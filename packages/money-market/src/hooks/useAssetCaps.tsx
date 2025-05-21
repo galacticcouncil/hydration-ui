@@ -9,6 +9,8 @@ import { DebtCeilingWarning } from "@/components/warnings/DebtCeilingWarning"
 import { SupplyCapWarning } from "@/components/warnings/SupplyCapWarning"
 import { AssetCapData, ComputedReserveData } from "@/hooks/commonTypes"
 
+const CAP_WARNING_PERCENT = 98
+
 type WarningDisplayProps = {
   supplyCap?: AssetCapData
   borrowCap?: AssetCapData
@@ -45,9 +47,13 @@ export const getAssetCapData = (
       // percentUsed: 99.9,
       // isMaxed: true,
       determineWarningDisplay: ({ supplyCap, ...rest }) =>
-        supplyCap ? <SupplyCapWarning supplyCap={supplyCap} {...rest} /> : null,
+        supplyCap && supplyCap.percentUsed >= CAP_WARNING_PERCENT ? (
+          <SupplyCapWarning supplyCap={supplyCap} {...rest} />
+        ) : null,
       displayMaxedTooltip: ({ supplyCap }) =>
-        supplyCap ? <SupplyCapMaxedTooltip supplyCap={supplyCap} /> : null,
+        supplyCap && supplyCap.isMaxed ? (
+          <SupplyCapMaxedTooltip supplyCap={supplyCap} />
+        ) : null,
     },
     borrowCap: {
       percentUsed: borrowCapUsage,
@@ -55,9 +61,13 @@ export const getAssetCapData = (
       // percentUsed: 98.5,
       // isMaxed: false,
       determineWarningDisplay: ({ borrowCap, ...rest }) =>
-        borrowCap ? <BorrowCapWarning borrowCap={borrowCap} {...rest} /> : null,
+        borrowCap && borrowCap.percentUsed >= CAP_WARNING_PERCENT ? (
+          <BorrowCapWarning borrowCap={borrowCap} {...rest} />
+        ) : null,
       displayMaxedTooltip: ({ borrowCap }) =>
-        borrowCap ? <BorrowCapMaxedTooltip borrowCap={borrowCap} /> : null,
+        borrowCap && borrowCap.isMaxed ? (
+          <BorrowCapMaxedTooltip borrowCap={borrowCap} />
+        ) : null,
     },
     debtCeiling: {
       percentUsed: debtCeilingUsage,
@@ -65,11 +75,11 @@ export const getAssetCapData = (
       // percentUsed: 99.994,
       // isMaxed: true,
       determineWarningDisplay: ({ debtCeiling, ...rest }) =>
-        debtCeiling ? (
+        debtCeiling && debtCeiling.percentUsed >= CAP_WARNING_PERCENT ? (
           <DebtCeilingWarning debtCeiling={debtCeiling} {...rest} />
         ) : null,
       displayMaxedTooltip: ({ debtCeiling }) =>
-        debtCeiling ? (
+        debtCeiling && debtCeiling.isMaxed ? (
           <DebtCeilingMaxedTooltip debtCeiling={debtCeiling} />
         ) : null,
     },

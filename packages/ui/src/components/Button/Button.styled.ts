@@ -195,10 +195,10 @@ const outlineVariants = createVariants((theme) => ({
     theme.buttons.secondary.accent.hover,
   ),
   success: outlineVariantStyles(
-    theme.accents.success.onEmphasis,
     theme.accents.success.emphasis,
     theme.accents.success.emphasis,
-    theme.accents.success.emphasis,
+    "transparent",
+    theme.accents.success.dim,
   ),
 }))
 

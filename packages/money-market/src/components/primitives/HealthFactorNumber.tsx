@@ -1,4 +1,4 @@
-import { Text } from "@galacticcouncil/ui/components"
+import { Flex, Text } from "@galacticcouncil/ui/components"
 import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 
@@ -16,25 +16,21 @@ export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(value)
 
   return (
-    <div
-      sx={{
-        flex: "row",
-        gap: 10,
-      }}
-    >
+    <Flex>
       {value === "-1" ? (
         <Text
+          fw={500}
           fs={fontSize}
           color={getToken("accents.success.emphasis")}
-          css={{ scale: "1.3" }}
+          sx={{ scale: "1.3" }}
         >
           ∞
         </Text>
       ) : (
-        <Text fs={fontSize} css={{ color: healthFactorColor }}>
+        <Text fw={500} fs={fontSize} sx={{ color: healthFactorColor }}>
           {healthFactor}
         </Text>
       )}
-    </div>
+    </Flex>
   )
 }

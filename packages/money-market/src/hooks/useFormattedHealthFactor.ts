@@ -1,26 +1,38 @@
 import { useTheme } from "@galacticcouncil/ui/theme"
 import Big from "big.js"
 
-import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
+type HealthFactorLevel = "none" | "good" | "warning" | "danger"
 
 export const useFormattedHealthFactor = (value: string) => {
-  const { formatNumber } = useAppFormatters()
-  const formattedHealthFactor = formatNumber(value)
+  const { getToken } = useTheme()
 
-  const hfBig = Big(value)
+  const healthFactor = Big(value)
 
-  const { themeProps } = useTheme()
-  let healthFactorColor = ""
-  if (hfBig.gte(3)) {
-    healthFactorColor = themeProps.accents.success.emphasis
-  } else if (hfBig.lt(1.1)) {
-    healthFactorColor = themeProps.accents.danger.emphasis
-  } else {
-    healthFactorColor = themeProps.accents.alert.primary
-  }
+  const isHealthFactorValid = !healthFactor.eq("-1")
+
+  const formattedHealthFactor = isHealthFactorValid
+    ? healthFactor.toFixed(2, Big.roundDown)
+    : "-1"
+
+  const level: HealthFactorLevel = !isHealthFactorValid
+    ? "none"
+    : healthFactor.gte(3)
+      ? "good"
+      : healthFactor.lt(1.1)
+        ? "danger"
+        : "warning"
+
+  const tokenMap = {
+    none: "text.low",
+    good: "accents.success.emphasis",
+    warning: "accents.alert.primary",
+    danger: "accents.danger.emphasis",
+  } as const
 
   return {
+    isHealthFactorValid,
+    healthFactorLevel: level,
     healthFactor: formattedHealthFactor,
-    healthFactorColor,
+    healthFactorColor: `${getToken(tokenMap[level])}`,
   }
 }

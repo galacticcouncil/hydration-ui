@@ -1,6 +1,7 @@
 import Big from "big.js"
 import { format as formatDate, isDate } from "date-fns"
 import { FormatFunction } from "i18next"
+import { isNullish } from "remeda"
 
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
 const MIN_PERCENTAGE_THRESHOLD = Big(0.01)
@@ -41,7 +42,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (!value) {
+    if (isNullish(value) || Number.isNaN(Number(value))) {
       return "N / A"
     }
 
@@ -62,7 +63,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (value === null || value === undefined || Number.isNaN(value)) {
+    if (isNullish(value) || Number.isNaN(Number(value))) {
       return "N / A"
     }
 
@@ -93,20 +94,23 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (!value) {
+    if (isNullish(value) || Number.isNaN(Number(value))) {
       return "N / A"
     }
 
     let parts = Intl.NumberFormat(lng, {
       style: "currency",
       currency: "USD",
-      maximumSignificantDigits: getMaxSignificantDigits(value, options),
+      maximumSignificantDigits:
+        options.maximumSignificantDigits || options.maximumFractionDigits
+          ? undefined
+          : getMaxSignificantDigits(value, options),
       ...options,
     }).formatToParts(value)
 
     if (options.symbol) {
       parts = [
-        ...parts.slice(1),
+        ...parts.filter(({ type }) => type !== "currency"),
         { type: "literal", value: NB_SPACE },
         { type: "currency", value: options.symbol } as Intl.NumberFormatPart,
       ]

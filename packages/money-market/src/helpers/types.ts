@@ -2,7 +2,6 @@ import { InterestRate } from "@aave/contract-helpers"
 import { SignatureLike } from "@ethersproject/bytes"
 
 import { ComputedReserveData } from "@/hooks/commonTypes"
-import { SignedParams } from "@/hooks/useApprovalTx"
 
 export type TxState = {
   txError?: string
@@ -62,7 +61,6 @@ interface DebtSwitchBaseProps {
   isMaxSelected: boolean
   loading?: boolean
   currentRateMode: number
-  signatureParams?: SignedParams
 }
 
 export interface DebtSwitchActionProps extends DebtSwitchBaseProps {
@@ -137,6 +135,5 @@ export interface WithdrawAndSwitchActionProps
     | "isMaxSelected"
   > {
   augustus: string
-  signatureParams?: SignedParams
   txCalldata: string
 }

@@ -1,10 +1,10 @@
 import {
-  BigNumberValue,
   calculateHealthFactorFromBalancesBigUnits,
   ComputedUserReserve,
   UserReserveData,
-  valueToBigNumber,
 } from "@aave/math-utils"
+import { bigMax, bigMin } from "@galacticcouncil/utils"
+import Big, { BigSource } from "big.js"
 
 import {
   ComputedReserveData,
@@ -13,17 +13,17 @@ import {
 } from "@/hooks/commonTypes"
 
 interface CalculateHFAfterSwapProps {
-  fromAmount: BigNumberValue
+  fromAmount: BigSource
   fromAssetData: ComputedReserveData
   fromAssetUserData: ComputedUserReserve
-  toAmountAfterSlippage: BigNumberValue
+  toAmountAfterSlippage: BigSource
   toAssetData: ComputedReserveData
   user: ExtendedFormattedUser
 }
 
 interface CalculateHFAfterSwapRepayProps {
-  amountToReceiveAfterSwap: BigNumberValue
-  amountToSwap: BigNumberValue
+  amountToReceiveAfterSwap: BigSource
+  amountToSwap: BigSource
   fromAssetData: ComputedReserveData
   toAssetData: ComputedReserveData
   user: ExtendedFormattedUser
@@ -62,9 +62,9 @@ export function calculateHFAfterSwap({
     fromAssetData.reserveLiquidationThreshold !== "0"
   ) {
     hfEffectOfFromAmount = calculateHealthFactorFromBalancesBigUnits({
-      collateralBalanceMarketReferenceCurrency: valueToBigNumber(
-        fromAmount,
-      ).multipliedBy(fromAssetData.formattedPriceInMarketReferenceCurrency),
+      collateralBalanceMarketReferenceCurrency: Big(fromAmount)
+        .mul(fromAssetData.formattedPriceInMarketReferenceCurrency)
+        .toString(),
       borrowBalanceMarketReferenceCurrency:
         user.totalBorrowsMarketReferenceCurrency,
       currentLiquidationThreshold: reserveLiquidationThreshold,
@@ -79,9 +79,9 @@ export function calculateHFAfterSwap({
       user.isolatedReserve?.underlyingAsset === toAssetData.underlyingAsset)
   ) {
     hfEffectOfToAmount = calculateHealthFactorFromBalancesBigUnits({
-      collateralBalanceMarketReferenceCurrency: valueToBigNumber(
-        toAmountAfterSlippage,
-      ).multipliedBy(toAssetData.formattedPriceInMarketReferenceCurrency),
+      collateralBalanceMarketReferenceCurrency: Big(toAmountAfterSlippage)
+        .mul(toAssetData.formattedPriceInMarketReferenceCurrency)
+        .toString(),
       borrowBalanceMarketReferenceCurrency:
         user.totalBorrowsMarketReferenceCurrency,
       currentLiquidationThreshold:
@@ -96,8 +96,8 @@ export function calculateHFAfterSwap({
     hfEffectOfFromAmount,
     hfAfterSwap:
       user.healthFactor === "-1"
-        ? valueToBigNumber("-1")
-        : valueToBigNumber(user.healthFactor)
+        ? Big("-1")
+        : Big(user.healthFactor)
             .plus(hfEffectOfToAmount)
             .minus(hfEffectOfFromAmount),
   }
@@ -128,33 +128,29 @@ export const calculateHFAfterRepay = ({
     fromAssetData.usageAsCollateralEnabled
   ) {
     hfInitialEffectOfFromAmount = calculateHealthFactorFromBalancesBigUnits({
-      collateralBalanceMarketReferenceCurrency: valueToBigNumber(
-        amountToSwap,
-      ).multipliedBy(fromAssetData.formattedPriceInMarketReferenceCurrency),
+      collateralBalanceMarketReferenceCurrency: Big(amountToSwap)
+        .mul(fromAssetData.formattedPriceInMarketReferenceCurrency)
+        .toString(),
       borrowBalanceMarketReferenceCurrency:
         user.totalBorrowsMarketReferenceCurrency,
       currentLiquidationThreshold: reserveLiquidationThreshold,
     }).toString()
   }
 
-  const fromAmountInMarketReferenceCurrency = valueToBigNumber(
-    BigNumber.min(amountToReceiveAfterSwap, debt),
+  const fromAmountInMarketReferenceCurrency = Big(
+    bigMin(amountToReceiveAfterSwap, debt),
   )
-    .multipliedBy(toAssetData.priceInUSD)
-    .toString(10)
-  let debtLeftInMarketReference = valueToBigNumber(user.totalBorrowsUSD).minus(
+    .mul(toAssetData.priceInUSD)
+    .toString()
+  let debtLeftInMarketReference = Big(user.totalBorrowsUSD).minus(
     fromAmountInMarketReferenceCurrency,
   )
 
-  debtLeftInMarketReference = BigNumber.max(
-    debtLeftInMarketReference,
-    valueToBigNumber("0"),
-  )
+  debtLeftInMarketReference = bigMax(debtLeftInMarketReference, Big("0"))
 
   const hfAfterRepayBeforeWithdraw = calculateHealthFactorFromBalancesBigUnits({
     collateralBalanceMarketReferenceCurrency: user.totalCollateralUSD,
-    borrowBalanceMarketReferenceCurrency:
-      debtLeftInMarketReference.toString(10),
+    borrowBalanceMarketReferenceCurrency: debtLeftInMarketReference.toString(),
     currentLiquidationThreshold: user.currentLiquidationThreshold,
   })
 
@@ -162,11 +158,11 @@ export const calculateHFAfterRepay = ({
     fromAssetData.reserveLiquidationThreshold !== "0" &&
     repayWithUserReserve?.usageAsCollateralEnabledOnUser
       ? calculateHealthFactorFromBalancesBigUnits({
-          collateralBalanceMarketReferenceCurrency: valueToBigNumber(
-            amountToSwap,
-          ).multipliedBy(fromAssetData.priceInUSD),
+          collateralBalanceMarketReferenceCurrency: Big(amountToSwap)
+            .mul(fromAssetData.priceInUSD)
+            .toString(),
           borrowBalanceMarketReferenceCurrency:
-            debtLeftInMarketReference.toString(10),
+            debtLeftInMarketReference.toString(),
           currentLiquidationThreshold:
             fromAssetData.formattedReserveLiquidationThreshold,
         }).toString()
@@ -177,7 +173,7 @@ export const calculateHFAfterRepay = ({
     : hfAfterRepayBeforeWithdraw.minus(hfRealEffectOfFromAmount)
 
   return {
-    hfEffectOfFromAmount: valueToBigNumber(hfInitialEffectOfFromAmount),
+    hfEffectOfFromAmount: Big(hfInitialEffectOfFromAmount),
     hfAfterSwap:
       hfAfterSwap.isLessThan(0) && !hfAfterSwap.eq(-1) ? 0 : hfAfterSwap,
   }
@@ -189,11 +185,11 @@ export const calculateHFAfterWithdraw = ({
   poolReserve,
   withdrawAmount,
 }: CalculateHFAfterWithdrawProps) => {
-  let totalCollateralInETHAfterWithdraw = valueToBigNumber(
+  let totalCollateralInETHAfterWithdraw = Big(
     user.totalCollateralMarketReferenceCurrency,
   )
   let liquidationThresholdAfterWithdraw = user.currentLiquidationThreshold
-  let healthFactorAfterWithdraw = valueToBigNumber(user.healthFactor)
+  let healthFactorAfterWithdraw = Big(user.healthFactor)
 
   const reserveLiquidationThreshold =
     user.isInEmode && user.userEmodeCategoryId === poolReserve.eModeCategoryId
@@ -204,32 +200,32 @@ export const calculateHFAfterWithdraw = ({
     userReserve?.usageAsCollateralEnabledOnUser &&
     poolReserve.reserveLiquidationThreshold !== "0"
   ) {
-    const amountToWithdrawInEth = valueToBigNumber(withdrawAmount).multipliedBy(
+    const amountToWithdrawInEth = Big(withdrawAmount || "0").mul(
       poolReserve.formattedPriceInMarketReferenceCurrency,
     )
     totalCollateralInETHAfterWithdraw = totalCollateralInETHAfterWithdraw.minus(
       amountToWithdrawInEth,
     )
 
-    liquidationThresholdAfterWithdraw = valueToBigNumber(
+    liquidationThresholdAfterWithdraw = Big(
       user.totalCollateralMarketReferenceCurrency,
     )
-      .multipliedBy(valueToBigNumber(user.currentLiquidationThreshold))
-      .minus(
-        valueToBigNumber(amountToWithdrawInEth).multipliedBy(
-          reserveLiquidationThreshold,
-        ),
-      )
+      .mul(user.currentLiquidationThreshold)
+      .minus(Big(amountToWithdrawInEth).mul(reserveLiquidationThreshold))
       .div(totalCollateralInETHAfterWithdraw)
-      .toFixed(4, BigNumber.ROUND_DOWN)
+      .toFixed(4, Big.roundDown)
 
-    healthFactorAfterWithdraw = calculateHealthFactorFromBalancesBigUnits({
-      collateralBalanceMarketReferenceCurrency:
-        totalCollateralInETHAfterWithdraw,
-      borrowBalanceMarketReferenceCurrency:
-        user.totalBorrowsMarketReferenceCurrency,
-      currentLiquidationThreshold: liquidationThresholdAfterWithdraw,
-    })
+    const calculatedHFAfterWithdraw = calculateHealthFactorFromBalancesBigUnits(
+      {
+        collateralBalanceMarketReferenceCurrency:
+          totalCollateralInETHAfterWithdraw.toString(),
+        borrowBalanceMarketReferenceCurrency:
+          user.totalBorrowsMarketReferenceCurrency,
+        currentLiquidationThreshold: liquidationThresholdAfterWithdraw,
+      },
+    ).toString()
+
+    healthFactorAfterWithdraw = Big(calculatedHFAfterWithdraw)
   }
 
   return healthFactorAfterWithdraw
@@ -246,30 +242,26 @@ export const calculateHFAfterSupply = ({
   poolReserve,
   supplyAmount,
 }: CalculateHFAfterSupplyProps) => {
-  const supplyAmountInEth = valueToBigNumber(supplyAmount).multipliedBy(
+  const supplyAmountInEth = Big(supplyAmount).mul(
     poolReserve.formattedPriceInMarketReferenceCurrency,
   )
 
-  let healthFactorAfterDeposit = user
-    ? valueToBigNumber(user.healthFactor)
-    : valueToBigNumber("-1")
+  let healthFactorAfterDeposit = user ? Big(user.healthFactor) : Big("-1")
 
   const totalCollateralMarketReferenceCurrencyAfter = user
-    ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency).plus(
-        supplyAmountInEth,
-      )
-    : valueToBigNumber("-1")
+    ? Big(user.totalCollateralMarketReferenceCurrency).plus(supplyAmountInEth)
+    : Big("-1")
 
   const liquidationThresholdAfter = user
-    ? valueToBigNumber(user.totalCollateralMarketReferenceCurrency)
-        .multipliedBy(user.currentLiquidationThreshold)
+    ? Big(user.totalCollateralMarketReferenceCurrency)
+        .mul(user.currentLiquidationThreshold)
         .plus(
-          supplyAmountInEth.multipliedBy(
+          supplyAmountInEth.mul(
             poolReserve.formattedReserveLiquidationThreshold,
           ),
         )
-        .dividedBy(totalCollateralMarketReferenceCurrencyAfter)
-    : valueToBigNumber("-1")
+        .div(totalCollateralMarketReferenceCurrencyAfter)
+    : Big("-1")
 
   if (
     user &&
@@ -277,14 +269,16 @@ export const calculateHFAfterSupply = ({
       (user.isInIsolationMode &&
         user.isolatedReserve?.underlyingAsset === poolReserve.underlyingAsset))
   ) {
-    healthFactorAfterDeposit = calculateHealthFactorFromBalancesBigUnits({
+    const calculatedHFAfterDeposit = calculateHealthFactorFromBalancesBigUnits({
       collateralBalanceMarketReferenceCurrency:
-        totalCollateralMarketReferenceCurrencyAfter,
-      borrowBalanceMarketReferenceCurrency: valueToBigNumber(
+        totalCollateralMarketReferenceCurrencyAfter.toString(),
+      borrowBalanceMarketReferenceCurrency: Big(
         user.totalBorrowsMarketReferenceCurrency,
-      ),
-      currentLiquidationThreshold: liquidationThresholdAfter,
-    })
+      ).toString(),
+      currentLiquidationThreshold: liquidationThresholdAfter.toString(),
+    }).toString()
+
+    healthFactorAfterDeposit = Big(calculatedHFAfterDeposit)
   }
 
   return healthFactorAfterDeposit

@@ -1,3 +1,4 @@
+import { useMarketAssetsData } from "@galacticcouncil/money-market/hooks"
 import { Wallet } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
@@ -18,7 +19,6 @@ import { FC } from "react"
 
 import { Logo } from "@/components"
 import { LINKS } from "@/config/navigation"
-import { MOCK_DATA } from "@/modules/borrow/_mock"
 import { ReserveHeader } from "@/modules/borrow/reserve/components/ReserveHeader"
 import { ReserveConfiguration } from "@/modules/borrow/reserve/ReserveConfiguration"
 import { useAssets } from "@/providers/assetsProvider"
@@ -34,7 +34,9 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
 }) => {
   const isGho = false
 
-  const reserve = MOCK_DATA.find(
+  const { data: reserves = [] } = useMarketAssetsData()
+
+  const reserve = reserves.find(
     (reserve) => getAssetIdFromAddress(reserve.underlyingAsset) === assetId,
   )
 
@@ -43,6 +45,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
   const asset = getAsset(assetId)
 
   if (!asset) return <Navigate to={LINKS.borrowMarkets} />
+  if (!reserve) return null
 
   return (
     <Stack gap={30} py={20}>

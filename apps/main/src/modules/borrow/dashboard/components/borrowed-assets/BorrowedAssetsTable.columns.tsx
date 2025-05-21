@@ -1,4 +1,7 @@
-import { useBorrowedAssetsData } from "@galacticcouncil/money-market/hooks"
+import {
+  useBorrowedAssetsData,
+  useModalContext,
+} from "@galacticcouncil/money-market/hooks"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -19,6 +22,8 @@ const columnHelper = createColumnHelper<TBorrowedAssetsRow>()
 export const useBorrowedAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset } = useAssets()
+
+  const { openRepay } = useModalContext()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("reserve.symbol", {
@@ -53,6 +58,11 @@ export const useBorrowedAssetsTableColumns = () => {
 
     const apyColumn = columnHelper.accessor("borrowAPY", {
       header: t("apy"),
+      meta: {
+        sx: {
+          textAlign: "center",
+        },
+      },
       cell: ({ row }) => {
         const { borrowAPY } = row.original
 
@@ -73,13 +83,20 @@ export const useBorrowedAssetsTableColumns = () => {
           textAlign: "right",
         },
       },
-      cell: () => {
+      cell: ({ row }) => {
+        const { reserve, underlyingAsset, borrowRateMode } = row.original
+
+        const isDisabled = !reserve.isActive || reserve.isPaused
         return (
           <Flex justify="flex-end" align="center" gap={4}>
             <Button
               variant="tertiary"
               size="small"
-              onClick={(e) => e.stopPropagation()}
+              disabled={isDisabled}
+              onClick={(e) => {
+                e.stopPropagation()
+                openRepay(underlyingAsset, borrowRateMode, reserve.isFrozen)
+              }}
             >
               {t("borrow:repay")}
             </Button>
@@ -95,5 +112,5 @@ export const useBorrowedAssetsTableColumns = () => {
     })
 
     return [assetColumn, balanceColumn, apyColumn, actionsColumn]
-  }, [getAsset, t])
+  }, [getAsset, openRepay, t])
 }

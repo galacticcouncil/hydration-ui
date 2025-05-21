@@ -9,10 +9,12 @@ import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import React, { useMemo, useState } from "react"
 
-import { MoneyMarketAssetInput } from "@/components/MoneyMarketAssetInput"
+import { AssetInput } from "@/components/primitives/AssetInput"
 import { CollateralState } from "@/components/primitives/CollateralState"
 import { HealthFactorChange } from "@/components/primitives/HealthFactorChange"
-import { TxModalWrapperProps } from "@/components/transactions/TxModalWrapper"
+import { IncentivesButton } from "@/components/primitives/IncentivesButton"
+import { ValueDetail } from "@/components/primitives/ValueDetail"
+import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrapper"
 import { IsolationModeWarning } from "@/components/warnings/IsolationModeWarning"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
@@ -38,7 +40,7 @@ export const SupplyModalContent = React.memo(
     isWrongNetwork,
     nativeBalance,
     tokenBalance,
-  }: TxModalWrapperProps) => {
+  }: TxModalWrapperRenderProps) => {
     const { formatPercent } = useAppFormatters()
 
     const { marketReferencePriceInUsd, user } = useAppDataContext()
@@ -194,9 +196,30 @@ export const SupplyModalContent = React.memo(
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
     }
 
+    const healthFactor = user ? user.healthFactor : "-1"
+    const futureHealthFactor = healthFactorAfterDeposit.toString()
+
+    const shouldRenderHealthFactor =
+      healthFactor !== "-1" && futureHealthFactor !== "-1"
+
+    const incentives = poolReserve.aIncentivesData
+    const shouldRenderIncentives =
+      incentives && incentives.filter((i) => i.incentiveAPR !== "0").length > 0
+
+    const supplyCapWarning = supplyCapUsage.determineWarningDisplay({
+      supplyCap: supplyCapUsage,
+    })
+
+    const debptCeilingWarning = debtCeilingUsage.determineWarningDisplay({
+      debtCeiling: debtCeilingUsage,
+    })
+
+    const shouldRenderWarnings =
+      showIsolationWarning || !!supplyCapWarning || !!debptCeilingWarning
+
     return (
       <>
-        <MoneyMarketAssetInput
+        <AssetInput
           name="supply-amount"
           value={amount}
           onChange={handleChange}
@@ -221,11 +244,12 @@ export const SupplyModalContent = React.memo(
           isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
           maxValue={maxAmountToSupply}
-          sx={{ mb: 20 }}
           error={
             isMaxExceeded ? "Insufficient balance on your account." : undefined
           }
         />
+
+        <Separator mx="var(--modal-content-inset)" />
 
         <Stack
           separated
@@ -234,33 +258,49 @@ export const SupplyModalContent = React.memo(
         >
           <SummaryRow
             label="Supply APY"
-            content={<>{formatPercent(Number(supplyApy) * 100)}</>}
-          />
-          <SummaryRow
-            label="Incentives"
             content={
-              <>
-                incentives={poolReserve.aIncentivesData} symbol=
-                {poolReserve.symbol}
-              </>
+              <ValueDetail value={formatPercent(Number(supplyApy) * 100)} />
             }
           />
+          {shouldRenderIncentives && (
+            <SummaryRow
+              label="Incentives"
+              content={
+                <IncentivesButton
+                  incentives={incentives}
+                  symbol={poolReserve.symbol}
+                />
+              }
+            />
+          )}
           <SummaryRow
             label="Collateral"
             content={<CollateralState collateralType={collateralType} />}
           />
-          <SummaryRow
-            label="Health Factor"
-            content={
-              <HealthFactorChange
-                healthFactor={user ? user.healthFactor : "-1"}
-                futureHealthFactor={healthFactorAfterDeposit.toString(10)}
-              />
-            }
-          />
+          {shouldRenderHealthFactor && (
+            <SummaryRow
+              label="Health Factor"
+              content={
+                <HealthFactorChange
+                  healthFactor={healthFactor}
+                  futureHealthFactor={futureHealthFactor}
+                />
+              }
+            />
+          )}
+
+          {shouldRenderWarnings && (
+            <Stack gap={14} py={14}>
+              {showIsolationWarning && (
+                <IsolationModeWarning asset={poolReserve.symbol} />
+              )}
+              {supplyCapWarning}
+              {debptCeilingWarning}
+            </Stack>
+          )}
         </Stack>
 
-        {showIsolationWarning && (
+        {/* {showIsolationWarning && (
           <IsolationModeWarning asset={poolReserve.symbol} />
         )}
         {supplyCapUsage.determineWarningDisplay({
@@ -268,7 +308,7 @@ export const SupplyModalContent = React.memo(
         })}
         {debtCeilingUsage.determineWarningDisplay({
           debtCeiling: debtCeilingUsage,
-        })}
+        })} */}
 
         <SupplyActions {...supplyActionsProps} />
       </>

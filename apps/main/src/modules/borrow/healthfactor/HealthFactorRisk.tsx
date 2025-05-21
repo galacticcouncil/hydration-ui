@@ -1,5 +1,10 @@
+import {
+  useFormattedHealthFactor,
+  useFormattedLtv,
+  useMoneyMarketData,
+} from "@galacticcouncil/money-market/hooks"
 import { Stack, Text } from "@galacticcouncil/ui/components"
-import { useTheme } from "@galacticcouncil/ui/theme"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorLtvScale } from "@/modules/borrow/healthfactor/HealthFactorLtvScale"
@@ -8,15 +13,28 @@ import { HealthFactorRiskScale } from "@/modules/borrow/healthfactor/HealthFacto
 
 export const HealthFactorRisk = () => {
   const { t } = useTranslation(["common", "borrow"])
-  const { themeProps } = useTheme()
 
-  const healthFactor = "1.25"
-  const healthFactorColor = themeProps.accents.danger.emphasis
+  const { user } = useMoneyMarketData()
 
-  const ltvColor = themeProps.accents.alert.primary
-  const currentLiquidationThreshold = "0.890479108488"
-  const currentLoanToValue = "0.851566582658"
-  const loanToValue = "0.706077160183"
+  const { healthFactor, healthFactorColor } = useFormattedHealthFactor(
+    user.healthFactor,
+  )
+
+  const currentLoanToValue = user.currentLoanToValue || "0"
+  const currentLiquidationThreshold = user.currentLiquidationThreshold || "0"
+
+  const loanToValue =
+    user?.totalCollateralMarketReferenceCurrency === "0"
+      ? "0"
+      : Big(user?.totalBorrowsMarketReferenceCurrency || "0")
+          .div(user?.totalCollateralMarketReferenceCurrency || "1")
+          .toFixed()
+
+  const formattedLtvValues = useFormattedLtv(
+    loanToValue,
+    currentLoanToValue,
+    currentLiquidationThreshold,
+  )
 
   return (
     <Stack gap={20}>
@@ -32,17 +50,17 @@ export const HealthFactorRisk = () => {
       <HealthFactorRiskInfo
         title={t("borrow:risk.ltv.title")}
         description={t("borrow:risk.ltv.description")}
-        value={t("percent", { value: Number(loanToValue) * 100 })}
+        value={t("percent", { value: formattedLtvValues.ltvPercent })}
         hint={t("borrow:risk.ltv.hint")}
         scale={
           <HealthFactorLtvScale
             loanToValue={loanToValue}
             currentLoanToValue={currentLoanToValue}
             currentLiquidationThreshold={currentLiquidationThreshold}
-            color={ltvColor}
+            {...formattedLtvValues}
           />
         }
-        color={ltvColor}
+        color={formattedLtvValues.ltvColor}
       />
     </Stack>
   )

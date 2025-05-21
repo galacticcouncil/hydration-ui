@@ -1,7 +1,6 @@
 import {
   AaveTokenV3Service,
   ApproveDelegationType,
-  ApproveType,
   BaseDebtToken,
   DebtSwitchAdapterService,
   ERC20_2612Service,
@@ -44,7 +43,13 @@ import {
 } from "@aave/contract-helpers/dist/esm/v3-pool-contract/lendingPoolTypes"
 import { AaveSafetyModule, AaveV3Ethereum } from "@bgd-labs/aave-address-book"
 import BN from "bignumber.js"
-import { BigNumber, PopulatedTransaction, Signature, utils } from "ethers"
+import {
+  BigNumber,
+  PopulatedTransaction,
+  providers,
+  Signature,
+  utils,
+} from "ethers"
 import { splitSignature } from "ethers/lib/utils"
 import { produce } from "immer"
 import { StateCreator } from "zustand"
@@ -89,10 +94,6 @@ type ClaimRewardsActionsProps = {
   isWrongNetwork?: boolean
   blocked: boolean
   selectedReward: Reward
-}
-
-type GenerateApprovalOpts = {
-  chainId?: number
 }
 
 type GenerateSignatureRequestOpts = {
@@ -159,11 +160,6 @@ export interface PoolSlice {
     },
     opts?: GenerateSignatureRequestOpts,
   ) => Promise<string>
-  // PoolBundle and LendingPoolBundle methods
-  generateApproval: (
-    args: ApproveType,
-    opts?: GenerateApprovalOpts,
-  ) => PopulatedTransaction
   supply: (args: Omit<LPSupplyParamsType, "user">) => PopulatedTransaction
   supplyWithPermit: (
     args: Omit<LPSupplyWithPermitType, "user">,
@@ -241,16 +237,17 @@ export const createPoolSlice: StateCreator<
       const account = get().account
       const currentChainId = get().currentChainId
       const currentMarketData = marketData || get().currentMarketData
+      const provider = get().jsonRpcProvider()
       const poolDataProviderContract = new UiPoolDataProvider({
         uiPoolDataProviderAddress:
           currentMarketData.addresses.UI_POOL_DATA_PROVIDER,
-        provider: get().jsonRpcProvider(),
+        provider,
         chainId: currentChainId,
       })
       const uiIncentiveDataProviderContract = new UiIncentiveDataProvider({
         uiIncentiveDataProviderAddress:
           currentMarketData.addresses.UI_INCENTIVE_DATA_PROVIDER || "",
-        provider: get().jsonRpcProvider(),
+        provider,
         chainId: currentChainId,
       })
       const lendingPoolAddressProvider =
@@ -380,14 +377,6 @@ export const createPoolSlice: StateCreator<
       const v3MarketData = selectCurrentChainIdV3MarketData(get())
       get().refreshPoolData(v3MarketData)
     },
-    generateApproval: (args: ApproveType, ops = {}) => {
-      const provider = get().jsonRpcProvider(ops.chainId)
-      const tokenERC20Service = new ERC20Service(provider)
-      return tokenERC20Service.approveTxData({
-        ...args,
-        amount: MAX_UINT_AMOUNT,
-      })
-    },
     supply: (args: Omit<LPSupplyParamsType, "user">) => {
       const poolBundle = get().getCorrectPoolBundle()
       const currentAccount = get().account
@@ -467,13 +456,13 @@ export const createPoolSlice: StateCreator<
 
       if (currentMarketData.v3) {
         const v3Service = new V3FaucetService(
-          jsonRpcProvider(),
+          jsonRpcProvider() as providers.Provider,
           currentMarketData.addresses.FAUCET,
         )
         return v3Service.mint({ ...args, userAddress })
       } else {
         const service = new FaucetService(
-          jsonRpcProvider(),
+          jsonRpcProvider() as providers.Provider,
           currentMarketData.addresses.FAUCET,
         )
         return service.mint({ ...args, userAddress })
@@ -610,7 +599,6 @@ export const createPoolSlice: StateCreator<
       isMaxSelected,
       txCalldata,
       augustus,
-      signatureParams,
     }) => {
       const user = get().account
       const provider = get().jsonRpcProvider()
@@ -619,23 +607,7 @@ export const createPoolSlice: StateCreator<
         provider,
         currentMarketData.addresses.DEBT_SWITCH_ADAPTER ?? "",
       )
-      let signatureDeconstruct: PermitSignature = {
-        amount: signatureParams?.amount ?? "0",
-        deadline: signatureParams?.deadline?.toString() ?? "0",
-        v: 0,
-        r: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        s: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      }
 
-      if (signatureParams) {
-        const sig: Signature = splitSignature(signatureParams.signature)
-        signatureDeconstruct = {
-          ...signatureDeconstruct,
-          v: sig.v,
-          r: sig.r,
-          s: sig.s,
-        }
-      }
       return debtSwitchService.debtSwitch({
         user,
         debtAssetUnderlying: poolReserve.underlyingAsset,
@@ -650,11 +622,11 @@ export const createPoolSlice: StateCreator<
         txCalldata,
         augustus,
         creditDelegationPermit: {
-          deadline: signatureDeconstruct.deadline,
-          value: signatureDeconstruct.amount,
-          v: signatureDeconstruct.v,
-          r: signatureDeconstruct.r,
-          s: signatureDeconstruct.s,
+          deadline: "0",
+          value: "0",
+          v: 0,
+          r: "0x0000000000000000000000000000000000000000000000000000000000000000",
+          s: "0x0000000000000000000000000000000000000000000000000000000000000000",
         },
         collateralPermit: {
           deadline: "0",
@@ -816,7 +788,6 @@ export const createPoolSlice: StateCreator<
       amountToSwap,
       amountToReceive,
       augustus,
-      signatureParams,
       txCalldata,
     }) => {
       const user = get().account
@@ -829,24 +800,6 @@ export const createPoolSlice: StateCreator<
         currentMarketData.addresses.WITHDRAW_SWITCH_ADAPTER,
       )
 
-      let signatureDeconstruct: PermitSignature = {
-        amount: signatureParams?.amount ?? "0",
-        deadline: signatureParams?.deadline?.toString() ?? "0",
-        v: 0,
-        r: "0x0000000000000000000000000000000000000000000000000000000000000000",
-        s: "0x0000000000000000000000000000000000000000000000000000000000000000",
-      }
-
-      if (signatureParams) {
-        const sig: Signature = splitSignature(signatureParams.signature)
-        signatureDeconstruct = {
-          ...signatureDeconstruct,
-          v: sig.v,
-          r: sig.r,
-          s: sig.s,
-        }
-      }
-
       return withdrawAndSwapService.withdrawAndSwitch({
         assetToSwitchFrom: poolReserve.underlyingAsset,
         assetToSwitchTo: targetReserve.underlyingAsset,
@@ -856,7 +809,13 @@ export const createPoolSlice: StateCreator<
         user,
         augustus,
         switchCallData: txCalldata,
-        permitParams: signatureDeconstruct,
+        permitParams: {
+          amount: "0",
+          deadline: "0",
+          v: 0,
+          r: "0x0000000000000000000000000000000000000000000000000000000000000000",
+          s: "0x0000000000000000000000000000000000000000000000000000000000000000",
+        },
       })
     },
     setUserEMode: async (categoryId) => {
@@ -941,17 +900,14 @@ export const createPoolSlice: StateCreator<
         return min || "0.001"
       },
     },
-    generateSignatureRequest: async (
-      { token, amount, deadline, spender },
-      opts = {},
-    ) => {
+    generateSignatureRequest: async ({ token, amount, deadline, spender }) => {
       const v3Tokens = [
         AaveV3Ethereum.ASSETS.AAVE.UNDERLYING.toLowerCase(),
         AaveV3Ethereum.ASSETS.AAVE.A_TOKEN.toLowerCase(),
         AaveSafetyModule.STK_AAVE.toLowerCase(),
       ]
 
-      const provider = get().jsonRpcProvider(opts.chainId)
+      const provider = get().jsonRpcProvider()
 
       let name = ""
       let version = "1"
@@ -1005,8 +961,8 @@ export const createPoolSlice: StateCreator<
       }
       return JSON.stringify(typeData)
     },
-    estimateGasLimit: async (tx: PopulatedTransaction, chainId?: number) => {
-      const provider = get().jsonRpcProvider(chainId)
+    estimateGasLimit: async (tx: PopulatedTransaction) => {
+      const provider = get().jsonRpcProvider()
       const defaultGasLimit: BigNumber = tx.gasLimit
         ? tx.gasLimit
         : BigNumber.from("0")

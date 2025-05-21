@@ -1,4 +1,7 @@
-import { useSuppliedAssetsData } from "@galacticcouncil/money-market/hooks"
+import {
+  useModalContext,
+  useSuppliedAssetsData,
+} from "@galacticcouncil/money-market/hooks"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -25,6 +28,8 @@ const columnHelper = createColumnHelper<TSuppliedAssetsRow>()
 export const useSuppliedAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset } = useAssets()
+
+  const { openWithdraw } = useModalContext()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("reserve.symbol", {
@@ -63,6 +68,11 @@ export const useSuppliedAssetsTableColumns = () => {
         select: (row) => row.original.supplyAPY,
         compare: numericallyStr,
       }),
+      meta: {
+        sx: {
+          textAlign: "center",
+        },
+      },
       cell: ({ row }) => {
         const { supplyAPY } = row.original
 
@@ -103,13 +113,23 @@ export const useSuppliedAssetsTableColumns = () => {
           textAlign: "right",
         },
       },
-      cell: () => {
+      cell: ({ row }) => {
+        const { reserve, underlyingAsset } = row.original
+
+        const { isActive, isPaused } = reserve
+
+        const isDisabled = !isActive || isPaused
+
         return (
           <Flex justify="flex-end" align="center" gap={4}>
             <Button
+              disabled={isDisabled}
               variant="tertiary"
               size="small"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation()
+                openWithdraw(underlyingAsset)
+              }}
             >
               {t("borrow:withdraw")}
             </Button>
@@ -131,5 +151,5 @@ export const useSuppliedAssetsTableColumns = () => {
       collateralColunn,
       actionsColumn,
     ]
-  }, [getAsset, t])
+  }, [getAsset, openWithdraw, t])
 }

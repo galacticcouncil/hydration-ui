@@ -31,22 +31,6 @@ export const SLiquidationMarker = styled.div(
   `,
 )
 
-export const SValue = styled.div<{ placement: "top" | "bottom" }>`
-  display: flex;
-  position: absolute;
-
-  left: 50%;
-  transform: translateX(-50%);
-  padding-block: 2px;
-
-  flex-direction: column;
-
-  align-items: center;
-  text-align: center;
-  bottom: ${({ placement }) => (placement === "top" ? "100%" : "auto")};
-  top: ${({ placement }) => (placement === "bottom" ? "100%" : "auto")};
-`
-
 export const SCurrentValueMarker = styled.div`
   position: relative;
   white-space: nowrap;

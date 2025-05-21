@@ -1,6 +1,7 @@
 {
   "available": "Available",
   "borrow": "Borrow",
+  "borrowPower": "Borrow power used",
   "borrow.table.title": "Assets to borrow",
   "borrowed.table.title": "Your borrows",
   "canBeCollateral": "Can be collateral",

@@ -1,3 +1,4 @@
+import { IncentivesButton } from "@galacticcouncil/money-market/components"
 import {
   getAssetCapData,
   useModalContext,
@@ -62,8 +63,13 @@ export const useSupplyAssetsTableColumns = () => {
         select: (row) => row.original.supplyAPY,
         compare: numericallyStr,
       }),
+      meta: {
+        sx: {
+          textAlign: "center",
+        },
+      },
       cell: ({ row }) => {
-        const { supplyAPY } = row.original
+        const { supplyAPY, aIncentivesData, symbol } = row.original
 
         const percent = Number(supplyAPY) * 100
 
@@ -71,7 +77,12 @@ export const useSupplyAssetsTableColumns = () => {
           value: percent,
         })
 
-        return <Amount value={value} />
+        return (
+          <>
+            <Amount value={value} />
+            <IncentivesButton incentives={aIncentivesData} symbol={symbol} />
+          </>
+        )
       },
     })
 
@@ -116,7 +127,7 @@ export const useSupplyAssetsTableColumns = () => {
         const { supplyCap } = getAssetCapData(row.original.reserve)
         const isMaxCapReached = supplyCap.isMaxed
 
-        const disabled =
+        const isDisabled =
           !isActive ||
           isPaused ||
           isFreezed ||
@@ -126,7 +137,7 @@ export const useSupplyAssetsTableColumns = () => {
         return (
           <Flex justify="flex-end" align="center" gap={4}>
             <Button
-              disabled={disabled}
+              disabled={isDisabled}
               variant="tertiary"
               size="small"
               onClick={(e) => {

@@ -1,4 +1,7 @@
-import { useBorrowAssetsData } from "@galacticcouncil/money-market/hooks"
+import {
+  useBorrowAssetsData,
+  useModalContext,
+} from "@galacticcouncil/money-market/hooks"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -19,6 +22,8 @@ const columnHelper = createColumnHelper<TBorrowAssetsRow>()
 export const useBorrowAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset } = useAssets()
+
+  const { openBorrow } = useModalContext()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
@@ -53,6 +58,15 @@ export const useBorrowAssetsTableColumns = () => {
 
     const apyColumn = columnHelper.accessor("variableBorrowRate", {
       header: t("apy"),
+      sortingFn: sortBy({
+        select: (row) => row.original.variableBorrowRate,
+        compare: numericallyStr,
+      }),
+      meta: {
+        sx: {
+          textAlign: "center",
+        },
+      },
       cell: ({ row }) => {
         const { variableBorrowRate } = row.original
 
@@ -73,13 +87,20 @@ export const useBorrowAssetsTableColumns = () => {
           textAlign: "right",
         },
       },
-      cell: () => {
+      cell: ({ row }) => {
+        const { isFreezed, availableBorrows, underlyingAsset } = row.original
+        const isDisabled = isFreezed || Number(availableBorrows) <= 0
+
         return (
           <Flex justify="flex-end" align="center" gap={4}>
             <Button
               variant="tertiary"
               size="small"
-              onClick={(e) => e.stopPropagation()}
+              disabled={isDisabled}
+              onClick={(e) => {
+                e.stopPropagation()
+                openBorrow(underlyingAsset)
+              }}
             >
               {t("borrow:borrow")}
             </Button>
@@ -95,5 +116,5 @@ export const useBorrowAssetsTableColumns = () => {
     })
 
     return [assetColumn, balanceColumn, apyColumn, actionsColumn]
-  }, [getAsset, t])
+  }, [getAsset, openBorrow, t])
 }

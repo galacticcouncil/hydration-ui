@@ -3,8 +3,6 @@ import { devtools, subscribeWithSelector } from "zustand/middleware"
 import { createWithEqualityFn as create } from "zustand/traditional"
 
 import { createSingletonSubscriber } from "@/store/utils/createSingletonSubscriber"
-import { getQueryParameter } from "@/store/utils/queryParams"
-import { CustomMarket } from "@/ui-config/marketsConfig"
 
 import { createGhoSlice, GhoSlice } from "./ghoSlice"
 import { createIncentiveSlice, IncentiveSlice } from "./incentiveSlice"
@@ -42,25 +40,6 @@ export const useRootStore = create<RootStore>()(
     }),
   ),
 )
-
-// hydrate state from localeStorage to not break on ssr issues
-if (typeof document !== "undefined") {
-  document.onreadystatechange = function () {
-    if (document.readyState === "complete") {
-      const selectedMarket =
-        getQueryParameter("marketName") ||
-        localStorage.getItem("selectedMarket")
-
-      if (selectedMarket) {
-        const currentMarket = useRootStore.getState().currentMarket
-        const setCurrentMarket = useRootStore.getState().setCurrentMarket
-        if (selectedMarket !== currentMarket) {
-          setCurrentMarket(selectedMarket as CustomMarket, true)
-        }
-      }
-    }
-  }
-}
 
 export const usePoolDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolData()

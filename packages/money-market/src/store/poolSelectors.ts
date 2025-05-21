@@ -31,11 +31,7 @@ export const selectCurrentChainIdMarkets = (state: RootStore) => {
       ...marketData,
       marketName: marketNames[index] as CustomMarket,
     }))
-    .filter(
-      (marketData) =>
-        marketData.chainId === state.currentChainId &&
-        state.currentNetworkConfig.isFork === marketData.isFork,
-    )
+    .filter((marketData) => marketData.chainId === state.currentChainId)
 }
 
 export const selectCurrentChainIdV2MarketData = (state: RootStore) => {
@@ -162,7 +158,6 @@ export const selectFormattedReserves = (
 ) => {
   const reserves = selectCurrentReserves(state)
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
-  const currentNetworkConfig = state.currentNetworkConfig
 
   const reserveIncentives = formatReserveIncentives(
     state.reserveIncentiveData || [],
@@ -181,9 +176,7 @@ export const selectFormattedReserves = (
       ...r,
       ...fetchIconSymbolAndName(r),
       isEmodeEnabled: r.eModeCategoryId !== 0,
-      isWrappedBaseAsset:
-        r.symbol.toLowerCase() ===
-        currentNetworkConfig.wrappedBaseAssetSymbol?.toLowerCase(),
+      isWrappedBaseAsset: false,
     }))
     .sort(reserveSortFn)
 

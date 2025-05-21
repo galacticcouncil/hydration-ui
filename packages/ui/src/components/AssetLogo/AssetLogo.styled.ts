@@ -15,6 +15,10 @@ const getSizeValue = (size: AssetLogoSize) => {
 }
 
 const sizes = createVariants(() => ({
+  "extra-small": css`
+    width: 12px;
+    height: 12px;
+  `,
   small: css`
     width: 18px;
     height: 18px;

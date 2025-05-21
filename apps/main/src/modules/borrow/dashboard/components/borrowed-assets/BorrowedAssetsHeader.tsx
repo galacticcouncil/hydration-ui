@@ -34,6 +34,7 @@ export const BorrowedAssetsHeader = () => {
             ) : (
               t("currency", {
                 value: user.totalBorrowsUSD,
+                maximumFractionDigits: 2,
               })
             )}
           </SValueStatsValue>
@@ -58,14 +59,14 @@ export const BorrowedAssetsHeader = () => {
       <ValueStats
         alwaysWrap
         size="small"
-        label={t("borrow:collateral")}
+        label={t("borrow:borrowPower")}
         value={t("currency", { value: 12245 })}
         customValue={
           <SValueStatsValue size="small">
             {loading ? (
               <Skeleton width={50} />
             ) : (
-              t("currency", {
+              t("percent", {
                 value: collateralUsagePercent.toNumber() * 100,
               })
             )}

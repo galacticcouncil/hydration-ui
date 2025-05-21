@@ -24,16 +24,19 @@ export type Papi = TypedApi<typeof hydration>
 export type TProviderContext = TProviderData & {
   isLoaded: boolean
   isApiLoaded: boolean
+  isEvmLoaded: boolean
 }
 
 const defaultData: TProviderContext = {
   isLoaded: false,
   isApiLoaded: false,
+  isEvmLoaded: false,
   rpcUrlList: [],
   endpoint: "",
   dataEnv: "mainnet",
   papi: {} as TProviderData["papi"],
   papiClient: {} as TProviderData["papiClient"],
+  evm: {} as TProviderData["evm"],
   featureFlags: {} as TProviderData["featureFlags"],
   balanceClient: {} as TProviderData["balanceClient"],
   poolService: {} as TProviderData["poolService"],
@@ -119,6 +122,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
     return {
       ...data,
       isApiLoaded: Object.keys(data.papi).length > 0,
+      isEvmLoaded: Object.keys(data.evm).length > 0,
       isLoaded: assets.length > 0,
     }
   }, [assets, data])

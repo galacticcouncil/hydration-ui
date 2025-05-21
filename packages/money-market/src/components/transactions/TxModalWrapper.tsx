@@ -13,7 +13,7 @@ import { usePermissions } from "@/hooks/usePermissions"
 import { useRootStore } from "@/store/root"
 import { isFeatureEnabled } from "@/utils/marketsAndNetworksConfig"
 
-export interface TxModalWrapperProps {
+export type TxModalWrapperRenderProps = {
   underlyingAsset: string
   poolReserve: ComputedReserveData
   userReserve: ComputedUserReserveData
@@ -24,25 +24,22 @@ export interface TxModalWrapperProps {
   action?: string
 }
 
-export const TxModalWrapper: React.FC<{
+export type TxModalWrapperProps = {
   underlyingAsset: string
   requiredChainId?: number
-  // if true wETH will stay wETH otherwise wETH will be returned as ETH
-  keepWrappedSymbol?: boolean
   requiredPermission?: PERMISSION
-  children: (props: TxModalWrapperProps) => React.ReactNode
+  children: (props: TxModalWrapperRenderProps) => React.ReactNode
   action?: string
-}> = ({
+}
+
+export const TxModalWrapper: React.FC<TxModalWrapperProps> = ({
   underlyingAsset,
   children,
   requiredChainId: _requiredChainId,
   requiredPermission,
-  keepWrappedSymbol,
 }) => {
   const currentMarketData = useRootStore((store) => store.currentMarketData)
-  const currentNetworkConfig = useRootStore(
-    (store) => store.currentNetworkConfig,
-  )
+
   const { walletBalances } = useWalletBalances(currentMarketData)
   const { user, reserves } = useAppDataContext()
   const { txError } = useModalContext()
@@ -73,11 +70,6 @@ export const TxModalWrapper: React.FC<{
     return underlyingAsset === userReserve?.underlyingAsset
   }) as ComputedUserReserveData
 
-  const symbol =
-    poolReserve?.isWrappedBaseAsset && !keepWrappedSymbol
-      ? currentNetworkConfig?.baseAssetSymbol
-      : poolReserve?.symbol
-
   return (
     <AssetCapsProvider asset={poolReserve}>
       {children({
@@ -88,7 +80,7 @@ export const TxModalWrapper: React.FC<{
           walletBalances[poolReserve?.underlyingAsset?.toLowerCase()]?.amount ||
           "0",
         poolReserve,
-        symbol,
+        symbol: poolReserve?.symbol,
         underlyingAsset,
         userReserve,
       })}

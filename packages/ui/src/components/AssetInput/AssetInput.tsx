@@ -232,7 +232,7 @@ export const AssetButton = ({
       <Text fw={600} fs="p3" sx={{ whiteSpace: "nowrap" }}>
         Select asset
       </Text>
-      <Icon size={20} component={ChevronDown} />
+      {!disabled && <Icon size={20} component={ChevronDown} />}
     </SAssetButtonEmpty>
   )
 }

@@ -1,44 +1,88 @@
+import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
 import { Web3ReactProvider } from "@web3-react/core"
-import { providers } from "ethers"
-import { FC, lazy, Suspense } from "react"
+import { FC, lazy, Suspense, useEffect } from "react"
 
 import { BackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
 import { AppDataProvider } from "@/hooks/app-data-provider/useAppDataProvider"
 import {
-  AppFormattersProviders,
+  AppFormattersProvider,
   AppFormattersProvidersContextType,
 } from "@/hooks/app-data-provider/useAppFormatters"
 import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
+import { useRootStore } from "@/store/root"
+import { MoneyMarketEnv, MoneyMarketTxFn } from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
+import { CustomMarket } from "@/utils"
 
 const SupplyModal = lazy(async () => ({
   default: (await import("@/components/transactions/supply/SupplyModal"))
     .SupplyModal,
 }))
 
+const WithdrawModal = lazy(async () => ({
+  default: (await import("@/components/transactions/withdraw/WithdrawModal"))
+    .WithdrawModal,
+}))
+
+const BorrowModal = lazy(async () => ({
+  default: (await import("@/components/transactions/borrow/BorrowModal"))
+    .BorrowModal,
+}))
+
+const RepayModal = lazy(async () => ({
+  default: (await import("@/components/transactions/repay/RepayModal"))
+    .RepayModal,
+}))
+
 const getWeb3Library: React.ComponentPropsWithoutRef<
   typeof Web3ReactProvider
->["getLibrary"] = (provider): providers.Web3Provider => {
-  const library = new providers.Web3Provider(provider)
+>["getLibrary"] = (provider) => {
+  const library = new Web3Provider(provider)
   library.pollingInterval = 12000
   return library
 }
 
-type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
+export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
+  provider: ExternalProvider
+  env: MoneyMarketEnv
+  onCreateTransaction: MoneyMarketTxFn
 }
 
 export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   children,
+  env,
+  onCreateTransaction,
+  provider: externalProvider,
   ...formatters
 }) => {
+  const provider = useRootStore((state) => state.provider)
+  const [setProvider, setCurrentMarket] = useRootStore((state) => [
+    state.setProvider,
+    state.setCurrentMarket,
+  ])
+
+  useEffect(() => {
+    if (!externalProvider) return
+    if (!provider) {
+      setCurrentMarket(
+        env === "mainnet"
+          ? CustomMarket.hydration_v3
+          : CustomMarket.hydration_testnet_v3,
+      )
+      setProvider(new Web3Provider(externalProvider), env)
+    }
+  }, [env, externalProvider, provider, setCurrentMarket, setProvider])
+
+  if (!provider) return null
+
   return (
     <Web3ReactProvider getLibrary={getWeb3Library}>
-      <AppFormattersProviders {...formatters}>
+      <AppFormattersProvider {...formatters}>
         <BackgroundDataProvider>
-          <Web3ContextProvider>
+          <Web3ContextProvider onCreateTransaction={onCreateTransaction}>
             <PermissionProvider>
               <ModalContextProvider>
                 <AppDataProvider>
@@ -46,6 +90,9 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
                     {children}
                     <Suspense>
                       <SupplyModal />
+                      <WithdrawModal />
+                      <BorrowModal />
+                      <RepayModal />
                     </Suspense>
                   </SharedDependenciesProvider>
                 </AppDataProvider>
@@ -53,7 +100,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
             </PermissionProvider>
           </Web3ContextProvider>
         </BackgroundDataProvider>
-      </AppFormattersProviders>
+      </AppFormattersProvider>
     </Web3ReactProvider>
   )
 }

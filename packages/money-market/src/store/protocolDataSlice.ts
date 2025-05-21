@@ -1,16 +1,10 @@
-import { providers } from "ethers"
+import { Provider } from "@ethersproject/providers"
 import { StateCreator } from "zustand"
 
-import { setQueryParameter } from "@/store/utils/queryParams"
+import { MoneyMarketEnv } from "@/types"
 import { CustomMarket, MarketDataType } from "@/ui-config/marketsConfig"
 import { NetworkConfig } from "@/ui-config/networksConfig"
-import {
-  availableMarkets,
-  getInitialMarket,
-  getNetworkConfig,
-  getProvider,
-  marketsData,
-} from "@/utils/marketsAndNetworksConfig"
+import { getNetworkConfig, marketsData } from "@/utils/marketsAndNetworksConfig"
 
 import { RootStore } from "./root"
 
@@ -20,11 +14,14 @@ type TypePermitParams = {
 }
 
 export interface ProtocolDataSlice {
+  env: MoneyMarketEnv
+  provider: Provider | null
   currentMarket: CustomMarket
   currentMarketData: MarketDataType
   currentChainId: number
   currentNetworkConfig: NetworkConfig
-  jsonRpcProvider: (chainId?: number) => providers.Provider
+  setProvider: (provider: Provider, env: MoneyMarketEnv) => void
+  jsonRpcProvider: () => Provider
   setCurrentMarket: (
     market: CustomMarket,
     omitQueryParameterUpdate?: boolean,
@@ -41,21 +38,20 @@ export const createProtocolDataSlice: StateCreator<
   [],
   ProtocolDataSlice
 > = (set, get) => {
-  const initialMarket = getInitialMarket()
+  const initialMarket = CustomMarket.hydration_v3
   const initialMarketData = marketsData[initialMarket]
+
   return {
+    env: "mainnet",
     currentMarket: initialMarket,
     currentMarketData: marketsData[initialMarket],
     currentChainId: initialMarketData.chainId,
     currentNetworkConfig: getNetworkConfig(initialMarketData.chainId),
-    jsonRpcProvider: (chainId) => getProvider(chainId ?? get().currentChainId),
-    setCurrentMarket: (market, omitQueryParameterUpdate) => {
-      if (!availableMarkets.includes(market as CustomMarket)) return
+    provider: null,
+    setProvider: (provider, env) => set({ provider, env }),
+    jsonRpcProvider: () => get().provider as Provider,
+    setCurrentMarket: (market) => {
       const nextMarketData = marketsData[market]
-      localStorage.setItem("selectedMarket", market)
-      if (!omitQueryParameterUpdate) {
-        setQueryParameter("marketName", market)
-      }
       set({
         currentMarket: market,
         currentMarketData: nextMarketData,

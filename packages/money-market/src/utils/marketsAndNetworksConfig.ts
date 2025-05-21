@@ -1,8 +1,7 @@
 import { ChainIdToNetwork } from "@aave/contract-helpers"
-import { StaticJsonRpcProvider } from "@ethersproject/providers"
-import { useEffect } from "react"
+import { Web3Provider } from "@ethersproject/providers"
 
-import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
+import { useRootStore } from "@/store/root"
 import {
   CustomMarket,
   MarketDataType,
@@ -13,20 +12,13 @@ import {
   ChainId,
   ExplorerLinkBuilderConfig,
   ExplorerLinkBuilderProps,
-  mainnetProviders,
   NetworkConfig,
   networkConfigs as _networkConfigs,
-  testnetProviders,
 } from "@/ui-config/networksConfig"
-import { ProviderWithSend } from "@/utils/utils"
-
-import { RotationProvider } from "./rotationProvider"
 
 export type Pool = {
   address: string
 }
-
-window.global ||= window
 
 export const networkConfigs = Object.keys(_networkConfigs).reduce(
   (acc, value) => {
@@ -48,11 +40,6 @@ export function getDefaultChainId() {
   return marketsData[availableMarkets[0]].chainId
 }
 
-/* export const getRpcUrls = () => {
-  const { autoMode, rpcUrl, rpcUrlList } = useProviderRpcUrlStore.getState()
-  return autoMode ? rpcUrlList : [rpcUrl]
-}
- */
 export function getSupportedChainIds(): number[] {
   return Array.from(
     Object.keys(marketsData).reduce(
@@ -68,17 +55,6 @@ export const availableMarkets = Object.keys(marketsData).filter((key) =>
     marketsData[key as keyof typeof CustomMarket].chainId,
   ),
 ) as CustomMarket[]
-
-const IS_TESTNET = false
-
-export const getInitialMarket = () => {
-  /* const bestRpcUrl = getRpcUrls()[0]
-
-  const isTestnet = isTestnetRpcUrl(bestRpcUrl) */
-  return IS_TESTNET
-    ? CustomMarket.hydration_testnet_v3
-    : CustomMarket.hydration_v3
-}
 
 const linkBuilder =
   ({
@@ -123,63 +99,15 @@ export const isFeatureEnabled = {
   switch: (data: MarketDataType) => data.enabledFeatures?.switch,
 }
 
-const providers: { [network: string]: ProviderWithSend } = {}
-
 /**
  * Created a fallback rpc provider in which providers are prioritized from private to public and in case there are multiple public ones, from top to bottom.
  * @param chainId
  * @returns provider or fallbackprovider in case multiple rpcs are configured
  */
-export const getProvider = (chainId: ChainId): ProviderWithSend => {
-  if (!providers[chainId]) {
-    const config = getNetworkConfig(chainId)
-    const chainProviders: string[] = []
-    if (config.privateJsonRPCUrl) {
-      chainProviders.push(config.privateJsonRPCUrl)
-    }
-    if (config.publicJsonRPCUrl.length) {
-      const rpcUrls = IS_TESTNET ? testnetProviders : mainnetProviders
-      if (rpcUrls.length === 1) {
-        chainProviders.push(rpcUrls[0])
-      } else {
-        const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort(
-          (a, b) => rpcUrls.indexOf(a) - rpcUrls.indexOf(b),
-        )
-        rpcUrlsByPriority.forEach((rpc) => chainProviders.push(rpc))
-      }
-    }
-    if (!chainProviders.length) {
-      throw new Error(`${chainId} has no jsonRPCUrl configured`)
-    }
-    providers[chainId] = new StaticJsonRpcProvider(chainProviders[0], chainId)
-    if (chainProviders.length === 1) {
-      // skip if only one provider
-    } else {
-      providers[chainId] = new RotationProvider(chainProviders, chainId)
-    }
-  }
-
-  return providers[chainId]
-}
-
-export const useMarketChangeSubscription = () => {
-  const { setCurrentMarket } = useProtocolDataContext()
-  useEffect(() => {
-    /* return useProviderRpcUrlStore.subscribe((state, prevState) => {
-      const autoModeChanged = prevState.autoMode !== state.autoMode
-      const rpcUrlChanged = prevState.rpcUrl !== state.rpcUrl
-
-      if (autoModeChanged || rpcUrlChanged) {
-        const newUrl = state.autoMode ? state.rpcUrlList[0] : state.rpcUrl
-        const isTestnet = isTestnetRpcUrl(newUrl)
-        setCurrentMarket(
-          isTestnet
-            ? CustomMarket.hydration_testnet_v3
-            : CustomMarket.hydration_v3,
-        )
-      }
-    }) */
-  }, [setCurrentMarket])
+export const getProvider = (_chainId: ChainId): Web3Provider => {
+  const { provider } = useRootStore.getState()
+  if (!provider) throw new Error("Provider not set")
+  return provider
 }
 
 export { CustomMarket }

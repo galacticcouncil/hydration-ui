@@ -1,6 +1,5 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
-import { Text } from "@galacticcouncil/ui/components"
 
 export const SContainer = styled.div`
   position: relative;
@@ -41,17 +40,6 @@ export const SCurrentValueMarker = styled.div<{ position: number }>`
     transform: ${({ position }) =>
       position > 75 ? "translateX(0)" : "translateX(-50%)"};
   }
-`
-
-export const SCurrentValue = styled(Text)`
-  display: flex;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  bottom: 100%;
 `
 
 export const SLiquidationMarker = styled.div(

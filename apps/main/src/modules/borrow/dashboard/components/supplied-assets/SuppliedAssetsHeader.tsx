@@ -25,6 +25,7 @@ export const SuppliedAssetsHeader = () => {
             ) : (
               t("currency", {
                 value: user.totalLiquidityUSD,
+                maximumFractionDigits: 2,
               })
             )}
           </SValueStatsValue>
@@ -60,6 +61,7 @@ export const SuppliedAssetsHeader = () => {
             ) : (
               t("currency", {
                 value: user.totalCollateralUSD,
+                maximumFractionDigits: 2,
               })
             )}
           </SValueStatsValue>

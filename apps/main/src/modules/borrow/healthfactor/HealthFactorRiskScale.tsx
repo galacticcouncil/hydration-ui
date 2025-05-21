@@ -3,9 +3,9 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { SFloatingValue } from "@/modules/borrow/healthfactor/HealthFactorRiskInfo.styled"
 import {
   SContainer,
-  SCurrentValue,
   SCurrentValueMarker,
   SCurrentValueWrapper,
   SHealthFactorBar,
@@ -30,9 +30,12 @@ export const HealthFactorRiskScale = ({ healthFactor }: HFContentProps) => {
       <SHealthFactorBar />
       <SCurrentValueWrapper position={position}>
         <SCurrentValueMarker position={position}>
-          <SCurrentValue fs={13} fw={600}>
+          <SFloatingValue
+            placement="top"
+            align={position <= 5 ? "left" : position >= 95 ? "right" : "center"}
+          >
             {formattedHealthFactor}
-          </SCurrentValue>
+          </SFloatingValue>
         </SCurrentValueMarker>
       </SCurrentValueWrapper>
       <SLiquidationMarker>

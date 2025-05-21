@@ -62,23 +62,14 @@ function joinChildren(
 ): React.ReactNode[] {
   const childrenArray = React.Children.toArray(children).filter(Boolean)
 
-  const arr = childrenArray.reduce<React.ReactNode[]>(
-    (output, child, index) => {
-      output.push(child)
+  return childrenArray.reduce<React.ReactNode[]>((output, child, index) => {
+    output.push(child)
 
-      const isLast = index === childrenArray.length - 1
-      if (!isLast || withTrailingSeparator) {
-        output.push(
-          React.cloneElement(separator, { key: `separator-${index}` }),
-        )
-      }
+    const isLast = index === childrenArray.length - 1
+    if (!isLast || withTrailingSeparator) {
+      output.push(React.cloneElement(separator, { key: `separator-${index}` }))
+    }
 
-      return output
-    },
-    [],
-  )
-
-  console.log({ arr })
-
-  return arr
+    return output
+  }, [])
 }

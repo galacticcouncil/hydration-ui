@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 
-type FormatterFn = (
+export type FormatterFn = (
   value: number | bigint | string | null | undefined,
   opts?: Record<string, number | string>,
 ) => string
@@ -16,7 +16,7 @@ const AppFormattersProvidersContext =
     {} as AppFormattersProvidersContextType,
   )
 
-export const AppFormattersProviders: React.FC<{
+export const AppFormattersProvider: React.FC<{
   formatNumber: FormatterFn
   formatCurrency: FormatterFn
   formatPercent: FormatterFn

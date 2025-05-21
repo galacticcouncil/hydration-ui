@@ -1,12 +1,10 @@
 import { gasLimitRecommendations, ProtocolAction } from "@aave/contract-helpers"
-import { TransactionResponse } from "@ethersproject/providers"
 import { useQueryClient } from "@tanstack/react-query"
 import { parseUnits } from "ethers/lib/utils"
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect } from "react"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
 import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
-import { SignedParams, useApprovalTx } from "@/hooks/useApprovalTx"
 import { usePoolApprovedAmount } from "@/hooks/useApprovedAmount"
 import { useModalContext } from "@/hooks/useModal"
 import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
@@ -34,25 +32,16 @@ export const SupplyActions = memo(
     symbol,
     blocked,
     decimals,
-    isWrappedBaseAsset,
     className,
   }: SupplyActionProps) => {
     const queryClient = useQueryClient()
-    const [
-      tryPermit,
-      supply,
-      supplyWithPermit,
-      estimateGasLimit,
-      addTransaction,
-      currentMarketData,
-    ] = useRootStore((state) => [
-      state.tryPermit,
-      state.supply,
-      state.supplyWithPermit,
-      state.estimateGasLimit,
-      state.addTransaction,
-      state.currentMarketData,
-    ])
+    const [supply, estimateGasLimit, currentMarketData] = useRootStore(
+      (state) => [
+        state.supply,
+        state.estimateGasLimit,
+        state.currentMarketData,
+      ],
+    )
     const {
       approvalTxState,
       mainTxState,
@@ -66,15 +55,8 @@ export const SupplyActions = memo(
     } = useModalContext()
     const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
       useBackgroundDataProvider()
-    const permitAvailable = tryPermit({
-      reserveAddress: poolAddress,
-      isWrappedBaseAsset: isWrappedBaseAsset,
-    })
-    const { sendTx } = useWeb3Context()
 
-    const [signatureParams, setSignatureParams] = useState<
-      SignedParams | undefined
-    >()
+    const { sendTx } = useWeb3Context()
 
     const {
       data: approvedAmount,
@@ -98,18 +80,6 @@ export const SupplyActions = memo(
     const usePermit = false
     /*     permitAvailable &&
       walletApprovalMethodPreference === ApprovalMethod.PERMIT */
-
-    const { approval } = useApprovalTx({
-      usePermit,
-      approvedAmount,
-      requiresApproval,
-      assetAddress: poolAddress,
-      symbol,
-      decimals,
-      signatureAmount: amountToSupply,
-      onApprovalTxConfirmed: fetchApprovedAmount,
-      onSignTxCompleted: (signedParams) => setSignatureParams(signedParams),
-    })
 
     useEffect(() => {
       if (!isFetchedAfterMount) {
@@ -136,48 +106,16 @@ export const SupplyActions = memo(
       try {
         setMainTxState({ ...mainTxState, loading: true })
 
-        let response: TransactionResponse
-        let action = ProtocolAction.default
-
         // determine if approval is signature or transaction
         // checking user preference is not sufficient because permit may be available but the user has an existing approval
-        if (usePermit && signatureParams) {
-          action = ProtocolAction.supplyWithPermit
-          let signedSupplyWithPermitTxData = supplyWithPermit({
-            signature: signatureParams.signature,
-            amount: parseUnits(amountToSupply, decimals).toString(),
-            reserve: poolAddress,
-            deadline: signatureParams.deadline,
-          })
-
-          signedSupplyWithPermitTxData = await estimateGasLimit(
-            signedSupplyWithPermitTxData,
-          )
-          response = await sendTx(signedSupplyWithPermitTxData, action)
-        } else {
-          action = ProtocolAction.supply
-          let supplyTxData = supply({
-            amount: parseUnits(amountToSupply, decimals).toString(),
-            reserve: poolAddress,
-          })
-          supplyTxData = await estimateGasLimit(supplyTxData)
-
-          response = await sendTx(supplyTxData, action)
-        }
-
-        setMainTxState({
-          txHash: response.hash,
-          loading: false,
-          success: true,
+        const action = ProtocolAction.supply
+        let supplyTxData = supply({
+          amount: parseUnits(amountToSupply, decimals).toString(),
+          reserve: poolAddress,
         })
+        supplyTxData = await estimateGasLimit(supplyTxData)
 
-        addTransaction(response.hash, {
-          action,
-          txState: "success",
-          asset: poolAddress,
-          amount: amountToSupply,
-          assetName: symbol,
-        })
+        await sendTx(supplyTxData, action)
 
         queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
         refetchPoolData && refetchPoolData()
@@ -208,14 +146,11 @@ export const SupplyActions = memo(
         isWrongNetwork={isWrongNetwork}
         requiresAmount
         amount={amountToSupply}
-        symbol={symbol}
         preparingTransactions={loadingTxns || !approvedAmount}
         actionText={<span>Supply {symbol}</span>}
         actionInProgressText={<span>Supplying {symbol}</span>}
-        handleApproval={approval}
         handleAction={action}
         requiresApproval={requiresApproval}
-        tryPermit={permitAvailable}
         className={className}
       />
     )

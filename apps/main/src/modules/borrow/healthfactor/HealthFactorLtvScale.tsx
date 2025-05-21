@@ -1,3 +1,4 @@
+import { useFormattedLtv } from "@galacticcouncil/money-market/hooks"
 import { Flex, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
@@ -11,28 +12,24 @@ import {
   SScaleBar,
   SScaleBarFill,
   SScaleBarStripes,
-  SValue,
 } from "@/modules/borrow/healthfactor/HealthFactorLtvScale.styled"
+import { SFloatingValue } from "@/modules/borrow/healthfactor/HealthFactorRiskInfo.styled"
 
-interface LTVContentProps {
+type LTVContentProps = {
   loanToValue: string
   currentLoanToValue: string
   currentLiquidationThreshold: string
-  color: string
-}
+} & ReturnType<typeof useFormattedLtv>
 
 export const HealthFactorLtvScale = ({
   loanToValue,
   currentLoanToValue,
-  currentLiquidationThreshold,
-  color,
+  currentLtvPercent,
+  liquidationThresholdPercent,
+  ltvColor,
+  ltvPercent,
 }: LTVContentProps) => {
   const { t } = useTranslation(["borrow"])
-
-  const ltvPercent = Number(loanToValue) * 100
-  const currentLtvPercent = Number(currentLoanToValue) * 100
-
-  const liquidationThresholdPercent = Number(currentLiquidationThreshold) * 100
 
   return (
     <SContainer>
@@ -42,31 +39,30 @@ export const HealthFactorLtvScale = ({
         }}
       >
         <SLiquidationMarker>
-          <SValue placement="bottom">
-            <Stack pr={`${Math.min(liquidationThresholdPercent, 100)}%`}>
-              <Text
-                fs="p4"
-                lh={1}
-                align="right"
-                color={getToken("details.values.negative")}
-              >
+          <SFloatingValue placement="bottom" align="right">
+            <Stack>
+              <Text fs="p4" lh={1} color={getToken("details.values.negative")}>
                 {liquidationThresholdPercent.toFixed(2)}%
               </Text>
               <Text
                 fs="p4"
                 color={getToken("details.values.negative")}
-                align="right"
                 sx={{ whiteSpace: "nowrap" }}
               >
                 {t("borrow:risk.liquidationThreshold")}
               </Text>
             </Stack>
-          </SValue>
+          </SFloatingValue>
         </SLiquidationMarker>
       </SLiquidationMarkerContainer>
       <SCurrentValueWrapper sx={{ left: `${Math.min(ltvPercent, 100)}%` }}>
         <SCurrentValueMarker>
-          <SValue placement="top">
+          <SFloatingValue
+            placement="top"
+            align={
+              ltvPercent <= 5 ? "left" : ltvPercent >= 95 ? "right" : "center"
+            }
+          >
             <Text fs="p4" fw={600}>
               {(Number(loanToValue) * 100).toFixed(2)}%
             </Text>
@@ -76,14 +72,17 @@ export const HealthFactorLtvScale = ({
                 {(Number(currentLoanToValue) * 100).toFixed(2)}%
               </Text>
             </Flex>
-          </SValue>
+          </SFloatingValue>
         </SCurrentValueMarker>
       </SCurrentValueWrapper>
       <SScaleBar>
-        <SScaleBarFill width={`${Math.min(ltvPercent, 100)}%`} color={color} />
+        <SScaleBarFill
+          width={`${Math.min(ltvPercent, 100)}%`}
+          color={ltvColor}
+        />
         {ltvPercent < currentLtvPercent && (
           <SScaleBarStripes
-            color={color}
+            color={ltvColor}
             width={`${Math.min(currentLtvPercent, 100)}%`}
           />
         )}

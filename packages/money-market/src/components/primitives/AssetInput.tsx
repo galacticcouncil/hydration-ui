@@ -1,5 +1,9 @@
-import { AssetInput } from "@galacticcouncil/ui/components"
-import { ReactNode } from "react"
+import { AssetInput as BaseAssetInput } from "@galacticcouncil/ui/components"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import Big from "big.js"
+
+import { TokenIcon } from "@/components/primitives"
+import { CapType } from "@/types"
 
 /* interface CustomProps {
   onChange: (event: { target: { name: string; value: string } }) => void
@@ -60,14 +64,14 @@ export interface AssetInputProps<T extends Asset = Asset> {
   capType?: CapType
   maxValue?: string
   isMaxSelected?: boolean
-  inputTitle?: ReactNode
-  balanceText?: ReactNode
+  inputTitle?: React.ReactNode
+  balanceText?: React.ReactNode
   loading?: boolean
   className?: string
   error?: string
 }
 
-export const MoneyMarketAssetInput = <T extends Asset = Asset>({
+export const AssetInput = <T extends Asset = Asset>({
   name,
   value,
   usdValue,
@@ -85,28 +89,32 @@ export const MoneyMarketAssetInput = <T extends Asset = Asset>({
   balanceText,
   error,
 }: AssetInputProps<T>) => {
-  /* const { t } = useTranslation()
+  /* const [selectedSymbol, setSelectedSymbol] = useState<string>(symbol)
   const handleSelect = (symbol: string) => {
     setSelectedSymbol(symbol)
     const newAsset = assets.find((asset) => asset.symbol === symbol) as T
     onSelect && onSelect(newAsset)
     onChange && onChange("")
-  }
-
-  const [selectedSymbol, setSelectedSymbol] = useState<string>(symbol)
+  } */
 
   const asset =
     assets.length === 1
       ? assets[0]
-      : assets && (assets.find((asset) => asset.symbol === selectedSymbol) as T) */
+      : assets && (assets.find((asset) => asset.symbol === symbol) as T)
 
   return (
-    <AssetInput
-      sx={{ p: 0 }}
-      label={inputTitle}
+    <BaseAssetInput
+      sx={{ pt: 0 }}
+      className={className}
+      label="Amount"
       symbol={symbol}
       value={value}
-      maxBalance={maxValue}
+      maxBalance={Big(maxValue || 0)
+        .round(6, Big.roundDown)
+        .toString()}
+      selectedAssetIcon={
+        <TokenIcon id={getAssetIdFromAddress(asset.address)} />
+      }
       modalDisabled
       onChange={onChange}
       loading={loading}

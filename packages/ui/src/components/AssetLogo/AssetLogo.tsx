@@ -10,7 +10,7 @@ import {
   SPlaceholder,
 } from "./AssetLogo.styled"
 
-export type AssetLogoSize = "large" | "medium" | "small"
+export type AssetLogoSize = "large" | "medium" | "small" | "extra-small"
 export type TBadge = "red" | "yellow"
 
 export type AssetLogoProps = {
@@ -32,7 +32,14 @@ export const AssetLogo = ({
   badgeTooltip,
   className,
 }: AssetLogoProps) => {
-  if (!src) return <SPlaceholder component={PlaceholderAssetLogo} size={size} />
+  if (!src)
+    return (
+      <SPlaceholder
+        component={PlaceholderAssetLogo}
+        size={size}
+        className={className}
+      />
+    )
 
   return (
     <Box

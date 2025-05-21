@@ -1,12 +1,12 @@
 import Big, { BigSource } from "big.js"
 
-function bigMinFn(valueA: BigSource, valueB: BigSource) {
+function bigMinFn(valueA: BigSource, valueB: BigSource): Big {
   const a = Big(valueA)
   const b = Big(valueB)
   return a.lt(b) ? a : b
 }
 
-function bigMaxFn(valueA: BigSource, valueB: BigSource) {
+function bigMaxFn(valueA: BigSource, valueB: BigSource): Big {
   const a = Big(valueA)
   const b = Big(valueB)
   return a.gt(b) ? a : b

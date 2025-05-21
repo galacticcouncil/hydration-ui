@@ -6,15 +6,6 @@ import {
 } from "@aave/math-utils"
 import { Provider } from "@ethersproject/providers"
 
-// @TODO rework to dynamic colors
-const theme = {
-  colors: {
-    green400: "#01F397",
-    red400: "#F87171",
-    warning300: "#F5A855",
-  },
-}
-
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 export interface ProviderWithSend extends Provider {
@@ -109,27 +100,6 @@ export const getFunctionDefsFromAbi = (abi: any[], method: string) => {
   } catch (err) {
     console.error("Error parsing ABI:", err)
   }
-}
-
-export const getLtvColor = (
-  loanToValue: number | string,
-  currentLoanToValue: number | string,
-  currentLiquidationThreshold: number | string,
-) => {
-  let ltvColor: string = theme.colors.green400
-  const ltvPercent = Number(loanToValue) * 100
-  const currentLtvPercent = Number(currentLoanToValue) * 100
-  const liquidationThresholdPercent = Number(currentLiquidationThreshold) * 100
-  if (ltvPercent >= Math.min(currentLtvPercent, liquidationThresholdPercent)) {
-    ltvColor = theme.colors.red400
-  } else if (
-    ltvPercent > currentLtvPercent / 2 &&
-    ltvPercent < currentLtvPercent
-  ) {
-    ltvColor = theme.colors.warning300
-  }
-
-  return ltvColor
 }
 
 export const wssToHttps = (url: string) => {

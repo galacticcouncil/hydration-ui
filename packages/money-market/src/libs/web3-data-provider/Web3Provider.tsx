@@ -1,15 +1,11 @@
-import { API_ETH_MOCK_ADDRESS, ProtocolAction } from "@aave/contract-helpers"
-import { SignatureLike } from "@ethersproject/bytes"
-import { JsonRpcProvider, TransactionResponse } from "@ethersproject/providers"
-import { Web3Provider } from "@ethersproject/providers"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { IAaveIncentivesControllerV2__factory } from "@aave/contract-helpers/src/incentive-controller-v2/typechain/IAaveIncentivesControllerV2__factory"
+import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
+import { JsonRpcProvider, Web3Provider } from "@ethersproject/providers"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-/* import {
-  useAccount,
-  useEnableWallet,
-  useEvmAccount,
-  useWallet,
-} from "@galacticcouncil/web3-connect" */
+import { CallType } from "@galacticcouncil/xcm-core"
+import { useQueryClient } from "@tanstack/react-query"
 import { useWeb3React } from "@web3-react/core"
 import { PopulatedTransaction, providers } from "ethers"
 import React, {
@@ -20,10 +16,12 @@ import React, {
   useState,
 } from "react"
 
+import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "@/libs/hooks/useWeb3Context"
 import { useRootStore } from "@/store/root"
-import { getNetworkConfig } from "@/utils/marketsAndNetworksConfig"
-import { hexToAscii } from "@/utils/utils"
+import { ExtendedEvmCall, MoneyMarketTxFn } from "@/types"
+import { queryKeysFactory } from "@/ui-config/queries"
+import { getFunctionDefsFromAbi, hexToAscii } from "@/utils/utils"
 
 export type ERC20TokenType = {
   address: string
@@ -40,15 +38,11 @@ export type Web3Data = {
   loading: boolean
   provider: JsonRpcProvider | undefined
   chainId: number
-  switchNetwork: (chainId: number) => Promise<void>
   getTxError: (txHash: string) => Promise<string>
   sendTx: (
     txData: PopulatedTransaction,
     action?: ProtocolAction,
-    // toasts?: ToastMessage,
-  ) => Promise<TransactionResponse>
-  addERC20Token: (args: ERC20TokenType) => Promise<boolean>
-  signTxData: (unsignedData: string) => Promise<SignatureLike>
+  ) => Promise<void>
   error: Error | undefined
   switchNetworkError: Error | undefined
   setSwitchNetworkError: (err: Error | undefined) => void
@@ -56,7 +50,7 @@ export type Web3Data = {
   readOnlyMode: boolean
 }
 
-/* const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
+const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
   switch (action) {
     case ProtocolAction.switchBorrowRateMode:
       return "swapBorrowRateMode"
@@ -67,67 +61,11 @@ export type Web3Data = {
     default:
       return action
   }
-} */
-
-/* const getToastPropsByProtocolAction = (
-  action: ProtocolAction,
-  poolData: PoolReserve,
-  //tx: { data: `0x${string}` | TransactionRequest; abi: string },
-) => {
-  try {
-    const call = undefined //decodeEvmCall(tx)!
-    const asset = poolData?.reserves?.find(({ underlyingAsset }) => {
-      return underlyingAsset.toLowerCase() === call.data.asset.toLowerCase()
-    })
-
-    if (!asset) return
-
-    if (
-      [
-        ProtocolAction.supply,
-        ProtocolAction.withdraw,
-        ProtocolAction.repay,
-        ProtocolAction.borrow,
-      ].includes(action)
-    ) {
-      return {
-        key: `lending.${action}.toast`,
-        tOptions: {
-          value:
-            call.data.amount === constants.MaxUint256.toString()
-              ? undefined
-              : call.data.amount,
-          symbol: asset.symbol,
-          fixedPointScale: asset.decimals,
-        },
-        components: ["span.highlight"],
-      }
-    }
-
-    if (action === ProtocolAction.setUsageAsCollateral) {
-      return {
-        key: `lending.collateral.${call?.data?.useAsCollateral ? "enable" : "disable"}.toast`,
-        tOptions: {
-          symbol: asset.symbol,
-        },
-        components: ["span.highlight"],
-      }
-    }
-  } catch {
-    // ignore
-  }
 }
- */
-/* const getTransactionMeta = (
-  action?: ProtocolAction,
-  // tx?: PopulatedTransaction,
-  // poolData?: PoolReserve,
-) => {
+
+const getTransactionAbi = (action?: ProtocolAction) => {
   if (!action) {
-    return {
-      abi: "",
-      toasProps: undefined,
-    }
+    return ""
   }
 
   const factory =
@@ -139,36 +77,20 @@ export type Web3Data = {
     ? getFunctionDefsFromAbi(factory.abi, getAbiMethodByProtocolAction(action))
     : undefined
 
-  const toastProps =
-    action && poolData && tx && abi
-      ? getToastPropsByProtocolAction(action, poolData, {
-          data: tx,
-          abi,
-        })
-      : undefined
+  return abi ?? ""
+}
 
-  return {
-    abi,
-    toastProps,
-  }
-} */
-
-export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
-  children,
-}) => {
-  // const { t } = useTranslation()
-  // const { api } = useRpcProvider()
-  // const { createTransaction } = useStore()
-
+export const Web3ContextProvider: React.FC<{
+  children: ReactElement
+  onCreateTransaction: MoneyMarketTxFn
+}> = ({ onCreateTransaction, children }) => {
+  const queryClient = useQueryClient()
   const { account } = useAccount()
-  // const evm = useEvmAccount()
-  // const { wallet, type } = useWallet()
-  // const { disconnect: deactivate } = useEnableWallet(type)
-  const { error } = useWeb3React<providers.Web3Provider>()
-  // const queryClient = useQueryClient()
 
-  /* const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
-    useBackgroundDataProvider() */
+  const { error } = useWeb3React<providers.Web3Provider>()
+
+  const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
+    useBackgroundDataProvider()
 
   const accountAddress = account?.address ?? ""
 
@@ -201,130 +123,39 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   }, [setWalletType])
 
   const sendTx = useCallback(
-    async (/* txData: PopulatedTransaction, action?: ProtocolAction */) => {
-      /* const { abi, toastProps } = getTransactionMeta(action, txData, poolData)
+    async (tx: PopulatedTransaction, action?: ProtocolAction) => {
+      const abi = getTransactionAbi(action)
 
-      const toast = toasts
-        ? toasts
-        : toastProps
-          ? createToastMessages(toastProps.key, {
-              t,
-              ...toastProps,
-            })
-          : undefined
-
-      const txOptions: TransactionOptions = {
-        toast,
+      const evmCall: ExtendedEvmCall = {
+        data: tx.data ?? "",
+        from: tx.from ?? "",
+        to: tx.to as `0x${string}`,
+        type: CallType.Evm,
+        abi,
+        gasLimit: tx.gasLimit ? BigInt(tx.gasLimit.toString()) : 0n,
+        maxFeePerGas: tx.maxFeePerGas ? BigInt(tx.maxFeePerGas.toString()) : 0n,
+        maxPriorityFeePerGas: tx.maxPriorityFeePerGas
+          ? BigInt(tx.maxPriorityFeePerGas.toString())
+          : 0n,
+        dryRun: (() => {}) as ExtendedEvmCall["dryRun"],
+      }
+      onCreateTransaction(evmCall, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
           refetchPoolData?.()
           refetchIncentiveData?.()
           refetchGhoData?.()
         },
-      }
-
-      if (!provider) {
-        const tx = api.tx.evm.call(
-          txData.from ?? "",
-          txData.to ?? "",
-          txData.data ?? "",
-          "0",
-          txData.gasLimit?.toString() ?? "0",
-          txData.maxFeePerGas?.toString() ?? "0",
-          txData.maxPriorityFeePerGas?.toString() ?? "0",
-          null,
-          [],
-        )
-
-        createTransaction(
-          {
-            tx,
-            evmTx: {
-              data: txData,
-              abi,
-            },
-          },
-          txOptions,
-        )
-        return {} as TransactionResponse
-      }
-
-      createTransaction(
-        {
-          evmTx: {
-            data: txData,
-            abi,
-          },
-        },
-        txOptions,
-      ) */
-
-      return {} as TransactionResponse
+      })
     },
-    [],
+    [
+      onCreateTransaction,
+      queryClient,
+      refetchGhoData,
+      refetchIncentiveData,
+      refetchPoolData,
+    ],
   )
-
-  // TODO: recheck that it works on all wallets
-  const signTxData = async (unsignedData: string): Promise<SignatureLike> => {
-    if (provider && account) {
-      const signature: SignatureLike = await provider.send(
-        "eth_signTypedData_v4",
-        [account, unsignedData],
-      )
-
-      return signature
-    }
-
-    throw new Error("Error signing transaction. Provider not found")
-  }
-
-  const switchNetwork = async (newChainId: number) => {
-    if (provider) {
-      try {
-        await provider.send("wallet_switchEthereumChain", [
-          { chainId: `0x${newChainId.toString(16)}` },
-        ])
-        setSwitchNetworkError(undefined)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (switchError: any) {
-        const networkInfo = getNetworkConfig(newChainId)
-        if (switchError.code === 4902) {
-          try {
-            try {
-              await provider.send("wallet_addEthereumChain", [
-                {
-                  chainId: `0x${newChainId.toString(16)}`,
-                  chainName: networkInfo.name,
-                  nativeCurrency: {
-                    symbol: networkInfo.baseAssetSymbol,
-                    decimals: networkInfo.baseAssetDecimals,
-                  },
-                  rpcUrls: [
-                    ...networkInfo.publicJsonRPCUrl,
-                    networkInfo.publicJsonRPCWSUrl,
-                  ],
-                  blockExplorerUrls: [networkInfo.explorerLink],
-                },
-              ])
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (error: any) {
-              if (error.code !== 4001) {
-                throw error
-              }
-            }
-            setSwitchNetworkError(undefined)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          } catch (addError: any) {
-            setSwitchNetworkError(addError)
-          }
-        } else if (switchError.code === 4001) {
-          setSwitchNetworkError(undefined)
-        } else {
-          setSwitchNetworkError(switchError)
-        }
-      }
-    }
-  }
 
   const getTxError = async (txHash: string): Promise<string> => {
     if (provider) {
@@ -337,40 +168,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
     throw new Error("Error getting transaction. Provider not found")
   }
 
-  const addERC20Token = async ({
-    address,
-    symbol,
-    decimals,
-    image,
-  }: ERC20TokenType): Promise<boolean> => {
-    // using window.ethereum as looks like its only supported for metamask
-    // and didn't manage to make the call with ethersjs
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const injectedProvider = (window as any).ethereum
-    if (provider && account && window && injectedProvider) {
-      if (address.toLowerCase() !== API_ETH_MOCK_ADDRESS.toLowerCase()) {
-        await injectedProvider.request({
-          method: "wallet_watchAsset",
-          params: {
-            type: "ERC20",
-            options: {
-              address,
-              symbol,
-              decimals,
-              image,
-            },
-          },
-        })
-
-        return true
-      }
-    }
-    return false
-  }
-
-  // inject account into zustand as long as aave itnerface is using old web3 providers
   useEffect(() => {
-    setAccount(address?.toLowerCase())
+    setAccount(address?.toLowerCase() || "")
   }, [address, setAccount])
 
   useEffect(() => {
@@ -386,12 +185,9 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           connected: active,
           loading,
           chainId: chainId || 1,
-          switchNetwork,
           getTxError,
           sendTx,
-          signTxData,
           currentAccount: address?.toLowerCase() || "",
-          addERC20Token,
           error,
           switchNetworkError,
           setSwitchNetworkError,

@@ -1,6 +1,6 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, EvmChain, EvmParachain } from "@galacticcouncil/xcm-core"
-import { EvmCall } from "@galacticcouncil/xcm-sdk"
 import {
   Chain,
   createPublicClient,
@@ -34,7 +34,7 @@ export type PermitResult = {
   message: PermitMessage
 }
 
-type CallType = Omit<EvmCall, "from" | "type" | "dryRun">
+type TransactionCall = Omit<ExtendedEvmCall, "from" | "type" | "dryRun">
 
 type EthereumSignerOptions = {
   chainKey?: string
@@ -68,7 +68,7 @@ export class EthereumSigner {
   }
 
   async signAndSubmitDispatch(
-    call: Omit<CallType, "to">,
+    call: Omit<TransactionCall, "to">,
     options: EthereumSignerOptions,
   ) {
     return this.signAndSubmit(
@@ -80,7 +80,7 @@ export class EthereumSigner {
     )
   }
 
-  async signAndSubmit(call: CallType, options: EthereumSignerOptions) {
+  async signAndSubmit(call: TransactionCall, options: EthereumSignerOptions) {
     try {
       const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
       const chain = chainsMap.get(chainKey)
@@ -92,13 +92,16 @@ export class EthereumSigner {
 
       await this.walletClient.switchChain({ id: client.chain.id })
 
-      const [gas, gasPrice] = await Promise.all([
+      const [_gas, gasPrice, nonce] = await Promise.all([
         this.publicClient.estimateGas({
           account: this.address as Hex,
           data: call.data as Hex,
           to: call.to,
         }),
         this.publicClient.getGasPrice(),
+        this.publicClient.getTransactionCount({
+          address: this.address as Hex,
+        }),
       ])
 
       const fivePrc = (gasPrice / 100n) * 5n
@@ -106,12 +109,14 @@ export class EthereumSigner {
 
       const txHash = await this.walletClient.sendTransaction({
         account: this.address as Hex,
-        chain: client.chain as Chain,
         data: call.data as Hex,
-        maxPriorityFeePerGas: gasPricePlus,
-        maxFeePerGas: gasPricePlus,
-        gas: (gas * 11n) / 10n,
         to: call.to,
+        nonce,
+        chain: client.chain as Chain,
+        maxFeePerGas: call?.maxFeePerGas || gasPricePlus,
+        maxPriorityFeePerGas: call?.maxPriorityFeePerGas || gasPricePlus,
+        // @TODO check gas estimation
+        gas: call?.gasLimit || 1_000_000n,
       })
 
       options.onSubmitted(txHash)

@@ -21,20 +21,6 @@ export type ExplorerLinkBuilderConfig = {
 export type NetworkConfig = {
   name: string
   displayName?: string
-  privateJsonRPCUrl?: string // private rpc will be used for rpc queries inside the client. normally has private api key and better rate
-  privateJsonRPCWSUrl?: string
-  publicJsonRPCUrl: readonly string[] // public rpc used if not private found, and used to add specific network to wallets if user don't have them. Normally with slow rates
-  publicJsonRPCWSUrl?: string
-  // protocolDataUrl: string;
-  // https://github.com/aave/aave-api
-  ratesHistoryApiUrl?: string
-  // cachingServerUrl?: string;
-  // cachingWSServerUrl?: string;
-  baseUniswapAdapter?: string
-  /**
-   * When this is set withdrawals will automatically be unwrapped
-   */
-  wrappedBaseAssetSymbol: string
   baseAssetSymbol: string
   // needed for configuring the chain on metemask when it doesn't exist yet
   baseAssetDecimals: number
@@ -44,8 +30,6 @@ export type NetworkConfig = {
   explorerLinkBuilder: (props: ExplorerLinkBuilderProps) => string
   // set this to show faucets and similar
   isTestnet?: boolean
-  // get's automatically populated on fork networks
-  isFork?: boolean
   networkLogoPath: string
   // contains the forked off chainId
   underlyingChainId?: number
@@ -60,33 +44,10 @@ const hydration = (chainsMap.get("hydration") as EvmParachain).client.chain
 
 export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 
-// @TODO take from UI config
-export const testnetProviders = [
-  "https://rpc.nice.hydration.cloud",
-  "https://paseo-rpc.play.hydration.cloud",
-]
-export const mainnetProviders = [
-  "https://hydration-rpc.n.dwellir.com",
-  /*   "https://rpc.helikon.io/hydradx",
-  "https://hydration.dotters.network",
-  "https://hydration.ibp.network",
-  "https://rpc.cay.hydration.cloud",
-  "https://rpc.parm.hydration.cloud",
-  "https://rpc.roach.hydration.cloud",
-  "https://rpc.zipp.hydration.cloud",
-  "https://rpc.sin.hydration.cloud",
-  "https://rpc.coke.hydration.cloud",
-  "https://3.rpc.hydration.cloud",
-  "https://5.rpc.hydration.cloud", */
-]
-
 export const networkConfigs: Record<string, BaseNetworkConfig> = {
   [ChainId.hydration]: {
     name: "Hydration",
-    publicJsonRPCUrl: mainnetProviders,
-    baseUniswapAdapter: "0x0",
     baseAssetSymbol: "",
-    wrappedBaseAssetSymbol: "",
     baseAssetDecimals: 18,
     explorerLink: hydration.blockExplorers?.default?.url ?? "",
     isTestnet: false,
@@ -94,10 +55,7 @@ export const networkConfigs: Record<string, BaseNetworkConfig> = {
   },
   [ChainId.hydration_testnet]: {
     name: "Hydration Testnet",
-    publicJsonRPCUrl: testnetProviders,
-    baseUniswapAdapter: "0x0",
     baseAssetSymbol: "",
-    wrappedBaseAssetSymbol: "",
     baseAssetDecimals: 18,
     explorerLink: "https://explorer.nice.hydration.cloud",
     isTestnet: true,

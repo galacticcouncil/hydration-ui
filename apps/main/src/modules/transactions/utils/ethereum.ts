@@ -1,5 +1,5 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { EthereumSigner } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
-import { EvmCall } from "@galacticcouncil/xcm-sdk"
 
 import { TxSignAndSubmitFn } from "@/modules/transactions/types"
 import { AnyPapiTx } from "@/states/transactions"
@@ -24,7 +24,7 @@ export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
 }
 
 export const signAndSubmitEvmTx: TxSignAndSubmitFn<
-  EvmCall,
+  ExtendedEvmCall,
   EthereumSigner
 > = async (
   tx,

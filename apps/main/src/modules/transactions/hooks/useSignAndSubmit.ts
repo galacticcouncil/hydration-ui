@@ -5,6 +5,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
 
+import { transformEvmCallToPapiTx } from "@/modules/transactions/TransactionProvider.utils"
 import { TxOptions } from "@/modules/transactions/types"
 import {
   signAndSubmitEvmDispatchTx,
@@ -15,12 +16,14 @@ import {
   signAndSubmitPolkadotTx,
 } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { AnyTransaction } from "@/states/transactions"
 
 export const useSignAndSubmit = (
   tx: AnyTransaction,
   options: MutationOptions<void, Error, TxOptions>,
 ) => {
+  const { papi } = useRpcProvider()
   const wallet = useWallet()
 
   return useMutation({
@@ -36,6 +39,14 @@ export const useSignAndSubmit = (
 
       if (isEvmCall(tx) && isEthereumSigner(wallet?.signer)) {
         return signAndSubmitEvmTx(tx, wallet.signer, txOptions)
+      }
+
+      if (isEvmCall(tx) && isPolkadotSigner(wallet?.signer)) {
+        return signAndSubmitPolkadotTx(
+          transformEvmCallToPapiTx(papi, tx),
+          wallet.signer,
+          txOptions,
+        )
       }
 
       throw new Error("Unsupported transaction or signer type")
