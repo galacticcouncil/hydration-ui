@@ -1,0 +1,129 @@
+import {
+  ArrowRightLeft,
+  ChevronRight,
+  Trash,
+} from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
+  ExternalLink,
+  Flex,
+  Icon,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { createColumnHelper } from "@tanstack/react-table"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { getSubscanLink } from "@/links/subscan"
+import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
+import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
+import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
+import { SwapType } from "@/modules/trade/orders/columns/SwapType"
+import { TAsset } from "@/providers/assetsProvider"
+
+export type OpenOrder = {
+  readonly from: TAsset
+  readonly fromAmount: string
+  readonly to: TAsset
+  readonly toAmount: string
+  readonly averagePrice: string
+  readonly type: SwapType
+  readonly status: SwapStatus
+}
+
+const columnHelper = createColumnHelper<OpenOrder>()
+
+export const useOpenOrdersColumns = () => {
+  const { t } = useTranslation(["common", "trade"])
+
+  return useMemo(() => {
+    const fromToColumn = columnHelper.display({
+      header: t("trade:trade.orders.openOrders.inOut"),
+      cell: ({ row }) => {
+        return (
+          <SwapAmount
+            fromAmount={row.original.fromAmount}
+            from={row.original.from}
+            toAmount={row.original.toAmount}
+            to={row.original.to}
+          />
+        )
+      },
+    })
+
+    const averagePriceColumn = columnHelper.display({
+      id: "price",
+      meta: {
+        sx: { textAlign: "center" },
+      },
+      header: () => (
+        <Flex gap={4} align="center" justify="center">
+          {t("trade:trade.orders.openOrders.averagePrice")}
+          <Icon
+            size={12}
+            component={ArrowRightLeft}
+            color={getToken("textButtons.small.hover")}
+          />
+        </Flex>
+      ),
+      cell: ({ row }) => {
+        return (
+          <SwapPrice
+            from={row.original.from}
+            to={row.original.to}
+            price={row.original.averagePrice}
+          />
+        )
+      },
+    })
+
+    const typeColumn = columnHelper.display({
+      header: t("trade:trade.orders.openOrders.type"),
+      meta: {
+        sx: { textAlign: "center" },
+      },
+      cell: ({ row }) => {
+        return <SwapType type={row.original.type} />
+      },
+    })
+
+    const statusColumn = columnHelper.display({
+      header: t("trade:trade.orders.openOrders.status"),
+      meta: {
+        sx: { textAlign: "end" },
+      },
+      cell: ({ row }) => {
+        return <SwapStatus status={row.original.status} />
+      },
+    })
+
+    const actionColumn = columnHelper.display({
+      id: "ations",
+      cell: ({ row }) => {
+        return (
+          <Flex gap={9} align="center" justify="end">
+            <Button variant="danger" outline>
+              <Icon component={Trash} size={14} />
+            </Button>
+            {/* TODO link */}
+            <ExternalLink href={getSubscanLink(row.original)}>
+              <Icon
+                component={ChevronRight}
+                size={16}
+                color={getToken("icons.onContainer")}
+              />
+            </ExternalLink>
+          </Flex>
+        )
+      },
+    })
+
+    return [
+      fromToColumn,
+      averagePriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
+  }, [t])
+}

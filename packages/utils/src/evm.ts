@@ -64,3 +64,11 @@ export const safeConvertSS58toH160 = (address: string) => {
     return ""
   }
 }
+
+export const safeConvertIndexerAddress = (address: string): string => {
+  try {
+    return u8aToHex(decodeAddress(address))
+  } catch {
+    return ''
+  }
+}

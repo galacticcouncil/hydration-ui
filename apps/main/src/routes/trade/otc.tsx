@@ -10,7 +10,7 @@ const searchSchema = z.object({
 
 export type OtcOffersType = z.infer<typeof offerSchema>
 
-export const Route = createFileRoute("/_trade/trade/otc")({
+export const Route = createFileRoute("/trade/otc")({
   component: TradeOtcPage,
   validateSearch: searchSchema,
 })

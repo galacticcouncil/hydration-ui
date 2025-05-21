@@ -1,6 +1,7 @@
 import { Box, Grid, Separator } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 
+import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
 import { TradeChart } from "@/modules/trade/swap/components/TradeChart"
 
@@ -17,6 +18,7 @@ export const SwapPage = () => {
         <Separator mx={-20} />
         <Outlet />
       </SContainer>
+      <TradeOrders />
     </Grid>
   )
 }

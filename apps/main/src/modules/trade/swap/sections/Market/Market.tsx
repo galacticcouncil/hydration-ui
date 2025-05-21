@@ -29,7 +29,9 @@ export type SelectedTradeOption =
     }
 
 export const Market: FC = () => {
-  const { assetIn, assetOut } = useSearch({ from: "/_trade/trade/swap/market" })
+  const { assetIn, assetOut } = useSearch({
+    from: "/trade/_history/swap/market",
+  })
 
   const form = useMarketForm({ assetIn, assetOut })
   const type = form.watch("type")

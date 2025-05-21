@@ -19,7 +19,7 @@ import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferM
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OfferStatusColumn } from "@/modules/trade/otc/table/columns/OfferStatusColumn"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import { OtcOffersType } from "@/routes/_trade/trade.otc"
+import { OtcOffersType } from "@/routes/trade/otc"
 import { nullFirst, numerically, sortBy } from "@/utils/sort"
 
 export enum OtcColumn {
