@@ -30,10 +30,9 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
   return (
     <>
       <ModalHeader
-        title={t("trade:trade.orders.mobileDetail.title")}
+        title={t("trade:trade.orders.swapDetail.title")}
         align="center"
       />
-      <ModalContentDivider />
       <ModalBody>
         <Flex
           justify="space-between"
@@ -126,7 +125,7 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
               >
                 <Icon component={SubScan} size={12} color="#FEFEFE" />
                 <Text fw={500} fs="p6" lh={1.4}>
-                  {t("trade:trade.orders.mobileDetail.openOnSubscan")}
+                  {t("trade:trade.orders.swapDetail.openOnSubscan")}
                 </Text>
               </ExternalLink>
             </Flex>

@@ -23,6 +23,8 @@ export type OrderData = {
   readonly from: TAsset
   readonly fromAmountBudget: string
   readonly fromAmountExecuted: string
+  readonly fromAmountRemaining: string
+  readonly singleTradeSize: string
   readonly to: TAsset
   readonly toAmountExecuted: string
   readonly price: string
@@ -64,6 +66,13 @@ export const useOrdersData = (
             schedule.totalExecutedAmountIn,
             from.decimals,
           )
+          const fromAmountRemaining = Big(fromAmountBudget)
+            .minus(fromAmountExecuted)
+            .toString()
+          const singleTradeSize = scaleHuman(
+            schedule.singleTradeSize,
+            from.decimals,
+          )
 
           const to = getAssetWithFallback(
             schedule.assetOut?.assetRegistryId ?? "",
@@ -84,6 +93,8 @@ export const useOrdersData = (
             from,
             fromAmountBudget,
             fromAmountExecuted,
+            fromAmountRemaining,
+            singleTradeSize,
             to,
             toAmountExecuted,
             price,

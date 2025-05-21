@@ -1,5 +1,11 @@
 import { ArrowRightLeft, Trash } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Icon,
+  Modal,
+  TableRowDetailsExpand,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -12,6 +18,7 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
+import { DcaOrderDetailsMobileModal } from "@/modules/trade/orders/DcaOrderDetailsMobileModal"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
@@ -127,13 +134,24 @@ export const useOpenOrdersColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: ({ row }) => (
-        <AmountMobile
-          fromAmount={row.original.fromAmountExecuted}
-          from={row.original.from}
-          status={row.original.status}
-        />
-      ),
+      cell: function Cell({ row }) {
+        const [modal, setModal] = useState(false)
+
+        return (
+          <>
+            <TableRowDetailsExpand onClick={() => setModal(true)}>
+              <AmountMobile
+                fromAmount={row.original.fromAmountExecuted}
+                from={row.original.from}
+                status={row.original.status}
+              />
+            </TableRowDetailsExpand>
+            <Modal open={modal} onOpenChange={setModal}>
+              <DcaOrderDetailsMobileModal details={row.original} />
+            </Modal>
+          </>
+        )
+      },
     })
 
     return !isDesktop

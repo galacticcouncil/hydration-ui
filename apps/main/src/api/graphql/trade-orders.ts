@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query"
 
 import { GraphqlClient } from "@/api/provider"
 import {
+  DcaScheduleSwapsDocument,
   UserOpenOrdersCountDocument,
   UserOrdersDocument,
   UserSwapsDocument,
@@ -147,4 +148,23 @@ export const userOpenOrdersCountQuery = (
           : {}),
       }),
     enabled: !!address,
+  })
+
+export const dcaScheduleSwapsQuery = (
+  squidClient: GraphqlClient,
+  scheduleId: number,
+) =>
+  queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "dcaSchedule",
+      "swaps",
+      scheduleId,
+    ],
+    queryFn: () =>
+      squidClient.gql(DcaScheduleSwapsDocument).send({
+        scheduleId: scheduleId.toString(),
+      }),
+    enabled: !!scheduleId,
   })

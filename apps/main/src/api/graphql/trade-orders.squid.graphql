@@ -88,6 +88,7 @@ query UserOrders(
       }
       totalExecutedAmountIn
       budgetAmountIn: totalAmount
+      singleTradeSize: amountIn
       assetOut {
         assetRegistryId
       }
@@ -103,5 +104,35 @@ query UserOpenOrdersCount($address: String!, $assetFilter: DcaScheduleFilter) {
     filter: $assetFilter
   ) {
     totalCount
+  }
+}
+
+query DcaScheduleSwaps($scheduleId: String!) {
+  dcaSchedule(id: $scheduleId) {
+    assetInId
+    assetOutId
+    dcaScheduleExecutionsByScheduleId(
+      condition: { status: "Executed" }
+      orderBy: ID_DESC
+    ) {
+      nodes {
+        id
+        status
+        amountIn
+        amountOut
+        dcaScheduleExecutionEventsByScheduleExecutionId(
+          first: 1
+          orderBy: PARA_BLOCK_HEIGHT_ASC
+        ) {
+          nodes {
+            event {
+              block {
+                timestamp
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

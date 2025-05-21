@@ -1,0 +1,152 @@
+import {
+  Amount,
+  Box,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalContentDivider,
+  ModalHeader,
+  Separator,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { formatDistanceToNow } from "date-fns"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+
+import { DcaScheduleStatus } from "@/api/graphql/trade-orders"
+import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
+import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
+import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { PastTransactions } from "@/modules/trade/orders/PastTransactions/PastTransactions"
+import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+
+type Props = {
+  readonly details: OrderData
+}
+
+export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
+  const { t } = useTranslation(["common", "trade"])
+  const [terminateModalOpen, setTerminateModalOpen] = useState(false)
+
+  return (
+    <>
+      <ModalHeader
+        title={t("trade:trade.orders.dcaDetail.title")}
+        align="center"
+      />
+      <ModalBody sx={{ overflowY: "hidden" }}>
+        <Flex
+          justify="space-between"
+          align="center"
+          p={getTokenPx("containers.paddings.primary")}
+        >
+          <SwapAmount
+            fromAmount={details.fromAmountExecuted}
+            from={details.from}
+            toAmount={details.toAmountExecuted}
+            to={details.to}
+            showLogo
+          />
+          {details.status && <DcaOrderStatus status={details.status} />}
+        </Flex>
+        <ModalContentDivider />
+        <Flex
+          justify="space-between"
+          p={getTokenPx("containers.paddings.primary")}
+        >
+          <Flex
+            direction="column"
+            gap={getTokenPx("containers.paddings.quint")}
+          >
+            <Text fs={13} lh={1} color={getToken("text.low")}>
+              {t("remaining")} / {t("budget")}
+            </Text>
+            <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+              {t("number", {
+                value: details.fromAmountRemaining,
+              })}
+              /
+              {t("number", {
+                value: details.fromAmountBudget,
+              })}{" "}
+              {details.from.symbol}
+            </Text>
+          </Flex>
+          <Separator orientation="vertical" />
+          <Flex
+            direction="column"
+            gap={getTokenPx("containers.paddings.quint")}
+            sx={{ justifySelf: "end" }}
+          >
+            <Text fs={13} lh={1} color={getToken("text.low")}>
+              {t("received")}
+            </Text>
+            <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+              {t("currency", {
+                value: details.toAmountExecuted,
+                symbol: details.to.symbol,
+              })}
+            </Text>
+          </Flex>
+        </Flex>
+        <ModalContentDivider />
+        <Flex
+          justify="space-between"
+          p={getTokenPx("containers.paddings.primary")}
+        >
+          {details.blocksPeriod && (
+            <>
+              <Amount
+                label={t("trade:trade.orders.dcaDetail.blockInterval")}
+                value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
+                  timeframe: formatDistanceToNow(
+                    Date.now() + details.blocksPeriod * PARACHAIN_BLOCK_TIME,
+                    {
+                      includeSeconds: true,
+                    },
+                  ),
+                  count: details.blocksPeriod,
+                })}
+              />
+              <Separator orientation="vertical" />
+            </>
+          )}
+          <Amount
+            label={t("trade:trade.orders.dcaDetail.singleTradeSize")}
+            value={t("currency", {
+              value: details.singleTradeSize,
+              symbol: details.from.symbol,
+            })}
+          />
+        </Flex>
+        <ModalContentDivider />
+        {details.status === DcaScheduleStatus.Created && (
+          <Box
+            p={getTokenPx("containers.paddings.primary")}
+            pt={getTokenPx("containers.paddings.secondary")}
+          >
+            <Modal
+              open={terminateModalOpen}
+              onOpenChange={setTerminateModalOpen}
+            >
+              <TerminateDcaScheduleModalContent
+                scheduleId={details.scheduleId}
+                sold={details.fromAmountExecuted}
+                total={details.fromAmountBudget}
+                symbol={details.to.symbol}
+                onClose={() => setTerminateModalOpen(false)}
+              />
+            </Modal>
+          </Box>
+        )}
+        <PastTransactions
+          scheduleId={details.scheduleId}
+          sx={{ marginInline: "var(--modal-content-inset)" }}
+        />
+        <ModalContentDivider />
+      </ModalBody>
+    </>
+  )
+}
