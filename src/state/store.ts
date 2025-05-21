@@ -434,3 +434,19 @@ export const useApiMetadata = create(
     { name: "api-metadata", storage: createJSONStorage(() => metadataStorage) },
   ),
 )
+
+export const useOmnipoolIds = create<{ ids?: string[] }>(() => ({
+  ids: undefined,
+}))
+
+export const setOmnipoolIds = (ids: string[]) =>
+  useOmnipoolIds.setState({ ids })
+
+export const useValidXYKPoolAddresses = create<{ addresses?: string[] }>(
+  () => ({
+    addresses: undefined,
+  }),
+)
+
+export const setValidXYKPoolAddresses = (addresses: string[]) =>
+  useValidXYKPoolAddresses.setState({ addresses })
