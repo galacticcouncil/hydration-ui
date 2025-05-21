@@ -473,7 +473,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           link.includes("evm") || link.includes("explorer.nice.hydration.cloud")
 
         const pullSnowbridgeToast = (status: number, messageId: string) => {
-          if (status === 0) {
+          if (status === 0 && !link.includes("snowbridge")) {
             toast.editToast(toastData.id, {
               txHash: messageId,
               link: `https://app.snowbridge.network/history#${messageId}`,
