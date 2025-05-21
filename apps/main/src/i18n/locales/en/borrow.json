@@ -1,0 +1,11 @@
+{
+  "collateral": "Collateral",
+  "healthFactor": "Health factor",
+  "netApy": "Net APY",
+  "netWorth": "Net worth",
+  "withdraw": "Withdraw",
+  "supply.table.title": "Assets to supply",
+  "supplied.table.title": "Your supplies",
+  "borrow.table.title": "Assets to borrow",
+  "borrowed.table.title": "Your borrows"
+}

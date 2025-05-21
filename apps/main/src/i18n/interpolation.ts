@@ -3,6 +3,7 @@ import { format as formatDate, isDate } from "date-fns"
 import { FormatFunction } from "i18next"
 
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
+const MIN_PERCENTAGE_THRESHOLD = Big(0.01)
 
 const formatNumberParts = (part: Intl.NumberFormatPart) => {
   if (part.type === "group") {
@@ -62,13 +63,24 @@ const formatters = {
       return "N / A"
     }
 
-    return Intl.NumberFormat(lng, {
+    const percentage = Big(value.toString())
+    const isBelowThreshold = percentage.lt(MIN_PERCENTAGE_THRESHOLD)
+    const percentageAdjusted = isBelowThreshold
+      ? MIN_PERCENTAGE_THRESHOLD.div(100)
+      : percentage.div(100)
+
+    const formattedValue = Intl.NumberFormat(lng, {
       style: "percent",
-      maximumFractionDigits: getMaxSignificantDigits(value, options),
+      maximumFractionDigits: 2,
+      ...options,
     })
-      .formatToParts(Number(value) / 100)
+      .formatToParts(percentageAdjusted.toNumber())
       .map(formatNumberParts)
       .join("")
+
+    const prefix = isBelowThreshold ? "<" : ""
+
+    return `${prefix}${formattedValue}`
   },
 
   currency: (
