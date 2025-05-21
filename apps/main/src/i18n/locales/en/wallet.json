@@ -15,6 +15,7 @@
   "myAssets.header.title": "My assets",
   "myAssets.header.cta": "Add new asset",
   "myAssets.header.toggle": "Show all assets",
+  "myAssets.header.feePaymentAsset": "Fee payment asset",
   "myAssets.header.transferable": "Transferable balance",
   "myAssets.header.total": "Total balance",
   "myAssets.actions.staking": "Start staking your {{ symbol }}",

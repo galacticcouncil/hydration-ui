@@ -45,12 +45,16 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.Solana]: SOLANA_PROVIDERS,
 }
 
-export type Account = {
+export type StoredAccount = {
   name: string
+  publicKey: string
   address: string
-  displayAddress: string
   provider: WalletProviderType
   delegate?: string
+}
+
+export type Account = StoredAccount & {
+  displayAddress: string
   isIncompatible?: boolean
 }
 
@@ -69,8 +73,8 @@ export type WalletProviderState = {
   open: boolean
   providers: WalletProviderEntry[]
   recentProvider: WalletProviderType | null
-  account: Account | null
-  accounts: Account[]
+  account: StoredAccount | null
+  accounts: StoredAccount[]
   mode: WalletMode
   error?: string
   meta?: WalletProviderMeta | null
@@ -78,8 +82,8 @@ export type WalletProviderState = {
 
 export type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
-  setAccount: (account: Account | null) => void
-  setAccounts: (accounts: Account[]) => void
+  setAccount: (account: StoredAccount | null) => void
+  setAccounts: (accounts: StoredAccount[]) => void
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
@@ -185,7 +189,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
     {
       name: "web3-connect",
       partialize: omit(["open", "error", "accounts"]),
-      version: 6,
+      version: 7,
     },
   ),
 )

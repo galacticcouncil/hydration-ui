@@ -18,6 +18,7 @@ import { Web3ConnectModeFilter } from "@/components/Web3ConnectModeFilter"
 import { Web3ConnectProviderLoader } from "@/components/Web3ConnectProviderLoader"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
+import { toAccount } from "@/utils"
 import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
@@ -47,7 +48,13 @@ export const Web3ConnectAccountSelect = () => {
   )
 
   const accountList = useMemo(
-    () => getFilteredAccounts(accounts, currentAccount, search, filter),
+    () =>
+      getFilteredAccounts(
+        accounts.map(toAccount),
+        currentAccount,
+        search,
+        filter,
+      ),
     [accounts, currentAccount, filter, search],
   )
 
