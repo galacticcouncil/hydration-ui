@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/_trade/trade/swap/cross-chain")({
+export const Route = createFileRoute("/trade/_history/swap/cross-chain")({
   component: RouteComponent,
 })
 

@@ -1,10 +1,8 @@
 import { CodegenConfig } from "@graphql-codegen/cli"
 
 export default {
-  schema: process.env.VITE_SQUID_URL,
+  schema: import.meta.env.VITE_SQUID_URL,
   overwrite: true,
-  // TODO remove this option when we have first squid indexer operations
-  ignoreNoDocuments: true,
   generates: {
     "schema.squid.graphql": {
       plugins: ["schema-ast"],
@@ -19,11 +17,12 @@ export default {
         fragmentMasking: false,
       },
       config: {
+        // graffle has problems with types or it crashes at runtime
         // documentMode: "string",
         avoidOptionals: {
           field: true,
           inputValue: false,
-          object: true,
+          object: false,
           defaultValue: true,
         },
         immutableTypes: true,

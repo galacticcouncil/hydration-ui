@@ -27,12 +27,12 @@ export const DynamicFee = ({
 
   const currentKey = ((): DynamicFeeRangeType | undefined => {
     switch (true) {
-      case value < rangeLow:
-        return "low"
-      case value <= rangeHigh:
-        return "middle"
       case value > rangeHigh:
         return "high"
+      case value >= rangeLow:
+        return "middle"
+      default:
+        return "low"
     }
   })()
 

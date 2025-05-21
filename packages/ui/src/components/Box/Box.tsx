@@ -24,8 +24,10 @@ export type BoxOwnProps = Partial<
     | "px"
     | "py"
     | "display"
+    | "position"
     | "width"
     | "height"
+    | "minWidth"
     | "maxWidth"
     | "maxHeight"
     | "size"
@@ -73,10 +75,12 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       px,
       py,
       display,
+      position,
       color,
       bg,
       width,
       height,
+      minWidth,
       maxWidth,
       maxHeight,
       size,
@@ -111,10 +115,12 @@ export const Box = forwardRef<HTMLElement, BoxProps>(
       px,
       py,
       display,
+      position,
       color,
       bg,
       width,
       height,
+      minWidth,
       maxWidth,
       maxHeight,
       size,
