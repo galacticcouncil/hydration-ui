@@ -52,9 +52,6 @@ export const HYDRATION_CHAIN_KEY = "hydration"
 export const HYDRATION_PARACHAIN_ADDRESS =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
 
-export const UNIFIED_ADDRESS_FORMAT_ENABLED =
-  import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true"
-
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
 export const VDOT_ASSET_ID = "15"
