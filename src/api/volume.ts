@@ -388,7 +388,7 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
 
       return nodes.map((node) => ({
-        poolId: safeConvertAddressSS58(node.poolId, HYDRA_ADDRESS_PREFIX),
+        poolId: safeConvertAddressSS58(node.poolId),
         assetId: node.assetAId.toString(),
         assetIdB: node.assetBId.toString(),
         volume: node.assetAVolume,
