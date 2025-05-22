@@ -19,7 +19,6 @@ import { isAnyParachain, Maybe } from "utils/helpers"
 import { ApiPromise } from "@polkadot/api"
 import { BN_NAN } from "utils/constants"
 import { uniqBy } from "utils/rx"
-import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { Parachain } from "@galacticcouncil/xcm-core"
 import { TAsset, useAssets } from "providers/assets"
@@ -194,10 +193,7 @@ const addressToDisplayAddress = (
     return H160.fromAccount(address)
   }
 
-  const convertedAddress = safeConvertAddressSS58(
-    address,
-    chain?.ss58Format ?? HYDRADX_SS58_PREFIX,
-  )
+  const convertedAddress = safeConvertAddressSS58(address, chain?.ss58Format)
 
   return convertedAddress ?? address
 }
