@@ -16,6 +16,7 @@ import {
   PROVIDERS_BY_WALLET_MODE,
   WalletMode,
 } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { ModalScrollableContent } from "components/Modal/Modal"
 
 type AddressBookProps = {
   onSelect: (address: string) => void
@@ -75,13 +76,20 @@ export const AddressBook = ({
               {t("addressbook.list.address")}
             </Text>
           </SHeader>
-          {items.map((address) => (
-            <AddressBookItem
-              key={address.address}
-              {...address}
-              onSelect={onSelect}
-            />
-          ))}
+          <ModalScrollableContent
+            sx={{
+              maxHeight: ["100%", "min(calc(90vh - 300px), 600px)"],
+              pr: 0,
+              width: "100%",
+            }}
+            content={items.map((address) => (
+              <AddressBookItem
+                key={address.address}
+                {...address}
+                onSelect={onSelect}
+              />
+            ))}
+          />
         </SItems>
       )}
     </SContainer>
