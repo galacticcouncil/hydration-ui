@@ -1,7 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { InputHTMLAttributes, forwardRef, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { Maybe } from "utils/helpers"
 import { SInput, SInputWrapper } from "./AddressInput.styled"
@@ -30,7 +29,7 @@ export const AddressInput = forwardRef<HTMLInputElement, InputProps>(
 
     const nativeAddress = props.hideNativeAddress
       ? null
-      : safeConvertAddressSS58(props.value, HYDRA_ADDRESS_PREFIX)
+      : safeConvertAddressSS58(props.value)
 
     return (
       <SInputWrapper disabled={props.disabled} className={props.className}>

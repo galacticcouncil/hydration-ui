@@ -1,7 +1,6 @@
 import { encodeAddress, decodeAddress } from "@polkadot/util-crypto"
 import { u8aToHex } from "@polkadot/util"
 import { Buffer } from "buffer"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 
 import {
   isAddress as isEvmAddress,
@@ -12,7 +11,6 @@ import { addr, EvmParachain } from "@galacticcouncil/xcm-core"
 import { isAnyEvmChain } from "./helpers"
 import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
-import { UNIFIED_ADDRESS_FORMAT_ENABLED } from "utils/constants"
 import { MetaTags } from "state/toasts"
 
 const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
@@ -51,13 +49,13 @@ export class H160 {
     this.address = safeConvertAddressH160(address) ?? ""
   }
 
-  toAccount = (useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED) => {
+  toAccount = () => {
     const addressBytes = Buffer.from(this.address.slice(2), "hex")
     return encodeAddress(
       new Uint8Array(
         Buffer.concat([H160.prefixBytes, addressBytes, Buffer.alloc(8)]),
       ),
-      useUnifiedFormat ? 0 : HYDRA_ADDRESS_PREFIX,
+      0,
     )
   }
 

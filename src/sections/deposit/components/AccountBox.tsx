@@ -47,8 +47,7 @@ export const AccountBox: React.FC<AccountBoxProps> = ({
     useShallow((state) => pick(state, ["toggle"])),
   )
 
-  const formattedAddress =
-    safeConvertAddressSS58(address, ss58Format, false) ?? ""
+  const formattedAddress = safeConvertAddressSS58(address, ss58Format) ?? ""
 
   const cex = CEX_CONFIG.find(({ id }) => id === cexId)
   const cexUrl = asset ? createCexWithdrawalUrl(cexId, asset.data) : ""

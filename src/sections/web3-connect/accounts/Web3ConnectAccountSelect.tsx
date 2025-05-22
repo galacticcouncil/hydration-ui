@@ -11,7 +11,7 @@ import {
 } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { BN_BILL, UNIFIED_ADDRESS_FORMAT_ENABLED } from "utils/constants"
+import { BN_BILL } from "utils/constants"
 import { getWalletProviderByType } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAddress } from "utils/evm"
 import { Badge } from "components/Badge/Badge"
@@ -88,7 +88,6 @@ export const Web3ConnectAccountSelect = ({
   const addressOldFormat = safeConvertAddressSS58(
     address,
     genesisHashToChain(genesisHash).prefix,
-    false,
   )
 
   return (
@@ -158,7 +157,7 @@ export const Web3ConnectAccountSelect = ({
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
           <div sx={{ mt: -4 }}>
-            {isEvm || !UNIFIED_ADDRESS_FORMAT_ENABLED ? (
+            {isEvm ? (
               <CopyButton
                 address={address}
                 sx={{
