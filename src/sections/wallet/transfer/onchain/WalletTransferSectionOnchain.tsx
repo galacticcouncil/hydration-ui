@@ -43,6 +43,8 @@ import { useState } from "react"
 import { useHealthFactorChange } from "api/borrow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { ProtocolAction } from "@aave/contract-helpers"
+import { useAddressStore } from "components/AddressBook/AddressBook.utils"
+import { useShallow } from "hooks/useShallow"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -189,8 +191,18 @@ export function WalletTransferSectionOnchain({
     healthFactorChange.currentHealthFactor !==
       healthFactorChange.futureHealthFactor
 
-  const dest = form.watch("dest")
-  const shouldShowDisclaimer = UNIFIED_ADDRESS_FORMAT_ENABLED && !!dest
+  const dest = form.watch("dest") || ""
+
+  const userOwnedAddresses = useAddressStore(
+    useShallow((state) => state.addresses.filter(({ isCustom }) => !isCustom)),
+  )
+
+  const isDestUserOwnedAddress = userOwnedAddresses.some(
+    ({ address }) => address.toLowerCase() === dest.toLowerCase(),
+  )
+
+  const shouldShowDisclaimer =
+    !!dest && !isDestUserOwnedAddress && UNIFIED_ADDRESS_FORMAT_ENABLED
 
   const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
 
