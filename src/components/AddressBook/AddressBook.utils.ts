@@ -99,7 +99,7 @@ export const useAddressStore = create<AddressStore>()(
     }),
     {
       name: "address-book",
-      version: 1,
+      version: 2,
       migrate: (persistedState, version) => {
         const state = persistedState as AddressStore
 
@@ -118,6 +118,16 @@ export const useAddressStore = create<AddressStore>()(
 
                 return { ...address, provider, isCustom: true }
               }
+
+              if (!address.isCustom) {
+                const newAddressFormat =
+                  safeConvertAddressSS58(address.address, 0) || address.address
+                return {
+                  ...address,
+                  address: newAddressFormat,
+                }
+              }
+
               return address
             }),
           }

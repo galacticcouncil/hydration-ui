@@ -252,7 +252,7 @@ export function shortenAccountAddress(address: string, length = 6) {
 
 export function safeConvertAddressSS58(
   address: Maybe<string>,
-  ss58prefix: number,
+  ss58prefix = 0,
   useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
 ) {
   try {
