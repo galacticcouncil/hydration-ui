@@ -454,7 +454,7 @@ export const useProviderData = (
 
       const slotDurationMs = slotDuration.toString()
       const isSixBlockEnabled = !!sixBlockSince
-      console.log(slotDurationMs)
+
       const balanceClient = new BalanceClient(api)
 
       const evm = new PolkadotEvmRpcProvider(api)

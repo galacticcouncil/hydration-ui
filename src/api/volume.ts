@@ -7,11 +7,12 @@ import BN from "bignumber.js"
 import { BN_0 } from "utils/constants"
 import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { decodeAddress } from "@polkadot/util-crypto"
 import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import { groupBy } from "utils/rx"
+import { safeConvertAddressSS58 } from "utils/formatting"
 
 export type TradeType = {
   name:
@@ -387,7 +388,7 @@ export const useXYKSquidVolumes = (addresses: string[]) => {
       const { nodes = [] } = xykPoolHistoricalVolumesByPeriod
 
       return nodes.map((node) => ({
-        poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
+        poolId: safeConvertAddressSS58(node.poolId, HYDRA_ADDRESS_PREFIX),
         assetId: node.assetAId.toString(),
         assetIdB: node.assetBId.toString(),
         volume: node.assetAVolume,
