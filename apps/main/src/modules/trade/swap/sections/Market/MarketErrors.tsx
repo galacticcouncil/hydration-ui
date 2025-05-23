@@ -1,26 +1,21 @@
-import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Alert } from "@galacticcouncil/ui/components"
 import { FC } from "react"
-import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { SelectedTradeOption } from "@/modules/trade/swap/sections/Market/Market"
 
 type Props = {
-  readonly swap: Trade
+  readonly selectedTradeOption: SelectedTradeOption | null
 }
 
-export const MarketErrors: FC<Props> = ({ swap }) => {
+export const MarketErrors: FC<Props> = ({ selectedTradeOption }) => {
   const { t } = useTranslation("trade")
 
-  const { watch } = useFormContext<MarketFormValues>()
-  const type = watch("type")
-
-  if (type !== "swap") {
+  if (selectedTradeOption?.type !== "swap") {
     return null
   }
 
-  const errors = swap?.swaps.flatMap((swap) => swap.errors)
+  const errors = selectedTradeOption?.swap?.swaps.flatMap((swap) => swap.errors)
   const error = errors?.[0]
 
   if (!error) {

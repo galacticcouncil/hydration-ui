@@ -4,7 +4,13 @@ import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export const MarketFooter: FC = () => {
+import { SwapType } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+
+type Props = {
+  readonly type: SwapType
+}
+
+export const MarketFooter: FC<Props> = ({ type }) => {
   const { t } = useTranslation("trade")
   const { account } = useAccount()
 
@@ -19,7 +25,7 @@ export const MarketFooter: FC = () => {
     >
       {account ? (
         <Button type="submit" size="large" width="100%">
-          {t("market.footer.swap")}
+          {type === "swap" ? t("market.footer.swap") : t("market.twap.cta")}
         </Button>
       ) : (
         <Web3ConnectButton size="large" width="100%" />

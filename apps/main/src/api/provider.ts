@@ -9,6 +9,8 @@ import { Graffle } from "graffle"
 import { PolkadotClient } from "polkadot-api"
 import { useEffect, useMemo, useState } from "react"
 
+import { TimeApi } from "@/api/utils/timeApi"
+import { TwapApi } from "@/api/utils/twapApi"
 import {
   createProvider,
   ProviderProps,
@@ -32,6 +34,8 @@ export type TProviderData = {
   dataEnv: TDataEnv
   tradeRouter: sor.TradeRouter
   tradeUtils: sor.TradeUtils
+  twapApi: TwapApi
+  timeApi: TimeApi
   /**
    * @deprecated
    */
@@ -102,6 +106,9 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     includeOnly: [PoolType.Omni, PoolType.Stable, PoolType.XYK, PoolType.LBP],
   })
 
+  const twapApi = new TwapApi(papi, tradeUtils, tradeRouter)
+  const timeApi = new TimeApi(papi)
+
   return {
     papi,
     papiClient,
@@ -113,6 +120,8 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     tradeRouter,
     tradeUtils,
+    twapApi,
+    timeApi,
     featureFlags: {},
     legacy_api,
     legacy_tradeRouter,
