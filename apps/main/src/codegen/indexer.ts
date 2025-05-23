@@ -17,6 +17,7 @@ export default {
         fragmentMasking: false,
       },
       config: {
+        // graffle has problems with types or it crashes at runtime
         // documentMode: "string",
         avoidOptionals: {
           field: true,

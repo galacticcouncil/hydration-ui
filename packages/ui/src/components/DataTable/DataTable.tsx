@@ -4,6 +4,7 @@ import {
   FilterFnOption,
   flexRender,
   OnChangeFn,
+  PaginationState,
   RowData,
   SortingState,
   Table as TableDef,
@@ -15,8 +16,10 @@ import {
   Fragment,
   Ref,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
 } from "react"
 
 import { Box } from "@/components/Box"
@@ -45,6 +48,7 @@ import {
 export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
     pageSize?: number
+    pageNumber?: number
     globalFilter?: string
     initialSorting?: SortingState
     sorting?: SortingState
@@ -61,11 +65,13 @@ export type DataTableProps<TData extends RowData> = TableProps &
     columnPinning?: ColumnPinningState | undefined
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
+    rowCount?: number
     getIsExpandable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
     onRowClick?: (item: TData) => void
     onSortingChange?: OnChangeFn<SortingState>
+    onPageClick?: (number: number) => void
   }
 
 export type DataTableRef = {
@@ -83,6 +89,7 @@ const DataTable = forwardRef(
       paginated = false,
       expandable = false,
       pageSize = 20,
+      pageNumber = 1,
       borderless,
       hoverable,
       isLoading,
@@ -95,11 +102,13 @@ const DataTable = forwardRef(
       globalFilterFn,
       noResultsMessage,
       columnPinning,
+      rowCount,
       getIsExpandable,
       renderSubComponent,
       renderOverride,
       onRowClick,
       onSortingChange,
+      onPageClick,
     }: DataTableProps<TData>,
     ref: ForwardedRef<DataTableRef>,
   ) => {
@@ -123,9 +132,15 @@ const DataTable = forwardRef(
       manualSorting,
       enableSortingRemoval,
       globalFilterFn: globalFilterFn ?? "auto",
+      ...(rowCount !== undefined
+        ? {
+            rowCount,
+            manualPagination: true,
+          }
+        : {}),
       initialState: {
         pagination: {
-          pageIndex: 0,
+          pageIndex: pageNumber - 1,
           pageSize,
         },
         sorting: initialSorting,
@@ -280,21 +295,21 @@ const DataTable = forwardRef(
           </TableBody>
         </Table>
         {!isLoading && paginated && table.getPageCount() > 1 && (
-          <DataTablePagination table={table} />
+          <DataTablePagination table={table} onPageClick={onPageClick} />
         )}
       </>
     )
   },
 )
 
-DataTable.displayName = "DataTable"
-
 type DataTablePaginationProps<T> = {
   table: TableDef<T>
+  onPageClick?: (number: number) => void
 }
 
 export const DataTablePagination = <T,>({
   table,
+  onPageClick,
 }: DataTablePaginationProps<T>) => {
   const totalPages = table.getPageCount()
   const currentPage = table.getState().pagination.pageIndex + 1
@@ -304,8 +319,10 @@ export const DataTablePagination = <T,>({
     [currentPage, totalPages],
   )
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const onPageIndexClick = useCallback((i: number) => table.setPageIndex(i), [])
+  const onPageClickHandler = (number: number) => {
+    table.setPageIndex(number - 1)
+    onPageClick?.(number)
+  }
 
   return (
     <Flex gap={6} p={10} justify="center">
@@ -334,7 +351,7 @@ export const DataTablePagination = <T,>({
             width={32}
             size="small"
             variant={pageNumber === currentPage ? "primary" : "tertiary"}
-            onClick={() => onPageIndexClick(pageNumber - 1)}
+            onClick={() => onPageClickHandler(pageNumber)}
             sx={{ textAlign: "center" }}
           >
             {pageNumber}

@@ -1,6 +1,7 @@
-import { Button, Flex } from "@galacticcouncil/ui/components"
-import { Link, useLocation } from "@tanstack/react-router"
-import { FC } from "react"
+import { Flex } from "@galacticcouncil/ui/components"
+import { FC, Fragment } from "react"
+
+import { SubpageMenuItem } from "@/components/SubpageMenu/SubpageMenuItem"
 
 export type SubpageItem = {
   readonly to: string
@@ -12,46 +13,19 @@ export type SubpageItem = {
 type Props = {
   readonly items: ReadonlyArray<SubpageItem>
   readonly className?: string
+  readonly renderItem?: (item: SubpageItem) => React.ReactNode
 }
 
-export const SubpageMenu: FC<Props> = ({ items, className }) => {
-  const path = useLocation({
-    select: (state) => state.href,
-  })
-
-  const currentSearch = useLocation({
-    select: (state) => state.search,
-  })
-
-  const isActive = (
-    to: string,
-    routeSearch?: Record<string, string | boolean>,
-  ) => {
-    return (
-      path.startsWith(to) &&
-      (routeSearch
-        ? Object.entries(routeSearch ?? {}).every(
-            ([key, value]) =>
-              currentSearch[key as keyof typeof currentSearch] === value,
-          )
-        : true)
-    )
-  }
-
+export const SubpageMenu: FC<Props> = ({ items, className, renderItem }) => {
   return (
     <Flex gap={20} sx={{ overflowX: "auto" }} className={className}>
-      {items.map(({ to, title, icon: IconComponent, search }, index) => (
-        <Button
-          key={`${to}_${index}`}
-          variant={isActive(to, search) ? "secondary" : "tertiary"}
-          asChild
-        >
-          <Link to={to} search={{ ...currentSearch, ...search }}>
-            {IconComponent && <IconComponent />}
-            {title}
-          </Link>
-        </Button>
-      ))}
+      {items.map((item, index) =>
+        renderItem ? (
+          <Fragment key={`${item.to}_${index}`}>{renderItem(item)}</Fragment>
+        ) : (
+          <SubpageMenuItem key={`${item.to}_${index}`} item={item} />
+        ),
+      )}
     </Flex>
   )
 }

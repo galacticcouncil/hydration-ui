@@ -1,0 +1,40 @@
+fragment Swap on Swap {
+  swapInputs {
+    nodes {
+      asset {
+        assetRegistryId
+      }
+      amount
+    }
+  }
+  swapOutputs {
+    nodes {
+      asset {
+        assetRegistryId
+      }
+      amount
+    }
+  }
+  dcaScheduleExecutionEvent {
+    scheduleExecution {
+      schedule {
+        status
+      }
+      status
+    }
+  }
+}
+
+query TradeOrders($address: String!, $offset: Int!, $pageSize: Int!) {
+  swaps(
+    filter: { swapperId: { equalTo: $address } }
+    offset: $offset
+    first: $pageSize
+    orderBy: ID_DESC
+  ) {
+    totalCount
+    nodes {
+      ...Swap
+    }
+  }
+}

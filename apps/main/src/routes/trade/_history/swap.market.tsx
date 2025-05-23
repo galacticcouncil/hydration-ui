@@ -8,7 +8,7 @@ const searchSchema = z.object({
   assetOut: z.string().optional(),
 })
 
-export const Route = createFileRoute("/_trade/trade/swap/market")({
+export const Route = createFileRoute("/trade/_history/swap/market")({
   component: Market,
   validateSearch: searchSchema,
 })

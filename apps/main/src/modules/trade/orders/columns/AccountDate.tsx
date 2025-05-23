@@ -1,0 +1,25 @@
+import { Flex, Text } from "@galacticcouncil/ui/components"
+import { getToken, px } from "@galacticcouncil/ui/utils"
+import { shortenAccountAddress } from "@galacticcouncil/utils"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+type Props = {
+  readonly address: string
+  readonly timestamp: string
+}
+
+export const AccountDate: FC<Props> = ({ address, timestamp }) => {
+  const { t } = useTranslation()
+
+  return (
+    <Flex direction="column" align="flex-end">
+      <Text fw={500} fs={10} lh={px(12)} color={getToken("text.high")}>
+        {shortenAccountAddress(address)}
+      </Text>
+      <Text fw={500} fs={10} lh={px(12)} color={getToken("text.medium")}>
+        {t("date.datetime", { value: new Date(timestamp) })}
+      </Text>
+    </Flex>
+  )
+}
