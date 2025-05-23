@@ -10,7 +10,13 @@ type Props = SChainSelectProps
 export const ChainSelect = forwardRef<HTMLButtonElement, Props>(
   ({ variant = "desktop", isActive, children, ...props }, ref) => {
     return (
-      <SChainSelect ref={ref} variant={variant} isActive={isActive} {...props}>
+      <SChainSelect
+        ref={ref}
+        type="button"
+        variant={variant}
+        isActive={isActive}
+        {...props}
+      >
         {children}
       </SChainSelect>
     )

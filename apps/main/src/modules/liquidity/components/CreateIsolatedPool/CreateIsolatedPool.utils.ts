@@ -7,7 +7,7 @@ import { z, ZodType } from "zod"
 import { TAssetData } from "@/api/assets"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-import { maxBalance, required } from "@/utils/validators"
+import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 import { CreateIsolatedPoolFormData } from "./CreateIsolatedPool"
 
@@ -42,18 +42,28 @@ export const zodCreateIsolatedPool = (
   assetB?: TAssetData,
 ): ZodType<CreateIsolatedPoolFormData> =>
   z.object({
-    amountA: required.pipe(maxBalance(balanceA)).refine(
-      () => {
-        return !!assetA
-      },
-      { message: t("liquidity:liquidity.createPool.modal.validation.assetA") },
-    ),
-    amountB: required.pipe(maxBalance(balanceB)).refine(
-      () => {
-        return !!assetB
-      },
-      { message: t("liquidity:liquidity.createPool.modal.validation.assetB") },
-    ),
+    amountA: required
+      .pipe(positive)
+      .check(validateFieldMaxBalance(balanceA))
+      .refine(
+        () => {
+          return !!assetA
+        },
+        {
+          message: t("liquidity:liquidity.createPool.modal.validation.assetA"),
+        },
+      ),
+    amountB: required
+      .pipe(positive)
+      .check(validateFieldMaxBalance(balanceB))
+      .refine(
+        () => {
+          return !!assetB
+        },
+        {
+          message: t("liquidity:liquidity.createPool.modal.validation.assetB"),
+        },
+      ),
   })
 
 export const useSubmitCreateIsolatedPool = () => {

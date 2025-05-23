@@ -40,8 +40,6 @@ const options = [
   { id: "100", label: "100%" },
 ]
 
-const range = { low: 0.33, middle: 0.66, high: 1 }
-
 export const RemoveLiquidity = ({
   positionId,
   poolId,
@@ -273,9 +271,9 @@ export const RemoveLiquidity = ({
               label={t("liquidity.remove.modal.withdrawalFees")}
               content={
                 <DynamicFee
-                  range={range}
+                  rangeLow={0.34}
+                  rangeHigh={0.66}
                   value={Number(values?.withdrawalFee)}
-                  displayValue
                 />
               }
               sx={{ px: getTokenPx("containers.paddings.primary") }}
