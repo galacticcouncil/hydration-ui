@@ -23,6 +23,7 @@ import {
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
 import { Transaction, useTransactionsStore } from "@/states/transactions"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = Transaction &
   TxState & {
@@ -65,17 +66,18 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const toasts = useTransactionToasts(props?.toasts)
 
   const transactionRef = useRef(props)
-  const { tx, meta } = transactionRef.current
 
   const { data: nonce, isLoading: isLoadingNonce } = useNonce({
     address: account?.address,
   })
 
-  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee({
-    address: account?.address ?? "",
-    tx,
-    feePaymentAssetId: meta?.feePaymentAssetId,
-  })
+  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
+    transactionRef.current,
+  )
+
+  const feeEstimateNative = fee?.feeEstimateNative
+  const feeEstimate = fee?.feeEstimate
+  const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
 
   const onClose = useCallback(() => {
     dispatch(doClose())
@@ -91,7 +93,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     dispatch(doSetStatus(status))
   }, [])
 
-  const signAndSubmitMutation = useSignAndSubmit(tx, {
+  const signAndSubmitMutation = useSignAndSubmit(transactionRef.current, {
     onMutate: () => dispatch(doSign()),
     onError: (err) => doSetError(err.message),
   })
@@ -102,7 +104,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     const { id, meta, ...transaction } = transactionRef.current
 
     signAndSubmitMutation.mutate({
-      chainKey: meta?.chainKey,
+      chainKey: meta?.chainKey ?? "hydration",
+      feeAssetId,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
@@ -143,9 +146,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         nonce,
         isLoadingNonce,
 
-        feeEstimateNative: fee?.feeEstimateNative,
-        feeEstimate: fee?.feeEstimate,
-        feeAssetId: fee?.feeAssetId ?? "0",
+        feeEstimateNative,
+        feeEstimate,
+        feeAssetId,
         isLoadingFeeEstimate,
 
         isLoading,

@@ -1,14 +1,18 @@
 import {
+  getAssetCapData,
   useModalContext,
+  useMoneyMarketData,
   useSuppliedAssetsData,
 } from "@galacticcouncil/money-market/hooks"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Button,
+  Chip,
   Flex,
   Icon,
   Toggle,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
@@ -16,7 +20,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
@@ -29,7 +33,9 @@ export const useSuppliedAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset } = useAssets()
 
-  const { openWithdraw } = useModalContext()
+  const { user } = useMoneyMarketData()
+
+  const { openWithdraw, openCollateralChange } = useModalContext()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("reserve.symbol", {
@@ -94,13 +100,39 @@ export const useSuppliedAssetsTableColumns = () => {
         },
       },
       cell: ({ row }) => {
+        const { usageAsCollateralEnabledOnUser, underlyingAsset, reserve } =
+          row.original
+
+        const { isPaused, isIsolated } = reserve
+
+        const { debtCeiling } = getAssetCapData(reserve)
+
+        const canBeEnabledAsCollateral =
+          !debtCeiling.isMaxed &&
+          reserve.reserveLiquidationThreshold !== "0" &&
+          ((!reserve.isIsolated && !user.isInIsolationMode) ||
+            user.isolatedReserve?.underlyingAsset === reserve.underlyingAsset ||
+            (reserve.isIsolated &&
+              user.totalCollateralMarketReferenceCurrency === "0"))
+
+        const isChecked =
+          usageAsCollateralEnabledOnUser && canBeEnabledAsCollateral
+
         return (
-          <Flex justify="center">
+          <Flex direction="column" justify="center" align="center">
             <Toggle
-              checked={row.original.usageAsCollateralEnabledOnUser}
+              checked={isChecked}
+              disabled={isPaused || !canBeEnabledAsCollateral}
               onClick={(e) => e.stopPropagation()}
-              onCheckedChange={() => {}}
+              onCheckedChange={() => openCollateralChange(underlyingAsset)}
             />
+            {isIsolated && (
+              <Tooltip text={t("borrow:tooltip.isolatedAsset")}>
+                <Chip variant="warning" size="small">
+                  Isolated
+                </Chip>
+              </Tooltip>
+            )}
           </Flex>
         )
       },
@@ -151,5 +183,5 @@ export const useSuppliedAssetsTableColumns = () => {
       collateralColunn,
       actionsColumn,
     ]
-  }, [getAsset, openWithdraw, t])
+  }, [getAsset, openCollateralChange, openWithdraw, t, user])
 }

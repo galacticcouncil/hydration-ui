@@ -63,9 +63,10 @@ export const Web3ConnectModeFilter: React.FC<Web3ConnectModeFilterProps> = ({
           size="small"
           key={mode}
           onClick={() => onSetActive(mode)}
+          sx={{ pl: 6 }}
         >
           <img
-            sx={{ size: 20, ml: -6 }}
+            sx={{ size: 20 }}
             src={getWalletModeIcon(mode)}
             alt={getWalletModeName(mode)}
           />

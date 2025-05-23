@@ -1,7 +1,9 @@
 export const HYDRATION_PARACHAIN_ID = 2034
+export const HYDRATION_CHAIN_KEY = "hydration"
 
 export const NATIVE_ASSET_ID = "0"
 export const NATIVE_ASSET_DECIMALS = 12
+export const NATIVE_EVM_ASSET_ID = "20"
 export const HUB_ID = "1"
 
 export const DOT_ASSET_ID = "5"

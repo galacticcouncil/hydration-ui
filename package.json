@@ -52,7 +52,7 @@
     "@polkadot/networks": "^13.2.3",
     "@polkadot/ui-shared": "^3.1.4",
     "big.js": "^6.2.2",
-    "polkadot-api": "^1.10.0",
+    "polkadot-api": "^1.11.2",
     "react-use": "^17.6.0",
     "remeda": "^2.19.0",
     "zustand": "^5.0.1"

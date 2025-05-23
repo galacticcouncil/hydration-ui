@@ -77,6 +77,8 @@ export const useMyAssetsColumns = () => {
           row.original.total,
         )
 
+        return <>{row.original.total}</>
+
         return (
           <Amount
             value={t("common:number", {

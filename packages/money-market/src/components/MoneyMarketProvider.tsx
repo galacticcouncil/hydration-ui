@@ -36,6 +36,22 @@ const RepayModal = lazy(async () => ({
     .RepayModal,
 }))
 
+const CollateralChangeModal = lazy(async () => ({
+  default: (
+    await import("@/components/transactions/collateral/CollateralChangeModal")
+  ).CollateralChangeModal,
+}))
+
+const EmodeModal = lazy(async () => ({
+  default: (await import("@/components/transactions/emode/EmodeModal"))
+    .EmodeModal,
+}))
+
+const ClaimRewardsModal = lazy(async () => ({
+  default: (await import("@/components/transactions/claim/ClaimRewardsModal"))
+    .ClaimRewardsModal,
+}))
+
 const getWeb3Library: React.ComponentPropsWithoutRef<
   typeof Web3ReactProvider
 >["getLibrary"] = (provider) => {
@@ -93,6 +109,9 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
                       <WithdrawModal />
                       <BorrowModal />
                       <RepayModal />
+                      <CollateralChangeModal />
+                      <EmodeModal />
+                      <ClaimRewardsModal />
                     </Suspense>
                   </SharedDependenciesProvider>
                 </AppDataProvider>

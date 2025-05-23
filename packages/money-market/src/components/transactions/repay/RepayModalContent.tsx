@@ -139,20 +139,7 @@ export const RepayModalContent: React.FC<
   // token info
   useEffect(() => {
     const repayTokens: RepayAsset[] = []
-    // set possible repay tokens
-    // if wrapped reserve push both wrapped / native
-    if (poolReserve.symbol === networkConfig.wrappedBaseAssetSymbol) {
-      const nativeTokenWalletBalance = Big(nativeBalance)
-      const maxNativeToken = BigNumber.max(
-        nativeTokenWalletBalance,
-        BigNumber.min(nativeTokenWalletBalance, debt),
-      )
-      repayTokens.push({
-        address: API_ETH_MOCK_ADDRESS.toLowerCase(),
-        symbol: networkConfig.baseAssetSymbol,
-        balance: maxNativeToken.toString(),
-      })
-    }
+
     // push reserve asset
     const minReserveTokenRepay = BigNumber.min(Big(tokenBalance), debt)
     const maxReserveTokenForRepay = BigNumber.max(
@@ -192,7 +179,6 @@ export const RepayModalContent: React.FC<
     displayGho,
     nativeBalance,
     networkConfig.baseAssetSymbol,
-    networkConfig.wrappedBaseAssetSymbol,
     poolReserve.aTokenAddress,
     poolReserve.iconSymbol,
     poolReserve.symbol,
@@ -292,19 +278,6 @@ export const RepayModalContent: React.FC<
             />
           }
         />
-        {/* <SummaryRow
-          label="Remaining supply"
-          content={
-            <>
-              {formatCurrency(
-                underlyingBalance.minus(withdrawAmount || "0").toString(),
-                {
-                  symbol,
-                },
-              )}
-            </>
-          }
-        /> */}
         {shouldRenderHealthFactor && (
           <SummaryRow
             label="Health Factor"

@@ -1,4 +1,5 @@
-import { Box, Grid, Text } from "@galacticcouncil/ui/components"
+import { ManageEmodeButton } from "@galacticcouncil/money-market/components/primitives"
+import { Box, Flex, Grid, Text } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { BorrowAssetsTable } from "@/modules/borrow/dashboard/components/borrow-assets/BorrowAssetsTable"
@@ -20,9 +21,15 @@ export const BorrowDashboardPage = () => {
           <SuppliedAssetsTable />
         </Box>
         <Box>
-          <Text as="h2" font="primary" fw={500} fs="h7" mb={12}>
-            {t("borrowed.table.title")}
-          </Text>
+          <Flex justify="space-between" align="center" mb={12}>
+            <Text as="h2" font="primary" fw={500} fs="h7">
+              {t("borrowed.table.title")}
+            </Text>
+            <Flex align="center" gap={4}>
+              {t("emode.label")}
+              <ManageEmodeButton />
+            </Flex>
+          </Flex>
           <BorrowedAssetsTable />
         </Box>
         <Box>

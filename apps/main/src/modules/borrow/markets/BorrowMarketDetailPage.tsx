@@ -20,7 +20,7 @@ import { Navigate } from "@tanstack/react-router"
 import { t } from "i18next"
 import { FC } from "react"
 
-import { Logo } from "@/components"
+import { Logo } from "@/components/Logo"
 import { LINKS } from "@/config/navigation"
 import { ReserveHeader } from "@/modules/borrow/reserve/components/ReserveHeader"
 import { ReserveConfiguration } from "@/modules/borrow/reserve/ReserveConfiguration"

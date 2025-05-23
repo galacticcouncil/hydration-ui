@@ -1,5 +1,7 @@
 import {
+  useClaimableRewards,
   useFormattedHealthFactor,
+  useModalContext,
   useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
 import {
@@ -8,12 +10,12 @@ import {
   Modal,
   ModalBody,
   ModalHeader,
-  Separator,
   Skeleton,
   Stack,
   SValueStatsValue,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -22,8 +24,11 @@ import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk
 export const DashboardHeader = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { user, loading } = useMoneyMarketData()
+  const { openClaimRewards } = useModalContext()
 
   const [riskModalOpen, setRiskModalOpen] = useState(false)
+
+  const { claimableRewardsUsd } = useClaimableRewards()
 
   const {
     healthFactor,
@@ -34,7 +39,12 @@ export const DashboardHeader = () => {
 
   return (
     <>
-      <Stack direction={["column", "row"]} justify="flex-start" gap={[0, 40]}>
+      <Stack
+        direction={["column", "row"]}
+        justify="flex-start"
+        gap={[10, 40, 60]}
+        separated
+      >
         <ValueStats
           label={t("borrow:netWorth")}
           customValue={
@@ -50,7 +60,6 @@ export const DashboardHeader = () => {
             </SValueStatsValue>
           }
         />
-        <Separator orientation="vertical" sx={{ my: 10 }} />
         <ValueStats
           label={t("borrow:netApy")}
           customValue={
@@ -66,7 +75,6 @@ export const DashboardHeader = () => {
           }
           size="large"
         />
-        <Separator orientation="vertical" sx={{ my: 10 }} />
         <ValueStats
           label={t("borrow:healthFactor")}
           customValue={
@@ -97,6 +105,29 @@ export const DashboardHeader = () => {
           }
           size="large"
         />
+
+        {Big(claimableRewardsUsd).gte(0.01) && (
+          <ValueStats
+            label={t("borrow:availableRewards")}
+            customValue={
+              <SValueStatsValue size="large">
+                {loading ? (
+                  <Skeleton width={100} />
+                ) : (
+                  <Flex align="center" gap={10}>
+                    {t("currency", {
+                      value: claimableRewardsUsd,
+                      maximumFractionDigits: 2,
+                    })}
+                    <Button onClick={() => openClaimRewards()}>
+                      {t("borrow:claim")}
+                    </Button>
+                  </Flex>
+                )}
+              </SValueStatsValue>
+            }
+          />
+        )}
       </Stack>
       <Modal open={riskModalOpen} onOpenChange={setRiskModalOpen}>
         <ModalHeader align="center" title={t("borrow:risk.title")} />

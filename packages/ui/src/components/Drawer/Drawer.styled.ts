@@ -19,6 +19,7 @@ export const SDrawerOverlay = styled(Overlay)`
 
 export const SDrawerContent = styled(Content)`
   --modal-content-padding: 12px;
+  --modal-content-inset: calc(var(--modal-content-padding) * -1);
 
   position: fixed;
   left: 0;

@@ -1,20 +1,15 @@
 import { isSS58Address, safeStringify } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
-import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { AnyTransaction } from "@/states/transactions"
+import { Transaction } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
-
-type UseEstimateFeeProps = {
-  address: string
-  tx: AnyTransaction
-  feePaymentAssetId?: string
-}
 
 type UseEstimateFeeResult = {
   feeEstimateNative: string
@@ -22,22 +17,22 @@ type UseEstimateFeeResult = {
   feeAssetId: string
 }
 
-export const useEstimateFee = ({
-  address,
-  tx: _tx,
-  feePaymentAssetId,
-}: UseEstimateFeeProps) => {
+export const useEstimateFee = (transaction: Transaction) => {
   const { papi, tradeRouter, isLoaded } = useRpcProvider()
   const { native, getAssetWithFallback } = useAssets()
+  const { account } = useAccount()
 
   const {
     data: accountFeePaymentAssetId,
     isLoading: isLoadingFeePaymentAssetId,
   } = useAccountFeePaymentAssetId()
 
-  const tx = isPapiTransaction(_tx) ? _tx : null
+  const address = account?.address ?? ""
 
-  const feeAssetId = feePaymentAssetId || accountFeePaymentAssetId?.toString()
+  const tx = transformAnyToPapiTx(papi, transaction.tx)
+
+  const feeAssetId =
+    transaction?.meta?.feePaymentAssetId || accountFeePaymentAssetId?.toString()
 
   return useQuery<UseEstimateFeeResult>({
     enabled:

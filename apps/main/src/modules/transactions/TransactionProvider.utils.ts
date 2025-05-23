@@ -1,13 +1,9 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { Binary } from "polkadot-api"
-
 import {
   TxActionType,
   TxState,
   TxStateAction,
   TxStatus,
 } from "@/modules/transactions/types"
-import { Papi } from "@/providers/rpcProvider"
 
 export const INITIAL_STATUS: TxState = {
   open: true,
@@ -63,16 +59,3 @@ export const doSetStatus = (payload: TxStatus) =>
     type: TxActionType.SET_STATUS,
     payload,
   }) as const
-
-export const transformEvmCallToPapiTx = (papi: Papi, tx: ExtendedEvmCall) =>
-  papi.tx.EVM.call({
-    source: Binary.fromHex(tx.from),
-    target: Binary.fromHex(tx.to),
-    input: Binary.fromHex(tx.data),
-    value: [0n, 0n, 0n, 0n],
-    gas_limit: tx.gasLimit || 0n,
-    max_fee_per_gas: [tx.maxFeePerGas || 0n, 0n, 0n, 0n],
-    max_priority_fee_per_gas: [tx.maxPriorityFeePerGas || 0n, 0n, 0n, 0n],
-    access_list: [],
-    nonce: undefined,
-  })

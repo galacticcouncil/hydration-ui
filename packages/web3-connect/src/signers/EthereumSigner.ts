@@ -2,18 +2,26 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, EvmChain, EvmParachain } from "@galacticcouncil/xcm-core"
 import {
+  Address,
   Chain,
   createPublicClient,
   createWalletClient,
   custom,
   EIP1193Provider,
+  getContract,
   Hex,
+  parseSignature,
   PublicClient,
   TransactionReceipt,
   WalletClient,
 } from "viem"
 
-import { EVM_DEFAULT_CHAIN_KEY, EVM_DISPATCH_ADDRESS } from "@/config/evm"
+import {
+  EVM_CALL_PERMIT_ABI,
+  EVM_CALL_PERMIT_ADDRESS,
+  EVM_DEFAULT_CHAIN_KEY,
+  EVM_DISPATCH_ADDRESS,
+} from "@/config/evm"
 
 type PermitMessage = {
   from: string
@@ -26,11 +34,7 @@ type PermitMessage = {
 }
 
 export type PermitResult = {
-  signature: {
-    r: string
-    s: string
-    v: number
-  }
+  signature: ReturnType<typeof parseSignature>
   message: PermitMessage
 }
 
@@ -78,6 +82,155 @@ export class EthereumSigner {
       },
       options,
     )
+  }
+
+  getPermit = async (data: string): Promise<PermitResult> => {
+    if (this.provider && this.address) {
+      /* const tx =
+        typeof data === "string"
+          ? {
+              from: this.address,
+              to: DISPATCH_ADDRESS,
+              data,
+            }
+          : {
+              from: data?.from ?? "",
+              to: data?.to ?? "",
+              data: data.data?.toString() ?? "",
+              gasLimit: data.gasLimit?.toString() ?? "0",
+            }
+
+      if (!tx.from)
+        throw new Error("Permit transaction must have a 'from' field")
+      if (!tx.to) throw new Error("Permit transaction must have a 'to' field")
+      if (!tx.data)
+        throw new Error("Permit transaction must have a 'data' field")
+
+      let gasLimit = BigNumber(0)
+      if (tx.gasLimit) {
+        gasLimit = BigNumber(tx.gasLimit.toString())
+      } else {
+        const { gas } = await this.getGasValues(tx)
+        gasLimit = BigNumber(gas.toString())
+      } */
+
+      const latestBlock = await this.publicClient.getBlock()
+
+      /* const nonce = await this.publicClient.getTransactionCount({
+        address: this.address as Hex,
+      }) */
+
+      //const callPermitContract = new Contract(CALL_PERMIT_ADDRESS, CALL_PERMIT_ABI, evm)
+
+      const callPermitContract = getContract({
+        address: EVM_CALL_PERMIT_ADDRESS,
+        abi: EVM_CALL_PERMIT_ABI,
+        client: this.publicClient,
+      })
+
+      const nonce = await callPermitContract.read.nonces([this.address as Hex])
+
+      const tx = {
+        from: this.address,
+        to: EVM_DISPATCH_ADDRESS,
+        data,
+      }
+
+      const createPermitMessageData = () => {
+        const message: PermitMessage = {
+          ...tx,
+          value: 0,
+          gaslimit: 33069,
+          /* .multipliedBy(1.2) // add 20%
+            .decimalPlaces(0)
+            .toNumber(), */
+          nonce: Number(nonce),
+          deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
+        }
+
+        const typedData = JSON.stringify({
+          types: {
+            EIP712Domain: [
+              {
+                name: "name",
+                type: "string",
+              },
+              {
+                name: "version",
+                type: "string",
+              },
+              {
+                name: "chainId",
+                type: "uint256",
+              },
+              {
+                name: "verifyingContract",
+                type: "address",
+              },
+            ],
+            CallPermit: [
+              {
+                name: "from",
+                type: "address",
+              },
+              {
+                name: "to",
+                type: "address",
+              },
+              {
+                name: "value",
+                type: "uint256",
+              },
+              {
+                name: "data",
+                type: "bytes",
+              },
+              {
+                name: "gaslimit",
+                type: "uint64",
+              },
+              {
+                name: "nonce",
+                type: "uint256",
+              },
+              {
+                name: "deadline",
+                type: "uint256",
+              },
+            ],
+          },
+          primaryType: "CallPermit",
+          domain: {
+            name: "Call Permit Precompile",
+            version: "1",
+            chainId: 222222,
+            verifyingContract: EVM_CALL_PERMIT_ADDRESS,
+          },
+          message: message,
+        })
+
+        return {
+          typedData,
+          message,
+        }
+      }
+
+      const { message, typedData } = createPermitMessageData()
+
+      const result = await this.walletClient.request({
+        method: "eth_signTypedData_v4",
+        params: [this.address as Address, typedData],
+      })
+
+      const signature = parseSignature(result)
+
+      return {
+        message,
+        signature,
+      }
+    }
+
+    throw new Error("Error signing transaction. Provider not found")
   }
 
   async signAndSubmit(call: TransactionCall, options: EthereumSignerOptions) {

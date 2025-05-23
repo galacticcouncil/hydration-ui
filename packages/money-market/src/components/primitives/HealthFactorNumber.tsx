@@ -27,7 +27,7 @@ export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
           ∞
         </Text>
       ) : (
-        <Text fw={500} fs={fontSize} sx={{ color: healthFactorColor }}>
+        <Text fw={700} fs={fontSize} sx={{ color: healthFactorColor }}>
           {healthFactor}
         </Text>
       )}

@@ -7,7 +7,7 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components"
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
@@ -24,8 +24,6 @@ export const useMarketAssetsTableColumns = () => {
         cell: ({ row }) => {
           const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
           const asset = getAsset(assetId)
-
-          console.log({ assetId, asset })
 
           return asset && <AssetLabelFull asset={asset} withName={false} />
         },

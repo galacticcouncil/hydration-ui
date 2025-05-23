@@ -1,3 +1,5 @@
+import { PolkadotClient } from "polkadot-api"
+
 import { Transaction } from "@/states/transactions"
 
 export enum TxActionType {
@@ -19,12 +21,19 @@ export type TxStatusCallbacks = {
 
 export type TxOptions = TxStatusCallbacks & {
   nonce?: number
-  chainKey?: string
+  chainKey: string
+  feeAssetId: string
 }
 
 export type TxSignAndSubmitFn<T = unknown, S = unknown> = (
   tx: T,
   signer: S,
+  options: TxOptions,
+) => void
+
+export type UnsignedTxSubmitFn<T = unknown> = (
+  tx: T,
+  client: PolkadotClient,
   options: TxOptions,
 ) => void
 
