@@ -15,14 +15,11 @@ export const XcmPage = () => {
     mutationFn: async () => {
       // example of swap using sdk-next
       const sell = await sdk.api.router.getBestSell(5, 0, 10_000_000_000n)
-      const callData = await sdk.tx
-        .trade(sell)
-        .build()
-        .then((tx) => tx.get().getEncodedData())
+      const tx = await sdk.tx.trade(sell).build()
 
       return createTransaction({
         title: "Swap Test",
-        tx: await papi.txFromCallData(callData),
+        tx: tx.get(),
       })
     },
   })

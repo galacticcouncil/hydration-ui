@@ -65,7 +65,7 @@ export const AssetSwitcher = ({
       <>
         <Separator />
         <SPriceContainer
-          disabled={!assetInId || !assetOutId}
+          disabled={isPriceDisabled}
           onClick={() => setIsReversed((isReversed) => !isReversed)}
         >
           <Text fs="p6" color={getToken("text.high")}>

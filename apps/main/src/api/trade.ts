@@ -28,6 +28,28 @@ export const bestSellQuery = (
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
 
+export const bestSellTwapQuery = (
+  { sdk, isLoaded }: TProviderContext,
+  { assetIn, assetOut, amountIn }: BestSellArgs,
+) =>
+  queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "twapSellOrder",
+      assetIn,
+      assetOut,
+      amountIn,
+    ],
+    queryFn: () =>
+      sdk.api.scheduler.getTwapSellOrder(
+        Number(assetIn),
+        Number(assetOut),
+        amountIn,
+      ),
+    enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+  })
+
 type BestBuyArgs = {
   readonly assetIn: string
   readonly assetOut: string
@@ -49,6 +71,29 @@ export const bestBuyQuery = (
     ],
     queryFn: () =>
       sdk.api.router.getBestBuy(Number(assetIn), Number(assetOut), amountOut),
+    enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+  })
+}
+
+export const bestBuyTwapQuery = (
+  { sdk, isLoaded }: TProviderContext,
+  { assetIn, assetOut, amountOut }: BestBuyArgs,
+) => {
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "twapBuyOrder",
+      assetIn,
+      assetOut,
+      amountOut,
+    ],
+    queryFn: () =>
+      sdk.api.scheduler.getTwapBuyOrder(
+        Number(assetIn),
+        Number(assetOut),
+        amountOut,
+      ),
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
 }

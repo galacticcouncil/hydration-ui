@@ -11,18 +11,15 @@ import {
   MarketFormValues,
   TradeType,
 } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { GDOT_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
-  readonly swap: Trade | undefined
-  readonly isLoading: boolean
+  readonly swap: Trade
 }
 
-export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
+export const MarketSummarySwap: FC<Props> = ({ swap }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const {
@@ -31,18 +28,14 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form
-  const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
-  if (!buyAsset || !sellAsset) {
+  if (!sellAsset || !buyAsset) {
     return null
   }
 
-  if (isLoading) {
-    return <MarketSummarySkeleton />
-  }
-
-  const tradeFeePct = swap?.tradeFeePct ?? 0
-  const tradeFeeRange = swap?.tradeFeeRange ?? [0, 0]
+  const tradeFeePct = swap.tradeFeePct
+  const tradeFeeRange = swap.tradeFeeRange ?? [0, 0]
 
   const [min, max] = tradeFeeRange
   const [
@@ -56,7 +49,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
       <Summary separator={<SwapSectionSeparator />} withTrailingSeparator>
         <SummaryRow
           label={t("trade:market.summary.priceImpact")}
-          content={t("percent", { value: swap?.priceImpactPct ?? 0 })}
+          content={t("percent", { value: swap.priceImpactPct })}
         />
         <SummaryRow
           label={t("trade:market.summary.estTradeFees")}
@@ -65,19 +58,16 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
               value={tradeFeePct}
               rangeLow={mediumLow}
               rangeHigh={mediumHigh}
-              tooltip="TODO Est. trade fees market swap"
+              tooltip={`TODO ${t("percent", { value: tradeFeePct })}`}
             />
           }
         />
-        {swap?.type === TradeType.Buy ? (
+        {swap.type === TradeType.Buy ? (
           <SummaryRow
             label={t("trade:market.summary.maxSent")}
             content={t("currency", {
               value: scaleHuman(
-                swap
-                  ? swap.amountIn +
-                      calculateSlippage(swap.amountIn, swapSlippage)
-                  : 0n,
+                swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
                 sellAsset.decimals,
               ),
               symbol: sellAsset.symbol,
@@ -88,10 +78,8 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
             label={t("trade:market.summary.minReceived")}
             content={t("currency", {
               value: scaleHuman(
-                swap
-                  ? swap.amountOut -
-                      calculateSlippage(swap.amountOut, swapSlippage)
-                  : 0n,
+                swap.amountOut -
+                  calculateSlippage(swap.amountOut, swapSlippage),
                 buyAsset.decimals,
               ),
               symbol: buyAsset.symbol,
@@ -99,13 +87,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
           />
         )}
       </Summary>
-      <TradeRoutes
-        routes={
-          swap?.swaps
-            // Hide 2-Pool-GDOT
-            .filter((swap) => swap.assetOut !== Number(GDOT_ASSET_ID)) ?? []
-        }
-      />
+      <TradeRoutes routes={swap.swaps ?? []} />
     </div>
   )
 }
