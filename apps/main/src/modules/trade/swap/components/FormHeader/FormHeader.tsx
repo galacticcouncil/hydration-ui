@@ -1,10 +1,10 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Flex, Modal } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SettingsModal } from "@/modules/trade/components"
+import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
 import { FileRouteTypes } from "@/routeTree.gen"
 
 import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
@@ -41,7 +41,9 @@ export const FormHeader = () => {
         onClick={() => setOpenSettings(true)}
       />
 
-      {openSettings && <SettingsModal onOpenChange={setOpenSettings} />}
+      <Modal open={openSettings} onOpenChange={setOpenSettings}>
+        <SettingsModal />
+      </Modal>
     </SFormHeader>
   )
 }

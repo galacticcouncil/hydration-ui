@@ -190,24 +190,25 @@ const DataTable = forwardRef(
                   ? renderOverride?.(row.original)
                   : undefined
 
+                const isRowExpanded = row.getIsExpanded()
                 const isRowExpandable =
-                  !isLoading &&
-                  !!expandable &&
-                  !override &&
-                  (getIsExpandable?.(row.original) ?? true)
+                  isRowExpanded ||
+                  (!isLoading &&
+                    !!expandable &&
+                    !override &&
+                    (getIsExpandable?.(row.original) ?? true))
 
                 return (
                   <Fragment key={row.id}>
                     <TableRow
-                      data-expanded={
-                        isRowExpandable ? row.getIsExpanded() : undefined
-                      }
+                      data-expanded={isRowExpanded}
                       data-selected={row.getIsSelected()}
                       onClick={() => {
                         if (isRowExpandable) {
-                          if (expandable === "single") {
+                          if (expandable === "single" && !isRowExpanded) {
                             table.resetExpanded()
                           }
+
                           row.toggleExpanded()
                         }
                         onRowClick?.(row.original)
@@ -243,7 +244,7 @@ const DataTable = forwardRef(
                               size={18}
                               color={getToken("icons.onSurface")}
                               component={
-                                row.getIsExpanded() ? ChevronDown : ChevronUp
+                                isRowExpanded ? ChevronDown : ChevronUp
                               }
                             />
                           </Flex>
@@ -257,19 +258,15 @@ const DataTable = forwardRef(
                         </TableRowOverride>
                       )}
                     </TableRow>
-                    {isRowExpandable &&
-                      renderSubComponent &&
-                      row.getIsExpanded() && (
-                        <TableRow>
-                          <TableCell
-                            colSpan={table.getVisibleLeafColumns().length + 1}
-                          >
-                            <Box py={16}>
-                              {renderSubComponent(row.original)}
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                      )}
+                    {isRowExpandable && renderSubComponent && isRowExpanded && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={table.getVisibleLeafColumns().length + 1}
+                        >
+                          <Box py={16}>{renderSubComponent(row.original)}</Box>
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </Fragment>
                 )
               })

@@ -15,6 +15,7 @@ type Props = {
   readonly variant?: AlertVariant
   readonly title?: string
   readonly description: ReactNode
+  readonly action?: ReactNode
   readonly className?: string
   readonly displayIcon?: boolean
 }
@@ -23,6 +24,7 @@ export const Alert: FC<Props> = ({
   variant = "info",
   title,
   description,
+  action,
   className,
   displayIcon = true,
 }) => {
@@ -35,7 +37,7 @@ export const Alert: FC<Props> = ({
         />
       )}
 
-      <Flex direction="column" gap={8}>
+      <Flex direction="column" gap={8} align="baseline">
         {title && <SAlertTitle variant={variant}>{title}</SAlertTitle>}
         {typeof description === "string" ? (
           <Text
@@ -49,6 +51,7 @@ export const Alert: FC<Props> = ({
         ) : (
           description
         )}
+        {action}
       </Flex>
     </SAlertContainer>
   )
