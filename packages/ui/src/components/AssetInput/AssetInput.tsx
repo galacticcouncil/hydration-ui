@@ -19,6 +19,7 @@ export type AssetInputProps = {
   dollarValue?: string
   dollarValueLoading?: boolean
   maxBalance?: string
+  ignoreBalance?: boolean
   error?: string
   disabled?: boolean
   modalDisabled?: boolean
@@ -38,6 +39,7 @@ export const AssetInput = ({
   dollarValueLoading,
   label,
   maxBalance,
+  ignoreBalance,
   onChange,
   error,
   disabled,
@@ -69,36 +71,38 @@ export const AssetInput = ({
             {label}
           </Text>
         )}
-        <Flex align="center" gap={6} sx={{ marginLeft: "auto" }}>
-          <Text
-            as="div"
-            color={getToken("text.low")}
-            fs="p5"
-            fw={500}
-            sx={{ width: "fit-content", lineHeight: "120%" }}
-          >
-            <span>Balance: </span>
-            {loading ? (
-              <span sx={{ height: 12, lineHeight: 1 }}>
-                <Skeleton width={48} height={12} />
-              </span>
-            ) : (
-              <span>{maxBalance ? formatValue(maxBalance) : ""}</span>
-            )}
-          </Text>
-          <MicroButton
-            aria-label="Max balance button"
-            onClick={onMaxButtonClick}
-            disabled={
-              Big(maxBalance || "0").lte(0) ||
-              loading ||
-              !onChange ||
-              !!disabled
-            }
-          >
-            max
-          </MicroButton>
-        </Flex>
+        {!ignoreBalance && (
+          <Flex align="center" gap={6} sx={{ marginLeft: "auto" }}>
+            <Text
+              as="div"
+              color={getToken("text.low")}
+              fs="p5"
+              fw={500}
+              sx={{ width: "fit-content", lineHeight: "120%" }}
+            >
+              <span>Balance: </span>
+              {loading ? (
+                <span sx={{ height: 12, lineHeight: 1 }}>
+                  <Skeleton width={48} height={12} />
+                </span>
+              ) : (
+                <span>{maxBalance ? formatValue(maxBalance) : ""}</span>
+              )}
+            </Text>
+            <MicroButton
+              aria-label="Max balance button"
+              onClick={onMaxButtonClick}
+              disabled={
+                Big(maxBalance || "0").lte(0) ||
+                loading ||
+                !onChange ||
+                !!disabled
+              }
+            >
+              max
+            </MicroButton>
+          </Flex>
+        )}
       </Flex>
       <Flex direction="column">
         <Flex align="center" justify="space-between">
@@ -121,7 +125,7 @@ export const AssetInput = ({
               placeholder="0"
               variant="embedded"
               disabled={disabled || loading || !onChange}
-              value={value ? formatValue(value) : ""}
+              value={value ?? ""}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.validity.valid) {
                   const formattedValue = e.target.value

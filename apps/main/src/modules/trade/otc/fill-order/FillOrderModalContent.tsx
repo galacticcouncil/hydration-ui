@@ -6,6 +6,7 @@ import {
   ModalHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -18,7 +19,7 @@ import { useSubmitFillOrder } from "@/modules/trade/otc/fill-order/FillOrderModa
 import { TokensConversion } from "@/modules/trade/otc/fill-order/TokensConversion"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
-import { useAccountData } from "@/states/account"
+import { useAccountBalance } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -35,9 +36,9 @@ export const FillOrderModalContent: FC<Props> = ({
   const { t } = useTranslation(["trade", "common"])
   const [isSubmitCancelOpen, setIsSubmitCancelOpen] = useState(false)
 
-  const balances = useAccountData((data) => data.balances)
+  const inBalance = useAccountBalance(otcOffer.assetIn.id)
   const assetInBalance = scaleHuman(
-    balances[otcOffer.assetIn?.id ?? ""]?.total ?? 0n,
+    inBalance?.total ?? 0n,
     otcOffer.assetIn?.decimals ?? 12,
   )
 
@@ -104,7 +105,20 @@ export const FillOrderModalContent: FC<Props> = ({
                     label={t("common:sell")}
                     maxBalance={assetInBalance}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(sellAmount) => {
+                      field.onChange(sellAmount)
+
+                      const percentage = new Big(sellAmount || "0").div(
+                        otcOffer.assetAmountIn,
+                      )
+                      const newBuyAmount = percentage
+                        .times(otcOffer.assetAmountOut)
+                        .toString()
+
+                      form.setValue("buyAmount", newBuyAmount, {
+                        shouldValidate: true,
+                      })
+                    }}
                     assets={[]}
                     selectedAsset={otcOffer.assetIn}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
@@ -122,7 +136,20 @@ export const FillOrderModalContent: FC<Props> = ({
                     label={t("common:buy")}
                     maxBalance={otcOffer.assetAmountOut}
                     value={field.value}
-                    onChange={field.onChange}
+                    onChange={(buyAmount) => {
+                      field.onChange(buyAmount)
+
+                      const percentage = new Big(buyAmount || "0").div(
+                        otcOffer.assetAmountOut,
+                      )
+                      const newSellAmount = percentage
+                        .times(otcOffer.assetAmountIn)
+                        .toString()
+
+                      form.setValue("sellAmount", newSellAmount, {
+                        shouldValidate: true,
+                      })
+                    }}
                     assets={[]}
                     selectedAsset={otcOffer.assetOut}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}

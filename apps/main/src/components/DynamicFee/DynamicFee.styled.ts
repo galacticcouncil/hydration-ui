@@ -2,7 +2,8 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { createVariants } from "@galacticcouncil/ui/utils"
 
-import { RangeType } from "./DynamicFee"
+export const dynamicFeeRangeTypes = ["low", "middle", "high"] as const
+export type DynamicFeeRangeType = (typeof dynamicFeeRangeTypes)[number]
 
 const variantStyles = (outer: string, inner: string) => css`
   background: ${outer};
@@ -12,33 +13,34 @@ const variantStyles = (outer: string, inner: string) => css`
   }
 `
 
-const colors = createVariants(({ accents }) => ({
+const colors = createVariants<DynamicFeeRangeType>(({ accents }) => ({
   low: variantStyles(accents.success.dim, accents.success.emphasis),
   middle: variantStyles(accents.alertAlt.dimBg, accents.alertAlt.primary),
   high: variantStyles(accents.alert.dimBg, accents.alert.primary),
 }))
 
-export const SFeeSection = styled.div<{ isActive: boolean; type: RangeType }>(
-  ({ theme, isActive, type }) => [
-    css`
-      width: 18px;
-      height: 6px;
+export const SFeeSection = styled.div<{
+  isActive: boolean
+  type: DynamicFeeRangeType
+}>(({ theme, isActive, type }) => [
+  css`
+    width: 18px;
+    height: 6px;
 
-      padding: 1px;
+    padding: 1px;
+
+    border-radius: ${theme.radii.full}px;
+
+    & > div {
+      width: 100%;
+      height: 100%;
 
       border-radius: ${theme.radii.full}px;
-
-      & > div {
-        width: 100%;
-        height: 100%;
-
-        border-radius: ${theme.radii.full}px;
-      }
-    `,
-    isActive
-      ? colors(type)
-      : css`
-          background: ${theme.controls.dim.accent};
-        `,
-  ],
-)
+    }
+  `,
+  isActive
+    ? colors(type)
+    : css`
+        background: ${theme.controls.dim.accent};
+      `,
+])
