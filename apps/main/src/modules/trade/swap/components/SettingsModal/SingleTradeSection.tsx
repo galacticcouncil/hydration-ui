@@ -3,8 +3,8 @@ import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { SettingsSection } from "@/modules/trade/components/SettingsModal/SettingsSection"
-import { TradeSlippage } from "@/modules/trade/components/SettingsModal/TradeSlippage"
+import { SettingsSection } from "@/modules/trade/swap/components/SettingsModal/SettingsSection"
+import { TradeSlippage } from "@/modules/trade/swap/components/SettingsModal/TradeSlippage"
 import { TradeSettings } from "@/states/tradeSettings"
 
 export const SingleTradeSection: FC = () => {

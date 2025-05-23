@@ -7,19 +7,21 @@ import {
   ModalHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
-import { FC, useMemo } from "react"
+import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { useOwnedAssets } from "@/hooks/data/useOwnedAssets"
 import { PartiallyFillableToggle } from "@/modules/trade/otc/place-order/PartiallyFillableToggle"
-import { PlaceOrderAssetField } from "@/modules/trade/otc/place-order/PlaceOrderAssetField"
-import { usePlaceOrderForm } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
+import {
+  PlaceOrderFormValues,
+  usePlaceOrderForm,
+} from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
 import { useSubmitPlaceOrder } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.submit"
 import { PlaceOrderPrice } from "@/modules/trade/otc/place-order/PlaceOrderPrice"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountData } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly onClose: () => void
@@ -27,22 +29,9 @@ type Props = {
 
 export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const { t } = useTranslation(["trade", "common"])
-  const { all, isExternal } = useAssets()
-  const allAssets = useMemo(
-    () =>
-      all
-        .values()
-        .filter((asset) => !isExternal(asset) && !!asset.name)
-        .toArray(),
-    [all, isExternal],
-  )
+  const { tradable } = useAssets()
 
-  const balances = useAccountData((data) => data.balances)
-
-  const ownedAssets = useMemo(() => {
-    const assetIds = new Set(Object.keys(balances))
-    return allAssets.filter((asset) => assetIds.has(asset.id))
-  }, [allAssets, balances])
+  const ownedAssets = useOwnedAssets()
 
   const form = usePlaceOrderForm()
   const submit = useSubmitPlaceOrder({ onSubmit: onClose })
@@ -51,11 +40,6 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
     "offerAmount",
     "buyAsset",
   ])
-
-  const offerAmountBalance = scaleHuman(
-    balances[offerAsset?.id ?? ""]?.total ?? 0n,
-    offerAsset?.decimals ?? 12,
-  )
 
   const isSubmitEnabled = form.formState.isValid
 
@@ -69,11 +53,10 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         <form onSubmit={form.handleSubmit((value) => submit.mutate(value))}>
           <ModalBody sx={{ p: 0 }}>
             <Box px={20}>
-              <PlaceOrderAssetField
-                label={t("common:offer")}
-                maxBalance={offerAmountBalance.toString()}
+              <AssetSelectFormField<PlaceOrderFormValues>
                 assetFieldName="offerAsset"
-                assetAmountFieldName="offerAmount"
+                amountFieldName="offerAmount"
+                label={t("common:offer")}
                 assets={ownedAssets}
               />
               <ModalContentDivider />
@@ -86,11 +69,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                   <ModalContentDivider />
                 </>
               )}
-              <PlaceOrderAssetField
-                label={t("common:buy")}
+              <AssetSelectFormField<PlaceOrderFormValues>
                 assetFieldName="buyAsset"
-                assetAmountFieldName="buyAmount"
-                assets={allAssets}
+                amountFieldName="buyAmount"
+                label={t("common:buy")}
+                assets={tradable}
+                ignoreBalance
               />
             </Box>
             <Separator />

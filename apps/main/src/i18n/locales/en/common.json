@@ -68,6 +68,7 @@
   "error.positive": "Must be a positive number",
   "error.maxBalance": "Insufficient balance on your account.",
   "error.existentialDeposit": "Too low amount.",
+  "error.sellOnly": "This asset is not allowed to be used as a buy asset.",
   "chart.error": "Error displaying the chart, try loading it again.",
   "chart.empty": "Not enough data to display this chart.",
   "navigation.bond.title": "Bond",
