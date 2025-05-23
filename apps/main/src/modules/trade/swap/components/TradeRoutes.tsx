@@ -1,4 +1,3 @@
-import { Swap } from "@galacticcouncil/sdk-next/build/types/sor"
 import { ChevronRight, Routes } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -6,16 +5,26 @@ import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAssets } from "@/providers/assetsProvider"
+import { GDOT_ASSET_ID } from "@/utils/consts"
+
+export type TradeRoute = {
+  readonly assetIn: number
+  readonly assetOut: number
+  readonly poolAddress: string
+}
 
 type TradeRoutesProps = {
-  readonly routes: ReadonlyArray<Swap>
+  readonly routes: ReadonlyArray<TradeRoute>
 }
 
 export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
   const { t } = useTranslation("trade")
   const { getAssetWithFallback } = useAssets()
 
-  const firstRoute = routes[0]
+  const filteredRoutes = // Hide 2-Pool-GDOT
+    routes.filter((route) => route.assetOut !== Number(GDOT_ASSET_ID))
+
+  const firstRoute = filteredRoutes[0]
 
   if (!firstRoute) {
     return null
@@ -30,7 +39,7 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
           color={getToken("buttons.primary.high.rest")}
           sx={{ pt: 2 }}
         >
-          {t("market.form.routes.label", { count: routes.length })}
+          {t("market.form.routes.label", { count: filteredRoutes.length })}
         </Text>
 
         <Flex gap={4} align="center">
@@ -43,7 +52,7 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
             >
               {getAssetWithFallback(String(firstRoute.assetIn)).symbol}
             </Text>
-            {routes.map((route) => {
+            {filteredRoutes.map((route) => {
               return (
                 <Fragment key={route.poolAddress}>
                   <Icon
@@ -73,7 +82,8 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
       </Flex>
       <Text fs="p6" lh={1} fw={400} color={getToken("text.low")} align="end">
         {t("market.form.routes.desc", {
-          symbol: getAssetWithFallback(String(routes[0]?.assetIn)).symbol,
+          symbol: getAssetWithFallback(String(filteredRoutes[0]?.assetIn))
+            .symbol,
         })}
       </Text>
     </Flex>
