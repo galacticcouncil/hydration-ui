@@ -4,6 +4,7 @@ import {
   FilterFnOption,
   flexRender,
   OnChangeFn,
+  PaginationState,
   RowData,
   SortingState,
   Table as TableDef,
@@ -46,6 +47,8 @@ export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
     pageSize?: number
     globalFilter?: string
+    pagination?: PaginationState
+    rowCount?: number
     initialSorting?: SortingState
     sorting?: SortingState
     manualSorting?: boolean
@@ -66,6 +69,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
     renderOverride?: (item: TData) => React.ReactElement | undefined
     onRowClick?: (item: TData) => void
     onSortingChange?: OnChangeFn<SortingState>
+    onPaginationChange?: OnChangeFn<PaginationState>
   }
 
 export type DataTableRef = {
@@ -88,6 +92,8 @@ const DataTable = forwardRef(
       isLoading,
       skeletonRowCount,
       globalFilter,
+      pagination,
+      rowCount,
       initialSorting,
       sorting,
       manualSorting,
@@ -100,6 +106,7 @@ const DataTable = forwardRef(
       renderOverride,
       onRowClick,
       onSortingChange,
+      onPaginationChange,
     }: DataTableProps<TData>,
     ref: ForwardedRef<DataTableRef>,
   ) => {
@@ -112,6 +119,9 @@ const DataTable = forwardRef(
 
     const isControlledSorting =
       sorting !== undefined && onSortingChange !== undefined
+
+    const isControlledPagination =
+      pagination && onPaginationChange !== undefined
 
     const table = useDataTable({
       data,
@@ -137,9 +147,17 @@ const DataTable = forwardRef(
         ...(isControlledSorting && {
           sorting,
         }),
+        ...(isControlledPagination && {
+          pagination,
+        }),
       },
       ...(isControlledSorting && {
         onSortingChange,
+      }),
+      ...(isControlledPagination && {
+        onPaginationChange,
+        manualPagination: true,
+        rowCount,
       }),
     })
 

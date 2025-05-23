@@ -54,5 +54,20 @@
   "tooltip.liquidationThreshold": "This represents the threshold at which a borrow position will be considered undercollateralized and subject to liquidation for each collateral. For example, if a collateral has a liquidation threshold of 80%, it means that the position will be liquidated when the debt value is worth 80% of the collateral value.",
   "tooltip.maxLTV": "The Maximum LTV ratio represents the maximum borrowing power of a specific collateral. For example, if a collateral has an LTV of 75%, the user can borrow up to 0.75 worth of ETH in the principal currency for every 1 ETH worth of collateral.",
   "totalSupplied": "Total supplied",
-  "withdraw": "Withdraw"
+  "withdraw": "Withdraw",
+  "history.search.placeholder": "Search by asset name or symbol",
+  "history.filter.title": "Filter by",
+  "history.table.title": "Transaction history",
+  "history.table.liquidatedCollateral": "Liquidated Collateral",
+  "history.table.emodeEnabled": "<0>{{ emode }}</0> <1>Enabled</1>",
+  "history.table.emodeDisabled": "<0>{{ emode }}</0> <1>Disabled</1>",
+  "history.table.collateralization": "Collateralization <0>{{ state }}</0> for",
+  "history.event.all": "All",
+  "history.event.borrow": "Borrow",
+  "history.event.repay": "Repay",
+  "history.event.supply": "Supply",
+  "history.event.withdraw": "Withdraw",
+  "history.event.liquidation": "Liquidation",
+  "history.event.collateral": "Collateral Change",
+  "history.event.emode": "User EMode Set"
 }
