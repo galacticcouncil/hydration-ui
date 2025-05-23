@@ -1,9 +1,9 @@
 import { Flex, Grid, Paper, Skeleton } from "@galacticcouncil/ui/components"
 import { createFileRoute } from "@tanstack/react-router"
-import { zodValidator } from "@tanstack/zod-adapter"
 import { FC } from "react"
 import * as z from "zod"
 
+import { WalletTransactionsPage } from "@/modules/wallet/transactions/WalletTransactionsPage"
 import { transactionTypesMock } from "@/modules/wallet/transactions/WalletTransactionsTable.data"
 
 const typeSchema = z.object({
@@ -32,6 +32,7 @@ const WalletTransactionsSkeleton: FC = () => {
 }
 
 export const Route = createFileRoute("/_wallet/wallet/transactions")({
+  component: WalletTransactionsPage,
   pendingComponent: WalletTransactionsSkeleton,
-  validateSearch: zodValidator(typeSchema),
+  validateSearch: typeSchema,
 })

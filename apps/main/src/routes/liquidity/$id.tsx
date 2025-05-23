@@ -1,5 +1,5 @@
 import {
-  createLazyFileRoute,
+  createFileRoute,
   Outlet,
   useLocation,
   useParams,
@@ -16,6 +16,6 @@ const Component = () => {
   return isIdRoute ? <PoolDetails /> : <Outlet />
 }
 
-export const Route = createLazyFileRoute("/liquidity/$id")({
+export const Route = createFileRoute("/liquidity/$id")({
   component: Component,
 })
