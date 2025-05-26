@@ -526,15 +526,16 @@ export const useStablepoolVolumes = () => {
 }
 
 export const useStablepoolVolumeSubscription = () => {
-  const squidWSClient = useSquidWSClient()
+  const { data: squidWSClient } = useSquidWSClient()
   const queryClient = useQueryClient()
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    unsubscribe = squidWSClient.subscribe<StablepoolQuery>(
-      {
-        query: `
+    if (squidWSClient) {
+      unsubscribe = squidWSClient.subscribe<StablepoolQuery>(
+        {
+          query: `
             subscription {
               stableswapHistoricalVolumesByPeriod(
                 filter: {poolIds: ${JSON.stringify(VALID_STABLEPOOLS)}, period: _24H_}
@@ -549,43 +550,47 @@ export const useStablepoolVolumeSubscription = () => {
               }
             }
           `,
-      },
-      {
-        next: (data) => {
-          const changedVolumes =
-            data.data?.stableswapHistoricalVolumesByPeriod?.nodes.map(
-              (node): StablepoolVolume => {
-                const volumes = node.assetVolumes.map(
-                  ({ assetRegistryId, swapVolume }) => ({
-                    assetId: assetRegistryId,
-                    assetVolume: swapVolume,
-                  }),
-                )
+        },
+        {
+          next: (data) => {
+            const changedVolumes =
+              data.data?.stableswapHistoricalVolumesByPeriod?.nodes.map(
+                (node): StablepoolVolume => {
+                  const volumes = node.assetVolumes.map(
+                    ({ assetRegistryId, swapVolume }) => ({
+                      assetId: assetRegistryId,
+                      assetVolume: swapVolume,
+                    }),
+                  )
 
-                return { poolId: node.poolId, volumes }
-              },
+                  return { poolId: node.poolId, volumes }
+                },
+              )
+
+            const prevData = queryClient.getQueryData<StablepoolVolume[]>(
+              QUERY_KEYS.stablepoolsSquidVolumes,
             )
 
-          const prevData = queryClient.getQueryData<StablepoolVolume[]>(
-            QUERY_KEYS.stablepoolsSquidVolumes,
-          )
+            const newData = prevData?.map((pool) => {
+              const changedVolume = changedVolumes?.find(
+                (changedVolume) => changedVolume.poolId === pool.poolId,
+              )
 
-          const newData = prevData?.map((pool) => {
-            const changedVolume = changedVolumes?.find(
-              (changedVolume) => changedVolume.poolId === pool.poolId,
+              return changedVolume ?? pool
+            })
+
+            queryClient.setQueryData(
+              QUERY_KEYS.stablepoolsSquidVolumes,
+              newData,
             )
-
-            return changedVolume ?? pool
-          })
-
-          queryClient.setQueryData(QUERY_KEYS.stablepoolsSquidVolumes, newData)
+          },
+          error: (error) => {
+            console.error("error", error)
+          },
+          complete: () => {},
         },
-        error: (error) => {
-          console.error("error", error)
-        },
-        complete: () => {},
-      },
-    )
+      )
+    }
 
     return () => unsubscribe?.()
   }, [queryClient, squidWSClient])
@@ -594,7 +599,7 @@ export const useStablepoolVolumeSubscription = () => {
 }
 
 export const useXYKVolumeSubscription = () => {
-  const squidWSClient = useSquidWSClient()
+  const { data: squidWSClient } = useSquidWSClient()
   const queryClient = useQueryClient()
 
   const addresses = useValidXYKPoolAddresses(
@@ -604,7 +609,7 @@ export const useXYKVolumeSubscription = () => {
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (addresses?.length) {
+    if (addresses?.length && squidWSClient) {
       const hexAddresses = addresses.map((address) =>
         u8aToHex(decodeAddress(address)),
       )

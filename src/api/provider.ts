@@ -500,9 +500,13 @@ export const useSquidUrl = () => {
 export const useSquidWSClient = () => {
   const url = useSquidUrl()
 
-  return createClient({
-    webSocketImpl: WebSocket,
-    url,
+  return useQuery({
+    queryKey: QUERY_KEYS.squidWSClient(url),
+    queryFn: () =>
+      createClient({
+        webSocketImpl: WebSocket,
+        url,
+      }),
   })
 }
 

@@ -166,14 +166,14 @@ export const getTradabilityFromBits = (bits: number) => {
 }
 
 export const useOmnipoolVolumeSubscription = () => {
-  const squidWSClient = useSquidWSClient()
+  const { data: squidWSClient } = useSquidWSClient()
   const ids = useOmnipoolIds(useShallow((state) => state.ids))
   const queryClient = useQueryClient()
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (ids) {
+    if (ids && squidWSClient) {
       unsubscribe = squidWSClient.subscribe<OmnipoolQuery>(
         {
           query: `
