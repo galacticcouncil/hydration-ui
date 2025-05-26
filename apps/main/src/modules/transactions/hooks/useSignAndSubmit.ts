@@ -23,6 +23,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { Transaction } from "@/states/transactions"
 import { HYDRATION_CHAIN_KEY, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
+const USE_LEGACY_PERMIT = false
+
 export const useSignAndSubmit = (
   transaction: Transaction,
   options: MutationOptions<void, Error, TxOptions>,
@@ -59,8 +61,7 @@ export const useSignAndSubmit = (
           const permit = await wallet.signer.getPermit(data)
 
           // Papi dispatch permit is failing, use legacy api for now
-          const useLegacyApi = true
-          if (useLegacyApi) {
+          if (USE_LEGACY_PERMIT) {
             const legacyPermitTx =
               legacy_api.tx.multiTransactionPayment.dispatchPermit(
                 permit.message.from,

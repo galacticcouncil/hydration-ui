@@ -198,9 +198,7 @@ export const ClaimRewardsModalContent = () => {
                             {formatCurrency(balance, { symbol })}
                           </Text>
                           <Text fs={12} lh={1} color={getToken("text.medium")}>
-                            {formatCurrency(balanceUsd, {
-                              maximumFractionDigits: 2,
-                            })}
+                            {formatCurrency(balanceUsd)}
                           </Text>
                         </Flex>
                       </TableCell>
@@ -223,9 +221,7 @@ export const ClaimRewardsModalContent = () => {
                     </TableCell>
                     <TableCell>
                       <Text fs={15} fw={600} align="right">
-                        {formatCurrency(claimableUsd, {
-                          maximumFractionDigits: 2,
-                        })}
+                        {formatCurrency(claimableUsd)}
                       </Text>
                     </TableCell>
                   </TableRow>

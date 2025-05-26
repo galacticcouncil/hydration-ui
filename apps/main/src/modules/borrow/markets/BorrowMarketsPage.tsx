@@ -1,5 +1,10 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
-import { Box, Grid, Input, Text } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  Grid,
+  Input,
+  SectionHeader,
+} from "@galacticcouncil/ui/components"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -11,20 +16,22 @@ export const BorrowMarketsPage = () => {
   const [searchPhrase, setSearchPhrase] = useState("")
 
   return (
-    <Grid py={20} gap={40}>
+    <Grid pt={20} gap={10}>
       <MarketAssetsStats />
-      <Input
-        customSize="large"
-        placeholder={t("borrow:searchAssets")}
-        iconStart={Search}
-        onChange={(e) => setSearchPhrase(e.target.value)}
-      />
-      <Box>
-        <Text as="h2" font="primary" fw={500} fs="h7" mb={12}>
-          {t("market.table.title")}
-        </Text>
-        <MarketAssetsTable search={searchPhrase} />
-      </Box>
+      <Flex
+        direction={["column", "row"]}
+        justify="space-between"
+        align={["flex-start", "center"]}
+      >
+        <SectionHeader>{t("borrow:market.table.title")}</SectionHeader>
+        <Input
+          sx={{ minWidth: ["100%", 250] }}
+          placeholder={t("borrow:searchAssets")}
+          iconStart={Search}
+          onChange={(e) => setSearchPhrase(e.target.value)}
+        />
+      </Flex>
+      <MarketAssetsTable search={searchPhrase} />
     </Grid>
   )
 }

@@ -40,9 +40,9 @@ export const DashboardHeader = () => {
   return (
     <>
       <Stack
-        direction={["column", "row"]}
+        direction={["column", null, "row"]}
         justify="flex-start"
-        gap={[10, 40, 60]}
+        gap={[10, null, 40, 60]}
         separated
       >
         <ValueStats
@@ -106,7 +106,7 @@ export const DashboardHeader = () => {
           size="large"
         />
 
-        {Big(claimableRewardsUsd).gte(0.01) && (
+        {Big(claimableRewardsUsd).gte(0) && (
           <ValueStats
             label={t("borrow:availableRewards")}
             customValue={
@@ -117,7 +117,6 @@ export const DashboardHeader = () => {
                   <Flex align="center" gap={10}>
                     {t("currency", {
                       value: claimableRewardsUsd,
-                      maximumFractionDigits: 2,
                     })}
                     <Button onClick={() => openClaimRewards()}>
                       {t("borrow:claim")}

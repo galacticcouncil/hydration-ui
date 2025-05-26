@@ -18,8 +18,6 @@ export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
   const { data, isLoading } = useMarketAssetsData()
   const columns = useMarketAssetsTableColumns()
 
-  console.log({ data, isLoading })
-
   const navigate = useNavigate()
 
   return (
