@@ -185,7 +185,6 @@ export const QUERY_KEYS = {
   otcExistentialDepositMultiplier: ["otcExistentialDepositMultiplier"],
   provider: ["provider"],
   providerMetadata: ["providerMetadata"],
-  math: ["@galacticcouncil/math"],
   existentialDeposit: [QUERY_KEY_PREFIX, "existentialDeposit"],
   metadataVersion: ["metadataVersion"],
   acceptedCurrencies: (ids: string[]) => ["acceptedCurrencies", ids.join(",")],

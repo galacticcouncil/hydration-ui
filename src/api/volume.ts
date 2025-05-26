@@ -7,13 +7,13 @@ import BN from "bignumber.js"
 import { BN_0, VALID_STABLEPOOLS } from "utils/constants"
 import { useIndexerUrl, useSquidUrl, useSquidWSClient } from "./provider"
 import { u8aToHex } from "@polkadot/util"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { decodeAddress } from "@polkadot/util-crypto"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { groupBy } from "utils/rx"
 import { useOmnipoolIds, useValidXYKPoolAddresses } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { useEffect } from "react"
+import { safeConvertAddressSS58 } from "utils/formatting"
 
 export type TradeType = {
   name:
@@ -418,14 +418,12 @@ export const useXYKSquidVolumes = (address?: string[]) => {
 
       const { nodes = [] } = xykpoolHistoricalVolumesByPeriod
 
-      return nodes.map(
-        (node): XYKVolume => ({
-          poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
-          assetId: node.assetAId.toString(),
-          assetIdB: node.assetBId.toString(),
-          volume: node.assetAVolume,
-        }),
-      )
+      return nodes.map((node) => ({
+        poolId: safeConvertAddressSS58(node.poolId),
+        assetId: node.assetAId.toString(),
+        assetIdB: node.assetBId.toString(),
+        volume: node.assetAVolume,
+      }))
     },
     {
       enabled: !!queryAddresses.length,
@@ -636,8 +634,8 @@ export const useXYKVolumeSubscription = () => {
           next: (data) => {
             const changedVolumes =
               data.data?.xykpoolHistoricalVolumesByPeriod?.nodes.map(
-                (node): XYKVolume => ({
-                  poolId: encodeAddress(node.poolId, HYDRA_ADDRESS_PREFIX),
+                (node) => ({
+                  poolId: safeConvertAddressSS58(node.poolId),
                   assetId: node.assetAId.toString(),
                   assetIdB: node.assetBId.toString(),
                   volume: node.assetAVolume,

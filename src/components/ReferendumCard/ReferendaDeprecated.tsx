@@ -7,7 +7,7 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { BN_0, BN_10, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { BN_0, BN_10 } from "utils/constants"
 import { SContainer, SHeader, SVotedBage } from "./ReferendumCard.styled"
 import { Icon } from "components/Icon/Icon"
 import BN from "bignumber.js"
@@ -15,6 +15,7 @@ import { useBestNumber } from "api/chain"
 import { customFormatDuration } from "utils/formatting"
 import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
 import { ReferendumCardProgress } from "./ReferendumCardProgress"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
 
@@ -27,6 +28,7 @@ type Props = {
 
 export const ReferendaDeprecated = ({ id, referendum, type, voted }: Props) => {
   const { t } = useTranslation()
+  const { slotDurationMs } = useRpcProvider()
 
   const info = useDeprecatedReferendumInfo(id)
   const bestNumber = useBestNumber()
@@ -57,7 +59,7 @@ export const ReferendaDeprecated = ({ id, referendum, type, voted }: Props) => {
 
   const diff = BN(info?.data?.onchainData.meta.end ?? 0)
     .minus(bestNumber.data?.parachainBlockNumber.toBigNumber() ?? 0)
-    .times(PARACHAIN_BLOCK_TIME)
+    .times(BN(slotDurationMs).div(1000))
     .toNumber()
   const endDate = customFormatDuration({ end: diff * 1000 })
 

@@ -28,7 +28,7 @@ export const SWarningMessageContainer = styled.div<{
   cursor: pointer;
 
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   gap: 8px;
 
@@ -41,8 +41,12 @@ export const SWarningMessageContent = styled.div`
   flex-direction: row;
 
   gap: 8px;
-  align-items: flex-start;
+
   justify-content: center;
+
+  @media (${theme.viewport.gte.md}) {
+    align-items: center;
+  }
 `
 
 export const SSecondaryItem = styled.div`

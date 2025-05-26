@@ -43,6 +43,7 @@ export type ProviderProps = {
 export type TFeatureFlags = {
   dispatchPermit: boolean
   strategies: boolean
+  isSixBlockEnabled: boolean
 } & { [key: string]: boolean }
 
 export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
@@ -420,6 +421,8 @@ export const useProviderData = (
         poolService,
         router: tradeRouter,
         ecosystem: Ecosystem.Polkadot,
+        unifiedAddressFormat:
+          import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true",
         isTestnet: isTestnetRpcUrl(endpoint),
       })
 
@@ -443,9 +446,15 @@ export const useProviderData = (
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const [isDispatchPermitEnabled] = await Promise.all([
-        api.tx.multiTransactionPayment.dispatchPermit,
-      ])
+      const [isDispatchPermitEnabled, sixBlockSince, slotDuration] =
+        await Promise.all([
+          api.tx.multiTransactionPayment.dispatchPermit,
+          api.query.staking.sixSecBlocksSince?.(),
+          api.consts.aura.slotDuration,
+        ])
+
+      const slotDurationMs = slotDuration.toString()
+      const isSixBlockEnabled = !!sixBlockSince
 
       const balanceClient = new BalanceClient(api)
 
@@ -463,9 +472,11 @@ export const useProviderData = (
         endpoint,
         dataEnv,
         timestamp,
+        slotDurationMs,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
           strategies: isGigaDotEnabled,
+          isSixBlockEnabled,
         } as TFeatureFlags,
       }
     },
