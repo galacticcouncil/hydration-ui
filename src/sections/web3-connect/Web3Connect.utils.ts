@@ -63,6 +63,8 @@ import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
 import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { persist } from "zustand/middleware"
+import { Reown } from "sections/web3-connect/wallets/Reown"
+import { ReownPolkadot } from "sections/web3-connect/wallets/ReownPolkadot"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -279,6 +281,9 @@ export const useWeb3ConnectEagerEnable = () => {
     }
 
     async function eagerEnable(wallet: WalletProvider["wallet"]) {
+      // Dont eager enable ReownPolkadot, because the session is lost on refresh
+      //if (wallet instanceof ReownPolkadot) return
+
       if (wallet instanceof ExternalWallet) {
         if (currentAccount?.provider === WalletProviderType.ExternalWallet) {
           await wallet.setAddress(currentAccount.address)
@@ -324,8 +329,12 @@ export const useWeb3ConnectEagerEnable = () => {
     })
 
     function cleanUp(wallet: WalletProvider["wallet"]) {
-      if (wallet instanceof WalletConnect) {
-        // disconnect from WalletConnect
+      if (
+        wallet instanceof WalletConnect ||
+        wallet instanceof ReownPolkadot ||
+        wallet instanceof Reown
+      ) {
+        // disconnect from WalletConnect or Reown
         wallet.disconnect()
       }
 

@@ -19,12 +19,14 @@ import { CoinbaseWallet } from "./CoinbaseWallet"
 import { Nightly } from "./Nightly"
 import { NightlyEvm } from "./NightlyEvm"
 import { TrustWallet } from "./TrustWallet"
+import { ReownPolkadot } from "./ReownPolkadot"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 import {
   SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { Reown } from "sections/web3-connect/wallets/Reown"
 
 declare module "@talismn/connect-wallets" {
   interface Wallet {
@@ -131,6 +133,28 @@ const solflareWallet: Wallet = new Solflare()
 
 const braveWalletSol: Wallet = new BraveWalletSol()
 
+const reown: Wallet = new Reown({
+  onOpen: () => {
+    const state = useWeb3ConnectStore.getState()
+    if (state.open) state.toggle()
+  },
+  onClose: () => {
+    const state = useWeb3ConnectStore.getState()
+    const status = state.getStatus(WalletProviderType.Reown)
+
+    // if user closes the Reown modal during pending state, disconnect the wallet
+    if (status === "pending") {
+      state.disconnect(WalletProviderType.Reown)
+    }
+  },
+})
+const reownPolkadot: Wallet = new ReownPolkadot({
+  onSessionDelete: () => {
+    const state = useWeb3ConnectStore.getState()
+    state.disconnect(WalletProviderType.ReownPolkadot)
+  },
+})
+
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
   metaMask,
@@ -147,6 +171,8 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   phantomWallet,
   solflareWallet,
   braveWalletSol,
+  reown,
+  reownPolkadot,
   walletConnect,
   walletConnectEvm,
   externalWallet,
