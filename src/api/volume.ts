@@ -1,7 +1,13 @@
+import {
+  AggregationTimeRange,
+  OmnipoolVolumeDocument,
+  StablepoolVolumeDocument,
+  XykVolumeDocument,
+} from "./../graphql/__generated__/squid/graphql"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { addDays } from "date-fns"
 import { gql, request } from "graphql-request"
-import { normalizeId, undefinedNoop } from "utils/helpers"
+import { isNotNil, normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0, VALID_STABLEPOOLS } from "utils/constants"
@@ -396,34 +402,25 @@ export const useXYKSquidVolumes = (address?: string[]) => {
         u8aToHex(decodeAddress(address)),
       )
 
-      const { xykpoolHistoricalVolumesByPeriod } = await request<XYKQuery>(
+      const { xykpoolHistoricalVolumesByPeriod } = await request(
         url,
-        gql`
-          query XykVolume($poolIds: [String!]!) {
-            xykpoolHistoricalVolumesByPeriod(
-              filter: { poolIds: $poolIds, period: _24H_ }
-            ) {
-              nodes {
-                poolId
-                assetAId
-                assetAVolume
-                assetBId
-                assetBVolume
-              }
-            }
-          }
-        `,
-        { poolIds: hexAddresses },
+        XykVolumeDocument,
+        {
+          filter: {
+            poolIds: hexAddresses,
+            period: AggregationTimeRange["24H"],
+          },
+        },
       )
 
-      const { nodes = [] } = xykpoolHistoricalVolumesByPeriod
-
-      return nodes.map((node) => ({
-        poolId: safeConvertAddressSS58(node.poolId),
-        assetId: node.assetAId.toString(),
-        assetIdB: node.assetBId.toString(),
-        volume: node.assetAVolume,
-      }))
+      return xykpoolHistoricalVolumesByPeriod.nodes
+        .filter(isNotNil)
+        .map((node) => ({
+          poolId: safeConvertAddressSS58(node.poolId),
+          assetId: node.assetAId.toString(),
+          assetIdB: node.assetBId.toString(),
+          volume: node.assetAVolume,
+        }))
     },
     {
       enabled: !!queryAddresses.length,
@@ -441,30 +438,20 @@ export const useOmnipoolVolumes = () => {
     QUERY_KEYS.omnipoolSquidVolumes,
 
     async () => {
-      const { omnipoolAssetHistoricalVolumesByPeriod } =
-        await request<OmnipoolQuery>(
-          url,
-          gql`
-            query OmnipoolVolume($omnipoolAssetIds: [String!]!) {
-              omnipoolAssetHistoricalVolumesByPeriod(
-                filter: { assetIds: $omnipoolAssetIds, period: _24H_ }
-              ) {
-                nodes {
-                  assetId
-                  assetVolume
-                }
-              }
-            }
-          `,
-          { omnipoolAssetIds: ids },
-        )
+      const { omnipoolAssetHistoricalVolumesByPeriod } = await request(
+        url,
+        OmnipoolVolumeDocument,
+        {
+          filter: { assetIds: ids, period: AggregationTimeRange["24H"] },
+        },
+      )
 
-      const { nodes = [] } = omnipoolAssetHistoricalVolumesByPeriod
-
-      return nodes.map<OmnipoolVolume>((node) => ({
-        assetId: node.assetId.toString(),
-        assetVolume: node.assetVolume.toString(),
-      }))
+      return omnipoolAssetHistoricalVolumesByPeriod.nodes
+        .filter(isNotNil)
+        .map<OmnipoolVolume>((node) => ({
+          assetId: node.assetId.toString(),
+          assetVolume: node.assetVolume.toString(),
+        }))
     },
 
     {
@@ -482,39 +469,29 @@ export const useStablepoolVolumes = () => {
     QUERY_KEYS.stablepoolsSquidVolumes,
 
     async () => {
-      const { stableswapHistoricalVolumesByPeriod } =
-        await request<StablepoolQuery>(
-          url,
-          gql`
-            query StablepoolVolume($poolIds: [String!]!) {
-              stableswapHistoricalVolumesByPeriod(
-                filter: { poolIds: $poolIds, period: _24H_ }
-              ) {
-                nodes {
-                  poolId
-                  assetVolumes {
-                    assetRegistryId
-                    swapVolume
-                  }
-                }
-              }
-            }
-          `,
-          { poolIds: VALID_STABLEPOOLS },
-        )
+      const { stableswapHistoricalVolumesByPeriod } = await request(
+        url,
+        StablepoolVolumeDocument,
+        {
+          filter: {
+            poolIds: VALID_STABLEPOOLS,
+            period: AggregationTimeRange["24H"],
+          },
+        },
+      )
 
-      const { nodes = [] } = stableswapHistoricalVolumesByPeriod
+      return stableswapHistoricalVolumesByPeriod.nodes
+        .filter(isNotNil)
+        .map((node): StablepoolVolume => {
+          const volumes = node.assetVolumes.map(
+            ({ assetRegistryId, swapVolume }) => ({
+              assetId: assetRegistryId as string,
+              assetVolume: swapVolume,
+            }),
+          )
 
-      return nodes.map((node): StablepoolVolume => {
-        const volumes = node.assetVolumes.map(
-          ({ assetRegistryId, swapVolume }) => ({
-            assetId: assetRegistryId,
-            assetVolume: swapVolume,
-          }),
-        )
-
-        return { poolId: node.poolId, volumes }
-      })
+          return { poolId: node.poolId, volumes }
+        })
     },
 
     {
