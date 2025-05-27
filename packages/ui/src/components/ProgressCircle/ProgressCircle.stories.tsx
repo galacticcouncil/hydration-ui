@@ -76,6 +76,6 @@ export const ReversedDirection: Story = {
   render: Template,
   args: {
     percent: 33,
-    reversed: true,
+    isReversed: true,
   },
 }

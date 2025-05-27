@@ -3,10 +3,11 @@ import {
   useAssetCaps,
   useProtocolDataContext,
 } from "@galacticcouncil/money-market/hooks"
-import { Stack, Text, ValueStats } from "@galacticcouncil/ui/components"
+import { Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { EModeInfo } from "@/modules/borrow/reserve/components/EModeInfo"
 import { InterestRateModelChart } from "@/modules/borrow/reserve/components/InterestRateModelChart"
 import { SupplyInfo } from "@/modules/borrow/reserve/components/SupplyInfo"
 
@@ -68,51 +69,31 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
         Interest rate model
       </Text>
 
-      <InterestRateModelChart />
-
-      <ReserveSectionDivider />
-
-      <Text fs="p3" fw={500} sx={{ mb: 30 }}>
-        E-Mode info
-      </Text>
-
-      <ValueStats
-        size="small"
-        font="secondary"
-        alwaysWrap
-        label={"E-Mode Category"}
-        value={"Stablecoins"}
+      <InterestRateModelChart
+        reserve={{
+          baseStableBorrowRate: reserve.baseStableBorrowRate,
+          baseVariableBorrowRate: reserve.baseVariableBorrowRate,
+          optimalUsageRatio: reserve.optimalUsageRatio,
+          stableRateSlope1: reserve.stableRateSlope1,
+          stableRateSlope2: reserve.stableRateSlope2,
+          utilizationRate: reserve.borrowUsageRatio,
+          variableRateSlope1: reserve.variableRateSlope1,
+          variableRateSlope2: reserve.variableRateSlope2,
+          stableBorrowRateEnabled: reserve.stableBorrowRateEnabled,
+          totalLiquidityUSD: reserve.totalLiquidityUSD,
+          totalDebtUSD: reserve.totalDebtUSD,
+        }}
       />
 
-      <Stack direction="row" gap={40} sx={{ mt: 20 }}>
-        <ValueStats
-          size="small"
-          alwaysWrap
-          font="secondary"
-          label={t("borrow:maxLTV")}
-          value={t("percent", {
-            value: Number(reserve.formattedEModeLtv) * 100,
-          })}
-        />
-        <ValueStats
-          size="small"
-          alwaysWrap
-          font="secondary"
-          label={t("borrow:risk.liquidationThreshold")}
-          value={t("percent", {
-            value: Number(reserve.formattedEModeLiquidationThreshold) * 100,
-          })}
-        />
-        <ValueStats
-          size="small"
-          alwaysWrap
-          font="secondary"
-          label={t("borrow:risk.liquidationPenalty")}
-          value={t("percent", {
-            value: Number(reserve.formattedEModeLiquidationBonus) * 100,
-          })}
-        />
-      </Stack>
+      {shouldRenderEModeInfo && (
+        <>
+          <ReserveSectionDivider />
+          <Text fs="p3" fw={500} sx={{ mb: 30 }}>
+            E-Mode info
+          </Text>
+          <EModeInfo reserve={reserve} />
+        </>
+      )}
 
       {/*  {shouldRenderBorrowInfo && (
         <>

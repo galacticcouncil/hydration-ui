@@ -17,7 +17,7 @@ export type ProgressCircleProps = BoxProps & {
   thickness?: number
   percent: number
   label?: React.ReactNode
-  reversed?: boolean
+  isReversed?: boolean
   labelPosition?: LabelPosition
   fontSize?: ResponsiveStyleValue<number>
 }
@@ -28,7 +28,7 @@ export const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(
       radius = 45,
       thickness = 4,
       percent = 0,
-      reversed = false,
+      isReversed = false,
       label,
       labelPosition = "center",
       fontSize = 14,
@@ -38,7 +38,7 @@ export const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(
     ref,
   ) => {
     const { circumference, size, position, transformFlip, transformRotate } =
-      calculateCircleProps(radius, thickness, reversed)
+      calculateCircleProps(radius, thickness, isReversed)
 
     return (
       <SContainer ref={ref} color={color} {...props}>
@@ -74,13 +74,13 @@ ProgressCircle.displayName = "ProgressCircle"
 function calculateCircleProps(
   radius: number,
   thickness: number,
-  reversed: boolean,
+  isReversed: boolean,
 ) {
   const circumference = radius * 2 * Math.PI
   const size = radius * 2 + thickness
   const position = radius + thickness / 2
-  const transformFlip = reversed ? `scale(1, -1) translate(0, -${size})` : ""
-  const transformRotate = reversed
+  const transformFlip = isReversed ? `scale(1, -1) translate(0, -${size})` : ""
+  const transformRotate = isReversed
     ? `rotate(90, ${size / 2} ,${size / 2})`
     : `rotate(-90, ${size / 2} ,${size / 2})`
 

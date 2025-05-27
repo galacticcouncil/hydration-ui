@@ -39,6 +39,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
       payload: TData[number]
     },
   ) => React.ReactElement
+  referenceLines?: React.ComponentPropsWithoutRef<typeof ReferenceLine>[]
   xAxisLabelProps?: AxisLabelCssProps
   yAxisLabelProps?: AxisLabelCssProps
   withoutReferenceLine?: boolean
@@ -65,6 +66,7 @@ export function AreaChart<TData extends TChartData>({
   gradient = "area",
   strokeWidth = 2,
   customDot,
+  referenceLines = [],
   xAxisLabelProps,
   yAxisLabelProps,
   withoutReferenceLine,
@@ -157,7 +159,6 @@ export function AreaChart<TData extends TChartData>({
                 strokeDasharray: "6 6",
               }}
             />
-
             <ReferenceLine
               y={activePointValue ?? 0}
               stroke={theme.text.low}
@@ -208,6 +209,9 @@ export function AreaChart<TData extends TChartData>({
             </Fragment>
           )
         })}
+        {referenceLines.map((props) => (
+          <ReferenceLine key={props.x} shapeRendering="crispEdges" {...props} />
+        ))}
       </AreaChartPrimitive>
     </ChartContainer>
   )
