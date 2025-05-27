@@ -1,85 +1,86 @@
 import { ResponsiveStyleValue } from "@theme-ui/css"
 import { forwardRef } from "react"
 
-import { SContainer, SText } from "./CircularProgress.styled"
+import { BoxProps } from "@/components/Box"
+import {
+  SBackgroundCircle,
+  SContainer,
+  SProgressCircle,
+  SText,
+} from "@/components/ProgressCircle/ProgressCircle.styled"
+import { getToken } from "@/utils"
 
 export type LabelPosition = "start" | "center" | "end"
 
-export type CircularProgressProps = {
+export type ProgressCircleProps = BoxProps & {
   radius?: number
   thickness?: number
   percent: number
-  children?: React.ReactNode
-  inverted?: boolean
+  label?: React.ReactNode
+  reversed?: boolean
   labelPosition?: LabelPosition
   fontSize?: ResponsiveStyleValue<number>
-} & React.DetailedHTMLProps<
-  React.HTMLAttributes<HTMLDivElement>,
-  HTMLDivElement
->
+}
 
-export const CircularProgress = forwardRef<
-  HTMLDivElement,
-  CircularProgressProps
->(
+export const ProgressCircle = forwardRef<HTMLDivElement, ProgressCircleProps>(
   (
     {
       radius = 45,
       thickness = 4,
       percent = 0,
-      children,
-      inverted = false,
+      reversed = false,
+      label,
       labelPosition = "center",
-      fontSize = 16,
+      fontSize = 14,
+      color = getToken("controls.solid.accent"),
       ...props
     },
     ref,
   ) => {
     const { circumference, size, position, transformFlip, transformRotate } =
-      calculateProps(radius, thickness, inverted)
+      calculateCircleProps(radius, thickness, reversed)
+
     return (
-      <SContainer ref={ref} {...props}>
+      <SContainer ref={ref} color={color} {...props}>
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle
-            sx={{ color: "primaryA0" }}
-            css={{ opacity: 0.35 }}
+          <SBackgroundCircle
             strokeWidth={Math.max(thickness - 2, 1)}
-            stroke="currentColor"
-            fill="transparent"
             r={radius}
             cx={position}
             cy={position}
           />
-          <circle
-            sx={{ color: "currentcolor" }}
+          <SProgressCircle
+            percent={percent}
             transform={`${transformFlip} ${transformRotate}`}
             strokeWidth={thickness}
             strokeDasharray={circumference}
             strokeDashoffset={circumference - (percent / 100) * circumference}
             strokeLinecap="round"
-            stroke="currentColor"
-            fill="transparent"
             r={radius}
             cx={position}
             cy={position}
           />
         </svg>
         <SText position={labelPosition} sx={{ fontSize }}>
-          {children || `${percent.toFixed(2)}%`}
+          {label || `${percent}%`}
         </SText>
       </SContainer>
     )
   },
 )
 
-CircularProgress.displayName = "CircularProgress"
+ProgressCircle.displayName = "ProgressCircle"
 
-function calculateProps(radius: number, thickness: number, inverted: boolean) {
+function calculateCircleProps(
+  radius: number,
+  thickness: number,
+  reversed: boolean,
+) {
   const circumference = radius * 2 * Math.PI
   const size = radius * 2 + thickness
   const position = radius + thickness / 2
-  const transformFlip = inverted ? `scale(1, -1) translate(0, -${size})` : ""
-  const transformRotate = inverted
+  const transformFlip = reversed ? `scale(1, -1) translate(0, -${size})` : ""
+  const transformRotate = reversed
     ? `rotate(90, ${size / 2} ,${size / 2})`
     : `rotate(-90, ${size / 2} ,${size / 2})`
 

@@ -1,15 +1,18 @@
 import { Meta, StoryObj } from "@storybook/react"
 import { ComponentPropsWithoutRef } from "react"
-import { CircularProgress } from "./CircularProgress"
 
-type Story = StoryObj<typeof CircularProgress>
+import { getToken } from "@/utils"
+
+import { ProgressCircle } from "./ProgressCircle"
+
+type Story = StoryObj<typeof ProgressCircle>
 
 export default {
-  component: CircularProgress,
-} as Meta<typeof CircularProgress>
+  component: ProgressCircle,
+} as Meta<typeof ProgressCircle>
 
-const Template = (props: ComponentPropsWithoutRef<typeof CircularProgress>) => {
-  return <CircularProgress {...props} />
+const Template = (props: ComponentPropsWithoutRef<typeof ProgressCircle>) => {
+  return <ProgressCircle {...props} />
 }
 
 export const Default: Story = {
@@ -19,11 +22,11 @@ export const Default: Story = {
   },
 }
 
-export const Color: Story = {
+export const CustomColor: Story = {
   render: Template,
   args: {
     percent: 33,
-    color: "red400",
+    color: getToken("colors.successGreen.400"),
   },
 }
 
@@ -65,14 +68,14 @@ export const CustomLabel: Story = {
   render: Template,
   args: {
     percent: 33,
-    children: <span sx={{ fontSize: 24, textAlign: "center" }}>$33</span>,
+    label: <span sx={{ fontSize: 24, textAlign: "center" }}>$33</span>,
   },
 }
 
-export const InvertedDirection: Story = {
+export const ReversedDirection: Story = {
   render: Template,
   args: {
     percent: 33,
-    inverted: true,
+    reversed: true,
   },
 }

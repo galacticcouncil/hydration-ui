@@ -8,10 +8,10 @@ import { CircleInfo } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
   Box,
-  CircularProgress,
   Flex,
   Icon,
   ProgressBar,
+  ProgressCircle,
   Stack,
   Text,
   Tooltip,
@@ -38,6 +38,23 @@ export const SupplyInfo = ({
   const { themeProps } = useTheme()
   const { t } = useTranslation(["common", "borrow"])
 
+  const adjustedPercentage =
+    supplyCap.percentUsed <= 2
+      ? 2
+      : supplyCap.percentUsed > 100
+        ? 100
+        : supplyCap.percentUsed
+
+  const determineColor = () => {
+    if (Math.round(adjustedPercentage) >= 99.99) {
+      return getToken("accents.danger.emphasis")
+    } else if (adjustedPercentage >= 98) {
+      return getToken("accents.alert.primary")
+    } else {
+      return getToken("accents.success.emphasis")
+    }
+  }
+
   return (
     <>
       <Flex
@@ -50,16 +67,12 @@ export const SupplyInfo = ({
           display={["none", "block"]}
           color={getToken("colors.successGreen.400")}
         >
-          <CircularProgress
+          <ProgressCircle
             radius={45}
             thickness={3}
-            percent={
-              supplyCap.percentUsed <= 2
-                ? 2
-                : supplyCap.percentUsed > 100
-                  ? 100
-                  : supplyCap.percentUsed
-            }
+            percent={adjustedPercentage}
+            label={t("percent", { value: adjustedPercentage })}
+            color={determineColor()}
           />
         </Box>
         <Stack gap={40} direction="row" separated>
@@ -92,7 +105,7 @@ export const SupplyInfo = ({
                   </Text>
                 </>
               }
-            ></ValueStats>
+            />
           )}
           <ValueStats
             size="small"
@@ -125,7 +138,8 @@ export const SupplyInfo = ({
               </Text>
               <Text
                 fs={14}
-                color={getToken("accents.success.primary")}
+                fw={600}
+                color={getToken("accents.success.emphasis")}
                 display="flex"
                 sx={{ alignItems: "center", gap: 4 }}
               >

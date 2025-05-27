@@ -2313,14 +2313,14 @@
     typescript "^5.8.3"
     write-package "^7.1.0"
 
-"@polkadot-api/cli@0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/cli/-/cli-0.13.0.tgz#028a36b506e5bc9bfe839d0dadec790b0a75308c"
-  integrity sha512-uumqacO1+YxuhHYOr75czxvV0KmRxm3DaZtRKzxIf2zpICnj/QnBTpJwlxU56g+pQDU5P/hTR0Thh0vrnUTNVw==
+"@polkadot-api/cli@0.13.1":
+  version "0.13.1"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/cli/-/cli-0.13.1.tgz#de750072269a62e68844503d58528affd0be5d20"
+  integrity sha512-awQQwIF0OY1MAEhCYilgthIGqpMPL9XgEGArNk7pAw34S4CXeiUQyS+mz2P6L5GMfKnk9J6CfB4fkm6bKPgIBA==
   dependencies:
     "@commander-js/extra-typings" "^13.1.0"
-    "@polkadot-api/codegen" "0.16.0"
-    "@polkadot-api/ink-contracts" "0.3.2"
+    "@polkadot-api/codegen" "0.16.1"
+    "@polkadot-api/ink-contracts" "0.3.3"
     "@polkadot-api/json-rpc-provider" "0.0.4"
     "@polkadot-api/known-chains" "0.7.6"
     "@polkadot-api/metadata-compatibility" "0.2.3"
@@ -2356,12 +2356,12 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
-"@polkadot-api/codegen@0.16.0":
-  version "0.16.0"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/codegen/-/codegen-0.16.0.tgz#abbec93432226d91090c08d10db628d0c6454771"
-  integrity sha512-2Sq/fkB7a9Oi3t7nGc0EbTt1Nd8Pb8XGiKKS9i/wwFAdCLN2oXd33DxmRQTX0Hm2/nrBzXYh1zBuyxRUb9+Sdw==
+"@polkadot-api/codegen@0.16.1":
+  version "0.16.1"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/codegen/-/codegen-0.16.1.tgz#d58892c8d7210855df6f75e59f49554504ceca22"
+  integrity sha512-3TGcaAZ8dqzBynCWN9BUAWrbFkaMyTK6VM088tGQBgIJltlgh+qgSai7E6ivvCJ4nnZp+MS+I3yFx7+vtisXdw==
   dependencies:
-    "@polkadot-api/ink-contracts" "0.3.2"
+    "@polkadot-api/ink-contracts" "0.3.3"
     "@polkadot-api/metadata-builders" "0.12.1"
     "@polkadot-api/metadata-compatibility" "0.2.3"
     "@polkadot-api/substrate-bindings" "0.13.0"
@@ -2379,10 +2379,10 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
-"@polkadot-api/ink-contracts@0.3.2":
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/ink-contracts/-/ink-contracts-0.3.2.tgz#cd46a8079d8831572b4c7c2477cf06aae50e6d33"
-  integrity sha512-ipWuClaySrPI7XHIomiswXhIZfU4q/EmHmLFIwLdn9iNhLd7YLuUtGF6kacSQu76YtWd3tkLe2rGx4cRRaLjOA==
+"@polkadot-api/ink-contracts@0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/ink-contracts/-/ink-contracts-0.3.3.tgz#8725dd9a5bf48a21196f4e902356d451c5ff748b"
+  integrity sha512-GdDzr/iAQ+h60IzwWJWsVHR/ovVubutNEDVwnH2s8A4kmee5yytn+XlABr3i2RlFuB8FwWOWQwuG2+6Hi2NnFQ==
   dependencies:
     "@polkadot-api/metadata-builders" "0.12.1"
     "@polkadot-api/substrate-bindings" "0.13.0"
@@ -10924,13 +10924,6 @@ string_decoder@~1.1.1:
     safe-buffer "~5.1.0"
 
 "strip-ansi-cjs@npm:strip-ansi@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
-
-strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==

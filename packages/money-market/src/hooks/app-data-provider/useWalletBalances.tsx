@@ -1,7 +1,4 @@
-import {
-  API_ETH_MOCK_ADDRESS,
-  ReservesDataHumanized,
-} from "@aave/contract-helpers"
+import { ReservesDataHumanized } from "@aave/contract-helpers"
 import {
   nativeToUSD,
   normalize,
@@ -15,10 +12,7 @@ import { usePoolsReservesHumanized } from "@/hooks/pool/usePoolReserves"
 import { usePoolsTokensBalance } from "@/hooks/pool/usePoolTokensBalance"
 import { UserPoolTokensBalances } from "@/services/WalletBalanceService"
 import { useRootStore } from "@/store/root"
-import {
-  MarketDataType,
-  networkConfigs,
-} from "@/utils/marketsAndNetworksConfig"
+import { MarketDataType } from "@/utils/marketsAndNetworksConfig"
 
 export interface WalletBalance {
   address: string
@@ -34,7 +28,6 @@ type FormatAggregatedBalanceParams = {
 const formatAggregatedBalance = ({
   reservesHumanized,
   balances,
-  marketData,
 }: FormatAggregatedBalanceParams) => {
   const reserves = reservesHumanized?.reservesData || []
   const baseCurrencyData = reservesHumanized?.baseCurrencyData || {
@@ -50,14 +43,6 @@ const formatAggregatedBalance = ({
   const aggregatedBalance = walletBalances.reduce(
     (acc, reserve) => {
       const poolReserve = reserves.find((poolReserve) => {
-        if (reserve.address === API_ETH_MOCK_ADDRESS.toLowerCase()) {
-          return (
-            poolReserve.symbol.toLowerCase() ===
-            networkConfigs[
-              marketData.chainId
-            ].wrappedBaseAssetSymbol?.toLowerCase()
-          )
-        }
         return poolReserve.underlyingAsset.toLowerCase() === reserve.address
       })
       if (reserve.amount !== "0") hasEmptyWallet = false
