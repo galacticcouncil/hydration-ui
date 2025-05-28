@@ -426,7 +426,7 @@ export const useXYKSquidVolumes = (address?: string[]) => {
     {
       enabled: !!queryAddresses.length,
       staleTime: millisecondsInHour,
-      refetchInterval: millisecondsInMinute,
+      cacheTime: millisecondsInHour,
     },
   )
 }
@@ -497,6 +497,7 @@ export const useStablepoolVolumes = () => {
 
     {
       staleTime: millisecondsInHour,
+      cacheTime: millisecondsInHour,
     },
   )
 }
