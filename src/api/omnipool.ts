@@ -15,7 +15,6 @@ import { useEffect, useMemo } from "react"
 import { useOmnipoolIds } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { OmnipoolQuery, OmnipoolVolume } from "./volume"
-import { useSquidWSClient } from "./provider"
 import { useSquidUrl } from "./provider"
 import { millisecondsInHour } from "date-fns"
 import request from "graphql-request"
@@ -171,14 +170,14 @@ export const getTradabilityFromBits = (bits: number) => {
 }
 
 export const useOmnipoolVolumeSubscription = () => {
-  const { data: squidWSClient } = useSquidWSClient()
+  const { squidWSClient, isLoaded } = useRpcProvider()
   const ids = useOmnipoolIds(useShallow((state) => state.ids))
   const queryClient = useQueryClient()
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (ids && squidWSClient) {
+    if (ids && isLoaded) {
       unsubscribe = squidWSClient.subscribe<OmnipoolQuery>(
         {
           query: print(OmnipoolVolumeSubscriptionDocument),
@@ -220,7 +219,7 @@ export const useOmnipoolVolumeSubscription = () => {
     }
 
     return () => unsubscribe?.()
-  }, [ids, queryClient, squidWSClient])
+  }, [ids, queryClient, squidWSClient, isLoaded])
 
   return null
 }

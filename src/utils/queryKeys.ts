@@ -388,7 +388,6 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
-  squidWSClient: (url: string) => ["squidWSClient", url],
 } as const
 
 export const WS_QUERY_KEYS = {

@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
 import {
+  ProviderProps,
   TDataEnv,
   TFeatureFlags,
   useProviderAssets,
@@ -18,6 +19,7 @@ import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 import { useShallow } from "hooks/useShallow"
+import { Client } from "graphql-ws"
 
 type TProviderContext = {
   api: ApiPromise
@@ -32,6 +34,8 @@ type TProviderContext = {
   txUtils: TradeUtils
   timestamp: string
   slotDurationMs: string
+  providerData: ProviderProps
+  squidWSClient: Client
 }
 
 const defaultData: TProviderContext = {
@@ -47,6 +51,8 @@ const defaultData: TProviderContext = {
   txUtils: {} as TProviderContext["txUtils"],
   timestamp: "",
   slotDurationMs: "12000",
+  providerData: {} as ProviderProps,
+  squidWSClient: {} as Client,
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
@@ -116,6 +122,8 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         dataEnv: providerData.dataEnv,
         timestamp: providerData.timestamp,
         slotDurationMs: providerData.slotDurationMs,
+        providerData: providerData.providerData,
+        squidWSClient: providerData.squidWSClient,
       }
     }
 

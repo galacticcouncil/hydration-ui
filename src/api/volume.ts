@@ -11,7 +11,7 @@ import { isNotNil, normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
 import { BN_0, VALID_STABLEPOOLS } from "utils/constants"
-import { useIndexerUrl, useSquidUrl, useSquidWSClient } from "./provider"
+import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
@@ -20,6 +20,7 @@ import { useOmnipoolIds, useValidXYKPoolAddresses } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { useEffect } from "react"
 import { safeConvertAddressSS58 } from "utils/formatting"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type TradeType = {
   name:
@@ -501,13 +502,13 @@ export const useStablepoolVolumes = () => {
 }
 
 export const useStablepoolVolumeSubscription = () => {
-  const { data: squidWSClient } = useSquidWSClient()
+  const { isLoaded, squidWSClient } = useRpcProvider()
   const queryClient = useQueryClient()
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (squidWSClient) {
+    if (isLoaded) {
       unsubscribe = squidWSClient.subscribe<StablepoolQuery>(
         {
           query: `
@@ -568,13 +569,13 @@ export const useStablepoolVolumeSubscription = () => {
     }
 
     return () => unsubscribe?.()
-  }, [queryClient, squidWSClient])
+  }, [queryClient, squidWSClient, isLoaded])
 
   return null
 }
 
 export const useXYKVolumeSubscription = () => {
-  const { data: squidWSClient } = useSquidWSClient()
+  const { isLoaded, squidWSClient } = useRpcProvider()
   const queryClient = useQueryClient()
 
   const addresses = useValidXYKPoolAddresses(
@@ -584,7 +585,7 @@ export const useXYKVolumeSubscription = () => {
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (addresses?.length && squidWSClient) {
+    if (addresses?.length && isLoaded) {
       const hexAddresses = addresses.map((address) =>
         u8aToHex(decodeAddress(address)),
       )
@@ -645,7 +646,7 @@ export const useXYKVolumeSubscription = () => {
     }
 
     return () => unsubscribe?.()
-  }, [addresses, queryClient, squidWSClient])
+  }, [addresses, queryClient, squidWSClient, isLoaded])
 
   return null
 }
