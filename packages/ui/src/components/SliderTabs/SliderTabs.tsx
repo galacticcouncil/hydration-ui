@@ -1,32 +1,39 @@
-import { Button } from "../Button"
-import { SSliderTabs } from "./SliderTabs.styled"
+import { Button } from "@/components/Button"
+import { SSliderTabs } from "@/components/SliderTabs/SliderTabs.styled"
 
-type TOption = {
-  id: string
-  label: string
+export type SliderTabsOption<T> = {
+  readonly id: string
+  readonly label: string
+  readonly value: T
 }
 
-type SliderTabsProps = {
-  options: TOption[]
-  selected?: string
-  onSelect: (option: TOption) => void
+type SliderTabsProps<T> = {
+  readonly options: ReadonlyArray<SliderTabsOption<T>>
+  readonly selected?: string
+  readonly onSelect: (option: SliderTabsOption<T>) => void
 }
 
-export const SliderTabs = ({
+export const SliderTabs = <T,>({
   options,
   selected,
   onSelect,
-}: SliderTabsProps) => (
-  <SSliderTabs>
-    {options.map((option) => (
-      <Button
-        key={option.id}
-        aria-label={option.label}
-        variant={selected === option.id ? "secondary" : "tertiary"}
-        onClick={() => onSelect(option)}
-      >
-        {option.label}
-      </Button>
-    ))}
-  </SSliderTabs>
-)
+}: SliderTabsProps<T>) => {
+  return (
+    <SSliderTabs>
+      {options.map((option) => {
+        const isSelected = selected === option.id
+
+        return (
+          <Button
+            key={option.id}
+            aria-label={option.label}
+            variant={isSelected ? "sliderTabActive" : "sliderTabInactive"}
+            onClick={() => onSelect(option)}
+          >
+            {option.label}
+          </Button>
+        )
+      })}
+    </SSliderTabs>
+  )
+}

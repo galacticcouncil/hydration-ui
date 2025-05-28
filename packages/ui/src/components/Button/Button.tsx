@@ -22,7 +22,16 @@ export type MicroButtonProps = BoxProps & {
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ children, ...props }, ref) => {
     return (
-      <SButton as="button" type="button" ref={ref} {...props}>
+      <SButton
+        as="button"
+        type="button"
+        ref={ref}
+        {...props}
+        outline={
+          props.variant === "sliderTabInactive" ||
+          (props.variant !== "sliderTabActive" && !!props.outline)
+        }
+      >
         {children}
       </SButton>
     )

@@ -12,6 +12,8 @@ export type ButtonVariant =
   | "emphasis"
   | "accent"
   | "success"
+  | "sliderTabActive"
+  | "sliderTabInactive"
 
 export type MicroButtonVariant = "low" | "emphasis"
 
@@ -82,17 +84,24 @@ const variantStyles = (
 
 const outlineVariantStyles = (
   color: string,
-  border: string,
+  border: "none" | (string & NonNullable<unknown>),
   bg: string,
   bgHover: string,
 ) => css`
   background-color: ${bg};
   color: ${color};
-  box-shadow: inset 0 0 0 1px ${border};
   &:not(:disabled):hover,
   &:not(:disabled):focus {
     background-color: ${bgHover};
   }
+
+  ${border === "none"
+    ? css`
+        box-shadow: none;
+      `
+    : css`
+        box-shadow: inset 0 0 0 1px ${border};
+      `}
 `
 
 const disabledStyles = css`
@@ -103,7 +112,7 @@ const disabledStyles = css`
   }
 `
 
-const variants = createVariants(({ buttons, accents }) => ({
+const variants = createVariants<ButtonVariant>(({ buttons, accents }) => ({
   primary: variantStyles(
     buttons.primary.high.onButton,
     buttons.primary.high.rest,
@@ -139,9 +148,19 @@ const variants = createVariants(({ buttons, accents }) => ({
     accents.success.emphasis,
     accents.success.dim,
   ),
+  sliderTabActive: variantStyles(
+    buttons.primary.medium.onButton,
+    buttons.primary.medium.rest,
+    buttons.primary.medium.hover,
+  ),
+  sliderTabInactive: variantStyles(
+    buttons.primary.low.onButton,
+    buttons.primary.low.rest,
+    buttons.primary.low.hover,
+  ),
 }))
 
-const microVariants = createVariants((theme) => ({
+const microVariants = createVariants<MicroButtonVariant>((theme) => ({
   low: microVariantStyles(
     theme.text.medium,
     theme.buttons.secondary.low.rest,
@@ -157,7 +176,7 @@ const microVariants = createVariants((theme) => ({
   ),
 }))
 
-const outlineVariants = createVariants((theme) => ({
+const outlineVariants = createVariants<ButtonVariant>((theme) => ({
   primary: outlineVariantStyles(
     theme.buttons.primary.high.onButton,
     theme.buttons.primary.high.rest,
@@ -200,9 +219,21 @@ const outlineVariants = createVariants((theme) => ({
     theme.accents.success.emphasis,
     theme.accents.success.emphasis,
   ),
+  sliderTabActive: outlineVariantStyles(
+    theme.buttons.primary.medium.onOutline,
+    theme.buttons.primary.medium.rest,
+    "transparent",
+    theme.buttons.primary.medium.hover,
+  ),
+  sliderTabInactive: outlineVariantStyles(
+    theme.text.medium,
+    "none",
+    "transparent",
+    theme.buttons.secondary.low.hover,
+  ),
 }))
 
-const sizes = createVariants((theme) => ({
+const sizes = createVariants<ButtonSize>((theme) => ({
   small: css`
     line-height: 1.2;
     font-size: ${theme.paragraphSize.p6};
