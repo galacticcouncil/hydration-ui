@@ -530,7 +530,7 @@ export const useDeprecatedReferendumInfo = (referendumIndex: string) => {
     QUERY_KEYS.deprecatedReferendumInfo(referendumIndex),
     async () => {
       const res = await fetch(
-        `https://hydration.subsquare.io/api/democracy/referendums/${referendumIndex}.json`,
+        `https://hydration-api.subsquare.io/democracy/referendums/${referendumIndex}.json`,
       )
       if (!res.ok) return null
 
