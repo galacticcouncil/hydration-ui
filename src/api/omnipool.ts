@@ -20,11 +20,9 @@ import { millisecondsInHour } from "date-fns"
 import request from "graphql-request"
 import {
   AggregationTimeRange,
-  OmnipoolVolumeSubscriptionDocument,
   OmnipoolYieldMetricsDocument,
 } from "graphql/__generated__/squid/graphql"
 import { isNotNil } from "utils/helpers"
-import { print } from "graphql"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -180,7 +178,18 @@ export const useOmnipoolVolumeSubscription = () => {
     if (ids && isLoaded) {
       unsubscribe = squidWSClient.subscribe<OmnipoolQuery>(
         {
-          query: print(OmnipoolVolumeSubscriptionDocument),
+          query: `
+            subscription {
+              omnipoolAssetHistoricalVolumesByPeriod(
+                filter: {assetIds: ${JSON.stringify(ids)}, period: _24H_}
+              ) {
+                nodes {
+                  assetId
+                  assetVolume
+                }
+              }
+            }
+          `,
           variables: {
             assetIds: JSON.stringify(ids),
             period: AggregationTimeRange["24H"],

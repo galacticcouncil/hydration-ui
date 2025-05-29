@@ -418,8 +418,8 @@ export const useXYKSquidVolumes = (address?: string[]) => {
         .filter(isNotNil)
         .map((node) => ({
           poolId: safeConvertAddressSS58(node.poolId),
-          assetId: node.assetAId.toString(),
-          assetIdB: node.assetBId.toString(),
+          assetId: node.assetAAssetRegistryId.toString(),
+          assetIdB: node.assetBAssetRegistryId.toString(),
           volume: node.assetAVolume,
         }))
     },
@@ -450,7 +450,7 @@ export const useOmnipoolVolumes = () => {
       return omnipoolAssetHistoricalVolumesByPeriod.nodes
         .filter(isNotNil)
         .map<OmnipoolVolume>((node) => ({
-          assetId: node.assetId.toString(),
+          assetId: node.assetRegistryId.toString(),
           assetVolume: node.assetVolume.toString(),
         }))
     },
