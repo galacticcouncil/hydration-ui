@@ -17,9 +17,10 @@ export const LiquidityDetailMobileActions: FC<Props> = ({ assetId }) => {
           {t("myLiquidity.actions.poolDetails")}
         </Link>
       </Button>
-      {/* TODO add liquidity from wallet */}
-      <Button variant="tertiary" size="large">
-        {t("myLiquidity.actions.addLiquidity")}
+      <Button variant="tertiary" size="large" asChild>
+        <Link to="/liquidity/$id/add" params={{ id: assetId }}>
+          {t("myLiquidity.actions.addLiquidity")}
+        </Link>
       </Button>
     </Grid>
   )
