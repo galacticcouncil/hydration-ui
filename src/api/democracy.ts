@@ -16,7 +16,8 @@ import { BN_0 } from "utils/constants"
 import { humanizeUnderscoredString } from "utils/formatting"
 import { millisecondsInMinute } from "date-fns"
 
-const REFERENDUM_DATA_URL = import.meta.env.VITE_REFERENDUM_DATA_URL as string
+const REFERENDUM_DATA_URL =
+  "https://hydration-api.subsquare.io/gov2/referendums"
 
 const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   none: 0,
