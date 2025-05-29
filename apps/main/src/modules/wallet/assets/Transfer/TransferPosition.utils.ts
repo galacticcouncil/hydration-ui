@@ -1,6 +1,5 @@
 import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { HYDRA_ADDRESS_PREFIX } from "@galacticcouncil/web3-connect/src/constants"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
@@ -91,7 +90,7 @@ export const useTransferPaymentInfo = (
     ? BigInt(scale(amount, assetDecimals))
     : null
 
-  const normalizedDest = safeConvertAddressSS58(to, HYDRA_ADDRESS_PREFIX) ?? to
+  const normalizedDest = safeConvertAddressSS58(to) ?? to
 
   const { data, ...query } = useQuery({
     ...paymentInfoQuery(

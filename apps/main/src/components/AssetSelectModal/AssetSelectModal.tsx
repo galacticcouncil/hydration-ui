@@ -20,7 +20,7 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { SOption } from "./AssetSelectModal.styled"
 import { useAssetSelectModalAssets } from "./AssetSelectModal.utils"
 
-type AssetSelectModalProps = {
+export type AssetSelectModalProps = {
   assets: TAssetData[]
   selectedAssetId?: string
   onOpenChange: (value: boolean) => void
@@ -29,7 +29,7 @@ type AssetSelectModalProps = {
   open: boolean
 }
 
-const Content = ({
+export const AssetSelectModalContent = ({
   assets,
   onOpenChange,
   onSelect,
@@ -123,7 +123,7 @@ const Content = ({
             onChange={(v) => setSearch(v.target.value)}
             onKeyDown={handleInputKeyDown}
             ref={inputRef}
-            css={{ flexGrow: 1 }}
+            sx={{ flexGrow: 1, px: 0, my: "var(--modal-content-inset)" }}
           />
         }
       />
@@ -221,7 +221,7 @@ const Content = ({
 export const AssetSelectModal = (props: AssetSelectModalProps) => {
   return (
     <Modal open={props.open} onOpenChange={props.onOpenChange}>
-      <Content {...props} />
+      <AssetSelectModalContent {...props} />
     </Modal>
   )
 }
