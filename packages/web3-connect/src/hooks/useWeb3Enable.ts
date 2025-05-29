@@ -5,7 +5,7 @@ import { useShallow } from "zustand/shallow"
 import { WalletProviderType } from "@/config/providers"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { BaseWalletError } from "@/utils/errors"
-import { toAccount } from "@/utils/wallet"
+import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 
 export const useWeb3Enable = () => {
@@ -23,7 +23,7 @@ export const useWeb3Enable = () => {
     retry: false,
     onMutate: (type) => setStatus(type, WalletProviderStatus.Pending),
     onSuccess: (data, type) => {
-      setAccounts(data.map(toAccount))
+      setAccounts(data.map(toStoredAccount))
       setStatus(type, WalletProviderStatus.Connected)
     },
     onError: (error, type) => {
