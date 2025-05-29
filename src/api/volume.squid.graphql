@@ -5,8 +5,10 @@ query XykVolume($filter: XykpoolVolumesByPeriodFilter!) {
         nodes {
         poolId
         assetAAssetRegistryId
+        assetAId
         assetAVolume
         assetBAssetRegistryId
+        assetBId
         assetBVolume
         }
     }
@@ -20,6 +22,7 @@ query OmnipoolVolume($filter: OmnipoolAssetVolumesByPeriodFilter!) {
     ) {
     nodes {
         assetRegistryId
+        assetId
         assetVolume
         }
     }
