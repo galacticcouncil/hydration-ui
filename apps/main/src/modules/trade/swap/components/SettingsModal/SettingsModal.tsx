@@ -7,9 +7,9 @@ import {
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { SingleTradeSection } from "@/modules/trade/components/SettingsModal/SingleTradeSection"
-import { SplitTradeSection } from "@/modules/trade/components/SettingsModal/SplitTradeSection"
-import { useTradeSettingsForm } from "@/modules/trade/components/SettingsModal/useTradeSettingsForm"
+import { SingleTradeSection } from "@/modules/trade/swap/components/SettingsModal/SingleTradeSection"
+import { SplitTradeSection } from "@/modules/trade/swap/components/SettingsModal/SplitTradeSection"
+import { useTradeSettingsForm } from "@/modules/trade/swap/components/SettingsModal/useTradeSettingsForm"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
