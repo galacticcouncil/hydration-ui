@@ -418,15 +418,15 @@ export const useXYKSquidVolumes = (address?: string[]) => {
         .filter(isNotNil)
         .map((node) => ({
           poolId: safeConvertAddressSS58(node.poolId),
-          assetId: node.assetAId.toString(),
-          assetIdB: node.assetBId.toString(),
+          assetId: node.assetAAssetRegistryId ?? node.assetAId,
+          assetIdB: node.assetBAssetRegistryId ?? node.assetBId,
           volume: node.assetAVolume,
         }))
     },
     {
       enabled: !!queryAddresses.length,
       staleTime: millisecondsInHour,
-      refetchInterval: millisecondsInMinute,
+      cacheTime: millisecondsInHour,
     },
   )
 }
@@ -450,7 +450,7 @@ export const useOmnipoolVolumes = () => {
       return omnipoolAssetHistoricalVolumesByPeriod.nodes
         .filter(isNotNil)
         .map<OmnipoolVolume>((node) => ({
-          assetId: node.assetId.toString(),
+          assetId: node.assetRegistryId ?? node.assetId,
           assetVolume: node.assetVolume.toString(),
         }))
     },
@@ -497,6 +497,7 @@ export const useStablepoolVolumes = () => {
 
     {
       staleTime: millisecondsInHour,
+      cacheTime: millisecondsInHour,
     },
   )
 }
