@@ -1,3 +1,4 @@
+import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AssetAmount } from "@galacticcouncil/xcm-core"
 import { useCrossChainBalance, useCrossChainBalanceSubscription } from "api/xcm"
@@ -23,7 +24,6 @@ import { AssetConfig } from "sections/deposit/types"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
-import { isAnyParachain } from "utils/helpers"
 import { isBigInt } from "utils/types"
 
 type DepositAssetProps = {
@@ -209,9 +209,9 @@ export const DepositAsset: React.FC<DepositAssetProps> = ({
 }
 
 function getAddressPrefix(chainKey: string) {
-  const chain = chainsMap.get(chainKey)
-  if (chain && isAnyParachain(chain)) {
-    return chain.key === "assethub" ? 0 : chain.ss58Format
+  // keep old hydration ss58 prefix for CEX, until they also migrate to new address format
+  if (chainKey === "hydration") {
+    return HYDRADX_SS58_PREFIX
   }
 
   return 0
