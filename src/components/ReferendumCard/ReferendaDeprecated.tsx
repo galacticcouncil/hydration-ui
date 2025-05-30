@@ -17,7 +17,7 @@ import { ReferendumCardSkeleton } from "./ReferendumCardSkeleton"
 import { ReferendumCardProgress } from "./ReferendumCardProgress"
 import { useRpcProvider } from "providers/rpcProvider"
 
-const REFERENDUM_LINK = import.meta.env.VITE_REFERENDUM_LINK as string
+const REFERENDUM_LINK = "https://hydration.subsquare.io/democracy/referendum"
 
 type Props = {
   id: string
