@@ -1,0 +1,107 @@
+fragment Swap on Swap {
+  paraTimestamp
+  operationType
+  swapperId
+  event {
+    paraBlockHeight
+    indexInBlock
+  }
+  swapInputs {
+    nodes {
+      asset {
+        assetRegistryId
+      }
+      amount
+    }
+  }
+  swapOutputs {
+    nodes {
+      asset {
+        assetRegistryId
+      }
+      amount
+    }
+  }
+  dcaScheduleExecutionEvent {
+    scheduleExecution {
+      schedule {
+        id
+        status
+        amountIn
+        totalExecutedAmountIn
+        period
+      }
+      status
+    }
+  }
+}
+
+query UserSwaps(
+  $swapperIdFilter: StringFilter
+  $assetIds: [String!]!
+  $offset: Int!
+  $pageSize: Int!
+) {
+  swaps(
+    filter: {
+      swapperId: $swapperIdFilter
+      allInvolvedAssetRegistryIds: { contains: $assetIds }
+    }
+    offset: $offset
+    first: $pageSize
+    orderBy: ID_DESC
+  ) {
+    totalCount
+    nodes {
+      ...Swap
+    }
+  }
+}
+
+query UserOrders(
+  $address: String!
+  $assetInId: StringFilter
+  $assetOutId: StringFilter
+  $offset: Int!
+  $pageSize: Int!
+  $status: [String!]!
+) {
+  dcaSchedules(
+    condition: { ownerId: $address }
+    filter: {
+      status: { in: $status }
+      assetInId: $assetInId
+      assetOutId: $assetOutId
+    }
+    offset: $offset
+    first: $pageSize
+    orderBy: PARA_BLOCK_HEIGHT_DESC
+  ) {
+    totalCount
+    nodes {
+      id
+      status
+      orderType
+      assetIn {
+        assetRegistryId
+      }
+      amountIn
+      totalExecutedAmountIn
+      assetOut {
+        assetRegistryId
+      }
+      amountOut
+      totalExecutedAmountOut
+      period
+    }
+  }
+}
+
+query UserOpenOrdersCount($address: String, $assetFilter: DcaScheduleFilter) {
+  dcaSchedules(
+    condition: { status: "Created", ownerId: $address }
+    filter: $assetFilter
+  ) {
+    totalCount
+  }
+}

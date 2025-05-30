@@ -6,7 +6,7 @@ import { otcOffersQueryKey } from "@/modules/trade/otc/table/OtcTable.query"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
-export const useSubmitCancelOrder = (
+export const useSubmitCancelOtcOrder = (
   otcOffer: OtcOfferTabular,
   onSubmit: () => void,
 ) => {

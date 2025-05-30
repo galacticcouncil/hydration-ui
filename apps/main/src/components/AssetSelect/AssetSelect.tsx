@@ -1,17 +1,10 @@
-import {
-  AssetInput,
-  AssetInputProps,
-  Button,
-  Flex,
-  Text,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { AssetInput, AssetInputProps } from "@galacticcouncil/ui/components"
 import Big from "big.js"
-import Flamingo from "public/images/Flamingo.webp"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetSelectModal } from "@/components/AssetSelectModal"
 import { Logo } from "@/components/Logo"
 import { useAccountBalances } from "@/states/account"
@@ -25,37 +18,6 @@ export type AssetSelectProps = Omit<
   assets: TAssetData[]
   selectedAsset: TAssetData | undefined | null
   setSelectedAsset?: (asset: TAssetData) => void
-}
-
-const EmptyState = () => {
-  const { t } = useTranslation()
-  return (
-    <Flex
-      direction="column"
-      align="center"
-      gap={12}
-      m="auto"
-      pb={50}
-      maxWidth={230}
-    >
-      <img src={Flamingo} loading="lazy" alt="Empty state" width={96} />
-      <Text color={getToken("text.high")} fs={14} lh={1.2} fw={500}>
-        {t("assetSelector.empty.mainText")}
-      </Text>
-      <Text
-        color={getToken("text.medium")}
-        fs={12}
-        lh={1.2}
-        fw={400}
-        align="center"
-      >
-        {t("assetSelector.empty.secondaryText")}
-      </Text>
-      <Button variant="secondary" sx={{ mt: 8 }}>
-        {t("assetSelector.empty.btn.addAsset")}
-      </Button>
-    </Flex>
-  )
 }
 
 export const AssetSelect = ({
@@ -115,7 +77,7 @@ export const AssetSelect = ({
         assets={assets}
         onOpenChange={setOpeModal}
         onSelect={setSelectedAsset}
-        emptyState={<EmptyState />}
+        emptyState={<AssetSelectEmptyState />}
         selectedAssetId={selectedAsset?.id}
       />
     </>

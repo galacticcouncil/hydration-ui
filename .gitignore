@@ -28,3 +28,4 @@ yarn-error.log*
 .turbo
 *.gen.*
 *storybook.log
+.cursor

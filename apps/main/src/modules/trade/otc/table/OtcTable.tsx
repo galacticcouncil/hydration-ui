@@ -4,6 +4,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useHydraAccountAddress } from "@galacticcouncil/web3-connect"
+import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -16,7 +17,6 @@ import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
 } from "@/modules/trade/otc/table/OtcTable.utils"
-import { Route } from "@/routes/_trade/trade.otc"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
@@ -25,7 +25,7 @@ type Props = {
 
 export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("trade")
-  const { offers: offersType } = Route.useSearch()
+  const { offers: offersType } = useSearch({ from: "/trade/otc" })
 
   const { data, isLoading } = useOtcOffersQuery()
   const columns = useOtcTableColums(offersType)
@@ -70,7 +70,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
         columns={columns}
         isLoading={isTableLoading}
         initialSorting={[{ id: OtcColumn.MarketPrice, desc: true }]}
-        noResultsMessage={t("otc.noOrders")}
+        emptyState={t("otc.noOrders")}
       />
     </TableContainer>
   )

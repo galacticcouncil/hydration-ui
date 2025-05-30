@@ -155,7 +155,13 @@ const ModalHeader: FC<ModalHeaderProps> = ({
         )}
       </Flex>
 
-      {description && <ModalDescription>{description}</ModalDescription>}
+      {description && (
+        <ModalDescription
+          sx={{ textAlign: align === "center" ? "center" : "left" }}
+        >
+          {description}
+        </ModalDescription>
+      )}
       {customHeader}
     </SModalHeader>
   )

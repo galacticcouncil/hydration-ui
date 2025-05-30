@@ -56,6 +56,7 @@ export const ToggleLabel = forwardRef<HTMLParagraphElement, TextProps>(
         fs="p5"
         lh={px(14.4)}
         color={getToken("text.high")}
+        sx={{ whiteSpace: "nowrap" }}
         {...props}
       />
     )

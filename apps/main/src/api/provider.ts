@@ -5,8 +5,9 @@ import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
+import { Graffle } from "graffle"
 import { PolkadotClient } from "polkadot-api"
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import {
   createProvider,
@@ -118,6 +119,14 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   } satisfies TProviderData
 }
 
+export const useSquidUrl = (): string => {
+  return useState(() => import.meta.env.VITE_SQUID_URL)[0]
+}
+
+export const useIndexerUrl = (): string => {
+  return useState(() => import.meta.env.VITE_INDEXER_URL)[0]
+}
+
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
 
@@ -174,4 +183,30 @@ export const useProviderMetadata = () => {
     staleTime: Infinity,
     notifyOnChangeProps: [],
   })
+}
+
+const getClient = (url: string) => Graffle.create().transport({ url })
+
+export type GraphqlClient = ReturnType<typeof getClient>
+
+export const useSquidClient = (): GraphqlClient => {
+  const url = useSquidUrl()
+  const [client, setClient] = useState<GraphqlClient>(() => getClient(url))
+
+  useEffect(() => {
+    setClient(getClient(url))
+  }, [url])
+
+  return client
+}
+
+export const useIndexerClient = (): GraphqlClient => {
+  const url = useIndexerUrl()
+  const [client, setClient] = useState<GraphqlClient>(() => getClient(url))
+
+  useEffect(() => {
+    setClient(getClient(url))
+  }, [url])
+
+  return client
 }

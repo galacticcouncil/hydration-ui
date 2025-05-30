@@ -13,9 +13,7 @@ import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarni
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 export const Market: FC = () => {
-  const { assetIn, assetOut } = useSearch({
-    from: "/_trade/trade/swap/market",
-  })
+  const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const form = useMarketForm({ assetIn, assetOut })
   const { data: swap, isLoading } = useMarketTradeData(form)
