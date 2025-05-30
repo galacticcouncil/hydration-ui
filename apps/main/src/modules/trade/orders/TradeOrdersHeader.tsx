@@ -52,51 +52,51 @@ export const TradeOrdersHeader = () => {
   const navigate = useNavigate()
 
   return (
-    <Grid
-      sx={{ overflowX: "auto" }}
-      columnTemplate="1fr auto"
-      align="center"
-      columnGap={20}
-      px={20}
-      py={getTokenPx("scales.paddings.l")}
-    >
-      <SubpageMenu
-        sx={{ overflow: "unset" }}
-        items={tradeOrderTabs.map<SubpageItem>((tab) => ({
-          to: pathname,
-          title: t(`trade.orders.${tab}`),
-          search: { tab, allPairs },
-        }))}
-        renderItem={(item) => (
-          <Box position="relative">
-            <SubpageMenuItem item={item} />
-            {item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
-              openOrdersCount > 0 && (
-                <OpenOrdersBadge
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    transform: "translate(25%, -25%)",
-                  }}
-                >
-                  {openOrdersCount}
-                </OpenOrdersBadge>
-              )}
-          </Box>
-        )}
-      />
-      <Flex gap={12} align="center">
-        <ToggleRoot>
-          <ToggleLabel>{t("trade.orders.allPairs")}</ToggleLabel>
-          <Toggle
-            checked={allPairs}
-            onCheckedChange={(checked) => {
-              navigate({ to: ".", search: { tab, allPairs: checked } })
-            }}
-          />
-        </ToggleRoot>
-      </Flex>
-    </Grid>
+    <Box px={20} py={getTokenPx("scales.paddings.l")}>
+      <Grid
+        sx={{ overflowX: "auto" }}
+        columnTemplate="1fr auto"
+        align="center"
+        columnGap={20}
+      >
+        <SubpageMenu
+          sx={{ overflow: "unset" }}
+          items={tradeOrderTabs.map<SubpageItem>((tab) => ({
+            to: pathname,
+            title: t(`trade.orders.${tab}`),
+            search: { tab, allPairs },
+          }))}
+          renderItem={(item) => (
+            <Box position="relative">
+              <SubpageMenuItem item={item} />
+              {item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
+                openOrdersCount > 0 && (
+                  <OpenOrdersBadge
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      transform: "translate(25%, -25%)",
+                    }}
+                  >
+                    {openOrdersCount}
+                  </OpenOrdersBadge>
+                )}
+            </Box>
+          )}
+        />
+        <Flex gap={12} align="center">
+          <ToggleRoot>
+            <ToggleLabel>{t("trade.orders.allPairs")}</ToggleLabel>
+            <Toggle
+              checked={allPairs}
+              onCheckedChange={(checked) => {
+                navigate({ to: ".", search: { tab, allPairs: checked } })
+              }}
+            />
+          </ToggleRoot>
+        </Flex>
+      </Grid>
+    </Box>
   )
 }

@@ -3,7 +3,7 @@ import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { OrderKind } from "@/modules/trade/orders/lib/useOrderData"
+import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 
 type Props = {
   readonly type: OrderKind | "market"

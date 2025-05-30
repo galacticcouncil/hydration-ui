@@ -45,9 +45,11 @@ export const isTradeOperation = (status: unknown): status is TradeOperation =>
 
 type AllSwaps = true
 
+export type SwapsQueryAddress = string | AllSwaps
+
 export const userSwapsQuery = (
   squidClient: GraphqlClient,
-  address: string | AllSwaps,
+  address: SwapsQueryAddress,
   assetIds: Array<string>,
   page: number,
   pageSize: number,

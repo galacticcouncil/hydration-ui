@@ -1,5 +1,14 @@
 import { ArrowRightLeft, Trash } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Icon,
+  Modal,
+  ModalBody,
+  ModalContentDivider,
+  ModalHeader,
+  TableRowDetailsExpandMobile,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
@@ -14,21 +23,11 @@ import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderStatus } from "@/modules/trade/orders/MyRecentActivity/MyRecentActivity.data"
+import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
+import { SwapDetailsMobile } from "@/modules/trade/orders/SwapDetailsMobile"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
-import { TAsset } from "@/providers/assetsProvider"
 
-export type MyRecentActivitySwap = {
-  readonly from: TAsset
-  readonly fromAmount: string
-  readonly to: TAsset
-  readonly toAmount: string
-  readonly fillPrice: string
-  readonly status: OrderStatus | null
-  readonly link: string | null
-}
-
-const columnHelper = createColumnHelper<MyRecentActivitySwap>()
+const columnHelper = createColumnHelper<SwapData>()
 
 export const useMyRecentActivityColumns = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -109,7 +108,7 @@ export const useMyRecentActivityColumns = () => {
 
     const actionColumn = columnHelper.display({
       id: "ations",
-      cell: function Row({ row }) {
+      cell: function Cell({ row }) {
         const { status } = row.original
         const [confirmationModal, setConfirmationModal] = useState(false)
 
@@ -157,13 +156,26 @@ export const useMyRecentActivityColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: ({ row }) => {
+      cell: function Cell({ row }) {
+        const [modal, setModal] = useState(false)
+
         return (
-          <AmountMobile
-            fromAmount={row.original.fromAmount}
-            from={row.original.from}
-            status={row.original.status?.status}
-          />
+          <>
+            <TableRowDetailsExpandMobile onClick={() => setModal(true)}>
+              <AmountMobile
+                fromAmount={row.original.fromAmount}
+                from={row.original.from}
+                status={row.original.status?.status}
+              />
+            </TableRowDetailsExpandMobile>
+            <Modal open={modal} onOpenChange={setModal}>
+              <ModalHeader title="Swap details" align="center" />
+              <ModalContentDivider />
+              <ModalBody>
+                <SwapDetailsMobile details={row.original} />
+              </ModalBody>
+            </Modal>
+          </>
         )
       },
     })

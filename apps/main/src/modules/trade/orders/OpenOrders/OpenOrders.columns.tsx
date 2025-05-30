@@ -12,7 +12,7 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData } from "@/modules/trade/orders/lib/useOrderData"
+import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const columnHelper = createColumnHelper<OrderData>()
@@ -86,7 +86,7 @@ export const useOpenOrdersColumns = () => {
 
     const actionColumn = columnHelper.display({
       id: "ations",
-      cell: function Row({ row }) {
+      cell: function Cell({ row }) {
         const [confirmationModal, setConfirmationModal] = useState(false)
 
         return (

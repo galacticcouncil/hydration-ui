@@ -29,6 +29,7 @@ fragment Swap on Swap {
         status
         amountIn
         totalExecutedAmountIn
+        period
       }
       status
     }
@@ -91,6 +92,7 @@ query UserOrders(
       }
       amountOut
       totalExecutedAmountOut
+      period
     }
   }
 }

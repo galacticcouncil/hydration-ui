@@ -1,7 +1,7 @@
 import {
   Modal,
   TableRowAction,
-  TableRowActionMobile,
+  TableRowDetailsExpandMobile,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -129,12 +129,12 @@ export const useMyLiquidityColumns = () => {
 
         return (
           <>
-            <TableRowActionMobile onClick={() => setIsDetailOpen(true)}>
+            <TableRowDetailsExpandMobile onClick={() => setIsDetailOpen(true)}>
               <MyLiquidityCurrentValue
                 asset={row.original.asset}
                 currentValue={row.original.currentValue}
               />
-            </TableRowActionMobile>
+            </TableRowDetailsExpandMobile>
             <Modal open={isDetailOpen} onOpenChange={setIsDetailOpen}>
               <LiquidityDetailMobileModal
                 asset={row.original.asset}

@@ -126,6 +126,7 @@
   "rpc.status.online": "The most recent block on this network. Prices update on every block.",
   "rpc.status.ping": "{{ value, number }} ms",
   "rpc.status.slow": "This RPC is having a hard time. Please select another RPC.",
+  "received": "Received",
   "save": "Save",
   "date": "Date",
   "date.default": "{{ value, date }}",

@@ -5,7 +5,7 @@ import {
   ModalContent,
   ModalRoot,
   ModalTrigger,
-  TableRowActionMobile,
+  TableRowDetailsExpandMobile,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -110,14 +110,14 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
 
         return (
           <>
-            <TableRowActionMobile
+            <TableRowDetailsExpandMobile
               disabled={!isConnected}
               onClick={() => setIsFillOpen(true)}
             >
               <OfferMarketPriceColumn
                 percentage={row.original.marketPricePercentage}
               />
-            </TableRowActionMobile>
+            </TableRowDetailsExpandMobile>
             <Modal open={isFillOpen} onOpenChange={setIsFillOpen}>
               <FillOrderModalContent
                 otcOffer={row.original}

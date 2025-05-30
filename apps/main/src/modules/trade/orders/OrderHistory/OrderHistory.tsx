@@ -3,7 +3,7 @@ import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
 import { DcaScheduleStatus } from "@/api/graphql/trade-orders"
-import { useOrderData } from "@/modules/trade/orders/lib/useOrderData"
+import { useOrdersData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 
@@ -19,7 +19,7 @@ export const OrderHistory: FC<Props> = ({ allPairs }) => {
   })
 
   const [page, setPage] = useState(1)
-  const { orders, totalCount, isPending } = useOrderData(
+  const { orders, totalCount, isPending } = useOrdersData(
     [DcaScheduleStatus.Completed, DcaScheduleStatus.Terminated],
     allPairs ? [] : [assetIn, assetOut],
     page,
