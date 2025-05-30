@@ -47,6 +47,7 @@ import { getPolkadotSignerFromPjs } from "polkadot-api/pjs-signer"
 import { Observable, firstValueFrom, shareReplay } from "rxjs"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
+import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise">
@@ -218,7 +219,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
           nonce: customNonce ? parseInt(customNonce) : -1,
-          withSignedTransaction: true,
+          withSignedTransaction: wallet instanceof WalletConnect ? false : true,
         })
 
         return props.onSigned(signature)

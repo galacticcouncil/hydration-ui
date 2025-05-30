@@ -13,12 +13,7 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
-import {
-  BN_0,
-  BN_1,
-  BN_10,
-  UNIFIED_ADDRESS_FORMAT_ENABLED,
-} from "utils/constants"
+import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
   getChainSpecificAddress,
   shortenAccountAddress,
@@ -201,8 +196,7 @@ export function WalletTransferSectionOnchain({
     ({ address }) => address.toLowerCase() === dest.toLowerCase(),
   )
 
-  const shouldShowDisclaimer =
-    !!dest && !isDestUserOwnedAddress && UNIFIED_ADDRESS_FORMAT_ENABLED
+  const shouldShowDisclaimer = !!dest && !isDestUserOwnedAddress
 
   const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
 
