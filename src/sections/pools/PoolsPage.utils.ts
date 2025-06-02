@@ -645,7 +645,7 @@ export const calculatePoolsTotals = (
       .plus(pool.tvlDisplay.isNaN() || isGDOT ? BN_0 : pool.tvlDisplay)
       .toString()
     acc.volume = BN(acc.volume)
-      .plus(BN(pool.volume ?? 0).div(isGDOT ? 1 : 2))
+      .plus(BN(pool.volume ?? 0))
       .toString()
 
     return acc
