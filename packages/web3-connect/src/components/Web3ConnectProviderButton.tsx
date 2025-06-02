@@ -47,7 +47,7 @@ export const Web3ConnectProviderButton: React.FC<
   }, [disconnect, enable, installUrl, installed, isConnected, provider])
 
   return (
-    <SProviderButton {...props} onClick={onClick}>
+    <SProviderButton type="button" {...props} onClick={onClick}>
       <Box sx={{ position: "relative" }}>
         <img width={32} height={32} src={logo} alt={title} />
         {EVM_PROVIDERS.includes(provider) && (

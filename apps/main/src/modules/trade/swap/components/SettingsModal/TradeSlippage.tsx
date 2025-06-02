@@ -7,7 +7,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { SettingLabel } from "@/modules/trade/components/SettingsModal/SettingLabel"
+import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
 
 type Props = {
   readonly slippage: number

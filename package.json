@@ -41,7 +41,7 @@
     "@galacticcouncil/math-staking": "^1.0.0",
     "@galacticcouncil/math-xyk": "^1.0.0",
     "@galacticcouncil/sdk": "^7.0.1",
-    "@galacticcouncil/sdk-next": "^1.0.0-beta.0",
+    "@galacticcouncil/sdk-next": "^0.1.0",
     "@galacticcouncil/xcm-cfg": "^9.1.0",
     "@galacticcouncil/xcm-core": "^7.1.0",
     "@galacticcouncil/xcm-sdk": "^9.2.0",
@@ -53,6 +53,7 @@
     "polkadot-api": "^1.10.0",
     "react-use": "^17.6.0",
     "remeda": "^2.19.0",
+    "use-debounce": "^10.0.4",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

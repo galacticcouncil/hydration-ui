@@ -3,38 +3,23 @@ import { useForm } from "react-hook-form"
 import * as z from "zod"
 
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { useAccountData } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 import {
-  maxBalanceError,
+  positive,
   required,
-  requiredAny,
-  validateMaxBalance,
+  requiredObject,
+  useValidateFormMaxBalance,
 } from "@/utils/validators"
 
 const useSchema = () => {
-  const balances = useAccountData((data) => data.balances)
+  const refineMaxBalance = useValidateFormMaxBalance()
 
   return z
     .object({
-      address: z.string().pipe(required),
-      asset: z.custom<TAsset | null>().refine(...requiredAny),
-      amount: z.string().pipe(required),
+      address: required,
+      asset: requiredObject<TAsset>(),
+      amount: required.pipe(positive),
     })
-    .refine(
-      ({ asset, amount }) => {
-        const balance = scaleHuman(
-          balances[asset?.id ?? ""]?.free ?? 0n,
-          asset?.decimals ?? 12,
-        )
-
-        return validateMaxBalance(balance, amount || "0")
-      },
-      {
-        path: ["amount"],
-        error: maxBalanceError,
-      },
-    )
+    .check(refineMaxBalance("amount", (form) => [form.asset, form.amount]))
 }
 
 export type TransferPositionFormValues = z.infer<ReturnType<typeof useSchema>>

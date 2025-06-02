@@ -18,8 +18,6 @@ import {
 } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountData } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly assetId?: string
@@ -33,13 +31,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const transferPosition = useSubmitTransferPosition({ onClose })
   const form = useTransferPositionForm({ assetId })
   const shouldValidate = form.formState.isSubmitted
-
-  const balances = useAccountData((data) => data.balances)
-  const asset = form.watch("asset")
-  const balance = scaleHuman(
-    balances[asset?.id ?? ""]?.free ?? 0n,
-    asset?.decimals ?? 12,
-  )
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
 
@@ -74,7 +65,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             assetFieldName="asset"
             amountFieldName="amount"
             assets={tradable}
-            maxBalance={balance.toString()}
           />
           <ModalContentDivider />
         </ModalBody>

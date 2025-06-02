@@ -142,6 +142,11 @@ export const useAccountBalances = () => {
   return { balances, getBalance, getFreeBalance, isBalanceLoading }
 }
 
+export const useAccountBalance = (assetId: string): Balance | undefined => {
+  const { balances } = useAccountBalances()
+  return balances[assetId]
+}
+
 export const useAccountPositions = () => {
   const positions = useAccountData(prop("positions"))
   const { omnipool, omnipoolMining, xykMining } = positions

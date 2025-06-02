@@ -14,7 +14,7 @@ import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
-import { AssetSwitcher } from "@/components/AssetSwitcher"
+import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { scale, scaleHuman } from "@/utils/formatting"
