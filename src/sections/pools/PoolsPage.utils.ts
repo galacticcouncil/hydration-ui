@@ -24,10 +24,11 @@ import { useAccountAssets } from "api/deposits"
 import { TShareToken, useAssets } from "providers/assets"
 import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
-import { useExternalWhitelist } from "api/external"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useBorrowAssetApy } from "api/borrow"
+import { useValidXYKPoolAddresses } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -87,9 +88,7 @@ const useStablepools = () => {
       : "",
   )
 
-  const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes(
-    filteredStablepools.map((filteredStablepool) => filteredStablepool.id),
-  )
+  const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes()
 
   const isLoading = isPoolsLoading || isLoadingPrices
 
@@ -208,8 +207,7 @@ export const usePools = () => {
 
   const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
-  const { data: volumes, isLoading: isVolumeLoading } =
-    useOmnipoolVolumes(assetsId)
+  const { data: volumes, isLoading: isVolumeLoading } = useOmnipoolVolumes()
 
   const isInitialLoading =
     omnipoolAssets.isLoading || isLoading || isLoadingStablepools
@@ -390,7 +388,9 @@ export const useXYKPools = () => {
   const { data: xykConsts } = useXYKConsts()
   const { shareTokens } = useAssets()
   const { data: accountAssets } = useAccountAssets()
-  const { data: whitelist } = useExternalWhitelist()
+  const addresses = useValidXYKPoolAddresses(
+    useShallow((state) => state.addresses),
+  )
 
   const { validShareTokens, allShareTokens } = useMemo(() => {
     return shareTokens.reduce<{
@@ -398,9 +398,7 @@ export const useXYKPools = () => {
       validShareTokens: Array<TShareToken>
     }>(
       (acc, shareToken) => {
-        const isInvalid = !shareToken.assets.some(
-          (asset) => asset.isSufficient || whitelist?.includes(asset.id),
-        )
+        const isInvalid = !addresses?.includes(shareToken.poolAddress)
 
         if (!isInvalid) acc.validShareTokens.push(shareToken)
 
@@ -412,10 +410,9 @@ export const useXYKPools = () => {
         validShareTokens: [],
       },
     )
-  }, [shareTokens, whitelist])
-
+  }, [shareTokens, addresses])
   const { data: allFarms, isLoading: isLoadingAllFarms } = useXYKFarms(
-    validShareTokens.map((pool) => pool.poolAddress) ?? [],
+    addresses ?? [],
   )
 
   const shareTokensId =
@@ -428,8 +425,7 @@ export const useXYKPools = () => {
 
   const fee = xykConsts?.fee ? getTradeFee(xykConsts.fee) : BN_NAN
 
-  const { data: volumes, isLoading: isVolumeLoading } =
-    useXYKPoolTradeVolumes(validShareTokens)
+  const { data: volumes, isLoading: isVolumeLoading } = useXYKPoolTradeVolumes()
 
   const isInitialLoading =
     isIssuanceLoading || shareTokeSpotPrices.isInitialLoading
@@ -649,7 +645,7 @@ export const calculatePoolsTotals = (
       .plus(pool.tvlDisplay.isNaN() || isGDOT ? BN_0 : pool.tvlDisplay)
       .toString()
     acc.volume = BN(acc.volume)
-      .plus(BN(pool.volume ?? 0).div(isGDOT ? 1 : 2))
+      .plus(BN(pool.volume ?? 0))
       .toString()
 
     return acc

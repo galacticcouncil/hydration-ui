@@ -28,6 +28,7 @@ import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { createClient } from "graphql-ws"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -393,6 +394,12 @@ export const useProviderData = (
       const endpoint = provider.endpoint
       const dataEnv = getProviderDataEnv(endpoint)
 
+      const providerData = getProviderData(endpoint)
+      const squidWSClient = createClient({
+        webSocketImpl: WebSocket,
+        url: providerData.squidUrl,
+      })
+
       const poolService = new CachingPoolService(api)
       const txUtils = new TradeUtils(api)
       const traderRoutes = [
@@ -420,8 +427,7 @@ export const useProviderData = (
         poolService,
         router: tradeRouter,
         ecosystem: Ecosystem.Polkadot,
-        unifiedAddressFormat:
-          import.meta.env.VITE_FF_UNIFIED_ADDRESS_FORMAT === "true",
+        unifiedAddressFormat: true,
         isTestnet: isTestnetRpcUrl(endpoint),
       })
 
@@ -454,7 +460,7 @@ export const useProviderData = (
 
       const slotDurationMs = slotDuration.toString()
       const isSixBlockEnabled = !!sixBlockSince
-      console.log(slotDurationMs)
+
       const balanceClient = new BalanceClient(api)
 
       const evm = new PolkadotEvmRpcProvider(api)
@@ -472,6 +478,8 @@ export const useProviderData = (
         dataEnv,
         timestamp,
         slotDurationMs,
+        providerData,
+        squidWSClient,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
           strategies: isGigaDotEnabled,
@@ -525,6 +533,19 @@ export const useActiveProvider = (): ProviderProps => {
 
   return (
     PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
+      name: "",
+      url: import.meta.env.VITE_PROVIDER_URL,
+      indexerUrl: import.meta.env.VITE_INDEXER_URL,
+      squidUrl: import.meta.env.VITE_SQUID_URL,
+      env: import.meta.env.VITE_ENV,
+      dataEnv: getDefaultDataEnv(),
+    }
+  )
+}
+
+function getProviderData(url: string): ProviderProps {
+  return (
+    PROVIDERS.find((provider) => provider.url === url) || {
       name: "",
       url: import.meta.env.VITE_PROVIDER_URL,
       indexerUrl: import.meta.env.VITE_INDEXER_URL,

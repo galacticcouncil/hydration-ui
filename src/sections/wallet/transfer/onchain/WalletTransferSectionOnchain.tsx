@@ -13,12 +13,7 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
-import {
-  BN_0,
-  BN_1,
-  BN_10,
-  UNIFIED_ADDRESS_FORMAT_ENABLED,
-} from "utils/constants"
+import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
   getChainSpecificAddress,
   shortenAccountAddress,
@@ -43,6 +38,8 @@ import { useState } from "react"
 import { useHealthFactorChange } from "api/borrow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { ProtocolAction } from "@aave/contract-helpers"
+import { useAddressStore } from "components/AddressBook/AddressBook.utils"
+import { useShallow } from "hooks/useShallow"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -189,8 +186,17 @@ export function WalletTransferSectionOnchain({
     healthFactorChange.currentHealthFactor !==
       healthFactorChange.futureHealthFactor
 
-  const dest = form.watch("dest")
-  const shouldShowDisclaimer = UNIFIED_ADDRESS_FORMAT_ENABLED && !!dest
+  const dest = form.watch("dest") || ""
+
+  const userOwnedAddresses = useAddressStore(
+    useShallow((state) => state.addresses.filter(({ isCustom }) => !isCustom)),
+  )
+
+  const isDestUserOwnedAddress = userOwnedAddresses.some(
+    ({ address }) => address.toLowerCase() === dest.toLowerCase(),
+  )
+
+  const shouldShowDisclaimer = !!dest && !isDestUserOwnedAddress
 
   const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
 
