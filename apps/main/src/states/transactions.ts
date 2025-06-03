@@ -26,6 +26,7 @@ export interface TransactionMeta {
   fee?: string
   feeBalance?: string
   feeSymbol?: string
+  feePaymentAssetId?: string
   dstChainKey?: string
   dstChainFee?: string
   dstChainFeeSymbol?: string

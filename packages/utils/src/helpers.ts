@@ -17,3 +17,15 @@ export const hexToRgba = (hex: string, alpha = 1): string => {
   const b = parseInt(hexValue.substring(4, 6), 16)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
+
+export const stringEquals = (
+  a: string,
+  b: string,
+  caseSensitive: boolean = false,
+): boolean => {
+  if (caseSensitive) {
+    return a === b
+  }
+
+  return a.toLowerCase() === b.toLowerCase()
+}

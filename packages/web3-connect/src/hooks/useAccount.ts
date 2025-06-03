@@ -1,7 +1,9 @@
+import { useMemo } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
 import { Account, useWeb3Connect } from "@/hooks/useWeb3Connect"
+import { toAccount } from "@/utils"
 
 type UseAccountReturn =
   | {
@@ -22,12 +24,16 @@ export const useAccount = (): UseAccountReturn => {
     useShallow(pick(["account", "accounts", "disconnect"])),
   )
 
-  return account
-    ? {
-        isConnected: true,
-        account,
-        accounts,
-        disconnect,
-      }
-    : { isConnected: false, account: null, accounts: [], disconnect }
+  return useMemo(
+    () =>
+      account
+        ? {
+            isConnected: true,
+            account: toAccount(account),
+            accounts: accounts.map(toAccount),
+            disconnect,
+          }
+        : { isConnected: false, account: null, accounts: [], disconnect },
+    [account, accounts, disconnect],
+  )
 }
