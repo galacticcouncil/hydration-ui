@@ -1,15 +1,26 @@
-import { BigNumber } from "@galacticcouncil/sdk"
-import { Separator, Skeleton, Stack } from "@galacticcouncil/ui/components"
-import { SummaryRow } from "@galacticcouncil/ui/components"
+import {
+  ButtonTransparent,
+  Flex,
+  Separator,
+  Skeleton,
+  Stack,
+  SummaryRow,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { TransactionFeePaymentAssetModal } from "@/modules/transactions/TransactionFeePaymentAssetModal"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
 const RowSeparator = () => <Separator mx="var(--modal-content-inset)" />
 
 export const ReviewTransactionSummary = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common"])
+  const [isFeePaymentModalOpen, setIsFeePaymentModalOpen] = useState(false)
+
   const {
     nonce,
     isLoadingNonce,
@@ -24,6 +35,7 @@ export const ReviewTransactionSummary = () => {
   const feeAsset = getAsset(feeAssetId)
 
   const isFeeOverride = !!meta?.fee && !!meta?.feeSymbol
+  const isChangingFeeAsset = !!meta?.feePaymentAssetId
 
   return (
     <Stack
@@ -43,19 +55,37 @@ export const ReviewTransactionSummary = () => {
         <SummaryRow
           label={t("transaction.summary.cost")}
           content={
-            isLoadingFeeEstimate ? (
-              <Skeleton width={60} />
-            ) : (
-              t("currency", {
-                symbol: feeAsset?.symbol,
-                value:
-                  feeEstimate && feeAsset
-                    ? BigNumber(feeEstimate?.toString()) // @TODO replace with big.js when sdk-next is released
-                        .shiftedBy(-feeAsset.decimals)
-                        .toString()
-                    : null,
-              })
-            )
+            <Text fs="p5" fw={500} color={getToken("text.high")}>
+              {isLoadingFeeEstimate ? (
+                <Skeleton width={60} height="1em" />
+              ) : (
+                <Flex as="span" gap={4}>
+                  {t("currency", {
+                    prefix: "≈ ",
+                    symbol: feeAsset?.symbol,
+                    value: feeEstimate,
+                  })}
+                  {!isChangingFeeAsset && (
+                    <>
+                      <ButtonTransparent
+                        onClick={() => setIsFeePaymentModalOpen(true)}
+                      >
+                        <Text
+                          as="span"
+                          color={getToken("accents.info.onPrimary")}
+                        >
+                          {t("edit")}
+                        </Text>
+                      </ButtonTransparent>
+                      <TransactionFeePaymentAssetModal
+                        open={isFeePaymentModalOpen}
+                        onOpenChange={setIsFeePaymentModalOpen}
+                      />
+                    </>
+                  )}
+                </Flex>
+              )}
+            </Text>
           }
         />
       )}

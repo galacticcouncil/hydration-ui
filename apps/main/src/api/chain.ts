@@ -1,6 +1,7 @@
 import { queryOptions, useQueryClient } from "@tanstack/react-query"
-import { useEffect } from "react"
+import { useMemo } from "react"
 
+import { useObservable } from "@/hooks/useObservable"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
@@ -34,21 +35,19 @@ export const bestNumberQuery = (context: TProviderContext) => {
 
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
-  const { isLoaded, papi } = useRpcProvider()
+  const { papi, isApiLoaded } = useRpcProvider()
 
-  useEffect(() => {
-    if (!isLoaded) return
+  const observable = useMemo(() => {
+    if (!isApiLoaded) return
+    return papi.query.System.Number.watchValue("best")
+  }, [isApiLoaded, papi])
 
-    const sub = papi.query.System.Number.watchValue("best").subscribe({
-      next: () => {
-        queryClient.invalidateQueries({
-          queryKey: [QUERY_KEY_BLOCK_PREFIX],
-        })
-      },
-    })
-
-    return () => {
-      sub.unsubscribe()
-    }
-  }, [isLoaded, papi, queryClient])
+  useObservable(observable, {
+    enabled: isApiLoaded,
+    onUpdate: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEY_BLOCK_PREFIX],
+      })
+    },
+  })
 }

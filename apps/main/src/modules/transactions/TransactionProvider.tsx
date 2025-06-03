@@ -3,7 +3,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useMemo,
   useReducer,
   useRef,
 } from "react"
@@ -23,7 +22,9 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { Transaction, useTransactionsStore } from "@/states/transactions"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = Transaction &
   TxState & {
@@ -35,7 +36,8 @@ export type TransactionContext = Transaction &
     nonce?: number
     isLoadingNonce: boolean
 
-    feeEstimate?: bigint
+    feeEstimateNative?: string
+    feeEstimate?: string
     feeAssetId: string
     isLoadingFeeEstimate: boolean
 
@@ -65,17 +67,17 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const toasts = useTransactionToasts(props?.toasts)
 
   const transactionRef = useRef(props)
-  const { tx } = transactionRef.current
+  const { tx, meta } = transactionRef.current
 
   const { data: nonce, isLoading: isLoadingNonce } = useNonce({
     address: account?.address,
   })
 
-  const { data: feeEstimateNative, isLoading: isLoadingFeeEstimate } =
-    useEstimateFee({
-      address: account?.address ?? "",
-      tx,
-    })
+  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee({
+    address: account?.address ?? "",
+    tx: isPapiTransaction(tx) ? tx : undefined,
+    feePaymentAssetId: meta?.feePaymentAssetId,
+  })
 
   const onClose = useCallback(() => {
     dispatch(doClose())
@@ -90,10 +92,6 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const setStatus = useCallback((status: TxStatus) => {
     dispatch(doSetStatus(status))
   }, [])
-
-  const isLoading = useMemo(() => {
-    return isLoadingNonce || isLoadingFeeEstimate
-  }, [isLoadingFeeEstimate, isLoadingNonce])
 
   const signAndSubmitMutation = useSignAndSubmit(tx, {
     onMutate: () => dispatch(doSign()),
@@ -131,6 +129,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     })
   }
 
+  const isLoading = isLoadingNonce || isLoadingFeeEstimate
+
   return (
     <TransactionContext.Provider
       value={{
@@ -145,8 +145,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         nonce,
         isLoadingNonce,
 
-        feeEstimate: feeEstimateNative, // @TODO: convert to fee payment asset
-        feeAssetId: "0", // @TODO: get fee payment asset
+        feeEstimateNative: fee?.feeEstimateNative,
+        feeEstimate: fee?.feeEstimate,
+        feeAssetId: fee?.feeAssetId ?? NATIVE_ASSET_ID,
         isLoadingFeeEstimate,
 
         isLoading,

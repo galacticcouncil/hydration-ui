@@ -1,3 +1,4 @@
+import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
 import {
   connectInjectedExtension,
   InjectedExtension,
@@ -51,7 +52,10 @@ export class BaseSubstrateWallet implements Wallet {
 
   setSigner = (address: string) => {
     const accounts = this.getInjectedAccounts()
-    const account = accounts.find((acc) => acc.address === address)
+    const account = accounts.find(
+      (acc) =>
+        safeConvertAddressSS58(acc.address) === safeConvertAddressSS58(address),
+    )
     if (account) {
       this._signer = account.polkadotSigner
     }

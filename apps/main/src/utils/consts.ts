@@ -6,6 +6,7 @@ export const HUB_ID = "1"
 
 export const USDT_ASSET_ID = "10"
 export const GDOT_ASSET_ID = "690"
+export const DOT_ASSET_ID = "5"
 
 export const PARACHAIN_BLOCK_TIME = 12_000
 

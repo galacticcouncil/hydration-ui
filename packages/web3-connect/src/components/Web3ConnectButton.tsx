@@ -8,7 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress } from "@galacticcouncil/utils"
+import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
 import { forwardRef } from "react"
 
 import { SConnectedButton } from "@/components/Web3ConnectButton.styled"
@@ -21,6 +21,8 @@ export const Web3ConnectButton = forwardRef<HTMLButtonElement, ButtonProps>(
     const { account } = useAccount()
     const { toggle } = useWeb3ConnectModal()
     if (account) {
+      const shortDisplayAddr = shortenAccountAddress(account.displayAddress)
+
       return (
         <SConnectedButton
           ref={ref}
@@ -38,9 +40,11 @@ export const Web3ConnectButton = forwardRef<HTMLButtonElement, ButtonProps>(
             <Text fs="p3" lh={1.2} truncate={140}>
               {account.name}
             </Text>
-            <Text fs="p6" color={getToken("text.medium")}>
-              {shortenAccountAddress(account.address)}
-            </Text>
+            {!stringEquals(account.name, shortDisplayAddr) && (
+              <Text fs="p6" color={getToken("text.medium")}>
+                {shortDisplayAddr}
+              </Text>
+            )}
           </Flex>
           <Icon size={8} component={CaretDown} />
         </SConnectedButton>

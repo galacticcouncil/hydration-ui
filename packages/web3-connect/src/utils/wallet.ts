@@ -1,21 +1,49 @@
 import { AccountAvatarTheme } from "@galacticcouncil/ui/components"
-import { isH160Address, safeConvertH160toSS58 } from "@galacticcouncil/utils"
+import {
+  isEvmParachainAccount,
+  isH160Address,
+  safeConvertAddressSS58,
+  safeConvertH160toSS58,
+  safeConvertSS58toH160,
+  safeConvertSS58toPublicKey,
+} from "@galacticcouncil/utils"
 
 import { WalletProviderType } from "@/config/providers"
-import { Account, COMPATIBLE_WALLET_PROVIDERS } from "@/hooks/useWeb3Connect"
+import {
+  Account,
+  COMPATIBLE_WALLET_PROVIDERS,
+  StoredAccount,
+} from "@/hooks/useWeb3Connect"
 import { WalletAccount } from "@/types/wallet"
 
-export const toAccount = ({
+export const toStoredAccount = ({
   address,
   name,
   provider,
-}: WalletAccount): Account => {
+}: WalletAccount): StoredAccount => {
+  const isEvm = isH160Address(address)
+
+  const ss58Format = isEvm
+    ? safeConvertH160toSS58(address)
+    : safeConvertAddressSS58(address)
+
+  const publicKey = safeConvertSS58toPublicKey(ss58Format)
+
   return {
-    address: isH160Address(address) ? safeConvertH160toSS58(address) : address,
-    displayAddress: address,
+    publicKey,
+    address: ss58Format,
     name: name ?? "",
     provider: provider,
-    isIncompatible: !COMPATIBLE_WALLET_PROVIDERS.includes(provider),
+  }
+}
+
+export const toAccount = (account: StoredAccount): Account => {
+  return {
+    ...account,
+    displayAddress: isEvmParachainAccount(account.address)
+      ? safeConvertSS58toH160(account.address)
+      : account.address,
+    isIncompatible: !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider),
   }
 }
 
