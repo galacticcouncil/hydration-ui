@@ -33,7 +33,7 @@
     "polkadot-api": "^1.10.0"
   },
   "dependencies": {
-    "@galacticcouncil/descriptors": "^1.1.0",
+    "@galacticcouncil/descriptors": "^1.1.1",
     "@galacticcouncil/math-lbp": "^1.0.0",
     "@galacticcouncil/math-liquidity-mining": "^1.0.0",
     "@galacticcouncil/math-omnipool": "^1.1.0",

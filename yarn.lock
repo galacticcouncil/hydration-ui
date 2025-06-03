@@ -832,10 +832,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.1.tgz#a7ee12f92bec7ddd2553d0f185693fb22f29f28c"
   integrity sha512-psIJv4hY/CEz3jXzd/mrRGtCtwmMQtCzi5OwDlJ8wbYtdxScCkIlHfZXRxDjUvgWTgG7xu9TbjeyifsJE6yHqw==
 
-"@galacticcouncil/descriptors@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.0.tgz#6ec9a13d65279d4bfd8bb342bf087e11fb070bd9"
-  integrity sha512-wbPNVmWfxw55e+jyyyYr5HCfzVbzE2WTgx/8S2MK3GbIxSf+uyOCk3Nk4yAhSEv1beZzXhPCQDkgobz4bycDcA==
+"@galacticcouncil/descriptors@^1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.1.tgz#71cb23dfe348a04a9989c78cf2ccf72f0bfa16db"
+  integrity sha512-/TNhudkCRYskJWG6i3gCx74RlfqMIMgBJ7UJEb6III8kSfJjezShUv1RV3AHZjUdodoZToS0tb+3IbaV+KPq8w==
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"
@@ -9037,6 +9037,11 @@ react-loading-skeleton@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/react-loading-skeleton/-/react-loading-skeleton-3.5.0.tgz#da2090355b4dedcad5c53cb3f0ed364e3a76d6ca"
   integrity sha512-gxxSyLbrEAdXTKgfbpBEFZCO/P153DnqSCQau2+o6lNy1jgMRr2MmRmOzMmyrwSaSYLRB8g7b0waYPmUjz7IhQ==
+
+react-number-format@^5.4.4:
+  version "5.4.4"
+  resolved "https://registry.yarnpkg.com/react-number-format/-/react-number-format-5.4.4.tgz#d31f0e260609431500c8d3f81bbd3ae1fb7cacad"
+  integrity sha512-wOmoNZoOpvMminhifQYiYSTCLUDOiUbBunrMrMjA+dV52sY+vck1S4UhR6PkgnoCquvvMSeJjErXZ4qSaWCliA==
 
 react-refresh@^0.17.0:
   version "0.17.0"
