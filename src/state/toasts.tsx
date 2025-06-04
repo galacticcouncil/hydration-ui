@@ -29,6 +29,7 @@ type ToastParams = {
   actions?: ReactNode
   persist?: boolean
   bridge?: MetaTags
+  isHydraSource?: boolean
   txHash?: string
   hideTime?: number
   hidden?: boolean
