@@ -341,7 +341,6 @@
   "liquidity.add.modal.limit.validation.max": "Max value is {{value}}",
   "liquidity.add.modal.provideLiquidity": "Provide Liquidity",
   "liquidity.add.modal.provideLiquidity.loading": "Providing liquidity",
-  "liquidity.add.modal.row.transactionCostValue": "≈ {{ amount, bignumber }} {{ symbol }}",
   "liquidity.add.modal.confirmButton": "Add liquidity",
   "liquidity.add.modal.onlyAddLiquidity": "Only Add Liquidity",
   "liquidity.add.modal.positionDetails": "Position details",
