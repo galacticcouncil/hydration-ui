@@ -150,17 +150,16 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   const createdAt: BN = positionData.createdAt.toBigNumber()
 
   const votes: Array<{
-    id: BN
+    id: string
     amount: BN
     conviction: string
-    //@ts-ignore
   }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
     const prevAcc = await acc
-    const id = key.toBigNumber()
+    const id = key.toString()
     const amount = data.amount.toBigNumber()
     const conviction = data.conviction.toString()
 
-    const referendaInfoRaw = await api.query.referenda.referendumInfoFor(key)
+    const referendaInfoRaw = await api.query.referenda.referendumInfoFor(id)
 
     if (referendaInfoRaw.isNone) return prevAcc
 
@@ -175,7 +174,7 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     }
 
     return prevAcc
-  }, Promise.resolve<Array<{ id: BN; amount: BN; conviction: string }>>([]))
+  }, Promise.resolve<Array<{ id: string; amount: BN; conviction: string }>>([]))
 
   return {
     stake: positionData.stake.toBigNumber(),
