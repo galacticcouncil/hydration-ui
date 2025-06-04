@@ -13,7 +13,6 @@ import { useOmnipoolFarms } from "api/farms"
 import { useAssetsData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useAssetsPrice } from "state/displayPrice"
-import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 
 export type TTreasuryAsset = {
   value: string
@@ -246,11 +245,7 @@ export const useTreasuryAssets = () => {
           ),
           totalPol: acc.totalPol.plus(omnipoolAsset.polDisplay),
           totalVolume: acc.totalVolume.plus(
-            omnipoolAsset.volume.isNaN()
-              ? 0
-              : omnipoolAsset.volume.div(
-                  omnipoolAsset.id === GDOT_STABLESWAP_ASSET_ID ? 1 : 2,
-                ),
+            omnipoolAsset.volume.isNaN() ? 0 : omnipoolAsset.volume,
           ),
         }
         return acc
