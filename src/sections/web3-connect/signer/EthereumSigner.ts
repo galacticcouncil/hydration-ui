@@ -268,6 +268,7 @@ export class EthereumSigner {
       })
     } else {
       return await this.signer.sendTransaction({
+        type: 0,
         chainId,
         nonce,
         ...tx,
