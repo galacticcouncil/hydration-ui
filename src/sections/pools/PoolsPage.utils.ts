@@ -592,7 +592,7 @@ export const useStablepoolsTotals = () => {
         const id = token.id
         const free = token.balance
 
-        if (token.type === "Token") {
+        if (token.type === "Token" || token.type === "Erc20") {
           if (memo[id]) {
             memo[id] = BN(memo[id]).plus(free)
           } else {

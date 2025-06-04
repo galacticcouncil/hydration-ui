@@ -4,12 +4,12 @@ import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
 import BigNumber from "bignumber.js"
 import { BN_0, BN_100 } from "utils/constants"
-import { useDisplayAssetStore } from "utils/displayAsset"
 import { SRow } from "./CurrencyReserves.styled"
 import { useTranslation } from "react-i18next"
 import { useMemo } from "react"
 import { useAssets } from "providers/assets"
 import { useAssetsPrice } from "state/displayPrice"
+import { DisplayValue } from "components/DisplayValue/DisplayValue"
 
 type Props = {
   reserves: { asset_id: number; amount: string }[]
@@ -17,12 +17,9 @@ type Props = {
 
 export const CurrencyReserves = ({ reserves }: Props) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback, getAsset } = useAssets()
-  const displayAsset = useDisplayAssetStore()
+  const { getAssetWithFallback } = useAssets()
   const assetIds = reserves.map((reserve) => reserve.asset_id.toString())
   const { getAssetPrice } = useAssetsPrice(assetIds)
-
-  const asset = displayAsset.id ? getAsset(displayAsset.id) : undefined
 
   const assets = useMemo(
     () =>
@@ -88,11 +85,7 @@ export const CurrencyReserves = ({ reserves }: Props) => {
           {t("total")}:
         </Text>
         <Text color="white" fs={14}>
-          {t("liquidity.add.modal.row.transactionCostValue", {
-            amount: totalValue,
-            symbol: asset?.symbol,
-            type: "dollar",
-          })}
+          <DisplayValue value={totalValue} />
         </Text>
       </div>
     </>
