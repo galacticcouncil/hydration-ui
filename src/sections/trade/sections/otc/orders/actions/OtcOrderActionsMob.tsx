@@ -8,7 +8,6 @@ import { useTranslation } from "react-i18next"
 import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import {
   OrderAssetColumn,
@@ -36,10 +35,7 @@ export const OtcOrderActionsMob = ({
 
   if (!row) return null
 
-  const userAddress = safeConvertAddressSS58(
-    account?.address,
-    HYDRA_ADDRESS_PREFIX,
-  )
+  const userAddress = safeConvertAddressSS58(account?.address)
   const orderOwner = row.owner
 
   return (

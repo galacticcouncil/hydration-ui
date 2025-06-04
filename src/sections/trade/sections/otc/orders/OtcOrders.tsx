@@ -21,7 +21,6 @@ import { OrderTableData } from "./OtcOrdersData.utils"
 import { OtcOrderActionsMob } from "./actions/OtcOrderActionsMob"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
 import { useTranslation } from "react-i18next"
 import { EmptyState } from "components/Table/EmptyState"
 
@@ -49,10 +48,7 @@ export const OtcOrderTable = ({
   )
 
   const { account } = useAccount()
-  const userAddress = safeConvertAddressSS58(
-    account?.address,
-    HYDRA_ADDRESS_PREFIX,
-  )
+  const userAddress = safeConvertAddressSS58(account?.address)
 
   const filteredData = useMemo(() => {
     let res: OrderTableData[] = data
