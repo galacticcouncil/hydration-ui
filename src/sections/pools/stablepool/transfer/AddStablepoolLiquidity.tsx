@@ -179,7 +179,7 @@ export const AddStablepoolLiquidity = ({
                 farm.globalFarmId,
                 farm.yieldFarmId,
               ])
-            : undefined,
+            : null,
         )
 
     return await createTransaction(

@@ -5,7 +5,6 @@ import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { SBurnContainer } from "./Burning.styled"
 import { useTranslation } from "react-i18next"
-import { useHubAssetImbalance } from "api/omnipool"
 import { formatValue } from "sections/stats/sections/LRNA/StatsLRNA.utils"
 import BigNumber from "bignumber.js"
 import { BN_0 } from "utils/constants"
@@ -21,10 +20,7 @@ export const Burning = () => {
 
   const symbol = meta?.symbol
 
-  const hubAssetImbalance = useHubAssetImbalance()
-  const imbalance = hubAssetImbalance?.data?.value
-    ? new BigNumber(hubAssetImbalance.data.value.toHex())
-    : BN_0
+  const imbalance = BN_0
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([meta.id])
   const price = getAssetPrice(meta.id).price
@@ -42,7 +38,7 @@ export const Burning = () => {
   const fees = new BigNumber(14551455145514)
   const feesSpotPrice = fees.times(price).shiftedBy(-meta.decimals).toNumber()
 
-  const isLoading = hubAssetImbalance.isLoading || isPriceLoading
+  const isLoading = isPriceLoading
 
   return (
     <SBurnContainer>

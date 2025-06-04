@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 
 import {
@@ -77,22 +76,6 @@ export const getOmnipoolFee = (api: ApiPromise) => async () => {
     minFee: minFee.toBigNumber().div(1000000),
     maxFee: maxFee.toBigNumber().div(1000000),
   }
-}
-
-export const getHubAssetImbalance = (api: ApiPromise) =>
-  api.query.omnipool.hubAssetImbalance()
-
-export const useHubAssetImbalance = () => {
-  const { api, isLoaded } = useRpcProvider()
-
-  return useQuery(
-    QUERY_KEYS.hubAssetImbalance(),
-    () => getHubAssetImbalance(api),
-    {
-      enabled: isLoaded,
-      refetchInterval: REFETCH_INTERVAL,
-    },
-  )
 }
 
 export const useAllLiquidityPositions = () => {
