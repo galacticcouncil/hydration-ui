@@ -1,6 +1,7 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { isBigInt, isNumber, pick, prop, unique, zip } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -9,7 +10,7 @@ import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
-import { useTransactionsStore } from "@/states/transactions"
+import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
 import { DOT_ASSET_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
@@ -134,19 +135,37 @@ export const useAccountFeePaymentAssets = () => {
   }
 }
 
-export const useSetFeePaymentAsset = () => {
+export const useSetFeePaymentAsset = (options: TransactionOptions) => {
+  const { t } = useTranslation(["common"])
   const { papi } = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
+  const { getAssetWithFallback } = useAssets()
 
   return useMutation({
-    mutationFn: async (assetId: string) =>
-      createTransaction({
-        tx: papi.tx.MultiTransactionPayment.set_currency({
-          currency: Number(assetId),
-        }),
-        meta: {
-          feePaymentAssetId: assetId,
+    mutationFn: async (assetId: string) => {
+      const { symbol } = getAssetWithFallback(assetId)
+      return createTransaction(
+        {
+          tx: papi.tx.MultiTransactionPayment.set_currency({
+            currency: Number(assetId),
+          }),
+          meta: {
+            feePaymentAssetId: assetId,
+          },
+          toasts: {
+            submitted: t("payment.toast.onLoading", {
+              symbol,
+            }),
+            success: t("payment.toast.onSuccess", {
+              symbol,
+            }),
+            error: t("payment.toast.onLoading", {
+              symbol,
+            }),
+          },
         },
-      }),
+        options,
+      )
+    },
   })
 }

@@ -20,22 +20,24 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { SOption } from "./AssetSelectModal.styled"
 import { useAssetSelectModalAssets } from "./AssetSelectModal.utils"
 
-export type AssetSelectModalProps = {
+export type AssetSelectProps = {
   assets: TAssetData[]
   selectedAssetId?: string
-  onOpenChange: (value: boolean) => void
   onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
+}
+
+export type AssetSelectModalProps = AssetSelectProps & {
   open: boolean
+  onOpenChange: (value: boolean) => void
 }
 
 export const AssetSelectModalContent = ({
   assets,
-  onOpenChange,
   onSelect,
   emptyState,
   selectedAssetId,
-}: AssetSelectModalProps) => {
+}: AssetSelectProps) => {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement>(null)
@@ -62,7 +64,6 @@ export const AssetSelectModalContent = ({
 
   const onSelectOption = (asset: TAssetData) => {
     onSelect?.(asset)
-    onOpenChange(false)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<Element>) => {
@@ -218,10 +219,20 @@ export const AssetSelectModalContent = ({
   )
 }
 
-export const AssetSelectModal = (props: AssetSelectModalProps) => {
+export const AssetSelectModal = ({
+  open,
+  onOpenChange,
+  ...props
+}: AssetSelectModalProps) => {
   return (
-    <Modal open={props.open} onOpenChange={props.onOpenChange}>
-      <AssetSelectModalContent {...props} />
+    <Modal open={open} onOpenChange={onOpenChange}>
+      <AssetSelectModalContent
+        {...props}
+        onSelect={(asset) => {
+          props.onSelect?.(asset)
+          onOpenChange(false)
+        }}
+      />
     </Modal>
   )
 }

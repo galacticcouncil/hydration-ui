@@ -8,7 +8,8 @@ import {
   ModalRoot,
   ModalTrigger,
 } from "@galacticcouncil/ui/components"
-import { FC } from "react"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Contacts } from "@/modules/layout/components/Settings/Contacts"
@@ -19,23 +20,35 @@ import {
   SSettingsContentDesktop,
   SSettingsSection,
 } from "@/modules/layout/components/Settings/Settings.styled"
+import { TransactionFeePaymentAssetModalContent } from "@/modules/transactions/TransactionFeePaymentAssetModal"
 
-export const Settings: FC = () => {
+enum SettingsModalPage {
+  Default = "Default",
+  PaymentAsset = "PaymentAsset",
+}
+
+export const SettingsContent = () => {
   const { t } = useTranslation()
+  const [page, setPage] = useState<SettingsModalPage>(SettingsModalPage.Default)
+  const { isConnected } = useAccount()
 
-  return (
-    <ModalRoot>
-      <ModalTrigger asChild>
-        <ButtonIcon>
-          <SettingsIcon size={19} />
-        </ButtonIcon>
-      </ModalTrigger>
-      <ModalContent>
-        <ModalHeader title={t("settings")} align="center" />
-        <ModalBody sx={{ padding: 0 }}>
+  const renderContent = () => {
+    switch (page) {
+      case SettingsModalPage.PaymentAsset:
+        return (
+          <TransactionFeePaymentAssetModalContent
+            onSubmitted={() => setPage(SettingsModalPage.Default)}
+          />
+        )
+      default:
+        return (
           <SSettingsContentDesktop>
             <SSettingsSection>
-              <PaymentAsset />
+              {isConnected && (
+                <PaymentAsset
+                  onClick={() => setPage(SettingsModalPage.PaymentAsset)}
+                />
+              )}
               <Contacts />
             </SSettingsSection>
             <ModalContentDivider />
@@ -44,8 +57,40 @@ export const Settings: FC = () => {
               <DarkMode />
             </SSettingsSection>
           </SSettingsContentDesktop>
-        </ModalBody>
-      </ModalContent>
-    </ModalRoot>
+        )
+    }
+  }
+
+  const getTitle = () => {
+    switch (page) {
+      case SettingsModalPage.PaymentAsset:
+        return t("paymentAsset")
+      default:
+        return t("settings")
+    }
+  }
+
+  return (
+    <>
+      <ModalHeader
+        title={getTitle()}
+        align="center"
+        onBack={() => setPage(SettingsModalPage.Default)}
+      />
+      <ModalBody sx={{ padding: 0 }}>{renderContent()}</ModalBody>
+    </>
   )
 }
+
+export const Settings: FC = () => (
+  <ModalRoot>
+    <ModalTrigger asChild>
+      <ButtonIcon>
+        <SettingsIcon size={19} />
+      </ButtonIcon>
+    </ModalTrigger>
+    <ModalContent>
+      <SettingsContent />
+    </ModalContent>
+  </ModalRoot>
+)

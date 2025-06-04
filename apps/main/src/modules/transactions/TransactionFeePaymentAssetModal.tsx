@@ -9,13 +9,12 @@ import {
   AssetSelectModalContent,
   AssetSelectModalProps,
 } from "@/components/AssetSelectModal"
+import { TransactionOptions } from "@/states/transactions"
 
-type Props = Pick<AssetSelectModalProps, "open" | "onOpenChange">
-
-export const TransactionFeePaymentAssetModalContent: React.FC<Props> = (
-  props,
-) => {
-  const { mutate } = useSetFeePaymentAsset()
+export const TransactionFeePaymentAssetModalContent: React.FC<
+  TransactionOptions
+> = (txOptions) => {
+  const { mutate } = useSetFeePaymentAsset(txOptions)
 
   const { accountFeePaymentAsset, acceptedFeePaymentAssets } =
     useAccountFeePaymentAssets()
@@ -31,17 +30,19 @@ export const TransactionFeePaymentAssetModalContent: React.FC<Props> = (
       assets={filteredPaymentAssets}
       onSelect={(asset) => {
         mutate(asset.id)
-        props.onOpenChange(false)
       }}
-      {...props}
     />
   )
 }
 
-export const TransactionFeePaymentAssetModal: React.FC<Props> = (props) => {
+export const TransactionFeePaymentAssetModal: React.FC<
+  Pick<AssetSelectModalProps, "open" | "onOpenChange">
+> = (props) => {
   return (
     <Modal {...props}>
-      <TransactionFeePaymentAssetModalContent {...props} />
+      <TransactionFeePaymentAssetModalContent
+        onSubmitted={() => props.onOpenChange(false)}
+      />
     </Modal>
   )
 }
