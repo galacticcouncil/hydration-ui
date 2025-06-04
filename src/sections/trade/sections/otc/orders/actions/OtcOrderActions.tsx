@@ -19,7 +19,7 @@ export const OtcOrderActions = (props: Props) => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
-  const userAddress = safeConvertAddressSS58(account?.address, 63)
+  const userAddress = safeConvertAddressSS58(account?.address)
   const orderOwner = props.data.owner
   return (
     <>
