@@ -164,5 +164,7 @@
   "addressBook.myContacts": "My contacts",
   "addressBook.label": "Destination address",
   "addressBook.modal.title": "Select account to use",
-  "addressBook.modal.placeholder": "Search or paste address to add"
+  "addressBook.modal.placeholder": "Search or paste address to add",
+  "payment.toast.onLoading": "Setting {{ symbol }} as fee payment asset",
+  "payment.toast.onSuccess": "Set {{ symbol }} as fee payment asset"
 }
