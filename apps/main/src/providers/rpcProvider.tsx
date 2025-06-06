@@ -34,6 +34,7 @@ const defaultData: TProviderContext = {
   dataEnv: "mainnet",
   papi: {} as TProviderData["papi"],
   papiClient: {} as TProviderData["papiClient"],
+  evm: {} as TProviderData["evm"],
   featureFlags: {} as TProviderData["featureFlags"],
   balanceClient: {} as TProviderData["balanceClient"],
   poolService: {} as TProviderData["poolService"],

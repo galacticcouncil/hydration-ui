@@ -27,9 +27,16 @@ const ChartTooltipLegendLabel = ({
   const formattedValue = labelFormatter ? labelFormatter(value, payload) : value
 
   return (
-    <Text fs={14} fw={500} align="left">
-      {formattedValue}
-    </Text>
+    <Flex justify="space-between">
+      {config.seriesLabel && (
+        <Text fs={14} fw={500}>
+          {config.seriesLabel}
+        </Text>
+      )}
+      <Text fs={14} fw={500} align="left">
+        {formattedValue}
+      </Text>
+    </Flex>
   )
 }
 

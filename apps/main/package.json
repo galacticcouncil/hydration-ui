@@ -25,6 +25,7 @@
   "dependencies": {
     "@galacticcouncil/ui": "*",
     "@galacticcouncil/utils": "*",
+    "@galacticcouncil/money-market": "*",
     "@galacticcouncil/web3-connect": "*",
     "@emotion/babel-plugin": "^11.12.0",
     "@emotion/react": "^11.13.3",
@@ -45,7 +46,7 @@
     "react-hook-form": "^7.54.2",
     "react-i18next": "^15.1.0",
     "sonner": "^2.0.1",
-    "viem": "^2.21.55",
+    "viem": "^2.30.0",
     "zod": "^4.0.0-beta.20250505T195954"
   },
   "devDependencies": {

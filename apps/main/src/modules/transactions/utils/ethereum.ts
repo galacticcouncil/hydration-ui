@@ -1,8 +1,9 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { EthereumSigner } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
-import { EvmCall } from "@galacticcouncil/xcm-sdk"
 
 import { TxSignAndSubmitFn } from "@/modules/transactions/types"
 import { AnyPapiTx } from "@/states/transactions"
+import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
   AnyPapiTx,
@@ -14,7 +15,7 @@ export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
       data,
     },
     {
-      chainKey: "hydration",
+      chainKey: HYDRATION_CHAIN_KEY,
       onError,
       onSuccess,
       onSubmitted,
@@ -24,7 +25,7 @@ export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
 }
 
 export const signAndSubmitEvmTx: TxSignAndSubmitFn<
-  EvmCall,
+  ExtendedEvmCall,
   EthereumSigner
 > = async (
   tx,

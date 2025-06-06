@@ -1,0 +1,23 @@
+{
+  "name": "@galacticcouncil/money-market",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./*": "./src/*/index.ts"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@aave/contract-helpers": "1.23.1",
+    "@aave/math-utils": "1.23.1",
+    "@bgd-labs/aave-address-book": "2.18.1",
+    "@galacticcouncil/ui": "*",
+    "@galacticcouncil/utils": "*",
+    "@galacticcouncil/web3-connect": "*",
+    "ethers": "5.7.0",
+    "immer": "^10.0.3",
+    "reflect-metadata": "0.1.13"
+  }
+}

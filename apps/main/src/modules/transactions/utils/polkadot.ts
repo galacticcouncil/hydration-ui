@@ -1,9 +1,14 @@
 import { logger } from "@galacticcouncil/utils"
 import { InvalidTxError, PolkadotSigner } from "polkadot-api"
 import { isFunction, isObjectType } from "remeda"
-import { catchError, of, shareReplay } from "rxjs"
+import { catchError, Observable, of, shareReplay } from "rxjs"
 
-import { TxSignAndSubmitFn } from "@/modules/transactions/types"
+import {
+  TxEventOrError,
+  TxOptions,
+  TxSignAndSubmitFn,
+  UnsignedTxSubmitFn,
+} from "@/modules/transactions/types"
 import { AnyPapiTx } from "@/states/transactions"
 
 export const isPapiTransaction = (tx: unknown): tx is AnyPapiTx =>
@@ -14,38 +19,62 @@ export const isPapiTransaction = (tx: unknown): tx is AnyPapiTx =>
 export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   AnyPapiTx,
   PolkadotSigner
-> = (tx, signer, { onError, onSubmitted, onSuccess, onFinalized, nonce }) => {
+> = async (tx, signer, options) => {
   const observer = tx
     .signSubmitAndWatch(signer, {
-      nonce,
+      nonce: options?.nonce,
     })
     .pipe(
       catchError((error) => of({ type: "error" as const, error })),
       shareReplay(1),
     )
 
+  return observeTransactionEvents(observer, options)
+}
+
+export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
+  tx,
+  client,
+  options,
+) => {
+  const callData = await tx.getEncodedData()
+  const observer = client.submitAndWatch(callData.asHex()).pipe(
+    catchError((error) => of({ type: "error" as const, error })),
+    shareReplay(1),
+  )
+
+  return observeTransactionEvents(observer, options)
+}
+
+const observeTransactionEvents = <T extends TxEventOrError>(
+  observer: Observable<T>,
+  options: TxOptions,
+) => {
   const sub = observer.subscribe((event) => {
     logger.log("Transaction status:", event)
-    if (event.type === "broadcasted") onSubmitted(event.txHash)
+    if (event.type === "broadcasted") options?.onSubmitted(event.txHash)
 
     if (event.type === "error") {
-      onError(
+      options?.onError(
         event.error instanceof InvalidTxError
           ? formatTxError(event.error.error)
           : formatError(event.error),
       )
+      sub.unsubscribe()
     }
 
     if (event.type === "txBestBlocksState" && event.found) {
-      if (event.ok) onSuccess()
-      if (!event.ok) onError(formatTxError(event.dispatchError))
+      if (event.ok) options?.onSuccess()
+      if (!event.ok) options?.onError(formatTxError(event.dispatchError))
     }
 
     if (event.type === "finalized") {
-      onFinalized()
+      options?.onFinalized()
       sub.unsubscribe()
     }
   })
+
+  return sub
 }
 
 export const formatTxError = (err: InvalidTxError["error"]): string => {

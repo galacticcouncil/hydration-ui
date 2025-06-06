@@ -1,19 +1,29 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, EvmChain, EvmParachain } from "@galacticcouncil/xcm-core"
-import { EvmCall } from "@galacticcouncil/xcm-sdk"
+import { Big } from "big.js"
 import {
+  Address,
   Chain,
   createPublicClient,
   createWalletClient,
   custom,
   EIP1193Provider,
+  getContract,
   Hex,
+  parseSignature,
   PublicClient,
   TransactionReceipt,
   WalletClient,
 } from "viem"
 
-import { EVM_DEFAULT_CHAIN_KEY, EVM_DISPATCH_ADDRESS } from "@/config/evm"
+import {
+  EVM_CALL_PERMIT_ABI,
+  EVM_CALL_PERMIT_ADDRESS,
+  EVM_CALL_PERMIT_TYPES,
+  EVM_DEFAULT_CHAIN_KEY,
+  EVM_DISPATCH_ADDRESS,
+} from "@/config/evm"
 
 type PermitMessage = {
   from: string
@@ -26,15 +36,11 @@ type PermitMessage = {
 }
 
 export type PermitResult = {
-  signature: {
-    r: string
-    s: string
-    v: number
-  }
+  signature: ReturnType<typeof parseSignature>
   message: PermitMessage
 }
 
-type CallType = Omit<EvmCall, "from" | "type" | "dryRun">
+type TransactionCall = Omit<ExtendedEvmCall, "from" | "type" | "dryRun">
 
 type EthereumSignerOptions = {
   chainKey?: string
@@ -68,7 +74,7 @@ export class EthereumSigner {
   }
 
   async signAndSubmitDispatch(
-    call: Omit<CallType, "to">,
+    call: Omit<TransactionCall, "to">,
     options: EthereumSignerOptions,
   ) {
     return this.signAndSubmit(
@@ -80,7 +86,75 @@ export class EthereumSigner {
     )
   }
 
-  async signAndSubmit(call: CallType, options: EthereumSignerOptions) {
+  getPermit = async (data: string): Promise<PermitResult> => {
+    if (this.provider && this.address) {
+      const latestBlock = await this.publicClient.getBlock()
+
+      const callPermitContract = getContract({
+        address: EVM_CALL_PERMIT_ADDRESS,
+        abi: EVM_CALL_PERMIT_ABI,
+        client: this.publicClient,
+      })
+
+      const nonce = await callPermitContract.read.nonces([this.address as Hex])
+
+      const tx = {
+        from: this.address as Address,
+        to: EVM_DISPATCH_ADDRESS as Hex,
+        data: data as Hex,
+      } as const
+
+      const gas = await this.publicClient.estimateGas(tx)
+
+      const createPermitMessageData = () => {
+        const message: PermitMessage = {
+          ...tx,
+          value: 0,
+          gaslimit: Big(gas.toString())
+            .mul(1.2) // add 20%
+            .round()
+            .toNumber(),
+          nonce: Number(nonce),
+          deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
+        }
+
+        const typedData = JSON.stringify({
+          types: EVM_CALL_PERMIT_TYPES,
+          primaryType: "CallPermit",
+          domain: {
+            name: "Call Permit Precompile",
+            version: "1",
+            chainId: 222222,
+            verifyingContract: EVM_CALL_PERMIT_ADDRESS,
+          },
+          message: message,
+        })
+
+        return {
+          typedData,
+          message,
+        }
+      }
+
+      const { message, typedData } = createPermitMessageData()
+
+      const result = await this.walletClient.request({
+        method: "eth_signTypedData_v4",
+        params: [this.address as Address, typedData],
+      })
+
+      const signature = parseSignature(result)
+
+      return {
+        message,
+        signature,
+      }
+    }
+
+    throw new Error("Error signing transaction. Provider not found")
+  }
+
+  async signAndSubmit(call: TransactionCall, options: EthereumSignerOptions) {
     try {
       const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
       const chain = chainsMap.get(chainKey)
@@ -92,13 +166,16 @@ export class EthereumSigner {
 
       await this.walletClient.switchChain({ id: client.chain.id })
 
-      const [gas, gasPrice] = await Promise.all([
+      const [_gas, gasPrice, nonce] = await Promise.all([
         this.publicClient.estimateGas({
           account: this.address as Hex,
           data: call.data as Hex,
           to: call.to,
         }),
         this.publicClient.getGasPrice(),
+        this.publicClient.getTransactionCount({
+          address: this.address as Hex,
+        }),
       ])
 
       const fivePrc = (gasPrice / 100n) * 5n
@@ -106,12 +183,14 @@ export class EthereumSigner {
 
       const txHash = await this.walletClient.sendTransaction({
         account: this.address as Hex,
-        chain: client.chain as Chain,
         data: call.data as Hex,
-        maxPriorityFeePerGas: gasPricePlus,
-        maxFeePerGas: gasPricePlus,
-        gas: (gas * 11n) / 10n,
         to: call.to,
+        nonce,
+        chain: client.chain as Chain,
+        maxFeePerGas: call?.maxFeePerGas || gasPricePlus,
+        maxPriorityFeePerGas: call?.maxPriorityFeePerGas || gasPricePlus,
+        // @TODO check gas estimation
+        gas: call?.gasLimit || 1_000_000n,
       })
 
       options.onSubmitted(txHash)

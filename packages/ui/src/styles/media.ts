@@ -84,21 +84,28 @@ export const useBreakpoints = () => {
     gte,
   }
 }
-
-export function useResponsiveValue<T = unknown>(
+export function useResponsiveValue<T>(
   value: ResponsiveStyleValue<T>,
+  defaultValue: T,
+): T
+export function useResponsiveValue<T>(
+  value: ResponsiveStyleValue<T>,
+  defaultValue?: undefined,
+): T | undefined
+export function useResponsiveValue<T>(
+  value: ResponsiveStyleValue<T>,
+  defaultValue?: T,
 ): T | undefined {
   const { breakpoint } = useBreakpoints()
 
-  if (!value) return
+  if (!value) return defaultValue
   if (!Array.isArray(value)) return value
 
   const index = BREAKPOINTS_TYPES.indexOf(breakpoint)
   const normalizedProp = normalizeResponsiveProp(value)
 
-  return normalizedProp?.[index]
+  return normalizedProp?.[index] ?? defaultValue
 }
-
 /**
  * Replaces null values in the array with the last non-null value to match with the breakpoints array
  * @example [50, null, 100] => [50, 50, 100]

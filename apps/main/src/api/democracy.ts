@@ -1,7 +1,7 @@
+import { bigMax } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
 import { TProviderContext } from "@/providers/rpcProvider"
-import { bigJsMax } from "@/utils/big"
 import { NATIVE_ASSET_DECIMALS, QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -101,7 +101,7 @@ export const accountVotesQuery = (
         (acc, votedAmount) => {
           if (votedAmount.isUnlocked) {
             return {
-              maxUnlockedValue: bigJsMax(
+              maxUnlockedValue: bigMax(
                 acc.maxUnlockedValue,
                 votedAmount.amount,
               ).toString(),
@@ -112,7 +112,7 @@ export const accountVotesQuery = (
           }
 
           return {
-            maxLockedValue: bigJsMax(
+            maxLockedValue: bigMax(
               acc.maxLockedValue,
               votedAmount.amount,
             ).toString(),

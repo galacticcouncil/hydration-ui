@@ -1,10 +1,11 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { uuid } from "@galacticcouncil/utils"
-import { Call, EvmCall } from "@galacticcouncil/xcm-sdk"
+import { Call } from "@galacticcouncil/xcm-sdk"
 import { Transaction as PapiTx } from "polkadot-api"
 import { create } from "zustand"
 
-export type AnyPapiTx = PapiTx<object, string, string, unknown>
-export type AnyTransaction = AnyPapiTx | Call | EvmCall
+export type AnyPapiTx = PapiTx<object | undefined, string, string, unknown>
+export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
 export interface TransactionInput {
   tx: AnyTransaction

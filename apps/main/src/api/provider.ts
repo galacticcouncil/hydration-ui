@@ -8,6 +8,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query"
 import { Graffle } from "graffle"
 import { PolkadotClient } from "polkadot-api"
 import { useEffect, useMemo, useState } from "react"
+import { createPublicClient, custom, PublicClient } from "viem"
 
 import {
   createProvider,
@@ -23,6 +24,7 @@ export type TFeatureFlags = object
 export type TProviderData = {
   papi: Papi
   papiClient: PolkadotClient
+  evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
   balanceClient: client.BalanceClient
@@ -88,6 +90,13 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   const tradeRouter = new sor.TradeRouter(poolService)
   const tradeUtils = new sor.TradeUtils(papiClient)
 
+  const evm = createPublicClient({
+    transport: custom({
+      request: ({ method, params }) =>
+        papiClient._request(method, params || []),
+    }),
+  })
+
   /**
    * @TODO Legacy clients for backward compatibility, remove when fully migrated
    */
@@ -105,6 +114,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   return {
     papi,
     papiClient,
+    evm,
     endpoint,
     poolService,
     balanceClient,

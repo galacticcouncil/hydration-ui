@@ -22,6 +22,7 @@ export type ChartConfig<TData extends TChartData> = {
 
   tooltipType?: ChartTooltipType
 
+  seriesLabel?: string
   series: {
     key: ExtractDataKey<TData>
     label: string

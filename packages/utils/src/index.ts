@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid"
 export { uuid }
 
 export * from "./array"
+export * from "./big"
 export * from "./device"
 export * from "./evm"
 export * from "./formatting"
