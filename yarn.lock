@@ -1459,10 +1459,6 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.1.tgz#71cb23dfe348a04a9989c78cf2ccf72f0bfa16db"
   integrity sha512-/TNhudkCRYskJWG6i3gCx74RlfqMIMgBJ7UJEb6III8kSfJjezShUv1RV3AHZjUdodoZToS0tb+3IbaV+KPq8w==
 
-"@galacticcouncil/descriptors@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.1.tgz#71cb23dfe348a04a9989c78cf2ccf72f0bfa16db"
-  integrity sha512-/TNhudkCRYskJWG6i3gCx74RlfqMIMgBJ7UJEb6III8kSfJjezShUv1RV3AHZjUdodoZToS0tb+3IbaV+KPq8w==
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"
@@ -2348,10 +2344,10 @@
     typescript "^5.8.3"
     write-package "^7.1.0"
 
-"@polkadot-api/cli@0.13.3":
-  version "0.13.3"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/cli/-/cli-0.13.3.tgz#78aaaf35334894b165520a3101ec9bbc22dfecb6"
-  integrity sha512-n8p/B/itueSlDHe9ByfpyDftJSHouraAFcwUY5MJByInn9V2QwgQhvuwy/WSjdJbIanF1XpFYe/L1SiBaSxr4g==
+"@polkadot-api/cli@0.13.4":
+  version "0.13.4"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/cli/-/cli-0.13.4.tgz#1c5217e21a95397d877aff2547c3833d84955477"
+  integrity sha512-7ZoNCMiUyGc4QPa4QkErpFavr/F8iFx7z10Ef3bkjBLerBu0Jycwc4oJ0N7ibwntbtX3+hg/JvjTj4NRRl93CQ==
   dependencies:
     "@commander-js/extra-typings" "^14.0.0"
     "@polkadot-api/codegen" "0.16.2"
@@ -2359,7 +2355,7 @@
     "@polkadot-api/json-rpc-provider" "0.0.4"
     "@polkadot-api/known-chains" "0.8.0"
     "@polkadot-api/metadata-compatibility" "0.2.4"
-    "@polkadot-api/observable-client" "0.11.1"
+    "@polkadot-api/observable-client" "0.11.2"
     "@polkadot-api/polkadot-sdk-compat" "2.3.2"
     "@polkadot-api/sm-provider" "0.1.7"
     "@polkadot-api/smoldot" "0.3.9"
@@ -2527,10 +2523,10 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
-"@polkadot-api/observable-client@0.11.1":
-  version "0.11.1"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/observable-client/-/observable-client-0.11.1.tgz#be4ad886b15ea0f8a5c89c8e540b2439f4ba8e91"
-  integrity sha512-g9ZsYacJRphDvBFe8u4U/PuaEcdo8n2rYujftlxq2KYESGTTG7sqCPqSXN9KVLG+wvenffqyjgiX/er2fDyBPw==
+"@polkadot-api/observable-client@0.11.2":
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/observable-client/-/observable-client-0.11.2.tgz#cbda08d20de05cddf06825c3851fae24fb9aa9dd"
+  integrity sha512-LJA95TdVnf4odK1pn2WkyssztM2KmqI+zgMI6AVKAw9KXsAb73Vf7ZI1OKjpL0rdMm5/LIb0HvVcaYLRsbdmmQ==
   dependencies:
     "@polkadot-api/metadata-builders" "0.12.2"
     "@polkadot-api/substrate-bindings" "0.14.0"
