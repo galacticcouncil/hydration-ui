@@ -93,15 +93,23 @@ export const TableRowAction: FC<ComponentProps<typeof Button>> = ({
   )
 }
 
-export const TableRowActionMobile: FC<ComponentProps<typeof Button>> = ({
+export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
   children,
   sx,
+  onClick,
   ...props
 }) => {
   return (
     <Flex gap={8} align="center" justify="flex-end" sx={{ overflow: "hidden" }}>
       {children}
-      <ButtonTransparent sx={{ flexShrink: 0, ...sx }} {...props}>
+      <ButtonTransparent
+        sx={{ flexShrink: 0, size: 16, ...sx }}
+        onClick={(e) => {
+          e.preventDefault()
+          onClick?.(e)
+        }}
+        {...props}
+      >
         <ChevronRight size={16} />
       </ButtonTransparent>
     </Flex>

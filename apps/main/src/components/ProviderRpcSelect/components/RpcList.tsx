@@ -54,7 +54,7 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
           <RpcListItem
             key={props.url}
             {...props}
-            {...(rpcStatusQuery?.data ?? {})}
+            {...rpcStatusQuery?.data}
             isLoading={!!rpcStatusQuery?.isLoading}
             isActive={rpcUrl === props.url}
             onClick={setRpcUrl}

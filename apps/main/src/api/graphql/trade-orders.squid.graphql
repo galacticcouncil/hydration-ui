@@ -1,0 +1,141 @@
+fragment Swap on Swap {
+  paraTimestamp
+  operationType
+  swapperId
+  event {
+    paraBlockHeight
+    indexInBlock
+  }
+  swapInputs {
+    nodes {
+      asset {
+        assetRegistryId
+      }
+      amount
+    }
+  }
+  swapOutputs {
+    nodes {
+      asset {
+        assetRegistryId
+      }
+      amount
+    }
+  }
+  dcaScheduleExecutionEvent {
+    scheduleExecution {
+      schedule {
+        id
+        status
+        budgetAmountIn: totalAmount
+        totalExecutedAmountIn
+      }
+      status
+    }
+  }
+}
+
+# TODO allow liquidity add/remove swaps when we know how to handle them
+query UserSwaps(
+  $swapperIdFilter: StringFilter
+  $allInvolvedAssetRegistryIds: StringListFilter
+  $offset: Int!
+  $pageSize: Int!
+) {
+  swaps(
+    filter: {
+      swapperId: $swapperIdFilter
+      allInvolvedAssetRegistryIds: $allInvolvedAssetRegistryIds
+      operationType: { in: ["ExactIn", "ExactOut"] }
+    }
+    offset: $offset
+    first: $pageSize
+    orderBy: ID_DESC
+  ) {
+    totalCount
+    nodes {
+      ...Swap
+    }
+  }
+}
+
+query UserOrders(
+  $address: String!
+  $assetInId: StringFilter
+  $assetOutId: StringFilter
+  $offset: Int!
+  $pageSize: Int!
+  $status: [String!]!
+) {
+  dcaSchedules(
+    condition: { ownerId: $address }
+    filter: {
+      status: { in: $status }
+      assetInId: $assetInId
+      assetOutId: $assetOutId
+    }
+    offset: $offset
+    first: $pageSize
+    orderBy: PARA_BLOCK_HEIGHT_DESC
+  ) {
+    totalCount
+    nodes {
+      id
+      status
+      orderType
+      assetIn {
+        assetRegistryId
+      }
+      totalExecutedAmountIn
+      budgetAmountIn: totalAmount
+      singleTradeSize: amountIn
+      assetOut {
+        assetRegistryId
+      }
+      totalExecutedAmountOut
+      period
+    }
+  }
+}
+
+query UserOpenOrdersCount($address: String!, $assetFilter: DcaScheduleFilter) {
+  dcaSchedules(
+    condition: { status: "Created", ownerId: $address }
+    filter: $assetFilter
+  ) {
+    totalCount
+  }
+}
+
+query DcaScheduleExecutions($scheduleId: String!) {
+  dcaSchedule(id: $scheduleId) {
+    assetInId
+    assetOutId
+    dcaScheduleExecutionsByScheduleId(
+      filter: { status: { in: ["Executed", "Failed"] } }
+      orderBy: ID_DESC
+    ) {
+      nodes {
+        id
+        status
+        amountIn
+        amountOut
+        dcaScheduleExecutionEventsByScheduleExecutionId(
+          first: 1
+          filter: { eventName: { in: ["Executed", "Failed"] } }
+          orderBy: PARA_BLOCK_HEIGHT_ASC
+        ) {
+          nodes {
+            event {
+              paraBlockHeight
+              indexInBlock
+              block {
+                timestamp
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

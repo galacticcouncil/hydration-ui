@@ -217,7 +217,7 @@ export const AssetButton = ({
             color={getToken("text.high")}
             fw={600}
             fs="p3"
-            sx={{ whiteSpace: "nowrap" }}
+            whiteSpace="nowrap"
           >
             {symbol}
           </Text>
@@ -234,7 +234,7 @@ export const AssetButton = ({
 
   return (
     <SAssetButtonEmpty variant="secondary" onClick={onAsssetBtnClick}>
-      <Text fw={600} fs="p3" sx={{ whiteSpace: "nowrap" }}>
+      <Text fw={600} fs="p3" whiteSpace="nowrap">
         Select asset
       </Text>
       <Icon size={20} component={ChevronDown} />

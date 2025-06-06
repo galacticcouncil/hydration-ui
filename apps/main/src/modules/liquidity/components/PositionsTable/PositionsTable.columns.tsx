@@ -24,7 +24,7 @@ export const usePositionsTableColumns = () => {
         id: "position",
         header: t("position"),
         cell: ({ row }) => (
-          <Text fs="p6" fw={500} sx={{ whiteSpace: "nowrap" }}>
+          <Text fs="p6" fw={500} whiteSpace="nowrap">
             {t("liquidity:liquidity.stablepool.position", {
               value: row.index + 1,
             })}

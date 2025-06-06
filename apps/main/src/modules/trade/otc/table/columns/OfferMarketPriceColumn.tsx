@@ -21,11 +21,7 @@ export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
           ? getToken("details.values.positive")
           : percentageNum < 0 && getToken("details.values.negative")
       }
-      sx={{
-        overflow: "hidden",
-        whiteSpace: "nowrap",
-        textOverflow: "ellipsis",
-      }}
+      truncate
     >
       {t("percent", { value: percentage })}
     </Text>

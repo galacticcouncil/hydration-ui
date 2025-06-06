@@ -3,7 +3,7 @@ import Big from "big.js"
 
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import { OtcOffersType } from "@/routes/_trade/trade.otc"
+import { OtcOffersType } from "@/routes/trade/otc"
 import { AssetPrice } from "@/states/displayAsset"
 import { Predicate } from "@/types/helpers"
 import { scaleHuman } from "@/utils/formatting"

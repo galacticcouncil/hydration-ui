@@ -38,7 +38,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           fs="p5"
           fw={600}
           color={getToken("text.medium")}
-          sx={{ whiteSpace: "nowrap" }}
+          whiteSpace="nowrap"
         >
           {unit}
         </Text>

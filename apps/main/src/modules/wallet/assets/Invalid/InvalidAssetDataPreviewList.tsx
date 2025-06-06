@@ -1,14 +1,13 @@
 import { CircleInfo, Warning } from "@galacticcouncil/ui/assets/icons"
-import {
-  Flex,
-  ModalContentDivider,
-  TransactionListItem,
-  TransactionListItemLabel,
-  TransactionListItemValue,
-} from "@galacticcouncil/ui/components"
+import { Flex, ModalContentDivider } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import {
+  TransactionItem,
+  TransactionItemLabel,
+  TransactionItemValue,
+} from "@/components/TransactionItem/TransactionItem"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
@@ -23,59 +22,59 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
 
   return (
     <Flex gap={2} direction="column" justify="space-between">
-      <TransactionListItem
+      <TransactionItem
         label={t("invalidAsset.modal.symbol")}
         value={asset?.symbol}
       />
       <ModalContentDivider />
-      <TransactionListItem
+      <TransactionItem
         label={t("invalidAsset.modal.assetId")}
         value={asset?.id}
       />
       <ModalContentDivider />
-      <TransactionListItem
+      <TransactionItem
         variant="success"
         customLabel={
-          <TransactionListItemLabel>
+          <TransactionItemLabel>
             <CircleInfo />
             {t("invalidAsset.modal.hydraRegistered")}
-          </TransactionListItemLabel>
+          </TransactionItemLabel>
         }
         value={t("common:yes")}
       />
       <ModalContentDivider />
-      <TransactionListItem
+      <TransactionItem
         customLabel={
-          <TransactionListItemLabel>
+          <TransactionItemLabel>
             <CircleInfo />
             {t("invalidAsset.modal.availableOnOtherChains")}
-          </TransactionListItemLabel>
+          </TransactionItemLabel>
         }
         value={3}
       />
       <ModalContentDivider />
-      <TransactionListItem
+      <TransactionItem
         customLabel={
-          <TransactionListItemLabel>
+          <TransactionItemLabel>
             <CircleInfo />
             {t("invalidAsset.modal.masterKeyExisting")}
-          </TransactionListItemLabel>
+          </TransactionItemLabel>
         }
         customValue={
-          <TransactionListItemValue variant="error">
+          <TransactionItemValue variant="error">
             {t("common:yes")}
             <Warning />
-          </TransactionListItemValue>
+          </TransactionItemValue>
         }
       />
       <ModalContentDivider />
-      <TransactionListItem
+      <TransactionItem
         variant="success"
         label={t("invalidAsset.modal.isolatedPoolCreated")}
         value={t("common:yes")}
       />
       <ModalContentDivider />
-      <TransactionListItem
+      <TransactionItem
         label={t("invalidAsset.modal.dailyVolume")}
         value={t("common:currency", { value: 1244455 })}
       />

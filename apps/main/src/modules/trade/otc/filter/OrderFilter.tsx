@@ -2,7 +2,7 @@ import { Button } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { FC, ReactNode } from "react"
 
-import { OtcOffersType, Route } from "@/routes/_trade/trade.otc"
+import { OtcOffersType, Route } from "@/routes/trade/otc"
 
 type Props = {
   readonly offers: OtcOffersType
