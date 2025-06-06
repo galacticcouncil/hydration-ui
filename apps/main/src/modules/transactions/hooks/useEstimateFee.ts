@@ -1,36 +1,36 @@
 import { isSS58Address, safeStringify } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
+import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { AnyPapiTx } from "@/states/transactions"
+import { Transaction } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
-type UseEstimateFeeProps = {
-  tx?: AnyPapiTx
-  address: string
-  feePaymentAssetId?: string
-}
-
-export const useEstimateFee = ({
-  tx,
-  address,
-  feePaymentAssetId,
-}: UseEstimateFeeProps) => {
+export const useEstimateFee = (transaction: Transaction) => {
   const { papi, tradeRouter, isLoaded } = useRpcProvider()
   const { native, getAsset } = useAssets()
+  const { account } = useAccount()
+
+  const feePaymentAssetIdOverride = transaction?.meta?.feePaymentAssetId
 
   const {
     data: accountFeePaymentAssetId,
     isLoading: isLoadingFeePaymentAssetId,
   } = useAccountFeePaymentAssetId({
-    enabled: !feePaymentAssetId,
+    enabled: !feePaymentAssetIdOverride,
   })
 
-  const feeAssetId = feePaymentAssetId || accountFeePaymentAssetId?.toString()
+  const address = account?.address ?? ""
+
+  const feeAssetId =
+    feePaymentAssetIdOverride || accountFeePaymentAssetId?.toString()
+
+  const tx = transformAnyToPapiTx(papi, transaction.tx)
 
   return useQuery({
     enabled: isLoaded && !isLoadingFeePaymentAssetId && isSS58Address(address),

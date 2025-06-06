@@ -34,6 +34,9 @@ export const LINKS = {
   stakingGovernance: "/staking/governance",
   referrals: "/referrals",
   borrow: "/borrow",
+  borrowDashboard: "/borrow/dashboard",
+  borrowMarkets: "/borrow/markets",
+  borrowHistory: "/borrow/history",
   memepad: "/memepad",
   submitTransaction: "/submit-transaction",
 }
@@ -64,6 +67,11 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "borrow",
     to: LINKS.borrow,
+    children: [
+      { key: "borrowDashboard", to: LINKS.borrowDashboard },
+      { key: "borrowMarkets", to: LINKS.borrowMarkets },
+      { key: "borrowHistory", to: LINKS.borrowHistory },
+    ],
   },
   {
     key: "liquidity",

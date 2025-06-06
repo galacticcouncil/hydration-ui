@@ -214,10 +214,10 @@ const outlineVariants = createVariants<ButtonVariant>((theme) => ({
     theme.buttons.secondary.accent.hover,
   ),
   success: outlineVariantStyles(
-    theme.accents.success.onEmphasis,
     theme.accents.success.emphasis,
     theme.accents.success.emphasis,
-    theme.accents.success.emphasis,
+    "transparent",
+    theme.accents.success.dim,
   ),
   sliderTabActive: outlineVariantStyles(
     theme.buttons.primary.medium.onOutline,

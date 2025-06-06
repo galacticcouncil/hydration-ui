@@ -124,6 +124,18 @@ export const useMenuTranslations = () => {
           title: t("navigation.borrow.title"),
           description: "",
         },
+        borrowDashboard: {
+          title: t("navigation.borrowDashboard.title"),
+          description: t("navigation.borrowDashboard.description"),
+        },
+        borrowMarkets: {
+          title: t("navigation.borrowMarkets.title"),
+          description: "",
+        },
+        borrowHistory: {
+          title: t("navigation.borrowHistory.title"),
+          description: t("navigation.borrowHistory.description"),
+        },
         memepad: {
           title: t("navigation.memepad.title"),
           description: "",

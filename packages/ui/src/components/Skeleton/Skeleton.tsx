@@ -1,5 +1,6 @@
 import "react-loading-skeleton/dist/skeleton.css"
 
+import { ClassNames } from "@emotion/react"
 import SkeletonPrimitive from "react-loading-skeleton"
 
 import { useTheme } from "@/theme"
@@ -11,10 +12,15 @@ export type SkeletonProps = React.ComponentPropsWithoutRef<
 export const Skeleton: React.FC<SkeletonProps> = (props) => {
   const { getToken } = useTheme()
   return (
-    <SkeletonPrimitive
-      baseColor={getToken("details.skeleton")}
-      highlightColor={getToken("details.skeleton")}
-      {...props}
-    />
+    <ClassNames>
+      {({ css }) => (
+        <SkeletonPrimitive
+          containerClassName={css({ display: "contents" })}
+          baseColor={getToken("details.skeleton")}
+          highlightColor={getToken("details.skeleton")}
+          {...props}
+        />
+      )}
+    </ClassNames>
   )
 }

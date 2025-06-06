@@ -77,19 +77,27 @@ export const Logo = ({
           }
         }
       } else if (isStableSwap(asset)) {
-        asset.underlyingAssetId?.forEach((id) => {
-          const underlyingAssetMeta = getAssetWithFallback(id)
-
-          if (isToken(underlyingAssetMeta)) {
-            const data = {
-              assetSrc: underlyingAssetMeta.iconSrc,
-              chainSrc: underlyingAssetMeta.srcChain,
-              alt: underlyingAssetMeta.symbol,
-            }
-
-            metadata = Array.isArray(metadata) ? [...metadata, data] : [data]
+        if (asset.iconSrc) {
+          metadata = {
+            assetSrc: asset.iconSrc,
+            chainSrc: undefined,
+            alt: asset.symbol,
           }
-        })
+        } else {
+          asset.underlyingAssetId?.forEach((id) => {
+            const underlyingAssetMeta = getAssetWithFallback(id)
+
+            if (isToken(underlyingAssetMeta)) {
+              const data = {
+                assetSrc: underlyingAssetMeta.iconSrc,
+                chainSrc: underlyingAssetMeta.srcChain,
+                alt: underlyingAssetMeta.symbol,
+              }
+
+              metadata = Array.isArray(metadata) ? [...metadata, data] : [data]
+            }
+          })
+        }
       }
 
       return Array.isArray(metadata)

@@ -1,3 +1,7 @@
+import { InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
+import { Subscription } from "rxjs"
+import { TransactionReceipt } from "viem"
+
 import { Transaction } from "@/states/transactions"
 
 export enum TxActionType {
@@ -19,14 +23,27 @@ export type TxStatusCallbacks = {
 
 export type TxOptions = TxStatusCallbacks & {
   nonce?: number
-  chainKey?: string
+  chainKey: string
+  feeAssetId: string
 }
+
+export type TxEventOrError =
+  | TxEvent
+  | { type: "error"; error: Error | InvalidTxError }
+
+export type TxResult = Subscription | TransactionReceipt | void
 
 export type TxSignAndSubmitFn<T = unknown, S = unknown> = (
   tx: T,
   signer: S,
   options: TxOptions,
-) => void
+) => Promise<TxResult>
+
+export type UnsignedTxSubmitFn<T = unknown> = (
+  tx: T,
+  client: PolkadotClient,
+  options: TxOptions,
+) => Promise<Subscription>
 
 export type TxState = {
   open: boolean

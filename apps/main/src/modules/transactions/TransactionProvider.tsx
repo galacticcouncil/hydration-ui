@@ -1,11 +1,5 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useReducer,
-  useRef,
-} from "react"
+import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
 import { useNonce } from "@/api/account"
@@ -22,9 +16,8 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
-import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { Transaction, useTransactionsStore } from "@/states/transactions"
-import { NATIVE_ASSET_ID } from "@/utils/consts"
+import { HYDRATION_CHAIN_KEY, NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = Transaction &
   TxState & {
@@ -59,31 +52,30 @@ export type TransactionProviderProps = Transaction & {
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   children,
-  ...props
+  ...transaction
 }) => {
   const { cancelTransaction } = useTransactionsStore()
-  const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
   const { account } = useAccount()
-  const toasts = useTransactionToasts(props?.toasts)
 
-  const transactionRef = useRef(props)
-  const { tx, meta } = transactionRef.current
+  const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
+  const toasts = useTransactionToasts(transaction.toasts)
 
   const { data: nonce, isLoading: isLoadingNonce } = useNonce({
     address: account?.address,
   })
 
-  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee({
-    address: account?.address ?? "",
-    tx: isPapiTransaction(tx) ? tx : undefined,
-    feePaymentAssetId: meta?.feePaymentAssetId,
-  })
+  const { data: fee, isLoading: isLoadingFeeEstimate } =
+    useEstimateFee(transaction)
+
+  const feeEstimateNative = fee?.feeEstimateNative
+  const feeEstimate = fee?.feeEstimate
+  const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
 
   const onClose = useCallback(() => {
     dispatch(doClose())
-    cancelTransaction(transactionRef.current.id)
-    transactionRef.current.onClose?.()
-  }, [cancelTransaction])
+    cancelTransaction(transaction.id)
+    transaction.onClose?.()
+  }, [cancelTransaction, transaction])
 
   const reset = useCallback(() => {
     dispatch(doReset())
@@ -93,7 +85,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     dispatch(doSetStatus(status))
   }, [])
 
-  const signAndSubmitMutation = useSignAndSubmit(tx, {
+  const signAndSubmitMutation = useSignAndSubmit(transaction, {
     onMutate: () => dispatch(doSign()),
     onError: (err) => doSetError(err.message),
   })
@@ -101,10 +93,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const openRef = useLatest(state.open)
 
   const signAndSubmit = () => {
-    const { id, meta, ...transaction } = transactionRef.current
-
     signAndSubmitMutation.mutate({
-      chainKey: meta?.chainKey,
+      chainKey: transaction.meta?.chainKey ?? HYDRATION_CHAIN_KEY,
+      feeAssetId,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
@@ -124,7 +115,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         }
       },
       onFinalized: () => {
-        cancelTransaction(id)
+        cancelTransaction(transaction.id)
       },
     })
   }
@@ -134,7 +125,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   return (
     <TransactionContext.Provider
       value={{
-        ...transactionRef.current,
+        ...transaction,
         ...state,
 
         isIdle: state.status === "idle",
@@ -145,9 +136,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         nonce,
         isLoadingNonce,
 
-        feeEstimateNative: fee?.feeEstimateNative,
-        feeEstimate: fee?.feeEstimate,
-        feeAssetId: fee?.feeAssetId ?? NATIVE_ASSET_ID,
+        feeEstimateNative,
+        feeEstimate,
+        feeAssetId,
         isLoadingFeeEstimate,
 
         isLoading,

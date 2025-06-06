@@ -3,7 +3,11 @@ import { queryOptions } from "@tanstack/react-query"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 import { useAssetRegistry } from "@/states/assetRegistry"
-import { HYDRATION_PARACHAIN_ID } from "@/utils/consts"
+import {
+  GDOT_ASSET_ID,
+  GDOT_ERC20_ID,
+  HYDRATION_PARACHAIN_ID,
+} from "@/utils/consts"
 import {
   getAccountKey20,
   getEthereumNetworkEntry,
@@ -80,11 +84,11 @@ type TCommonAssetData = {
   name: string
   isTradable: boolean
   isSufficient: boolean
+  iconSrc?: string
 }
 
 export type TToken = TCommonAssetData & {
   type: AssetType.TOKEN
-  iconSrc?: string
   srcChain?: string
   parachainId?: string
   ecosystem: AssetEcosystem
@@ -128,6 +132,17 @@ const METADATA_BASE_URL =
   "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
 
 const METADATA_PATHS = ["/assets-v2.json", "/chains-v2.json"]
+
+const STABLESWAP_DATA_OVERRIDE_MAP: Record<
+  string,
+  Partial<TCommonAssetData>
+> = {
+  [GDOT_ASSET_ID]: {
+    name: "GIGADOT",
+    symbol: "GDOT",
+    iconSrc: `polkadot/2034/assets/${GDOT_ERC20_ID}/icon.svg`,
+  },
+}
 
 export const assetsQuery = (data: TProviderContext) => {
   const { assetClient, tradeRouter, isApiLoaded, dataEnv } = data
@@ -315,6 +330,7 @@ function assetToStableSwapType(
     ...commonAssetData,
     type: AssetType.STABLESWAP,
     underlyingAssetId,
+    ...STABLESWAP_DATA_OVERRIDE_MAP[asset.id.toString()],
   }
 }
 

@@ -81,8 +81,8 @@ const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
     line-height: 1;
 
     ${mq("sm")} {
-      font-size: 22px;
-      line-height: 24px;
+      font-size: ${theme.headlineSize.h6};
+      line-height: ${theme.lineHeight.xl}px;
     }
   `,
   large: css`
@@ -90,8 +90,8 @@ const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
     line-height: 1;
 
     ${mq("sm")} {
-      font-size: 28px;
-      line-height: 30px;
+      font-size: ${theme.headlineSize.h5};
+      line-height: ${theme.lineHeight["2xl"]}px;
     }
   `,
 }))
