@@ -1,4 +1,3 @@
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useNavigate } from "@tanstack/react-location"
 import { getDelegates } from "api/proxies"
 import CrossIcon from "assets/icons/CrossIcon.svg?react"
@@ -19,9 +18,9 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
-import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
+import { POLKADOT_APP_NAME } from "utils/api"
 import { H160, safeConvertAddressH160 } from "utils/evm"
-import { getAddressVariants } from "utils/formatting"
+import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
 import { FormValues } from "utils/helpers"
 import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTransferAccountInput"
 
@@ -81,16 +80,12 @@ export const Web3ConnectExternalForm = ({
       if (proxyWallet?.installed) {
         await proxyWallet?.enable(POLKADOT_APP_NAME)
         const accounts = await proxyWallet?.getAccounts()
-
+        console.log(accounts)
         hasDelegates = accounts?.some((account) =>
-          delegates.find(
-            (delegate) =>
-              delegate ===
-              encodeAddress(
-                decodeAddress(account.address),
-                HYDRA_ADDRESS_PREFIX,
-              ),
-          ),
+          delegates.find((delegate) => {
+            console.log(delegate, safeConvertAddressSS58(account.address))
+            return delegate === safeConvertAddressSS58(account.address)
+          }),
         )
       }
     }
