@@ -14,9 +14,9 @@ export const MarketErrors: FC<Props> = ({ swap }) => {
   const { t } = useTranslation("trade")
 
   const { watch } = useFormContext<MarketFormValues>()
-  const type = watch("type")
+  const isSingleTrade = watch("isSingleTrade")
 
-  if (type !== "swap") {
+  if (!isSingleTrade) {
     return null
   }
 

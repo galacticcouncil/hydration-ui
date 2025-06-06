@@ -13,25 +13,26 @@ import {
   validateAssetSellOnly,
 } from "@/utils/validators"
 
-export type SwapType = "swap" | "twap"
+export enum TradeType {
+  Sell = "Sell",
+  Buy = "Buy",
+}
+
+const schema = z.object({
+  sellAsset: requiredObject<TAssetData>(),
+  sellAmount: required.pipe(positive),
+  buyAsset: requiredObject<TAssetData>().check(validateAssetSellOnly),
+  buyAmount: required.pipe(positive),
+  type: z.custom<TradeType>(),
+  isSingleTrade: z.boolean(),
+})
 
 const useSchema = () => {
   const refineMaxBalance = useValidateFormMaxBalance()
 
-  return z
-    .object({
-      sellAsset: requiredObject<TAssetData>(),
-      sellAmount: required.pipe(positive),
-      buyAsset: requiredObject<TAssetData>().check(validateAssetSellOnly),
-      buyAmount: required.pipe(positive),
-      type: z.custom<SwapType>(),
-    })
-    .check(
-      refineMaxBalance("sellAmount", (form) => [
-        form.sellAsset,
-        form.sellAmount,
-      ]),
-    )
+  return schema.check(
+    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
+  )
 }
 
 export type MarketFormValues = z.infer<ReturnType<typeof useSchema>>
@@ -48,11 +49,12 @@ export const useMarketForm = ({
   const { getAsset } = useAssets()
 
   const defaultValues: MarketFormValues = {
-    sellAmount: "",
-    buyAmount: "",
-    type: "swap",
-    buyAsset: assetOut ? (getAsset(assetOut) ?? null) : null,
     sellAsset: assetIn ? (getAsset(assetIn) ?? null) : null,
+    sellAmount: "",
+    buyAsset: assetOut ? (getAsset(assetOut) ?? null) : null,
+    buyAmount: "",
+    type: TradeType.Sell,
+    isSingleTrade: true,
   }
 
   return useForm<MarketFormValues>({
