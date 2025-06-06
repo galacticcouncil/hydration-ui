@@ -5,21 +5,27 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { calculateSlippage } from "@/api/utils/slippage"
+import { TwapOrder } from "@/api/utils/twapApi"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { GDOT_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
+
+// TODO SDK doesnt provide
+const calculateDiffToRef = (Vfin: bigint, Vref: bigint): number => {
+  return +(((Vfin - Vref) / Vref) * 100n).toString()
+}
 
 type Props = {
   readonly swap: Trade
+  readonly twap: TwapOrder
   readonly isLoading: boolean
 }
 
-export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
+export const MarketSummaryTwap: FC<Props> = ({ swap, twap, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const {
@@ -29,16 +35,23 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
   const { watch } = form
   const buyAsset = watch("buyAsset")
 
+  const tradeFeePct = swap.tradeFeePct
+  const tradeFeeRange = swap.tradeFeeRange ?? [0, 0]
+
+  if (isLoading && (!twap || !swap)) {
+    return <MarketSummarySkeleton />
+  }
+
   if (!buyAsset) {
     return null
   }
 
-  if (isLoading && !swap) {
-    return <MarketSummarySkeleton />
-  }
-
-  const tradeFeePct = swap.tradeFeePct
-  const tradeFeeRange = swap.tradeFeeRange ?? [0, 0]
+  const twapPrice = twap.minAmountOut
+  const swapPrice =
+    swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage)
+  const twapDiff = calculateDiffToRef(twapPrice, swapPrice)
+  const twapDiffAbs = Math.abs(twapDiff)
+  const twapSymbol = twapDiff >= 0 ? "+" : "-"
 
   const [min, max] = tradeFeeRange
   const [
@@ -55,7 +68,7 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
         rows={[
           {
             label: t("trade:market.summary.priceImpact"),
-            content: t("percent", { value: swap.priceImpactPct }),
+            content: t("percent", { value: twap.priceImpactPct }),
           },
           {
             label: t("trade:market.summary.estTradeFees"),
@@ -70,24 +83,14 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
           },
           {
             label: t("trade:market.summary.minReceived"),
-            content: t("currency", {
-              value: scaleHuman(
-                swap.amountOut -
-                  calculateSlippage(swap.amountOut, swapSlippage),
-                buyAsset.decimals,
-              ),
+            content: `${t("currency", {
+              value: scaleHuman(twap.minAmountOut, buyAsset.decimals),
               symbol: buyAsset.symbol,
-            }),
+            })} (${twapSymbol + t("percent", { value: twapDiffAbs })})`,
           },
         ]}
       />
-      <TradeRoutes
-        routes={
-          swap?.swaps
-            // Hide 2-Pool-GDOT
-            .filter((swap) => swap.assetOut !== Number(GDOT_ASSET_ID)) ?? []
-        }
-      />
+      <TradeRoutes routes={swap.swaps} />
     </div>
   )
 }
