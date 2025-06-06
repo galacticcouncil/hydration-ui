@@ -7,7 +7,10 @@ import { useTranslation } from "react-i18next"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes"
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import {
+  MarketFormValues,
+  TradeType,
+} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -28,9 +31,9 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form
-  const buyAsset = watch("buyAsset")
+  const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
 
-  if (!buyAsset) {
+  if (!buyAsset || !sellAsset) {
     return null
   }
 
@@ -69,19 +72,33 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
               />
             ),
           },
-          {
-            label: t("trade:market.summary.minReceived"),
-            content: t("currency", {
-              value: scaleHuman(
-                swap
-                  ? swap.amountOut -
-                      calculateSlippage(swap.amountOut, swapSlippage)
-                  : 0n,
-                buyAsset.decimals,
-              ),
-              symbol: buyAsset.symbol,
-            }),
-          },
+          swap?.type === TradeType.Buy
+            ? {
+                label: t("trade:market.summary.maxSent"),
+                content: t("currency", {
+                  value: scaleHuman(
+                    swap
+                      ? swap.amountIn -
+                          calculateSlippage(swap.amountIn, swapSlippage)
+                      : 0n,
+                    sellAsset.decimals,
+                  ),
+                  symbol: sellAsset.symbol,
+                }),
+              }
+            : {
+                label: t("trade:market.summary.minReceived"),
+                content: t("currency", {
+                  value: scaleHuman(
+                    swap
+                      ? swap.amountOut -
+                          calculateSlippage(swap.amountOut, swapSlippage)
+                      : 0n,
+                    buyAsset.decimals,
+                  ),
+                  symbol: buyAsset.symbol,
+                }),
+              },
         ]}
       />
       <TradeRoutes

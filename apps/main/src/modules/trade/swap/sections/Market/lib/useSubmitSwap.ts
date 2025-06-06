@@ -1,9 +1,13 @@
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
+import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import {
+  MarketFormValues,
+  TradeType,
+} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -32,14 +36,22 @@ export const useSubmitSwap = () => {
         return
       }
 
-      const balance = getBalance(sellAsset.id)
-      const isMax = Big(amountIn.toString()).gte(
-        Big(balance?.free.toString() || "0").minus(5),
-      )
+      const tx = await (async (): Promise<Binary> => {
+        if (swap.type === TradeType.Buy) {
+          return await tradeUtils.buildBuyTx(swap, Number(swapSlippage))
+        }
 
-      const tx = isMax
-        ? await tradeUtils.buildSellAllTx(swap, Number(swapSlippage))
-        : await tradeUtils.buildSellTx(swap, Number(swapSlippage))
+        const balance = getBalance(sellAsset.id)
+        const isMax = Big(amountIn.toString()).gte(
+          Big(balance?.free.toString() || "0").minus(5),
+        )
+
+        if (isMax) {
+          return await tradeUtils.buildSellAllTx(swap, Number(swapSlippage))
+        }
+
+        return await tradeUtils.buildSellTx(swap, Number(swapSlippage))
+      })()
 
       const params = {
         in: t("currency", {

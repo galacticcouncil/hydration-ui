@@ -63,6 +63,7 @@
   "market.form.routes.desc": "Use accumulated asset ({{symbol}}) to avoid extra routing cost.",
   "market.summary.priceImpact": "Price impact:",
   "market.summary.minReceived": "Minimal received:",
+  "market.summary.maxSent": "Max sent:",
   "market.summary.estTradeFees": "Est. trade fees:",
   "market.warn.changeSlippage": "Split trade likely to fail due to slippage - please adjust your slippage settings or reduce trade size.",
   "market.warn.changeSlippage.cta": "Adjust slippage",

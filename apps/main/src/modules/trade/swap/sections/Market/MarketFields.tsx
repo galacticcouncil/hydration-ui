@@ -10,6 +10,7 @@ import { bestSellQuery } from "@/api/trade"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useOwnedAssets } from "@/hooks/data/useOwnedAssets"
+import { TradeType } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -27,19 +28,20 @@ export const MarketFields: FC = () => {
   const { setValue, trigger, getValues } = useFormContext<MarketFormValues>()
 
   const switchAssets = (): void => {
-    const { buyAmount, sellAmount, sellAsset, buyAsset } = getValues()
+    const { buyAmount, sellAmount, sellAsset, buyAsset, type } = getValues()
 
     setValue("buyAmount", sellAmount)
     setValue("sellAmount", buyAmount)
     setValue("sellAsset", buyAsset)
     setValue("buyAsset", sellAsset)
+    setValue("type", type === TradeType.Sell ? TradeType.Buy : TradeType.Sell)
 
     trigger(["buyAmount", "sellAmount", "sellAsset", "buyAsset"])
   }
 
   const queryClient = useQueryClient()
 
-  const resetType = () => setValue("type", "swap")
+  const resetSingleTrade = () => setValue("isSingleTrade", true)
 
   const changeSellAmount = useDebouncedCallback(
     async (sellAmount: string): Promise<void> => {
@@ -49,7 +51,7 @@ export const MarketFields: FC = () => {
         return
       }
 
-      resetType()
+      resetSingleTrade()
       const { amountOut } = await queryClient.ensureQueryData(
         bestSellQuery(rpc, {
           assetIn: sellAsset.id,
@@ -61,6 +63,7 @@ export const MarketFields: FC = () => {
       setValue("buyAmount", scaleHuman(amountOut, buyAsset.decimals), {
         shouldValidate: true,
       })
+      setValue("type", TradeType.Sell)
     },
     RECALCULATE_DEBOUNCE_MS,
   )
@@ -73,7 +76,7 @@ export const MarketFields: FC = () => {
         return
       }
 
-      resetType()
+      resetSingleTrade()
       const { amountOut } = await queryClient.ensureQueryData(
         bestSellQuery(rpc, {
           assetIn: buyAsset.id,
@@ -85,6 +88,7 @@ export const MarketFields: FC = () => {
       setValue("sellAmount", scaleHuman(amountOut, sellAsset.decimals), {
         shouldValidate: true,
       })
+      setValue("type", TradeType.Buy)
     },
     RECALCULATE_DEBOUNCE_MS,
   )
@@ -97,7 +101,7 @@ export const MarketFields: FC = () => {
         label={t("sell")}
         assets={ownedAssets}
         onAssetChange={(sellAsset) => {
-          resetType()
+          resetSingleTrade()
           const { buyAsset } = getValues()
 
           navigate({
@@ -120,7 +124,7 @@ export const MarketFields: FC = () => {
         assets={tradable}
         ignoreBalance
         onAssetChange={(buyAsset) => {
-          resetType()
+          resetSingleTrade()
           const { sellAsset } = getValues()
 
           navigate({
