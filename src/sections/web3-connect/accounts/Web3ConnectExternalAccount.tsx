@@ -17,7 +17,7 @@ import { Web3ConnectAccount } from "sections/web3-connect/accounts/Web3ConnectAc
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
-import { HYDRA_ADDRESS_PREFIX, POLKADOT_APP_NAME } from "utils/api"
+import { POLKADOT_APP_NAME } from "utils/api"
 import { getAddressVariants } from "utils/formatting"
 import { pick } from "utils/rx"
 import {
@@ -111,10 +111,7 @@ export const Web3ConnectExternalAccount: FC<
           delegates.find((delegate) => {
             return (
               delegate.toString() ===
-              encodeAddress(
-                decodeAddress(account.address),
-                HYDRA_ADDRESS_PREFIX,
-              )
+              encodeAddress(decodeAddress(account.address))
             )
           }),
         )
