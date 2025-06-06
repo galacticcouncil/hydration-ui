@@ -2623,6 +2623,16 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
+"@polkadot-api/signers-common@0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/signers-common/-/signers-common-0.1.9.tgz#b3cf112ccd7af586075679b470c341265e48a50f"
+  integrity sha512-eOAPfnNpa0kJrtM/OPHOt+jlFP97c4CWZmzfcPzOqfrLUgyyLzVCFzgBipffpzPXNPQsToM6FM+7DQEgQmoDuA==
+  dependencies:
+    "@polkadot-api/metadata-builders" "0.12.1"
+    "@polkadot-api/polkadot-signer" "0.1.6"
+    "@polkadot-api/substrate-bindings" "0.13.0"
+    "@polkadot-api/utils" "0.1.2"
+
 "@polkadot-api/sm-provider@0.1.7":
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/@polkadot-api/sm-provider/-/sm-provider-0.1.7.tgz#80a1860deae6a60e92ef69c587e93c2c69aa150e"

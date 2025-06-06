@@ -77,6 +77,65 @@ const observeTransactionEvents = <T extends TxEventOrError>(
   return sub
 }
 
+export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
+  tx,
+  client,
+  { onError, onSubmitted, onSuccess, onFinalized },
+) => {
+  const callData = await tx.getEncodedData()
+  const observer = client.submitAndWatch(callData.asHex()).pipe(
+    catchError((error) => of({ type: "error" as const, error })),
+    shareReplay(1),
+  )
+
+  return observeTransactionEvents(observer, options)
+}
+
+export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
+  tx,
+  client,
+  options,
+) => {
+  const callData = await tx.getEncodedData()
+  const observer = client.submitAndWatch(callData.asHex()).pipe(
+    catchError((error) => of({ type: "error" as const, error })),
+    shareReplay(1),
+  )
+
+  return observeTransactionEvents(observer, options)
+}
+
+const observeTransactionEvents = <T extends TxEventOrError>(
+  observer: Observable<T>,
+  options: TxOptions,
+) => {
+  const sub = observer.subscribe((event) => {
+    logger.log("Transaction status:", event)
+    if (event.type === "broadcasted") options?.onSubmitted(event.txHash)
+
+    if (event.type === "error") {
+      options?.onError(
+        event.error instanceof InvalidTxError
+          ? formatTxError(event.error.error)
+          : formatError(event.error),
+      )
+      sub.unsubscribe()
+    }
+
+    if (event.type === "txBestBlocksState" && event.found) {
+      if (event.ok) options?.onSuccess()
+      if (!event.ok) options?.onError(formatTxError(event.dispatchError))
+    }
+
+    if (event.type === "finalized") {
+      options?.onFinalized()
+      sub.unsubscribe()
+    }
+  })
+
+  return sub
+}
+
 export const formatTxError = (err: InvalidTxError["error"]): string => {
   if (!err) return ""
   if (typeof err === "string") return err

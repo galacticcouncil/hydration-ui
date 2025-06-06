@@ -45,6 +45,12 @@ export type UnsignedTxSubmitFn<T = unknown> = (
   options: TxOptions,
 ) => Promise<Subscription>
 
+export type UnsignedTxSubmitFn<T = unknown> = (
+  tx: T,
+  client: PolkadotClient,
+  options: TxOptions,
+) => void
+
 export type TxState = {
   open: boolean
   status: TxStatus
