@@ -1,0 +1,19 @@
+import { createFileRoute } from "@tanstack/react-router"
+import * as z from "zod"
+
+import { borrowHistoryFilters } from "@/modules/borrow/history/BorrowHistoryFilter.utils"
+import { BorrowHistoryPage } from "@/modules/borrow/history/BorrowHistoryPage"
+
+const filterTypeSchema = z
+  .array(z.enum(borrowHistoryFilters))
+  .readonly()
+  .optional()
+const searchSchema = z.object({
+  search: z.string().optional(),
+  type: filterTypeSchema,
+})
+
+export const Route = createFileRoute("/borrow/history")({
+  component: BorrowHistoryPage,
+  validateSearch: searchSchema,
+})
