@@ -5,6 +5,7 @@ import * as z from "zod"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
+import { SELL_ONLY_ASSETS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 const requiredError = i18n.t("error.required")
@@ -119,12 +120,7 @@ export const validateFormExistentialDeposit = <TFormValues extends FieldValues>(
   )
 
 export const validateAssetSellOnly = z.refine<TAsset | null>(
-  (asset) => {
-    const isLrna = asset?.id === "1" && asset?.symbol.toLowerCase() === "h2o"
-    const isGdotShare =
-      asset?.id === "690" && asset?.symbol.toLowerCase() === "2-pool-gdot"
-    return !isLrna && !isGdotShare
-  },
+  (asset) => !asset || !SELL_ONLY_ASSETS.includes(asset.id),
   {
     error: i18n.t("error.sellOnly"),
   },

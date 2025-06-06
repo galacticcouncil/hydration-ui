@@ -4,7 +4,11 @@ import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export const MarketFooter: FC = () => {
+type Props = {
+  readonly isEnabled: boolean
+}
+
+export const MarketFooter: FC<Props> = ({ isEnabled }) => {
   const { t } = useTranslation("trade")
   const { account } = useAccount()
 
@@ -18,7 +22,7 @@ export const MarketFooter: FC = () => {
       }}
     >
       {account ? (
-        <Button type="submit" size="large" width="100%">
+        <Button type="submit" size="large" width="100%" disabled={!isEnabled}>
           {t("market.footer.swap")}
         </Button>
       ) : (

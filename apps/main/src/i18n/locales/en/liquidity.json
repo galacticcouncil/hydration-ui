@@ -84,8 +84,6 @@
   "liquidity.createPool.modal.title": "Create Isolated Pool",
   "liquidity.createPool.modal.assetA": "Asset A",
   "liquidity.createPool.modal.assetB": "Asset B",
-  "liquidity.createPool.modal.rate": "Exchange rate: 1 {{assetA}} = {{ value, number }} {{assetB}}",
-  "liquidity.createPool.modal.rate.placeholder": "Exchange rate: - = -",
   "liquidity.createPool.toast.submitted": "Creating {{ symbolA }}/{{ symbolB }} pool...",
   "liquidity.createPool.toast.success": "Created {{ symbolA }}/{{ symbolB }} pool.",
   "liquidity.createPool.modal.validation.assetA": "Asset A is not defined",

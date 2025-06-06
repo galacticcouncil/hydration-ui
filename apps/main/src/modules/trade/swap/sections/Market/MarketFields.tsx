@@ -1,89 +1,75 @@
-import { useQueryClient } from "@tanstack/react-query"
-import { useNavigate } from "@tanstack/react-router"
-import Big from "big.js"
+import { useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebouncedCallback } from "use-debounce"
 
-import { bestSellQuery } from "@/api/trade"
-import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useOwnedAssets } from "@/hooks/data/useOwnedAssets"
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
+import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
+import {
+  MarketFormValues,
+  TradeType,
+} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
+import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { scaleHuman } from "@/utils/formatting"
+import { SELL_ONLY_ASSETS } from "@/utils/consts"
 
-const RECALCULATE_DEBOUNCE_MS = 120
+const RECALCULATE_DEBOUNCE_MS = 250
 
 export const MarketFields: FC = () => {
-  const rpc = useRpcProvider()
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
   const ownedAssets = useOwnedAssets()
 
   const navigate = useNavigate()
-  const { setValue, trigger, getValues } = useFormContext<MarketFormValues>()
+  const search = useSearch({ from: "/trade/_history" })
 
-  const switchAssets = (): void => {
-    const { buyAmount, sellAmount, sellAsset, buyAsset } = getValues()
+  const { reset, getValues, setValue } = useFormContext<MarketFormValues>()
 
-    setValue("buyAmount", sellAmount)
-    setValue("sellAmount", buyAmount)
-    setValue("sellAsset", buyAsset)
-    setValue("buyAsset", sellAsset)
+  const switchAssets = useSwitchAssets()
+  const calculateBuyAmount = useCalculateBuyAmount()
+  const calculateSellAmount = useCalculateSellAmount()
 
-    trigger(["buyAmount", "sellAmount", "sellAsset", "buyAsset"])
-  }
+  const buyableAssets = tradable.filter(
+    (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
+  )
 
-  const queryClient = useQueryClient()
-
-  const resetType = () => setValue("type", "swap")
-
-  const changeSellAmount = useDebouncedCallback(
+  const handleSellAmountChange = useDebouncedCallback(
     async (sellAmount: string): Promise<void> => {
-      const { sellAsset, buyAsset } = getValues()
+      const formValues = getValues()
+      const { sellAsset, buyAsset, type } = formValues
 
-      if (!buyAsset || !sellAsset || Big(sellAmount || "0").lte(0)) {
+      if (!sellAsset || !buyAsset || !sellAmount) {
         return
       }
 
-      resetType()
-      const { amountOut } = await queryClient.ensureQueryData(
-        bestSellQuery(rpc, {
-          assetIn: sellAsset.id,
-          assetOut: buyAsset.id,
-          amountIn: sellAmount,
-        }),
-      )
-
-      setValue("buyAmount", scaleHuman(amountOut, buyAsset.decimals), {
-        shouldValidate: true,
+      reset({
+        ...formValues,
+        buyAmount: await calculateBuyAmount(sellAsset, buyAsset, sellAmount),
+        isSingleTrade: true,
+        ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
       })
     },
     RECALCULATE_DEBOUNCE_MS,
   )
 
-  const changeBuyAmount = useDebouncedCallback(
+  const handleBuyAmountChange = useDebouncedCallback(
     async (buyAmount: string): Promise<void> => {
-      const { buyAsset, sellAsset } = getValues()
+      const formValues = getValues()
+      const { sellAsset, buyAsset, type } = formValues
 
-      if (!buyAsset || !sellAsset || Big(buyAmount || "0").lte(0)) {
+      if (!sellAsset || !buyAsset || !buyAmount) {
         return
       }
 
-      resetType()
-      const { amountOut } = await queryClient.ensureQueryData(
-        bestSellQuery(rpc, {
-          assetIn: buyAsset.id,
-          assetOut: sellAsset.id,
-          amountIn: buyAmount,
-        }),
-      )
-
-      setValue("sellAmount", scaleHuman(amountOut, sellAsset.decimals), {
-        shouldValidate: true,
+      reset({
+        ...formValues,
+        sellAmount: await calculateSellAmount(sellAsset, buyAsset, buyAmount),
+        isSingleTrade: true,
+        ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
       })
     },
     RECALCULATE_DEBOUNCE_MS,
@@ -96,40 +82,58 @@ export const MarketFields: FC = () => {
         amountFieldName="sellAmount"
         label={t("sell")}
         assets={ownedAssets}
-        onAssetChange={(sellAsset) => {
-          resetType()
+        onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
+          const isSwitch = sellAsset.id === buyAsset?.id
 
-          navigate({
-            from: "/trade/swap/market",
-            to: "/trade/swap/market",
-            search: { assetOut: buyAsset?.id, assetIn: sellAsset.id },
-          })
+          if (isSwitch) {
+            setValue("sellAsset", previousSellAsset)
+            switchAssets.mutate()
+          } else {
+            setValue("isSingleTrade", true)
+
+            navigate({
+              to: ".",
+              search: {
+                ...search,
+                assetIn: sellAsset.id,
+                assetOut: buyAsset?.id,
+              },
+            })
+          }
         }}
-        onAmountChange={changeSellAmount}
+        onAmountChange={(sellAmount) => {
+          handleBuyAmountChange.cancel()
+          handleSellAmountChange(sellAmount)
+        }}
       />
-      <AssetSwitcher
-        onSwitchAssets={switchAssets}
-        onPriceClick={() => null}
-        price="1 HDX = 3 661.923 kUSD"
-      />
+      <MarketSwitcher />
       <AssetSelectFormField<MarketFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
         label={t("buy")}
-        assets={tradable}
+        assets={buyableAssets}
         ignoreBalance
-        onAssetChange={(buyAsset) => {
-          resetType()
+        onAssetChange={(buyAsset, previousBuyAsset) => {
           const { sellAsset } = getValues()
+          const isSwitch = buyAsset.id === sellAsset?.id
 
-          navigate({
-            from: "/trade/swap/market",
-            to: "/trade/swap/market",
-            search: { assetOut: buyAsset.id, assetIn: sellAsset?.id },
-          })
+          if (isSwitch) {
+            setValue("buyAsset", previousBuyAsset)
+            switchAssets.mutate()
+          } else {
+            setValue("isSingleTrade", true)
+
+            navigate({
+              to: ".",
+              search: { assetIn: sellAsset?.id, assetOut: buyAsset.id },
+            })
+          }
         }}
-        onAmountChange={changeBuyAmount}
+        onAmountChange={(buyAmount) => {
+          handleSellAmountChange.cancel()
+          handleBuyAmountChange(buyAmount)
+        }}
       />
     </div>
   )
