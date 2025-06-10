@@ -220,11 +220,6 @@ export const SupplyModalContent = React.memo(
 
     return (
       <>
-        {supplyCapUsage.determineWarningDisplay({ supplyCap: supplyCapUsage })}
-        {debtCeilingUsage.determineWarningDisplay({
-          debtCeiling: debtCeilingUsage,
-        })}
-
         <AssetInput
           name="supply-amount"
           value={amount}
@@ -244,6 +239,7 @@ export const SupplyModalContent = React.memo(
               iconSymbol: supplyUnWrapped
                 ? currentNetworkConfig.baseAssetSymbol
                 : poolReserve.iconSymbol,
+              address: poolReserve.underlyingAsset,
             },
           ]}
           isMaxSelected={isMaxSelected}
@@ -277,6 +273,11 @@ export const SupplyModalContent = React.memo(
         {showIsolationWarning && (
           <IsolationModeWarning asset={poolReserve.symbol} sx={{ mt: 12 }} />
         )}
+
+        {supplyCapUsage.determineWarningDisplay({ supplyCap: supplyCapUsage })}
+        {debtCeilingUsage.determineWarningDisplay({
+          debtCeiling: debtCeilingUsage,
+        })}
 
         <SupplyActions {...supplyActionsProps} />
       </>

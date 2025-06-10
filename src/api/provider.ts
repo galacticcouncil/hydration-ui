@@ -14,6 +14,7 @@ import {
   CachingPoolService,
   PoolType,
   TradeRouter,
+  TradeUtils,
 } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
@@ -26,6 +27,8 @@ import {
 import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
+import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { createClient } from "graphql-ws"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -39,9 +42,11 @@ export type ProviderProps = {
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
+  strategies: boolean
+  isSixBlockEnabled: boolean
 } & { [key: string]: boolean }
 
-export const PASEO_WS_URL = "paseo-rpc.play.hydration.cloud"
+export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
 
 const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   indexerUrl: "https://explorer.hydradx.cloud/graphql",
@@ -52,11 +57,6 @@ const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
 }
 
 export const PROVIDERS: ProviderProps[] = [
-  {
-    name: "GalacticCouncil",
-    url: "wss://rpc.hydradx.cloud",
-    ...defaultProvider,
-  },
   {
     name: "Dwellir",
     url: "wss://hydration-rpc.n.dwellir.com",
@@ -108,13 +108,8 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
-    name: "3",
-    url: "wss://3.rpc.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
     name: "5",
-    url: "wss://5.rpc.hydration.cloud",
+    url: "wss://rpc.5.hydration.cloud",
     ...defaultProvider,
   },
   {
@@ -128,7 +123,7 @@ export const PROVIDERS: ProviderProps[] = [
   },
   {
     name: "Paseo",
-    url: `wss://${PASEO_WS_URL}`,
+    url: PASEO_WS_URL,
     indexerUrl: "https://explorer.hydradx.cloud/graphql",
     squidUrl:
       "https://galacticcouncil.squids.live/hydration-paseo-pools:prod/api/graphql",
@@ -160,6 +155,8 @@ export const isTestnetRpcUrl = (rpcUrl: string) => {
   const dataEnv = getProviderDataEnv(rpcUrl)
   return dataEnv === "testnet"
 }
+
+export const isPaseoRpcUrl = (rpcUrl: string) => rpcUrl === PASEO_WS_URL
 
 export async function getBestProvider(): Promise<PingResponse[]> {
   const controller = new AbortController()
@@ -397,13 +394,30 @@ export const useProviderData = (
       const endpoint = provider.endpoint
       const dataEnv = getProviderDataEnv(endpoint)
 
+      const providerData = getProviderData(endpoint)
+      const squidWSClient = createClient({
+        webSocketImpl: WebSocket,
+        url: providerData.squidUrl,
+      })
+
       const poolService = new CachingPoolService(api)
+      const txUtils = new TradeUtils(api)
       const traderRoutes = [
         PoolType.Omni,
         PoolType.Stable,
         PoolType.XYK,
         PoolType.LBP,
       ]
+
+      const stablebools = await poolService.getPools([PoolType.Stable])
+      const isGigaDotEnabled = stablebools.some(
+        ({ id }) => id === GDOT_STABLESWAP_ASSET_ID,
+      )
+
+      if (isGigaDotEnabled) {
+        traderRoutes.push(PoolType.Aave)
+      }
+
       const tradeRouter = new TradeRouter(poolService, {
         includeOnly: traderRoutes,
       })
@@ -413,6 +427,7 @@ export const useProviderData = (
         poolService,
         router: tradeRouter,
         ecosystem: Ecosystem.Polkadot,
+        unifiedAddressFormat: true,
         isTestnet: isTestnetRpcUrl(endpoint),
       })
 
@@ -436,10 +451,15 @@ export const useProviderData = (
 
       await poolService.syncRegistry(externalTokens[dataEnv])
 
-      const [isDispatchPermitEnabled] = await Promise.all([
-        api.tx.multiTransactionPayment.dispatchPermit,
-        tradeRouter.getPools(),
-      ])
+      const [isDispatchPermitEnabled, sixBlockSince, slotDuration] =
+        await Promise.all([
+          api.tx.multiTransactionPayment.dispatchPermit,
+          api.query.staking.sixSecBlocksSince?.(),
+          api.consts.aura.slotDuration,
+        ])
+
+      const slotDurationMs = slotDuration.toString()
+      const isSixBlockEnabled = !!sixBlockSince
 
       const balanceClient = new BalanceClient(api)
 
@@ -451,13 +471,19 @@ export const useProviderData = (
         api,
         evm,
         tradeRouter,
+        txUtils,
         poolService,
         balanceClient,
         endpoint,
         dataEnv,
         timestamp,
+        slotDurationMs,
+        providerData,
+        squidWSClient,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
+          strategies: isGigaDotEnabled,
+          isSixBlockEnabled,
         } as TFeatureFlags,
       }
     },
@@ -507,6 +533,19 @@ export const useActiveProvider = (): ProviderProps => {
 
   return (
     PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
+      name: "",
+      url: import.meta.env.VITE_PROVIDER_URL,
+      indexerUrl: import.meta.env.VITE_INDEXER_URL,
+      squidUrl: import.meta.env.VITE_SQUID_URL,
+      env: import.meta.env.VITE_ENV,
+      dataEnv: getDefaultDataEnv(),
+    }
+  )
+}
+
+function getProviderData(url: string): ProviderProps {
+  return (
+    PROVIDERS.find((provider) => provider.url === url) || {
       name: "",
       url: import.meta.env.VITE_PROVIDER_URL,
       indexerUrl: import.meta.env.VITE_INDEXER_URL,

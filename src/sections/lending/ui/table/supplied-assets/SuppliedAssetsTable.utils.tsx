@@ -12,10 +12,12 @@ import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
+import { getAssetIdFromAddress } from "utils/evm"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
 
 export type TSuppliedAssetsTable = typeof useSuppliedAssetsTableData
 export type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
@@ -39,7 +41,6 @@ export const useSuppliedAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.reserve.symbol}
-            iconSymbol={row.original.reserve.iconSymbol}
           />
         ),
       }),
@@ -79,11 +80,16 @@ export const useSuppliedAssetsTableColumns = () => {
           const { supplyAPY, reserve } = row.original
 
           return (
-            <IncentivesCard
-              value={supplyAPY}
-              incentives={reserve.aIncentivesData}
-              symbol={reserve.symbol}
-            />
+            <OverrideApy
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="supply"
+            >
+              <IncentivesCard
+                value={supplyAPY}
+                incentives={reserve.aIncentivesData}
+                symbol={reserve.symbol}
+              />
+            </OverrideApy>
           )
         },
       }),

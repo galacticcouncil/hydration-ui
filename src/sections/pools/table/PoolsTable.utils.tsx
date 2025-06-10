@@ -26,7 +26,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -45,6 +45,7 @@ import {
   TransferModal,
 } from "sections/pools/stablepool/transfer/TransferModal"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
+import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
 
 const NonClickableContainer = ({
   children,
@@ -485,13 +486,19 @@ export const usePoolTable = (
               ),
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
-                  <APY
-                    assetId={row.original.id}
-                    fee={row.original.fee}
-                    isLoading={row.original.isFeeLoading}
-                    totalFee={row.original.totalFee}
-                    farms={row.original.farms}
-                  />
+                  <NonClickableContainer>
+                    {row.original.id === GDOT_STABLESWAP_ASSET_ID ? (
+                      <GDOTAPY type="supply" />
+                    ) : (
+                      <APY
+                        assetId={row.original.id}
+                        fee={row.original.fee}
+                        isLoading={row.original.isFeeLoading}
+                        totalFee={row.original.totalFee}
+                        farms={row.original.farms}
+                      />
+                    )}
+                  </NonClickableContainer>
                 ) : null,
             }),
           ]

@@ -42,7 +42,7 @@ import {
   isMetaMaskLike,
   requestNetworkSwitch,
 } from "utils/metamask"
-import { genesisHashToChain, isNotNil } from "utils/helpers"
+import { isNotNil } from "utils/helpers"
 import { useIsEvmAccountBound } from "api/evm"
 import {
   EIP6963AnnounceProviderEvent,
@@ -61,7 +61,6 @@ import { SubWallet } from "sections/web3-connect/wallets/SubWallet"
 import { Talisman } from "sections/web3-connect/wallets/Talisman"
 import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
-import { HYDRADX_SS58_PREFIX } from "@galacticcouncil/sdk"
 import { persist } from "zustand/middleware"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
@@ -86,11 +85,7 @@ export const useEvmAccount = () => {
 
   const isEvm = isEvmAccount(address)
 
-  const evmAddress = useMemo(() => {
-    if (!address) return ""
-    if (isEvm) return H160.fromAccount(address)
-    return H160.fromSS58(address)
-  }, [isEvm, address])
+  const evmAddress = H160.fromAny(address)
 
   const accountBinding = useIsEvmAccountBound(evmAddress)
   const isBound = isEvm ? true : !!accountBinding.data
@@ -567,18 +562,14 @@ export function mapWalletAccount({
     wallet &&
     SOLANA_PROVIDERS.includes(wallet.extensionName as WalletProviderType)
 
-  const chainInfo = genesisHashToChain(genesisHash)
-
   return {
     address: isEvm
       ? new H160(address).toAccount()
       : isSolana
-        ? safeConvertSolanaAddressToSS58(address, HYDRADX_SS58_PREFIX)
+        ? safeConvertSolanaAddressToSS58(address)
         : address,
     displayAddress:
-      isEvm || isSolana
-        ? address
-        : safeConvertAddressSS58(address, chainInfo.prefix) || address,
+      isEvm || isSolana ? address : safeConvertAddressSS58(address) || address,
     genesisHash,
     name: name ?? "",
     provider: normalizeProviderType(wallet!),

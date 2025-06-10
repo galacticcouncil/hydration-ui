@@ -10,7 +10,7 @@ import { enUS } from "date-fns/locale"
 import { z } from "zod"
 import { BigNumberLikeType, normalizeBigNumber } from "./balance"
 import BigNumber from "bignumber.js"
-import { BN_10, UNIFIED_ADDRESS_FORMAT_ENABLED } from "./constants"
+import { BN_10 } from "./constants"
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { intervalToDuration, formatDuration } from "date-fns"
@@ -250,25 +250,15 @@ export function shortenAccountAddress(address: string, length = 6) {
   )}`
 }
 
-export function safeConvertAddressSS58(
-  address: Maybe<string>,
-  ss58prefix: number,
-  useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
-) {
+export function safeConvertAddressSS58(address: Maybe<string>, ss58prefix = 0) {
   try {
-    return encodeAddress(
-      decodeAddress(address),
-      useUnifiedFormat ? 0 : ss58prefix,
-    )
+    return encodeAddress(decodeAddress(address), ss58prefix)
   } catch {
     return null
   }
 }
 
-export function getChainSpecificAddress(
-  address: string,
-  useUnifiedFormat = UNIFIED_ADDRESS_FORMAT_ENABLED,
-) {
+export function getChainSpecificAddress(address: string) {
   if (isEvmAccount(address)) {
     return H160.fromAccount(address)
   }
@@ -278,7 +268,7 @@ export function getChainSpecificAddress(
   }
 
   const variants = getAddressVariants(address)
-  return useUnifiedFormat ? variants.polkadotAddress : variants.hydraAddress
+  return variants.polkadotAddress
 }
 
 /**
@@ -297,7 +287,7 @@ export const getAddressVariants = (address: string) => {
   const isHydraVariant = isHydraAddress(address)
   const hydraAddress = isHydraVariant
     ? address
-    : safeConvertAddressSS58(address, HYDRA_ADDRESS_PREFIX, false) ?? ""
+    : safeConvertAddressSS58(address, HYDRA_ADDRESS_PREFIX) ?? ""
 
   const polkadotAddress = safeConvertAddressSS58(address, 0) ?? ""
 

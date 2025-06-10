@@ -17,6 +17,10 @@ import {
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { MoneyMarketBanner } from "sections/lending/ui/money-market/MoneyMarketBanner"
 import { ReserveActionsSkeleton } from "sections/lending/skeleton/LendingReserveOverviewSkeleton"
+import { useRootStore } from "sections/lending/store/root"
+import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { GhoReserveConfiguration } from "sections/lending/ui/reserve-overview/gho/GhoReserveConfiguration"
+import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
 
 export type LendingReserveOverviewPageProps = {
   underlyingAsset: string
@@ -26,18 +30,25 @@ export const LendingReserveOverviewPage: React.FC<
   LendingReserveOverviewPageProps
 > = ({ underlyingAsset }) => {
   const { t } = useTranslation()
-
-  const { isBound, isLoading, account: evmAccount } = useEvmAccount()
-
-  const shouldRenderReserveActions = !evmAccount || (!!evmAccount && isBound)
-
+  const displayGho = useRootStore((store) => store.displayGho)
   const { reserves } = useAppDataContext()
+  const { currentMarket } = useProtocolDataContext()
+
+  const { isBound, isLoading } = useEvmAccount()
+
+  const isActionsDisabled =
+    MONEY_MARKET_SUPPLY_BLACKLIST.includes(underlyingAsset)
 
   const reserve = reserves.find(
     (reserve) => reserve.underlyingAsset === underlyingAsset,
   ) as ComputedReserveData
 
   const [mode, setMode] = useState<"overview" | "actions">("overview")
+
+  const isGho = displayGho({
+    symbol: reserve.symbol,
+    currentMarket,
+  })
 
   return (
     <AssetCapsProvider asset={reserve}>
@@ -67,19 +78,26 @@ export const LendingReserveOverviewPage: React.FC<
       </SFilterContainer>
       <SContent>
         <SContainer active={mode === "overview"}>
-          <ReserveConfiguration reserve={reserve} />
+          {isGho ? (
+            <GhoReserveConfiguration reserve={reserve} />
+          ) : (
+            <ReserveConfiguration reserve={reserve} />
+          )}
         </SContainer>
-        {shouldRenderReserveActions ? (
-          <SContainer active={mode === "actions"}>
-            {isLoading ? (
-              <ReserveActionsSkeleton />
-            ) : (
-              <ReserveActions reserve={reserve} />
-            )}
+        {isLoading ? (
+          <SContainer>
+            <ReserveActionsSkeleton />
           </SContainer>
-        ) : !isLoading ? (
-          <MoneyMarketBanner />
-        ) : null}
+        ) : (
+          <>
+            {isBound && !isActionsDisabled && (
+              <SContainer>
+                <ReserveActions reserve={reserve} />
+              </SContainer>
+            )}
+            {!isBound && <MoneyMarketBanner />}
+          </>
+        )}
       </SContent>
     </AssetCapsProvider>
   )

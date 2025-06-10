@@ -1,33 +1,47 @@
 fragment Supply on MmSupply {
-  assetId
+  asset {
+    assetRegistryId
+  }
   amount
 }
 
 fragment Withdraw on MmWithdraw {
-  assetId
+  asset {
+    assetRegistryId
+  }
   amount
 }
 
 fragment Borrow on MmBorrow {
-  assetId
+  asset {
+    assetRegistryId
+  }
   amount
 }
 
 fragment Repay on MmRepay {
-  assetId
+  asset {
+    assetRegistryId
+  }
   amount
 }
 
 fragment CollateralEnabled on MmReserveUsedAsCollateralEnabledEvent {
-  assetId
+  asset {
+    assetRegistryId
+  }
 }
 
 fragment CollateralDisabled on MmReserveUsedAsCollateralDisabledEvent {
-  assetId
+  asset {
+    assetRegistryId
+  }
 }
 
 fragment LiquidationCall on MmLiquidationCall {
-  assetId: collateralAssetId
+  asset: collateralAsset {
+    assetRegistryId
+  }
   amount: liquidatedCollateralAmount
 }
 

@@ -62,7 +62,7 @@ export interface ModalContextType<T extends ModalArgsType> {
     underlyingAsset: string,
     currentRateMode: InterestRate,
   ) => void
-  openClaimRewards: () => void
+  openClaimRewards: (underlyingAsset?: string) => void
   openEmode: (mode: EmodeModalType) => void
   close: () => void
   type?: ModalType
@@ -124,8 +124,9 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
           setType(ModalType.RateSwitch)
           setArgs({ underlyingAsset, currentRateMode })
         },
-        openClaimRewards: () => {
+        openClaimRewards: (underlyingAsset) => {
           setType(ModalType.ClaimRewards)
+          setArgs({ underlyingAsset })
         },
         openEmode: (mode) => {
           setType(ModalType.Emode)

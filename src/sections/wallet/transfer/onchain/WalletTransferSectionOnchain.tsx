@@ -13,14 +13,8 @@ import { WalletTransferAccountInput } from "sections/wallet/transfer/WalletTrans
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { useStore } from "state/store"
 import { theme } from "theme"
+import { BN_0, BN_1, BN_10 } from "utils/constants"
 import {
-  BN_0,
-  BN_1,
-  BN_10,
-  UNIFIED_ADDRESS_FORMAT_ENABLED,
-} from "utils/constants"
-import {
-  getAddressVariants,
   getChainSpecificAddress,
   shortenAccountAddress,
 } from "utils/formatting"
@@ -41,6 +35,11 @@ import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
 import { createToastMessages } from "state/toasts"
 import { Switch } from "components/Switch/Switch"
 import { useState } from "react"
+import { useHealthFactorChange } from "api/borrow"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { useAddressStore } from "components/AddressBook/AddressBook.utils"
+import { useShallow } from "hooks/useShallow"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -175,12 +174,29 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
-  const dest = form.watch("dest")
-  const shouldShowDisclaimer =
-    UNIFIED_ADDRESS_FORMAT_ENABLED && dest
-      ? dest.toLowerCase() ===
-        getAddressVariants(dest).polkadotAddress.toLowerCase()
-      : false
+  const healthFactorChange = useHealthFactorChange({
+    assetId: assetMeta.id,
+    amount: debouncedAmount,
+    action: ProtocolAction.withdraw,
+  })
+
+  const isHealthFactorChanged =
+    amount.gt(0) &&
+    healthFactorChange &&
+    healthFactorChange.currentHealthFactor !==
+      healthFactorChange.futureHealthFactor
+
+  const dest = form.watch("dest") || ""
+
+  const userOwnedAddresses = useAddressStore(
+    useShallow((state) => state.addresses.filter(({ isCustom }) => !isCustom)),
+  )
+
+  const isDestUserOwnedAddress = userOwnedAddresses.some(
+    ({ address }) => address.toLowerCase() === dest.toLowerCase(),
+  )
+
+  const shouldShowDisclaimer = !!dest && !isDestUserOwnedAddress
 
   const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
 
@@ -275,27 +291,40 @@ export function WalletTransferSectionOnchain({
             </label>
           </Alert>
         )}
-        <SummaryRow
-          label={t("wallet.assets.transfer.transaction_cost")}
-          content={
-            insufficientFee ? (
-              <div sx={{ flex: "row", gap: 4 }}>
-                {basicFeeComp}
-                <Text fs={14} color="brightBlue300" tAlign="right">
-                  {t("value.tokenWithSymbol", {
-                    value: insufficientFee.displayValue.multipliedBy(
-                      spotPrice?.spotPrice ?? BN_1,
-                    ),
-                    symbol: accountCurrencyMeta?.symbol,
-                    numberPrefix: "+  ",
-                  })}
-                </Text>
-              </div>
-            ) : (
-              basicFeeComp
-            )
-          }
-        />
+        <div>
+          <SummaryRow
+            label={t("wallet.assets.transfer.transaction_cost")}
+            content={
+              insufficientFee ? (
+                <div sx={{ flex: "row", gap: 4 }}>
+                  {basicFeeComp}
+                  <Text fs={14} color="brightBlue300" tAlign="right">
+                    {t("value.tokenWithSymbol", {
+                      value: insufficientFee.displayValue.multipliedBy(
+                        spotPrice?.spotPrice ?? BN_1,
+                      ),
+                      symbol: accountCurrencyMeta?.symbol,
+                      numberPrefix: "+  ",
+                    })}
+                  </Text>
+                </div>
+              ) : (
+                basicFeeComp
+              )
+            }
+          />
+          {healthFactorChange && (
+            <SummaryRow
+              content={
+                <HealthFactorChange
+                  healthFactor={healthFactorChange.currentHealthFactor}
+                  futureHealthFactor={healthFactorChange.futureHealthFactor}
+                />
+              }
+              label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
+            />
+          )}
+        </div>
         {asset !== "0" && (
           <Alert variant="warning">
             {t("wallet.assets.transfer.warning.nonNative")}
@@ -309,6 +338,11 @@ export function WalletTransferSectionOnchain({
               ),
               symbol: accountCurrencyMeta?.symbol,
             })}
+          </Alert>
+        )}
+        {isHealthFactorChanged && (
+          <Alert variant="error">
+            {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
           </Alert>
         )}
       </div>

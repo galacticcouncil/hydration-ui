@@ -25,12 +25,13 @@ import {
 } from "sections/pools/pool/details/PoolDetails.styled"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1 } from "utils/constants"
+import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
+import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -48,7 +49,7 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     pool.meta.isStableSwap ? (
       <TransferModal
-        defaultPage={Page.OPTIONS}
+        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
       />
@@ -56,6 +57,9 @@ export const PoolDetails = () => {
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
+
+  const shouldRenderPoolCap =
+    !isXYKPoolType || pool.id !== GDOT_STABLESWAP_ASSET_ID
 
   return (
     <>
@@ -106,7 +110,10 @@ export const PoolDetails = () => {
             size="small"
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
-            disabled={!pool.canAddLiquidity || native.id === pool.id}
+            disabled={
+              (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
+              native.id === pool.id
+            }
             onClick={() => setOpen(true)}
           >
             <div
@@ -126,7 +133,7 @@ export const PoolDetails = () => {
         </div>
 
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
-          {!ixXYKPool && (
+          {shouldRenderPoolCap && (
             <>
               <Separator
                 color="white"
@@ -162,7 +169,7 @@ export const PoolDetails = () => {
 
               <SValue>
                 <Text color="basic400" fs={[12, 13]}>
-                  {t("24Volume")}
+                  {t("24hVolume")}
                 </Text>
                 <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   <DisplayValue value={BN(pool.volume ?? NaN)} type="token" />
@@ -249,6 +256,18 @@ export const PoolDetails = () => {
             />
 
             <CurrencyReserves reserves={pool.reserves} />
+
+            {pool.isGigaDOT && (
+              <>
+                <Separator
+                  color="white"
+                  opacity={0.06}
+                  sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
+                />
+
+                <GDOTIncentives />
+              </>
+            )}
           </>
         ) : null}
 

@@ -1,6 +1,6 @@
 import ChevronDown from "assets/icons/ChevronDown.svg?react"
 import { ButtonTransparent } from "components/Button/Button"
-import { Dropdown } from "components/Dropdown/Dropdown"
+import { Dropdown, TDropdownItem } from "components/Dropdown/Dropdown"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
 import { TokenIcon } from "sections/lending/components/primitives/TokenIcon"
@@ -19,18 +19,22 @@ export const RewardsSelect = ({
 }: RewardsSelectProps) => {
   const selected = rewards.find((r) => r.symbol === selectedReward) as Reward
 
-  const items = useMemo(() => {
+  const items = useMemo<TDropdownItem[]>(() => {
     return [
       {
         key: "all",
         label: "Claim all rewards",
       },
-    ].concat(
-      rewards.map((reward) => ({
+      ...rewards.map((reward) => ({
         key: reward.symbol,
-        label: reward.symbol,
+        label: (
+          <>
+            <TokenIcon address={reward.rewardTokenAddress} />
+            {reward.symbol}
+          </>
+        ),
       })),
-    )
+    ]
   }, [rewards])
 
   return (
@@ -53,7 +57,7 @@ export const RewardsSelect = ({
               ) : (
                 <div sx={{ flex: "row", align: "center" }}>
                   <TokenIcon
-                    symbol={selected.symbol}
+                    address={selected.rewardTokenAddress}
                     size={16}
                     sx={{ mr: 8 }}
                   />

@@ -3,6 +3,7 @@ import {
   NotifyOnChangeProps,
   useQueries,
   useQuery,
+  UseQueryOptions,
 } from "@tanstack/react-query"
 import { Maybe } from "graphql/jsutils/Maybe"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -13,6 +14,13 @@ import BigNumber from "bignumber.js"
 import { millisecondsInMinute } from "date-fns"
 import { BN_0 } from "utils/constants"
 import { useExternalApi } from "./external"
+import {
+  AggregationTimeRange,
+  SwapAssetFeesByPeriodDocument,
+  SwapAssetFeesByPeriodQuery,
+} from "graphql/__generated__/squid/graphql"
+import { useSquidUrl } from "api/provider"
+import request from "graphql-request"
 
 export type StatsData = {
   timestamp: string
@@ -73,65 +81,6 @@ const getStatsTvl = (assetId?: string) => async () => {
   )
 
   const data: Promise<StatsData[]> = res.json()
-
-  return data
-}
-
-export const useTVL = (assetId?: string) => {
-  return useQuery(
-    QUERY_KEYS.tvl(assetId),
-    assetId
-      ? async () => {
-          const data = await getTVL(assetId === "all" ? undefined : assetId)
-          return data
-        }
-      : undefinedNoop,
-    { enabled: !!assetId },
-  )
-}
-
-const getTVL = async (assetId?: string) => {
-  const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v2/stats/tvl${
-      assetId != null ? `/${assetId}` : ""
-    }`,
-  )
-  const data: Promise<{ tvl_usd: number; asset_id: number }[]> = res.json()
-
-  return data
-}
-
-export const useFee = (assetId?: string | "all") => {
-  return useQuery(
-    QUERY_KEYS.fee(assetId),
-    assetId
-      ? async () => {
-          const asset_id = assetId === "all" ? undefined : assetId
-          const data = await geFee(asset_id)
-
-          return data
-        }
-      : undefinedNoop,
-    {
-      enabled: !!assetId,
-    },
-  )
-}
-
-const geFee = async (assetId?: string) => {
-  const res = await fetch(
-    `https://api.hydradx.io/hydradx-ui/v2/stats/fees${
-      assetId !== undefined ? `/${assetId}` : ""
-    }`,
-  )
-  const data: Promise<
-    {
-      asset_id: number
-      accrued_fees_usd: number
-      projected_apy_perc: number
-      projected_apr_perc: number
-    }[]
-  > = res.json()
 
   return data
 }
@@ -200,4 +149,26 @@ export const useTreasuryBalances = () => {
       : undefinedNoop,
     { staleTime: millisecondsInMinute, enabled: !!api },
   )
+}
+
+type UseAssetFeesTotalOptions = {
+  period: keyof typeof AggregationTimeRange
+}
+
+export const useSwapAssetFeesByPeriod = (
+  { period }: UseAssetFeesTotalOptions = { period: "24H" },
+  options: UseQueryOptions<SwapAssetFeesByPeriodQuery> = {},
+) => {
+  const squidUrl = useSquidUrl()
+
+  return useQuery({
+    queryKey: QUERY_KEYS.swapAssetFees(period),
+    queryFn: () =>
+      request(squidUrl, SwapAssetFeesByPeriodDocument, {
+        filter: {
+          period: AggregationTimeRange[period],
+        },
+      }),
+    ...options,
+  })
 }

@@ -463,6 +463,10 @@ export const useCreateAssetHubToken = ({
           srcChainFee: fee,
           srcChainFeeBalance: feeBalance,
           srcChainFeeSymbol: feeSymbol,
+          dstChain: "",
+          dstChainFee: "",
+          dstChainFeeSymbol: "",
+          tags: [],
         },
       },
       {
@@ -526,6 +530,10 @@ export const useAssetHubRevokeAdminRights = ({
           srcChainFee: fee,
           srcChainFeeBalance: feeBalance,
           srcChainFeeSymbol: feeSymbol,
+          dstChain: "",
+          dstChainFee: "",
+          dstChainFeeSymbol: "",
+          tags: [],
         },
       },
       {

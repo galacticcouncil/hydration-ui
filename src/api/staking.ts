@@ -2,16 +2,14 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import {
-  getReferendumInfoOf,
-  TAccountVote,
-  useAccountOpenGovVotes,
-} from "./democracy"
+import { TAccountVote, useAccountOpenGovVotes } from "./democracy"
 import request, { gql } from "graphql-request"
 import { useActiveProvider } from "./provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { undefinedNoop } from "utils/helpers"
+import { useAssets } from "providers/assets"
+import { useAssetsPrice } from "state/displayPrice"
 
 interface ISubscanData {
   code: number
@@ -88,6 +86,33 @@ const getUniques = async (
   return data
 }
 
+export const useStakingTotal = () => {
+  const { api, isLoaded } = useRpcProvider()
+  const { native } = useAssets()
+
+  const { getAssetPrice } = useAssetsPrice([native.id])
+  const { price } = getAssetPrice(native.id)
+
+  return useQuery(
+    QUERY_KEYS.staking,
+    async () => {
+      const res = await api.query.staking.staking()
+      if (!res || !price) return null
+      const totalStake = res.totalStake.toBigNumber()
+      return {
+        totalStake: totalStake.toString(),
+        totalStakeDisplay: totalStake
+          .shiftedBy(-native.decimals)
+          .multipliedBy(price)
+          .toString(),
+      }
+    },
+    {
+      enabled: isLoaded && !!price,
+    },
+  )
+}
+
 export const useStake = (address: string | undefined) => {
   const { api } = useRpcProvider()
   return useQuery(QUERY_KEYS.stake(address), getStake(api, address))
@@ -125,22 +150,22 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
   const createdAt: BN = positionData.createdAt.toBigNumber()
 
   const votes: Array<{
-    id: BN
+    id: string
     amount: BN
     conviction: string
-    //@ts-ignore
   }> = await votesRes.votes.reduce(async (acc, [key, data]) => {
     const prevAcc = await acc
-    const id = key.toBigNumber()
+    const id = key.toString()
     const amount = data.amount.toBigNumber()
     const conviction = data.conviction.toString()
 
-    const referendaInfo = await getReferendumInfoOf(api, id.toString())
-    const isFinished = referendaInfo.isNone
-      ? true
-      : referendaInfo.unwrap().isFinished
+    const referendaInfoRaw = await api.query.referenda.referendumInfoFor(id)
 
-    if (isFinished) {
+    if (referendaInfoRaw.isNone) return prevAcc
+
+    const referendaInfo = referendaInfoRaw.unwrap()
+
+    if (referendaInfo.isApproved || referendaInfo.isRejected) {
       prevAcc.push({
         id,
         amount,
@@ -149,19 +174,18 @@ const getStakingPosition = (api: ApiPromise, id: number) => async () => {
     }
 
     return prevAcc
-  }, Promise.resolve<Array<{ id: BN; amount: BN; conviction: string }>>([]))
+  }, Promise.resolve<Array<{ id: string; amount: BN; conviction: string }>>([]))
 
   return {
-    stake: positionData.stake.toBigNumber() as BN,
-    rewardPerStake: positionData.rewardPerStake.toBigNumber() as BN,
+    stake: positionData.stake.toBigNumber(),
+    rewardPerStake: positionData.rewardPerStake.toBigNumber(),
     createdAt,
-    actionPoints: positionData.actionPoints.toBigNumber() as BN,
+    actionPoints: positionData.actionPoints.toBigNumber(),
     accumulatedUnpaidRewards:
-      positionData.accumulatedUnpaidRewards.toBigNumber() as BN,
-    accumulatedSlashPoints:
-      positionData.accumulatedSlashPoints.toBigNumber() as BN,
+      positionData.accumulatedUnpaidRewards.toBigNumber(),
+    accumulatedSlashPoints: positionData.accumulatedSlashPoints.toBigNumber(),
     accumulatedLockedRewards:
-      positionData.accumulatedLockedRewards.toBigNumber() as BN,
+      positionData.accumulatedLockedRewards.toBigNumber(),
     votes: votes,
   }
 }
@@ -181,6 +205,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsWeight,
     actionPointsWeight,
     stakeWeight,
+    sixBlockSince,
   ] = await Promise.all([
     api.consts.staking.palletId,
     api.consts.staking.periodLength,
@@ -189,6 +214,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     api.consts.staking.timePointsWeight,
     api.consts.staking.actionPointsWeight,
     api.consts.staking.currentStakeWeight,
+    api.query.staking.sixSecBlocksSince?.(),
   ])
 
   return {
@@ -199,6 +225,7 @@ const getStakingConsts = (api: ApiPromise) => async () => {
     timePointsWeight: timePointsWeight.toBigNumber().div(1000000),
     actionPointsWeight: actionPointsWeight.toBigNumber().div(1000000000),
     stakeWeight: stakeWeight.toString(),
+    sixBlockSince: sixBlockSince?.toString(),
   }
 }
 

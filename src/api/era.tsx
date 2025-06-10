@@ -4,7 +4,7 @@ import { ExtrinsicEra } from "@polkadot/types/interfaces/extrinsics"
 import { bnToBn } from "@polkadot/util"
 import { useTimestamp } from "./timestamp"
 import { useMemo } from "react"
-import { PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { useRpcProvider } from "providers/rpcProvider"
 
 const DEFAULT_PERIOD = 900
 
@@ -13,6 +13,7 @@ export const useEra = (
   hexBlockNumber?: string,
   enabled = true,
 ) => {
+  const { slotDurationMs } = useRpcProvider()
   const blockNumber = bnToBn(hexBlockNumber)
 
   const mortal = useMemo(() => {
@@ -46,7 +47,7 @@ export const useEra = (
       const birthDate = new Date(timestamp.data)
       const deathDate = addSeconds(
         birthDate,
-        mortal.period.times(PARACHAIN_BLOCK_TIME).toNumber(),
+        mortal.period.times(BN(slotDurationMs).div(1000)).toNumber(),
       )
       return {
         birthDate,
@@ -62,5 +63,5 @@ export const useEra = (
       period: null,
       isLoading: timestamp.isLoading,
     }
-  }, [timestamp.data, timestamp.isLoading, mortal?.period])
+  }, [timestamp.data, timestamp.isLoading, mortal?.period, slotDurationMs])
 }

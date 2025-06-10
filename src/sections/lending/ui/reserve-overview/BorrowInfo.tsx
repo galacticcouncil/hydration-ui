@@ -11,12 +11,14 @@ import { PercentageValue } from "components/PercentageValue"
 import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircularStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 import {
   MarketDataType,
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 
 interface BorrowInfoProps {
   reserve: ComputedReserveData
@@ -153,9 +155,17 @@ export const BorrowInfo = ({
               labelColor="basic400"
               font="GeistSemiBold"
             >
-              <PercentageValue
-                value={Number(reserve.variableBorrowAPY) * 100}
-              />
+              <OverrideApy
+                assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
+                color="basic100"
+                size={19}
+                type="borrow"
+              >
+                <PercentageValue
+                  value={Number(reserve.variableBorrowAPY) * 100}
+                />
+              </OverrideApy>
+
               <div sx={{ mt: 2 }}>
                 <IncentivesButton
                   symbol={reserve.symbol}
@@ -218,7 +228,9 @@ export const BorrowInfo = ({
                     <a
                       target="_blank"
                       css={{ textDecoration: "underline" }}
-                      href={currentMarketData.addresses.COLLECTOR}
+                      href={currentNetworkConfig.explorerLinkBuilder({
+                        address: currentMarketData.addresses.COLLECTOR,
+                      })}
                       rel="noreferrer"
                     >
                       &nbsp;

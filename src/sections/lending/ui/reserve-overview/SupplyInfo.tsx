@@ -12,9 +12,10 @@ import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircula
 import { DebtCeilingStatus } from "sections/lending/components/caps/DebtCeilingStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { IncentivesButton } from "sections/lending/ui/incentives/IncentivesButton"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 
 type SupplyInfoProps = {
   reserve: ComputedReserveData
@@ -133,13 +134,14 @@ export const SupplyInfo = ({
               labelColor="basic400"
               font="GeistSemiBold"
             >
-              <PercentageValue value={Number(reserve.supplyAPY) * 100} />
-              <div sx={{ mt: 2 }}>
-                <IncentivesButton
-                  symbol={reserve.symbol}
-                  incentives={reserve.aIncentivesData}
-                />
-              </div>
+              <OverrideApy
+                assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
+                color="basic100"
+                size={19}
+                type="supply"
+              >
+                <PercentageValue value={Number(reserve.supplyAPY) * 100} />
+              </OverrideApy>
             </DataValue>
             {hasUnbacked && (
               <DataValue

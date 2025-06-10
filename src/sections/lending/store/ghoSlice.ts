@@ -1,6 +1,9 @@
 import { GhoService } from "@aave/contract-helpers"
 import { GhoReserveData, GhoUserData, normalize } from "@aave/math-utils"
-import { GHO_SUPPORTED_MARKETS } from "sections/lending/utils/ghoUtilities"
+import {
+  GHO_SUPPORTED_MARKETS,
+  GHO_SYMBOL,
+} from "sections/lending/utils/ghoUtilities"
 import { getProvider } from "sections/lending/utils/marketsAndNetworksConfig"
 import { StateCreator } from "zustand"
 
@@ -60,7 +63,9 @@ export const createGhoSlice: StateCreator<
       symbol,
       currentMarket,
     }: GhoUtilMintingAvailableParams): boolean => {
-      return symbol === "GHO" && GHO_SUPPORTED_MARKETS.includes(currentMarket)
+      return (
+        symbol === GHO_SYMBOL && GHO_SUPPORTED_MARKETS.includes(currentMarket)
+      )
     },
     ghoUserQualifiesForDiscount: (futureBorrowAmount = "0") => {
       const ghoReserveDataFetched = get().ghoReserveDataFetched

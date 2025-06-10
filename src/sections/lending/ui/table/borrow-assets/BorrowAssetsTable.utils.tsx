@@ -1,5 +1,9 @@
 import { API_ETH_MOCK_ADDRESS, InterestRate } from "@aave/contract-helpers"
-import { USD_DECIMALS, valueToBigNumber } from "@aave/math-utils"
+import {
+  FormattedGhoReserveData,
+  USD_DECIMALS,
+  valueToBigNumber,
+} from "@aave/math-utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import { Button } from "components/Button/Button"
@@ -7,10 +11,11 @@ import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Link } from "components/Link/Link"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { IncentivesCard } from "sections/lending/ui/incentives/IncentivesCard"
+import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import {
   ComputedReserveData,
+  ExtendedFormattedUser,
   useAppDataContext,
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
@@ -21,8 +26,11 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import {
   assetCanBeBorrowedByUser,
   getMaxAmountAvailableToBorrow,
+  getMaxGhoMintAmount,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
+import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { getAssetIdFromAddress } from "utils/evm"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData
 export type TBorrowAssetsTableData = ReturnType<TBorrowAssetsTable>
@@ -30,7 +38,9 @@ export type TBorrowAssetsRow = TBorrowAssetsTableData["data"][number]
 
 const { accessor, display } = createColumnHelper<TBorrowAssetsRow>()
 
-export const useBorrowAssetsTableColumns = () => {
+export const useBorrowAssetsTableColumns = ({
+  isGho,
+}: { isGho?: boolean } = {}) => {
   const { t } = useTranslation()
   const { openBorrow } = useModalContext()
   const { currentMarket } = useProtocolDataContext()
@@ -43,7 +53,6 @@ export const useBorrowAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.symbol}
-            iconSymbol={row.original.iconSymbol}
           />
         ),
       }),
@@ -78,7 +87,7 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
       accessor("variableBorrowRate", {
-        header: t("lending.apyVariable"),
+        header: isGho ? t("lending.apyBorrowRate") : t("lending.apyVariable"),
         meta: {
           sx: {
             textAlign: "center",
@@ -88,11 +97,16 @@ export const useBorrowAssetsTableColumns = () => {
           const { variableBorrowRate, vIncentivesData, symbol } = row.original
 
           return (
-            <IncentivesCard
-              value={variableBorrowRate}
-              incentives={vIncentivesData}
-              symbol={symbol}
-            />
+            <OverrideApy
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              type="borrow"
+            >
+              <IncentivesCard
+                value={variableBorrowRate}
+                incentives={vIncentivesData}
+                symbol={symbol}
+              />
+            </OverrideApy>
           )
         },
       }),
@@ -124,33 +138,26 @@ export const useBorrowAssetsTableColumns = () => {
         },
       }),
     ],
-    [currentMarket, openBorrow, t],
+    [currentMarket, isGho, openBorrow, t],
   )
 }
 
 export const useBorrowAssetsTableData = () => {
   const { currentNetworkConfig, currentMarket } = useProtocolDataContext()
-  const { user, reserves, marketReferencePriceInUsd, loading } =
+  const { user, reserves, marketReferencePriceInUsd, ghoReserveData, loading } =
     useAppDataContext()
-  const [displayGho] = useRootStore((store) => [store.displayGho])
-  const [account] = useRootStore((store) => [store.account])
+  const displayGho = useRootStore((store) => store.displayGho)
+  const account = useRootStore((store) => store.account)
 
   const { baseAssetSymbol } = currentNetworkConfig
-
   const sortedReserves = useMemo(() => {
     const tokensToBorrow = reserves
       .filter((reserve) => assetCanBeBorrowedByUser(reserve, user))
       .map((reserve: ComputedReserveData) => {
-        const availableBorrows =
-          user && account
-            ? Number(
-                getMaxAmountAvailableToBorrow(
-                  reserve,
-                  user,
-                  InterestRate.Variable,
-                ),
-              )
-            : 0
+        const isGho = displayGho({ symbol: reserve.symbol, currentMarket })
+        const availableBorrows = account
+          ? getAvailableBorrows(user, reserve, isGho ? ghoReserveData : null)
+          : 0
 
         const availableBorrowsInUSD = valueToBigNumber(availableBorrows)
           .multipliedBy(reserve.formattedPriceInMarketReferenceCurrency)
@@ -212,6 +219,7 @@ export const useBorrowAssetsTableData = () => {
     baseAssetSymbol,
     currentMarket,
     displayGho,
+    ghoReserveData,
     marketReferencePriceInUsd,
     reserves,
     user,
@@ -221,4 +229,19 @@ export const useBorrowAssetsTableData = () => {
     data: sortedReserves,
     isLoading: loading,
   }
+}
+
+const getAvailableBorrows = (
+  user: ExtendedFormattedUser,
+  reserve: ComputedReserveData,
+  ghoReserveData: FormattedGhoReserveData | null,
+) => {
+  return ghoReserveData
+    ? Math.min(
+        Number(getMaxGhoMintAmount(user, reserve)),
+        ghoReserveData.aaveFacilitatorRemainingCapacity,
+      )
+    : Number(
+        getMaxAmountAvailableToBorrow(reserve, user, InterestRate.Variable),
+      )
 }

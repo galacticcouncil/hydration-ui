@@ -2,8 +2,12 @@ import { useQuery } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useRpcProvider } from "providers/rpcProvider"
-import { undefinedNoop } from "utils/helpers"
-import { PoolBase } from "@galacticcouncil/sdk"
+import { isNotNil, undefinedNoop } from "utils/helpers"
+import { StableSwap } from "@galacticcouncil/sdk"
+import { useSquidUrl } from "./provider"
+import request from "graphql-request"
+import { StableswapYieldMetricsDocument } from "graphql/__generated__/squid/graphql"
+import { millisecondsInHour } from "date-fns"
 
 export const useStableswapPool = (poolId?: string) => {
   const { api } = useRpcProvider()
@@ -21,8 +25,25 @@ export const getStableswapPool =
   }
 
 export const useStableSDKPools = () => {
-  return useQuery<PoolBase[]>(QUERY_KEYS.stablePools, {
+  return useQuery<StableSwap[]>(QUERY_KEYS.stablePools, {
     enabled: false,
     staleTime: Infinity,
+  })
+}
+
+export const useStablepoolFees = (poolIds: string[]) => {
+  const url = useSquidUrl()
+
+  return useQuery({
+    queryKey: QUERY_KEYS.stablepoolFees(poolIds),
+    queryFn: async () => {
+      const data = await request(url, StableswapYieldMetricsDocument, {
+        filter: { poolIds },
+      })
+
+      return data.stableswapYieldMetrics.nodes.filter(isNotNil)
+    },
+    staleTime: millisecondsInHour,
+    enabled: !!poolIds.length,
   })
 }

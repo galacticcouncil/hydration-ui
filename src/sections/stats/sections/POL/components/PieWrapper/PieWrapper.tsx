@@ -4,7 +4,7 @@ import { useMedia } from "react-use"
 import { theme } from "theme"
 import { useMemo, useState } from "react"
 import { SContainerVertical } from "sections/stats/StatsPage.styled"
-import { PieTotalValue } from "sections/stats/sections/overview/components/PieTotalValue/PieTotalValue"
+import { PieTotalValue } from "sections/stats/sections/omnipool/components/PieTotalValue/PieTotalValue"
 import { TTreasuryAsset } from "sections/stats/StatsPage.utils"
 import { PieChart } from "sections/stats/components/PieChart/PieChart"
 import { useTranslation } from "react-i18next"
@@ -61,7 +61,7 @@ export const PieWrapper = ({
       >
         <PieTotalValue
           title={t("stats.pol.volume")}
-          data={BN(totalVolume).div(2).multipliedBy(POLMultiplier).toString()}
+          data={BN(totalVolume).multipliedBy(POLMultiplier).toString()}
           isLoading={isLoading}
         />
       </div>

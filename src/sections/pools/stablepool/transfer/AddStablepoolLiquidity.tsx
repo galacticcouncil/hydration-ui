@@ -14,12 +14,16 @@ import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { TAsset } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import {
+  BN_0,
+  GDOT_ERC20_ASSET_ID,
+  STABLEPOOL_TOKEN_DECIMALS,
+} from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import {
@@ -35,12 +39,14 @@ import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
+import { useBestTradeSell } from "api/trade"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
+import { useSpotPrice } from "api/spotPrice"
 
 type Props = {
   asset: TAsset
   onSuccess: (result: ISubmittableResult, shares: string) => void
   onClose: () => void
-  onCancel: () => void
   onAssetOpen: () => void
   onSubmitted: (shares?: string) => void
   isStablepoolOnly: boolean
@@ -59,26 +65,26 @@ export const AddStablepoolLiquidity = ({
   onAssetOpen,
   onSubmitted,
   onClose,
-  onCancel,
   isStablepoolOnly,
   isJoinFarms,
   setIsJoinFarms,
 }: Props) => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+
   const accountBalances = useAccountAssets()
   const {
     reserves,
     stablepoolFee: fee = BN_0,
     farms,
+    isGigaDOT,
     id: poolId,
   } = usePoolData().pool as TPoolFullData
 
   const { t } = useTranslation()
 
-  const walletBalance = accountBalances.data?.accountAssetsMap.get(
-    asset.id,
-  )?.balance
+  const walletBalance = accountBalances.data?.accountAssetsMap.get(asset.id)
+    ?.balance?.balance
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
@@ -91,7 +97,7 @@ export const AddStablepoolLiquidity = ({
 
   const estimatedFees = useEstimatedFees(estimationTxs)
 
-  const balance = walletBalance?.balance ?? "0"
+  const balance = walletBalance ?? "0"
   const balanceMax =
     estimatedFees.accountCurrencyId === asset.id
       ? BN(balance)
@@ -114,6 +120,15 @@ export const AddStablepoolLiquidity = ({
   const { getAssetPrice } = useAssetsPrice([asset.id])
 
   const shares = form.watch("amount")
+  const value = form.watch("value")
+
+  const [debouncedValue] = useDebouncedValue(value, 300)
+
+  const { minAmountOut, swapTx } = useBestTradeSell(
+    asset.id,
+    isGigaDOT ? GDOT_ERC20_ASSET_ID : "",
+    debouncedValue ?? "0",
+  )
 
   const getShares = useStablepoolShares({
     poolId,
@@ -164,12 +179,12 @@ export const AddStablepoolLiquidity = ({
                 farm.globalFarmId,
                 farm.yieldFarmId,
               ])
-            : undefined,
+            : null,
         )
 
     return await createTransaction(
       {
-        tx,
+        tx: isGigaDOT ? swapTx : tx,
       },
       {
         onSuccess: (result) =>
@@ -287,34 +302,39 @@ export const AddStablepoolLiquidity = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        <Summary
-          rows={[
-            {
-              label: t("liquidity.add.modal.shareTokens"),
-              content: t("value", {
-                value: shares,
-                type: "token",
-              }),
-            },
-            {
-              label: t("liquidity.remove.modal.price"),
-              content: (
-                <Text fs={14} color="white" tAlign="right">
-                  <Trans
-                    t={t}
-                    i18nKey="liquidity.add.modal.row.spotPrice"
-                    tOptions={{
-                      firstAmount: 1,
-                      firstCurrency: asset.symbol,
-                    }}
-                  >
-                    <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
-                  </Trans>
-                </Text>
-              ),
-            },
-          ]}
-        />
+        {isGigaDOT ? (
+          <GigaDotSummary selectedAsset={asset} minAmountOut={minAmountOut} />
+        ) : (
+          <Summary
+            rows={[
+              {
+                label: t("liquidity.add.modal.shareTokens"),
+                content: t("value", {
+                  value: shares,
+                  type: "token",
+                }),
+              },
+              {
+                label: t("liquidity.remove.modal.price"),
+                content: (
+                  <Text fs={14} color="white" tAlign="right">
+                    <Trans
+                      t={t}
+                      i18nKey="liquidity.add.modal.row.spotPrice"
+                      tOptions={{
+                        firstAmount: 1,
+                        firstCurrency: asset.symbol,
+                      }}
+                    >
+                      <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
+                    </Trans>
+                  </Text>
+                ),
+              },
+            ]}
+          />
+        )}
+
         {customErrors?.cap ? (
           <Alert variant="warning" css={{ marginBottom: 8 }}>
             {customErrors.cap.message}
@@ -344,5 +364,54 @@ export const AddStablepoolLiquidity = ({
           : t("liquidity.add.modal.confirmButton")}
       </Button>
     </form>
+  )
+}
+
+const GigaDotSummary = ({
+  selectedAsset,
+  minAmountOut,
+}: {
+  selectedAsset: TAsset
+  minAmountOut: string
+}) => {
+  const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
+
+  const gigaDotMeta = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
+  const { data } = useSpotPrice(GDOT_ERC20_ASSET_ID, selectedAsset.id)
+
+  return (
+    <Summary
+      rows={[
+        {
+          label: t("liquidity.stablepool.add.minimalReceived"),
+          content: t("value.tokenWithSymbol", {
+            value: BN(minAmountOut).shiftedBy(-gigaDotMeta.decimals),
+            type: "token",
+            symbol: gigaDotMeta?.name ?? "GIGADOT",
+          }),
+        },
+        {
+          label: t("liquidity.remove.modal.price"),
+          content: (
+            <Text fs={14} color="white" tAlign="right">
+              <Trans
+                t={t}
+                i18nKey="liquidity.add.modal.row.spotPrice"
+                tOptions={{
+                  firstAmount: 1,
+                  firstCurrency: gigaDotMeta.symbol,
+                }}
+              >
+                {t("value.tokenWithSymbol", {
+                  value: data?.spotPrice.toString(),
+                  symbol: selectedAsset.symbol,
+                })}
+              </Trans>
+            </Text>
+          ),
+        },
+      ]}
+    />
   )
 }

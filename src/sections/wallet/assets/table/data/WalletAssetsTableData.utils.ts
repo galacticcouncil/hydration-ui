@@ -1,7 +1,7 @@
 import { TBalance, useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { BN_NAN, PARACHAIN_BLOCK_TIME } from "utils/constants"
+import { BN_NAN, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { arraySearch, sortAssets } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -56,8 +56,12 @@ export const useAssetsData = ({
       }>(
         (acc, balance) => {
           const meta = getAsset(balance.assetId)
+          const isVisible =
+            meta && meta.id === GDOT_STABLESWAP_ASSET_ID
+              ? BigNumber(balance.total).shiftedBy(-meta.decimals).gt(1)
+              : true
 
-          if (meta) {
+          if (meta && isVisible) {
             if (
               meta.isToken ||
               meta.isStableSwap ||
@@ -174,7 +178,7 @@ export const useAssetsData = ({
             const { id, symbol, name, isExternal } = meta
             const isWithBalance = rowsWithBalance.some((row) => row.id === id)
 
-            if (!isWithBalance) {
+            if (!isWithBalance && id !== GDOT_STABLESWAP_ASSET_ID) {
               const inTradeRouter = tradable.some(
                 (tradeAsset) => tradeAsset.id === id,
               )
@@ -290,6 +294,7 @@ export const useLockedNativeTokens = () => {
 }
 
 export const useUnlockableTokens = () => {
+  const { slotDurationMs } = useRpcProvider()
   const { native } = useAssets()
   const { lockDemocracy, lockOpenGov, isLoading } = useLockedNativeTokens()
   const { data: unlockedVotes, isLoading: isLoadingVotes } = useAccountVotes()
@@ -307,8 +312,9 @@ export const useUnlockableTokens = () => {
         : lockDemocracy
             .minus(unlockedVotes.maxLockedValue.shiftedBy(-native.decimals))
             .toString()
-      const lockedSeconds =
-        unlockedVotes.maxLockedBlock.times(PARACHAIN_BLOCK_TIME)
+      const lockedSeconds = unlockedVotes.maxLockedBlock.times(
+        BigNumber(slotDurationMs).div(1000),
+      )
       const endDate = !unlockedVotes.maxLockedBlock.isZero()
         ? durationInDaysAndHoursFromNow(
             lockedSeconds?.times(1000).toNumber() ?? 0,
@@ -319,7 +325,7 @@ export const useUnlockableTokens = () => {
     }
 
     return { unlockedValue: "0", endDate: undefined }
-  }, [unlockedVotes, lockDemocracy, native])
+  }, [unlockedVotes, lockDemocracy, native, slotDurationMs])
 
   const { openGovUnlockValue, openGovEndDate } = useMemo(() => {
     if (openGovUnlockedVotes && lockOpenGov) {
@@ -337,7 +343,7 @@ export const useUnlockableTokens = () => {
       if (openGovUnlockedVotes.maxLockedBlock) {
         const lockedSeconds = BigNumber(
           openGovUnlockedVotes.maxLockedBlock,
-        ).times(PARACHAIN_BLOCK_TIME)
+        ).times(BigNumber(slotDurationMs).div(1000))
 
         openGovEndDate = !BigNumber(
           openGovUnlockedVotes.maxLockedBlock,
@@ -352,7 +358,7 @@ export const useUnlockableTokens = () => {
     }
 
     return { openGovUnlockValue: "0", openGovEndDate: undefined }
-  }, [openGovUnlockedVotes, lockOpenGov, native])
+  }, [openGovUnlockedVotes, lockOpenGov, native, slotDurationMs])
 
   const commonUnlockedValue =
     unlockedVotes?.maxLockedValue.gt(openGovUnlockValue) ||

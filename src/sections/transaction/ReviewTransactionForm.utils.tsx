@@ -28,13 +28,17 @@ import {
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
 import { useAccountAssets } from "api/deposits"
+import { useHealthFactorChange } from "api/borrow"
+import BN from "bignumber.js"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { TradeMetadata, XcmMetadata } from "@galacticcouncil/apps"
 
 export const useTransactionValues = ({
   xcallMeta,
   overrides,
   tx,
 }: {
-  xcallMeta?: Record<string, string>
+  xcallMeta?: XcmMetadata
   overrides?: {
     currencyId?: string
     feeExtra?: BigNumber
@@ -275,6 +279,59 @@ export const useEditFeePaymentAsset = (
   }
 }
 
+export const useHealthFactorChangeFromTxMetadata = (
+  txMetadata?: TradeMetadata,
+) => {
+  const { assetIn, assetOut, amountIn } = txMetadata || {}
+  const amountOut = null
+  return useHealthFactorChange({
+    assetId: assetIn?.id || "",
+    amount: amountIn || "",
+    action: ProtocolAction.withdraw,
+    swapAsset:
+      assetOut && amountOut
+        ? { assetId: assetOut.id, amount: amountOut }
+        : undefined,
+  })
+}
+
+export const useHealthFactorChangeFromTx = (
+  tx: SubmittableExtrinsic<"promise">,
+) => {
+  const { getAsset } = useAssets()
+  const assetFromTx = getAssetFromTx(tx)
+  const assetIn = assetFromTx?.assetInId
+    ? getAsset(assetFromTx.assetInId)
+    : null
+
+  const assetInId = assetIn ? assetIn.id : ""
+  const amountIn =
+    assetIn && assetFromTx?.amountIn
+      ? BN(assetFromTx.amountIn).shiftedBy(-assetIn.decimals).toString()
+      : ""
+
+  const assetOut = assetFromTx?.assetOutId
+    ? getAsset(assetFromTx.assetOutId)
+    : null
+
+  const assetOutId = assetOut ? assetOut.id : ""
+
+  const amountOut =
+    assetOut && assetFromTx?.amountOut
+      ? BN(assetFromTx.amountOut).shiftedBy(-assetOut.decimals).toString()
+      : ""
+
+  return useHealthFactorChange({
+    assetId: assetInId,
+    amount: amountIn,
+    action: ProtocolAction.withdraw,
+    swapAsset:
+      assetOutId && amountOut
+        ? { assetId: assetOutId, amount: amountOut }
+        : undefined,
+  })
+}
+
 export const createPolkadotJSTxUrl = (
   rpcUrl: string,
   tx: SubmittableExtrinsic<"promise">,
@@ -297,4 +354,67 @@ export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   return useMemo(() => {
     return createPolkadotJSTxUrl(rpcUrl, tx)
   }, [rpcUrl, tx])
+}
+
+const normalizeHumanizedString = (str: string) => str.replace(/,/g, "")
+
+export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
+  if (!tx) return null
+
+  let assetInId = null
+  let amountIn = null
+  let assetOutId = null
+  let amountOut = null
+  try {
+    const json: any = tx.method.toHuman()
+    const isSwapCall =
+      (json.method === "sell" || json.method === "buy") &&
+      (json.section === "router" || json.section === "omnipool")
+
+    const isTransferCall =
+      json.method === "transfer" && json.section === "currencies"
+
+    const isDcaCall = json.method === "schedule" && json.section === "dca"
+
+    if (isSwapCall) {
+      const amountInArg =
+        json.args?.amount ||
+        json.args?.amount_in ||
+        json.args?.max_amount_in ||
+        "0"
+
+      const amountOutArg =
+        json.args?.amount_out || json.args?.min_amount_out || "0"
+
+      assetInId = normalizeHumanizedString(json.args.asset_in)
+      amountIn = normalizeHumanizedString(amountInArg)
+      assetOutId = normalizeHumanizedString(json.args.asset_out)
+      amountOut = normalizeHumanizedString(amountOutArg)
+    }
+
+    if (isTransferCall) {
+      assetInId = normalizeHumanizedString(json.args.currency_id)
+      amountIn = normalizeHumanizedString(json.args.amount)
+    }
+    if (isDcaCall) {
+      assetInId = normalizeHumanizedString(
+        json.args.schedule.order.Sell.assetIn,
+      )
+      amountIn = normalizeHumanizedString(json.args.schedule.totalAmount)
+    }
+  } catch {
+    return {
+      assetInId,
+      amountIn,
+      assetOutId,
+      amountOut,
+    }
+  }
+
+  return {
+    assetInId,
+    amountIn,
+    assetOutId,
+    amountOut,
+  }
 }

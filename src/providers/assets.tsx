@@ -91,6 +91,25 @@ const fallbackAsset: TAsset = {
   externalId: undefined,
 }
 
+const getAdjustedAssetProps = (assetRaw: TAssetStored) => {
+  if (assetRaw.type === "Bond") {
+    const bond = assetRaw as TBond
+    return {
+      iconId: bond.underlyingAssetId,
+    }
+  }
+
+  if (assetRaw.meta) {
+    return {
+      iconId: Object.keys(assetRaw.meta),
+    }
+  }
+
+  return {
+    iconId: assetRaw.id,
+  }
+}
+
 export type TAsset = ReturnType<typeof getFullAsset> & {
   iconId: string | string[]
 }
@@ -146,12 +165,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
         const asset = {
           ...getFullAsset(assetRaw),
-          iconId:
-            assetRaw.type === "Bond"
-              ? (assetRaw as TBond).underlyingAssetId
-              : assetRaw.meta
-                ? Object.keys(assetRaw.meta)
-                : assetRaw.id,
+          ...getAdjustedAssetProps(assetRaw),
         }
 
         if (
@@ -261,12 +275,13 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     { shareTokens: [], shareTokensMap: new Map([]) },
   )
 
+  const allWithShareTokensMap = useMemo(() => {
+    return new Map<string, TAsset | TShareToken>([...all, ...shareTokensMap])
+  }, [all, shareTokensMap])
+
   const getAsset = useCallback(
-    (id: string) =>
-      new Map<string, TAsset | TShareToken>([...all, ...shareTokensMap]).get(
-        id,
-      ),
-    [all, shareTokensMap],
+    (id: string) => allWithShareTokensMap.get(id),
+    [allWithShareTokensMap],
   )
   const getAssetWithFallback = useCallback(
     (id: string) => getAsset(id) ?? fallbackAsset,

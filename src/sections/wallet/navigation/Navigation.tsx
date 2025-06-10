@@ -15,7 +15,7 @@ export const Navigation = () => {
   const { t } = useTranslation()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
 
-  const visibilityMap = {
+  const visibilityMap: Record<string, boolean> = {
     [LINKS.walletAssets]: true,
     [LINKS.walletTransactions]: isDevelopment,
     [LINKS.walletVesting]: !!totalVestedAmount?.gt(0),

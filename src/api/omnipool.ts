@@ -1,7 +1,6 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ApiPromise } from "@polkadot/api"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { REFETCH_INTERVAL } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 
 import {
@@ -11,7 +10,18 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { PoolToken } from "@galacticcouncil/sdk"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
+import { useOmnipoolIds } from "state/store"
+import { useShallow } from "hooks/useShallow"
+import { OmnipoolQuery, OmnipoolVolume } from "./volume"
+import { useSquidUrl } from "./provider"
+import { millisecondsInHour } from "date-fns"
+import request from "graphql-request"
+import {
+  AggregationTimeRange,
+  OmnipoolYieldMetricsDocument,
+} from "graphql/__generated__/squid/graphql"
+import { isNotNil } from "utils/helpers"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
@@ -66,22 +76,6 @@ export const getOmnipoolFee = (api: ApiPromise) => async () => {
     minFee: minFee.toBigNumber().div(1000000),
     maxFee: maxFee.toBigNumber().div(1000000),
   }
-}
-
-export const getHubAssetImbalance = (api: ApiPromise) =>
-  api.query.omnipool.hubAssetImbalance()
-
-export const useHubAssetImbalance = () => {
-  const { api, isLoaded } = useRpcProvider()
-
-  return useQuery(
-    QUERY_KEYS.hubAssetImbalance(),
-    () => getHubAssetImbalance(api),
-    {
-      enabled: isLoaded,
-      refetchInterval: REFETCH_INTERVAL,
-    },
-  )
 }
 
 export const useAllLiquidityPositions = () => {
@@ -154,4 +148,84 @@ export const getTradabilityFromBits = (bits: number) => {
   const canRemoveLiquidity = is_remove_liquidity_allowed(bits)
 
   return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+}
+
+export const useOmnipoolVolumeSubscription = () => {
+  const { squidWSClient, isLoaded } = useRpcProvider()
+  const ids = useOmnipoolIds(useShallow((state) => state.ids))
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined
+
+    if (ids && isLoaded) {
+      unsubscribe = squidWSClient.subscribe<OmnipoolQuery>(
+        {
+          query: `
+            subscription {
+              omnipoolAssetHistoricalVolumesByPeriod(
+                filter: {assetIds: ${JSON.stringify(ids)}, period: _24H_}
+              ) {
+                nodes {
+                  assetId
+                  assetVolume
+                }
+              }
+            }
+          `,
+          variables: {
+            assetIds: JSON.stringify(ids),
+            period: AggregationTimeRange["24H"],
+          },
+        },
+        {
+          next: (data) => {
+            const changedVolumes =
+              data.data?.omnipoolAssetHistoricalVolumesByPeriod?.nodes.map(
+                (node) => ({
+                  assetId: node.assetId.toString(),
+                  assetVolume: node.assetVolume.toString(),
+                }),
+              )
+
+            const prevData = queryClient.getQueryData<OmnipoolVolume[]>(
+              QUERY_KEYS.omnipoolSquidVolumes,
+            )
+
+            const newData = prevData?.map((asset) => {
+              const changedVolume = changedVolumes?.find(
+                (changedVolume) => changedVolume.assetId === asset.assetId,
+              )
+
+              return changedVolume ?? asset
+            })
+
+            queryClient.setQueryData(QUERY_KEYS.omnipoolSquidVolumes, newData)
+          },
+          error: (error) => {
+            console.error("error", error)
+          },
+          complete: () => {},
+        },
+      )
+    }
+
+    return () => unsubscribe?.()
+  }, [ids, queryClient, squidWSClient, isLoaded])
+
+  return null
+}
+
+export const useOmnipoolYieldMetrics = () => {
+  const url = useSquidUrl()
+
+  return useQuery({
+    queryKey: QUERY_KEYS.omnipoolYieldMetrics,
+    queryFn: async () => {
+      const data = await request(url, OmnipoolYieldMetricsDocument)
+
+      return data.omnipoolAssetsYieldMetrics.nodes.filter(isNotNil)
+    },
+    staleTime: millisecondsInHour,
+  })
 }

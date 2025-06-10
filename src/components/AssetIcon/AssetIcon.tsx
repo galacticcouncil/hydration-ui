@@ -6,7 +6,7 @@ import {
   ChainLogo as ChainLogoUi,
   PlaceholderLogo,
 } from "@galacticcouncil/ui"
-import { assetPlaceholderCss, SATokenWrapper } from "./AssetIcon.styled"
+import { assetPlaceholderCss } from "./AssetIcon.styled"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { ExternalAssetBadgeVariant, useExternalWhitelist } from "api/external"
@@ -19,6 +19,7 @@ import { useExternalAssetsMetadata } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { pick } from "utils/rx"
+import { GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -43,6 +44,8 @@ export const UigcChainLogo = createComponent({
   elementClass: ChainLogoUi,
   react: React,
 })
+
+const A_TOKEN_HIGHLIGHT_RING_BLACKLIST = [GDOT_ERC20_ASSET_ID]
 
 export const MultipleAssetLogo = ({
   iconId,
@@ -179,32 +182,32 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       )
     }
 
-    const Wrapper = underlyingAssetId ? SATokenWrapper : React.Fragment
-
     return (
-      <Wrapper>
-        <UigcAssetId
-          css={{ "& uigc-logo-chain": { display: "none" } }}
-          ref={(el) => {
-            el &&
-              details.parachainId &&
-              el.setAttribute("chainOrigin", details.parachainId)
-            el && el.setAttribute("fit", "")
-          }}
-          ecosystem="polkadot"
-          asset={underlyingAssetId ?? details.id}
-          chain={HYDRADX_PARACHAIN_ID.toString()}
-          chainOrigin={details.parachainId}
-        >
-          {badgeVariant && (
-            <UigcAssetBadge
-              slot="badge"
-              variant={badgeVariant}
-              text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
-            />
-          )}
-        </UigcAssetId>
-      </Wrapper>
+      <UigcAssetId
+        css={{ "& uigc-logo-chain": { display: "none" } }}
+        ref={(el) => {
+          el &&
+            details.parachainId &&
+            el.setAttribute("chainOrigin", details.parachainId)
+          el && el.setAttribute("fit", "")
+        }}
+        ecosystem="polkadot"
+        isAToken={
+          !!underlyingAssetId &&
+          !A_TOKEN_HIGHLIGHT_RING_BLACKLIST.includes(details.id)
+        }
+        asset={underlyingAssetId ?? details.id}
+        chain={HYDRADX_PARACHAIN_ID.toString()}
+        chainOrigin={details.parachainId}
+      >
+        {badgeVariant && (
+          <UigcAssetBadge
+            slot="badge"
+            variant={badgeVariant}
+            text={t(`wallet.addToken.tooltip.${badgeVariant}`)}
+          />
+        )}
+      </UigcAssetId>
     )
   }
 
