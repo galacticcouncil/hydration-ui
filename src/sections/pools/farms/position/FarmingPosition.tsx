@@ -94,7 +94,7 @@ const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
       variant="error"
       onClick={() => exit.mutate()}
       isLoading={exit.isLoading}
-      disabled={exit.isLoading || account?.isExternalWalletConnected}
+      disabled={exit.isLoading}
       css={{ flex: "1 0 0 " }}
     >
       <Icon icon={<ExitIcon />} />
