@@ -18,7 +18,7 @@ import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const usePriceSubscriber = () => {
-  const { isApiLoaded, tradeRouter } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(prop("setAssets"))
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
@@ -39,7 +39,7 @@ export const usePriceSubscriber = () => {
 
       const prices = await Promise.all(
         activeAssetsIds.map((assetId) =>
-          getSpotPrice(tradeRouter, assetId, stableCoinId ?? "")(),
+          getSpotPrice(sdk.api.router, assetId, stableCoinId ?? "")(),
         ),
       )
 
@@ -63,13 +63,13 @@ export const spotPrice = (
   assetIn: string,
   assetOut: string,
 ) => {
-  const { isApiLoaded, tradeRouter } = context
+  const { isApiLoaded, sdk } = context
 
   return queryOptions({
     enabled: isApiLoaded && !!assetIn && !!assetOut,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "spotPrice", assetIn, assetOut],
     queryFn: async () => {
-      const spotPrice = await getSpotPrice(tradeRouter, assetIn, assetOut)()
+      const spotPrice = await getSpotPrice(sdk.api.router, assetIn, assetOut)()
 
       return spotPrice
     },
@@ -114,14 +114,14 @@ export const useSubscribedPriceKeys = (assetIds: string[]) => {
     useShallow((state) => state.setAssets),
   )
 
-  const { isLoaded, tradeRouter } = useRpcProvider()
+  const { isLoaded, sdk } = useRpcProvider()
 
   useQueries({
     queries: assetIds.map((assetId) => ({
       queryKey: ["spotPriceKey", assetId],
       queryFn: async () => {
         const price = await getSpotPrice(
-          tradeRouter,
+          sdk.api.router,
           assetId,
           stableCoinId ?? "",
         )()

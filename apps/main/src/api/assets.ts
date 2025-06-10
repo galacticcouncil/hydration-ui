@@ -145,7 +145,7 @@ const STABLESWAP_DATA_OVERRIDE_MAP: Record<
 }
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { assetClient, tradeRouter, isApiLoaded, dataEnv } = data
+  const { sdk, isApiLoaded, dataEnv } = data
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
@@ -160,8 +160,8 @@ export const assetsQuery = (data: TProviderContext) => {
 
       const [tradeAssets, assets, assetsMetadata, chainsMetadata] =
         await Promise.all([
-          tradeRouter.getTradeableAssets(),
-          assetClient.getOnChainAssets(true),
+          sdk.api.router.getTradeableAssets(),
+          sdk.client.asset.getOnChainAssets(true),
           ...metadataQueries,
         ])
 

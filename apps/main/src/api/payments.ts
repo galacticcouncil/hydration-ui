@@ -24,7 +24,7 @@ const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
 }
 
 export const useAcceptedFeePaymentAssets = (ids: string[]) => {
-  const { papi, isLoaded, tradeRouter } = useRpcProvider()
+  const { papi, isLoaded, sdk } = useRpcProvider()
   const { getAsset } = useAssets()
 
   return useQuery({
@@ -34,7 +34,7 @@ export const useAcceptedFeePaymentAssets = (ids: string[]) => {
       const assetIds = ids.map<[number]>((id) => [Number(id)])
 
       const [pools, acceptedCurrencies] = await Promise.all([
-        tradeRouter.getPools(),
+        sdk.api.router.getPools(),
         papi.query.MultiTransactionPayment.AcceptedCurrencies.getValues(
           assetIds,
         ),
