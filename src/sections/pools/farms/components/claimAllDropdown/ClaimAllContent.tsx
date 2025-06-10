@@ -110,8 +110,7 @@ export const ClaimAllContent = forwardRef<HTMLDivElement, Props>(
             <SClaimButton
               disabled={
                 !claimableValues ||
-                BigNumber(claimableTotal).isZero() ||
-                account?.isExternalWalletConnected
+                BigNumber(claimableTotal).isZero()
               }
               onClick={claim}
             >
