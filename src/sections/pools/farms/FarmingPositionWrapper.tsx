@@ -167,7 +167,6 @@ export const FarmingPositionWrapper = () => {
             variant="error"
             size="compact"
             onClick={() => exit.mutate()}
-            disabled={account?.isExternalWalletConnected}
           >
             <Icon size={12} icon={<ExitIcon />} />
             {t("liquidity.pool.farms.exitAll.btn")}
