@@ -1459,10 +1459,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.1.tgz#71cb23dfe348a04a9989c78cf2ccf72f0bfa16db"
   integrity sha512-/TNhudkCRYskJWG6i3gCx74RlfqMIMgBJ7UJEb6III8kSfJjezShUv1RV3AHZjUdodoZToS0tb+3IbaV+KPq8w==
 
-"@galacticcouncil/descriptors@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.1.tgz#71cb23dfe348a04a9989c78cf2ccf72f0bfa16db"
-  integrity sha512-/TNhudkCRYskJWG6i3gCx74RlfqMIMgBJ7UJEb6III8kSfJjezShUv1RV3AHZjUdodoZToS0tb+3IbaV+KPq8w==
+"@galacticcouncil/descriptors@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.2.0.tgz#41d02fe7b3583cfec11ce9cea7efdc4617990818"
+  integrity sha512-h2gsylDEGt3scR4fjwUxFxhXwdGsCmosMDwPau4oarXbU1fDWxqYa0wf6lhlw9QBIgt1d+o8DCyabM5CJKVWMQ==
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"
@@ -1519,12 +1519,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.1.0.tgz#e6ee482adf98a9fb2e8a53b7328ebee6ed41ecbe"
   integrity sha512-elKGesL580Csjo+uIIkJmEdh5SYwCGjWGgdkby1GCve1TUpegEgi77KYXIQ8sS4JAtLX94HMH8KxN8UpELxOqg==
 
-"@galacticcouncil/sdk-next@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.1.0.tgz#6861dd773c2cc57ca1425e43ea7179cc21adda0f"
-  integrity sha512-5p0omzXzi0odNOqiozIiU2QqmNm9Oxkvl9Cvi20ShS/yePJqe+OzN079GuO5ixUIlBV24Jczqcg6gkCcVI9jSg==
+"@galacticcouncil/sdk-next@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.2.0.tgz#37df806d89d6fd5bc29eb6fe2e197a0c91250233"
+  integrity sha512-D8lthf1awRt21mKX8Z8HfUx6d6ddjyZAQLQ/Cg7m0T0O24pwek52w5AVciCOMTdanSj8om2xmEihGza+EvFZzg==
   dependencies:
-    "@galacticcouncil/descriptors" "^1.1.1"
+    "@galacticcouncil/descriptors" "^1.2.0"
     "@galacticcouncil/math-lbp" "^1.1.0"
     "@galacticcouncil/math-liquidity-mining" "^1.1.0"
     "@galacticcouncil/math-omnipool" "^1.2.0"

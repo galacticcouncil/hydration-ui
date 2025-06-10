@@ -11,7 +11,7 @@ type BestSellArgs = {
 }
 
 export const bestSellQuery = (
-  { tradeRouter, isLoaded }: TProviderContext,
+  { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountIn }: BestSellArgs,
 ) =>
   queryOptions({
@@ -24,7 +24,7 @@ export const bestSellQuery = (
       amountIn,
     ],
     queryFn: () =>
-      tradeRouter.getBestSell(Number(assetIn), Number(assetOut), amountIn),
+      sdk.api.router.getBestSell(Number(assetIn), Number(assetOut), amountIn),
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
 
@@ -35,7 +35,7 @@ type BestBuyArgs = {
 }
 
 export const bestBuyQuery = (
-  { tradeRouter, isLoaded }: TProviderContext,
+  { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountOut }: BestBuyArgs,
 ) => {
   return queryOptions({
@@ -48,7 +48,7 @@ export const bestBuyQuery = (
       amountOut,
     ],
     queryFn: () =>
-      tradeRouter.getBestBuy(Number(assetIn), Number(assetOut), amountOut),
+      sdk.api.router.getBestBuy(Number(assetIn), Number(assetOut), amountOut),
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
 }

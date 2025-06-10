@@ -12,7 +12,7 @@ import { Transaction } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useEstimateFee = (transaction: Transaction) => {
-  const { papi, tradeRouter, isLoaded } = useRpcProvider()
+  const { papi, sdk, isLoaded } = useRpcProvider()
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
 
@@ -39,7 +39,7 @@ export const useEstimateFee = (transaction: Transaction) => {
       if (!tx) throw new Error("Invalid transaction")
       if (!feeAssetId) throw new Error("Missing fee payment asset id")
 
-      const getSpotPriceFn = getSpotPrice(tradeRouter, native.id, feeAssetId)
+      const getSpotPriceFn = getSpotPrice(sdk.api.router, native.id, feeAssetId)
       const [fees, spot] = await Promise.all([
         tx.getEstimatedFees(address),
         getSpotPriceFn(),
