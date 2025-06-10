@@ -1,5 +1,5 @@
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
-import { Summary } from "@galacticcouncil/ui/components"
+import { Summary, SummaryRow } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -7,7 +7,10 @@ import { useTranslation } from "react-i18next"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes"
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import {
+  MarketFormValues,
+  TradeType,
+} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -28,9 +31,9 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form
-  const buyAsset = watch("buyAsset")
+  const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
 
-  if (!buyAsset) {
+  if (!buyAsset || !sellAsset) {
     return null
   }
 
@@ -50,28 +53,40 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
 
   return (
     <div>
-      <Summary
-        separator={<SwapSectionSeparator />}
-        withTrailingSeparator
-        rows={[
-          {
-            label: t("trade:market.summary.priceImpact"),
-            content: t("percent", { value: swap?.priceImpactPct ?? 0 }),
-          },
-          {
-            label: t("trade:market.summary.estTradeFees"),
-            content: (
-              <DynamicFee
-                value={tradeFeePct}
-                rangeLow={mediumLow}
-                rangeHigh={mediumHigh}
-                tooltip="TODO Est. trade fees market swap"
-              />
-            ),
-          },
-          {
-            label: t("trade:market.summary.minReceived"),
-            content: t("currency", {
+      <Summary separator={<SwapSectionSeparator />} withTrailingSeparator>
+        <SummaryRow
+          label={t("trade:market.summary.priceImpact")}
+          content={t("percent", { value: swap?.priceImpactPct ?? 0 })}
+        />
+        <SummaryRow
+          label={t("trade:market.summary.estTradeFees")}
+          content={
+            <DynamicFee
+              value={tradeFeePct}
+              rangeLow={mediumLow}
+              rangeHigh={mediumHigh}
+              tooltip="TODO Est. trade fees market swap"
+            />
+          }
+        />
+        {swap?.type === TradeType.Buy ? (
+          <SummaryRow
+            label={t("trade:market.summary.maxSent")}
+            content={t("currency", {
+              value: scaleHuman(
+                swap
+                  ? swap.amountIn +
+                      calculateSlippage(swap.amountIn, swapSlippage)
+                  : 0n,
+                sellAsset.decimals,
+              ),
+              symbol: sellAsset.symbol,
+            })}
+          />
+        ) : (
+          <SummaryRow
+            label={t("trade:market.summary.minReceived")}
+            content={t("currency", {
               value: scaleHuman(
                 swap
                   ? swap.amountOut -
@@ -80,10 +95,10 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
                 buyAsset.decimals,
               ),
               symbol: buyAsset.symbol,
-            }),
-          },
-        ]}
-      />
+            })}
+          />
+        )}
+      </Summary>
       <TradeRoutes
         routes={
           swap?.swaps

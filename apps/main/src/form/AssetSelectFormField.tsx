@@ -17,7 +17,7 @@ type Props<TFormValues extends FieldValues> = Omit<
 > & {
   readonly assetFieldName: FieldPathByValue<TFormValues, TAsset | null>
   readonly amountFieldName: FieldPathByValue<TFormValues, string>
-  readonly onAssetChange?: (asset: TAsset) => void
+  readonly onAssetChange?: (asset: TAsset, previousAsset: TAsset | null) => void
   readonly onAmountChange?: (amount: string) => void
 }
 
@@ -44,7 +44,7 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
       selectedAsset={assetField.value}
       setSelectedAsset={(asset) => {
         assetField.onChange(asset)
-        onAssetChange?.(asset)
+        onAssetChange?.(asset, assetField.value)
       }}
       value={amountField.value}
       onChange={(value) => {

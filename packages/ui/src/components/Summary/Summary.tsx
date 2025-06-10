@@ -1,19 +1,33 @@
 import { Stack, StackProps } from "@galacticcouncil/ui/components"
 
 import { RowModel, SummaryRow } from "./SummaryRow"
+import { ReactNode } from "react"
 
-type SummaryProps = Omit<StackProps, "children"> & {
-  rows: RowModel[]
-}
+type ContentProps =
+  | {
+      readonly rows: ReadonlyArray<RowModel>
+      readonly children?: never
+    }
+  | {
+      readonly children: ReactNode
+      readonly rows?: never
+    }
 
-export const Summary = ({ rows, separated = true, ...props }: SummaryProps) => (
+type SummaryProps = Omit<StackProps, "children"> & ContentProps
+
+export const Summary = ({
+  rows,
+  children,
+  separated = true,
+  ...props
+}: SummaryProps) => (
   <Stack separated={separated} {...props}>
-    {rows.map((row, i) => (
+    {rows?.map((row, i) => (
       <SummaryRow
         key={`${row.label}_${i}`}
         label={row.label}
         content={row.content}
       />
-    ))}
+    )) ?? children}
   </Stack>
 )

@@ -20,7 +20,6 @@ import { useAccountBalances } from "@/states/account"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import {
-  calculateRate,
   useSubmitCreateIsolatedPool,
   zodCreateIsolatedPool,
 } from "./CreateIsolatedPool.utils"
@@ -36,7 +35,6 @@ export const CreateIsolatedPool = () => {
   const { getFreeBalance } = useAccountBalances()
   const [assetA, setAssetA] = useState<TAssetData | undefined>(undefined)
   const [assetB, setAssetB] = useState<TAssetData | undefined>(undefined)
-  const [isReversedPrice, setIsReversedPrice] = useState(false)
 
   const assetABalance = assetA
     ? scaleHuman(getFreeBalance(assetA.id), assetA.decimals)
@@ -60,18 +58,9 @@ export const CreateIsolatedPool = () => {
 
   const [amountA, amountB] = form.watch(["amountA", "amountB"])
 
-  const rate = calculateRate({
-    amountA,
-    amountB,
-    assetA,
-    assetB,
-    reversed: isReversedPrice,
-  })
-
   const onSwitchAssets = () => {
     setAssetA(assetB)
     setAssetB(assetA)
-    setIsReversedPrice(false)
   }
 
   const onSubmit = (values: CreateIsolatedPoolFormData) => {
@@ -116,18 +105,11 @@ export const CreateIsolatedPool = () => {
             />
 
             <AssetSwitcher
+              assetInId={assetA?.id ?? ""}
+              assetOutId={assetB?.id ?? ""}
+              priceIn={amountA}
+              priceOut={amountB}
               onSwitchAssets={onSwitchAssets}
-              disabled={!rate}
-              onPriceClick={() => setIsReversedPrice((prev) => !prev)}
-              price={
-                rate
-                  ? t("liquidity.createPool.modal.rate", {
-                      assetA: rate.assetA,
-                      assetB: rate.assetB,
-                      value: rate.rate.toString(),
-                    })
-                  : t("liquidity.createPool.modal.rate.placeholder")
-              }
             />
 
             <Controller

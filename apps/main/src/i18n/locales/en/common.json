@@ -9,6 +9,7 @@
   "add": "Add",
   "cancel": "Cancel",
   "close": "Close",
+  "unknownExchangeRate": "Exchange rate: - = -",
   "custom": "Custom",
   "connectWallet": "Connect Wallet",
   "edit": "Edit",

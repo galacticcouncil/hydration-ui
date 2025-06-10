@@ -6,6 +6,7 @@ export const NATIVE_ASSET_DECIMALS = 12
 export const NATIVE_EVM_ASSET_ID = "20"
 export const HUB_ID = "1"
 
+export const H2O_ASSET_ID = "1"
 export const USDT_ASSET_ID = "10"
 export const GDOT_ASSET_ID = "690"
 export const GDOT_ERC20_ID = "69"
@@ -14,3 +15,5 @@ export const DOT_ASSET_ID = "5"
 export const PARACHAIN_BLOCK_TIME = 12_000
 
 export const QUERY_KEY_BLOCK_PREFIX = "@block"
+
+export const SELL_ONLY_ASSETS = [H2O_ASSET_ID, GDOT_ASSET_ID]

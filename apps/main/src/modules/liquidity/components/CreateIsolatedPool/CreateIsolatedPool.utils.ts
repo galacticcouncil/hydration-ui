@@ -11,30 +11,6 @@ import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 import { CreateIsolatedPoolFormData } from "./CreateIsolatedPool"
 
-export const calculateRate = ({
-  amountA,
-  amountB,
-  assetA,
-  assetB,
-  reversed,
-}: {
-  amountA?: string
-  amountB?: string
-  assetA?: TAssetData
-  assetB?: TAssetData
-  reversed: boolean
-}) => {
-  if (!amountA || !amountB || !assetA || !assetB) return undefined
-
-  const rate = Big(amountB).div(amountA)
-
-  return {
-    assetA: reversed ? assetB.symbol : assetA.symbol,
-    assetB: reversed ? assetA.symbol : assetB.symbol,
-    rate: reversed ? Big(1).div(rate) : rate,
-  }
-}
-
 export const zodCreateIsolatedPool = (
   balanceA: string,
   balanceB: string,
