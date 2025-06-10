@@ -60,8 +60,11 @@ const useMissingExternalAssets = (ids: string[]) => {
 
 export const useExternalXYKVolume = (poolsAddress: string[]) => {
   const [valid, setValid] = useState(false)
-  const { poolService } = useRpcProvider()
+  const { sdk } = useRpcProvider()
   const { getAsset } = useAssets()
+
+  const { ctx } = sdk
+
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
 
   const getExtrernalTokenByInternalId = useExternalTokenMeta()
@@ -94,7 +97,7 @@ export const useExternalXYKVolume = (poolsAddress: string[]) => {
   useQuery(
     ["syncExternalTokens", missingAssets.map((asset) => asset.id).join(",")],
     async () => {
-      await poolService.syncRegistry([
+      await ctx.pool.syncRegistry([
         ...externalTokensStored[dataEnv],
         ...missingAssets,
       ])

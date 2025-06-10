@@ -265,9 +265,10 @@ const select = (data: TFarmAprData[] | undefined) => {
 
 export const useOmnipoolFarms = (ids: string[]) => {
   const { account } = useAccount()
-  const { api, balanceClient, isLoaded } = useRpcProvider()
+  const { api, sdk, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
+  const { client } = sdk
 
   const { omnipoolDeposits = [] } = data ?? {}
 
@@ -284,7 +285,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
   const { data: stoppedFarmsData = [] } = useQuery(
     QUERY_KEYS.stoppedOmnipoolFarms(account?.address),
-    getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback),
+    getFarmsData(api, client.balance, stoppedFarms, getAssetWithFallback),
     {
       enabled:
         isActiveFarms &&
@@ -298,7 +299,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { data: activeFarmsData = [], isLoading } = useQuery(
     QUERY_KEYS.omnipoolFarms,
     activeFarms
-      ? getFarmsData(api, balanceClient, activeFarms, getAssetWithFallback)
+      ? getFarmsData(api, client.balance, activeFarms, getAssetWithFallback)
       : undefinedNoop,
     {
       enabled: isActiveFarms && isLoaded,
@@ -311,9 +312,10 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
 export const useXYKFarms = (ids: string[]) => {
   const { account } = useAccount()
-  const { api, balanceClient, isLoaded } = useRpcProvider()
+  const { api, sdk, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
+  const { client } = sdk
 
   const { xykDeposits = [] } = data ?? {}
 
@@ -330,7 +332,7 @@ export const useXYKFarms = (ids: string[]) => {
 
   const { data: stoppedFarmsData = [] } = useQuery(
     QUERY_KEYS.stoppedXykFarms(account?.address),
-    getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback, true),
+    getFarmsData(api, client.balance, stoppedFarms, getAssetWithFallback, true),
     {
       enabled:
         isActiveFarms &&
@@ -346,7 +348,7 @@ export const useXYKFarms = (ids: string[]) => {
     activeFarms
       ? getFarmsData(
           api,
-          balanceClient,
+          client.balance,
           activeFarms,
           getAssetWithFallback,
           true,

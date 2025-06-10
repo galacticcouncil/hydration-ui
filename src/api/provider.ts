@@ -8,14 +8,7 @@ import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
-import {
-  AssetClient,
-  BalanceClient,
-  CachingPoolService,
-  PoolType,
-  TradeRouter,
-  TradeUtils,
-} from "@galacticcouncil/sdk"
+import { createSdkContext, PoolType } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
@@ -261,11 +254,11 @@ export const useProviderAssets = () => {
             ? ExternalAssetCursor.deref().state
             : useUserExternalTokenStore.getState()
 
-          const assetClient = new AssetClient(provider.api)
+          const { api, client } = provider.sdk
 
           const [tradeAssets, sdkAssets] = await Promise.all([
-            provider.tradeRouter.getAllAssets(),
-            assetClient.getOnChainAssets(true, externalTokens[dataEnv]),
+            api.router.getAllAssets(),
+            client.asset.getOnChainAssets(true, externalTokens[dataEnv]),
           ])
 
           if (sdkAssets?.length && tradeAssets?.length) {
@@ -400,32 +393,17 @@ export const useProviderData = (
         url: providerData.squidUrl,
       })
 
-      const poolService = new CachingPoolService(api)
-      const txUtils = new TradeUtils(api)
-      const traderRoutes = [
-        PoolType.Omni,
-        PoolType.Stable,
-        PoolType.XYK,
-        PoolType.LBP,
-      ]
+      const sdk = createSdkContext(api)
+      const { ctx } = sdk
 
-      const stablebools = await poolService.getPools([PoolType.Stable])
+      const stablebools = await ctx.pool.getPools([PoolType.Stable])
       const isGigaDotEnabled = stablebools.some(
         ({ id }) => id === GDOT_STABLESWAP_ASSET_ID,
       )
 
-      if (isGigaDotEnabled) {
-        traderRoutes.push(PoolType.Aave)
-      }
-
-      const tradeRouter = new TradeRouter(poolService, {
-        includeOnly: traderRoutes,
-      })
-
       ChainCursor.reset({
         api,
-        poolService,
-        router: tradeRouter,
+        sdk: sdk,
         ecosystem: Ecosystem.Polkadot,
         unifiedAddressFormat: true,
         isTestnet: isTestnetRpcUrl(endpoint),
@@ -449,7 +427,7 @@ export const useProviderData = (
         },
       })
 
-      await poolService.syncRegistry(externalTokens[dataEnv])
+      await ctx.pool.syncRegistry(externalTokens[dataEnv])
 
       const [isDispatchPermitEnabled, sixBlockSince, slotDuration] =
         await Promise.all([
@@ -461,8 +439,6 @@ export const useProviderData = (
       const slotDurationMs = slotDuration.toString()
       const isSixBlockEnabled = !!sixBlockSince
 
-      const balanceClient = new BalanceClient(api)
-
       const evm = new PolkadotEvmRpcProvider(api)
 
       const timestamp = new Date().toISOString()
@@ -470,10 +446,7 @@ export const useProviderData = (
       return {
         api,
         evm,
-        tradeRouter,
-        txUtils,
-        poolService,
-        balanceClient,
+        sdk,
         endpoint,
         dataEnv,
         timestamp,
