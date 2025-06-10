@@ -25,7 +25,7 @@ export const JoinFarmsButton = (props: {
       <Button
         variant="primary"
         size="compact"
-        disabled={!farms.length || account?.isExternalWalletConnected}
+        disabled={!farms.length}
         onClick={() => setJoinFarm(true)}
         css={{ flex: "1 0 0" }}
       >
