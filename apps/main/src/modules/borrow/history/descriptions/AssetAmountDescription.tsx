@@ -1,0 +1,35 @@
+import { Flex, Text } from "@galacticcouncil/ui/components"
+import { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+import { Logo } from "@/components/Logo"
+import { useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
+
+type Props = {
+  readonly assetId: string | null | undefined
+  readonly amount: string
+}
+
+export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
+  const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
+  const asset = getAssetWithFallback(assetId ?? "")
+
+  return (
+    <Flex
+      gap={8}
+      align="center"
+      justify={["end", "start"]}
+      sx={{ flexWrap: "wrap" }}
+    >
+      {assetId && <Logo size="small" id={assetId} />}
+      <Text fs={14} css={{ whiteSpace: "nowrap" }}>
+        {t("currency", {
+          value: scaleHuman(amount, asset.decimals),
+          symbol: asset.symbol,
+        })}
+      </Text>
+    </Flex>
+  )
+}
