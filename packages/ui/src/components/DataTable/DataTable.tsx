@@ -264,23 +264,22 @@ const DataTable = forwardRef(
                             </TableCell>
                           )
                         })}
+
+                        {isRowExpandable && (
+                          <TableCell>
+                            <Flex justify="center" align="center">
+                              <Icon
+                                size={18}
+                                color={getToken("icons.onSurface")}
+                                component={
+                                  isRowExpanded ? ChevronDown : ChevronUp
+                                }
+                              />
+                            </Flex>
+                          </TableCell>
+                        )}
                       </TableRow>
                     </DataTableExternalLink>
-                    {isRowExpandable && (
-                      <TableRow>
-                        <TableCell>
-                          <Flex justify="center" align="center">
-                            <Icon
-                              size={18}
-                              color={getToken("icons.onSurface")}
-                              component={
-                                isRowExpanded ? ChevronDown : ChevronUp
-                              }
-                            />
-                          </Flex>
-                        </TableCell>
-                      </TableRow>
-                    )}
                     {override && (
                       <TableRowOverride
                         colSpan={table.getVisibleLeafColumns().length + 1}
