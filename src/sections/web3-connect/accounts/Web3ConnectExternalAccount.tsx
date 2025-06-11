@@ -1,4 +1,3 @@
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { useExternalWalletDelegates } from "api/proxies"
 import { useShallow } from "hooks/useShallow"
 import {
@@ -18,7 +17,7 @@ import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectS
 import { WalletProviderType } from "sections/web3-connect/constants/providers"
 import { ExternalWallet } from "sections/web3-connect/wallets/ExternalWallet"
 import { POLKADOT_APP_NAME } from "utils/api"
-import { getAddressVariants } from "utils/formatting"
+import { getAddressVariants, safeConvertAddressSS58 } from "utils/formatting"
 import { pick } from "utils/rx"
 import {
   SContainer,
@@ -110,8 +109,7 @@ export const Web3ConnectExternalAccount: FC<
         .filter((account) =>
           delegates.find((delegate) => {
             return (
-              delegate.toString() ===
-              encodeAddress(decodeAddress(account.address))
+              delegate.toString() === safeConvertAddressSS58(account.address)
             )
           }),
         )
