@@ -27,7 +27,7 @@ export const EmodeButton: FC<EmodeButtonProps> = ({ className }) => {
       </Text>
       <Button
         size="micro"
-        disabled={!account || account.isExternalWalletConnected}
+        disabled={!account}
         onClick={() =>
           openEmode(
             isEModeDisabled ? EmodeModalType.ENABLE : EmodeModalType.SWITCH,

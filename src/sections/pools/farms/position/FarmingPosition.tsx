@@ -20,7 +20,6 @@ import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionToolt
 import { useFarmExitAllMutation } from "utils/farms/exit"
 import { TOAST_MESSAGES } from "state/toasts"
 import { ToastMessage } from "state/store"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import ExitIcon from "assets/icons/Exit.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { TFarmAprData } from "api/farms"
@@ -64,7 +63,6 @@ function FarmingPositionDetailsButton(props: {
 const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
   const { t } = useTranslation()
   const { pool } = usePoolData()
-  const { account } = useAccount()
 
   const { meta, id: poolId } = pool
 
@@ -94,7 +92,7 @@ const ExitFarmsButton = (props: { depositNft: TDeposit }) => {
       variant="error"
       onClick={() => exit.mutate()}
       isLoading={exit.isLoading}
-      disabled={exit.isLoading || account?.isExternalWalletConnected}
+      disabled={exit.isLoading}
       css={{ flex: "1 0 0 " }}
     >
       <Icon icon={<ExitIcon />} />
