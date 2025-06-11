@@ -23,7 +23,6 @@ import {
   SValuesContainer,
   SXYKRateContainer,
 } from "sections/pools/pool/details/PoolDetails.styled"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
 import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
@@ -36,7 +35,6 @@ import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncenti
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const { pool } = usePoolData()
   const ixXYKPool = isXYKPoolType(pool)
   const { native } = useAssets()
@@ -114,7 +112,6 @@ export const PoolDetails = () => {
             sx={{ width: ["100%", "auto"] }}
             disabled={
               (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
-              account?.isExternalWalletConnected ||
               native.id === pool.id
             }
             onClick={() => setOpen(true)}

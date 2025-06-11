@@ -159,19 +159,13 @@ export const WalletAssetsTableActionsMob = ({
                       ? { assetOut: row.id }
                       : { assetIn: row.id }
                   }
-                  disabled={
-                    !row.tradability.inTradeRouter ||
-                    account?.isExternalWalletConnected
-                  }
+                  disabled={!row.tradability.inTradeRouter}
                   sx={{ width: "100%" }}
                 >
                   <Button
                     sx={{ width: "100%" }}
                     size="small"
-                    disabled={
-                      !row.tradability.inTradeRouter ||
-                      account?.isExternalWalletConnected
-                    }
+                    disabled={!row.tradability.inTradeRouter}
                   >
                     <TradeIcon />
                     {t("wallet.assets.table.actions.trade")}
@@ -181,7 +175,6 @@ export const WalletAssetsTableActionsMob = ({
                 <Button
                   sx={{ width: "100%" }}
                   size="small"
-                  disabled={account?.isExternalWalletConnected}
                   onClick={() => onTransferClick(row.id)}
                 >
                   <TransferIcon />
@@ -215,10 +208,7 @@ export const WalletAssetsTableActionsMob = ({
                     sx={{ width: "100%" }}
                     size="small"
                     onClick={() => feeAsPayment.mutate(row.id)}
-                    disabled={
-                      !row.couldBeSetAsPaymentFee ||
-                      account?.isExternalWalletConnected
-                    }
+                    disabled={!row.couldBeSetAsPaymentFee}
                   >
                     <DollarIcon />
                     {t("wallet.assets.table.actions.payment.asset")}
@@ -240,7 +230,6 @@ const NativeLocks = ({
   reserved: string
   reservedDisplay?: string
 }) => {
-  const { account } = useAccount()
   const { t } = useTranslation()
   const lockedTokens = useLockedNativeTokens()
   const unlocable = useUnlockableTokens()
@@ -434,11 +423,7 @@ const NativeLocks = ({
       <Button
         variant="primary"
         size="small"
-        disabled={
-          account?.isExternalWalletConnected ||
-          isUnlockDisabled ||
-          unlock.isLoading
-        }
+        disabled={isUnlockDisabled || unlock.isLoading}
         onClick={() => unlock.mutate()}
         isLoading={unlock.isLoading}
         sx={{ mx: 8, mt: 12 }}

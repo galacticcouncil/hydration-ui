@@ -27,7 +27,6 @@ import { theme } from "theme"
 import { useAssets } from "providers/assets"
 import { TableData } from "components/Table/Table.styled"
 import BigNumber from "bignumber.js"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 const chains = Array.from(chainsMap.values())
 
@@ -64,7 +63,6 @@ const NativeAssetDetails = ({
   reserved: string
   reservedDisplay?: string
 }) => {
-  const { account } = useAccount()
   const { t } = useTranslation()
   const lockedTokens = useLockedNativeTokens()
   const unlocable = useUnlockableTokens()
@@ -180,11 +178,7 @@ const NativeAssetDetails = ({
         <Button
           variant="primary"
           size="compact"
-          disabled={
-            account?.isExternalWalletConnected ||
-            isUnlockDisabled ||
-            unlock.isLoading
-          }
+          disabled={isUnlockDisabled || unlock.isLoading}
           onClick={() => unlock.mutate()}
           isLoading={unlock.isLoading}
         >

@@ -2,7 +2,6 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import FPIcon from "assets/icons/PoolsAndFarms.svg?react"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
 import { TLPData } from "utils/omnipool"
@@ -14,7 +13,6 @@ export const JoinFarmsButton = (props: {
   onSuccess: () => void
 }) => {
   const { t } = useTranslation()
-  const { account } = useAccount()
   const [joinFarm, setJoinFarm] = useState(false)
   const {
     pool: { farms },
@@ -25,7 +23,7 @@ export const JoinFarmsButton = (props: {
       <Button
         variant="primary"
         size="compact"
-        disabled={!farms.length || account?.isExternalWalletConnected}
+        disabled={!farms.length}
         onClick={() => setJoinFarm(true)}
         css={{ flex: "1 0 0" }}
       >

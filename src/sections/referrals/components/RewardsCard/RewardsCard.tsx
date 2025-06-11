@@ -57,11 +57,7 @@ export const RewardsCard = () => {
           size="small"
           variant={isLevelUp ? "green" : "primary"}
           isLoading={isLoading}
-          disabled={
-            !rewards.data ||
-            rewards.data.totalRewards.isZero() ||
-            account?.isExternalWalletConnected
-          }
+          disabled={!rewards.data || rewards.data.totalRewards.isZero()}
           onClick={() => mutate({ value: rewards.data?.totalRewards })}
         >
           {t(
