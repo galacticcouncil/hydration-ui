@@ -3,11 +3,11 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useMemo } from "react"
 import { isNonNullish, reverse } from "remeda"
 
-import { SContainer } from "@/components/Web3ConnectProviderIcons.styled"
+import { SContainer } from "@/components/provider/ProviderIcons.styled"
 import { WalletProviderType } from "@/config/providers"
 import { getWallet } from "@/wallets"
 
-export type Web3ConnectProviderIconsProps = {
+export type ProviderIconsProps = {
   providers: WalletProviderType[]
 }
 
@@ -26,9 +26,9 @@ const getImgSize = (count: number) => {
   }
 }
 
-export const Web3ConnectProviderIcons: React.FC<
-  Web3ConnectProviderIconsProps
-> = ({ providers = [] }) => {
+export const ProviderIcons: React.FC<ProviderIconsProps> = ({
+  providers = [],
+}) => {
   const connectedWallets = useMemo(() => {
     const maxVisible =
       providers.length === DISPLAY_THRESHOLD
@@ -40,7 +40,7 @@ export const Web3ConnectProviderIcons: React.FC<
       .filter(isNonNullish)
   }, [providers])
 
-  const remainingCount = providers.length - connectedWallets.length
+  const remainingCount = Math.max(0, providers.length - connectedWallets.length)
 
   return (
     <SContainer>

@@ -33,6 +33,7 @@ const defaultData: TProviderContext = {
   endpoint: "",
   dataEnv: "mainnet",
   papi: {} as TProviderData["papi"],
+  papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],

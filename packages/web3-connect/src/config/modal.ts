@@ -1,7 +1,6 @@
 export enum Web3ConnectModalPage {
-  ProviderSelect,
-  External,
-  AccountSelect,
-  Error,
-  AddressBook,
+  ProviderSelect = "ProviderSelect",
+  ExternalWallet = "ExternalWallet",
+  AccountSelect = "AccountSelect",
+  Error = "Error",
 }

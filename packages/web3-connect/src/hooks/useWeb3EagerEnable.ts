@@ -1,16 +1,26 @@
+import { isEvmAccount } from "@galacticcouncil/sdk"
+import {
+  isH160Address,
+  isSS58Address,
+  safeConvertSS58toH160,
+} from "@galacticcouncil/utils"
 import { useEffect, useRef, useState } from "react"
 import { useMount, usePrevious } from "react-use"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { WalletProviderType } from "@/config/providers"
 import { useWeb3Connect } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
-import { getWallet } from "@/wallets"
+import { toStoredAccount } from "@/utils"
+import { ExternalWallet, getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export const useWeb3EagerEnable = () => {
-  const { enable } = useWeb3Enable()
-  const { providers } = useWeb3Connect(useShallow(pick(["providers"])))
+  const { enable, disconnect } = useWeb3Enable()
+  const { providers, setAccount } = useWeb3Connect(
+    useShallow(pick(["providers", "setAccount"])),
+  )
   const prevProviders = usePrevious(providers)
 
   const [providersRequested, setProvidersRequested] = useState(false)
@@ -39,15 +49,28 @@ export const useWeb3EagerEnable = () => {
       for (const { type } of providers) {
         const wallet = getWallet(type)
 
-        if (wallet?.installed && !wallet?.enabled) {
-          await enable(wallet.provider)
-          if (account && wallet instanceof BaseSubstrateWallet) {
-            wallet.setSigner(account.address)
+        if (wallet instanceof ExternalWallet) {
+          if (account?.provider === WalletProviderType.ExternalWallet) {
+            wallet.setAccount(
+              isEvmAccount(account.address)
+                ? safeConvertSS58toH160(account.address)
+                : account.address,
+            )
+            await enable(wallet.provider)
+          } else {
+            disconnect(wallet.provider)
+          }
+        } else {
+          if (wallet?.installed && !wallet?.enabled) {
+            await enable(wallet.provider)
+            if (account && wallet instanceof BaseSubstrateWallet) {
+              wallet.setSigner(account.address)
+            }
           }
         }
       }
     }
-  }, [providersRequested, enable])
+  }, [providersRequested, enable, disconnect])
 
   useEffect(() => {
     prevProviders?.forEach(({ type }) => {
@@ -58,4 +81,20 @@ export const useWeb3EagerEnable = () => {
       }
     })
   }, [prevProviders, providers])
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const address = params.get("address")
+
+    // Override connected account to ExternalWallet if address is provided in query param
+    if (address && (isH160Address(address) || isSS58Address(address))) {
+      const externalWallet = getWallet(WalletProviderType.ExternalWallet)
+      if (externalWallet instanceof ExternalWallet) {
+        externalWallet.setAccount(address)
+        enable(WalletProviderType.ExternalWallet).then(([account]) => {
+          setAccount(toStoredAccount(account))
+        })
+      }
+    }
+  }, [enable, setAccount])
 }

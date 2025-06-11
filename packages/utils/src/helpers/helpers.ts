@@ -1,3 +1,5 @@
+import { isNullish } from "remeda"
+
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -28,4 +30,17 @@ export const stringEquals = (
   }
 
   return a.toLowerCase() === b.toLowerCase()
+}
+
+export const updateQueryString = (
+  param: string,
+  value?: string | number | null,
+) => {
+  const url = new URL(window.location.href)
+  if (isNullish(value)) {
+    url.searchParams.delete(param)
+  } else {
+    url.searchParams.set(param, value.toString())
+  }
+  window.history.replaceState({}, "", url.toString())
 }

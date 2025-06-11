@@ -43,7 +43,9 @@ export const toAccount = (account: StoredAccount): Account => {
     displayAddress: isEvmParachainAccount(account.address)
       ? safeConvertSS58toH160(account.address)
       : account.address,
-    isIncompatible: !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider),
+    isIncompatible:
+      account.provider === WalletProviderType.ExternalWallet ||
+      !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider),
   }
 }
 
