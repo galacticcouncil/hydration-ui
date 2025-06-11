@@ -1,9 +1,7 @@
 import BN from "bignumber.js"
 import { useMemo } from "react"
 import { getFloatingPointAmount } from "utils/balance"
-import { isHydraAddress } from "utils/formatting"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
-import { HYDRA_ADDRESS_PREFIX } from "utils/api"
+import { isHydraAddress, safeConvertAddressSS58 } from "utils/formatting"
 import { useAccountsIdentity } from "api/stats"
 import { TradeType, useAllTrades } from "api/volume"
 
@@ -81,7 +79,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
         const hydraAddress = isHydraAddress(trade.args.who)
           ? trade.args.who
-          : encodeAddress(decodeAddress(trade.args.who), HYDRA_ADDRESS_PREFIX)
+          : safeConvertAddressSS58(trade.args.who) ?? "N/A"
 
         const identity = identities.find(
           (identity) => identity.data?.address === trade.args.who,

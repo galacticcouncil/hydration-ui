@@ -35,12 +35,16 @@ export const BorrowAssetsTable = () => {
   const { data, isLoading } = useBorrowAssetsTableData()
   const { account } = useAccount()
 
-  const { hollar = [], assets = [] } = useMemo(() => {
-    return groupBy(data, (reserve) =>
+  const { hollar, assets } = useMemo(() => {
+    const grpoup = groupBy(data, (reserve) =>
       displayGho({ symbol: reserve.symbol, currentMarket })
         ? "hollar"
         : "assets",
     )
+    return {
+      hollar: grpoup.hollar || [],
+      assets: grpoup.assets || [],
+    }
   }, [currentMarket, data, displayGho])
 
   const assetsColumns = useBorrowAssetsTableColumns()

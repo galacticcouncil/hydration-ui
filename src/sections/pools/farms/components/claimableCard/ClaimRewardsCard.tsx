@@ -9,7 +9,6 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { theme } from "theme"
 import { separateBalance } from "utils/balance"
 import { useClaimFarmMutation } from "utils/farms/claiming"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Card } from "components/Card/Card"
 import { TDeposit } from "api/deposits"
 import { useAssets } from "providers/assets"
@@ -29,7 +28,6 @@ export const ClaimRewardsCard = (props: {
     pool: { id, meta },
   } = usePoolData()
   const { getAssetWithFallback, isShareToken } = useAssets()
-  const { account } = useAccount()
 
   const { data: claimableValues } = useAccountClaimableFarmValues()
   const poolClaimableValues = claimableValues?.get(
@@ -152,9 +150,7 @@ export const ClaimRewardsCard = (props: {
             variant="primary"
             size="small"
             sx={{ height: "fit-content" }}
-            disabled={
-              account?.isExternalWalletConnected || BN(claimableTotal).isZero()
-            }
+            disabled={BN(claimableTotal).isZero()}
             onClick={claim}
             isLoading={isLoading}
           >

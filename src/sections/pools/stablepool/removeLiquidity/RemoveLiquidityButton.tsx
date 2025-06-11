@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { RemoveLiquidityModal } from "./RemoveLiquidityModal"
 import { useTranslation } from "react-i18next"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
 import { TPoolFullData } from "sections/pools/PoolsPage.utils"
@@ -25,7 +24,6 @@ enum STABLEPOOLTYPE {
 export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
   const { t } = useTranslation()
   const { getErc20 } = useAssets()
-  const { account } = useAccount()
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
 
   const meta = getErc20(GDOT_ERC20_ASSET_ID)
@@ -44,7 +42,6 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
             pool.isGigaDOT ? STABLEPOOLTYPE.GIGADOT : STABLEPOOLTYPE.CLASSIC,
           )
         }
-        disabled={account?.isExternalWalletConnected}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
