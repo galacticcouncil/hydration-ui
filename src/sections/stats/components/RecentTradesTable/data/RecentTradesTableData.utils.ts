@@ -79,7 +79,7 @@ export const useRecentTradesTableData = (assetId?: string) => {
 
         const hydraAddress = isHydraAddress(trade.args.who)
           ? trade.args.who
-          : safeConvertAddressSS58(trade.args.who)
+          : safeConvertAddressSS58(trade.args.who) ?? "N/A"
 
         const identity = identities.find(
           (identity) => identity.data?.address === trade.args.who,
