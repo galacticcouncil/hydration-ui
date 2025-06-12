@@ -39,6 +39,7 @@ type Props = {
   provider?: WalletProviderType | null
   isProxy?: boolean
   isActive?: boolean
+  hideBalance?: boolean
 }
 
 const CopyButton: React.FC<{
@@ -78,6 +79,7 @@ export const Web3ConnectAccountSelect = ({
   onClick,
   isActive,
   provider,
+  hideBalance = false,
 }: Props) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(themeParams.viewport.gte.sm)
@@ -126,23 +128,25 @@ export const Web3ConnectAccountSelect = ({
               </Badge>
             )}
           </div>
-          <Text fs={14} color="graySoft">
-            {!balance && <Skeleton width={50} height={12} />}
-            {balance && !balanceSymbol && (
-              <DisplayValue
-                value={BigNumber(balance)}
-                compact={BigNumber(balance).gt(BN_BILL)}
-              />
-            )}
-            {balance &&
-              balanceSymbol &&
-              balanceDecimals &&
-              t("value.tokenWithSymbol", {
-                value: balance,
-                symbol: balanceSymbol,
-                fixedPointScale: balanceDecimals,
-              })}
-          </Text>
+          {!hideBalance && (
+            <Text fs={14} color="graySoft">
+              {!balance && <Skeleton width={50} height={12} />}
+              {balance && !balanceSymbol && (
+                <DisplayValue
+                  value={BigNumber(balance)}
+                  compact={BigNumber(balance).gt(BN_BILL)}
+                />
+              )}
+              {balance &&
+                balanceSymbol &&
+                balanceDecimals &&
+                t("value.tokenWithSymbol", {
+                  value: balance,
+                  symbol: balanceSymbol,
+                  fixedPointScale: balanceDecimals,
+                })}
+            </Text>
+          )}
         </div>
         <div sx={{ flex: "row", justify: "space-between" }}>
           <Text

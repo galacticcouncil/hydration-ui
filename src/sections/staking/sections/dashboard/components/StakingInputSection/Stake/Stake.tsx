@@ -226,11 +226,7 @@ export const Stake = ({
           <Button
             variant="primary"
             type="submit"
-            disabled={
-              loading ||
-              account?.isExternalWalletConnected ||
-              !form.formState.isValid
-            }
+            disabled={loading || !form.formState.isValid}
           >
             {positionId == null
               ? t("staking.dashboard.form.stake.button")
