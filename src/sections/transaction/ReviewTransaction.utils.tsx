@@ -86,7 +86,7 @@ type TxHuman = Record<string, { args: TxMethod["args"] }>
 
 function getXcmTab(tags?: string[]) {
   if (!tags) return undefined
-  return tags as unknown as MetaTags
+  return tags[0] as unknown as MetaTags
 }
 
 function getTxHuman(x: AnyJson, prefix = ""): TxHuman | null {
