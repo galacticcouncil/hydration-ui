@@ -53,6 +53,7 @@ export const Web3ConnectAccount: FC<Props> = ({
         isProxy={isProxy}
         isActive={isActive}
         balance={balance}
+        hideBalance={isProxy}
       />
     </SAccountItem>
   )
