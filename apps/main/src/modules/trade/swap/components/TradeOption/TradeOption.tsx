@@ -10,30 +10,32 @@ import { TAsset } from "@/providers/assetsProvider"
 import { STradeOptionContainer } from "./TradeOption.styled"
 
 type Props = {
-  readonly buyAsset: TAsset
+  readonly asset: TAsset
   readonly label: string
   readonly time: string
   readonly active: boolean
   readonly value: string
   readonly diff?: string
+  readonly isBuy?: boolean
   readonly onClick: () => void
   readonly disabled?: boolean
 }
 
 export const TradeOption = ({
-  buyAsset,
+  asset,
   label,
   time,
   active,
   value,
   diff,
+  isBuy,
   onClick,
   disabled,
 }: Props) => {
   const { t } = useTranslation()
 
-  const [displayValue] = useDisplayAssetPrice(buyAsset.id, value)
-  const [displayDiff] = useDisplayAssetPrice(buyAsset.id, diff || "0")
+  const [displayValue] = useDisplayAssetPrice(asset.id, value)
+  const [displayDiff] = useDisplayAssetPrice(asset.id, diff || "0")
 
   const isPositive = Big(diff || "0").gte(0)
 
@@ -56,7 +58,7 @@ export const TradeOption = ({
         <Text fs={14} lh={1} fw={600} color={getToken("text.high")}>
           {t("currency", {
             value: value,
-            symbol: buyAsset.symbol,
+            symbol: asset.symbol,
           })}
         </Text>
         <Flex gap={4} align="center">
@@ -68,9 +70,13 @@ export const TradeOption = ({
               fs="p6"
               fw={600}
               color={
-                isPositive
-                  ? getToken("accents.success.emphasis")
-                  : getToken("accents.danger.emphasis")
+                isBuy
+                  ? isPositive
+                    ? getToken("accents.danger.emphasis")
+                    : getToken("accents.success.emphasis")
+                  : isPositive
+                    ? getToken("accents.success.emphasis")
+                    : getToken("accents.danger.emphasis")
               }
             >
               ({isPositive && "+"}

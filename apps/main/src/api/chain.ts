@@ -51,3 +51,14 @@ export const useInvalidateOnBlock = () => {
     },
   })
 }
+
+export const blockTimeQuery = (context: TProviderContext) => {
+  const { isApiLoaded, sdk } = context
+
+  return queryOptions({
+    enabled: isApiLoaded,
+    queryKey: ["blockTime"],
+    queryFn: () => sdk.api.scheduler.blockTime,
+    staleTime: Infinity,
+  })
+}

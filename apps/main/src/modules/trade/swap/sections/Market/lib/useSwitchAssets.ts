@@ -22,7 +22,7 @@ export const useSwitchAssets = () => {
     mutationFn: async () => {
       const { buyAmount, sellAmount, sellAsset, buyAsset, type } = getValues()
 
-      if (!sellAsset || !buyAsset || !buyAmount || !sellAmount) {
+      if (!sellAsset || !buyAsset) {
         return
       }
 
@@ -33,13 +33,23 @@ export const useSwitchAssets = () => {
         type === TradeType.Sell
           ? [
               TradeType.Buy,
-              await calculateSellAmount(newSellAsset, newBuyAsset, sellAmount),
+              sellAmount &&
+                (await calculateSellAmount(
+                  newSellAsset,
+                  newBuyAsset,
+                  sellAmount,
+                )),
               sellAmount,
             ]
           : [
               TradeType.Sell,
               buyAmount,
-              await calculateBuyAmount(newSellAsset, newBuyAsset, buyAmount),
+              buyAmount &&
+                (await calculateBuyAmount(
+                  newSellAsset,
+                  newBuyAsset,
+                  buyAmount,
+                )),
             ]
 
       const newFormValues: MarketFormValues = {
