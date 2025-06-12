@@ -635,7 +635,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           } catch (error) {}
         }
 
-        if (diffInMinutes > 59) {
+        if (diffInMinutes > 70) {
           toast.add("unknown", omit(["bridge"], toastData))
 
           return false
