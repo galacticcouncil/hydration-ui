@@ -23,8 +23,11 @@ export const MarketSummarySwap: FC<Props> = ({ swap }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const {
-    single: { swapSlippage },
+    swap: {
+      single: { swapSlippage },
+    },
   } = useTradeSettings()
+
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form

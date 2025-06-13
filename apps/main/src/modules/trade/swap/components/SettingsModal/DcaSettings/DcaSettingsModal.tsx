@@ -1,0 +1,96 @@
+import {
+  Flex,
+  FormError,
+  Input,
+  ModalBody,
+  ModalContentDivider,
+  ModalHeader,
+} from "@galacticcouncil/ui/components"
+import { FC } from "react"
+import { Controller, FormProvider } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+
+import { useDcaSettingsForm } from "@/modules/trade/swap/components/SettingsModal/DcaSettings/useDcaSettingsForm"
+import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
+import { SettingsSection } from "@/modules/trade/swap/components/SettingsModal/SettingsSection"
+import { TradeSlippage } from "@/modules/trade/swap/components/SettingsModal/TradeSlippage"
+import { useTradeSettings } from "@/states/tradeSettings"
+
+export const DcaSettingsModal: FC = () => {
+  const { t } = useTranslation("trade")
+
+  const { update, ...tradeSettings } = useTradeSettings()
+  const form = useDcaSettingsForm(tradeSettings.dca, (dca) =>
+    update({ ...tradeSettings, dca }),
+  )
+
+  return (
+    <FormProvider {...form}>
+      <ModalHeader
+        title={t("dca.settings.modal.title")}
+        description={t("dca.settings.modal.description")}
+      />
+      <ModalContentDivider />
+      <ModalBody sx={{ minHeight: ["auto", 400], pt: 0 }}>
+        <form>
+          <SettingsSection label="">
+            <Controller
+              control={form.control}
+              name="slippage"
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) => (
+                <>
+                  <TradeSlippage
+                    slippage={value}
+                    onSlippageChange={(twapSlippage) => onChange(twapSlippage)}
+                    helpTooltip={t("dca.settings.modal.slippage.help")}
+                  />
+                  {error && (
+                    <FormError sx={{ textAlign: "end" }}>
+                      {error.message}
+                    </FormError>
+                  )}
+                </>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="maxRetries"
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) => (
+                <div>
+                  <Flex justify="space-between" align="center">
+                    <SettingLabel
+                      label={t("dca.settings.modal.maxRetries")}
+                      helpTooltip={t("dca.settings.modal.maxRetries.help")}
+                    />
+                    <Input
+                      sx={{ width: 85 }}
+                      value={value}
+                      onChange={(e) => {
+                        const value = Number(e.target.value)
+
+                        if (!isNaN(value)) {
+                          onChange(value)
+                        }
+                      }}
+                    />
+                  </Flex>
+                  {error && (
+                    <FormError sx={{ textAlign: "end" }}>
+                      {error.message}
+                    </FormError>
+                  )}
+                </div>
+              )}
+            />
+          </SettingsSection>
+        </form>
+      </ModalBody>
+    </FormProvider>
+  )
+}

@@ -6,11 +6,11 @@ import { useTranslation } from "react-i18next"
 import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
 import { SettingsSection } from "@/modules/trade/swap/components/SettingsModal/SettingsSection"
 import { TradeSlippage } from "@/modules/trade/swap/components/SettingsModal/TradeSlippage"
-import { TradeSettings } from "@/states/tradeSettings"
+import { SwapSettings } from "@/states/tradeSettings"
 
 export const SplitTradeSection: FC = () => {
   const { t } = useTranslation("trade")
-  const { control } = useFormContext<TradeSettings>()
+  const { control } = useFormContext<SwapSettings>()
 
   return (
     <SettingsSection label={t("swap.settings.modal.option.split")}>

@@ -2,16 +2,16 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
 
 import { useSaveFormOnChange } from "@/hooks/useSaveFormOnChange"
-import { TradeSettings, tradeSettingsSchema } from "@/states/tradeSettings"
+import { SwapSettings, swapSettingsSchema } from "@/states/tradeSettings"
 
-export const useTradeSettingsForm = (
-  defaultValues: TradeSettings,
-  onUpdate: (values: TradeSettings) => void,
+export const useSwapSettingsForm = (
+  defaultValues: SwapSettings,
+  onUpdate: (values: SwapSettings) => void,
 ) => {
-  const form = useForm<TradeSettings>({
+  const form = useForm<SwapSettings>({
     defaultValues,
     mode: "onChange",
-    resolver: standardSchemaResolver(tradeSettingsSchema),
+    resolver: standardSchemaResolver(swapSettingsSchema),
   })
 
   useSaveFormOnChange(form, onUpdate)

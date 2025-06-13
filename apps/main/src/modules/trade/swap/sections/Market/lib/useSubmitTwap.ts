@@ -20,7 +20,9 @@ export const useSubmitTwap = () => {
   const address = account?.address ?? ""
 
   const {
-    split: { twapMaxRetries, twapSlippage },
+    swap: {
+      split: { twapMaxRetries, twapSlippage },
+    },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
@@ -41,7 +43,9 @@ export const useSubmitTwap = () => {
       const params = {
         noOfTrades: twap.tradeCount,
         timeframe: blockTime
-          ? formatDistanceToNow(Date.now() + twap.tradeCount * blockTime)
+          ? formatDistanceToNow(Date.now() + twap.tradeCount * blockTime, {
+              includeSeconds: true,
+            })
           : t("unknown"),
         in: t("currency", {
           value: scaleHuman(twap.tradeAmountIn, sellAsset.decimals),
