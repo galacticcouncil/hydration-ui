@@ -28,6 +28,12 @@ type PermitMessage = {
   deadline: number
 }
 
+type TxOptions = {
+  extraGas?: bigint
+  chain?: string
+  onNetworkSwitch?: () => void
+}
+
 export type PermitResult = { signature: Signature; message: PermitMessage }
 
 type EthereumProvider = MetaMaskLikeProvider | UniversalProvider
@@ -68,7 +74,7 @@ export class EthereumSigner {
     }
   }
 
-  requestNetworkSwitch = async (chain: string) => {
+  requestNetworkSwitch = async (chain: string, onChange?: () => void) => {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
@@ -78,22 +84,18 @@ export class EthereumSigner {
       // some wallets like Coinbase dont reflect the change inside provider immediately
       await sleep(200)
       this.signer = this.getSigner(this.provider)
+      onChange?.()
     }
   }
 
-  sendDispatch = async (
-    data: string,
-    chain?: string,
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
+  sendDispatch = async (data: string, options: TxOptions = {}) => {
     return this.sendTransaction(
       {
         to: DISPATCH_ADDRESS,
         data,
         from: this.address,
-        chain,
       },
-      { onNetworkSwitch: options?.onNetworkSwitch },
+      options,
     )
   }
 
@@ -240,11 +242,8 @@ export class EthereumSigner {
     throw new Error("Error signing transaction. Provider not found")
   }
 
-  sendTransaction = async (
-    transaction: TransactionRequest & { chain?: string },
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
-    const { chain, ...tx } = transaction
+  sendTransaction = async (tx: TransactionRequest, options: TxOptions = {}) => {
+    const { chain, extraGas = 0n } = options
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
 
     const chainCfg = chainsMap.get(from) as EvmChain
@@ -257,13 +256,15 @@ export class EthereumSigner {
     if (from === "hydration") {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
         await this.getGasValues(tx)
+
+      const gasLimit = gas.mul(13).div(10) // add 30%
       return await this.signer.sendTransaction({
         chainId,
         nonce,
         value: 0,
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(13).div(10), // add 30%
+        gasLimit: gasLimit.add(extraGas),
         ...tx,
       })
     } else {

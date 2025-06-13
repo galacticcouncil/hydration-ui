@@ -1,5 +1,5 @@
 import { TransactionResponse } from "@ethersproject/providers"
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Button } from "components/Button/Button"
@@ -16,6 +16,8 @@ import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
+  isTxType,
+  toSubmittableExtrinsic,
   useEditFeePaymentAsset,
   useHealthFactorChangeFromTx,
   useHealthFactorChangeFromTxMetadata,
@@ -48,9 +50,11 @@ import { Observable, firstValueFrom, shareReplay } from "rxjs"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
+import { TxType } from "@galacticcouncil/apps"
+import { useRpcProvider } from "providers/rpcProvider"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
-  tx: SubmittableExtrinsic<"promise">
+  tx: SubmittableExtrinsic<"promise"> | TxType
 }
 
 type Props = TxProps & {
@@ -69,12 +73,18 @@ type Props = TxProps & {
 
 export const ReviewTransactionForm: FC<Props> = (props) => {
   const { t } = useTranslation()
+  const { api } = useRpcProvider()
   const { account } = useAccount()
   const { setReferralCode } = useReferralCodesStore()
   const { toggle: toggleWeb3Modal } = useWeb3ConnectStore()
   const queryClient = useQueryClient()
 
-  const polkadotJSUrl = usePolkadotJSTxUrl(props.tx)
+  const extrinsic = useMemo(
+    () => toSubmittableExtrinsic(api, props.tx),
+    [api, props.tx],
+  )
+
+  const polkadotJSUrl = usePolkadotJSTxUrl(extrinsic)
 
   const shouldOpenPolkaJSUrl =
     polkadotJSUrl && account?.isExternalWalletConnected && !account?.delegate
@@ -82,15 +92,19 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const { transactions } = useStore()
 
   const isChangingFeePaymentAsset =
-    !isSetCurrencyExtrinsic(props.tx?.toHuman()) &&
-    transactions?.some(({ tx }) => isSetCurrencyExtrinsic(tx?.toHuman()))
+    !isSetCurrencyExtrinsic(extrinsic?.toHuman()) &&
+    transactions?.some(({ tx }) => {
+      if (!tx) return false
+      const extrinsic = toSubmittableExtrinsic(api, tx)
+      return isSetCurrencyExtrinsic(extrinsic?.toHuman())
+    })
 
   const [tipAmount, setTipAmount] = useState<BN | undefined>(undefined)
   const [customNonce, setCustomNonce] = useState<string | undefined>(undefined)
 
   const transactionValues = useTransactionValues({
     xcallMeta: props.xcallMeta,
-    tx: props.tx,
+    tx: extrinsic,
     overrides: props.overrides,
   })
 
@@ -161,17 +175,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
             })
           }
 
-          const evmTx = await wallet.signer.sendDispatch(
-            txData,
-            props.xcallMeta?.srcChain,
-            {
-              onNetworkSwitch: () => {
-                queryClient.refetchQueries(
-                  QUERY_KEYS.evmChainInfo(account?.displayAddress ?? ""),
-                )
-              },
+          const evmTx = await wallet.signer.sendDispatch(txData, {
+            chain: props.xcallMeta?.srcChain,
+            extraGas: isTxType(props.tx) ? props.tx.extraGas : undefined,
+            onNetworkSwitch: () => {
+              queryClient.refetchQueries(
+                QUERY_KEYS.evmChainInfo(account?.displayAddress ?? ""),
+              )
             },
-          )
+          })
           return props.onEvmSigned({ evmTx, tx })
         }
 
@@ -195,7 +207,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           )
           const client = await getWs(srcChain.ws)
           const papi = client.getTypedApi(assethub)
-          const callData = Binary.fromHex(props.tx.inner.toHex())
+          const callData = Binary.fromHex(extrinsic.inner.toHex())
           const tx = await papi.txFromCallData(callData)
           const observer = tx
             .signSubmitAndWatch(signer, {
@@ -309,7 +321,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           <>
             <div sx={{ mt: 15 }}>
               <ReviewTransactionSummary
-                tx={props.tx}
+                tx={extrinsic}
                 transactionValues={transactionValues}
                 editFeePaymentAssetEnabled={hasMultipleFeeAssets}
                 xcallMeta={props.xcallMeta}
