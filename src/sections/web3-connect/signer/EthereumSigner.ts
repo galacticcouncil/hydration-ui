@@ -31,6 +31,7 @@ type PermitMessage = {
 type TxOptions = {
   extraGas?: bigint
   chain?: string
+  nonce?: number
   onNetworkSwitch?: () => void
 }
 
@@ -101,9 +102,11 @@ export class EthereumSigner {
 
   getPermit = async (
     data: string | TransactionRequest,
-    nonce: number,
+    options: TxOptions = {},
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
+      const { nonce = 0, extraGas = 0n } = options
+
       await this.requestNetworkSwitch("hydration")
       const tx =
         typeof data === "string"
@@ -140,7 +143,8 @@ export class EthereumSigner {
           ...tx,
           value: 0,
           gaslimit: gasLimit
-            .multipliedBy(1.2) // add 20%
+            .multipliedBy(1.3) // add 30%
+            .plus(extraGas.toString())
             .decimalPlaces(0)
             .toNumber(),
           nonce,
@@ -243,7 +247,7 @@ export class EthereumSigner {
   }
 
   sendTransaction = async (tx: TransactionRequest, options: TxOptions = {}) => {
-    const { chain, extraGas = 0n } = options
+    const { chain, extraGas = 0n, nonce: customNonce } = options
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
 
     const chainCfg = chainsMap.get(from) as EvmChain
@@ -251,7 +255,7 @@ export class EthereumSigner {
     await this.requestNetworkSwitch(from)
 
     const chainId = chainCfg.evmChain.id
-    const nonce = await this.signer.getTransactionCount()
+    const nonce = customNonce || (await this.signer.getTransactionCount())
 
     if (from === "hydration") {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =

@@ -164,12 +164,17 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (wallet?.signer instanceof EthereumSigner) {
           const txData = tx.method.toHex()
+          const extraGas = isTxType(props.tx) ? props.tx.extraGas : undefined
 
           if (shouldUsePermit) {
             const nonce = customNonce
               ? parseFloat(customNonce)
               : permitNonce ?? 0
-            const permit = await wallet.signer.getPermit(txData, nonce)
+            const permit = await wallet.signer.getPermit(txData, {
+              nonce,
+              extraGas,
+            })
+
             return props.onPermitDispatched({
               permit,
             })
@@ -177,7 +182,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
           const evmTx = await wallet.signer.sendDispatch(txData, {
             chain: props.xcallMeta?.srcChain,
-            extraGas: isTxType(props.tx) ? props.tx.extraGas : undefined,
+            extraGas,
             onNetworkSwitch: () => {
               queryClient.refetchQueries(
                 QUERY_KEYS.evmChainInfo(account?.displayAddress ?? ""),
