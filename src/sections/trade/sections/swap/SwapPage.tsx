@@ -56,7 +56,7 @@ const grafanaDsn = import.meta.env.VITE_GRAFANA_DSN
 const stableCoinAssetId = import.meta.env.VITE_STABLECOIN_ASSET_ID
 
 export function SwapPage() {
-  const { api, isLoaded } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const { stableCoinId } = useDisplayAssetStore()
@@ -75,7 +75,7 @@ export function SwapPage() {
     const { transaction, notification, meta } = e.detail
     await createTransaction(
       {
-        tx: api.tx(transaction.hex),
+        tx: transaction,
         txMeta: meta,
       },
       {

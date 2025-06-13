@@ -1,9 +1,4 @@
-import {
-  type TradeRouter,
-  type TradeUtils,
-  type PoolService,
-  type BalanceClient,
-} from "@galacticcouncil/sdk"
+import { type SdkCtx } from "@galacticcouncil/sdk"
 import { ApiPromise } from "@polkadot/api"
 import {
   ProviderProps,
@@ -23,15 +18,12 @@ import { Client } from "graphql-ws"
 
 type TProviderContext = {
   api: ApiPromise
-  balanceClient: BalanceClient
+  sdk: SdkCtx
   dataEnv: TDataEnv
   endpoint: string
   evm: PolkadotEvmRpcProvider
   featureFlags: TFeatureFlags
   isLoaded: boolean
-  poolService: PoolService
-  tradeRouter: TradeRouter
-  txUtils: TradeUtils
   timestamp: string
   slotDurationMs: string
   providerData: ProviderProps
@@ -40,15 +32,12 @@ type TProviderContext = {
 
 const defaultData: TProviderContext = {
   api: {} as TProviderContext["api"],
-  balanceClient: {} as TProviderContext["balanceClient"],
+  sdk: {} as TProviderContext["sdk"],
   dataEnv: "mainnet",
   endpoint: "",
   evm: {} as TProviderContext["evm"],
   featureFlags: {} as TProviderContext["featureFlags"],
   isLoaded: false,
-  poolService: {} as TProviderContext["poolService"],
-  tradeRouter: {} as TradeRouter,
-  txUtils: {} as TProviderContext["txUtils"],
   timestamp: "",
   slotDurationMs: "12000",
   providerData: {} as ProviderProps,
@@ -110,12 +99,9 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       }
 
       return {
-        poolService: providerData.poolService,
+        sdk: providerData.sdk,
         api: providerData.api,
         evm: providerData.evm,
-        tradeRouter: providerData.tradeRouter,
-        txUtils: providerData.txUtils,
-        balanceClient: providerData.balanceClient,
         featureFlags: providerData.featureFlags,
         isLoaded: providerData.api.isConnected,
         endpoint: providerData.endpoint,

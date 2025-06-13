@@ -28,6 +28,13 @@ type PermitMessage = {
   deadline: number
 }
 
+type TxOptions = {
+  extraGas?: bigint
+  chain?: string
+  nonce?: number
+  onNetworkSwitch?: () => void
+}
+
 export type PermitResult = { signature: Signature; message: PermitMessage }
 
 type EthereumProvider = MetaMaskLikeProvider | UniversalProvider
@@ -68,7 +75,7 @@ export class EthereumSigner {
     }
   }
 
-  requestNetworkSwitch = async (chain: string) => {
+  requestNetworkSwitch = async (chain: string, onChange?: () => void) => {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
@@ -78,30 +85,28 @@ export class EthereumSigner {
       // some wallets like Coinbase dont reflect the change inside provider immediately
       await sleep(200)
       this.signer = this.getSigner(this.provider)
+      onChange?.()
     }
   }
 
-  sendDispatch = async (
-    data: string,
-    chain?: string,
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
+  sendDispatch = async (data: string, options: TxOptions = {}) => {
     return this.sendTransaction(
       {
         to: DISPATCH_ADDRESS,
         data,
         from: this.address,
-        chain,
       },
-      { onNetworkSwitch: options?.onNetworkSwitch },
+      options,
     )
   }
 
   getPermit = async (
     data: string | TransactionRequest,
-    nonce: number,
+    options: TxOptions = {},
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
+      const { nonce = 0, extraGas = 0n } = options
+
       await this.requestNetworkSwitch("hydration")
       const tx =
         typeof data === "string"
@@ -138,7 +143,8 @@ export class EthereumSigner {
           ...tx,
           value: 0,
           gaslimit: gasLimit
-            .multipliedBy(1.2) // add 20%
+            .multipliedBy(1.3) // add 30%
+            .plus(extraGas.toString())
             .decimalPlaces(0)
             .toNumber(),
           nonce,
@@ -240,11 +246,8 @@ export class EthereumSigner {
     throw new Error("Error signing transaction. Provider not found")
   }
 
-  sendTransaction = async (
-    transaction: TransactionRequest & { chain?: string },
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
-    const { chain, ...tx } = transaction
+  sendTransaction = async (tx: TransactionRequest, options: TxOptions = {}) => {
+    const { chain, extraGas = 0n, nonce: customNonce } = options
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
 
     const chainCfg = chainsMap.get(from) as EvmChain
@@ -252,18 +255,20 @@ export class EthereumSigner {
     await this.requestNetworkSwitch(from)
 
     const chainId = chainCfg.evmChain.id
-    const nonce = await this.signer.getTransactionCount()
+    const nonce = customNonce || (await this.signer.getTransactionCount())
 
     if (from === "hydration") {
       const { gas, maxFeePerGas, maxPriorityFeePerGas } =
         await this.getGasValues(tx)
+
+      const gasLimit = gas.mul(13).div(10) // add 30%
       return await this.signer.sendTransaction({
         chainId,
         nonce,
         value: 0,
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(13).div(10), // add 30%
+        gasLimit: gasLimit.add(extraGas),
         ...tx,
       })
     } else {

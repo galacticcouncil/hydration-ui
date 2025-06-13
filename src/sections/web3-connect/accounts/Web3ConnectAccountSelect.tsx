@@ -15,7 +15,7 @@ import { BN_BILL } from "utils/constants"
 import { getWalletProviderByType } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAddress } from "utils/evm"
 import { Badge } from "components/Badge/Badge"
-import * as Tooltip from "@radix-ui/react-tooltip"
+import * as Dropdown from "@radix-ui/react-dropdown-menu"
 import {
   SCopyDropdownContent,
   SCopyDropdownItem,
@@ -169,8 +169,8 @@ export const Web3ConnectAccountSelect = ({
                 }}
               />
             ) : (
-              <Tooltip.Root delayDuration={0}>
-                <Tooltip.Trigger asChild>
+              <Dropdown.Root>
+                <Dropdown.Trigger asChild>
                   <ButtonTransparent onClick={(e) => e.stopPropagation()}>
                     <CopyIcon
                       width={18}
@@ -180,7 +180,7 @@ export const Web3ConnectAccountSelect = ({
                       }}
                     />
                   </ButtonTransparent>
-                </Tooltip.Trigger>
+                </Dropdown.Trigger>
                 <SCopyDropdownContent
                   align="end"
                   side="bottom"
@@ -203,7 +203,7 @@ export const Web3ConnectAccountSelect = ({
                     </CopyButton>
                   )}
                 </SCopyDropdownContent>
-              </Tooltip.Root>
+              </Dropdown.Root>
             )}
           </div>
         </div>

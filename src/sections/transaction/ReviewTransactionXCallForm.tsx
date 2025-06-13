@@ -55,13 +55,17 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
         if (isEvmCall(xcall) && wallet?.signer instanceof EthereumSigner) {
           const { srcChain } = xcallMeta
 
-          const evmTx = await wallet.signer.sendTransaction({
-            chain: srcChain,
-            from: H160.fromAccount(account.address),
-            to: xcall.to,
-            data: xcall.data,
-            value: xcall.value,
-          })
+          const evmTx = await wallet.signer.sendTransaction(
+            {
+              from: H160.fromAccount(account.address),
+              to: xcall.to,
+              data: xcall.data,
+              value: xcall.value,
+            },
+            {
+              chain: srcChain,
+            },
+          )
 
           const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
           if (isApproveTx) {
