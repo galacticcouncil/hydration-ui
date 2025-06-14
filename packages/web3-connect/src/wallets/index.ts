@@ -3,6 +3,7 @@ import { pick } from "remeda"
 import { WalletProviderType } from "@/config/providers"
 import { Wallet, WalletData } from "@/types/wallet"
 import { Enkrypt } from "@/wallets/Enkrypt"
+import { ExternalWallet } from "@/wallets/ExternalWallet"
 import { MetaMask } from "@/wallets/MetaMask"
 import { RabbyWallet } from "@/wallets/RabbyWallet"
 import { SubWallet, SubWalletEvm } from "@/wallets/SubWallet"
@@ -12,6 +13,7 @@ import { PolkadotJS } from "./PolkadotJS"
 
 export {
   Enkrypt,
+  ExternalWallet,
   MetaMask,
   PolkadotJS,
   RabbyWallet,
@@ -30,6 +32,7 @@ const wallets = [
   new SubWalletEvm(),
   new Talisman(),
   new TalismanEvm(),
+  new ExternalWallet(),
 ]
 
 export function getWallets(): Wallet[] {

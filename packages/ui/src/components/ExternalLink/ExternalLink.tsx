@@ -6,3 +6,5 @@ export const ExternalLink = forwardRef<
 >((props, ref) => {
   return <a target="_blank" rel="noopener noreferrer" ref={ref} {...props} />
 })
+
+ExternalLink.displayName = "ExternalLink"

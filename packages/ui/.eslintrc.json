@@ -7,6 +7,9 @@
   "rules": {
     "no-restricted-imports": "off"
   },
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "overrides": [
     {
       "files": ["*.mjs"],

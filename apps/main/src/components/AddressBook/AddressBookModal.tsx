@@ -1,7 +1,7 @@
 import { Flex, Input } from "@galacticcouncil/ui/components"
 import { ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { Web3ConnectAccount } from "@galacticcouncil/web3-connect/src/components/Web3ConnectAccount"
+import { Web3ConnectAccount } from "@galacticcouncil/web3-connect"
 import { Search } from "lucide-react"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"

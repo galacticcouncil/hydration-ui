@@ -1,4 +1,4 @@
-import { KeyOfType } from "@galacticcouncil/utils/src/types"
+import { KeyOfType } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import { TAssetData } from "@/api/assets"

@@ -4,6 +4,8 @@ import { WalletProviderType } from "@/config/providers"
 import { EthereumSigner } from "@/signers/EthereumSigner"
 import { WalletError } from "@/utils/errors"
 
+export type DummySigner = object
+
 export type SubscriptionFn = (
   accounts: WalletAccount[] | undefined,
 ) => void | Promise<void>
@@ -26,7 +28,7 @@ export type WalletData = {
 
 type WalletExtension = {
   extension?: unknown
-  signer: PolkadotSigner | EthereumSigner | undefined
+  signer: PolkadotSigner | EthereumSigner | DummySigner | undefined
 }
 
 interface WalletConnector {
