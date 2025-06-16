@@ -1,8 +1,13 @@
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
+import { toLowerCase } from "remeda"
 
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import {
+  MarketFormValues,
+  TradeType,
+} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
@@ -10,10 +15,13 @@ import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { papi, sdk } = useRpcProvider()
+  const { sdk } = useRpcProvider()
   const {
     single: { swapSlippage },
   } = useTradeSettings()
+
+  const { account } = useAccount()
+  const address = account?.address ?? ""
 
   const { createTransaction } = useTransactionsStore()
 
@@ -23,35 +31,50 @@ export const useSubmitSwap = () => {
       Trade,
     ]): Promise<void> => {
       const { sellAsset, buyAsset } = values
-      const { amountIn, amountOut } = swap
+      const { amountIn, amountOut, type } = swap
 
-      if (!sellAsset || !buyAsset) {
+      if (!sellAsset || !buyAsset || !address) {
         return
       }
 
-      const params = {
-        in: t("currency", {
-          value: scaleHuman(amountIn, sellAsset.decimals),
-          symbol: sellAsset.symbol,
-        }),
-        out: t("currency", {
-          value: scaleHuman(amountOut, buyAsset.decimals),
-          symbol: buyAsset.symbol,
-        }),
-      }
+      const params =
+        type === TradeType.Sell
+          ? {
+              in: t("currency", {
+                value: scaleHuman(amountIn, sellAsset.decimals),
+                symbol: sellAsset.symbol,
+              }),
+              out: t("currency", {
+                value: scaleHuman(amountOut, buyAsset.decimals),
+                symbol: buyAsset.symbol,
+              }),
+            }
+          : {
+              in: t("currency", {
+                value: scaleHuman(amountOut, buyAsset.decimals),
+                symbol: buyAsset.symbol,
+              }),
+              out: t("currency", {
+                value: scaleHuman(amountIn, sellAsset.decimals),
+                symbol: sellAsset.symbol,
+              }),
+            }
 
-      const callData = await sdk.tx
+      const tx = await sdk.tx
         .trade(swap)
         .withSlippage(Number(swapSlippage))
+        .withBeneficiary(address)
         .build()
-        .then((tx) => tx.get().getEncodedData())
 
       await createTransaction({
-        tx: await papi.txFromCallData(callData),
+        tx: tx.get(),
         toasts: {
-          submitted: t("trade:market.submit.swap.processing", params),
-          success: t("trade:market.submit.swap.success", params),
-          error: t("trade:market.submit.swap.error", params),
+          submitted: t(
+            `trade:market.swap.${toLowerCase(type)}.loading`,
+            params,
+          ),
+          success: t(`trade:market.swap.${toLowerCase(type)}.success`, params),
+          error: t(`trade:market.swap.${toLowerCase(type)}.error`, params),
         },
       })
     },

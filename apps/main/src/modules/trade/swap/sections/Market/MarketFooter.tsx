@@ -5,10 +5,11 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
+  readonly isSingleTrade: boolean
   readonly isEnabled: boolean
 }
 
-export const MarketFooter: FC<Props> = ({ isEnabled }) => {
+export const MarketFooter: FC<Props> = ({ isSingleTrade, isEnabled }) => {
   const { t } = useTranslation("trade")
   const { account } = useAccount()
 
@@ -23,7 +24,7 @@ export const MarketFooter: FC<Props> = ({ isEnabled }) => {
     >
       {account ? (
         <Button type="submit" size="large" width="100%" disabled={!isEnabled}>
-          {t("market.footer.swap")}
+          {isSingleTrade ? t("market.footer.swap") : t("market.twap.cta")}
         </Button>
       ) : (
         <Web3ConnectButton size="large" width="100%" />

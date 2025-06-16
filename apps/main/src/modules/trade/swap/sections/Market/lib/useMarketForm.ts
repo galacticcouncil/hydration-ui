@@ -12,9 +12,16 @@ import {
   validateAssetSellOnly,
 } from "@/utils/validators"
 
+// TODO broken export from sdk-next
 export enum TradeType {
   Sell = "Sell",
   Buy = "Buy",
+}
+
+export enum TradeOrderType {
+  Dca = "Dca",
+  TwapSell = "TwapSell",
+  TwapBuy = "TwapBuy",
 }
 
 const schema = z.object({
