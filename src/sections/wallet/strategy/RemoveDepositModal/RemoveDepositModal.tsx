@@ -24,6 +24,7 @@ import { ProtocolAction } from "@aave/contract-helpers"
 type Props = {
   readonly assetId: string
   readonly balance: string
+  readonly assetReceiveId?: string
   readonly onClose: () => void
 }
 
@@ -31,6 +32,7 @@ export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
   onClose,
+  assetReceiveId,
 }) => {
   const { createTransaction } = useStore()
   const { tradable, getAssetWithFallback } = useAssets()
@@ -44,7 +46,7 @@ export const RemoveDepositModal: FC<Props> = ({
   const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
   const maxBalance = BigNumber.min(maxBalanceToWithdraw, balance).toString()
 
-  const form = useRemoveDepositForm({ maxBalance })
+  const form = useRemoveDepositForm({ maxBalance, assetReceiveId })
   const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
 
   const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)

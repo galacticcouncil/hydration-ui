@@ -19,7 +19,7 @@ import {
   TPool,
   TXYKPool,
   isXYKPoolType,
-  usePoolDetails,
+  useStableSwapReserves,
 } from "sections/pools/PoolsPage.utils"
 import { TFarmAprData } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
@@ -40,10 +40,7 @@ import {
   useTablePagination,
 } from "components/Table/TablePagination"
 import { PoolContext } from "sections/pools/pool/Pool"
-import {
-  Page,
-  TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
 
@@ -71,7 +68,7 @@ const NonClickableContainer = ({
 }
 
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
-  const { meta: asset, farms, fee, totalFee } = pool
+  const { meta: asset, farms, fee, totalFee, isStablePool } = pool
 
   const isDesktop = useMedia(theme.viewport.gte.md)
   const isFarmsVisible = !isDesktop || asset.isShareToken
@@ -90,7 +87,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           >
             {asset.symbol}
           </Text>
-          {asset?.isStableSwap && (
+          {isStablePool && (
             <div css={{ position: "relative" }}>
               <LazyMotion features={domAnimation}>
                 <SStablepoolBadge
@@ -113,7 +110,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           )}
         </div>
 
-        {asset?.isStableSwap && (
+        {isStablePool && (
           <Text
             fs={11}
             color="white"
@@ -185,9 +182,12 @@ const AddLiquidityButton: React.FC<{
           {t("liquidity.asset.actions.joinPool")}
         </Button>
       )}
-      {open && (
-        <LiquidityModalWrapper pool={pool} onClose={() => setOpen(false)} />
-      )}
+      {open &&
+        (pool.isStablePool ? (
+          <StablePoolModalWrapper pool={pool} onClose={() => setOpen(false)} />
+        ) : (
+          <LiquidityModalWrapper pool={pool} onClose={() => setOpen(false)} />
+        ))}
     </>
   )
 }
@@ -196,26 +196,39 @@ const LiquidityModalWrapper: React.FC<{
   pool: TPool | TXYKPool
   onClose: () => void
 }> = ({ pool, onClose }) => {
-  const poolDetails = usePoolDetails(pool.id)
+  if (!pool) return null
+
+  return (
+    <PoolContext.Provider
+      value={{
+        pool,
+        isXYK: isXYKPoolType(pool),
+      }}
+    >
+      <AddLiquidity isOpen onClose={onClose} />
+    </PoolContext.Provider>
+  )
+}
+
+const StablePoolModalWrapper = ({
+  pool,
+  onClose,
+}: {
+  pool: TPool | TXYKPool
+  onClose: () => void
+}) => {
+  const stablepoolDetails = useStableSwapReserves(pool.id)
 
   if (!pool) return null
 
   return (
     <PoolContext.Provider
       value={{
-        pool: { ...pool, ...poolDetails.data },
-        isXYK: isXYKPoolType(pool),
+        pool: { ...pool, ...stablepoolDetails.data },
+        isXYK: false,
       }}
     >
-      {pool.meta.isStableSwap ? (
-        <TransferModal
-          defaultPage={Page.ADD_LIQUIDITY}
-          onClose={onClose}
-          farms={pool.farms}
-        />
-      ) : (
-        <AddLiquidity isOpen onClose={onClose} />
-      )}
+      <TransferModal onClose={onClose} farms={pool.farms} disabledOmnipool />
     </PoolContext.Provider>
   )
 }

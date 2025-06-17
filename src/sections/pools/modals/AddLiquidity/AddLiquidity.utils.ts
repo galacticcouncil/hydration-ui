@@ -26,6 +26,7 @@ import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { isStablepoolType } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -105,6 +106,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     assetMeta: pool.meta,
     assetBalance,
     ommipoolAsset,
+    isGETH: isStablepoolType(pool) && pool.isGETH,
   }
 }
 

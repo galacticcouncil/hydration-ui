@@ -2,7 +2,11 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
-import { TXYKPool, useXYKSpotPrice } from "sections/pools/PoolsPage.utils"
+import {
+  isStablepoolType,
+  TXYKPool,
+  useXYKSpotPrice,
+} from "sections/pools/PoolsPage.utils"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -13,10 +17,7 @@ import { useState } from "react"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
-import {
-  Page,
-  TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 import {
   SPoolDetailsContainer,
   SValue,
@@ -25,13 +26,14 @@ import {
 } from "sections/pools/pool/details/PoolDetails.styled"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { BN_1, BN_MILL, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
 import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
+import { useStableswapPool } from "api/stableswap"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -47,12 +49,8 @@ export const PoolDetails = () => {
   const isFarms = pool.farms?.length > 0
 
   const modal = isOpen ? (
-    pool.meta.isStableSwap ? (
-      <TransferModal
-        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
-        onClose={() => setOpen(false)}
-        farms={pool.farms ?? []}
-      />
+    pool.meta.isStableSwap || pool.meta.isErc20 ? (
+      <TransferModal onClose={() => setOpen(false)} farms={pool.farms ?? []} />
     ) : (
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
@@ -219,10 +217,8 @@ export const PoolDetails = () => {
                 <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   {ixXYKPool ? (
                     t("value.percentage", { value: pool.fee })
-                  ) : pool.stablepoolFee ? (
-                    t("value.percentage", {
-                      value: pool.stablepoolFee.times(100),
-                    })
+                  ) : pool.isStablePool ? (
+                    <StablepoolFee poolId={pool.poolId} />
                   ) : omnipoolFee.isLoading ? (
                     <Skeleton height={16} width={50} />
                   ) : (
@@ -247,7 +243,7 @@ export const PoolDetails = () => {
             </SValuesContainer>
           </div>
         </div>
-        {!ixXYKPool && pool.isStablePool ? (
+        {!ixXYKPool && isStablepoolType(pool) ? (
           <>
             <Separator
               color="white"
@@ -385,5 +381,20 @@ export const XYKRate = ({
         })}
       </Text>
     </SXYKRateContainer>
+  )
+}
+
+const StablepoolFee = ({ poolId }: { poolId: string }) => {
+  const { t } = useTranslation()
+  const { data } = useStableswapPool(poolId)
+
+  return (
+    <>
+      {t("value.percentage", {
+        value: BN(data?.fee.toString() ?? 0)
+          .div(BN_MILL)
+          .times(100),
+      })}
+    </>
   )
 }

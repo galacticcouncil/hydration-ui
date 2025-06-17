@@ -54,6 +54,8 @@ export const HYDRATION_PARACHAIN_ADDRESS =
 
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
+export const GETH_STABLESWAP_ASSET_ID = "4200"
+export const GETH_ERC20_ASSET_ID = "420"
 export const VDOT_ASSET_ID = "15"
 export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
@@ -63,3 +65,5 @@ export const CUSTOM_SUPPLY_MODAL_ASSETS = [
   GDOT_STABLESWAP_ASSET_ID,
   GDOT_ERC20_ASSET_ID,
 ]
+
+export const AAVE_EXTRA_GAS = 1_000_000n

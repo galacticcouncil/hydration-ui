@@ -1,6 +1,6 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BN from "bignumber.js"
-import { BN_100 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_100 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -77,8 +77,14 @@ export const AddLiquidityForm = ({
 
   const { getAssetPrice } = useAssetsPrice([assetId])
 
-  const { poolShare, omnipoolFee, assetMeta, assetBalance, sharesToGet } =
-    useAddLiquidity(assetId, debouncedAmount)
+  const {
+    poolShare,
+    omnipoolFee,
+    assetMeta,
+    assetBalance,
+    sharesToGet,
+    isGETH,
+  } = useAddLiquidity(assetId, debouncedAmount)
 
   const estimatedFees = useEstimatedFees(
     getAddToOmnipoolFee(api, isJoinFarms, farms),
@@ -115,7 +121,14 @@ export const AddLiquidityForm = ({
       : api.tx.omnipool.addLiquidityWithLimit(assetId, amount, shares)
 
     return await createTransaction(
-      { tx },
+      {
+        tx: isGETH
+          ? api.tx.dispatcher.dispatchWithExtraGas(
+              tx.inner.toHex(),
+              AAVE_EXTRA_GAS,
+            )
+          : tx,
+      },
       {
         onSuccess: (result) => {
           refetchAccountAssets()

@@ -20,7 +20,7 @@ import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyR
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
-  BN_0,
+  BN_MILL,
   GDOT_ERC20_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
@@ -37,11 +37,12 @@ import { Separator } from "components/Separator/Separator"
 import { useAccountAssets } from "api/deposits"
 import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { TPoolFullData } from "sections/pools/PoolsPage.utils"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { useBestTradeSell } from "api/trade"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useSpotPrice } from "api/spotPrice"
+import { useStableswapPool } from "api/stableswap"
 
 type Props = {
   asset: TAsset
@@ -73,13 +74,8 @@ export const AddStablepoolLiquidity = ({
   const { createTransaction } = useStore()
 
   const accountBalances = useAccountAssets()
-  const {
-    reserves,
-    stablepoolFee: fee = BN_0,
-    farms,
-    isGigaDOT,
-    id: poolId,
-  } = usePoolData().pool as TPoolFullData
+  const { reserves, farms, isGigaDOT, poolId, isGETH, id } = usePoolData()
+    .pool as TStablepool
 
   const { t } = useTranslation()
 
@@ -124,9 +120,11 @@ export const AddStablepoolLiquidity = ({
 
   const [debouncedValue] = useDebouncedValue(value, 300)
 
+  const isSwap = isGigaDOT || isGETH
+
   const { minAmountOut, swapTx } = useBestTradeSell(
     asset.id,
-    isGigaDOT ? GDOT_ERC20_ASSET_ID : "",
+    isGigaDOT ? GDOT_ERC20_ASSET_ID : isGETH ? id : "",
     debouncedValue ?? "0",
   )
 
@@ -184,7 +182,7 @@ export const AddStablepoolLiquidity = ({
 
     return await createTransaction(
       {
-        tx: isGigaDOT ? swapTx : tx,
+        tx: isSwap ? swapTx : tx,
       },
       {
         onSuccess: (result) =>
@@ -275,11 +273,9 @@ export const AddStablepoolLiquidity = ({
           )}
         />
         <Spacer size={20} />
-        <SummaryRow
-          label={t("liquidity.add.modal.tradeFee")}
-          content={t("value.percentage", { value: fee.multipliedBy(100) })}
-          description={t("liquidity.add.modal.tradeFee.description")}
-        />
+
+        <FeeRow poolId={poolId} />
+
         <Separator
           color="darkBlue401"
           sx={{
@@ -364,6 +360,23 @@ export const AddStablepoolLiquidity = ({
           : t("liquidity.add.modal.confirmButton")}
       </Button>
     </form>
+  )
+}
+
+const FeeRow = ({ poolId }: { poolId: string }) => {
+  const { t } = useTranslation()
+  const { data } = useStableswapPool(poolId)
+
+  return (
+    <SummaryRow
+      label={t("liquidity.add.modal.tradeFee")}
+      content={t("value.percentage", {
+        value: BN(data?.fee.toString() ?? 0)
+          .div(BN_MILL)
+          .multipliedBy(100),
+      })}
+      description={t("liquidity.add.modal.tradeFee.description")}
+    />
   )
 }
 

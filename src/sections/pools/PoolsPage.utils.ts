@@ -1,20 +1,19 @@
 import { useOmnipoolYieldMetrics, useOmnipoolDataObserver } from "api/omnipool"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { normalizeBigNumber } from "utils/balance"
 import {
   BN_0,
   BN_1,
-  BN_MILL,
   BN_NAN,
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
+  GETH_ERC20_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
   VALID_STABLEPOOLS,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
-import { useStableSDKPools, useStableswapPool } from "api/stableswap"
+import { useStableSDKPools } from "api/stableswap"
 import { XykMath } from "@galacticcouncil/sdk"
-import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { useOmnipoolVolumes, useStablepoolVolumes } from "api/volume"
 import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
@@ -30,17 +29,22 @@ import { useBorrowAssetApy } from "api/borrow"
 import { useValidXYKPoolAddresses } from "state/store"
 import { useShallow } from "hooks/useShallow"
 
-export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
+export const isXYKPoolType = (pool: TAnyPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
 
+export const isStablepoolType = (pool: TAnyPool): pool is TStablepool =>
+  !!(pool as TStablepool).reserves
+
 export type TPool = NonNullable<ReturnType<typeof usePools>["data"]>[number]
-export type TPoolDetails = NonNullable<
-  ReturnType<typeof usePoolDetails>["data"]
+export type TStablePoolDetails = NonNullable<
+  ReturnType<typeof useStableSwapReserves>["data"]
 >
-export type TPoolFullData = TPool & TPoolDetails
+export type TStablepool = TPool & TStablePoolDetails
 export type TXYKPool = NonNullable<
   ReturnType<typeof useXYKPools>["data"]
 >[number]
+
+export type TAnyPool = TPool | TStablepool | TXYKPool
 
 const getTradeFee = (fee: string[]) => {
   if (fee?.length !== 2) return BN_NAN
@@ -147,6 +151,7 @@ const useStablepools = () => {
 
       return {
         id: filteredStablepool.id,
+        poolId: filteredStablepool.id,
         name,
         symbol,
         meta: {
@@ -171,6 +176,8 @@ const useStablepools = () => {
         balance: accountAsset?.balance,
         isPositions,
         isGigaDOT,
+        isGETH: false,
+        isStablePool: isGigaDOT,
       }
     })
   }, [
@@ -218,6 +225,8 @@ export const usePools = () => {
     if (!omnipoolAssets.data || isLoading) return undefined
 
     const rows = omnipoolAssets.data.map((asset) => {
+      const isGETH = asset.id === GETH_ERC20_ASSET_ID
+      const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
       const meta = getAssetWithFallback(asset.id)
       const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
 
@@ -259,9 +268,15 @@ export const usePools = () => {
 
       return {
         id: asset.id,
+        poolId,
         name: meta.name,
         symbol: meta.symbol,
-        meta,
+        meta: isGETH
+          ? {
+              ...meta,
+              meta: getAssetWithFallback(GETH_STABLESWAP_ASSET_ID).meta,
+            }
+          : meta,
         tvlDisplay,
         spotPrice: spotPrice,
         canAddLiquidity: tradability.canAddLiquidity,
@@ -280,6 +295,8 @@ export const usePools = () => {
         balance: accountAsset?.balance,
         isPositions,
         isGigaDOT: false,
+        isGETH,
+        isStablePool: meta.isStableSwap || isGETH,
       }
     })
 
@@ -326,62 +343,6 @@ export const usePools = () => {
     data: sortedData,
     isLoading: isInitialLoading,
   }
-}
-
-export const usePoolDetails = (assetId: string) => {
-  const { getAssetWithFallback } = useAssets()
-  const meta = getAssetWithFallback(assetId)
-  const isStablePool = meta?.isStableSwap
-
-  const omnipoolPositions = useOmnipoolPositionsData()
-  const { data: stablePools, isLoading } = useStableSDKPools()
-  const stablePoolBalance = isStablePool
-    ? stablePools
-        ?.find((stablePool) => stablePool.id === assetId)
-        ?.tokens.filter(
-          (token) => token.type === "Token" || token.type === "Erc20",
-        )
-    : undefined
-
-  const stablepool = useStableswapPool(isStablePool ? assetId : undefined)
-
-  const data = useMemo(() => {
-    const omnipoolNftPositions = omnipoolPositions.data.filter(
-      (position) => position.assetId === assetId,
-    )
-
-    const reserves = isStablePool
-      ? (stablePoolBalance ?? []).map((token) => {
-          const id = token.id
-          const meta = getAssetWithFallback(id)
-
-          return {
-            asset_id: Number(id),
-            decimals: meta.decimals,
-            amount: token.balance,
-          }
-        })
-      : []
-
-    return {
-      omnipoolNftPositions,
-      reserves,
-      stablepoolFee: stablepool.data?.fee
-        ? normalizeBigNumber(stablepool.data.fee).div(BN_MILL)
-        : undefined,
-      isStablePool,
-      stablePoolBalance,
-    }
-  }, [
-    getAssetWithFallback,
-    assetId,
-    isStablePool,
-    omnipoolPositions.data,
-    stablepool.data?.fee,
-    stablePoolBalance,
-  ])
-
-  return { data, isInitialLoading: isLoading }
 }
 
 export const useXYKPools = () => {
@@ -470,6 +431,7 @@ export const useXYKPools = () => {
 
         return {
           id: shareToken.id,
+          poolId: poolAddress,
           symbol: shareToken.symbol,
           name: shareToken.name,
           iconId: shareToken.iconId,
@@ -494,6 +456,7 @@ export const useXYKPools = () => {
             farm.isActive ? BN(farm.apr).gt(0) : true,
           ),
           isFeeLoading,
+          isStablePool: false,
         }
       })
       .sort((a, b) => {
@@ -674,4 +637,98 @@ export const calculateXykTotals = (
 
     return acc
   }, defaultValues)
+}
+
+export const useStableSwapReserves = (poolId: string) => {
+  const { data: stablePools = [], isLoading } = useStableSDKPools()
+
+  const stablePoolBalance =
+    stablePools
+      .find((stablePool) => stablePool.id === poolId)
+      ?.tokens.filter(
+        (token) => token.type === "Token" || token.type === "Erc20",
+      ) ?? []
+
+  const reserves = stablePoolBalance.map((token) => {
+    const id = token.id
+    //const meta = getAssetWithFallback(id)
+
+    return {
+      asset_id: Number(id),
+      decimals: token.decimals,
+      symbol: token.symbol,
+      amount: token.balance,
+    }
+  })
+
+  const assetIds = stablePoolBalance.map((token) => token.id)
+  const { getAssetPrice, isLoading: isPricesLoading } = useAssetsPrice(assetIds)
+
+  const assetBalances = useMemo(
+    () =>
+      reserves.map((reserve) => {
+        const id = reserve.asset_id.toString()
+        const spotPrice = getAssetPrice(id).price
+        const balance = BN(reserve.amount).shiftedBy(-reserve.decimals)
+
+        return {
+          id,
+          symbol: reserve.symbol,
+          balance: balance.toString(),
+          balanceDisplay: balance.multipliedBy(spotPrice).toString(),
+        }
+      }),
+    [reserves, getAssetPrice],
+  )
+
+  const totalValue = assetBalances
+    .reduce((t, asset) => t.plus(asset.balanceDisplay), BN_0)
+    .toString()
+
+  let smallestPercentage: undefined | { assetId: string; percentage: number }
+  let biggestPercentage: undefined | { assetId: string; percentage: number }
+
+  const balances = assetBalances.map((assetBalance) => {
+    const percentage = BN(assetBalance.balanceDisplay)
+      .div(totalValue)
+      .times(100)
+      .dp(1)
+      .toNumber()
+
+    if (!smallestPercentage || !biggestPercentage) {
+      smallestPercentage = {
+        assetId: assetBalance.id,
+        percentage,
+      }
+
+      biggestPercentage = {
+        assetId: assetBalance.id,
+        percentage,
+      }
+    }
+
+    if (smallestPercentage.percentage > percentage) {
+      smallestPercentage = {
+        assetId: assetBalance.id,
+        percentage,
+      }
+    }
+
+    if (biggestPercentage.percentage < percentage) {
+      biggestPercentage = {
+        assetId: assetBalance.id,
+        percentage,
+      }
+    }
+
+    return {
+      ...assetBalance,
+      percentage,
+    }
+  })
+
+  return {
+    data: { balances, reserves, smallestPercentage, biggestPercentage },
+    isLoading: isLoading || isPricesLoading,
+  }
 }

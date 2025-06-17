@@ -14,11 +14,7 @@ import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
-import { TPoolFullData } from "sections/pools/PoolsPage.utils"
-import {
-  Page,
-  TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { useState } from "react"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -26,18 +22,17 @@ import BN from "bignumber.js"
 import { useRefetchAccountAssets } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 
 export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const pool = usePoolData().pool as TPoolFullData
+  const pool = usePoolData().pool as TStablepool
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const { farms, meta, isGigaDOT } = pool
+  const { meta, isGigaDOT, isGETH } = pool
 
-  const [transferOpen, setTransferOpen] = useState<number | undefined>(
-    undefined,
-  )
+  const [transferOpen, setTransferOpen] = useState(false)
 
   const amountPrice = pool.spotPrice
     ? amount.shiftedBy(-meta.decimals).multipliedBy(pool.spotPrice)
@@ -75,7 +70,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
               <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
                 <div sx={{ flex: "row", gap: 7, align: "center" }}>
                   <MultipleAssetLogo iconId={meta.iconId} size={26} />
-                  {isGigaDOT && <Text>{meta.symbol}</Text>}
+                  {(isGigaDOT || isGETH) && <Text>{meta.symbol}</Text>}
                 </div>
                 <div
                   sx={{
@@ -163,7 +158,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   <SOmnipoolButton
                     size="small"
                     fullWidth
-                    onClick={() => setTransferOpen(Page.MOVE_TO_OMNIPOOL)}
+                    onClick={() => setTransferOpen(true)}
                     disabled={!pool.canAddLiquidity}
                   >
                     <div
@@ -185,13 +180,11 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
           </div>
         </SPoolDetailsContainer>
       )}
-      {transferOpen !== undefined && (
-        <TransferModal
-          defaultPage={transferOpen}
-          onClose={() => setTransferOpen(undefined)}
-          farms={farms}
-        />
-      )}
+
+      <AddLiquidity
+        isOpen={transferOpen}
+        onClose={() => setTransferOpen(false)}
+      />
     </>
   )
 }
