@@ -2,7 +2,7 @@ import { Skeleton, Summary } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TradeRoutesSkeleton } from "@/modules/trade/swap/components/TradeRoutesSkeleton"
+import { TradeRoutesSkeleton } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutesSkeleton"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 export const MarketSummarySkeleton: FC = () => {
