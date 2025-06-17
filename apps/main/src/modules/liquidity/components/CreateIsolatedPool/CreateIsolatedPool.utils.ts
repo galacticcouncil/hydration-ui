@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { t } from "i18next"
 import { useTranslation } from "react-i18next"
-import { z, ZodType } from "zod"
+import { z, ZodType } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useRpcProvider } from "@/providers/rpcProvider"

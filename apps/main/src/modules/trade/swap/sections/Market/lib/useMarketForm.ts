@@ -1,6 +1,6 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useAssets } from "@/providers/assetsProvider"

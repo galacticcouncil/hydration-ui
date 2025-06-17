@@ -6,7 +6,7 @@ import {
 } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
-import { type infer as Infer, object, string } from "zod"
+import { type infer as Infer, object, string } from "zod/v4"
 
 export type ExternalWalletFormValues = Infer<typeof schema>
 

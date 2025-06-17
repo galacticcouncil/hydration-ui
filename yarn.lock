@@ -1458,8 +1458,6 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.2.0.tgz#41d02fe7b3583cfec11ce9cea7efdc4617990818"
   integrity sha512-h2gsylDEGt3scR4fjwUxFxhXwdGsCmosMDwPau4oarXbU1fDWxqYa0wf6lhlw9QBIgt1d+o8DCyabM5CJKVWMQ==
-  dependencies:
-    "@polkadot-api/descriptors" "file:../../.cache/yarn/v6/npm-@galacticcouncil-descriptors-1.2.0-41d02fe7b3583cfec11ce9cea7efdc4617990818-integrity/node_modules/@galacticcouncil/descriptors/.papi/descriptors"
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"
@@ -5137,11 +5135,6 @@
   version "2.7.61"
   resolved "https://registry.yarnpkg.com/@zip.js/zip.js/-/zip.js-2.7.61.tgz#417ba7c6afe2f704d7b5e4f93d14488bc20ab3a6"
   integrity sha512-+tZvY10nkW0pJoU88XFWLBd2O9PJPvEnDhSY/jQHfIroN5W5qGfPgFHKC4lkx0+9Vw/0IAkNHf1XBVInBkM9Vw==
-
-"@zod/core@0.11.6":
-  version "0.11.6"
-  resolved "https://registry.yarnpkg.com/@zod/core/-/core-0.11.6.tgz#9216e98848dc9364eda35e3da90f5362f10e8887"
-  integrity sha512-03Bv82fFSfjDAvMfdHHdGSS6SOJs0iCcJlWJv1kJHRtoTT02hZpyip/2Lk6oo4l4FtjuwTrsEQTwg/LD8I7dJA==
 
 abitype@1.0.8, abitype@^1.0.6:
   version "1.0.8"
@@ -12324,12 +12317,10 @@ zod@^3.17.3, zod@^3.22.2, zod@^3.24.2:
   resolved "https://registry.yarnpkg.com/zod/-/zod-3.24.4.tgz#e2e2cca5faaa012d76e527d0d36622e0a90c315f"
   integrity sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==
 
-zod@^4.0.0-beta.20250505T195954:
-  version "4.0.0-beta.20250505T195954"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-4.0.0-beta.20250505T195954.tgz#ba9da025671de2dde9d4d033089f03c37a35022f"
-  integrity sha512-iB8WvxkobVIXMARvQu20fKvbS7mUTiYRpcD8OQV1xjRhxO0EEpYIRJBk6yfBzHAHEdOSDh3SxDITr5Eajr2vtg==
-  dependencies:
-    "@zod/core" "0.11.6"
+zod@^3.25.67:
+  version "3.25.67"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.25.67.tgz#62987e4078e2ab0f63b491ef0c4f33df24236da8"
+  integrity sha512-idA2YXwpCdqUSKRCACDE6ItZD9TZzy3OZMtpfLoh6oPR47lipysRrJfjzMqFxQ3uJuUPyUeWe1r9vLH33xO/Qw==
 
 zustand@^5.0.1:
   version "5.0.4"

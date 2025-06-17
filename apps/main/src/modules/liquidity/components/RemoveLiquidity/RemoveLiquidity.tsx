@@ -18,7 +18,7 @@ import Big from "big.js"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"

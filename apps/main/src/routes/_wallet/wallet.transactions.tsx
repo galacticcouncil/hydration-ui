@@ -1,7 +1,7 @@
 import { Flex, Grid, Paper, Skeleton } from "@galacticcouncil/ui/components"
 import { createFileRoute } from "@tanstack/react-router"
 import { FC } from "react"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import { WalletTransactionsPage } from "@/modules/wallet/transactions/WalletTransactionsPage"
 import { transactionTypesMock } from "@/modules/wallet/transactions/WalletTransactionsTable.data"

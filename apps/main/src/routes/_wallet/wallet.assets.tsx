@@ -2,7 +2,7 @@ import { Flex, Grid, Paper, Skeleton } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createFileRoute } from "@tanstack/react-router"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import { WalletAssetsPage } from "@/modules/wallet/assets/WalletAssetsPage"
 
