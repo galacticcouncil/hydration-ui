@@ -149,6 +149,7 @@ export const useTransactionValues = ({
     bestNumber.data?.parachainBlockNumber.toString(),
   )
 
+  const txWeight = paymentInfo?.weight.refTime.toString()
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
   const paymentFeeHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
@@ -182,6 +183,7 @@ export const useTransactionValues = ({
         shouldUsePermit,
         permitNonce: permitNonce.data,
         pendingPermit,
+        txWeight,
       },
     }
 
@@ -264,6 +266,7 @@ export const useTransactionValues = ({
       shouldUsePermit,
       permitNonce: permitNonce.data,
       pendingPermit,
+      txWeight,
     },
   }
 }
