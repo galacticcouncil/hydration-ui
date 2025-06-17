@@ -13,9 +13,11 @@ export function useCopy(resetTimeoutMs = 0) {
       setCopied(true)
 
       cancel()
-      reset()
+      if (resetTimeoutMs > 0) {
+        reset()
+      }
     },
-    [copyToClipboard, cancel, reset],
+    [copyToClipboard, cancel, resetTimeoutMs, reset],
   )
 
   return {

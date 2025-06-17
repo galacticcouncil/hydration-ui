@@ -1,13 +1,6 @@
-import { CheckIcon, CopyIcon } from "@galacticcouncil/ui/assets/icons"
-import {
-  AccountAvatar,
-  Box,
-  Flex,
-  Icon,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { AccountAvatar, Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress, useCopy } from "@galacticcouncil/utils"
+import { shortenAccountAddress } from "@galacticcouncil/utils"
 
 import {
   SAccountOption,
@@ -32,8 +25,6 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
 }) => {
   const { account: currentAccount } = useAccount()
   const wallet = getWallet(account.provider)
-
-  const { copied, copy } = useCopy(5000)
 
   const isActive =
     currentAccount?.address === account.address &&
@@ -68,17 +59,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
                 {shortenAccountAddress(account.displayAddress, 12)}
               </Text>
             </Text>
-            <SCopyButton
-              copied={copied}
-              disabled={copied}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                copy(account.displayAddress)
-              }}
-            >
-              <Icon size={14} component={copied ? CheckIcon : CopyIcon} />
-            </SCopyButton>
+            <SCopyButton text={account.displayAddress} />
           </Flex>
         </Flex>
       </Flex>
