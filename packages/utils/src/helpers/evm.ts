@@ -45,7 +45,7 @@ export const safeConvertH160toSS58 = (address: string) => {
       new Uint8Array(
         Buffer.concat([H160_PREFIX_BYTES, addressBytes, Buffer.alloc(8)]),
       ),
-      63,
+      0,
     )
   } catch {
     return ""

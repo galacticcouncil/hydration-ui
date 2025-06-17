@@ -1,3 +1,4 @@
+import { isEvmAccount } from "@galacticcouncil/sdk"
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
@@ -7,22 +8,23 @@ import {
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
+import { isSS58Address } from "@galacticcouncil/utils"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
-import { Web3ConnectAccount } from "@/components/Web3ConnectAccount"
-import { getFilteredAccounts } from "@/components/Web3ConnectAccountSelect.utils"
-import { Web3ConnectModeFilter } from "@/components/Web3ConnectModeFilter"
-import { Web3ConnectProviderLoader } from "@/components/Web3ConnectProviderLoader"
+import { AccountFilter } from "@/components/account/AccountFilter"
+import { AccountOption } from "@/components/account/AccountOption"
+import { getFilteredAccounts } from "@/components/content/AccountSelectContent.utils"
+import { ProviderLoader } from "@/components/provider/ProviderLoader"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
 import { toAccount } from "@/utils"
 import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
-export const Web3ConnectAccountSelect = () => {
+export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
   const { accounts, setAccount, toggle, getConnectedProviders } =
     useWeb3Connect(
@@ -58,7 +60,6 @@ export const Web3ConnectAccountSelect = () => {
     [accounts, currentAccount, filter, search],
   )
 
-  const shouldRenderFilters = !isProvidersConnecting && accounts.length > 1
   const hasNoResults = accountList.length === 0
 
   const onAccountSelect = useCallback(
@@ -74,25 +75,47 @@ export const Web3ConnectAccountSelect = () => {
     [setAccount, toggle],
   )
 
+  const groups = Object.groupBy(accountList, (acc) => {
+    if (isEvmAccount(acc.address)) {
+      return WalletMode.EVM
+    }
+
+    if (isSS58Address(acc.address)) {
+      return WalletMode.Substrate
+    }
+
+    return WalletMode.Unknown
+  })
+
+  const groupCount = Object.keys(groups).length ?? 0
+  const shouldRenderFilter = groupCount > 1 || filter !== WalletMode.Default
+  const shouldRenderSearch = accounts.length > 1
+  const shouldRenderHeader =
+    !isProvidersConnecting && (shouldRenderFilter || shouldRenderSearch)
+
   return (
     <>
       <ModalHeader
         title="Select account"
         customHeader={
-          shouldRenderFilters && (
+          shouldRenderHeader && (
             <Flex direction="column" gap={20} mt={10}>
-              <Input
-                value={searchVal}
-                onChange={(e) => setSearchVal(e.target.value)}
-                customSize="large"
-                iconStart={Search}
-                placeholder="Search by name or paste address"
-              />
-              <Web3ConnectModeFilter
-                active={filter}
-                onSetActive={(mode) => setFilter(mode)}
-                blacklist={[WalletMode.Solana]}
-              />
+              {shouldRenderSearch && (
+                <Input
+                  value={searchVal}
+                  onChange={(e) => setSearchVal(e.target.value)}
+                  customSize="large"
+                  iconStart={Search}
+                  placeholder="Search by name or paste address"
+                />
+              )}
+              {shouldRenderFilter && (
+                <AccountFilter
+                  active={filter}
+                  onSetActive={(mode) => setFilter(mode)}
+                  blacklist={[WalletMode.Solana]}
+                />
+              )}
             </Flex>
           )
         }
@@ -100,14 +123,12 @@ export const Web3ConnectAccountSelect = () => {
       <ModalBody>
         <Grid gap={10}>
           {isProvidersConnecting ? (
-            <Web3ConnectProviderLoader
-              providers={providers.map(prop("type"))}
-            />
+            <ProviderLoader providers={providers.map(prop("type"))} />
           ) : (
             <>
               {hasNoResults && <Text>No accounts found</Text>}
               {accountList.map((account) => (
-                <Web3ConnectAccount
+                <AccountOption
                   key={`${account.address}-${account.provider}`}
                   {...account}
                   onSelect={onAccountSelect}

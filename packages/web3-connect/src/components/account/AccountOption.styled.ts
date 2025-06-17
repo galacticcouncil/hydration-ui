@@ -1,6 +1,6 @@
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SAccountItem = styled.button<{
+export const SAccountOption = styled.div<{
   withButton?: boolean
 }>`
   position: relative;
@@ -50,3 +50,12 @@ export const SChangeAccountButton = styled.button`
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 `
+
+export const SCopyButton = styled.button<{ copied: boolean }>(
+  ({ theme, copied }) => css`
+    color: ${copied ? theme.accents.success.emphasis : theme.text.medium};
+    &:hover:not(:disabled) {
+      color: ${theme.text.high};
+    }
+  `,
+)

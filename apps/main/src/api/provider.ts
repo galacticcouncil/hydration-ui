@@ -24,6 +24,7 @@ export type TProviderData = {
   papi: Papi
   sdk: SdkCtx
   papiClient: PolkadotClient
+  papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
@@ -68,9 +69,14 @@ export const providerQuery = (rpcUrlList: string[]) => {
 
 const getProviderData = async (rpcUrlList: string[] = []) => {
   const papiClient = await api.getWs(rpcUrlList)
-  const sdk = await createSdkContext(papiClient)
 
   const papi = papiClient.getTypedApi(hydration)
+
+  const [sdk, papiCompatibilityToken] = await Promise.all([
+    createSdkContext(papiClient),
+    papi.compatibilityToken,
+  ])
+
   const poolService = sdk.ctx.pool.withOmnipool().withStableswap().withXyk()
 
   const evm = createPublicClient({
@@ -97,6 +103,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   return {
     papi,
     papiClient,
+    papiCompatibilityToken,
     evm,
     endpoint,
     poolService,

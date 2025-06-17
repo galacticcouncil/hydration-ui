@@ -38,13 +38,13 @@ const WALLET_MODES = [
   WalletMode.Solana,
 ] as const
 
-export type Web3ConnectModeFilterProps = {
+export type AccountFilterProps = {
   active: WalletMode
   onSetActive: (mode: WalletMode) => void
   blacklist?: WalletMode[]
 }
 
-export const Web3ConnectModeFilter: React.FC<Web3ConnectModeFilterProps> = ({
+export const AccountFilter: React.FC<AccountFilterProps> = ({
   active,
   onSetActive,
   blacklist,
@@ -63,7 +63,7 @@ export const Web3ConnectModeFilter: React.FC<Web3ConnectModeFilterProps> = ({
           size="small"
           key={mode}
           onClick={() => onSetActive(mode)}
-          sx={{ pl: 6 }}
+          sx={{ position: "relative", pl: 6 }}
         >
           <img
             sx={{ size: 20 }}

@@ -58,6 +58,7 @@ const useToastsStore = create<ToastStore>()(
     }),
     {
       name: "toasts",
+      version: 1,
     },
   ),
 )
@@ -111,19 +112,26 @@ export const useToasts = () => {
     [currentAddress, update],
   )
 
-  const edit = (id: string, props: Partial<ToastData>) => {
-    if (!currentAddress) return
+  const edit = useCallback(
+    (id: string, props: Partial<ToastData>) => {
+      if (!currentAddress) return
 
-    update(currentAddress, (toasts) =>
-      toasts.map((toast) => (toast.id === id ? { ...toast, ...props } : toast)),
-    )
-  }
+      update(currentAddress, (toasts) =>
+        toasts.map((toast) =>
+          toast.id === id ? { ...toast, ...props } : toast,
+        ),
+      )
+    },
+    [currentAddress, update],
+  )
 
-  const remove = (id: string) => {
-    if (!currentAddress) return
-
-    update(currentAddress, (toasts) => toasts.filter((t) => t.id !== id))
-  }
+  const remove = useCallback(
+    (id: string) => {
+      if (!currentAddress) return
+      update(currentAddress, (toasts) => toasts.filter((t) => t.id !== id))
+    },
+    [currentAddress, update],
+  )
 
   const successToast = useCallback(
     (toast: ToastParams) => add(toast, "success"),

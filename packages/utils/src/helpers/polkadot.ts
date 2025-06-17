@@ -1,5 +1,9 @@
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { Binary } from "polkadot-api"
+
+export const isBinary = (value: unknown): value is Binary =>
+  value instanceof Binary
 
 export const safeConvertAddressSS58 = (address: string, ss58prefix = 0) => {
   try {

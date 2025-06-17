@@ -137,7 +137,7 @@ export const TableRow = styled.tr<{
   readonly isClickable?: boolean
   readonly isExpandable?: boolean
   readonly hasOverride?: boolean
-  readonly isEmptyState?: boolean;
+  readonly isEmptyState?: boolean
 }>(
   ({ theme, isClickable, isExpandable, hasOverride, isEmptyState }) => css`
     &[data-expanded="true"],
@@ -145,12 +145,12 @@ export const TableRow = styled.tr<{
       background: ${theme.surfaces.containers.high.primary};
     }
 
-    ${!isEmptyState && css`
+    ${!isEmptyState &&
+    css`
       ${TableBody} &:hover {
         background: ${theme.surfaces.containers.high.hover};
       }
     `}
-    
 
     ${isClickable &&
     css`

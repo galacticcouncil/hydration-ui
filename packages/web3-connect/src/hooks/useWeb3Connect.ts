@@ -25,24 +25,28 @@ export enum WalletMode {
   SubstrateEVM = "substrate-evm",
   SubstrateH160 = "substrate-h160",
   Solana = "solana",
+  Unknown = "unknown",
 }
 
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
   ...SUBSTRATE_PROVIDERS,
   ...EVM_PROVIDERS,
-  ...ALTERNATIVE_PROVIDERS,
 ]
 
 export const PROVIDERS_BY_WALLET_MODE: Record<
   WalletMode,
   WalletProviderType[]
 > = {
-  [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
+  [WalletMode.Default]: [
+    ...COMPATIBLE_WALLET_PROVIDERS,
+    ...ALTERNATIVE_PROVIDERS,
+  ],
   [WalletMode.EVM]: EVM_PROVIDERS,
   [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
   [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
   [WalletMode.Solana]: SOLANA_PROVIDERS,
+  [WalletMode.Unknown]: [],
 }
 
 export type StoredAccount = {
@@ -189,7 +193,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
     {
       name: "web3-connect",
       partialize: omit(["open", "error", "accounts"]),
-      version: 7,
+      version: 9,
     },
   ),
 )

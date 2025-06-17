@@ -1454,15 +1454,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.1.tgz#a7ee12f92bec7ddd2553d0f185693fb22f29f28c"
   integrity sha512-psIJv4hY/CEz3jXzd/mrRGtCtwmMQtCzi5OwDlJ8wbYtdxScCkIlHfZXRxDjUvgWTgG7xu9TbjeyifsJE6yHqw==
 
-"@galacticcouncil/descriptors@^1.1.1":
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.1.1.tgz#71cb23dfe348a04a9989c78cf2ccf72f0bfa16db"
-  integrity sha512-/TNhudkCRYskJWG6i3gCx74RlfqMIMgBJ7UJEb6III8kSfJjezShUv1RV3AHZjUdodoZToS0tb+3IbaV+KPq8w==
-
 "@galacticcouncil/descriptors@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.2.0.tgz#41d02fe7b3583cfec11ce9cea7efdc4617990818"
   integrity sha512-h2gsylDEGt3scR4fjwUxFxhXwdGsCmosMDwPau4oarXbU1fDWxqYa0wf6lhlw9QBIgt1d+o8DCyabM5CJKVWMQ==
+  dependencies:
+    "@polkadot-api/descriptors" "file:../../.cache/yarn/v6/npm-@galacticcouncil-descriptors-1.2.0-41d02fe7b3583cfec11ce9cea7efdc4617990818-integrity/node_modules/@galacticcouncil/descriptors/.papi/descriptors"
 
 "@galacticcouncil/math-lbp@^1.0.0":
   version "1.0.0"

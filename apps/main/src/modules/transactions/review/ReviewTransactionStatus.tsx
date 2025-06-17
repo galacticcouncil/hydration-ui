@@ -7,10 +7,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useCopy } from "@galacticcouncil/utils"
 import React from "react"
 import { useTranslation } from "react-i18next"
 
-import { useCopy } from "@/hooks/useCopy"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { TxStatus } from "@/modules/transactions/types"
 
