@@ -469,8 +469,13 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           return false
         }
 
+        const isWormhole = bridge?.includes("Wormhole")
+        const isSnowbridge = bridge?.includes("Snowbridge")
+
         const isEvm =
           link.includes("evm") || link.includes("explorer.nice.hydration.cloud")
+
+        const isWormholeLink = link.includes("wormholescan")
 
         const pullSnowbridgeToast = (status: number, messageId: string) => {
           if (status === 0 && !link.includes("snowbridge")) {
@@ -506,7 +511,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           }
         }
 
-        if (bridge === "Wormhole" && !isHydraSource) {
+        if (isWormhole && (!isHydraSource || isWormholeLink)) {
           const url = new URL(link)
           const hash = url.hash.split("/").slice(-1)[0]
 
@@ -534,9 +539,11 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           } catch {}
           return false
           // from hydration to eth (not supported by snowbridge indexer)
-        } else if (bridge === "Snowbridge") {
+        } else if (isSnowbridge) {
           let hash =
-            link.includes("snowbridge") || xcm === "evm" ? txHash : undefined
+            link.includes("snowbridge") || (xcm === "evm" && !isHydraSource)
+              ? txHash
+              : undefined
 
           if (!hash) {
             if (isEvm) {
@@ -581,8 +588,8 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           }
 
           // from eth to hydration (only through evm wallet)
-        } else if (bridge === "Wormhole" && isHydraSource) {
-          if (diffInMinutes > 5) {
+        } else if (isWormhole && isHydraSource) {
+          if (diffInMinutes > 10) {
             toast.add(
               "unknown",
               omit(["bridge", "hidden"], {
@@ -629,7 +636,6 @@ export const useBridgeToast = (toasts: ToastData[]) => {
               //udpate a link to show tx details on wormhole
               toast.editToast(toastData.id, {
                 link: `https://wormholescan.io/#/tx/${evmTx.hash}`,
-                xcm: "evm",
               })
             }
           } catch (error) {}

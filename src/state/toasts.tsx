@@ -10,7 +10,7 @@ import { useShallow } from "hooks/useShallow"
 import { usePrevious } from "react-use"
 import { tags } from "@galacticcouncil/xcm-cfg"
 
-export type MetaTags = keyof typeof tags.Tag
+export type MetaTags = Array<keyof typeof tags.Tag>
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastVariant =

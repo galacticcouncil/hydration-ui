@@ -84,9 +84,10 @@ export class TransactionError extends Error {
 
 type TxHuman = Record<string, { args: TxMethod["args"] }>
 
-function getXcmTab(tags?: string[]) {
+function getXcmTag(tags?: string[]) {
   if (!tags) return undefined
-  return tags[0] as unknown as MetaTags
+
+  return tags as unknown as MetaTags
 }
 
 function getTxHuman(x: AnyJson, prefix = ""): TxHuman | null {
@@ -261,7 +262,7 @@ export const useSendEvmTransactionMutation = (
                 txData,
                 chain.key,
                 isTestnet,
-                getXcmTab(metaTags),
+                getXcmTag(metaTags),
               )
             : ""
 
@@ -275,7 +276,7 @@ export const useSendEvmTransactionMutation = (
 
         const bridge =
           !isApproveTx && (chain?.isEvmChain() || destChain?.isEvmChain())
-            ? getXcmTab(metaTags)
+            ? getXcmTag(metaTags)
             : undefined
 
         loading({
@@ -365,7 +366,7 @@ export const useSendSolanaTransactionMutation = (
 
         const bridge =
           chain?.isSolana() || destChain?.isSolana()
-            ? getXcmTab(metaTags)
+            ? getXcmTag(metaTags)
             : undefined
 
         loading({
@@ -513,7 +514,7 @@ const getTransactionData = (
 
   const bridge =
     xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()
-      ? getXcmTab(metaTags)
+      ? getXcmTag(metaTags)
       : undefined
 
   const isHydraSource = true
