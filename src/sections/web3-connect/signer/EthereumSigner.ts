@@ -76,15 +76,6 @@ export class EthereumSigner {
       gasLimit = BigNumber(gas.toString()).times(13).div(10).decimalPlaces(0) // add 30%
     }
 
-    console.log({
-      byWeight: gasLimit.toString(),
-      regular: BigNumber(gas.toString())
-        .times(13)
-        .div(10)
-        .decimalPlaces(0)
-        .toString(),
-    })
-
     return {
       gas,
       gasLimit,
