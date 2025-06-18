@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TProviderContext } from "@/providers/rpcProvider"
+import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 export const uniquesIds = (context: TProviderContext) => {
   const { isApiLoaded, papi } = context
@@ -31,7 +32,7 @@ export const insufficientFeeQuery = ({ papi, isLoaded }: TProviderContext) => {
       return new Big(fee.toString()).times(1.1).toString()
     },
     enabled: isLoaded,
-    gcTime: 1000 * 60 * 60 * 24,
-    staleTime: 1000 * 60 * 60 * 1,
+    gcTime: GC_TIME,
+    staleTime: STALE_TIME,
   })
 }

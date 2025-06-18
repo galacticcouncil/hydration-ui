@@ -29,6 +29,7 @@ export type MyActivityDcaOrderStatus = {
   readonly scheduleId: number
   readonly sold: string
   readonly total: string
+  readonly symbol: string
 }
 
 export type OrderStatus = MarketSwapStatus | MyActivityDcaOrderStatus
@@ -88,7 +89,7 @@ export const useSwapsData = (
                 swap.event?.indexInBlock,
               )
             : null
-          const status = getOrderStatus(swap)
+          const status = getOrderStatus(swap, getAssetWithFallback)
           const type = isTradeOperation(swap.operationType)
             ? swap.operationType
             : null
@@ -114,7 +115,10 @@ export const useSwapsData = (
   return { swaps, totalCount, isLoading }
 }
 
-const getOrderStatus = (swap: SwapFragment): OrderStatus | null => {
+const getOrderStatus = (
+  swap: SwapFragment,
+  getAsset: (id: string) => TAsset,
+): OrderStatus | null => {
   if (!swap.dcaScheduleExecutionEvent) {
     return { kind: "market", status: "filled" }
   }
@@ -125,11 +129,14 @@ const getOrderStatus = (swap: SwapFragment): OrderStatus | null => {
     return null
   }
 
+  const asset = getAsset(schedule.assetInId ?? "")
+
   return {
     kind: OrderKind.Dca,
     scheduleId: Number(schedule.id),
-    sold: schedule.totalExecutedAmountIn || "0",
-    total: schedule.budgetAmountIn || "0",
+    sold: scaleHuman(schedule.totalExecutedAmountIn || "0", asset.decimals),
+    total: scaleHuman(schedule.budgetAmountIn || "0", asset.decimals),
+    symbol: asset.symbol,
     status: isDcaScheduleStatus(schedule.status) ? schedule.status : null,
   }
 }

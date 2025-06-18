@@ -20,7 +20,9 @@ export const useSubmitTwap = () => {
   const address = account?.address ?? ""
 
   const {
-    split: { twapMaxRetries, twapSlippage },
+    swap: {
+      split: { twapMaxRetries, twapSlippage },
+    },
   } = useTradeSettings()
 
   const { createTransaction } = useTransactionsStore()
@@ -32,33 +34,38 @@ export const useSubmitTwap = () => {
       MarketFormValues,
       TradeOrder,
     ]): Promise<void> => {
-      const { sellAsset, buyAsset } = values
+      const { sellAsset } = values
 
-      if (!sellAsset || !buyAsset || !address) {
+      if (!address) {
         return
-      }
-
-      const params = {
-        noOfTrades: twap.tradeCount,
-        timeframe: blockTime
-          ? formatDistanceToNow(Date.now() + twap.tradeCount * blockTime)
-          : t("unknown"),
-        in: t("currency", {
-          value: scaleHuman(twap.tradeAmountIn, sellAsset.decimals),
-          symbol: sellAsset.symbol,
-        }),
-        inTotal: t("currency", {
-          value: scaleHuman(twap.amountIn, sellAsset.decimals),
-          symbol: sellAsset.symbol,
-        }),
       }
 
       const tx = await sdk.tx
         .order(twap)
-        .withSlippage(Number(twapSlippage))
+        .withSlippage(twapSlippage)
         .withMaxRetries(twapMaxRetries)
         .withBeneficiary(address)
         .build()
+
+      const sellDecimals = sellAsset?.decimals ?? 0
+      const sellSymbol = sellAsset?.symbol ?? ""
+
+      const params = {
+        noOfTrades: twap.tradeCount,
+        timeframe: blockTime
+          ? formatDistanceToNow(Date.now() + twap.tradeCount * blockTime, {
+              includeSeconds: true,
+            })
+          : t("unknown"),
+        in: t("currency", {
+          value: scaleHuman(twap.tradeAmountIn, sellDecimals),
+          symbol: sellSymbol,
+        }),
+        inTotal: t("currency", {
+          value: scaleHuman(twap.amountIn, sellDecimals),
+          symbol: sellSymbol,
+        }),
+      }
 
       await createTransaction({
         tx: tx.get(),

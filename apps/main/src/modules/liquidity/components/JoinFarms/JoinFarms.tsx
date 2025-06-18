@@ -9,6 +9,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { preventDefault } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { AvailableFarms } from "@/modules/liquidity/components/AvailableFarms"
@@ -42,7 +43,7 @@ export const JoinFarms = ({ positionId, poolId }: JoinFarmsProps) => {
         <ModalHeader title={t("joinFarms")} closable={false} />
         <ModalBody>
           <AvailableFarms farms={farms} />
-          <form autoComplete="off">
+          <form autoComplete="off" onSubmit={preventDefault}>
             <ModalContentDivider
               sx={{ mt: getTokenPx("containers.paddings.primary") }}
             />

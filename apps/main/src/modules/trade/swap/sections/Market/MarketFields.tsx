@@ -27,7 +27,8 @@ export const MarketFields: FC = () => {
   const navigate = useNavigate()
   const search = useSearch({ from: "/trade/_history" })
 
-  const { reset, getValues, setValue } = useFormContext<MarketFormValues>()
+  const { reset, getValues, setValue, trigger } =
+    useFormContext<MarketFormValues>()
 
   const switchAssets = useSwitchAssets()
   const calculateBuyAmount = useCalculateBuyAmount()
@@ -52,6 +53,8 @@ export const MarketFields: FC = () => {
         isSingleTrade: true,
         ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
       })
+
+      trigger()
     },
     RECALCULATE_DEBOUNCE_MS,
   )
@@ -71,6 +74,8 @@ export const MarketFields: FC = () => {
         isSingleTrade: true,
         ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
       })
+
+      trigger()
     },
     RECALCULATE_DEBOUNCE_MS,
   )

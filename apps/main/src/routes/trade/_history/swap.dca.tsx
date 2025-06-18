@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/trade/_history/swap/dca")({
-  component: RouteComponent,
-})
+import { Dca } from "@/modules/trade/swap/sections/DCA/Dca"
 
-function RouteComponent() {
-  return "N / A"
-}
+export const Route = createFileRoute("/trade/_history/swap/dca")({
+  component: Dca,
+})

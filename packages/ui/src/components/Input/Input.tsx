@@ -7,6 +7,7 @@ import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
   CustomInputProps & {
+    isError?: boolean
     iconStart?: React.ComponentType
     iconEnd?: React.ComponentType
     unit?: string

@@ -12,6 +12,8 @@ const requiredError = i18n.t("error.required")
 
 export const required = z.string().trim().min(1, requiredError)
 
+export const validNumber = z.number({ error: i18n.t("error.validNumber") })
+
 export const requiredObject = <T extends Record<string, unknown>>() =>
   z.custom<T | null>().check(
     z.refine((value) => value !== null, {
@@ -26,7 +28,7 @@ export const validWebsocketUrl = z
   .string()
   .refine((value) => WSS_REGEX.test(value), i18n.t("error.invalidWebsocketUrl"))
 
-export const validNumber = z.string().refine((value) => {
+export const validNumberBig = z.string().refine((value) => {
   try {
     new Big(value)
     return true
@@ -37,7 +39,7 @@ export const validNumber = z.string().refine((value) => {
 
 export const positive = z
   .string()
-  .pipe(validNumber)
+  .pipe(validNumberBig)
   .refine((value) => new Big(value || "0").gt(0), i18n.t("error.positive"))
 
 const maxBalanceError = i18n.t("error.maxBalance")

@@ -17,7 +17,9 @@ export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
   const { sdk } = useRpcProvider()
   const {
-    single: { swapSlippage },
+    swap: {
+      single: { swapSlippage },
+    },
   } = useTradeSettings()
 
   const { account } = useAccount()
@@ -33,38 +35,42 @@ export const useSubmitSwap = () => {
       const { sellAsset, buyAsset } = values
       const { amountIn, amountOut, type } = swap
 
-      if (!sellAsset || !buyAsset || !address) {
+      if (!address) {
         return
       }
+      const tx = await sdk.tx
+        .trade(swap)
+        .withSlippage(swapSlippage)
+        .withBeneficiary(address)
+        .build()
+
+      const sellDecimals = sellAsset?.decimals ?? 0
+      const sellSymbol = sellAsset?.symbol ?? ""
+      const buyDecimals = buyAsset?.decimals ?? 0
+      const buySymbol = buyAsset?.symbol ?? ""
 
       const params =
         type === TradeType.Sell
           ? {
               in: t("currency", {
-                value: scaleHuman(amountIn, sellAsset.decimals),
-                symbol: sellAsset.symbol,
+                value: scaleHuman(amountIn, sellDecimals),
+                symbol: sellSymbol,
               }),
               out: t("currency", {
-                value: scaleHuman(amountOut, buyAsset.decimals),
-                symbol: buyAsset.symbol,
+                value: scaleHuman(amountOut, buyDecimals),
+                symbol: buySymbol,
               }),
             }
           : {
               in: t("currency", {
-                value: scaleHuman(amountOut, buyAsset.decimals),
-                symbol: buyAsset.symbol,
+                value: scaleHuman(amountOut, buyDecimals),
+                symbol: buySymbol,
               }),
               out: t("currency", {
-                value: scaleHuman(amountIn, sellAsset.decimals),
-                symbol: sellAsset.symbol,
+                value: scaleHuman(amountIn, sellDecimals),
+                symbol: sellSymbol,
               }),
             }
-
-      const tx = await sdk.tx
-        .trade(swap)
-        .withSlippage(Number(swapSlippage))
-        .withBeneficiary(address)
-        .build()
 
       await createTransaction({
         tx: tx.get(),

@@ -83,6 +83,9 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
               timeframe: formatDistanceToNow(
                 Date.now() +
                   (blockTime.data ?? PARACHAIN_BLOCK_TIME) * twap.tradePeriod,
+                {
+                  includeSeconds: true,
+                },
               ),
             })}
             disabled={!!twap.errors.length}

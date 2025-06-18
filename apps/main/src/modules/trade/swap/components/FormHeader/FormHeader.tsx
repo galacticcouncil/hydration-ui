@@ -1,5 +1,5 @@
 import { Flex, Modal } from "@galacticcouncil/ui/components"
-import { Link, useSearch } from "@tanstack/react-router"
+import { Link, useMatchRoute, useSearch } from "@tanstack/react-router"
 import { Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -24,6 +24,10 @@ export const FormHeader = () => {
   const [openSettings, setOpenSettings] = useState(false)
 
   const search = useSearch({ from: "/trade/_history/swap" })
+  const matchRoute = useMatchRoute()
+  const hasSettings =
+    !!matchRoute({ to: "/trade/swap/market" }) ||
+    !!matchRoute({ to: "/trade/swap/dca" })
 
   return (
     <SFormHeader justify="space-between" align="center">
@@ -37,17 +41,21 @@ export const FormHeader = () => {
         ))}
       </Flex>
 
-      <SSettingsIcon
-        as="button"
-        aria-label="Settings"
-        size={20}
-        component={Settings}
-        onClick={() => setOpenSettings(true)}
-      />
+      {hasSettings && (
+        <>
+          <SSettingsIcon
+            as="button"
+            aria-label="Settings"
+            size={20}
+            component={Settings}
+            onClick={() => setOpenSettings(true)}
+          />
 
-      <Modal open={openSettings} onOpenChange={setOpenSettings}>
-        <SettingsModal />
-      </Modal>
+          <Modal open={openSettings} onOpenChange={setOpenSettings}>
+            <SettingsModal />
+          </Modal>
+        </>
+      )}
     </SFormHeader>
   )
 }

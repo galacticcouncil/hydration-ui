@@ -119,7 +119,7 @@ export const useOpenOrdersColumns = () => {
                 scheduleId={row.original.scheduleId}
                 sold={row.original.fromAmountExecuted}
                 total={row.original.fromAmountBudget}
-                symbol={row.original.to.symbol}
+                symbol={row.original.from.symbol}
                 onClose={() => setModal("none")}
               />
             </Modal>
