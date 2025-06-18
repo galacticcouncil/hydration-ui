@@ -56,13 +56,14 @@ export const useTokenBalance = (
   id: Maybe<string | u32>,
   address: Maybe<AccountId32 | string>,
 ) => {
-  const { balanceClient, isLoaded } = useRpcProvider()
+  const { sdk, isLoaded } = useRpcProvider()
+  const { client } = sdk
 
   const enabled = !!id && !!address && isLoaded
 
   return useQuery(
     QUERY_KEYS.tokenBalance(id, address),
-    enabled ? getTokenBalance(balanceClient, address, id) : undefinedNoop,
+    enabled ? getTokenBalance(client.balance, address, id) : undefinedNoop,
     { enabled },
   )
 }
@@ -72,7 +73,8 @@ export function useTokensBalances(
   address: Maybe<AccountId32 | string>,
   noRefresh?: boolean,
 ) {
-  const { balanceClient, isLoaded } = useRpcProvider()
+  const { sdk, isLoaded } = useRpcProvider()
+  const { client } = sdk
 
   return useQueries({
     queries: tokenIds.map((id) => ({
@@ -80,7 +82,7 @@ export function useTokensBalances(
         ? QUERY_KEYS.tokenBalance(id, address)
         : QUERY_KEYS.tokenBalanceLive(id, address),
       queryFn: address
-        ? getTokenBalance(balanceClient, address, id)
+        ? getTokenBalance(client.balance, address, id)
         : undefinedNoop,
       enabled: !!id && !!address && isLoaded,
     })),

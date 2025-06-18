@@ -1,5 +1,5 @@
 import styled from "@emotion/styled"
-import { Content } from "@radix-ui/react-tooltip"
+import { Content } from "@radix-ui/react-dropdown-menu"
 import { theme } from "theme"
 
 export const SCopyDropdownContent = styled(Content)`
