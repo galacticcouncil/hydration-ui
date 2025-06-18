@@ -4,7 +4,7 @@ import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary, Enum } from "polkadot-api"
 import { useMemo } from "react"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale } from "@/utils/formatting"

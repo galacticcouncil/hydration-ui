@@ -96,7 +96,7 @@ export type XYKPoolMeta = {
 }
 
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
-  const { assets, metadata } = useAssetRegistry()
+  const { assets } = useAssetRegistry()
   //const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
   //const degenMode = useSettingsStore.getState().degenMode
   //   const { tokens: externalTokens } =
@@ -116,7 +116,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     hub,
     tokens,
   } = useMemo(() => {
-    const chains = metadata.chainsMetadata?.items
     return assets.reduce<{
       all: Map<string, TAsset>
       tradable: TAsset[]
@@ -141,12 +140,6 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         }
 
         if (isToken(asset)) {
-          const chainSrc = chains?.find((item) =>
-            item.includes(`${asset.ecosystem}/${asset.parachainId}`),
-          )
-
-          asset.srcChain = chainSrc
-
           acc.tokens.push(asset)
         } else if (isStableSwap(asset)) {
           acc.stableswap.push(asset)
@@ -197,7 +190,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         hub: {} as TAsset,
       },
     )
-  }, [assets, metadata])
+  }, [assets])
 
   const getMetaFromXYKPoolTokens = useCallback(
     (tokens: PoolToken[]): XYKPoolMeta | null => {

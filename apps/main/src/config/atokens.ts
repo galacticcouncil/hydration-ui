@@ -38,6 +38,6 @@ export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP =
-  process.env.VITE_ENV === "production"
+  import.meta.env.VITE_ENV === "production"
     ? A_TOKEN_UNDERLYING_ID_MAP_MAINNET
     : A_TOKEN_UNDERLYING_ID_MAP_TESTNET

@@ -1,4 +1,4 @@
-import * as z from "zod"
+import * as z from "zod/v4"
 import { create } from "zustand"
 import { createJSONStorage, persist } from "zustand/middleware"
 

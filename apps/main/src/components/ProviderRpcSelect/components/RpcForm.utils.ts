@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import { PROVIDER_URLS } from "@/api/provider"
 import { useRpcListStore } from "@/states/provider"

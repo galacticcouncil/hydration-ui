@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"

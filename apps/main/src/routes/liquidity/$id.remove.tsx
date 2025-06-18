@@ -1,5 +1,5 @@
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
-import z from "zod"
+import z from "zod/v4"
 
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
 

@@ -5,49 +5,32 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { Box, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { openUrl } from "@galacticcouncil/utils"
-import { useCallback } from "react"
-import { countBy, pick, prop } from "remeda"
-import { useShallow } from "zustand/shallow"
 
 import {
   SAccountIndicator,
   SConnectionIndicator,
   SProviderButton,
-} from "@/components/Web3ConnectProviderButton.styled"
+} from "@/components/provider/ProviderButton.styled"
 import { EVM_PROVIDERS } from "@/config/providers"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
-import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { WalletData } from "@/types/wallet"
 
-export type Web3ConnectProviderButtonProps =
-  React.ButtonHTMLAttributes<HTMLButtonElement> & WalletData
+export type ProviderButtonProps = WalletData & {
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
+  isConnected?: boolean
+  accountCount?: number
+}
 
-export const Web3ConnectProviderButton: React.FC<
-  Web3ConnectProviderButtonProps
-> = ({ title, logo, installed, provider, installUrl, ...props }) => {
-  const { enable, disconnect } = useWeb3Enable()
-
-  const { getStatus, accounts } = useWeb3Connect(
-    useShallow(pick(["accounts", "getStatus"])),
-  )
-
-  const isConnected = getStatus(provider) === WalletProviderStatus.Connected
-
-  const accountsCount = countBy(accounts, prop("provider"))[provider] || 0
-
-  const onClick = useCallback(() => {
-    if (isConnected) {
-      disconnect(provider)
-    } else if (installed) {
-      enable(provider)
-    } else {
-      openUrl(installUrl)
-    }
-  }, [disconnect, enable, installUrl, installed, isConnected, provider])
-
+export const ProviderButton: React.FC<ProviderButtonProps> = ({
+  title,
+  logo,
+  installed,
+  provider,
+  onClick,
+  isConnected,
+  accountCount = 0,
+}) => {
   return (
-    <SProviderButton type="button" {...props} onClick={onClick}>
+    <SProviderButton type="button" onClick={onClick}>
       <Box sx={{ position: "relative" }}>
         <img width={32} height={32} src={logo} alt={title} />
         {EVM_PROVIDERS.includes(provider) && (
@@ -76,8 +59,8 @@ export const Web3ConnectProviderButton: React.FC<
         />
       </Flex>
       {isConnected && <SConnectionIndicator />}
-      {accountsCount > 0 && (
-        <SAccountIndicator>+{accountsCount}</SAccountIndicator>
+      {accountCount > 0 && (
+        <SAccountIndicator>+{accountCount}</SAccountIndicator>
       )}
     </SProviderButton>
   )

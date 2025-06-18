@@ -7,7 +7,7 @@ import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { FieldError } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import {
   useMaxAddLiquidityLimit,

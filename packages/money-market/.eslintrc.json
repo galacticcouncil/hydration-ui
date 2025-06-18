@@ -1,4 +1,7 @@
 {
-    "root": true,
-    "extends": ["@galacticcouncil/eslint-config/index.js"]
+  "root": true,
+  "extends": ["@galacticcouncil/eslint-config/index.js"],
+  "parserOptions": {
+    "project": "./tsconfig.json"
   }
+}

@@ -6,7 +6,7 @@ type Props = {
   readonly size?: number
 }
 
-export const Web3WalletLogo = ({ wallet, className, size = 32 }: Props) => {
+export const ProviderLogo = ({ wallet, className, size = 32 }: Props) => {
   return (
     <img
       className={className}

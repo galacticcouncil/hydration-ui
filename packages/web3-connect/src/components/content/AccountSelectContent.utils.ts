@@ -1,6 +1,8 @@
-import { arraySearch } from "@galacticcouncil/utils"
-import { filter, pipe, sortBy } from "remeda"
+import { isEvmAccount } from "@galacticcouncil/sdk"
+import { arraySearch, isSS58Address } from "@galacticcouncil/utils"
+import { pipe, sortBy } from "remeda"
 
+import { WalletProviderType } from "@/config/providers"
 import {
   Account,
   PROVIDERS_BY_WALLET_MODE,
@@ -29,9 +31,21 @@ export const searchAccounts = (phrase: string) => (accounts: Account[]) => {
 }
 
 export const filterAccounts = (mode: WalletMode) => (accounts: Account[]) => {
-  return filter(accounts, (account) =>
-    PROVIDERS_BY_WALLET_MODE[mode].includes(account.provider),
-  )
+  return accounts.filter((account) => {
+    if (account.provider !== WalletProviderType.ExternalWallet) {
+      return PROVIDERS_BY_WALLET_MODE[mode].includes(account.provider)
+    }
+
+    const isEvmAddress = isEvmAccount(account.address)
+    switch (mode) {
+      case WalletMode.EVM:
+        return isEvmAddress
+      case WalletMode.Substrate:
+        return !isEvmAddress && isSS58Address(account.address)
+      default:
+        return true
+    }
+  })
 }
 
 export const getFilteredAccounts = (

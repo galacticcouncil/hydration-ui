@@ -2,20 +2,23 @@ import { AccountAvatar, Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 
-import { SAccountItem } from "@/components/Web3ConnectAccount.styled"
-import { Web3WalletLogo } from "@/components/Web3WalletLogo"
+import {
+  SAccountOption,
+  SCopyButton,
+} from "@/components/account/AccountOption.styled"
+import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import { useAccount } from "@/hooks/useAccount"
 import { Account } from "@/hooks/useWeb3Connect"
 import { getAccountAvatarTheme } from "@/utils"
 import { getWallet } from "@/wallets"
 
-export type Web3ConnectAccountProps = Account & {
+export type AccountOptionProps = Account & {
   isProxy?: boolean
   balance?: string
   onSelect?: (account: Account) => void
 }
 
-export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
+export const AccountOption: React.FC<AccountOptionProps> = ({
   isProxy = false,
   onSelect,
   ...account
@@ -28,8 +31,7 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
     currentAccount?.provider === account.provider
 
   return (
-    <SAccountItem
-      type="button"
+    <SAccountOption
       data-active={isActive}
       data-proxy={isProxy}
       onClick={() => onSelect?.(account)}
@@ -41,23 +43,26 @@ export const Web3ConnectAccount: React.FC<Web3ConnectAccountProps> = ({
             theme={getAccountAvatarTheme(account)}
           />
         </Box>
-        <Flex direction="column" sx={{ minWidth: 0 }}>
+        <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
           <Flex align="center" gap={4}>
-            {wallet && <Web3WalletLogo size={12} wallet={wallet} />}
+            {wallet && <ProviderLogo size={12} wallet={wallet} />}
             <Text fs="p3" truncate>
               {account.name}
             </Text>
           </Flex>
-          <Text fs="p4" color={getToken("text.medium")}>
-            <Text as="span" display={["none", "block"]}>
-              {account.displayAddress}
+          <Flex align="center" justify="space-between" gap={4}>
+            <Text fs="p4" color={getToken("text.medium")}>
+              <Text as="span" display={["none", "block"]}>
+                {account.displayAddress}
+              </Text>
+              <Text as="span" display={["block", "none"]}>
+                {shortenAccountAddress(account.displayAddress, 12)}
+              </Text>
             </Text>
-            <Text as="span" display={["block", "none"]}>
-              {shortenAccountAddress(account.displayAddress, 12)}
-            </Text>
-          </Text>
+            <SCopyButton text={account.displayAddress} />
+          </Flex>
         </Flex>
       </Flex>
-    </SAccountItem>
+    </SAccountOption>
   )
 }

@@ -1,6 +1,6 @@
 import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"

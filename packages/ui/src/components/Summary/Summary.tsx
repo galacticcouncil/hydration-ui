@@ -1,7 +1,7 @@
 import { Stack, StackProps } from "@galacticcouncil/ui/components"
+import { ReactNode } from "react"
 
 import { RowModel, SummaryRow } from "./SummaryRow"
-import { ReactNode } from "react"
 
 type ContentProps =
   | {
