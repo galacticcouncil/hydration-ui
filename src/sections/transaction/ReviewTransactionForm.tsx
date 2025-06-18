@@ -119,6 +119,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     shouldUsePermit,
     permitNonce,
     pendingPermit,
+    txWeight,
   } = transactionValues.data
 
   const healthFactorFromMeta = useHealthFactorChangeFromTxMetadata(props.txMeta)
@@ -164,7 +165,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (wallet?.signer instanceof EthereumSigner) {
           const txData = tx.method.toHex()
-          const extraGas = isTxType(props.tx) ? props.tx.extraGas : undefined
+          const shouldAddTxWeight = isTxType(props.tx) && !!props.tx.extraGas
 
           if (shouldUsePermit) {
             const nonce = customNonce
@@ -172,7 +173,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
               : permitNonce ?? 0
             const permit = await wallet.signer.getPermit(txData, {
               nonce,
-              extraGas,
+              ...(shouldAddTxWeight && { txWeight }),
             })
 
             return props.onPermitDispatched({
@@ -182,7 +183,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
           const evmTx = await wallet.signer.sendDispatch(txData, {
             chain: props.xcallMeta?.srcChain,
-            extraGas,
+            ...(shouldAddTxWeight && { txWeight }),
             onNetworkSwitch: () => {
               queryClient.refetchQueries(
                 QUERY_KEYS.evmChainInfo(account?.displayAddress ?? ""),
