@@ -20,15 +20,17 @@ export const useSpotPrice = (
   assetA: Maybe<u32 | string>,
   assetB: Maybe<u32 | string>,
 ) => {
-  const { tradeRouter, isLoaded } = useRpcProvider()
+  const { sdk, isLoaded } = useRpcProvider()
   const tokenIn = assetA?.toString() ?? ""
   const tokenOut = assetB?.toString() ?? ""
 
-  const routerInitialized = Object.keys(tradeRouter).length > 0
+  const { api } = sdk
+
+  const routerInitialized = Object.keys(api.router).length > 0
 
   return useQuery(
     QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
-    getSpotPrice(tradeRouter, tokenIn, tokenOut),
+    getSpotPrice(api.router, tokenIn, tokenOut),
     {
       enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded,
       notifyOnChangeProps: TRACKED_PROPS,
@@ -38,7 +40,7 @@ export const useSpotPrice = (
 }
 
 export const usePriceSubscriber = () => {
-  const { isLoaded, tradeRouter, timestamp } = useRpcProvider()
+  const { isLoaded, sdk, timestamp } = useRpcProvider()
   const queryClient = useQueryClient()
   const setAssets = useDisplaySpotPriceStore(
     useShallow((state) => state.setAssets),
@@ -46,6 +48,8 @@ export const usePriceSubscriber = () => {
   const stableCoinId = useDisplayAssetStore(
     useShallow((state) => state.stableCoinId),
   )
+
+  const { api } = sdk
 
   return useQuery(
     [...QUERY_KEYS.displayPrices(stableCoinId), timestamp],
@@ -63,7 +67,7 @@ export const usePriceSubscriber = () => {
 
       const prices = await Promise.all(
         activeAssetsIds.map((assetId) =>
-          getSpotPrice(tradeRouter, assetId, stableCoinId ?? "")(),
+          getSpotPrice(api.router, assetId, stableCoinId ?? "")(),
         ),
       )
 
@@ -77,7 +81,7 @@ export const usePriceSubscriber = () => {
       return activeAssetsIds
     },
     {
-      enabled: isLoaded && !!stableCoinId && !!tradeRouter,
+      enabled: isLoaded && !!stableCoinId && !!api.router,
       notifyOnChangeProps: [],
       staleTime: 10000,
     },
@@ -122,14 +126,16 @@ export const usePriceKeys = (assetIds: string[]) => {
     useShallow((state) => state.setAssets),
   )
 
-  const { isLoaded, tradeRouter } = useRpcProvider()
+  const { isLoaded, sdk } = useRpcProvider()
+
+  const { api } = sdk
 
   useQueries({
     queries: assetIds.map((assetId) => ({
       queryKey: QUERY_KEYS.spotPriceKey(assetId),
       queryFn: async () => {
         const price = await getSpotPrice(
-          tradeRouter,
+          api.router,
           assetId,
           stableCoinId ?? "",
         )()

@@ -9,7 +9,7 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import BigNumber from "bignumber.js"
 import { Signature } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
-import { CALL_PERMIT_ADDRESS, DISPATCH_ADDRESS } from "utils/evm"
+import { CALL_PERMIT_ADDRESS, DISPATCH_ADDRESS, GAS_TO_WEIGHT } from "utils/evm"
 import {
   MetaMaskLikeProvider,
   isEthereumProvider,
@@ -17,6 +17,7 @@ import {
 } from "utils/metamask"
 import { sleep } from "utils/helpers"
 import { EvmChain } from "@galacticcouncil/xcm-core"
+import { BN_0 } from "utils/constants"
 
 type PermitMessage = {
   from: string
@@ -26,6 +27,13 @@ type PermitMessage = {
   gaslimit: number
   nonce: number
   deadline: number
+}
+
+type TxOptions = {
+  txWeight?: string
+  chain?: string
+  nonce?: number
+  onNetworkSwitch?: () => void
 }
 
 export type PermitResult = { signature: Signature; message: PermitMessage }
@@ -51,7 +59,7 @@ export class EthereumSigner {
     this.address = address
   }
 
-  async getGasValues(tx: TransactionRequest) {
+  async getGasValues(tx: TransactionRequest, txWeight?: string) {
     const [gas, gasPrice] = await Promise.all([
       this.signer.provider.estimateGas(tx),
       this.signer.provider.getGasPrice(),
@@ -60,15 +68,24 @@ export class EthereumSigner {
     const fivePrc = gasPrice.div(100).mul(5)
     const gasPricePlus = gasPrice.add(fivePrc)
 
+    let gasLimit = BN_0
+    if (txWeight) {
+      const weight2Gas = BigNumber(txWeight).div(GAS_TO_WEIGHT)
+      gasLimit = weight2Gas.times(11).div(10).decimalPlaces(0) // add 10%
+    } else {
+      gasLimit = BigNumber(gas.toString()).times(13).div(10).decimalPlaces(0) // add 30%
+    }
+
     return {
       gas,
+      gasLimit,
       gasPrice,
       maxPriorityFeePerGas: gasPricePlus,
       maxFeePerGas: gasPricePlus,
     }
   }
 
-  requestNetworkSwitch = async (chain: string) => {
+  requestNetworkSwitch = async (chain: string, onChange?: () => void) => {
     if (isEthereumProvider(this.provider)) {
       await requestNetworkSwitch(this.provider, {
         chain,
@@ -78,30 +95,28 @@ export class EthereumSigner {
       // some wallets like Coinbase dont reflect the change inside provider immediately
       await sleep(200)
       this.signer = this.getSigner(this.provider)
+      onChange?.()
     }
   }
 
-  sendDispatch = async (
-    data: string,
-    chain?: string,
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
+  sendDispatch = async (data: string, options: TxOptions = {}) => {
     return this.sendTransaction(
       {
         to: DISPATCH_ADDRESS,
         data,
         from: this.address,
-        chain,
       },
-      { onNetworkSwitch: options?.onNetworkSwitch },
+      options,
     )
   }
 
   getPermit = async (
     data: string | TransactionRequest,
-    nonce: number,
+    options: TxOptions = {},
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
+      const { nonce = 0, txWeight } = options
+
       await this.requestNetworkSwitch("hydration")
       const tx =
         typeof data === "string"
@@ -125,10 +140,9 @@ export class EthereumSigner {
 
       let gasLimit = BigNumber(0)
       if (tx.gasLimit) {
-        gasLimit = BigNumber(tx.gasLimit.toString())
+        gasLimit = BigNumber(tx.gasLimit.toString()).times(1.3).decimalPlaces(0)
       } else {
-        const { gas } = await this.getGasValues(tx)
-        gasLimit = BigNumber(gas.toString())
+        gasLimit = (await this.getGasValues(tx, txWeight)).gasLimit
       }
 
       const latestBlock = await this.signer.provider.getBlock("latest")
@@ -137,10 +151,7 @@ export class EthereumSigner {
         const message: PermitMessage = {
           ...tx,
           value: 0,
-          gaslimit: gasLimit
-            .multipliedBy(1.2) // add 20%
-            .decimalPlaces(0)
-            .toNumber(),
+          gaslimit: gasLimit.toNumber(),
           nonce,
           deadline: latestBlock.timestamp + 3600, // 1 hour deadline,
         }
@@ -240,11 +251,8 @@ export class EthereumSigner {
     throw new Error("Error signing transaction. Provider not found")
   }
 
-  sendTransaction = async (
-    transaction: TransactionRequest & { chain?: string },
-    options?: { onNetworkSwitch?: () => void },
-  ) => {
-    const { chain, ...tx } = transaction
+  sendTransaction = async (tx: TransactionRequest, options: TxOptions = {}) => {
+    const { chain, txWeight, nonce: customNonce } = options
     const from = chain && chainsMap.get(chain)?.isEvmChain ? chain : "hydration"
 
     const chainCfg = chainsMap.get(from) as EvmChain
@@ -252,18 +260,19 @@ export class EthereumSigner {
     await this.requestNetworkSwitch(from)
 
     const chainId = chainCfg.evmChain.id
-    const nonce = await this.signer.getTransactionCount()
+    const nonce = customNonce || (await this.signer.getTransactionCount())
 
     if (from === "hydration") {
-      const { gas, maxFeePerGas, maxPriorityFeePerGas } =
-        await this.getGasValues(tx)
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await this.getGasValues(tx, txWeight)
+
       return await this.signer.sendTransaction({
         chainId,
         nonce,
         value: 0,
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gas.mul(13).div(10), // add 30%
+        gasLimit: gasLimit.toString(),
         ...tx,
       })
     } else {

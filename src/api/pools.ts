@@ -14,16 +14,18 @@ import { setOmnipoolIds, setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
 
 export const useSDKPools = () => {
-  const { isLoaded, tradeRouter, timestamp } = useRpcProvider()
+  const { isLoaded, sdk, timestamp } = useRpcProvider()
   const queryClient = useQueryClient()
   const activeQueriesAmount = useActiveQueries(["pools"])
   const { data: whitelist, isSuccess: isWhitelistLoaded } =
     useExternalWhitelist()
 
+  const { api } = sdk
+
   return useQuery({
     queryKey: [...QUERY_KEYS.allPools, timestamp],
     queryFn: async () => {
-      const pools = await tradeRouter.getPools()
+      const pools = await api.router.getPools()
 
       const stablePools = pools.filter((pool) => pool.type === PoolType.Stable)
 

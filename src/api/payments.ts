@@ -32,14 +32,16 @@ export const getAcceptedCurrency = (api: ApiPromise) => async () => {
 }
 
 export const useAcceptedCurrencies = (ids: string[]) => {
-  const { api, isLoaded, tradeRouter, timestamp } = useRpcProvider()
+  const { api, isLoaded, sdk, timestamp } = useRpcProvider()
   const { native, getAsset } = useAssets()
+
+  const { api: sdkApi } = sdk
 
   return useQuery(
     [...QUERY_KEYS.acceptedCurrencies(ids), timestamp],
     async () => {
       const [pools, acceptedCurrency] = await Promise.all([
-        tradeRouter.getPools(),
+        sdkApi.router.getPools(),
         getAcceptedCurrency(api)(),
       ])
 

@@ -47,7 +47,9 @@ export const syncAssethubXcmConfig = (
 }
 
 export const useCrossChainWallet = () => {
-  const { poolService } = useRpcProvider()
+  const { sdk } = useRpcProvider()
+
+  const { ctx } = sdk
 
   return useMemo(() => {
     const configService = new HydrationConfigService({
@@ -67,13 +69,13 @@ export const useCrossChainWallet = () => {
     const assethubCex = configService.getChain("assethub_cex")
 
     wallet.registerDex(
-      new dex.HydrationDex(hydration, poolService),
+      new dex.HydrationDex(hydration, ctx.pool),
       new dex.AssethubDex(assethub),
       new dex.AssethubDex(assethubCex),
     )
 
     return wallet
-  }, [poolService])
+  }, [ctx.pool])
 }
 
 export const useCrossChainTransfer = (

@@ -31,7 +31,24 @@ import { useAccountAssets } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
 import BN from "bignumber.js"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { TradeMetadata, XcmMetadata } from "@galacticcouncil/apps"
+import { TradeMetadata, TxType, XcmMetadata } from "@galacticcouncil/apps"
+import { ApiPromise } from "@polkadot/api"
+
+export const isTxType = (
+  tx: SubmittableExtrinsic<"promise"> | TxType,
+): tx is TxType => {
+  return tx && "hex" in tx && "get" in tx && "dryRun" in tx
+}
+
+export const toSubmittableExtrinsic = (
+  api: ApiPromise,
+  tx: SubmittableExtrinsic<"promise"> | TxType,
+): SubmittableExtrinsic<"promise"> => {
+  if (isTxType(tx)) {
+    return api.tx(tx.hex)
+  }
+  return tx
+}
 
 export const useTransactionValues = ({
   xcallMeta,
@@ -132,6 +149,7 @@ export const useTransactionValues = ({
     bestNumber.data?.parachainBlockNumber.toString(),
   )
 
+  const txWeight = paymentInfo?.weight.refTime.toString()
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
   const paymentFeeHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
@@ -165,6 +183,7 @@ export const useTransactionValues = ({
         shouldUsePermit,
         permitNonce: permitNonce.data,
         pendingPermit,
+        txWeight,
       },
     }
 
@@ -247,6 +266,7 @@ export const useTransactionValues = ({
       shouldUsePermit,
       permitNonce: permitNonce.data,
       pendingPermit,
+      txWeight,
     },
   }
 }
