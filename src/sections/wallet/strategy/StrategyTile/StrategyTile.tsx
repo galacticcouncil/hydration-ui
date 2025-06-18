@@ -3,6 +3,7 @@ import { AssetOverview } from "sections/wallet/strategy/AssetOverview/AssetOverv
 import {
   StrategyTileSeparator,
   SStrategyTile,
+  StrategyTileVariant,
 } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
 import { NewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm"
 import { StrategyTileBackgroundEffect } from "sections/wallet/strategy/StrategyTileBackgroundEffect/StrategyTileBackgroundEffect"
@@ -24,13 +25,23 @@ import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDeposit
 type Props = {
   readonly assetId: string
   readonly underlyingAssetId: string
+  readonly emptyState: string
+  readonly riskTooltip: string
+  readonly variant: StrategyTileVariant
 }
 
-export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
+export const StrategyTile: FC<Props> = ({
+  assetId,
+  underlyingAssetId,
+  emptyState,
+  riskTooltip,
+  variant,
+}) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
-  const { data: defaultAssetId, isLoading } = useNewDepositDefaultAssetId()
+  const { data: defaultAssetId, isLoading } =
+    useNewDepositDefaultAssetId(underlyingAssetId)
   const { data: accountAssets } = useAccountAssets()
 
   const depositBalance = new BigNumber(
@@ -51,13 +62,14 @@ export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
       : null
 
   return (
-    <SStrategyTile>
-      <StrategyTileBackgroundEffect />
+    <SStrategyTile variant={variant}>
+      <StrategyTileBackgroundEffect variant={variant} />
       <div sx={{ flex: "column", gap: [20, 20, 35] }}>
         <AssetOverview
           assetId={assetId}
           underlyingAssetId={underlyingAssetId}
           riskLevel="lower"
+          riskTooltip={riskTooltip}
         />
         <Separator color="white" sx={{ opacity: 0.06 }} />
         {depositData ? (
@@ -66,19 +78,19 @@ export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
             depositData={depositData}
           />
         ) : (
-          <CurrentDepositEmptyState />
+          <CurrentDepositEmptyState emptyState={emptyState} />
         )}
       </div>
       <StrategyTileSeparator />
-      {!isLoading ? (
+      {isLoading ? (
+        <WalletStrategyFormSkeleton />
+      ) : (
         <NewDepositFormWrapper defaultAssetId={defaultAssetId}>
           <NewDepositForm
             assetId={underlyingAssetId}
             depositData={depositData}
           />
         </NewDepositFormWrapper>
-      ) : (
-        <WalletStrategyFormSkeleton />
       )}
     </SStrategyTile>
   )

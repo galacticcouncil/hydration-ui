@@ -15,12 +15,14 @@ type Props = {
   readonly assetId: string
   readonly underlyingAssetId: string
   readonly riskLevel: StrategyRiskLevel
+  readonly riskTooltip: string
 }
 
 export const AssetOverview: FC<Props> = ({
   assetId,
   underlyingAssetId,
   riskLevel,
+  riskTooltip,
 }) => {
   const { t } = useTranslation()
   const { totalSupplyApy, tvl } = useBorrowAssetApy(assetId)
@@ -47,9 +49,7 @@ export const AssetOverview: FC<Props> = ({
           variant={`risk:${riskLevel}`}
           label={`${t("risk")}:`}
           value={riskLevel}
-          icon={
-            <InfoTooltip text={t("wallet.strategy.risk.gigadot.tooltip")} />
-          }
+          icon={<InfoTooltip text={riskTooltip} />}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
