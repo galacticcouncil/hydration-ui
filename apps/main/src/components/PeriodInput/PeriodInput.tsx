@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import i18n from "@/i18n"
 import { validNumber } from "@/utils/validators"

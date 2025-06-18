@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import * as z from "zod"
+import { z } from "zod/v4"
 
 import { minimumOrderBudgetQuery } from "@/api/trade"
 import { periodInputSchema } from "@/components/PeriodInput/PeriodInput"
@@ -63,6 +63,7 @@ const useSchema = () => {
       }
 
       ctx.issues.push({
+        code: "custom",
         input: sellAmount,
         path: ["sellAmount" satisfies keyof DcaFormValues],
         message: t("error.minBudgetTooLow", {
