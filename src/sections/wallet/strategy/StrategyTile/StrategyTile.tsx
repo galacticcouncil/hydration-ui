@@ -30,7 +30,7 @@ export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
   const underlyingAsset = getAssetWithFallback(underlyingAssetId)
-  const defaultAssetId = useNewDepositDefaultAssetId()
+  const { data: defaultAssetId, isLoading } = useNewDepositDefaultAssetId()
   const { data: accountAssets } = useAccountAssets()
 
   const depositBalance = new BigNumber(
@@ -70,7 +70,7 @@ export const StrategyTile: FC<Props> = ({ assetId, underlyingAssetId }) => {
         )}
       </div>
       <StrategyTileSeparator />
-      {defaultAssetId ? (
+      {!isLoading ? (
         <NewDepositFormWrapper defaultAssetId={defaultAssetId}>
           <NewDepositForm
             assetId={underlyingAssetId}

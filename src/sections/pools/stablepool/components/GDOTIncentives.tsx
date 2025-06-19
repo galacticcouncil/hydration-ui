@@ -219,17 +219,16 @@ export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
           <>
             <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
             <APYRow id={VDOT_ASSET_ID} label={t("stakeApy")} value={vDotApy} />
-            {[...underlyingAssetsAPY].map(({ id, borrowApy, supplyApy }) => {
-              return (
-                <APYRow
-                  id={id}
-                  label={isSupply ? t("supplyApy") : t("borrowApy")}
-                  value={BN(isSupply ? supplyApy : borrowApy)
-                    .minus(id === VDOT_ASSET_ID ? vDotApy ?? 0 : 0)
-                    .toString()}
-                />
-              )
-            })}
+            {underlyingAssetsAPY.map(({ id, borrowApy, supplyApy }) => (
+              <APYRow
+                key={id}
+                id={id}
+                label={isSupply ? t("supplyApy") : t("borrowApy")}
+                value={BN(isSupply ? supplyApy : borrowApy)
+                  .minus(id === VDOT_ASSET_ID ? vDotApy ?? 0 : 0)
+                  .toString()}
+              />
+            ))}
           </>
         }
       />

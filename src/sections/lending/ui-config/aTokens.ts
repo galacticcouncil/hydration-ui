@@ -49,3 +49,7 @@ export const A_TOKEN_UNDERLYING_ID_MAP =
   import.meta.env.VITE_ENV === "production"
     ? A_TOKEN_UNDERLYING_ID_MAP_MAINNET
     : A_TOKEN_UNDERLYING_ID_MAP_TESTNET
+
+export const REVERSE_A_TOKEN_UNDERLYING_ID_MAP = Object.fromEntries(
+  Object.entries(A_TOKEN_UNDERLYING_ID_MAP).map(([key, value]) => [value, key]),
+)

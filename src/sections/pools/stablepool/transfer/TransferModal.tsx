@@ -50,12 +50,12 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
 
   const assetIds = Object.keys(pool.meta.meta ?? {})
 
-  const defaultAssetId = useNewDepositDefaultAssetId()
+  const { data: defaultAssetId } = useNewDepositDefaultAssetId(poolId)
 
   const { t } = useTranslation()
 
   const [assetId, setAssetId] = useState<string | undefined>(
-    isGigaDOT && defaultAssetId ? defaultAssetId : smallestPercentage?.assetId,
+    isGigaDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId,
   )
 
   const isOnlyStablepool = disabledOmnipool || !canAddLiquidity || isGETH

@@ -29,6 +29,18 @@ export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
 export type TSupplyAssetsRow = TSupplyAssetsTableData["data"][number]
 
+type TSupplyAsset = ComputedReserveData & {
+  reserve: ComputedReserveData
+  walletBalance: string
+  walletBalanceUSD: string
+  availableToDeposit: string
+
+  availableToDepositUSD: string
+
+  usageAsCollateralEnabledOnUser: boolean
+  detailsAddress: string
+}
+
 const { accessor, display } = createColumnHelper<TSupplyAssetsRow>()
 
 export const useSupplyAssetsTableColumns = () => {
@@ -193,67 +205,79 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   } = useAppDataContext()
   const { walletBalances, loading } = useWalletBalances(currentMarketData)
 
-  const data = useMemo(() => {
-    const tokensToSupply = reserves
+  const { gigaReserves, supplyReserves } = useMemo(() => {
+    const { tokensToSupply, gigaReserves } = reserves
       .filter(
         (reserve: ComputedReserveData) =>
-          !MONEY_MARKET_SUPPLY_BLACKLIST.includes(reserve.underlyingAsset) &&
           !displayGho({ currentMarket, symbol: reserve.symbol }) &&
           !(reserve.isFrozen || reserve.isPaused),
       )
-      .map((reserve: ComputedReserveData) => {
-        const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
-        const walletBalanceUSD =
-          walletBalances[reserve.underlyingAsset]?.amountUSD
-        let availableToDeposit = valueToBigNumber(walletBalance)
-        if (reserve.supplyCap !== "0") {
-          availableToDeposit = availableToDeposit.isNaN()
-            ? new BigNumber(0)
-            : BigNumber.min(
-                availableToDeposit,
-                new BigNumber(reserve.supplyCap)
-                  .minus(reserve.totalLiquidity)
-                  .multipliedBy("0.995"),
-              )
-        }
-        const availableToDepositUSD = valueToBigNumber(availableToDeposit)
-          .multipliedBy(reserve.priceInMarketReferenceCurrency)
-          .multipliedBy(marketReferencePriceInUsd)
-          .shiftedBy(-USD_DECIMALS)
-          .toString()
+      .reduce<{
+        tokensToSupply: TSupplyAsset[]
+        gigaReserves: ComputedReserveData[]
+      }>(
+        (acc, reserve: ComputedReserveData) => {
+          if (MONEY_MARKET_SUPPLY_BLACKLIST.includes(reserve.underlyingAsset)) {
+            acc.gigaReserves.push(reserve)
 
-        const isIsolated = reserve.isIsolated
-        const hasDifferentCollateral = user?.userReservesData.find(
-          (userRes) =>
-            userRes.usageAsCollateralEnabledOnUser &&
-            userRes.reserve.id !== reserve.id,
-        )
+            return acc
+          }
 
-        const usageAsCollateralEnabledOnUser = !user?.isInIsolationMode
-          ? reserve.reserveLiquidationThreshold !== "0" &&
-            (!isIsolated || (isIsolated && !hasDifferentCollateral))
-          : !isIsolated
-            ? false
-            : !hasDifferentCollateral
+          const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
+          const walletBalanceUSD =
+            walletBalances[reserve.underlyingAsset]?.amountUSD
+          let availableToDeposit = valueToBigNumber(walletBalance)
+          if (reserve.supplyCap !== "0") {
+            availableToDeposit = availableToDeposit.isNaN()
+              ? new BigNumber(0)
+              : BigNumber.min(
+                  availableToDeposit,
+                  new BigNumber(reserve.supplyCap)
+                    .minus(reserve.totalLiquidity)
+                    .multipliedBy("0.995"),
+                )
+          }
+          const availableToDepositUSD = valueToBigNumber(availableToDeposit)
+            .multipliedBy(reserve.priceInMarketReferenceCurrency)
+            .multipliedBy(marketReferencePriceInUsd)
+            .shiftedBy(-USD_DECIMALS)
+            .toString()
 
-        return {
-          ...reserve,
-          reserve,
-          walletBalance,
-          walletBalanceUSD,
-          availableToDeposit:
-            availableToDeposit.toNumber() <= 0
-              ? "0"
-              : availableToDeposit.toString(),
-          availableToDepositUSD:
-            Number(availableToDepositUSD) <= 0
-              ? "0"
-              : availableToDepositUSD.toString(),
-          usageAsCollateralEnabledOnUser,
-          detailsAddress: reserve.underlyingAsset,
-        }
-      })
-      .flat()
+          const isIsolated = reserve.isIsolated
+          const hasDifferentCollateral = user?.userReservesData.find(
+            (userRes) =>
+              userRes.usageAsCollateralEnabledOnUser &&
+              userRes.reserve.id !== reserve.id,
+          )
+
+          const usageAsCollateralEnabledOnUser = !user?.isInIsolationMode
+            ? reserve.reserveLiquidationThreshold !== "0" &&
+              (!isIsolated || (isIsolated && !hasDifferentCollateral))
+            : !isIsolated
+              ? false
+              : !hasDifferentCollateral
+
+          acc.tokensToSupply.push({
+            ...reserve,
+            reserve,
+            walletBalance,
+            walletBalanceUSD,
+            availableToDeposit:
+              availableToDeposit.toNumber() <= 0
+                ? "0"
+                : availableToDeposit.toString(),
+            availableToDepositUSD:
+              Number(availableToDepositUSD) <= 0
+                ? "0"
+                : availableToDepositUSD.toString(),
+            usageAsCollateralEnabledOnUser,
+            detailsAddress: reserve.underlyingAsset,
+          })
+
+          return acc
+        },
+        { tokensToSupply: [], gigaReserves: [] },
+      )
 
     const sortedSupplyReserves = tokensToSupply.sort((a, b) =>
       +a.walletBalanceUSD > +b.walletBalanceUSD ? -1 : 1,
@@ -269,7 +293,10 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
         ? filteredSupplyReserves
         : sortedSupplyReserves
 
-    return supplyReserves as DashboardReserve[]
+    return { supplyReserves, gigaReserves } as {
+      supplyReserves: DashboardReserve[]
+      gigaReserves: ComputedReserveData[]
+    }
   }, [
     currentMarket,
     displayGho,
@@ -284,7 +311,8 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   const isLoading = loadingReserves || loading
 
   return {
-    data,
+    data: supplyReserves,
+    gigaReserves,
     isLoading,
   }
 }

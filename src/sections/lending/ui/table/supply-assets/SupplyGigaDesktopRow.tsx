@@ -1,27 +1,26 @@
-import { Link, useNavigate } from "@tanstack/react-location"
+import { useNavigate } from "@tanstack/react-location"
 import { Button } from "components/Button/Button"
 import { TableCell } from "components/DataTable"
 import { Text } from "components/Typography/Text/Text"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
-import { TAsset } from "providers/assets"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
-import { SSupplyGigadotDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow.styled"
+import { SSupplyGigaDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigaRow.styled"
 import { getAddressFromAssetId } from "utils/evm"
-import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
+import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 type Props = {
-  readonly gigadot: TAsset
+  readonly reserve: ComputedReserveData
   readonly onOpenSupply: () => void
 }
 
 export const SupplyGigadotDesktopRow: FC<Props> = ({
-  gigadot,
+  reserve,
   onOpenSupply,
 }) => {
   const { t } = useTranslation()
@@ -32,11 +31,11 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
   return (
     <table sx={{ display: "block" }}>
       <tbody sx={{ display: "block" }}>
-        <SSupplyGigadotDesktopRow
+        <SSupplyGigaDesktopRow
           onClick={() =>
             navigate({
               to: ROUTES.reserveOverview(
-                getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
+                getAddressFromAssetId(reserve.underlyingAsset),
                 currentMarket,
               ),
             })
@@ -48,8 +47,9 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
             }}
           >
             <AssetNameColumn
-              detailsAddress={getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)}
-              symbol={gigadot.symbol}
+              detailsAddress={reserve.underlyingAsset}
+              symbol={reserve.symbol}
+              aToken
             />
           </TableCell>
           <TableCell>
@@ -71,17 +71,11 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
               >
                 {t("lending.supply")}
               </Button>
-              <Link
-                to={ROUTES.reserveOverview(
-                  getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
-                  currentMarket,
-                )}
-              >
-                <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
-              </Link>
+
+              <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
             </div>
           </TableCell>
-        </SSupplyGigadotDesktopRow>
+        </SSupplyGigaDesktopRow>
       </tbody>
     </table>
   )

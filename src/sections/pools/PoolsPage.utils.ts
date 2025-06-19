@@ -651,7 +651,6 @@ export const useStableSwapReserves = (poolId: string) => {
 
   const reserves = stablePoolBalance.map((token) => {
     const id = token.id
-    //const meta = getAssetWithFallback(id)
 
     return {
       asset_id: Number(id),
