@@ -472,8 +472,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
         const isWormhole = bridge?.includes("Wormhole")
         const isSnowbridge = bridge?.includes("Snowbridge")
 
-        const isEvm =
-          link.includes("evm") || link.includes("explorer.nice.hydration.cloud")
+        const isEvm = xcm === "evm"
 
         const isWormholeLink = link.includes("wormholescan")
 
@@ -541,7 +540,7 @@ export const useBridgeToast = (toasts: ToastData[]) => {
           // from hydration to eth (not supported by snowbridge indexer)
         } else if (isSnowbridge) {
           let hash =
-            link.includes("snowbridge") || (xcm === "evm" && !isHydraSource)
+            link.includes("snowbridge") || (isEvm && !isHydraSource)
               ? txHash
               : undefined
 
