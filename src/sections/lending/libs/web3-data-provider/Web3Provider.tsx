@@ -6,8 +6,7 @@ import {
   TransactionResponse,
   Web3Provider,
 } from "@ethersproject/providers"
-import { useWeb3React } from "@web3-react/core"
-import { constants, PopulatedTransaction, providers } from "ethers"
+import { constants, PopulatedTransaction } from "ethers"
 import React, {
   ReactElement,
   useCallback,
@@ -66,7 +65,6 @@ export type Web3Data = {
   ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
   signTxData: (unsignedData: string) => Promise<SignatureLike>
-  error: Error | undefined
   switchNetworkError: Error | undefined
   setSwitchNetworkError: (err: Error | undefined) => void
   readOnlyModeAddress: string | undefined
@@ -178,7 +176,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const evm = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
-  const { error } = useWeb3React<providers.Web3Provider>()
   const queryClient = useQueryClient()
 
   const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
@@ -416,7 +413,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           signTxData,
           currentAccount: address?.toLowerCase() || "",
           addERC20Token,
-          error,
           switchNetworkError,
           setSwitchNetworkError,
           readOnlyModeAddress: readOnlyMode
