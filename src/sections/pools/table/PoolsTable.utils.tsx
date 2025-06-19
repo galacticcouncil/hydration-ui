@@ -26,7 +26,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -500,11 +500,8 @@ export const usePoolTable = (
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
-                    {row.original.id === GDOT_STABLESWAP_ASSET_ID ? (
-                      <GigaAPY
-                        type="supply"
-                        assetId={GDOT_STABLESWAP_ASSET_ID}
-                      />
+                    {row.original.isGigaDOT || row.original.isGETH ? (
+                      <GigaAPY type="supply" assetId={row.original.poolId} />
                     ) : (
                       <APY
                         assetId={row.original.id}
