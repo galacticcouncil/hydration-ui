@@ -83,7 +83,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
   const goBack = () => {
     const nextPage = page - 1
 
-    if (nextPage === 0 && !canAddLiquidity) {
+    if (nextPage === 0 && isOnlyStablepool) {
       onClose()
     }
 
