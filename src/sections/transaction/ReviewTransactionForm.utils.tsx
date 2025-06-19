@@ -37,7 +37,7 @@ import { ApiPromise } from "@polkadot/api"
 export const isTxType = (
   tx: SubmittableExtrinsic<"promise"> | TxType,
 ): tx is TxType => {
-  return tx && "hex" in tx && "get" in tx && "dryRun" in tx
+  return tx && "hex" in tx && "get" in tx
 }
 
 export const toSubmittableExtrinsic = (
