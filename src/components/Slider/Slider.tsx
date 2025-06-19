@@ -9,8 +9,6 @@ import {
 } from "components/Slider/Slider.styled"
 import { theme } from "theme"
 
-const dashCount = 20
-
 export type GradientKey = keyof typeof theme.gradients
 export type ColorKey = keyof typeof theme.colors
 
@@ -22,6 +20,7 @@ export type SliderProps = {
   step: number
   disabled?: boolean
   color?: GradientKey | ColorKey
+  dashCount?: number
 }
 
 export const Slider: FC<SliderProps> = ({
@@ -32,6 +31,7 @@ export const Slider: FC<SliderProps> = ({
   onChange,
   disabled,
   color = "brightBlue600",
+  dashCount = 20,
 }) => {
   const [rootWidth, setRootWidth] = useState(0)
   const rootRef = useRef<HTMLSpanElement>(null)
@@ -52,7 +52,7 @@ export const Slider: FC<SliderProps> = ({
           />
         </Fragment>
       )),
-    [rootWidth],
+    [dashCount, rootWidth],
   )
 
   useLayoutEffect(() => {
