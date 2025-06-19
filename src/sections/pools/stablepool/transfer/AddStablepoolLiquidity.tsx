@@ -43,6 +43,7 @@ import { useBestTradeSell } from "api/trade"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useSpotPrice } from "api/spotPrice"
 import { useStableswapPool } from "api/stableswap"
+import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 
 type Props = {
   asset: TAsset
@@ -298,8 +299,12 @@ export const AddStablepoolLiquidity = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        {isGigaDOT ? (
-          <GigaDotSummary selectedAsset={asset} minAmountOut={minAmountOut} />
+        {isGigaDOT || isGETH ? (
+          <GigaDotSummary
+            selectedAsset={asset}
+            minAmountOut={minAmountOut}
+            poolId={poolId}
+          />
         ) : (
           <Summary
             rows={[
@@ -383,15 +388,18 @@ const FeeRow = ({ poolId }: { poolId: string }) => {
 const GigaDotSummary = ({
   selectedAsset,
   minAmountOut,
+  poolId,
 }: {
   selectedAsset: TAsset
   minAmountOut: string
+  poolId: string
 }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
-  const gigaDotMeta = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
-  const { data } = useSpotPrice(GDOT_ERC20_ASSET_ID, selectedAsset.id)
+  const aTokenId = REVERSE_A_TOKEN_UNDERLYING_ID_MAP[poolId]
+  const meta = getAssetWithFallback(aTokenId)
+  const { data } = useSpotPrice(aTokenId, selectedAsset.id)
 
   return (
     <Summary
@@ -399,9 +407,9 @@ const GigaDotSummary = ({
         {
           label: t("liquidity.stablepool.add.minimalReceived"),
           content: t("value.tokenWithSymbol", {
-            value: BN(minAmountOut).shiftedBy(-gigaDotMeta.decimals),
+            value: BN(minAmountOut).shiftedBy(-meta.decimals),
             type: "token",
-            symbol: gigaDotMeta?.name ?? "GIGADOT",
+            symbol: meta.name,
           }),
         },
         {
@@ -413,7 +421,7 @@ const GigaDotSummary = ({
                 i18nKey="liquidity.add.modal.row.spotPrice"
                 tOptions={{
                   firstAmount: 1,
-                  firstCurrency: gigaDotMeta.symbol,
+                  firstCurrency: meta.symbol,
                 }}
               >
                 {t("value.tokenWithSymbol", {
