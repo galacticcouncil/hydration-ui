@@ -25,12 +25,13 @@ export const useSpotPrice = (
   const tokenOut = assetB?.toString() ?? ""
 
   const { api } = sdk
+  const router = api?.router ?? {}
 
-  const routerInitialized = Object.keys(api.router).length > 0
+  const routerInitialized = Object.keys(router).length > 0
 
   return useQuery(
     QUERY_KEYS.spotPriceLive(tokenIn, tokenOut),
-    getSpotPrice(api.router, tokenIn, tokenOut),
+    getSpotPrice(router, tokenIn, tokenOut),
     {
       enabled: !!tokenIn && !!tokenOut && routerInitialized && isLoaded,
       notifyOnChangeProps: TRACKED_PROPS,
