@@ -42,7 +42,7 @@ import {
 import { PoolContext } from "sections/pools/pool/Pool"
 import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
+import { GigaAPY } from "sections/pools/stablepool/components/GigaIncentives"
 
 const NonClickableContainer = ({
   children,
@@ -501,7 +501,10 @@ export const usePoolTable = (
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
                     {row.original.id === GDOT_STABLESWAP_ASSET_ID ? (
-                      <GDOTAPY type="supply" />
+                      <GigaAPY
+                        type="supply"
+                        assetId={GDOT_STABLESWAP_ASSET_ID}
+                      />
                     ) : (
                       <APY
                         assetId={row.original.id}

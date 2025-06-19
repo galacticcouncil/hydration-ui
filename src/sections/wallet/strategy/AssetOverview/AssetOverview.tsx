@@ -9,7 +9,7 @@ import {
   AssetOverviewTileValue,
 } from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 
 type Props = {
   readonly assetId: string

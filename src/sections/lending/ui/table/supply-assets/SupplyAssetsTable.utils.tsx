@@ -22,7 +22,7 @@ import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData

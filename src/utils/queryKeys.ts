@@ -341,6 +341,7 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  lidoEthAPR: ["lidoEthAPR"],
   borrowUserSummary: (address: string) => [
     QUERY_KEY_PREFIX,
     "borrowUserSummary",

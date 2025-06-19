@@ -6,13 +6,16 @@ import BN from "bignumber.js"
 import i18n from "i18next"
 import {
   DOT_ASSET_ID,
+  ETH_ASSET_ID,
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
   VDOT_ASSET_ID,
+  WSTETH_ASSET_ID,
 } from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
-import { SContainer, SIncentiveRow } from "./GDOTIncentives.styled"
+import { SContainer, SIncentiveRow } from "./GigaIncentives.styled"
 import { ReactNode } from "react"
 import { useBorrowAssetApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
@@ -21,7 +24,7 @@ import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 
-export const GDOTIncentives = () => {
+export const GigaIncentives = ({ id }: { id: string }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
@@ -43,7 +46,7 @@ export const GDOTIncentives = () => {
             {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
           </Text>
         </div>
-        <GDOTAPY withLabel type="supply" />
+        <GigaAPY withLabel type="supply" assetId={id} />
       </SContainer>
     </>
   )
@@ -96,18 +99,26 @@ type APYProps = {
   readonly withLabel?: boolean
   readonly size?: ResponsiveValue<number>
   readonly color?: ResponsiveValue<keyof typeof theme.colors>
+  readonly assetId: string
 }
 
-export const GDOTAPY = ({ withLabel, type, color, size }: APYProps) => {
+export const GigaAPY = ({
+  withLabel,
+  type,
+  color,
+  assetId,
+  size,
+}: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
+
   const {
     totalSupplyApy,
     totalBorrowApy,
     lpAPY,
     underlyingAssetsAPY,
     incentives,
-  } = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
+  } = useBorrowAssetApy(assetId)
 
   const isSupply = type === "supply"
   const apy = isSupply ? totalSupplyApy : totalBorrowApy
@@ -189,6 +200,8 @@ export const GDOTAPY = ({ withLabel, type, color, size }: APYProps) => {
 const gDotSummary: ApySummary = {
   [DOT_ASSET_ID]: i18n.t("supplyApy"),
   [VDOT_ASSET_ID]: i18n.t("stakeApy"),
+  [ETH_ASSET_ID]: i18n.t("supplyApy"),
+  [WSTETH_ASSET_ID]: i18n.t("stakeApy"),
 }
 
 export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
@@ -244,7 +257,9 @@ type OverrideApyProps = APYProps & {
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (props.assetId) {
     case GDOT_STABLESWAP_ASSET_ID:
-      return props.type === "supply" ? <GDOTAPY {...props} /> : children
+      return props.type === "supply" ? <GigaAPY {...props} /> : children
+    case GETH_STABLESWAP_ASSET_ID:
+      return props.type === "supply" ? <GigaAPY {...props} /> : children
     case VDOT_ASSET_ID:
       return <VDOTAPY {...props} />
     default:

@@ -32,7 +32,7 @@ import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarm
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
-import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
+import { GigaIncentives } from "sections/pools/stablepool/components/GigaIncentives"
 import { useStableswapPool } from "api/stableswap"
 
 export const PoolDetails = () => {
@@ -261,7 +261,7 @@ export const PoolDetails = () => {
                   sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
                 />
 
-                <GDOTIncentives />
+                <GigaIncentives id={pool.poolId} />
               </>
             )}
           </>

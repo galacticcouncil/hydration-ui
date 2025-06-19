@@ -6,8 +6,9 @@ import { useTranslation } from "react-i18next"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { getSupplyGigaRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigaRow.styled"
-import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
+import { GigaAPY } from "sections/pools/stablepool/components/GigaIncentives"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { getAssetIdFromAddress } from "utils/evm"
 
 const columnHelper = createColumnHelper<{}>()
 
@@ -23,6 +24,8 @@ export const SupplyGigadotMobileRow: FC<Props> = ({
   const { t } = useTranslation()
   const { account } = useAccount()
 
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
+
   const table = useReactTable({
     data: useMemo(() => [{}], []),
     columns: useMemo(
@@ -34,12 +37,10 @@ export const SupplyGigadotMobileRow: FC<Props> = ({
               textAlign: "center",
             },
           },
-          cell: () => {
-            return <GDOTAPY type="supply" />
-          },
+          cell: () => <GigaAPY type="supply" assetId={assetId} />,
         }),
       ],
-      [t],
+      [t, assetId],
     ),
   })
 

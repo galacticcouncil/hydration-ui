@@ -33,10 +33,11 @@ import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
-import { VDOT_ASSET_ID } from "utils/constants"
+import { VDOT_ASSET_ID, WSTETH_ASSET_ID } from "utils/constants"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import { useStablepoolFees } from "./stableswap"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
+import { useLIDOEthAPR } from "./external/ethereum"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -490,8 +491,14 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     [asset, assetId],
   )
 
+  const isGETH = assetIds.includes(WSTETH_ASSET_ID)
+
   const { data: vDotApy } = useBifrostVDotApy({
     enabled: assetIds.includes(VDOT_ASSET_ID),
+  })
+
+  const { data: ethApr } = useLIDOEthAPR({
+    enabled: isGETH,
   })
 
   const { data: stablepoolFees } = useStablepoolFees(
@@ -561,6 +568,14 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
       }
     })
 
+    if (isGETH) {
+      underlyingAssetsAPY.push({
+        id: WSTETH_ASSET_ID,
+        supplyApy: ethApr ?? 0,
+        borrowApy: ethApr ?? 0,
+      })
+    }
+
     const supplyAPYSum = underlyingAssetsAPY.reduce(
       (a, b) => a + b.supplyApy,
       0,
@@ -588,6 +603,8 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     reserves,
     vDotApy?.apy,
     stablepoolFee,
+    ethApr,
+    isGETH,
   ])
 
   return {
