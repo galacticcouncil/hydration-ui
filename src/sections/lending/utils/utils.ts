@@ -7,6 +7,8 @@ import {
 import BigNumber from "bignumber.js"
 import { Provider } from "@ethersproject/providers"
 import { theme } from "theme"
+import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { getAddressFromAssetId } from "utils/evm"
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
@@ -143,4 +145,13 @@ export const wssToHttps = (url: string) => {
   if (url.includes("ws://")) return url.replace("ws://", "http://")
 
   return url.replace("wss://", "https://")
+}
+
+export const getReserveByAssetId = (
+  reserves: ComputedReserveData[],
+  assetId: string,
+): ComputedReserveData | undefined => {
+  return reserves.find(
+    (reserve) => reserve.underlyingAsset === getAddressFromAssetId(assetId),
+  )
 }
