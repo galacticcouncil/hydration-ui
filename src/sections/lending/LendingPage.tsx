@@ -3,7 +3,7 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { LendingPageProviders } from "sections/lending/providers/LendingPageProviders"
 import { LendingDashboardSkeleton } from "sections/lending/skeleton/LendingDashboardSkeleton"
-import { useMarketChangeSubscription } from "sections/lending/utils/marketsAndNetworksConfig"
+import { useMoneyMarketInit } from "sections/lending/utils/marketsAndNetworksConfig"
 import { LINKS } from "utils/navigation"
 
 export const LendingPageIndex = () => {
@@ -32,7 +32,11 @@ export const LendingPageOutlet = () => {
 }
 
 export const LendingPage = () => {
-  useMarketChangeSubscription()
+  const { isLoading } = useMoneyMarketInit()
+
+  if (isLoading) {
+    return <LendingDashboardSkeleton />
+  }
 
   return (
     <LendingPageProviders>

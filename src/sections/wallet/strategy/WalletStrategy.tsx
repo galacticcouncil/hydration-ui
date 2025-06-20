@@ -4,7 +4,7 @@ import { WalletStrategyHeader } from "sections/wallet/strategy/WalletStrategyHea
 import { WalletStrategyProviders } from "sections/wallet/strategy/WalletStrategy.providers"
 import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
 import { StrategyTile } from "sections/wallet/strategy/StrategyTile/StrategyTile"
-import { useMarketChangeSubscription } from "sections/lending/utils/marketsAndNetworksConfig"
+import { useMoneyMarketInit } from "sections/lending/utils/marketsAndNetworksConfig"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
 import { useGigadotAssetIds } from "sections/wallet/strategy/WalletStrategy.utils"
 
@@ -18,9 +18,9 @@ export const WalletStrategy: FC = () => {
   const { assetId, underlyingAssetId } = useGigadotAssetIds()
   const { isLoaded, featureFlags } = useRpcProvider()
 
-  useMarketChangeSubscription()
+  const { isLoading: isMoneyMarketLoading } = useMoneyMarketInit()
 
-  if (!isLoaded) {
+  if (!isLoaded || isMoneyMarketLoading) {
     return <WalletStrategySkeleton />
   }
 

@@ -25,12 +25,14 @@ type Props = {
   readonly assetId: string
   readonly balance: string
   readonly onClose: () => void
+  readonly onSuccess?: () => void
 }
 
 export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
   onClose,
+  onSuccess,
 }) => {
   const { createTransaction } = useStore()
   const { tradable, getAssetWithFallback } = useAssets()
@@ -69,6 +71,7 @@ export const RemoveDepositModal: FC<Props> = ({
     createTransaction(
       { tx: swapTx },
       {
+        onSuccess,
         toast: createToastMessages("wallet.strategy.remove.toast", {
           t,
           tOptions: {
