@@ -20,11 +20,9 @@ import {
   getFunctionDefsFromAbi,
   hexToAscii,
 } from "sections/lending/utils/utils"
-import { useQueryClient } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import {
   useAccount,
   useEnableWallet,
@@ -40,6 +38,7 @@ import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { decodeEvmCall } from "sections/transaction/ReviewTransactionData.utils"
 import { PoolReserve } from "sections/lending/store/poolSlice"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 
 export type ERC20TokenType = {
   address: string
@@ -176,10 +175,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const evm = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
-  const queryClient = useQueryClient()
-
-  const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
-    useBackgroundDataProvider()
+  const refetchMarketData = useRefetchMarketData()
+  const { poolData } = useBackgroundDataProvider()
 
   const accountAddress = account?.address ?? ""
 
@@ -229,12 +226,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       const txOptions: TransactionOptions = {
         toast,
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-          refetchPoolData?.()
-          refetchIncentiveData?.()
-          refetchGhoData?.()
-        },
+        onSuccess: refetchMarketData,
       }
 
       if (!provider) {
@@ -275,17 +267,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       return {} as TransactionResponse
     },
-    [
-      api,
-      createTransaction,
-      poolData,
-      provider,
-      queryClient,
-      refetchGhoData,
-      refetchIncentiveData,
-      refetchPoolData,
-      t,
-    ],
+    [api.tx.evm, createTransaction, poolData, provider, refetchMarketData, t],
   )
 
   // TODO: recheck that it works on all wallets
