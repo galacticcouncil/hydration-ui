@@ -11,7 +11,7 @@ import { DynamicFee } from "@/components/DynamicFee"
 import {
   TradeRoute,
   TradeRoutes,
-} from "@/modules/trade/swap/components/TradeRoutes"
+} from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import {
   MarketFormValues,
   TradeOrderType,

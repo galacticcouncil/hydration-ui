@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
-import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes"
+import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import {
   MarketFormValues,
   TradeType,

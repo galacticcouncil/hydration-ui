@@ -17,6 +17,7 @@ export const ChartCrosshair: React.FC<ChartCrosshairProps> = ({
         fs="p5"
         color={getToken("text.low")}
         fw={500}
+        lh={1.2}
         whiteSpace="nowrap"
       >
         {date}
@@ -26,6 +27,7 @@ export const ChartCrosshair: React.FC<ChartCrosshairProps> = ({
         fs="p3"
         color={getToken("text.medium")}
         fw={500}
+        lh={1}
         whiteSpace="nowrap"
       >
         {time}

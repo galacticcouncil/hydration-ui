@@ -3,7 +3,7 @@ import { Outlet } from "@tanstack/react-router"
 
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
 import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart"
+import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 
 import { SContainer } from "./SwapPage.styled"
 
