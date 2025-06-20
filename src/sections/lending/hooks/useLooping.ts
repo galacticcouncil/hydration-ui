@@ -2,20 +2,21 @@ import { InterestRate } from "@aave/contract-helpers"
 
 import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { Trade } from "@galacticcouncil/sdk"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { getMinAmountOut } from "api/trade"
 import BigNumber from "bignumber.js"
 import { PopulatedTransaction } from "ethers"
 import { useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 import { useRootStore } from "sections/lending/store/root"
-import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import { getReserveByAssetId } from "sections/lending/utils/utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
+import { BN_0 } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 type BatchItem =
@@ -41,6 +42,8 @@ type LoopingOptions = {
   enabled: boolean
 }
 
+type LoopingStep = { supply: BigNumber; borrow: BigNumber }
+
 export const useLooping = (
   { amount, multiplier, supplyAssetId, borrowAssetId, aTokenId }: LoopingProps,
   options: LoopingOptions,
@@ -51,39 +54,72 @@ export const useLooping = (
   const { api, sdk } = useRpcProvider()
   const { reserves } = useAppDataContext()
   const { getAsset } = useAssets()
+  const { user } = useAppDataContext()
+  const refetchMarketData = useRefetchMarketData()
   const [borrow, estimateGasLimit] = useRootStore((state) => [
     state.borrow,
     state.estimateGasLimit,
   ])
-  const queryClient = useQueryClient()
-  const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
-    useBackgroundDataProvider()
 
   const borrowReserve = getReserveByAssetId(reserves, borrowAssetId)
   const supplyReserve = getReserveByAssetId(reserves, supplyAssetId)
   const aToken = getAsset(aTokenId)
 
-  const { data: batch, isLoading: isLoadingBatch } = useQuery({
+  const { data, isLoading: isLoadingBatch } = useQuery({
     enabled: options.enabled && !!borrowReserve && !!supplyReserve && !!aToken,
+    keepPreviousData: true,
     queryKey: QUERY_KEYS.moneyMarketLooping(amount, multiplier),
     queryFn: async () => {
       if (!borrowReserve) throw new Error("Borrow reserve not found")
       if (!supplyReserve) throw new Error("Supply reserve not found")
       if (!aToken) throw new Error("aToken not found")
 
+      const { userEmodeCategoryId } = user
+
+      const isInEmode = supplyReserve.eModeCategoryId === userEmodeCategoryId
+
       const steps = getLoopingSteps({
-        initialAmount: BigNumber(amount).toNumber(),
-        loops: multiplier,
-        ltv: Number(supplyReserve.formattedEModeLtv),
+        initialAmount: amount,
+        multiplier,
+        ltv: isInEmode
+          ? supplyReserve.formattedEModeLtv
+          : supplyReserve.formattedBaseLTVasCollateral,
       })
 
-      const txs: BatchItem[] = []
+      const stepsHumanizted = steps.map((step) => ({
+        borrow: step.borrow.toNumber(),
+        supply: step.supply.toNumber(),
+      }))
 
-      for (const [index, amount] of steps.entries()) {
-        // Skip borrowing on first step
-        if (index !== 0) {
+      console.table({
+        ...Object.fromEntries(
+          stepsHumanizted.map((user, i) => [
+            `Step ${i + 1}${i === 3 ? " (Target supply adjustment)" : ""}${i === 4 ? " (Squeeze HF)" : ""}`,
+            user,
+          ]),
+        ),
+        [String.fromCharCode(160)]: {
+          borrow: "👇",
+          supply: "👇",
+        },
+        Total: {
+          borrow: steps
+            .reduce((acc, curr) => acc.plus(curr.borrow), BN_0)
+            .toNumber(),
+          supply: steps
+            .reduce((acc, curr) => acc.plus(curr.supply), BN_0)
+            .toNumber(),
+        },
+      })
+
+      const batch: BatchItem[] = []
+
+      for (const step of steps) {
+        const { supply: supplyAmount, borrow: borrowAmount } = step
+
+        if (borrowAmount.gt(0)) {
           const tx = borrow({
-            amount: BigNumber(amount)
+            amount: BigNumber(borrowAmount)
               .shiftedBy(borrowReserve.decimals)
               .multipliedBy(0.99)
               .toFixed(0),
@@ -92,30 +128,46 @@ export const useLooping = (
             debtTokenAddress: borrowReserve.variableDebtTokenAddress,
           })
           const data = await estimateGasLimit(tx)
-          txs.push({
+          batch.push({
             type: "evm",
             data,
           })
         }
 
-        const sell = await sdk.api.router.getBestSell(
-          borrowAssetId,
-          aToken.id,
-          amount,
-        )
-        txs.push({
-          type: "trade",
-          data: sell,
-        })
+        if (supplyAmount.gt(0)) {
+          const sell = await sdk.api.router.getBestSell(
+            borrowAssetId,
+            aToken.id,
+            supplyAmount,
+          )
+          batch.push({
+            type: "trade",
+            data: sell,
+          })
+        }
       }
 
-      return txs
+      const amountOut = batch.reduce((acc, curr) => {
+        if (curr.type === "trade") {
+          return acc.plus(curr.data.amountOut)
+        }
+        return acc
+      }, BN_0)
+
+      const minAmountOut = getMinAmountOut(
+        amountOut.toString(),
+        TradeConfigCursor.deref().slippage ?? "0",
+      )
+
+      return { batch, minAmountOut }
     },
   })
 
-  const { mutate: submitLooping, isLoading: isSubmitting } = useMutation(
+  const { mutate: createLoopingTx, isLoading: isSubmitting } = useMutation(
     async () => {
-      if (!batch || !account) return
+      if (!data || !account) return
+
+      const { batch } = data
 
       const extrinsicBatch = batch.map(async (item) => {
         if (item.type === "trade") {
@@ -159,12 +211,7 @@ export const useLooping = (
           }),
           rejectOnClose: true,
           onSubmitted: options.onSubmitted,
-          onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-            refetchPoolData?.()
-            refetchIncentiveData?.()
-            refetchGhoData?.()
-          },
+          onSuccess: refetchMarketData,
         },
       )
     },
@@ -174,25 +221,49 @@ export const useLooping = (
 
   return {
     isLoading,
-    submitLooping,
+    createLoopingTx,
+    minAmountOut: data?.minAmountOut || "0",
   }
 }
 
 function getLoopingSteps({
   initialAmount,
+  multiplier,
   ltv,
-  loops,
 }: {
-  initialAmount: number
-  loops: number
-  ltv: number
-}): number[] {
-  return Array.from({ length: loops }).reduce<number[]>(
+  initialAmount: string
+  multiplier: number
+  ltv: string
+}): LoopingStep[] {
+  const amount = new BigNumber(initialAmount)
+
+  const steps = Array.from({ length: multiplier - 1 }).reduce<LoopingStep[]>(
     (acc) => {
       const prev = acc[acc.length - 1]
-      const next = prev * ltv
-      return [...acc, next]
+      const supply = prev.supply.times(ltv)
+      const borrow = supply
+      return [...acc, { supply, borrow }]
     },
-    [initialAmount],
+    [{ supply: amount, borrow: new BigNumber(0) }],
   )
+
+  const targetTotalSupply = amount.times(multiplier)
+  const accumulatedSupply = steps.reduce(
+    (sum, step) => sum.plus(step.supply),
+    new BigNumber(0),
+  )
+
+  // adjustment to reach the target total supply
+  const adjustmentStep: LoopingStep = {
+    supply: targetTotalSupply.minus(accumulatedSupply),
+    borrow: steps[steps.length - 1].supply.times(ltv),
+  }
+
+  // final step to squeeze Health Factor with some safety margin
+  const squeezeStep: LoopingStep = {
+    supply: BN_0,
+    borrow: adjustmentStep.supply.times(ltv).times(0.9),
+  }
+
+  return [...steps, adjustmentStep, squeezeStep]
 }

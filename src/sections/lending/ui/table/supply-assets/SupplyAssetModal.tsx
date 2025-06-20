@@ -60,7 +60,7 @@ export const SupplyAssetModal: FC<Props> = ({
 
   const allowedAssets = useNewDepositAssets(assetsBlacklist)
   const {
-    minAmountOut,
+    minAmountOut: minDepositedAmountOut,
     submit,
     healthFactorChange,
     underlyingReserve,
@@ -77,7 +77,11 @@ export const SupplyAssetModal: FC<Props> = ({
   const supplyAssetId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
   const aTokenId = assetId
 
-  const { submitLooping, isLoading: isLoopingLoading } = useLooping(
+  const {
+    createLoopingTx,
+    isLoading: isLoopingLoading,
+    minAmountOut: minLoopedAmountOut,
+  } = useLooping(
     {
       amount,
       multiplier: loopingMultiplier,
@@ -90,6 +94,10 @@ export const SupplyAssetModal: FC<Props> = ({
       onSubmitted: onClose,
     },
   )
+
+  const minAmountOut = isLoopingEnabled
+    ? minLoopedAmountOut
+    : minDepositedAmountOut
 
   return (
     <ModalContents
@@ -165,11 +173,14 @@ export const SupplyAssetModal: FC<Props> = ({
                       <Button
                         type="button"
                         variant="primary"
-                        onClick={() => submitLooping?.()}
+                        onClick={() => createLoopingTx?.()}
                         disabled={isLoopingLoading}
                         isLoading={isLoopingLoading}
                       >
-                        Loop {loopingMultiplier}x
+                        {t("lending.looping.cta.title", {
+                          symbol: asset.symbol,
+                          multiplier: loopingMultiplier,
+                        })}
                       </Button>
                     ) : (
                       <Button

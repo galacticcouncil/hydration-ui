@@ -1267,6 +1267,7 @@
   "lending.looping.toast.onSuccess": "Looped <0>{{ value, bignumber(type: token) }} {{ symbol }}</0>",
   "lending.looping.switch.title": "Enable looping",
   "lending.looping.slider.title": "Looping multiplier",
+  "lending.looping.cta.title": "Loop {{ symbol }} {{ multiplier }}x",
   "migration.export.title": "HydraDX is now Hydration",
   "migration.export.description": "As part of the rebranding, this app has moved to app.hydration.net.",
   "migration.export.question": "Would you like to migrate all past app settings to the new app?",
