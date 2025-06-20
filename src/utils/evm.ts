@@ -105,7 +105,7 @@ export function getEvmTxLink(
   if (chain.isEvmChain()) {
     const isApproveTx = txData?.startsWith("0x095ea7b3")
 
-    if (tags === "Wormhole" && !isApproveTx) {
+    if (tags?.includes("Wormhole") && !isApproveTx) {
       return `https://wormholescan.io/#/tx/${txHash}`
     }
 
