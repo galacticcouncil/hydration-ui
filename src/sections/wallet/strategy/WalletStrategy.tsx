@@ -7,6 +7,9 @@ import { StrategyTile } from "sections/wallet/strategy/StrategyTile/StrategyTile
 import { useMarketChangeSubscription } from "sections/lending/utils/marketsAndNetworksConfig"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
 import { useGigadotAssetIds } from "sections/wallet/strategy/WalletStrategy.utils"
+import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useTranslation } from "react-i18next"
+import { StrategyTileVariant } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
 
 const GigadotAnswers = lazy(async () => ({
   default: (
@@ -15,7 +18,8 @@ const GigadotAnswers = lazy(async () => ({
 }))
 
 export const WalletStrategy: FC = () => {
-  const { assetId, underlyingAssetId } = useGigadotAssetIds()
+  const { t } = useTranslation()
+  const { gdotAssetId, underlyingGdotAssetId } = useGigadotAssetIds()
   const { isLoaded, featureFlags } = useRpcProvider()
 
   useMarketChangeSubscription()
@@ -30,7 +34,20 @@ export const WalletStrategy: FC = () => {
     <WalletStrategyProviders>
       <SWalletStrategy>
         <WalletStrategyHeader />
-        <StrategyTile assetId={assetId} underlyingAssetId={underlyingAssetId} />
+        <StrategyTile
+          assetId={gdotAssetId}
+          underlyingAssetId={underlyingGdotAssetId}
+          emptyState={t("wallet.strategy.gigadot.emptyState")}
+          riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
+          variant={StrategyTileVariant.One}
+        />
+        <StrategyTile
+          assetId={GETH_STABLESWAP_ASSET_ID}
+          underlyingAssetId={GETH_ERC20_ASSET_ID}
+          emptyState={t("wallet.strategy.gigaeth.emptyState")}
+          riskTooltip={t("wallet.strategy.gigaeth.risk.tooltip")}
+          variant={StrategyTileVariant.Two}
+        />
         <GigadotAnswers />
       </SWalletStrategy>
     </WalletStrategyProviders>

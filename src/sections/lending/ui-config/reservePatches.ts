@@ -18,6 +18,11 @@ const underlyingAssetMap: Record<string, IconMapInterface> = {
     symbol: "GDOT",
     iconSymbol: "GDOT",
   },
+  "0x0000000000000000000000000000000100001068": {
+    name: "GIGAETH",
+    symbol: "GETH",
+    iconSymbol: "GETH",
+  },
 }
 
 export function fetchIconSymbolAndName({

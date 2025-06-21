@@ -12,11 +12,12 @@ export const NewDepositAssetSelector: FC<Props> = ({
   allowedAssets,
   onClose,
 }) => {
-  const { setValue } = useFormContext<NewDepositFormValues>()
+  const { setValue, getValues } = useFormContext<NewDepositFormValues>()
 
   return (
     <AssetsModalContent
       allowedAssets={allowedAssets}
+      defaultSelectedAsssetId={getValues("asset")?.id}
       allAssets
       hideInactiveAssets
       onSelect={(asset) => {

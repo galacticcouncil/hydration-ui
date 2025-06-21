@@ -1,4 +1,4 @@
-import { TPoolFullData } from "sections/pools/PoolsPage.utils"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { useTranslation } from "react-i18next"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useState } from "react"
@@ -15,6 +15,8 @@ import { Text } from "components/Typography/Text/Text"
 import { Spinner } from "components/Spinner/Spinner"
 import { TLPData } from "utils/omnipool"
 import { useRefetchAccountAssets } from "api/deposits"
+import { useStableswapPool } from "api/stableswap"
+import { BN_MILL } from "utils/constants"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -28,7 +30,7 @@ type RemoveStableSwapAssetProps = {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
-  pool: TPoolFullData
+  pool: TStablepool
   position?: TLPData | TLPData[]
 }
 
@@ -42,6 +44,7 @@ export const RemoveLiquidityModal = ({
   const stableSwapMeta = pool.meta
   const assets = Object.keys(stableSwapMeta.meta ?? {})
   const refetch = useRefetchAccountAssets()
+  const { data } = useStableswapPool(pool.id)
 
   const isRemovingOmnipoolPosition = !!position
 
@@ -84,8 +87,9 @@ export const RemoveLiquidityModal = ({
 
   const canGoBack =
     isRemovingOmnipoolPosition || page === RemoveStablepoolLiquidityPage.ASSETS
+  const stablepoolFee = BN(data?.fee.toString() ?? 0).div(BN_MILL)
 
-  if (!assetId || !pool.stablepoolFee || !assets.length) return null
+  if (!assetId || !assets.length) return null
 
   return (
     <Modal
@@ -208,7 +212,7 @@ export const RemoveLiquidityModal = ({
                 onClose={onClose}
                 position={{
                   reserves: pool.reserves,
-                  fee: pool.stablepoolFee,
+                  fee: stablepoolFee,
                   poolId: pool.id,
                   amount:
                     isRemovingOmnipoolPosition && !removeAll

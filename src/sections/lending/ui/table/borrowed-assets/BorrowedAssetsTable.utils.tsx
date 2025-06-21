@@ -14,7 +14,7 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 
 export type TBorrowedAssetsTable = typeof useBorrowedAssetsTableData

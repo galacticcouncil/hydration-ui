@@ -8,6 +8,7 @@ import { maxBalance } from "utils/validators"
 
 type SchemaOptions = {
   maxBalance: string
+  assetReceiveId?: string
 }
 
 const createSchema = (options: SchemaOptions) => {
@@ -22,7 +23,7 @@ export type RemoveDepositFormValues = z.infer<ReturnType<typeof createSchema>>
 export const useRemoveDepositForm = (options: SchemaOptions) => {
   const { getAsset } = useAssets()
   const defaultValues: RemoveDepositFormValues = {
-    assetReceived: getAsset(DOT_ASSET_ID) ?? null,
+    assetReceived: getAsset(options.assetReceiveId ?? DOT_ASSET_ID) ?? null,
     amount: "",
   }
 

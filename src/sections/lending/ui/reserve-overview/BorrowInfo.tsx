@@ -17,7 +17,7 @@ import {
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 
 interface BorrowInfoProps {
