@@ -29,7 +29,7 @@ export const RemoveLiquidity = ({
 
   const isXyk = isXYKPoolType(pool)
 
-  if (isStablepoolType(pool)) {
+  if (isStablepoolType(pool) && !pool.isGETH) {
     return (
       <RemoveStablepoolLiquidityModal
         isOpen={isOpen}

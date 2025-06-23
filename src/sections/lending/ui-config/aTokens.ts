@@ -19,7 +19,7 @@ export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
   //GDOT
   "690": "69",
   //GETH
-  "420": "420",
+  "420": "4200",
   //aETH
   "1007": "34",
 }

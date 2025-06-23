@@ -11,9 +11,13 @@ import { BasicModal } from "sections/lending/components/primitives/BasicModal"
 import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import {
+  GDOT_STABLESWAP_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
+} from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
@@ -36,14 +40,19 @@ export const WithdrawModal = () => {
   const fallbackWithdraw =
     isBorrowing && reserveAssetsCount + borrowAssetsCount > 3
 
-  if (assetId === GDOT_STABLESWAP_ASSET_ID && !fallbackWithdraw) {
+  if (
+    (assetId === GDOT_STABLESWAP_ASSET_ID ||
+      assetId === GETH_STABLESWAP_ASSET_ID) &&
+    !fallbackWithdraw
+  ) {
     const userReserve = user?.userReservesData.find((userReserve) => {
       return args.underlyingAsset === userReserve?.underlyingAsset
     })
+
     return (
       <BasicModal open={type === ModalType.Withdraw} setOpen={close}>
         <RemoveDepositModal
-          assetId={GDOT_ERC20_ASSET_ID}
+          assetId={REVERSE_A_TOKEN_UNDERLYING_ID_MAP[assetId]}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
         />

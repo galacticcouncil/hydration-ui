@@ -45,7 +45,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
           sx={{ height: ["auto", "auto"], p: [12, 20] }}
           css={{ background: "transparent" }}
         >
-          {!isGigaDOT && (
+          {!(isGigaDOT || isGETH) && (
             <div
               sx={{
                 flex: "row",

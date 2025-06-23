@@ -33,6 +33,10 @@ import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection
 import { useRefetchAccountAssets } from "api/deposits"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { useAssetsPrice } from "state/displayPrice"
+import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 
 type Props = {
   assetId: string
@@ -59,6 +63,9 @@ export const AddLiquidityForm = ({
   const { createTransaction } = useStore()
   const isFarms = farms.length > 0
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
   const refetchAccountAssets = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
 
@@ -86,13 +93,25 @@ export const AddLiquidityForm = ({
     isGETH,
   } = useAddLiquidity(assetId, debouncedAmount)
 
+  const hfChange = useHealthFactorChange({
+    assetId,
+    amount: debouncedAmount,
+    action: ProtocolAction.withdraw,
+  })
+
+  const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
+
   const estimatedFees = useEstimatedFees(
     getAddToOmnipoolFee(api, isJoinFarms, farms),
   )
 
   const balance = assetBalance?.balance ?? "0"
-  const balanceMax =
-    estimatedFees.accountCurrencyId === assetMeta.id
+  const balanceMax = isGETH
+    ? BN.min(
+        BN(maxBalanceToWithdraw).shiftedBy(assetMeta.decimals),
+        balance,
+      ).toString()
+    : estimatedFees.accountCurrencyId === assetMeta.id
       ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(assetMeta.existentialDeposit)
@@ -115,7 +134,6 @@ export const AddLiquidityForm = ({
           ]),
           assetId,
           amount,
-          //@ts-ignore
           shares,
         )
       : api.tx.omnipool.addLiquidityWithLimit(assetId, amount, shares)
@@ -181,6 +199,10 @@ export const AddLiquidityForm = ({
         (key) => key !== "farm",
       ).length
 
+  const isHFDisabled = isGETH
+    ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
+    : false
+
   useEffect(() => {
     if (!isFarms) return
     if (isJoinFarmDisabled) {
@@ -215,7 +237,7 @@ export const AddLiquidityForm = ({
               onBlur={onChange}
               onChange={onChange}
               asset={assetId}
-              balance={BN(balance)}
+              balance={BN(balanceMax)}
               balanceMax={BN(balanceMax)}
               error={error?.message}
               onAssetOpen={onAssetOpen}
@@ -309,6 +331,27 @@ export const AddLiquidityForm = ({
             },
           ]}
         />
+
+        {hfChange && (
+          <>
+            <SummaryRow
+              label={t("healthFactor")}
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+            />
+            <HealthFactorRiskWarning
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+              sx={{ mb: 16 }}
+            />
+          </>
+        )}
+
         <Text color="warningOrange200" fs={14} fw={400} sx={{ my: 20 }}>
           {t("liquidity.add.modal.warning")}
         </Text>
@@ -334,7 +377,7 @@ export const AddLiquidityForm = ({
           width: "auto",
         }}
       />
-      <Button variant="primary" disabled={isSubmitDisabled}>
+      <Button variant="primary" disabled={isSubmitDisabled || isHFDisabled}>
         {isJoinFarms
           ? t("liquidity.add.modal.button.joinFarms")
           : t("liquidity.add.modal.confirmButton")}

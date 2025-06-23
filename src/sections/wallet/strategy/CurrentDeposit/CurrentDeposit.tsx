@@ -6,6 +6,7 @@ import { useAssets } from "providers/assets"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Reward } from "sections/lending/helpers/types"
+import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
@@ -13,6 +14,7 @@ import { CurrentDepositClaimReward } from "sections/wallet/strategy/CurrentDepos
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
+import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
 
 export type CurrentDepositData = {
   readonly depositBalance: string
@@ -39,6 +41,12 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
   const depositValue = new BigNumber(spotPrice)
     .times(depositData.depositBalance || "0")
     .toString()
+
+  const isGETH = assetId && assetId === GETH_ERC20_ASSET_ID
+
+  const { data: gethReserves } = useStableSwapReserves(
+    isGETH ? GETH_STABLESWAP_ASSET_ID : "",
+  )
 
   const isAccountBindingRequired = !isLoadingEvmAccount && !isBound
 
@@ -75,6 +83,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
           assetId={assetId}
           balance={depositData.depositBalance}
           onClose={() => setIsRemoveModalOpen(false)}
+          assetReceiveId={gethReserves.biggestPercentage?.assetId}
         />
       </Modal>
     </SCurrentDeposit>
