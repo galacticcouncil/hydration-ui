@@ -6,10 +6,14 @@ import { useMutation, useQuery } from "@tanstack/react-query"
 import { getMinAmountOut } from "api/trade"
 import BigNumber from "bignumber.js"
 import { PopulatedTransaction } from "ethers"
-import { useAssets } from "providers/assets"
+import i18n from "i18n/i18n"
+import { TAsset, useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import {
+  ComputedReserveData,
+  useAppDataContext,
+} from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 import { useRootStore } from "sections/lending/store/root"
 import { getReserveByAssetId } from "sections/lending/utils/utils"
@@ -17,6 +21,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { BN_0 } from "utils/constants"
+import { H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 type BatchItem =
@@ -34,7 +39,9 @@ type LoopingProps = {
   multiplier: number
   borrowAssetId: string
   supplyAssetId: string
-  aTokenId: string
+  assetInId: string
+  assetOutId: string
+  withEmode: boolean
 }
 
 type LoopingOptions = {
@@ -45,7 +52,15 @@ type LoopingOptions = {
 type LoopingStep = { supply: BigNumber; borrow: BigNumber }
 
 export const useLooping = (
-  { amount, multiplier, supplyAssetId, borrowAssetId, aTokenId }: LoopingProps,
+  {
+    amount,
+    multiplier,
+    supplyAssetId,
+    borrowAssetId,
+    assetInId,
+    assetOutId,
+    withEmode,
+  }: LoopingProps,
   options: LoopingOptions,
 ) => {
   const { t } = useTranslation()
@@ -56,63 +71,85 @@ export const useLooping = (
   const { getAsset } = useAssets()
   const { user } = useAppDataContext()
   const refetchMarketData = useRefetchMarketData()
-  const [borrow, estimateGasLimit] = useRootStore((state) => [
-    state.borrow,
-    state.estimateGasLimit,
-  ])
+  const [borrow, estimateGasLimit, getPool, currentMarketData] = useRootStore(
+    (state) => [
+      state.borrow,
+      state.estimateGasLimit,
+      state.getCorrectPool,
+      state.currentMarketData,
+    ],
+  )
+
+  const assetIn = getAsset(assetInId)
+  const assetOut = getAsset(assetOutId)
 
   const borrowReserve = getReserveByAssetId(reserves, borrowAssetId)
   const supplyReserve = getReserveByAssetId(reserves, supplyAssetId)
-  const aToken = getAsset(aTokenId)
 
   const { data, isLoading: isLoadingBatch } = useQuery({
-    enabled: options.enabled && !!borrowReserve && !!supplyReserve && !!aToken,
+    enabled:
+      options.enabled && !!borrowReserve && !!supplyReserve && !!assetOut,
     keepPreviousData: true,
-    queryKey: QUERY_KEYS.moneyMarketLooping(amount, multiplier),
+    queryKey: QUERY_KEYS.moneyMarketLooping(
+      assetInId,
+      assetOutId,
+      supplyAssetId,
+      borrowAssetId,
+      amount,
+      multiplier,
+      withEmode,
+    ),
     queryFn: async () => {
+      if (!account) throw new Error("Account not connected")
+      if (!assetIn || !assetOut) throw new Error("Assets not found")
       if (!borrowReserve) throw new Error("Borrow reserve not found")
       if (!supplyReserve) throw new Error("Supply reserve not found")
-      if (!aToken) throw new Error("aToken not found")
 
       const { userEmodeCategoryId } = user
+      const isInEmode = userEmodeCategoryId === supplyReserve.eModeCategoryId
 
-      const isInEmode = supplyReserve.eModeCategoryId === userEmodeCategoryId
-
-      const steps = getLoopingSteps({
+      const loopingSteps = getLoopingSteps({
         initialAmount: amount,
         multiplier,
-        ltv: isInEmode
-          ? supplyReserve.formattedEModeLtv
-          : supplyReserve.formattedBaseLTVasCollateral,
+        ltv:
+          isInEmode || withEmode
+            ? supplyReserve.formattedEModeLtv
+            : supplyReserve.formattedBaseLTVasCollateral,
       })
 
-      const stepsHumanizted = steps.map((step) => ({
-        borrow: step.borrow.toNumber(),
-        supply: step.supply.toNumber(),
+      const spotPrice = await sdk.api.router.getBestSpotPrice(
+        assetInId,
+        borrowAssetId,
+      )
+
+      const formattedSpotPrice = spotPrice
+        ? spotPrice.amount.shiftedBy(-spotPrice.decimals).toString()
+        : "1"
+
+      const steps = loopingSteps.map((step) => ({
+        borrow: step.borrow.times(formattedSpotPrice),
+        supply: step.supply,
       }))
 
-      console.table({
-        ...Object.fromEntries(
-          stepsHumanizted.map((user, i) => [
-            `Step ${i + 1}${i === 3 ? " (Target supply adjustment)" : ""}${i === 4 ? " (Squeeze HF)" : ""}`,
-            user,
-          ]),
-        ),
-        [String.fromCharCode(160)]: {
-          borrow: "👇",
-          supply: "👇",
-        },
-        Total: {
-          borrow: steps
-            .reduce((acc, curr) => acc.plus(curr.borrow), BN_0)
-            .toNumber(),
-          supply: steps
-            .reduce((acc, curr) => acc.plus(curr.supply), BN_0)
-            .toNumber(),
-        },
-      })
+      printSteps(steps, borrowReserve, assetIn)
 
       const batch: BatchItem[] = []
+
+      if (withEmode && !isInEmode) {
+        const pool = getPool().getContractInstance(
+          currentMarketData.addresses.LENDING_POOL,
+        )
+        const tx = await pool.populateTransaction.setUserEMode(
+          supplyReserve.eModeCategoryId,
+        )
+        batch.push({
+          type: "evm",
+          data: {
+            from: H160.fromSS58(account.address),
+            ...(await estimateGasLimit(tx)),
+          },
+        })
+      }
 
       for (const step of steps) {
         const { supply: supplyAmount, borrow: borrowAmount } = step
@@ -127,17 +164,16 @@ export const useLooping = (
             interestRateMode: InterestRate.Variable,
             debtTokenAddress: borrowReserve.variableDebtTokenAddress,
           })
-          const data = await estimateGasLimit(tx)
           batch.push({
             type: "evm",
-            data,
+            data: await estimateGasLimit(tx),
           })
         }
 
         if (supplyAmount.gt(0)) {
           const sell = await sdk.api.router.getBestSell(
-            borrowAssetId,
-            aToken.id,
+            assetIn.id,
+            assetOut.id,
             supplyAmount,
           )
           batch.push({
@@ -163,7 +199,7 @@ export const useLooping = (
     },
   })
 
-  const { mutate: createLoopingTx, isLoading: isSubmitting } = useMutation(
+  const { mutate: submitLooping, isLoading: isSubmitting } = useMutation(
     async () => {
       if (!data || !account) return
 
@@ -204,7 +240,7 @@ export const useLooping = (
           toast: createToastMessages("lending.looping.toast", {
             t,
             tOptions: {
-              symbol: aToken?.symbol,
+              symbol: assetOut?.symbol,
               value: amount,
             },
             components: ["span.highlight"],
@@ -221,7 +257,7 @@ export const useLooping = (
 
   return {
     isLoading,
-    createLoopingTx,
+    submitLooping,
     minAmountOut: data?.minAmountOut || "0",
   }
 }
@@ -266,4 +302,46 @@ function getLoopingSteps({
   }
 
   return [...steps, adjustmentStep, squeezeStep]
+}
+
+function printSteps(
+  steps: LoopingStep[],
+  borrowReserve: ComputedReserveData,
+  assetIn: TAsset,
+) {
+  const stepsHumanizted = steps.map((step) => ({
+    borrow: i18n.t("value.tokenWithSymbol", {
+      value: step.borrow,
+      symbol: borrowReserve.symbol,
+    }),
+    supply: i18n.t("value.tokenWithSymbol", {
+      value: step.supply,
+      symbol: assetIn.symbol,
+    }),
+  }))
+
+  const adjustmentIndex = stepsHumanizted.length - 2
+  const squeezeIndex = stepsHumanizted.length - 1
+  console.table({
+    ...Object.fromEntries(
+      stepsHumanizted.map((user, i) => [
+        `Step ${i + 1}${i === adjustmentIndex ? " (Target supply adjustment)" : ""}${i === squeezeIndex ? " (Squeeze HF)" : ""}`,
+        user,
+      ]),
+    ),
+    [String.fromCharCode(160)]: {
+      borrow: "👇",
+      supply: "👇",
+    },
+    Total: {
+      borrow: i18n.t("value.tokenWithSymbol", {
+        value: steps.reduce((acc, curr) => acc.plus(curr.borrow), BN_0),
+        symbol: borrowReserve.symbol,
+      }),
+      supply: i18n.t("value.tokenWithSymbol", {
+        value: steps.reduce((acc, curr) => acc.plus(curr.supply), BN_0),
+        symbol: assetIn.symbol,
+      }),
+    },
+  })
 }

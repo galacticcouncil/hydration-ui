@@ -19,7 +19,7 @@ import {
   isTestnetRpcUrl,
   useProviderRpcUrlStore,
 } from "api/provider"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRootStore } from "sections/lending/store/root"
 import { useRpcProvider } from "providers/rpcProvider"
 
@@ -134,15 +134,14 @@ export const getProvider = (_chainId: ChainId): Provider => {
 
 export const useMoneyMarketInit = () => {
   const { isLoaded, evm, dataEnv } = useRpcProvider()
-  const [setProvider, setCurrentMarket] = useRootStore((state) => [
+  const [provider, setProvider, setCurrentMarket] = useRootStore((state) => [
+    state.provider,
     state.setProvider,
     state.setCurrentMarket,
   ])
 
-  const [isLoading, setIsLoading] = useState(true)
-
   useEffect(() => {
-    setIsLoading(true)
+    setProvider(null)
     if (isLoaded && evm) {
       setCurrentMarket(
         dataEnv === "mainnet"
@@ -150,11 +149,10 @@ export const useMoneyMarketInit = () => {
           : CustomMarket.hydration_testnet_v3,
       )
       setProvider(evm)
-      setIsLoading(false)
     }
   }, [dataEnv, evm, isLoaded, setCurrentMarket, setProvider])
 
-  return { isLoading }
+  return { isLoading: !isLoaded || !provider }
 }
 
 export { CustomMarket }

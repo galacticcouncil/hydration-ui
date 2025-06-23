@@ -379,10 +379,23 @@ export const QUERY_KEYS = {
     pagination.pageSize,
     pagination.pageIndex,
   ],
-  moneyMarketLooping: (amount: string, multiplier: number) => [
+  moneyMarketLooping: (
+    assetInId: string,
+    assetOutId: string,
+    supplyAssetId: string,
+    borrowAssetId: string,
+    amount: string,
+    multiplier: number,
+    withEmode: boolean,
+  ) => [
     "moneyMarketLooping",
+    assetInId,
+    assetOutId,
+    supplyAssetId,
+    borrowAssetId,
     amount,
     multiplier,
+    withEmode,
   ],
   swapAssetFees: (period: string) => ["swapAssetFees", period],
   bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [

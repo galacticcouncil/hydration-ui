@@ -50,11 +50,11 @@ export const STrack = styled(Track)`
   border-radius: 9999px;
 `
 
-export const SThumb = styled(Thumb)`
+export const SThumb = styled(Thumb)<{ size: number }>`
   all: unset;
   display: block;
-  width: 40px;
-  height: 40px;
+  width: ${({ size }) => size}px;
+  height: ${({ size }) => size}px;
 
   background: rgba(146, 209, 247, 0.2);
   border-radius: 50%;
@@ -69,8 +69,8 @@ export const SThumb = styled(Thumb)`
 
     border-radius: 50%;
 
-    width: 20px;
-    height: 20px;
+    width: ${({ size }) => size / 2}px;
+    height: ${({ size }) => size / 2}px;
 
     background: ${theme.colors.brightBlue200};
 
@@ -103,8 +103,30 @@ export const SDash = styled.div<{
   ${({ row }) => (row === "top" ? `top: 0;` : `bottom: 0;`)};
   ${({ offset }) => `left: ${offset}px;`};
 
-  height: 3px;
+  height: 5px;
   width: 1px;
 
-  background-color: rgba(150, 138, 158, 0.24);
+  color: ${theme.colors.darkBlue300};
+  font-size: 11px;
+
+  background-color: ${theme.colors.darkBlue400};
+`
+
+export const SDashLabel = styled.span<{
+  offset: number
+}>`
+  display: block;
+
+  position: absolute;
+  top: 26px;
+
+  font-size: 11px;
+  color: ${theme.colors.darkBlue300};
+  text-align: center;
+
+  ${({ offset }) => `left: ${offset}px;`};
+
+  &:not(&:first-of-type) {
+    transform: translateX(-50%);
+  }
 `

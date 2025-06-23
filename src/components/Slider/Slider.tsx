@@ -1,7 +1,16 @@
-import { FC, Fragment, useLayoutEffect, useMemo, useRef, useState } from "react"
+import {
+  FC,
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import { Range } from "@radix-ui/react-slider"
 import {
   SDash,
+  SDashLabel,
   SRange,
   SRoot,
   SThumb,
@@ -12,6 +21,8 @@ import { theme } from "theme"
 export type GradientKey = keyof typeof theme.gradients
 export type ColorKey = keyof typeof theme.colors
 
+type ThumbSize = "small" | "medium" | "large"
+
 export type SliderProps = {
   value: number[]
   onChange: (value: number[]) => void
@@ -20,7 +31,15 @@ export type SliderProps = {
   step: number
   disabled?: boolean
   color?: GradientKey | ColorKey
-  dashCount?: number
+  dashes?: "auto" | number
+  thumbSize?: "small" | "medium"
+  formatDashValue?: (value: number) => string
+}
+
+const thumbSizeMap: Record<ThumbSize, number> = {
+  small: 24,
+  medium: 40,
+  large: 52,
 }
 
 export const Slider: FC<SliderProps> = ({
@@ -31,28 +50,38 @@ export const Slider: FC<SliderProps> = ({
   onChange,
   disabled,
   color = "brightBlue600",
-  dashCount = 20,
+  dashes = 20,
+  thumbSize = "medium",
+  formatDashValue,
 }) => {
   const [rootWidth, setRootWidth] = useState(0)
   const rootRef = useRef<HTMLSpanElement>(null)
 
-  const dashes = useMemo(
+  const dashCount = dashes === "auto" ? Math.floor((max - min) / step) : dashes
+
+  const dashFormatter = useRef(formatDashValue)
+  useEffect(() => {
+    dashFormatter.current = formatDashValue
+  }, [formatDashValue])
+
+  const dashContent = useMemo(
     () =>
-      Array.from({ length: dashCount + 1 }).map((_, i) => (
-        <Fragment key={i}>
-          <SDash
-            key={`top-${i}`}
-            offset={i * (rootWidth / dashCount)}
-            row="top"
-          />
-          <SDash
-            key={`bottom-${i}`}
-            offset={i * (rootWidth / dashCount)}
-            row="bottom"
-          />
-        </Fragment>
-      )),
-    [dashCount, rootWidth],
+      Array.from({ length: dashCount + 1 }).map((_, i) => {
+        const dashValue = min + i * step
+        const offset = i * (rootWidth / dashCount)
+        return (
+          <Fragment key={i}>
+            <SDash key={`top-${i}`} offset={offset} row="top" />
+            <SDash key={`bottom-${i}`} offset={offset} row="bottom"></SDash>
+            <SDashLabel offset={offset}>
+              {dashFormatter.current
+                ? dashFormatter.current(dashValue)
+                : dashValue}
+            </SDashLabel>
+          </Fragment>
+        )
+      }),
+    [dashCount, min, rootWidth, step],
   )
 
   useLayoutEffect(() => {
@@ -69,13 +98,13 @@ export const Slider: FC<SliderProps> = ({
       disabled={disabled}
       ref={rootRef}
     >
-      {dashes}
+      {dashContent}
       <STrack>
         <Range asChild>
           <SRange color={color} />
         </Range>
       </STrack>
-      <SThumb />
+      <SThumb size={thumbSizeMap[thumbSize]} />
     </SRoot>
   )
 }

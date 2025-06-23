@@ -20,10 +20,13 @@ import { Alert } from "components/Alert/Alert"
 import { Switch } from "components/Switch/Switch"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Slider } from "components/Slider/Slider"
-import { Separator } from "components/Separator/Separator"
 import { useLooping } from "sections/lending/hooks/useLooping"
 import { DOT_ASSET_ID } from "utils/constants"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { getAssetIdFromAddress } from "utils/evm"
+import { IncompatibleEmodePositionsWarning } from "sections/lending/components/transactions/Warnings/IncompatibleEmodePositionsWarning"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 type Props = {
   readonly assetId: string
@@ -41,7 +44,9 @@ export const SupplyAssetModal: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { user } = useAppDataContext()
 
+  const [shouldEnableEmode, setShouldEnableEmode] = useState(false)
   const [isLoopingEnabled, setIsLoopingEnabled] = useState(false)
   const [loopingMultiplier, setLoopingMultiplier] = useState(
     LOOPING_MULTIPLIER_MIN,
@@ -67,37 +72,55 @@ export const SupplyAssetModal: FC<Props> = ({
     supplyCapReached,
   } = useSubmitNewDepositForm(assetId)
 
-  const onSubmit = (): void => {
-    submit()
-    onClose()
-  }
-
-  const { page, direction, back, next } = useModalPagination()
-
-  const supplyAssetId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
-  const aTokenId = assetId
-
   const {
-    createLoopingTx,
+    submitLooping,
     isLoading: isLoopingLoading,
     minAmountOut: minLoopedAmountOut,
   } = useLooping(
     {
       amount,
       multiplier: loopingMultiplier,
-      supplyAssetId,
+      supplyAssetId: getAssetIdFromAddress(
+        underlyingReserve?.underlyingAsset ?? "",
+      ),
       borrowAssetId: DOT_ASSET_ID,
-      aTokenId: aTokenId,
+      assetInId: selectedAsset?.id ?? "",
+      assetOutId: assetId,
+      withEmode: shouldEnableEmode,
     },
     {
-      enabled: isLoopingEnabled,
+      enabled: !!selectedAsset && isLoopingEnabled,
       onSubmitted: onClose,
     },
   )
 
+  const onSubmit = (): void => {
+    if (isLoopingEnabled) {
+      submitLooping()
+    } else {
+      submit()
+      onClose()
+    }
+  }
+
+  const { page, direction, back, next } = useModalPagination()
+
   const minAmountOut = isLoopingEnabled
     ? minLoopedAmountOut
     : minDepositedAmountOut
+
+  const isInCorrectEmode =
+    user.userEmodeCategoryId === underlyingReserve?.eModeCategoryId
+
+  const hasIncompatibleEmodePositions =
+    shouldEnableEmode &&
+    user.userReservesData.some(
+      (userReserve) =>
+        (Number(userReserve.scaledVariableDebt) > 0 ||
+          Number(userReserve.principalStableDebt) > 0) &&
+        userReserve.reserve.eModeCategoryId !==
+          underlyingReserve?.eModeCategoryId,
+    )
 
   return (
     <ModalContents
@@ -115,6 +138,24 @@ export const SupplyAssetModal: FC<Props> = ({
                   selectedAssetBalance={selectedAssetBalance}
                   onSelectAssetClick={allowedAssets.length ? next : noop}
                 />
+                {!isInCorrectEmode && (
+                  <SummaryRow
+                    label={
+                      <Text fs={14} color="brightBlue300">
+                        {t("lending.emode.switch.title")}
+                      </Text>
+                    }
+                    content={
+                      <Switch
+                        name="emode"
+                        sx={{ my: -6 }}
+                        onCheckedChange={setShouldEnableEmode}
+                        value={shouldEnableEmode}
+                      />
+                    }
+                    withSeparator
+                  />
+                )}
                 <SummaryRow
                   label={
                     <Text fs={14} color="brightBlue300">
@@ -124,31 +165,50 @@ export const SupplyAssetModal: FC<Props> = ({
                   content={
                     <Switch
                       name="looping"
+                      sx={{ my: -6 }}
                       onCheckedChange={setIsLoopingEnabled}
                       value={isLoopingEnabled}
                     />
                   }
+                  withSeparator
                 />
-                <Separator sx={{ my: -5 }} />
                 {isLoopingEnabled && (
-                  <>
+                  <div sx={{ mb: 10 }}>
                     <SummaryRow
                       label={
                         <Text fs={14}>{t("lending.looping.slider.title")}</Text>
                       }
-                      content={<Text fs={14}>{loopingMultiplier}x</Text>}
+                      content={
+                        <InfoTooltip text={t("lending.looping.slider.tooltip")}>
+                          <Text
+                            fs={14}
+                            sx={{ flex: "row", align: "center", gap: 4 }}
+                          >
+                            <span>
+                              {t("lending.looping.slider.value", {
+                                value: loopingMultiplier,
+                              })}
+                            </span>
+                            <SInfoIcon />
+                          </Text>
+                        </InfoTooltip>
+                      }
                     />
-                    <div sx={{ mt: -10 }}>
+                    <div>
                       <Slider
+                        thumbSize="small"
                         step={1}
                         min={LOOPING_MULTIPLIER_MIN}
                         max={LOOPING_MULTIPLIER_MAX}
-                        dashCount={6}
+                        dashes="auto"
                         onChange={([value]) => setLoopingMultiplier(value)}
                         value={[loopingMultiplier]}
+                        formatDashValue={(value) =>
+                          t("lending.looping.slider.value", { value })
+                        }
                       />
                     </div>
-                  </>
+                  </div>
                 )}
                 {underlyingReserve && (
                   <SupplyAssetSummary
@@ -160,6 +220,9 @@ export const SupplyAssetModal: FC<Props> = ({
                     hfChange={healthFactorChange}
                   />
                 )}
+                <Alert variant="info">
+                  {t("lending.looping.collateral.dot.warning")}
+                </Alert>
                 {supplyCapReached && (
                   <Alert variant="warning">
                     {t("lending.tooltip.supplyCapMaxed", {
@@ -167,14 +230,19 @@ export const SupplyAssetModal: FC<Props> = ({
                     })}
                   </Alert>
                 )}
+                {hasIncompatibleEmodePositions && (
+                  <IncompatibleEmodePositionsWarning
+                    eModeLabel={underlyingReserve?.eModeLabel}
+                  />
+                )}
                 {account && (
                   <>
                     {isLoopingEnabled ? (
                       <Button
-                        type="button"
                         variant="primary"
-                        onClick={() => createLoopingTx?.()}
-                        disabled={isLoopingLoading}
+                        disabled={
+                          isLoopingLoading || hasIncompatibleEmodePositions
+                        }
                         isLoading={isLoopingLoading}
                       >
                         {t("lending.looping.cta.title", {
