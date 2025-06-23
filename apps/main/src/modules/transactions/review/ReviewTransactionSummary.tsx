@@ -1,6 +1,7 @@
 import {
   ButtonTransparent,
   Flex,
+  Modal,
   Separator,
   Skeleton,
   Stack,
@@ -77,10 +78,14 @@ export const ReviewTransactionSummary = () => {
                           {t("edit")}
                         </Text>
                       </ButtonTransparent>
-                      <TransactionFeePaymentAssetModal
+                      <Modal
                         open={isFeePaymentModalOpen}
                         onOpenChange={setIsFeePaymentModalOpen}
-                      />
+                      >
+                        <TransactionFeePaymentAssetModal
+                          onSubmitted={() => setIsFeePaymentModalOpen(false)}
+                        />
+                      </Modal>
                     </>
                   )}
                 </Flex>

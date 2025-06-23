@@ -193,11 +193,7 @@
   "transaction.summary.nonce": "Nonce",
   "transaction.summary.destFee": "Destination fee",
   "search.placeholder": "Search...",
-  "addressBook.placeholder": "Paste address here...",
-  "addressBook.myContacts": "My contacts",
-  "addressBook.label": "Destination address",
   "addressBook.modal.title": "Select account to use",
-  "addressBook.modal.placeholder": "Search or paste address to add",
   "payment.toast.onLoading": "Setting {{ symbol }} as fee payment asset",
   "payment.toast.onSuccess": "Set {{ symbol }} as fee payment asset"
 }

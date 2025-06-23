@@ -1,6 +1,7 @@
-import { isH160Address } from "@galacticcouncil/utils"
+import { isH160Address, isSS58Address } from "@galacticcouncil/utils"
 import { lazy, Suspense } from "react"
 
+import { IdenticonEmpty } from "@/assets/icons"
 import { Box, BoxProps } from "@/components/Box"
 import { getToken } from "@/utils"
 
@@ -46,6 +47,7 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
         />
       }
     >
+      {chosenTheme === null && <IdenticonEmpty />}
       {chosenTheme === "evm" && <EthereumIdenticon size={size} {...props} />}
       {chosenTheme === "talisman" && (
         <TalismanIdenticon size={size} {...props} />
@@ -57,6 +59,13 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
   )
 }
 
-function getAutoTheme(address: string): AccountAvatarTheme {
-  return isH160Address(address) ? "evm" : "polkadot"
+function getAutoTheme(address: string): AccountAvatarTheme | null {
+  switch (true) {
+    case isH160Address(address):
+      return "evm"
+    case isSS58Address(address):
+      return "polkadot"
+    default:
+      return null
+  }
 }

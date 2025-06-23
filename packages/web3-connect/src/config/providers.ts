@@ -21,6 +21,11 @@ export enum WalletProviderType {
   WalletConnectEvm = "walletconnect-evm",
 }
 
+export const TALISMAN_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.Talisman,
+  WalletProviderType.TalismanEvm,
+]
+
 export const MOBILE_ONLY_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.NovaWallet,
 ]
@@ -40,10 +45,10 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.PolkadotJS,
   WalletProviderType.Talisman,
   WalletProviderType.Subwallet,
   WalletProviderType.Enkrypt,
-  WalletProviderType.PolkadotJS,
   WalletProviderType.NovaWallet,
   WalletProviderType.MantaWallet,
   WalletProviderType.FearlessWallet,

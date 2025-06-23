@@ -5,11 +5,11 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
+import { AddressBookModal } from "@galacticcouncil/web3-connect"
 import { FC, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { AddressBookModal } from "@/components/AddressBook/AddressBookModal"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
@@ -37,9 +37,14 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   if (isMyContactsOpen) {
     return (
       <AddressBookModal
-        onBack={() => setIsMyContactsOpen(false)}
+        header={
+          <ModalHeader
+            title={t("common:addressBook.modal.title")}
+            onBack={() => setIsMyContactsOpen(false)}
+          />
+        }
         onSelect={(address) => {
-          form.setValue("address", address, { shouldValidate })
+          form.setValue("address", address.address, { shouldValidate })
           setIsMyContactsOpen(false)
         }}
       />
