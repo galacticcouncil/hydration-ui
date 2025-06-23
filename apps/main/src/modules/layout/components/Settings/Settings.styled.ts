@@ -1,17 +1,9 @@
+import { mq } from "@galacticcouncil/ui/theme"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SSettingsContentDesktop = styled.div(
-  ({ theme }) => css`
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+import { TOP_NAVBAR_BREAKPOINT } from "@/modules/layout/constants"
 
-    padding: ${theme.containers.paddings.quart}px
-      ${theme.containers.paddings.tertiary}px;
-  `,
-)
-
-export const SSettingsContentMobile = styled.div(
+export const SSettingsContent = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
@@ -19,6 +11,13 @@ export const SSettingsContentMobile = styled.div(
 
     padding: ${theme.buttons.paddings.tertiary}px
       ${theme.containers.paddings.quart}px;
+
+    ${mq(TOP_NAVBAR_BREAKPOINT)} {
+      gap: 4px;
+
+      padding: ${theme.containers.paddings.quart}px
+        ${theme.containers.paddings.tertiary}px;
+    }
   `,
 )
 

@@ -5,6 +5,7 @@ import {
   DropdownMenuContentDivider,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Modal,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { Link } from "@tanstack/react-router"
@@ -25,8 +26,8 @@ import {
   STabBarLabel,
 } from "@/modules/layout/components/MobileTabBar/MobileTabBar.styled"
 import { MobileTabBarActions } from "@/modules/layout/components/MobileTabBar/MobileTabBarActions"
-import { MobileTabBarSettings } from "@/modules/layout/components/MobileTabBar/MobileTabBarSettings"
 import { MobileTabBarSubmenuItem } from "@/modules/layout/components/MobileTabBar/MobileTabBarSubMenu"
+import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
 
 export enum MobileTabBarDrawer {
   Settings = "Settings",
@@ -91,10 +92,12 @@ export const MobileTabBar: FC = () => {
           )}
         </DropdownMenu>
       )}
-      <MobileTabBarSettings
-        isOpen={drawer === MobileTabBarDrawer.Settings}
-        onClose={closeDrawer}
-      />
+      <Modal
+        open={drawer === MobileTabBarDrawer.Settings}
+        onOpenChange={closeDrawer}
+      >
+        <SettingsModal />
+      </Modal>
     </SMobileTabBar>
   )
 }
