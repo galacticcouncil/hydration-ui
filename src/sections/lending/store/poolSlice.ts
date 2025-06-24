@@ -9,6 +9,7 @@ import {
   EthereumTransactionTypeExtended,
   FaucetParamsType,
   FaucetService,
+  gasLimitRecommendations,
   IncentivesController,
   IncentivesControllerV2,
   IncentivesControllerV2Interface,
@@ -41,7 +42,7 @@ import {
 } from "@aave/contract-helpers/dist/esm/v3-pool-contract/lendingPoolTypes"
 import { AaveSafetyModule, AaveV3Ethereum } from "@bgd-labs/aave-address-book"
 import dayjs from "dayjs"
-import { BigNumber, PopulatedTransaction, Signature, utils } from "ethers"
+import { PopulatedTransaction, Signature, utils } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
 import { produce } from "immer"
 import { ClaimRewardsActionsProps } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions"
@@ -966,29 +967,22 @@ export const createPoolSlice: StateCreator<
     },
     estimateGasLimit: async (tx: PopulatedTransaction, chainId?: number) => {
       const provider = get().jsonRpcProvider(chainId)
-      const defaultGasLimit: BigNumber = tx.gasLimit
-        ? tx.gasLimit
-        : BigNumber.from("0")
-      delete tx.gasLimit
-      let estimatedGas = BigNumber.from("0")
-      try {
-        //estimatedGas = await provider.estimateGas(tx)
-        estimatedGas = BigNumber.from("500000")
-      } catch (e) {
-        estimatedGas = BigNumber.from("500000")
-      }
 
-      estimatedGas = estimatedGas.mul(2)
-      // use the max of the 2 values, airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
-      tx.gasLimit = estimatedGas.gt(defaultGasLimit)
-        ? estimatedGas
-        : defaultGasLimit
+      // const estimatedGas = await provider.estimateGas(tx)
+      // gas estimator doesnt work so we use a default recommended value from AAVE
+      const estimatedGas = gasLimitRecommendations.default.recommended
 
       const gasPrice = await provider.getGasPrice()
       const gasOnePrc = gasPrice.div(100)
       const gasPricePlus = gasPrice.add(gasOnePrc)
 
       Object.assign(tx, {
+        // use the max of the 2 values (estimated vs provided),
+        // airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
+        gasLimit: BN.max(
+          tx.gasLimit?.toString() ?? "0",
+          estimatedGas,
+        ).toString(),
         maxFeePerGas: gasPricePlus,
         maxPriorityFeePerGas: gasPricePlus,
       })
