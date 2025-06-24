@@ -126,7 +126,5 @@ export const SDashLabel = styled.span<{
 
   ${({ offset }) => `left: ${offset}px;`};
 
-  &:not(&:first-of-type) {
-    transform: translateX(-50%);
-  }
+  transform: translateX(-50%);
 `

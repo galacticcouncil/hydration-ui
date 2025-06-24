@@ -1156,6 +1156,7 @@
   "lending.liquidationThreshold": "Liquidation at {{ value }}",
   "lending.cap.range": "{{ valueA, compact }} of {{ valueB, compact }}",
   "lending.cap.range.usd": "${{ valueA, compact }} of ${{ valueB, compact }}",
+  "lending.summary.overview": "Transaction overview",
   "lending.tooltip.supplyApy": "The weighted average of APY for all supplied assets, including incentives.",
   "lending.tooltip.borrowApy": "The weighted average of APY for all borrowed assets, including incentives.",
   "lending.tooltip.collateral": "The total value of your assets denominated in USD that can be used as collateral for borrowing assets.",

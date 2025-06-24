@@ -19,23 +19,18 @@ import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/Supp
 import { Alert } from "components/Alert/Alert"
 import { Switch } from "components/Switch/Switch"
 import { SummaryRow } from "components/Summary/SummaryRow"
-import { Slider } from "components/Slider/Slider"
 import { useLooping } from "sections/lending/hooks/useLooping"
 import { DOT_ASSET_ID } from "utils/constants"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAssetIdFromAddress } from "utils/evm"
 import { IncompatibleEmodePositionsWarning } from "sections/lending/components/transactions/Warnings/IncompatibleEmodePositionsWarning"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
+import { SupplyAssetLoopingSlider } from "sections/lending/ui/table/supply-assets/SupplyAssetLoopingSlider"
 
 type Props = {
   readonly assetId: string
   readonly assetsBlacklist: ReadonlyArray<string>
   readonly onClose: () => void
 }
-
-const LOOPING_MULTIPLIER_MIN = 2
-const LOOPING_MULTIPLIER_MAX = 4
 
 export const SupplyAssetModal: FC<Props> = ({
   assetId,
@@ -47,10 +42,9 @@ export const SupplyAssetModal: FC<Props> = ({
   const { user } = useAppDataContext()
 
   const [shouldEnableEmode, setShouldEnableEmode] = useState(false)
-  const [isLoopingEnabled, setIsLoopingEnabled] = useState(false)
-  const [loopingMultiplier, setLoopingMultiplier] = useState(
-    LOOPING_MULTIPLIER_MIN,
-  )
+  const [loopingMultiplier, setLoopingMultiplier] = useState(1)
+
+  const isLoopingEnabled = loopingMultiplier > 1
 
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
@@ -156,60 +150,11 @@ export const SupplyAssetModal: FC<Props> = ({
                     withSeparator
                   />
                 )}
-                <SummaryRow
-                  label={
-                    <Text fs={14} color="brightBlue300">
-                      {t("lending.looping.switch.title")}
-                    </Text>
-                  }
-                  content={
-                    <Switch
-                      name="looping"
-                      sx={{ my: -6 }}
-                      onCheckedChange={setIsLoopingEnabled}
-                      value={isLoopingEnabled}
-                    />
-                  }
-                  withSeparator
+                <SupplyAssetLoopingSlider
+                  value={loopingMultiplier}
+                  onChange={setLoopingMultiplier}
+                  sx={{ py: 12, mb: 10 }}
                 />
-                {isLoopingEnabled && (
-                  <div sx={{ mb: 10 }}>
-                    <SummaryRow
-                      label={
-                        <Text fs={14}>{t("lending.looping.slider.title")}</Text>
-                      }
-                      content={
-                        <InfoTooltip text={t("lending.looping.slider.tooltip")}>
-                          <Text
-                            fs={14}
-                            sx={{ flex: "row", align: "center", gap: 4 }}
-                          >
-                            <span>
-                              {t("lending.looping.slider.value", {
-                                value: loopingMultiplier,
-                              })}
-                            </span>
-                            <SInfoIcon />
-                          </Text>
-                        </InfoTooltip>
-                      }
-                    />
-                    <div>
-                      <Slider
-                        thumbSize="small"
-                        step={1}
-                        min={LOOPING_MULTIPLIER_MIN}
-                        max={LOOPING_MULTIPLIER_MAX}
-                        dashes="auto"
-                        onChange={([value]) => setLoopingMultiplier(value)}
-                        value={[loopingMultiplier]}
-                        formatDashValue={(value) =>
-                          t("lending.looping.slider.value", { value })
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
                 {underlyingReserve && (
                   <SupplyAssetSummary
                     asset={asset}
