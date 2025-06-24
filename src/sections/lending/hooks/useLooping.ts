@@ -1,4 +1,4 @@
-import { InterestRate } from "@aave/contract-helpers"
+import { InterestRate, ProtocolAction } from "@aave/contract-helpers"
 
 import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { Trade } from "@galacticcouncil/sdk"
@@ -166,7 +166,7 @@ export const useLooping = (
           })
           batch.push({
             type: "evm",
-            data: await estimateGasLimit(tx),
+            data: await estimateGasLimit(tx, ProtocolAction.borrow),
           })
         }
 

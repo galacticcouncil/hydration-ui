@@ -9,7 +9,6 @@ import {
   EthereumTransactionTypeExtended,
   FaucetParamsType,
   FaucetService,
-  gasLimitRecommendations,
   IncentivesController,
   IncentivesControllerV2,
   IncentivesControllerV2Interface,
@@ -20,6 +19,7 @@ import {
   Pool,
   PoolBaseCurrencyHumanized,
   PoolBundle,
+  ProtocolAction,
   ReserveDataHumanized,
   ReservesIncentiveDataHumanized,
   UiIncentiveDataProvider,
@@ -42,7 +42,7 @@ import {
 } from "@aave/contract-helpers/dist/esm/v3-pool-contract/lendingPoolTypes"
 import { AaveSafetyModule, AaveV3Ethereum } from "@bgd-labs/aave-address-book"
 import dayjs from "dayjs"
-import { PopulatedTransaction, Signature, utils } from "ethers"
+import { BigNumber, PopulatedTransaction, Signature, utils } from "ethers"
 import { splitSignature } from "ethers/lib/utils"
 import { produce } from "immer"
 import { ClaimRewardsActionsProps } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions"
@@ -67,6 +67,7 @@ import {
 import { RootStore } from "./root"
 import { fetchBifrostVDotApy } from "api/external/bifrost"
 import BN from "bignumber.js"
+import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 // TODO: what is the better name for this type?
 export type PoolReserve = {
@@ -179,7 +180,7 @@ export interface PoolSlice {
   getCorrectPool: () => Pool
   estimateGasLimit: (
     tx: PopulatedTransaction,
-    chainId?: number,
+    action?: ProtocolAction,
   ) => Promise<PopulatedTransaction>
 }
 
@@ -965,29 +966,30 @@ export const createPoolSlice: StateCreator<
       }
       return JSON.stringify(typeData)
     },
-    estimateGasLimit: async (tx: PopulatedTransaction, chainId?: number) => {
-      const provider = get().jsonRpcProvider(chainId)
-
-      // const estimatedGas = await provider.estimateGas(tx)
-      // gas estimator doesnt work so we use a default recommended value from AAVE
-      const estimatedGas = gasLimitRecommendations.default.recommended
+    estimateGasLimit: async (
+      tx: PopulatedTransaction,
+      action?: ProtocolAction,
+    ) => {
+      const provider = get().jsonRpcProvider()
 
       const gasPrice = await provider.getGasPrice()
       const gasOnePrc = gasPrice.div(100)
       const gasPricePlus = gasPrice.add(gasOnePrc)
 
-      Object.assign(tx, {
-        // use the max of the 2 values (estimated vs provided),
-        // airing on the side of caution to prioritize having enough gas vs submitting w/ most efficient gas limit
-        gasLimit: BN.max(
-          tx.gasLimit?.toString() ?? "0",
-          estimatedGas,
-        ).toString(),
+      // const estimatedGas = await provider.estimateGas(tx)
+      // gas estimator doesnt work so we use a recommended value from AAVE for specific action
+      const estimatedGas = action
+        ? gasLimitRecommendations[action].recommended
+        : tx?.gasLimit || gasLimitRecommendations.default.recommended
+
+      const gasLimit = BigNumber.from(estimatedGas)
+
+      return {
+        ...tx,
+        gasLimit,
         maxFeePerGas: gasPricePlus,
         maxPriorityFeePerGas: gasPricePlus,
-      })
-
-      return tx
+      }
     },
   }
 }
