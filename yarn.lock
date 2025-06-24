@@ -2582,10 +2582,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.6.0.tgz#a24f87c2dfc05a8904748d1dfa6c35d0f2a09a55"
   integrity sha512-b76kkmd4mJd0Iev9pI1IuP3WB3FV0V/XOAVNEv1/BvfpXd/JdNC/1GeTsfuaAZ8+4yFY/m3/xLdKEpvVurL9KQ==
 
-"@galacticcouncil/apps@^13.3.0":
-  version "13.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-13.3.0.tgz#e9af7d7e6b9bab6cd4f583434faa6bca0682d76a"
-  integrity sha512-PAy9F6ZKOsTePtCVgy1Ic+WBjxW14g7s05HDEHcqHoMG4RZlhydqn8LfhJbhqInaOtKafl/TsHEm0Qkp7Tt3aA==
+"@galacticcouncil/apps@^13.3.2":
+  version "13.3.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-13.3.2.tgz#9af4a1717c3727159def0527e9892a7b61cbc7da"
+  integrity sha512-B8tgN7k9ktLa0nyLtricXJyM35hHLquGCm5bzkBCdKrKvcS28jtnMkFH4NA1c8YFt73N/580xITehqnOiuPtOQ==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2628,10 +2628,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk@^9.5.2":
-  version "9.5.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.5.2.tgz#5cc636893cf120e5eb1dd88fc2dc357e5d843b3b"
-  integrity sha512-8Rd4a/oPM0/UgeKqSUyI18WDRWZcqAuuMcs65xKgFfUe6tQfnMaLX8GQzy7itTQ1qDUNwI6CtkXBQf1VGVVV0w==
+"@galacticcouncil/sdk@^9.5.3":
+  version "9.5.3"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.5.3.tgz#22d5020a757a7b17c8489a4e407c6c234365ed11"
+  integrity sha512-3qk0axKbfJxg0GhhGvfU9dcM+j9ZQ+4u6yAruhm2ceZ6DMv6Rt4BE7GdSaiHnl0OAx0zPRP4m9bQ+kZmgt+BDQ==
   dependencies:
     "@galacticcouncil/math-lbp" "^1.2.0"
     "@galacticcouncil/math-liquidity-mining" "^1.2.0"
