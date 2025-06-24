@@ -20,6 +20,8 @@ import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyR
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
+  AAVE_EXTRA_GAS,
+  BN_100,
   BN_MILL,
   GDOT_ERC20_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
@@ -44,6 +46,8 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useSpotPrice } from "api/spotPrice"
 import { useStableswapPool } from "api/stableswap"
 import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useLiquidityLimit } from "state/liquidityLimit"
 
 type Props = {
   asset: TAsset
@@ -71,17 +75,20 @@ export const AddStablepoolLiquidity = ({
   isJoinFarms,
   setIsJoinFarms,
 }: Props) => {
-  const { api } = useRpcProvider()
+  const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { addLiquidityLimit } = useLiquidityLimit()
 
-  const accountBalances = useAccountAssets()
+  const { account } = useAccount()
+
+  const { data: accountBalances } = useAccountAssets()
   const { reserves, farms, isGigaDOT, poolId, isGETH, id } = usePoolData()
     .pool as TStablepool
 
   const { t } = useTranslation()
 
-  const walletBalance = accountBalances.data?.accountAssetsMap.get(asset.id)
-    ?.balance?.balance
+  const walletBalance = accountBalances?.accountAssetsMap.get(asset.id)?.balance
+    ?.balance
 
   const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
 
@@ -181,9 +188,75 @@ export const AddStablepoolLiquidity = ({
             : null,
         )
 
-    return await createTransaction(
+    const initialBalance =
+      accountBalances?.accountAssetsMap.get(id)?.balance?.freeBalance ?? "0"
+
+    await createTransaction(
       {
         tx: isSwap ? swapTx : tx,
+      },
+      {
+        onSuccess: (result) =>
+          onSuccess(
+            result,
+            scale(values.amount, STABLEPOOL_TOKEN_DECIMALS).toString(),
+          ),
+        onSubmitted: () => {
+          if (!isGETH) {
+            onSubmitted(shares)
+            form.reset()
+          }
+        },
+        onError: () => onClose(),
+        onClose,
+        onBack: () => {},
+        steps: isGETH
+          ? [
+              {
+                label: t("liquidity.add.modal.geth.stepper.first"),
+                state: "active",
+              },
+              {
+                label: t("liquidity.add.modal.geth.stepper.second"),
+                state: "todo",
+              },
+            ]
+          : undefined,
+        toast,
+        disableAutoClose: isGETH,
+      },
+    )
+
+    if (!isGETH) return
+
+    const balanceApi = (
+      await sdk.client.balance.getBalance(account?.address ?? "", id)
+    ).toString()
+
+    const diffBalance = BN(balanceApi).minus(initialBalance).toString()
+
+    const limitShares = BN(diffBalance)
+      .times(BN_100.minus(addLiquidityLimit).div(BN_100))
+      .toFixed(0)
+
+    const secondTx = api.tx.dispatcher.dispatchWithExtraGas(
+      isJoinFarms
+        ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+            farms.map<[string, string]>((farm) => [
+              farm.globalFarmId,
+              farm.yieldFarmId,
+            ]),
+            id,
+            diffBalance,
+            limitShares,
+          )
+        : api.tx.omnipool.addLiquidityWithLimit(id, diffBalance, limitShares),
+      AAVE_EXTRA_GAS,
+    )
+
+    await createTransaction(
+      {
+        tx: secondTx,
       },
       {
         onSuccess: (result) =>
@@ -195,12 +268,28 @@ export const AddStablepoolLiquidity = ({
           onSubmitted(shares)
           form.reset()
         },
-        onError: () => {
-          onClose()
-        },
+        onError: () => onClose(),
         onClose,
         onBack: () => {},
-        toast,
+        steps: [
+          { label: t("liquidity.add.modal.geth.stepper.first"), state: "done" },
+          {
+            label: t("liquidity.add.modal.geth.stepper.second"),
+            state: "active",
+          },
+        ],
+        toast: createToastMessages(
+          `liquidity.add.modal.${isJoinFarms ? "andJoinFarms." : ""}toast`,
+          {
+            t,
+            tOptions: {
+              value: values.amount,
+              symbol: asset.symbol,
+              where: "Omnipool",
+            },
+            components: ["span", "span.highlight"],
+          },
+        ),
       },
     )
   }

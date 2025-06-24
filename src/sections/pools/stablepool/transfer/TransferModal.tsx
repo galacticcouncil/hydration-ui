@@ -58,7 +58,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
     isGigaDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId,
   )
 
-  const isOnlyStablepool = disabledOmnipool || !canAddLiquidity || isGETH
+  const isOnlyStablepool = disabledOmnipool || !canAddLiquidity
 
   const { page, direction, paginateTo } = useModalPagination(
     isOnlyStablepool ? Page.ADD_LIQUIDITY : Page.OPTIONS,
