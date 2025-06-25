@@ -10,7 +10,7 @@ import {
 import { Range } from "@radix-ui/react-slider"
 import {
   SDash,
-  SDashLabel,
+  SDashValue,
   SRange,
   SRoot,
   SThumb,
@@ -81,12 +81,12 @@ export const Slider: FC<SliderProps> = ({
 
       return (
         <Fragment key={i}>
-          <SDash key={`top-${i}`} offset={offset} row="top" />
-          <SDash key={`bottom-${i}`} offset={offset} row="bottom"></SDash>
+          <SDash key={`top-${i}`} $offset={offset} row="top" />
+          <SDash key={`bottom-${i}`} $offset={offset} row="bottom" />
           {withDashValues && (
-            <SDashLabel offset={offset}>
+            <SDashValue $offset={offset}>
               {dashFormatter.current ? dashFormatter.current(value) : value}
-            </SDashLabel>
+            </SDashValue>
           )}
         </Fragment>
       )

@@ -24,6 +24,9 @@ import { BN_0 } from "utils/constants"
 import { H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 
+const MAX_LOOPING_STEPS = 100
+const SQUEZEE_HF_SAFETY_MARGIN = 0.9
+
 type BatchItem =
   | {
       type: "trade"
@@ -262,7 +265,7 @@ export const useLooping = (
   }
 }
 
-function getLoopingSteps({
+/* function getLoopingSteps_old({
   initialAmount,
   multiplier,
   ltv,
@@ -298,10 +301,50 @@ function getLoopingSteps({
   // final step to squeeze Health Factor with some safety margin
   const squeezeStep: LoopingStep = {
     supply: BN_0,
-    borrow: adjustmentStep.supply.times(ltv).times(0.9),
+    borrow: adjustmentStep.supply.times(ltv).times(SQUEZEE_HF_SAFETY_MARGIN),
   }
 
   return [...steps, adjustmentStep, squeezeStep]
+} */
+
+export function getLoopingSteps({
+  initialAmount,
+  multiplier,
+  ltv,
+}: {
+  initialAmount: string
+  multiplier: number
+  ltv: string
+}): LoopingStep[] {
+  const amount = new BigNumber(initialAmount)
+  const targetSupply = amount.times(multiplier)
+  const ltvRatio = new BigNumber(ltv)
+
+  const steps: LoopingStep[] = [{ supply: amount, borrow: new BigNumber(0) }]
+  let totalSupply = amount
+
+  let i = 0
+  while (totalSupply.lt(targetSupply) && i < MAX_LOOPING_STEPS) {
+    const prev = steps[steps.length - 1]
+    const supply = prev.supply.times(ltvRatio)
+    const borrow = supply
+
+    totalSupply = totalSupply.plus(supply)
+    if (totalSupply.gt(targetSupply)) break
+
+    steps.push({ supply, borrow })
+    i++
+  }
+
+  const lastStep = steps[steps.length - 1]
+
+  // final step to squeeze Health Factor with some safety margin
+  const squeezeHfStep: LoopingStep = {
+    supply: BN_0,
+    borrow: lastStep.supply.times(ltv).times(SQUEZEE_HF_SAFETY_MARGIN),
+  }
+
+  return [...steps, squeezeHfStep]
 }
 
 function printSteps(
@@ -309,7 +352,7 @@ function printSteps(
   borrowReserve: ComputedReserveData,
   assetIn: TAsset,
 ) {
-  const stepsHumanizted = steps.map((step) => ({
+  const stepsHumanized = steps.map((step) => ({
     borrow: i18n.t("value.tokenWithSymbol", {
       value: step.borrow,
       symbol: borrowReserve.symbol,
@@ -320,14 +363,9 @@ function printSteps(
     }),
   }))
 
-  const adjustmentIndex = stepsHumanizted.length - 2
-  const squeezeIndex = stepsHumanizted.length - 1
   console.table({
     ...Object.fromEntries(
-      stepsHumanizted.map((user, i) => [
-        `Step ${i + 1}${i === adjustmentIndex ? " (Target supply adjustment)" : ""}${i === squeezeIndex ? " (Squeeze HF)" : ""}`,
-        user,
-      ]),
+      stepsHumanized.map((user, i) => [`Step ${i + 1}`, user]),
     ),
     [String.fromCharCode(160)]: {
       borrow: "👇",

@@ -97,11 +97,11 @@ export const SThumb = styled(Thumb)<{ size: number }>`
 
 export const SDash = styled.div<{
   row: "top" | "bottom"
-  offset: number
+  $offset: number
 }>`
   position: absolute;
   ${({ row }) => (row === "top" ? `top: 0;` : `bottom: 0;`)};
-  ${({ offset }) => `left: ${offset}px;`};
+  ${({ $offset }) => `left: ${$offset}px;`};
 
   height: 5px;
   width: 1px;
@@ -112,8 +112,8 @@ export const SDash = styled.div<{
   background-color: ${theme.colors.darkBlue400};
 `
 
-export const SDashLabel = styled.span<{
-  offset: number
+export const SDashValue = styled.span<{
+  $offset: number
 }>`
   display: block;
 
@@ -124,7 +124,7 @@ export const SDashLabel = styled.span<{
   color: ${theme.colors.darkBlue300};
   text-align: center;
 
-  ${({ offset }) => `left: ${offset}px;`};
+  ${({ $offset }) => `left: ${$offset}px;`};
 
   transform: translateX(-50%);
 `
