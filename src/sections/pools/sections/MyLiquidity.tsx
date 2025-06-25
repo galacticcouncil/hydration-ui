@@ -23,6 +23,7 @@ import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/Cr
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BigNumber from "bignumber.js"
 import { MyIsolatedPoolsTotal } from "sections/pools/header/MyIsolatedPoolsTotal"
+import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
 
 export const MyLiquidity = () => {
   const { account } = useAccount()
@@ -215,6 +216,8 @@ const MyLiquidityData = () => {
         ]}
       />
       <SearchFilter />
+
+      <GigaCampaignBanner />
 
       {!pools.isLoading &&
         !xykPools.isInitialLoading &&

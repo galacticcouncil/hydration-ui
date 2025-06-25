@@ -16,6 +16,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
 import BN from "bignumber.js"
+import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -125,6 +126,7 @@ const OmnipoolAndStablepoolData = () => {
         ]}
       />
       <SearchFilter />
+      <GigaCampaignBanner />
       <Spacer size={[24, 40]} />
       {pools.isLoading ? (
         <PoolsTableSkeleton />
