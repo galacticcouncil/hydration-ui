@@ -22,6 +22,7 @@ import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
 import BN from "bignumber.js"
+import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -173,6 +174,8 @@ const AllPoolsData = () => {
       />
 
       <SearchFilter />
+
+      <GigaCampaignBanner />
 
       {!pools.isLoading &&
         !xykPools.isInitialLoading &&
