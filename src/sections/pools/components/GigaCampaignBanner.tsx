@@ -11,7 +11,7 @@ export const GigaCampaignBanner = () => {
     <GigaBannerContainer sx={{ mt: 12 }}>
       <div sx={{ flex: "column", gap: 6 }}>
         <Icon icon={<Title />} />
-        <Text fs={13} color="black" font="GeistMedium">
+        <Text fs={13} color="black">
           {t("giga.campaign.description")}
         </Text>
       </div>
