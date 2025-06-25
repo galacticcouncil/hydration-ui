@@ -14,7 +14,8 @@ export const GigaBannerContainer = styled.div`
   background-repeat: no-repeat;
   background-size: cover;
 
-  padding-left: 60px;
+  padding-left: 70px;
+  padding-right: 50px;
 
   width: 100%;
   height: 89px;

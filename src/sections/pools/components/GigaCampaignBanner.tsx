@@ -1,6 +1,8 @@
 import { Text } from "components/Typography/Text/Text"
 import { GigaBannerContainer } from "./GigaCampaignBanner.styled"
 import { useTranslation } from "react-i18next"
+import { Icon } from "components/Icon/Icon"
+import Title from "assets/icons/gigaCampaignTitle.svg?react"
 
 export const GigaCampaignBanner = () => {
   const { t } = useTranslation()
@@ -8,9 +10,7 @@ export const GigaCampaignBanner = () => {
   return (
     <GigaBannerContainer sx={{ mt: 12 }}>
       <div sx={{ flex: "column", gap: 6 }}>
-        <Text fs={16} color="black" font="GeistSemiBold">
-          {t("giga.campaign.title")}
-        </Text>
+        <Icon icon={<Title />} />
         <Text fs={13} color="black" font="GeistMedium">
           {t("giga.campaign.description")}
         </Text>
