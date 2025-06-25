@@ -13,6 +13,7 @@ import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { SPoolContainer } from "./Pool.styled"
 import { createContext, useContext } from "react"
+import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
 
 export const PoolContext = createContext<{
   pool: TPoolFullData | TXYKPool
@@ -39,10 +40,20 @@ const Pool = ({ pool }: { pool: TPool }) => {
     <PoolContext.Provider
       value={{ pool: { ...pool, ...poolDetails.data }, isXYK: false }}
     >
-      <SPoolContainer>
-        <PoolDetails />
-        <MyPositions />
-      </SPoolContainer>
+      <div
+        sx={{
+          display: "grid",
+          justify: "center",
+          gap: 20,
+          mt: -30,
+        }}
+      >
+        <GigaCampaignBanner />
+        <SPoolContainer>
+          <PoolDetails />
+          <MyPositions />
+        </SPoolContainer>
+      </div>
     </PoolContext.Provider>
   )
 }
