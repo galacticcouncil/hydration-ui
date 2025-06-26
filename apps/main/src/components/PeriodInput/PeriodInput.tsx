@@ -12,7 +12,7 @@ import { z } from "zod/v4"
 import i18n from "@/i18n"
 import { validNumber } from "@/utils/validators"
 
-const periodTypes = ["hour", "day", "week", "month"] as const
+export const periodTypes = ["hour", "day", "week", "month"] as const
 export type PeriodType = (typeof periodTypes)[number]
 
 const periodOptions = periodTypes.map(
