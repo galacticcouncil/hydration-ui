@@ -32,7 +32,7 @@ import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { scale } from "utils/balance"
+import { scale, scaleHuman } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
 import { Separator } from "components/Separator/Separator"
@@ -90,7 +90,7 @@ export const AddStablepoolLiquidity = ({
   const walletBalance = accountBalances?.accountAssetsMap.get(asset.id)?.balance
     ?.balance
 
-  const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
+  const omnipoolZod = useAddToOmnipoolZod(id, farms, true)
 
   const estimationTxs = [
     api.tx.stableswap.addLiquidity(poolId, [
@@ -134,6 +134,14 @@ export const AddStablepoolLiquidity = ({
     asset.id,
     isGigaDOT ? GDOT_ERC20_ASSET_ID : isGETH ? id : "",
     debouncedValue ?? "0",
+    isGETH
+      ? (minAmount) =>
+          form.setValue(
+            "amount",
+            scaleHuman(minAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
+            { shouldValidate: true },
+          )
+      : undefined,
   )
 
   const getShares = useStablepoolShares({
@@ -210,24 +218,25 @@ export const AddStablepoolLiquidity = ({
         onError: () => onClose(),
         onClose,
         onBack: () => {},
-        steps: isGETH
-          ? [
-              {
-                label: t("liquidity.add.modal.geth.stepper.first"),
-                state: "active",
-              },
-              {
-                label: t("liquidity.add.modal.geth.stepper.second"),
-                state: "todo",
-              },
-            ]
-          : undefined,
+        steps:
+          isGETH && !isStablepoolOnly
+            ? [
+                {
+                  label: t("liquidity.add.modal.geth.stepper.first"),
+                  state: "active",
+                },
+                {
+                  label: t("liquidity.add.modal.geth.stepper.second"),
+                  state: "todo",
+                },
+              ]
+            : undefined,
         toast,
         disableAutoClose: isGETH,
       },
     )
 
-    if (!isGETH) return
+    if (!isGETH || isStablepoolOnly) return
 
     const balanceApi = (
       await sdk.client.balance.getBalance(account?.address ?? "", id)
@@ -352,7 +361,7 @@ export const AddStablepoolLiquidity = ({
               value={value}
               onChange={(v) => {
                 onChange(v)
-                handleShares(v)
+                if (!isGETH) handleShares(v)
               }}
               balance={BN(balance)}
               balanceMax={BN(balanceMax)}

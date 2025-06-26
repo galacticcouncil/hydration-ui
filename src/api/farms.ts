@@ -647,7 +647,7 @@ export const useRefetchClaimableFarmValues = () => {
 
 export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
-  const { tokens, getAssetWithFallback } = useAssets()
+  const { tokens, erc20, getAssetWithFallback } = useAssets()
   const { data } = useAccountAssets()
 
   const {
@@ -742,7 +742,7 @@ export const useAccountClaimableFarmValues = () => {
           const simulator = new OmnipoolLiquidityMiningClaimSim(
             getAccountResolver(api.registry),
             multiCurrency,
-            tokens,
+            [...tokens, ...erc20],
           )
 
           const { globalFarm: mutableGlobalFarm, yieldFarm: mutableYieldFarm } =
