@@ -1,47 +1,69 @@
+import {
+  OhlcData,
+  toUTCTimestamp,
+} from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
-import { DATA } from "@/modules/trade/swap/_mock"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
-
-export enum TradeChartIntervalType {
-  All = "all",
-  Hour = "hour",
-  Day = "day",
-  Week = "week",
-  Month = "month",
-}
+import { bestNumberQuery } from "@/api/chain"
+import { tradePricesQuery } from "@/api/graphql/trade-prices"
+import { useSquidClient } from "@/api/provider"
+import { PeriodType } from "@/components/PeriodInput/PeriodInput"
+import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { scaleHuman } from "@/utils/formatting"
 
 type Args = {
-  readonly assetIn: string
-  readonly assetOut: string
-  readonly interval: TradeChartIntervalType
+  readonly assetInId: string
+  readonly assetOutId: string
+  readonly period: PeriodType | null
 }
 
-export const useTradeChartData = ({ assetIn, assetOut, interval }: Args) => {
-  return useQuery({
-    // Fetch mock data until we have real data
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "trade",
-      "chart",
-      assetIn,
-      assetOut,
-      interval,
-    ],
-    queryFn: mockFetch,
-    retry: 0,
-  })
-}
+export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
+  const rpc = useRpcProvider()
+  const squidClient = useSquidClient()
 
-async function mockFetch() {
-  const shouldError = false
-  return new Promise<typeof DATA>((resolve, reject) => {
-    setTimeout(() => {
-      if (shouldError) {
-        reject(new Error("Failed to fetch data"))
-      } else {
-        resolve(DATA)
-      }
-    }, 1000)
-  })
+  const { getAsset } = useAssets()
+  const assetOut = getAsset(assetOutId)
+
+  const { data: blockNumberData } = useQuery(bestNumberQuery(rpc))
+
+  const currentBlock = blockNumberData?.parachainBlockNumber ?? 0
+  const startingBlock = useMemo(
+    () =>
+      period
+        ? Math.max(0, currentBlock - PERIOD_MS[period] / PARACHAIN_BLOCK_TIME)
+        : 0,
+    // only refetch on period change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [period, currentBlock === 0],
+  )
+
+  const { data, isError, isLoading, isSuccess } = useQuery(
+    tradePricesQuery(squidClient, assetInId, assetOutId, startingBlock),
+  )
+
+  const prices = useMemo(() => {
+    if (isLoading || !assetOut) {
+      return []
+    }
+
+    return (
+      data?.assetSpotPriceHistoricalData?.edges.map<OhlcData>((edge) => ({
+        time: toUTCTimestamp(
+          new Date(edge.node?.block?.timestamp ?? 0).valueOf(),
+        ),
+        close: Number(scaleHuman(edge.node?.price ?? 0, assetOut.decimals)),
+      })) ?? []
+    )
+  }, [data, assetOut, isLoading])
+
+  return {
+    prices,
+    isError,
+    isLoading,
+    isSuccess,
+  }
 }

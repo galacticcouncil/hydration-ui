@@ -16,22 +16,20 @@ import { last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
+import { PeriodType, periodTypes } from "@/components/PeriodInput/PeriodInput"
 import i18n from "@/i18n"
-import {
-  TradeChartIntervalType,
-  useTradeChartData,
-} from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
+import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import {
   TradeChartInterval,
   TradeChartIntervalOptionType,
 } from "@/modules/trade/swap/components/TradeChart/TradeChartInterval"
 import { useAssets } from "@/providers/assetsProvider"
 
-const intervalOptions = Object.values(TradeChartIntervalType).map<
-  TradeChartIntervalOptionType<TradeChartIntervalType>
+const intervalOptions = (["all", ...periodTypes] as const).map<
+  TradeChartIntervalOptionType<PeriodType | "all">
 >((option) => ({
   key: option,
-  label: i18n.t(`interval.${option}`),
+  label: i18n.t(`period.${option}`),
 }))
 
 export type TradeChartProps = Omit<TradingViewChartProps, "data">
@@ -41,25 +39,18 @@ export const TradeChart: React.FC<TradeChartProps> = (props) => {
 
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
-  const [interval, setInterval] = useState<TradeChartIntervalType>(
-    TradeChartIntervalType.All,
-  )
+  const [interval, setInterval] = useState<PeriodType | "all">("all")
   const [crosshair, setCrosshair] = useState<CrosshairCallbackData>(null)
 
-  const {
-    isLoading,
-    isSuccess,
-    isError,
-    data = [],
-  } = useTradeChartData({
-    assetIn,
-    assetOut,
-    interval,
+  const { prices, isLoading, isSuccess, isError } = useTradeChartData({
+    assetInId: assetIn,
+    assetOutId: assetOut,
+    period: interval === "all" ? null : interval,
   })
 
-  const isEmpty = isSuccess && !data.length
+  const isEmpty = isSuccess && !prices.length
 
-  const lastDataPoint = last(data)
+  const lastDataPoint = last(prices)
   const value = getCrosshairValue(crosshair) ?? lastDataPoint?.close ?? 0
 
   const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
@@ -100,7 +91,7 @@ export const TradeChart: React.FC<TradeChartProps> = (props) => {
       >
         <TradingViewChart
           {...props}
-          data={data}
+          data={prices}
           onCrosshairMove={setCrosshair}
         />
       </ChartState>

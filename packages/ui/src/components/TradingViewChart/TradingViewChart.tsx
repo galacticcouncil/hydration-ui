@@ -23,7 +23,7 @@ import {
 import { useTheme } from "@/theme"
 
 export type TradingViewChartProps = {
-  data: OhlcData[]
+  data: Array<OhlcData>
   type?: SeriesType
   height?: number
   onCrosshairMove?: (data: CrosshairCallbackData) => void

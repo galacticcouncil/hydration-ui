@@ -1,0 +1,20 @@
+query TradePrices(
+  $assetInId: String!
+  $assetOutId: String!
+  $filter: AssetSpotPriceHistoricalDatumFilter!
+) {
+  assetSpotPriceHistoricalData(
+    condition: { assetInId: $assetInId, assetOutId: $assetOutId }
+    filter: $filter
+    orderBy: NATURAL
+  ) {
+    edges {
+      node {
+        price
+        block {
+          timestamp
+        }
+      }
+    }
+  }
+}
