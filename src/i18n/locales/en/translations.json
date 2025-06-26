@@ -1504,5 +1504,7 @@
   "borrowApy": "Borrow APY",
   "supplyAndStakeApy": "Supply + Stake APY",
   "stakeApy": "Stake APY",
-  "incentivesApr": "Incentives APR"
+  "incentivesApr": "Incentives APR",
+  "giga.campaign.title": "Polkadot GIGAHydration",
+  "giga.campaign.description": "New farms with GIGA incentives are about to launch this week."
 }

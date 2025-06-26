@@ -22,7 +22,7 @@ export const MobileNavBarContent = () => {
 
   const menuItems = useActiveMenuItems()
 
-  const { visibleTabs, hiddenTabs } = useMemo(() => {
+  const { visibleTabs = [], hiddenTabs = [] } = useMemo(() => {
     return groupBy(menuItems, (item) => {
       const isVisible = isMediumMedia ? item.tabVisible : item.mobVisible
       return isVisible ? "visibleTabs" : "hiddenTabs"
