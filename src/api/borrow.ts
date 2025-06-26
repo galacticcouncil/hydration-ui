@@ -33,11 +33,16 @@ import BN from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
-import { VDOT_ASSET_ID, WSTETH_ASSET_ID } from "utils/constants"
+import {
+  GETH_ERC20_ASSET_ID,
+  VDOT_ASSET_ID,
+  WSTETH_ASSET_ID,
+} from "utils/constants"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import { useStablepoolFees } from "./stableswap"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { useLIDOEthAPR } from "./external/ethereum"
+import { TFarmAprData, useOmnipoolFarm } from "./farms"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -471,9 +476,13 @@ export type BorrowAssetApyData = {
   incentivesNetAPR: number
   incentives: ReserveIncentiveResponse[]
   underlyingAssetsAPY: { supplyApy: number; borrowApy: number; id: string }[]
+  farms: TFarmAprData[] | undefined
 }
 
-export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
+export const useBorrowAssetApy = (
+  assetId: string,
+  withFarms: boolean | undefined = false,
+): BorrowAssetApyData => {
   const { getAsset, getErc20 } = useAssets()
   const { data } = useBorrowReserves()
 
@@ -503,6 +512,10 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
 
   const { data: stablepoolFees } = useStablepoolFees(
     asset?.isStableSwap ? [assetId] : [],
+  )
+
+  const { data: farms } = useOmnipoolFarm(
+    isGETH && withFarms ? GETH_ERC20_ASSET_ID : undefined,
   )
 
   const stablepoolFee = stablepoolFees?.find((fee) => fee.poolId === assetId)
@@ -590,7 +603,10 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     return {
       totalSupplyApy: isIncentivesInfinity
         ? Infinity
-        : supplyAPYSum + incentivesNetAPR + lpAPY,
+        : supplyAPYSum +
+          incentivesNetAPR +
+          lpAPY +
+          Number(farms?.totalApr ?? 0),
       totalBorrowApy: borrowAPYSum + incentivesNetAPR + lpAPY,
       lpAPY: lpAPY,
       underlyingAssetsAPY,
@@ -605,6 +621,7 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     stablepoolFee,
     ethApr,
     isGETH,
+    farms?.totalApr,
   ])
 
   return {
@@ -616,5 +633,6 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     underlyingAssetsAPY,
     vDotApy: vDotApy?.apy,
     incentives: assetReserve?.aIncentivesData ?? [],
+    farms: farms?.farms,
   }
 }

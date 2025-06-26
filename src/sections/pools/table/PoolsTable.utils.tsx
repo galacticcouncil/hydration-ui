@@ -501,7 +501,11 @@ export const usePoolTable = (
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
                     {row.original.isGigaDOT || row.original.isGETH ? (
-                      <GigaAPY type="supply" assetId={row.original.poolId} />
+                      <GigaAPY
+                        type="supply"
+                        assetId={row.original.poolId}
+                        withFarms
+                      />
                     ) : (
                       <APY
                         assetId={row.original.id}

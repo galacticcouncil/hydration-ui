@@ -100,6 +100,7 @@ type APYProps = {
   readonly size?: ResponsiveValue<number>
   readonly color?: ResponsiveValue<keyof typeof theme.colors>
   readonly assetId: string
+  readonly withFarms?: boolean
 }
 
 export const GigaAPY = ({
@@ -108,6 +109,7 @@ export const GigaAPY = ({
   color,
   assetId,
   size,
+  withFarms,
 }: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
@@ -118,7 +120,8 @@ export const GigaAPY = ({
     lpAPY,
     underlyingAssetsAPY,
     incentives,
-  } = useBorrowAssetApy(assetId)
+    farms,
+  } = useBorrowAssetApy(assetId, withFarms)
 
   const isSupply = type === "supply"
   const apy = isSupply ? totalSupplyApy : totalBorrowApy
@@ -190,6 +193,44 @@ export const GigaAPY = ({
                 </SIncentiveRow>
               )
             })}
+            {farms && (
+              <>
+                <div
+                  sx={{
+                    flex: "row",
+                    gap: 4,
+                    justify: "space-between",
+                    mt: 6,
+                    opacity: 0.8,
+                  }}
+                >
+                  <Text fs={10} tTransform="uppercase">
+                    {t("liquidity.table.farms.apr.rewards")}
+                  </Text>
+                  <Text fs={10} tTransform="uppercase">
+                    {t("liquidity.table.farms.apr")}
+                  </Text>
+                </div>
+                {farms.map(({ apr, rewardCurrency }) => {
+                  return (
+                    <SIncentiveRow key={rewardCurrency}>
+                      <div sx={{ flex: "row", gap: 4, align: "center" }}>
+                        <Icon
+                          size={14}
+                          icon={<AssetLogo id={rewardCurrency} />}
+                        />
+                        <Text fs={12}>
+                          {getAssetWithFallback(rewardCurrency).symbol}
+                        </Text>
+                      </div>
+                      <Text fs={12} font="GeistSemiBold">
+                        {t("value.percentage", { value: apr })}
+                      </Text>
+                    </SIncentiveRow>
+                  )
+                })}
+              </>
+            )}
           </>
         }
       />
@@ -252,6 +293,7 @@ export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
 type OverrideApyProps = APYProps & {
   readonly children: ReactNode
   readonly assetId: string
+  readonly withFarms?: boolean
 }
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
