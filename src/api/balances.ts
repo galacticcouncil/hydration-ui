@@ -25,7 +25,10 @@ export const parseBalanceData = (
   const freeBalance = data.free.toString()
   const frozenBalance = data.frozen.toString()
   const reservedBalance = data.reserved.toString()
-  const balance = BigNumber(freeBalance).minus(frozenBalance).toString()
+
+  const balance = BigNumber(freeBalance).lt(frozenBalance)
+    ? "0"
+    : BigNumber(freeBalance).minus(frozenBalance).toString()
 
   return {
     accountId: address,
