@@ -46,6 +46,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
     isGigaDOT,
     isGETH,
     smallestPercentage,
+    symbol,
   } = pool as TStablepool
 
   const assetIds = Object.keys(pool.meta.meta ?? {})
@@ -92,11 +93,14 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
 
   const title = stablepoolSelected
     ? t(
-        `liquidity.stablepool.transfer.stablepool${isGigaDOT ? ".gigadot" : ""}`,
+        `liquidity.stablepool.transfer.stablepool${isGigaDOT || isGETH ? ".custom" : ""}`,
+        { symbol },
       )
-    : t(
-        `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
-      )
+    : isGETH
+      ? t("liquidity.add.modal.title.geth")
+      : t(
+          `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
+        )
 
   return (
     <Modal open onClose={onClose} disableCloseOutside>

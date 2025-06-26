@@ -202,6 +202,7 @@ export const AddStablepoolLiquidity = ({
     await createTransaction(
       {
         tx: isSwap ? swapTx : tx,
+        title: isGETH ? t("liquidity.add.modal.geth.stepper.first") : undefined,
       },
       {
         onSuccess: (result) =>
@@ -266,6 +267,7 @@ export const AddStablepoolLiquidity = ({
     await createTransaction(
       {
         tx: secondTx,
+        title: t("liquidity.add.modal.geth.stepper.second"),
       },
       {
         onSuccess: (result) =>
@@ -306,7 +308,7 @@ export const AddStablepoolLiquidity = ({
   const onInvalidSubmit = (errors: FieldErrors<FormValues<typeof form>>) => {
     if (
       !isJoinFarms &&
-      (errors.amount as { farm?: { message: string } }).farm
+      (errors.amount as { farm?: { message: string } })?.farm
     ) {
       onSubmit(form.getValues())
     }
