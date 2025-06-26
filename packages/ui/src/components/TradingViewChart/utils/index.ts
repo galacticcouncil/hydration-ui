@@ -124,13 +124,13 @@ const getMainSeries = (
 
 const getMainSeriesData = (
   type: SeriesType,
-  data: OhlcData[],
-): OhlcData[] | SingleValueData[] => {
+  data: Array<OhlcData>,
+): Array<OhlcData> | Array<SingleValueData> => {
   if (type === "Candlestick") return data
   return data.map((item) => ({ time: item.time, value: item.close }))
 }
 
-const getVolumeData = (data: OhlcData[]): SingleValueData[] => {
+const getVolumeData = (data: ReadonlyArray<OhlcData>): SingleValueData[] => {
   return data.map((item) => ({
     time: item.time,
     value: item.volume ?? 0,
@@ -140,7 +140,7 @@ const getVolumeData = (data: OhlcData[]): SingleValueData[] => {
 export const renderSeries = (
   chart: IChartApi,
   type: SeriesType,
-  data: OhlcData[] = [],
+  data: Array<OhlcData> = [],
   options: ColorOptions,
 ): ISeriesApi<SeriesType> => {
   const series = getMainSeries(chart, type, options)
