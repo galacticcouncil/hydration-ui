@@ -217,7 +217,11 @@ export const WalletAssetsTable = ({
                     </Text>
                   </>
                 }
-                navigateTo={LINKS.cross_chain}
+                navigateTo={
+                  import.meta.env.VITE_ENV === "production"
+                    ? LINKS.cross_chain
+                    : undefined
+                }
                 btnText={t("wallet.assets.table.empty.btn")}
               />
             )}
