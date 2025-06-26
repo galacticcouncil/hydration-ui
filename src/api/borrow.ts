@@ -543,6 +543,8 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
         ? incentivesAPRSum || 0
         : Infinity
 
+    const numberOfReserves = BN.max(underlyingReserves.length, 2)
+
     const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
       const isVdot =
         reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
@@ -556,14 +558,8 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
         : BN(reserve.variableBorrowAPY)
 
       return {
-        supplyApy: supplyAPY
-          .div(underlyingReserves.length)
-          .times(100)
-          .toNumber(),
-        borrowApy: borrowAPY
-          .div(underlyingReserves.length)
-          .times(100)
-          .toNumber(),
+        supplyApy: supplyAPY.div(numberOfReserves).times(100).toNumber(),
+        borrowApy: borrowAPY.div(numberOfReserves).times(100).toNumber(),
         id: getAssetIdFromAddress(reserve.underlyingAsset),
       }
     })
@@ -571,8 +567,12 @@ export const useBorrowAssetApy = (assetId: string): BorrowAssetApyData => {
     if (isGETH) {
       underlyingAssetsAPY.push({
         id: WSTETH_ASSET_ID,
-        supplyApy: ethApr ?? 0,
-        borrowApy: ethApr ?? 0,
+        supplyApy: BN(ethApr ?? 0)
+          .div(numberOfReserves)
+          .toNumber(),
+        borrowApy: BN(ethApr ?? 0)
+          .div(numberOfReserves)
+          .toNumber(),
       })
     }
 
