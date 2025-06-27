@@ -219,7 +219,7 @@ export class OmnipoolLiquidityMiningClaimSim {
 
     // avoid double claiming, if possible
     if (BN(farmEntry.updatedAt).eq(current_period)) {
-      return null
+      // return null
     }
 
     this.sync_global_farm(global_farm, current_period, oraclePrice)
