@@ -125,6 +125,10 @@ export const FarmingPositionWrapper = () => {
             (omnipoolDeposit) => omnipoolDeposit.depositId === position.id,
           )
 
+      const activeFarming = position.data.yieldFarmEntries.every((entry) =>
+        pool.farms.find((farm) => farm.yieldFarmId === entry.yieldFarmId),
+      )
+
       if (depositData) {
         acc.positions.push({
           element: (
@@ -134,6 +138,7 @@ export const FarmingPositionWrapper = () => {
               depositNft={position}
               depositData={depositData}
               availableYieldFarms={availableYieldFarms}
+              activeFarming={activeFarming}
             />
           ),
           moveTo: !acc.height.isZero()
