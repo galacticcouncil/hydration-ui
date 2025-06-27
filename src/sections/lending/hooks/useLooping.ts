@@ -16,6 +16,7 @@ import {
 } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 import { useRootStore } from "sections/lending/store/root"
+import { getLoopingSteps } from "sections/lending/utils/looping"
 import { getReserveByAssetId } from "sections/lending/utils/utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
@@ -23,9 +24,6 @@ import { createToastMessages } from "state/toasts"
 import { BN_0 } from "utils/constants"
 import { H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
-
-const MAX_LOOPING_STEPS = 100
-const SQUEZEE_HF_SAFETY_MARGIN = 0.9
 
 type BatchItem =
   | {
@@ -265,88 +263,6 @@ export const useLooping = (
   }
 }
 
-/* function getLoopingSteps_old({
-  initialAmount,
-  multiplier,
-  ltv,
-}: {
-  initialAmount: string
-  multiplier: number
-  ltv: string
-}): LoopingStep[] {
-  const amount = new BigNumber(initialAmount)
-
-  const steps = Array.from({ length: multiplier - 1 }).reduce<LoopingStep[]>(
-    (acc) => {
-      const prev = acc[acc.length - 1]
-      const supply = prev.supply.times(ltv)
-      const borrow = supply
-      return [...acc, { supply, borrow }]
-    },
-    [{ supply: amount, borrow: new BigNumber(0) }],
-  )
-
-  const targetTotalSupply = amount.times(multiplier)
-  const accumulatedSupply = steps.reduce(
-    (sum, step) => sum.plus(step.supply),
-    new BigNumber(0),
-  )
-
-  // adjustment to reach the target total supply
-  const adjustmentStep: LoopingStep = {
-    supply: targetTotalSupply.minus(accumulatedSupply),
-    borrow: steps[steps.length - 1].supply.times(ltv),
-  }
-
-  // final step to squeeze Health Factor with some safety margin
-  const squeezeStep: LoopingStep = {
-    supply: BN_0,
-    borrow: adjustmentStep.supply.times(ltv).times(SQUEZEE_HF_SAFETY_MARGIN),
-  }
-
-  return [...steps, adjustmentStep, squeezeStep]
-} */
-
-export function getLoopingSteps({
-  initialAmount,
-  multiplier,
-  ltv,
-}: {
-  initialAmount: string
-  multiplier: number
-  ltv: string
-}): LoopingStep[] {
-  const amount = new BigNumber(initialAmount)
-  const targetSupply = amount.times(multiplier)
-  const ltvRatio = new BigNumber(ltv)
-
-  const steps: LoopingStep[] = [{ supply: amount, borrow: new BigNumber(0) }]
-  let totalSupply = amount
-
-  let i = 0
-  while (totalSupply.lt(targetSupply) && i < MAX_LOOPING_STEPS) {
-    const prev = steps[steps.length - 1]
-    const supply = prev.supply.times(ltvRatio)
-    const borrow = supply
-
-    totalSupply = totalSupply.plus(supply)
-    if (totalSupply.gt(targetSupply)) break
-
-    steps.push({ supply, borrow })
-    i++
-  }
-
-  const lastStep = steps[steps.length - 1]
-
-  // final step to squeeze Health Factor with some safety margin
-  const squeezeHfStep: LoopingStep = {
-    supply: BN_0,
-    borrow: lastStep.supply.times(ltv).times(SQUEZEE_HF_SAFETY_MARGIN),
-  }
-
-  return [...steps, squeezeHfStep]
-}
-
 function printSteps(
   steps: LoopingStep[],
   borrowReserve: ComputedReserveData,
@@ -365,7 +281,7 @@ function printSteps(
 
   console.table({
     ...Object.fromEntries(
-      stepsHumanized.map((user, i) => [`Step ${i + 1}`, user]),
+      stepsHumanized.map((step, i) => [`Step ${i + 1}`, step]),
     ),
     [String.fromCharCode(160)]: {
       borrow: "👇",

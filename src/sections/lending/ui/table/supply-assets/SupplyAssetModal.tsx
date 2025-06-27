@@ -1,7 +1,7 @@
 import { useAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { ModalContents } from "components/Modal/contents/ModalContents"
-import { FC, useState } from "react"
+import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -9,7 +9,6 @@ import { NewDepositFormValues } from "sections/wallet/strategy/NewDepositForm/Ne
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { NewDepositAssetField } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetField"
 import { Button } from "components/Button/Button"
-import { Text } from "components/Typography/Text/Text"
 import BigNumber from "bignumber.js"
 import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
 import { useModalPagination } from "components/Modal/Modal.utils"
@@ -17,14 +16,13 @@ import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/New
 import { noop } from "utils/helpers"
 import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/SupplyAssetSummary"
 import { Alert } from "components/Alert/Alert"
-import { Switch } from "components/Switch/Switch"
-import { SummaryRow } from "components/Summary/SummaryRow"
 import { useLooping } from "sections/lending/hooks/useLooping"
 import { DOT_ASSET_ID } from "utils/constants"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAssetIdFromAddress } from "utils/evm"
 import { IncompatibleEmodePositionsWarning } from "sections/lending/components/transactions/Warnings/IncompatibleEmodePositionsWarning"
 import { SupplyAssetLoopingSlider } from "sections/lending/ui/table/supply-assets/SupplyAssetLoopingSlider"
+import { getMaxMultiplierFromLtv } from "sections/lending/utils/looping"
 
 type Props = {
   readonly assetId: string
@@ -41,11 +39,6 @@ export const SupplyAssetModal: FC<Props> = ({
   const { account } = useAccount()
   const { user } = useAppDataContext()
 
-  const [shouldEnableEmode, setShouldEnableEmode] = useState(false)
-  const [loopingMultiplier, setLoopingMultiplier] = useState(1)
-
-  const isLoopingEnabled = loopingMultiplier > 1
-
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
@@ -53,7 +46,12 @@ export const SupplyAssetModal: FC<Props> = ({
   const accountAssetsMap = accountAssets?.accountAssetsMap
 
   const form = useFormContext<NewDepositFormValues>()
-  const [selectedAsset, amount] = form.watch(["asset", "amount"])
+  const [selectedAsset, amount, loopingMultiplier] = form.watch([
+    "asset",
+    "amount",
+    "loopingMultiplier",
+  ])
+
   const selectedAssetBalance =
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
@@ -65,6 +63,15 @@ export const SupplyAssetModal: FC<Props> = ({
     underlyingReserve,
     supplyCapReached,
   } = useSubmitNewDepositForm(assetId)
+
+  const isInCorrectEmode =
+    user.userEmodeCategoryId === underlyingReserve?.eModeCategoryId
+
+  const isLoopingEnabled = loopingMultiplier > 1
+
+  const maxLoopingMultiplier = getMaxMultiplierFromLtv(
+    Number(underlyingReserve?.formattedEModeLtv ?? 0),
+  )
 
   const {
     submitLooping,
@@ -80,7 +87,7 @@ export const SupplyAssetModal: FC<Props> = ({
       borrowAssetId: DOT_ASSET_ID,
       assetInId: selectedAsset?.id ?? "",
       assetOutId: assetId,
-      withEmode: shouldEnableEmode,
+      withEmode: !isInCorrectEmode,
     },
     {
       enabled: !!selectedAsset && isLoopingEnabled,
@@ -103,11 +110,9 @@ export const SupplyAssetModal: FC<Props> = ({
     ? minLoopedAmountOut
     : minDepositedAmountOut
 
-  const isInCorrectEmode =
-    user.userEmodeCategoryId === underlyingReserve?.eModeCategoryId
-
-  const hasIncompatibleEmodePositions =
-    shouldEnableEmode &&
+  const hasIncompatibleLoopingPositions =
+    isLoopingEnabled &&
+    !isInCorrectEmode &&
     user.userReservesData.some(
       (userReserve) =>
         (Number(userReserve.scaledVariableDebt) > 0 ||
@@ -132,29 +137,12 @@ export const SupplyAssetModal: FC<Props> = ({
                   selectedAssetBalance={selectedAssetBalance}
                   onSelectAssetClick={allowedAssets.length ? next : noop}
                 />
-                {!isInCorrectEmode && (
-                  <SummaryRow
-                    label={
-                      <Text fs={14} color="brightBlue300">
-                        {t("lending.emode.switch.title")}
-                      </Text>
-                    }
-                    content={
-                      <Switch
-                        name="emode"
-                        sx={{ my: -6 }}
-                        onCheckedChange={setShouldEnableEmode}
-                        value={shouldEnableEmode}
-                      />
-                    }
-                    withSeparator
+                {maxLoopingMultiplier > 1 && (
+                  <SupplyAssetLoopingSlider
+                    max={maxLoopingMultiplier}
+                    sx={{ py: 12, mb: 10 }}
                   />
                 )}
-                <SupplyAssetLoopingSlider
-                  value={loopingMultiplier}
-                  onChange={setLoopingMultiplier}
-                  sx={{ py: 12, mb: 10 }}
-                />
                 {underlyingReserve && (
                   <SupplyAssetSummary
                     asset={asset}
@@ -175,7 +163,7 @@ export const SupplyAssetModal: FC<Props> = ({
                     })}
                   </Alert>
                 )}
-                {hasIncompatibleEmodePositions && (
+                {hasIncompatibleLoopingPositions && (
                   <IncompatibleEmodePositionsWarning
                     eModeLabel={underlyingReserve?.eModeLabel}
                   />
@@ -186,7 +174,7 @@ export const SupplyAssetModal: FC<Props> = ({
                       <Button
                         variant="primary"
                         disabled={
-                          isLoopingLoading || hasIncompatibleEmodePositions
+                          isLoopingLoading || hasIncompatibleLoopingPositions
                         }
                         isLoading={isLoopingLoading}
                       >

@@ -2,21 +2,27 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { Slider } from "components/Slider/Slider"
 import { Text } from "components/Typography/Text/Text"
+import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { NewDepositFormValues } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.form"
 
 export type SupplyAssetLoopingSliderProps = {
-  value: number
-  onChange: (value: number) => void
   className?: string
+  max: number
 }
-
-const LOOPING_MULTIPLIER_MIN = 1
-const LOOPING_MULTIPLIER_MAX = 8
 
 export const SupplyAssetLoopingSlider: React.FC<
   SupplyAssetLoopingSliderProps
-> = ({ value, onChange, className }) => {
+> = ({ className, max }) => {
   const { t } = useTranslation()
+
+  const { control } = useFormContext<NewDepositFormValues>()
+
+  const { field } = useController({
+    control,
+    name: "loopingMultiplier",
+  })
+
   return (
     <div className={className}>
       <div sx={{ flex: "row", justify: "space-between", mb: 4 }}>
@@ -25,7 +31,7 @@ export const SupplyAssetLoopingSlider: React.FC<
           <Text fs={14} sx={{ flex: "row", align: "center", gap: 4 }}>
             <span>
               {t("lending.looping.slider.value", {
-                value,
+                value: field.value,
               })}
             </span>
             <SInfoIcon />
@@ -34,13 +40,13 @@ export const SupplyAssetLoopingSlider: React.FC<
       </div>
       <Slider
         step={1}
-        min={LOOPING_MULTIPLIER_MIN}
-        max={LOOPING_MULTIPLIER_MAX}
+        min={1}
+        max={max}
         thumbSize="small"
         dashes="auto"
         withDashValues
-        onChange={([value]) => onChange(value)}
-        value={[value]}
+        onChange={([value]) => field.onChange(value)}
+        value={[field.value]}
         formatDashValue={(value) =>
           t("lending.looping.slider.value", { value })
         }
