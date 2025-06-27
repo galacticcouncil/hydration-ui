@@ -5,19 +5,21 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Text } from "components/Typography/Text/Text"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { TJoinFarmsInput, useJoinFarms } from "utils/farms/deposit"
+import { RejoinFarm, TJoinFarmsInput, useJoinFarms } from "utils/farms/deposit"
 import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/FarmDetailsCard"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
 import { TLPData } from "utils/omnipool"
 import { JoinFarmsForm } from "./JoinFarmsForm"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TDeposit } from "api/deposits"
+import { RejoinAllFarms } from "./RejoinAllFarms"
 
 type JoinFarmModalProps = {
   onClose: () => void
   position?: TLPData
   depositNft?: TDeposit
   initialFarms?: TFarmAprData[]
+  rejoinFarms?: RejoinFarm[]
 }
 
 export enum Page {
@@ -30,10 +32,11 @@ export const JoinFarmModal = ({
   position,
   depositNft,
   initialFarms,
+  rejoinFarms,
 }: JoinFarmModalProps) => {
   const { t } = useTranslation()
   const {
-    pool: { meta, id: poolId, farms: allFarms },
+    pool: { meta, id: poolId, farms: allFarms, symbol },
   } = usePoolData()
   const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
 
@@ -93,12 +96,20 @@ export const JoinFarmModal = ({
                     />
                   ))}
                 </div>
-                <JoinFarmsForm
-                  position={position}
-                  farms={farms}
-                  depositNft={depositNft}
-                  onSubmit={onSubmit}
-                />
+                {rejoinFarms ? (
+                  <RejoinAllFarms
+                    rejoinFarms={rejoinFarms}
+                    symbol={symbol}
+                    onClose={onClose}
+                  />
+                ) : (
+                  <JoinFarmsForm
+                    position={position}
+                    farms={farms}
+                    depositNft={depositNft}
+                    onSubmit={onSubmit}
+                  />
+                )}
               </>
             ),
           },

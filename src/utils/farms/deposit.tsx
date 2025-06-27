@@ -2,7 +2,7 @@ import { TFarmAprData, useAccountClaimableFarmValues } from "api/farms"
 import { Trans } from "react-i18next"
 import { ToastMessage, TransactionOptions, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
-import { TOAST_MESSAGES } from "state/toasts"
+import { createToastMessages, TOAST_MESSAGES } from "state/toasts"
 import { ApiPromise } from "@polkadot/api"
 import { t } from "i18next"
 import BN from "bignumber.js"
@@ -10,11 +10,18 @@ import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 import { scaleHuman } from "utils/balance"
 import { TShareToken, useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
+import { useMutation } from "@tanstack/react-query"
 
 type XYKInput = { shares: string; depositId?: string }
 type OmnipoolInput = { positionId: string; value: string; depositId?: string }
 
 export type TJoinFarmsInput = XYKInput | OmnipoolInput
+
+export type RejoinFarm = {
+  farms: TFarmAprData[]
+  depositId: string
+  currentValue?: string
+}
 
 const isXYKData = (data: TJoinFarmsInput): data is XYKInput => {
   return (data as XYKInput).shares !== undefined
@@ -178,10 +185,60 @@ export const useJoinFarms = ({ farms, poolId, options }: TArgs) => {
   }
 }
 
-export const useRedepositFarms = ({
+export const useRedepositOmnipoolFarms = ({
   farms,
-  poolId,
+  total,
+  symbol,
+  onSubmit,
 }: {
-  farms: TFarmAprData[]
-  poolId: string
-}) => {}
+  farms: RejoinFarm[]
+  total: string
+  symbol: string
+  onSubmit: () => void
+}) => {
+  const { api } = useRpcProvider()
+  const { createTransaction } = useStore()
+  const refetchAccountAssets = useRefetchAccountAssets()
+  const { refetch: refetchClaimableValues } = useAccountClaimableFarmValues()
+
+  return useMutation(
+    async () => {
+      const txs = farms
+        .map((farm) =>
+          farm.farms.map((farmData) =>
+            api.tx.omnipoolLiquidityMining.redepositShares(
+              farmData.globalFarmId,
+              farmData.yieldFarmId,
+              farm.depositId,
+            ),
+          ),
+        )
+        .flat()
+
+      const toast = createToastMessages("farms.modal.joinGiga.toast", {
+        t,
+        tOptions: {
+          amount: BN(total),
+          symbol,
+        },
+        components: ["span", "span.highlight"],
+      })
+
+      await createTransaction(
+        {
+          tx: api.tx.utility.batchAll(txs),
+        },
+        {
+          toast,
+          onSubmitted: onSubmit,
+        },
+      )
+    },
+    {
+      onSuccess: () => {
+        refetchAccountAssets()
+        refetchClaimableValues()
+      },
+    },
+  )
+}
