@@ -165,6 +165,12 @@ export const SupplyAssetModal: FC<Props> = ({
                 )}
                 {hasIncompatibleLoopingPositions && (
                   <IncompatibleEmodePositionsWarning
+                    title={t(
+                      "lending.looping.incompatibleEmodePositions.title",
+                      {
+                        eModeLabel: underlyingReserve?.eModeLabel ?? "",
+                      },
+                    )}
                     eModeLabel={underlyingReserve?.eModeLabel}
                   />
                 )}
