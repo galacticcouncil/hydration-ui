@@ -21,6 +21,14 @@ export enum WalletProviderType {
   WalletConnectEvm = "walletconnect-evm",
 }
 
+export const isWalletProviderType = (
+  provider: string,
+): provider is WalletProviderType => {
+  return Object.values(WalletProviderType).includes(
+    provider as WalletProviderType,
+  )
+}
+
 export const TALISMAN_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Talisman,
   WalletProviderType.TalismanEvm,

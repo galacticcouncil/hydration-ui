@@ -20,7 +20,7 @@ import {
   useAddressStore,
 } from "@/components/address-book/AddressBook.store"
 import { AddressBookEmptyState } from "@/components/address-book/AddressBookEmptyState"
-import { AddressBookSearch } from "@/components/address-book/AddressBookSeach"
+import { AddressBookSearch } from "@/components/address-book/AddressBookSearch"
 
 type Props = {
   readonly header?: React.ReactNode
