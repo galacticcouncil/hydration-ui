@@ -15,6 +15,11 @@ import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { useAccountAssets } from "api/deposits"
+import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
+import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward"
+import Skeleton from "react-loading-skeleton"
 
 export type CurrentDepositData = {
   readonly depositBalance: string
@@ -23,23 +28,39 @@ export type CurrentDepositData = {
 
 type Props = {
   readonly assetId: string
-  readonly depositData: CurrentDepositData
+  readonly emptyState: string
 }
 
-export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
+export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
   const { t } = useTranslation()
   const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
-
-  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
 
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
-  const { getAssetPrice } = useAssetsPrice([assetId])
+  const { data: accountAssets, isLoading: isAccountAssetsLoading } =
+    useAccountAssets()
+
+  const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
+
+  const depositBalance = new BigNumber(
+    accountAsset?.balance?.balance || "0",
+  ).shiftedBy(-asset.decimals)
+
+  const isMiningPositions = !!accountAsset?.omnipoolDeposits?.length
+
+  const reward = useAssetReward(assetId)
+
+  const hasBalance =
+    depositBalance.gt(0) || BigNumber(reward.balance).gt(0) || isMiningPositions
+
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
+
+  const { getAssetPrice, isLoading } = useAssetsPrice([assetId])
   const spotPrice = getAssetPrice(assetId).price || "0"
 
   const depositValue = new BigNumber(spotPrice)
-    .times(depositData.depositBalance || "0")
+    .times(depositBalance || "0")
     .toString()
 
   const isGETH = assetId && assetId === GETH_ERC20_ASSET_ID
@@ -48,6 +69,16 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
     isGETH ? GETH_STABLESWAP_ASSET_ID : "",
   )
 
+  if (isAccountAssetsLoading || isLoading)
+    return (
+      <div sx={{ pb: [0, 30] }}>
+        <Skeleton width="100%" height={20} />
+        <Skeleton width="70%" height={20} sx={{ mt: 4 }} />
+      </div>
+    )
+
+  if (!hasBalance) return <CurrentDepositEmptyState emptyState={emptyState} />
+
   const isAccountBindingRequired = !isLoadingEvmAccount && !isBound
 
   return (
@@ -55,7 +86,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
       <CurrentDepositBalance
         label={t("wallet.strategy.deposit.myDeposit")}
         balance={t("value.tokenWithSymbol", {
-          value: depositData.depositBalance,
+          value: depositBalance,
           symbol: asset.symbol,
         })}
         value={t("value.usd", { amount: depositValue })}
@@ -64,7 +95,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
         size="small"
         variant="outline"
         css={{ borderColor: "rgba(255,255,255,0.2)" }}
-        disabled={new BigNumber(depositData.depositBalance).lte(0)}
+        disabled={new BigNumber(depositBalance).lte(0)}
         onClick={() => setIsRemoveModalOpen(true)}
       >
         {t("remove")}
@@ -72,8 +103,10 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
       <CurrentDepositSeparator />
       {isAccountBindingRequired ? (
         <CurrentDepositBindAccount />
+      ) : isGETH ? (
+        <CurrentDepositFarmsClaimReward assetId={assetId} />
       ) : (
-        <CurrentDepositClaimReward reward={depositData.reward} />
+        <CurrentDepositClaimReward reward={reward} />
       )}
       <Modal
         open={isRemoveModalOpen}
@@ -81,7 +114,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, depositData }) => {
       >
         <RemoveDepositModal
           assetId={assetId}
-          balance={depositData.depositBalance}
+          balance={depositBalance.toString()}
           onClose={() => setIsRemoveModalOpen(false)}
           assetReceiveId={gethReserves.biggestPercentage?.assetId}
         />

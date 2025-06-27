@@ -4,7 +4,6 @@ import { NewDepositFormValues } from "./NewDepositForm.form"
 import { useFormContext } from "react-hook-form"
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
-import { CurrentDepositData } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit"
 import { NewDepositAssetField } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetField"
 import { NewDepositSummary } from "sections/wallet/strategy/NewDepositForm/NewDepositSummary"
 import { useAccountAssets } from "api/deposits"
@@ -22,10 +21,9 @@ import { Alert } from "components/Alert/Alert"
 
 type Props = {
   readonly assetId: string
-  readonly depositData: CurrentDepositData | null
 }
 
-export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
+export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
 
