@@ -67,12 +67,14 @@ export const JoinedFarms = ({ depositNft }: JoinedFarmsProps) => {
           }))}
         />
         <Text fs={16} color="white">
-          {aprs
-            .map((apr) =>
-              t("value.percentage", { value: apr, decimalPlaces: 1 }),
-            )
-            .join(" + ")}{" "}
-          {t("apr")}
+          {aprs.length
+            ? aprs
+                .map((apr) =>
+                  t("value.percentage", { value: apr, decimalPlaces: 1 }),
+                )
+                .join(" + ")
+            : t("value.percentage", { value: 0, decimalPlaces: 1 })}
+          {" " + t("apr")}
         </Text>
       </div>
     </div>

@@ -3,8 +3,9 @@ import { GigaBannerContainer } from "./GigaCampaignBanner.styled"
 import { useTranslation } from "react-i18next"
 import { Icon } from "components/Icon/Icon"
 import Title from "assets/icons/gigaCampaignTitle.svg?react"
+import { ReactNode } from "react"
 
-export const GigaCampaignBanner = () => {
+export const GigaCampaignBanner = ({ action }: { action?: ReactNode }) => {
   const { t } = useTranslation()
 
   return (
@@ -15,6 +16,7 @@ export const GigaCampaignBanner = () => {
           {t("giga.campaign.description")}
         </Text>
       </div>
+      {action}
     </GigaBannerContainer>
   )
 }
