@@ -226,7 +226,7 @@ export const useRedepositOmnipoolFarms = ({
 
       await createTransaction(
         {
-          tx: api.tx.utility.batchAll(txs),
+          tx: api.tx.utility.forceBatch(txs),
         },
         {
           toast,
