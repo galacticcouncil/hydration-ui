@@ -270,6 +270,8 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { data } = useAccountAssets()
   const { client } = sdk
 
+  const balanceClient = client?.balance
+
   const { omnipoolDeposits = [] } = data ?? {}
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
@@ -285,9 +287,10 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
   const { data: stoppedFarmsData = [] } = useQuery(
     QUERY_KEYS.stoppedOmnipoolFarms(account?.address),
-    getFarmsData(api, client.balance, stoppedFarms, getAssetWithFallback),
+    getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback),
     {
       enabled:
+        !!balanceClient &&
         isActiveFarms &&
         isLoaded &&
         !!account?.address &&
@@ -317,6 +320,8 @@ export const useXYKFarms = (ids: string[]) => {
   const { data } = useAccountAssets()
   const { client } = sdk
 
+  const balanceClient = client?.balance
+
   const { xykDeposits = [] } = data ?? {}
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
@@ -332,9 +337,10 @@ export const useXYKFarms = (ids: string[]) => {
 
   const { data: stoppedFarmsData = [] } = useQuery(
     QUERY_KEYS.stoppedXykFarms(account?.address),
-    getFarmsData(api, client.balance, stoppedFarms, getAssetWithFallback, true),
+    getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback, true),
     {
       enabled:
+        !!balanceClient &&
         isActiveFarms &&
         isLoaded &&
         !!account?.address &&
