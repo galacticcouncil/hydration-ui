@@ -1,8 +1,6 @@
+import { AddressBook, AddressBookProps } from "@galacticcouncil/web3-connect"
 import { FieldPathByValue, FieldValues, useFormContext } from "react-hook-form"
 import { useController } from "react-hook-form"
-
-import { AddressBookProps } from "@/components/AddressBook/AddressBook"
-import { AddressBook } from "@/components/AddressBook/AddressBook"
 
 type Props<TFormValues extends FieldValues> = Omit<
   AddressBookProps,

@@ -105,7 +105,7 @@ export const SInput = styled.input<CustomInputProps>(
       color: ${isError ? theme.accents.danger.secondary : theme.text.high};
 
       ::placeholder {
-        color: ${theme.text.medium};
+        color: ${isError ? theme.accents.danger.secondary : theme.text.medium};
       }
 
       :disabled {

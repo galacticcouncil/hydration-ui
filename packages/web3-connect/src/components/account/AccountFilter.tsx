@@ -2,53 +2,58 @@ import { Button, Flex } from "@galacticcouncil/ui/components"
 
 import { WalletMode } from "@/hooks/useWeb3Connect"
 
-export function getWalletModeIcon(mode: WalletMode) {
-  if (mode === WalletMode.EVM) {
-    return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
-  }
-  if (mode === WalletMode.Substrate) {
-    return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
-  }
-
-  if (mode === WalletMode.Solana) {
-    return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
-  }
-
-  return ""
-}
-
-export function getWalletModeName(mode: WalletMode) {
-  if (mode === WalletMode.EVM) {
-    return "Ethereum"
-  }
-  if (mode === WalletMode.Substrate) {
-    return "Polkadot"
-  }
-
-  if (mode === WalletMode.Solana) {
-    return "Solana"
-  }
-
-  return ""
-}
-
-const WALLET_MODES = [
+export const allAccountFilterOptions = [
   WalletMode.Substrate,
   WalletMode.EVM,
   WalletMode.Solana,
-] as const
+] as const satisfies Array<WalletMode>
+
+export type AccountFilterOptionOverride =
+  (typeof allAccountFilterOptions)[number]
+
+export type AccountFilterOption =
+  | AccountFilterOptionOverride
+  | WalletMode.Default
+
+const modeData: Record<
+  AccountFilterOptionOverride,
+  [name: string, icon: string]
+> = {
+  [WalletMode.Substrate]: [
+    "Polkadot",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg",
+  ],
+  [WalletMode.EVM]: [
+    "Evm",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg",
+  ],
+  [WalletMode.Solana]: [
+    "Solana",
+    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg",
+  ],
+}
+
+const defaultBlacklist: ReadonlyArray<AccountFilterOptionOverride> = [
+  WalletMode.Solana,
+]
 
 export type AccountFilterProps = {
-  active: WalletMode
-  onSetActive: (mode: WalletMode) => void
-  blacklist?: WalletMode[]
+  readonly active: AccountFilterOption
+  readonly whitelist?: ReadonlyArray<AccountFilterOptionOverride>
+  readonly blacklist?: ReadonlyArray<AccountFilterOptionOverride>
+  readonly onSetActive: (mode: AccountFilterOption) => void
 }
 
 export const AccountFilter: React.FC<AccountFilterProps> = ({
   active,
-  onSetActive,
+  whitelist,
   blacklist,
+  onSetActive,
 }) => {
+  const fullBlacklist = blacklist
+    ? [...defaultBlacklist, ...blacklist]
+    : defaultBlacklist
+
   return (
     <Flex gap={10}>
       <Button
@@ -57,22 +62,29 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
       >
         All
       </Button>
-      {WALLET_MODES.filter((mode) => !blacklist?.includes(mode)).map((mode) => (
-        <Button
-          variant={active === mode ? "secondary" : "tertiary"}
-          size="small"
-          key={mode}
-          onClick={() => onSetActive(mode)}
-          sx={{ position: "relative", pl: 6 }}
-        >
-          <img
-            sx={{ size: 20 }}
-            src={getWalletModeIcon(mode)}
-            alt={getWalletModeName(mode)}
-          />
-          {getWalletModeName(mode)}
-        </Button>
-      ))}
+      {Object.entries(modeData)
+        .filter(
+          ([mode]) =>
+            !whitelist ||
+            whitelist.includes(mode as AccountFilterOptionOverride),
+        )
+        .filter(
+          ([mode]) =>
+            !fullBlacklist ||
+            !fullBlacklist.includes(mode as AccountFilterOptionOverride),
+        )
+        .map(([mode, [name, icon]]) => (
+          <Button
+            variant={active === mode ? "secondary" : "tertiary"}
+            size="small"
+            key={mode}
+            onClick={() => onSetActive(mode as AccountFilterOption)}
+            sx={{ position: "relative", pl: 6 }}
+          >
+            <img sx={{ size: 20 }} src={icon} alt={name} />
+            {name}
+          </Button>
+        ))}
     </Flex>
   )
 }

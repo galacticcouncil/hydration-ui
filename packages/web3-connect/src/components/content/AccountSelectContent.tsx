@@ -14,7 +14,10 @@ import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
-import { AccountFilter } from "@/components/account/AccountFilter"
+import {
+  AccountFilter,
+  AccountFilterOption,
+} from "@/components/account/AccountFilter"
 import { AccountOption } from "@/components/account/AccountOption"
 import { getFilteredAccounts } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
@@ -33,7 +36,7 @@ export const AccountSelectContent = () => {
       ),
     )
 
-  const [filter, setFilter] = useState<WalletMode>(WalletMode.Default)
+  const [filter, setFilter] = useState<AccountFilterOption>(WalletMode.Default)
   const [searchVal, setSearchVal] = useState("")
   const [search, setSearch] = useState("")
   useDebounce(
@@ -113,7 +116,6 @@ export const AccountSelectContent = () => {
                 <AccountFilter
                   active={filter}
                   onSetActive={(mode) => setFilter(mode)}
-                  blacklist={[WalletMode.Solana]}
                 />
               )}
             </Flex>

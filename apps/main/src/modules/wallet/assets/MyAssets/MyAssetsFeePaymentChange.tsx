@@ -3,6 +3,7 @@ import {
   Button,
   Flex,
   Icon,
+  Modal,
   Spinner,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -42,10 +43,11 @@ export const MyAssetsFeePaymentChange = () => {
       >
         <Icon size={16} component={isLoading ? Spinner : Settings} />
       </Button>
-      <TransactionFeePaymentAssetModal
-        open={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
+      <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <TransactionFeePaymentAssetModal
+          onSubmitted={() => setIsModalOpen(false)}
+        />
+      </Modal>
     </Flex>
   )
 }
