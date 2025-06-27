@@ -15,6 +15,9 @@ export const GigaCampaignBanner = ({ action }: { action?: ReactNode }) => {
         <Text fs={13} color="black" css={{ textShadow: "0px 0px 5.9px #FFF" }}>
           {t("giga.campaign.description")}
         </Text>
+        <Text fs={13} color="black" css={{ textShadow: "0px 0px 5.9px #FFF" }}>
+          {t("giga.campaign.description2")}
+        </Text>
       </div>
       {action}
     </GigaBannerContainer>
