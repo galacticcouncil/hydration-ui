@@ -239,6 +239,8 @@ export class OmnipoolLiquidityMiningClaimSim {
       yield_farm.loyaltyCurve,
     )
 
+    console.log("FARM entry", farmEntry)
+
     const reward = new BN(
       liquidityMining.calculate_user_reward(
         farmEntry.accumulatedRpvs,
