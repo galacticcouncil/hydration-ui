@@ -799,10 +799,13 @@
   "farms.modal.join.button.label_other": "Join farms",
   "farms.modal.join.toast.onLoading": "<0>Joining farm with </0><1>{{ amount, bignumber(type: 'token') }}</1> <0> {{symbol}}.</0>",
   "farms.modal.join.toast.onSuccess": "<0>Joined farm with </0><1>{{ amount, bignumber(type: 'token') }}</1> <0> {{symbol}}</0>.",
+  "farms.modal.joinGiga.toast.onLoading": "<0>Joining GIGA Hydrated farms with </0><1>{{ amount, bignumber(type: 'token') }}</1> <0> {{symbol}}.</0>",
+  "farms.modal.joinGiga.toast.onSuccess": "<0>Joined GIGA Hydrated farms with </0><1>{{ amount, bignumber(type: 'token') }}</1> <0> {{symbol}}</0>.",
   "farms.modal.join.first": "Join first farm",
   "farms.modal.join.first.loading": "Joining first farm",
   "farms.modal.join.first.title": "Entering {{symbol}} farm",
   "farms.modal.join.rest": "Join remaining farms",
+  "farms.modal.join.all": "Join with all positions",
   "farms.modal.join.rest.loading": "Joining remaining farms",
   "farms.modal.join.rest.title": "Entering remaining farms",
   "farms.modal.join.minDeposit": "Minimal value of liquidity position for entering farms is {{ value, bignumber(type: 'token') }} {{symbol}}",
@@ -1502,5 +1505,6 @@
   "stakeApy": "Stake APY",
   "incentivesApr": "Incentives APR",
   "giga.campaign.title": "Polkadot GIGAHydration",
-  "giga.campaign.description": "New farms with GIGA incentives are about to launch this week."
+  "giga.campaign.description": "The new farms with GIGA incentives are live.",
+  "join": "Join!"
 }

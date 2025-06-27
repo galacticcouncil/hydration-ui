@@ -29,6 +29,8 @@ import { useTotalIssuances } from "api/totalIssuance"
 import { useBorrowAssetApy } from "api/borrow"
 import { useValidXYKPoolAddresses } from "state/store"
 import { useShallow } from "hooks/useShallow"
+import { useAllOmnipoolDeposits } from "./farms/position/FarmingPosition.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export const isXYKPoolType = (pool: TPool | TXYKPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -674,4 +676,44 @@ export const calculateXykTotals = (
 
     return acc
   }, defaultValues)
+}
+
+export const useRejoinedFarms = (pool: TPool) => {
+  const { account } = useAccount()
+  const omnipoolDepositValues = useAllOmnipoolDeposits(account?.address)
+
+  const { farms, miningPositions } = pool
+
+  const depositValues = useMemo(
+    () => omnipoolDepositValues[pool.id] ?? [],
+    [omnipoolDepositValues, pool.id],
+  )
+
+  const avaialableFarms = useMemo(
+    () =>
+      miningPositions
+        .map((position) => {
+          const depositId = position.id
+          const depositValue = depositValues.find(
+            (depositValue) => depositValue.depositId === depositId,
+          )
+          return {
+            farms: farms.filter(
+              (farm) =>
+                !position.data.yieldFarmEntries.some(
+                  (entry) =>
+                    BN(entry.globalFarmId).eq(farm.globalFarmId) &&
+                    BN(entry.yieldFarmId).eq(farm.yieldFarmId),
+                ),
+            ),
+            depositId,
+            currentValue: depositValue?.totalValueShifted.toString(),
+          }
+        })
+        .flat()
+        .filter((farm) => farm.farms.length),
+    [depositValues, farms, miningPositions],
+  )
+
+  return avaialableFarms
 }
