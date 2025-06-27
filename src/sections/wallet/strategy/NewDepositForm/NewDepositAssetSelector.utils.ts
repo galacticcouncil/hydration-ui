@@ -71,18 +71,22 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
       const highestBalance = accountBalances
         .map((accountBalance) => {
           const price = getAssetPrice(accountBalance.assetId).price
+          const meta = getAssetWithFallback(accountBalance.assetId)
 
           return {
             ...accountBalance,
-            displayBalance: BigNumber(accountBalance.freeBalance).times(price),
+            meta,
+            displayBalance: BigNumber(accountBalance.freeBalance)
+              .shiftedBy(-meta.decimals)
+              .times(price),
           }
         })
-        .sort((a, b) => (a.displayBalance.gt(b.displayBalance) ? 1 : -1))
+        .sort((a, b) => (a.displayBalance.gt(b.displayBalance) ? -1 : 1))
         .find((balance) => {
-          const meta = getAssetWithFallback(balance.assetId)
-
           return (
-            balance.displayBalance.gt(0) && meta.isTradable && !meta.isExternal
+            balance.displayBalance.gt(0) &&
+            balance.meta.isTradable &&
+            !balance.meta.isExternal
           )
         })
 
