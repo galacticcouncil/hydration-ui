@@ -683,7 +683,11 @@ export const useRejoinedFarms = (pool: TPool) => {
   const omnipoolDepositValues = useAllOmnipoolDeposits(account?.address)
 
   const { farms, miningPositions } = pool
-  const depositValues = omnipoolDepositValues[pool.id]
+
+  const depositValues = useMemo(
+    () => omnipoolDepositValues[pool.id] ?? [],
+    [omnipoolDepositValues, pool.id],
+  )
 
   const avaialableFarms = useMemo(
     () =>
