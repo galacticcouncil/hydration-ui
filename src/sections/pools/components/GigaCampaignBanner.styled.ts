@@ -7,6 +7,7 @@ import { theme } from "theme"
 export const GigaBannerContainer = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
 
   border-radius: 8px;
 
