@@ -106,13 +106,11 @@ export const FarmingPosition = ({
   depositNft,
   availableYieldFarms,
   depositData,
-  activeFarming,
 }: {
   index: number
   depositNft: TDeposit
   depositData: TDepositData
   availableYieldFarms: TFarmAprData[]
-  activeFarming: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -134,12 +132,9 @@ export const FarmingPosition = ({
           align: ["stretch", "center"],
         }}
       >
-        <div sx={{ flex: "row", gap: 8 }}>
-          <Text fw={[500, 400]}>
-            {t("farms.positions.position.title", { index })}
-          </Text>
-          {!activeFarming && <p sx={{ fontSize: 32 }}>🖕</p>}
-        </div>
+        <Text fw={[500, 400]}>
+          {t("farms.positions.position.title", { index })}
+        </Text>
 
         <div sx={{ flex: "row", gap: 8 }}>
           <ExitFarmsButton depositNft={depositNft} />

@@ -18,6 +18,7 @@ import BN from "bignumber.js"
 import { CollapsedPositionsList } from "sections/pools/pool/myPositions/MyPositions"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { Alert } from "components/Alert"
 
 export const FarmingPositionWrapper = () => {
   const { t } = useTranslation()
@@ -94,6 +95,13 @@ export const FarmingPositionWrapper = () => {
   const withAnimation = positionsNumber > 1
   const isHubValue = total.hub.gt(0)
 
+  const isInactivePositions = positions.some(
+    (position) =>
+      !position.data.yieldFarmEntries.every((entry) =>
+        pool.farms.find((farm) => farm.yieldFarmId === entry.yieldFarmId),
+      ),
+  )
+
   const positionsData = positions.reduce<{
     positions: { element: ReactElement; moveTo: number; height: number }[]
     height: BN
@@ -125,10 +133,6 @@ export const FarmingPositionWrapper = () => {
             (omnipoolDeposit) => omnipoolDeposit.depositId === position.id,
           )
 
-      const activeFarming = position.data.yieldFarmEntries.every((entry) =>
-        pool.farms.find((farm) => farm.yieldFarmId === entry.yieldFarmId),
-      )
-
       if (depositData) {
         acc.positions.push({
           element: (
@@ -138,7 +142,6 @@ export const FarmingPositionWrapper = () => {
               depositNft={position}
               depositData={depositData}
               availableYieldFarms={availableYieldFarms}
-              activeFarming={activeFarming}
             />
           ),
           moveTo: !acc.height.isZero()
@@ -232,6 +235,17 @@ export const FarmingPositionWrapper = () => {
           </Text>
         </div>
       </div>
+
+      {isInactivePositions && (
+        <Alert variant="warning">
+          <Text fs={14} lh={16}>
+            {t("liquidity.pool.farms.alert.farms.title")}
+          </Text>
+          <Text fs={12} lh={16}>
+            {t("liquidity.pool.farms.alert.farms.desc")}
+          </Text>
+        </Alert>
+      )}
 
       <ClaimRewardsCard />
 
