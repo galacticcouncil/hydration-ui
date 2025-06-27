@@ -24,7 +24,7 @@ export const RemoveDepositSummary: FC<Props> = ({
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
-  const gigaDotMeta = getAssetWithFallback(assetId)
+  const meta = getAssetWithFallback(assetId)
   const { data, isLoading } = useSpotPrice(assetReceived?.id, assetId)
 
   return (
@@ -59,7 +59,7 @@ export const RemoveDepositSummary: FC<Props> = ({
               >
                 {t("value.tokenWithSymbol", {
                   value: data?.spotPrice.toString(),
-                  symbol: gigaDotMeta.symbol,
+                  symbol: meta.symbol,
                 })}
               </Trans>
             )}

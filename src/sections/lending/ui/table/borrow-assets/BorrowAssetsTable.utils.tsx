@@ -29,7 +29,7 @@ import {
   getMaxGhoMintAmount,
 } from "sections/lending/utils/getMaxAmountAvailableToBorrow"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData

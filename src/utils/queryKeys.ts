@@ -73,7 +73,9 @@ export const QUERY_KEYS = {
     ids.join("."),
   ],
   omnipoolActiveFarms: ["omnipoolActiveFarms"],
+  omnipoolActiveFarm: (id?: string) => ["omnipoolActiveFarm", id],
   omnipoolFarms: ["omnipoolFarms"],
+  omnipoolFarm: (id?: string) => ["omnipoolFarm", id],
   stoppedOmnipoolFarms: (address?: string) => ["stoppedOmnipoolFarms", address],
   xykActiveFarms: ["xykActiveFarms"],
   xykFarms: ["xykFarms"],
@@ -341,6 +343,7 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  lidoEthAPR: ["lidoEthAPR"],
   borrowUserSummary: (address: string) => [
     QUERY_KEY_PREFIX,
     "borrowUserSummary",

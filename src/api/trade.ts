@@ -22,6 +22,7 @@ export const useBestTradeSell = (
   assetInId: string,
   assetOutId: string,
   amountIn: string,
+  onSuccess?: (minAmount: string) => void,
 ) => {
   const { api, sdk, isLoaded } = useRpcProvider()
   const { account } = useAccount()
@@ -32,7 +33,19 @@ export const useBestTradeSell = (
 
   const { data: tradeData, isInitialLoading } = useQuery({
     queryKey: QUERY_KEYS.bestTradeSell(assetInId, assetOutId, amountIn),
-    queryFn: () => sdkApi.router.getBestSell(assetInId, assetOutId, amountIn),
+    queryFn: async () => {
+      const data = await sdkApi.router.getBestSell(
+        assetInId,
+        assetOutId,
+        amountIn,
+      )
+
+      onSuccess?.(
+        getMinAmountOut(data?.amountOut.toString() || "0", slippageData || "0"),
+      )
+
+      return data
+    },
     enabled: isLoaded && !!assetInId && !!assetOutId && !!amountIn,
   })
 

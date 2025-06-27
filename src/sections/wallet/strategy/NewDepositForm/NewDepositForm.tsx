@@ -1,10 +1,9 @@
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { NewDepositFormValues } from "./NewDepositForm.form"
-import { FormProvider, useFormContext } from "react-hook-form"
+import { useFormContext } from "react-hook-form"
 import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
-import { CurrentDepositData } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit"
 import { NewDepositAssetField } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetField"
 import { NewDepositSummary } from "sections/wallet/strategy/NewDepositForm/NewDepositSummary"
 import { useAccountAssets } from "api/deposits"
@@ -16,18 +15,15 @@ import { Modal } from "components/Modal/Modal"
 import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { noop } from "utils/helpers"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { Alert } from "components/Alert/Alert"
 
-const assetsBlacklist = [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
-
 type Props = {
   readonly assetId: string
-  readonly depositData: CurrentDepositData | null
 }
 
-export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
+export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
 
@@ -44,12 +40,12 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
   const selectedAssetBalance =
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
-  const allowedAssets = useNewDepositAssets(assetsBlacklist)
+  const allowedAssets = useNewDepositAssets(STRATEGY_ASSETS_BLACKLIST)
   const { minAmountOut, submit, supplyCapReached } =
     useSubmitNewDepositForm(assetId)
 
   return (
-    <FormProvider {...form}>
+    <>
       <form onSubmit={form.handleSubmit(submit)}>
         <div sx={{ flex: "column", gap: 10 }}>
           <Text fw={[126, 600]} fs={[14, 17.5]} lh="1.2" color="white">
@@ -63,7 +59,9 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
           />
           {account && (
             <Button type="submit" variant="primary" disabled={supplyCapReached}>
-              {t("wallet.strategy.gigadot.deposit.cta")}
+              {t("wallet.strategy.deposit.cta", {
+                symbol: asset.symbol,
+              })}
             </Button>
           )}
           {!account && <Web3ConnectModalButton />}
@@ -94,6 +92,6 @@ export const NewDepositForm: FC<Props> = ({ assetId, depositData }) => {
           onClose={() => setIsAssetSelectOpen(false)}
         />
       </Modal>
-    </FormProvider>
+    </>
   )
 }
