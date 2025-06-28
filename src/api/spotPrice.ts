@@ -106,7 +106,7 @@ const getSpotPrice =
         tokenOutParam,
       )
 
-      if (res) {
+      if (res && res.amount.isFinite()) {
         spotPrice = res.amount
           .shiftedBy(-res.decimals)
           .decimalPlaces(10)
