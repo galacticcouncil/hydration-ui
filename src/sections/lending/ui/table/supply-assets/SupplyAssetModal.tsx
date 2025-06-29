@@ -16,6 +16,13 @@ import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/New
 import { noop } from "utils/helpers"
 import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/SupplyAssetSummary"
 import { Alert } from "components/Alert/Alert"
+import { useLooping } from "sections/lending/hooks/useLooping"
+import { DOT_ASSET_ID } from "utils/constants"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { getAssetIdFromAddress } from "utils/evm"
+import { IncompatibleEmodePositionsWarning } from "sections/lending/components/transactions/Warnings/IncompatibleEmodePositionsWarning"
+import { SupplyAssetLoopingSlider } from "sections/lending/ui/table/supply-assets/SupplyAssetLoopingSlider"
+import { getMaxMultiplierFromLtv } from "sections/lending/utils/looping"
 
 type Props = {
   readonly assetId: string
@@ -30,6 +37,7 @@ export const SupplyAssetModal: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
+  const { user } = useAppDataContext()
 
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
@@ -38,25 +46,80 @@ export const SupplyAssetModal: FC<Props> = ({
   const accountAssetsMap = accountAssets?.accountAssetsMap
 
   const form = useFormContext<NewDepositFormValues>()
-  const selectedAsset = form.watch("asset")
+  const [selectedAsset, amount, loopingMultiplier] = form.watch([
+    "asset",
+    "amount",
+    "loopingMultiplier",
+  ])
+
   const selectedAssetBalance =
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
 
   const allowedAssets = useNewDepositAssets(assetsBlacklist)
   const {
-    minAmountOut,
+    minAmountOut: minDepositedAmountOut,
     submit,
     healthFactorChange,
     underlyingReserve,
     supplyCapReached,
   } = useSubmitNewDepositForm(assetId)
 
+  const isInCorrectEmode =
+    user.userEmodeCategoryId === underlyingReserve?.eModeCategoryId
+
+  const isLoopingEnabled = loopingMultiplier > 1
+
+  const maxLoopingMultiplier = getMaxMultiplierFromLtv(
+    Number(underlyingReserve?.formattedEModeLtv ?? 0),
+  )
+
+  const {
+    submitLooping,
+    isLoading: isLoopingLoading,
+    minAmountOut: minLoopedAmountOut,
+  } = useLooping(
+    {
+      amount,
+      multiplier: loopingMultiplier,
+      supplyAssetId: getAssetIdFromAddress(
+        underlyingReserve?.underlyingAsset ?? "",
+      ),
+      borrowAssetId: DOT_ASSET_ID,
+      assetInId: selectedAsset?.id ?? "",
+      assetOutId: assetId,
+      withEmode: !isInCorrectEmode,
+    },
+    {
+      enabled: !!selectedAsset && isLoopingEnabled,
+      onSubmitted: onClose,
+    },
+  )
+
   const onSubmit = (): void => {
-    submit()
-    onClose()
+    if (isLoopingEnabled) {
+      submitLooping()
+    } else {
+      submit()
+      onClose()
+    }
   }
 
   const { page, direction, back, next } = useModalPagination()
+
+  const minAmountOut = isLoopingEnabled
+    ? minLoopedAmountOut
+    : minDepositedAmountOut
+
+  const hasIncompatibleLoopingPositions =
+    isLoopingEnabled &&
+    !isInCorrectEmode &&
+    user.userReservesData.some(
+      (userReserve) =>
+        (Number(userReserve.scaledVariableDebt) > 0 ||
+          Number(userReserve.principalStableDebt) > 0) &&
+        userReserve.reserve.eModeCategoryId !==
+          underlyingReserve?.eModeCategoryId,
+    )
 
   return (
     <ModalContents
@@ -74,6 +137,12 @@ export const SupplyAssetModal: FC<Props> = ({
                   selectedAssetBalance={selectedAssetBalance}
                   onSelectAssetClick={allowedAssets.length ? next : noop}
                 />
+                {maxLoopingMultiplier > 1 && (
+                  <SupplyAssetLoopingSlider
+                    max={maxLoopingMultiplier}
+                    sx={{ py: 12, mb: 10 }}
+                  />
+                )}
                 {underlyingReserve && (
                   <SupplyAssetSummary
                     asset={asset}
@@ -84,6 +153,9 @@ export const SupplyAssetModal: FC<Props> = ({
                     hfChange={healthFactorChange}
                   />
                 )}
+                <Alert variant="info">
+                  {t("lending.looping.collateral.dot.warning")}
+                </Alert>
                 {supplyCapReached && (
                   <Alert variant="warning">
                     {t("lending.tooltip.supplyCapMaxed", {
@@ -91,14 +163,44 @@ export const SupplyAssetModal: FC<Props> = ({
                     })}
                   </Alert>
                 )}
+                {hasIncompatibleLoopingPositions && (
+                  <IncompatibleEmodePositionsWarning
+                    title={t(
+                      "lending.looping.incompatibleEmodePositions.title",
+                      {
+                        eModeLabel: underlyingReserve?.eModeLabel ?? "",
+                      },
+                    )}
+                    eModeLabel={underlyingReserve?.eModeLabel}
+                  />
+                )}
                 {account && (
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    disabled={supplyCapReached}
-                  >
-                    {t("lending.supply.modal.cta", { symbol: asset.symbol })}
-                  </Button>
+                  <>
+                    {isLoopingEnabled ? (
+                      <Button
+                        variant="primary"
+                        disabled={
+                          isLoopingLoading || hasIncompatibleLoopingPositions
+                        }
+                        isLoading={isLoopingLoading}
+                      >
+                        {t("lending.looping.cta.title", {
+                          symbol: asset.symbol,
+                          multiplier: loopingMultiplier,
+                        })}
+                      </Button>
+                    ) : (
+                      <Button
+                        type="submit"
+                        variant="primary"
+                        disabled={supplyCapReached}
+                      >
+                        {t("lending.supply.modal.cta", {
+                          symbol: asset.symbol,
+                        })}
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </form>

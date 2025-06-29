@@ -222,6 +222,7 @@ export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
             {[...underlyingAssetsAPY].map(({ id, borrowApy, supplyApy }) => {
               return (
                 <APYRow
+                  key={id}
                   id={id}
                   label={isSupply ? t("supplyApy") : t("borrowApy")}
                   value={BN(isSupply ? supplyApy : borrowApy)

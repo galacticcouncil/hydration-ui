@@ -14,9 +14,11 @@ import { getAssetIdFromAddress } from "utils/evm"
 import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
+  const refetchMarketData = useRefetchMarketData()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
@@ -46,6 +48,7 @@ export const WithdrawModal = () => {
           assetId={GDOT_ERC20_ASSET_ID}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
+          onSuccess={refetchMarketData}
         />
       </BasicModal>
     )
