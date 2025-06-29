@@ -10,21 +10,33 @@ import { GlobalStyle } from "components/GlobalStyle"
 import { Global } from "@emotion/react"
 import "react-loading-skeleton/dist/skeleton.css"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { injectMimir, isMimirIframe } from "mimir/mimir"
 
-const root = createRoot(document.getElementById("root")!)
-const client = new QueryClient()
+const init = async (): Promise<void> => {
+  const isMimir = await isMimirIframe()
 
-root.render(
-  <StrictMode>
-    <QueryClientProvider client={client}>
-      <ReactQueryDevtools initialIsOpen={false} />
-      <Global styles={GlobalStyle} />
-      <App />
-    </QueryClientProvider>
-  </StrictMode>,
-)
+  if (isMimir) {
+    injectMimir()
+    return
+  }
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals()
+  const root = createRoot(document.getElementById("root")!)
+  const client = new QueryClient()
+
+  root.render(
+    <StrictMode>
+      <QueryClientProvider client={client}>
+        <ReactQueryDevtools initialIsOpen={false} />
+        <Global styles={GlobalStyle} />
+        <App />
+      </QueryClientProvider>
+    </StrictMode>,
+  )
+
+  // If you want to start measuring performance in your app, pass a function
+  // to log results (for example: reportWebVitals(console.log))
+  // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+  reportWebVitals()
+}
+
+init()
