@@ -82,7 +82,7 @@ export const AddStablepoolLiquidity = ({
   const { account } = useAccount()
 
   const { data: accountBalances } = useAccountAssets()
-  const { reserves, farms, isGigaDOT, poolId, isGETH, id } = usePoolData()
+  const { reserves, farms, isGDOT, poolId, isGETH, id } = usePoolData()
     .pool as TStablepool
 
   const { t } = useTranslation()
@@ -128,11 +128,11 @@ export const AddStablepoolLiquidity = ({
 
   const [debouncedValue] = useDebouncedValue(value, 300)
 
-  const isSwap = isGigaDOT || isGETH
+  const isSwap = isGDOT || isGETH
 
   const { minAmountOut, swapTx } = useBestTradeSell(
     asset.id,
-    isGigaDOT ? GDOT_ERC20_ASSET_ID : isGETH ? id : "",
+    isGDOT ? GDOT_ERC20_ASSET_ID : isGETH ? id : "",
     debouncedValue ?? "0",
     isGETH
       ? (minAmount) =>
@@ -399,7 +399,7 @@ export const AddStablepoolLiquidity = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        {isGigaDOT || isGETH ? (
+        {isGDOT || isGETH ? (
           <GigaDotSummary
             selectedAsset={asset}
             minAmountOut={minAmountOut}

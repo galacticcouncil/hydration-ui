@@ -43,7 +43,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const allowedAssets = useNewDepositAssets(STRATEGY_ASSETS_BLACKLIST)
   const { minAmountOut, submit, supplyCapReached } =
     useSubmitNewDepositForm(assetId)
-
+  //
   return (
     <>
       <form onSubmit={form.handleSubmit(submit)}>

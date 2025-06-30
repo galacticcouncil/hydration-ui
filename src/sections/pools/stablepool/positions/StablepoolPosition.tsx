@@ -30,7 +30,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const pool = usePoolData().pool as TStablepool
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const { meta, isGigaDOT, isGETH } = pool
+  const { meta, isGDOT, isGETH } = pool
 
   const [transferOpen, setTransferOpen] = useState(false)
 
@@ -45,7 +45,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
           sx={{ height: ["auto", "auto"], p: [12, 20] }}
           css={{ background: "transparent" }}
         >
-          {!(isGigaDOT || isGETH) && (
+          {!(isGDOT || isGETH) && (
             <div
               sx={{
                 flex: "row",
@@ -70,7 +70,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
               <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
                 <div sx={{ flex: "row", gap: 7, align: "center" }}>
                   <MultipleAssetLogo iconId={meta.iconId} size={26} />
-                  {(isGigaDOT || isGETH) && <Text>{meta.symbol}</Text>}
+                  {(isGDOT || isGETH) && <Text>{meta.symbol}</Text>}
                 </div>
                 <div
                   sx={{
@@ -94,7 +94,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                         {t("value.token", {
                           value: amount,
                           fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                          numberSuffix: !isGigaDOT
+                          numberSuffix: !isGDOT
                             ? ` ${t("liquidity.stablepool.position.token")}`
                             : undefined,
                         })}

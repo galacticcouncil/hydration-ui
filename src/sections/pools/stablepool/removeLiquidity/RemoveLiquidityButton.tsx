@@ -25,7 +25,7 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
 
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
 
-  const { balance, meta, isGigaDOT, id, biggestPercentage } = pool
+  const { balance, meta, isGDOT, id, biggestPercentage } = pool
 
   const balanceHuman = balance?.freeBalance
     ? scaleHuman(balance.freeBalance, meta.decimals).toString()
@@ -39,7 +39,7 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
         fullWidth
         onClick={() =>
           setOpenRemove(
-            pool.isGigaDOT || pool.isGETH
+            pool.isGDOT || pool.isGETH
               ? STABLEPOOLTYPE.GIGA
               : STABLEPOOLTYPE.CLASSIC,
           )
@@ -61,9 +61,9 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
       {STABLEPOOLTYPE.GIGA === openRemove && (
         <Modal open onClose={() => setOpenRemove(null)}>
           <RemoveDepositModal
-            assetId={isGigaDOT ? GDOT_ERC20_ASSET_ID : id}
+            assetId={isGDOT ? GDOT_ERC20_ASSET_ID : id}
             balance={balanceHuman ?? "0"}
-            assetReceiveId={isGigaDOT ? undefined : biggestPercentage?.assetId}
+            assetReceiveId={isGDOT ? undefined : biggestPercentage?.assetId}
             onClose={() => setOpenRemove(null)}
           />
         </Modal>

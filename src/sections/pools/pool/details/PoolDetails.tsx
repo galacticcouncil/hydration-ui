@@ -253,7 +253,7 @@ export const PoolDetails = () => {
 
             <CurrencyReserves reserves={pool.reserves} />
 
-            {pool.isGigaDOT && (
+            {pool.isGDOT && (
               <>
                 <Separator
                   color="white"

@@ -43,7 +43,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
   const {
     id: poolId,
     canAddLiquidity,
-    isGigaDOT,
+    isGDOT,
     isGETH,
     smallestPercentage,
     symbol,
@@ -56,7 +56,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
   const { t } = useTranslation()
 
   const [assetId, setAssetId] = useState<string | undefined>(
-    isGigaDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId,
+    isGDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId,
   )
 
   const isOnlyStablepool = disabledOmnipool || !canAddLiquidity
@@ -68,18 +68,18 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
   const [stablepoolSelected, setStablepoolSelected] = useState(isOnlyStablepool)
 
   const selectableAssets = useMemo(() => {
-    const invalidAssets = isGigaDOT
+    const invalidAssets = isGDOT
       ? [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
       : isGETH
         ? [GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
         : []
 
-    return isGigaDOT || isGETH
+    return isGDOT || isGETH
       ? tradable
           .map((asset) => asset.id)
           .filter((assetId) => !invalidAssets.includes(assetId))
       : assetIds
-  }, [assetIds, isGigaDOT, isGETH, tradable])
+  }, [assetIds, isGDOT, isGETH, tradable])
 
   const goBack = () => {
     const nextPage = page - 1
@@ -93,7 +93,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
 
   const title = stablepoolSelected
     ? t(
-        `liquidity.stablepool.transfer.stablepool${isGigaDOT || isGETH ? ".custom" : ""}`,
+        `liquidity.stablepool.transfer.stablepool${isGDOT || isGETH ? ".custom" : ""}`,
         { symbol },
       )
     : isGETH

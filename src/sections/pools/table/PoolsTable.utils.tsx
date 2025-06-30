@@ -500,7 +500,7 @@ export const usePoolTable = (
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
-                    {row.original.isGigaDOT || row.original.isGETH ? (
+                    {row.original.isGDOT || row.original.isGETH ? (
                       <GigaAPY
                         type="supply"
                         assetId={row.original.poolId}
