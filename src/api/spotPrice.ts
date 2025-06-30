@@ -99,7 +99,7 @@ const getSpotPrice =
     try {
       const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
 
-      if (res) {
+      if (res && res.amount.isFinite()) {
         spotPrice = res.amount
           .shiftedBy(-res.decimals)
           .decimalPlaces(10)

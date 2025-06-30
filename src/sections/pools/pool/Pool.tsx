@@ -14,6 +14,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { SPoolContainer } from "./Pool.styled"
 import { createContext, useContext } from "react"
 import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
+import { RedepositAllFarmsButton } from "sections/pools/farms/position/redeposit/RedepositAllFarmsButton"
 
 export const PoolContext = createContext<{
   pool: TAnyPool
@@ -65,7 +66,7 @@ const Stablepool = ({ pool }: { pool: TPool }) => {
           mt: -30,
         }}
       >
-        <GigaCampaignBanner />
+        <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
         <SPoolContainer>
           <PoolDetails />
           <MyPositions />
