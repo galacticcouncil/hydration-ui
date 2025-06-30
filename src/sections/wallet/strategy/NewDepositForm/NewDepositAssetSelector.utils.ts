@@ -4,6 +4,7 @@ import { prop } from "utils/rx"
 import { useMemo } from "react"
 import BigNumber from "bignumber.js"
 import {
+  BN_0,
   DOT_ASSET_ID,
   ETH_ASSET_ID,
   GETH_ERC20_ASSET_ID,
@@ -76,9 +77,11 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
           return {
             ...accountBalance,
             meta,
-            displayBalance: BigNumber(accountBalance.freeBalance)
-              .shiftedBy(-meta.decimals)
-              .times(price),
+            displayBalance: !BigNumber(price).isNaN()
+              ? BigNumber(accountBalance.freeBalance)
+                  .shiftedBy(-meta.decimals)
+                  .times(price)
+              : BN_0,
           }
         })
         .sort((a, b) => (a.displayBalance.gt(b.displayBalance) ? -1 : 1))
