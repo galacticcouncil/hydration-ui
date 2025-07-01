@@ -29,6 +29,8 @@ import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward
 import Skeleton from "react-loading-skeleton"
 import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
 import { TRemoveFarmingPosition } from "sections/wallet/strategy/RemoveDepositModal/RemoveDeposit.utils"
+import { useNavigate } from "@tanstack/react-location"
+import { LINKS } from "utils/navigation"
 
 export type CurrentDepositData = {
   readonly depositBalance: string
@@ -206,6 +208,7 @@ const CurrentDepositRemoveButton = ({
   positions?: TRemoveFarmingPosition[]
 }) => {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
 
   return (
@@ -215,7 +218,11 @@ const CurrentDepositRemoveButton = ({
         variant="outline"
         css={{ borderColor: "rgba(255,255,255,0.2)" }}
         disabled={new BigNumber(depositBalance).lte(0)}
-        onClick={() => setIsRemoveModalOpen(true)}
+        onClick={() =>
+          positions
+            ? navigate({ to: LINKS.allPools, search: { id: assetId } })
+            : setIsRemoveModalOpen(true)
+        }
       >
         {t("remove")}
       </Button>
