@@ -1,5 +1,5 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { FC, lazy } from "react"
+import { FC } from "react"
 import { WalletStrategyHeader } from "sections/wallet/strategy/WalletStrategyHeader"
 import { WalletStrategyProviders } from "sections/wallet/strategy/WalletStrategy.providers"
 import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
@@ -10,12 +10,6 @@ import { useGigadotAssetIds } from "sections/wallet/strategy/WalletStrategy.util
 import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { StrategyTileVariant } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
-
-const GigadotAnswers = lazy(async () => ({
-  default: (
-    await import("sections/wallet/strategy/GigadotAnswers/GigadotAnswers")
-  ).GigadotAnswers,
-}))
 
 export const WalletStrategy: FC = () => {
   const { t } = useTranslation()
@@ -48,7 +42,6 @@ export const WalletStrategy: FC = () => {
           riskTooltip={t("wallet.strategy.gigaeth.risk.tooltip")}
           variant={StrategyTileVariant.Two}
         />
-        <GigadotAnswers />
       </SWalletStrategy>
     </WalletStrategyProviders>
   )
