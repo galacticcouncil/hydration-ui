@@ -19,14 +19,14 @@ import {
   TPool,
   TXYKPool,
   isXYKPoolType,
-  usePoolDetails,
+  useStableSwapReserves,
 } from "sections/pools/PoolsPage.utils"
 import { TFarmAprData } from "api/farms"
 import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -40,12 +40,9 @@ import {
   useTablePagination,
 } from "components/Table/TablePagination"
 import { PoolContext } from "sections/pools/pool/Pool"
-import {
-  Page,
-  TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { GDOTAPY } from "sections/pools/stablepool/components/GDOTIncentives"
+import { GigaAPY } from "sections/pools/stablepool/components/GigaIncentives"
 
 const NonClickableContainer = ({
   children,
@@ -71,7 +68,7 @@ const NonClickableContainer = ({
 }
 
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
-  const { meta: asset, farms, fee, totalFee } = pool
+  const { meta: asset, farms, fee, totalFee, isStablePool } = pool
 
   const isDesktop = useMedia(theme.viewport.gte.md)
   const isFarmsVisible = !isDesktop || asset.isShareToken
@@ -90,7 +87,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           >
             {asset.symbol}
           </Text>
-          {asset?.isStableSwap && (
+          {isStablePool && (
             <div css={{ position: "relative" }}>
               <LazyMotion features={domAnimation}>
                 <SStablepoolBadge
@@ -113,7 +110,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
           )}
         </div>
 
-        {asset?.isStableSwap && (
+        {isStablePool && (
           <Text
             fs={11}
             color="white"
@@ -185,9 +182,12 @@ const AddLiquidityButton: React.FC<{
           {t("liquidity.asset.actions.joinPool")}
         </Button>
       )}
-      {open && (
-        <LiquidityModalWrapper pool={pool} onClose={() => setOpen(false)} />
-      )}
+      {open &&
+        (!isXYKPoolType(pool) && pool.isStablePool ? (
+          <StablePoolModalWrapper pool={pool} onClose={() => setOpen(false)} />
+        ) : (
+          <LiquidityModalWrapper pool={pool} onClose={() => setOpen(false)} />
+        ))}
     </>
   )
 }
@@ -196,26 +196,44 @@ const LiquidityModalWrapper: React.FC<{
   pool: TPool | TXYKPool
   onClose: () => void
 }> = ({ pool, onClose }) => {
-  const poolDetails = usePoolDetails(pool.id)
+  if (!pool) return null
+
+  return (
+    <PoolContext.Provider
+      value={{
+        pool,
+        isXYK: isXYKPoolType(pool),
+      }}
+    >
+      <AddLiquidity isOpen onClose={onClose} />
+    </PoolContext.Provider>
+  )
+}
+
+const StablePoolModalWrapper = ({
+  pool,
+  onClose,
+}: {
+  pool: TPool
+  onClose: () => void
+}) => {
+  const stablepoolDetails = useStableSwapReserves(pool.id)
 
   if (!pool) return null
 
   return (
     <PoolContext.Provider
       value={{
-        pool: { ...pool, ...poolDetails.data },
-        isXYK: isXYKPoolType(pool),
+        pool: { ...pool, ...stablepoolDetails.data },
+        isXYK: false,
       }}
     >
-      {pool.meta.isStableSwap ? (
-        <TransferModal
-          defaultPage={Page.ADD_LIQUIDITY}
-          onClose={onClose}
-          farms={pool.farms}
-        />
-      ) : (
-        <AddLiquidity isOpen onClose={onClose} />
-      )}
+      <TransferModal
+        onClose={onClose}
+        farms={pool.farms}
+        disabledOmnipool={!pool.isGETH}
+        skipOptions={pool.isGETH}
+      />
     </PoolContext.Provider>
   )
 }
@@ -316,19 +334,15 @@ const APY = ({
 
   if (farms?.length)
     return (
-      <NonClickableContainer>
-        <GlobalFarmRowMulti assetFee={fee} farms={farms} totalFee={totalFee} />
-      </NonClickableContainer>
+      <GlobalFarmRowMulti assetFee={fee} farms={farms} totalFee={totalFee} />
     )
 
   return (
-    <NonClickableContainer>
-      <Text color="white" fs={14}>
-        {assetId === native.id
-          ? "--"
-          : t("value.percentage", { value: totalFee })}
-      </Text>
-    </NonClickableContainer>
+    <Text color="white" fs={14}>
+      {assetId === native.id
+        ? "--"
+        : t("value.percentage", { value: totalFee })}
+    </Text>
   )
 }
 
@@ -487,8 +501,12 @@ export const usePoolTable = (
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
-                    {row.original.id === GDOT_STABLESWAP_ASSET_ID ? (
-                      <GDOTAPY type="supply" />
+                    {row.original.isGDOT || row.original.isGETH ? (
+                      <GigaAPY
+                        type="supply"
+                        assetId={row.original.poolId}
+                        withFarms
+                      />
                     ) : (
                       <APY
                         assetId={row.original.id}

@@ -1,11 +1,13 @@
 import { Text } from "components/Typography/Text/Text"
 import { FC } from "react"
+import Skeleton from "react-loading-skeleton"
 
 type Props = {
   readonly variant?: "default" | "highlight"
   readonly label: string
   readonly balance: string
   readonly value: string
+  readonly isLoading?: boolean
 }
 
 export const CurrentDepositBalance: FC<Props> = ({
@@ -13,6 +15,7 @@ export const CurrentDepositBalance: FC<Props> = ({
   label,
   balance,
   value,
+  isLoading,
 }) => {
   return (
     <div sx={{ flex: "column", gap: 8 }}>
@@ -29,7 +32,7 @@ export const CurrentDepositBalance: FC<Props> = ({
           {balance}
         </Text>
         <Text fw={500} fs={11} lh="1.4" color="basic100">
-          {value}
+          {isLoading ? <Skeleton width={50} height="100%" /> : value}
         </Text>
       </div>
     </div>

@@ -7,7 +7,7 @@ import {
 } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable.constants"
 import { theme } from "theme"
 
-export const getSupplyGigadotRowGradient = (rotation: number) => css`
+export const getSupplyGigaRowGradient = (rotation: number) => css`
   background: linear-gradient(
     ${rotation}deg,
     rgba(12, 88, 138, 0.4) 0.04%,
@@ -15,7 +15,7 @@ export const getSupplyGigadotRowGradient = (rotation: number) => css`
   );
 `
 
-export const SSupplyGigadotDesktopRow = styled.tr`
+export const SSupplyGigaDesktopRow = styled.tr`
   display: flex;
   align-items: center;
 
@@ -25,7 +25,7 @@ export const SSupplyGigadotDesktopRow = styled.tr`
     background: rgba(${theme.rgbColors.white}, 0.06);
   }
 
-  ${getSupplyGigadotRowGradient(90)}
+  ${getSupplyGigaRowGradient(90)}
   ${DATA_TABLE_SPACING[supplyAssetsTableSpacing]}
   ${DATA_TABLE_SIZE[supplyAssetsTableSize]}
 `

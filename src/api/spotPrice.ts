@@ -9,7 +9,6 @@ import { u32 } from "@polkadot/types"
 import { TradeRouter } from "@galacticcouncil/sdk"
 import { Maybe } from "utils/helpers"
 import { useRpcProvider } from "providers/rpcProvider"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { useDisplaySpotPriceStore } from "state/displayPrice"
 import { useShallow } from "hooks/useShallow"
 import { useDisplayAssetStore } from "utils/displayAsset"
@@ -91,22 +90,16 @@ export const usePriceSubscriber = () => {
 
 const getSpotPrice =
   (tradeRouter: TradeRouter, tokenIn: string, tokenOut: string) => async () => {
-    const tokenInParam = A_TOKEN_UNDERLYING_ID_MAP[tokenIn] ?? tokenIn
-    const tokenOutParam = A_TOKEN_UNDERLYING_ID_MAP[tokenOut] ?? tokenOut
     // X -> X would return undefined, no need for spot price in such case
-    if (tokenIn === tokenOut || tokenInParam === tokenOutParam)
-      return { tokenIn, tokenOut, spotPrice: "1" }
+    if (tokenIn === tokenOut) return { tokenIn, tokenOut, spotPrice: "1" }
 
     // error replies are valid in case token has no spot price
     let spotPrice: string = "NaN"
 
     try {
-      const res = await tradeRouter.getBestSpotPrice(
-        tokenInParam,
-        tokenOutParam,
-      )
+      const res = await tradeRouter.getBestSpotPrice(tokenIn, tokenOut)
 
-      if (res) {
+      if (res && res.amount.isFinite()) {
         spotPrice = res.amount
           .shiftedBy(-res.decimals)
           .decimalPlaces(10)

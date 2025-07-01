@@ -29,7 +29,10 @@ export const GlobalFarmRowMulti = ({
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
 
-  const apr = totalFee ?? getTotalAPR(farms).plus(assetFee ?? 0)
+  const apr =
+    totalFee && !totalFee.isNaN()
+      ? totalFee
+      : getTotalAPR(farms).plus(assetFee.isNaN() ? 0 : assetFee)
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
@@ -82,7 +85,12 @@ export const GlobalFarmRowMulti = ({
               return (
                 <div
                   key={rewardCurrency}
-                  sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
+                  sx={{
+                    flex: "row",
+                    gap: 4,
+                    justify: "space-between",
+                    mt: 6,
+                  }}
                 >
                   <div sx={{ flex: "row", gap: 4, align: "center" }}>
                     <Icon size={14} icon={<AssetLogo id={rewardCurrency} />} />

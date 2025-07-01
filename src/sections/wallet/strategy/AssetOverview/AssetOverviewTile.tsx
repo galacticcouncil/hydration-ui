@@ -54,11 +54,11 @@ export const AssetOverviewTileValue = ({
       css={{ textTransform: "capitalize" }}
       color={(() => {
         switch (variant) {
-          case "risk:lower":
+          case "risk:low":
             return "brightBlue300"
           case `risk:medium`:
             return "warningYellow300"
-          case "risk:higher":
+          case "risk:high":
             return "red500"
           default:
             return "white"

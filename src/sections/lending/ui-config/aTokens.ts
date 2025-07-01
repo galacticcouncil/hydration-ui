@@ -18,6 +18,10 @@ export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
   "1006": "1000765",
   //GDOT
   "690": "69",
+  //GETH
+  "420": "4200",
+  //aETH
+  "1007": "34",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
@@ -35,9 +39,17 @@ export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
   "1006": "1000765",
   // GDOT
   "69": "690",
+  //GETH
+  "420": "4200",
+  //aETH
+  "1007": "34",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP =
   import.meta.env.VITE_ENV === "production"
     ? A_TOKEN_UNDERLYING_ID_MAP_MAINNET
     : A_TOKEN_UNDERLYING_ID_MAP_TESTNET
+
+export const REVERSE_A_TOKEN_UNDERLYING_ID_MAP = Object.fromEntries(
+  Object.entries(A_TOKEN_UNDERLYING_ID_MAP).map(([key, value]) => [value, key]),
+)

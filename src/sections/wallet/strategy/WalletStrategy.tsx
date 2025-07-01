@@ -1,5 +1,5 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { FC, lazy } from "react"
+import { FC } from "react"
 import { WalletStrategyHeader } from "sections/wallet/strategy/WalletStrategyHeader"
 import { WalletStrategyProviders } from "sections/wallet/strategy/WalletStrategy.providers"
 import { WalletStrategySkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
@@ -7,15 +7,13 @@ import { StrategyTile } from "sections/wallet/strategy/StrategyTile/StrategyTile
 import { useMarketChangeSubscription } from "sections/lending/utils/marketsAndNetworksConfig"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
 import { useGigadotAssetIds } from "sections/wallet/strategy/WalletStrategy.utils"
-
-const GigadotAnswers = lazy(async () => ({
-  default: (
-    await import("sections/wallet/strategy/GigadotAnswers/GigadotAnswers")
-  ).GigadotAnswers,
-}))
+import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
+import { useTranslation } from "react-i18next"
+import { StrategyTileVariant } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
 
 export const WalletStrategy: FC = () => {
-  const { assetId, underlyingAssetId } = useGigadotAssetIds()
+  const { t } = useTranslation()
+  const { gdotAssetId, underlyingGdotAssetId } = useGigadotAssetIds()
   const { isLoaded, featureFlags } = useRpcProvider()
 
   useMarketChangeSubscription()
@@ -30,8 +28,20 @@ export const WalletStrategy: FC = () => {
     <WalletStrategyProviders>
       <SWalletStrategy>
         <WalletStrategyHeader />
-        <StrategyTile assetId={assetId} underlyingAssetId={underlyingAssetId} />
-        <GigadotAnswers />
+        <StrategyTile
+          assetId={gdotAssetId}
+          underlyingAssetId={underlyingGdotAssetId}
+          emptyState={t("wallet.strategy.gigadot.emptyState")}
+          riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
+          variant={StrategyTileVariant.One}
+        />
+        <StrategyTile
+          assetId={GETH_STABLESWAP_ASSET_ID}
+          underlyingAssetId={GETH_ERC20_ASSET_ID}
+          emptyState={t("wallet.strategy.geth.emptyState")}
+          riskTooltip={t("wallet.strategy.geth.risk.tooltip")}
+          variant={StrategyTileVariant.Two}
+        />
       </SWalletStrategy>
     </WalletStrategyProviders>
   )
