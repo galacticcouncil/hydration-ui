@@ -3,6 +3,7 @@ import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SAccountOption = styled.div<{
   withButton?: boolean
+  disabled?: boolean
 }>`
   position: relative;
   width: 100%;
@@ -14,8 +15,6 @@ export const SAccountOption = styled.div<{
   flex-direction: column;
   justify-content: center;
 
-  cursor: pointer;
-
   padding: 4px 16px;
   transition: ${({ theme }) => theme.transitions.colors};
 
@@ -23,17 +22,23 @@ export const SAccountOption = styled.div<{
   border-radius: ${({ theme }) => theme.radii.lg}px;
   border: 1px solid ${({ theme }) => theme.details.borders};
 
-  &[data-active="true"],
-  &[data-active="true"]:hover,
-  &[data-active="true"]:focus {
-    background-color: ${({ theme }) => theme.buttons.secondary.outline.fill};
-    border-color: ${({ theme }) => theme.buttons.secondary.outline.outline};
-  }
+  ${({ theme, disabled }) =>
+    !disabled &&
+    css`
+      cursor: pointer;
 
-  &:hover,
-  &:active {
-    background-color: ${({ theme }) => theme.details.borders};
-  }
+      &[data-active="true"],
+      &[data-active="true"]:hover,
+      &[data-active="true"]:focus {
+        background-color: ${theme.buttons.secondary.outline.fill};
+        border-color: ${theme.buttons.secondary.outline.outline};
+      }
+
+      &:hover,
+      &:active {
+        background-color: ${theme.details.borders};
+      }
+    `}
 
   ${({ withButton }) =>
     withButton &&
@@ -55,6 +60,8 @@ export const SChangeAccountButton = styled.button`
 export const SCopyButton = styled(CopyButton)(
   ({ theme }) => css`
     color: ${theme.text.medium};
+    cursor: pointer;
+
     &[data-copied="true"] {
       color: ${theme.accents.success.emphasis};
     }

@@ -1,19 +1,16 @@
-import { Modal } from "@galacticcouncil/ui/components"
+import { ModalBody } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
 
 import {
   useAccountFeePaymentAssets,
   useSetFeePaymentAsset,
 } from "@/api/payments"
-import {
-  AssetSelectModalContent,
-  AssetSelectModalProps,
-} from "@/components/AssetSelectModal"
+import { AssetSelectModalContent } from "@/components/AssetSelectModal"
 import { TransactionOptions } from "@/states/transactions"
 
-export const TransactionFeePaymentAssetModalContent: React.FC<
-  TransactionOptions
-> = (txOptions) => {
+export const TransactionFeePaymentAssetModal: React.FC<TransactionOptions> = (
+  txOptions,
+) => {
   const { mutate } = useSetFeePaymentAsset(txOptions)
 
   const { accountFeePaymentAsset, acceptedFeePaymentAssets } =
@@ -26,23 +23,13 @@ export const TransactionFeePaymentAssetModalContent: React.FC<
   }, [acceptedFeePaymentAssets, accountFeePaymentAsset?.id])
 
   return (
-    <AssetSelectModalContent
-      assets={filteredPaymentAssets}
-      onSelect={(asset) => {
-        mutate(asset.id)
-      }}
-    />
-  )
-}
-
-export const TransactionFeePaymentAssetModal: React.FC<
-  Pick<AssetSelectModalProps, "open" | "onOpenChange">
-> = (props) => {
-  return (
-    <Modal {...props}>
-      <TransactionFeePaymentAssetModalContent
-        onSubmitted={() => props.onOpenChange(false)}
+    <ModalBody sx={{ padding: 0 }}>
+      <AssetSelectModalContent
+        assets={filteredPaymentAssets}
+        onSelect={(asset) => {
+          mutate(asset.id)
+        }}
       />
-    </Modal>
+    </ModalBody>
   )
 }
