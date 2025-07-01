@@ -329,19 +329,15 @@ const APY = ({
 
   if (farms?.length)
     return (
-      <NonClickableContainer>
-        <GlobalFarmRowMulti assetFee={fee} farms={farms} totalFee={totalFee} />
-      </NonClickableContainer>
+      <GlobalFarmRowMulti assetFee={fee} farms={farms} totalFee={totalFee} />
     )
 
   return (
-    <NonClickableContainer>
-      <Text color="white" fs={14}>
-        {assetId === native.id
-          ? "--"
-          : t("value.percentage", { value: totalFee })}
-      </Text>
-    </NonClickableContainer>
+    <Text color="white" fs={14}>
+      {assetId === native.id
+        ? "--"
+        : t("value.percentage", { value: totalFee })}
+    </Text>
   )
 }
 

@@ -23,6 +23,7 @@ import { ResponsiveValue } from "utils/responsive"
 import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
+import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 
 export const GigaIncentives = ({ id }: { id: string }) => {
   const { t } = useTranslation()
@@ -126,10 +127,21 @@ export const GigaAPY = ({
   const isSupply = type === "supply"
   const apy = isSupply ? totalSupplyApy : totalBorrowApy
 
+  const hasFarms = farms && farms.length > 0
+  const defaultColor = withFarms && hasFarms ? "brightBlue200" : "white"
+
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
+      {hasFarms && (
+        <MultipleIcons
+          size={size ?? 14}
+          icons={farms.map((farm) => ({
+            icon: <AssetLogo id={farm.rewardCurrency} />,
+          }))}
+        />
+      )}
       <Text
-        color={color ?? "white"}
+        color={color ?? defaultColor}
         fs={size ?? 14}
         tTransform={withLabel ? "uppercase" : "none"}
       >
