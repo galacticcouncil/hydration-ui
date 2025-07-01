@@ -8,7 +8,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import { secondsInYear } from "date-fns"
 import { BLOCK_TIME, BN_0, BN_1 } from "utils/constants"
-import { undefinedNoop } from "utils/helpers"
+import { noop, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { useBestNumber } from "./chain"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
@@ -261,6 +261,32 @@ const select = (data: TFarmAprData[] | undefined) => {
     },
     new Map(),
   )
+}
+
+export const useOmnipoolFarm = (id?: string) => {
+  const { api, sdk, isLoaded } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+
+  const { client } = sdk
+
+  const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
+    QUERY_KEYS.omnipoolActiveFarm(id),
+    id ? getActiveFarms(api, [id]) : noop,
+    { enabled: !!id && isLoaded, staleTime: millisecondsInMinute },
+  )
+
+  const { data: activeFarmsData = [], isInitialLoading } = useQuery(
+    QUERY_KEYS.omnipoolFarm(id),
+    activeFarms
+      ? getFarmsData(api, client.balance, activeFarms, getAssetWithFallback)
+      : undefinedNoop,
+    {
+      enabled: isActiveFarms && isLoaded,
+      staleTime: millisecondsInMinute,
+    },
+  )
+
+  return { data: select(activeFarmsData)?.get(id ?? ""), isInitialLoading }
 }
 
 export const useOmnipoolFarms = (ids: string[]) => {

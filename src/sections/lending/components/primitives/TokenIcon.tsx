@@ -1,7 +1,7 @@
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { GHO_ASSET_ID } from "sections/lending/utils/ghoUtilities"
 import { getAssetIdFromAddress } from "utils/evm"
 
@@ -11,10 +11,6 @@ interface TokenIconProps {
   size?: number
   className?: string
 }
-
-const REVERSE_A_TOKEN_UNDERLYING_ID_MAP = Object.fromEntries(
-  Object.entries(A_TOKEN_UNDERLYING_ID_MAP).map(([key, value]) => [value, key]),
-)
 
 export function TokenIcon({
   address,

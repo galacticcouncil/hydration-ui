@@ -8,9 +8,13 @@ import { Spinner } from "components/Spinner/Spinner"
 
 type Props = {
   onClose: () => void
+  disableAutoClose?: boolean
 }
 
-export const ReviewTransactionPending = ({ onClose }: Props) => {
+export const ReviewTransactionPending = ({
+  onClose,
+  disableAutoClose,
+}: Props) => {
   const { t } = useTranslation()
   return (
     <div
@@ -35,13 +39,16 @@ export const ReviewTransactionPending = ({ onClose }: Props) => {
         variant="primary"
         sx={{ mt: 40, width: [200, "auto"] }}
         onClick={onClose}
+        disabled={!!disableAutoClose}
       >
         {t("liquidity.reviewTransaction.modal.success.close")}
       </Button>
 
       <Spacer size={40} />
 
-      <ReviewTransactionProgress duration={3} onComplete={onClose} />
+      {!disableAutoClose && (
+        <ReviewTransactionProgress duration={1} onComplete={onClose} />
+      )}
     </div>
   )
 }

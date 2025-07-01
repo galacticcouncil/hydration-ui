@@ -2,8 +2,38 @@ import styled from "@emotion/styled"
 import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
 import { theme } from "theme"
+import { css, SerializedStyles } from "@emotion/react"
 
-export const SStrategyTile = styled.div`
+export enum StrategyTileVariant {
+  One = "One",
+  Two = "Two",
+}
+
+const desktopBackgroundVariantStyles: Record<
+  StrategyTileVariant,
+  SerializedStyles
+> = {
+  [StrategyTileVariant.One]: css`
+    background: radial-gradient(
+        50.55% 157.06% at 4.5% 150.85%,
+        #f80b6b 5.78%,
+        rgba(79, 31, 71, 0) 89.15%
+      ),
+      ${theme.colors.darkBlue700};
+  `,
+  [StrategyTileVariant.Two]: css`
+    background: radial-gradient(
+        50.55% 157.06% at 4.5% 150.85%,
+        #525252 5.78%,
+        rgba(32, 32, 32, 0) 89.15%
+      ),
+      ${theme.colors.darkBlue700};
+  `,
+}
+
+export const SStrategyTile = styled.div<{
+  readonly variant: StrategyTileVariant
+}>`
   --strategy-tile-padding-block: 40px;
 
   position: relative;
@@ -58,12 +88,7 @@ export const SStrategyTile = styled.div`
     grid-template-columns: 5fr auto 4fr;
     column-gap: 40px;
 
-    background: radial-gradient(
-        50.55% 157.06% at 4.5% 150.85%,
-        #f80b6b 5.78%,
-        rgba(79, 31, 71, 0) 89.15%
-      ),
-      ${theme.colors.darkBlue700};
+    ${({ variant }) => desktopBackgroundVariantStyles[variant]}
   }
 `
 

@@ -7,7 +7,7 @@ export const WalletStrategyHeader: FC = () => {
 
   return (
     <Text font="GeistMono" fs={28} lh="1.2" color="white">
-      {t("wallet.strategy.gigadot.title")}
+      {t("wallet.strategy.title")}
     </Text>
   )
 }
