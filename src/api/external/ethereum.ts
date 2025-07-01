@@ -43,13 +43,7 @@ export const fetchLIDOEthAPR = async () => {
   const res = await fetch("https://eth-api.lido.fi/v1/protocol/steth/apr/sma")
   const data = await res.json()
 
-  let apr: number | undefined
-
-  try {
-    apr = data.data.smaApr
-  } catch (error) {}
-
-  return apr
+  return data?.data?.smaApr as number | undefined
 }
 
 export const useLIDOEthAPR = (options: UseQueryOptions<LidoEthApr> = {}) => {

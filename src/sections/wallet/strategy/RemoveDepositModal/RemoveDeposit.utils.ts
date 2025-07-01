@@ -48,5 +48,9 @@ export const useRemoveAllFarmingPositions = (
 
   const txs = [...exitingFarmsTxs, ...liquidityTxs]
 
-  return { totalShares: totalShares.toString() }
+  return {
+    totalShares: totalShares.toString(),
+    txs,
+    tx: api.tx.utility.batchAll(txs),
+  }
 }
