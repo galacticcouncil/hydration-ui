@@ -14,7 +14,7 @@ import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/us
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
 import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 
 type SupplyInfoProps = {

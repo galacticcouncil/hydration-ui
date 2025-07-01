@@ -8,7 +8,7 @@ import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
-import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TAnyPool } from "sections/pools/PoolsPage.utils"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
@@ -17,13 +17,13 @@ import { TLPData } from "utils/omnipool"
 type Props = {
   position: TLPData
   index: number
-  pool: TPoolFullData
+  pool: TAnyPool
   onSuccess: () => void
   onRemovePosition: () => void
 }
 
 export function LiquidityPositionRemoveLiquidity(props: {
-  pool: TXYKPool | TPoolFullData
+  pool: TAnyPool
   onRemovePosition: () => void
 }) {
   const { t } = useTranslation()

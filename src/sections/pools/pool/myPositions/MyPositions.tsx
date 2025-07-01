@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { TPoolFullData, TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
@@ -21,7 +21,7 @@ import BN from "bignumber.js"
 
 export const MyPositions = () => {
   const { t } = useTranslation()
-  const { pool } = usePoolData() as { pool: TPoolFullData }
+  const { pool } = usePoolData()
 
   const stablepoolAmount = pool.balance?.freeBalance ?? "0"
   const isPositions = pool.isPositions

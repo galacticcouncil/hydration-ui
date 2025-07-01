@@ -526,20 +526,11 @@ export const routes: Route[] = [
   },
   {
     path: LINKS.strategies,
-    children: [
-      {
-        path: "/",
-        element: <Navigate to="gigadot" />,
-      },
-      {
-        path: "gigadot",
-        element: (
-          <Suspense fallback={<WalletStrategySkeleton />}>
-            <WalletStrategy />
-          </Suspense>
-        ),
-      },
-    ],
+    element: (
+      <Suspense fallback={<WalletStrategySkeleton />}>
+        <WalletStrategy />
+      </Suspense>
+    ),
   },
   {
     path: "*",

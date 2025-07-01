@@ -3,32 +3,32 @@ import { RemoveLiquidityModal } from "./RemoveLiquidityModal"
 import { useTranslation } from "react-i18next"
 import { Icon } from "components/Icon/Icon"
 import MinusIcon from "assets/icons/MinusIcon.svg?react"
-import { TPoolFullData } from "sections/pools/PoolsPage.utils"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { Button } from "components/Button/Button"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { Modal } from "components/Modal/Modal"
 import { scaleHuman } from "utils/balance"
 import { GDOT_ERC20_ASSET_ID } from "utils/constants"
-import { useAssets } from "providers/assets"
 
 type Props = {
-  pool: TPoolFullData
+  pool: TStablepool
   onSuccess: () => void
 }
 
 enum STABLEPOOLTYPE {
   CLASSIC,
-  GIGADOT,
+  GIGA,
 }
 
 export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
   const { t } = useTranslation()
-  const { getErc20 } = useAssets()
+
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
 
-  const meta = getErc20(GDOT_ERC20_ASSET_ID)
-  const balance = pool.balance?.freeBalance
-    ? scaleHuman(pool.balance?.freeBalance, meta?.decimals ?? 0).toString()
+  const { balance, meta, isGDOT, id, biggestPercentage } = pool
+
+  const balanceHuman = balance?.freeBalance
+    ? scaleHuman(balance.freeBalance, meta.decimals).toString()
     : undefined
 
   return (
@@ -39,7 +39,9 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
         fullWidth
         onClick={() =>
           setOpenRemove(
-            pool.isGigaDOT ? STABLEPOOLTYPE.GIGADOT : STABLEPOOLTYPE.CLASSIC,
+            pool.isGDOT || pool.isGETH
+              ? STABLEPOOLTYPE.GIGA
+              : STABLEPOOLTYPE.CLASSIC,
           )
         }
       >
@@ -56,11 +58,12 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
           onClose={() => setOpenRemove(null)}
         />
       )}
-      {STABLEPOOLTYPE.GIGADOT === openRemove && (
+      {STABLEPOOLTYPE.GIGA === openRemove && (
         <Modal open onClose={() => setOpenRemove(null)}>
           <RemoveDepositModal
-            assetId={GDOT_ERC20_ASSET_ID}
-            balance={balance ?? "0"}
+            assetId={isGDOT ? GDOT_ERC20_ASSET_ID : id}
+            balance={balanceHuman ?? "0"}
+            assetReceiveId={isGDOT ? undefined : biggestPercentage?.assetId}
             onClose={() => setOpenRemove(null)}
           />
         </Modal>

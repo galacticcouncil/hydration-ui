@@ -9,18 +9,20 @@ import {
   AssetOverviewTileValue,
 } from "sections/wallet/strategy/AssetOverview/AssetOverviewTile"
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 
 type Props = {
   readonly assetId: string
   readonly underlyingAssetId: string
   readonly riskLevel: StrategyRiskLevel
+  readonly riskTooltip: string
 }
 
 export const AssetOverview: FC<Props> = ({
   assetId,
   underlyingAssetId,
   riskLevel,
+  riskTooltip,
 }) => {
   const { t } = useTranslation()
   const { totalSupplyApy, tvl } = useBorrowAssetApy(assetId)
@@ -47,15 +49,13 @@ export const AssetOverview: FC<Props> = ({
           variant={`risk:${riskLevel}`}
           label={`${t("risk")}:`}
           value={riskLevel}
-          icon={
-            <InfoTooltip text={t("wallet.strategy.risk.gigadot.tooltip")} />
-          }
+          icon={<InfoTooltip text={riskTooltip} />}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
           label={`${t("apy")}:`}
           customValue={
-            <OverrideApy assetId={assetId} type="supply">
+            <OverrideApy assetId={assetId} type="supply" withFarms>
               <AssetOverviewTileValue>
                 {totalSupplyApy === Infinity
                   ? "∞"

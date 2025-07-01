@@ -469,3 +469,7 @@ export function isIOS() {
 export function isMobileDevice() {
   return isAndroid() || isIOS()
 }
+
+export function neverGuard(value: never) {
+  throw new Error(`Unexpected call, value: ${value}`)
+}
