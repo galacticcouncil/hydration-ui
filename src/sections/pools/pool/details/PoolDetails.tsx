@@ -50,7 +50,11 @@ export const PoolDetails = () => {
 
   const modal = isOpen ? (
     pool.meta.isStableSwap || pool.meta.isErc20 ? (
-      <TransferModal onClose={() => setOpen(false)} farms={pool.farms ?? []} />
+      <TransferModal
+        onClose={() => setOpen(false)}
+        farms={pool.farms ?? []}
+        skipOptions={!ixXYKPool && pool.isGETH}
+      />
     ) : (
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )

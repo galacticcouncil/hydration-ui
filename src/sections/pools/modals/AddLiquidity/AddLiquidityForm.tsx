@@ -163,7 +163,7 @@ export const AddLiquidityForm = ({
           {
             t,
             tOptions: {
-              value: values.amount,
+              value: BN(values.amount),
               symbol: assetMeta?.symbol,
               where: "Omnipool",
             },

@@ -84,7 +84,7 @@ export const AddStablepoolLiquidity = ({
   const { account } = useAccount()
 
   const { data: accountBalances } = useAccountAssets()
-  const { reserves, farms, isGDOT, poolId, isGETH, id } = usePoolData()
+  const { reserves, farms, isGDOT, poolId, isGETH, id, symbol } = usePoolData()
     .pool as TStablepool
 
   const { t } = useTranslation()
@@ -303,8 +303,8 @@ export const AddStablepoolLiquidity = ({
           {
             t,
             tOptions: {
-              value: values.amount,
-              symbol: asset.symbol,
+              value: BN(values.amount),
+              symbol,
               where: "Omnipool",
             },
             components: ["span", "span.highlight"],
