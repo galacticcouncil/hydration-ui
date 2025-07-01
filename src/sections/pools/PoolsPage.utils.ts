@@ -48,6 +48,8 @@ export type TXYKPool = NonNullable<
 
 export type TAnyPool = TPool | TStablepool | TXYKPool
 
+const GASSETS = [GDOT_STABLESWAP_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
+
 const getTradeFee = (fee: string[]) => {
   if (fee?.length !== 2) return BN_NAN
 
@@ -324,15 +326,15 @@ export const usePools = () => {
             return -1
           }
 
-          if (poolB.id === NATIVE_ASSET_ID) {
+          if (poolB.poolId === NATIVE_ASSET_ID) {
             return 1
           }
 
-          if (poolA.id === GDOT_STABLESWAP_ASSET_ID) {
+          if (GASSETS.includes(poolA.poolId)) {
             return -1
           }
 
-          if (poolB.id === GDOT_STABLESWAP_ASSET_ID) {
+          if (GASSETS.includes(poolB.poolId)) {
             return 1
           }
 
