@@ -1,0 +1,22 @@
+query TradePrices(
+  $assetInId: String!
+  $assetOutId: String!
+  $startTimestamp: String!
+  $endTimestamp: String!
+  $bucketSize: AssetsPairPriceTimeRange
+) {
+  assetPairPricesAndVolumesByPeriod(
+    filter: {
+      assetInRegistryId: $assetInId
+      assetOutRegistryId: $assetOutId
+      startTimestamp: $startTimestamp
+      endTimestamp: $endTimestamp
+      bucketSize: $bucketSize
+    }
+  ) {
+    nodes {
+      timestamp
+      priceAvrgNorm
+    }
+  }
+}

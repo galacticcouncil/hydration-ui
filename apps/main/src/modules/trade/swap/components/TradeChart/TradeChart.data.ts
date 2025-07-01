@@ -1,47 +1,83 @@
+import {
+  OhlcData,
+  toUTCTimestamp,
+} from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
-import { DATA } from "@/modules/trade/swap/_mock"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
-
-export enum TradeChartIntervalType {
-  All = "all",
-  Hour = "hour",
-  Day = "day",
-  Week = "week",
-  Month = "month",
-}
+import { tradePricesQuery } from "@/api/graphql/trade-prices"
+import { useSquidClient } from "@/api/provider"
+import { AssetsPairPriceTimeRange } from "@/codegen/__generated__/squid/graphql"
+import { PeriodType } from "@/components/PeriodInput/PeriodInput"
+import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
+import { useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 type Args = {
-  readonly assetIn: string
-  readonly assetOut: string
-  readonly interval: TradeChartIntervalType
+  readonly assetInId: string
+  readonly assetOutId: string
+  readonly period: PeriodType | null
 }
 
-export const useTradeChartData = ({ assetIn, assetOut, interval }: Args) => {
-  return useQuery({
-    // Fetch mock data until we have real data
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "trade",
-      "chart",
-      assetIn,
-      assetOut,
-      interval,
-    ],
-    queryFn: mockFetch,
-    retry: 0,
-  })
+export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
+  const squidClient = useSquidClient()
+
+  const { getAsset } = useAssets()
+  const assetOut = getAsset(assetOutId)
+
+  const [startTimestamp, endTimestamp] = useMemo(() => {
+    const now = new Date()
+
+    if (!period) {
+      return ["1970-01-01T00:00:00.000Z", now.toISOString()]
+    }
+
+    const ms = PERIOD_MS[period]
+
+    return [new Date(now.getTime() - ms).toISOString(), now.toISOString()]
+  }, [period])
+
+  const bucketSize = period
+    ? bucketSizes[period]
+    : AssetsPairPriceTimeRange["4H"]
+
+  const { data, isError, isLoading, isSuccess } = useQuery(
+    tradePricesQuery(
+      squidClient,
+      assetInId,
+      assetOutId,
+      startTimestamp,
+      endTimestamp,
+      bucketSize,
+    ),
+  )
+
+  const prices = useMemo(() => {
+    if (isLoading || !assetOut) {
+      return []
+    }
+
+    return (
+      data?.assetPairPricesAndVolumesByPeriod.nodes
+        .filter((node) => node !== null)
+        .map<OhlcData>((node) => ({
+          time: toUTCTimestamp(new Date(node.timestamp).valueOf()),
+          close: Number(scaleHuman(node.priceAvrgNorm, assetOut.decimals)),
+        })) ?? []
+    )
+  }, [data, assetOut, isLoading])
+
+  return {
+    prices,
+    isError,
+    isLoading,
+    isSuccess,
+  }
 }
 
-async function mockFetch() {
-  const shouldError = false
-  return new Promise<typeof DATA>((resolve, reject) => {
-    setTimeout(() => {
-      if (shouldError) {
-        reject(new Error("Failed to fetch data"))
-      } else {
-        resolve(DATA)
-      }
-    }, 1000)
-  })
+const bucketSizes: Record<PeriodType, AssetsPairPriceTimeRange> = {
+  hour: AssetsPairPriceTimeRange.All,
+  day: AssetsPairPriceTimeRange.All,
+  week: AssetsPairPriceTimeRange["1H"],
+  month: AssetsPairPriceTimeRange["4H"],
 }
