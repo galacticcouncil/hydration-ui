@@ -183,7 +183,7 @@ const AddLiquidityButton: React.FC<{
         </Button>
       )}
       {open &&
-        (pool.isStablePool ? (
+        (!isXYKPoolType(pool) && pool.isStablePool ? (
           <StablePoolModalWrapper pool={pool} onClose={() => setOpen(false)} />
         ) : (
           <LiquidityModalWrapper pool={pool} onClose={() => setOpen(false)} />
@@ -214,7 +214,7 @@ const StablePoolModalWrapper = ({
   pool,
   onClose,
 }: {
-  pool: TPool | TXYKPool
+  pool: TPool
   onClose: () => void
 }) => {
   const stablepoolDetails = useStableSwapReserves(pool.id)
@@ -228,7 +228,12 @@ const StablePoolModalWrapper = ({
         isXYK: false,
       }}
     >
-      <TransferModal onClose={onClose} farms={pool.farms} disabledOmnipool />
+      <TransferModal
+        onClose={onClose}
+        farms={pool.farms}
+        disabledOmnipool={!pool.isGETH}
+        skipOptions={pool.isGETH}
+      />
     </PoolContext.Provider>
   )
 }

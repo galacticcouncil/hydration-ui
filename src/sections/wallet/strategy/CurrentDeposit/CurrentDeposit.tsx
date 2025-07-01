@@ -12,14 +12,23 @@ import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/C
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
 import { CurrentDepositClaimReward } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositClaimReward"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useEvmAccount,
+} from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
-import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
+import {
+  BN_0,
+  GETH_ERC20_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
+} from "utils/constants"
 import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
-import { useAccountAssets } from "api/deposits"
+import { TDeposit, useAccountAssets } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward"
 import Skeleton from "react-loading-skeleton"
+import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
+import { TRemoveFarmingPosition } from "sections/wallet/strategy/RemoveDepositModal/RemoveDeposit.utils"
 
 export type CurrentDepositData = {
   readonly depositBalance: string
@@ -32,7 +41,6 @@ type Props = {
 }
 
 export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
-  const { t } = useTranslation()
   const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
 
   const { getAssetWithFallback } = useAssets()
@@ -47,29 +55,16 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
     accountAsset?.balance?.balance || "0",
   ).shiftedBy(-asset.decimals)
 
-  const isMiningPositions = !!accountAsset?.omnipoolDeposits?.length
-
+  const miningPositions = accountAsset?.omnipoolDeposits ?? []
+  const isMiningPositions = !!miningPositions.length
   const reward = useAssetReward(assetId)
 
   const hasBalance =
     depositBalance.gt(0) || BigNumber(reward.balance).gt(0) || isMiningPositions
 
-  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
-
-  const { getAssetPrice, isLoading } = useAssetsPrice([assetId])
-  const spotPrice = getAssetPrice(assetId).price || "0"
-
-  const depositValue = new BigNumber(spotPrice)
-    .times(depositBalance || "0")
-    .toString()
-
   const isGETH = assetId && assetId === GETH_ERC20_ASSET_ID
 
-  const { data: gethReserves } = useStableSwapReserves(
-    isGETH ? GETH_STABLESWAP_ASSET_ID : "",
-  )
-
-  if (isAccountAssetsLoading || isLoading)
+  if (isAccountAssetsLoading)
     return (
       <div sx={{ pb: [0, 30] }}>
         <Skeleton width="100%" height={20} />
@@ -83,14 +78,138 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
 
   return (
     <SCurrentDeposit>
+      {isGETH ? (
+        <FarmsDepositBalance
+          assetId={assetId}
+          symbol={asset.symbol}
+          miningPositions={miningPositions}
+        />
+      ) : (
+        <DepositBalance
+          assetId={assetId}
+          symbol={asset.symbol}
+          balance={depositBalance.toString()}
+        />
+      )}
+      <CurrentDepositSeparator />
+      {isAccountBindingRequired ? (
+        <CurrentDepositBindAccount />
+      ) : isGETH ? (
+        <CurrentDepositFarmsClaimReward assetId={assetId} />
+      ) : (
+        <CurrentDepositClaimReward reward={reward} />
+      )}
+    </SCurrentDeposit>
+  )
+}
+
+const DepositBalance = ({
+  assetId,
+  symbol,
+  balance,
+}: {
+  assetId: string
+  symbol: string
+  balance: string
+}) => {
+  const { t } = useTranslation()
+  const { getAssetPrice, isLoading } = useAssetsPrice([assetId])
+  const spotPrice = getAssetPrice(assetId).price || "0"
+
+  const depositValue = new BigNumber(spotPrice).times(balance || "0").toString()
+
+  return (
+    <>
       <CurrentDepositBalance
         label={t("wallet.strategy.deposit.myDeposit")}
         balance={t("value.tokenWithSymbol", {
-          value: depositBalance,
-          symbol: asset.symbol,
+          value: BigNumber(balance),
+          symbol,
         })}
+        isLoading={isLoading}
         value={t("value.usd", { amount: depositValue })}
       />
+      <CurrentDepositRemoveButton assetId={assetId} depositBalance={balance} />
+    </>
+  )
+}
+
+const FarmsDepositBalance = ({
+  assetId,
+  symbol,
+  miningPositions,
+}: {
+  assetId: string
+  symbol: string
+  miningPositions: TDeposit[]
+}) => {
+  const { t } = useTranslation()
+  const { account } = useAccount()
+
+  const { data: gethReserves } = useStableSwapReserves(GETH_STABLESWAP_ASSET_ID)
+
+  const omnipoolDepositValues = useAllOmnipoolDeposits(account?.address)
+  const assetDeposits = omnipoolDepositValues[assetId] ?? []
+
+  const { totalValue, display, positions } = assetDeposits.reduce<{
+    positions: TRemoveFarmingPosition[]
+    totalValue: BigNumber
+    display: BigNumber
+  }>(
+    (acc, position) => {
+      const miningPosition = miningPositions.find(
+        (miningPosition) => miningPosition.id === position.depositId,
+      )
+
+      if (miningPosition) {
+        return {
+          totalValue: acc.totalValue.plus(position.totalValueShifted),
+          display: acc.display.plus(position.valueDisplay),
+          positions: [...acc.positions, { ...miningPosition, ...position }],
+        }
+      }
+
+      return acc
+    },
+    { totalValue: BN_0, display: BN_0, positions: [] },
+  )
+
+  return (
+    <>
+      <CurrentDepositBalance
+        label={t("wallet.strategy.deposit.myDeposit")}
+        balance={t("value.tokenWithSymbol", {
+          value: totalValue,
+          symbol,
+        })}
+        value={t("value.usd", { amount: display })}
+      />
+      <CurrentDepositRemoveButton
+        assetId={assetId}
+        depositBalance={totalValue.toString()}
+        assetReceiveId={gethReserves.biggestPercentage?.assetId}
+        positions={positions}
+      />
+    </>
+  )
+}
+
+const CurrentDepositRemoveButton = ({
+  assetId,
+  depositBalance,
+  assetReceiveId,
+  positions,
+}: {
+  assetId: string
+  depositBalance: string
+  assetReceiveId?: string
+  positions?: TRemoveFarmingPosition[]
+}) => {
+  const { t } = useTranslation()
+  const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
+
+  return (
+    <>
       <Button
         size="small"
         variant="outline"
@@ -100,26 +219,19 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
       >
         {t("remove")}
       </Button>
-      <CurrentDepositSeparator />
-      {isAccountBindingRequired ? (
-        <CurrentDepositBindAccount />
-      ) : isGETH ? (
-        <CurrentDepositFarmsClaimReward assetId={assetId} />
-      ) : (
-        <CurrentDepositClaimReward reward={reward} />
-      )}
       <Modal
         open={isRemoveModalOpen}
         onClose={() => setIsRemoveModalOpen(false)}
       >
         <RemoveDepositModal
           assetId={assetId}
-          balance={depositBalance.toString()}
+          balance={depositBalance}
           onClose={() => setIsRemoveModalOpen(false)}
-          assetReceiveId={gethReserves.biggestPercentage?.assetId}
+          assetReceiveId={assetReceiveId}
+          positions={positions}
         />
       </Modal>
-    </SCurrentDeposit>
+    </>
   )
 }
 
