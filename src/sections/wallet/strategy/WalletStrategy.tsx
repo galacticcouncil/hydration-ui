@@ -38,8 +38,8 @@ export const WalletStrategy: FC = () => {
         <StrategyTile
           assetId={GETH_STABLESWAP_ASSET_ID}
           underlyingAssetId={GETH_ERC20_ASSET_ID}
-          emptyState={t("wallet.strategy.gigaeth.emptyState")}
-          riskTooltip={t("wallet.strategy.gigaeth.risk.tooltip")}
+          emptyState={t("wallet.strategy.geth.emptyState")}
+          riskTooltip={t("wallet.strategy.geth.risk.tooltip")}
           variant={StrategyTileVariant.Two}
         />
       </SWalletStrategy>

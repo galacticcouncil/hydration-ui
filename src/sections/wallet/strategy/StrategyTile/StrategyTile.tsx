@@ -42,7 +42,7 @@ export const StrategyTile: FC<Props> = ({
         <AssetOverview
           assetId={assetId}
           underlyingAssetId={underlyingAssetId}
-          riskLevel="lower"
+          riskLevel="low"
           riskTooltip={riskTooltip}
         />
         <Separator color="white" sx={{ opacity: 0.06 }} />
