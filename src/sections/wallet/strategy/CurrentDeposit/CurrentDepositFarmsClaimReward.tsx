@@ -87,7 +87,7 @@ export const CurrentDepositFarmsClaimReward = ({
         </Text>
         {isLoading || isFarmValuesLoading ? (
           <Skeleton width={50} height={16} />
-        ) : (
+        ) : claimableAssets.length ? (
           claimableAssets.map((claimableAsset) => (
             <Fragment key={claimableAsset.symbol}>
               <Text fw={500} fs={18} lh={13} color="white">
@@ -95,6 +95,10 @@ export const CurrentDepositFarmsClaimReward = ({
               </Text>
             </Fragment>
           ))
+        ) : (
+          <Text fw={500} fs={18} lh={13} color="white">
+            {t("value", { value: 0 })}
+          </Text>
         )}
         <Text fw={500} fs={11} lh="1.4" color="basic100">
           <DisplayValue value={BN(claimableTotal)} />
