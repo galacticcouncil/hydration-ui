@@ -90,9 +90,10 @@ const useStablepools = () => {
       : "",
   )
 
-  const { data: volumes, isLoading: isVolumeLoading } = useStablepoolVolumes()
-
   const isLoading = isPoolsLoading || isLoadingPrices
+
+  const { data: volumes, isLoading: isVolumeLoading } =
+    useStablepoolVolumes(isLoading)
 
   const data = useMemo(() => {
     if (isLoading || !filteredStablepools.length) return []
@@ -194,8 +195,6 @@ export const usePools = () => {
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
-  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
-    useOmnipoolYieldMetrics()
 
   const { data: stablepools, isLoading: isLoadingStablepools } =
     useStablepools()
@@ -204,15 +203,19 @@ export const usePools = () => {
     () => omnipoolAssets.data?.map((a) => a.id) ?? [],
     [omnipoolAssets.data],
   )
+
   const { data: allFarms, isLoading: isAllFarmsLoading } =
     useOmnipoolFarms(assetsId)
 
   const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
-  const { data: volumes, isLoading: isVolumeLoading } = useOmnipoolVolumes()
-
   const isInitialLoading =
     omnipoolAssets.isLoading || isLoading || isLoadingStablepools
+
+  const { data: volumes, isLoading: isVolumeLoading } =
+    useOmnipoolVolumes(isInitialLoading)
+  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
+    useOmnipoolYieldMetrics(isInitialLoading)
 
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
@@ -427,10 +430,11 @@ export const useXYKPools = () => {
 
   const fee = xykConsts?.fee ? getTradeFee(xykConsts.fee) : BN_NAN
 
-  const { data: volumes, isLoading: isVolumeLoading } = useXYKPoolTradeVolumes()
-
   const isInitialLoading =
     isIssuanceLoading || shareTokeSpotPrices.isInitialLoading
+
+  const { data: volumes, isLoading: isVolumeLoading } =
+    useXYKPoolTradeVolumes(isInitialLoading)
 
   const data = useMemo(() => {
     if (!shareTokeSpotPrices.data || !totalIssuances) return undefined

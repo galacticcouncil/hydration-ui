@@ -216,7 +216,7 @@ export const useOmnipoolVolumeSubscription = () => {
   return null
 }
 
-export const useOmnipoolYieldMetrics = () => {
+export const useOmnipoolYieldMetrics = (disabled?: boolean) => {
   const url = useSquidUrl()
 
   return useQuery({
@@ -227,5 +227,6 @@ export const useOmnipoolYieldMetrics = () => {
       return data.omnipoolAssetsYieldMetrics.nodes.filter(isNotNil)
     },
     staleTime: millisecondsInHour,
+    enabled: !disabled,
   })
 }
