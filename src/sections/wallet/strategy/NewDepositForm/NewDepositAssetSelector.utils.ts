@@ -13,6 +13,7 @@ import {
 import { useAssets } from "providers/assets"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 export const useNewDepositAssets = (
   assetsBlacklist: ReadonlyArray<string>,
@@ -84,7 +85,17 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
               : BN_0,
           }
         })
-        .sort((a, b) => (a.displayBalance.gt(b.displayBalance) ? -1 : 1))
+        .sort((a, b) => {
+          if (a.meta.id === NATIVE_ASSET_ID) {
+            return 1
+          }
+
+          if (b.meta.id === NATIVE_ASSET_ID) {
+            return -1
+          }
+
+          return a.displayBalance.gt(b.displayBalance) ? -1 : 1
+        })
         .find((balance) => {
           return (
             balance.displayBalance.gt(0) &&
