@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useMemo, useState, useEffect } from "react"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 const calculateSlippage = (amount: string, slippagePct: string): string => {
@@ -52,25 +51,22 @@ export const useBestTradeSell = (
   const amountOut = tradeData?.amountOut.toString() || "0"
   const minAmountOut = getMinAmountOut(amountOut, slippageData || "0")
 
-  const [tx, setTx] = useState<any>()
+  const getSwapTx = async () => {
+    if (!tradeData || !account) return undefined
 
-  useEffect(() => {
-    const buildTx = async () => {
-      if (tradeData && account) {
-        const builtTx = await sdkTx
-          .trade(tradeData)
-          .withSlippage(Number(slippageData))
-          .withBeneficiary(account.address)
-          .build()
-        setTx(builtTx.hex)
-      } else {
-        setTx(undefined)
-      }
-    }
-    buildTx()
-  }, [tradeData, account, sdkTx, slippageData])
+    const builtTx = await sdkTx
+      .trade(tradeData)
+      .withSlippage(Number(slippageData))
+      .withBeneficiary(account.address)
+      .build()
 
-  const swapTx = useMemo(() => (tx ? api.tx(tx) : undefined), [api, tx])
+    return api.tx(builtTx.hex)
+  }
 
-  return { minAmountOut, swapTx, amountOut, isLoading: isInitialLoading }
+  return {
+    minAmountOut,
+    getSwapTx,
+    amountOut,
+    isLoading: isInitialLoading,
+  }
 }

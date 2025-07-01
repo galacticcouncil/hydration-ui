@@ -58,6 +58,7 @@ type Props = {
   isStablepoolOnly: boolean
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
+  initialAmount?: string
 }
 
 const createFormSchema = (balance: string, decimals: number) =>
@@ -74,6 +75,7 @@ export const AddStablepoolLiquidity = ({
   isStablepoolOnly,
   isJoinFarms,
   setIsJoinFarms,
+  initialAmount,
 }: Props) => {
   const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -112,13 +114,16 @@ export const AddStablepoolLiquidity = ({
 
   const stablepoolZod = createFormSchema(balanceMax, asset?.decimals)
 
+  const resolver = isStablepoolOnly
+    ? stablepoolZod
+    : omnipoolZod
+      ? omnipoolZod.merge(stablepoolZod)
+      : undefined
+
   const form = useForm<{ value: string; amount: string }>({
     mode: "onChange",
-    resolver: zodResolver(
-      !isStablepoolOnly && omnipoolZod
-        ? omnipoolZod.merge(stablepoolZod)
-        : stablepoolZod,
-    ),
+    defaultValues: { value: initialAmount },
+    resolver: resolver ? zodResolver(resolver) : undefined,
   })
   const { formState } = form
   const { getAssetPrice } = useAssetsPrice([asset.id])
@@ -130,17 +135,18 @@ export const AddStablepoolLiquidity = ({
 
   const isSwap = isGDOT || isGETH
 
-  const { minAmountOut, swapTx } = useBestTradeSell(
+  const { getSwapTx } = useBestTradeSell(
     asset.id,
-    isGDOT ? GDOT_ERC20_ASSET_ID : isGETH ? id : "",
+    isGDOT ? GDOT_ERC20_ASSET_ID : isGETH && !!resolver ? id : "",
     debouncedValue ?? "0",
     isGETH
-      ? (minAmount) =>
+      ? (minAmount) => {
           form.setValue(
             "amount",
             scaleHuman(minAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
-            { shouldValidate: true },
+            { shouldValidate: true, shouldTouch: true },
           )
+        }
       : undefined,
   )
 
@@ -199,6 +205,10 @@ export const AddStablepoolLiquidity = ({
     const initialBalance =
       accountBalances?.accountAssetsMap.get(id)?.balance?.freeBalance ?? "0"
 
+    const isTwoStepsTx = isGETH && !isStablepoolOnly
+
+    const swapTx = await getSwapTx()
+
     await createTransaction(
       {
         tx: isSwap ? swapTx : tx,
@@ -211,7 +221,7 @@ export const AddStablepoolLiquidity = ({
             scale(values.amount, STABLEPOOL_TOKEN_DECIMALS).toString(),
           ),
         onSubmitted: () => {
-          if (!isGETH) {
+          if (!isTwoStepsTx) {
             onSubmitted(shares)
             form.reset()
           }
@@ -219,25 +229,24 @@ export const AddStablepoolLiquidity = ({
         onError: () => onClose(),
         onClose,
         onBack: () => {},
-        steps:
-          isGETH && !isStablepoolOnly
-            ? [
-                {
-                  label: t("liquidity.add.modal.geth.stepper.first"),
-                  state: "active",
-                },
-                {
-                  label: t("liquidity.add.modal.geth.stepper.second"),
-                  state: "todo",
-                },
-              ]
-            : undefined,
+        steps: isTwoStepsTx
+          ? [
+              {
+                label: t("liquidity.add.modal.geth.stepper.first"),
+                state: "active",
+              },
+              {
+                label: t("liquidity.add.modal.geth.stepper.second"),
+                state: "todo",
+              },
+            ]
+          : undefined,
         toast,
         disableAutoClose: isGETH,
       },
     )
 
-    if (!isGETH || isStablepoolOnly) return
+    if (!isTwoStepsTx) return
 
     const balanceApi = (
       await sdk.client.balance.getBalance(account?.address ?? "", id)
@@ -402,7 +411,7 @@ export const AddStablepoolLiquidity = ({
         {isGDOT || isGETH ? (
           <GigaDotSummary
             selectedAsset={asset}
-            minAmountOut={minAmountOut}
+            minAmountOut={shares}
             poolId={poolId}
           />
         ) : (
@@ -507,7 +516,7 @@ const GigaDotSummary = ({
         {
           label: t("liquidity.stablepool.add.minimalReceived"),
           content: t("value.tokenWithSymbol", {
-            value: BN(minAmountOut).shiftedBy(-meta.decimals),
+            value: BN(minAmountOut),
             type: "token",
             symbol: meta.name,
           }),

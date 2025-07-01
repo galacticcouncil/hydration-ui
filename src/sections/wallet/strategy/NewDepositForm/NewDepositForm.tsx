@@ -15,9 +15,12 @@ import { Modal } from "components/Modal/Modal"
 import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { noop } from "utils/helpers"
-import { STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
+import { GETH_ERC20_ASSET_ID, STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { Alert } from "components/Alert/Alert"
+import { usePools, useStableSwapReserves } from "sections/pools/PoolsPage.utils"
+import { PoolContext } from "sections/pools/pool/Pool"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 
 type Props = {
   readonly assetId: string
@@ -43,11 +46,16 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const allowedAssets = useNewDepositAssets(STRATEGY_ASSETS_BLACKLIST)
   const { minAmountOut, submit, supplyCapReached } =
     useSubmitNewDepositForm(assetId)
-  //
+
+  const isGETH = assetId === GETH_ERC20_ASSET_ID
+
   return (
     <>
-      <form onSubmit={form.handleSubmit(submit)}>
-        <div sx={{ flex: "column", gap: 10 }}>
+      <div sx={{ flex: "column", gap: 10 }}>
+        <form
+          onSubmit={!isGETH ? form.handleSubmit(submit) : undefined}
+          sx={{ flex: "column", gap: 10 }}
+        >
           <Text fw={[126, 600]} fs={[14, 17.5]} lh="1.2" color="white">
             {t("wallet.strategy.deposit.yourDeposit")}
           </Text>
@@ -57,30 +65,40 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
               allowedAssets.length ? () => setIsAssetSelectOpen(true) : noop
             }
           />
-          {account && (
+          {account && !isGETH ? (
             <Button type="submit" variant="primary" disabled={supplyCapReached}>
               {t("wallet.strategy.deposit.cta", {
                 symbol: asset.symbol,
               })}
             </Button>
-          )}
+          ) : null}
           {!account && <Web3ConnectModalButton />}
-          {supplyCapReached ? (
-            <Alert variant="warning">
-              {t("lending.tooltip.supplyCapMaxed", {
-                symbol: asset.symbol,
-              })}
-            </Alert>
-          ) : (
-            <NewDepositSummary
-              asset={asset}
-              minReceived={new BigNumber(minAmountOut || "0")
-                .shiftedBy(-asset.decimals)
-                .toString()}
-            />
-          )}
-        </div>
-      </form>
+        </form>
+
+        {isGETH && (
+          <GETHDepositButton
+            assetId={assetId}
+            symbol={asset.symbol}
+            disabled={supplyCapReached}
+            initialAssetId={selectedAsset?.id}
+            initialAmount={form.watch("amount")}
+          />
+        )}
+        {supplyCapReached ? (
+          <Alert variant="warning">
+            {t("lending.tooltip.supplyCapMaxed", {
+              symbol: asset.symbol,
+            })}
+          </Alert>
+        ) : (
+          <NewDepositSummary
+            asset={asset}
+            minReceived={new BigNumber(minAmountOut || "0")
+              .shiftedBy(-asset.decimals)
+              .toString()}
+          />
+        )}
+      </div>
       <Modal
         open={isAssetSelectOpen}
         onClose={() => setIsAssetSelectOpen(false)}
@@ -92,6 +110,60 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           onClose={() => setIsAssetSelectOpen(false)}
         />
       </Modal>
+    </>
+  )
+}
+
+export const GETHDepositButton = ({
+  assetId,
+  symbol,
+  disabled,
+  initialAmount,
+  initialAssetId,
+}: {
+  assetId: string
+  symbol: string
+  disabled: boolean
+  initialAssetId?: string
+  initialAmount?: string
+}) => {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+
+  const { data } = usePools()
+
+  const pool = data?.find((pool) => pool.id === assetId)
+
+  const stablepoolDetails = useStableSwapReserves(pool?.poolId ?? "")
+
+  return (
+    <>
+      <Button
+        type="button"
+        variant="primary"
+        disabled={disabled || !pool}
+        onClick={() => setOpen(true)}
+      >
+        {t("wallet.strategy.deposit.cta", {
+          symbol,
+        })}
+      </Button>
+      {pool && open && (
+        <PoolContext.Provider
+          value={{
+            pool: { ...pool, ...stablepoolDetails.data },
+            isXYK: false,
+          }}
+        >
+          <TransferModal
+            onClose={() => setOpen(false)}
+            farms={pool.farms}
+            initialAmount={initialAmount}
+            initialAssetId={initialAssetId}
+            skipOptions
+          />
+        </PoolContext.Provider>
+      )}
     </>
   )
 }

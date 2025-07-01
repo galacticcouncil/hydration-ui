@@ -51,7 +51,7 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
 
-  const { minAmountOut, swapTx, amountOut } = useBestTradeSell(
+  const { minAmountOut, getSwapTx, amountOut } = useBestTradeSell(
     assetId,
     assetReceived?.id ?? "",
     debouncedBalance,
@@ -67,9 +67,11 @@ export const RemoveDepositModal: FC<Props> = ({
     .shiftedBy(-(assetReceived?.decimals ?? 0))
     .toString()
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    const tx = await getSwapTx()
+
     createTransaction(
-      { tx: swapTx },
+      { tx },
       {
         toast: createToastMessages("wallet.strategy.remove.toast", {
           t,

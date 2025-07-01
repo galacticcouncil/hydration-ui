@@ -31,9 +31,19 @@ type Props = {
   onClose: () => void
   farms: TFarmAprData[]
   disabledOmnipool?: boolean
+  initialAmount?: string
+  initialAssetId?: string
+  skipOptions?: boolean
 }
 
-export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
+export const TransferModal = ({
+  onClose,
+  disabledOmnipool,
+  farms,
+  initialAmount,
+  initialAssetId,
+  skipOptions,
+}: Props) => {
   const { getAssetWithFallback, tradable } = useAssets()
   const { pool } = usePoolData()
   const refetch = useRefetchAccountAssets()
@@ -56,13 +66,14 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
   const { t } = useTranslation()
 
   const [assetId, setAssetId] = useState<string | undefined>(
-    isGDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId,
+    initialAssetId ??
+      (isGDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId),
   )
 
   const isOnlyStablepool = disabledOmnipool || !canAddLiquidity
 
   const { page, direction, paginateTo } = useModalPagination(
-    isOnlyStablepool ? Page.ADD_LIQUIDITY : Page.OPTIONS,
+    isOnlyStablepool || skipOptions ? Page.ADD_LIQUIDITY : Page.OPTIONS,
   )
 
   const [stablepoolSelected, setStablepoolSelected] = useState(isOnlyStablepool)
@@ -137,6 +148,7 @@ export const TransferModal = ({ onClose, disabledOmnipool, farms }: Props) => {
                 asset={getAssetWithFallback(assetId ?? poolId)}
                 isJoinFarms={isJoinFarms && !stablepoolSelected}
                 setIsJoinFarms={setIsJoinFarms}
+                initialAmount={initialAmount}
               />
             ),
           },
