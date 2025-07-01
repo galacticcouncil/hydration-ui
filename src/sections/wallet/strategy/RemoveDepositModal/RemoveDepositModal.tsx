@@ -20,10 +20,7 @@ import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/He
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
-import {
-  TRemoveFarmingPosition,
-  useRemoveAllFarmingPositions,
-} from "./RemoveDeposit.utils"
+import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
 
 type Props = {
   readonly assetId: string
@@ -49,8 +46,6 @@ export const RemoveDepositModal: FC<Props> = ({
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
-  const removeAllPositions = useRemoveAllFarmingPositions(positions)
-  console.log(removeAllPositions)
   const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
   const maxBalance = BigNumber.min(maxBalanceToWithdraw, balance).toString()
 
