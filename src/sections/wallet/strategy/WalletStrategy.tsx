@@ -14,15 +14,13 @@ import { StrategyTileVariant } from "sections/wallet/strategy/StrategyTile/Strat
 export const WalletStrategy: FC = () => {
   const { t } = useTranslation()
   const { gdotAssetId, underlyingGdotAssetId } = useGigadotAssetIds()
-  const { isLoaded, featureFlags } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
 
   useMarketChangeSubscription()
 
   if (!isLoaded) {
     return <WalletStrategySkeleton />
   }
-
-  if (!featureFlags.strategies) return null
 
   return (
     <WalletStrategyProviders>

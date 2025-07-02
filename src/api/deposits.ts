@@ -18,6 +18,7 @@ import { millisecondsInHour } from "date-fns/constants"
 import { getAccountBalanceData } from "api/accountBalances"
 import { create } from "zustand"
 import { useShallow } from "hooks/useShallow"
+import { useUniqueIds } from "./consts"
 
 export type TYieldFarmEntry = {
   globalFarmId: string
@@ -185,6 +186,9 @@ export const useAccountAssets = (givenAddress?: string) => {
   const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback, getShareTokenByAddress, isShareToken, isBond } =
     useAssets()
+
+  const { data: uniqueIds } = useUniqueIds()
+
   const setIsPositions = useAccountData(
     useShallow((state) => state.setIsPositions),
   )
@@ -193,21 +197,22 @@ export const useAccountAssets = (givenAddress?: string) => {
 
   return useQuery(
     QUERY_KEYS.accountAssets(address),
-    address != null
+    address != null && uniqueIds
       ? async () => {
-          const [omnipoolNftId, miningNftId, xykMiningNftId, accountBalances] =
-            await Promise.all([
-              api.consts.omnipool.nftCollectionId,
-              api.consts.omnipoolLiquidityMining.nftCollectionId,
-              api.consts.xykLiquidityMining.nftCollectionId,
-              getAccountBalanceData(api, address),
-            ])
-          const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
-            await Promise.all([
-              api.query.uniques.account.entries(address, omnipoolNftId),
-              api.query.uniques.account.entries(address, miningNftId),
-              api.query.uniques.account.entries(address, xykMiningNftId),
-            ])
+          const [
+            omnipoolNftsRaw,
+            miningNftsRaw,
+            xykMiningNftsRaw,
+            accountBalances,
+          ] = await Promise.all([
+            api.query.uniques.account.entries(address, uniqueIds.omnipoolNftId),
+            api.query.uniques.account.entries(address, uniqueIds.miningNftId),
+            api.query.uniques.account.entries(
+              address,
+              uniqueIds.xykMiningNftId,
+            ),
+            getAccountBalanceData(api, address),
+          ])
 
           const omnipoolNfts = parseNfts(omnipoolNftsRaw)
           const miningNfts = parseNfts(miningNftsRaw)
@@ -275,9 +280,6 @@ export const useAccountAssets = (givenAddress?: string) => {
           })
 
           return {
-            omnipoolNfts,
-            miningNfts,
-            xykMiningNfts,
             liquidityPositions,
             depositLiquidityPositions,
             omnipoolDeposits,
@@ -288,7 +290,7 @@ export const useAccountAssets = (givenAddress?: string) => {
         }
       : undefinedNoop,
     {
-      enabled: !!address && isLoaded,
+      enabled: !!address && isLoaded && !!uniqueIds,
       staleTime: millisecondsInHour,
       select: (data) => {
         const {

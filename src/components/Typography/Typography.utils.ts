@@ -13,6 +13,7 @@ export interface TypographyProps {
     | "GeistSemiBold"
     | "GeistMono"
     | "GeistMonoSemiBold"
+    | "Gazpacho"
   >
   tAlign?: ResponsiveValue<"left" | "right" | "center">
   tTransform?: ResponsiveValue<"uppercase" | "lowercase" | "none">

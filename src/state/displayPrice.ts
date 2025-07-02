@@ -31,6 +31,9 @@ export const useDisplaySpotPriceStore = create<Store>(
 )
 
 export const useAssetsPrice = (assetIds: string[]) => {
+  // subscribe to price changes by asset id
+  usePriceKeys(assetIds)
+
   const assets = useDisplaySpotPriceStore(
     useShallow((state) =>
       assetIds.reduce<Record<string, string>>((acc, assetId) => {
@@ -39,9 +42,6 @@ export const useAssetsPrice = (assetIds: string[]) => {
       }, {}),
     ),
   )
-
-  // subscribe to price changes by asset id
-  usePriceKeys(assetIds)
 
   const prices = useMemo(() => {
     const result: AssetPrice = {}
@@ -62,14 +62,13 @@ export const useAssetsPrice = (assetIds: string[]) => {
     [prices],
   )
 
-  const isLoading = useMemo(() => {
-    for (const [, price] of Object.entries(prices)) {
-      if (price && price.isLoading === true) {
-        return true
-      }
-    }
-    return false
-  }, [prices])
+  const isLoading = useMemo(
+    () => Object.values(prices).some((p) => p && p.isLoading),
+    [prices],
+  )
 
-  return { prices, isLoading, getAssetPrice }
+  return useMemo(
+    () => ({ prices, isLoading, getAssetPrice }),
+    [prices, isLoading, getAssetPrice],
+  )
 }
