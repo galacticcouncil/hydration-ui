@@ -26,6 +26,7 @@ import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
 import { useAccountAssets } from "api/deposits"
+import { isStablepoolType } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -105,6 +106,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     assetMeta: pool.meta,
     assetBalance,
     ommipoolAsset,
+    isGETH: isStablepoolType(pool) && pool.isGETH,
   }
 }
 
@@ -147,7 +149,7 @@ export const useAddToOmnipoolZod = (
     )
   }, [farms])
 
-  const oraclePrice = useOraclePrice(
+  const { data: oraclePrice } = useOraclePrice(
     isFarms ? minDeposit.assetId : undefined,
     assetId,
   )
@@ -223,64 +225,37 @@ export const useAddToOmnipoolZod = (
       },
     )
 
+  if (!isFarms) return z.object({ amount: rules })
+
+  if (!oraclePrice) return undefined
+
   return z.object({
-    amount: isFarms
-      ? rules.refine(
-          (value) => {
-            if (!value || !BigNumber(value).isPositive()) return true
-            const scaledValue = scale(value, decimals)
-            // position.amount * n/d (from oracle) > globalFarm.minDeposit
-            const valueInIncentivizedAsset = scaledValue
-              .times(oraclePrice.data?.price?.n ?? 1)
-              .div(oraclePrice.data?.price?.d ?? 1)
+    amount: rules.refine(
+      (value) => {
+        if (!value || !BigNumber(value).isPositive()) return true
 
-            if (valueInIncentivizedAsset.lt(minDeposit.value)) return false
+        const scaledValue = scale(value, decimals)
+        // position.amount * n/d (from oracle) > globalFarm.minDeposit
+        const valueInIncentivizedAsset = scaledValue
+          .times(oraclePrice?.price?.n ?? 1)
+          .div(oraclePrice?.price?.d ?? 1)
 
-            const sharesToGet = getSharesToGet(
-              omnipoolAsset,
-              scaledValue.toString(),
-            )
+        return valueInIncentivizedAsset.gte(minDeposit.value)
+      },
+      (value) => {
+        const maxValue = minDeposit.value
+          .times(oraclePrice?.price?.d ?? 1)
+          .div(oraclePrice?.price?.n ?? 1)
 
-            if (!sharesToGet.isNaN()) {
-              // position.shares > globalFarm.minDeposit
-              if (sharesToGet.gte(minDeposit.value)) return true
-            }
-
-            return false
-          },
-          (value) => {
-            const scaledValue = scale(value, decimals)
-            const sharesToGet = getSharesToGet(
-              omnipoolAsset,
-              scaledValue.toString(),
-            )
-
-            // min amount of current asset to join farms
-            let minAmountToProvide = BN_0
-
-            if (minDeposit.value.minus(sharesToGet).isPositive()) {
-              const diffCof = minDeposit.value.div(sharesToGet)
-
-              minAmountToProvide = scaledValue.times(diffCof)
-            }
-
-            const maxValue = BigNumber.max(
-              minDeposit.value
-                .times(oraclePrice.data?.price?.d ?? 1)
-                .div(oraclePrice.data?.price?.n ?? 1),
-              minAmountToProvide,
-            )
-
-            return {
-              message: t("farms.modal.join.minDeposit", {
-                value: scaleHuman(maxValue, decimals).times(1.02),
-                symbol: symbol,
-              }),
-              path: ["farm"],
-            }
-          },
-        )
-      : rules,
+        return {
+          message: t("farms.modal.join.minDeposit", {
+            value: scaleHuman(maxValue, decimals).times(1.02),
+            symbol: symbol,
+          }),
+          path: ["farm"],
+        }
+      },
+    ),
   })
 }
 

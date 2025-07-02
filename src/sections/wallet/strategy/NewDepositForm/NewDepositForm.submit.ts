@@ -30,7 +30,7 @@ export const useSubmitNewDepositForm = (assetId: string) => {
   const { watch } = useFormContext<NewDepositFormValues>()
   const [selectedAsset, amount] = watch(["asset", "amount"])
 
-  const { amountOut, minAmountOut, swapTx } = useBestTradeSell(
+  const { amountOut, minAmountOut, getSwapTx } = useBestTradeSell(
     selectedAsset?.id ?? "",
     assetId,
     amount,
@@ -64,42 +64,42 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     return !!supplyCap?.supplyCapReached
   }, [underlyingReserve])
 
-  const submit = useCallback(
-    () =>
-      createTransaction(
-        { tx: swapTx },
-        {
-          onSuccess: () => {
-            onNextNetworkUpdate(() => {
-              queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-              refetchPoolData?.()
-              refetchIncentiveData?.()
-            })
-          },
-          toast: createToastMessages("wallet.strategy.deposit.toast", {
-            t,
-            tOptions: {
-              strategy: asset.name,
-              amount: amount,
-              symbol: selectedAsset?.symbol,
-            },
-            components: ["span.highlight"],
-          }),
+  const submit = useCallback(async () => {
+    const tx = await getSwapTx()
+
+    return createTransaction(
+      { tx },
+      {
+        onSuccess: () => {
+          onNextNetworkUpdate(() => {
+            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
+            refetchPoolData?.()
+            refetchIncentiveData?.()
+          })
         },
-      ),
-    [
-      amount,
-      asset.name,
-      createTransaction,
-      onNextNetworkUpdate,
-      queryClient,
-      refetchIncentiveData,
-      refetchPoolData,
-      selectedAsset?.symbol,
-      swapTx,
-      t,
-    ],
-  )
+        toast: createToastMessages("wallet.strategy.deposit.toast", {
+          t,
+          tOptions: {
+            strategy: asset.name,
+            amount: amount,
+            symbol: selectedAsset?.symbol,
+          },
+          components: ["span.highlight"],
+        }),
+      },
+    )
+  }, [
+    amount,
+    asset.name,
+    createTransaction,
+    onNextNetworkUpdate,
+    queryClient,
+    refetchIncentiveData,
+    refetchPoolData,
+    selectedAsset?.symbol,
+    getSwapTx,
+    t,
+  ])
 
   return {
     minAmountOut,

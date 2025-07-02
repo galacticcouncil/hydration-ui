@@ -51,13 +51,10 @@ function getInitialEmode(
   eModes: AppDataContextType["eModes"],
   currentEmode: number,
 ) {
-  const eModesNumber = Object.keys(eModes).length
   if (mode === EmodeModalType.ENABLE) {
-    if (eModesNumber > 3) return undefined
     return eModes[1]
   }
   if (mode === EmodeModalType.SWITCH) {
-    if (eModesNumber > 3) return undefined
     if (currentEmode === 1) return eModes[2]
     return eModes[1]
   }

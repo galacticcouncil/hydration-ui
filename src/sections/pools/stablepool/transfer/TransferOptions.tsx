@@ -5,28 +5,32 @@ import { ListItem } from "sections/pools/stablepool/components/ListItem"
 import { useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
 import { TFarmAprData } from "api/farms"
+import { Button } from "components/Button/Button"
+import { useState } from "react"
 
 export type Option = "OMNIPOOL" | "STABLEPOOL"
 
 type Props = {
-  selected: Option
-  onSelect: (selected: Option) => void
   disableOmnipool?: boolean
   farms: TFarmAprData[]
+  onConfirm: (selected: Option) => void
 }
 
 export const TransferOptions = ({
-  selected,
-  onSelect,
   disableOmnipool,
   farms,
+  onConfirm,
 }: Props) => {
   const { t } = useTranslation()
+  const [selectedOption, setSelectedOption] = useState<Option>(
+    disableOmnipool ? "STABLEPOOL" : "OMNIPOOL",
+  )
+
   return (
     <>
       <PathOption
-        selected={selected === "OMNIPOOL"}
-        onSelect={() => onSelect("OMNIPOOL")}
+        selected={selectedOption === "OMNIPOOL"}
+        onSelect={() => setSelectedOption("OMNIPOOL")}
         heading={t("liquidity.stablepool.add.stablepoolAndOmnipool")}
         subheading={t("liquidity.stablepool.add.benefits")}
         icon={<WaterRippleIcon />}
@@ -52,8 +56,8 @@ export const TransferOptions = ({
         )}
       </PathOption>
       <PathOption
-        selected={selected === "STABLEPOOL"}
-        onSelect={() => onSelect("STABLEPOOL")}
+        selected={selectedOption === "STABLEPOOL"}
+        onSelect={() => setSelectedOption("STABLEPOOL")}
         heading={t("liquidity.stablepool.add.stablepoolOnly")}
         subheading={t("liquidity.stablepool.add.benefits")}
         icon={<DropletIcon />}
@@ -68,6 +72,14 @@ export const TransferOptions = ({
           {t("liquidity.stablepool.add.stablepoolOnly.benefit3")}
         </ListItem>
       </PathOption>
+
+      <Button
+        variant="primary"
+        sx={{ mt: 21 }}
+        onClick={() => onConfirm(selectedOption)}
+      >
+        {t("next")}
+      </Button>
     </>
   )
 }

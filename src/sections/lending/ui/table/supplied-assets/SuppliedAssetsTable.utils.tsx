@@ -17,7 +17,7 @@ import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/Isolati
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 
 export type TSuppliedAssetsTable = typeof useSuppliedAssetsTableData
 export type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
