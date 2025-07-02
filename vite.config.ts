@@ -44,6 +44,7 @@ export default defineConfig(({ command }) => {
     build: {
       target: "esnext",
       outDir: "build",
+      sourcemap: true,
     },
     optimizeDeps: {
       esbuildOptions: {
@@ -102,6 +103,11 @@ export default defineConfig(({ command }) => {
               local: "GeistMonoSemiBold",
               src: "./src/assets/fonts/GeistMono/GeistMono-SemiBold.otf",
             },
+            // {
+            //   name: "Gazpacho",
+            //   local: "Gazpacho",
+            //   src: "./src/assets/fonts/Gazpacho/Gazpacho.woff2",
+            // },
           ],
         },
       }),
