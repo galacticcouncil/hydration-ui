@@ -75,7 +75,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           {!account && <Web3ConnectModalButton />}
         </form>
 
-        {isGETH && (
+        {isGETH && account && (
           <GETHDepositButton
             assetId={assetId}
             symbol={asset.symbol}
