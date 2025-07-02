@@ -450,3 +450,30 @@ export const useValidXYKPoolAddresses = create<{ addresses?: string[] }>(
 
 export const setValidXYKPoolAddresses = (addresses: string[]) =>
   useValidXYKPoolAddresses.setState({ addresses })
+
+export const useOmnipoolTvlTotal = create<{ tvl?: string }>(() => ({
+  tvl: undefined,
+}))
+
+export const setOmnipoolTvlTotal = (tvl?: string) =>
+  useOmnipoolTvlTotal.setState({ tvl })
+
+export const useOmnipoolVolumeTotal = create<{ volume?: string }>(() => ({
+  volume: undefined,
+}))
+
+export const setOmnipoolVolumeTotal = (volume?: string) =>
+  useOmnipoolVolumeTotal.setState({ volume })
+
+export const useXykTvlTotal = create<{ tvl?: string }>(() => ({
+  tvl: undefined,
+}))
+
+export const setXykTvlTotal = (tvl?: string) => useXykTvlTotal.setState({ tvl })
+
+export const useXykVolumeTotal = create<{ volume?: string }>(() => ({
+  volume: undefined,
+}))
+
+export const setXykVolumeTotal = (volume?: string) =>
+  useXykVolumeTotal.setState({ volume })
