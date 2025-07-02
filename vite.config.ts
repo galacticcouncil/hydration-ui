@@ -103,11 +103,11 @@ export default defineConfig(({ command }) => {
               local: "GeistMonoSemiBold",
               src: "./src/assets/fonts/GeistMono/GeistMono-SemiBold.otf",
             },
-            // {
-            //   name: "Gazpacho",
-            //   local: "Gazpacho",
-            //   src: "./src/assets/fonts/Gazpacho/Gazpacho.woff2",
-            // },
+            {
+              name: "Gazpacho",
+              local: "Gazpacho",
+              src: "./src/assets/fonts/Gazpacho/Gazpacho.woff2",
+            },
           ],
         },
       }),
