@@ -293,7 +293,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
     getActiveFarms(api),
-    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
   )
 
   const stoppedFarms = useMemo(
@@ -311,7 +311,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
         isLoaded &&
         !!account?.address &&
         !!stoppedFarms.length,
-      staleTime: millisecondsInMinute,
+      staleTime: millisecondsInHour,
     },
   )
 
