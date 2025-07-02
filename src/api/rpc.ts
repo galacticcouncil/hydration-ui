@@ -5,10 +5,21 @@ import { sleep } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { PingResponse, pingRpc } from "utils/rpc"
 import BN from "bignumber.js"
+import { pingWorker } from "workers/ping"
+import { wsToHttp } from "utils/formatting"
 
 const rpcStatusQueryOptions = (url: string, slotDuration: string) => ({
   queryKey: QUERY_KEYS.rpcStatus(url),
-  queryFn: () => pingRpc(url),
+  queryFn: async () => {
+    const [ping, status] = await Promise.all([
+      pingWorker.getPing(wsToHttp(url)),
+      pingRpc(url),
+    ])
+    return {
+      ...status,
+      ping,
+    }
+  },
   retry: 0,
   refetchInterval: BN(slotDuration).div(2).toNumber(),
   keepPreviousData: true,
@@ -36,7 +47,15 @@ export const useRpcsStatus = (
       queryFn: async () => {
         const delay = index * 150 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)
-        const result = await pingRpc(url)
+        const [ping, status] = await Promise.all([
+          pingWorker.getPing(wsToHttp(url)),
+          pingRpc(url),
+        ])
+
+        const result: PingResponse = {
+          ...status,
+          ping,
+        }
 
         if (!options.calculateAvgPing) return result
 
@@ -52,13 +71,12 @@ export const useRpcsStatus = (
             (ping): ping is number =>
               typeof ping == "number" && ping > 0 && ping < Infinity,
           )
-          .sort((a, b) => a - b)
+          .slice(-10) // Keep only the last 10 pings
+          .sort((a, b) => a - b) // Sort pings from lowest to highest
 
         // Remove outlier
-        const trimmedPings = sortedPings.slice(
-          0,
-          sortedPings.length > 1 ? -1 : sortedPings.length,
-        )
+        const trimmedPings =
+          sortedPings.length > 1 ? sortedPings.slice(0, -1) : sortedPings
 
         const avgPing =
           trimmedPings.length > 0

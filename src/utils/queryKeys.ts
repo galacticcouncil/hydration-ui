@@ -201,6 +201,7 @@ export const QUERY_KEYS = {
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
   otcFee: ["otcFee"],
+  useUniqueIds: ["useUniqueIds"],
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
@@ -364,7 +365,6 @@ export const QUERY_KEYS = {
   ],
   spotPriceKey: (assetId: string) => ["spotPriceKey", assetId],
   displayPrices: (stableCoinId: string | undefined) => [
-    QUERY_KEY_PREFIX,
     "displayPrices",
     stableCoinId,
   ],
