@@ -55,7 +55,7 @@ export const AllPoolsHeader = () => {
           label: t("liquidity.header.24hours"),
           content: (
             <HeaderTotalData
-              isLoading={!volume && !xykVolume}
+              isLoading={!volume || !xykVolume}
               value={volume && xykVolume ? BN(volume).plus(xykVolume) : BN_NAN}
               fontSize={[19, 24]}
             />

@@ -604,7 +604,7 @@ const getOraclePrice =
 
 export const useFarmsPoolAssets = () => {
   const indexerUrl = useIndexerUrl()
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.yieldFarmCreated,
@@ -612,7 +612,7 @@ export const useFarmsPoolAssets = () => {
       const currentBlockNumber = await api.derive.chain.bestNumber()
       const latestBlockNumber = currentBlockNumber
         .toBigNumber()
-        .plus(NEW_YIELD_FARMS_BLOCKS)
+        .minus(NEW_YIELD_FARMS_BLOCKS)
         .toNumber()
 
       const { events } = await getYieldFarmCreated(
@@ -620,17 +620,11 @@ export const useFarmsPoolAssets = () => {
         latestBlockNumber,
       )()
 
-      const newFarmsByPoolAsset = new Set<number>()
-
-      events.forEach(({ args: { assetId } }) => {
-        if (!newFarmsByPoolAsset.has(assetId)) {
-          newFarmsByPoolAsset.add(assetId)
-        }
-      })
-
-      return [...newFarmsByPoolAsset.values()]
+      return [
+        ...new Set(events.map(({ args: { assetId } }) => assetId)).values(),
+      ]
     },
-    { staleTime: Infinity, cacheTime: Infinity },
+    { staleTime: Infinity, cacheTime: Infinity, enabled: isLoaded },
   )
 }
 

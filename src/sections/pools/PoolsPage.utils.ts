@@ -1,5 +1,5 @@
 import { useOmnipoolYieldMetrics, useOmnipoolDataObserver } from "api/omnipool"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import {
   BN_0,
@@ -368,13 +368,17 @@ export const usePools = () => {
       : undefined
   }, [data, stablepools])
 
-  if (!tvlTotal.isZero()) {
-    setOmnipoolTvlTotal(tvlTotal.toFixed(0))
-  }
+  useEffect(() => {
+    if (!tvlTotal.isZero()) {
+      setOmnipoolTvlTotal(tvlTotal.toFixed(0))
+    }
+  }, [tvlTotal])
 
-  if (!volumeTotal.isZero()) {
-    setOmnipoolVolumeTotal(volumeTotal.toFixed(0))
-  }
+  useEffect(() => {
+    if (!volumeTotal.isZero()) {
+      setOmnipoolVolumeTotal(volumeTotal.toFixed(0))
+    }
+  }, [volumeTotal])
 
   return {
     data: sortedData,
@@ -534,13 +538,17 @@ export const useXYKPools = () => {
     isVolumeLoading,
   ])
 
-  if (!tvlTotal.isZero()) {
-    setXykTvlTotal(tvlTotal.toFixed(0))
-  }
+  useEffect(() => {
+    if (!tvlTotal.isZero()) {
+      setXykTvlTotal(tvlTotal.toFixed(0))
+    }
+  }, [tvlTotal])
 
-  if (!volumeTotal.isZero()) {
-    setXykVolumeTotal(volumeTotal.toFixed(0))
-  }
+  useEffect(() => {
+    if (!volumeTotal.isZero()) {
+      setXykVolumeTotal(volumeTotal.toFixed(0))
+    }
+  }, [volumeTotal])
 
   return { data, isInitialLoading }
 }

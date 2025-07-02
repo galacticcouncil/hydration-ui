@@ -129,8 +129,8 @@ export const useUniqueIds = () => {
     {
       enabled: isLoaded,
       retry: 0,
-      cacheTime: 1000 * 60 * 60 * 24,
-      staleTime: 1000 * 60 * 60 * 1,
+      cacheTime: Infinity,
+      staleTime: Infinity,
     },
   )
 }
