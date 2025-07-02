@@ -8,17 +8,14 @@ import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
-import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { useSearch } from "@tanstack/react-location"
 import { PoolWrapper } from "sections/pools/pool/Pool"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
-import BN from "bignumber.js"
 import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
-import { useOmnipoolTvlTotal, useOmnipoolVolumeTotal } from "state/store"
-import { BN_NAN } from "utils/constants"
+import { OmnipoolAndStablepoolHeader } from "sections/pools/header/OmnipoolAndStablepoolHeader"
 
 export const OmnipoolAndStablepool = () => {
   const { t } = useTranslation()
@@ -59,22 +56,13 @@ export const OmnipoolAndStablepool = () => {
       </>
     )
 
-  return <OmnipoolAndStablepoolData />
+  return <OmnipoolAndStablepoolData id={id} />
 }
 
-const OmnipoolAndStablepoolData = () => {
-  const { t } = useTranslation()
+const OmnipoolAndStablepoolData = ({ id }: { id: number | undefined }) => {
   const { search } = useSearchFilter()
-  const searchQuery = useSearch<{
-    Search: {
-      id?: number
-    }
-  }>()
-  const { id } = searchQuery
 
   const pools = usePools()
-  const tvl = useOmnipoolTvlTotal((state) => state.tvl)
-  const volume = useOmnipoolVolumeTotal((state) => state.volume)
 
   if (id != null) {
     const pool = pools.data?.find((pool) => pool.id === id.toString())
@@ -93,44 +81,14 @@ const OmnipoolAndStablepoolData = () => {
 
   return (
     <>
-      <HeaderValues
-        fontSizeLabel={14}
-        skeletonHeight={[19, 24]}
-        values={[
-          {
-            label: t("liquidity.header.omnipool"),
-            content: (
-              <HeaderTotalData
-                isLoading={!tvl}
-                value={tvl ? BN(tvl) : BN_NAN}
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-          {
-            label: t("liquidity.header.stablepool"),
-            content: <StablePoolsTotal />,
-          },
-          {
-            withoutSeparator: true,
-            label: t("liquidity.header.24hours"),
-            content: (
-              <HeaderTotalData
-                isLoading={!volume}
-                value={volume ? BN(volume) : BN_NAN}
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-        ]}
-      />
+      <OmnipoolAndStablepoolHeader />
       <SearchFilter />
       <GigaCampaignBanner />
       <Spacer size={[24, 40]} />
       {pools.isLoading ? (
         <PoolsTableSkeleton />
       ) : filteredPools.length ? (
-        <PoolsTable data={filteredPools} />
+        <PoolsTable data={filteredPools} paginated />
       ) : (
         <EmptySearchState />
       )}

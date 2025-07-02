@@ -3,7 +3,6 @@ import { useXYKPools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
-import { BN_NAN } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
@@ -15,8 +14,7 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
-import { useXykTvlTotal, useXykVolumeTotal } from "state/store"
-import BN from "bignumber.js"
+import { IsolatedPoolsHeader } from "sections/pools/header/IsolatedPoolsHeader"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
@@ -53,22 +51,12 @@ export const IsolatedPools = () => {
       </>
     )
 
-  return <IsolatedPoolsData />
+  return <IsolatedPoolsData id={id} />
 }
 
-const IsolatedPoolsData = () => {
-  const { t } = useTranslation()
+const IsolatedPoolsData = ({ id }: { id: number | undefined }) => {
   const { search } = useSearchFilter()
-  const searchQuery = useSearch<{
-    Search: {
-      id?: number
-    }
-  }>()
-  const { id } = searchQuery
   const xykPools = useXYKPools()
-
-  const tvl = useXykTvlTotal((state) => state.tvl)
-  const volume = useXykVolumeTotal((state) => state.volume)
 
   if (id != null) {
     const pool = xykPools.data?.find((pool) => pool.id === id.toString())
@@ -87,33 +75,7 @@ const IsolatedPoolsData = () => {
 
   return (
     <>
-      <HeaderValues
-        fontSizeLabel={14}
-        skeletonHeight={[19, 24]}
-        values={[
-          {
-            label: t("liquidity.header.isolated"),
-            content: (
-              <HeaderTotalData
-                isLoading={!tvl}
-                value={tvl ? BN(tvl) : BN_NAN}
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-          {
-            withoutSeparator: true,
-            label: t("liquidity.header.24hours"),
-            content: (
-              <HeaderTotalData
-                isLoading={!volume}
-                value={volume ? BN(volume) : BN_NAN}
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-        ]}
-      />
+      <IsolatedPoolsHeader />
       <SearchFilter />
       <Spacer size={24} />
       <div

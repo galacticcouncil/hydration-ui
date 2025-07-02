@@ -84,10 +84,10 @@ export const MyLiquidity = () => {
       </>
     )
 
-  return <MyLiquidityData />
+  return <MyLiquidityData id={id} />
 }
 
-const MyLiquidityData = () => {
+const MyLiquidityData = ({ id }: { id: number | undefined }) => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
   const navigate = useNavigate()
@@ -96,7 +96,6 @@ const MyLiquidityData = () => {
       id?: number
     }
   }>()
-  const { id } = searchQuery
 
   const pools = usePools()
   const xykPools = useXYKPools()

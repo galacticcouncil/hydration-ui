@@ -9,21 +9,15 @@ import { arraySearch } from "utils/helpers"
 import { PoolsTable } from "sections/pools/table/PoolsTable"
 import { useSearch } from "@tanstack/react-location"
 import { PoolWrapper } from "sections/pools/pool/Pool"
-import { StablePoolsTotal } from "sections/pools/header/StablePoolsTotal"
 import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
-import BN from "bignumber.js"
+
 import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
-import {
-  useOmnipoolTvlTotal,
-  useOmnipoolVolumeTotal,
-  useXykTvlTotal,
-  useXykVolumeTotal,
-} from "state/store"
-import { BN_NAN } from "utils/constants"
+
+import { AllPoolsHeader } from "sections/pools/header/AllPoolsHeader"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -77,23 +71,12 @@ export const AllPools = () => {
       </>
     )
 
-  return <AllPoolsData />
+  return <AllPoolsData id={id} />
 }
 
-const AllPoolsData = () => {
+const AllPoolsData = ({ id }: { id: number | undefined }) => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
-  const searchQuery = useSearch<{
-    Search: {
-      id?: number
-    }
-  }>()
-  const tvl = useOmnipoolTvlTotal((state) => state.tvl)
-  const volume = useOmnipoolVolumeTotal((state) => state.volume)
-  const xykTvl = useXykTvlTotal((state) => state.tvl)
-  const xykVolume = useXykVolumeTotal((state) => state.volume)
-
-  const { id } = searchQuery
 
   const pools = usePools()
   const xykPools = useXYKPools()
@@ -121,51 +104,7 @@ const AllPoolsData = () => {
 
   return (
     <>
-      <HeaderValues
-        fontSizeLabel={14}
-        skeletonHeight={[19, 24]}
-        values={[
-          {
-            label: t("liquidity.header.omnipool"),
-            content: (
-              <HeaderTotalData
-                isLoading={!tvl}
-                value={tvl ? BN(tvl) : BN_NAN}
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-          {
-            label: t("liquidity.header.stablepool"),
-            content: <StablePoolsTotal />,
-          },
-
-          {
-            label: t("liquidity.header.isolated"),
-            content: (
-              <HeaderTotalData
-                isLoading={!xykTvl}
-                value={xykTvl ? BN(xykTvl) : BN_NAN}
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-
-          {
-            withoutSeparator: true,
-            label: t("liquidity.header.24hours"),
-            content: (
-              <HeaderTotalData
-                isLoading={!volume && !xykVolume}
-                value={
-                  volume && xykVolume ? BN(volume).plus(xykVolume) : BN_NAN
-                }
-                fontSize={[19, 24]}
-              />
-            ),
-          },
-        ]}
-      />
+      <AllPoolsHeader />
 
       <SearchFilter />
 
@@ -183,7 +122,7 @@ const AllPoolsData = () => {
             {pools.isLoading ? (
               <PoolsTableSkeleton />
             ) : (
-              <PoolsTable data={filteredPools} />
+              <PoolsTable data={filteredPools} paginated />
             )}
           </div>
         ) : null}
@@ -197,19 +136,7 @@ const AllPoolsData = () => {
                 align: ["flex-start", "flex-end"],
               }}
             >
-              <div
-                sx={{
-                  flex: "row",
-                  gap: [4, 40],
-                  align: "baseline",
-                  width: "100%",
-                  justify: ["space-between", "start"],
-                  flexWrap: "wrap",
-                }}
-                css={{ whiteSpace: "nowrap" }}
-              >
-                <TableLabel label={t("liquidity.section.xyk")} />
-              </div>
+              <TableLabel label={t("liquidity.section.xyk")} />
 
               <CreateXYKPoolModalButton
                 disabled={xykPools.isInitialLoading}
