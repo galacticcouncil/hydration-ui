@@ -150,6 +150,8 @@ const getFarmsData =
   async () => {
     const accountResolver = getAccountResolver(api.registry)
 
+    const parachainBlockNumber = await api.derive.chain.bestNumber()
+
     const farmsData = activeFarms.map(async (farm) => {
       const { isActive, globalFarmId, yieldFarmId, poolId } = farm
       const yieldFarmRaw = isXyk
@@ -170,8 +172,6 @@ const getFarmsData =
 
       const potAddress = accountResolver(Number(globalFarmId), isXyk).toString()
 
-      const parachainBlockNumber = await api.derive.chain.bestNumber()
-
       const yieldFarm = yieldFarmRaw.unwrap()
       const globalFarm = globalFarmRaw.unwrap()
       const rewardCurrency = globalFarm.rewardCurrency.toString()
@@ -183,11 +183,9 @@ const getFarmsData =
         rewardCurrency,
       )()
 
-      const price = await getOraclePrice(
-        api,
-        rewardCurrency,
-        incentivizedAsset,
-      )()
+      const price = !isXyk
+        ? await getOraclePrice(api, rewardCurrency, incentivizedAsset)()
+        : undefined
 
       const farmDetails = getFarmApr(
         parachainBlockNumber.toBigNumber(),
@@ -195,7 +193,7 @@ const getFarmsData =
           globalFarm,
           yieldFarm,
         },
-        price.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
+        price?.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
         isXyk,
         balance.freeBalance,
       )
@@ -263,7 +261,7 @@ export const useOmnipoolFarm = (id?: string) => {
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarm(id),
-    id ? getActiveFarms(api, [id]) : noop,
+    id ? getActiveFarms(api) : noop,
     { enabled: !!id && isLoaded, staleTime: millisecondsInMinute },
   )
 
