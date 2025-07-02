@@ -5,11 +5,11 @@ import BN from "bignumber.js"
 import { BN_NAN } from "utils/constants"
 import { useAssetsPrice } from "state/displayPrice"
 
-export const useXYKPoolTradeVolumes = () => {
+export const useXYKPoolTradeVolumes = (disabled?: boolean) => {
   const { getAssetWithFallback } = useAssets()
 
   const { data: volumes = [], isLoading: isVolumesLoading } =
-    useXYKSquidVolumes()
+    useXYKSquidVolumes(undefined, disabled)
 
   const allAssetsInPools = [...new Set(volumes.map((volume) => volume.assetId))]
   const { getAssetPrice, isLoading: isLoadingPrices } =

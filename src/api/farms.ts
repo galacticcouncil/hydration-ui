@@ -35,7 +35,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { BalanceClient } from "@galacticcouncil/sdk"
 import { useAssetsPrice } from "state/displayPrice"
 
-const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / 12
+const NEW_YIELD_FARMS_BLOCKS = (48 * 60 * 60) / 6
 
 type TFarmIds = {
   poolId: string
@@ -84,34 +84,26 @@ export type TFarmAprData = {
 }
 
 const getActiveFarms =
-  (api: ApiPromise, ids: string[], isXyk: boolean = false) =>
+  (api: ApiPromise, isXyk: boolean = false) =>
   async () => {
-    const activeFarms = await Promise.all(
-      ids.map((id) =>
-        isXyk
-          ? api.query.xykWarehouseLM.activeYieldFarm.entries(id)
-          : api.query.omnipoolWarehouseLM.activeYieldFarm.entries(id),
-      ),
-    )
+    const allEntries = isXyk
+      ? await api.query.xykWarehouseLM.activeYieldFarm.entries()
+      : await api.query.omnipoolWarehouseLM.activeYieldFarm.entries()
 
-    const activeFarmIds = activeFarms.flatMap((farm) =>
-      farm.map(async ([storageKey, codec]) => {
-        const [poolIdRaw, globalFarmIdRaw] = storageKey.args
+    return allEntries.map(([storageKey, codec]) => {
+      const [poolIdRaw, globalFarmIdRaw] = storageKey.args
 
-        const yieldFarmId = codec.unwrap().toString()
-        const poolId = poolIdRaw.toString()
-        const globalFarmId = globalFarmIdRaw.toString()
+      const yieldFarmId = codec.toString()
+      const poolId = poolIdRaw.toString()
+      const globalFarmId = globalFarmIdRaw.toString()
 
-        return {
-          poolId,
-          globalFarmId,
-          yieldFarmId,
-          isActive: true,
-        }
-      }),
-    )
-
-    return await Promise.all(activeFarmIds)
+      return {
+        poolId,
+        globalFarmId,
+        yieldFarmId,
+        isActive: true,
+      }
+    })
   }
 
 const getStoppedFarms = (deposits: TDeposit[], activeFarms: TFarmIds[]) =>
@@ -158,6 +150,8 @@ const getFarmsData =
   async () => {
     const accountResolver = getAccountResolver(api.registry)
 
+    const parachainBlockNumber = await api.derive.chain.bestNumber()
+
     const farmsData = activeFarms.map(async (farm) => {
       const { isActive, globalFarmId, yieldFarmId, poolId } = farm
       const yieldFarmRaw = isXyk
@@ -178,8 +172,6 @@ const getFarmsData =
 
       const potAddress = accountResolver(Number(globalFarmId), isXyk).toString()
 
-      const parachainBlockNumber = await api.derive.chain.bestNumber()
-
       const yieldFarm = yieldFarmRaw.unwrap()
       const globalFarm = globalFarmRaw.unwrap()
       const rewardCurrency = globalFarm.rewardCurrency.toString()
@@ -191,11 +183,9 @@ const getFarmsData =
         rewardCurrency,
       )()
 
-      const price = await getOraclePrice(
-        api,
-        rewardCurrency,
-        incentivizedAsset,
-      )()
+      const price = !isXyk
+        ? await getOraclePrice(api, rewardCurrency, incentivizedAsset)()
+        : undefined
 
       const farmDetails = getFarmApr(
         parachainBlockNumber.toBigNumber(),
@@ -203,7 +193,7 @@ const getFarmsData =
           globalFarm,
           yieldFarm,
         },
-        price.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
+        price?.oraclePrice ?? globalFarm.priceAdjustment.toBigNumber(),
         isXyk,
         balance.freeBalance,
       )
@@ -271,7 +261,7 @@ export const useOmnipoolFarm = (id?: string) => {
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarm(id),
-    id ? getActiveFarms(api, [id]) : noop,
+    id ? getActiveFarms(api) : noop,
     { enabled: !!id && isLoaded, staleTime: millisecondsInMinute },
   )
 
@@ -302,8 +292,8 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
-    getActiveFarms(api, ids),
-    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
+    getActiveFarms(api),
+    { enabled: !!ids.length && isLoaded, staleTime: millisecondsInHour },
   )
 
   const stoppedFarms = useMemo(
@@ -321,14 +311,14 @@ export const useOmnipoolFarms = (ids: string[]) => {
         isLoaded &&
         !!account?.address &&
         !!stoppedFarms.length,
-      staleTime: millisecondsInMinute,
+      staleTime: millisecondsInHour,
     },
   )
 
   const { data: activeFarmsData = [], isLoading } = useQuery(
     QUERY_KEYS.omnipoolFarms,
     activeFarms
-      ? getFarmsData(api, client.balance, activeFarms, getAssetWithFallback)
+      ? getFarmsData(api, balanceClient, activeFarms, getAssetWithFallback)
       : undefinedNoop,
     {
       enabled: isActiveFarms && isLoaded,
@@ -352,7 +342,7 @@ export const useXYKFarms = (ids: string[]) => {
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.xykActiveFarms,
-    getActiveFarms(api, ids, true),
+    getActiveFarms(api, true),
     { enabled: !!ids.length && isLoaded, staleTime: millisecondsInMinute },
   )
 
@@ -614,57 +604,55 @@ const getOraclePrice =
 
 export const useFarmsPoolAssets = () => {
   const indexerUrl = useIndexerUrl()
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
 
   return useQuery(
     QUERY_KEYS.yieldFarmCreated,
     async () => {
-      const { events } = await getYieldFarmCreated(indexerUrl)()
       const currentBlockNumber = await api.derive.chain.bestNumber()
-      const blockNumberDiff = currentBlockNumber
+      const latestBlockNumber = currentBlockNumber
         .toBigNumber()
         .minus(NEW_YIELD_FARMS_BLOCKS)
+        .toNumber()
 
-      const newFarmsByPoolAsset = events.reduce<Array<number>>((acc, event) => {
-        if (
-          blockNumberDiff.lt(event.block.height) &&
-          !acc.includes(event.args.assetId)
-        )
-          acc.push(event.args.assetId)
+      const { events } = await getYieldFarmCreated(
+        indexerUrl,
+        latestBlockNumber,
+      )()
 
-        return acc
-      }, [])
-
-      return newFarmsByPoolAsset
+      return [
+        ...new Set(events.map(({ args: { assetId } }) => assetId)).values(),
+      ]
     },
-    { staleTime: millisecondsInHour },
+    { staleTime: Infinity, cacheTime: Infinity, enabled: isLoaded },
   )
 }
 
-export const getYieldFarmCreated = (indexerUrl: string) => async () => {
-  return {
-    ...(await request<{
-      events: Array<{
-        args: { assetId: number; globalFarmId: number; yieldFamId: number }
-        block: { height: number }
-      }>
-    }>(
-      indexerUrl,
-      gql`
-        query YieldFarmCreated {
-          events(
-            where: { name_eq: "OmnipoolLiquidityMining.YieldFarmCreated" }
-          ) {
-            args
-            block {
-              height
+export const getYieldFarmCreated =
+  (indexerUrl: string, blockNumber: number) => async () => {
+    return {
+      ...(await request<{
+        events: Array<{
+          args: { assetId: number }
+        }>
+      }>(
+        indexerUrl,
+        gql`
+          query YieldFarmCreated($blockNumber: Int) {
+            events(
+              where: {
+                name_eq: "OmnipoolLiquidityMining.YieldFarmCreated"
+                block: { height_gte: $blockNumber }
+              }
+            ) {
+              args
             }
           }
-        }
-      `,
-    )),
+        `,
+        { blockNumber },
+      )),
+    }
   }
-}
 
 export const useRefetchClaimableFarmValues = () => {
   const { account } = useAccount()

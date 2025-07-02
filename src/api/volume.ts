@@ -390,7 +390,7 @@ const getVolumeDaily = async (assetId?: string) => {
   return data
 }
 
-export const useXYKSquidVolumes = (address?: string[]) => {
+export const useXYKSquidVolumes = (address?: string[], disabled?: boolean) => {
   const url = useSquidUrl()
   const { addresses: validAddresses = [] } = useValidXYKPoolAddresses()
   const queryAddresses = address ?? validAddresses
@@ -424,14 +424,14 @@ export const useXYKSquidVolumes = (address?: string[]) => {
         }))
     },
     {
-      enabled: !!queryAddresses.length,
+      enabled: !!queryAddresses.length && !disabled,
       staleTime: millisecondsInHour,
       cacheTime: millisecondsInHour,
     },
   )
 }
 
-export const useOmnipoolVolumes = () => {
+export const useOmnipoolVolumes = (disabled?: boolean) => {
   const url = useSquidUrl()
   const ids = useOmnipoolIds(useShallow((state) => state.ids))
 
@@ -456,14 +456,14 @@ export const useOmnipoolVolumes = () => {
     },
 
     {
-      enabled: !!ids,
+      enabled: !!ids && !disabled,
       cacheTime: millisecondsInHour,
       staleTime: millisecondsInHour,
     },
   )
 }
 
-export const useStablepoolVolumes = () => {
+export const useStablepoolVolumes = (disabled?: boolean) => {
   const url = useSquidUrl()
 
   return useQuery(
@@ -496,6 +496,7 @@ export const useStablepoolVolumes = () => {
     },
 
     {
+      enabled: !disabled,
       staleTime: millisecondsInHour,
       cacheTime: millisecondsInHour,
     },

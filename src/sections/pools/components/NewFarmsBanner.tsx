@@ -14,11 +14,11 @@ import { useAssets } from "providers/assets"
 export const NewFarmsBanner = () => {
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
-  const poolAssets = useFarmsPoolAssets()
+  const { data: poolAssets } = useFarmsPoolAssets()
 
   const [visible, setVisible] = useState(true)
 
-  if (!poolAssets.data?.length || !visible) return null
+  if (!poolAssets?.length || !visible) return null
 
   return (
     <NewFarmsBannerContainer>
@@ -34,7 +34,7 @@ export const NewFarmsBanner = () => {
           <Icon icon={<Star />} sx={{ color: "white" }} />
           <Text fs={11} color="white">
             {t("banner.newFarms.label", {
-              symbols: poolAssets.data
+              symbols: poolAssets
                 .map(
                   (poolAsset) =>
                     getAssetWithFallback(poolAsset.toString()).symbol,
