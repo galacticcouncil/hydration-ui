@@ -365,7 +365,6 @@ export const QUERY_KEYS = {
   ],
   spotPriceKey: (assetId: string) => ["spotPriceKey", assetId],
   displayPrices: (stableCoinId: string | undefined) => [
-    QUERY_KEY_PREFIX,
     "displayPrices",
     stableCoinId,
   ],
