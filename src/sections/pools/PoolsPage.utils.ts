@@ -111,10 +111,13 @@ const useStablepools = () => {
   const { data: volumes, isLoading: isVolumeLoading } =
     useStablepoolVolumes(isLoading)
 
-  const data = useMemo(() => {
-    if (isLoading || !filteredStablepools.length) return []
+  const { data, volumeTotal } = useMemo(() => {
+    let volumeTotal = BN_0
 
-    return filteredStablepools.map((filteredStablepool) => {
+    if (isLoading || !filteredStablepools.length)
+      return { data: [], volumeTotal }
+
+    const data = filteredStablepools.map((filteredStablepool) => {
       const isGDOT = GDOT_STABLESWAP_ASSET_ID === filteredStablepool.id
       const meta = getAssetWithFallback(filteredStablepool.id)
       const metaOverride = isGDOT
@@ -144,6 +147,10 @@ const useStablepools = () => {
             return acc.plus(volumeDisplay)
           }, BN_0)
           .toString() ?? "0"
+
+      if (volume) {
+        volumeTotal = volumeTotal.plus(volume)
+      }
 
       const tvlDisplay = filteredStablepool.tokens.reduce((acc, token) => {
         if (token.type !== "Token" && token.type !== "Erc20") return acc
@@ -195,6 +202,8 @@ const useStablepools = () => {
         isStablePool: isGDOT,
       }
     })
+
+    return { data, volumeTotal }
   }, [
     isLoading,
     filteredStablepools,
@@ -206,7 +215,7 @@ const useStablepools = () => {
     borrow.totalSupplyApy,
   ])
 
-  return { data, isLoading }
+  return { data, volumeTotal, isLoading }
 }
 
 export const usePools = () => {
@@ -215,8 +224,11 @@ export const usePools = () => {
   const omnipoolAssets = useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountAssets()
 
-  const { data: stablepools, isLoading: isLoadingStablepools } =
-    useStablepools()
+  const {
+    data: stablepools,
+    volumeTotal: stablepoolVolumeTotal,
+    isLoading: isLoadingStablepools,
+  } = useStablepools()
 
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id) ?? [],
@@ -375,10 +387,10 @@ export const usePools = () => {
   }, [tvlTotal])
 
   useEffect(() => {
-    if (!volumeTotal.isZero()) {
-      setOmnipoolVolumeTotal(volumeTotal.toFixed(0))
+    if (!volumeTotal.isZero() && !stablepoolVolumeTotal.isZero()) {
+      setOmnipoolVolumeTotal(volumeTotal.plus(stablepoolVolumeTotal).toFixed(0))
     }
-  }, [volumeTotal])
+  }, [volumeTotal, stablepoolVolumeTotal])
 
   return {
     data: sortedData,

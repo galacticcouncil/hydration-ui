@@ -8,7 +8,7 @@ import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPo
 import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
-import { BN_NAN } from "utils/constants"
+import { BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
 import { setOmnipoolIds, setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
@@ -83,7 +83,13 @@ export const useSDKPools = () => {
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
 
-      setOmnipoolIds(tokens.map((token) => token.id))
+      setOmnipoolIds(
+        tokens.map((token) =>
+          token.id === GETH_ERC20_ASSET_ID
+            ? "0x8a598fe3e3a471ce865332e330d303502a0e2f52"
+            : token.id,
+        ),
+      )
 
       setValidXYKPoolAddresses(
         xykPools
