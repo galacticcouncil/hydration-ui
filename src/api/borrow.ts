@@ -479,7 +479,21 @@ export type BorrowAssetApyData = {
   farms: TFarmAprData[] | undefined
 }
 
-export const useBorrowAssetApy = (
+export const useBorrowAssetApy = () => {
+  return {
+    tvl: "0",
+    totalSupplyApy: 0,
+    totalBorrowApy: 0,
+    lpAPY: 0,
+    incentivesNetAPR: 0,
+    underlyingAssetsAPY: [],
+    vDotApy: "0",
+    incentives: [],
+    farms: undefined,
+  }
+}
+
+export const useBorrowAssetApy_ = (
   assetId: string,
   withFarms: boolean | undefined = false,
 ): BorrowAssetApyData => {
