@@ -556,7 +556,9 @@ export const useBorrowAssetApy = (
         ? incentivesAPRSum || 0
         : Infinity
 
-    const numberOfReserves = BN.max(underlyingReserves.length, 2)
+    // GETH consits of aETH and wstETH,
+    // but wstETH is not Money Market reserve, so we need to account for that separately
+    const numberOfReserves = isGETH ? 2 : underlyingReserves.length
 
     const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
       const isVdot =
