@@ -215,26 +215,26 @@ export const usePools = () => {
   const omnipoolAssets = useOmnipoolDataObserver()
   //const { data: accountAssets } = useAccountAssets()
 
-  // const { data: stablepools, isLoading: isLoadingStablepools } =
-  //   useStablepools()
+  const { data: stablepools, isLoading: isLoadingStablepools } =
+    useStablepools()
 
   const assetsId = useMemo(
     () => omnipoolAssets.data?.map((a) => a.id) ?? [],
     [omnipoolAssets.data],
   )
 
-  // const { data: allFarms, isLoading: isAllFarmsLoading } =
-  //   useOmnipoolFarms(assetsId)
+  const { data: allFarms, isLoading: isAllFarmsLoading } =
+    useOmnipoolFarms(assetsId)
 
   const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
-  // const isInitialLoading =
-  //   omnipoolAssets.isLoading || isLoading || isLoadingStablepools
+  const isInitialLoading =
+    omnipoolAssets.isLoading || isLoading || isLoadingStablepools
 
-  // const { data: volumes, isLoading: isVolumeLoading } =
-  //   useOmnipoolVolumes(isInitialLoading)
-  // const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
-  //   useOmnipoolYieldMetrics(isInitialLoading)
+  const { data: volumes, isLoading: isVolumeLoading } =
+    useOmnipoolVolumes(isInitialLoading)
+  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
+    useOmnipoolYieldMetrics(isInitialLoading)
 
   // const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
