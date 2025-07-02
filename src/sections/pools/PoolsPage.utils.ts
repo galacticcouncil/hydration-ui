@@ -213,337 +213,349 @@ export const usePools = () => {
   const { native, getAssetWithFallback } = useAssets()
 
   const omnipoolAssets = useOmnipoolDataObserver()
-  const { data: accountAssets } = useAccountAssets()
+  //const { data: accountAssets } = useAccountAssets()
 
-  const { data: stablepools, isLoading: isLoadingStablepools } =
-    useStablepools()
+  // const { data: stablepools, isLoading: isLoadingStablepools } =
+  //   useStablepools()
 
-  const assetsId = useMemo(
-    () => omnipoolAssets.data?.map((a) => a.id) ?? [],
-    [omnipoolAssets.data],
-  )
+  // const assetsId = useMemo(
+  //   () => omnipoolAssets.data?.map((a) => a.id) ?? [],
+  //   [omnipoolAssets.data],
+  // )
 
-  const { data: allFarms, isLoading: isAllFarmsLoading } =
-    useOmnipoolFarms(assetsId)
+  // const { data: allFarms, isLoading: isAllFarmsLoading } =
+  //   useOmnipoolFarms(assetsId)
 
-  const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
+  // const { isLoading, getAssetPrice } = useAssetsPrice(assetsId)
 
-  const isInitialLoading =
-    omnipoolAssets.isLoading || isLoading || isLoadingStablepools
+  // const isInitialLoading =
+  //   omnipoolAssets.isLoading || isLoading || isLoadingStablepools
 
-  const { data: volumes, isLoading: isVolumeLoading } =
-    useOmnipoolVolumes(isInitialLoading)
-  const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
-    useOmnipoolYieldMetrics(isInitialLoading)
+  // const { data: volumes, isLoading: isVolumeLoading } =
+  //   useOmnipoolVolumes(isInitialLoading)
+  // const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
+  //   useOmnipoolYieldMetrics(isInitialLoading)
 
-  const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
+  // const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
-  const { data, tvlTotal, volumeTotal } = useMemo(() => {
-    let volumeTotal = BN_0
-    let tvlTotal = BN_0
+  // const { data, tvlTotal, volumeTotal } = useMemo(() => {
+  //   let volumeTotal = BN_0
+  //   let tvlTotal = BN_0
 
-    if (!omnipoolAssets.data || isLoading)
-      return { data: undefined, volumeTotal, tvlTotal }
+  //   if (!omnipoolAssets.data || isLoading)
+  //     return { data: undefined, volumeTotal, tvlTotal }
 
-    const rows = omnipoolAssets.data.map((asset) => {
-      const isGETH = asset.id === GETH_ERC20_ASSET_ID
-      const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
-      const meta = getAssetWithFallback(asset.id)
-      const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
+  //   const rows = omnipoolAssets.data.map((asset) => {
+  //     const isGETH = asset.id === GETH_ERC20_ASSET_ID
+  //     const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
+  //     const meta = getAssetWithFallback(asset.id)
+  //     const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
 
-      const spotPrice = getAssetPrice(asset.id).price
-      const tradability = getTradabilityFromBits(asset.bits ?? 0)
+  //     const spotPrice = getAssetPrice(asset.id).price
+  //     const tradability = getTradabilityFromBits(asset.bits ?? 0)
 
-      const tvlDisplay = BN(asset.balance)
-        .times(spotPrice)
-        .shiftedBy(-meta.decimals)
+  //     const tvlDisplay = BN(asset.balance)
+  //       .times(spotPrice)
+  //       .shiftedBy(-meta.decimals)
 
-      const volumeRaw = volumes?.find(
-        (volume) => volume.assetId === asset.id,
-      )?.assetVolume
+  //     const volumeRaw = volumes?.find(
+  //       (volume) => volume.assetId === asset.id,
+  //     )?.assetVolume
 
-      const volume =
-        volumeRaw && spotPrice
-          ? BN(volumeRaw)
-              .shiftedBy(-meta.decimals)
-              .multipliedBy(spotPrice)
-              .toString()
-          : undefined
+  //     const volume =
+  //       volumeRaw && spotPrice
+  //         ? BN(volumeRaw)
+  //             .shiftedBy(-meta.decimals)
+  //             .multipliedBy(spotPrice)
+  //             .toString()
+  //         : undefined
 
-      if (!tvlDisplay.isNaN()) {
-        tvlTotal = tvlTotal.plus(tvlDisplay)
-      }
+  //     if (!tvlDisplay.isNaN()) {
+  //       tvlTotal = tvlTotal.plus(tvlDisplay)
+  //     }
 
-      if (volume) {
-        volumeTotal = volumeTotal.plus(volume)
-      }
+  //     if (volume) {
+  //       volumeTotal = volumeTotal.plus(volume)
+  //     }
 
-      const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
+  //     const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
 
-      const fee =
-        native.id === asset.id
-          ? BN_0
-          : BN(
-              omnipoolMetrics.find(
-                (omnipoolMetric) => omnipoolMetric.assetId === asset.id,
-              )?.projectedAprPerc ?? BN_NAN,
-            )
+  //     const fee =
+  //       native.id === asset.id
+  //         ? BN_0
+  //         : BN(
+  //             omnipoolMetrics.find(
+  //               (omnipoolMetric) => omnipoolMetric.assetId === asset.id,
+  //             )?.projectedAprPerc ?? BN_NAN,
+  //           )
 
-      const totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
+  //     const totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
 
-      const filteredOmnipoolPositions = accountAsset?.liquidityPositions ?? []
-      const filteredMiningPositions = accountAsset?.omnipoolDeposits ?? []
-      const isPositions = !!accountAsset?.isPoolPositions
+  //     const filteredOmnipoolPositions = accountAsset?.liquidityPositions ?? []
+  //     const filteredMiningPositions = accountAsset?.omnipoolDeposits ?? []
+  //     const isPositions = !!accountAsset?.isPoolPositions
 
-      return {
-        id: asset.id,
-        poolId,
-        name: meta.name,
-        symbol: meta.symbol,
-        meta: isGETH
-          ? {
-              ...meta,
-              meta: getAssetWithFallback(GETH_STABLESWAP_ASSET_ID).meta,
-            }
-          : meta,
-        tvlDisplay,
-        spotPrice: spotPrice,
-        canAddLiquidity: tradability.canAddLiquidity,
-        canRemoveLiquidity: tradability.canRemoveLiquidity,
-        volume,
-        isVolumeLoading: isVolumeLoading,
-        farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
-        allFarms: farms.filter((farm) =>
-          farm.isActive ? BN(farm.apr).gt(0) : true,
-        ),
-        fee,
-        totalFee,
-        isFeeLoading: isTotalFeeLoading,
-        omnipoolPositions: filteredOmnipoolPositions,
-        miningPositions: filteredMiningPositions,
-        balance: accountAsset?.balance,
-        isPositions,
-        isGDOT: false,
-        isGETH,
-        isStablePool: meta.isStableSwap || isGETH,
-      }
-    })
+  //     return {
+  //       id: asset.id,
+  //       poolId,
+  //       name: meta.name,
+  //       symbol: meta.symbol,
+  //       meta: isGETH
+  //         ? {
+  //             ...meta,
+  //             meta: getAssetWithFallback(GETH_STABLESWAP_ASSET_ID).meta,
+  //           }
+  //         : meta,
+  //       tvlDisplay,
+  //       spotPrice: spotPrice,
+  //       canAddLiquidity: tradability.canAddLiquidity,
+  //       canRemoveLiquidity: tradability.canRemoveLiquidity,
+  //       volume,
+  //       isVolumeLoading: isVolumeLoading,
+  //       farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
+  //       allFarms: farms.filter((farm) =>
+  //         farm.isActive ? BN(farm.apr).gt(0) : true,
+  //       ),
+  //       fee,
+  //       totalFee,
+  //       isFeeLoading: isTotalFeeLoading,
+  //       omnipoolPositions: filteredOmnipoolPositions,
+  //       miningPositions: filteredMiningPositions,
+  //       balance: accountAsset?.balance,
+  //       isPositions,
+  //       isGDOT: false,
+  //       isGETH,
+  //       isStablePool: meta.isStableSwap || isGETH,
+  //     }
+  //   })
 
-    return { data: rows, tvlTotal, volumeTotal }
-  }, [
-    omnipoolAssets.data,
-    native.id,
-    accountAssets,
-    getAssetWithFallback,
-    allFarms,
-    volumes,
-    getAssetPrice,
-    isLoading,
-    isTotalFeeLoading,
-    isVolumeLoading,
-    omnipoolMetrics,
-  ])
+  //   return { data: rows, tvlTotal, volumeTotal }
+  // }, [
+  //   omnipoolAssets.data,
+  //   native.id,
+  //   accountAssets,
+  //   getAssetWithFallback,
+  //   allFarms,
+  //   volumes,
+  //   getAssetPrice,
+  //   isLoading,
+  //   isTotalFeeLoading,
+  //   isVolumeLoading,
+  //   omnipoolMetrics,
+  // ])
 
-  const sortedData = useMemo(() => {
-    return data
-      ? [...data, ...stablepools].sort((poolA, poolB) => {
-          if (poolA.id === NATIVE_ASSET_ID) {
-            return -1
-          }
+  // const sortedData = useMemo(() => {
+  //   return data
+  //     ? [...data, ...stablepools].sort((poolA, poolB) => {
+  //         if (poolA.id === NATIVE_ASSET_ID) {
+  //           return -1
+  //         }
 
-          if (poolB.poolId === NATIVE_ASSET_ID) {
-            return 1
-          }
+  //         if (poolB.poolId === NATIVE_ASSET_ID) {
+  //           return 1
+  //         }
 
-          if (GASSETS.includes(poolA.poolId)) {
-            return -1
-          }
+  //         if (GASSETS.includes(poolA.poolId)) {
+  //           return -1
+  //         }
 
-          if (GASSETS.includes(poolB.poolId)) {
-            return 1
-          }
+  //         if (GASSETS.includes(poolB.poolId)) {
+  //           return 1
+  //         }
 
-          return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
-        })
-      : undefined
-  }, [data, stablepools])
+  //         return poolA.tvlDisplay.gt(poolB.tvlDisplay) ? -1 : 1
+  //       })
+  //     : undefined
+  // }, [data, stablepools])
 
-  if (!tvlTotal.isZero()) {
-    setOmnipoolTvlTotal(tvlTotal.toFixed(0))
-  }
+  // if (!tvlTotal.isZero()) {
+  //   setOmnipoolTvlTotal(tvlTotal.toFixed(0))
+  // }
 
-  if (!volumeTotal.isZero()) {
-    setOmnipoolVolumeTotal(volumeTotal.toFixed(0))
-  }
+  // if (!volumeTotal.isZero()) {
+  //   setOmnipoolVolumeTotal(volumeTotal.toFixed(0))
+  // }
 
-  return {
-    data: sortedData,
-    isLoading: isInitialLoading,
-  }
+  return { data: [], isLoading: false }
+
+  // return {
+  //   data: sortedData,
+  //   isLoading: isInitialLoading,
+  // }
 }
 
 export const useXYKPools = () => {
   const { data: xykConsts } = useXYKConsts()
   const { shareTokens } = useAssets()
-  const { data: accountAssets } = useAccountAssets()
   const addresses = useValidXYKPoolAddresses(
     useShallow((state) => state.addresses),
   )
 
-  const { validShareTokens, allShareTokens } = useMemo(() => {
-    return shareTokens.reduce<{
-      allShareTokens: Array<TShareToken & { isInvalid: boolean }>
-      validShareTokens: Array<TShareToken>
-    }>(
-      (acc, shareToken) => {
-        const isInvalid = !addresses?.includes(shareToken.poolAddress)
-
-        if (!isInvalid) acc.validShareTokens.push(shareToken)
-
-        acc.allShareTokens.push({ ...shareToken, isInvalid })
-        return acc
-      },
-      {
-        allShareTokens: [],
-        validShareTokens: [],
-      },
-    )
-  }, [shareTokens, addresses])
-  const { data: allFarms, isLoading: isLoadingAllFarms } = useXYKFarms(
-    addresses ?? [],
-  )
-
-  const shareTokensId =
-    validShareTokens.map((shareToken) => shareToken.id) ?? []
-
-  const { data: totalIssuances, isInitialLoading: isIssuanceLoading } =
-    useTotalIssuances()
-
-  const shareTokeSpotPrices = useDisplayShareTokenPrice(shareTokensId)
-
-  const fee = xykConsts?.fee ? getTradeFee(xykConsts.fee) : BN_NAN
-
-  const isInitialLoading =
-    isIssuanceLoading || shareTokeSpotPrices.isInitialLoading
-
-  const { data: volumes, isLoading: isVolumeLoading } =
-    useXYKPoolTradeVolumes(isInitialLoading)
-
-  const { data, volumeTotal, tvlTotal } = useMemo(() => {
-    let volumeTotal = BN_0
-    let tvlTotal = BN_0
-
-    if (!shareTokeSpotPrices.data || !totalIssuances)
-      return { data: undefined, volumeTotal, tvlTotal }
-
-    const data = allShareTokens
-      .map((shareToken) => {
-        const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
-        const balance = accountAsset?.balance
-
-        const { id: shareTokenId, poolAddress, isInvalid } = shareToken
-
-        const issuance = totalIssuances.get(shareTokenId)
-
-        const shareTokenSpotPrice = shareTokeSpotPrices.data.find(
-          (shareTokeSpotPrice) => shareTokeSpotPrice.tokenIn === shareTokenId,
-        )
-
-        const myPoolShare =
-          balance && issuance
-            ? BN(balance.total).div(issuance).multipliedBy(100)
-            : undefined
-
-        const tvlDisplay =
-          issuance
-            ?.shiftedBy(-shareToken.decimals)
-            ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? BN_NAN) ?? BN_NAN
-
-        const volume = volumes?.find(
-          (volume) => volume.poolAddress === poolAddress,
-        )?.volume
-
-        const isFeeLoading = isLoadingAllFarms
-        const { totalApr, farms = [] } =
-          allFarms?.get(shareToken.poolAddress) ?? {}
-        const totalFee = !isFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
-
-        const miningPositions = accountAsset?.xykDeposits ?? []
-        const isPositions = !!accountAsset?.isPoolPositions
-
-        if (!isInvalid) {
-          if (!tvlDisplay.isNaN()) {
-            tvlTotal = tvlTotal.plus(tvlDisplay)
-          }
-
-          if (volume && !BN(volume).isNaN()) {
-            volumeTotal = volumeTotal.plus(volume)
-          }
-        }
-
-        return {
-          id: shareToken.id,
-          poolId: poolAddress,
-          symbol: shareToken.symbol,
-          name: shareToken.name,
-          iconId: shareToken.iconId,
-          meta: shareToken,
-          tvlDisplay,
-          spotPrice: shareTokenSpotPrice?.spotPrice,
-          fee,
-          isXykPool: true,
-          poolAddress,
-          canAddLiquidity: true,
-          canRemoveLiquidity: true,
-          shareTokenIssuance: { totalShare: issuance, myPoolShare },
-          volume,
-          isVolumeLoading,
-          miningPositions,
-          isInvalid,
-          balance,
-          isPositions,
-          totalFee,
-          farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
-          allFarms: farms.filter((farm) =>
-            farm.isActive ? BN(farm.apr).gt(0) : true,
-          ),
-          isFeeLoading,
-          isStablePool: false,
-        }
-      })
-      .sort((a, b) => {
-        if (a.isInvalid) return 1
-        if (b.isInvalid) return -1
-
-        if (a.tvlDisplay.isNaN()) return 1
-        if (b.tvlDisplay.isNaN()) return -1
-
-        return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
-      })
-
-    return { data, volumeTotal, tvlTotal }
-  }, [
-    shareTokeSpotPrices.data,
-    totalIssuances,
-    allShareTokens,
-    accountAssets?.accountAssetsMap,
-    volumes,
-    isLoadingAllFarms,
-    allFarms,
-    fee,
-    isVolumeLoading,
-  ])
-
-  if (!tvlTotal.isZero()) {
-    setXykTvlTotal(tvlTotal.toFixed(0))
-  }
-
-  if (!volumeTotal.isZero()) {
-    setXykVolumeTotal(volumeTotal.toFixed(0))
-  }
-
-  return { data, isInitialLoading }
+  return { data: [], isLoading: false }
 }
+
+// export const useXYKPools = () => {
+//   const { data: xykConsts } = useXYKConsts()
+//   const { shareTokens } = useAssets()
+//   const { data: accountAssets } = useAccountAssets()
+//   const addresses = useValidXYKPoolAddresses(
+//     useShallow((state) => state.addresses),
+//   )
+
+//   const { validShareTokens, allShareTokens } = useMemo(() => {
+//     return shareTokens.reduce<{
+//       allShareTokens: Array<TShareToken & { isInvalid: boolean }>
+//       validShareTokens: Array<TShareToken>
+//     }>(
+//       (acc, shareToken) => {
+//         const isInvalid = !addresses?.includes(shareToken.poolAddress)
+
+//         if (!isInvalid) acc.validShareTokens.push(shareToken)
+
+//         acc.allShareTokens.push({ ...shareToken, isInvalid })
+//         return acc
+//       },
+//       {
+//         allShareTokens: [],
+//         validShareTokens: [],
+//       },
+//     )
+//   }, [shareTokens, addresses])
+//   const { data: allFarms, isLoading: isLoadingAllFarms } = useXYKFarms(
+//     addresses ?? [],
+//   )
+
+//   const shareTokensId =
+//     validShareTokens.map((shareToken) => shareToken.id) ?? []
+
+//   const { data: totalIssuances, isInitialLoading: isIssuanceLoading } =
+//     useTotalIssuances()
+
+//   const shareTokeSpotPrices = useDisplayShareTokenPrice(shareTokensId)
+
+//   const fee = xykConsts?.fee ? getTradeFee(xykConsts.fee) : BN_NAN
+
+//   const isInitialLoading =
+//     isIssuanceLoading || shareTokeSpotPrices.isInitialLoading
+
+//   const { data: volumes, isLoading: isVolumeLoading } =
+//     useXYKPoolTradeVolumes(isInitialLoading)
+
+//   const { data, volumeTotal, tvlTotal } = useMemo(() => {
+//     let volumeTotal = BN_0
+//     let tvlTotal = BN_0
+
+//     if (!shareTokeSpotPrices.data || !totalIssuances)
+//       return { data: undefined, volumeTotal, tvlTotal }
+
+//     const data = allShareTokens
+//       .map((shareToken) => {
+//         const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
+//         const balance = accountAsset?.balance
+
+//         const { id: shareTokenId, poolAddress, isInvalid } = shareToken
+
+//         const issuance = totalIssuances.get(shareTokenId)
+
+//         const shareTokenSpotPrice = shareTokeSpotPrices.data.find(
+//           (shareTokeSpotPrice) => shareTokeSpotPrice.tokenIn === shareTokenId,
+//         )
+
+//         const myPoolShare =
+//           balance && issuance
+//             ? BN(balance.total).div(issuance).multipliedBy(100)
+//             : undefined
+
+//         const tvlDisplay =
+//           issuance
+//             ?.shiftedBy(-shareToken.decimals)
+//             ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? BN_NAN) ?? BN_NAN
+
+//         const volume = volumes?.find(
+//           (volume) => volume.poolAddress === poolAddress,
+//         )?.volume
+
+//         const isFeeLoading = isLoadingAllFarms
+//         const { totalApr, farms = [] } =
+//           allFarms?.get(shareToken.poolAddress) ?? {}
+//         const totalFee = !isFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
+
+//         const miningPositions = accountAsset?.xykDeposits ?? []
+//         const isPositions = !!accountAsset?.isPoolPositions
+
+//         if (!isInvalid) {
+//           if (!tvlDisplay.isNaN()) {
+//             tvlTotal = tvlTotal.plus(tvlDisplay)
+//           }
+
+//           if (volume && !BN(volume).isNaN()) {
+//             volumeTotal = volumeTotal.plus(volume)
+//           }
+//         }
+
+//         return {
+//           id: shareToken.id,
+//           poolId: poolAddress,
+//           symbol: shareToken.symbol,
+//           name: shareToken.name,
+//           iconId: shareToken.iconId,
+//           meta: shareToken,
+//           tvlDisplay,
+//           spotPrice: shareTokenSpotPrice?.spotPrice,
+//           fee,
+//           isXykPool: true,
+//           poolAddress,
+//           canAddLiquidity: true,
+//           canRemoveLiquidity: true,
+//           shareTokenIssuance: { totalShare: issuance, myPoolShare },
+//           volume,
+//           isVolumeLoading,
+//           miningPositions,
+//           isInvalid,
+//           balance,
+//           isPositions,
+//           totalFee,
+//           farms: farms.filter((farm) => farm.isActive && BN(farm.apr).gt(0)),
+//           allFarms: farms.filter((farm) =>
+//             farm.isActive ? BN(farm.apr).gt(0) : true,
+//           ),
+//           isFeeLoading,
+//           isStablePool: false,
+//         }
+//       })
+//       .sort((a, b) => {
+//         if (a.isInvalid) return 1
+//         if (b.isInvalid) return -1
+
+//         if (a.tvlDisplay.isNaN()) return 1
+//         if (b.tvlDisplay.isNaN()) return -1
+
+//         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
+//       })
+
+//     return { data, volumeTotal, tvlTotal }
+//   }, [
+//     shareTokeSpotPrices.data,
+//     totalIssuances,
+//     allShareTokens,
+//     accountAssets?.accountAssetsMap,
+//     volumes,
+//     isLoadingAllFarms,
+//     allFarms,
+//     fee,
+//     isVolumeLoading,
+//   ])
+
+//   if (!tvlTotal.isZero()) {
+//     setXykTvlTotal(tvlTotal.toFixed(0))
+//   }
+
+//   if (!volumeTotal.isZero()) {
+//     setXykVolumeTotal(volumeTotal.toFixed(0))
+//   }
+
+//   return { data, isInitialLoading }
+// }
 
 export const useXYKSpotPrice = (shareTokenId: string) => {
   const { getShareToken } = useAssets()
