@@ -1,12 +1,6 @@
 import { useRpcProvider } from "providers/rpcProvider"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  calculatePoolsTotals,
-  calculateXykTotals,
-  usePools,
-  useXYKPools,
-} from "sections/pools/PoolsPage.utils"
+import { usePools, useXYKPools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
@@ -23,6 +17,13 @@ import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
 import BN from "bignumber.js"
 import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
+import {
+  useOmnipoolTvlTotal,
+  useOmnipoolVolumeTotal,
+  useXykTvlTotal,
+  useXykVolumeTotal,
+} from "state/store"
+import { BN_NAN } from "utils/constants"
 
 export const AllPools = () => {
   const { t } = useTranslation()
@@ -87,34 +88,15 @@ const AllPoolsData = () => {
       id?: number
     }
   }>()
+  const tvl = useOmnipoolTvlTotal((state) => state.tvl)
+  const volume = useOmnipoolVolumeTotal((state) => state.volume)
+  const xykTvl = useXykTvlTotal((state) => state.tvl)
+  const xykVolume = useXykVolumeTotal((state) => state.volume)
 
   const { id } = searchQuery
 
   const pools = usePools()
   const xykPools = useXYKPools()
-
-  const omnipoolTotals = useMemo(
-    () => calculatePoolsTotals(pools.data),
-    [pools.data],
-  )
-
-  const xykTotals = useMemo(
-    () => calculateXykTotals(xykPools.data),
-    [xykPools.data],
-  )
-
-  const filteredPools =
-    (search && pools.data
-      ? arraySearch(pools.data, search, ["symbol", "name"])
-      : pools.data) ?? []
-
-  const filteredXYKPools = useMemo(
-    () =>
-      (search && xykPools.data
-        ? arraySearch(xykPools.data, search, ["symbol", "name"])
-        : xykPools.data) ?? [],
-    [search, xykPools.data],
-  )
 
   if (id != null) {
     const pool = [...(pools.data ?? []), ...(xykPools.data ?? [])].find(
@@ -127,6 +109,16 @@ const AllPoolsData = () => {
     if (pool) return <PoolWrapper pool={pool} />
   }
 
+  const filteredPools =
+    (search && pools.data
+      ? arraySearch(pools.data, search, ["symbol", "name"])
+      : pools.data) ?? []
+
+  const filteredXYKPools =
+    (search && xykPools.data
+      ? arraySearch(xykPools.data, search, ["symbol", "name"])
+      : xykPools.data) ?? []
+
   return (
     <>
       <HeaderValues
@@ -137,8 +129,8 @@ const AllPoolsData = () => {
             label: t("liquidity.header.omnipool"),
             content: (
               <HeaderTotalData
-                isLoading={pools.isLoading}
-                value={BN(omnipoolTotals.tvl)}
+                isLoading={!tvl}
+                value={tvl ? BN(tvl) : BN_NAN}
                 fontSize={[19, 24]}
               />
             ),
@@ -152,8 +144,8 @@ const AllPoolsData = () => {
             label: t("liquidity.header.isolated"),
             content: (
               <HeaderTotalData
-                isLoading={xykPools.isInitialLoading}
-                value={BN(xykTotals.tvl)}
+                isLoading={!xykTvl}
+                value={xykTvl ? BN(xykTvl) : BN_NAN}
                 fontSize={[19, 24]}
               />
             ),
@@ -164,8 +156,10 @@ const AllPoolsData = () => {
             label: t("liquidity.header.24hours"),
             content: (
               <HeaderTotalData
-                isLoading={pools.isLoading || xykPools.isInitialLoading}
-                value={BN(xykTotals.volume).plus(BN(omnipoolTotals.volume))}
+                isLoading={!volume && !xykVolume}
+                value={
+                  volume && xykVolume ? BN(volume).plus(xykVolume) : BN_NAN
+                }
                 fontSize={[19, 24]}
               />
             ),

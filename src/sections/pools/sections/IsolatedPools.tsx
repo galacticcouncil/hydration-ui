@@ -3,8 +3,7 @@ import { useXYKPools } from "sections/pools/PoolsPage.utils"
 import { HeaderValues } from "sections/pools/header/PoolsHeader"
 import { HeaderTotalData } from "sections/pools/header/PoolsHeaderTotal"
 import { useTranslation } from "react-i18next"
-import { useMemo } from "react"
-import { BN_0 } from "utils/constants"
+import { BN_NAN } from "utils/constants"
 import { SearchFilter } from "sections/pools/filter/SearchFilter"
 import { useSearchFilter } from "sections/pools/filter/SearchFilter.utils"
 import { arraySearch } from "utils/helpers"
@@ -16,6 +15,8 @@ import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
+import { useXykTvlTotal, useXykVolumeTotal } from "state/store"
+import BN from "bignumber.js"
 
 export const IsolatedPools = () => {
   const { t } = useTranslation()
@@ -64,36 +65,10 @@ const IsolatedPoolsData = () => {
     }
   }>()
   const { id } = searchQuery
-
   const xykPools = useXYKPools()
 
-  const totals = useMemo(() => {
-    if (xykPools.data) {
-      return xykPools.data.reduce(
-        (acc, xykPool) => {
-          if (!xykPool.isInvalid) {
-            acc.tvl = acc.tvl.plus(
-              !xykPool.tvlDisplay.isNaN() ? xykPool.tvlDisplay : BN_0,
-            )
-            acc.volume = acc.volume.plus(xykPool.volume ?? 0)
-          }
-
-          return acc
-        },
-        { tvl: BN_0, volume: BN_0 },
-      )
-    }
-
-    return { tvl: BN_0, volume: BN_0 }
-  }, [xykPools.data])
-
-  const filteredPools = useMemo(
-    () =>
-      (search && xykPools.data
-        ? arraySearch(xykPools.data, search, ["symbol", "name"])
-        : xykPools.data) ?? [],
-    [search, xykPools.data],
-  )
+  const tvl = useXykTvlTotal((state) => state.tvl)
+  const volume = useXykVolumeTotal((state) => state.volume)
 
   if (id != null) {
     const pool = xykPools.data?.find((pool) => pool.id === id.toString())
@@ -105,6 +80,11 @@ const IsolatedPoolsData = () => {
     if (pool) return <PoolWrapper pool={pool} />
   }
 
+  const filteredPools =
+    (search && xykPools.data
+      ? arraySearch(xykPools.data, search, ["symbol", "name"])
+      : xykPools.data) ?? []
+
   return (
     <>
       <HeaderValues
@@ -115,8 +95,8 @@ const IsolatedPoolsData = () => {
             label: t("liquidity.header.isolated"),
             content: (
               <HeaderTotalData
-                isLoading={xykPools.isInitialLoading}
-                value={totals.tvl}
+                isLoading={!tvl}
+                value={tvl ? BN(tvl) : BN_NAN}
                 fontSize={[19, 24]}
               />
             ),
@@ -126,8 +106,8 @@ const IsolatedPoolsData = () => {
             label: t("liquidity.header.24hours"),
             content: (
               <HeaderTotalData
-                isLoading={xykPools.isInitialLoading}
-                value={totals.volume}
+                isLoading={!volume}
+                value={volume ? BN(volume) : BN_NAN}
                 fontSize={[19, 24]}
               />
             ),

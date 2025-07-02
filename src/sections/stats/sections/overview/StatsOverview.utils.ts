@@ -154,11 +154,13 @@ export const useStatsOverviewTotals = () => {
   const totals = useMemo(() => {
     if (isLoading) return null
 
-    const volume24h = BN(xyk.volume).plus(BN(omnipools.volume)).toString()
+    const volume24h = BN(xyk.volume ?? 0)
+      .plus(BN(omnipools.volume ?? 0))
+      .toString()
 
-    const hydrationTvl = BN(omnipools.tvl)
+    const hydrationTvl = BN(omnipools.tvl ?? 0)
       .plus(stablepools.tvl)
-      .plus(xyk.tvl)
+      .plus(xyk.tvl ?? 0)
       .plus(moneyMarket.tvl)
       .plus(stakeTotal)
       .minus(stableswapTvl.tvl)

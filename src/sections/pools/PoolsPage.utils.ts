@@ -26,7 +26,17 @@ import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useBorrowAssetApy } from "api/borrow"
-import { useValidXYKPoolAddresses } from "state/store"
+import {
+  setOmnipoolTvlTotal,
+  setOmnipoolVolumeTotal,
+  setXykTvlTotal,
+  setXykVolumeTotal,
+  useOmnipoolTvlTotal,
+  useOmnipoolVolumeTotal,
+  useValidXYKPoolAddresses,
+  useXykTvlTotal,
+  useXykVolumeTotal,
+} from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { useAllOmnipoolDeposits } from "./farms/position/FarmingPosition.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -228,8 +238,12 @@ export const usePools = () => {
 
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
-  const data = useMemo(() => {
-    if (!omnipoolAssets.data || isLoading) return undefined
+  const { data, tvlTotal, volumeTotal } = useMemo(() => {
+    let volumeTotal = BN_0
+    let tvlTotal = BN_0
+
+    if (!omnipoolAssets.data || isLoading)
+      return { data: undefined, volumeTotal, tvlTotal }
 
     const rows = omnipoolAssets.data.map((asset) => {
       const isGETH = asset.id === GETH_ERC20_ASSET_ID
@@ -255,6 +269,14 @@ export const usePools = () => {
               .multipliedBy(spotPrice)
               .toString()
           : undefined
+
+      if (!tvlDisplay.isNaN()) {
+        tvlTotal = tvlTotal.plus(tvlDisplay)
+      }
+
+      if (volume) {
+        volumeTotal = volumeTotal.plus(volume)
+      }
 
       const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
 
@@ -307,7 +329,7 @@ export const usePools = () => {
       }
     })
 
-    return rows
+    return { data: rows, tvlTotal, volumeTotal }
   }, [
     omnipoolAssets.data,
     native.id,
@@ -345,6 +367,14 @@ export const usePools = () => {
         })
       : undefined
   }, [data, stablepools])
+
+  if (!tvlTotal.isZero()) {
+    setOmnipoolTvlTotal(tvlTotal.toFixed(0))
+  }
+
+  if (!volumeTotal.isZero()) {
+    setOmnipoolVolumeTotal(volumeTotal.toFixed(0))
+  }
 
   return {
     data: sortedData,
@@ -399,10 +429,14 @@ export const useXYKPools = () => {
   const { data: volumes, isLoading: isVolumeLoading } =
     useXYKPoolTradeVolumes(isInitialLoading)
 
-  const data = useMemo(() => {
-    if (!shareTokeSpotPrices.data || !totalIssuances) return undefined
+  const { data, volumeTotal, tvlTotal } = useMemo(() => {
+    let volumeTotal = BN_0
+    let tvlTotal = BN_0
 
-    return allShareTokens
+    if (!shareTokeSpotPrices.data || !totalIssuances)
+      return { data: undefined, volumeTotal, tvlTotal }
+
+    const data = allShareTokens
       .map((shareToken) => {
         const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
         const balance = accountAsset?.balance
@@ -436,6 +470,16 @@ export const useXYKPools = () => {
 
         const miningPositions = accountAsset?.xykDeposits ?? []
         const isPositions = !!accountAsset?.isPoolPositions
+
+        if (!isInvalid) {
+          if (!tvlDisplay.isNaN()) {
+            tvlTotal = tvlTotal.plus(tvlDisplay)
+          }
+
+          if (volume && !BN(volume).isNaN()) {
+            volumeTotal = volumeTotal.plus(volume)
+          }
+        }
 
         return {
           id: shareToken.id,
@@ -476,6 +520,8 @@ export const useXYKPools = () => {
 
         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
       })
+
+    return { data, volumeTotal, tvlTotal }
   }, [
     shareTokeSpotPrices.data,
     totalIssuances,
@@ -487,6 +533,14 @@ export const useXYKPools = () => {
     fee,
     isVolumeLoading,
   ])
+
+  if (!tvlTotal.isZero()) {
+    setXykTvlTotal(tvlTotal.toFixed(0))
+  }
+
+  if (!volumeTotal.isZero()) {
+    setXykVolumeTotal(volumeTotal.toFixed(0))
+  }
 
   return { data, isInitialLoading }
 }
@@ -527,29 +581,24 @@ export const useXYKSpotPrice = (shareTokenId: string) => {
 }
 
 export const useOmnipoolsTotals = () => {
-  const pools = usePools()
-
-  const omnipoolTotals = useMemo(
-    () => calculatePoolsTotals(pools.data),
-    [pools.data],
-  )
+  const tvl = useOmnipoolTvlTotal((state) => state.tvl)
+  const volume = useOmnipoolVolumeTotal((state) => state.volume)
 
   return {
-    ...omnipoolTotals,
-    isLoading: pools.isLoading,
+    tvl,
+    volume,
+    isLoading: !tvl || !volume,
   }
 }
 
 export const useXykTotals = () => {
-  const xykPools = useXYKPools()
+  const tvl = useXykTvlTotal((state) => state.tvl)
+  const volume = useXykVolumeTotal((state) => state.volume)
 
-  const xykTotals = useMemo(
-    () => calculateXykTotals(xykPools.data),
-    [xykPools.data],
-  )
   return {
-    ...xykTotals,
-    isLoading: xykPools.isInitialLoading,
+    tvl,
+    volume,
+    isLoading: !tvl || !volume,
   }
 }
 
