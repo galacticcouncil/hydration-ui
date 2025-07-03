@@ -3,15 +3,16 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
-import { PoolToken, PoolType } from "@galacticcouncil/sdk"
+import { PoolToken, PoolType, StableSwap } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
-import { BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
+import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
-import { setOmnipoolIds, setValidXYKPoolAddresses } from "state/store"
+import { setStableswapIds, setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
+import { prop } from "utils/rx"
 
 export const useSDKPools = () => {
   const { isLoaded, sdk, timestamp } = useRpcProvider()
@@ -27,7 +28,9 @@ export const useSDKPools = () => {
     queryFn: async () => {
       const pools = await api.router.getPools()
 
-      const stablePools = pools.filter((pool) => pool.type === PoolType.Stable)
+      const stablePools = pools.filter(
+        (pool) => pool.type === PoolType.Stable,
+      ) as StableSwap[]
 
       const omnipoolTokens = (
         pools.find((pool) => pool.type === PoolType.Omni)
@@ -39,6 +42,7 @@ export const useSDKPools = () => {
           protocolShares: token.protocolShares?.toString(),
           cap: token.cap?.toString(),
           hubReserves: token.hubReserves?.toString(),
+          isOmnipool: true,
         }
       })
 
@@ -83,13 +87,7 @@ export const useSDKPools = () => {
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
 
-      setOmnipoolIds(
-        tokens.map((token) =>
-          token.id === GETH_ERC20_ASSET_ID
-            ? "0x8a598fe3e3a471ce865332e330d303502a0e2f52"
-            : token.id,
-        ),
-      )
+      setStableswapIds(stablePools.map(prop("id")))
 
       setValidXYKPoolAddresses(
         xykPools
