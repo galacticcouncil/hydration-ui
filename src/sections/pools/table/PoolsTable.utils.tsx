@@ -217,7 +217,7 @@ const StablePoolModalWrapper = ({
   pool: TPool
   onClose: () => void
 }) => {
-  const stablepoolDetails = useStableSwapReserves(pool.id)
+  const stablepoolDetails = useStableSwapReserves(pool.poolId)
 
   if (!pool) return null
 
