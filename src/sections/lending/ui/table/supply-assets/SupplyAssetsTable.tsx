@@ -26,14 +26,12 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { SupplyGigaRow } from "sections/lending/ui/table/supply-assets/SupplyGigaRow"
-import { useRpcProvider } from "providers/rpcProvider"
 import { Separator } from "components/Separator/Separator"
 import { Fragment } from "react"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { featureFlags } = useRpcProvider()
 
   const { currentMarket } = useProtocolDataContext()
   const [showAll, setShowAll] = useLocalStorageBool("showAllSupplyAssets")
@@ -60,10 +58,7 @@ export const SupplyAssetsTable = () => {
 
   return (
     <TableContainer background={supplyAssetsTableBackground}>
-      <TableTitleContainer
-        spacing={supplyAssetsTableSpacing}
-        customContainer={featureFlags.strategies}
-      >
+      <TableTitleContainer spacing={supplyAssetsTableSpacing} customContainer>
         <TableTitle>{t("lending.supply.table.title")}</TableTitle>
         {hasAvailableDeposits && (
           <TableAction
@@ -79,21 +74,16 @@ export const SupplyAssetsTable = () => {
           </TableAction>
         )}
       </TableTitleContainer>
-      {featureFlags.strategies &&
-        gigaReserves.map((gigaReserve, index, arr) => (
-          <Fragment key={gigaReserve.id}>
-            <SupplyGigaRow isLoading={isLoading} reserve={gigaReserve} />
-            {arr.length > index + 1 && (
-              <Separator sx={{ display: ["none", "block"] }} />
-            )}
-          </Fragment>
-        ))}
+      {gigaReserves.map((gigaReserve, index, arr) => (
+        <Fragment key={gigaReserve.id}>
+          <SupplyGigaRow isLoading={isLoading} reserve={gigaReserve} />
+          {arr.length > index + 1 && (
+            <Separator sx={{ display: ["none", "block"] }} />
+          )}
+        </Fragment>
+      ))}
       <DataTable
-        css={
-          !featureFlags.strategies || !isDesktop
-            ? { "&": { borderTop: "none" } }
-            : undefined
-        }
+        css={!isDesktop ? { "&": { borderTop: "none" } } : undefined}
         table={table}
         spacing={supplyAssetsTableSpacing}
         size={supplyAssetsTableSize}
