@@ -19,6 +19,44 @@ import { DepositButton } from "sections/deposit/DepositButton"
 
 type Props = { disconnected?: boolean }
 
+export const WalletAssetsHeaderSkeleton = () => {
+  const { t } = useTranslation()
+
+  return (
+    <div
+      sx={{
+        flex: ["column", "column", "row"],
+        align: "start",
+        gap: [10, 24, 100],
+      }}
+    >
+      <DataValueList separated sx={{ flexGrow: 1, width: "100%" }}>
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("wallet.assets.header.networth")}
+          size="large"
+          isLoading
+          disableSkeletonAnimation
+        />
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("wallet.assets.header.assetsBalance")}
+          size="large"
+          isLoading
+          disableSkeletonAnimation
+        />
+        <DataValue
+          labelColor="brightBlue300"
+          label={t("wallet.assets.header.liquidityBalance")}
+          size="large"
+          isLoading
+          disableSkeletonAnimation
+        />
+      </DataValueList>
+    </div>
+  )
+}
+
 export const WalletAssetsHeader = ({ disconnected }: Props) => {
   const { t } = useTranslation()
   const {
