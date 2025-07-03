@@ -34,7 +34,6 @@ export type ProviderProps = {
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
-  strategies: boolean
   isSixBlockEnabled: boolean
 } & { [key: string]: boolean }
 
