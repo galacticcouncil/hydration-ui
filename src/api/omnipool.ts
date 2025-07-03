@@ -29,7 +29,6 @@ export type TOmnipoolAssetData = {
   shares: string
   bits: number
   balance: string
-  isOmnipool: boolean
 }
 
 export type TOmnipoolAssetsData = Array<TOmnipoolAssetData>

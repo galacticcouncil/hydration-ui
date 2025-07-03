@@ -42,7 +42,6 @@ export const useSDKPools = () => {
           protocolShares: token.protocolShares?.toString(),
           cap: token.cap?.toString(),
           hubReserves: token.hubReserves?.toString(),
-          isOmnipool: true,
         }
       })
 
