@@ -31,6 +31,8 @@ import {
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { NoData } from "sections/lending/components/primitives/NoData"
 
 export type TBorrowAssetsTable = typeof useBorrowAssetsTableData
 export type TBorrowAssetsTableData = ReturnType<TBorrowAssetsTable>
@@ -44,6 +46,8 @@ export const useBorrowAssetsTableColumns = ({
   const { t } = useTranslation()
   const { openBorrow } = useModalContext()
   const { currentMarket } = useProtocolDataContext()
+
+  const { isBound } = useEvmAccount()
 
   return useMemo(
     () => [
@@ -70,6 +74,8 @@ export const useBorrowAssetsTableColumns = ({
           const { availableBorrows, availableBorrowsInUSD } = row.original
           const value = Number(availableBorrows ?? 0)
           const valueUsd = Number(availableBorrowsInUSD ?? 0)
+
+          if (!isBound) return <NoData />
 
           return (
             <span sx={{ color: value === 0 ? "basic500" : "white" }}>
@@ -119,7 +125,8 @@ export const useBorrowAssetsTableColumns = ({
         },
         cell: ({ row }) => {
           const { isFreezed, availableBorrows, underlyingAsset } = row.original
-          const disableBorrow = isFreezed || Number(availableBorrows) <= 0
+          const disableBorrow =
+            !isBound || isFreezed || Number(availableBorrows) <= 0
           return (
             <div sx={{ flex: "row", align: "center", justify: "end" }}>
               <Button
@@ -138,7 +145,7 @@ export const useBorrowAssetsTableColumns = ({
         },
       }),
     ],
-    [currentMarket, isGho, openBorrow, t],
+    [isBound, currentMarket, isGho, openBorrow, t],
   )
 }
 
