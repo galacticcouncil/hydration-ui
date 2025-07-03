@@ -16,7 +16,7 @@ import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { groupBy } from "utils/rx"
-import { useStableswapIds, useValidXYKPoolAddresses } from "state/store"
+import { useValidXYKPoolAddresses } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { useEffect } from "react"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -465,41 +465,35 @@ export const useOmnipoolVolumes = (disabled?: boolean) => {
 export const useStablepoolVolumes = (disabled?: boolean) => {
   const url = useSquidUrl()
 
-  const ids = useStableswapIds(useShallow((state) => state.ids))
-
   return useQuery(
     QUERY_KEYS.stablepoolsSquidVolumes,
 
-    ids
-      ? async () => {
-          const { stableswapHistoricalVolumesByPeriod } = await request(
-            url,
-            StablepoolVolumeDocument,
-            {
-              filter: {
-                poolIds: ids,
-                period: AggregationTimeRange["24H"],
-              },
-            },
+    async () => {
+      const { stableswapHistoricalVolumesByPeriod } = await request(
+        url,
+        StablepoolVolumeDocument,
+        {
+          filter: {
+            period: AggregationTimeRange["24H"],
+          },
+        },
+      )
+
+      return stableswapHistoricalVolumesByPeriod.nodes
+        .filter(isNotNil)
+        .map((node): StablepoolVolume => {
+          const volumes = node.assetVolumes.map(
+            ({ assetRegistryId, swapVolume }) => ({
+              assetId: assetRegistryId as string,
+              assetVolume: swapVolume,
+            }),
           )
 
-          return stableswapHistoricalVolumesByPeriod.nodes
-            .filter(isNotNil)
-            .map((node): StablepoolVolume => {
-              const volumes = node.assetVolumes.map(
-                ({ assetRegistryId, swapVolume }) => ({
-                  assetId: assetRegistryId as string,
-                  assetVolume: swapVolume,
-                }),
-              )
-
-              return { poolId: node.poolId, volumes }
-            })
-        }
-      : undefinedNoop,
-
+          return { poolId: node.poolId, volumes }
+        })
+    },
     {
-      enabled: !disabled && !!ids?.length,
+      enabled: !disabled,
       staleTime: millisecondsInHour,
       cacheTime: millisecondsInHour,
     },
@@ -510,18 +504,16 @@ export const useStablepoolVolumeSubscription = () => {
   const { isLoaded, squidWSClient } = useRpcProvider()
   const queryClient = useQueryClient()
 
-  const ids = useStableswapIds(useShallow((state) => state.ids))
-
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (isLoaded && ids) {
+    if (isLoaded) {
       unsubscribe = squidWSClient.subscribe<StablepoolQuery>(
         {
           query: `
             subscription {
               stableswapHistoricalVolumesByPeriod(
-                filter: {poolIds: ${JSON.stringify(ids)}, period: _24H_}
+                filter: {period: _24H_}
               ) {
                 nodes {
                   poolId
@@ -576,7 +568,7 @@ export const useStablepoolVolumeSubscription = () => {
     }
 
     return () => unsubscribe?.()
-  }, [queryClient, squidWSClient, isLoaded, ids])
+  }, [queryClient, squidWSClient, isLoaded])
 
   return null
 }

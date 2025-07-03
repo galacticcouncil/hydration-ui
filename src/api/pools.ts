@@ -10,9 +10,8 @@ import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
-import { setStableswapIds, setValidXYKPoolAddresses } from "state/store"
+import { setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
-import { prop } from "utils/rx"
 
 export const useSDKPools = () => {
   const { isLoaded, sdk, timestamp } = useRpcProvider()
@@ -85,8 +84,6 @@ export const useSDKPools = () => {
       queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
-
-      setStableswapIds(stablePools.map(prop("id")))
 
       setValidXYKPoolAddresses(
         xykPools

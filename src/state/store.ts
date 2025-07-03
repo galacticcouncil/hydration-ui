@@ -435,13 +435,6 @@ export const useApiMetadata = create(
   ),
 )
 
-export const useStableswapIds = create<{ ids?: string[] }>(() => ({
-  ids: undefined,
-}))
-
-export const setStableswapIds = (ids: string[]) =>
-  useStableswapIds.setState({ ids })
-
 export const useValidXYKPoolAddresses = create<{ addresses?: string[] }>(
   () => ({
     addresses: undefined,

@@ -229,23 +229,21 @@ export const usePools = () => {
 
         const name = metaOverride?.name || meta.name
         const symbol = metaOverride?.symbol || meta.symbol
+        const iconId = metaOverride?.iconId || meta.iconId
 
         return {
           id: asset.id,
           poolId,
           name,
           symbol,
-          meta: isGETH
+          meta: isGDOT
             ? {
                 ...meta,
-                meta: getAssetWithFallback(GETH_STABLESWAP_ASSET_ID).meta,
+                name,
+                symbol,
+                iconId,
               }
-            : isGDOT
-              ? {
-                  ...getAssetWithFallback(GDOT_ERC20_ASSET_ID),
-                  meta: getAssetWithFallback(GDOT_ERC20_ASSET_ID).meta,
-                }
-              : meta,
+            : meta,
           tvlDisplay,
           spotPrice,
           canAddLiquidity: tradability.canAddLiquidity,
