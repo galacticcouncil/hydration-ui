@@ -736,14 +736,12 @@ export const useRejoinedFarms = (pool: TPool) => {
 }
 
 export const useStablepoolsData = (disabled?: boolean) => {
-  const { stableswap } = useAssets()
-
   const { data: volumes, isLoading: isVolumeLoading } =
     useStablepoolVolumes(disabled)
 
   const { data: stablePools, isLoading: isPoolLoading } = useStableSDKPools()
 
-  const tokensMap = new Map<string, PoolToken>()
+  const tokensSet = new Set<string>()
 
   const stablePoolData = stablePools?.map((stablePool) => {
     const filteredTokens: (PoolToken & { volume: string | undefined })[] = []
@@ -752,30 +750,19 @@ export const useStablepoolsData = (disabled?: boolean) => {
     )?.volumes
 
     stablePool.tokens.forEach((token) => {
-      if (token.type !== "Stableswap") {
+      if (token.type !== "StableSwap") {
         const volume = poolVolume?.find(
           (pool) => pool.assetId === token.id,
         )?.assetVolume
-        tokensMap.set(token.id, token)
+
+        tokensSet.add(token.id)
         filteredTokens.push({ ...token, volume })
       }
     })
-
     return { poolId: stablePool.id, tokens: filteredTokens }
   })
 
-  const stablepoolIds = useMemo(
-    () => [
-      ...new Set(
-        stableswap.flatMap((asset) =>
-          asset.meta ? Object.keys(asset.meta) : [],
-        ),
-      ),
-    ],
-    [stableswap],
-  )
-
-  const { isLoading, getAssetPrice } = useAssetsPrice(stablepoolIds)
+  const { isLoading, getAssetPrice } = useAssetsPrice([...tokensSet])
 
   const data = stablePoolData?.map((stablepool) => {
     let totalVolume = BN_0
