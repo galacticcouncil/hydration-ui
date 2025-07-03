@@ -42,6 +42,7 @@ const Pool = ({ pool }: { pool: TPool }) => {
   return (
     <PoolContext.Provider value={{ pool, isXYK: false }}>
       <SPoolContainer>
+        <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
         <PoolDetails />
         <MyPositions />
       </SPoolContainer>
@@ -58,20 +59,11 @@ const Stablepool = ({ pool }: { pool: TPool }) => {
     <PoolContext.Provider
       value={{ pool: { ...pool, ...poolDetails.data }, isXYK: false }}
     >
-      <div
-        sx={{
-          display: "grid",
-          justify: "center",
-          gap: 20,
-          mt: -30,
-        }}
-      >
+      <SPoolContainer>
         <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
-        <SPoolContainer>
-          <PoolDetails />
-          <MyPositions />
-        </SPoolContainer>
-      </div>
+        <PoolDetails />
+        <MyPositions />
+      </SPoolContainer>
     </PoolContext.Provider>
   )
 }

@@ -1,14 +1,15 @@
 import { HeaderTotalData } from "./PoolsHeaderTotal"
-import { useStablepoolsTotals } from "sections/pools/PoolsPage.utils"
 import BN from "bignumber.js"
+import { useStablepoolTvlTotal } from "state/store"
+import { BN_NAN } from "utils/constants"
 
 export const StablePoolsTotal = () => {
-  const { isLoading, tvl } = useStablepoolsTotals()
+  const tvl = useStablepoolTvlTotal((state) => state.tvl)
 
   return (
     <HeaderTotalData
-      isLoading={isLoading}
-      value={BN(tvl)}
+      isLoading={!tvl}
+      value={tvl ? BN(tvl) : BN_NAN}
       fontSize={[19, 24]}
     />
   )

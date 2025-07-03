@@ -13,7 +13,6 @@ type DataProps = {
   subValue?: ReactNode
   isLoading: boolean
   fontSize?: ResponsiveValue<number>
-  isOnlyDollar?: boolean
 }
 
 export const HeaderTotalData = ({
@@ -21,38 +20,39 @@ export const HeaderTotalData = ({
   subValue,
   isLoading,
   fontSize,
-  isOnlyDollar,
 }: DataProps) => {
   const { t } = useTranslation()
 
   if (isLoading)
     return <Skeleton sx={{ height: fontSize ?? [19, 28], width: [180, 200] }} />
 
-  return (
+  const HeadlineComp = (
+    <Heading
+      as="h3"
+      sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
+      css={{ whiteSpace: "nowrap" }}
+      font="GeistMedium"
+    >
+      <DisplayValue
+        value={
+          <Trans
+            t={t}
+            i18nKey="wallet.assets.header.value"
+            tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
+          >
+            <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
+          </Trans>
+        }
+      />
+    </Heading>
+  )
+
+  return subValue ? (
     <div sx={{ flex: "column", align: ["end", "start"] }}>
-      <Heading
-        as="h3"
-        sx={{ fontSize: fontSize ?? [19, 28], fontWeight: 500 }}
-        css={{ whiteSpace: "nowrap" }}
-        font="GeistMedium"
-      >
-        {isOnlyDollar ? (
-          t("value.usd", { amount: value })
-        ) : (
-          <DisplayValue
-            value={
-              <Trans
-                t={t}
-                i18nKey="wallet.assets.header.value"
-                tOptions={{ ...separateBalance(value, { type: "dollar" }) }}
-              >
-                <span css={{ color: `rgba(${theme.rgbColors.white}, 0.4);` }} />
-              </Trans>
-            }
-          />
-        )}
-      </Heading>
+      {HeadlineComp}
       {subValue}
     </div>
+  ) : (
+    HeadlineComp
   )
 }
