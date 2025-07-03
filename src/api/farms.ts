@@ -292,7 +292,10 @@ export const useOmnipoolFarms = (ids: string[]) => {
   )
 
   const stoppedFarms = useMemo(
-    () => getStoppedFarms(omnipoolDeposits, activeFarms ?? []),
+    () =>
+      !!omnipoolDeposits.length
+        ? getStoppedFarms(omnipoolDeposits, activeFarms ?? [])
+        : [],
     [activeFarms, omnipoolDeposits],
   )
 
@@ -342,7 +345,10 @@ export const useXYKFarms = (ids: string[]) => {
   )
 
   const stoppedFarms = useMemo(
-    () => getStoppedFarms(xykDeposits, activeFarms ?? []),
+    () =>
+      !!xykDeposits.length
+        ? getStoppedFarms(xykDeposits, activeFarms ?? [])
+        : [],
     [activeFarms, xykDeposits],
   )
 
