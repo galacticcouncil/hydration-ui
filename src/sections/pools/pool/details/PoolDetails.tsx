@@ -398,6 +398,7 @@ const StablepoolFee = ({ poolId }: { poolId: string }) => {
         value: BN(data?.fee.toString() ?? 0)
           .div(BN_MILL)
           .times(100),
+        decimalPlaces: 5,
       })}
     </>
   )
