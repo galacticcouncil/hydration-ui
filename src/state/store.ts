@@ -435,13 +435,6 @@ export const useApiMetadata = create(
   ),
 )
 
-export const useOmnipoolIds = create<{ ids?: string[] }>(() => ({
-  ids: undefined,
-}))
-
-export const setOmnipoolIds = (ids: string[]) =>
-  useOmnipoolIds.setState({ ids })
-
 export const useValidXYKPoolAddresses = create<{ addresses?: string[] }>(
   () => ({
     addresses: undefined,
@@ -457,6 +450,13 @@ export const useOmnipoolTvlTotal = create<{ tvl?: string }>(() => ({
 
 export const setOmnipoolTvlTotal = (tvl?: string) =>
   useOmnipoolTvlTotal.setState({ tvl })
+
+export const useStablepoolTvlTotal = create<{ tvl?: string }>(() => ({
+  tvl: undefined,
+}))
+
+export const setStablepoolTvlTotal = (tvl?: string) =>
+  useStablepoolTvlTotal.setState({ tvl })
 
 export const useOmnipoolVolumeTotal = create<{ volume?: string }>(() => ({
   volume: undefined,

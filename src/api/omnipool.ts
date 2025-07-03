@@ -11,8 +11,6 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { PoolToken } from "@galacticcouncil/sdk"
 import { useEffect, useMemo } from "react"
-import { useOmnipoolIds } from "state/store"
-import { useShallow } from "hooks/useShallow"
 import { OmnipoolQuery, OmnipoolVolume } from "./volume"
 import { useSquidUrl } from "./provider"
 import { millisecondsInHour } from "date-fns"
@@ -23,7 +21,7 @@ import {
 } from "graphql/__generated__/squid/graphql"
 import { isNotNil } from "utils/helpers"
 
-export type TOmnipoolAssetsData = Array<{
+export type TOmnipoolAssetData = {
   id: string
   hubReserve: string
   cap: string
@@ -31,7 +29,9 @@ export type TOmnipoolAssetsData = Array<{
   shares: string
   bits: number
   balance: string
-}>
+}
+
+export type TOmnipoolAssetsData = Array<TOmnipoolAssetData>
 
 export const useOmnipoolDataObserver = () => {
   const { data: omnipoolTokens, isLoading: isOmnipoolTokensLoading } =
@@ -152,19 +152,18 @@ export const getTradabilityFromBits = (bits: number) => {
 
 export const useOmnipoolVolumeSubscription = () => {
   const { squidWSClient, isLoaded } = useRpcProvider()
-  const ids = useOmnipoolIds(useShallow((state) => state.ids))
   const queryClient = useQueryClient()
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined
 
-    if (ids && isLoaded) {
+    if (isLoaded) {
       unsubscribe = squidWSClient.subscribe<OmnipoolQuery>(
         {
           query: `
             subscription {
               omnipoolAssetHistoricalVolumesByPeriod(
-                filter: {assetIds: ${JSON.stringify(ids)}, period: _24H_}
+                filter: {period: _24H_}
               ) {
                 nodes {
                   assetId
@@ -174,7 +173,6 @@ export const useOmnipoolVolumeSubscription = () => {
             }
           `,
           variables: {
-            assetIds: JSON.stringify(ids),
             period: AggregationTimeRange["24H"],
           },
         },
@@ -211,7 +209,7 @@ export const useOmnipoolVolumeSubscription = () => {
     }
 
     return () => unsubscribe?.()
-  }, [ids, queryClient, squidWSClient, isLoaded])
+  }, [queryClient, squidWSClient, isLoaded])
 
   return null
 }

@@ -3,14 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
-import { PoolToken, PoolType } from "@galacticcouncil/sdk"
+import { PoolToken, PoolType, StableSwap } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
-import { setOmnipoolIds, setValidXYKPoolAddresses } from "state/store"
+import { setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
 
 export const useSDKPools = () => {
@@ -27,7 +27,9 @@ export const useSDKPools = () => {
     queryFn: async () => {
       const pools = await api.router.getPools()
 
-      const stablePools = pools.filter((pool) => pool.type === PoolType.Stable)
+      const stablePools = pools.filter(
+        (pool) => pool.type === PoolType.Stable,
+      ) as StableSwap[]
 
       const omnipoolTokens = (
         pools.find((pool) => pool.type === PoolType.Omni)
@@ -82,8 +84,6 @@ export const useSDKPools = () => {
       queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
-
-      setOmnipoolIds(tokens.map((token) => token.id))
 
       setValidXYKPoolAddresses(
         xykPools
