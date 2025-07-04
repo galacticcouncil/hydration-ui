@@ -32,7 +32,9 @@ export const useSwapAssetFees24hTotal = () => {
     return isSuccess ? data.swapAssetFeesByPeriod.nodes.filter(isNotNil) : []
   }, [data, isSuccess])
 
-  const assetIds = isSuccess ? assets.map(prop("assetId")) : []
+  const assetIds = isSuccess
+    ? assets.map((asset) => asset.assetRegistryId as string)
+    : []
 
   const { isLoading: isAssetsPriceLoading, getAssetPrice } =
     useAssetsPrice(assetIds)
@@ -40,7 +42,7 @@ export const useSwapAssetFees24hTotal = () => {
   const swapFees24h = useMemo(() => {
     if (isAssetsPriceLoading) return "0"
     return assets.reduce((prev, curr) => {
-      const asset = getAsset(curr.assetId)
+      const asset = getAsset(curr.assetRegistryId as string)
       if (!asset) return prev
 
       const { price } = getAssetPrice(asset.id)
