@@ -13,6 +13,7 @@ import { createSingletonSubscriber } from "./utils/createSingletonSubscriber"
 import { getQueryParameter } from "./utils/queryParams"
 import { createV3MigrationSlice, V3MigrationSlice } from "./v3MigrationSlice"
 import { createWalletSlice, WalletSlice } from "./walletSlice"
+import { QueryClient } from "@tanstack/react-query"
 
 enableMapSet()
 
@@ -61,9 +62,10 @@ if (typeof document !== "undefined") {
   }
 }
 
-export const usePoolDataSubscription = createSingletonSubscriber(() => {
-  return useRootStore.getState().refreshPoolData()
-}, 60_000)
+export const usePoolDataSubscription = (queryClient: QueryClient) =>
+  createSingletonSubscriber(() => {
+    return useRootStore.getState().refreshPoolData({ queryClient })
+  }, 5_000)
 
 export const usePoolDataV3Subscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolV3Data()

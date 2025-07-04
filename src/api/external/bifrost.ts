@@ -1,23 +1,28 @@
 import { useQuery, UseQueryOptions } from "@tanstack/react-query"
+import { millisecondsInHour } from "date-fns"
 import { QUERY_KEYS } from "utils/queryKeys"
 
-type BifrostAPY = {
-  apy: string
-  apyBase: string
-  apyReward: string
-}
+type BifrostVDotApy = number
 
 export const fetchBifrostVDotApy = async () => {
   const res = await fetch("https://dapi.bifrost.io/api/site")
   const data = await res.json()
-  return data["vDOT"] as BifrostAPY
+  const apy = Number(data["vDOT"]?.apy)
+  return isNaN(apy) ? 0 : apy
+}
+
+export const vdotApyQuery: UseQueryOptions<BifrostVDotApy> = {
+  queryKey: QUERY_KEYS.bifrostVDotApy,
+  queryFn: fetchBifrostVDotApy,
+  staleTime: millisecondsInHour,
+  refetchOnWindowFocus: false,
 }
 
 export const useBifrostVDotApy = (
-  options: UseQueryOptions<BifrostAPY> = {},
+  options: UseQueryOptions<BifrostVDotApy> = {},
 ) => {
-  return useQuery<BifrostAPY>(QUERY_KEYS.bifrostVDotApy, fetchBifrostVDotApy, {
-    refetchOnWindowFocus: false,
+  return useQuery({
+    ...vdotApyQuery,
     ...options,
   })
 }

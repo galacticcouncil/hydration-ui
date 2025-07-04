@@ -67,8 +67,9 @@ import {
   selectFormattedReserves,
 } from "./poolSelectors"
 import { RootStore } from "./root"
-import { fetchBifrostVDotApy } from "api/external/bifrost"
 import BN from "bignumber.js"
+import { QueryClient } from "@tanstack/react-query"
+import { EXTERNAL_APY_QUERIES } from "sections/lending/ui-config/misc"
 
 // TODO: what is the better name for this type?
 export type PoolReserve = {
@@ -97,9 +98,12 @@ type GenerateSignatureRequestOpts = {
 
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
-  vDotApy: string
   data: Map<number, Map<string, PoolReserve>>
-  refreshPoolData: (marketData?: MarketDataType) => Promise<void>
+  externalApyData: Map<string, string>
+  refreshPoolData: (options: {
+    marketData?: MarketDataType
+    queryClient?: QueryClient
+  }) => Promise<void>
   refreshPoolV3Data: () => Promise<void>
   // methods
   useOptimizedPath: () => boolean | undefined
@@ -216,7 +220,7 @@ export const createPoolSlice: StateCreator<
   }
   return {
     data: new Map(),
-    vDotApy: "0",
+    externalApyData: new Map(),
     getCorrectPoolBundle() {
       const currentMarketData = get().currentMarketData
       const provider = get().jsonRpcProvider()
@@ -233,9 +237,11 @@ export const createPoolSlice: StateCreator<
         })
       }
     },
-    refreshPoolData: async (marketData?: MarketDataType) => {
+    refreshPoolData: async ({ marketData, queryClient }) => {
       const account = get().account
       const currentChainId = get().currentChainId
+
+      console.log("refresh", { queryClient })
       const currentMarketData = marketData || get().currentMarketData
       const poolDataProviderContract = new UiPoolDataProvider({
         uiPoolDataProviderAddress:
@@ -359,13 +365,22 @@ export const createPoolSlice: StateCreator<
           )
         }
 
-        promises.push(
-          fetchBifrostVDotApy().then((vDotApy) => {
-            set({
-              vDotApy: BN(vDotApy.apy).div(100).toString(),
-            })
-          }),
-        )
+        if (queryClient) {
+          Object.entries(EXTERNAL_APY_QUERIES).forEach(([assetId, query]) => {
+            promises.push(
+              queryClient.fetchQuery(query).then((apy) => {
+                set((state) =>
+                  produce(state, (draft) => {
+                    draft.externalApyData.set(
+                      assetId,
+                      BN(apy).div(100).toString(),
+                    )
+                  }),
+                )
+              }),
+            )
+          })
+        }
 
         await Promise.all(promises)
       } catch (e) {
@@ -374,7 +389,7 @@ export const createPoolSlice: StateCreator<
     },
     refreshPoolV3Data: async () => {
       const v3MarketData = selectCurrentChainIdV3MarketData(get())
-      get().refreshPoolData(v3MarketData)
+      get().refreshPoolData({ marketData: v3MarketData })
     },
     generateApproval: (args: ApproveType, ops = {}) => {
       const provider = get().jsonRpcProvider(ops.chainId)

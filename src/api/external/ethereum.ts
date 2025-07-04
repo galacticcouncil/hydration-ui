@@ -37,19 +37,25 @@ export const useEthereumAccountBalance = (
   )
 }
 
-type LidoEthApr = number | undefined
+type LidoEthApr = number
 
 export const fetchLIDOEthAPR = async () => {
   const res = await fetch("https://eth-api.lido.fi/v1/protocol/steth/apr/sma")
   const data = await res.json()
 
-  return data?.data?.smaApr as number | undefined
+  return (data?.data?.smaApr ?? 0) as LidoEthApr
+}
+
+export const lidoEthAPRQuery: UseQueryOptions<LidoEthApr> = {
+  queryKey: QUERY_KEYS.lidoEthAPR,
+  queryFn: fetchLIDOEthAPR,
+  staleTime: millisecondsInHour,
+  refetchOnWindowFocus: false,
 }
 
 export const useLIDOEthAPR = (options: UseQueryOptions<LidoEthApr> = {}) => {
-  return useQuery<LidoEthApr>(QUERY_KEYS.lidoEthAPR, fetchLIDOEthAPR, {
-    refetchOnWindowFocus: false,
-    staleTime: millisecondsInHour,
+  return useQuery<LidoEthApr>({
+    ...lidoEthAPRQuery,
     ...options,
   })
 }
