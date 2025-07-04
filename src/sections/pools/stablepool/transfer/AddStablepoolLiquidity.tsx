@@ -35,7 +35,7 @@ import {
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
 import { scale, scaleHuman } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Separator } from "components/Separator/Separator"
 import { useAccountBalances } from "api/deposits"
 import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
@@ -50,6 +50,10 @@ import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aT
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { AddOmnipoolLiquiditySummary } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
+import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 
 type Props = {
   asset: TAsset
@@ -85,6 +89,9 @@ export const AddStablepoolLiquidity = ({
 
   const { account } = useAccount()
 
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
   const { data: accountBalances } = useAccountBalances()
   const { reserves, farms, isGDOT, poolId, isGETH, id, symbol } = usePoolData()
     .pool as TStablepool
@@ -103,11 +110,19 @@ export const AddStablepoolLiquidity = ({
     ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, isJoinFarms, farms) : []),
   ]
 
+  const isGETHSelected = isGETH && asset.id === GETH_ERC20_ASSET_ID
+  const isSwap = isGDOT || (isGETH && !isGETHSelected)
+
   const estimatedFees = useEstimatedFees(estimationTxs)
+  const maxBalanceToWithdraw = useMaxWithdrawAmount(asset.id)
 
   const balance = walletBalance ?? "0"
-  const balanceMax =
-    estimatedFees.accountCurrencyId === asset.id
+  const balanceMax = isGETHSelected
+    ? BN.min(
+        BN(maxBalanceToWithdraw).shiftedBy(asset.decimals),
+        balance,
+      ).toString()
+    : estimatedFees.accountCurrencyId === asset.id
       ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(asset.existentialDeposit)
@@ -135,9 +150,6 @@ export const AddStablepoolLiquidity = ({
 
   const [debouncedValue] = useDebouncedValue(value, 300)
 
-  const isGETHSelected = isGETH && asset.id === GETH_ERC20_ASSET_ID
-  const isSwap = isGDOT || (isGETH && !isGETHSelected)
-
   const { getSwapTx } = useBestTradeSell(
     isSwap ? asset.id : "",
     isGDOT ? GDOT_ERC20_ASSET_ID : isGETH && !!resolver ? id : "",
@@ -158,6 +170,12 @@ export const AddStablepoolLiquidity = ({
     asset,
     reserves,
     isGETHSelected,
+  })
+
+  const hfChange = useHealthFactorChange({
+    assetId: asset.id,
+    amount: debouncedValue,
+    action: ProtocolAction.withdraw,
   })
 
   const handleShares = (value: string) => {
@@ -391,6 +409,10 @@ export const AddStablepoolLiquidity = ({
           (key) => key !== "farm",
         ).length
 
+  const isHFDisabled = isGETH
+    ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
+    : false
+
   useEffect(() => {
     if (!farms.length || isStablepoolOnly) return
     if (isJoinFarmDisabled) {
@@ -426,7 +448,7 @@ export const AddStablepoolLiquidity = ({
                 onChange(v)
                 if (!isGETH || isGETHSelected) handleShares(v)
               }}
-              balance={BN(balance)}
+              balance={BN(balanceMax)}
               balanceMax={BN(balanceMax)}
               asset={asset.id}
               error={error?.message}
@@ -503,6 +525,26 @@ export const AddStablepoolLiquidity = ({
           />
         )}
 
+        {hfChange && (
+          <>
+            <SummaryRow
+              label={t("healthFactor")}
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+            />
+            <HealthFactorRiskWarning
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+              sx={{ mb: 16 }}
+            />
+          </>
+        )}
+
         {customErrors?.cap ? (
           <Alert variant="warning" css={{ marginBottom: 8 }}>
             {customErrors.cap.message}
@@ -526,7 +568,7 @@ export const AddStablepoolLiquidity = ({
           width: "auto",
         }}
       />
-      <Button variant="primary" disabled={isSubmitDisabled}>
+      <Button variant="primary" disabled={isSubmitDisabled || isHFDisabled}>
         {isJoinFarms
           ? t("liquidity.add.modal.button.joinFarms")
           : t("liquidity.add.modal.confirmButton")}
