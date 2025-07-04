@@ -1,4 +1,4 @@
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { TAsset, useAssets } from "providers/assets"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { FC } from "react"
@@ -110,7 +110,7 @@ const SupplyModalForm = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const accountAssetsMap = accountAssets?.accountAssetsMap
 
   const form = useFormContext<NewDepositFormValues>()

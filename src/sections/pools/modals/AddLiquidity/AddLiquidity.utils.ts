@@ -25,7 +25,7 @@ import { useXYKConsts } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { isStablepoolType } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
@@ -80,10 +80,10 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
 
   const { data: omnipoolFee } = useOmnipoolFee()
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
-  const { poolShare, sharesToGet } = useMemo(() => {
+  const { poolShare, sharesToGet, totalShares } = useMemo(() => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
@@ -93,13 +93,14 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
       const poolShare = BigNumber(sharesToGet).div(totalShares).times(100)
 
-      return { poolShare, sharesToGet }
+      return { poolShare, sharesToGet, totalShares: ommipoolAsset.shares }
     }
 
-    return { poolShare: BN_0, sharesToGet: BN_0 }
+    return { poolShare: BN_0, sharesToGet: BN_0, totalShares: BN_0 }
   }, [assetValue, ommipoolAsset, pool.meta.decimals])
 
   return {
+    totalShares,
     poolShare,
     sharesToGet,
     omnipoolFee,
@@ -122,7 +123,7 @@ export const useAddToOmnipoolZod = (
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   const omnipoolAssets = useOmnipoolDataObserver()
@@ -268,7 +269,7 @@ export const useXYKZodSchema = (
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { data: xykConsts } = useXYKConsts()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
 
   const assetAId = assetAMeta.id
   const assetBId = assetBMeta.id

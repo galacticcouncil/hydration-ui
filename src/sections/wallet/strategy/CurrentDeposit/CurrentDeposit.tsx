@@ -23,7 +23,7 @@ import {
   GETH_STABLESWAP_ASSET_ID,
 } from "utils/constants"
 import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
-import { TDeposit, useAccountAssets } from "api/deposits"
+import { TDeposit, useAccountBalances, useAccountPositions } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward"
 import Skeleton from "react-loading-skeleton"
@@ -49,15 +49,17 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
   const asset = getAssetWithFallback(assetId)
 
   const { data: accountAssets, isLoading: isAccountAssetsLoading } =
-    useAccountAssets()
+    useAccountBalances()
+  const { data: accountPositions } = useAccountPositions()
 
   const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
+  const positions = accountPositions?.accountAssetsMap.get(assetId)
 
   const depositBalance = new BigNumber(
     accountAsset?.balance?.balance || "0",
   ).shiftedBy(-asset.decimals)
 
-  const miningPositions = accountAsset?.omnipoolDeposits ?? []
+  const miningPositions = positions?.omnipoolDeposits ?? []
   const isMiningPositions = !!miningPositions.length
   const reward = useAssetReward(assetId)
 

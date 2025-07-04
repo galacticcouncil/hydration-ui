@@ -6,7 +6,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Button } from "components/Button/Button"
 import { NewDepositAssetField } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetField"
 import { NewDepositSummary } from "sections/wallet/strategy/NewDepositForm/NewDepositSummary"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -35,7 +35,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const accountAssetsMap = accountAssets?.accountAssetsMap
 
   const form = useFormContext<NewDepositFormValues>()

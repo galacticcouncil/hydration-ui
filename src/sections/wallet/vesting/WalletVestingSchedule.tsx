@@ -19,7 +19,7 @@ import { SClaimButton, SInner, SSchedule } from "./WalletVestingSchedule.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
 
 export const WalletVestingSchedule = () => {
@@ -29,7 +29,7 @@ export const WalletVestingSchedule = () => {
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const { data: claimableBalance } = useVestingTotalClaimableBalance()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
 
   const { data: nextClaimableDate } = useNextClaimableDate()
   const { data: paymentInfoData } = usePaymentInfo(api.tx.vesting.claim())

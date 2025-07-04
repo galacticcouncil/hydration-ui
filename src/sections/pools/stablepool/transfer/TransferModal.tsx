@@ -15,7 +15,6 @@ import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitM
 import {
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
-  GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
 } from "utils/constants"
 import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
@@ -82,7 +81,7 @@ export const TransferModal = ({
     const invalidAssets = isGDOT
       ? [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
       : isGETH
-        ? [GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
+        ? [GETH_STABLESWAP_ASSET_ID]
         : []
 
     return isGDOT || isGETH
@@ -95,7 +94,7 @@ export const TransferModal = ({
   const goBack = () => {
     const nextPage = page - 1
 
-    if (nextPage === 0 && isOnlyStablepool) {
+    if (nextPage === 0 && (isOnlyStablepool || skipOptions)) {
       onClose()
     }
 

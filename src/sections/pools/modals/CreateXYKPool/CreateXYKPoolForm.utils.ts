@@ -14,7 +14,7 @@ import { createToastMessages } from "state/toasts"
 import { ApiPromise } from "@polkadot/api"
 import { useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 type XYKAsset = {
   id: string
@@ -71,7 +71,7 @@ export const useAllowedXYKPoolAssets = () => {
   const degenMode = useSettingsStore(useShallow((s) => s.degenMode))
   const { isAdded } = useUserExternalTokenStore()
 
-  const { data } = useAccountAssets()
+  const { data } = useAccountBalances()
 
   return useMemo(() => {
     return [...all.values()].filter((asset) => {
@@ -100,7 +100,7 @@ export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
   const assetAMeta = isLoaded ? getAssetWithFallback(assetA ?? "") : null
   const assetBMeta = isLoaded ? getAssetWithFallback(assetB ?? "") : null
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const balanceA = assetA
     ? accountAssets?.accountAssetsMap.get(assetA)?.balance
     : undefined
