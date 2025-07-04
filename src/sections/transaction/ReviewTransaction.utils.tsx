@@ -727,7 +727,6 @@ export const useSendTransactionMutation = (
   const sendTx = useMutation(async ({ tx }) => {
     return await new Promise(async (resolve, reject) => {
       const txWalletAddress = account?.address
-
       if (isObservable(tx)) {
         try {
           const sub = tx.subscribe({

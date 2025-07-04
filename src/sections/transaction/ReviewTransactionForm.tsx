@@ -55,6 +55,8 @@ import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/He
 import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 import { TxType } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
+import { MimirWallet } from "sections/web3-connect/wallets/MimirWallet"
+import { useProviderRpcUrlStore } from "api/provider"
 
 type TxProps = Omit<Transaction, "id" | "tx" | "xcall"> & {
   tx: SubmittableExtrinsic<"promise"> | TxType
@@ -70,6 +72,7 @@ type Props = TxProps & {
   onSigned: (
     signed: SubmittableExtrinsic<"promise"> | Observable<TxEvent>,
   ) => void
+  onMultisigSigned: () => void
   onSignError?: (error: unknown) => void
   isLoading: boolean
 }
@@ -200,6 +203,41 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           return props.onEvmSigned({ evmTx, tx })
         }
 
+        if (wallet instanceof MimirWallet) {
+          const { rpcUrl } = useProviderRpcUrlStore.getState()
+
+          const polkadotSigner = await wallet.getMimirSigner()
+          const client = await getWs(rpcUrl)
+          const papi = client.getTypedApi(assethub)
+          const callData = Binary.fromHex(extrinsic.inner.toHex())
+          const tx = await papi.txFromCallData(callData)
+
+          const observer = tx.signSubmitAndWatch(polkadotSigner)
+
+          await new Promise<void>((resolve) => {
+            const clearSub = () => {
+              sub.unsubscribe()
+              client.destroy()
+            }
+
+            const sub = observer.subscribe({
+              next: (event) => {
+                if (
+                  event.type === "txBestBlocksState" &&
+                  event.found &&
+                  event.ok
+                ) {
+                  clearSub()
+                  resolve()
+                  props.onMultisigSigned()
+                }
+              },
+            })
+          })
+
+          return
+        }
+
         const srcChain = props?.xcallMeta?.srcChain
           ? (chainsMap.get(props.xcallMeta.srcChain) as AnyParachain)
           : null
@@ -212,6 +250,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           : address
 
         const { txOptions } = props
+
         if (srcChain && txOptions?.asset) {
           const signer = getPolkadotSignerFromPjs(
             address,

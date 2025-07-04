@@ -132,6 +132,7 @@ export const ReviewTransaction = (props: Transaction) => {
               props.onSubmitted?.()
               sendTx({ tx })
             }}
+            onMultisigSigned={() => onBack?.()}
             onPermitDispatched={(permit) => {
               props.onSubmitted?.()
               sendPermitTx(permit)

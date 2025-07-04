@@ -64,8 +64,10 @@ export const Web3ConnectProviderButton: FC<Props> = ({
 
   const isConnected = getStatus(type) === WalletProviderStatus.Connected
 
-  const isOpenableInMobileApp =
-    isMobileDevice() && !wallet.installed && !!wallet?.appLink
+  const isOpenableInDapp =
+    ((isMobileDevice() && !wallet.installed) ||
+      (!!wallet.isDappOnly && !!wallet.installed)) &&
+    !!wallet?.appLink
 
   const onClick = useCallback(() => {
     if (isConnected) {
@@ -85,7 +87,7 @@ export const Web3ConnectProviderButton: FC<Props> = ({
     return children({ onClick, isConnected })
   }
 
-  if (isOpenableInMobileApp) {
+  if (isOpenableInDapp) {
     return (
       <SProviderButtonLink href={wallet.appLink}>
         <Web3ConnectProviderIcon type={type} />

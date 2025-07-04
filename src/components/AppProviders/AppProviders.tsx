@@ -10,6 +10,7 @@ import { createComponent } from "@lit-labs/react"
 import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
 import { AssetsProvider } from "providers/assets"
+import { MimirProvider } from "mimir/MimirProvider"
 
 const AppsContextProvider = createComponent({
   tagName: "gc-context-provider",
@@ -40,26 +41,28 @@ const QuerySubscriptions = lazy(async () => ({
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <MigrationProvider>
-      <TooltipProvider>
-        <ProviderResolver>
-          <AssetsProvider>
-            <RpcProvider>
-              <ToastProvider />
-              <SkeletonTheme
-                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-                borderRadius={4}
-              >
-                <AppsContextProvider>
-                  {children} <Services />
-                </AppsContextProvider>
-              </SkeletonTheme>
-            </RpcProvider>
-          </AssetsProvider>
-        </ProviderResolver>
-      </TooltipProvider>
-    </MigrationProvider>
+    <MimirProvider>
+      <MigrationProvider>
+        <TooltipProvider>
+          <ProviderResolver>
+            <AssetsProvider>
+              <RpcProvider>
+                <ToastProvider />
+                <SkeletonTheme
+                  baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+                  highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+                  borderRadius={4}
+                >
+                  <AppsContextProvider>
+                    {children} <Services />
+                  </AppsContextProvider>
+                </SkeletonTheme>
+              </RpcProvider>
+            </AssetsProvider>
+          </ProviderResolver>
+        </TooltipProvider>
+      </MigrationProvider>
+    </MimirProvider>
   )
 }
 
