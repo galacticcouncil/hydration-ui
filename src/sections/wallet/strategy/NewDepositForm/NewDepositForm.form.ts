@@ -9,10 +9,10 @@ import {
 import * as z from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 const useSchema = () => {
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const accountAssetsMap = accountAssets?.accountAssetsMap
 
   return z

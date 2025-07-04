@@ -1,42 +1,10 @@
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { useQuery } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
-import { Maybe, undefinedNoop } from "utils/helpers"
 import { u32, Vec } from "@polkadot/types"
 import BigNumber from "bignumber.js"
-import { useRpcProvider } from "providers/rpcProvider"
-import { parseBalanceData } from "./balances"
 import { ITuple } from "@polkadot/types-codec/types"
 import { OrmlTokensAccountData } from "@polkadot/types/lookup"
-
-export const useAccountBalances = (
-  address: Maybe<AccountId32 | string>,
-  noRefresh?: boolean,
-) => {
-  const { api, isLoaded } = useRpcProvider()
-  return useQuery(
-    noRefresh
-      ? QUERY_KEYS.accountBalances(address)
-      : QUERY_KEYS.accountBalancesLive(address),
-    !!address ? getAccountBalances(api, address) : undefinedNoop,
-    { enabled: address != null && isLoaded },
-  )
-}
-
-export const useAccountsBalances = (addresses: string[]) => {
-  const { api, isLoaded } = useRpcProvider()
-
-  return useQuery(
-    QUERY_KEYS.accountsBalances(addresses),
-    () =>
-      Promise.all(
-        addresses.map((address) => getAccountBalances(api, address)()),
-      ),
-    { enabled: !!addresses.length && isLoaded },
-  )
-}
 
 export const getAccountBalanceData = async (
   api: ApiPromise,
@@ -45,32 +13,6 @@ export const getAccountBalanceData = async (
   return await api.call.currenciesApi.accounts<
     Vec<ITuple<[u32, OrmlTokensAccountData]>>
   >(accountId.toString())
-}
-
-const getAccountBalances = (
-  api: ApiPromise,
-  accountId: AccountId32 | string,
-) => {
-  return async () => {
-    const tokens = await getAccountBalanceData(api, accountId.toString())
-
-    const balances = tokens.map(([id, data]) => {
-      return parseBalanceData(data, id.toString(), accountId.toString())
-    })
-
-    const native = balances.find(
-      ({ assetId }) => assetId === NATIVE_ASSET_ID,
-    ) ?? {
-      accountId: accountId.toString(),
-      assetId: NATIVE_ASSET_ID,
-      balance: new BigNumber(0),
-      total: new BigNumber(0),
-      freeBalance: new BigNumber(0),
-      reservedBalance: new BigNumber(0),
-    }
-
-    return { native, balances, accountId }
-  }
 }
 
 export const getAccountAssetBalances =

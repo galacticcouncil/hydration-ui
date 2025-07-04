@@ -11,31 +11,57 @@ import { BN_0, BN_MILL, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import BigNumber from "bignumber.js"
 import { scaleHuman } from "utils/balance"
 import { TAsset } from "providers/assets"
+import { useOmnipoolDataObserver } from "api/omnipool"
+import { getSharesToGet } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
 
 type Args = {
   poolId: string
   asset: TAsset
   reserves: { asset_id: number; amount: string }[]
+  isGETHSelected: boolean
 }
 
-export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
-  const pool = useStableswapPool(poolId)
-  const bestNumber = useBestNumber()
-  const currentBlock = bestNumber.data?.relaychainBlockNumber
+export const useStablepoolShares = ({
+  poolId,
+  asset,
+  reserves,
+  isGETHSelected,
+}: Args) => {
+  const { dataMap } = useOmnipoolDataObserver()
+  const ommipoolAsset = dataMap?.get(asset.id)
+  const { data: pool } = useStableswapPool(poolId)
+
+  const { data: bestNumber } = useBestNumber()
+  const currentBlock = bestNumber?.relaychainBlockNumber
 
   const { data: issuances } = useTotalIssuances()
   const shareIssuance = issuances?.get(poolId)
 
-  return (amount: string) => {
-    if (!pool.data || !currentBlock || !shareIssuance || !asset?.decimals) {
+  const totalShares = isGETHSelected
+    ? ommipoolAsset?.shares
+    : shareIssuance?.toString()
+
+  const getShares = (amount: string) => {
+    if (isGETHSelected) {
+      return ommipoolAsset
+        ? getSharesToGet(
+            ommipoolAsset,
+            scale(amount, asset.decimals).toString(),
+          )
+            .shiftedBy(-asset.decimals)
+            .toString()
+        : undefined
+    }
+
+    if (!pool || !currentBlock || !shareIssuance || !asset?.decimals) {
       return undefined
     }
 
     const amplification = calculate_amplification(
-      pool.data.initialAmplification.toString(),
-      pool.data.finalAmplification.toString(),
-      pool.data.initialBlock.toString(),
-      pool.data.finalBlock.toString(),
+      pool.initialAmplification.toString(),
+      pool.finalAmplification.toString(),
+      pool.initialBlock.toString(),
+      pool.finalBlock.toString(),
       currentBlock.toString(),
     )
 
@@ -46,14 +72,14 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
       },
     ]
 
-    const pegs = StableMath.defaultPegs(pool.data.assets.length)
+    const pegs = StableMath.defaultPegs(pool.assets.length)
 
     const shares = calculate_shares(
       JSON.stringify(reserves),
       JSON.stringify(assets),
       amplification,
       shareIssuance.toString(),
-      new BigNumber(pool.data.fee.toString()).div(BN_MILL).toString(),
+      new BigNumber(pool.fee.toString()).div(BN_MILL).toString(),
       JSON.stringify(pegs),
     )
 
@@ -62,4 +88,6 @@ export const useStablepoolShares = ({ poolId, asset, reserves }: Args) => {
       BN_0,
     ).toString()
   }
+
+  return { getShares, totalShares }
 }

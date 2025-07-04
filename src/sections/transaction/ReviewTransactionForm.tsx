@@ -29,7 +29,10 @@ import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
 import BN from "bignumber.js"
 import { H160, isEvmAccount } from "utils/evm"
-import { isSetCurrencyExtrinsic } from "sections/transaction/ReviewTransaction.utils"
+import {
+  getTransactionJSON,
+  isSetCurrencyExtrinsic,
+} from "sections/transaction/ReviewTransaction.utils"
 import {
   EthereumSigner,
   PermitResult,
@@ -165,12 +168,16 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
         if (wallet?.signer instanceof EthereumSigner) {
           const txData = tx.method.toHex()
-          const shouldAddTxWeight = isTxType(props.tx) && !!props.tx.extraGas
+
+          const shouldAddTxWeight = isTxType(props.tx)
+            ? !!props.tx.extraGas
+            : !!getTransactionJSON(tx)?.args?.extra_gas
 
           if (shouldUsePermit) {
             const nonce = customNonce
               ? parseFloat(customNonce)
               : permitNonce ?? 0
+
             const permit = await wallet.signer.getPermit(txData, {
               nonce,
               ...(shouldAddTxWeight && { txWeight }),

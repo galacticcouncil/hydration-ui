@@ -13,6 +13,8 @@ import { createSingletonSubscriber } from "./utils/createSingletonSubscriber"
 import { getQueryParameter } from "./utils/queryParams"
 import { createV3MigrationSlice, V3MigrationSlice } from "./v3MigrationSlice"
 import { createWalletSlice, WalletSlice } from "./walletSlice"
+import { QueryClient } from "@tanstack/react-query"
+import { POLLING_INTERVAL } from "sections/lending/ui-config/queries"
 
 enableMapSet()
 
@@ -61,21 +63,22 @@ if (typeof document !== "undefined") {
   }
 }
 
-export const usePoolDataSubscription = createSingletonSubscriber(() => {
-  return useRootStore.getState().refreshPoolData()
-}, 60_000)
+export const usePoolDataSubscription = (queryClient: QueryClient) =>
+  createSingletonSubscriber(() => {
+    return useRootStore.getState().refreshPoolData({ queryClient })
+  }, POLLING_INTERVAL)
 
 export const usePoolDataV3Subscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolV3Data()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const useIncentiveDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshIncentiveData()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const useGhoDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshGhoData()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const useCurrentMarketData = () => {
   const { currentMarketData, data } = useRootStore.getState()

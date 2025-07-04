@@ -12,6 +12,7 @@ import {
   SInnerContainer,
 } from "./MoneyMarketBanner.styled"
 import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectModalButton"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 
 type MoneyMarketBannerProps = {
   className?: string
@@ -23,7 +24,11 @@ export const MoneyMarketBanner: FC<MoneyMarketBannerProps> = ({
   const { t } = useTranslation()
   const { account, isBound } = useEvmAccount()
 
-  const { mutate: onBind } = useEvmAccountBind()
+  const refetchMarketData = useRefetchMarketData()
+
+  const { mutate: onBind } = useEvmAccountBind({
+    onSuccess: refetchMarketData,
+  })
 
   return (
     <SContainer className={className}>

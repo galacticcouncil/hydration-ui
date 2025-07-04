@@ -191,37 +191,37 @@ export const selectFormattedReserves = (
   return produce(formattedPoolReserves, (draft) => {
     const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
 
-    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
+    const externalApyDataEntries = [...state.externalApyData.entries()]
 
-    if (vDotReserve) {
-      const vDotSupplyApy = valueToBigNumber(vDotReserve.supplyAPY).plus(
-        state.vDotApy,
-      )
-
-      const vDotBorrowApy = valueToBigNumber(
-        vDotReserve.variableBorrowAPY,
-      ).plus(state.vDotApy)
-
-      vDotReserve.supplyAPY = vDotSupplyApy.toString()
-      vDotReserve.variableBorrowAPY = vDotBorrowApy.toString()
-
-      const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
-      const gDotReserve = reserveMap.get(
-        getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
-      )
-
-      if (gDotReserve && dotReserve) {
-        const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
-        const vdotApyHalf = vDotSupplyApy.div(2)
-
-        // @TODO: Add GDOT LP Fee when available
-        const gdotLpFee = "0"
-
-        gDotReserve.supplyAPY = vdotApyHalf
-          .plus(dotApyHalf)
-          .plus(gdotLpFee)
+    externalApyDataEntries.forEach(([assetId, apy]) => {
+      const reserve = reserveMap.get(getAddressFromAssetId(assetId))
+      if (reserve) {
+        reserve.supplyAPY = valueToBigNumber(reserve.supplyAPY)
+          .plus(apy)
+          .toString()
+        reserve.variableBorrowAPY = valueToBigNumber(reserve.variableBorrowAPY)
+          .plus(apy)
           .toString()
       }
+    })
+
+    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
+    const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
+    const gDotReserve = reserveMap.get(
+      getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
+    )
+
+    if (gDotReserve && dotReserve && vDotReserve) {
+      const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
+      const vdotApyHalf = valueToBigNumber(vDotReserve.supplyAPY).div(2)
+
+      // @TODO: Add GDOT LP Fee when available
+      const gdotLpFee = "0"
+
+      gDotReserve.supplyAPY = vdotApyHalf
+        .plus(dotApyHalf)
+        .plus(gdotLpFee)
+        .toString()
     }
   })
 }

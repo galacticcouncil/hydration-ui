@@ -7,7 +7,10 @@ import SettingsIcon from "assets/icons/SettingsIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getEmodeMessage } from "./EmodeNaming"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import {
+  useAccount,
+  useEvmAccount,
+} from "sections/web3-connect/Web3Connect.utils"
 
 type EmodeButtonProps = {
   className?: string
@@ -18,6 +21,8 @@ export const EmodeButton: FC<EmodeButtonProps> = ({ className }) => {
   const { account } = useAccount()
   const { user, eModes } = useAppDataContext()
 
+  const { isBound } = useEvmAccount()
+
   const isEModeDisabled = user.userEmodeCategoryId === 0
 
   return (
@@ -27,7 +32,7 @@ export const EmodeButton: FC<EmodeButtonProps> = ({ className }) => {
       </Text>
       <Button
         size="micro"
-        disabled={!account}
+        disabled={!account || !isBound}
         onClick={() =>
           openEmode(
             isEModeDisabled ? EmodeModalType.ENABLE : EmodeModalType.SWITCH,

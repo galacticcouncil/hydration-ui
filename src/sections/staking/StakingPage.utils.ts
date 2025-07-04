@@ -16,7 +16,7 @@ import { useMemo } from "react"
 import { useOpenGovReferendas } from "api/democracy"
 import { scaleHuman } from "utils/balance"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
 import { useIncreaseStake } from "./sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
 import { useShallow } from "hooks/useShallow"
@@ -125,7 +125,7 @@ export const useStakeData = () => {
   const stake = useStake(account?.address)
   const { data: hdxSupply, isLoading: isSupplyLoading } =
     useHDXSupplyFromSubscan()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
 
   const locks = useTokenLocks(native.id)
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([

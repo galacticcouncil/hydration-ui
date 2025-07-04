@@ -14,7 +14,7 @@ import { theme } from "theme"
 import { JoinFarmsButton } from "sections/pools/farms/modals/join/JoinFarmsButton"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { SPositionContainer } from "sections/pools/pool/myPositions/MyPositions.styled"
-import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
+import { useAccountBalances, useRefetchAccountAssets } from "api/deposits"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
 import { useXYKSDKPools } from "api/xyk"
 
@@ -28,7 +28,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
     xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
     []
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const shareTokensBalance = accountAssets?.accountAssetsMap.get(
     pool.id,
   )?.balance

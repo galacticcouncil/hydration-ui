@@ -35,9 +35,8 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountAssets: (address: string | undefined) => [
-    QUERY_KEY_PREFIX,
-    "accountAssets",
+  accountPositions: (address: string | undefined) => [
+    "accountPositions",
     address,
   ],
   accountClaimableFarmValues: (address: string | undefined) => [

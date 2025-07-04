@@ -13,7 +13,7 @@ import BN from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { Switch } from "components/Switch/Switch"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
 
 type Props = {
@@ -35,7 +35,7 @@ export const ReviewTransactionAuthorTip: FC<Props> = ({
   const { getAssetPrice } = useAssetsPrice([NATIVE_ASSET_ID])
   const displayPrice = getAssetPrice(NATIVE_ASSET_ID).price
 
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
 
   const asset = native
   const tokenBalance = asset

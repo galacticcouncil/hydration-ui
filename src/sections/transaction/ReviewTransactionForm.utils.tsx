@@ -27,7 +27,7 @@ import {
   useNextEvmPermitNonce,
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
 import BN from "bignumber.js"
 import { ProtocolAction } from "@aave/contract-helpers"
@@ -122,7 +122,7 @@ export const useTransactionValues = ({
     native.id,
     accountFeePaymentId,
   )
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const feeAssetBalance = accountFeePaymentId
     ? accountAssets.data?.accountAssetsMap.get(accountFeePaymentId)?.balance
     : undefined

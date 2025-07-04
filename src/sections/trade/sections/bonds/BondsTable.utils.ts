@@ -10,7 +10,7 @@ import { format } from "date-fns"
 import BN from "bignumber.js"
 import { Transaction } from "./table/transactions/Transactions.utils"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 export const useBondsTableData = ({
   id,
@@ -28,7 +28,7 @@ export const useBondsTableData = ({
   const lbpPools = useLbpPool()
   const bondsData = (id ? bonds.filter((bond) => bond.id === id) : bonds) ?? []
 
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const balances = pluck("id", bonds).map(
     (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
   )
