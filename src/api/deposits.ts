@@ -190,6 +190,10 @@ export const useAccountPositions = (givenAddress?: string) => {
   const { api, isLoaded } = useRpcProvider()
   const { data: uniqueIds } = useUniqueIds()
 
+  const setIsPositions = useAccountData(
+    useShallow((state) => state.setIsPositions),
+  )
+
   const address = givenAddress ?? account?.address
 
   return useQuery(
@@ -331,6 +335,12 @@ export const useAccountPositions = (givenAddress?: string) => {
             })
           })
 
+          setIsPositions(
+            !!xykDeposits.length ||
+              !!omnipoolDeposits.length ||
+              !!liquidityPositions.length,
+          )
+
           return {
             liquidityPositions,
             depositLiquidityPositions,
@@ -353,8 +363,6 @@ export const useAccountBalances = (givenAddress?: string) => {
   const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback, isShareToken, isBond } = useAssets()
 
-  const { data: uniqueIds } = useUniqueIds()
-
   const setIsPositions = useAccountData(
     useShallow((state) => state.setIsPositions),
   )
@@ -363,7 +371,7 @@ export const useAccountBalances = (givenAddress?: string) => {
 
   return useQuery(
     QUERY_KEYS.accountBalancesLive(address),
-    address != null && uniqueIds
+    address != null
       ? async () => {
           const accountBalances = await getAccountBalanceData(api, address)
 
@@ -378,7 +386,7 @@ export const useAccountBalances = (givenAddress?: string) => {
         }
       : undefinedNoop,
     {
-      enabled: !!address && isLoaded && !!uniqueIds,
+      enabled: !!address && isLoaded,
       staleTime: millisecondsInHour,
       select: (data) => {
         const { balances = [] } = data ?? {}
