@@ -241,7 +241,6 @@ export const createPoolSlice: StateCreator<
       const account = get().account
       const currentChainId = get().currentChainId
 
-      console.log("refresh", { queryClient })
       const currentMarketData = marketData || get().currentMarketData
       const poolDataProviderContract = new UiPoolDataProvider({
         uiPoolDataProviderAddress:
