@@ -12,7 +12,7 @@ import { RemoveLiquidityInput } from "./components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useXYKSDKPools, useXYKTotalLiquidity } from "api/xyk"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BN from "bignumber.js"
 
 type RemoveLiquidityProps = {
@@ -41,7 +41,7 @@ export const RemoveXYKLiquidityForm = ({
 
   const totalLiquidity = useXYKTotalLiquidity(pool.poolAddress)
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const shareTokenBalance = accountAssets?.accountAssetsMap.get(
     pool.id,
   )?.balance

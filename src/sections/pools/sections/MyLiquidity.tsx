@@ -122,7 +122,7 @@ const MyLiquidityData = ({ id }: { id: number | undefined }) => {
   const stablePoolTotal = useMemo(() => {
     if (pools.data) {
       return pools.data.reduce((acc, pool) => {
-        if (pool.meta.isStableSwap && pool.balance && pool.spotPrice) {
+        if (pool.isStablePool && pool.balance && pool.spotPrice) {
           acc = acc.plus(
             BigNumber(pool.balance.freeBalance)
               .shiftedBy(-pool.meta.decimals)

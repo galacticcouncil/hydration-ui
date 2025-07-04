@@ -95,7 +95,7 @@ export const TransferModal = ({
   const goBack = () => {
     const nextPage = page - 1
 
-    if (nextPage === 0 && isOnlyStablepool) {
+    if (nextPage === 0 && (isOnlyStablepool || skipOptions)) {
       onClose()
     }
 

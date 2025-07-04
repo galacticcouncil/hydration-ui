@@ -84,6 +84,7 @@ export const usePriceSubscriber = () => {
       enabled: isLoaded && !!stableCoinId && !!api.router,
       notifyOnChangeProps: [],
       staleTime: 10000,
+      refetchOnWindowFocus: true,
     },
   )
 }

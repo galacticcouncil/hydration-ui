@@ -36,7 +36,7 @@ import { scale, scaleHuman } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
 import { useEffect } from "react"
 import { Separator } from "components/Separator/Separator"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
@@ -83,7 +83,7 @@ export const AddStablepoolLiquidity = ({
 
   const { account } = useAccount()
 
-  const { data: accountBalances } = useAccountAssets()
+  const { data: accountBalances } = useAccountBalances()
   const { reserves, farms, isGDOT, poolId, isGETH, id, symbol } = usePoolData()
     .pool as TStablepool
 

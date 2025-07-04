@@ -22,7 +22,7 @@ import BN from "bignumber.js"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useXYKPoolTradeVolumes } from "./pool/details/PoolDetails.utils"
 import { scaleHuman } from "utils/balance"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances, useAccountPositions } from "api/deposits"
 import { TShareToken, useAssets } from "providers/assets"
 import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
@@ -91,7 +91,8 @@ export const usePools = () => {
 
   const { data: omnipoolAssets, isLoading: isOmnipoolAssetLoading } =
     useOmnipoolDataObserver()
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
+  const { data: accountPositions } = useAccountPositions()
   const { data: stablepoolData = [] } = useStablepoolsData()
 
   const assetsId = useMemo(
@@ -156,6 +157,7 @@ export const usePools = () => {
         const meta = getAssetWithFallback(asset.id)
 
         const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
+        const positions = accountPositions?.accountAssetsMap.get(asset.id)
 
         const spotPrice = getAssetPrice(asset.id).price
         const tradability = !isStablePool
@@ -219,9 +221,10 @@ export const usePools = () => {
           totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
         }
 
-        const filteredOmnipoolPositions = accountAsset?.liquidityPositions ?? []
-        const filteredMiningPositions = accountAsset?.omnipoolDeposits ?? []
-        const isPositions = !!accountAsset?.isPoolPositions
+        const filteredOmnipoolPositions = positions?.liquidityPositions ?? []
+        const filteredMiningPositions = positions?.omnipoolDeposits ?? []
+        const isPositions =
+          !!positions?.isPoolPositions || !!accountAsset?.isPoolPositions
 
         const metaOverride = isGDOT
           ? getAssetWithFallback(GDOT_ERC20_ASSET_ID)
@@ -301,6 +304,7 @@ export const usePools = () => {
     omnipoolMetrics,
     stablepoolData,
     gdotBorrowApy.totalSupplyApy,
+    accountPositions,
   ])
 
   useEffect(() => {
@@ -330,7 +334,9 @@ export const usePools = () => {
 export const useXYKPools = () => {
   const { data: xykConsts } = useXYKConsts()
   const { shareTokens } = useAssets()
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
+  const { data: accountPositions } = useAccountPositions()
+
   const addresses = useValidXYKPoolAddresses(
     useShallow((state) => state.addresses),
   )
@@ -384,6 +390,7 @@ export const useXYKPools = () => {
     const data = allShareTokens
       .map((shareToken) => {
         const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
+        const positions = accountPositions?.accountAssetsMap.get(shareToken.id)
         const balance = accountAsset?.balance
 
         const { id: shareTokenId, poolAddress, isInvalid } = shareToken
@@ -413,8 +420,9 @@ export const useXYKPools = () => {
           allFarms?.get(shareToken.poolAddress) ?? {}
         const totalFee = !isFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
 
-        const miningPositions = accountAsset?.xykDeposits ?? []
-        const isPositions = !!accountAsset?.isPoolPositions
+        const miningPositions = positions?.xykDeposits ?? []
+        const isPositions =
+          !!positions?.isPoolPositions || !!accountAsset?.isPoolPositions
 
         if (!isInvalid) {
           if (!tvlDisplay.isNaN()) {
@@ -477,6 +485,7 @@ export const useXYKPools = () => {
     allFarms,
     fee,
     isVolumeLoading,
+    accountPositions,
   ])
 
   useEffect(() => {

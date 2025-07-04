@@ -2,7 +2,7 @@ import { u32 } from "@polkadot/types"
 import { AssetSelect } from "components/AssetSelect/AssetSelect"
 import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 export const WalletTransferAssetSelect = (props: {
   name: string
@@ -25,7 +25,7 @@ export const WalletTransferAssetSelect = (props: {
   error?: string
 }) => {
   const { t } = useTranslation()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const balance = accountAssets.data?.accountAssetsMap.get(
     props.asset.toString(),
   )?.balance?.balance

@@ -25,7 +25,7 @@ import { useXYKConsts } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { isStablepoolType } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
@@ -80,7 +80,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
 
   const { data: omnipoolFee } = useOmnipoolFee()
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   const { poolShare, sharesToGet } = useMemo(() => {
@@ -122,7 +122,7 @@ export const useAddToOmnipoolZod = (
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   const omnipoolAssets = useOmnipoolDataObserver()
@@ -268,7 +268,7 @@ export const useXYKZodSchema = (
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { data: xykConsts } = useXYKConsts()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
 
   const assetAId = assetAMeta.id
   const assetBId = assetBMeta.id

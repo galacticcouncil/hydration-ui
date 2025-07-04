@@ -4,7 +4,7 @@ import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { BN_NAN } from "utils/constants"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances, useAccountPositions } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTotalIssuances } from "api/totalIssuance"
 import BigNumber from "bignumber.js"
@@ -14,39 +14,34 @@ export const useOmnipoolPositionsData = ({
   search,
   address,
 }: { search?: string; address?: string } = {}) => {
-  const accountPositionsQuery = useAccountAssets(address)
-  const positions = useMemo(
-    () => accountPositionsQuery.data?.liquidityPositions ?? [],
-    [accountPositionsQuery.data?.liquidityPositions],
-  )
+  const { data: accountPositions, isInitialLoading } = useAccountPositions()
+  const { liquidityPositions = [] } = accountPositions ?? {}
 
-  const positionIds = positions.map((position) => position.assetId)
+  const positionIds = liquidityPositions.map((position) => position.assetId)
 
   const { getData } = useLiquidityPositionData(positionIds)
 
-  const isLoading = accountPositionsQuery.isInitialLoading
-
   const data = useMemo(() => {
-    const rows = positions.reduce<TLPData[]>((acc, position) => {
+    const rows = liquidityPositions.reduce<TLPData[]>((acc, position) => {
       const data = getData(position)
       if (data) acc.push(data)
       return acc
     }, [])
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
-  }, [getData, positions, search])
+  }, [getData, liquidityPositions, search])
 
   return {
     data,
-    isLoading,
-    isInitialLoading: isLoading,
+    isLoading: isInitialLoading,
+    isInitialLoading,
   }
 }
 
 export const useXykPositionsData = ({ search }: { search?: string } = {}) => {
   const { isShareToken } = useAssets()
   const { account } = useAccount()
-  const { data: accountAssets } = useAccountAssets(account?.address)
+  const { data: accountAssets } = useAccountBalances(account?.address)
 
   const accountShareTokens = useMemo(() => {
     const accountShareTokens = []

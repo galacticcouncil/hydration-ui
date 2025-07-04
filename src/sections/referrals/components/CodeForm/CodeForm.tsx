@@ -26,7 +26,7 @@ import { useAccountCurrency } from "api/payments"
 import { usePaymentInfo } from "api/transaction"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BN from "bignumber.js"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
@@ -58,7 +58,7 @@ export const CodeForm = () => {
     ),
   )
 
-  const balances = useAccountAssets()
+  const balances = useAccountBalances()
 
   const linkFeeBalance = registrationFee.data?.id
     ? balances.data?.accountAssetsMap.get(registrationFee.data.id)?.balance

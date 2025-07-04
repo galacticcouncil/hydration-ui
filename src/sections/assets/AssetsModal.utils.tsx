@@ -6,7 +6,7 @@ import { Maybe } from "utils/helpers"
 import { AssetsModalContent } from "./AssetsModal"
 import { TAsset, TBond, useAssets } from "providers/assets"
 import BN from "bignumber.js"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { TBalance } from "api/balances"
 import { useAssetsPrice } from "state/displayPrice"
 
@@ -152,7 +152,7 @@ export const useAssetsData = ({
     tokens: tokenAssets,
     erc20,
   } = useAssets()
-  const { data } = useAccountAssets()
+  const { data } = useAccountBalances()
 
   const {
     tokensWithBalance,

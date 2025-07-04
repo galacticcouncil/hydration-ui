@@ -6,7 +6,7 @@ import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/
 import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useUserBorrowSummary } from "api/borrow"
 
@@ -52,7 +52,7 @@ export const useWalletAssetsTotals = ({
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
   const { data: balances, isLoading: isAccountAssetsLoading } =
-    useAccountAssets(address)
+    useAccountBalances(address)
 
   const shareTokenBalances = useMemo(
     () => [...(balances?.accountShareTokensMap.values() ?? [])],

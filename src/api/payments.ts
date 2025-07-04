@@ -12,7 +12,7 @@ import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import { uniqBy } from "utils/rx"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useAccountAssets } from "./deposits"
+import { useAccountBalances } from "./deposits"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 
@@ -160,7 +160,7 @@ export const useAccountFeePaymentAssets = () => {
   const { featureFlags } = useRpcProvider()
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const accountFeePaymentAsset = useAccountCurrency(account?.address)
   const feePaymentAssetId = accountFeePaymentAsset.data
 
