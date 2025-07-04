@@ -84,11 +84,15 @@ export const LiquidityPositionsBannerWrapper = () => {
   const { setWarnings } = useWarningsStore()
 
   const { data: accounAssets, isSuccess } = useAccountAssets()
-  const { omnipoolDeposits = [] } = accounAssets ?? {}
+  const { omnipoolDeposits = [], liquidityPositions = [] } = accounAssets ?? {}
 
-  const hasInvalidPositions = omnipoolDeposits.some((position) =>
-    INVALID_ASSETS.includes(position.data.ammPoolId),
-  )
+  const hasInvalidPositions =
+    omnipoolDeposits.some((position) =>
+      INVALID_ASSETS.includes(position.data.ammPoolId),
+    ) ||
+    liquidityPositions.some((position) =>
+      INVALID_ASSETS.includes(position.assetId),
+    )
 
   useEffect(() => {
     if (isSuccess) {
