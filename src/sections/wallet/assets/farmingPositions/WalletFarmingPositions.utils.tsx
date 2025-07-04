@@ -180,7 +180,7 @@ export const useFarmingPositionsData = ({
 } = {}) => {
   const { getShareTokenByAddress, getAsset } = useAssets()
   const { data: accountPositions } = useAccountPositions()
-  const { omnipoolDeposits = [], xykDeposits = [] } = accountPositions ?? {}
+  const { omnipoolDeposits, xykDeposits } = accountPositions ?? {}
 
   const { omnipool, xyk } = useAllFarmDeposits()
 
@@ -190,7 +190,7 @@ export const useFarmingPositionsData = ({
   const isLoading = queries.some((q) => q.isLoading)
 
   const data = useMemo(() => {
-    if (!omnipoolDeposits || !bestNumber.data) return []
+    if (!omnipoolDeposits || !xykDeposits || !bestNumber.data) return []
 
     const rows = [...omnipoolDeposits, ...xykDeposits]
       .map((deposit) => {

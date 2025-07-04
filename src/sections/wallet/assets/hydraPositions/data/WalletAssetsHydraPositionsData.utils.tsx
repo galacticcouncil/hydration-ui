@@ -15,18 +15,21 @@ export const useOmnipoolPositionsData = ({
   address,
 }: { search?: string; address?: string } = {}) => {
   const { data: accountPositions, isInitialLoading } = useAccountPositions()
-  const { liquidityPositions = [] } = accountPositions ?? {}
+  const { liquidityPositions } = accountPositions ?? {}
 
-  const positionIds = liquidityPositions.map((position) => position.assetId)
+  const positionIds = liquidityPositions?.map((position) => position.assetId)
 
   const { getData } = useLiquidityPositionData(positionIds)
 
   const data = useMemo(() => {
-    const rows = liquidityPositions.reduce<TLPData[]>((acc, position) => {
-      const data = getData(position)
-      if (data) acc.push(data)
-      return acc
-    }, [])
+    const rows = (liquidityPositions ?? []).reduce<TLPData[]>(
+      (acc, position) => {
+        const data = getData(position)
+        if (data) acc.push(data)
+        return acc
+      },
+      [],
+    )
 
     return search ? arraySearch(rows, search, ["symbol", "name"]) : rows
   }, [getData, liquidityPositions, search])
