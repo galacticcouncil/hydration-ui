@@ -83,7 +83,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const { data: accountAssets } = useAccountBalances()
   const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
-  const { poolShare, sharesToGet } = useMemo(() => {
+  const { poolShare, sharesToGet, totalShares } = useMemo(() => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
@@ -93,13 +93,14 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
       const poolShare = BigNumber(sharesToGet).div(totalShares).times(100)
 
-      return { poolShare, sharesToGet }
+      return { poolShare, sharesToGet, totalShares: ommipoolAsset.shares }
     }
 
-    return { poolShare: BN_0, sharesToGet: BN_0 }
+    return { poolShare: BN_0, sharesToGet: BN_0, totalShares: BN_0 }
   }, [assetValue, ommipoolAsset, pool.meta.decimals])
 
   return {
+    totalShares,
     poolShare,
     sharesToGet,
     omnipoolFee,

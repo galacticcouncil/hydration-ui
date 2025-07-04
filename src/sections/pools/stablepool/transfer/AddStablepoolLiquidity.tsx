@@ -24,6 +24,7 @@ import {
   BN_100,
   BN_MILL,
   GDOT_ERC20_ASSET_ID,
+  GETH_ERC20_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
@@ -48,6 +49,7 @@ import { useStableswapPool } from "api/stableswap"
 import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useLiquidityLimit } from "state/liquidityLimit"
+import { AddOmnipoolLiquiditySummary } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 
 type Props = {
   asset: TAsset
@@ -133,10 +135,11 @@ export const AddStablepoolLiquidity = ({
 
   const [debouncedValue] = useDebouncedValue(value, 300)
 
-  const isSwap = isGDOT || isGETH
+  const isGETHSelected = isGETH && asset.id === GETH_ERC20_ASSET_ID
+  const isSwap = isGDOT || (isGETH && !isGETHSelected)
 
   const { getSwapTx } = useBestTradeSell(
-    asset.id,
+    isSwap ? asset.id : "",
     isGDOT ? GDOT_ERC20_ASSET_ID : isGETH && !!resolver ? id : "",
     debouncedValue ?? "0",
     isGETH
@@ -150,10 +153,11 @@ export const AddStablepoolLiquidity = ({
       : undefined,
   )
 
-  const getShares = useStablepoolShares({
+  const { getShares, totalShares } = useStablepoolShares({
     poolId,
     asset,
     reserves,
+    isGETHSelected,
   })
 
   const handleShares = (value: string) => {
@@ -167,6 +171,70 @@ export const AddStablepoolLiquidity = ({
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (asset.decimals == null) {
       throw new Error("Missing asset meta")
+    }
+
+    const shiftedAmount = scale(
+      values.amount,
+      STABLEPOOL_TOKEN_DECIMALS,
+    ).toString()
+    const secondStepperLabel = t(
+      `liquidity.add.modal.geth.stepper.second${isJoinFarms ? ".joinFarms" : ""}`,
+    )
+
+    const addToOmnipoolToasts = createToastMessages(
+      `liquidity.add.modal.${isJoinFarms ? "andJoinFarms." : ""}toast`,
+      {
+        t,
+        tOptions: {
+          value: BN(values.amount),
+          symbol,
+          where: "Omnipool",
+        },
+        components: ["span", "span.highlight"],
+      },
+    )
+
+    if (isGETHSelected) {
+      const shares = shiftedAmount
+
+      const limitShares = BN(shares)
+        .times(BN_100.minus(addLiquidityLimit).div(BN_100))
+        .toFixed(0)
+
+      const secondTx = api.tx.dispatcher.dispatchWithExtraGas(
+        isJoinFarms
+          ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+              farms.map<[string, string]>((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ]),
+              id,
+              scale(values.value, STABLEPOOL_TOKEN_DECIMALS).toString(),
+              limitShares,
+            )
+          : api.tx.omnipool.addLiquidityWithLimit(id, shares, limitShares),
+        AAVE_EXTRA_GAS,
+      )
+
+      createTransaction(
+        {
+          tx: secondTx,
+          title: secondStepperLabel,
+        },
+        {
+          onSuccess: (result) => onSuccess(result, shiftedAmount),
+          onSubmitted: () => {
+            onSubmitted(shares)
+            form.reset()
+          },
+          onError: () => onClose(),
+          onClose,
+          onBack: () => {},
+          toast: addToOmnipoolToasts,
+        },
+      )
+
+      return
     }
 
     const toast = createToastMessages("liquidity.add.modal.toast", {
@@ -215,11 +283,7 @@ export const AddStablepoolLiquidity = ({
         title: isGETH ? t("liquidity.add.modal.geth.stepper.first") : undefined,
       },
       {
-        onSuccess: (result) =>
-          onSuccess(
-            result,
-            scale(values.amount, STABLEPOOL_TOKEN_DECIMALS).toString(),
-          ),
+        onSuccess: (result) => onSuccess(result, shiftedAmount),
         onSubmitted: () => {
           if (!isTwoStepsTx) {
             onSubmitted(shares)
@@ -236,7 +300,7 @@ export const AddStablepoolLiquidity = ({
                 state: "active",
               },
               {
-                label: t("liquidity.add.modal.geth.stepper.second"),
+                label: secondStepperLabel,
                 state: "todo",
               },
             ]
@@ -276,14 +340,10 @@ export const AddStablepoolLiquidity = ({
     await createTransaction(
       {
         tx: secondTx,
-        title: t("liquidity.add.modal.geth.stepper.second"),
+        title: secondStepperLabel,
       },
       {
-        onSuccess: (result) =>
-          onSuccess(
-            result,
-            scale(values.amount, STABLEPOOL_TOKEN_DECIMALS).toString(),
-          ),
+        onSuccess: (result) => onSuccess(result, shiftedAmount),
         onSubmitted: () => {
           onSubmitted(shares)
           form.reset()
@@ -292,24 +352,16 @@ export const AddStablepoolLiquidity = ({
         onClose,
         onBack: () => {},
         steps: [
-          { label: t("liquidity.add.modal.geth.stepper.first"), state: "done" },
           {
-            label: t("liquidity.add.modal.geth.stepper.second"),
+            label: t("liquidity.add.modal.geth.stepper.first"),
+            state: "done",
+          },
+          {
+            label: secondStepperLabel,
             state: "active",
           },
         ],
-        toast: createToastMessages(
-          `liquidity.add.modal.${isJoinFarms ? "andJoinFarms." : ""}toast`,
-          {
-            t,
-            tOptions: {
-              value: BN(values.amount),
-              symbol,
-              where: "Omnipool",
-            },
-            components: ["span", "span.highlight"],
-          },
-        ),
+        toast: addToOmnipoolToasts,
       },
     )
   }
@@ -372,7 +424,7 @@ export const AddStablepoolLiquidity = ({
               value={value}
               onChange={(v) => {
                 onChange(v)
-                if (!isGETH) handleShares(v)
+                if (!isGETH || isGETHSelected) handleShares(v)
               }}
               balance={BN(balance)}
               balanceMax={BN(balanceMax)}
@@ -408,7 +460,13 @@ export const AddStablepoolLiquidity = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        {isGDOT || isGETH ? (
+        {isGETHSelected ? (
+          <AddOmnipoolLiquiditySummary
+            asset={asset}
+            sharesToGet={scale(shares, STABLEPOOL_TOKEN_DECIMALS).toString()}
+            totalShares={totalShares ?? "0"}
+          />
+        ) : isGDOT || isGETH ? (
           <GigaDotSummary
             selectedAsset={asset}
             minAmountOut={shares}
