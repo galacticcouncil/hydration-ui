@@ -61,7 +61,6 @@ export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
 export const ETH_ASSET_ID = "34"
 export const WSTETH_ASSET_ID = "1000809"
-export const VALID_STABLEPOOLS = [GDOT_STABLESWAP_ASSET_ID]
 
 export const STRATEGY_ASSETS_BLACKLIST = [
   GDOT_STABLESWAP_ASSET_ID,

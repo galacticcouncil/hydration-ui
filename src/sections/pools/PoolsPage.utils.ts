@@ -267,10 +267,11 @@ export const usePools = () => {
           isGDOT,
           isGETH,
           isStablePool: isStablePool || !!isStableInOmnipool,
+          isInOmnipool: isStablePool ? !!isStableInOmnipool : true,
         }
       })
       .sort((poolA, poolB) => {
-        if (poolA.id === NATIVE_ASSET_ID) {
+        if (poolA.poolId === NATIVE_ASSET_ID) {
           return -1
         }
 
@@ -462,6 +463,7 @@ export const useXYKPools = () => {
           ),
           isFeeLoading,
           isStablePool: false,
+          isInOmnipool: false,
         }
       })
       .sort((a, b) => {
