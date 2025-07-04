@@ -1,4 +1,4 @@
-import { useAccountAssets } from "api/deposits"
+import { useAccountPositions } from "api/deposits"
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useWarningsStore } from "components/WarningMessage/WarningMessage.utils"
@@ -83,8 +83,9 @@ export const LiquidityPositionsBanner = () => {
 export const LiquidityPositionsBannerWrapper = () => {
   const { setWarnings } = useWarningsStore()
 
-  const { data: accounAssets, isSuccess } = useAccountAssets()
-  const { omnipoolDeposits = [], liquidityPositions = [] } = accounAssets ?? {}
+  const { data: accountPositions, isSuccess } = useAccountPositions()
+  const { omnipoolDeposits = [], liquidityPositions = [] } =
+    accountPositions ?? {}
 
   const hasInvalidPositions =
     omnipoolDeposits.some((position) =>
