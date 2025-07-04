@@ -364,22 +364,25 @@ export const createPoolSlice: StateCreator<
           )
         }
 
-        if (queryClient) {
-          Object.entries(EXTERNAL_APY_QUERIES).forEach(([assetId, query]) => {
-            promises.push(
-              queryClient.fetchQuery(query).then((apy) => {
-                set((state) =>
-                  produce(state, (draft) => {
-                    draft.externalApyData.set(
-                      assetId,
-                      BN(apy).div(100).toString(),
-                    )
-                  }),
-                )
-              }),
-            )
-          })
+        if (!queryClient) {
+          Promise.all(promises)
+          return
         }
+
+        Object.entries(EXTERNAL_APY_QUERIES).forEach(([assetId, query]) => {
+          promises.push(
+            queryClient.fetchQuery(query).then((apy) => {
+              set(
+                produce((draft) => {
+                  draft.externalApyData.set(
+                    assetId,
+                    BN(apy).div(100).toString(),
+                  )
+                }),
+              )
+            }),
+          )
+        })
 
         await Promise.all(promises)
       } catch (e) {

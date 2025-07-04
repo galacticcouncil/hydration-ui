@@ -10,14 +10,7 @@ import { getAddressFromAssetId } from "utils/evm"
 
 export const HEALTH_FACTOR_RISK_THRESHOLD = 1.5
 
-type AssetIdsWithExternalApySource =
-  | typeof VDOT_ASSET_ID
-  | typeof GETH_STABLESWAP_ASSET_ID
-
-export const EXTERNAL_APY_QUERIES: Record<
-  AssetIdsWithExternalApySource,
-  UseQueryOptions<number>
-> = {
+export const EXTERNAL_APY_QUERIES: Record<string, UseQueryOptions<number>> = {
   [VDOT_ASSET_ID]: vdotApyQuery,
   [GETH_STABLESWAP_ASSET_ID]: lidoEthAPRQuery,
 }
