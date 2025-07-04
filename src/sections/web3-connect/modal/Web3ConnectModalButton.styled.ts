@@ -1,8 +1,9 @@
 import styled from "@emotion/styled"
+import { css } from "@emotion/react"
 import { Button } from "components/Button/Button"
 import { theme } from "theme"
 
-export const SContainer = styled.div`
+export const SContainer = styled.div<{ readonly isDisabled: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -13,7 +14,14 @@ export const SContainer = styled.div`
 
   background: rgba(${theme.rgbColors.black}, 0.2);
 
-  cursor: pointer;
+  ${({ isDisabled }) =>
+    isDisabled
+      ? css`
+          pointer-events: none;
+        `
+      : css`
+          cursor: pointer;
+        `}
 
   flex-shrink: 0;
 

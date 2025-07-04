@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from "vite"
+import { defineConfig, Plugin, loadEnv } from "vite"
 import react from "@vitejs/plugin-react"
 import wasm from "vite-plugin-wasm"
 import svgr from "vite-plugin-svgr"
@@ -7,6 +7,7 @@ import fs from "fs/promises"
 import { resolve } from "node:path"
 import { exec } from "child_process"
 import Unfonts from "unplugin-fonts/vite"
+import mkcert from "vite-plugin-mkcert"
 
 import * as child from "child_process"
 
@@ -36,10 +37,24 @@ const commitHash = child
   .trim()
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
+  const isDev = process.env.NODE_ENV
+  const [isHttps] = (() => {
+    if (!isDev) {
+      return [false]
+    }
+
+    const env = loadEnv(mode, process.cwd())
+
+    return [env.VITE_HTTPS === "true"]
+  })()
+
   return {
     define: {
       "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(commitHash),
+    },
+    server: {
+      ...(isHttps && { host: "app.hydration.net" }),
     },
     build: {
       target: "esnext",
@@ -62,6 +77,7 @@ export default defineConfig(({ command }) => {
           }
         : undefined,
     plugins: [
+      ...(isHttps ? [mkcert()] : []),
       tsconfigPaths(),
       react({
         jsxImportSource: "@basilisk/jsx",

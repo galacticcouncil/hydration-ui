@@ -25,10 +25,12 @@ import {
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { MimirWallet } from "sections/web3-connect/wallets/MimirWallet"
 
 declare module "@talismn/connect-wallets" {
   interface Wallet {
     appLink?: string
+    isDappOnly?: boolean
   }
 }
 
@@ -63,6 +65,8 @@ const onMetaMaskLikeAccountChange =
   }
 
 const novaWallet: Wallet = new NovaWallet()
+
+export const mimirWallet = new MimirWallet()
 
 const talisman = new Talisman()
 const talismanEvm: Wallet = new TalismanEvm({
@@ -150,6 +154,7 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   walletConnect,
   walletConnectEvm,
   externalWallet,
+  mimirWallet as unknown as Wallet,
 ].map((wallet) => ({
   wallet,
   type: normalizeProviderType(wallet),
