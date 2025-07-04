@@ -272,7 +272,7 @@ export class EthereumSigner {
         value: 0,
         maxPriorityFeePerGas,
         maxFeePerGas,
-        gasLimit: gasLimit.toString(),
+        gasLimit: gasLimit.times(1.3).decimalPlaces(0).toString(),
         ...tx,
       })
     } else {
