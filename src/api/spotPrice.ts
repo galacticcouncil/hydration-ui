@@ -85,6 +85,7 @@ export const usePriceSubscriber = () => {
       notifyOnChangeProps: [],
       staleTime: 10000,
       refetchOnWindowFocus: true,
+      keepPreviousData: true,
     },
   )
 }
