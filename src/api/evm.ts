@@ -5,7 +5,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { DISPATCH_ADDRESS, H160, isEvmAccount, isEvmAddress } from "utils/evm"
 import BigNumber from "bignumber.js"
 import { undefinedNoop } from "utils/helpers"
-import { useStore } from "state/store"
+import { TransactionOptions, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTranslation } from "react-i18next"
@@ -70,12 +70,13 @@ export const useEvmPaymentFee = (txHex: string, address?: string) => {
   )
 }
 
-export const useEvmAccountBind = () => {
+export const useEvmAccountBind = (options: TransactionOptions = {}) => {
   const { t } = useTranslation()
   const { account } = useAccount()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+
   return useMutation(() => {
     return createTransaction(
       {
@@ -85,13 +86,15 @@ export const useEvmAccountBind = () => {
         toast: createToastMessages("lending.bind.toast", {
           t,
         }),
-        onSuccess: () => {
+        onSuccess: (...args) => {
+          options.onSuccess?.(...args)
           if (account) {
             queryClient.refetchQueries(
               QUERY_KEYS.evmAccountBinding(H160.fromSS58(account.address)),
             )
           }
         },
+        ...options,
       },
     )
   })

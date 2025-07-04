@@ -31,7 +31,7 @@ import { usePaymentFees } from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
-import { useAccountAssets, useRefetchAccountAssets } from "api/deposits"
+import { useAccountBalances, useRefetchAccountAssets } from "api/deposits"
 import { createToastMessages } from "state/toasts"
 import { Switch } from "components/Switch/Switch"
 import { useState } from "react"
@@ -61,7 +61,7 @@ export function WalletTransferSectionOnchain({
   const { native, getAssetWithFallback } = useAssets()
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const refetchAccountAssets = useRefetchAccountAssets()
 
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)

@@ -246,7 +246,7 @@ const ManageLiquidityButton: React.FC<{
 
   const isXykPool = isXYKPoolType(pool)
 
-  const userStablePoolBalance = pool.meta.isStableSwap
+  const userStablePoolBalance = pool.isStablePool
     ? pool.balance?.freeBalance ?? "0"
     : "0"
 

@@ -24,6 +24,8 @@ import { DashboardReserve } from "sections/lending/utils/dashboard"
 import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { NoData } from "sections/lending/components/primitives/NoData"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -47,6 +49,8 @@ export const useSupplyAssetsTableColumns = () => {
   const { t } = useTranslation()
   const { openSupply } = useModalContext()
   const { currentMarket } = useProtocolDataContext()
+
+  const { isBound } = useEvmAccount()
 
   return useMemo(
     () => [
@@ -78,6 +82,9 @@ export const useSupplyAssetsTableColumns = () => {
           const isMaxCapReached = supplyCap.isMaxed
 
           const disabled = value === 0 || isMaxCapReached
+
+          if (!isBound) return <NoData />
+
           return (
             <span sx={{ color: disabled ? "basic500" : "white" }}>
               {t("value.token", { value })}
@@ -162,6 +169,7 @@ export const useSupplyAssetsTableColumns = () => {
           const isMaxCapReached = supplyCap.isMaxed
 
           const disableSupply =
+            !isBound ||
             !isActive ||
             isPaused ||
             isFreezed ||
@@ -190,7 +198,7 @@ export const useSupplyAssetsTableColumns = () => {
         },
       }),
     ],
-    [currentMarket, openSupply, t],
+    [isBound, currentMarket, openSupply, t],
   )
 }
 
@@ -224,6 +232,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
           }
 
           const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
+
           const walletBalanceUSD =
             walletBalances[reserve.underlyingAsset]?.amountUSD
           let availableToDeposit = valueToBigNumber(walletBalance)
@@ -282,6 +291,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
     const sortedSupplyReserves = tokensToSupply.sort((a, b) =>
       +a.walletBalanceUSD > +b.walletBalanceUSD ? -1 : 1,
     )
+
     const filteredSupplyReserves = sortedSupplyReserves.filter(
       (reserve) => reserve.availableToDepositUSD !== "0",
     )

@@ -8,7 +8,7 @@ import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 import { TLPData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 export const useZodSchema = ({
   id,
@@ -24,7 +24,7 @@ export const useZodSchema = ({
   const assetId = enabled ? id : undefined
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { data: accountAssets } = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
 
   const meta = getAssetWithFallback(id)
   const balance = assetId

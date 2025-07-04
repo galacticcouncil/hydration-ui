@@ -19,7 +19,7 @@ import {
 import { pluck } from "utils/rx"
 import { DOC_LINK } from "utils/constants"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BN from "bignumber.js"
 
 export const WhyBonds = () => {
@@ -29,7 +29,7 @@ export const WhyBonds = () => {
 
   const [expanded, setExpanded] = useState<boolean | undefined>(undefined)
 
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const balances = pluck("id", bonds).map(
     (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
   )

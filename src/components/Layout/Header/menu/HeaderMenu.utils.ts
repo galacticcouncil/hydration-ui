@@ -11,6 +11,7 @@ export const useActiveMenuItems = () => {
   const { featureFlags } = useRpcProvider()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
   const isPositions = useAccountData(useShallow((state) => state.isPositions))
+
   return useMemo(() => {
     return MENU_ITEMS.filter(
       (item) => item.enabled && !(item.asyncEnabled && !featureFlags[item.key]),

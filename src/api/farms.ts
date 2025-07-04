@@ -28,7 +28,7 @@ import { scaleHuman } from "utils/balance"
 import { MultiCurrencyContainer } from "utils/farms/claiming/multiCurrency"
 import { OmnipoolLiquidityMiningClaimSim } from "utils/farms/claiming/claimSimulator"
 import { createMutableFarmEntry } from "utils/farms/claiming/mutableFarms"
-import { TDeposit, useAccountAssets } from "./deposits"
+import { TDeposit, useAccountPositions } from "./deposits"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getCurrentLoyaltyFactor } from "utils/farms/apr"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -278,7 +278,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
   const { account } = useAccount()
   const { api, sdk, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { data } = useAccountAssets()
+  const { data } = useAccountPositions()
   const { client } = sdk
 
   const balanceClient = client?.balance
@@ -331,7 +331,7 @@ export const useXYKFarms = (ids: string[]) => {
   const { account } = useAccount()
   const { api, sdk, isLoaded } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { data } = useAccountAssets()
+  const { data } = useAccountPositions()
   const { client } = sdk
 
   const balanceClient = client?.balance
@@ -669,7 +669,7 @@ export const useRefetchClaimableFarmValues = () => {
 export const useAccountClaimableFarmValues = () => {
   const { api, isLoaded } = useRpcProvider()
   const { tokens, erc20, getAssetWithFallback } = useAssets()
-  const { data } = useAccountAssets()
+  const { data } = useAccountPositions()
 
   const {
     omnipoolDeposits = [],

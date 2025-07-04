@@ -14,7 +14,6 @@ import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatche
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
@@ -178,28 +177,24 @@ export const useSuppliedAssetsTableData = () => {
   const { user, loading } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
 
-  const { isBound } = useEvmAccount()
-
   const data = useMemo(() => {
-    if (!isBound) return []
-    return (
-      user?.userReservesData
-        .filter((userReserve) => userReserve.underlyingBalance !== "0")
-        .map((userReserve) => ({
-          ...userReserve,
-          supplyAPY: userReserve.reserve.supplyAPY, // Note: added only for table sort
-          reserve: {
-            ...userReserve.reserve,
-            ...(userReserve.reserve.isWrappedBaseAsset
-              ? fetchIconSymbolAndName({
-                  symbol: currentNetworkConfig.baseAssetSymbol,
-                  underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-                })
-              : {}),
-          },
-        })) || []
-    )
-  }, [isBound, currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
+    if (!user?.userReservesData) return []
+    return user.userReservesData
+      .filter((userReserve) => userReserve.underlyingBalance !== "0")
+      .map((userReserve) => ({
+        ...userReserve,
+        supplyAPY: userReserve.reserve.supplyAPY, // Note: added only for table sort
+        reserve: {
+          ...userReserve.reserve,
+          ...(userReserve.reserve.isWrappedBaseAsset
+            ? fetchIconSymbolAndName({
+                symbol: currentNetworkConfig.baseAssetSymbol,
+                underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
+              })
+            : {}),
+        },
+      }))
+  }, [currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
 
   return {
     data,

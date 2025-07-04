@@ -14,7 +14,7 @@ import { useOTCfee } from "api/consts"
 import { Summary } from "components/Summary/Summary"
 import Skeleton from "react-loading-skeleton"
 import { Spacer } from "components/Spacer/Spacer"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BN from "bignumber.js"
 
 type FillOrderProps = {
@@ -37,7 +37,7 @@ export const FillOrder = ({
   const { api } = useRpcProvider()
   const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const assetInBalance = accountAssets.data?.accountAssetsMap.get(
     accepting.asset,
   )?.balance

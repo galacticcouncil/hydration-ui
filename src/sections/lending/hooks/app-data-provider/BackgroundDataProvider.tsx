@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import React, { useContext } from "react"
 import { PoolReserve } from "sections/lending/store/poolSlice"
 import {
@@ -27,7 +28,8 @@ const BackgroundDataProviderContext =
 export const BackgroundDataProvider: React.FC<{
   children?: React.ReactNode
 }> = ({ children }) => {
-  const refetchPoolData = usePoolDataSubscription()
+  const queryClient = useQueryClient()
+  const refetchPoolData = usePoolDataSubscription(queryClient)()
   const refetchIncentiveData = useIncentiveDataSubscription()
   const refetchGhoData = useGhoDataSubscription()
   const poolData = useCurrentMarketData()

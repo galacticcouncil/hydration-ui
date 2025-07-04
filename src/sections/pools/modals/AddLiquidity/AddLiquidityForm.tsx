@@ -28,7 +28,7 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { createToastMessages } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useEffect, useState } from "react"
-import { useAssets } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useLiquidityLimit } from "state/liquidityLimit"
@@ -82,10 +82,8 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const { getAssetPrice } = useAssetsPrice([assetId])
-
   const {
-    poolShare,
+    totalShares,
     omnipoolFee,
     assetMeta,
     assetBalance,
@@ -299,37 +297,11 @@ export const AddLiquidityForm = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        <Summary
-          rows={[
-            {
-              label: t("liquidity.remove.modal.price"),
-              content: (
-                <Text fs={14} color="white" tAlign="right">
-                  <Trans
-                    t={t}
-                    i18nKey="liquidity.add.modal.row.spotPrice"
-                    tOptions={{
-                      firstAmount: 1,
-                      firstCurrency: assetMeta?.symbol,
-                    }}
-                  >
-                    <DisplayValue value={BN(getAssetPrice(assetId).price)} />
-                  </Trans>
-                </Text>
-              ),
-            },
-            {
-              label: t("liquidity.add.modal.shareOfPool"),
-              content: poolShare?.gte(0.01)
-                ? t("value.percentage", {
-                    value: poolShare,
-                  })
-                : t("value.percentage", {
-                    numberPrefix: "<",
-                    value: BN(0.01),
-                  }),
-            },
-          ]}
+
+        <AddOmnipoolLiquiditySummary
+          asset={assetMeta}
+          sharesToGet={sharesToGet.toString()}
+          totalShares={totalShares.toString()}
         />
 
         {hfChange && (
@@ -383,5 +355,58 @@ export const AddLiquidityForm = ({
           : t("liquidity.add.modal.confirmButton")}
       </Button>
     </form>
+  )
+}
+
+export const AddOmnipoolLiquiditySummary = ({
+  asset,
+  totalShares,
+  sharesToGet,
+}: {
+  asset: TAsset
+  totalShares: string
+  sharesToGet: string
+}) => {
+  const { t } = useTranslation()
+
+  const { getAssetPrice } = useAssetsPrice([asset.id])
+
+  const poolShare = BN(sharesToGet)
+    .div(BN(totalShares).plus(sharesToGet))
+    .times(100)
+
+  return (
+    <Summary
+      rows={[
+        {
+          label: t("liquidity.remove.modal.price"),
+          content: (
+            <Text fs={14} color="white" tAlign="right">
+              <Trans
+                t={t}
+                i18nKey="liquidity.add.modal.row.spotPrice"
+                tOptions={{
+                  firstAmount: 1,
+                  firstCurrency: asset.symbol,
+                }}
+              >
+                <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
+              </Trans>
+            </Text>
+          ),
+        },
+        {
+          label: t("liquidity.add.modal.shareOfPool"),
+          content: poolShare?.gte(0.01)
+            ? t("value.percentage", {
+                value: poolShare,
+              })
+            : t("value.percentage", {
+                numberPrefix: "<",
+                value: BN(0.01),
+              }),
+        },
+      ]}
+    />
   )
 }

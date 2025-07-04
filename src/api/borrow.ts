@@ -469,7 +469,7 @@ export const useMaxWithdrawAmount = (assetId: string) => {
 
 export type BorrowAssetApyData = {
   tvl: string
-  vDotApy?: string
+  vDotApy?: number
   totalSupplyApy: number
   totalBorrowApy: number
   lpAPY: number
@@ -565,11 +565,11 @@ export const useBorrowAssetApy = (
         reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
 
       const supplyAPY = isVdot
-        ? BN(reserve.supplyAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        ? BN(reserve.supplyAPY).plus(BN(vDotApy ?? 0).div(100))
         : BN(reserve.supplyAPY)
 
       const borrowAPY = isVdot
-        ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy?.apy ?? 0).div(100))
+        ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy ?? 0).div(100))
         : BN(reserve.variableBorrowAPY)
 
       return {
@@ -619,7 +619,7 @@ export const useBorrowAssetApy = (
     assetReserve?.aIncentivesData,
     getErc20,
     reserves,
-    vDotApy?.apy,
+    vDotApy,
     stablepoolFee,
     ethApr,
     isGETH,
@@ -633,7 +633,7 @@ export const useBorrowAssetApy = (
     lpAPY,
     incentivesNetAPR,
     underlyingAssetsAPY,
-    vDotApy: vDotApy?.apy,
+    vDotApy,
     incentives: assetReserve?.aIncentivesData ?? [],
     farms: farms?.farms,
   }

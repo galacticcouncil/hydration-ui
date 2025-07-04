@@ -110,7 +110,7 @@ export const ReviewTransaction = (props: Transaction) => {
           <ReviewTransactionSuccess onClose={onMinimizeModal} />
         ) : isError ? (
           <ReviewTransactionError
-            onClose={onMinimizeModal}
+            onClose={onClose}
             onReview={onReview}
             error={error}
           />

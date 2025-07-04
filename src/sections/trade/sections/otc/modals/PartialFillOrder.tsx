@@ -20,7 +20,7 @@ import { Summary } from "components/Summary/Summary"
 import Skeleton from "react-loading-skeleton"
 import { useOTCfee } from "api/consts"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 const FULL_ORDER_PCT_LBOUND = 99
 
@@ -44,7 +44,7 @@ export const PartialFillOrder = ({
   const { api } = useRpcProvider()
   const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const assetInBalance = accountAssets.data?.accountAssetsMap.get(
     accepting.asset,
   )?.balance
