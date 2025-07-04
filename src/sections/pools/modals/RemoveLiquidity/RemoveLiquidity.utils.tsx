@@ -2,13 +2,13 @@ import { useOraclePrice } from "api/farms"
 import { useOmnipoolDataObserver } from "api/omnipool"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
-import { BN_0 } from "utils/constants"
+import { BN_0, MIN_WITHDRAWAL_FEE } from "utils/constants"
 import BN from "bignumber.js"
 import {
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
-import { scaleHuman } from "utils/balance"
+import { scale, scaleHuman } from "utils/balance"
 import { useMinWithdrawalFee } from "api/consts"
 import { useMutation } from "@tanstack/react-query"
 import { ToastMessage, useStore } from "state/store"
@@ -57,8 +57,8 @@ export const useRemoveLiquidity = (
   const meta = pool.meta
   const hubMeta = hub
 
-  const oracle = useOraclePrice(assetId, hubMeta.id)
-  const minlFeeQuery = useMinWithdrawalFee()
+  const { data: oracle } = useOraclePrice(assetId, hubMeta.id)
+  const { data: minlFeeQuery } = useMinWithdrawalFee()
   const { getData } = useLiquidityPositionData([assetId])
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
@@ -97,20 +97,22 @@ export const useRemoveLiquidity = (
 
   const calculateLiquidityValues = useCallback(
     (position: TLPData, removeSharesValue: BN) => {
-      if (omnipoolAsset && oracle.data && minlFeeQuery.data) {
-        const oraclePrice = oracle.data.oraclePrice ?? BN_0
-        const minWithdrawalFee = minlFeeQuery.data
+      if (omnipoolAsset && oracle && minlFeeQuery) {
+        const oraclePrice = oracle.oraclePrice ?? BN_0
+        const minWithdrawalFee = minlFeeQuery
 
         const lrnaSpotPrice = calculate_lrna_spot_price(
           omnipoolAsset.balance,
           omnipoolAsset.hubReserve,
         )
 
-        const withdrawalFee = calculate_withdrawal_fee(
-          lrnaSpotPrice,
-          oraclePrice.toString(),
-          minWithdrawalFee.toString(),
-        )
+        const withdrawalFee = pool.canAddLiquidity
+          ? calculate_withdrawal_fee(
+              lrnaSpotPrice,
+              oraclePrice.toString(),
+              minWithdrawalFee.toString(),
+            )
+          : scale(MIN_WITHDRAWAL_FEE, "q").toString()
 
         if (removeSharesValue.isZero()) {
           return {
@@ -146,7 +148,7 @@ export const useRemoveLiquidity = (
         }
       }
     },
-    [getData, minlFeeQuery.data, omnipoolAsset, oracle.data],
+    [getData, minlFeeQuery, omnipoolAsset, oracle, pool.canAddLiquidity],
   )
 
   const values = useMemo(() => {
