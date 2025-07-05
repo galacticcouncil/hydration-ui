@@ -1,6 +1,5 @@
 import { useAccountData } from "api/deposits"
 import { useVestingTotalVestedAmount } from "api/vesting"
-import { useShallow } from "hooks/useShallow"
 
 import { useVisibleElements } from "hooks/useVisibleElements"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -10,7 +9,9 @@ import { MENU_ITEMS } from "utils/navigation"
 export const useActiveMenuItems = () => {
   const { featureFlags } = useRpcProvider()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
-  const isPositions = useAccountData(useShallow((state) => state.isPositions))
+  const { isPositions, isBalance } = useAccountData()
+
+  const isAnyPositions = isPositions || isBalance
 
   return useMemo(() => {
     return MENU_ITEMS.filter(
@@ -21,7 +22,7 @@ export const useActiveMenuItems = () => {
           ...item,
           subItems: item.subItems?.filter((subItem) => {
             if (subItem.key === "liquidity.myLiquidity") {
-              return isPositions
+              return isAnyPositions
             }
 
             if (subItem.key === "wallet.vesting") {
@@ -32,7 +33,7 @@ export const useActiveMenuItems = () => {
           }),
         }) as (typeof MENU_ITEMS)[number],
     )
-  }, [featureFlags, isPositions, totalVestedAmount])
+  }, [featureFlags, isAnyPositions, totalVestedAmount])
 }
 
 export const useVisibleHeaderMenuItems = () => {

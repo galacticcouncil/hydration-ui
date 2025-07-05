@@ -13,7 +13,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import { useVisibleHeaderMenuItems } from "./HeaderMenu.utils"
 import { useAccountData } from "api/deposits"
-import { useShallow } from "hooks/useShallow"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
@@ -164,13 +163,15 @@ const LiquidityMenuItem = ({
   isHidden: boolean
 }) => {
   const { t } = useTranslation()
-  const isPositions = useAccountData(useShallow((state) => state.isPositions))
+  const { isPositions, isBalance } = useAccountData()
+
+  const isAnyPositions = isPositions || isBalance
 
   return (
     <Link
-      to={isPositions ? LINKS.myLiquidity : item.href}
+      to={isAnyPositions ? LINKS.myLiquidity : item.href}
       search={resetSearchParams(search)}
-      key={isPositions ? LINKS.myLiquidity : item.href}
+      key={isAnyPositions ? LINKS.myLiquidity : item.href}
       css={isHidden ? { pointerEvents: "none" } : {}}
     >
       {({ isActive }) => (

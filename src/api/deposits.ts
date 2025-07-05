@@ -14,10 +14,9 @@ import BN from "bignumber.js"
 import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
 import { TAsset, TBond, TShareToken, useAssets } from "providers/assets"
-import { millisecondsInHour } from "date-fns/constants"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getAccountBalanceData } from "api/accountBalances"
 import { create } from "zustand"
-import { useShallow } from "hooks/useShallow"
 import { useUniqueIds } from "./consts"
 
 export type TYieldFarmEntry = {
@@ -190,10 +189,6 @@ export const useAccountPositions = (givenAddress?: string) => {
   const { api, isLoaded } = useRpcProvider()
   const { data: uniqueIds } = useUniqueIds()
 
-  const setIsPositions = useAccountData(
-    useShallow((state) => state.setIsPositions),
-  )
-
   const address = givenAddress ?? account?.address
 
   return useQuery(
@@ -335,11 +330,14 @@ export const useAccountPositions = (givenAddress?: string) => {
             })
           })
 
-          setIsPositions(
+          const isAnyPositions =
             !!xykDeposits.length ||
-              !!omnipoolDeposits.length ||
-              !!liquidityPositions.length,
-          )
+            !!omnipoolDeposits.length ||
+            !!liquidityPositions.length
+
+          if (isAnyPositions) {
+            setAccountPositions(isAnyPositions)
+          }
 
           return {
             liquidityPositions,
@@ -353,7 +351,7 @@ export const useAccountPositions = (givenAddress?: string) => {
       : undefinedNoop,
     {
       enabled: !!address && isLoaded && !!uniqueIds,
-      staleTime: millisecondsInHour,
+      staleTime: millisecondsInMinute,
     },
   )
 }
@@ -362,10 +360,6 @@ export const useAccountBalances = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api, isLoaded } = useRpcProvider()
   const { getAssetWithFallback, isShareToken, isBond } = useAssets()
-
-  const setIsPositions = useAccountData(
-    useShallow((state) => state.setIsPositions),
-  )
 
   const address = givenAddress ?? account?.address
 
@@ -391,7 +385,7 @@ export const useAccountBalances = (givenAddress?: string) => {
       select: (data) => {
         const { balances = [] } = data ?? {}
 
-        let isAnyPoolPositions = false
+        let isBalance = false
         const accountShareTokensMap: Map<
           string,
           { balance: TBalance; asset: TShareToken }
@@ -417,7 +411,7 @@ export const useAccountBalances = (givenAddress?: string) => {
                   asset.id === GETH_ERC20_ASSET_ID) &&
                 BN(balance.balance).gt(0)
 
-              if (isPoolPositions) isAnyPoolPositions = true
+              if (isPoolPositions) isBalance = true
 
               acc.set(balance.assetId, { balance, asset, isPoolPositions })
 
@@ -445,7 +439,9 @@ export const useAccountBalances = (givenAddress?: string) => {
           new Map([]),
         )
 
-        setIsPositions(isAnyPoolPositions)
+        if (isBalance) {
+          setAccountBalance(isBalance)
+        }
 
         return {
           ...data,
@@ -453,7 +449,6 @@ export const useAccountBalances = (givenAddress?: string) => {
           accountShareTokensMap,
           accountStableswapMap,
           accountBondsMap,
-          isAnyPoolPositions,
         }
       },
     },
@@ -462,14 +457,20 @@ export const useAccountBalances = (givenAddress?: string) => {
 
 type useAccountDataStore = {
   isPositions: boolean
-  setIsPositions: (isPositions: boolean) => void
+  isBalance: boolean
 }
 
-export const useAccountData = create<useAccountDataStore>((set) => ({
+export const useAccountData = create<useAccountDataStore>(() => ({
   isPositions: false,
-  setIsPositions(isPositions) {
-    set({
-      isPositions,
-    })
-  },
+  isBalance: false,
 }))
+
+export const useXykVolumeTotal = create<{ volume?: string }>(() => ({
+  volume: undefined,
+}))
+
+const setAccountPositions = (isPositions: boolean) =>
+  useAccountData.setState({ isPositions })
+
+const setAccountBalance = (isBalance: boolean) =>
+  useAccountData.setState({ isBalance })
