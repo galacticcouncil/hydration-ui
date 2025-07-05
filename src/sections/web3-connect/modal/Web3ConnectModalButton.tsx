@@ -17,13 +17,14 @@ import {
 } from "./Web3ConnectModalButton.styled"
 import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
+import { WalletProviderType } from "sections/web3-connect/Web3Connect.utils"
 
 const Web3ConnectActiveButton: FC<{
   onOpen: () => void
   account: Account
   className?: string
 }> = ({ account, onOpen, className }) => {
-  const displayAddress = account?.displayAddress ?? account?.address ?? ""
+  const displayAddress = account.displayAddress ?? account.address ?? ""
 
   const shortenedAddress = displayAddress
     ? shortenAccountAddress(displayAddress)
@@ -32,8 +33,10 @@ const Web3ConnectActiveButton: FC<{
   const shouldHideAddress =
     account.name?.toLowerCase() === shortenedAddress?.toLowerCase()
 
+  const isDisabled = account.provider === WalletProviderType.MimirWallet
+
   return (
-    <SContainer className={className} onClick={onOpen}>
+    <SContainer className={className} onClick={onOpen} isDisabled={isDisabled}>
       <div sx={{ flex: "column", gap: 4 }}>
         <Text
           color="basic100"
@@ -62,8 +65,8 @@ const Web3ConnectActiveButton: FC<{
         <SAvatarCointainer>
           <AccountAvatar
             size={22}
-            genesisHash={account?.genesisHash}
-            provider={account?.provider}
+            genesisHash={account.genesisHash}
+            provider={account.provider}
             address={displayAddress}
             css={{
               pointerEvents: "none",
