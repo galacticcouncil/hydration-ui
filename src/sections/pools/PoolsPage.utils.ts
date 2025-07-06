@@ -391,7 +391,9 @@ export const useXYKPools = () => {
     const data = allShareTokens
       .map((shareToken) => {
         const accountAsset = accountAssets?.accountAssetsMap.get(shareToken.id)
-        const positions = accountPositions?.accountAssetsMap.get(shareToken.id)
+        const positions = accountPositions?.accountAssetsMap.get(
+          shareToken.poolAddress,
+        )
         const balance = accountAsset?.balance
 
         const { id: shareTokenId, poolAddress, isInvalid } = shareToken
