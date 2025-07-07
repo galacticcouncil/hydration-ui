@@ -1,4 +1,4 @@
-import { useAccountData } from "api/deposits"
+import { useIsAccountBalance, useIsAccountPositions } from "api/deposits"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import { SubNavigationTabLink } from "components/Layout/SubNavigation/SubNavigation"
 import { SSeparator } from "components/Separator/Separator.styled"
@@ -9,7 +9,8 @@ import { LINKS } from "utils/navigation"
 
 export const MyLiquidity = () => {
   const { t } = useTranslation()
-  const { isPositions, isBalance } = useAccountData()
+  const { isPositions } = useIsAccountPositions()
+  const { isBalance } = useIsAccountBalance()
 
   const isAnyPositions = isPositions || isBalance
 
