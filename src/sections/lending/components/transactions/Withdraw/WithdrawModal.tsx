@@ -12,6 +12,7 @@ import { ModalWrapper } from "sections/lending/components/transactions/FlowCommo
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
 import {
+  ETH_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
 } from "utils/constants"
@@ -55,6 +56,7 @@ export const WithdrawModal = () => {
           assetId={REVERSE_A_TOKEN_UNDERLYING_ID_MAP[assetId]}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
+          assetReceiveId={ETH_ASSET_ID}
         />
       </BasicModal>
     )
