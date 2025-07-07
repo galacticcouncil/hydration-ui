@@ -1,4 +1,4 @@
-import { useAccountData } from "api/deposits"
+import { useIsAccountBalance, useIsAccountPositions } from "api/deposits"
 import { useVestingTotalVestedAmount } from "api/vesting"
 
 import { useVisibleElements } from "hooks/useVisibleElements"
@@ -9,7 +9,8 @@ import { MENU_ITEMS } from "utils/navigation"
 export const useActiveMenuItems = () => {
   const { featureFlags } = useRpcProvider()
   const { data: totalVestedAmount } = useVestingTotalVestedAmount()
-  const { isPositions, isBalance } = useAccountData()
+  const { isPositions } = useIsAccountPositions()
+  const { isBalance } = useIsAccountBalance()
 
   const isAnyPositions = isPositions || isBalance
 

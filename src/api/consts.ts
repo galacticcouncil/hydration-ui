@@ -124,7 +124,11 @@ export const useUniqueIds = () => {
         api.consts.xykLiquidityMining.nftCollectionId,
       ])
 
-      return { omnipoolNftId, miningNftId, xykMiningNftId }
+      return {
+        omnipoolNftId: omnipoolNftId.toString(),
+        miningNftId: miningNftId.toString(),
+        xykMiningNftId: xykMiningNftId.toString(),
+      }
     },
     {
       enabled: isLoaded,

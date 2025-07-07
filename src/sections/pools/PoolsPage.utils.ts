@@ -160,9 +160,10 @@ export const usePools = () => {
         const positions = accountPositions?.accountAssetsMap.get(asset.id)
 
         const spotPrice = getAssetPrice(asset.id).price
-        const tradability = !isStablePool
-          ? getTradabilityFromBits(asset.bits)
-          : { canAddLiquidity: false, canRemoveLiquidity: true }
+        const tradability =
+          !isStablePool && asset.bits
+            ? getTradabilityFromBits(asset.bits)
+            : { canAddLiquidity: false, canRemoveLiquidity: true }
 
         const tvlDisplay = isStablePool
           ? BN(asset.balance)

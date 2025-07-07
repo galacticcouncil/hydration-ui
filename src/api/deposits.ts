@@ -13,11 +13,12 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
 import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
-import { TAsset, TBond, TShareToken, useAssets } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getAccountBalanceData } from "api/accountBalances"
 import { create } from "zustand"
 import { useUniqueIds } from "./consts"
+import { useEffect, useMemo } from "react"
 
 export type TYieldFarmEntry = {
   globalFarmId: string
@@ -191,21 +192,16 @@ export const useAccountPositions = (givenAddress?: string) => {
 
   const address = givenAddress ?? account?.address
 
-  return useQuery(
+  const { data, isLoading, isInitialLoading, isSuccess } = useQuery(
     QUERY_KEYS.accountPositions(address),
     address != null && uniqueIds
       ? async () => {
+          const { omnipoolNftId, miningNftId, xykMiningNftId } = uniqueIds
           const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
             await Promise.all([
-              api.query.uniques.account.entries(
-                address,
-                uniqueIds.omnipoolNftId,
-              ),
-              api.query.uniques.account.entries(address, uniqueIds.miningNftId),
-              api.query.uniques.account.entries(
-                address,
-                uniqueIds.xykMiningNftId,
-              ),
+              api.query.uniques.account.entries(address, omnipoolNftId),
+              api.query.uniques.account.entries(address, miningNftId),
+              api.query.uniques.account.entries(address, xykMiningNftId),
             ])
 
           const omnipoolNfts = parseNfts(omnipoolNftsRaw)
@@ -335,10 +331,6 @@ export const useAccountPositions = (givenAddress?: string) => {
             !!omnipoolDeposits.length ||
             !!liquidityPositions.length
 
-          if (isAnyPositions) {
-            setAccountPositions(isAnyPositions)
-          }
-
           return {
             liquidityPositions,
             depositLiquidityPositions,
@@ -346,6 +338,7 @@ export const useAccountPositions = (givenAddress?: string) => {
             xykDeposits,
             accountAssetsMap,
             accountAddress: address,
+            isAnyPositions,
           }
         }
       : undefinedNoop,
@@ -354,27 +347,44 @@ export const useAccountPositions = (givenAddress?: string) => {
       staleTime: millisecondsInMinute,
     },
   )
+
+  useEffect(() => {
+    if (data?.isAnyPositions) {
+      setAccountPositions(data.isAnyPositions)
+    }
+  }, [data?.isAnyPositions])
+
+  return { data, isLoading, isInitialLoading, isSuccess }
 }
 
 export const useAccountBalances = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api, isLoaded } = useRpcProvider()
-  const { getAssetWithFallback, isShareToken, isBond } = useAssets()
+  const { getAssetWithFallback } = useAssets()
 
   const address = givenAddress ?? account?.address
 
-  return useQuery(
+  const {
+    data: assets,
+    isInitialLoading,
+    isLoading,
+    isSuccess,
+  } = useQuery(
     QUERY_KEYS.accountBalancesLive(address),
     address != null
       ? async () => {
           const accountBalances = await getAccountBalanceData(api, address)
 
-          const allBalances = accountBalances.map(([id, data]) => {
-            return parseBalanceData(data, id.toString(), address)
-          })
+          const accountAssets = []
+
+          for (const [id, data] of accountBalances) {
+            const parcedBalance = parseBalanceData(data, id.toString(), address)
+
+            accountAssets.push(parcedBalance)
+          }
 
           return {
-            balances: allBalances,
+            balances: accountAssets,
             accountAddress: address,
           }
         }
@@ -382,87 +392,66 @@ export const useAccountBalances = (givenAddress?: string) => {
     {
       enabled: !!address && isLoaded,
       staleTime: millisecondsInHour,
-      select: (data) => {
-        const { balances = [] } = data ?? {}
-
-        let isBalance = false
-        const accountShareTokensMap: Map<
-          string,
-          { balance: TBalance; asset: TShareToken }
-        > = new Map([])
-
-        const accountStableswapMap: Map<
-          string,
-          { balance: TBalance; asset: TAsset }
-        > = new Map([])
-
-        const accountBondsMap: Map<
-          string,
-          { balance: TBalance; asset: TBond }
-        > = new Map([])
-
-        const accountAssetsMap = balances.reduce<Map<string, TAccountAsset>>(
-          (acc, balance) => {
-            if (BN(balance.total).gt(0)) {
-              const asset = getAssetWithFallback(balance.assetId)
-              const isPoolPositions =
-                (asset.isShareToken ||
-                  asset.isStableSwap ||
-                  asset.id === GETH_ERC20_ASSET_ID) &&
-                BN(balance.balance).gt(0)
-
-              if (isPoolPositions) isBalance = true
-
-              acc.set(balance.assetId, { balance, asset, isPoolPositions })
-
-              if (isShareToken(asset))
-                accountShareTokensMap.set(balance.assetId, {
-                  balance,
-                  asset,
-                })
-
-              if (asset.isStableSwap)
-                accountStableswapMap.set(balance.assetId, {
-                  balance,
-                  asset,
-                })
-
-              if (isBond(asset))
-                accountBondsMap.set(balance.assetId, {
-                  balance,
-                  asset,
-                })
-            }
-
-            return acc
-          },
-          new Map([]),
-        )
-
-        if (isBalance) {
-          setAccountBalance(isBalance)
-        }
-
-        return {
-          ...data,
-          accountAssetsMap,
-          accountShareTokensMap,
-          accountStableswapMap,
-          accountBondsMap,
-        }
-      },
     },
   )
+
+  const data = useMemo(() => {
+    if (!assets) return undefined
+
+    const accountAssetsMap: Map<
+      string,
+      { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
+    > = new Map([])
+    let isBalance = false
+
+    for (const balance of assets.balances) {
+      if (balance.total !== "0") {
+        const asset = getAssetWithFallback(balance.assetId)
+
+        const isPoolPositions =
+          (asset.isShareToken ||
+            asset.isStableSwap ||
+            asset.id === GETH_ERC20_ASSET_ID) &&
+          balance.balance !== "0"
+
+        if (isPoolPositions) {
+          isBalance = true
+        }
+
+        accountAssetsMap.set(balance.assetId, {
+          balance,
+          asset,
+          isPoolPositions,
+        })
+      }
+    }
+
+    return { accountAssetsMap, balances: assets.balances, isBalance }
+  }, [assets, getAssetWithFallback])
+
+  useEffect(() => {
+    if (data?.isBalance) {
+      setAccountBalance(data.isBalance)
+    }
+  }, [data?.isBalance])
+
+  return { data, isLoading, isInitialLoading, isSuccess }
 }
 
-type useAccountDataStore = {
-  isPositions: boolean
+type TAccountBalance = {
   isBalance: boolean
 }
 
-export const useAccountData = create<useAccountDataStore>(() => ({
-  isPositions: false,
+type TAccountPosiitons = {
+  isPositions: boolean
+}
+
+export const useIsAccountBalance = create<TAccountBalance>(() => ({
   isBalance: false,
+}))
+
+export const useIsAccountPositions = create<TAccountPosiitons>(() => ({
+  isPositions: false,
 }))
 
 export const useXykVolumeTotal = create<{ volume?: string }>(() => ({
@@ -470,7 +459,19 @@ export const useXykVolumeTotal = create<{ volume?: string }>(() => ({
 }))
 
 const setAccountPositions = (isPositions: boolean) =>
-  useAccountData.setState({ isPositions })
+  useIsAccountPositions.setState((state) => {
+    if (state.isPositions !== isPositions) {
+      return { isPositions }
+    }
+
+    return { isPositions: state.isPositions }
+  })
 
 const setAccountBalance = (isBalance: boolean) =>
-  useAccountData.setState({ isBalance })
+  useIsAccountBalance.setState((state) => {
+    if (state.isBalance !== isBalance) {
+      return { isBalance }
+    }
+
+    return { isBalance: state.isBalance }
+  })
