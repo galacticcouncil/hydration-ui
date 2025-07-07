@@ -195,17 +195,12 @@ export const useAccountPositions = (givenAddress?: string) => {
     QUERY_KEYS.accountPositions(address),
     address != null && uniqueIds
       ? async () => {
+          const { omnipoolNftId, miningNftId, xykMiningNftId } = uniqueIds
           const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
             await Promise.all([
-              api.query.uniques.account.entries(
-                address,
-                uniqueIds.omnipoolNftId,
-              ),
-              api.query.uniques.account.entries(address, uniqueIds.miningNftId),
-              api.query.uniques.account.entries(
-                address,
-                uniqueIds.xykMiningNftId,
-              ),
+              api.query.uniques.account.entries(address, omnipoolNftId),
+              api.query.uniques.account.entries(address, miningNftId),
+              api.query.uniques.account.entries(address, xykMiningNftId),
             ])
 
           const omnipoolNfts = parseNfts(omnipoolNftsRaw)

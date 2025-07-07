@@ -3,12 +3,10 @@ import {
   useAccountOpenGovVotes,
   useOpenGovReferendas,
   useReferendaTracks,
-  useReferendums,
 } from "api/democracy"
 import { OpenGovReferenda } from "components/ReferendumCard/Referenda"
 import { ToastSidebarGroup } from "components/Toast/sidebar/group/ToastSidebarGroup"
 import { useTranslation } from "react-i18next"
-import { ReferendaDeprecated } from "components/ReferendumCard/ReferendaDeprecated"
 import { splitReferendaByVoted } from "components/Toast/sidebar/referendums/ToastSidebarReferendums.utils"
 import { useHDXIssuance } from "api/balances"
 
@@ -18,7 +16,6 @@ export const ToastSidebarReferendums = () => {
   const { data: openGovQuery = [] } = useOpenGovReferendas()
   const tracks = useReferendaTracks()
   const { data: HDXIssuance } = useHDXIssuance()
-  const { data: referendums = [] } = useReferendums("ongoing")
 
   const { openGovNonVoted, openGovVoted } = splitReferendaByVoted(
     openGovQuery,
@@ -58,7 +55,7 @@ export const ToastSidebarReferendums = () => {
               )
             })
           : null}
-        {referendums &&
+        {/* {referendums &&
           referendums.map((referendum) => (
             <ReferendaDeprecated
               key={referendum.id}
@@ -67,7 +64,7 @@ export const ToastSidebarReferendums = () => {
               type="staking"
               voted={false}
             />
-          ))}
+          ))} */}
       </div>
     </ToastSidebarGroup>
   )
