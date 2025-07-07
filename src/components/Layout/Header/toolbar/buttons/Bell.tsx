@@ -19,7 +19,6 @@ export const Bell = () => {
   const { setSidebar, toasts } = useToast()
   const { t } = useTranslation()
 
-  const { data: referendums } = { data: [] } //useReferendums("ongoing")
   const { isLoading: isOpenGovLoading, data: openGovReferendas } =
     useOpenGovReferendas()
 
@@ -31,7 +30,7 @@ export const Bell = () => {
   )
   const isLoading = !!loadingToasts.length || isOpenGovLoading
 
-  const hasReferendum = !!referendums?.length || !!openGovReferendas?.length
+  const hasReferendum = !!openGovReferendas?.length
   const hasBridgeToasts = !!bridgeToasts.length
 
   const tooltipText = `

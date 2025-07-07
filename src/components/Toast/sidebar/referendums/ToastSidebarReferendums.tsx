@@ -55,16 +55,6 @@ export const ToastSidebarReferendums = () => {
               )
             })
           : null}
-        {/* {referendums &&
-          referendums.map((referendum) => (
-            <ReferendaDeprecated
-              key={referendum.id}
-              id={referendum.id}
-              referendum={referendum.referendum}
-              type="staking"
-              voted={false}
-            />
-          ))} */}
       </div>
     </ToastSidebarGroup>
   )
