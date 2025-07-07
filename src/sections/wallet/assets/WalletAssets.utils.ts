@@ -55,8 +55,12 @@ export const useWalletAssetsTotals = ({
     useAccountBalances(address)
 
   const shareTokenBalances = useMemo(
-    () => [...(balances?.accountShareTokensMap.values() ?? [])],
-    [balances?.accountShareTokensMap],
+    () => [
+      ...(balances?.accountAssetsMap
+        .values()
+        .filter(({ asset }) => asset.isShareToken) ?? []),
+    ],
+    [balances?.accountAssetsMap],
   )
 
   const spotPrices = useDisplayShareTokenPrice(

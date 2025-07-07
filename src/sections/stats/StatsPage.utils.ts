@@ -42,7 +42,11 @@ export const useTreasuryAssets = () => {
     })
   const { getData } = useLiquidityPositionData()
 
-  const bonds = Array.from(accountAssets?.accountBondsMap.values() ?? [])
+  const bonds = Array.from(
+    accountAssets?.accountAssetsMap
+      .values()
+      .filter(({ asset }) => asset.isBond) ?? [],
+  )
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
     ...bonds.map((bond) => bond.asset.id),
