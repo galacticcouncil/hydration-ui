@@ -87,12 +87,11 @@ export const getDestZodSchema = (currentAddress?: string) =>
 export const useTransferZodSchema = (assetId: string) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const accountAssets = useAccountBalances()
+  const { data: accountAssets } = useAccountBalances()
 
   const { decimals } = getAssetWithFallback(assetId)
 
-  const assetBalance =
-    accountAssets.data?.accountAssetsMap.get(assetId)?.balance
+  const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   if (assetBalance === undefined) return undefined
 

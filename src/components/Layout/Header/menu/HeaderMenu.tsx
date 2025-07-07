@@ -12,7 +12,7 @@ import { useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import IconChevron from "assets/icons/ChevronDown.svg?react"
 import { useVisibleHeaderMenuItems } from "./HeaderMenu.utils"
-import { useAccountData } from "api/deposits"
+import { useIsAccountBalance, useIsAccountPositions } from "api/deposits"
 
 export const HeaderMenu = () => {
   const { t } = useTranslation()
@@ -163,10 +163,12 @@ const LiquidityMenuItem = ({
   isHidden: boolean
 }) => {
   const { t } = useTranslation()
-  const { isPositions, isBalance } = useAccountData()
+
+  const { isPositions } = useIsAccountPositions()
+  const { isBalance } = useIsAccountBalance()
 
   const isAnyPositions = isPositions || isBalance
-
+  console.log({ isAnyPositions })
   return (
     <Link
       to={isAnyPositions ? LINKS.myLiquidity : item.href}

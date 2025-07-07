@@ -27,7 +27,7 @@ export type TOmnipoolAssetData = {
   cap: string
   protocolShares: string
   shares: string
-  bits: number
+  bits: number | undefined
   balance: string
 }
 
