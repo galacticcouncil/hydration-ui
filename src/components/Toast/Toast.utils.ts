@@ -402,8 +402,6 @@ export const useProcessToasts = (toasts: ToastData[]) => {
               return true
             }
           }
-
-          return false
         } else {
           const res = await getExtrinsic(indexerUrl, toastData.txHash as string)
 
@@ -532,11 +530,11 @@ export const useBridgeToast = (toasts: ToastData[]) => {
                   hidden: isHiddenToast,
                 }),
               )
-            }
 
-            return true
+              return true
+            }
           } catch {}
-          return false
+
           // from hydration to eth (not supported by snowbridge indexer)
         } else if (isSnowbridge) {
           let hash =
@@ -630,12 +628,15 @@ export const useBridgeToast = (toasts: ToastData[]) => {
                   link: `https://moonbeam.subscan.io/tx/${evmTx.hash}`,
                 }),
               )
+              return true
             }
             if (evmTx?.isMoonbeamSuccess === true && evmTx.hash) {
               //udpate a link to show tx details on wormhole
               toast.editToast(toastData.id, {
                 link: `https://wormholescan.io/#/tx/${evmTx.hash}`,
               })
+
+              return true
             }
           } catch (error) {}
         }
