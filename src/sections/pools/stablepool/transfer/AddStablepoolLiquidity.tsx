@@ -99,7 +99,7 @@ export const AddStablepoolLiquidity = ({
   const { t } = useTranslation()
 
   const walletBalance = accountBalances?.accountAssetsMap.get(asset.id)?.balance
-    ?.balance
+    ?.transferable
 
   const omnipoolZod = useAddToOmnipoolZod(id, farms, true)
 

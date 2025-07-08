@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useSDKPools } from "./pools"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEY_PREFIX, QUERY_KEYS } from "utils/queryKeys"
 import { useDegenModeSubscription } from "components/Layout/Header/DegenMode/DegenMode.utils"
 import { useExternalAssetRegistry } from "./external"
@@ -10,16 +10,25 @@ import { usePriceSubscriber } from "./spotPrice"
 import { useProviderMetadata } from "./provider"
 import { useOmnipoolVolumeSubscription } from "./omnipool"
 import { useActiveQueries } from "hooks/useActiveQueries"
+import { Balance } from "@galacticcouncil/sdk"
 import {
   useStablepoolVolumeSubscription,
   useXYKVolumeSubscription,
 } from "./volume"
+import { VoidFn } from "@polkadot/api/types"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { TAsset, useAssets } from "providers/assets"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { TBalance } from "./balances"
+import { GETH_ERC20_ASSET_ID } from "utils/constants"
+import { setAccountBalances, setIsAccountBalance } from "./deposits"
 
 export const QuerySubscriptions = () => {
   const { isLoaded } = useRpcProvider()
   const { degenMode } = useSettingsStore()
   usePriceSubscriber()
   useProviderMetadata()
+  useBalanceSubscription()
 
   if (!isLoaded) return null
 
@@ -114,4 +123,244 @@ const StablepoolVolumes = () => {
 const StablepoolVolumeSubscription = () => {
   useStablepoolVolumeSubscription()
   return null
+}
+
+export function useBalanceSubscription() {
+  const { isLoaded, sdk } = useRpcProvider()
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
+  const { all, erc20, native, getAssetWithFallback } = useAssets()
+
+  const accountAddress = account?.address
+  const { client } = sdk ?? {}
+  const { balanceV2 } = client ?? {}
+
+  const {
+    data: systemBalance,
+    isSuccess: isSuccessSystem,
+    isLoading: isLoadingSystem,
+  } = useQuery<Balance>(QUERY_KEYS.accountSystemBalance, {
+    enabled: false,
+    staleTime: Infinity,
+  })
+
+  const {
+    data: tokenBalances,
+    isSuccess: isSuccessTokens,
+    isLoading: isLoadingTokens,
+  } = useQuery<Map<string, Balance>>(QUERY_KEYS.accountTokenBalances, {
+    enabled: false,
+    staleTime: Infinity,
+  })
+
+  const {
+    data: accountErc20Balances,
+    isSuccess: isSuccessErc20,
+    isLoading: isLoadingErc20,
+  } = useQuery<Map<string, Balance>>(QUERY_KEYS.accountErc20Balance, {
+    enabled: false,
+    staleTime: Infinity,
+  })
+
+  const followedAssetIds = useMemo(
+    () =>
+      Array.from(all.values())
+        .filter((a) => !a.isErc20 && a.id !== NATIVE_ASSET_ID)
+        .map((a) => a.id),
+    [all],
+  )
+
+  const erc20AssetIds = useMemo(() => erc20.map((a) => a.id), [erc20])
+
+  useEffect(() => {
+    if (
+      !accountAddress ||
+      !balanceV2 ||
+      !isLoaded ||
+      !followedAssetIds.length ||
+      !erc20AssetIds.length
+    )
+      return
+
+    console.log("Subscribe to balances")
+
+    let unsubSystemBalance: VoidFn | null = null
+    let unsubTokensBalance: VoidFn | null = null
+    let unsubErcBalance: VoidFn | null = null
+
+    const subscribeSystemBalance = async () => {
+      unsubSystemBalance = await balanceV2.subscribeSystemBalance(
+        accountAddress,
+        (assetId: string, balance: Balance) => {
+          if (balance.total !== "0") {
+            queryClient.setQueryData(QUERY_KEYS.accountSystemBalance, balance)
+          }
+        },
+      )
+    }
+
+    const subscribeTokensBalance = async () => {
+      unsubTokensBalance = await balanceV2.subscribeTokenBalance(
+        accountAddress,
+        (balances) => {
+          const prevData =
+            queryClient.getQueryData<Map<string, Balance>>([
+              QUERY_KEYS.accountTokenBalances,
+            ]) ?? new Map([])
+
+          for (const [assetId, balance] of balances) {
+            if (balance.total !== "0") {
+              prevData.set(assetId, balance)
+            }
+          }
+
+          queryClient.setQueryData(QUERY_KEYS.accountTokenBalances, prevData)
+        },
+        followedAssetIds,
+      )
+    }
+
+    const snapABalances = new Map<string, Balance>([])
+
+    const subscribeErc20Balance = async () => {
+      unsubErcBalance = await balanceV2.subscribeErc20Balance(
+        accountAddress,
+        (balances) => {
+          const prevData =
+            queryClient.getQueryData<Map<string, Balance>>([
+              QUERY_KEYS.accountErc20Balance,
+            ]) ?? new Map([])
+
+          let shouldSync = false
+
+          for (const [assetId, balance] of balances) {
+            const snapBalance = snapABalances.get(assetId)
+
+            if (snapBalance?.transferable !== balance.transferable) {
+              shouldSync = true
+
+              snapABalances.set(assetId, balance)
+              if (balance.total !== "0") {
+                prevData.set(assetId, balance)
+              }
+            }
+          }
+
+          if (shouldSync) {
+            queryClient.setQueryData(QUERY_KEYS.accountErc20Balance, prevData)
+          }
+        },
+        erc20AssetIds,
+      )
+    }
+
+    subscribeSystemBalance()
+    subscribeTokensBalance()
+    subscribeErc20Balance()
+
+    return () => {
+      console.log("Unsubscribe of balances")
+      unsubSystemBalance?.()
+      unsubTokensBalance?.()
+      unsubErcBalance?.()
+    }
+  }, [
+    accountAddress,
+    balanceV2,
+    queryClient,
+    isLoaded,
+    followedAssetIds,
+    erc20AssetIds,
+  ])
+
+  const getIsPoolPositions = (asset: TAsset, balance: Balance) =>
+    (asset.isShareToken ||
+      asset.isStableSwap ||
+      asset.id === GETH_ERC20_ASSET_ID) &&
+    balance.total !== "0"
+
+  const data = useMemo(() => {
+    if (!isSuccessSystem || !isSuccessTokens || !isSuccessErc20) return
+
+    const accountAssetsMap: Map<
+      string,
+      { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
+    > = new Map([])
+    let isBalance = false
+
+    if (systemBalance) {
+      accountAssetsMap.set(native.id, {
+        balance: { ...systemBalance, assetId: native.id },
+        asset: native,
+        isPoolPositions: false,
+      })
+    }
+
+    if (tokenBalances) {
+      for (const [assetId, balance] of tokenBalances.entries()) {
+        const asset = getAssetWithFallback(assetId)
+
+        const isPoolPositions = getIsPoolPositions(asset, balance)
+
+        if (isPoolPositions) {
+          isBalance = true
+        }
+
+        accountAssetsMap.set(assetId, {
+          balance: { ...balance, assetId },
+          asset,
+          isPoolPositions,
+        })
+      }
+    }
+
+    if (accountErc20Balances) {
+      for (const [assetId, balance] of accountErc20Balances.entries()) {
+        const asset = getAssetWithFallback(assetId)
+
+        const isPoolPositions = getIsPoolPositions(asset, balance)
+
+        if (isPoolPositions) {
+          isBalance = true
+        }
+
+        accountAssetsMap.set(assetId, {
+          balance: { ...balance, assetId },
+          asset,
+          isPoolPositions,
+        })
+      }
+    }
+
+    const balances = [...accountAssetsMap.values().map((a) => a.balance)]
+
+    return {
+      accountAssetsMap,
+      balances,
+      isBalance,
+    }
+  }, [
+    getAssetWithFallback,
+    isSuccessErc20,
+    isSuccessSystem,
+    isSuccessTokens,
+    native,
+    systemBalance,
+    tokenBalances,
+    accountErc20Balances,
+  ])
+
+  const isLoading = isLoadingSystem || isLoadingTokens || isLoadingErc20
+  const isInitialLoading = isLoading
+  const isSuccess = isSuccessSystem || isSuccessTokens || isSuccessErc20
+
+  useEffect(() => {
+    setAccountBalances({ data, isLoading, isInitialLoading, isSuccess })
+  }, [data, isInitialLoading, isLoading, isSuccess])
+
+  useEffect(() => {
+    if (data?.isBalance) {
+      setIsAccountBalance(data.isBalance)
+    }
+  }, [data?.isBalance])
 }

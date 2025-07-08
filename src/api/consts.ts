@@ -62,7 +62,7 @@ export const useInsufficientFee = (assetId: string, address: string) => {
   const balance = useTokenBalance(
     assetId,
     isValidAddress && !isSufficient ? validAddress : undefined,
-  ).data?.balance
+  ).data?.transferable
 
   const fee = useQuery(
     QUERY_KEYS.insufficientFee,

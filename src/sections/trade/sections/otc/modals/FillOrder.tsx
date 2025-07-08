@@ -52,10 +52,10 @@ export const FillOrder = ({
     e.preventDefault()
     if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta")
 
-    if (assetInBalance?.balance == null)
+    if (assetInBalance?.transferable == null)
       throw new Error("Missing assetIn balance")
 
-    const aInBalance = assetInBalance.balance
+    const aInBalance = assetInBalance.transferable
     const aInDecimals = assetInMeta.decimals
 
     if (
@@ -108,8 +108,8 @@ export const FillOrder = ({
     )
   }
 
-  const isDisabled = assetInBalance?.balance
-    ? BN(assetInBalance.balance).lt(
+  const isDisabled = assetInBalance?.transferable
+    ? BN(assetInBalance.transferable).lt(
         accepting.amount.multipliedBy(BN_10.pow(assetInMeta.decimals)),
       )
     : false

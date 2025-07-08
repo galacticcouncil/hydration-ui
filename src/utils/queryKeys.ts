@@ -26,15 +26,7 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "accountBalances",
-    id?.toString(),
-  ],
-  accountBalances: (id: Maybe<AccountId32 | string>) => [
-    "accountBalances",
-    id?.toString(),
-  ],
+  accountBalances: (id?: string) => ["accountBalances", id],
   accountPositions: (address: string | undefined) => [
     "accountPositions",
     address,
@@ -48,6 +40,9 @@ export const QUERY_KEYS = {
     "accountsBalances",
     ids.join("."),
   ],
+  accountSystemBalance: ["accountsBalances"],
+  accountTokenBalances: ["accountTokenBalances"],
+  accountErc20Balance: ["accountErc20Balance"],
   allPools: [QUERY_KEY_PREFIX, "allPools"],
   omnipoolTokens: ["pools", "omnipoolTokens"],
   stablePools: ["pools", "stable"],

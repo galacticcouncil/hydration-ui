@@ -112,9 +112,9 @@ export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
     mode: "onChange",
     resolver: zodResolver(
       createXYKPoolFormSchema(
-        balanceA?.balance ?? "0",
+        balanceA?.transferable ?? "0",
         assetAMeta?.decimals ?? 0,
-        balanceB?.balance ?? "0",
+        balanceB?.transferable ?? "0",
         assetBMeta?.decimals ?? 0,
       ),
     ),

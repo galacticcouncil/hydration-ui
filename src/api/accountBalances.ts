@@ -1,19 +1,16 @@
 import { AccountId32 } from "@polkadot/types/interfaces"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { ApiPromise } from "@polkadot/api"
-import { u32, Vec } from "@polkadot/types"
+import { u32 } from "@polkadot/types"
 import BigNumber from "bignumber.js"
-import { ITuple } from "@polkadot/types-codec/types"
-import { OrmlTokensAccountData } from "@polkadot/types/lookup"
-
-export const getAccountBalanceData = async (
-  api: ApiPromise,
-  accountId: AccountId32 | string,
-) => {
-  return await api.call.currenciesApi.accounts<
-    Vec<ITuple<[u32, OrmlTokensAccountData]>>
-  >(accountId.toString())
-}
+import { QUERY_KEYS } from "utils/queryKeys"
+import { useQuery } from "@tanstack/react-query"
+import { useRpcProvider } from "providers/rpcProvider"
+import { millisecondsInMinute } from "date-fns"
+import { undefinedNoop } from "utils/helpers"
+import { TBalance } from "./balances"
+import { TAsset, useAssets } from "providers/assets"
+import { GETH_ERC20_ASSET_ID } from "utils/constants"
 
 export const getAccountAssetBalances =
   (
@@ -69,3 +66,54 @@ export const getAccountAssetBalances =
 
     return values
   }
+
+export const useAccountBalance = (address?: string) => {
+  const { isLoaded, sdk } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+
+  const { client } = sdk ?? {}
+  const { balanceV2 } = client ?? {}
+
+  return useQuery(
+    QUERY_KEYS.accountBalances(address),
+    address
+      ? async () => {
+          const balances = await balanceV2.getAccountBalances(address)
+
+          const accountAssetsMap: Map<
+            string,
+            { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
+          > = new Map([])
+          let isBalance = false
+
+          for (const balance of balances) {
+            if (balance.total !== "0") {
+              const asset = getAssetWithFallback(balance.assetId)
+
+              const isPoolPositions =
+                (asset.isShareToken ||
+                  asset.isStableSwap ||
+                  asset.id === GETH_ERC20_ASSET_ID) &&
+                balance.total !== "0"
+
+              if (isPoolPositions) {
+                isBalance = true
+              }
+
+              accountAssetsMap.set(balance.assetId, {
+                balance,
+                asset,
+                isPoolPositions,
+              })
+            }
+          }
+
+          return { accountAssetsMap, balances, isBalance }
+        }
+      : undefinedNoop,
+    {
+      enabled: isLoaded && !!address && !!balanceV2,
+      staleTime: millisecondsInMinute,
+    },
+  )
+}

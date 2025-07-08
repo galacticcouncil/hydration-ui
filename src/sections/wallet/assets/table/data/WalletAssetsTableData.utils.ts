@@ -133,7 +133,7 @@ export const useAssetsData = ({
 
       const transferable = isExternalInvalid
         ? BN_NAN
-        : BigNumber(balance.balance).shiftedBy(-decimals)
+        : BigNumber(balance.transferable).shiftedBy(-decimals)
       const transferableDisplay =
         spotPrice && BigNumber(spotPrice).isFinite()
           ? transferable.times(spotPrice).toString()

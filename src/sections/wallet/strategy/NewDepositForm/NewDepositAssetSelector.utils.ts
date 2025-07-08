@@ -121,7 +121,7 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
         const asset = getAssetWithFallback(accountAsset.assetId)
 
         return (
-          BigNumber(accountAsset.balance).gt("0") &&
+          BigNumber(accountAsset.transferable).gt("0") &&
           asset.isTradable &&
           !asset.isErc20 &&
           !asset.isExternal

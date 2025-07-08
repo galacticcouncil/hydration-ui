@@ -58,15 +58,15 @@ export const CodeForm = () => {
     ),
   )
 
-  const balances = useAccountBalances()
+  const { data: accountBalances, isInitialLoading } = useAccountBalances()
 
   const linkFeeBalance = registrationFee.data?.id
-    ? balances.data?.accountAssetsMap.get(registrationFee.data.id)?.balance
+    ? accountBalances?.accountAssetsMap.get(registrationFee.data.id)?.balance
     : undefined
 
   const isLinkFeeBalance =
     registrationFee.data && linkFeeBalance
-      ? BN(linkFeeBalance.balance)
+      ? BN(linkFeeBalance.transferable)
           .shiftedBy(-registrationFee.data.decimals)
           .minus(registrationFee.data.amount)
           .minus(
@@ -92,11 +92,9 @@ export const CodeForm = () => {
       })
   }
 
-  const isBalance = balances.data
-    ? balances.data.balances?.some((balance) => BN(balance.balance).gt(0))
-    : undefined
+  const isBalance = accountBalances?.isBalance
 
-  const isBalanceLoading = balances.isInitialLoading
+  const isBalanceLoading = isInitialLoading
 
   const state = getUserState(account?.address, isBalance)
   const isDisabled = state !== UserState.FUNDED
