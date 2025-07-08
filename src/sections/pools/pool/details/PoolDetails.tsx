@@ -26,7 +26,7 @@ import {
 } from "sections/pools/pool/details/PoolDetails.styled"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1, BN_MILL } from "utils/constants"
+import { BN_1, BN_MILL, GETH_ERC20_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
@@ -46,14 +46,29 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
+  const isTransferModalOpen =
+    isOpen && (pool.meta.isStableSwap || pool.meta.isErc20)
+  const isGeth = !ixXYKPool && pool.isGETH
+
+  const initialAssetId = (() => {
+    if (!isTransferModalOpen || !isGeth) {
+      return undefined
+    }
+
+    const hasGethBalance = new BN(pool.balance?.freeBalance || "0").gt(0)
+
+    return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
+  })()
+
   const isFarms = pool.farms?.length > 0
 
   const modal = isOpen ? (
-    pool.meta.isStableSwap || pool.meta.isErc20 ? (
+    isTransferModalOpen ? (
       <TransferModal
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
-        skipOptions={!ixXYKPool && pool.isGETH}
+        skipOptions={isGeth}
+        initialAssetId={initialAssetId}
       />
     ) : (
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
