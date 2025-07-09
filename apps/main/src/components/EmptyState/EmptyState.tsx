@@ -19,7 +19,13 @@ export const EmptyState: FC<Props> = ({ header, description, action }) => {
       pb={50}
       maxWidth={230}
     >
-      <img src={Flamingo} loading="lazy" alt="Empty state" width={96} />
+      <img
+        src={Flamingo}
+        loading="lazy"
+        alt="Empty state"
+        width={96}
+        height={96}
+      />
       <Text color={getToken("text.high")} fs={14} lh={1.2} fw={500}>
         {header}
       </Text>

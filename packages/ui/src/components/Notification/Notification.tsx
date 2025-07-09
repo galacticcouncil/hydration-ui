@@ -2,11 +2,24 @@ import {
   CircleAlert,
   CircleCheck,
   CircleClose,
+  MoveUpRight,
+  QuestionCircleRegular,
   Send,
   SquareQuestion,
   TriangleAlert,
 } from "@/assets/icons"
-import { ButtonTransparent, Flex, Text } from "@/components"
+import {
+  ButtonIcon,
+  ButtonTransparent,
+  ExternalLink,
+  Flex,
+  Icon,
+  Spinner,
+  Stack,
+  Text,
+  Tooltip,
+} from "@/components"
+import { getToken } from "@/utils"
 
 import {
   SCloseIcon,
@@ -19,6 +32,7 @@ import {
 export const DEFAULT_AUTO_CLOSE_TIME = 3000
 
 export type ToastVariant =
+  | "pending"
   | "submitted"
   | "success"
   | "error"
@@ -32,15 +46,18 @@ type CustomToastProps = {
   onClose?: () => void
   autoClose?: boolean
   autoCloseTimeSC?: number
+  dateString?: string
+  link?: string
+  hint?: string
 }
 
-const getNotificationIcon = (variant: ToastVariant) => {
-  if (variant === "success") return CircleCheck
-  if (variant === "error") return CircleAlert
-  if (variant === "submitted") return Send
-  if (variant === "warning") return TriangleAlert
-
-  return SquareQuestion
+const notificationIcons: Record<ToastVariant, React.ComponentType> = {
+  pending: Spinner,
+  success: CircleCheck,
+  error: CircleAlert,
+  submitted: Send,
+  warning: TriangleAlert,
+  unknown: SquareQuestion,
 }
 
 export const Notification = ({
@@ -50,21 +67,45 @@ export const Notification = ({
   autoClose = true,
   autoCloseTimeSC = DEFAULT_AUTO_CLOSE_TIME,
   onClose,
+  dateString,
+  link,
+  hint,
 }: CustomToastProps) => {
   return (
     <SNotification className={className}>
       <Flex gap={8}>
         <SIconVariant
-          component={getNotificationIcon(variant)}
+          component={notificationIcons[variant]}
           variant={variant}
           size={16}
         />
-        <Text fw={400} fs={12}>
-          {content}
-        </Text>
-        {/*Place for link button */}
+        <Stack gap={2}>
+          <Text fw={500} fs="p5">
+            {content}
+          </Text>
+          {dateString && (
+            <Text fs="p6" fw={500} color={getToken("text.medium")}>
+              {dateString}
+            </Text>
+          )}
+        </Stack>
+        <Flex ml="auto">
+          {hint && (
+            <Tooltip text={hint}>
+              <ButtonIcon asChild>
+                <Icon component={QuestionCircleRegular} size={24} />
+              </ButtonIcon>
+            </Tooltip>
+          )}
+          {link && (
+            <ButtonIcon asChild>
+              <ExternalLink href={link}>
+                <Icon component={MoveUpRight} size={18} />
+              </ExternalLink>
+            </ButtonIcon>
+          )}
+        </Flex>
       </Flex>
-
       {autoClose && (
         <SProgressContainer>
           <SProgress

@@ -2343,18 +2343,18 @@
     typescript "^5.8.3"
     write-package "^7.1.0"
 
-"@polkadot-api/cli@0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/cli/-/cli-0.14.0.tgz#72be9a4a45ed88a597a805652a50a9ba26ce25ca"
-  integrity sha512-bDNWSbSVWNRYYjOQgCWp321Rut4/yDxjfn0wJcACcCiWboJNu4ErZ6370yLovkbTDrOUqMPO+Mnq7cnN4xPzGA==
+"@polkadot-api/cli@0.14.1":
+  version "0.14.1"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/cli/-/cli-0.14.1.tgz#648ed92c3c8baee34406b762e453232e55517325"
+  integrity sha512-9vHPc5urmSarADToGnpTeieAMKMV12OJ4vNp+5sHb7jdkCL2lwpL0dF0L5X1kixYht84NPOa9ZbTGGyPR1gxxg==
   dependencies:
     "@commander-js/extra-typings" "^14.0.0"
-    "@polkadot-api/codegen" "0.16.3"
-    "@polkadot-api/ink-contracts" "0.3.4"
+    "@polkadot-api/codegen" "0.16.4"
+    "@polkadot-api/ink-contracts" "0.3.5"
     "@polkadot-api/json-rpc-provider" "0.0.4"
     "@polkadot-api/known-chains" "0.9.0"
     "@polkadot-api/metadata-compatibility" "0.3.0"
-    "@polkadot-api/observable-client" "0.12.0"
+    "@polkadot-api/observable-client" "0.13.0"
     "@polkadot-api/polkadot-sdk-compat" "2.3.2"
     "@polkadot-api/sm-provider" "0.1.7"
     "@polkadot-api/smoldot" "0.3.10"
@@ -2386,12 +2386,12 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
-"@polkadot-api/codegen@0.16.3":
-  version "0.16.3"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/codegen/-/codegen-0.16.3.tgz#10439f3c3a21ddaa58cc3746c6b0ba60eaa8abb0"
-  integrity sha512-vZy4r/AlkYdTPIxgvifmC2YqwVQgBA2RRLV7apGF2WzmqTTIGjLITAw+6M78X4pKZEkPR35+gVE4Wgvk+TvliQ==
+"@polkadot-api/codegen@0.16.4":
+  version "0.16.4"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/codegen/-/codegen-0.16.4.tgz#78eed89d47ab3ca2a3983e2808802ccf7ec096fb"
+  integrity sha512-lHNTJ3rG0tBRoKzjAhQRs7qYRdrBtvpKIWDo7fgun2A1DEsWxZAvugDs+Qp1m4UcXP5YgjI8bv//a9Qu8SD1XA==
   dependencies:
-    "@polkadot-api/ink-contracts" "0.3.4"
+    "@polkadot-api/ink-contracts" "0.3.5"
     "@polkadot-api/metadata-builders" "0.12.2"
     "@polkadot-api/metadata-compatibility" "0.3.0"
     "@polkadot-api/substrate-bindings" "0.14.0"
@@ -2409,10 +2409,10 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
-"@polkadot-api/ink-contracts@0.3.4":
-  version "0.3.4"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/ink-contracts/-/ink-contracts-0.3.4.tgz#dcd807e6b21acc5b1c536e33347515ab4e1f06a1"
-  integrity sha512-JnCIX3GCV47u9h9poUJUJMcZ+wr1/2wCbg6NftmpqeQfin5BsWYOnKSkrMY7SEWpXC4EfACK8ucub9oo2rv/jg==
+"@polkadot-api/ink-contracts@0.3.5":
+  version "0.3.5"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/ink-contracts/-/ink-contracts-0.3.5.tgz#94f18afd420a0e89c7e82953eb9661a9baef4ab6"
+  integrity sha512-91TO9TV0prCz+nDHVaxt/iXldxVY1xZykyook0Tqt+L2NpjM0Rgj7fQe9hysZfw5GUYlf5K2HI7BxRWEQGaorA==
   dependencies:
     "@polkadot-api/metadata-builders" "0.12.2"
     "@polkadot-api/substrate-bindings" "0.14.0"
@@ -2522,10 +2522,10 @@
     "@polkadot-api/substrate-bindings" "0.13.0"
     "@polkadot-api/utils" "0.1.2"
 
-"@polkadot-api/observable-client@0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@polkadot-api/observable-client/-/observable-client-0.12.0.tgz#ff946718cd0be05a330914ed71fa30e2d4607a33"
-  integrity sha512-2edI5Ke3EOWT5F4+m13alJx3zTQGJd9CPvL9iHvwyBpgJ+5T+VNf69lHpTQ16ruWGnravPG0ixkz1FhFh8ZOKA==
+"@polkadot-api/observable-client@0.13.0":
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/observable-client/-/observable-client-0.13.0.tgz#7493e689ebbb15ee57db44e6f0167b13576dc313"
+  integrity sha512-h8YOCU/Lhj+hdjruGTXtHnUvwp0HlubMDGxywqpSoKOfTzdjEkZHDanasSXdm7o50JTmsnQfzKQl0q4jeULVvQ==
   dependencies:
     "@polkadot-api/metadata-builders" "0.12.2"
     "@polkadot-api/substrate-bindings" "0.14.0"

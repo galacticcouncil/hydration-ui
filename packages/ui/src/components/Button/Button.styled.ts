@@ -27,6 +27,7 @@ export type SButtonProps = {
 
 const defaulStyles = createStyles(
   (theme) => css`
+    position: relative;
     display: grid;
     grid-auto-flow: column;
     column-gap: 4px;
@@ -311,6 +312,8 @@ export const SMicroButton = styled.button<{ variant?: MicroButtonVariant }>(
 
 export const SButtonIcon = styled.button(
   ({ theme }) => css`
+    position: relative;
+
     width: 34px;
     height: 34px;
 

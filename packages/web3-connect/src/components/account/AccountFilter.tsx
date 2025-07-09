@@ -24,7 +24,7 @@ const modeData: Record<
     "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg",
   ],
   [WalletMode.EVM]: [
-    "Evm",
+    "EVM",
     "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg",
   ],
   [WalletMode.Solana]: [

@@ -44,3 +44,24 @@ export const updateQueryString = (
   }
   window.history.replaceState({}, "", url.toString())
 }
+
+export const createQueryString = (
+  params: Record<string, string | number>,
+): string => {
+  const searchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    searchParams.append(key, String(value))
+  }
+
+  const queryString = searchParams.toString()
+  return queryString ? `?${queryString}` : ""
+}
+
+export const getRdnsFromUrl = (url: string): string => {
+  try {
+    return new URL(url).hostname.split(".").reverse().slice(0, 2).join(".")
+  } catch {
+    return ""
+  }
+}

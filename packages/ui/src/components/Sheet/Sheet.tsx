@@ -1,6 +1,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-import { forwardRef } from "react"
+import { FC, forwardRef } from "react"
 
 import { FlexProps } from "@/components/Flex"
 
@@ -38,9 +38,6 @@ const SheetContent = forwardRef<
     <SSheetWrapper>
       <SSheetContent ref={ref} {...props}>
         <SSheetPaper>{children}</SSheetPaper>
-        <SSheetClose>
-          <X sx={{ width: 20, height: 20 }} />
-        </SSheetClose>
       </SSheetContent>
     </SSheetWrapper>
   </SheetPortal>
@@ -57,7 +54,18 @@ const SheetTitle = forwardRef<
 ))
 SheetTitle.displayName = DialogPrimitive.Title.displayName
 
-const SheetHeader = (props: FlexProps) => <SSheetHeader {...props} />
+type SheetHeaderProps = Omit<FlexProps, "title"> & {
+  title?: string
+}
+
+const SheetHeader: FC<SheetHeaderProps> = ({ title, ...props }) => (
+  <SSheetHeader {...props}>
+    <SheetTitle>{title || <>&nbsp;</>}</SheetTitle>
+    <SSheetClose>
+      <X sx={{ width: 20, height: 20 }} />
+    </SSheetClose>
+  </SSheetHeader>
+)
 SheetHeader.displayName = "SheetHeader"
 
 const SheetBody = (props: FlexProps) => <SSheetBody {...props} />
@@ -81,9 +89,7 @@ const Sheet = ({
           disableInteractOutside ? (e) => e.preventDefault() : undefined
         }
       >
-        <SheetHeader>
-          <SheetTitle>{title || <>&nbsp;</>}</SheetTitle>
-        </SheetHeader>
+        <SheetHeader title={title} />
         <SheetBody>{children}</SheetBody>
       </SheetContent>
     </SheetRoot>
