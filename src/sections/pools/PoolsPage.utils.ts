@@ -95,17 +95,22 @@ export const usePools = () => {
   const { data: accountPositions } = useAccountPositions()
   const { data: stablepoolData = [] } = useStablepoolsData()
 
-  const assetsId = useMemo(
+  const omnipoolAssetsId = useMemo(
     () => omnipoolAssets?.map((a) => a.id) ?? [],
     [omnipoolAssets],
   )
 
+  const stablepoolAssetsId = useMemo(
+    () => stablepoolData?.map((a) => a.id) ?? [],
+    [stablepoolData],
+  )
+
   const { data: allFarms, isLoading: isAllFarmsLoading } =
-    useOmnipoolFarms(assetsId)
+    useOmnipoolFarms(omnipoolAssetsId)
 
   const { isLoading, getAssetPrice } = useAssetsPrice([
-    ...assetsId,
-    GDOT_STABLESWAP_ASSET_ID,
+    ...omnipoolAssetsId,
+    ...stablepoolAssetsId,
   ])
 
   const isInitialLoading = isOmnipoolAssetLoading || isLoading

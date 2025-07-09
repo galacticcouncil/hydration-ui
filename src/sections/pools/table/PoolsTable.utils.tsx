@@ -26,7 +26,7 @@ import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/G
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -219,7 +219,15 @@ const StablePoolModalWrapper = ({
 }) => {
   const stablepoolDetails = useStableSwapReserves(pool.poolId)
 
-  if (!pool) return null
+  const initialAssetId = (() => {
+    if (!pool.isGETH) {
+      return undefined
+    }
+
+    const hasGethBalance = new BN(pool.balance?.freeBalance || "0").gt(0)
+
+    return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
+  })()
 
   return (
     <PoolContext.Provider
@@ -233,6 +241,7 @@ const StablePoolModalWrapper = ({
         farms={pool.farms}
         disabledOmnipool={!pool.isGETH}
         skipOptions={pool.isGETH}
+        initialAssetId={initialAssetId}
       />
     </PoolContext.Provider>
   )
