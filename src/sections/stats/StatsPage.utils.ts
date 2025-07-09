@@ -8,7 +8,7 @@ import { useTreasuryBalances } from "api/stats"
 import { useOmnipoolVolumes } from "api/volume"
 import { useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { useOmnipoolFarms } from "api/farms"
 import { useAssetsData } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
@@ -28,7 +28,7 @@ export const useTreasuryAssets = () => {
   const { data: treasuryBalances } = useTreasuryBalances()
 
   const { data: accountAssets, isLoading: isAccountsAssetsLoading } =
-    useAccountAssets(HYDRA_TREASURE_ACCOUNT)
+    useAccountBalances(HYDRA_TREASURE_ACCOUNT)
 
   const { data: treasutyAssets, isLoading: isAssetsDataLoading } =
     useAssetsData({
@@ -42,7 +42,11 @@ export const useTreasuryAssets = () => {
     })
   const { getData } = useLiquidityPositionData()
 
-  const bonds = Array.from(accountAssets?.accountBondsMap.values() ?? [])
+  const bonds = Array.from(
+    accountAssets?.accountAssetsMap
+      .values()
+      .filter(({ asset }) => asset.isBond) ?? [],
+  )
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
     ...bonds.map((bond) => bond.asset.id),

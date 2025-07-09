@@ -32,7 +32,9 @@ export const useSwapAssetFees24hTotal = () => {
     return isSuccess ? data.swapAssetFeesByPeriod.nodes.filter(isNotNil) : []
   }, [data, isSuccess])
 
-  const assetIds = isSuccess ? assets.map(prop("assetId")) : []
+  const assetIds = isSuccess
+    ? assets.map((asset) => asset.assetRegistryId as string)
+    : []
 
   const { isLoading: isAssetsPriceLoading, getAssetPrice } =
     useAssetsPrice(assetIds)
@@ -40,7 +42,7 @@ export const useSwapAssetFees24hTotal = () => {
   const swapFees24h = useMemo(() => {
     if (isAssetsPriceLoading) return "0"
     return assets.reduce((prev, curr) => {
-      const asset = getAsset(curr.assetId)
+      const asset = getAsset(curr.assetRegistryId as string)
       if (!asset) return prev
 
       const { price } = getAssetPrice(asset.id)
@@ -154,11 +156,13 @@ export const useStatsOverviewTotals = () => {
   const totals = useMemo(() => {
     if (isLoading) return null
 
-    const volume24h = BN(xyk.volume).plus(BN(omnipools.volume)).toString()
+    const volume24h = BN(xyk.volume ?? 0)
+      .plus(BN(omnipools.volume ?? 0))
+      .toString()
 
-    const hydrationTvl = BN(omnipools.tvl)
+    const hydrationTvl = BN(omnipools.tvl ?? 0)
       .plus(stablepools.tvl)
-      .plus(xyk.tvl)
+      .plus(xyk.tvl ?? 0)
       .plus(moneyMarket.tvl)
       .plus(stakeTotal)
       .minus(stableswapTvl.tvl)

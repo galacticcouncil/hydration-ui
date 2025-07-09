@@ -65,7 +65,6 @@ export const LINKS = {
   deposit: "/deposit",
   withdraw: "/withdraw",
   strategies: "/strategies",
-  gigadotStrategies: "/strategies/gigadot",
 }
 
 export const MENU_ITEMS = [
@@ -130,7 +129,7 @@ export const MENU_ITEMS = [
   },
   {
     key: "strategies",
-    href: LINKS.gigadotStrategies,
+    href: LINKS.strategies,
     Icon: StrategyIcon,
     subItems: undefined,
     enabled: true,
@@ -212,7 +211,7 @@ export const MENU_ITEMS = [
     key: "xcm",
     href: LINKS.cross_chain,
     Icon: TransferIcon,
-    enabled: true,
+    enabled: import.meta.env.VITE_ENV === "production",
     external: false,
     mobVisible: false,
     tabVisible: false,

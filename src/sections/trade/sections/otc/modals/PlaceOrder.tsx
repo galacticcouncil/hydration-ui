@@ -18,7 +18,7 @@ import { OrderAssetRate } from "./cmp/AssetXRate"
 import { PartialOrderToggle } from "./cmp/PartialOrderToggle"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { useExistentialDepositMultiplier } from "sections/trade/sections/otc/useExistentialDepositorMultiplier"
 import { validateOtcExistentialDeposit } from "utils/validators"
 
@@ -54,7 +54,7 @@ export const PlaceOrder = ({
   })
 
   const { api } = useRpcProvider()
-  const accountAssets = useAccountAssets()
+  const accountAssets = useAccountBalances()
   const assetOutMeta = aOut ? getAssetWithFallback(aOut.toString()) : undefined
   const assetOutBalance = aOut
     ? accountAssets.data?.accountAssetsMap.get(aOut.toString())?.balance

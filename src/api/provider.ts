@@ -8,7 +8,7 @@ import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
-import { createSdkContext, PoolType } from "@galacticcouncil/sdk"
+import { createSdkContext } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
 import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
 import { undefinedNoop } from "utils/helpers"
@@ -20,7 +20,6 @@ import {
 import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
-import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { createClient } from "graphql-ws"
 
 export type TDataEnv = "testnet" | "mainnet"
@@ -35,7 +34,6 @@ export type ProviderProps = {
 
 export type TFeatureFlags = {
   dispatchPermit: boolean
-  strategies: boolean
   isSixBlockEnabled: boolean
 } & { [key: string]: boolean }
 
@@ -76,8 +74,18 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
+    name: "cay2",
+    url: "wss://rpc2.cay.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
     name: "parm",
     url: "wss://rpc.parm.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "parm2",
+    url: "wss://rpc2.parm.hydration.cloud",
     ...defaultProvider,
   },
   {
@@ -91,6 +99,11 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
+    name: "zipp2",
+    url: "wss://rpc2.zipp.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
     name: "sin",
     url: "wss://rpc.sin.hydration.cloud",
     ...defaultProvider,
@@ -98,6 +111,21 @@ export const PROVIDERS: ProviderProps[] = [
   {
     name: "coke",
     url: "wss://rpc.coke.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "coke2",
+    url: "wss://rpc2.coke.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "lait",
+    url: "wss://rpc.lait.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
+    name: "limo",
+    url: "wss://rpc.limo.hydration.cloud",
     ...defaultProvider,
   },
   {
@@ -396,11 +424,6 @@ export const useProviderData = (
       const sdk = createSdkContext(api)
       const { ctx } = sdk
 
-      const stablebools = await ctx.pool.getPools([PoolType.Stable])
-      const isGigaDotEnabled = stablebools.some(
-        ({ id }) => id === GDOT_STABLESWAP_ASSET_ID,
-      )
-
       ChainCursor.reset({
         api,
         sdk: sdk,
@@ -455,7 +478,6 @@ export const useProviderData = (
         squidWSClient,
         featureFlags: {
           dispatchPermit: !!isDispatchPermitEnabled,
-          strategies: isGigaDotEnabled,
           isSixBlockEnabled,
         } as TFeatureFlags,
       }

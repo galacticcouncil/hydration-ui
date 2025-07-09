@@ -9,7 +9,7 @@ import { H160, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { maxBalance, required } from "utils/validators"
 import { z } from "zod"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 
 export function usePaymentFees({
   asset,
@@ -87,12 +87,11 @@ export const getDestZodSchema = (currentAddress?: string) =>
 export const useTransferZodSchema = (assetId: string) => {
   const { account } = useAccount()
   const { getAssetWithFallback } = useAssets()
-  const accountAssets = useAccountAssets()
+  const { data: accountAssets } = useAccountBalances()
 
   const { decimals } = getAssetWithFallback(assetId)
 
-  const assetBalance =
-    accountAssets.data?.accountAssetsMap.get(assetId)?.balance
+  const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
 
   if (assetBalance === undefined) return undefined
 

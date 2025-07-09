@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useMemo, useState, useEffect } from "react"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 const calculateSlippage = (amount: string, slippagePct: string): string => {
@@ -22,6 +21,7 @@ export const useBestTradeSell = (
   assetInId: string,
   assetOutId: string,
   amountIn: string,
+  onSuccess?: (minAmount: string) => void,
 ) => {
   const { api, sdk, isLoaded } = useRpcProvider()
   const { account } = useAccount()
@@ -32,32 +32,41 @@ export const useBestTradeSell = (
 
   const { data: tradeData, isInitialLoading } = useQuery({
     queryKey: QUERY_KEYS.bestTradeSell(assetInId, assetOutId, amountIn),
-    queryFn: () => sdkApi.router.getBestSell(assetInId, assetOutId, amountIn),
+    queryFn: async () => {
+      const data = await sdkApi.router.getBestSell(
+        assetInId,
+        assetOutId,
+        amountIn,
+      )
+
+      onSuccess?.(
+        getMinAmountOut(data?.amountOut.toString() || "0", slippageData || "0"),
+      )
+
+      return data
+    },
     enabled: isLoaded && !!assetInId && !!assetOutId && !!amountIn,
   })
 
   const amountOut = tradeData?.amountOut.toString() || "0"
   const minAmountOut = getMinAmountOut(amountOut, slippageData || "0")
 
-  const [tx, setTx] = useState<any>()
+  const getSwapTx = async () => {
+    if (!tradeData || !account) return undefined
 
-  useEffect(() => {
-    const buildTx = async () => {
-      if (tradeData && account) {
-        const builtTx = await sdkTx
-          .trade(tradeData)
-          .withSlippage(Number(slippageData))
-          .withBeneficiary(account.address)
-          .build()
-        setTx(builtTx.hex)
-      } else {
-        setTx(undefined)
-      }
-    }
-    buildTx()
-  }, [tradeData, account, sdkTx, slippageData])
+    const builtTx = await sdkTx
+      .trade(tradeData)
+      .withSlippage(Number(slippageData))
+      .withBeneficiary(account.address)
+      .build()
 
-  const swapTx = useMemo(() => (tx ? api.tx(tx) : undefined), [api, tx])
+    return api.tx(builtTx.hex)
+  }
 
-  return { minAmountOut, swapTx, amountOut, isLoading: isInitialLoading }
+  return {
+    minAmountOut,
+    getSwapTx,
+    amountOut,
+    isLoading: isInitialLoading,
+  }
 }

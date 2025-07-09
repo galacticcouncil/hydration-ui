@@ -6,16 +6,13 @@ import {
   TableTitle,
   TableTitleContainer,
 } from "components/DataTable"
-import { Modal } from "components/Modal/Modal"
 import { Switch } from "components/Switch/Switch"
 import { useReactTable } from "hooks/useReactTable"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { ROUTES } from "sections/lending/components/primitives/Link"
 import { useLocalStorageBool } from "sections/lending/hooks/useLocalStorageBool"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { SupplyAssetModal } from "sections/lending/ui/table/supply-assets/SupplyAssetModal"
 import { SupplyAssetsMobileRow } from "sections/lending/ui/table/supply-assets/SupplyAssetsMobileRow"
 import {
   supplyAssetsTableBackground,
@@ -28,24 +25,22 @@ import {
 } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
-import { SupplyGigadotRow } from "sections/lending/ui/table/supply-assets/SupplyGigadotRow"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
-import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
+import { SupplyGigaRow } from "sections/lending/ui/table/supply-assets/SupplyGigaRow"
+import { Separator } from "components/Separator/Separator"
+import { Fragment } from "react"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { featureFlags } = useRpcProvider()
 
   const { currentMarket } = useProtocolDataContext()
   const [showAll, setShowAll] = useLocalStorageBool("showAllSupplyAssets")
-  const [supplyModal, setSupplyModal] = useState("")
 
   const { account } = useAccount()
 
-  const { data, isLoading } = useSupplyAssetsTableData({ showAll })
+  const { data, gigaReserves, isLoading } = useSupplyAssetsTableData({
+    showAll,
+  })
   const columns = useSupplyAssetsTableColumns()
 
   const table = useReactTable({
@@ -61,14 +56,9 @@ export const SupplyAssetsTable = () => {
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const defaultAssetId = useNewDepositDefaultAssetId()
-
   return (
     <TableContainer background={supplyAssetsTableBackground}>
-      <TableTitleContainer
-        spacing={supplyAssetsTableSpacing}
-        customContainer={featureFlags.strategies}
-      >
+      <TableTitleContainer spacing={supplyAssetsTableSpacing} customContainer>
         <TableTitle>{t("lending.supply.table.title")}</TableTitle>
         {hasAvailableDeposits && (
           <TableAction
@@ -84,15 +74,16 @@ export const SupplyAssetsTable = () => {
           </TableAction>
         )}
       </TableTitleContainer>
-      {featureFlags.strategies && (
-        <SupplyGigadotRow isLoading={isLoading} onOpenSupply={setSupplyModal} />
-      )}
+      {gigaReserves.map((gigaReserve, index, arr) => (
+        <Fragment key={gigaReserve.id}>
+          <SupplyGigaRow isLoading={isLoading} reserve={gigaReserve} />
+          {arr.length > index + 1 && (
+            <Separator sx={{ display: ["none", "block"] }} />
+          )}
+        </Fragment>
+      ))}
       <DataTable
-        css={
-          !featureFlags.strategies || !isDesktop
-            ? { "&": { borderTop: "none" } }
-            : undefined
-        }
+        css={!isDesktop ? { "&": { borderTop: "none" } } : undefined}
         table={table}
         spacing={supplyAssetsTableSpacing}
         size={supplyAssetsTableSize}
@@ -109,22 +100,6 @@ export const SupplyAssetsTable = () => {
           })
         }}
       />
-      {defaultAssetId && (
-        <Modal open={!!supplyModal} onClose={() => setSupplyModal("")}>
-          <NewDepositFormWrapper defaultAssetId={defaultAssetId}>
-            <SupplyAssetModal
-              assetId={supplyModal}
-              assetsBlacklist={assetsBlacklist[supplyModal] ?? []}
-              onClose={() => setSupplyModal("")}
-            />
-          </NewDepositFormWrapper>
-        </Modal>
-      )}
     </TableContainer>
   )
-}
-
-const assetsBlacklist: Record<string, ReadonlyArray<string>> = {
-  [GDOT_ERC20_ASSET_ID]: [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID],
-  [GDOT_STABLESWAP_ASSET_ID]: [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID],
 }

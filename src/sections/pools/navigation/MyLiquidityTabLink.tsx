@@ -1,8 +1,7 @@
-import { useAccountData } from "api/deposits"
+import { useIsAccountBalance, useIsAccountPositions } from "api/deposits"
 import UserIcon from "assets/icons/UserIcon.svg?react"
 import { SubNavigationTabLink } from "components/Layout/SubNavigation/SubNavigation"
 import { SSeparator } from "components/Separator/Separator.styled"
-import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
@@ -10,9 +9,12 @@ import { LINKS } from "utils/navigation"
 
 export const MyLiquidity = () => {
   const { t } = useTranslation()
-  const isPositions = useAccountData(useShallow((state) => state.isPositions))
+  const { isPositions } = useIsAccountPositions()
+  const { isBalance } = useIsAccountBalance()
 
-  if (!isPositions) return null
+  const isAnyPositions = isPositions || isBalance
+
+  if (!isAnyPositions) return null
 
   return (
     <>

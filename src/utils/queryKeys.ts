@@ -35,9 +35,8 @@ export const QUERY_KEYS = {
     "accountBalances",
     id?.toString(),
   ],
-  accountAssets: (address: string | undefined) => [
-    QUERY_KEY_PREFIX,
-    "accountAssets",
+  accountPositions: (address: string | undefined) => [
+    "accountPositions",
     address,
   ],
   accountClaimableFarmValues: (address: string | undefined) => [
@@ -73,7 +72,9 @@ export const QUERY_KEYS = {
     ids.join("."),
   ],
   omnipoolActiveFarms: ["omnipoolActiveFarms"],
+  omnipoolActiveFarm: (id?: string) => ["omnipoolActiveFarm", id],
   omnipoolFarms: ["omnipoolFarms"],
+  omnipoolFarm: (id?: string) => ["omnipoolFarm", id],
   stoppedOmnipoolFarms: (address?: string) => ["stoppedOmnipoolFarms", address],
   xykActiveFarms: ["xykActiveFarms"],
   xykFarms: ["xykFarms"],
@@ -199,6 +200,7 @@ export const QUERY_KEYS = {
   polkadotAccounts: ["polkadotAccounts"],
   maxAddLiquidityLimit: ["maxAddLiquidityLimit"],
   otcFee: ["otcFee"],
+  useUniqueIds: ["useUniqueIds"],
   insufficientFee: ["insufficientFee"],
   coingeckoUsd: ["coingeckoUsd"],
   polStats: ["polStats"],
@@ -341,6 +343,7 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  lidoEthAPR: ["lidoEthAPR"],
   borrowUserSummary: (address: string) => [
     QUERY_KEY_PREFIX,
     "borrowUserSummary",
@@ -361,7 +364,6 @@ export const QUERY_KEYS = {
   ],
   spotPriceKey: (assetId: string) => ["spotPriceKey", assetId],
   displayPrices: (stableCoinId: string | undefined) => [
-    QUERY_KEY_PREFIX,
     "displayPrices",
     stableCoinId,
   ],

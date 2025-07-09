@@ -11,13 +11,14 @@ import {
 import { undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
-import { BN_0 } from "utils/constants"
+import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { parseBalanceData, TBalance } from "./balances"
-import { TAsset, TBond, TShareToken, useAssets } from "providers/assets"
-import { millisecondsInHour } from "date-fns/constants"
+import { TAsset, useAssets } from "providers/assets"
+import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { getAccountBalanceData } from "api/accountBalances"
 import { create } from "zustand"
-import { useShallow } from "hooks/useShallow"
+import { useUniqueIds } from "./consts"
+import { useEffect, useMemo } from "react"
 
 export type TYieldFarmEntry = {
   globalFarmId: string
@@ -50,9 +51,7 @@ export type TOmnipoolPosition = {
   price: string[]
 }
 
-export type TAccountAsset = {
-  balance?: TBalance
-  asset: TAsset
+export type TAccountPositions = {
   isPoolPositions: boolean
   xykDeposits?: TDeposit[]
   omnipoolDeposits?: TDeposit[]
@@ -62,12 +61,18 @@ export type TAccountAsset = {
   })[]
 }
 
+export type TAccountAsset = {
+  balance?: TBalance
+  asset: TAsset
+  isPoolPositions: boolean
+}
+
 export const useRefetchAccountAssets = () => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
 
   return () => {
-    queryClient.refetchQueries(QUERY_KEYS.accountAssets(account?.address))
+    queryClient.refetchQueries(QUERY_KEYS.accountPositions(account?.address))
   }
 }
 
@@ -180,28 +185,18 @@ const parseDepositData = (
     })
 }
 
-export const useAccountAssets = (givenAddress?: string) => {
+export const useAccountPositions = (givenAddress?: string) => {
   const { account } = useAccount()
   const { api, isLoaded } = useRpcProvider()
-  const { getAssetWithFallback, getShareTokenByAddress, isShareToken, isBond } =
-    useAssets()
-  const setIsPositions = useAccountData(
-    useShallow((state) => state.setIsPositions),
-  )
+  const { data: uniqueIds } = useUniqueIds()
 
   const address = givenAddress ?? account?.address
 
-  return useQuery(
-    QUERY_KEYS.accountAssets(address),
-    address != null
+  const { data, isLoading, isInitialLoading, isSuccess } = useQuery(
+    QUERY_KEYS.accountPositions(address),
+    address != null && uniqueIds
       ? async () => {
-          const [omnipoolNftId, miningNftId, xykMiningNftId, accountBalances] =
-            await Promise.all([
-              api.consts.omnipool.nftCollectionId,
-              api.consts.omnipoolLiquidityMining.nftCollectionId,
-              api.consts.xykLiquidityMining.nftCollectionId,
-              getAccountBalanceData(api, address),
-            ])
+          const { omnipoolNftId, miningNftId, xykMiningNftId } = uniqueIds
           const [omnipoolNftsRaw, miningNftsRaw, xykMiningNftsRaw] =
             await Promise.all([
               api.query.uniques.account.entries(address, omnipoolNftId),
@@ -270,19 +265,126 @@ export const useAccountAssets = (givenAddress?: string) => {
             true,
           )
 
-          const allBalances = accountBalances.map(([id, data]) => {
-            return parseBalanceData(data, id.toString(), address)
+          const accountAssetsMap: Map<string, TAccountPositions> = new Map([])
+
+          xykDeposits.forEach((deposit) => {
+            const id = deposit.data.ammPoolId
+            const balance = accountAssetsMap.get(id)
+
+            accountAssetsMap.set(id, {
+              ...(balance ?? {}),
+              xykDeposits: [...(balance?.xykDeposits ?? []), deposit],
+              isPoolPositions: true,
+            })
           })
 
+          omnipoolDeposits.forEach((omnipoolDeposit) => {
+            const id = omnipoolDeposit.data.ammPoolId
+
+            const balance = accountAssetsMap.get(id)
+
+            accountAssetsMap.set(id, {
+              ...(balance ?? {}),
+
+              omnipoolDeposits: [
+                ...(balance?.omnipoolDeposits ?? []),
+                omnipoolDeposit,
+              ],
+              isPoolPositions: true,
+            })
+          })
+
+          liquidityPositions.forEach((liquidityPosition) => {
+            const id = liquidityPosition.assetId
+
+            const balance = accountAssetsMap.get(id)
+
+            accountAssetsMap.set(id, {
+              ...(balance ?? {}),
+
+              liquidityPositions: [
+                ...(balance?.liquidityPositions ?? []),
+                liquidityPosition,
+              ],
+              isPoolPositions: true,
+            })
+          })
+
+          depositLiquidityPositions.forEach((depositLiquidityPosition) => {
+            const id = depositLiquidityPosition.assetId
+
+            const balance = accountAssetsMap.get(id)
+
+            accountAssetsMap.set(id, {
+              ...(balance ?? {}),
+
+              depositLiquidityPositions: [
+                ...(balance?.depositLiquidityPositions ?? []),
+                depositLiquidityPosition,
+              ],
+              isPoolPositions: true,
+            })
+          })
+
+          const isAnyPositions =
+            !!xykDeposits.length ||
+            !!omnipoolDeposits.length ||
+            !!liquidityPositions.length
+
           return {
-            omnipoolNfts,
-            miningNfts,
-            xykMiningNfts,
             liquidityPositions,
             depositLiquidityPositions,
             omnipoolDeposits,
             xykDeposits,
-            balances: allBalances,
+            accountAssetsMap,
+            accountAddress: address,
+            isAnyPositions,
+          }
+        }
+      : undefinedNoop,
+    {
+      enabled: !!address && isLoaded && !!uniqueIds,
+      staleTime: millisecondsInMinute,
+    },
+  )
+
+  useEffect(() => {
+    if (data?.isAnyPositions) {
+      setAccountPositions(data.isAnyPositions)
+    }
+  }, [data?.isAnyPositions])
+
+  return { data, isLoading, isInitialLoading, isSuccess }
+}
+
+export const useAccountBalances = (givenAddress?: string) => {
+  const { account } = useAccount()
+  const { api, isLoaded } = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+
+  const address = givenAddress ?? account?.address
+
+  const {
+    data: assets,
+    isInitialLoading,
+    isLoading,
+    isSuccess,
+  } = useQuery(
+    QUERY_KEYS.accountBalancesLive(address),
+    address != null
+      ? async () => {
+          const accountBalances = await getAccountBalanceData(api, address)
+
+          const accountAssets = []
+
+          for (const [id, data] of accountBalances) {
+            const parcedBalance = parseBalanceData(data, id.toString(), address)
+
+            accountAssets.push(parcedBalance)
+          }
+
+          return {
+            balances: accountAssets,
             accountAddress: address,
           }
         }
@@ -290,169 +392,86 @@ export const useAccountAssets = (givenAddress?: string) => {
     {
       enabled: !!address && isLoaded,
       staleTime: millisecondsInHour,
-      select: (data) => {
-        const {
-          balances = [],
-          xykDeposits = [],
-          omnipoolDeposits = [],
-          liquidityPositions = [],
-          depositLiquidityPositions = [],
-        } = data ?? {}
-
-        let isAnyPoolPositions = false
-        const accountShareTokensMap: Map<
-          string,
-          { balance: TBalance; asset: TShareToken }
-        > = new Map([])
-
-        const accountStableswapMap: Map<
-          string,
-          { balance: TBalance; asset: TAsset }
-        > = new Map([])
-
-        const accountBondsMap: Map<
-          string,
-          { balance: TBalance; asset: TBond }
-        > = new Map([])
-
-        const accountAssetsMap = balances.reduce<Map<string, TAccountAsset>>(
-          (acc, balance) => {
-            if (BN(balance.total).gt(0)) {
-              const asset = getAssetWithFallback(balance.assetId)
-              const isPoolPositions =
-                (asset.isShareToken || asset.isStableSwap) &&
-                BN(balance.balance).gt(0)
-
-              if (isPoolPositions) isAnyPoolPositions = true
-
-              acc.set(balance.assetId, { balance, asset, isPoolPositions })
-
-              if (isShareToken(asset))
-                accountShareTokensMap.set(balance.assetId, {
-                  balance,
-                  asset,
-                })
-
-              if (asset.isStableSwap)
-                accountStableswapMap.set(balance.assetId, {
-                  balance,
-                  asset,
-                })
-
-              if (isBond(asset))
-                accountBondsMap.set(balance.assetId, {
-                  balance,
-                  asset,
-                })
-            }
-
-            return acc
-          },
-          new Map([]),
-        )
-
-        xykDeposits.forEach((deposit) => {
-          const asset = getShareTokenByAddress(
-            deposit.data.ammPoolId.toString(),
-          )
-
-          if (asset) {
-            const balance = accountAssetsMap.get(asset.id)
-            isAnyPoolPositions = true
-
-            accountAssetsMap.set(asset.id, {
-              ...(balance ?? {}),
-              asset,
-              xykDeposits: [...(balance?.xykDeposits ?? []), deposit],
-              isPoolPositions: true,
-            })
-          }
-        })
-
-        omnipoolDeposits.forEach((omnipoolDeposit) => {
-          const asset = getAssetWithFallback(
-            omnipoolDeposit.data.ammPoolId.toString(),
-          )
-
-          if (asset) {
-            const balance = accountAssetsMap.get(asset.id)
-            isAnyPoolPositions = true
-
-            accountAssetsMap.set(asset.id, {
-              ...(balance ?? {}),
-              asset,
-              omnipoolDeposits: [
-                ...(balance?.omnipoolDeposits ?? []),
-                omnipoolDeposit,
-              ],
-              isPoolPositions: true,
-            })
-          }
-        })
-
-        liquidityPositions.forEach((liquidityPosition) => {
-          const asset = getAssetWithFallback(liquidityPosition.assetId)
-
-          if (asset) {
-            const balance = accountAssetsMap.get(asset.id)
-            isAnyPoolPositions = true
-
-            accountAssetsMap.set(asset.id, {
-              ...(balance ?? {}),
-              asset,
-              liquidityPositions: [
-                ...(balance?.liquidityPositions ?? []),
-                liquidityPosition,
-              ],
-              isPoolPositions: true,
-            })
-          }
-        })
-
-        depositLiquidityPositions.forEach((depositLiquidityPosition) => {
-          const asset = getAssetWithFallback(depositLiquidityPosition.assetId)
-
-          if (asset) {
-            const balance = accountAssetsMap.get(asset.id)
-            isAnyPoolPositions = true
-
-            accountAssetsMap.set(asset.id, {
-              ...(balance ?? {}),
-              asset,
-              depositLiquidityPositions: [
-                ...(balance?.depositLiquidityPositions ?? []),
-                depositLiquidityPosition,
-              ],
-              isPoolPositions: true,
-            })
-          }
-        })
-
-        setIsPositions(isAnyPoolPositions)
-
-        return {
-          ...data,
-          accountAssetsMap,
-          accountShareTokensMap,
-          accountStableswapMap,
-          accountBondsMap,
-          isAnyPoolPositions,
-        }
-      },
     },
   )
+
+  const data = useMemo(() => {
+    if (!assets) return undefined
+
+    const accountAssetsMap: Map<
+      string,
+      { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
+    > = new Map([])
+    let isBalance = false
+
+    for (const balance of assets.balances) {
+      if (balance.total !== "0") {
+        const asset = getAssetWithFallback(balance.assetId)
+
+        const isPoolPositions =
+          (asset.isShareToken ||
+            asset.isStableSwap ||
+            asset.id === GETH_ERC20_ASSET_ID) &&
+          balance.balance !== "0"
+
+        if (isPoolPositions) {
+          isBalance = true
+        }
+
+        accountAssetsMap.set(balance.assetId, {
+          balance,
+          asset,
+          isPoolPositions,
+        })
+      }
+    }
+
+    return { accountAssetsMap, balances: assets.balances, isBalance }
+  }, [assets, getAssetWithFallback])
+
+  useEffect(() => {
+    if (data?.isBalance) {
+      setAccountBalance(data.isBalance)
+    }
+  }, [data?.isBalance])
+
+  return { data, isLoading, isInitialLoading, isSuccess }
 }
 
-type useAccountDataStore = {
+type TAccountBalance = {
+  isBalance: boolean
+}
+
+type TAccountPosiitons = {
   isPositions: boolean
-  setIsPositions: (isPositions: boolean) => void
 }
 
-export const useAccountData = create<useAccountDataStore>((set) => ({
-  isPositions: false,
-  setIsPositions(isPositions) {
-    set({
-      isPositions,
-    })
-  },
+export const useIsAccountBalance = create<TAccountBalance>(() => ({
+  isBalance: false,
 }))
+
+export const useIsAccountPositions = create<TAccountPosiitons>(() => ({
+  isPositions: false,
+}))
+
+export const useXykVolumeTotal = create<{ volume?: string }>(() => ({
+  volume: undefined,
+}))
+
+const setAccountPositions = (isPositions: boolean) =>
+  useIsAccountPositions.setState((state) => {
+    if (state.isPositions !== isPositions) {
+      return { isPositions }
+    }
+
+    return { isPositions: state.isPositions }
+  })
+
+const setAccountBalance = (isBalance: boolean) =>
+  useIsAccountBalance.setState((state) => {
+    if (state.isBalance !== isBalance) {
+      return { isBalance }
+    }
+
+    return { isBalance: state.isBalance }
+  })

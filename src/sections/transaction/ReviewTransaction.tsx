@@ -47,6 +47,7 @@ export const ReviewTransaction = (props: Transaction) => {
 
   const isError = isSendError || !!signError
   const error = sendError || signError
+  const isMinimizeModalDisabled = props.disableAutoClose && !!props.steps
 
   const modalProps: Partial<ComponentProps<typeof Modal>> =
     (isLoading && isBroadcasted) || isSuccess || isError
@@ -68,6 +69,8 @@ export const ReviewTransaction = (props: Transaction) => {
   }
 
   const onMinimizeModal = () => {
+    if (isMinimizeModalDisabled) return
+
     setMinimizeModal(true)
     if (!props.disableAutoClose) props.onClose?.()
   }
@@ -99,12 +102,15 @@ export const ReviewTransaction = (props: Transaction) => {
         {...modalProps}
       >
         {isLoading && isBroadcasted ? (
-          <ReviewTransactionPending onClose={onMinimizeModal} />
+          <ReviewTransactionPending
+            onClose={onMinimizeModal}
+            disableAutoClose={isMinimizeModalDisabled}
+          />
         ) : isSuccess ? (
           <ReviewTransactionSuccess onClose={onMinimizeModal} />
         ) : isError ? (
           <ReviewTransactionError
-            onClose={onMinimizeModal}
+            onClose={onClose}
             onReview={onReview}
             error={error}
           />

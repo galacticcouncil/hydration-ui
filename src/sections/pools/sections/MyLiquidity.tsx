@@ -23,6 +23,7 @@ import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/Cr
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BigNumber from "bignumber.js"
 import { MyIsolatedPoolsTotal } from "sections/pools/header/MyIsolatedPoolsTotal"
+import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
 
 export const MyLiquidity = () => {
   const { account } = useAccount()
@@ -83,10 +84,10 @@ export const MyLiquidity = () => {
       </>
     )
 
-  return <MyLiquidityData />
+  return <MyLiquidityData id={id} />
 }
 
-const MyLiquidityData = () => {
+const MyLiquidityData = ({ id }: { id: number | undefined }) => {
   const { t } = useTranslation()
   const { search } = useSearchFilter()
   const navigate = useNavigate()
@@ -95,7 +96,6 @@ const MyLiquidityData = () => {
       id?: number
     }
   }>()
-  const { id } = searchQuery
 
   const pools = usePools()
   const xykPools = useXYKPools()
@@ -122,7 +122,7 @@ const MyLiquidityData = () => {
   const stablePoolTotal = useMemo(() => {
     if (pools.data) {
       return pools.data.reduce((acc, pool) => {
-        if (pool.meta.isStableSwap && pool.balance && pool.spotPrice) {
+        if (pool.isStablePool && pool.balance && pool.spotPrice) {
           acc = acc.plus(
             BigNumber(pool.balance.freeBalance)
               .shiftedBy(-pool.meta.decimals)
@@ -215,6 +215,8 @@ const MyLiquidityData = () => {
         ]}
       />
       <SearchFilter />
+
+      <GigaCampaignBanner />
 
       {!pools.isLoading &&
         !xykPools.isInitialLoading &&

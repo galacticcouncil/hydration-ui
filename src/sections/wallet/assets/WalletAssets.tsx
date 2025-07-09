@@ -2,7 +2,10 @@ import { WalletAssetsTablePlaceholder } from "sections/wallet/assets/table/place
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { WalletFarmingPositionsWrapper } from "./farmingPositions/wrapper/WalletFarmingPositionsWrapper"
 import { WalletAssetsPositionsWrapper } from "./hydraPositions/WalletAssetsPositionsWrapper"
-import { WalletAssetsHeader } from "./header/WalletAssetsHeader"
+import {
+  WalletAssetsHeader,
+  WalletAssetsHeaderSkeleton,
+} from "./header/WalletAssetsHeader"
 import { WalletAssetsTableSkeleton } from "./table/skeleton/WalletAssetsTableSkeleton"
 import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
 import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
@@ -17,7 +20,7 @@ import { WalletStrategyBanner } from "sections/wallet/strategy/WalletStrategyBan
 export const WalletAssets = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const { isLoaded, featureFlags } = useRpcProvider()
+  const { isLoaded } = useRpcProvider()
 
   const { category } = useWalletAssetsFilters()
 
@@ -28,7 +31,7 @@ export const WalletAssets = () => {
   if (!account)
     return (
       <div sx={{ flex: "column", gap: [24, 40] }}>
-        <WalletAssetsHeader disconnected />
+        <WalletAssetsHeaderSkeleton />
         <WalletAssetsTablePlaceholder />
       </div>
     )
@@ -72,7 +75,7 @@ export const WalletAssets = () => {
   return (
     <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
-      {featureFlags.strategies && <WalletStrategyBanner />}
+      <WalletStrategyBanner />
       <div sx={{ flex: "column", gap: [16, 20] }}>
         <WalletAssetsFilters />
         {section}

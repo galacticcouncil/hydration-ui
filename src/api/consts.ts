@@ -111,3 +111,30 @@ export const useOTCfee = () => {
     },
   )
 }
+
+export const useUniqueIds = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.useUniqueIds,
+    async () => {
+      const [omnipoolNftId, miningNftId, xykMiningNftId] = await Promise.all([
+        api.consts.omnipool.nftCollectionId,
+        api.consts.omnipoolLiquidityMining.nftCollectionId,
+        api.consts.xykLiquidityMining.nftCollectionId,
+      ])
+
+      return {
+        omnipoolNftId: omnipoolNftId.toString(),
+        miningNftId: miningNftId.toString(),
+        xykMiningNftId: xykMiningNftId.toString(),
+      }
+    },
+    {
+      enabled: isLoaded,
+      retry: 0,
+      cacheTime: Infinity,
+      staleTime: Infinity,
+    },
+  )
+}

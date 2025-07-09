@@ -2,7 +2,11 @@ import { Button } from "components/Button/Button"
 import { Icon } from "components/Icon/Icon"
 import { GradientText } from "components/Typography/GradientText/GradientText"
 import { useTranslation } from "react-i18next"
-import { TXYKPool, useXYKSpotPrice } from "sections/pools/PoolsPage.utils"
+import {
+  isStablepoolType,
+  TXYKPool,
+  useXYKSpotPrice,
+} from "sections/pools/PoolsPage.utils"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -13,10 +17,7 @@ import { useState } from "react"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
 import { PoolCapacity } from "sections/pools/pool/capacity/PoolCapacity"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
-import {
-  Page,
-  TransferModal,
-} from "sections/pools/stablepool/transfer/TransferModal"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 import {
   SPoolDetailsContainer,
   SValue,
@@ -25,13 +26,14 @@ import {
 } from "sections/pools/pool/details/PoolDetails.styled"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
+import { BN_1, BN_MILL, GETH_ERC20_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
-import { GDOTIncentives } from "sections/pools/stablepool/components/GDOTIncentives"
+import { GigaIncentives } from "sections/pools/stablepool/components/GigaIncentives"
+import { useStableswapPool } from "api/stableswap"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -44,22 +46,34 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
+  const isTransferModalOpen =
+    isOpen && (pool.meta.isStableSwap || pool.meta.isErc20)
+  const isGeth = !ixXYKPool && pool.isGETH
+
+  const initialAssetId = (() => {
+    if (!isTransferModalOpen || !isGeth) {
+      return undefined
+    }
+
+    const hasGethBalance = new BN(pool.balance?.freeBalance || "0").gt(0)
+
+    return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
+  })()
+
   const isFarms = pool.farms?.length > 0
 
   const modal = isOpen ? (
-    pool.meta.isStableSwap ? (
+    isTransferModalOpen ? (
       <TransferModal
-        defaultPage={pool.canAddLiquidity ? Page.OPTIONS : Page.ADD_LIQUIDITY}
         onClose={() => setOpen(false)}
         farms={pool.farms ?? []}
+        skipOptions={isGeth}
+        initialAssetId={initialAssetId}
       />
     ) : (
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
     )
   ) : null
-
-  const shouldRenderPoolCap =
-    !isXYKPoolType || pool.id !== GDOT_STABLESWAP_ASSET_ID
 
   return (
     <>
@@ -133,7 +147,7 @@ export const PoolDetails = () => {
         </div>
 
         <div sx={{ flex: ["column-reverse", "column"], gap: 16 }}>
-          {shouldRenderPoolCap && (
+          {pool.isInOmnipool && (
             <>
               <Separator
                 color="white"
@@ -219,10 +233,8 @@ export const PoolDetails = () => {
                 <Text color="white" fs={[14, 16]} fw={600} font="GeistMedium">
                   {ixXYKPool ? (
                     t("value.percentage", { value: pool.fee })
-                  ) : pool.stablepoolFee ? (
-                    t("value.percentage", {
-                      value: pool.stablepoolFee.times(100),
-                    })
+                  ) : pool.isStablePool ? (
+                    <StablepoolFee poolId={pool.poolId} />
                   ) : omnipoolFee.isLoading ? (
                     <Skeleton height={16} width={50} />
                   ) : (
@@ -247,7 +259,7 @@ export const PoolDetails = () => {
             </SValuesContainer>
           </div>
         </div>
-        {!ixXYKPool && pool.isStablePool ? (
+        {!ixXYKPool && isStablepoolType(pool) ? (
           <>
             <Separator
               color="white"
@@ -257,7 +269,7 @@ export const PoolDetails = () => {
 
             <CurrencyReserves reserves={pool.reserves} />
 
-            {pool.isGigaDOT && (
+            {pool.isGDOT && (
               <>
                 <Separator
                   color="white"
@@ -265,7 +277,7 @@ export const PoolDetails = () => {
                   sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
                 />
 
-                <GDOTIncentives />
+                <GigaIncentives id={pool.poolId} />
               </>
             )}
           </>
@@ -385,5 +397,21 @@ export const XYKRate = ({
         })}
       </Text>
     </SXYKRateContainer>
+  )
+}
+
+const StablepoolFee = ({ poolId }: { poolId: string }) => {
+  const { t } = useTranslation()
+  const { data } = useStableswapPool(poolId)
+
+  return (
+    <>
+      {t("value.percentage", {
+        value: BN(data?.fee.toString() ?? 0)
+          .div(BN_MILL)
+          .times(100),
+        decimalPlaces: 5,
+      })}
+    </>
   )
 }

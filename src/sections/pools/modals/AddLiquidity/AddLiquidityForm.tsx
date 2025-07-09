@@ -1,6 +1,6 @@
 import { Controller, FieldErrors, useForm } from "react-hook-form"
 import BN from "bignumber.js"
-import { BN_100 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_100 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -28,11 +28,15 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { createToastMessages } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useEffect, useState } from "react"
-import { useAssets } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { useAssetsPrice } from "state/displayPrice"
+import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 
 type Props = {
   assetId: string
@@ -59,6 +63,9 @@ export const AddLiquidityForm = ({
   const { createTransaction } = useStore()
   const isFarms = farms.length > 0
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
   const refetchAccountAssets = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
 
@@ -75,18 +82,34 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const { getAssetPrice } = useAssetsPrice([assetId])
+  const {
+    totalShares,
+    omnipoolFee,
+    assetMeta,
+    assetBalance,
+    sharesToGet,
+    isGETH,
+  } = useAddLiquidity(assetId, debouncedAmount)
 
-  const { poolShare, omnipoolFee, assetMeta, assetBalance, sharesToGet } =
-    useAddLiquidity(assetId, debouncedAmount)
+  const hfChange = useHealthFactorChange({
+    assetId,
+    amount: debouncedAmount,
+    action: ProtocolAction.withdraw,
+  })
+
+  const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
 
   const estimatedFees = useEstimatedFees(
     getAddToOmnipoolFee(api, isJoinFarms, farms),
   )
 
   const balance = assetBalance?.balance ?? "0"
-  const balanceMax =
-    estimatedFees.accountCurrencyId === assetMeta.id
+  const balanceMax = isGETH
+    ? BN.min(
+        BN(maxBalanceToWithdraw).shiftedBy(assetMeta.decimals),
+        balance,
+      ).toString()
+    : estimatedFees.accountCurrencyId === assetMeta.id
       ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(assetMeta.existentialDeposit)
@@ -109,13 +132,19 @@ export const AddLiquidityForm = ({
           ]),
           assetId,
           amount,
-          //@ts-ignore
           shares,
         )
       : api.tx.omnipool.addLiquidityWithLimit(assetId, amount, shares)
 
     return await createTransaction(
-      { tx },
+      {
+        tx: isGETH
+          ? api.tx.dispatcher.dispatchWithExtraGas(
+              tx.inner.toHex(),
+              AAVE_EXTRA_GAS,
+            )
+          : tx,
+      },
       {
         onSuccess: (result) => {
           refetchAccountAssets()
@@ -132,7 +161,7 @@ export const AddLiquidityForm = ({
           {
             t,
             tOptions: {
-              value: values.amount,
+              value: BN(values.amount),
               symbol: assetMeta?.symbol,
               where: "Omnipool",
             },
@@ -168,6 +197,10 @@ export const AddLiquidityForm = ({
         (key) => key !== "farm",
       ).length
 
+  const isHFDisabled = isGETH
+    ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
+    : false
+
   useEffect(() => {
     if (!isFarms) return
     if (isJoinFarmDisabled) {
@@ -202,7 +235,7 @@ export const AddLiquidityForm = ({
               onBlur={onChange}
               onChange={onChange}
               asset={assetId}
-              balance={BN(balance)}
+              balance={BN(balanceMax)}
               balanceMax={BN(balanceMax)}
               error={error?.message}
               onAssetOpen={onAssetOpen}
@@ -264,38 +297,33 @@ export const AddLiquidityForm = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        <Summary
-          rows={[
-            {
-              label: t("liquidity.remove.modal.price"),
-              content: (
-                <Text fs={14} color="white" tAlign="right">
-                  <Trans
-                    t={t}
-                    i18nKey="liquidity.add.modal.row.spotPrice"
-                    tOptions={{
-                      firstAmount: 1,
-                      firstCurrency: assetMeta?.symbol,
-                    }}
-                  >
-                    <DisplayValue value={BN(getAssetPrice(assetId).price)} />
-                  </Trans>
-                </Text>
-              ),
-            },
-            {
-              label: t("liquidity.add.modal.shareOfPool"),
-              content: poolShare?.gte(0.01)
-                ? t("value.percentage", {
-                    value: poolShare,
-                  })
-                : t("value.percentage", {
-                    numberPrefix: "<",
-                    value: BN(0.01),
-                  }),
-            },
-          ]}
+
+        <AddOmnipoolLiquiditySummary
+          asset={assetMeta}
+          sharesToGet={sharesToGet.toString()}
+          totalShares={totalShares.toString()}
         />
+
+        {hfChange && (
+          <>
+            <SummaryRow
+              label={t("healthFactor")}
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+            />
+            <HealthFactorRiskWarning
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+              sx={{ mb: 16 }}
+            />
+          </>
+        )}
+
         <Text color="warningOrange200" fs={14} fw={400} sx={{ my: 20 }}>
           {t("liquidity.add.modal.warning")}
         </Text>
@@ -321,11 +349,64 @@ export const AddLiquidityForm = ({
           width: "auto",
         }}
       />
-      <Button variant="primary" disabled={isSubmitDisabled}>
+      <Button variant="primary" disabled={isSubmitDisabled || isHFDisabled}>
         {isJoinFarms
           ? t("liquidity.add.modal.button.joinFarms")
           : t("liquidity.add.modal.confirmButton")}
       </Button>
     </form>
+  )
+}
+
+export const AddOmnipoolLiquiditySummary = ({
+  asset,
+  totalShares,
+  sharesToGet,
+}: {
+  asset: TAsset
+  totalShares: string
+  sharesToGet: string
+}) => {
+  const { t } = useTranslation()
+
+  const { getAssetPrice } = useAssetsPrice([asset.id])
+
+  const poolShare = BN(sharesToGet)
+    .div(BN(totalShares).plus(sharesToGet))
+    .times(100)
+
+  return (
+    <Summary
+      rows={[
+        {
+          label: t("liquidity.remove.modal.price"),
+          content: (
+            <Text fs={14} color="white" tAlign="right">
+              <Trans
+                t={t}
+                i18nKey="liquidity.add.modal.row.spotPrice"
+                tOptions={{
+                  firstAmount: 1,
+                  firstCurrency: asset.symbol,
+                }}
+              >
+                <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
+              </Trans>
+            </Text>
+          ),
+        },
+        {
+          label: t("liquidity.add.modal.shareOfPool"),
+          content: poolShare?.gte(0.01)
+            ? t("value.percentage", {
+                value: poolShare,
+              })
+            : t("value.percentage", {
+                numberPrefix: "<",
+                value: BN(0.01),
+              }),
+        },
+      ]}
+    />
   )
 }

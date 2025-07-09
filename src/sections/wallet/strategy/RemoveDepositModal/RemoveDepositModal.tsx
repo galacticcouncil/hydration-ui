@@ -13,24 +13,29 @@ import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
 import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
 import { useAssets } from "providers/assets"
-import { GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useBestTradeSell } from "api/trade"
 import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
+import { STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
+import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
 
 type Props = {
   readonly assetId: string
   readonly balance: string
+  readonly assetReceiveId?: string
   readonly onClose: () => void
+  readonly positions?: TRemoveFarmingPosition[]
 }
 
 export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
   onClose,
+  assetReceiveId,
+  positions,
 }) => {
   const { createTransaction } = useStore()
   const { tradable, getAssetWithFallback } = useAssets()
@@ -44,12 +49,12 @@ export const RemoveDepositModal: FC<Props> = ({
   const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
   const maxBalance = BigNumber.min(maxBalanceToWithdraw, balance).toString()
 
-  const form = useRemoveDepositForm({ maxBalance })
+  const form = useRemoveDepositForm({ maxBalance, assetReceiveId })
   const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
 
   const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
 
-  const { minAmountOut, swapTx, amountOut } = useBestTradeSell(
+  const { minAmountOut, getSwapTx, amountOut } = useBestTradeSell(
     assetId,
     assetReceived?.id ?? "",
     debouncedBalance,
@@ -65,9 +70,11 @@ export const RemoveDepositModal: FC<Props> = ({
     .shiftedBy(-(assetReceived?.decimals ?? 0))
     .toString()
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
+    const tx = await getSwapTx()
+
     createTransaction(
-      { tx: swapTx },
+      { tx },
       {
         toast: createToastMessages("wallet.strategy.remove.toast", {
           t,
@@ -164,9 +171,7 @@ export const RemoveDepositModal: FC<Props> = ({
               allowedAssets={tradable
                 .map((asset) => asset.id)
                 .filter(
-                  (assetId) =>
-                    assetId !== GDOT_ERC20_ASSET_ID &&
-                    assetId !== GDOT_STABLESWAP_ASSET_ID,
+                  (assetId) => !STRATEGY_ASSETS_BLACKLIST.includes(assetId),
                 )}
               onSelect={(asset) => {
                 form.setValue("assetReceived", asset, { shouldValidate: true })

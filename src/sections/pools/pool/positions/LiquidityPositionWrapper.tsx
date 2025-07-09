@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next"
 import { LiquidityPosition } from "./LiquidityPosition"
 import LiquidityIcon from "assets/icons/WaterRippleIcon.svg?react"
 import { Icon } from "components/Icon/Icon"
-import { TPoolFullData } from "sections/pools/PoolsPage.utils"
 import { Button } from "components/Button/Button"
 import TrashIcon from "assets/icons/IconRemove.svg?react"
 import { RemoveLiquidity } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity"
@@ -19,6 +18,7 @@ import BN from "bignumber.js"
 import { LrnaPositionTooltip } from "sections/pools/components/LrnaPositionTooltip"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TLPData } from "utils/omnipool"
+import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 
 export const LiquidityPositionWrapper = () => {
   const { t } = useTranslation()
@@ -26,10 +26,14 @@ export const LiquidityPositionWrapper = () => {
   const [openRemove, setOpenRemove] = useState<TLPData | TLPData[] | undefined>(
     undefined,
   )
-  const pool = usePoolData().pool as TPoolFullData
+  const { pool } = usePoolData()
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const positions = pool.omnipoolNftPositions
+  const omnipoolPositions = useOmnipoolPositionsData()
+
+  const positions = omnipoolPositions.data.filter(
+    (position) => position.assetId === pool.id,
+  )
   const positionsNumber = positions.length
 
   const total = useMemo(() => {

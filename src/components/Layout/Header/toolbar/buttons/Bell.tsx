@@ -6,7 +6,7 @@ import {
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { useToast } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { useOpenGovReferendas, useReferendums } from "api/democracy"
+import { useOpenGovReferendas } from "api/democracy"
 import { m as motion } from "framer-motion"
 import {
   SToolbarButton,
@@ -19,7 +19,6 @@ export const Bell = () => {
   const { setSidebar, toasts } = useToast()
   const { t } = useTranslation()
 
-  const { data: referendums } = useReferendums("ongoing")
   const { isLoading: isOpenGovLoading, data: openGovReferendas } =
     useOpenGovReferendas()
 
@@ -31,7 +30,7 @@ export const Bell = () => {
   )
   const isLoading = !!loadingToasts.length || isOpenGovLoading
 
-  const hasReferendum = !!referendums?.length || !!openGovReferendas?.length
+  const hasReferendum = !!openGovReferendas?.length
   const hasBridgeToasts = !!bridgeToasts.length
 
   const tooltipText = `

@@ -10,13 +10,13 @@ import { gql, request } from "graphql-request"
 import { isNotNil, normalizeId, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { BN_0, VALID_STABLEPOOLS } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { useIndexerUrl, useSquidUrl } from "./provider"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
 import { groupBy } from "utils/rx"
-import { useOmnipoolIds, useValidXYKPoolAddresses } from "state/store"
+import { useValidXYKPoolAddresses } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { useEffect } from "react"
 import { safeConvertAddressSS58 } from "utils/formatting"
@@ -390,7 +390,7 @@ const getVolumeDaily = async (assetId?: string) => {
   return data
 }
 
-export const useXYKSquidVolumes = (address?: string[]) => {
+export const useXYKSquidVolumes = (address?: string[], disabled?: boolean) => {
   const url = useSquidUrl()
   const { addresses: validAddresses = [] } = useValidXYKPoolAddresses()
   const queryAddresses = address ?? validAddresses
@@ -424,16 +424,15 @@ export const useXYKSquidVolumes = (address?: string[]) => {
         }))
     },
     {
-      enabled: !!queryAddresses.length,
+      enabled: !!queryAddresses.length && !disabled,
       staleTime: millisecondsInHour,
       cacheTime: millisecondsInHour,
     },
   )
 }
 
-export const useOmnipoolVolumes = () => {
+export const useOmnipoolVolumes = (disabled?: boolean) => {
   const url = useSquidUrl()
-  const ids = useOmnipoolIds(useShallow((state) => state.ids))
 
   return useQuery(
     QUERY_KEYS.omnipoolSquidVolumes,
@@ -443,7 +442,7 @@ export const useOmnipoolVolumes = () => {
         url,
         OmnipoolVolumeDocument,
         {
-          filter: { assetIds: ids, period: AggregationTimeRange["24H"] },
+          filter: { period: AggregationTimeRange["24H"] },
         },
       )
 
@@ -456,14 +455,14 @@ export const useOmnipoolVolumes = () => {
     },
 
     {
-      enabled: !!ids,
+      enabled: !disabled,
       cacheTime: millisecondsInHour,
       staleTime: millisecondsInHour,
     },
   )
 }
 
-export const useStablepoolVolumes = () => {
+export const useStablepoolVolumes = (disabled?: boolean) => {
   const url = useSquidUrl()
 
   return useQuery(
@@ -475,7 +474,6 @@ export const useStablepoolVolumes = () => {
         StablepoolVolumeDocument,
         {
           filter: {
-            poolIds: VALID_STABLEPOOLS,
             period: AggregationTimeRange["24H"],
           },
         },
@@ -494,8 +492,8 @@ export const useStablepoolVolumes = () => {
           return { poolId: node.poolId, volumes }
         })
     },
-
     {
+      enabled: !disabled,
       staleTime: millisecondsInHour,
       cacheTime: millisecondsInHour,
     },
@@ -515,7 +513,7 @@ export const useStablepoolVolumeSubscription = () => {
           query: `
             subscription {
               stableswapHistoricalVolumesByPeriod(
-                filter: {poolIds: ${JSON.stringify(VALID_STABLEPOOLS)}, period: _24H_}
+                filter: {period: _24H_}
               ) {
                 nodes {
                   poolId

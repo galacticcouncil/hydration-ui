@@ -20,8 +20,11 @@ import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyR
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import {
-  BN_0,
+  AAVE_EXTRA_GAS,
+  BN_100,
+  BN_MILL,
   GDOT_ERC20_ASSET_ID,
+  GETH_ERC20_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import { useEstimatedFees } from "api/transaction"
@@ -30,18 +33,27 @@ import {
   getAddToOmnipoolFee,
   useAddToOmnipoolZod,
 } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
-import { scale } from "utils/balance"
+import { scale, scaleHuman } from "utils/balance"
 import { Alert } from "components/Alert/Alert"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Separator } from "components/Separator/Separator"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import { JoinFarmsSection } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
 import { usePoolData } from "sections/pools/pool/Pool"
-import { TPoolFullData } from "sections/pools/PoolsPage.utils"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { useBestTradeSell } from "api/trade"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useSpotPrice } from "api/spotPrice"
+import { useStableswapPool } from "api/stableswap"
+import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useLiquidityLimit } from "state/liquidityLimit"
+import { AddOmnipoolLiquiditySummary } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
+import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
+import { ProtocolAction } from "@aave/contract-helpers"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 
 type Props = {
   asset: TAsset
@@ -52,6 +64,7 @@ type Props = {
   isStablepoolOnly: boolean
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
+  initialAmount?: string
 }
 
 const createFormSchema = (balance: string, decimals: number) =>
@@ -68,25 +81,27 @@ export const AddStablepoolLiquidity = ({
   isStablepoolOnly,
   isJoinFarms,
   setIsJoinFarms,
+  initialAmount,
 }: Props) => {
-  const { api } = useRpcProvider()
+  const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { addLiquidityLimit } = useLiquidityLimit()
 
-  const accountBalances = useAccountAssets()
-  const {
-    reserves,
-    stablepoolFee: fee = BN_0,
-    farms,
-    isGigaDOT,
-    id: poolId,
-  } = usePoolData().pool as TPoolFullData
+  const { account } = useAccount()
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
+  const { data: accountBalances } = useAccountBalances()
+  const { reserves, farms, isGDOT, poolId, isGETH, id, symbol } = usePoolData()
+    .pool as TStablepool
 
   const { t } = useTranslation()
 
-  const walletBalance = accountBalances.data?.accountAssetsMap.get(asset.id)
-    ?.balance?.balance
+  const walletBalance = accountBalances?.accountAssetsMap.get(asset.id)?.balance
+    ?.balance
 
-  const omnipoolZod = useAddToOmnipoolZod(poolId, farms, true)
+  const omnipoolZod = useAddToOmnipoolZod(id, farms, true)
 
   const estimationTxs = [
     api.tx.stableswap.addLiquidity(poolId, [
@@ -95,11 +110,19 @@ export const AddStablepoolLiquidity = ({
     ...(!isStablepoolOnly ? getAddToOmnipoolFee(api, isJoinFarms, farms) : []),
   ]
 
+  const isGETHSelected = isGETH && asset.id === GETH_ERC20_ASSET_ID
+  const isSwap = isGDOT || (isGETH && !isGETHSelected)
+
   const estimatedFees = useEstimatedFees(estimationTxs)
+  const maxBalanceToWithdraw = useMaxWithdrawAmount(asset.id)
 
   const balance = walletBalance ?? "0"
-  const balanceMax =
-    estimatedFees.accountCurrencyId === asset.id
+  const balanceMax = isGETHSelected
+    ? BN.min(
+        BN(maxBalanceToWithdraw).shiftedBy(asset.decimals),
+        balance,
+      ).toString()
+    : estimatedFees.accountCurrencyId === asset.id
       ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
           .minus(asset.existentialDeposit)
@@ -108,13 +131,16 @@ export const AddStablepoolLiquidity = ({
 
   const stablepoolZod = createFormSchema(balanceMax, asset?.decimals)
 
+  const resolver = isStablepoolOnly
+    ? stablepoolZod
+    : omnipoolZod
+      ? omnipoolZod.merge(stablepoolZod)
+      : undefined
+
   const form = useForm<{ value: string; amount: string }>({
     mode: "onChange",
-    resolver: zodResolver(
-      !isStablepoolOnly && omnipoolZod
-        ? omnipoolZod.merge(stablepoolZod)
-        : stablepoolZod,
-    ),
+    defaultValues: { value: initialAmount },
+    resolver: resolver ? zodResolver(resolver) : undefined,
   })
   const { formState } = form
   const { getAssetPrice } = useAssetsPrice([asset.id])
@@ -124,16 +150,32 @@ export const AddStablepoolLiquidity = ({
 
   const [debouncedValue] = useDebouncedValue(value, 300)
 
-  const { minAmountOut, swapTx } = useBestTradeSell(
-    asset.id,
-    isGigaDOT ? GDOT_ERC20_ASSET_ID : "",
+  const { getSwapTx } = useBestTradeSell(
+    isSwap ? asset.id : "",
+    isGDOT ? GDOT_ERC20_ASSET_ID : isGETH && !!resolver ? id : "",
     debouncedValue ?? "0",
+    isGETH
+      ? (minAmount) => {
+          form.setValue(
+            "amount",
+            scaleHuman(minAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
+            { shouldValidate: true, shouldTouch: true },
+          )
+        }
+      : undefined,
   )
 
-  const getShares = useStablepoolShares({
+  const { getShares, totalShares } = useStablepoolShares({
     poolId,
     asset,
     reserves,
+    isGETHSelected,
+  })
+
+  const hfChange = useHealthFactorChange({
+    assetId: asset.id,
+    amount: debouncedValue,
+    action: ProtocolAction.withdraw,
   })
 
   const handleShares = (value: string) => {
@@ -147,6 +189,70 @@ export const AddStablepoolLiquidity = ({
   const onSubmit = async (values: FormValues<typeof form>) => {
     if (asset.decimals == null) {
       throw new Error("Missing asset meta")
+    }
+
+    const shiftedAmount = scale(
+      values.amount,
+      STABLEPOOL_TOKEN_DECIMALS,
+    ).toString()
+    const secondStepperLabel = t(
+      `liquidity.add.modal.geth.stepper.second${isJoinFarms ? ".joinFarms" : ""}`,
+    )
+
+    const addToOmnipoolToasts = createToastMessages(
+      `liquidity.add.modal.${isJoinFarms ? "andJoinFarms." : ""}toast`,
+      {
+        t,
+        tOptions: {
+          value: BN(values.amount),
+          symbol,
+          where: "Omnipool",
+        },
+        components: ["span", "span.highlight"],
+      },
+    )
+
+    if (isGETHSelected) {
+      const shares = shiftedAmount
+
+      const limitShares = BN(shares)
+        .times(BN_100.minus(addLiquidityLimit).div(BN_100))
+        .toFixed(0)
+
+      const secondTx = api.tx.dispatcher.dispatchWithExtraGas(
+        isJoinFarms
+          ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+              farms.map<[string, string]>((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ]),
+              id,
+              scale(values.value, STABLEPOOL_TOKEN_DECIMALS).toString(),
+              limitShares,
+            )
+          : api.tx.omnipool.addLiquidityWithLimit(id, shares, limitShares),
+        AAVE_EXTRA_GAS,
+      )
+
+      createTransaction(
+        {
+          tx: secondTx,
+          title: secondStepperLabel,
+        },
+        {
+          onSuccess: (result) => onSuccess(result, shiftedAmount),
+          onSubmitted: () => {
+            onSubmitted(shares)
+            form.reset()
+          },
+          onError: () => onClose(),
+          onClose,
+          onBack: () => {},
+          toast: addToOmnipoolToasts,
+        },
+      )
+
+      return
     }
 
     const toast = createToastMessages("liquidity.add.modal.toast", {
@@ -182,26 +288,98 @@ export const AddStablepoolLiquidity = ({
             : null,
         )
 
-    return await createTransaction(
+    const initialBalance =
+      accountBalances?.accountAssetsMap.get(id)?.balance?.freeBalance ?? "0"
+
+    const isTwoStepsTx = isGETH && !isStablepoolOnly
+
+    const swapTx = await getSwapTx()
+
+    await createTransaction(
       {
-        tx: isGigaDOT ? swapTx : tx,
+        tx: isSwap ? swapTx : tx,
+        title: isGETH ? t("liquidity.add.modal.geth.stepper.first") : undefined,
       },
       {
-        onSuccess: (result) =>
-          onSuccess(
-            result,
-            scale(values.amount, STABLEPOOL_TOKEN_DECIMALS).toString(),
-          ),
+        onSuccess: (result) => onSuccess(result, shiftedAmount),
+        onSubmitted: () => {
+          if (!isTwoStepsTx) {
+            onSubmitted(shares)
+            form.reset()
+          }
+        },
+        onError: () => onClose(),
+        onClose,
+        onBack: () => {},
+        steps: isTwoStepsTx
+          ? [
+              {
+                label: t("liquidity.add.modal.geth.stepper.first"),
+                state: "active",
+              },
+              {
+                label: secondStepperLabel,
+                state: "todo",
+              },
+            ]
+          : undefined,
+        toast,
+        disableAutoClose: isGETH,
+      },
+    )
+
+    if (!isTwoStepsTx) return
+
+    const balanceApi = (
+      await sdk.client.balance.getBalance(account?.address ?? "", id)
+    ).toString()
+
+    const diffBalance = BN(balanceApi).minus(initialBalance).toString()
+
+    const limitShares = BN(diffBalance)
+      .times(BN_100.minus(addLiquidityLimit).div(BN_100))
+      .toFixed(0)
+
+    const secondTx = api.tx.dispatcher.dispatchWithExtraGas(
+      isJoinFarms
+        ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
+            farms.map<[string, string]>((farm) => [
+              farm.globalFarmId,
+              farm.yieldFarmId,
+            ]),
+            id,
+            diffBalance,
+            limitShares,
+          )
+        : api.tx.omnipool.addLiquidityWithLimit(id, diffBalance, limitShares),
+      AAVE_EXTRA_GAS,
+    )
+
+    await createTransaction(
+      {
+        tx: secondTx,
+        title: secondStepperLabel,
+      },
+      {
+        onSuccess: (result) => onSuccess(result, shiftedAmount),
         onSubmitted: () => {
           onSubmitted(shares)
           form.reset()
         },
-        onError: () => {
-          onClose()
-        },
+        onError: () => onClose(),
         onClose,
         onBack: () => {},
-        toast,
+        steps: [
+          {
+            label: t("liquidity.add.modal.geth.stepper.first"),
+            state: "done",
+          },
+          {
+            label: secondStepperLabel,
+            state: "active",
+          },
+        ],
+        toast: addToOmnipoolToasts,
       },
     )
   }
@@ -209,7 +387,7 @@ export const AddStablepoolLiquidity = ({
   const onInvalidSubmit = (errors: FieldErrors<FormValues<typeof form>>) => {
     if (
       !isJoinFarms &&
-      (errors.amount as { farm?: { message: string } }).farm
+      (errors.amount as { farm?: { message: string } })?.farm
     ) {
       onSubmit(form.getValues())
     }
@@ -230,6 +408,10 @@ export const AddStablepoolLiquidity = ({
       : !!Object.keys(formState.errors.amount ?? {}).filter(
           (key) => key !== "farm",
         ).length
+
+  const isHFDisabled = isGETH
+    ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
+    : false
 
   useEffect(() => {
     if (!farms.length || isStablepoolOnly) return
@@ -264,9 +446,9 @@ export const AddStablepoolLiquidity = ({
               value={value}
               onChange={(v) => {
                 onChange(v)
-                handleShares(v)
+                if (!isGETH || isGETHSelected) handleShares(v)
               }}
-              balance={BN(balance)}
+              balance={BN(balanceMax)}
               balanceMax={BN(balanceMax)}
               asset={asset.id}
               error={error?.message}
@@ -275,11 +457,9 @@ export const AddStablepoolLiquidity = ({
           )}
         />
         <Spacer size={20} />
-        <SummaryRow
-          label={t("liquidity.add.modal.tradeFee")}
-          content={t("value.percentage", { value: fee.multipliedBy(100) })}
-          description={t("liquidity.add.modal.tradeFee.description")}
-        />
+
+        <FeeRow poolId={poolId} />
+
         <Separator
           color="darkBlue401"
           sx={{
@@ -302,8 +482,18 @@ export const AddStablepoolLiquidity = ({
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
         </Text>
-        {isGigaDOT ? (
-          <GigaDotSummary selectedAsset={asset} minAmountOut={minAmountOut} />
+        {isGETHSelected ? (
+          <AddOmnipoolLiquiditySummary
+            asset={asset}
+            sharesToGet={scale(shares, STABLEPOOL_TOKEN_DECIMALS).toString()}
+            totalShares={totalShares ?? "0"}
+          />
+        ) : isGDOT || isGETH ? (
+          <GigaDotSummary
+            selectedAsset={asset}
+            minAmountOut={shares}
+            poolId={poolId}
+          />
         ) : (
           <Summary
             rows={[
@@ -335,6 +525,26 @@ export const AddStablepoolLiquidity = ({
           />
         )}
 
+        {hfChange && (
+          <>
+            <SummaryRow
+              label={t("healthFactor")}
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+            />
+            <HealthFactorRiskWarning
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+              sx={{ mb: 16 }}
+            />
+          </>
+        )}
+
         {customErrors?.cap ? (
           <Alert variant="warning" css={{ marginBottom: 8 }}>
             {customErrors.cap.message}
@@ -358,7 +568,7 @@ export const AddStablepoolLiquidity = ({
           width: "auto",
         }}
       />
-      <Button variant="primary" disabled={isSubmitDisabled}>
+      <Button variant="primary" disabled={isSubmitDisabled || isHFDisabled}>
         {isJoinFarms
           ? t("liquidity.add.modal.button.joinFarms")
           : t("liquidity.add.modal.confirmButton")}
@@ -367,18 +577,38 @@ export const AddStablepoolLiquidity = ({
   )
 }
 
+const FeeRow = ({ poolId }: { poolId: string }) => {
+  const { t } = useTranslation()
+  const { data } = useStableswapPool(poolId)
+
+  return (
+    <SummaryRow
+      label={t("liquidity.add.modal.tradeFee")}
+      content={t("value.percentage", {
+        value: BN(data?.fee.toString() ?? 0)
+          .div(BN_MILL)
+          .multipliedBy(100),
+      })}
+      description={t("liquidity.add.modal.tradeFee.description")}
+    />
+  )
+}
+
 const GigaDotSummary = ({
   selectedAsset,
   minAmountOut,
+  poolId,
 }: {
   selectedAsset: TAsset
   minAmountOut: string
+  poolId: string
 }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
-  const gigaDotMeta = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
-  const { data } = useSpotPrice(GDOT_ERC20_ASSET_ID, selectedAsset.id)
+  const aTokenId = REVERSE_A_TOKEN_UNDERLYING_ID_MAP[poolId]
+  const meta = getAssetWithFallback(aTokenId)
+  const { data } = useSpotPrice(aTokenId, selectedAsset.id)
 
   return (
     <Summary
@@ -386,9 +616,9 @@ const GigaDotSummary = ({
         {
           label: t("liquidity.stablepool.add.minimalReceived"),
           content: t("value.tokenWithSymbol", {
-            value: BN(minAmountOut).shiftedBy(-gigaDotMeta.decimals),
+            value: BN(minAmountOut),
             type: "token",
-            symbol: gigaDotMeta?.name ?? "GIGADOT",
+            symbol: meta.name,
           }),
         },
         {
@@ -400,7 +630,7 @@ const GigaDotSummary = ({
                 i18nKey="liquidity.add.modal.row.spotPrice"
                 tOptions={{
                   firstAmount: 1,
-                  firstCurrency: gigaDotMeta.symbol,
+                  firstCurrency: meta.symbol,
                 }}
               >
                 {t("value.tokenWithSymbol", {

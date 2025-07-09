@@ -14,7 +14,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
-import { useAccountAssets } from "api/deposits"
+import { useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { scaleHuman } from "utils/balance"
 import { useAssetsPrice } from "state/displayPrice"
@@ -43,7 +43,7 @@ export const useAssetsData = ({
   const rugCheck = useExternalTokensRugCheck()
 
   const { data: accountAssets, isLoading: isBalancesLoading } =
-    useAccountAssets(address)
+    useAccountBalances(address)
   const getExternalMeta = useExternalTokenMeta()
 
   const { balances = [] } = accountAssets ?? {}

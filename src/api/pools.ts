@@ -3,14 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { ApiPromise } from "@polkadot/api"
 import type { u32 } from "@polkadot/types"
-import { PoolToken, PoolType } from "@galacticcouncil/sdk"
+import { PoolBase, PoolToken, PoolType, StableSwap } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
 import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
 import { useActiveQueries } from "hooks/useActiveQueries"
-import { setOmnipoolIds, setValidXYKPoolAddresses } from "state/store"
+import { setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
 
 export const useSDKPools = () => {
@@ -27,73 +27,70 @@ export const useSDKPools = () => {
     queryFn: async () => {
       const pools = await api.router.getPools()
 
-      const stablePools = pools.filter((pool) => pool.type === PoolType.Stable)
+      const stablePools: StableSwap[] = []
+      const xykPools: PoolBase[] = []
+      const validXYKPoolAddresses: string[] = []
+      const omnipoolTokens: TOmnipoolAssetsData = []
+      let hub: PoolToken | undefined
 
-      const omnipoolTokens = (
-        pools.find((pool) => pool.type === PoolType.Omni)
-          ?.tokens as OmniPoolToken[]
-      ).map((token) => {
-        return {
-          ...token,
-          shares: token.shares?.toString(),
-          protocolShares: token.protocolShares?.toString(),
-          cap: token.cap?.toString(),
-          hubReserves: token.hubReserves?.toString(),
+      pools.forEach((pool) => {
+        if (pool.type === PoolType.Stable) {
+          stablePools.push(pool as StableSwap)
+        } else if (pool.type === PoolType.XYK) {
+          xykPools.push(pool)
+
+          const isValid = pool.tokens.some(
+            (asset) => asset.isSufficient || whitelist?.includes(asset.id),
+          )
+
+          if (isValid) {
+            validXYKPoolAddresses.push(pool.address)
+          }
+        } else if (pool.type === PoolType.Omni) {
+          const tokens = pool.tokens as OmniPoolToken[]
+
+          tokens.forEach((tokenRaw) => {
+            const token = {
+              ...tokenRaw,
+              shares: tokenRaw.shares?.toString(),
+              protocolShares: tokenRaw.protocolShares?.toString(),
+              cap: tokenRaw.cap?.toString(),
+              hubReserves: tokenRaw.hubReserves?.toString(),
+            }
+
+            if (token.id === HUB_ID) {
+              hub = token
+            } else {
+              const {
+                id,
+                hubReserves,
+                cap,
+                protocolShares,
+                shares,
+                tradeable,
+                balance,
+              } = token
+
+              omnipoolTokens.push({
+                id,
+                hubReserve: hubReserves,
+                cap,
+                protocolShares,
+                shares,
+                bits: tradeable,
+                balance,
+              })
+            }
+          })
         }
       })
 
-      const { tokens, hub } = omnipoolTokens.reduce<{
-        tokens: TOmnipoolAssetsData
-        hub: PoolToken
-      }>(
-        (acc, token) => {
-          if (token.id === HUB_ID) {
-            acc.hub = token
-          } else {
-            const {
-              id,
-              hubReserves,
-              cap,
-              protocolShares,
-              shares,
-              tradeable,
-              balance,
-            } = token
-
-            acc.tokens.push({
-              id,
-              hubReserve: hubReserves,
-              cap,
-              protocolShares,
-              shares,
-              bits: tradeable,
-              balance,
-            } as TOmnipoolAssetsData[number])
-          }
-
-          return acc
-        },
-        { tokens: [], hub: {} as PoolToken },
-      )
-
-      const xykPools = pools.filter((pool) => pool.type === PoolType.XYK)
-
-      queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, tokens)
+      queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, omnipoolTokens)
       queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
       queryClient.setQueryData(QUERY_KEYS.hubToken, hub)
       queryClient.setQueryData(QUERY_KEYS.xykPools, xykPools)
 
-      setOmnipoolIds(tokens.map((token) => token.id))
-
-      setValidXYKPoolAddresses(
-        xykPools
-          .filter((pool) =>
-            pool.tokens.some(
-              (asset) => asset.isSufficient || whitelist?.includes(asset.id),
-            ),
-          )
-          .map((pool) => pool.address),
-      )
+      setValidXYKPoolAddresses(validXYKPoolAddresses)
 
       return false
     },

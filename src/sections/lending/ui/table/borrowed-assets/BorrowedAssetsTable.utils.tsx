@@ -13,9 +13,9 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
-import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
-import { OverrideApy } from "sections/pools/stablepool/components/GDOTIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export type TBorrowedAssetsTable = typeof useBorrowedAssetsTableData
 export type TBorrowedAssetsTableData = ReturnType<TBorrowedAssetsTable>
@@ -26,6 +26,8 @@ const { accessor, display } = createColumnHelper<TBorrowedAssetsRow>()
 export const useBorrowedAssetsTableColumns = () => {
   const { t } = useTranslation()
   const { openRepay } = useModalContext()
+
+  const { isBound } = useEvmAccount()
 
   return useMemo(
     () => [
@@ -97,7 +99,7 @@ export const useBorrowedAssetsTableColumns = () => {
         cell: ({ row }) => {
           const { reserve, underlyingAsset, borrowRateMode } = row.original
 
-          const disableRepay = !reserve.isActive || reserve.isPaused
+          const disableRepay = !isBound || !reserve.isActive || reserve.isPaused
           return (
             <Button
               disabled={disableRepay}
@@ -113,7 +115,7 @@ export const useBorrowedAssetsTableColumns = () => {
         },
       }),
     ],
-    [openRepay, t],
+    [isBound, openRepay, t],
   )
 }
 
@@ -121,47 +123,44 @@ export const useBorrowedAssetsTableData = () => {
   const { user, loading } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
 
-  const { isBound } = useEvmAccount()
-
   const data = useMemo(() => {
-    if (!isBound) return []
-    const borrowPositions =
-      user?.userReservesData.reduce(
-        (acc, userReserve) => {
-          if (userReserve.variableBorrows !== "0") {
-            acc.push({
-              ...userReserve,
-              borrowRateMode: InterestRate.Variable,
-              reserve: {
-                ...userReserve.reserve,
-                ...(userReserve.reserve.isWrappedBaseAsset
-                  ? fetchIconSymbolAndName({
-                      symbol: currentNetworkConfig.baseAssetSymbol,
-                      underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-                    })
-                  : {}),
-              },
-            })
-          }
-          if (userReserve.stableBorrows !== "0") {
-            acc.push({
-              ...userReserve,
-              borrowRateMode: InterestRate.Stable,
-              reserve: {
-                ...userReserve.reserve,
-                ...(userReserve.reserve.isWrappedBaseAsset
-                  ? fetchIconSymbolAndName({
-                      symbol: currentNetworkConfig.baseAssetSymbol,
-                      underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-                    })
-                  : {}),
-              },
-            })
-          }
-          return acc
-        },
-        [] as (ComputedUserReserveData & { borrowRateMode: InterestRate })[],
-      ) || []
+    if (!user?.userReservesData) return []
+    const borrowPositions = user.userReservesData.reduce(
+      (acc, userReserve) => {
+        if (userReserve.variableBorrows !== "0") {
+          acc.push({
+            ...userReserve,
+            borrowRateMode: InterestRate.Variable,
+            reserve: {
+              ...userReserve.reserve,
+              ...(userReserve.reserve.isWrappedBaseAsset
+                ? fetchIconSymbolAndName({
+                    symbol: currentNetworkConfig.baseAssetSymbol,
+                    underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
+                  })
+                : {}),
+            },
+          })
+        }
+        if (userReserve.stableBorrows !== "0") {
+          acc.push({
+            ...userReserve,
+            borrowRateMode: InterestRate.Stable,
+            reserve: {
+              ...userReserve.reserve,
+              ...(userReserve.reserve.isWrappedBaseAsset
+                ? fetchIconSymbolAndName({
+                    symbol: currentNetworkConfig.baseAssetSymbol,
+                    underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
+                  })
+                : {}),
+            },
+          })
+        }
+        return acc
+      },
+      [] as (ComputedUserReserveData & { borrowRateMode: InterestRate })[],
+    )
 
     return borrowPositions.map((item) => {
       return {
@@ -184,7 +183,7 @@ export const useBorrowedAssetsTableData = () => {
             : item.reserve.sIncentivesData,
       }
     })
-  }, [isBound, currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
+  }, [currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
 
   return {
     data,

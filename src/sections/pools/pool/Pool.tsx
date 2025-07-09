@@ -1,8 +1,8 @@
 import {
+  TAnyPool,
   TPool,
-  TPoolFullData,
   TXYKPool,
-  usePoolDetails,
+  useStableSwapReserves,
 } from "sections/pools/PoolsPage.utils"
 import { PoolDetails } from "sections/pools/pool/details/PoolDetails"
 import {
@@ -13,12 +13,14 @@ import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { SPoolContainer } from "./Pool.styled"
 import { createContext, useContext } from "react"
+import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
+import { RedepositAllFarmsButton } from "sections/pools/farms/position/redeposit/RedepositAllFarmsButton"
 
 export const PoolContext = createContext<{
-  pool: TPoolFullData | TXYKPool
+  pool: TAnyPool
   isXYK: boolean
 }>({
-  pool: {} as TPoolFullData,
+  pool: {} as TAnyPool,
   isXYK: false,
 })
 
@@ -27,19 +29,38 @@ export const usePoolData = () => useContext(PoolContext)
 export const PoolWrapper = ({ pool }: { pool: TPool | TXYKPool }) => {
   const isXYK = isXYKPoolType(pool)
 
-  return isXYK ? <XYKPool pool={pool} /> : <Pool pool={pool} />
+  return isXYK ? (
+    <XYKPool pool={pool} />
+  ) : pool.isStablePool ? (
+    <Stablepool pool={pool} />
+  ) : (
+    <Pool pool={pool} />
+  )
 }
 
 const Pool = ({ pool }: { pool: TPool }) => {
-  const poolDetails = usePoolDetails(pool.id)
+  return (
+    <PoolContext.Provider value={{ pool, isXYK: false }}>
+      <SPoolContainer>
+        <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
+        <PoolDetails />
+        <MyPositions />
+      </SPoolContainer>
+    </PoolContext.Provider>
+  )
+}
 
-  if (poolDetails.isInitialLoading) return <PoolSkeleton />
+const Stablepool = ({ pool }: { pool: TPool }) => {
+  const poolDetails = useStableSwapReserves(pool.poolId)
+
+  if (poolDetails.isLoading) return <PoolSkeleton />
 
   return (
     <PoolContext.Provider
       value={{ pool: { ...pool, ...poolDetails.data }, isXYK: false }}
     >
       <SPoolContainer>
+        <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
         <PoolDetails />
         <MyPositions />
       </SPoolContainer>
