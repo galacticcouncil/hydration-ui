@@ -1,47 +1,88 @@
+import {
+  OhlcData,
+  toUTCTimestamp,
+} from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
+import { useMemo } from "react"
 
-import { DATA } from "@/modules/trade/swap/_mock"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
-
-export enum TradeChartIntervalType {
-  All = "all",
-  Hour = "hour",
-  Day = "day",
-  Week = "week",
-  Month = "month",
-}
+import { tradePricesQuery } from "@/api/graphql/trade-prices"
+import { useSquidClient } from "@/api/provider"
+import { TimeSeriesBucketTimeRange } from "@/codegen/__generated__/squid/graphql"
+import { PeriodType } from "@/components/PeriodInput/PeriodInput"
+import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
+import { numerically, sortBy } from "@/utils/sort"
 
 type Args = {
-  readonly assetIn: string
-  readonly assetOut: string
-  readonly interval: TradeChartIntervalType
+  readonly assetInId: string
+  readonly assetOutId: string
+  readonly period: PeriodType | null
 }
 
-export const useTradeChartData = ({ assetIn, assetOut, interval }: Args) => {
-  return useQuery({
-    // Fetch mock data until we have real data
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      "trade",
-      "chart",
-      assetIn,
-      assetOut,
-      interval,
-    ],
-    queryFn: mockFetch,
-    retry: 0,
-  })
+export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
+  const squidClient = useSquidClient()
+
+  const [startTimestamp, endTimestamp] = useMemo(() => {
+    if (!period) {
+      return []
+    }
+
+    const now = Date.now()
+    const ms = PERIOD_MS[period]
+
+    return [(now - ms).toString(), now.toString()]
+  }, [period])
+
+  const bucketSize = period
+    ? bucketSizes[period]
+    : TimeSeriesBucketTimeRange["4H"]
+
+  const { data, isError, isLoading, isSuccess } = useQuery(
+    tradePricesQuery(
+      squidClient,
+      assetInId,
+      assetOutId,
+      startTimestamp,
+      endTimestamp,
+      bucketSize,
+    ),
+  )
+
+  const prices = useMemo(() => {
+    if (isLoading || !data) {
+      return []
+    }
+
+    return data.assetPairPricesAndVolumesByPeriod.nodes
+      .flatMap((node) => node?.buckets ?? [])
+      .filter((bucket) => bucket.priceAvrgNorm !== "NaN")
+      .map((bucket) => ({
+        timestamp: Number(bucket.timestamp) || 0,
+        amount: Big(1).div(bucket.priceAvrgNorm).toString(),
+      }))
+      .sort(
+        sortBy({
+          select: (bucket) => bucket.timestamp,
+          compare: numerically,
+        }),
+      )
+      .map<OhlcData>((bucket) => ({
+        time: toUTCTimestamp(bucket.timestamp),
+        close: Number(bucket.amount),
+      }))
+  }, [data, isLoading])
+
+  return {
+    prices,
+    isError,
+    isLoading,
+    isSuccess,
+  }
 }
 
-async function mockFetch() {
-  const shouldError = false
-  return new Promise<typeof DATA>((resolve, reject) => {
-    setTimeout(() => {
-      if (shouldError) {
-        reject(new Error("Failed to fetch data"))
-      } else {
-        resolve(DATA)
-      }
-    }, 1000)
-  })
+const bucketSizes: Record<PeriodType, TimeSeriesBucketTimeRange> = {
+  hour: TimeSeriesBucketTimeRange["1M"],
+  day: TimeSeriesBucketTimeRange["30M"],
+  week: TimeSeriesBucketTimeRange["4H"],
+  month: TimeSeriesBucketTimeRange["4H"],
 }

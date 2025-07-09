@@ -1,5 +1,5 @@
 import { hexToRgba } from "@galacticcouncil/utils"
-import { createChart } from "lightweight-charts"
+import { createChart, LineType } from "lightweight-charts"
 import { useEffect, useRef, useState } from "react"
 
 import { Box } from "@/components"
@@ -23,9 +23,10 @@ import {
 import { useTheme } from "@/theme"
 
 export type TradingViewChartProps = {
-  data: OhlcData[]
+  data: Array<OhlcData>
   type?: SeriesType
   height?: number
+  hidePriceIndicator?: boolean
   onCrosshairMove?: (data: CrosshairCallbackData) => void
 }
 
@@ -33,6 +34,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   data,
   type = "Baseline",
   height = 400,
+  hidePriceIndicator,
   onCrosshairMove,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
@@ -63,16 +65,27 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       crosshair: crosshair(themeProps),
     })
 
-    const series = renderSeries(chart, type, data, {
-      upColor: themeProps.details.values.positive,
-      downColor: themeProps.details.values.negative,
-      lineColor: themeProps.details.chart,
-      volumeBarColor: hexToRgba(themeProps.details.chart, 0.3),
-    })
+    const series = renderSeries(
+      chart,
+      type,
+      data,
+      {
+        upColor: themeProps.details.values.positive,
+        downColor: themeProps.details.values.negative,
+        lineColor: themeProps.details.chart,
+        volumeBarColor: hexToRgba(themeProps.details.chart, 0.3),
+      },
+      {
+        lineType: LineType.Curved,
+      },
+    )
 
     chart.timeScale().fitContent()
 
-    if (crosshairRef.current && priceIndicatorRef.current) {
+    if (
+      crosshairRef.current &&
+      (hidePriceIndicator || !!priceIndicatorRef.current)
+    ) {
       subscribeCrosshairMove(
         chart,
         series,
@@ -97,13 +110,13 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       window.removeEventListener("resize", handleResize)
       chart.remove()
     }
-  }, [data, height, themeProps, type])
+  }, [data, height, themeProps, type, hidePriceIndicator])
 
   return (
     <Box sx={{ position: "relative" }}>
       <div ref={chartContainerRef} />
       <Crosshair ref={crosshairRef} {...crosshairData} />
-      <PriceIndicator ref={priceIndicatorRef} />
+      {!hidePriceIndicator && <PriceIndicator ref={priceIndicatorRef} />}
     </Box>
   )
 }

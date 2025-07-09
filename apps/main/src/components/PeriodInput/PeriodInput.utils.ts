@@ -6,7 +6,7 @@ import {
 
 import { Period, PeriodType } from "@/components/PeriodInput/PeriodInput"
 
-const PERIOD_MS: Record<PeriodType, number> = {
+export const PERIOD_MS: Record<PeriodType, number> = {
   hour: millisecondsInHour,
   day: millisecondsInDay,
   week: millisecondsInWeek,
