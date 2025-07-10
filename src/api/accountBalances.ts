@@ -120,10 +120,9 @@ export const useAccountBalance = (address?: string) => {
           for (const { balance, asset } of balances) {
             if (balance.total !== "0") {
               const isPoolPositions =
-                (asset.isShareToken ||
-                  asset.isStableSwap ||
-                  asset.id === GETH_ERC20_ASSET_ID) &&
-                balance.total !== "0"
+                asset.isShareToken ||
+                asset.isStableSwap ||
+                asset.id === GETH_ERC20_ASSET_ID
 
               if (isPoolPositions) {
                 isBalance = true
