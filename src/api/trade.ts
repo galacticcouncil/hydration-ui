@@ -11,7 +11,10 @@ const calculateSlippage = (amount: string, slippagePct: string): string => {
   return slippage.decimalPlaces(0, 1).toString()
 }
 
-const getMinAmountOut = (amountOut: string, slippagePct: string): string => {
+export const getMinAmountOut = (
+  amountOut: string,
+  slippagePct: string,
+): string => {
   const slippage = calculateSlippage(amountOut, slippagePct)
 
   return BN(amountOut).minus(slippage).toString()

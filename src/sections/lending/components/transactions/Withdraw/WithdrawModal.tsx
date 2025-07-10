@@ -19,9 +19,11 @@ import {
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
+  const refetchMarketData = useRefetchMarketData()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
@@ -57,6 +59,7 @@ export const WithdrawModal = () => {
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
           assetReceiveId={ETH_ASSET_ID}
+          onSuccess={refetchMarketData}
         />
       </BasicModal>
     )

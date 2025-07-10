@@ -175,6 +175,7 @@ export const useSupplyAssetsTableColumns = () => {
             isFreezed ||
             Number(walletBalance ?? 0) <= 0 ||
             isMaxCapReached
+
           return (
             <div sx={{ flex: "row", align: "center", justify: "end" }}>
               <Button
