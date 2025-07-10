@@ -122,6 +122,7 @@ export const usePools = () => {
     useOmnipoolYieldMetrics(isInitialLoading)
 
   const gdotBorrowApy = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
+  const gethBorrowApy = useBorrowAssetApy(GETH_STABLESWAP_ASSET_ID)
 
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
@@ -233,9 +234,15 @@ export const usePools = () => {
               return id === asset.id
             })?.projectedAprPerc ?? "0"
 
-          totalFee = BN(lpFeeStablepool)
-            .plus(lpFeeOmnipool ?? 0)
-            .plus(farmsApr ?? 0)
+          if (isGETH) {
+            totalFee = BN(lpFeeOmnipool ?? 0)
+              .plus(gethBorrowApy.totalSupplyApy)
+              .plus(farmsApr ?? 0)
+          } else {
+            totalFee = BN(lpFeeStablepool)
+              .plus(lpFeeOmnipool ?? 0)
+              .plus(farmsApr ?? 0)
+          }
         } else if (!isStablepoolOnly && asset.id !== native.id) {
           lpFeeOmnipool =
             omnipoolMetrics.find(({ assetId, assetRegistryId }) => {
@@ -332,6 +339,7 @@ export const usePools = () => {
     omnipoolMetrics,
     stablepoolData,
     gdotBorrowApy.totalSupplyApy,
+    gethBorrowApy.totalSupplyApy,
     accountPositions,
   ])
 
