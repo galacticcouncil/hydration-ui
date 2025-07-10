@@ -8,9 +8,11 @@ import { useMemo } from "react"
 
 import { tradePricesQuery } from "@/api/graphql/trade-prices"
 import { useSquidClient } from "@/api/provider"
+import { spotPrice } from "@/api/spotPrice"
 import { TimeSeriesBucketTimeRange } from "@/codegen/__generated__/squid/graphql"
 import { PeriodType } from "@/components/PeriodInput/PeriodInput"
 import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { numerically, sortBy } from "@/utils/sort"
 
 type Args = {
@@ -20,6 +22,7 @@ type Args = {
 }
 
 export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
+  const rpc = useRpcProvider()
   const squidClient = useSquidClient()
 
   const [startTimestamp, endTimestamp] = useMemo(() => {
@@ -37,29 +40,54 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
     ? bucketSizes[period]
     : TimeSeriesBucketTimeRange["4H"]
 
+  // To prevent refetching on asset switch
+  const isAssetInFirst = Number(assetOutId) >= Number(assetOutId)
+  const sortedAssets = isAssetInFirst
+    ? ([assetInId, assetOutId] as const)
+    : ([assetOutId, assetInId] as const)
+
   const { data, isError, isLoading, isSuccess } = useQuery(
     tradePricesQuery(
       squidClient,
-      assetInId,
-      assetOutId,
+      sortedAssets[0],
+      sortedAssets[1],
       startTimestamp,
       endTimestamp,
       bucketSize,
     ),
   )
 
+  const { data: spotPriceData, isLoading: isSpotPriceLoading } = useQuery(
+    spotPrice(rpc, sortedAssets[1], sortedAssets[0]),
+  )
+
   const prices = useMemo(() => {
-    if (isLoading || !data) {
+    if (isLoading || !data || isSpotPriceLoading) {
       return []
     }
 
-    return data.assetPairPricesAndVolumesByPeriod.nodes
+    const currentPrice = spotPriceData?.spotPrice
+
+    const prices = data.assetPairPricesAndVolumesByPeriod.nodes
       .flatMap((node) => node?.buckets ?? [])
       .filter((bucket) => bucket.priceAvrgNorm !== "NaN")
       .map((bucket) => ({
         timestamp: Number(bucket.timestamp) || 0,
-        amount: Big(1).div(bucket.priceAvrgNorm).toString(),
+        amount: isAssetInFirst
+          ? Big(1).div(bucket.priceAvrgNorm).toString()
+          : bucket.priceAvrgNorm,
       }))
+
+    const withCurrentPrice = currentPrice
+      ? prices.concat([
+          {
+            timestamp: Date.now(),
+            amount: currentPrice,
+          },
+        ])
+      : prices
+
+    return withCurrentPrice
       .sort(
         sortBy({
           select: (bucket) => bucket.timestamp,
@@ -70,7 +98,7 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
         time: toUTCTimestamp(bucket.timestamp),
         close: Number(bucket.amount),
       }))
-  }, [data, isLoading])
+  }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPriceData])
 
   return {
     prices,

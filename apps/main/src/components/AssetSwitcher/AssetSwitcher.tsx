@@ -1,4 +1,4 @@
-import { Icon, Separator, Text } from "@galacticcouncil/ui/components"
+import { Icon, Separator, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { ArrowDown } from "lucide-react"
@@ -15,10 +15,12 @@ import {
 
 type AssetSwitcherProps = {
   readonly assetInId: string
-  readonly priceIn: string
+  readonly priceIn: string | undefined | null
   readonly assetOutId: string
-  readonly priceOut: string
+  readonly priceOut: string | undefined | null
   readonly disabled?: boolean
+  readonly fallbackPrice?: string | undefined | null
+  readonly isFallbackPriceLoading?: boolean
   readonly onSwitchAssets: () => void
 }
 
@@ -28,6 +30,8 @@ export const AssetSwitcher = ({
   priceIn,
   priceOut,
   disabled,
+  fallbackPrice,
+  isFallbackPriceLoading,
   onSwitchAssets,
 }: AssetSwitcherProps) => {
   const { t } = useTranslation()
@@ -37,24 +41,28 @@ export const AssetSwitcher = ({
   const assetIn = getAssetWithFallback(assetInId)
   const assetOut = getAssetWithFallback(assetOutId)
 
-  const price = isReversed
-    ? Big(priceOut || "0").gt(0)
-      ? Big(priceIn || "0").div(priceOut)
-      : Big(0)
-    : Big(priceIn || "0").gt(0)
-      ? Big(priceOut || "0").div(priceIn)
-      : Big(0)
+  const canCalculatePrice = !!priceIn && !!priceOut
 
-  const shownAssetIn = isReversed ? assetOut : assetIn
-  const shownAssetOut = isReversed ? assetIn : assetOut
+  const price = (() => {
+    if (!canCalculatePrice) {
+      return Big(fallbackPrice || "0")
+    }
+
+    return Big(priceOut).gt(0) ? Big(priceIn).div(priceOut) : Big(0)
+  })()
+
+  const [shownAssetIn, shownAssetOut, shownPrice] = isReversed
+    ? [assetOut, assetIn, price.gt(0) ? Big(1).div(price) : Big(0)]
+    : [assetIn, assetOut, price]
 
   const switchAssets = (): void => {
     setIsReversed(false)
     onSwitchAssets()
   }
 
+  const isPriceReady = canCalculatePrice || !isFallbackPriceLoading
   const isSwitcherDisabled = disabled || !assetInId || !assetOutId
-  const isPriceDisabled = !assetInId || !assetOutId || price.lte(0)
+  const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
   return (
     <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
@@ -69,12 +77,14 @@ export const AssetSwitcher = ({
           onClick={() => setIsReversed((isReversed) => !isReversed)}
         >
           <Text fs="p6" color={getToken("text.high")}>
-            {isPriceDisabled
-              ? t("unknownExchangeRate")
-              : `1 ${shownAssetIn.symbol} = ${t("currency", {
-                  value: price,
-                  symbol: shownAssetOut.symbol,
-                })}`}
+            {!isPriceReady && <Skeleton width={120} />}
+            {isPriceReady &&
+              (isPriceDisabled
+                ? t("unknownExchangeRate")
+                : `1 ${shownAssetOut.symbol} = ${t("currency", {
+                    value: shownPrice,
+                    symbol: shownAssetIn.symbol,
+                  })}`)}
           </Text>
         </SPriceContainer>
       </>

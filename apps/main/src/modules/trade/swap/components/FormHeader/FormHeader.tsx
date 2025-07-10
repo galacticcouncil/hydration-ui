@@ -13,11 +13,7 @@ type GetTradeSwapTab<T> = T extends `/trade/swap/${infer Tab}` ? Tab : never
 type ToRoute = FileRouteTypes["to"]
 type TradeSwapTab = GetTradeSwapTab<ToRoute>
 
-export const swapTabs: ReadonlyArray<TradeSwapTab> = [
-  "market",
-  "dca",
-  "cross-chain",
-] as const
+export const swapTabs: ReadonlyArray<TradeSwapTab> = ["market", "dca"] as const
 
 export const FormHeader = () => {
   const { t } = useTranslation("trade")
