@@ -1,6 +1,5 @@
 import { useAccountBalances } from "api/deposits"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { prop } from "utils/rx"
 import { useMemo } from "react"
 import BigNumber from "bignumber.js"
 import {
@@ -10,7 +9,6 @@ import {
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
 } from "utils/constants"
-import { useAssets } from "providers/assets"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
@@ -24,7 +22,7 @@ export const useNewDepositAssets = (
   return useMemo(() => {
     return account && accountAssets?.balances
       ? accountAssets.balances
-          .map(prop("assetId"))
+          .map(({ asset }) => asset.id)
           .filter((id) => !assetsBlacklist.includes(id))
       : []
   }, [account, accountAssets?.balances, assetsBlacklist])
@@ -33,7 +31,6 @@ export const useNewDepositAssets = (
 export const useNewDepositDefaultAssetId = (assetId?: string) => {
   const { account } = useAccount()
   const { data: accountAssets, isInitialLoading } = useAccountBalances()
-  const { getAssetWithFallback } = useAssets()
 
   const accountBalances = useMemo(
     () => accountAssets?.balances ?? [],
@@ -45,7 +42,7 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
     useStableSwapReserves(isGETH ? GETH_STABLESWAP_ASSET_ID : "")
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
-    isGETH ? accountBalances.map(prop("assetId")) ?? [] : [],
+    isGETH ? accountBalances.map(({ asset }) => asset.id) ?? [] : [],
   )
 
   const data = useMemo(() => {
@@ -58,7 +55,7 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
           const balance = accountAssets.accountAssetsMap.get(reserve.id)
 
           return balance
-            ? BigNumber(balance.balance?.freeBalance ?? 0).gt(0)
+            ? BigNumber(balance.balance?.transferable ?? 0).gt(0)
             : false
         })
 
@@ -66,31 +63,30 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
 
       const ethBalance =
         accountAssets.accountAssetsMap.get(ETH_ASSET_ID)?.balance
-          ?.freeBalance ?? "0"
+          ?.transferable ?? "0"
 
       if (BigNumber(ethBalance).gt(0)) return ETH_ASSET_ID
 
       const highestBalance = accountBalances
         .map((accountBalance) => {
-          const price = getAssetPrice(accountBalance.assetId).price
-          const meta = getAssetWithFallback(accountBalance.assetId)
+          const { balance, asset } = accountBalance
+          const price = getAssetPrice(asset.id).price
 
           return {
             ...accountBalance,
-            meta,
             displayBalance: !BigNumber(price).isNaN()
-              ? BigNumber(accountBalance.freeBalance)
-                  .shiftedBy(-meta.decimals)
+              ? BigNumber(balance.transferable)
+                  .shiftedBy(-asset.decimals)
                   .times(price)
               : BN_0,
           }
         })
         .sort((a, b) => {
-          if (a.meta.id === NATIVE_ASSET_ID) {
+          if (a.asset.id === NATIVE_ASSET_ID) {
             return 1
           }
 
-          if (b.meta.id === NATIVE_ASSET_ID) {
+          if (b.asset.id === NATIVE_ASSET_ID) {
             return -1
           }
 
@@ -99,12 +95,12 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
         .find((balance) => {
           return (
             balance.displayBalance.gt(0) &&
-            balance.meta.isTradable &&
-            !balance.meta.isExternal
+            balance.asset.isTradable &&
+            !balance.asset.isExternal
           )
         })
 
-      if (highestBalance) return highestBalance.assetId
+      if (highestBalance) return highestBalance.asset.id
 
       return DOT_ASSET_ID
     } else {
@@ -112,23 +108,23 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
 
       const hasDotBalance = new BigNumber(
         accountAssets.accountAssetsMap.get(DOT_ASSET_ID)?.balance
-          ?.freeBalance || "0",
+          ?.transferable || "0",
       ).gt("0")
 
       if (hasDotBalance) return DOT_ASSET_ID
 
       const assetWithBalance = accountBalances.find((accountAsset) => {
-        const asset = getAssetWithFallback(accountAsset.assetId)
+        const { asset, balance } = accountAsset
 
         return (
-          BigNumber(accountAsset.transferable).gt("0") &&
+          BigNumber(balance.transferable).gt("0") &&
           asset.isTradable &&
           !asset.isErc20 &&
           !asset.isExternal
         )
       })
 
-      return assetWithBalance?.assetId ?? DOT_ASSET_ID
+      return assetWithBalance?.asset.id ?? DOT_ASSET_ID
     }
   }, [
     account,
@@ -136,7 +132,6 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
     accountBalances,
     isGETH,
     gethReserves,
-    getAssetWithFallback,
     getAssetPrice,
   ])
 

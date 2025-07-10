@@ -27,8 +27,8 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
 
   const { balance, meta, isGDOT, id, biggestPercentage } = pool
 
-  const balanceHuman = balance?.freeBalance
-    ? scaleHuman(balance.freeBalance, meta.decimals).toString()
+  const balanceHuman = balance?.transferable
+    ? scaleHuman(balance.transferable, meta.decimals).toString()
     : undefined
 
   return (

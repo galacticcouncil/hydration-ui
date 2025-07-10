@@ -289,7 +289,7 @@ export const AddStablepoolLiquidity = ({
         )
 
     const initialBalance =
-      accountBalances?.accountAssetsMap.get(id)?.balance?.freeBalance ?? "0"
+      accountBalances?.accountAssetsMap.get(id)?.balance?.transferable ?? "0"
 
     const isTwoStepsTx = isGETH && !isStablepoolOnly
 

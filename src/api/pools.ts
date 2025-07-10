@@ -95,6 +95,7 @@ export const useSDKPools = () => {
       return false
     },
     enabled: isLoaded && !!activeQueriesAmount && isWhitelistLoaded,
+    refetchInterval: millisecondsInMinute,
     staleTime: millisecondsInMinute,
   })
 }

@@ -69,7 +69,7 @@ export const getAccountAssetBalances =
 
 export const useAccountBalance = (address?: string) => {
   const { isLoaded, sdk } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
+  const { all, native } = useAssets()
 
   const { client } = sdk ?? {}
   const { balanceV2 } = client ?? {}
@@ -78,7 +78,38 @@ export const useAccountBalance = (address?: string) => {
     QUERY_KEYS.accountBalances(address),
     address
       ? async () => {
-          const balances = await balanceV2.getAccountBalances(address)
+          const followedAssets = []
+          const followedErc20Tokens = []
+
+          for (const [, asset] of all) {
+            if (!asset.isErc20 && asset.id !== NATIVE_ASSET_ID) {
+              followedAssets.push(asset)
+            } else if (asset.isErc20) {
+              followedErc20Tokens.push(asset)
+            }
+          }
+
+          const systemBalance = await balanceV2.getSystemBalance(address)
+          const tokenBalance = await Promise.all(
+            followedAssets.map(async (asset) => {
+              const balance = await balanceV2.getTokenBalance(address, asset.id)
+
+              return { balance, asset }
+            }),
+          )
+          const erc20Balance = await Promise.all(
+            followedErc20Tokens.map(async (asset) => {
+              const balance = await balanceV2.getErc20Balance(address, asset.id)
+
+              return { balance, asset }
+            }),
+          )
+
+          const balances = [
+            { balance: systemBalance, asset: native },
+            ...tokenBalance,
+            ...erc20Balance,
+          ]
 
           const accountAssetsMap: Map<
             string,
@@ -86,10 +117,8 @@ export const useAccountBalance = (address?: string) => {
           > = new Map([])
           let isBalance = false
 
-          for (const balance of balances) {
+          for (const { balance, asset } of balances) {
             if (balance.total !== "0") {
-              const asset = getAssetWithFallback(balance.assetId)
-
               const isPoolPositions =
                 (asset.isShareToken ||
                   asset.isStableSwap ||
@@ -100,7 +129,7 @@ export const useAccountBalance = (address?: string) => {
                 isBalance = true
               }
 
-              accountAssetsMap.set(balance.assetId, {
+              accountAssetsMap.set(asset.id, {
                 balance,
                 asset,
                 isPoolPositions,

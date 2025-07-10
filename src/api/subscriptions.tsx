@@ -194,6 +194,8 @@ export function useBalanceSubscription() {
         (assetId: string, balance: Balance) => {
           if (balance.total !== "0") {
             queryClient.setQueryData(QUERY_KEYS.accountSystemBalance, balance)
+          } else {
+            queryClient.setQueryData(QUERY_KEYS.accountSystemBalance, false)
           }
         },
       )
@@ -290,7 +292,7 @@ export function useBalanceSubscription() {
 
     if (systemBalance) {
       accountAssetsMap.set(native.id, {
-        balance: { ...systemBalance, assetId: native.id },
+        balance: systemBalance,
         asset: native,
         isPoolPositions: false,
       })
@@ -307,7 +309,7 @@ export function useBalanceSubscription() {
         }
 
         accountAssetsMap.set(assetId, {
-          balance: { ...balance, assetId },
+          balance,
           asset,
           isPoolPositions,
         })
@@ -325,14 +327,14 @@ export function useBalanceSubscription() {
         }
 
         accountAssetsMap.set(assetId, {
-          balance: { ...balance, assetId },
+          balance,
           asset,
           isPoolPositions,
         })
       }
     }
 
-    const balances = [...accountAssetsMap.values().map((a) => a.balance)]
+    const balances = [...accountAssetsMap.values()]
 
     return {
       accountAssetsMap,

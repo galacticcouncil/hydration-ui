@@ -77,7 +77,7 @@ export const useAllowedXYKPoolAssets = () => {
     return [...all.values()].filter((asset) => {
       const isTradable = asset.isTradable
       const hasBalance = BN(
-        data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
+        data?.accountAssetsMap.get(asset.id)?.balance?.transferable ?? "0",
       ).gt(0)
 
       const isNotTradableWithBalance = !isTradable && hasBalance

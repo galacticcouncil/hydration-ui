@@ -396,18 +396,19 @@ export const setIsAccountBalance = (isBalance: boolean) =>
     return { isBalance: state.isBalance }
   })
 
+export type AccountBalance = {
+  balance: TBalance
+  asset: TAsset
+}
+
 type AccountBalancesStore = {
   data:
     | {
         accountAssetsMap: Map<
           string,
-          {
-            balance: TBalance
-            asset: TAsset
-            isPoolPositions: boolean
-          }
+          AccountBalance & { isPoolPositions: boolean }
         >
-        balances: TBalance[]
+        balances: AccountBalance[]
         isBalance: boolean
       }
     | undefined
