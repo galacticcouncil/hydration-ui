@@ -72,7 +72,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
   const isXyK = isXYKPoolType(pool)
 
   const isDesktop = useMedia(theme.viewport.gte.md)
-  const isApyVisible = !isDesktop || (isXyK && !!farms.length)
+  const isApyVisible = isXyK ? !!farms.length : !isDesktop
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -120,7 +120,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             {asset.name}
           </Text>
         )}
-        {isApyVisible && (
+        {isApyVisible && BN(totalFee).gt(0) && (
           <APY
             fontSize={11}
             iconSize={11}
