@@ -22,7 +22,7 @@ import {
   useStableSwapReserves,
 } from "sections/pools/PoolsPage.utils"
 import { TFarmAprData } from "api/farms"
-import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
+import { APY } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
@@ -68,10 +68,11 @@ const NonClickableContainer = ({
 }
 
 const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
-  const { meta: asset, farms, fee, totalFee, isStablePool } = pool
+  const { meta: asset, farms, totalFee, isStablePool } = pool
+  const isXyK = isXYKPoolType(pool)
 
   const isDesktop = useMedia(theme.viewport.gte.md)
-  const isFarmsVisible = !isDesktop || asset.isShareToken
+  const isApyVisible = !isDesktop || (isXyK && !!farms.length)
 
   return (
     <NonClickableContainer sx={{ flex: "row", gap: 8, align: "center" }}>
@@ -119,12 +120,13 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             {asset.name}
           </Text>
         )}
-        {!!farms?.length && isFarmsVisible && (
-          <GlobalFarmRowMulti
+        {isApyVisible && (
+          <APY
             fontSize={11}
             iconSize={11}
-            assetFee={asset.isShareToken ? undefined : fee}
-            totalFee={asset.isShareToken ? undefined : totalFee}
+            lpFeeOmnipool={!isXyK ? pool.lpFeeOmnipool : undefined}
+            lpFeeStablepool={!isXyK ? pool.lpFeeStablepool : undefined}
+            totalFee={!isXyK ? totalFee : undefined}
             farms={farms}
             withAprSuffix
           />
@@ -321,37 +323,41 @@ const ManageLiquidityButton: React.FC<{
   )
 }
 
-const APY = ({
+const OmnipoolAPY = ({
   assetId,
-  fee,
   isLoading,
+  lpFeeOmnipool,
+  lpFeeStablepool,
   totalFee,
   farms,
 }: {
   assetId: string
-  fee: BN
   isLoading: boolean
   totalFee: BN
   farms?: TFarmAprData[]
+  lpFeeOmnipool?: string
+  lpFeeStablepool?: string
 }) => {
-  const { t } = useTranslation()
   const { native } = useAssets()
 
   if (isLoading) {
     return <CellSkeleton />
   }
 
-  if (farms?.length)
+  if (assetId === native.id)
     return (
-      <GlobalFarmRowMulti assetFee={fee} farms={farms} totalFee={totalFee} />
+      <Text color="white" fs={14}>
+        --
+      </Text>
     )
 
   return (
-    <Text color="white" fs={14}>
-      {assetId === native.id
-        ? "--"
-        : t("value.percentage", { value: totalFee })}
-    </Text>
+    <APY
+      lpFeeOmnipool={lpFeeOmnipool}
+      lpFeeStablepool={lpFeeStablepool}
+      farms={farms}
+      totalFee={totalFee}
+    />
   )
 }
 
@@ -514,12 +520,14 @@ export const usePoolTable = (
                       <GigaAPY
                         type="supply"
                         assetId={row.original.poolId}
+                        omnipoolFee={row.original.lpFeeOmnipool}
                         withFarms
                       />
                     ) : (
-                      <APY
+                      <OmnipoolAPY
                         assetId={row.original.id}
-                        fee={row.original.fee}
+                        lpFeeOmnipool={row.original.lpFeeOmnipool}
+                        lpFeeStablepool={row.original.lpFeeStablepool}
                         isLoading={row.original.isFeeLoading}
                         totalFee={row.original.totalFee}
                         farms={row.original.farms}
