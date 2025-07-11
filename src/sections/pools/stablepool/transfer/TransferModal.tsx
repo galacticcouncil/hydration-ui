@@ -159,6 +159,7 @@ export const TransferModal = ({
               <AssetsModalContent
                 hideInactiveAssets
                 allowedAssets={selectableAssets}
+                displayZeroBalance
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)
