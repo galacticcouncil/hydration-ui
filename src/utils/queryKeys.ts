@@ -1,5 +1,4 @@
 import type { u32 } from "@polkadot/types"
-import { u128 } from "@polkadot/types-codec"
 import type { AccountId32 } from "@polkadot/types/interfaces"
 import { CodecHash } from "@polkadot/types/interfaces/runtime"
 import { StatsTimeframe } from "api/stats"
@@ -26,15 +25,7 @@ export const QUERY_KEYS = {
     "assetsTable",
     id?.toString(),
   ],
-  accountBalancesLive: (id: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "accountBalances",
-    id?.toString(),
-  ],
-  accountBalances: (id: Maybe<AccountId32 | string>) => [
-    "accountBalances",
-    id?.toString(),
-  ],
+  accountBalances: (id?: string) => ["accountBalances", id],
   accountPositions: (address: string | undefined) => [
     "accountPositions",
     address,
@@ -48,7 +39,10 @@ export const QUERY_KEYS = {
     "accountsBalances",
     ids.join("."),
   ],
-  allPools: [QUERY_KEY_PREFIX, "allPools"],
+  accountSystemBalance: ["accountsBalances"],
+  accountTokenBalances: ["accountTokenBalances"],
+  accountErc20Balance: ["accountErc20Balance"],
+  allPools: ["allPools"],
   omnipoolTokens: ["pools", "omnipoolTokens"],
   stablePools: ["pools", "stable"],
   stablepoolFees: (ids: string[]) => ["pools", "stable", "fees", ids.join(",")],
@@ -58,19 +52,7 @@ export const QUERY_KEYS = {
     "dynamicAssetFee",
     id?.toString(),
   ],
-  deposit: (id: Maybe<u128>) => [QUERY_KEY_PREFIX, "deposit", id?.toString()],
-  allXYKDeposits: [QUERY_KEY_PREFIX, "allXYKDeposits"],
-  omnipoolDeposits: (ids: string[]) => [
-    QUERY_KEY_PREFIX,
-    "omnipoolDeposits",
-    ids.join("."),
-  ],
   omnipoolMinLiquidity: ["omnipoolMinLiquidity"],
-  xykDeposits: (ids: string[]) => [
-    QUERY_KEY_PREFIX,
-    "xykDeposits",
-    ids.join("."),
-  ],
   omnipoolActiveFarms: ["omnipoolActiveFarms"],
   omnipoolActiveFarm: (id?: string) => ["omnipoolActiveFarm", id],
   omnipoolFarms: ["omnipoolFarms"],
@@ -80,12 +62,6 @@ export const QUERY_KEYS = {
   xykFarms: ["xykFarms"],
   stoppedXykFarms: (address?: string) => ["stoppedXykFarms", address],
   totalIssuances: ["totalIssuances"],
-  reserves: (id: Maybe<string | u32>, address: Maybe<AccountId32 | string>) => [
-    QUERY_KEY_PREFIX,
-    "reserves",
-    id?.toString(),
-    address,
-  ],
   tokenBalance: (
     id: Maybe<string | u32>,
     address: Maybe<AccountId32 | string>,
@@ -94,14 +70,6 @@ export const QUERY_KEYS = {
     id: Maybe<string | u32>,
     address: Maybe<AccountId32 | string>,
   ) => [QUERY_KEY_PREFIX, "tokenBalance", id?.toString(), address],
-  tokensBalances: (ids: string[], address?: string) => [
-    QUERY_KEY_PREFIX,
-    "tokenBalances",
-    address,
-    ...ids,
-  ],
-  exchangeFee: [QUERY_KEY_PREFIX, "exchangeFee"],
-  calculateTotalLiqInPools: [QUERY_KEY_PREFIX, "totalLiqInPools"],
   spotPriceLive: (assetA: string, assetB: string) => [
     QUERY_KEY_PREFIX,
     "spotPrice",

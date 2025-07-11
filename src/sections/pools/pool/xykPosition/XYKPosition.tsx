@@ -136,7 +136,7 @@ export const XYKPosition = ({ pool }: { pool: TXYKPool }) => {
                 <div>
                   <Text fs={[13, 16]}>
                     {t("value.token", {
-                      value: shareTokensBalance?.balance,
+                      value: shareTokensBalance?.transferable,
                       fixedPointScale: pool.meta.decimals,
                     })}
                   </Text>

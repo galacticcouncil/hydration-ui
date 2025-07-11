@@ -77,7 +77,7 @@ export const useAllowedXYKPoolAssets = () => {
     return [...all.values()].filter((asset) => {
       const isTradable = asset.isTradable
       const hasBalance = BN(
-        data?.accountAssetsMap.get(asset.id)?.balance?.freeBalance ?? "0",
+        data?.accountAssetsMap.get(asset.id)?.balance?.transferable ?? "0",
       ).gt(0)
 
       const isNotTradableWithBalance = !isTradable && hasBalance
@@ -112,9 +112,9 @@ export const useCreateXYKPoolForm = (assetA?: string, assetB?: string) => {
     mode: "onChange",
     resolver: zodResolver(
       createXYKPoolFormSchema(
-        balanceA?.balance ?? "0",
+        balanceA?.transferable ?? "0",
         assetAMeta?.decimals ?? 0,
-        balanceB?.balance ?? "0",
+        balanceB?.transferable ?? "0",
         assetBMeta?.decimals ?? 0,
       ),
     ),

@@ -49,7 +49,7 @@ export const syncAssethubXcmConfig = (
 export const useCrossChainWallet = () => {
   const { sdk } = useRpcProvider()
 
-  const { ctx } = sdk
+  const { ctx } = sdk ?? {}
 
   return useMemo(() => {
     const configService = new HydrationConfigService({
@@ -63,6 +63,10 @@ export const useCrossChainWallet = () => {
       transferValidations: validations,
     })
 
+    if (!ctx?.pool) {
+      return wallet
+    }
+
     // Register chain swaps
     const hydration = configService.getChain("hydration")
     const assethub = configService.getChain("assethub")
@@ -75,7 +79,7 @@ export const useCrossChainWallet = () => {
     )
 
     return wallet
-  }, [ctx.pool])
+  }, [ctx?.pool])
 }
 
 export const useCrossChainTransfer = (
@@ -214,13 +218,13 @@ export const useCrossChainBalanceSubscription = (
   const queryClient = useQueryClient()
 
   useEffect(() => {
+    if (!wallet) return
     let subscription:
       | Awaited<ReturnType<typeof wallet.subscribeBalance>>
       | undefined
 
     async function subscribeBalance() {
-      if (!address) return
-      if (!chain) return
+      if (!address || !chain || !wallet) return
       subscription = await wallet.subscribeBalance(
         address,
         chain,

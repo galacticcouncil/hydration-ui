@@ -116,7 +116,7 @@ const SupplyModalForm = ({
   const form = useFormContext<NewDepositFormValues>()
   const selectedAsset = form.watch("asset")
   const selectedAssetBalance =
-    accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.balance || "0"
+    accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.transferable || "0"
 
   const {
     minAmountOut,

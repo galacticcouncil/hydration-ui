@@ -231,8 +231,8 @@ export const useTransactionValues = ({
       parseFloat(xcallMeta.srcChainFee)
     isEnoughPaymentBalance = feeBalanceDiff > 0
   } else {
-    isEnoughPaymentBalance = feeAssetBalance?.balance
-      ? BigNumber(feeAssetBalance.balance)
+    isEnoughPaymentBalance = feeAssetBalance?.transferable
+      ? BigNumber(feeAssetBalance.transferable)
           .shiftedBy(-feePaymentMeta.decimals)
           .minus(displayFeePaymentValue ?? 0)
           .minus(displayFeeExtra ?? 0)
