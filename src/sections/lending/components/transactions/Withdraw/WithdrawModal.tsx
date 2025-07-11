@@ -56,7 +56,9 @@ export const WithdrawModal = () => {
           assetId={REVERSE_A_TOKEN_UNDERLYING_ID_MAP[assetId]}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
-          assetReceiveId={ETH_ASSET_ID}
+          assetReceiveId={
+            assetId === GETH_STABLESWAP_ASSET_ID ? ETH_ASSET_ID : undefined
+          }
         />
       </BasicModal>
     )
