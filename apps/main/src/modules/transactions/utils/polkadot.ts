@@ -82,10 +82,10 @@ export const formatTxError = (err: InvalidTxError["error"]): string => {
   if (typeof err === "string") return err
   if (err.type === "Module") return formatTxError(err.value)
   if (typeof err.type === "string")
-    return [err.type, formatTxError(err.value)].filter(Boolean).join(": ")
+    return [err.type, formatTxError(err.value)].filter(Boolean).join(".")
   return "Unknown error"
 }
 
 export const formatError = (err: Error) => {
-  return [err.name, err.message].filter(Boolean).join(": ")
+  return [err.name, err.message].filter(Boolean).join(".")
 }

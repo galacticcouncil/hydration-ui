@@ -3,6 +3,7 @@ import { devtools, subscribeWithSelector } from "zustand/middleware"
 import { createWithEqualityFn as create } from "zustand/traditional"
 
 import { createSingletonSubscriber } from "@/store/utils/createSingletonSubscriber"
+import { POLLING_INTERVAL } from "@/ui-config/queries"
 
 import { createGhoSlice, GhoSlice } from "./ghoSlice"
 import { createIncentiveSlice, IncentiveSlice } from "./incentiveSlice"
@@ -40,19 +41,19 @@ export const useRootStore = create<RootStore>()(
 
 export const usePoolDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolData()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const usePoolDataV3Subscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshPoolV3Data()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const useIncentiveDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshIncentiveData()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const useGhoDataSubscription = createSingletonSubscriber(() => {
   return useRootStore.getState().refreshGhoData()
-}, 60_000)
+}, POLLING_INTERVAL)
 
 export const useCurrentMarketData = () => {
   const { currentMarketData, data } = useRootStore.getState()

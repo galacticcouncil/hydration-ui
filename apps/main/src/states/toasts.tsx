@@ -5,13 +5,21 @@ import {
 } from "@galacticcouncil/ui/components"
 import { uuid } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { CallType } from "@galacticcouncil/xcm-core"
 import { useCallback } from "react"
 import { toast as toastSonner } from "sonner"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
+import { TransactionMeta } from "@/states/transactions"
+
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
+
+export type ToastMeta = TransactionMeta & {
+  txHash: string
+  ecosystem: CallType
+}
 
 export type ToastMessageType = (typeof TOAST_MESSAGES)[number]
 
@@ -19,11 +27,10 @@ type ToastParams = {
   title: string
   id?: string
   link?: string
-  bridge?: string
-  txHash?: string
   persist?: boolean
   address?: string
-  xcm?: "evm" | "substrate" | "solana"
+  hint?: string
+  meta: ToastMeta
 }
 
 export type ToastData = ToastParams & {
@@ -58,14 +65,16 @@ const useToastsStore = create<ToastStore>()(
     }),
     {
       name: "toasts",
-      version: 1,
+      version: 2,
     },
   ),
 )
 
 export const useToasts = () => {
-  const currentAddress = useAccount().account?.address
+  const { account } = useAccount()
   const { update } = useToastsStore()
+
+  const currentAddress = account?.address
 
   const toasts = useToastsStore(
     useShallow((state) =>
@@ -98,7 +107,7 @@ export const useToasts = () => {
 
       if (persist && address) {
         update(address, (accountToasts) => {
-          //remove toasts with same id and set max 10
+          // remove toasts with same id, keep most recent 9 + 1 new
           const prevToasts = accountToasts
             .filter((toast) => toast.id !== id)
             .slice(0, 9)
@@ -121,6 +130,18 @@ export const useToasts = () => {
           toast.id === id ? { ...toast, ...props } : toast,
         ),
       )
+
+      const { variant, title } = props
+
+      if (variant && title) {
+        toastSonner.custom(
+          () => <Notification variant={variant} content={title} />,
+          {
+            id,
+            duration: DEFAULT_AUTO_CLOSE_TIME,
+          },
+        )
+      }
     },
     [currentAddress, update],
   )
@@ -133,19 +154,16 @@ export const useToasts = () => {
     [currentAddress, update],
   )
 
-  const successToast = useCallback(
+  const success = useCallback(
     (toast: ToastParams) => add(toast, "success"),
     [add],
   )
-  const errorToast = useCallback(
-    (toast: ToastParams) => add(toast, "error"),
+  const error = useCallback((toast: ToastParams) => add(toast, "error"), [add])
+  const pending = useCallback(
+    (toast: ToastParams) => add(toast, "pending"),
     [add],
   )
-  const loadingToast = useCallback(
-    (toast: ToastParams) => add(toast, "submitted"),
-    [add],
-  )
-  const unknownToast = useCallback(
+  const unknown = useCallback(
     (toast: ToastParams) => add(toast, "unknown"),
     [add],
   )
@@ -155,9 +173,9 @@ export const useToasts = () => {
     add,
     remove,
     edit,
-    successToast,
-    errorToast,
-    loadingToast,
-    unknownToast,
+    success,
+    error,
+    pending,
+    unknown,
   }
 }

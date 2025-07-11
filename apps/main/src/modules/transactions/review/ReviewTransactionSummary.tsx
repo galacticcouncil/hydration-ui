@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next"
 import { TransactionFeePaymentAssetModal } from "@/modules/transactions/TransactionFeePaymentAssetModal"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { useAssets } from "@/providers/assetsProvider"
+import { TransactionType } from "@/states/transactions"
 
 const RowSeparator = () => <Separator mx="var(--modal-content-inset)" />
 
@@ -28,6 +29,7 @@ export const ReviewTransactionSummary = () => {
     feeEstimate,
     feeAssetId,
     isLoadingFeeEstimate,
+    fee,
     meta,
   } = useTransaction()
 
@@ -35,8 +37,8 @@ export const ReviewTransactionSummary = () => {
 
   const feeAsset = getAsset(feeAssetId)
 
-  const isFeeOverride = !!meta?.fee && !!meta?.feeSymbol
-  const isChangingFeeAsset = !!meta?.feePaymentAssetId
+  const isFeeOverride = !!fee?.feeAmount && !!fee?.feeSymbol
+  const isChangingFeeAsset = !!fee?.feePaymentAssetId
 
   return (
     <Stack
@@ -48,8 +50,8 @@ export const ReviewTransactionSummary = () => {
         <SummaryRow
           label={t("transaction.summary.cost")}
           content={t("currency", {
-            value: meta.fee,
-            symbol: meta.feeSymbol,
+            value: fee.feeAmount,
+            symbol: fee.feeSymbol,
           })}
         />
       ) : (
@@ -94,7 +96,7 @@ export const ReviewTransactionSummary = () => {
           }
         />
       )}
-      {meta?.dstChainFee && meta.dstChainFeeSymbol && (
+      {meta?.type === TransactionType.Xcm && (
         <SummaryRow
           label={t("transaction.summary.destFee")}
           content={t("currency", {

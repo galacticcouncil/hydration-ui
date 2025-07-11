@@ -1,34 +1,60 @@
-import { useMemo, useRef } from "react"
+import { subscan } from "@galacticcouncil/utils"
+import { CallType } from "@galacticcouncil/xcm-core"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
 import { useToasts } from "@/states/toasts"
-import { TrasactionToats } from "@/states/transactions"
+import { Transaction } from "@/states/transactions"
 
-export const useTransactionToasts = (messages?: TrasactionToats) => {
+export const useTransactionToasts = (
+  transaction: Transaction,
+  ecosystem: CallType,
+) => {
   const { t } = useTranslation()
-  const toasts = useToasts()
-  const toastsRef = useRef(toasts)
+  const { pending, edit } = useToasts()
+
+  const { id, toasts, meta } = transaction
 
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
-    const { successToast, errorToast, loadingToast } = toastsRef.current
     return {
       onSubmitted: (txHash) => {
-        loadingToast({
-          title: messages?.submitted ?? t("transaction.status.submitted.title"),
-          txHash,
+        pending({
+          id,
+          title: toasts?.submitted ?? t("transaction.status.submitted.title"),
+          link: subscan.tx(meta.srcChainKey, txHash),
+          meta: {
+            ...meta,
+            txHash,
+            ecosystem,
+          },
         })
       },
       onSuccess: () => {
-        successToast({
-          title: messages?.success ?? t("transaction.status.success.title"),
+        edit(id, {
+          variant: "success",
+          title: toasts?.success ?? t("transaction.status.success.title"),
+          dateCreated: new Date().toISOString(),
         })
       },
-      onError: () => {
-        errorToast({
-          title: messages?.error ?? t("transaction.status.error.title"),
+      onError: (message) => {
+        edit(id, {
+          variant: "error",
+          title: toasts?.error ?? t("transaction.status.error.title"),
+          dateCreated: new Date().toISOString(),
+          hint: message,
         })
       },
     }
-  }, [messages?.error, messages?.submitted, messages?.success, t])
+  }, [
+    ecosystem,
+    edit,
+    id,
+    meta,
+    pending,
+    t,
+    toasts?.error,
+    toasts?.submitted,
+    toasts?.success,
+  ])
 }

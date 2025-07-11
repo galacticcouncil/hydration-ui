@@ -20,6 +20,7 @@
   "pending": "Pending",
   "success": "Success",
   "warning": "Warning",
+  "completed": "Completed",
   "open": "Open",
   "add": "Add",
   "cancel": "Cancel",
@@ -187,8 +188,12 @@
   "transaction.summary.cost": "Transaction cost",
   "transaction.summary.nonce": "Nonce",
   "transaction.summary.destFee": "Destination fee",
+  "transaction.alert.insufficientFeeBalance": "Not enough fee payment asset balance.",
   "search.placeholder": "Search...",
   "addressBook.modal.title": "Select account to use",
   "payment.toast.onLoading": "Setting {{ symbol }} as fee payment asset",
-  "payment.toast.onSuccess": "Set {{ symbol }} as fee payment asset"
+  "payment.toast.onSuccess": "Set {{ symbol }} as fee payment asset",
+  "notifications": "Notifications",
+  "notifications.empty.title": "No recent activities",
+  "notifications.empty.description": "It's quite a peaceful day"
 }

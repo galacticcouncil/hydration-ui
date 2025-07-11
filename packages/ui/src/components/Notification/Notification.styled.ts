@@ -11,7 +11,8 @@ export const SNotification = styled.div(
     display: flex;
 
     flex-direction: column;
-    padding: 16px 24px 16px 8px;
+    padding-block: ${theme.scales.paddings.l}px;
+    padding-inline: ${theme.scales.paddings.m}px;
 
     position: relative;
 
@@ -85,7 +86,12 @@ export const SProgress = styled.div<{
 ])
 
 export const SIconVariant = styled(Icon)<{ variant: ToastVariant }>(
-  ({ variant }) => [getColor("color")(variant)],
+  ({ variant }) => [
+    css`
+      flex-shrink: 0;
+    `,
+    getColor("color")(variant),
+  ],
 )
 
 export const SCloseIcon = styled(Icon)(

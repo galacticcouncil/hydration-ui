@@ -14,9 +14,11 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
+    "fragment Extrinsic on Extrinsic {\n  hash\n  block {\n    height\n    timestamp\n  }\n  indexInBlock\n  success\n  error\n}\n\nquery ExtrinsicByHash($hash: String!) {\n  extrinsics(where: {hash_eq: $hash}) {\n    ...Extrinsic\n  }\n}\n\nquery ExtrinsicByBlockAndIndex($blockNumber: Int!, $index: Int!) {\n  extrinsics(where: {block: {height_eq: $blockNumber}, indexInBlock_eq: $index}) {\n    ...Extrinsic\n  }\n}": typeof types.ExtrinsicFragmentDoc,
     "query OtcOrderStatus($orderId: Int!) {\n  events(\n    where: {args_jsonContains: {orderId: $orderId}, AND: {name_eq: \"OTC.Placed\"}}\n  ) {\n    args\n  }\n}": typeof types.OtcOrderStatusDocument,
 };
 const documents: Documents = {
+    "fragment Extrinsic on Extrinsic {\n  hash\n  block {\n    height\n    timestamp\n  }\n  indexInBlock\n  success\n  error\n}\n\nquery ExtrinsicByHash($hash: String!) {\n  extrinsics(where: {hash_eq: $hash}) {\n    ...Extrinsic\n  }\n}\n\nquery ExtrinsicByBlockAndIndex($blockNumber: Int!, $index: Int!) {\n  extrinsics(where: {block: {height_eq: $blockNumber}, indexInBlock_eq: $index}) {\n    ...Extrinsic\n  }\n}": types.ExtrinsicFragmentDoc,
     "query OtcOrderStatus($orderId: Int!) {\n  events(\n    where: {args_jsonContains: {orderId: $orderId}, AND: {name_eq: \"OTC.Placed\"}}\n  ) {\n    args\n  }\n}": types.OtcOrderStatusDocument,
 };
 
@@ -34,6 +36,10 @@ const documents: Documents = {
  */
 export function graphql(source: string): unknown;
 
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "fragment Extrinsic on Extrinsic {\n  hash\n  block {\n    height\n    timestamp\n  }\n  indexInBlock\n  success\n  error\n}\n\nquery ExtrinsicByHash($hash: String!) {\n  extrinsics(where: {hash_eq: $hash}) {\n    ...Extrinsic\n  }\n}\n\nquery ExtrinsicByBlockAndIndex($blockNumber: Int!, $index: Int!) {\n  extrinsics(where: {block: {height_eq: $blockNumber}, indexInBlock_eq: $index}) {\n    ...Extrinsic\n  }\n}"): (typeof documents)["fragment Extrinsic on Extrinsic {\n  hash\n  block {\n    height\n    timestamp\n  }\n  indexInBlock\n  success\n  error\n}\n\nquery ExtrinsicByHash($hash: String!) {\n  extrinsics(where: {hash_eq: $hash}) {\n    ...Extrinsic\n  }\n}\n\nquery ExtrinsicByBlockAndIndex($blockNumber: Int!, $index: Int!) {\n  extrinsics(where: {block: {height_eq: $blockNumber}, indexInBlock_eq: $index}) {\n    ...Extrinsic\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

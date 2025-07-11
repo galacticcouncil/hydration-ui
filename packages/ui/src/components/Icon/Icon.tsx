@@ -1,4 +1,4 @@
-import { Box, BoxProps } from "@/components"
+import { Box, BoxProps } from "@/components/Box"
 
 type IconProps = BoxProps & {
   component: React.ComponentType

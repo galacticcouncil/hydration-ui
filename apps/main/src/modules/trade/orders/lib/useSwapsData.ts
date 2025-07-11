@@ -1,4 +1,4 @@
-import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
+import { safeConvertAddressSS58, subscan } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -13,9 +13,9 @@ import {
 } from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
 import { SwapFragment } from "@/codegen/__generated__/squid/graphql"
-import { getSubscanLink } from "@/links/subscan"
 import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export type MarketSwapStatus = {
@@ -84,9 +84,10 @@ export const useSwapsData = (
             ? Big(fromAmount).div(toAmount).toString()
             : "0"
           const link = swap.event
-            ? getSubscanLink(
-                swap.event?.paraBlockHeight,
-                swap.event?.indexInBlock,
+            ? subscan.blockEvent(
+                HYDRATION_CHAIN_KEY,
+                swap.event.paraBlockHeight,
+                swap.event.indexInBlock,
               )
             : null
           const status = getOrderStatus(swap, getAssetWithFallback)

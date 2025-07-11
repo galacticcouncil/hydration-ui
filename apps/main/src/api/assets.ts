@@ -8,6 +8,8 @@ import { useAssetRegistry } from "@/states/assetRegistry"
 import {
   GDOT_ASSET_ID,
   GDOT_ERC20_ID,
+  GETH_ASSET_ID,
+  GETH_ERC20_ID,
   HYDRATION_PARACHAIN_ID,
 } from "@/utils/consts"
 import {
@@ -91,6 +93,11 @@ const STABLESWAP_DATA_OVERRIDE_MAP: Record<
     name: "GIGADOT",
     symbol: "GDOT",
     iconId: GDOT_ERC20_ID,
+  },
+  [GETH_ASSET_ID]: {
+    name: "GIGAETH",
+    symbol: "GETH",
+    iconId: GETH_ERC20_ID,
   },
 }
 

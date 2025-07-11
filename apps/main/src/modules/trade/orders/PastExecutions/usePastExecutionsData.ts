@@ -1,3 +1,4 @@
+import { subscan } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
@@ -8,8 +9,8 @@ import {
 } from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
-import { getSubscanLink } from "@/links/subscan"
 import { useAssets } from "@/providers/assetsProvider"
+import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export type PastExecutionData = {
@@ -60,7 +61,11 @@ export const usePastExecutionsData = (scheduleId: number) => {
           const timestamp = event?.block?.timestamp ?? null
 
           const link = event
-            ? getSubscanLink(event.paraBlockHeight, event.indexInBlock)
+            ? subscan.blockEvent(
+                HYDRATION_CHAIN_KEY,
+                event.paraBlockHeight,
+                event.indexInBlock,
+              )
             : null
 
           return {

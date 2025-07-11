@@ -149,7 +149,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
           tx: papi.tx.MultiTransactionPayment.set_currency({
             currency: Number(assetId),
           }),
-          meta: {
+          fee: {
             feePaymentAssetId: assetId,
           },
           toasts: {

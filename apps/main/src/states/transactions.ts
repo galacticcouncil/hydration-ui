@@ -1,37 +1,67 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { Transaction as AnyPapiTx } from "@galacticcouncil/sdk-next/build/types/tx"
 import { uuid } from "@galacticcouncil/utils"
+import { tags } from "@galacticcouncil/xcm-cfg"
 import { Call } from "@galacticcouncil/xcm-sdk"
 import { create } from "zustand"
 
+import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
+
+export const XcmTag = tags.Tag
+export type XcmTags = Array<keyof typeof XcmTag>
+
 export type { AnyPapiTx }
 export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
+
+export enum TransactionType {
+  Onchain = "Onchain",
+  Xcm = "Xcm",
+}
 
 export interface TransactionInput {
   tx: AnyTransaction
   title?: string
   description?: string
   steps?: unknown[]
-  toasts?: TrasactionToats
+  fee?: TransactionFee
+  toasts?: TransactionToasts
   meta?: TransactionMeta
 }
 
-export interface TrasactionToats {
+export type TransactionProps = Omit<TransactionInput, "meta"> & {
+  meta: TransactionMeta
+}
+
+export interface TransactionToasts {
   submitted: string
   success: string
   error: string
 }
 
-export interface TransactionMeta {
-  chainKey?: string
-  fee?: string
+type TransactionFee = {
+  feeAmount?: string
   feeBalance?: string
   feeSymbol?: string
   feePaymentAssetId?: string
-  dstChainKey?: string
+}
+
+type TransactionMetaCommons = {
+  srcChainKey: string
+}
+
+export type TransactionOnchainMeta = TransactionMetaCommons & {
+  type: TransactionType.Onchain
+}
+
+export type TransactionXcmMeta = TransactionMetaCommons & {
+  type: TransactionType.Xcm
+  dstChainKey: string
   dstChainFee?: string
   dstChainFeeSymbol?: string
+  tags?: XcmTags
 }
+
+export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta
 
 export interface TransactionActions {
   onSuccess?: () => void
@@ -45,7 +75,7 @@ export interface TransactionOptions extends TransactionActions {
   onClose?: () => void
 }
 
-export interface Transaction extends TransactionInput, TransactionActions {
+export interface Transaction extends TransactionProps, TransactionActions {
   id: string
 }
 
@@ -54,7 +84,7 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<unknown>
+  ) => Promise<void>
   cancelTransaction: (id: string) => void
 }
 
@@ -66,8 +96,12 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
         return {
           transactions: [
             {
-              ...transaction,
               id: uuid(),
+              ...transaction,
+              meta: transaction?.meta ?? {
+                type: TransactionType.Onchain,
+                srcChainKey: HYDRATION_CHAIN_KEY,
+              },
               onSubmitted: options?.onSubmitted,
               onSuccess: () => {
                 options?.onSuccess?.()

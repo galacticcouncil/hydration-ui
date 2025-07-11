@@ -8,6 +8,7 @@ import { getSpotPrice } from "@/api/spotPrice"
 import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalances } from "@/states/account"
 import { Transaction } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -16,7 +17,7 @@ export const useEstimateFee = (transaction: Transaction) => {
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
 
-  const feePaymentAssetIdOverride = transaction?.meta?.feePaymentAssetId
+  const feePaymentAssetIdOverride = transaction?.fee?.feePaymentAssetId
 
   const {
     data: accountFeePaymentAssetId,
@@ -25,27 +26,43 @@ export const useEstimateFee = (transaction: Transaction) => {
     enabled: !feePaymentAssetIdOverride,
   })
 
+  const { isBalanceLoading, getFreeBalance } = useAccountBalances()
+
   const address = account?.address ?? ""
 
   const feeAssetId =
     feePaymentAssetIdOverride || accountFeePaymentAssetId?.toString()
+  const feeAsset = getAsset(feeAssetId ?? "")
 
   const tx = transformAnyToPapiTx(papi, transaction.tx)
 
   return useQuery({
-    enabled: isLoaded && !isLoadingFeePaymentAssetId && isSS58Address(address),
+    enabled:
+      isLoaded &&
+      !isLoadingFeePaymentAssetId &&
+      !isBalanceLoading &&
+      isSS58Address(address),
     queryKey: ["estimateFee", address, safeStringify(tx?.decodedCall)],
     queryFn: async () => {
       if (!tx) throw new Error("Invalid transaction")
-      if (!feeAssetId) throw new Error("Missing fee payment asset id")
+      if (!feeAsset) throw new Error(`Asset ${feeAssetId} is not valid`)
 
-      const getSpotPriceFn = getSpotPrice(sdk.api.router, native.id, feeAssetId)
+      const getSpotPriceFn = getSpotPrice(
+        sdk.api.router,
+        native.id,
+        feeAsset.id,
+      )
       const [fees, spot] = await Promise.all([
         tx.getEstimatedFees(address),
         getSpotPriceFn(),
       ])
 
       const feeEstimateNative = scaleHuman(fees, native.decimals)
+
+      const feeAssetBalance = scaleHuman(
+        getFreeBalance(feeAsset.id),
+        feeAsset.decimals,
+      )
 
       if (spot?.spotPrice) {
         const feeEstimate = Big(feeEstimateNative)
@@ -55,19 +72,18 @@ export const useEstimateFee = (transaction: Transaction) => {
         return {
           feeEstimateNative,
           feeEstimate,
+          feeAssetBalance,
           feeAssetId,
         }
       }
 
       const assetPaymentValue =
         await papi.query.MultiTransactionPayment.AcceptedCurrencies.getValue(
-          Number(feeAssetId),
+          Number(feeAsset.id),
         )
 
-      const feeAsset = getAsset(feeAssetId)
-
-      if (!assetPaymentValue || !feeAsset) {
-        throw new Error(`Asset ${feeAssetId} is not valid fee payment asset`)
+      if (!assetPaymentValue) {
+        throw new Error(`Asset ${feeAsset.id} is not accepted for payment`)
       }
 
       const assetPaymentValueAdjusted = scaleHuman(
@@ -83,6 +99,7 @@ export const useEstimateFee = (transaction: Transaction) => {
       return {
         feeEstimateNative,
         feeEstimate,
+        feeAssetBalance,
         feeAssetId,
       }
     },
