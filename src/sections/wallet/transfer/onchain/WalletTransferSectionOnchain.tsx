@@ -80,7 +80,7 @@ export function WalletTransferSectionOnchain({
 
   const isTransferingPaymentAsset = accountCurrency.data === asset.toString()
 
-  const balance = BigNumber(tokenBalance?.balance ?? "0")
+  const balance = BigNumber(tokenBalance?.transferable ?? "0")
 
   const [debouncedAmount] = useDebouncedValue(form.watch("amount"), 500)
 

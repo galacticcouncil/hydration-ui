@@ -49,7 +49,7 @@ export const RemoveLiquidityModal = ({
   const isRemovingOmnipoolPosition = !!position
 
   const stablepoolPosition = pool.balance
-  const stablepoolPositionAmount = stablepoolPosition?.freeBalance ?? "0"
+  const stablepoolPositionAmount = stablepoolPosition?.transferable ?? "0"
 
   const { t } = useTranslation()
   const { page, direction, paginateTo } = useModalPagination(

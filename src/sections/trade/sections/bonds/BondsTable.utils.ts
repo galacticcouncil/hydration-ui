@@ -29,16 +29,12 @@ export const useBondsTableData = ({
   const bondsData = (id ? bonds.filter((bond) => bond.id === id) : bonds) ?? []
 
   const accountAssets = useAccountBalances()
-  const balances = pluck("id", bonds).map(
-    (id) => accountAssets.data?.accountAssetsMap.get(id)?.balance,
-  )
-
-  const bondsBalances = balances.filter((balance) =>
-    BN(balance?.total ?? "0").gt(0),
-  )
+  const bondsBalances = pluck("id", bonds)
+    .map((id) => accountAssets.data?.accountAssetsMap.get(id))
+    .filter((accountBalance) => BN(accountBalance?.balance.total ?? "0").gt(0))
 
   const bondEvents = useBondsEvents(
-    bondsBalances.map((bondBalance) => bondBalance?.assetId.toString()) ?? [],
+    bondsBalances.map((bondBalance) => bondBalance?.asset.id),
     true,
   )
 
@@ -59,7 +55,7 @@ export const useBondsTableData = ({
 
   const bondsWithBalance = bondsBalances
     .map((bondBalance) => {
-      const id = bondBalance?.assetId.toString() ?? ""
+      const id = bondBalance?.asset.id ?? ""
       const bond = bondMap.get(id)
 
       if (!bond) return undefined
@@ -136,13 +132,15 @@ export const useBondsTableData = ({
           currentBlockNumber < Number(lbpPool.end)
         : false
 
+      const totalBalance = bondBalance?.balance.total
+
       return {
         assetId: bondAssetId,
         assetIn: accumulatedAssetId,
         maturity: bondMap.get(id)?.maturity,
-        balance: bondBalance?.total,
-        balanceHuman: bondBalance?.total
-          ? BN(bondBalance.total).shiftedBy(-bond.decimals).toString()
+        balance: totalBalance,
+        balanceHuman: totalBalance
+          ? BN(totalBalance).shiftedBy(-bond.decimals).toString()
           : undefined,
         price: "",
         bondId: bond.id,

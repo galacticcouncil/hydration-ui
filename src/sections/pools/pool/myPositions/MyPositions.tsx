@@ -23,7 +23,7 @@ export const MyPositions = () => {
   const { t } = useTranslation()
   const { pool } = usePoolData()
 
-  const stablepoolAmount = pool.balance?.freeBalance ?? "0"
+  const stablepoolAmount = pool.balance?.transferable ?? "0"
   const isPositions = pool.isPositions
 
   return (

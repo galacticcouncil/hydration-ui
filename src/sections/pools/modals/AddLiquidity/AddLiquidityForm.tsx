@@ -103,7 +103,7 @@ export const AddLiquidityForm = ({
     getAddToOmnipoolFee(api, isJoinFarms, farms),
   )
 
-  const balance = assetBalance?.balance ?? "0"
+  const balance = assetBalance?.transferable ?? "0"
   const balanceMax = isGETH
     ? BN.min(
         BN(maxBalanceToWithdraw).shiftedBy(assetMeta.decimals),

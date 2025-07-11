@@ -55,7 +55,7 @@ export const PoolDetails = () => {
       return undefined
     }
 
-    const hasGethBalance = new BN(pool.balance?.freeBalance || "0").gt(0)
+    const hasGethBalance = new BN(pool.balance?.transferable || "0").gt(0)
 
     return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
   })()
