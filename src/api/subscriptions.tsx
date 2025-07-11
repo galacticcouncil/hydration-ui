@@ -22,6 +22,9 @@ import { NATIVE_ASSET_ID } from "utils/api"
 import { TBalance } from "./balances"
 import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { setAccountBalances, setIsAccountBalance } from "./deposits"
+import { percentageDifference } from "utils/helpers"
+
+const ERC20_THRESHOLD = 0.01
 
 export const QuerySubscriptions = () => {
   const { isLoaded } = useRpcProvider()
@@ -205,19 +208,18 @@ export function useBalanceSubscription() {
       unsubTokensBalance = await balanceV2.subscribeTokenBalance(
         accountAddress,
         (balances) => {
-          const prevData = new Map(
-            queryClient.getQueryData<Map<string, Balance>>(
-              QUERY_KEYS.accountTokenBalances,
-            ) ?? [],
-          )
+          const validBalances = new Map([])
 
           for (const [assetId, balance] of balances) {
             if (balance.total !== "0") {
-              prevData.set(assetId, balance)
+              validBalances.set(assetId, balance)
             }
           }
 
-          queryClient.setQueryData(QUERY_KEYS.accountTokenBalances, prevData)
+          queryClient.setQueryData(
+            QUERY_KEYS.accountTokenBalances,
+            validBalances,
+          )
         },
         followedAssetIds,
       )
@@ -229,29 +231,36 @@ export function useBalanceSubscription() {
       unsubErcBalance = await balanceV2.subscribeErc20Balance(
         accountAddress,
         (balances) => {
-          const prevData = new Map(
-            queryClient.getQueryData<Map<string, Balance>>(
-              QUERY_KEYS.accountErc20Balance,
-            ) ?? [],
-          )
+          const validBalances = new Map([])
 
           let shouldSync = false
 
           for (const [assetId, balance] of balances) {
-            const snapBalance = snapABalances.get(assetId)
+            if (balance.total !== "0") {
+              const snapBalance = snapABalances.get(assetId)
 
-            if (snapBalance?.transferable !== balance.transferable) {
-              shouldSync = true
-
+              validBalances.set(assetId, balance)
               snapABalances.set(assetId, balance)
-              if (balance.total !== "0") {
-                prevData.set(assetId, balance)
+
+              const snapTransferable = snapBalance?.transferable ?? "0"
+              const { transferable } = balance
+
+              if (
+                snapTransferable !== transferable &&
+                percentageDifference(snapTransferable, transferable).gt(
+                  ERC20_THRESHOLD,
+                )
+              ) {
+                shouldSync = true
               }
             }
           }
 
           if (shouldSync) {
-            queryClient.setQueryData(QUERY_KEYS.accountErc20Balance, prevData)
+            queryClient.setQueryData(
+              QUERY_KEYS.accountErc20Balance,
+              validBalances,
+            )
           }
         },
         erc20AssetIds,

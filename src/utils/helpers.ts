@@ -472,3 +472,7 @@ export function isMobileDevice() {
 export function neverGuard(value: never) {
   throw new Error(`Unexpected call, value: ${value}`)
 }
+
+export function percentageDifference(a: string, b: string): BN {
+  return BN(a).minus(b).abs().div(BN(a).plus(b).div(2)).multipliedBy(100)
+}
