@@ -206,9 +206,9 @@ export function useBalanceSubscription() {
         accountAddress,
         (balances) => {
           const prevData =
-            queryClient.getQueryData<Map<string, Balance>>([
+            queryClient.getQueryData<Map<string, Balance>>(
               QUERY_KEYS.accountTokenBalances,
-            ]) ?? new Map([])
+            ) ?? new Map([])
 
           for (const [assetId, balance] of balances) {
             if (balance.total !== "0") {
@@ -229,9 +229,9 @@ export function useBalanceSubscription() {
         accountAddress,
         (balances) => {
           const prevData =
-            queryClient.getQueryData<Map<string, Balance>>([
+            queryClient.getQueryData<Map<string, Balance>>(
               QUERY_KEYS.accountErc20Balance,
-            ]) ?? new Map([])
+            ) ?? new Map([])
 
           let shouldSync = false
 
