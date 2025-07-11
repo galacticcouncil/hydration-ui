@@ -7,7 +7,6 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useQuery } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { millisecondsInMinute } from "date-fns"
-import { undefinedNoop } from "utils/helpers"
 import { TBalance } from "./balances"
 import { TAsset, useAssets } from "providers/assets"
 import { GETH_ERC20_ASSET_ID } from "utils/constants"
@@ -76,69 +75,69 @@ export const useAccountBalance = (address?: string) => {
 
   return useQuery(
     QUERY_KEYS.accountBalances(address),
-    address
-      ? async () => {
-          const followedAssets = []
-          const followedErc20Tokens = []
+    async () => {
+      if (!address) return
 
-          for (const [, asset] of all) {
-            if (!asset.isErc20 && asset.id !== NATIVE_ASSET_ID) {
-              followedAssets.push(asset)
-            } else if (asset.isErc20) {
-              followedErc20Tokens.push(asset)
-            }
-          }
+      const followedAssets = []
+      const followedErc20Tokens = []
 
-          const systemBalance = await balanceV2.getSystemBalance(address)
-          const tokenBalance = await Promise.all(
-            followedAssets.map(async (asset) => {
-              const balance = await balanceV2.getTokenBalance(address, asset.id)
-
-              return { balance, asset }
-            }),
-          )
-          const erc20Balance = await Promise.all(
-            followedErc20Tokens.map(async (asset) => {
-              const balance = await balanceV2.getErc20Balance(address, asset.id)
-
-              return { balance, asset }
-            }),
-          )
-
-          const balances = [
-            { balance: systemBalance, asset: native },
-            ...tokenBalance,
-            ...erc20Balance,
-          ]
-
-          const accountAssetsMap: Map<
-            string,
-            { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
-          > = new Map([])
-          let isBalance = false
-
-          for (const { balance, asset } of balances) {
-            if (balance.total !== "0") {
-              const isPoolPositions =
-                asset.isShareToken ||
-                asset.isStableSwap ||
-                asset.id === GETH_ERC20_ASSET_ID
-
-              if (isPoolPositions) {
-                isBalance = true
-              }
-
-              accountAssetsMap.set(asset.id, {
-                balance,
-                asset,
-                isPoolPositions,
-              })
-            }
-          }
-
-          return { accountAssetsMap, balances, isBalance }
+      for (const [, asset] of all) {
+        if (!asset.isErc20 && asset.id !== NATIVE_ASSET_ID) {
+          followedAssets.push(asset)
+        } else if (asset.isErc20) {
+          followedErc20Tokens.push(asset)
         }
-      : undefinedNoop,
+      }
+
+      const systemBalance = await balanceV2.getSystemBalance(address)
+      const tokenBalance = await Promise.all(
+        followedAssets.map(async (asset) => {
+          const balance = await balanceV2.getTokenBalance(address, asset.id)
+
+          return { balance, asset }
+        }),
+      )
+      const erc20Balance = await Promise.all(
+        followedErc20Tokens.map(async (asset) => {
+          const balance = await balanceV2.getErc20Balance(address, asset.id)
+
+          return { balance, asset }
+        }),
+      )
+
+      const balances = [
+        { balance: systemBalance, asset: native },
+        ...tokenBalance,
+        ...erc20Balance,
+      ]
+
+      const accountAssetsMap: Map<
+        string,
+        { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
+      > = new Map([])
+      let isBalance = false
+
+      for (const { balance, asset } of balances) {
+        if (!BigNumber(balance.total).isZero()) {
+          const isPoolPositions =
+            asset.isShareToken ||
+            asset.isStableSwap ||
+            asset.id === GETH_ERC20_ASSET_ID
+
+          if (isPoolPositions) {
+            isBalance = true
+          }
+
+          accountAssetsMap.set(asset.id, {
+            balance,
+            asset,
+            isPoolPositions,
+          })
+        }
+      }
+
+      return { accountAssetsMap, balances, isBalance }
+    },
     {
       enabled: isLoaded && !!address && !!balanceV2,
       staleTime: millisecondsInMinute,

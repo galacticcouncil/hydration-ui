@@ -139,7 +139,7 @@ export function useBalanceSubscription() {
     data: systemBalance,
     isSuccess: isSuccessSystem,
     isLoading: isLoadingSystem,
-  } = useQuery<Balance>(QUERY_KEYS.accountSystemBalance, {
+  } = useQuery<Balance | false>(QUERY_KEYS.accountSystemBalance, {
     enabled: false,
     staleTime: Infinity,
   })
