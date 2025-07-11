@@ -64,18 +64,6 @@ export const useMenuTranslations = () => {
           title: t("navigation.otc.title"),
           description: t("navigation.otc.description"),
         },
-        yieldDca: {
-          title: t("navigation.yieldDca.title"),
-          description: t("navigation.yieldDca.description"),
-        },
-        bonds: {
-          title: t("navigation.bonds.title"),
-          description: t("navigation.bonds.description"),
-        },
-        // bond: {
-        //   title: t("navigation.bond.title"),
-        //   description: "",
-        // },
         // stats: {
         //   title: t("navigation.stats.title"),
         //   description: t("navigation.stats.description"),

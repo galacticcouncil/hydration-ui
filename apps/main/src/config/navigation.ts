@@ -1,9 +1,4 @@
-import {
-  PixelDollarBadge,
-  TwoColorCirclePercentage,
-  TwoColorSwap,
-  TwoColorUsers,
-} from "@galacticcouncil/ui/assets/icons"
+import { TwoColorSwap, TwoColorUsers } from "@galacticcouncil/ui/assets/icons"
 
 import { FileRouteTypes } from "@/routeTree.gen"
 
@@ -22,9 +17,6 @@ export const LINKS = {
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
-  yieldDca: "/trade/yield-dca",
-  bonds: "/trade/bonds",
-  // bond: "/trade/bond",
   // stats: "/stats",
   // statsOverview: "/stats/overview",
   // statsTreasury: "/stats/treasury",
@@ -58,8 +50,6 @@ export const NAVIGATION: NavigationItem[] = [
     children: [
       { key: "swap", icon: TwoColorSwap, to: LINKS.swap },
       { key: "otc", icon: TwoColorUsers, to: LINKS.otc },
-      { key: "yieldDca", icon: TwoColorCirclePercentage, to: LINKS.yieldDca },
-      { key: "bonds", icon: PixelDollarBadge, to: LINKS.bonds },
     ],
   },
   {
