@@ -256,7 +256,7 @@ export function useBalanceSubscription() {
             }
           }
 
-          if (shouldSync) {
+          if (shouldSync || !validBalances.size) {
             queryClient.setQueryData(
               QUERY_KEYS.accountErc20Balance,
               validBalances,
