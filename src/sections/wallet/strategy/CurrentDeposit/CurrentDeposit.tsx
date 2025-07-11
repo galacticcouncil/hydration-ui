@@ -56,7 +56,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
   const positions = accountPositions?.accountAssetsMap.get(assetId)
 
   const depositBalance = new BigNumber(
-    accountAsset?.balance?.balance || "0",
+    accountAsset?.balance?.transferable || "0",
   ).shiftedBy(-asset.decimals)
 
   const miningPositions = positions?.omnipoolDeposits ?? []

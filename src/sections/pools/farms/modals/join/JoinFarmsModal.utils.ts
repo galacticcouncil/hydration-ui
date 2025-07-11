@@ -80,6 +80,6 @@ export const useZodSchema = ({
   return z.object({
     amount: position
       ? rule
-      : rule.pipe(maxBalance(balance?.balance ?? "0", meta.decimals)),
+      : rule.pipe(maxBalance(balance?.transferable ?? "0", meta.decimals)),
   })
 }

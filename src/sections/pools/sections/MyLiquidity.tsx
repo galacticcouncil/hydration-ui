@@ -124,7 +124,7 @@ const MyLiquidityData = ({ id }: { id: number | undefined }) => {
       return pools.data.reduce((acc, pool) => {
         if (pool.isStablePool && pool.balance && pool.spotPrice) {
           acc = acc.plus(
-            BigNumber(pool.balance.freeBalance)
+            BigNumber(pool.balance.transferable)
               .shiftedBy(-pool.meta.decimals)
               .times(pool.spotPrice),
           )

@@ -48,8 +48,10 @@ export const RemoveXYKLiquidityForm = ({
 
   const value = form.watch("value")
 
-  const removeShareToken = shareTokenBalance?.balance
-    ? BN(shareTokenBalance.balance).multipliedBy(value).dividedToIntegerBy(100)
+  const removeShareToken = shareTokenBalance?.transferable
+    ? BN(shareTokenBalance.transferable)
+        .multipliedBy(value)
+        .dividedToIntegerBy(100)
     : BN_0
 
   const removeAmount = xykPoolTokens.map((asset) => {
@@ -140,7 +142,7 @@ export const RemoveXYKLiquidityForm = ({
                 onChange={field.onChange}
                 balance={t("liquidity.remove.modal.shares", {
                   shares: getFloatingPointAmount(
-                    shareTokenBalance?.balance ?? 0,
+                    shareTokenBalance?.transferable ?? 0,
                     decimals,
                   ),
                 })}
