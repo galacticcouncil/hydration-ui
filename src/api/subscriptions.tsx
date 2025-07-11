@@ -205,10 +205,11 @@ export function useBalanceSubscription() {
       unsubTokensBalance = await balanceV2.subscribeTokenBalance(
         accountAddress,
         (balances) => {
-          const prevData =
+          const prevData = new Map(
             queryClient.getQueryData<Map<string, Balance>>(
               QUERY_KEYS.accountTokenBalances,
-            ) ?? new Map([])
+            ) ?? [],
+          )
 
           for (const [assetId, balance] of balances) {
             if (balance.total !== "0") {
@@ -228,10 +229,11 @@ export function useBalanceSubscription() {
       unsubErcBalance = await balanceV2.subscribeErc20Balance(
         accountAddress,
         (balances) => {
-          const prevData =
+          const prevData = new Map(
             queryClient.getQueryData<Map<string, Balance>>(
               QUERY_KEYS.accountErc20Balance,
-            ) ?? new Map([])
+            ) ?? [],
+          )
 
           let shouldSync = false
 
