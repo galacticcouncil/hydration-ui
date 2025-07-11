@@ -366,9 +366,12 @@ export const useTransactionHandler = ({
           maxFeePerGas: gasPricePlus,
           maxPriorityFeePerGas: gasPricePlus,
         })
+
         return processTx({
-          tx: () =>
-            sendTx(params as PopulatedTransaction, protocolAction, toasts),
+          tx: () => {
+            const action = eventTxInfo?.action || protocolAction
+            return sendTx(params as PopulatedTransaction, action, toasts)
+          },
           successCallback: (txnResponse: TransactionResponse) => {
             setMainTxState({
               txHash: txnResponse.hash,

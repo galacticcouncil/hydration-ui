@@ -213,6 +213,7 @@ export const ClaimRewardsModalContent = () => {
       )}
       {txError && <GasEstimationError txError={txError} />}
       <ClaimRewardsActions
+        claimableUsd={claimableUsd}
         selectedReward={selectedReward ?? ({} as Reward)}
         blocked={blockingError !== undefined}
       />
