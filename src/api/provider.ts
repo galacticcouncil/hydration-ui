@@ -3,7 +3,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
@@ -21,6 +21,7 @@ import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 import { createClient } from "graphql-ws"
+import { useWindowFocus } from "hooks/useWindowFocus"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -398,7 +399,7 @@ export const useProviderData = (
     })
   }, [queryClient, shouldRefetchOnRpcChange])
 
-  return useQuery(
+  const query = useQuery(
     QUERY_KEYS.provider,
     async () => {
       const currentRpcUrlState = useProviderRpcUrlStore.getState()
@@ -488,6 +489,24 @@ export const useProviderData = (
       retry: false,
     },
   )
+
+  useWindowFocus({
+    onFocus: useCallback(async () => {
+      if (!shouldRefetchOnRpcChange) return
+      const provider = query.data?.api
+        ? getProviderInstance(query.data?.api)
+        : null
+
+      if (provider && !provider.isConnected) {
+        setEnabled(false)
+        queryClient.removeQueries(QUERY_KEYS.provider)
+        await reconnectProvider(provider)
+        setEnabled(true)
+      }
+    }, [query.data?.api, queryClient, shouldRefetchOnRpcChange]),
+  })
+
+  return query
 }
 
 export const useRefetchProviderData = () => {
