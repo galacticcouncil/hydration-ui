@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { millisecondsInMinute } from "date-fns"
 import { TBalance } from "./balances"
-import { TAsset, useAssets } from "providers/assets"
+import { TAsset, TShareToken, useAssets } from "providers/assets"
 import { GETH_ERC20_ASSET_ID } from "utils/constants"
 
 export const getAccountAssetBalances =
@@ -68,7 +68,7 @@ export const getAccountAssetBalances =
 
 export const useAccountBalance = (address?: string) => {
   const { isLoaded, sdk } = useRpcProvider()
-  const { all, native } = useAssets()
+  const { all, native, shareTokens } = useAssets()
 
   const { client } = sdk ?? {}
   const { balanceV2 } = client ?? {}
@@ -78,7 +78,7 @@ export const useAccountBalance = (address?: string) => {
     async () => {
       if (!address) return
 
-      const followedAssets = []
+      const followedAssets: Array<TShareToken | TAsset> = [...shareTokens]
       const followedErc20Tokens = []
 
       for (const [, asset] of all) {
@@ -113,7 +113,11 @@ export const useAccountBalance = (address?: string) => {
 
       const accountAssetsMap: Map<
         string,
-        { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
+        {
+          balance: TBalance
+          asset: TAsset | TShareToken
+          isPoolPositions: boolean
+        }
       > = new Map([])
       let isBalance = false
 
