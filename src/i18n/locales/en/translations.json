@@ -237,6 +237,8 @@
   "liquidity.table.farms.apr": "APR",
   "liquidity.table.farms.apr.description": "Estimated APR, based on past month's fees, farm rewards and current TVL, without considering the effects of Impermanent Loss",
   "liquidity.table.farms.apr.lpFee": "LP Fee Apr",
+  "liquidity.table.farms.apr.lpFeeOmnipool": "Omnipool LP Fee Apr",
+  "liquidity.table.farms.apr.lpFeeStablepool": "Stablepool LP Fee Apr",
   "liquidity.table.farms.apr.rewards": "Farm rewards APR",
   "liquidity.pool.details.title": "Pool details",
   "liquidity.pool.create": "Create pool",

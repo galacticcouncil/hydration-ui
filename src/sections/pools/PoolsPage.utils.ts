@@ -15,7 +15,7 @@ import {
   GETH_STABLESWAP_ASSET_ID,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
-import { useStableSDKPools } from "api/stableswap"
+import { useStablepoolFees, useStableSDKPools } from "api/stableswap"
 import { PoolToken, XykMath } from "@galacticcouncil/sdk"
 import { useOmnipoolVolumes, useStablepoolVolumes } from "api/volume"
 import BN from "bignumber.js"
@@ -66,6 +66,7 @@ type TStablepoolData = {
   volume: string
   balance: string
   isStablepoolData: boolean
+  lpFee: string | undefined
 }
 
 const isStablepoolData = (
@@ -93,7 +94,7 @@ export const usePools = () => {
     useOmnipoolDataObserver()
   const { data: accountAssets } = useAccountBalances()
   const { data: accountPositions } = useAccountPositions()
-  const { data: stablepoolData = [] } = useStablepoolsData()
+  const { data: stablepoolData } = useStablepoolsData()
 
   const omnipoolAssetsId = useMemo(
     () => omnipoolAssets?.map((a) => a.id) ?? [],
@@ -121,6 +122,7 @@ export const usePools = () => {
     useOmnipoolYieldMetrics(isInitialLoading)
 
   const gdotBorrowApy = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
+  const gethBorrowApy = useBorrowAssetApy(GETH_STABLESWAP_ASSET_ID)
 
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
@@ -129,7 +131,7 @@ export const usePools = () => {
     let tvlTotal = BN_0
     let stablepoolTotal = BN_0
 
-    if (!omnipoolAssets || isLoading)
+    if (!omnipoolAssets || isLoading || !stablepoolData)
       return { data: undefined, volumeTotal, tvlTotal, stablepoolTotal }
 
     const onlyStablepool: TStablepoolData[] = []
@@ -156,7 +158,7 @@ export const usePools = () => {
         const isGDOT = asset.id === GDOT_STABLESWAP_ASSET_ID
         const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
 
-        const isStablePool = isStablepoolData(asset)
+        const isStablepoolOnly = isStablepoolData(asset)
         const isStableInOmnipool = stableInOmnipool.get(poolId)
 
         const meta = getAssetWithFallback(asset.id)
@@ -166,17 +168,17 @@ export const usePools = () => {
 
         const spotPrice = getAssetPrice(asset.id).price
         const tradability =
-          !isStablePool && asset.bits
+          !isStablepoolOnly && asset.bits
             ? getTradabilityFromBits(asset.bits)
             : { canAddLiquidity: false, canRemoveLiquidity: true }
 
-        const tvlDisplay = isStablePool
+        const tvlDisplay = isStablepoolOnly
           ? BN(asset.balance)
           : BN(asset.balance).times(spotPrice).shiftedBy(-meta.decimals)
 
         let volume: string | undefined
 
-        if (isStablePool) {
+        if (isStablepoolOnly) {
           volume = asset.volume
         } else {
           const stablepoolVolume = isStableInOmnipool?.volume
@@ -200,7 +202,7 @@ export const usePools = () => {
             : omnipoolVolume
         }
 
-        if (!tvlDisplay.isNaN() && !isStablePool) {
+        if (!tvlDisplay.isNaN() && !isStablepoolOnly) {
           tvlTotal = tvlTotal.plus(tvlDisplay)
         }
 
@@ -208,23 +210,48 @@ export const usePools = () => {
           volumeTotal = volumeTotal.plus(volume)
         }
 
-        const { totalApr, farms = [] } = allFarms?.get(asset.id) ?? {}
+        const { totalApr: farmsApr, farms = [] } = allFarms?.get(asset.id) ?? {}
 
-        let fee: BN | undefined
+        let lpFeeOmnipool: string | undefined
+        let lpFeeStablepool: string | undefined
         let totalFee: BN | undefined
 
-        if (isStablePool && isGDOT) {
-          fee = BN(gdotBorrowApy.totalSupplyApy)
-          totalFee = fee
-        } else if (native.id === asset.id) {
-          fee = BN_0
-        } else {
-          fee = BN(
-            omnipoolMetrics.find(
-              (omnipoolMetric) => omnipoolMetric.assetId === asset.id,
-            )?.projectedAprPerc ?? BN_NAN,
-          )
-          totalFee = !isTotalFeeLoading ? fee.plus(totalApr ?? 0) : BN_NAN
+        if (isStablepoolOnly) {
+          lpFeeStablepool = asset.lpFee
+
+          if (isGDOT) {
+            totalFee = BN(gdotBorrowApy.totalSupplyApy)
+          } else {
+            totalFee = BN(lpFeeStablepool ?? 0).plus(farmsApr ?? 0)
+          }
+        } else if (isStableInOmnipool) {
+          lpFeeStablepool = isStableInOmnipool.lpFee ?? "0"
+
+          lpFeeOmnipool =
+            omnipoolMetrics.find(({ assetId, assetRegistryId }) => {
+              const id = assetRegistryId ?? assetId
+
+              return id === asset.id
+            })?.projectedAprPerc ?? "0"
+
+          if (isGETH) {
+            totalFee = BN(lpFeeOmnipool ?? 0)
+              .plus(gethBorrowApy.totalSupplyApy)
+              .plus(farmsApr ?? 0)
+          } else {
+            totalFee = BN(lpFeeStablepool)
+              .plus(lpFeeOmnipool ?? 0)
+              .plus(farmsApr ?? 0)
+          }
+        } else if (!isStablepoolOnly && asset.id !== native.id) {
+          lpFeeOmnipool =
+            omnipoolMetrics.find(({ assetId, assetRegistryId }) => {
+              const id = assetRegistryId ?? assetId
+
+              return id === asset.id
+            })?.projectedAprPerc ?? "0"
+
+          totalFee = BN(lpFeeOmnipool ?? 0).plus(farmsApr ?? 0)
         }
 
         const filteredOmnipoolPositions = positions?.liquidityPositions ?? []
@@ -263,8 +290,9 @@ export const usePools = () => {
           allFarms: farms.filter((farm) =>
             farm.isActive ? BN(farm.apr).gt(0) : true,
           ),
-          fee,
           totalFee: totalFee ?? BN_NAN,
+          lpFeeOmnipool,
+          lpFeeStablepool,
           isFeeLoading: isTotalFeeLoading,
           omnipoolPositions: filteredOmnipoolPositions,
           miningPositions: filteredMiningPositions,
@@ -272,8 +300,8 @@ export const usePools = () => {
           isPositions,
           isGDOT,
           isGETH,
-          isStablePool: isStablePool || !!isStableInOmnipool,
-          isInOmnipool: isStablePool ? !!isStableInOmnipool : true,
+          isStablePool: isStablepoolOnly || !!isStableInOmnipool,
+          isInOmnipool: !isStablepoolOnly,
         }
       })
       .sort((poolA, poolB) => {
@@ -311,6 +339,7 @@ export const usePools = () => {
     omnipoolMetrics,
     stablepoolData,
     gdotBorrowApy.totalSupplyApy,
+    gethBorrowApy.totalSupplyApy,
     accountPositions,
   ])
 
@@ -759,6 +788,7 @@ export const useStablepoolsData = (disabled?: boolean) => {
     useStablepoolVolumes(disabled)
 
   const { data: stablePools, isLoading: isPoolLoading } = useStableSDKPools()
+  const { data: stablepoolFees } = useStablepoolFees()
 
   const tokensSet = new Set<string>()
 
@@ -787,6 +817,9 @@ export const useStablepoolsData = (disabled?: boolean) => {
     let totalVolume = BN_0
     let totalBalance = BN_0
 
+    const poolId = stablepool.poolId
+    const id = poolId
+
     stablepool.tokens.forEach((token) => {
       const assetPrice = BN(getAssetPrice(token.id).price)
 
@@ -803,12 +836,17 @@ export const useStablepoolsData = (disabled?: boolean) => {
         totalBalance = totalBalance.plus(displayBalance)
     })
 
+    const lpFee = stablepoolFees?.find(
+      (stablepoolFee) => stablepoolFee.poolId === poolId,
+    )?.projectedApyPerc
+
     const data: TStablepoolData = {
-      poolId: stablepool.poolId,
-      id: stablepool.poolId,
+      poolId,
+      id,
       volume: totalVolume.toString(),
       balance: totalBalance.toString(),
       isStablepoolData: true,
+      lpFee,
     }
 
     return data
