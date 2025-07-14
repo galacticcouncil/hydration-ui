@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
@@ -30,50 +31,49 @@ const useSchema = () => {
   const { t } = useTranslation()
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
+  const { account } = useAccount()
 
   const refineMaxBalance = useValidateFormMaxBalance()
 
-  return schema
-    .check(
-      refineMaxBalance("sellAmount", (form) => [
-        form.sellAsset,
-        form.sellAmount,
-      ]),
+  const minBudgetSchema = schema.check(async (ctx) => {
+    const { sellAsset, sellAmount } = ctx.value
+
+    if (!sellAsset || !sellAmount) {
+      return
+    }
+
+    const minAmount = await queryClient.ensureQueryData(
+      minimumOrderBudgetQuery(rpc, sellAsset.id),
     )
-    .check(async (ctx) => {
-      const { sellAsset, sellAmount } = ctx.value
 
-      if (!sellAsset || !sellAmount) {
-        return
-      }
+    const minAmountHuman = scaleHuman(minAmount.toString(), sellAsset.decimals)
 
-      const minAmount = await queryClient.ensureQueryData(
-        minimumOrderBudgetQuery(rpc, sellAsset.id),
-      )
+    const isValid = Big(sellAmount).gte(minAmountHuman)
 
-      const minAmountHuman = scaleHuman(
-        minAmount.toString(),
-        sellAsset.decimals,
-      )
+    if (isValid) {
+      return
+    }
 
-      const isValid = Big(sellAmount).gte(minAmountHuman)
-
-      if (isValid) {
-        return
-      }
-
-      ctx.issues.push({
-        code: "custom",
-        input: sellAmount,
-        path: ["sellAmount" satisfies keyof DcaFormValues],
-        message: t("error.minBudgetTooLow", {
-          value: t("currency", {
-            value: minAmountHuman,
-            symbol: sellAsset.symbol,
-          }),
+    ctx.issues.push({
+      code: "custom",
+      input: sellAmount,
+      path: ["sellAmount" satisfies keyof DcaFormValues],
+      message: t("error.minBudgetTooLow", {
+        value: t("currency", {
+          value: minAmountHuman,
+          symbol: sellAsset.symbol,
         }),
-      })
+      }),
     })
+  })
+
+  if (!account) {
+    return minBudgetSchema
+  }
+
+  return minBudgetSchema.check(
+    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
+  )
 }
 
 type Args = {

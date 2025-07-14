@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
@@ -34,7 +35,12 @@ const schema = z.object({
 })
 
 const useSchema = () => {
+  const { account } = useAccount()
   const refineMaxBalance = useValidateFormMaxBalance()
+
+  if (!account) {
+    return schema
+  }
 
   return schema.check(
     refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
