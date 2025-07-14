@@ -11,8 +11,8 @@ type Props = {
 
 export const SubpageLayout: FC<Props> = ({ actions, subpageMenu }) => {
   return (
-    <Flex direction="column">
-      <Flex justify="space-between" align="center" sx={{ py: 8 }}>
+    <Flex direction="column" py={8}>
+      <Flex justify="space-between" align="center" mb={20}>
         {subpageMenu ?? <SubpageMenu />}
         {actions}
       </Flex>

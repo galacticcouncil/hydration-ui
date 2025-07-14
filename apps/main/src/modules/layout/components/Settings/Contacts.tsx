@@ -1,4 +1,4 @@
-import { Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
+import { BookOpen } from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItemDescription,
   MenuItemIcon,
@@ -18,7 +18,7 @@ export const Contacts: FC<Props> = ({ onClick }) => {
 
   return (
     <MenuSelectionItem onClick={onClick}>
-      <MenuItemIcon component={Rectangle7101} />
+      <MenuItemIcon component={BookOpen} />
       <MenuItemLabel>{t("contacts")}</MenuItemLabel>
       <MenuItemDescription>{t("contacts.description")}</MenuItemDescription>
       <MenuSelectionItemArrow />

@@ -15,8 +15,8 @@ import { useTranslation } from "react-i18next"
 
 import { userOpenOrdersCountQuery } from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
-import { SubpageItem, SubpageMenu } from "@/components/SubpageMenu"
-import { SubpageMenuItem } from "@/components/SubpageMenu/SubpageMenuItem"
+import { TabItem, TabMenu } from "@/components/TabMenu"
+import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { OpenOrdersBadge } from "@/modules/trade/orders/OpenOrders/OpenOrdersBadge"
 
 export const tradeOrderTabs = [
@@ -55,21 +55,26 @@ export const TradeOrdersHeader = () => {
     <Grid
       sx={{ overflowX: "auto" }}
       columnTemplate="1fr auto"
-      align="center"
-      columnGap={20}
+      columnGap={8}
       px={20}
       py={getTokenPx("scales.paddings.l")}
     >
-      <SubpageMenu
+      <TabMenu
+        gap={8}
         sx={{ overflowX: "unset" }}
-        items={tradeOrderTabs.map<SubpageItem>((tab) => ({
+        items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(`trade.orders.${tab}`),
           search: { tab, allPairs },
         }))}
         renderItem={(item) => (
           <Box position="relative">
-            <SubpageMenuItem item={item} />
+            <TabMenuItem
+              size="small"
+              item={item}
+              variant="muted"
+              sx={{ px: 10 }}
+            />
             {item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
               openOrdersCount > 0 && (
                 <OpenOrdersBadge

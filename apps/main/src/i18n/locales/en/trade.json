@@ -102,7 +102,6 @@
   "otc.header.otcValue": "Value in OTC",
   "otc.header.sold": "Total sold",
   "otc.header.24volume": "24h Volume",
-  "otc.filters.inputPlaceholder": "Search tokens",
   "otc.filters.offers.my": "My offers",
   "otc.filters.offers.all": "All",
   "otc.filters.offers.partiallyFillable": "Partially fillable",

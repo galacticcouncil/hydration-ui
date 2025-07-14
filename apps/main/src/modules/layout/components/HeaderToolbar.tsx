@@ -1,7 +1,8 @@
 import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
-import { ButtonIcon } from "@galacticcouncil/ui/components"
+import { ButtonIcon, ExternalLink } from "@galacticcouncil/ui/components"
 import { FC, lazy } from "react"
 
+import { HYDRATION_DOCS_LINK } from "@/config/links"
 import { SHeaderToolbar } from "@/modules/layout/components/HeaderToolbar.styled"
 import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 import { NotificationCenter } from "@/modules/layout/components/NotificationCenter/NotificationCenter"
@@ -18,10 +19,11 @@ export const HeaderToolbar: FC = () => {
 
   return (
     <SHeaderToolbar>
-      {/* PLACEHOLDER */}
       {hasTopNavbar && (
-        <ButtonIcon>
-          <QuestionCircleRegular />
+        <ButtonIcon asChild>
+          <ExternalLink href={HYDRATION_DOCS_LINK}>
+            <QuestionCircleRegular />
+          </ExternalLink>
         </ButtonIcon>
       )}
       <NotificationCenter />

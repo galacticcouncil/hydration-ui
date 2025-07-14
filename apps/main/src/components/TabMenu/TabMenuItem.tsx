@@ -1,15 +1,29 @@
-import { Button } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  ButtonSize,
+  ButtonVariant,
+} from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { useLocation } from "@tanstack/react-router"
 import { FC } from "react"
 
-import { SubpageItem } from "@/components/SubpageMenu/SubpageMenu"
+import { TabItem } from "@/components/TabMenu/TabMenu"
 
 export type Props = {
-  readonly item: SubpageItem
+  readonly item: TabItem
+  readonly size?: ButtonSize
+  readonly variant?: ButtonVariant
+  readonly activeVariant?: ButtonVariant
+  readonly className?: string
 }
 
-export const SubpageMenuItem: FC<Props> = ({ item }) => {
+export const TabMenuItem: FC<Props> = ({
+  item,
+  size,
+  activeVariant = "secondary",
+  variant = "muted",
+  className,
+}) => {
   const { to, title, icon: IconComponent, search } = item
 
   const path = useLocation({
@@ -36,7 +50,12 @@ export const SubpageMenuItem: FC<Props> = ({ item }) => {
   }
 
   return (
-    <Button variant={isActive(to, search) ? "secondary" : "tertiary"} asChild>
+    <Button
+      className={className}
+      variant={isActive(to, search) ? activeVariant : variant}
+      size={size}
+      asChild
+    >
       <Link to={to} search={search}>
         {IconComponent && <IconComponent />}
         {title}

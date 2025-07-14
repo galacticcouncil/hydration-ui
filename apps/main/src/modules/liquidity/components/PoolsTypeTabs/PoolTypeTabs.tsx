@@ -3,7 +3,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { SubpageMenu } from "@/components/SubpageMenu"
+import { TabMenu } from "@/components/TabMenu"
 import { LINKS } from "@/config/navigation"
 
 export const PoolTypeTabs = () => {
@@ -45,7 +45,9 @@ export const PoolTypeTabs = () => {
   }
 
   return (
-    <SubpageMenu
+    <TabMenu
+      size="large"
+      variant="muted"
       items={[
         {
           to: LINKS.liquidity,

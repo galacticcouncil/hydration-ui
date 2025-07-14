@@ -114,9 +114,29 @@ const TABLE_COLUMNS = [
           <AssetLogo
             src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${row.original.id}.png`}
           />
-          <Text fw={600}>{getValue()}</Text>
+          <Text fw={600} whiteSpace="nowrap">
+            {getValue()}
+          </Text>
         </Flex>
       )
+    },
+  }),
+  columnHelper.accessor("price", {
+    header: "Price",
+    cell: ({ getValue }) => formatters.usd.format(getValue()),
+    meta: {
+      sx: {
+        textAlign: "end",
+      },
+    },
+  }),
+  columnHelper.accessor("price", {
+    header: "Price",
+    cell: ({ getValue }) => formatters.usd.format(getValue()),
+    meta: {
+      sx: {
+        textAlign: "end",
+      },
     },
   }),
   columnHelper.accessor("price", {
@@ -132,7 +152,6 @@ const TABLE_COLUMNS = [
     header: "Market Cap",
     cell: ({ getValue }) => formatters.usdCompact.format(getValue()),
     meta: {
-      visibility: ["tablet", "desktop"],
       sx: {
         textAlign: ["end", "end", "end", "center"],
       },
@@ -141,7 +160,6 @@ const TABLE_COLUMNS = [
   columnHelper.accessor("changeIn24h", {
     header: "24h %",
     meta: {
-      visibility: ["desktop"],
       sx: {
         textAlign: "end",
       },
@@ -275,5 +293,17 @@ export const WithPagination: Story = {
     paginated: true,
     pageSize: 6,
     data: LARGE_TABLE_DATA,
+  },
+}
+
+export const WithPinnedColumn: Story = {
+  render: MockTable,
+  args: {
+    paginated: true,
+    pageSize: 6,
+    data: LARGE_TABLE_DATA,
+    columnPinning: {
+      left: ["symbol"],
+    },
   },
 }

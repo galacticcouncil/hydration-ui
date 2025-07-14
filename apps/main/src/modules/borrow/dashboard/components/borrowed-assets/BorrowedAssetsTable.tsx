@@ -54,7 +54,6 @@ export const BorrowedAssetsTable = () => {
               })
             }
             fixedLayout
-            hoverable
             data={data}
             columns={columns}
           />

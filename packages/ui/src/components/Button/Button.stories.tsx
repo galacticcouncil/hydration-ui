@@ -91,3 +91,17 @@ export const Accent: Story = {
     variant: "accent",
   },
 }
+
+export const Muted: Story = {
+  render: VariantTemplate,
+  args: {
+    variant: "muted",
+  },
+}
+
+export const Transparent: Story = {
+  render: VariantTemplate,
+  args: {
+    variant: "transparent",
+  },
+}

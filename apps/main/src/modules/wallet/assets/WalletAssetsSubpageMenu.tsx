@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 
-import { SubpageMenu } from "@/components/SubpageMenu/SubpageMenu"
+import { TabMenu } from "@/components/TabMenu/TabMenu"
 
 export const WalletAssetsSubpageMenu = () => {
   const { t } = useTranslation()
 
   return (
-    <SubpageMenu
+    <TabMenu
       items={[
         {
           to: "/wallet/assets",

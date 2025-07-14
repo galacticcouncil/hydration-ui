@@ -42,7 +42,7 @@ export const BorrowDashboardPage = () => {
   const shouldRenderBorrow = mode === "borrow" || !shouldRenderFilter
 
   return (
-    <Stack gap={30} py={20}>
+    <Stack gap={30}>
       <DashboardHeader />
       <AccountBindingBanner />
       <Box>

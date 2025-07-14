@@ -1,7 +1,7 @@
 import { isH160Address, isSS58Address } from "@galacticcouncil/utils"
 import { lazy, Suspense } from "react"
 
-import { IdenticonEmpty } from "@/assets/icons"
+import { EmptyIdenticon } from "@/components/AccountAvatar/identicons/EmptyIdenticon"
 import { Box, BoxProps } from "@/components/Box"
 import { getToken } from "@/utils"
 
@@ -47,7 +47,7 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
         />
       }
     >
-      {chosenTheme === null && <IdenticonEmpty />}
+      {chosenTheme === null && <EmptyIdenticon size={size} />}
       {chosenTheme === "evm" && <EthereumIdenticon size={size} {...props} />}
       {chosenTheme === "talisman" && (
         <TalismanIdenticon size={size} {...props} />

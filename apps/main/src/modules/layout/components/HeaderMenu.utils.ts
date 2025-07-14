@@ -44,10 +44,10 @@ export const useMenuTranslations = () => {
           title: t("navigation.walletTransactions.title"),
           description: "",
         },
-        crossChain: {
-          title: t("navigation.crossChain.title"),
-          description: "",
-        },
+        // crossChain: {
+        //   title: t("navigation.crossChain.title"),
+        //   description: "",
+        // },
         // bridge: {
         //   title: t("navigation.bridge.title"),
         //   description: "",
