@@ -6,20 +6,25 @@ import { useRootStore } from "sections/lending/store/root"
 import { TxActionsWrapper } from "sections/lending/components/transactions/TxActionsWrapper"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
+import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
 
 export type ClaimRewardsActionsProps = {
   isWrongNetwork?: boolean
   blocked: boolean
+  claimableUsd: string
   selectedReward: Reward
 }
 
 export const ClaimRewardsActions = ({
   isWrongNetwork = false,
   blocked,
+  claimableUsd,
   selectedReward,
 }: ClaimRewardsActionsProps) => {
   const { t } = useTranslation()
   const claimRewards = useRootStore((state) => state.claimRewards)
+
+  const isClaimAllRewards = selectedReward?.symbol === "all"
 
   const { action, loadingTxns, mainTxState, requiresApproval } =
     useTransactionHandler({
@@ -27,10 +32,18 @@ export const ClaimRewardsActions = ({
       eventTxInfo: {
         assetName: selectedReward.symbol,
         amount: selectedReward.balance,
+        action: isClaimAllRewards
+          ? ExtendedProtocolAction.claimAllRewards
+          : ProtocolAction.claimRewards,
       },
       tryPermit: false,
       handleGetTxns: async () => {
-        return claimRewards({ isWrongNetwork, blocked, selectedReward })
+        return claimRewards({
+          isWrongNetwork,
+          blocked,
+          selectedReward,
+          claimableUsd,
+        })
       },
       skip: Object.keys(selectedReward).length === 0 || blocked,
       deps: [selectedReward],
@@ -42,18 +55,25 @@ export const ClaimRewardsActions = ({
       blocked={blocked}
       preparingTransactions={loadingTxns}
       mainTxState={mainTxState}
-      handleAction={() =>
-        action(
-          createToastMessages("lending.claimRewards.toast", {
-            t,
-            tOptions: {
-              symbol: selectedReward.symbol,
-              value: selectedReward.balance,
-            },
-            components: ["span.highlight"],
-          }),
-        )
-      }
+      handleAction={() => {
+        const toasts = isClaimAllRewards
+          ? createToastMessages("lending.claimAllRewards.toast", {
+              t,
+              tOptions: {
+                value: claimableUsd,
+              },
+              components: ["span.highlight"],
+            })
+          : createToastMessages("lending.claimRewards.toast", {
+              t,
+              tOptions: {
+                symbol: selectedReward.symbol,
+                value: selectedReward.balance,
+              },
+              components: ["span.highlight"],
+            })
+        return action(toasts)
+      }}
       actionText={
         selectedReward.symbol === "all" ? (
           <span>Claim all</span>
