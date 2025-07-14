@@ -132,7 +132,7 @@ export function useBalanceSubscription() {
   const { isLoaded, sdk } = useRpcProvider()
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  const { all, erc20, native, getAssetWithFallback } = useAssets()
+  const { all, erc20, native, getAssetWithFallback, shareTokens } = useAssets()
 
   const accountAddress = account?.address
   const { client } = sdk ?? {}
@@ -166,11 +166,13 @@ export function useBalanceSubscription() {
   })
 
   const followedAssetIds = useMemo(
-    () =>
-      Array.from(all.values())
-        .filter((a) => !a.isErc20 && a.id !== NATIVE_ASSET_ID)
-        .map((a) => a.id),
-    [all],
+    () => [
+      ...Array.from(all.values())
+        .filter((token) => !token.isErc20 && token.id !== NATIVE_ASSET_ID)
+        .map((token) => token.id),
+      ...shareTokens.map((token) => token.id),
+    ],
+    [all, shareTokens],
   )
 
   const erc20AssetIds = useMemo(() => erc20.map((a) => a.id), [erc20])
@@ -256,7 +258,7 @@ export function useBalanceSubscription() {
             }
           }
 
-          if (shouldSync) {
+          if (shouldSync || !validBalances.size) {
             queryClient.setQueryData(
               QUERY_KEYS.accountErc20Balance,
               validBalances,
