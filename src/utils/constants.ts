@@ -39,8 +39,6 @@ export const REFETCH_INTERVAL = 60000
 
 export const STABLEPOOL_TOKEN_DECIMALS = 18
 
-export const SLIPPAGE_LIMIT = new BN(3)
-
 //decimals
 export const TRILL = 12
 export const QUINTILL = 18

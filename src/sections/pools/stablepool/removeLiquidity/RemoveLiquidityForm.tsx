@@ -1,5 +1,5 @@
 import { default as BigNumber } from "bignumber.js"
-import { Button } from "components/Button/Button"
+import { Button, ButtonTransparent } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { useMemo } from "react"
@@ -7,11 +7,7 @@ import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useStore } from "state/store"
 import { getFloatingPointAmount } from "utils/balance"
-import {
-  BN_100,
-  SLIPPAGE_LIMIT,
-  STABLEPOOL_TOKEN_DECIMALS,
-} from "utils/constants"
+import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { theme } from "theme"
 import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { useStablepoolLiquidityOut } from "./RemoveLiquidity.utils"
@@ -23,6 +19,8 @@ import { useAssets } from "providers/assets"
 import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
 import { Switch } from "components/Switch/Switch"
+import { useLiquidityLimit } from "state/liquidityLimit"
+import { Summary } from "components/Summary/Summary"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -38,6 +36,7 @@ type RemoveLiquidityProps = {
   defaultValue?: number
   splitRemove: boolean
   setSplitRemove: (enabled: boolean) => void
+  setLiquidityLimit: () => void
 }
 
 export const RemoveStablepoolLiquidityForm = ({
@@ -49,6 +48,7 @@ export const RemoveStablepoolLiquidityForm = ({
   defaultValue,
   splitRemove,
   setSplitRemove,
+  setLiquidityLimit,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({
@@ -58,6 +58,7 @@ export const RemoveStablepoolLiquidityForm = ({
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
+  const { addLiquidityLimit } = useLiquidityLimit()
   const { createTransaction } = useStore()
 
   const value = form.watch("value")
@@ -101,7 +102,12 @@ export const RemoveStablepoolLiquidityForm = ({
     const meta = getAssetWithFallback(assetId)
     const assetOutValue = getAssetOutValue(Number(assetId), removeSharesValue)
     const minValue = BigNumber(assetOutValue)
-      .minus(SLIPPAGE_LIMIT.plus(feeDisplay).times(assetOutValue).div(100))
+      .minus(
+        BigNumber(addLiquidityLimit)
+          .plus(feeDisplay)
+          .times(assetOutValue)
+          .div(100),
+      )
       .dp(0)
       .toString()
 
@@ -114,6 +120,7 @@ export const RemoveStablepoolLiquidityForm = ({
     removeSharesValue,
     feeDisplay,
     splitRemove,
+    addLiquidityLimit,
   ])
 
   const handleSubmit = async () => {
@@ -266,14 +273,35 @@ export const RemoveStablepoolLiquidityForm = ({
         </STradingPairContainer>
       </div>
       <Spacer size={17} />
-      <div sx={{ flex: "row", justify: "space-between" }}>
-        <Text color="basic400">
-          {t("liquidity.remove.modal.tokenFee.label")}
-        </Text>
-        <Text color="white">
-          {t("value.percentage", { value: feeDisplay })}
-        </Text>
-      </div>
+
+      <Summary
+        rows={[
+          {
+            label: t("liquidity.add.modal.tradeLimit"),
+            content: (
+              <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
+                <Text fs={14} color="white" tAlign="right">
+                  {t("value.percentage", { value: addLiquidityLimit })}
+                </Text>
+                <ButtonTransparent onClick={() => setLiquidityLimit()}>
+                  <Text color="brightBlue200" fs={14}>
+                    {t("edit")}
+                  </Text>
+                </ButtonTransparent>
+              </div>
+            ),
+          },
+          {
+            label: t("liquidity.remove.modal.tokenFee.label"),
+            content: (
+              <Text color="white" fs={14}>
+                {t("value.percentage", { value: feeDisplay })}
+              </Text>
+            ),
+          },
+        ]}
+      />
+
       <Spacer size={20} />
       <Button fullWidth variant="primary" disabled={removeSharesValue === "0"}>
         {t("liquidity.stablepool.remove.confirm")}

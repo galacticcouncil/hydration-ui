@@ -1,5 +1,5 @@
 import BN from "bignumber.js"
-import { Button } from "components/Button/Button"
+import { Button, ButtonTransparent } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -65,6 +65,7 @@ type Props = {
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
   initialAmount?: string
+  setLiquidityLimit: () => void
 }
 
 const createFormSchema = (balance: string, decimals: number) =>
@@ -82,6 +83,7 @@ export const AddStablepoolLiquidity = ({
   isJoinFarms,
   setIsJoinFarms,
   initialAmount,
+  setLiquidityLimit,
 }: Props) => {
   const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -472,6 +474,30 @@ export const AddStablepoolLiquidity = ({
           )}
         />
         <Spacer size={20} />
+
+        <SummaryRow
+          label={t("liquidity.add.modal.tradeLimit")}
+          content={
+            <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
+              <Text fs={14} color="white" tAlign="right">
+                {t("value.percentage", { value: addLiquidityLimit })}
+              </Text>
+              <ButtonTransparent onClick={() => setLiquidityLimit()}>
+                <Text color="brightBlue200" fs={14}>
+                  {t("edit")}
+                </Text>
+              </ButtonTransparent>
+            </div>
+          }
+        />
+
+        <Separator
+          color="darkBlue401"
+          sx={{
+            my: 4,
+            width: "auto",
+          }}
+        />
 
         <FeeRow poolId={poolId} />
 

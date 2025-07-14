@@ -92,6 +92,12 @@ export const TransferModal = ({
   }, [assetIds, isGDOT, isGETH, tradable])
 
   const goBack = () => {
+    if (page === Page.LIMIT_LIQUIDITY) {
+      paginateTo(Page.ADD_LIQUIDITY)
+
+      return
+    }
+
     const nextPage = page - 1
 
     if (nextPage === 0 && (isOnlyStablepool || skipOptions)) {
@@ -148,6 +154,7 @@ export const TransferModal = ({
                 isJoinFarms={isJoinFarms && !stablepoolSelected}
                 setIsJoinFarms={setIsJoinFarms}
                 initialAmount={initialAmount}
+                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ),
           },
