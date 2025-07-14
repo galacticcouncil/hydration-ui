@@ -1,45 +1,44 @@
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
-import { Summary } from "@galacticcouncil/ui/components"
+import { Summary, SummaryRow } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
-import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes"
-import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
+import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
+import {
+  MarketFormValues,
+  TradeType,
+} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { GDOT_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
-  readonly swap: Trade | undefined
-  readonly isLoading: boolean
+  readonly swap: Trade
 }
 
-export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
+export const MarketSummarySwap: FC<Props> = ({ swap }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const {
-    single: { swapSlippage },
+    swap: {
+      single: { swapSlippage },
+    },
   } = useTradeSettings()
+
   const form = useFormContext<MarketFormValues>()
 
   const { watch } = form
-  const buyAsset = watch("buyAsset")
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
-  if (!buyAsset) {
+  if (!sellAsset || !buyAsset) {
     return null
   }
 
-  if (isLoading) {
-    return <MarketSummarySkeleton />
-  }
-
-  const tradeFeePct = swap?.tradeFeePct ?? 0
-  const tradeFeeRange = swap?.tradeFeeRange ?? [0, 0]
+  const tradeFeePct = swap.tradeFeePct
+  const tradeFeeRange = swap.tradeFeeRange ?? [0, 0]
 
   const [min, max] = tradeFeeRange
   const [
@@ -50,47 +49,48 @@ export const MarketSummarySwap: FC<Props> = ({ swap, isLoading }) => {
 
   return (
     <div>
-      <Summary
-        separator={<SwapSectionSeparator />}
-        withTrailingSeparator
-        rows={[
-          {
-            label: t("trade:market.summary.priceImpact"),
-            content: t("percent", { value: swap?.priceImpactPct ?? 0 }),
-          },
-          {
-            label: t("trade:market.summary.estTradeFees"),
-            content: (
-              <DynamicFee
-                value={tradeFeePct}
-                rangeLow={mediumLow}
-                rangeHigh={mediumHigh}
-                tooltip="TODO Est. trade fees market swap"
-              />
-            ),
-          },
-          {
-            label: t("trade:market.summary.minReceived"),
-            content: t("currency", {
+      <Summary separator={<SwapSectionSeparator />} withTrailingSeparator>
+        <SummaryRow
+          label={t("trade:market.summary.priceImpact")}
+          content={t("percent", { value: swap.priceImpactPct })}
+        />
+        <SummaryRow
+          label={t("trade:market.summary.estTradeFees")}
+          content={
+            <DynamicFee
+              value={tradeFeePct}
+              rangeLow={mediumLow}
+              rangeHigh={mediumHigh}
+              tooltip={`TODO ${t("percent", { value: tradeFeePct })}`}
+            />
+          }
+        />
+        {swap.type === TradeType.Buy ? (
+          <SummaryRow
+            label={t("trade:market.summary.maxSent")}
+            content={t("currency", {
               value: scaleHuman(
-                swap
-                  ? swap.amountOut -
-                      calculateSlippage(swap.amountOut, swapSlippage)
-                  : 0n,
+                swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
+                sellAsset.decimals,
+              ),
+              symbol: sellAsset.symbol,
+            })}
+          />
+        ) : (
+          <SummaryRow
+            label={t("trade:market.summary.minReceived")}
+            content={t("currency", {
+              value: scaleHuman(
+                swap.amountOut -
+                  calculateSlippage(swap.amountOut, swapSlippage),
                 buyAsset.decimals,
               ),
               symbol: buyAsset.symbol,
-            }),
-          },
-        ]}
-      />
-      <TradeRoutes
-        routes={
-          swap?.swaps
-            // Hide 2-Pool-GDOT
-            .filter((swap) => swap.assetOut !== Number(GDOT_ASSET_ID)) ?? []
-        }
-      />
+            })}
+          />
+        )}
+      </Summary>
+      <TradeRoutes routes={swap.swaps ?? []} />
     </div>
   )
 }

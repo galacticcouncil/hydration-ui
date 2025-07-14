@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { SOtcHeader } from "@/modules/trade/otc/header/OtcHeader.styled"
 import { OtcValue } from "@/modules/trade/otc/header/OtcValue"
 
+// TODO integrate
 export const OtcHeader: FC = () => {
   const { t } = useTranslation("trade")
 

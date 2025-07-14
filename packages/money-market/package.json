@@ -7,7 +7,10 @@
   },
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "lint": "yarn lint:eslint && yarn lint:ts",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "lint:eslint": "eslint src"
   },
   "dependencies": {
     "@aave/contract-helpers": "1.23.1",

@@ -5,7 +5,10 @@
   "main": "./src/index.ts",
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc --build"
+    "build": "tsc --build",
+    "lint": "yarn lint:eslint && yarn lint:ts",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "lint:eslint": "eslint src"
   },
   "dependencies": {
     "@types/uuid": "^10.0.0",

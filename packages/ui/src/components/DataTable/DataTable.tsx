@@ -23,6 +23,7 @@ import {
 
 import { Box } from "@/components/Box"
 import { Button } from "@/components/Button"
+import { ExternalLink } from "@/components/ExternalLink"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
 import {
@@ -43,7 +44,6 @@ import {
   useDataTable,
   UseDataTableOwnOptions,
 } from "./DataTable.utils"
-import { ExternalLink } from "@/components/ExternalLink"
 
 export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
@@ -264,23 +264,22 @@ const DataTable = forwardRef(
                             </TableCell>
                           )
                         })}
+
+                        {isRowExpandable && (
+                          <TableCell>
+                            <Flex justify="center" align="center">
+                              <Icon
+                                size={18}
+                                color={getToken("icons.onSurface")}
+                                component={
+                                  isRowExpanded ? ChevronDown : ChevronUp
+                                }
+                              />
+                            </Flex>
+                          </TableCell>
+                        )}
                       </TableRow>
                     </DataTableExternalLink>
-                    {isRowExpandable && (
-                      <TableRow>
-                        <TableCell>
-                          <Flex justify="center" align="center">
-                            <Icon
-                              size={18}
-                              color={getToken("icons.onSurface")}
-                              component={
-                                isRowExpanded ? ChevronDown : ChevronUp
-                              }
-                            />
-                          </Flex>
-                        </TableCell>
-                      </TableRow>
-                    )}
                     {override && (
                       <TableRowOverride
                         colSpan={table.getVisibleLeafColumns().length + 1}
@@ -316,6 +315,8 @@ const DataTable = forwardRef(
     )
   },
 )
+
+DataTable.displayName = "DataTable"
 
 type DataTablePaginationProps<T> = {
   table: TableDef<T>

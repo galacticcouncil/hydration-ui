@@ -104,7 +104,9 @@ export class EthereumSigner {
         data: data as Hex,
       } as const
 
-      const gas = await this.publicClient.estimateGas(tx)
+      // @TODO check gas estimation, why it is not working
+      // const gas = await this.publicClient.estimateGas(tx)
+      const gas = 1_000_000n
 
       const createPermitMessageData = () => {
         const message: PermitMessage = {
@@ -166,12 +168,12 @@ export class EthereumSigner {
 
       await this.walletClient.switchChain({ id: client.chain.id })
 
-      const [_gas, gasPrice, nonce] = await Promise.all([
-        this.publicClient.estimateGas({
-          account: this.address as Hex,
-          data: call.data as Hex,
-          to: call.to,
-        }),
+      const [/*gas,*/ gasPrice, nonce] = await Promise.all([
+        // this.publicClient.estimateGas({
+        //   account: this.address as Hex,
+        //   data: call.data as Hex,
+        //   to: call.to,
+        // }),
         this.publicClient.getGasPrice(),
         this.publicClient.getTransactionCount({
           address: this.address as Hex,
@@ -189,7 +191,7 @@ export class EthereumSigner {
         chain: client.chain as Chain,
         maxFeePerGas: call?.maxFeePerGas || gasPricePlus,
         maxPriorityFeePerGas: call?.maxPriorityFeePerGas || gasPricePlus,
-        // @TODO check gas estimation
+        // @TODO check gas estimation, why it is not working
         gas: call?.gasLimit || 1_000_000n,
       })
 

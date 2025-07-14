@@ -67,7 +67,10 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
             </Text>
             <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
               {t("number", {
-                value: details.fromAmountRemaining,
+                value:
+                  details.status === DcaScheduleStatus.Created
+                    ? details.fromAmountRemaining
+                    : "0",
               })}
               /
               {t("number", {
@@ -146,7 +149,7 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
                 scheduleId={details.scheduleId}
                 sold={details.fromAmountExecuted}
                 total={details.fromAmountBudget}
-                symbol={details.to.symbol}
+                symbol={details.from.symbol}
                 onClose={() => setTerminateModalOpen(false)}
               />
             </Modal>

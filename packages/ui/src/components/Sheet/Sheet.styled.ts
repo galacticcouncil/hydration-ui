@@ -14,9 +14,7 @@ import { mq } from "@/theme"
 
 export const SSheetOverlay = SModalOverlay
 
-export const SSheetClose = styled(SModalClose)`
-  padding: 18px 20px;
-`
+export const SSheetClose = SModalClose
 
 export const SSheetWrapper = styled(SModalWrapper)`
   inset: 8px;
@@ -70,6 +68,11 @@ export const SSheetPaper = styled(Paper)`
 `
 
 export const SSheetHeader = styled(SModalHeader)`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
   padding: 15px var(--modal-content-padding);
 `
 

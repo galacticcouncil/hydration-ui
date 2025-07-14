@@ -9,11 +9,15 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-export const Contacts: FC = () => {
+type Props = {
+  readonly onClick: () => void
+}
+
+export const Contacts: FC<Props> = ({ onClick }) => {
   const { t } = useTranslation()
 
   return (
-    <MenuSelectionItem>
+    <MenuSelectionItem onClick={onClick}>
       <MenuItemIcon component={Rectangle7101} />
       <MenuItemLabel>{t("contacts")}</MenuItemLabel>
       <MenuItemDescription>{t("contacts.description")}</MenuItemDescription>

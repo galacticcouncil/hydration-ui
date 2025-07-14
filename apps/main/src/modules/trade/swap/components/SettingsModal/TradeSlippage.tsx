@@ -1,4 +1,4 @@
-import { Flex, Input, Text } from "@galacticcouncil/ui/components"
+import { Flex, NumberInput, Text } from "@galacticcouncil/ui/components"
 import {
   SliderTabs,
   SliderTabsOption,
@@ -10,10 +10,11 @@ import { useTranslation } from "react-i18next"
 import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
 
 type Props = {
-  readonly slippage: number
-  readonly onSlippageChange: (slippage: number) => void
+  readonly slippage: number | null
+  readonly onSlippageChange: (slippage: number | null) => void
   readonly helpTooltip?: string
   readonly description?: string
+  readonly isError?: boolean
 }
 
 export const TradeSlippage: FC<Props> = ({
@@ -21,6 +22,7 @@ export const TradeSlippage: FC<Props> = ({
   onSlippageChange,
   helpTooltip,
   description,
+  isError,
 }) => {
   const { t } = useTranslation()
 
@@ -36,23 +38,20 @@ export const TradeSlippage: FC<Props> = ({
           <SliderTabs
             options={slippageOptions}
             selected={
-              slippageOptions.find((option) => option.value === slippage)?.id
+              slippageOptions.find((option) => option.id === slippage)?.id
             }
-            onSelect={(option) => onSlippageChange(option.value)}
+            onSelect={(option) => onSlippageChange(option.id)}
           />
 
-          <Input
+          <NumberInput
             sx={{ width: 85 }}
             value={slippage}
             unit="%"
             placeholder={t("custom")}
-            onChange={(e) => {
-              const value = Number(e.target.value)
-
-              if (!isNaN(value)) {
-                onSlippageChange(value)
-              }
-            }}
+            isError={isError}
+            onValueChange={({ floatValue }) =>
+              onSlippageChange(floatValue ?? null)
+            }
           />
         </Flex>
       </Flex>
@@ -66,7 +65,7 @@ export const TradeSlippage: FC<Props> = ({
 }
 
 const slippageOptions: ReadonlyArray<SliderTabsOption<number>> = [
-  { id: "0.5", value: 0.5, label: "0.5%" },
-  { id: "1", value: 1, label: "1%" },
-  { id: "3", value: 3, label: "3%" },
+  { id: 0.5, label: "0.5%" },
+  { id: 1, label: "1%" },
+  { id: 3, label: "3%" },
 ]

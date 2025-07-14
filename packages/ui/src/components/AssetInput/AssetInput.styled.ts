@@ -42,13 +42,9 @@ export const SAssetButtonEmpty = styled(Button)`
   box-sizing: border-box;
 `
 
-export const SAssetInput = styled(Input)<{ isError: boolean }>(
-  ({ isError, theme }) => css`
-    text-align: right;
-    font-size: 16px;
-    height: auto;
-    padding-right: 0px;
-
-    color: ${isError ? theme.accents.danger.secondary : "inherit"};
-  `,
-)
+export const SAssetInput = styled(Input)`
+  text-align: right;
+  font-size: 16px;
+  height: auto;
+  padding-right: 0px;
+`

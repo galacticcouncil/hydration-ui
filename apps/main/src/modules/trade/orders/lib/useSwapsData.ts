@@ -1,4 +1,4 @@
-import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
+import { safeConvertAddressSS58, subscan } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -13,9 +13,9 @@ import {
 } from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
 import { SwapFragment } from "@/codegen/__generated__/squid/graphql"
-import { getSubscanLink } from "@/links/subscan"
 import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export type MarketSwapStatus = {
@@ -29,6 +29,7 @@ export type MyActivityDcaOrderStatus = {
   readonly scheduleId: number
   readonly sold: string
   readonly total: string
+  readonly symbol: string
 }
 
 export type OrderStatus = MarketSwapStatus | MyActivityDcaOrderStatus
@@ -83,12 +84,13 @@ export const useSwapsData = (
             ? Big(fromAmount).div(toAmount).toString()
             : "0"
           const link = swap.event
-            ? getSubscanLink(
-                swap.event?.paraBlockHeight,
-                swap.event?.indexInBlock,
+            ? subscan.blockEvent(
+                HYDRATION_CHAIN_KEY,
+                swap.event.paraBlockHeight,
+                swap.event.indexInBlock,
               )
             : null
-          const status = getOrderStatus(swap)
+          const status = getOrderStatus(swap, getAssetWithFallback)
           const type = isTradeOperation(swap.operationType)
             ? swap.operationType
             : null
@@ -114,7 +116,10 @@ export const useSwapsData = (
   return { swaps, totalCount, isLoading }
 }
 
-const getOrderStatus = (swap: SwapFragment): OrderStatus | null => {
+const getOrderStatus = (
+  swap: SwapFragment,
+  getAsset: (id: string) => TAsset,
+): OrderStatus | null => {
   if (!swap.dcaScheduleExecutionEvent) {
     return { kind: "market", status: "filled" }
   }
@@ -125,11 +130,14 @@ const getOrderStatus = (swap: SwapFragment): OrderStatus | null => {
     return null
   }
 
+  const asset = getAsset(schedule.assetInId ?? "")
+
   return {
     kind: OrderKind.Dca,
     scheduleId: Number(schedule.id),
-    sold: schedule.totalExecutedAmountIn || "0",
-    total: schedule.budgetAmountIn || "0",
+    sold: scaleHuman(schedule.totalExecutedAmountIn || "0", asset.decimals),
+    total: scaleHuman(schedule.budgetAmountIn || "0", asset.decimals),
+    symbol: asset.symbol,
     status: isDcaScheduleStatus(schedule.status) ? schedule.status : null,
   }
 }

@@ -27,7 +27,10 @@ export const TerminateDcaScheduleModalContent: FC<Props> = ({
       total={total}
       symbol={symbol}
       onBack={onClose}
-      onSubmit={() => terminateDcaSchedule.mutate(scheduleId)}
+      onSubmit={() => {
+        terminateDcaSchedule.mutate(scheduleId)
+        onClose()
+      }}
     />
   )
 }

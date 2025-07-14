@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import { TradeOtcPage } from "@/modules/trade/otc/TradeOtcPage"
 

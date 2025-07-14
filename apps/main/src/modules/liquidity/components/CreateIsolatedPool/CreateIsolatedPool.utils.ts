@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { t } from "i18next"
 import { useTranslation } from "react-i18next"
-import { z, ZodType } from "zod"
+import { z, ZodType } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -10,30 +10,6 @@ import { useTransactionsStore } from "@/states/transactions"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 import { CreateIsolatedPoolFormData } from "./CreateIsolatedPool"
-
-export const calculateRate = ({
-  amountA,
-  amountB,
-  assetA,
-  assetB,
-  reversed,
-}: {
-  amountA?: string
-  amountB?: string
-  assetA?: TAssetData
-  assetB?: TAssetData
-  reversed: boolean
-}) => {
-  if (!amountA || !amountB || !assetA || !assetB) return undefined
-
-  const rate = Big(amountB).div(amountA)
-
-  return {
-    assetA: reversed ? assetB.symbol : assetA.symbol,
-    assetB: reversed ? assetA.symbol : assetB.symbol,
-    rate: reversed ? Big(1).div(rate) : rate,
-  }
-}
 
 export const zodCreateIsolatedPool = (
   balanceA: string,

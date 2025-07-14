@@ -78,7 +78,10 @@ export const FillOrderModalContent: FC<Props> = ({
         <form
           onSubmit={
             isUsersOffer
-              ? () => setIsSubmitCancelOpen(true)
+              ? (e) => {
+                  e.preventDefault()
+                  setIsSubmitCancelOpen(true)
+                }
               : form.handleSubmit((values) => submit.mutate(values))
           }
         >

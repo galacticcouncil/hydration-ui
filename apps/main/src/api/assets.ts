@@ -1,11 +1,15 @@
 import { Asset, Bond } from "@galacticcouncil/sdk-next"
+import { AssetMetadataFactory } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
+import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { useAssetRegistry } from "@/states/assetRegistry"
 import {
   GDOT_ASSET_ID,
   GDOT_ERC20_ID,
+  GETH_ASSET_ID,
+  GETH_ERC20_ID,
   HYDRATION_PARACHAIN_ID,
 } from "@/utils/consts"
 import {
@@ -14,53 +18,6 @@ import {
   getExternalId,
   getParachainId,
 } from "@/utils/externalAssets"
-
-/**
- * Map of aTokens and their corresponding underlying asset ids
- */
-export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
-  // aDOT
-  "1000037": "5",
-  // aUSDT
-  "1000039": "10",
-  // aUSDC
-  "1000038": "21",
-  // aWBTC
-  "1000040": "3",
-  // aWETH
-  "1000041": "20",
-  //avDOT
-  "1005": "15",
-}
-
-export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
-  // aDOT
-  "1001": "5",
-  // aUSDT
-  "1002": "10",
-  // aUSDC
-  "1003": "22",
-  // aWBTC
-  "1004": "19",
-  //avDOT
-  "1005": "15",
-}
-
-export const A_TOKEN_UNDERLYING_ID_MAP =
-  import.meta.env.VITE_ENV === "production"
-    ? A_TOKEN_UNDERLYING_ID_MAP_MAINNET
-    : A_TOKEN_UNDERLYING_ID_MAP_TESTNET
-
-export type TAssetResouce = {
-  baseUrl: string
-  branch: string
-  cdn: {
-    [key: string]: string
-  }
-  path: string
-  repository: string
-  items: string[]
-}
 
 export enum AssetType {
   TOKEN = "Token",
@@ -85,11 +42,11 @@ type TCommonAssetData = {
   isTradable: boolean
   isSufficient: boolean
   iconSrc?: string
+  chainSrc?: string
 }
 
 export type TToken = TCommonAssetData & {
   type: AssetType.TOKEN
-  srcChain?: string
   parachainId?: string
   ecosystem: AssetEcosystem
 }
@@ -128,42 +85,38 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
-const METADATA_BASE_URL =
-  "https://raw.githubusercontent.com/galacticcouncil/intergalactic-asset-metadata/master"
-
-const METADATA_PATHS = ["/assets-v2.json", "/chains-v2.json"]
-
 const STABLESWAP_DATA_OVERRIDE_MAP: Record<
   string,
-  Partial<TCommonAssetData>
+  Partial<TCommonAssetData> & { iconId?: string }
 > = {
   [GDOT_ASSET_ID]: {
     name: "GIGADOT",
     symbol: "GDOT",
-    iconSrc: `polkadot/2034/assets/${GDOT_ERC20_ID}/icon.svg`,
+    iconId: GDOT_ERC20_ID,
+  },
+  [GETH_ASSET_ID]: {
+    name: "GIGAETH",
+    symbol: "GETH",
+    iconId: GETH_ERC20_ID,
   },
 }
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { assetClient, tradeRouter, isApiLoaded, dataEnv } = data
+  const { sdk, isApiLoaded, dataEnv } = data
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
     queryFn: async () => {
-      const metadataQueries = METADATA_PATHS.map((path) =>
-        fetch(METADATA_BASE_URL + path).then(
-          (d) => d.json() as unknown as TAssetResouce,
-        ),
-      )
+      const metadata = AssetMetadataFactory.getInstance()
 
-      const { sync, syncMetadata } = useAssetRegistry.getState()
+      const { sync } = useAssetRegistry.getState()
 
-      const [tradeAssets, assets, assetsMetadata, chainsMetadata] =
-        await Promise.all([
-          tradeRouter.getTradeableAssets(),
-          assetClient.getOnChainAssets(true),
-          ...metadataQueries,
-        ])
+      const [tradeAssets, assets] = await Promise.all([
+        sdk.api.router.getTradeableAssets(),
+        sdk.client.asset.getOnChainAssets(true),
+        metadata.fetchAssets(),
+        metadata.fetchChains(),
+      ])
 
       const syncData = assets.map((asset): TAssetData => {
         const isTradable = tradeAssets.some((id) => id === asset.id)
@@ -179,17 +132,13 @@ export const assetsQuery = (data: TProviderContext) => {
         }
 
         if (asset.type === AssetType.TOKEN) {
-          return assetToTokenType(
-            asset,
-            commonAssetData,
-            findIconSrc(assetsMetadata?.items ?? []),
-          )
+          return assetToTokenType(asset, commonAssetData, metadata)
         } else if (asset.type === AssetType.ERC20) {
           return assetToErc20Type(asset, commonAssetData)
         } else if (asset.type === AssetType.BOND) {
           return assetToBondType(asset, commonAssetData)
         } else if (asset.type === AssetType.STABLESWAP) {
-          return assetToStableSwapType(asset, commonAssetData)
+          return assetToStableSwapType(asset, commonAssetData, metadata)
         } else if (asset.type === AssetType.External) {
           return assetToExternalType(asset, commonAssetData)
         } else {
@@ -199,39 +148,9 @@ export const assetsQuery = (data: TProviderContext) => {
           }
         }
       })
-      console.log({ syncData })
-      syncMetadata({
-        url: assetsMetadata ? getMetadataUrl(assetsMetadata) : undefined,
-        chainsMetadata,
-      })
+
       sync(syncData)
 
-      // const [shareToken, poolAssets] = await Promise.all([
-      //   api.query.xyk.shareToken.entries(),
-      //   api.query.xyk.poolAssets.entries(),
-      // ])
-
-      // const shareTokens = shareToken
-      //   .map(([key, shareTokenIdRaw]) => {
-      //     const poolAddress = key.args[0].toString()
-      //     const shareTokenId = shareTokenIdRaw.toString()
-
-      //     const xykAssets = poolAssets.find(
-      //       (xykPool) => xykPool[0].args[0].toString() === poolAddress,
-      //     )?.[1]
-
-      //     if (xykAssets)
-      //       return {
-      //         poolAddress,
-      //         shareTokenId,
-      //         assets: xykAssets.unwrap().map((asset) => asset.toString()),
-      //       }
-
-      //     return undefined
-      //   })
-      //   .filter(isNonNullish)
-
-      // syncShareTokens(shareTokens)
       return []
     },
     enabled: isApiLoaded,
@@ -241,26 +160,10 @@ export const assetsQuery = (data: TProviderContext) => {
   })
 }
 
-function findIconSrc(items: string[]) {
-  return (parachainId: string, assetIdOrAddress: string) => {
-    return items.find((item) =>
-      item.includes(`${parachainId}/assets/${assetIdOrAddress}`),
-    )
-  }
-}
-
-function getMetadataUrl(resource: TAssetResouce) {
-  const { cdn, path, repository } = resource
-  return [cdn["jsDelivr"], repository + "@latest", path].join("/")
-}
-
 function assetToTokenType(
   asset: Asset,
   commonAssetData: TCommonAssetData,
-  getIconSrc: (
-    parachainId: string,
-    assetIdOrAddress: string,
-  ) => string | undefined,
+  metadata: AssetMetadataFactory,
 ): TToken {
   const ethereumNetworkEntry = getEthereumNetworkEntry(asset)
 
@@ -268,26 +171,29 @@ function assetToTokenType(
     const accountKey20 = getAccountKey20(asset)
     const parachainId = ethereumNetworkEntry?.value?.chain_id?.toString()
     const address = accountKey20?.key ? accountKey20.key.asHex() : ""
+    const ecosystem = AssetEcosystem.ETHEREUM
 
     return {
       ...commonAssetData,
       type: AssetType.TOKEN,
-      ecosystem: AssetEcosystem.ETHEREUM,
-      iconSrc: getIconSrc(parachainId, address),
       parachainId,
+      ecosystem,
+      iconSrc: metadata.getAssetLogoSrc(parachainId, address, ecosystem),
+      chainSrc: metadata.getChainLogoSrc(parachainId, ecosystem),
     }
   } else {
     const parachainId = getParachainId(asset)?.toString()
+    const ecosystem = AssetEcosystem.POLKADOT
 
     return {
       ...commonAssetData,
-      parachainId,
       type: AssetType.TOKEN,
-      ecosystem: AssetEcosystem.POLKADOT,
-      iconSrc: getIconSrc(
-        HYDRATION_PARACHAIN_ID.toString(),
-        commonAssetData.id,
-      ),
+      parachainId,
+      ecosystem,
+      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, asset.id),
+      chainSrc: parachainId
+        ? metadata.getChainLogoSrc(parachainId, ecosystem)
+        : undefined,
     }
   }
 }
@@ -323,14 +229,21 @@ function assetToBondType(
 function assetToStableSwapType(
   asset: Asset,
   commonAssetData: TCommonAssetData,
+  metadata: AssetMetadataFactory,
 ): TStableswap {
   const underlyingAssetId = asset?.meta ? Object.keys(asset.meta) : undefined
+
+  const { iconId, ...overrideProps } =
+    STABLESWAP_DATA_OVERRIDE_MAP[asset.id] ?? {}
 
   return {
     ...commonAssetData,
     type: AssetType.STABLESWAP,
     underlyingAssetId,
-    ...STABLESWAP_DATA_OVERRIDE_MAP[asset.id.toString()],
+    ...overrideProps,
+    ...(iconId && {
+      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, iconId),
+    }),
   }
 }
 

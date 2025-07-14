@@ -1,3 +1,5 @@
+export { AccountOption as Web3ConnectAccount } from "@/components/account/AccountOption"
+export * from "@/components/address-book"
 export { Web3ConnectButton } from "@/components/Web3ConnectButton"
 export { Web3ConnectModal } from "@/components/Web3ConnectModal"
 export * from "@/hooks"

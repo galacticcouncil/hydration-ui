@@ -1,8 +1,7 @@
 import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
-import { api, client, pool, sor } from "@galacticcouncil/sdk-next"
+import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { getProviderInstance, hasOwn } from "@galacticcouncil/utils"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
-import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { Graffle } from "graffle"
@@ -23,21 +22,15 @@ export type TFeatureFlags = object
 
 export type TProviderData = {
   papi: Papi
+  sdk: SdkCtx
   papiClient: PolkadotClient
+  papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
-  balanceClient: client.BalanceClient
-  assetClient: client.AssetClient
   poolService: pool.PoolContextProvider
   endpoint: string
   dataEnv: TDataEnv
-  tradeRouter: sor.TradeRouter
-  tradeUtils: sor.TradeUtils
-  /**
-   * @deprecated
-   */
-  legacy_api: ApiPromise
   /**
    * @deprecated
    */
@@ -76,19 +69,15 @@ export const providerQuery = (rpcUrlList: string[]) => {
 
 const getProviderData = async (rpcUrlList: string[] = []) => {
   const papiClient = await api.getWs(rpcUrlList)
+
   const papi = papiClient.getTypedApi(hydration)
 
-  const balanceClient = new client.BalanceClient(papiClient)
+  const [sdk, papiCompatibilityToken] = await Promise.all([
+    createSdkContext(papiClient),
+    papi.compatibilityToken,
+  ])
 
-  const assetClient = new client.AssetClient(papiClient)
-
-  const poolService = new pool.PoolContextProvider(papiClient)
-    .withOmnipool()
-    .withStableswap()
-    .withXyk()
-
-  const tradeRouter = new sor.TradeRouter(poolService)
-  const tradeUtils = new sor.TradeUtils(papiClient)
+  const poolService = sdk.ctx.pool.withOmnipool().withStableswap().withXyk()
 
   const evm = createPublicClient({
     transport: custom({
@@ -114,17 +103,14 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   return {
     papi,
     papiClient,
+    papiCompatibilityToken,
     evm,
     endpoint,
     poolService,
-    balanceClient,
-    assetClient,
+    sdk,
     rpcUrlList,
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
-    tradeRouter,
-    tradeUtils,
     featureFlags: {},
-    legacy_api,
     legacy_tradeRouter,
   } satisfies TProviderData
 }

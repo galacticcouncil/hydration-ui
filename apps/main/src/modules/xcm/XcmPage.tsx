@@ -7,19 +7,19 @@ import { useTransactionsStore } from "@/states/transactions"
 
 export const XcmPage = () => {
   const { createTransaction } = useTransactionsStore()
-  const { papi, tradeRouter, tradeUtils } = useRpcProvider()
+  const { papi, sdk } = useRpcProvider()
 
   const { isConnected } = useAccount()
 
   const { mutate: swap, isPending: isSwapPending } = useMutation({
     mutationFn: async () => {
       // example of swap using sdk-next
-      const sell = await tradeRouter.getBestSell(5, 0, 10_000_000_000n)
-      const callData = await tradeUtils.buildSellTx(sell)
+      const sell = await sdk.api.router.getBestSell(5, 0, 10_000_000_000n)
+      const tx = await sdk.tx.trade(sell).build()
 
       return createTransaction({
         title: "Swap Test",
-        tx: await papi.txFromCallData(callData),
+        tx: tx.get(),
       })
     },
   })

@@ -21,6 +21,7 @@ export const layout = (theme: ThemeProps): Partial<LayoutOptions> => ({
   background: { type: ColorType.Solid, color: "transparent" },
   textColor: theme.text.low,
   fontSize: 12,
+  attributionLogo: false,
 })
 
 export const rightPriceScale: Partial<PriceScaleOptions> = {

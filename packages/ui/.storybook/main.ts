@@ -3,6 +3,7 @@ import type { StorybookConfig } from "@storybook/react-vite"
 import react from "@vitejs/plugin-react"
 import tsconfigPaths from "vite-tsconfig-paths"
 import svgr from "vite-plugin-svgr"
+import wasm from "vite-plugin-wasm"
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -43,6 +44,7 @@ const config: StorybookConfig = {
           plugins: ["@emotion/babel-plugin"],
         },
       }),
+      wasm(),
       svgr({
         svgrOptions: {
           svgo: true,

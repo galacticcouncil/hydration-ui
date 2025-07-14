@@ -33,15 +33,12 @@ const defaultData: TProviderContext = {
   endpoint: "",
   dataEnv: "mainnet",
   papi: {} as TProviderData["papi"],
+  papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
+  sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
   featureFlags: {} as TProviderData["featureFlags"],
-  balanceClient: {} as TProviderData["balanceClient"],
   poolService: {} as TProviderData["poolService"],
-  assetClient: {} as TProviderData["assetClient"],
-  tradeRouter: {} as TProviderData["tradeRouter"],
-  tradeUtils: {} as TProviderData["tradeUtils"],
-  legacy_api: {} as TProviderData["legacy_api"],
   legacy_tradeRouter: {} as TProviderData["legacy_tradeRouter"],
 }
 
@@ -123,6 +120,17 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
       isLoaded: assets.length > 0,
     }
   }, [assets, data])
+
+  useEffect(() => {
+    if (!data?.sdk) {
+      return
+    }
+
+    return () => {
+      data.sdk.destroy()
+      data.papiClient.destroy()
+    }
+  }, [data?.sdk, data?.papiClient])
 
   return (
     <ProviderContext.Provider value={value}>

@@ -1,0 +1,97 @@
+fragment Supply on MmSupply {
+  asset {
+    assetRegistryId
+  }
+  amount
+}
+
+fragment Withdraw on MmWithdraw {
+  asset {
+    assetRegistryId
+  }
+  amount
+}
+
+fragment Borrow on MmBorrow {
+  asset {
+    assetRegistryId
+  }
+  amount
+}
+
+fragment Repay on MmRepay {
+  asset {
+    assetRegistryId
+  }
+  amount
+}
+
+fragment CollateralEnabled on MmReserveUsedAsCollateralEnabledEvent {
+  asset {
+    assetRegistryId
+  }
+}
+
+fragment CollateralDisabled on MmReserveUsedAsCollateralDisabledEvent {
+  asset {
+    assetRegistryId
+  }
+}
+
+fragment LiquidationCall on MmLiquidationCall {
+  asset: collateralAsset {
+    assetRegistryId
+  }
+  amount: liquidatedCollateralAmount
+}
+
+fragment UserEMode on MmUserEModeSet {
+  categoryId
+}
+
+fragment EventData on MoneyMarketEvent {
+  supply {
+    ...Supply
+  }
+  withdraw {
+    ...Withdraw
+  }
+  borrow {
+    ...Borrow
+  }
+  repay {
+    ...Repay
+  }
+  reserveUsedAsCollateralEnabled {
+    ...CollateralEnabled
+  }
+  reserveUsedAsCollateralDisabled {
+    ...CollateralDisabled
+  }
+  liquidationCall {
+    ...LiquidationCall
+  }
+  userEModeSet {
+    ...UserEMode
+  }
+}
+
+fragment MoneyMarketEvent on MoneyMarketEvent {
+  ...EventData
+  eventName
+  event {
+    block {
+      timestamp
+    }
+  }
+}
+
+query MoneyMarketEvents($filter: MoneyMarketEventFilter, $first: Int, $offset: Int) {
+      moneyMarketEvents(first: $first, offset: $offset, filter: $filter, orderBy: [EVENT_ID_DESC]
+) {
+  totalCount
+    nodes {
+      ...MoneyMarketEvent
+    }
+  }
+}

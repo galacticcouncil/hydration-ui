@@ -1,51 +1,42 @@
-import {
-  PixelDollarBadge,
-  TwoColorCirclePercentage,
-  TwoColorClock,
-  TwoColorSwap,
-  TwoColorUsers,
-} from "@galacticcouncil/ui/assets/icons"
+import { TwoColorSwap, TwoColorUsers } from "@galacticcouncil/ui/assets/icons"
+
+import { FileRouteTypes } from "@/routeTree.gen"
+
+type Route = FileRouteTypes["to"]
 
 export const LINKS = {
   home: "/",
   liquidity: "/liquidity",
   myLiquidity: "/liquidity",
   pools: "/liquidity",
-  omnipool: "/liquidity/omnipool-stablepools",
-  isolated: "/liquidity/isolated",
-  lbp: "/liquidity/lbp",
   swap: "/trade/swap/market",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   crossChain: "/cross-chain",
-  bridge: "/bridge",
+  // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
-  dca: "/trade/dca",
-  yieldDca: "/trade/yield-dca",
-  bonds: "/trade/bonds",
-  bond: "/trade/bond",
-  stats: "/stats",
-  statsOverview: "/stats/overview",
-  statsTreasury: "/stats/treasury",
+  // stats: "/stats",
+  // statsOverview: "/stats/overview",
+  // statsTreasury: "/stats/treasury",
   staking: "/staking",
-  stakingDashboard: "/staking/dashboard",
-  stakingGovernance: "/staking/governance",
-  referrals: "/referrals",
+  // stakingDashboard: "/staking/dashboard",
+  // stakingGovernance: "/staking/governance",
+  // referrals: "/referrals",
   borrow: "/borrow",
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
-  memepad: "/memepad",
-  submitTransaction: "/submit-transaction",
-}
+  // memepad: "/memepad",
+  // submitTransaction: "/submit-transaction",
+} satisfies Record<string, Route>
 
 export type NavigationKey = keyof typeof LINKS
 
 export type NavigationItem = {
   key: NavigationKey
-  to: string
+  to: Route
   icon?: React.ComponentType
   enabled?: boolean
   children?: NavigationItem[]
@@ -58,10 +49,7 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.trade,
     children: [
       { key: "swap", icon: TwoColorSwap, to: LINKS.swap },
-      { key: "dca", icon: TwoColorClock, to: LINKS.dca },
-      { key: "yieldDca", icon: TwoColorCirclePercentage, to: LINKS.yieldDca },
       { key: "otc", icon: TwoColorUsers, to: LINKS.otc },
-      { key: "bonds", icon: PixelDollarBadge, to: LINKS.bonds },
     ],
   },
   {
@@ -97,26 +85,26 @@ export const NAVIGATION: NavigationItem[] = [
     key: "crossChain",
     to: LINKS.crossChain,
   },
-  {
-    key: "stats",
-    to: LINKS.stats,
-    children: [
-      { key: "statsOverview", to: LINKS.statsOverview },
-      { key: "statsTreasury", to: LINKS.statsTreasury },
-    ],
-  },
+  // {
+  //   key: "stats",
+  //   to: LINKS.stats,
+  //   children: [
+  //     { key: "statsOverview", to: LINKS.statsOverview },
+  //     { key: "statsTreasury", to: LINKS.statsTreasury },
+  //   ],
+  // },
   {
     key: "staking",
     to: LINKS.staking,
   },
-  {
-    key: "referrals",
-    to: LINKS.referrals,
-  },
-  {
-    key: "memepad",
-    to: LINKS.memepad,
-  },
+  // {
+  //   key: "referrals",
+  //   to: LINKS.referrals,
+  // },
+  // {
+  //   key: "memepad",
+  //   to: LINKS.memepad,
+  // },
 ]
 
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
@@ -125,10 +113,10 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "liquidity",
   "wallet",
   "crossChain",
-  "stats",
+  // "stats",
   "staking",
-  "referrals",
-  "memepad",
+  // "referrals",
+  // "memepad",
 ]
 export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "wallet",
@@ -136,10 +124,10 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "liquidity",
   "borrow",
   "crossChain",
-  "stats",
+  // "stats",
   "staking",
-  "referrals",
-  "memepad",
+  // "referrals",
+  // "memepad",
 ]
 
 export const NAV_ITEMS_SHOWN_MOBILE = 4

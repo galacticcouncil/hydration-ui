@@ -1,9 +1,10 @@
-import { Bell, QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
+import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
 import { ButtonIcon } from "@galacticcouncil/ui/components"
 import { FC, lazy } from "react"
 
 import { SHeaderToolbar } from "@/modules/layout/components/HeaderToolbar.styled"
 import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
+import { NotificationCenter } from "@/modules/layout/components/NotificationCenter/NotificationCenter"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 
 const Settings = lazy(async () => ({
@@ -23,10 +24,7 @@ export const HeaderToolbar: FC = () => {
           <QuestionCircleRegular />
         </ButtonIcon>
       )}
-      {/* PLACEHOLDER */}
-      <ButtonIcon>
-        <Bell size={19} />
-      </ButtonIcon>
+      <NotificationCenter />
       {hasTopNavbar && <Settings />}
       <HeaderWeb3ConnectButton />
     </SHeaderToolbar>

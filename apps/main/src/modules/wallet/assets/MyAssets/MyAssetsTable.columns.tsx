@@ -138,20 +138,12 @@ export const useMyAssetsColumns = () => {
             <TableRowAction disabled={!row.original.isTradeable} asChild>
               <Link
                 to="/trade/swap/market"
-                search={{ assetOut: row.original.id }}
+                search={{ assetIn: row.original.id }}
                 disabled={!row.original.isTradeable}
               >
                 {t("common:trade")}
               </Link>
             </TableRowAction>
-            {/* TODO more actions */}
-            {/* <TableRowAction>
-              <Icon
-                component={Ellipsis}
-                color={getToken("icons.onContainer")}
-                size={12}
-              />
-            </TableRowAction> */}
             <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
               {modal === "transfer" && (
                 <TransferPositionModal

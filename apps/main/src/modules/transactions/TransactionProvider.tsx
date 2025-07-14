@@ -1,10 +1,12 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { CallType } from "@galacticcouncil/xcm-core"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
 import { useNonce } from "@/api/account"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
+import { useTransactionEcosystem } from "@/modules/transactions/hooks/useTransactionEcosystem"
 import { useTransactionToasts } from "@/modules/transactions/hooks/useTransactionToasts"
 import {
   doClose,
@@ -17,7 +19,7 @@ import {
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
 import { Transaction, useTransactionsStore } from "@/states/transactions"
-import { HYDRATION_CHAIN_KEY, NATIVE_ASSET_ID } from "@/utils/consts"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export type TransactionContext = Transaction &
   TxState & {
@@ -26,11 +28,14 @@ export type TransactionContext = Transaction &
     isSuccess: boolean
     isError: boolean
 
+    ecosystem: CallType
+
     nonce?: number
     isLoadingNonce: boolean
 
     feeEstimateNative?: string
     feeEstimate?: string
+    feeAssetBalance?: string
     feeAssetId: string
     isLoadingFeeEstimate: boolean
 
@@ -58,7 +63,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const { account } = useAccount()
 
   const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
-  const toasts = useTransactionToasts(transaction.toasts)
+  const ecosystem = useTransactionEcosystem(transaction)
+  const toasts = useTransactionToasts(transaction, ecosystem)
 
   const { data: nonce, isLoading: isLoadingNonce } = useNonce({
     address: account?.address,
@@ -70,6 +76,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
   const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
+  const feeAssetBalance = fee?.feeAssetBalance
 
   const onClose = useCallback(() => {
     dispatch(doClose())
@@ -94,7 +101,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const signAndSubmit = () => {
     signAndSubmitMutation.mutate({
-      chainKey: transaction.meta?.chainKey ?? HYDRATION_CHAIN_KEY,
+      chainKey: transaction.meta.srcChainKey,
       feeAssetId,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
@@ -133,11 +140,14 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         isSuccess: state.status === "success",
         isError: state.status === "error",
 
+        ecosystem,
+
         nonce,
         isLoadingNonce,
 
         feeEstimateNative,
         feeEstimate,
+        feeAssetBalance,
         feeAssetId,
         isLoadingFeeEstimate,
 

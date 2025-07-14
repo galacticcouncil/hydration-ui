@@ -1,15 +1,18 @@
 import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
+import { SELL_ONLY_ASSETS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 const requiredError = i18n.t("error.required")
 
 export const required = z.string().trim().min(1, requiredError)
+
+export const validNumber = z.number({ error: i18n.t("error.validNumber") })
 
 export const requiredObject = <T extends Record<string, unknown>>() =>
   z.custom<T | null>().check(
@@ -25,7 +28,7 @@ export const validWebsocketUrl = z
   .string()
   .refine((value) => WSS_REGEX.test(value), i18n.t("error.invalidWebsocketUrl"))
 
-export const validNumber = z.string().refine((value) => {
+export const validNumberBig = z.string().refine((value) => {
   try {
     new Big(value)
     return true
@@ -36,7 +39,7 @@ export const validNumber = z.string().refine((value) => {
 
 export const positive = z
   .string()
-  .pipe(validNumber)
+  .pipe(validNumberBig)
   .refine((value) => new Big(value || "0").gt(0), i18n.t("error.positive"))
 
 const maxBalanceError = i18n.t("error.maxBalance")
@@ -119,12 +122,7 @@ export const validateFormExistentialDeposit = <TFormValues extends FieldValues>(
   )
 
 export const validateAssetSellOnly = z.refine<TAsset | null>(
-  (asset) => {
-    const isLrna = asset?.id === "1" && asset?.symbol.toLowerCase() === "h2o"
-    const isGdotShare =
-      asset?.id === "690" && asset?.symbol.toLowerCase() === "2-pool-gdot"
-    return !isLrna && !isGdotShare
-  },
+  (asset) => !asset || !SELL_ONLY_ASSETS.includes(asset.id),
   {
     error: i18n.t("error.sellOnly"),
   },

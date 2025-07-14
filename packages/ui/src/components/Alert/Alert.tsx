@@ -11,7 +11,7 @@ import { Flex } from "@/components/Flex"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
-type Props = {
+export type AlertProps = {
   readonly variant?: AlertVariant
   readonly title?: string
   readonly description: ReactNode
@@ -20,7 +20,7 @@ type Props = {
   readonly displayIcon?: boolean
 }
 
-export const Alert: FC<Props> = ({
+export const Alert: FC<AlertProps> = ({
   variant = "info",
   title,
   description,

@@ -1,6 +1,7 @@
 import { hexToRgba } from "@galacticcouncil/utils"
 import {
   BaselineSeries,
+  BaselineStyleOptions,
   CandlestickSeries,
   HistogramSeries,
   type IChartApi,
@@ -73,14 +74,16 @@ const getCandlestickSeries = (
 
 const getBaselineSeries = (
   chart: IChartApi,
-  options: ColorOptions,
+  color: ColorOptions,
+  baseline: Partial<BaselineStyleOptions>,
 ): ISeriesApi<"Baseline"> => {
   return chart.addSeries(BaselineSeries, {
-    topLineColor: options.lineColor,
-    topFillColor1: hexToRgba(options.lineColor, 0.5),
-    topFillColor2: hexToRgba(options.lineColor, 0),
+    topLineColor: color.lineColor,
+    topFillColor1: hexToRgba(color.lineColor, 0.5),
+    topFillColor2: hexToRgba(color.lineColor, 0),
     lineWidth: 2,
     priceLineVisible: false,
+    ...baseline,
   })
 }
 
@@ -110,13 +113,14 @@ const getVolumeSeries = (
 const getMainSeries = (
   chart: IChartApi,
   type: SeriesType,
-  options: ColorOptions,
+  color: ColorOptions,
+  baseline: Partial<BaselineStyleOptions>,
 ) => {
   switch (type) {
     case "Candlestick":
-      return getCandlestickSeries(chart, options)
+      return getCandlestickSeries(chart, color)
     case "Baseline":
-      return getBaselineSeries(chart, options)
+      return getBaselineSeries(chart, color, baseline)
     default:
       throw new Error(`Unknown series type: ${type}`)
   }
@@ -124,13 +128,13 @@ const getMainSeries = (
 
 const getMainSeriesData = (
   type: SeriesType,
-  data: OhlcData[],
-): OhlcData[] | SingleValueData[] => {
+  data: Array<OhlcData>,
+): Array<OhlcData> | Array<SingleValueData> => {
   if (type === "Candlestick") return data
   return data.map((item) => ({ time: item.time, value: item.close }))
 }
 
-const getVolumeData = (data: OhlcData[]): SingleValueData[] => {
+const getVolumeData = (data: ReadonlyArray<OhlcData>): SingleValueData[] => {
   return data.map((item) => ({
     time: item.time,
     value: item.volume ?? 0,
@@ -140,10 +144,11 @@ const getVolumeData = (data: OhlcData[]): SingleValueData[] => {
 export const renderSeries = (
   chart: IChartApi,
   type: SeriesType,
-  data: OhlcData[] = [],
-  options: ColorOptions,
+  data: Array<OhlcData> = [],
+  color: ColorOptions,
+  baseline: Partial<BaselineStyleOptions> = {},
 ): ISeriesApi<SeriesType> => {
-  const series = getMainSeries(chart, type, options)
+  const series = getMainSeries(chart, type, color, baseline)
   const seriesData = getMainSeriesData(type, data)
   series.setData(seriesData)
 
@@ -151,7 +156,7 @@ export const renderSeries = (
   const hasVolume = isNumber(sample?.volume)
 
   if (hasVolume) {
-    const volumeSeries = getVolumeSeries(chart, options)
+    const volumeSeries = getVolumeSeries(chart, color)
     const volumeData = getVolumeData(data)
     volumeSeries.setData(volumeData)
   }
@@ -166,19 +171,26 @@ export const subscribeCrosshairMove = (
   series: ISeriesApi<SeriesType>,
   chartContainerElement: HTMLDivElement,
   crosshairElement: HTMLDivElement,
-  priceIndicatorElement: HTMLDivElement,
+  priceIndicatorElement: HTMLDivElement | null,
   onUpdate: (data: CrosshairCallbackData) => void,
 ) => {
   if (!chart || !series || !crosshairElement) return
 
   crosshairElement.style.top = "10px"
-  priceIndicatorElement.style.left = "0px"
-  priceIndicatorElement.style.opacity = "0"
+
+  if (priceIndicatorElement) {
+    priceIndicatorElement.style.left = "0px"
+    priceIndicatorElement.style.opacity = "0"
+  }
 
   chart.subscribeCrosshairMove((param) => {
     if (!param || !param.time || param.point === undefined) {
       crosshairElement.style.opacity = "0"
-      priceIndicatorElement.style.opacity = "0"
+
+      if (priceIndicatorElement) {
+        priceIndicatorElement.style.opacity = "0"
+      }
+
       onUpdate(null)
       return
     }
@@ -187,7 +199,11 @@ export const subscribeCrosshairMove = (
 
     if (!dataPoint) {
       crosshairElement.style.opacity = "0"
-      priceIndicatorElement.style.opacity = "0"
+
+      if (priceIndicatorElement) {
+        priceIndicatorElement.style.opacity = "0"
+      }
+
       onUpdate(null)
       return
     }
@@ -202,7 +218,7 @@ export const subscribeCrosshairMove = (
     const price = getCrosshairValue(data)
     const priceY = price ? series.priceToCoordinate(price) : null
     const priceFormatted = price ? series.priceFormatter().format(price) : ""
-    const priceIndicatorHeight = priceIndicatorElement.offsetHeight
+    const priceIndicatorHeight = priceIndicatorElement?.offsetHeight ?? 0
 
     let left = param.point.x - tooltipWidth / 2
     if (left < 10) {
@@ -214,13 +230,15 @@ export const subscribeCrosshairMove = (
     crosshairElement.style.left = `${left}px`
     crosshairElement.style.opacity = "1"
 
-    if (priceY) {
-      const top = priceY - priceIndicatorHeight / 2
-      priceIndicatorElement.style.opacity = "1"
-      priceIndicatorElement.style.top = `${top}px`
-      priceIndicatorElement.innerHTML = priceFormatted
-    } else {
-      priceIndicatorElement.style.opacity = "0"
+    if (priceIndicatorElement) {
+      if (priceY) {
+        const top = priceY - priceIndicatorHeight / 2
+        priceIndicatorElement.style.opacity = "1"
+        priceIndicatorElement.style.top = `${top}px`
+        priceIndicatorElement.innerHTML = priceFormatted
+      } else {
+        priceIndicatorElement.style.opacity = "0"
+      }
     }
 
     onUpdate(data)

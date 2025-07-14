@@ -15,14 +15,18 @@ const Template = (
     {...args}
     onClose={() => {}}
     content="Transaction has been submitted"
+    dateString="2 minutes ago"
   />
 )
 
 export const Success: Story = {
   render: Template,
-  args: {
-    variant: "success",
-  },
+  args: { variant: "success" },
+}
+
+export const Pending: Story = {
+  render: Template,
+  args: { variant: "pending" },
 }
 
 export const Error: Story = {

@@ -12,21 +12,23 @@ export const mapOtcOffersToTableData =
   (assetPrices: Record<string, AssetPrice>) =>
   (offer: OtcOffer): OtcOfferTabular => {
     const { assetIn, amountIn, assetOut, amountOut } = offer
-    const usdPriceIn = assetPrices[assetIn.id]?.price
-    const usdPriceOut = assetPrices[assetOut.id]?.price
+    const usdPriceIn = assetPrices[assetIn.id]
+    const usdPriceOut = assetPrices[assetOut.id]
 
     const assetAmountIn = scaleHuman(amountIn, assetIn?.decimals ?? 12)
     const assetAmountOut = scaleHuman(amountOut, assetOut?.decimals ?? 12)
 
-    const offerPrice =
-      usdPriceIn && usdPriceIn !== "NaN"
-        ? new Big(assetAmountIn).mul(usdPriceIn).div(assetAmountOut).toString()
-        : null
+    const offerPrice = usdPriceIn?.isValid
+      ? new Big(assetAmountIn)
+          .mul(usdPriceIn.price)
+          .div(assetAmountOut)
+          .toString()
+      : null
 
     const marketPricePercentage = offerPrice
-      ? usdPriceOut && usdPriceOut !== "NaN"
+      ? usdPriceOut?.isValid
         ? calculateDiffToRef(
-            new BigNumber(usdPriceOut),
+            new BigNumber(usdPriceOut.price),
             new BigNumber(offerPrice.toString()),
           ).toNumber()
         : 0

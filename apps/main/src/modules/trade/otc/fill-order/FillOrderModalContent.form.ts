@@ -2,7 +2,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useForm } from "react-hook-form"
-import { type infer as Infer, object, refine } from "zod"
+import { type infer as Infer, object, refine } from "zod/v4"
 
 import { otcExistentialDepositorMultiplierQuery } from "@/api/otc"
 import i18n from "@/i18n"

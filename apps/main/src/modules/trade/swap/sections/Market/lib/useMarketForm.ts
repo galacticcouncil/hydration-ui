@@ -1,10 +1,9 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
-import * as z from "zod"
+import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useAssets } from "@/providers/assetsProvider"
-import { NATIVE_ASSET_ID, USDT_ASSET_ID } from "@/utils/consts"
 import {
   positive,
   required,
@@ -13,46 +12,52 @@ import {
   validateAssetSellOnly,
 } from "@/utils/validators"
 
-export type SwapType = "swap" | "twap"
+// TODO broken export from sdk-next
+export enum TradeType {
+  Sell = "Sell",
+  Buy = "Buy",
+}
+
+export enum TradeOrderType {
+  Dca = "Dca",
+  TwapSell = "TwapSell",
+  TwapBuy = "TwapBuy",
+}
+
+const schema = z.object({
+  sellAsset: requiredObject<TAssetData>(),
+  sellAmount: required.pipe(positive),
+  buyAsset: requiredObject<TAssetData>().check(validateAssetSellOnly),
+  buyAmount: required.pipe(positive),
+  type: z.custom<TradeType>(),
+  isSingleTrade: z.boolean(),
+})
 
 const useSchema = () => {
   const refineMaxBalance = useValidateFormMaxBalance()
 
-  return z
-    .object({
-      sellAsset: requiredObject<TAssetData>(),
-      sellAmount: required.pipe(positive),
-      buyAsset: requiredObject<TAssetData>().check(validateAssetSellOnly),
-      buyAmount: required.pipe(positive),
-      type: z.custom<SwapType>(),
-    })
-    .check(
-      refineMaxBalance("sellAmount", (form) => [
-        form.sellAsset,
-        form.sellAmount,
-      ]),
-    )
+  return schema.check(
+    refineMaxBalance("sellAmount", (form) => [form.sellAsset, form.sellAmount]),
+  )
 }
 
 export type MarketFormValues = z.infer<ReturnType<typeof useSchema>>
 
 type Args = {
-  readonly assetIn: string | undefined
-  readonly assetOut: string | undefined
+  readonly assetIn: string
+  readonly assetOut: string
 }
 
-export const useMarketForm = ({
-  assetIn = USDT_ASSET_ID,
-  assetOut = NATIVE_ASSET_ID,
-}: Args) => {
+export const useMarketForm = ({ assetIn, assetOut }: Args) => {
   const { getAsset } = useAssets()
 
   const defaultValues: MarketFormValues = {
+    sellAsset: getAsset(assetIn) ?? null,
     sellAmount: "",
+    buyAsset: getAsset(assetOut) ?? null,
     buyAmount: "",
-    type: "swap",
-    buyAsset: assetOut ? (getAsset(assetOut) ?? null) : null,
-    sellAsset: assetIn ? (getAsset(assetIn) ?? null) : null,
+    type: TradeType.Sell,
+    isSingleTrade: true,
   }
 
   return useForm<MarketFormValues>({
