@@ -190,7 +190,7 @@ export const MoneyMarketAPY = ({
                         ? isSupply
                           ? t("supplyApy")
                           : t("borrowApy")
-                        : labels[id]}
+                        : labels[id] ?? t("supplyApy")}
                     </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
