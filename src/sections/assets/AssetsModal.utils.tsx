@@ -213,15 +213,15 @@ export const useAssetsData = ({
     if (isLoading) return { allowed: [], notAllowed: [] }
 
     const tokensData = tokensWithBalance.map(
-      ({ asset, balance: { balance } }) => {
+      ({ asset, balance: { transferable } }) => {
         const spotPrice = getAssetPrice(asset.id).price
 
-        const displayValue = BN(balance)
+        const displayValue = BN(transferable)
           .shiftedBy(-asset.decimals)
           .times(spotPrice)
           .toString()
 
-        return { meta: asset, balance, displayValue }
+        return { meta: asset, balance: transferable, displayValue }
       },
     )
 
@@ -257,17 +257,17 @@ export const useAssetsData = ({
   const bonds = useMemo(() => {
     if (isLoading) return { allowed: [], notAllowed: [] }
     const bondsData = bondsWithBalance.map(
-      ({ asset, balance: { balance } }) => {
+      ({ asset, balance: { transferable } }) => {
         const meta = asset as TBond
         const id = !meta.isTradable ? meta.underlyingAssetId : meta.id
         const spotPrice = getAssetPrice(id).price
 
-        const displayValue = BN(balance)
+        const displayValue = BN(transferable)
           .shiftedBy(-asset.decimals)
           .times(spotPrice)
           .toString()
 
-        return { meta: asset, balance, displayValue }
+        return { meta: asset, balance: transferable, displayValue }
       },
     )
     const bonds = allAssets

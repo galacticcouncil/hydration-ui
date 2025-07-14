@@ -400,18 +400,17 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
 const deepEqual = (obj1: any, obj2: any): boolean => {
   if (obj1 === obj2) return true
   if (obj1 == null || obj2 == null) return false
-  if (typeof obj1 !== "object" || typeof obj2 !== "object") {
-    return false
-  }
+  if (typeof obj1 !== "object" || typeof obj2 !== "object") return false
 
-  let keys1 = Object.keys(obj1)
-  let keys2 = Object.keys(obj2)
-  if (keys1.length !== keys2.length) {
-    return false
-  }
+  const keys = new Set([...Object.keys(obj1), ...Object.keys(obj2)])
 
-  for (let key of keys1) {
-    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) return false
+  for (const key of keys) {
+    const val1 = obj1[key] ?? undefined
+    const val2 = obj2[key] ?? undefined
+
+    if (val1 === undefined && val2 === undefined) continue
+
+    if (!deepEqual(val1, val2)) return false
   }
 
   return true
@@ -472,4 +471,8 @@ export function isMobileDevice() {
 
 export function neverGuard(value: never) {
   throw new Error(`Unexpected call, value: ${value}`)
+}
+
+export function percentageDifference(a: string, b: string): BN {
+  return BN(a).minus(b).abs().div(BN(a).plus(b).div(2)).multipliedBy(100)
 }

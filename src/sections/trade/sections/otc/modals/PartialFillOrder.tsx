@@ -52,7 +52,7 @@ export const PartialFillOrder = ({
 
   const formSchema = usePartialFillFormSchema({
     offeringAmount: offering.amount,
-    assetInBalance: assetInBalance?.balance ?? "0",
+    assetInBalance: assetInBalance?.transferable ?? "0",
     assetInMeta,
     assetOutMeta,
   })

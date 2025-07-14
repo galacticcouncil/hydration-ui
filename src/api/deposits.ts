@@ -11,14 +11,15 @@ import {
 import { undefinedNoop } from "utils/helpers"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import BN from "bignumber.js"
-import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
-import { parseBalanceData, TBalance } from "./balances"
-import { TAsset, useAssets } from "providers/assets"
-import { millisecondsInHour, millisecondsInMinute } from "date-fns/constants"
-import { getAccountBalanceData } from "api/accountBalances"
+import { BN_0 } from "utils/constants"
+import { TBalance } from "./balances"
+import { TAsset } from "providers/assets"
+import { millisecondsInMinute } from "date-fns/constants"
 import { create } from "zustand"
 import { useUniqueIds } from "./consts"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
+
+import { useAccountBalance } from "./accountBalances"
 
 export type TYieldFarmEntry = {
   globalFarmId: string
@@ -350,90 +351,9 @@ export const useAccountPositions = (givenAddress?: string) => {
 
   useEffect(() => {
     if (data?.isAnyPositions) {
-      setAccountPositions(data.isAnyPositions)
+      setIsAccountPositions(data.isAnyPositions)
     }
   }, [data?.isAnyPositions])
-
-  return { data, isLoading, isInitialLoading, isSuccess }
-}
-
-export const useAccountBalances = (givenAddress?: string) => {
-  const { account } = useAccount()
-  const { api, isLoaded } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-
-  const address = givenAddress ?? account?.address
-
-  const {
-    data: assets,
-    isInitialLoading,
-    isLoading,
-    isSuccess,
-  } = useQuery(
-    QUERY_KEYS.accountBalancesLive(address),
-    address != null
-      ? async () => {
-          const accountBalances = await getAccountBalanceData(api, address)
-
-          const accountAssets = []
-
-          for (const [id, data] of accountBalances) {
-            const parcedBalance = parseBalanceData(data, id.toString(), address)
-
-            accountAssets.push(parcedBalance)
-          }
-
-          return {
-            balances: accountAssets,
-            accountAddress: address,
-          }
-        }
-      : undefinedNoop,
-    {
-      enabled: !!address && isLoaded,
-      staleTime: millisecondsInHour,
-    },
-  )
-
-  const data = useMemo(() => {
-    if (!assets) return undefined
-
-    const accountAssetsMap: Map<
-      string,
-      { balance: TBalance; asset: TAsset; isPoolPositions: boolean }
-    > = new Map([])
-    let isBalance = false
-
-    for (const balance of assets.balances) {
-      if (balance.total !== "0") {
-        const asset = getAssetWithFallback(balance.assetId)
-
-        const isPoolPositions =
-          (asset.isShareToken ||
-            asset.isStableSwap ||
-            asset.id === GETH_ERC20_ASSET_ID) &&
-          balance.balance !== "0"
-
-        if (isPoolPositions) {
-          isBalance = true
-        }
-
-        accountAssetsMap.set(balance.assetId, {
-          balance,
-          asset,
-          isPoolPositions,
-        })
-      }
-    }
-
-    return { accountAssetsMap, balances: assets.balances, isBalance }
-  }, [assets, getAssetWithFallback])
-
-  useEffect(() => {
-    if (data?.isBalance) {
-      setAccountBalance(data.isBalance)
-    }
-  }, [data?.isBalance])
 
   return { data, isLoading, isInitialLoading, isSuccess }
 }
@@ -458,7 +378,7 @@ export const useXykVolumeTotal = create<{ volume?: string }>(() => ({
   volume: undefined,
 }))
 
-const setAccountPositions = (isPositions: boolean) =>
+const setIsAccountPositions = (isPositions: boolean) =>
   useIsAccountPositions.setState((state) => {
     if (state.isPositions !== isPositions) {
       return { isPositions }
@@ -467,7 +387,7 @@ const setAccountPositions = (isPositions: boolean) =>
     return { isPositions: state.isPositions }
   })
 
-const setAccountBalance = (isBalance: boolean) =>
+export const setIsAccountBalance = (isBalance: boolean) =>
   useIsAccountBalance.setState((state) => {
     if (state.isBalance !== isBalance) {
       return { isBalance }
@@ -475,3 +395,50 @@ const setAccountBalance = (isBalance: boolean) =>
 
     return { isBalance: state.isBalance }
   })
+
+export type AccountBalance = {
+  balance: TBalance
+  asset: TAsset
+}
+
+type AccountBalancesStore = {
+  data:
+    | {
+        accountAssetsMap: Map<
+          string,
+          AccountBalance & { isPoolPositions: boolean }
+        >
+        balances: AccountBalance[]
+        isBalance: boolean
+      }
+    | undefined
+  isLoading: boolean
+  isInitialLoading: boolean
+  isSuccess: boolean
+}
+
+export const useAccountBalances = (givenAddress?: string) => {
+  const { account } = useAccount()
+  const address = givenAddress ?? account?.address
+  const isConnectedAccount = account?.address === address
+
+  const connectedAccountBalances = useAccountBalancesStore()
+
+  const { data, isSuccess, isLoading, isInitialLoading } = useAccountBalance(
+    !isConnectedAccount ? address : undefined,
+  )
+
+  if (isConnectedAccount) return connectedAccountBalances
+
+  return { data, isSuccess, isLoading, isInitialLoading }
+}
+
+export const useAccountBalancesStore = create<AccountBalancesStore>(() => ({
+  data: undefined,
+  isLoading: false,
+  isInitialLoading: false,
+  isSuccess: false,
+}))
+
+export const setAccountBalances = (store: AccountBalancesStore) =>
+  useAccountBalancesStore.setState({ ...store })

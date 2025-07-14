@@ -97,7 +97,7 @@ export const useTransferZodSchema = (assetId: string) => {
 
   return z
     .object({
-      amount: required.pipe(maxBalance(assetBalance.balance, decimals)),
+      amount: required.pipe(maxBalance(assetBalance.transferable, decimals)),
     })
     .merge(getDestZodSchema(account?.address))
 }

@@ -206,7 +206,7 @@ export const PlaceOrder = ({
                             value || "0",
                           ),
                         maxBalance: (value) => {
-                          const balance = assetOutBalance?.balance
+                          const balance = assetOutBalance?.transferable
                           const decimals = assetOutMeta?.decimals
                           if (
                             balance &&

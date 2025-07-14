@@ -226,7 +226,7 @@ const StablePoolModalWrapper = ({
       return undefined
     }
 
-    const hasGethBalance = new BN(pool.balance?.freeBalance || "0").gt(0)
+    const hasGethBalance = new BN(pool.balance?.transferable || "0").gt(0)
 
     return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
   })()
@@ -258,7 +258,7 @@ const ManageLiquidityButton: React.FC<{
   const isXykPool = isXYKPoolType(pool)
 
   const userStablePoolBalance = pool.isStablePool
-    ? pool.balance?.freeBalance ?? "0"
+    ? pool.balance?.transferable ?? "0"
     : "0"
 
   let positionsAmount: BN = BN_0
