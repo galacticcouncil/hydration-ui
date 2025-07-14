@@ -145,7 +145,7 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = BN(balance?.transferable ?? "0")
+  const rawAvailableBalance = BN(balance?.free ?? "0")
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
