@@ -103,6 +103,7 @@ type APYProps = {
   readonly color?: ResponsiveValue<keyof typeof theme.colors>
   readonly assetId: string
   readonly withFarms?: boolean
+  readonly omnipoolFee?: string
 }
 
 export const MoneyMarketAPY = ({
@@ -112,6 +113,7 @@ export const MoneyMarketAPY = ({
   assetId,
   size,
   withFarms,
+  omnipoolFee,
 }: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
@@ -127,7 +129,9 @@ export const MoneyMarketAPY = ({
   } = useBorrowAssetApy(assetId, withFarms)
 
   const isSupply = type === "supply"
-  const apy = isSupply ? totalSupplyApy : totalBorrowApy
+  const apy = BN(isSupply ? totalSupplyApy : totalBorrowApy)
+    .plus(omnipoolFee ?? 0)
+    .toNumber()
 
   const hasFarms = farms && farms.length > 0
   const defaultColor = withFarms && hasFarms ? "brightBlue200" : "white"
@@ -160,15 +164,29 @@ export const MoneyMarketAPY = ({
         text={
           <>
             <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
+            {omnipoolFee && (
+              <div
+                sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
+              >
+                <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
+                  {t("liquidity.table.farms.apr.lpFeeOmnipool")}
+                </Text>
+                <Text fs={12} font="GeistSemiBold">
+                  {t("value.percentage", { value: BN(omnipoolFee) })}
+                </Text>
+              </div>
+            )}
             {BN(apy).gt(0) && BN(lpAPY).gt(0) && (
               <div
                 sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
               >
                 <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
-                  {t("liquidity.table.farms.apr.lpFee")}
+                  {t(
+                    `liquidity.table.farms.apr.${omnipoolFee ? "lpFeeStablepool" : "lpFee"}`,
+                  )}
                 </Text>
                 <Text fs={12} font="GeistSemiBold">
-                  <FormattedNumber percent value={lpAPY / 100} />
+                  {t("value.percentage", { value: BN(lpAPY) })}
                 </Text>
               </div>
             )}
