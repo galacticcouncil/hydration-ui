@@ -510,9 +510,7 @@ export const useBorrowAssetApy = (
     enabled: isGETH,
   })
 
-  const { data: stablepoolFees } = useStablepoolFees(
-    asset?.isStableSwap ? [assetId] : [],
-  )
+  const { data: stablepoolFees } = useStablepoolFees(!asset?.isStableSwap)
 
   const { data: farms } = useOmnipoolFarm(
     isGETH && withFarms ? GETH_ERC20_ASSET_ID : undefined,

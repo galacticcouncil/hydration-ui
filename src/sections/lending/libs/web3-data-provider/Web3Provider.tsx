@@ -41,6 +41,7 @@ import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { decodeEvmCall } from "sections/transaction/ReviewTransactionData.utils"
 import { PoolReserve } from "sections/lending/store/poolSlice"
+import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
 
 export type ERC20TokenType = {
   address: string
@@ -61,7 +62,7 @@ export type Web3Data = {
   getTxError: (txHash: string) => Promise<string>
   sendTx: (
     txData: PopulatedTransaction,
-    action?: ProtocolAction,
+    action?: ProtocolAction | ExtendedProtocolAction,
     toasts?: ToastMessage,
   ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
@@ -73,7 +74,9 @@ export type Web3Data = {
   readOnlyMode: boolean
 }
 
-const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
+const getAbiMethodByProtocolAction = (
+  action: ProtocolAction | ExtendedProtocolAction,
+) => {
   switch (action) {
     case ProtocolAction.switchBorrowRateMode:
       return "swapBorrowRateMode"
@@ -87,7 +90,7 @@ const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
 }
 
 const getToastPropsByProtocolAction = (
-  action: ProtocolAction,
+  action: ProtocolAction | ExtendedProtocolAction,
   poolData: PoolReserve,
   tx: { data: `0x${string}` | TransactionRequest; abi: string },
 ) => {
@@ -100,12 +103,10 @@ const getToastPropsByProtocolAction = (
     if (!asset) return
 
     if (
-      [
-        ProtocolAction.supply,
-        ProtocolAction.withdraw,
-        ProtocolAction.repay,
-        ProtocolAction.borrow,
-      ].includes(action)
+      action === ProtocolAction.supply ||
+      action === ProtocolAction.withdraw ||
+      action === ProtocolAction.repay ||
+      action === ProtocolAction.borrow
     ) {
       return {
         key: `lending.${action}.toast`,
@@ -134,7 +135,7 @@ const getToastPropsByProtocolAction = (
 }
 
 const getTransactionMeta = (
-  action?: ProtocolAction,
+  action?: ProtocolAction | ExtendedProtocolAction,
   tx?: PopulatedTransaction,
   poolData?: PoolReserve,
 ) => {
@@ -146,7 +147,8 @@ const getTransactionMeta = (
   }
 
   const factory =
-    action === ProtocolAction.claimRewards
+    action === ProtocolAction.claimRewards ||
+    action === ExtendedProtocolAction.claimAllRewards
       ? IAaveIncentivesControllerV2__factory
       : IPool__factory
 
@@ -216,7 +218,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const sendTx = useCallback(
     async (
       txData: PopulatedTransaction,
-      action?: ProtocolAction,
+      action?: ProtocolAction | ExtendedProtocolAction,
       toasts?: ToastMessage,
     ) => {
       const { abi, toastProps } = getTransactionMeta(action, txData, poolData)

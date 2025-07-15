@@ -2,7 +2,7 @@ import { Text } from "components/Typography/Text/Text"
 import { SContainer, SJoinButton } from "./RedepositFarms.styled"
 import { Trans, useTranslation } from "react-i18next"
 import { JoinFarmModal } from "sections/pools/farms/modals/join/JoinFarmsModal"
-import { GlobalFarmRowMulti } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
+import { APY } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { useState } from "react"
 import { TFarmAprData } from "api/farms"
 import {
@@ -36,7 +36,7 @@ export const RedepositFarms = ({
           <Trans t={t} i18nKey="farms.positions.redeposit.openFarms" />
         </Text>
 
-        <GlobalFarmRowMulti
+        <APY
           farms={availableYieldFarms}
           fontSize={16}
           iconSize={24}

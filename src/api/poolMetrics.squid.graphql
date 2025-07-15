@@ -2,14 +2,15 @@ query OmnipoolYieldMetrics {
     omnipoolAssetsYieldMetrics {
         nodes {
             assetId
+            assetRegistryId
             projectedAprPerc
         }
     }
 }
 
 
-query StableswapYieldMetrics($filter: StableswapYieldMetricsFilter!) {
-    stableswapYieldMetrics(filter: $filter ) {
+query StableswapYieldMetrics {
+    stableswapYieldMetrics {
         nodes {
             poolId
             projectedAprPerc
