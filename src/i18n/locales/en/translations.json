@@ -1435,8 +1435,6 @@
   "deposit.guide.coinbase.step5.title": "Submit.",
   "deposit.bank.banxa.cta": "Go to Banxa",
   "deposit.bank.banxa.description": "Deposit DOT (via Polkadot), USDC or USDT (via Polkadot AssetHub).",
-  "deposit.bank.harbour.cta": "Go to Harbour",
-  "deposit.bank.harbour.description": "Deposit DOT (via Polkadot) or USDC (via Polkadot AssetHub).",
   "deposit.bank.title": "Bank / Credit Card",
   "deposit.cex.select.title": "Deposit from",
   "deposit.cex.exchange.title": "Exchange:",
