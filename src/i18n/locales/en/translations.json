@@ -1274,6 +1274,8 @@
   "lending.history.event.liquidation": "Liquidation",
   "lending.history.event.collateral": "Collateral Change",
   "lending.history.event.emode": "User EMode Set",
+  "lending.claimAllRewards.toast.onLoading": "Claiming <0>{{ value, bignumber(numberPrefix: '$'; type: 'dollar') }}</0>...",
+  "lending.claimAllRewards.toast.onSuccess": "Claimed <0>{{ value, bignumber(numberPrefix: '$'; type: 'dollar') }}</0>.",
   "lending.claimRewards.toast.onLoading": "Claiming <0>{{ value, bignumber(type: token) }} {{ symbol }}</0>...",
   "lending.claimRewards.toast.onSuccess": "Claimed <0>{{ value, bignumber(type: token) }} {{ symbol }}</0>.",
   "migration.export.title": "HydraDX is now Hydration",
