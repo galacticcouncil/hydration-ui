@@ -348,9 +348,12 @@ export const useOmnipoolAssetDetails = () => {
         native.id === omnipoolAssetId
           ? BN_0
           : BN(
-              omnipoolMetrics.find(
-                (omnipoolMetric) => omnipoolMetric.assetId === omnipoolAssetId,
-              )?.projectedAprPerc ?? BN_NAN,
+              omnipoolMetrics.find((omnipoolMetric) => {
+                const id =
+                  omnipoolMetric.assetRegistryId ?? omnipoolMetric.assetId
+
+                return id === omnipoolAssetId
+              })?.projectedAprPerc ?? BN_NAN,
             )
 
       const totalFee = !isLoadingFee ? fee.plus(totalApr ?? 0) : BN_NAN
