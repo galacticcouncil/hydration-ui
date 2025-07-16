@@ -78,7 +78,7 @@ export const NAVIGATION: NavigationItem[] = [
     to: LINKS.wallet,
     children: [
       { key: "walletAssets", to: LINKS.walletAssets },
-      { key: "walletTransactions", to: LINKS.walletTransactions },
+      // { key: "walletTransactions", to: LINKS.walletTransactions },
     ],
   },
   // {
