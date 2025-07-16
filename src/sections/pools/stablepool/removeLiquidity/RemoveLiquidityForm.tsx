@@ -56,7 +56,6 @@ export const RemoveStablepoolLiquidityForm = ({
   })
   const { api } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const asset = getAssetWithFallback(assetId)
 
   const { addLiquidityLimit } = useLiquidityLimit()
   const { createTransaction } = useStore()
@@ -159,7 +158,7 @@ export const RemoveStablepoolLiquidityForm = ({
             out: scaleHuman(removeSharesValue, STABLEPOOL_TOKEN_DECIMALS)
               .dp(4)
               .toString(),
-            symbol: asset?.symbol,
+            symbol: t("liquidity.stablepool.position.token"),
           },
           components: ["span", "span.highlight"],
         }),
