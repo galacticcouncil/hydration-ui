@@ -67,11 +67,12 @@ export const RemoveStablepoolLiquidityForm = ({
     return position.amount.div(100).times(value).dp(0).toString()
   }, [value, position])
 
-  const { getAssetOutValue } = useStablepoolLiquidityOut({
-    reserves: position.reserves,
-    poolId: position.poolId,
-    fee: position.fee.toString(),
-  })
+  const { getAssetOutValue, getAssetOutProportionally } =
+    useStablepoolLiquidityOut({
+      reserves: position.reserves,
+      poolId: position.poolId,
+      fee: position.fee.toString(),
+    })
 
   const feeDisplay = useMemo(
     () => position.fee.times(BN_100).toString(),
@@ -79,23 +80,16 @@ export const RemoveStablepoolLiquidityForm = ({
   )
 
   const minAssetsOut = useMemo(() => {
-    const reservesAmount = position.reserves.length
-
     if (splitRemove) {
       return position.reserves.map((reserve) => {
         const meta = getAssetWithFallback(reserve.asset_id.toString())
-        const assetOutValue = getAssetOutValue(
-          reserve.asset_id,
-          BigNumber(removeSharesValue).div(reservesAmount).toFixed(0),
+        const assetOutValue = getAssetOutProportionally(
+          reserve.amount,
+          removeSharesValue,
         )
 
         const minValue = BigNumber(assetOutValue)
-          .minus(
-            BigNumber(addLiquidityLimit)
-              .plus(feeDisplay)
-              .times(assetOutValue)
-              .div(100),
-          )
+          .minus(BigNumber(addLiquidityLimit).times(assetOutValue).div(100))
           .dp(0)
           .toString()
 
@@ -129,6 +123,7 @@ export const RemoveStablepoolLiquidityForm = ({
     feeDisplay,
     splitRemove,
     addLiquidityLimit,
+    getAssetOutProportionally,
   ])
 
   const handleSubmit = async () => {
@@ -299,14 +294,18 @@ export const RemoveStablepoolLiquidityForm = ({
               </div>
             ),
           },
-          {
-            label: t("liquidity.remove.modal.tokenFee.label"),
-            content: (
-              <Text color="white" fs={14}>
-                {t("value.percentage", { value: feeDisplay })}
-              </Text>
-            ),
-          },
+          ...(splitRemove
+            ? []
+            : [
+                {
+                  label: t("liquidity.remove.modal.tokenFee.label"),
+                  content: (
+                    <Text color="white" fs={14}>
+                      {t("value.percentage", { value: feeDisplay })}
+                    </Text>
+                  ),
+                },
+              ]),
         ]}
       />
 
