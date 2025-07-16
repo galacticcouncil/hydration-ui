@@ -1,4 +1,4 @@
-import { queryOptions, useQueryClient } from "@tanstack/react-query"
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useObservable } from "@/hooks/useObservable"
@@ -61,4 +61,14 @@ export const blockTimeQuery = (context: TProviderContext) => {
     queryFn: () => sdk.api.scheduler.blockTime,
     staleTime: Infinity,
   })
+}
+
+export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
+  const provider = useRpcProvider()
+  const { data } = useQuery(bestNumberQuery(provider))
+
+  const timestamp = data?.timestamp || 0
+  const periodMs = provider.slotDurationMs * blocksFromNow
+
+  return timestamp + periodMs
 }

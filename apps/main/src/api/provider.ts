@@ -31,6 +31,7 @@ export type TProviderData = {
   poolService: pool.PoolContextProvider
   endpoint: string
   dataEnv: TDataEnv
+  slotDurationMs: number
   /**
    * @deprecated
    */
@@ -72,8 +73,9 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
 
   const papi = papiClient.getTypedApi(hydration)
 
-  const [sdk, papiCompatibilityToken] = await Promise.all([
+  const [sdk, slotDuration, papiCompatibilityToken] = await Promise.all([
     createSdkContext(papiClient),
+    papi.constants.Aura.SlotDuration(),
     papi.compatibilityToken,
   ])
 
@@ -110,6 +112,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     sdk,
     rpcUrlList,
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
+    slotDurationMs: Number(slotDuration),
     featureFlags: {},
     legacy_tradeRouter,
   } satisfies TProviderData

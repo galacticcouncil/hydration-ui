@@ -32,6 +32,7 @@ const defaultData: TProviderContext = {
   rpcUrlList: [],
   endpoint: "",
   dataEnv: "mainnet",
+  slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
   sdk: {} as TProviderData["sdk"],

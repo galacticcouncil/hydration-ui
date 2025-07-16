@@ -14,7 +14,7 @@ export type ThemeProps = ThemeBaseProps & typeof lightJSON
 export type ThemeName = keyof typeof themes
 export type ThemeColor = Join<Paths<ThemeProps["colors"]>, ".">
 export type ThemeToken = Join<Paths<ThemeProps>, ".">
-export type ThemeFont = keyof ThemeProps["fontFamilies1"]
+export type ThemeFont = "mono" | keyof ThemeProps["fontFamilies1"]
 
 const base = makeTheme({
   breakpoints: BREAKPOINTS_VALUES,
