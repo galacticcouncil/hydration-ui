@@ -63,7 +63,7 @@ export const SModalContent = styled(Content)`
   height: 100dvh;
 
   & > div > :not([hidden]) ~ :not([hidden]) {
-    border-top: 1px solid ${({ theme }) => theme.details.borders};
+    border-top: 1px solid ${({ theme }) => theme.details.separators};
   }
 
   &[data-state="open"] {

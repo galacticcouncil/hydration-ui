@@ -16,6 +16,7 @@ export type TextProps = BoxProps & {
   transform?: ThemeUICSSProperties["textTransform"]
   decoration?: ThemeUICSSProperties["textDecoration"]
   whiteSpace?: ThemeUICSSProperties["whiteSpace"]
+  wordBreak?: ThemeUICSSProperties["wordBreak"]
   truncate?: true | ResponsiveStyleValue<number | string>
 }
 
@@ -46,6 +47,7 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
       whiteSpace,
       font = "secondary",
       truncate,
+      wordBreak,
       ...props
     },
     ref,
@@ -55,13 +57,15 @@ export const Text = forwardRef<HTMLParagraphElement, TextProps>(
         as={as}
         ref={ref}
         sx={{
-          fontFamily: getToken(`fontFamilies1.${font}`),
+          fontFamily:
+            font === "mono" ? "GeistMono" : getToken(`fontFamilies1.${font}`),
           fontWeight: fw,
           textAlign: align,
           textTransform: transform,
           textDecoration: decoration,
           lineHeight: lh,
           whiteSpace,
+          wordBreak,
           ...getFontSizeProps(fs),
           ...(truncate && getTruncateProps(truncate)),
         }}

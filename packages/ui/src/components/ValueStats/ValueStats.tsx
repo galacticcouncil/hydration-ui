@@ -6,9 +6,9 @@ import {
   SValueStatsLabel,
   SValueStatsValue,
   SValueStatsValueContainer,
+  ValueStatsFont,
   ValueStatsSize,
 } from "@/components/ValueStats/ValueStats.styled"
-import { ThemeFont } from "@/theme"
 
 import { Skeleton } from "../Skeleton"
 
@@ -17,7 +17,7 @@ export const ValueStatsValue = SValueStatsValue
 export const ValueStatsBottomValue = SValueStatsBottomValue
 
 type ValueStatsProps = {
-  readonly font?: ThemeFont
+  readonly font?: ValueStatsFont
   readonly alwaysWrap?: boolean
   readonly size?: ValueStatsSize
   readonly label?: string
