@@ -89,7 +89,15 @@ export const RemoveStablepoolLiquidityForm = ({
           BigNumber(removeSharesValue).div(reservesAmount).toFixed(0),
         )
 
-        const minValue = "0"
+        const minValue = BigNumber(assetOutValue)
+          .minus(
+            BigNumber(addLiquidityLimit)
+              .plus(feeDisplay)
+              .times(assetOutValue)
+              .div(100),
+          )
+          .dp(0)
+          .toString()
 
         return {
           minValue,
