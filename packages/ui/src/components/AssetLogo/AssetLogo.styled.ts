@@ -24,8 +24,8 @@ const sizes = createVariants(() => ({
     height: 18px;
   `,
   medium: css`
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   `,
   large: css`
     width: 34px;

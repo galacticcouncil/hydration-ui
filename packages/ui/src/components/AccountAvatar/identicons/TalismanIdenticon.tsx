@@ -4,7 +4,7 @@ import color from "color"
 import md5 from "md5"
 import { FC, useId, useMemo } from "react"
 
-import { Box, BoxProps } from "@/components/Box"
+import { Flex, FlexProps } from "@/components/Flex"
 
 const shuffle = (input: string, e = 0) => input.slice(e) + input.slice(0, e)
 
@@ -33,7 +33,7 @@ function normalizeSeed(seed: string) {
   }
 }
 
-export type TalismanIdenticonProps = BoxProps & {
+export type TalismanIdenticonProps = FlexProps & {
   address: string
   size: number
 }
@@ -65,7 +65,7 @@ export const TalismanIdenticon: FC<TalismanIdenticonProps> = ({
   }, [address])
 
   return (
-    <Box {...props}>
+    <Flex {...props}>
       <svg
         width={size}
         height={size}
@@ -136,6 +136,6 @@ export const TalismanIdenticon: FC<TalismanIdenticonProps> = ({
           </g>
         )}
       </svg>
-    </Box>
+    </Flex>
   )
 }

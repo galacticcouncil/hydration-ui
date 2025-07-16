@@ -19,7 +19,7 @@ export const SearchInput = ({
     <Input
       onFocus={() => onFocus(true)}
       onBlur={() => onFocus(false)}
-      placeholder={t("search.placeholder")}
+      placeholder={t("search.placeholder.any")}
       iconStart={Search}
       onChange={(e) => onChange(e.target.value)}
       customSize="medium"

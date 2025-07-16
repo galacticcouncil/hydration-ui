@@ -12,6 +12,8 @@ export type ButtonVariant =
   | "emphasis"
   | "accent"
   | "success"
+  | "muted"
+  | "transparent"
   | "sliderTabActive"
   | "sliderTabInactive"
 
@@ -113,51 +115,61 @@ const disabledStyles = css`
   }
 `
 
-const variants = createVariants<ButtonVariant>(({ buttons, accents }) => ({
+const variants = createVariants<ButtonVariant>((theme) => ({
   primary: variantStyles(
-    buttons.primary.high.onButton,
-    buttons.primary.high.rest,
-    buttons.primary.high.hover,
+    theme.buttons.primary.high.onButton,
+    theme.buttons.primary.high.rest,
+    theme.buttons.primary.high.hover,
   ),
   secondary: variantStyles(
-    buttons.primary.medium.onButton,
-    buttons.primary.medium.rest,
-    buttons.primary.medium.hover,
+    theme.buttons.primary.medium.onButton,
+    theme.buttons.primary.medium.rest,
+    theme.buttons.primary.medium.hover,
   ),
   tertiary: variantStyles(
-    buttons.primary.low.onButton,
-    buttons.primary.low.rest,
-    buttons.primary.low.hover,
+    theme.buttons.primary.low.onButton,
+    theme.buttons.primary.low.rest,
+    theme.buttons.primary.low.hover,
   ),
   danger: variantStyles(
-    buttons.primary.high.onButton,
-    buttons.secondary.danger.onRest,
-    buttons.secondary.danger.outline,
+    theme.buttons.primary.high.onButton,
+    theme.buttons.secondary.danger.onRest,
+    theme.buttons.secondary.danger.outline,
   ),
   emphasis: variantStyles(
-    buttons.primary.high.onButton,
-    buttons.secondary.emphasis.onRest,
-    buttons.secondary.emphasis.outline,
+    theme.buttons.primary.high.onButton,
+    theme.buttons.secondary.emphasis.onRest,
+    theme.buttons.secondary.emphasis.outline,
   ),
   accent: variantStyles(
-    buttons.primary.high.onButton,
-    buttons.secondary.accent.onRest,
-    buttons.secondary.accent.outline,
+    theme.buttons.primary.high.onButton,
+    theme.buttons.secondary.accent.onRest,
+    theme.buttons.secondary.accent.outline,
   ),
   success: variantStyles(
-    accents.success.onEmphasis,
-    accents.success.emphasis,
-    accents.success.dim,
+    theme.accents.success.onEmphasis,
+    theme.accents.success.emphasis,
+    theme.accents.success.dim,
+  ),
+  muted: variantStyles(
+    theme.buttons.secondary.low.onRest,
+    theme.buttons.outlineDark.rest,
+    theme.colors.darkBlue.alpha[200],
+  ),
+  transparent: variantStyles(
+    theme.text.high,
+    "transparent",
+    theme.colors.darkBlue.alpha[200],
   ),
   sliderTabActive: variantStyles(
-    buttons.primary.medium.onButton,
-    buttons.primary.medium.rest,
-    buttons.primary.medium.hover,
+    theme.buttons.primary.medium.onButton,
+    theme.buttons.primary.medium.rest,
+    theme.buttons.primary.medium.hover,
   ),
   sliderTabInactive: variantStyles(
-    buttons.primary.low.onButton,
-    buttons.primary.low.rest,
-    buttons.primary.low.hover,
+    theme.buttons.primary.low.onButton,
+    theme.buttons.primary.low.rest,
+    theme.buttons.primary.low.hover,
   ),
 }))
 
@@ -192,7 +204,7 @@ const outlineVariants = createVariants<ButtonVariant>((theme) => ({
   ),
   tertiary: outlineVariantStyles(
     theme.text.medium,
-    theme.colors.darkBlue.alpha[200],
+    theme.buttons.secondary.low.borderRest,
     theme.buttons.secondary.low.rest,
     theme.buttons.secondary.low.hover,
   ),
@@ -220,6 +232,18 @@ const outlineVariants = createVariants<ButtonVariant>((theme) => ({
     "transparent",
     theme.accents.success.dim,
   ),
+  transparent: outlineVariantStyles(
+    theme.text.high,
+    theme.colors.darkBlue.alpha[200],
+    "transparent",
+    theme.colors.darkBlue.alpha[200],
+  ),
+  muted: outlineVariantStyles(
+    theme.text.medium,
+    theme.buttons.secondary.low.borderRest,
+    theme.buttons.outlineDark.rest,
+    theme.buttons.secondary.low.hover,
+  ),
   sliderTabActive: outlineVariantStyles(
     theme.buttons.primary.medium.onOutline,
     theme.buttons.primary.medium.rest,
@@ -238,17 +262,17 @@ const sizes = createVariants<ButtonSize>((theme) => ({
   small: css`
     line-height: 1.2;
     font-size: ${theme.paragraphSize.p6};
-    padding: ${theme.buttons.paddings.quart}px ${theme.scales.paddings.m}px;
+    padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
   `,
   medium: css`
     line-height: 1.2;
     font-size: ${theme.paragraphSize.p5};
-    padding: ${theme.buttons.paddings.tertiary}px ${theme.scales.paddings.xl}px;
+    padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
   `,
   large: css`
     line-height: 1;
-    font-size: ${theme.paragraphSize.p2};
-    padding: ${theme.buttons.paddings.primary}px 30px;
+    font-size: ${theme.paragraphSize.p3};
+    padding: ${theme.buttons.paddings.primary}px ${theme.scales.paddings.xl}px;
   `,
 }))
 

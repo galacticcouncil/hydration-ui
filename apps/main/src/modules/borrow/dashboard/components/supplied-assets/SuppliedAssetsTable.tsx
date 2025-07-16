@@ -54,7 +54,6 @@ export const SuppliedAssetsTable = () => {
               })
             }
             fixedLayout
-            hoverable
             data={data}
             columns={columns}
           />

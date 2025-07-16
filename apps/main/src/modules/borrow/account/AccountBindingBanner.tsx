@@ -1,3 +1,4 @@
+import VendingMachine from "@galacticcouncil/ui/assets/images/VendingMachine.webp"
 import { Box, Button, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -44,7 +45,7 @@ export const AccountBindingBanner = () => {
         <Button onClick={() => bind()}>{t("binding.banner.cta")}</Button>
       </Box>
       <SBannerImageContainer>
-        <SBannerImage src="/images/VendingMachine.webp" loading="lazy" />
+        <SBannerImage src={VendingMachine} loading="lazy" />
       </SBannerImageContainer>
     </SBanner>
   )

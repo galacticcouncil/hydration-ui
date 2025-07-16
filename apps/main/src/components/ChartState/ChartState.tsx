@@ -1,3 +1,5 @@
+import Casette from "@galacticcouncil/ui/assets/images/Casette.webp"
+import ChartError from "@galacticcouncil/ui/assets/images/ChartError.webp"
 import {
   ChartSkeleton,
   ChartStatus,
@@ -39,7 +41,7 @@ export const ChartState: React.FC<ChartStateProps> = ({
         <ChartStatus
           icon={
             <img
-              src="/images/ChartError.webp"
+              src={ChartError}
               loading="lazy"
               width={75}
               height={75}
@@ -58,7 +60,7 @@ export const ChartState: React.FC<ChartStateProps> = ({
         <ChartStatus
           icon={
             <img
-              src="/images/Casette.webp"
+              src={Casette}
               loading="lazy"
               width={75}
               height={75}

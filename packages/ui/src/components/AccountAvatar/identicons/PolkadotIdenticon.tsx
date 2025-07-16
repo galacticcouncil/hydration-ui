@@ -1,10 +1,10 @@
 import { polkadotIcon } from "@polkadot/ui-shared"
 import { useMemo } from "react"
 
-import { Box, BoxProps } from "@/components/Box"
+import { Flex, FlexProps } from "@/components/Flex"
 import { getToken } from "@/utils"
 
-export type PolkadotIdenticonProps = BoxProps & {
+export type PolkadotIdenticonProps = FlexProps & {
   address: string
   size: number
 }
@@ -23,7 +23,7 @@ export const PolkadotIdenticon: React.FC<PolkadotIdenticonProps> = ({
   }, [address, size])
 
   return (
-    <Box {...props}>
+    <Flex {...props}>
       <svg
         width={size}
         height={size}
@@ -39,6 +39,6 @@ export const PolkadotIdenticon: React.FC<PolkadotIdenticonProps> = ({
           <circle cx={cx} cy={cy} fill={fill} key={key} r={r} />
         ))}
       </svg>
-    </Box>
+    </Flex>
   )
 }

@@ -41,21 +41,32 @@ export const TableHead: React.FC<TableHeadProps> = ({
   ...props
 }) => {
   const ascColor =
-    sortDirection === "asc"
-      ? getToken("controls.solid.activeHover")
-      : getToken("controls.solid.base")
+    sortDirection === "asc" ? getToken("text.medium") : getToken("text.low")
   const descColor =
-    sortDirection === "desc"
-      ? getToken("controls.solid.activeHover")
-      : getToken("controls.solid.base")
+    sortDirection === "desc" ? getToken("text.medium") : getToken("text.low")
 
   return (
-    <TableHeadPrimitive {...props} canSort={canSort} onClick={onSort}>
+    <TableHeadPrimitive
+      {...props}
+      canSort={canSort}
+      isSorting={!!sortDirection}
+      onClick={onSort}
+    >
       {children}
       {canSort && (
         <TableHeadSortIndicator>
-          <CaretDown sx={{ color: descColor }} />
-          <CaretDown sx={{ color: ascColor }} />
+          <CaretDown
+            sx={{
+              color: descColor,
+              opacity: sortDirection === "asc" ? 0.25 : 1,
+            }}
+          />
+          <CaretDown
+            sx={{
+              color: ascColor,
+              opacity: sortDirection === "desc" ? 0.25 : 1,
+            }}
+          />
         </TableHeadSortIndicator>
       )}
     </TableHeadPrimitive>

@@ -14,11 +14,11 @@ import { MarketAssetsStats } from "@/modules/borrow/markets/components/MarketAss
 import { MarketAssetsTable } from "@/modules/borrow/markets/components/MarketAssetsTable"
 
 export const BorrowMarketsPage = () => {
-  const { t } = useTranslation(["borrow"])
+  const { t } = useTranslation(["common", "borrow"])
   const [searchPhrase, setSearchPhrase] = useState("")
 
   return (
-    <Stack gap={30} py={20}>
+    <Stack gap={30}>
       <MarketAssetsStats />
       <AccountBindingBanner />
       <Box>
@@ -33,7 +33,7 @@ export const BorrowMarketsPage = () => {
           </SectionHeader>
           <Input
             sx={{ minWidth: ["100%", 250] }}
-            placeholder={t("borrow:searchAssets")}
+            placeholder={t("search.placeholder.assets")}
             iconStart={Search}
             onChange={(e) => setSearchPhrase(e.target.value)}
           />

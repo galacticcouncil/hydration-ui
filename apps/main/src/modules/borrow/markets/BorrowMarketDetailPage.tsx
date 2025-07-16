@@ -16,11 +16,11 @@ import { Navigate } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AssetHeader } from "@/components/AssetHeader"
 import { LINKS } from "@/config/navigation"
 import { AccountBindingBanner } from "@/modules/borrow/account/AccountBindingBanner"
 import { ReserveActions } from "@/modules/borrow/reserve/components/ReserveActions"
 import { ReserveHeader } from "@/modules/borrow/reserve/components/ReserveHeader"
-import { ReserveLogo } from "@/modules/borrow/reserve/components/ReserveLogo"
 import { ReserveConfiguration } from "@/modules/borrow/reserve/ReserveConfiguration"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -53,12 +53,8 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
 
   return (
     <AssetCapsProvider asset={reserve}>
-      <Stack gap={30} py={20}>
-        <ReserveLogo
-          assetId={assetId}
-          name={reserve?.name}
-          symbol={reserve?.symbol}
-        />
+      <Stack gap={30}>
+        <AssetHeader asset={asset} />
         <ReserveHeader reserve={reserve} />
         <AccountBindingBanner />
         <Box>

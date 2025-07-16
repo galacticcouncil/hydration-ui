@@ -9,7 +9,7 @@ type Props = {
 }
 
 export const BorrowHistorySearch: FC<Props> = ({ onChange }) => {
-  const { t } = useTranslation(["borrow"])
+  const { t } = useTranslation("common")
 
   const [input, setInput] = useState("")
   useDebounce(
@@ -29,7 +29,7 @@ export const BorrowHistorySearch: FC<Props> = ({ onChange }) => {
       iconStart={Search}
       value={input}
       onChange={(e) => setInput(e.target.value)}
-      placeholder={t("borrow:history.search.placeholder")}
+      placeholder={t("search.placeholder.assets")}
       sx={{ minWidth: ["100%", 250] }}
     />
   )

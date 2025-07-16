@@ -1,6 +1,8 @@
+import { Moon } from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItem,
   MenuItemAction,
+  MenuItemIcon,
   MenuItemLabel,
   Toggle,
   ToggleLabel,
@@ -16,6 +18,7 @@ export const DarkMode: FC = () => {
 
   return (
     <MenuItem>
+      <MenuItemIcon component={Moon} />
       <MenuItemLabel>{t("darkMode")}</MenuItemLabel>
       <MenuItemAction>
         <ToggleRoot>

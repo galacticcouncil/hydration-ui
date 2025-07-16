@@ -1,6 +1,5 @@
 import { Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { SFloatingValue } from "@/modules/borrow/healthfactor/HealthFactorRiskInfo.styled"
@@ -19,10 +18,7 @@ type HealthFactorRiskScaleProps = {
 export const HealthFactorRiskScale: React.FC<HealthFactorRiskScaleProps> = ({
   healthFactor,
 }) => {
-  const { t } = useTranslation(["borrow"])
-  const formattedHealthFactor = Number(
-    Big(healthFactor).toFixed(2, Big.roundDown),
-  )
+  const { t } = useTranslation(["common", "borrow"])
 
   const position = +healthFactor > 10 ? 100 : +healthFactor * 10
 
@@ -35,7 +31,13 @@ export const HealthFactorRiskScale: React.FC<HealthFactorRiskScaleProps> = ({
             placement="top"
             align={position <= 5 ? "left" : position >= 95 ? "right" : "center"}
           >
-            {formattedHealthFactor}
+            <Text fs="p4" fw={600}>
+              {t("number", {
+                value: healthFactor,
+                maximumFractionDigits: 2,
+                notation: "compact",
+              })}
+            </Text>
           </SFloatingValue>
         </SCurrentValueMarker>
       </SCurrentValueWrapper>

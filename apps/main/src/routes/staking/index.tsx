@@ -3,7 +3,7 @@ import { AreaChart } from "@galacticcouncil/ui/components"
 import { MOCK_CURVE_DATA } from "@galacticcouncil/ui/components/Chart/utils"
 import { createFileRoute } from "@tanstack/react-router"
 
-export const Route = createFileRoute("/_staking/staking/")({
+export const Route = createFileRoute("/staking/")({
   component: RouteComponent,
 })
 

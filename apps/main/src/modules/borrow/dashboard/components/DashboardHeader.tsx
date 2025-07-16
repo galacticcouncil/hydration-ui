@@ -80,6 +80,7 @@ export const DashboardHeader = () => {
                   t("number", {
                     value: healthFactor,
                     maximumFractionDigits: 2,
+                    notation: "compact",
                   })
                 ) : (
                   "-"

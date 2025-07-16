@@ -14,12 +14,7 @@ export const OrderFilter: FC<Props> = ({ children, offers }) => {
   const isSelected = offers === selectedOffers
 
   return (
-    <Button
-      outline={!isSelected}
-      variant={isSelected ? "secondary" : "tertiary"}
-      height={38}
-      asChild
-    >
+    <Button variant={isSelected ? "secondary" : "muted"} height={38} asChild>
       <Link to="/trade/otc" search={{ offers }}>
         {children}
       </Link>

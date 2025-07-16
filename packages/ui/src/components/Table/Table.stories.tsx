@@ -142,13 +142,6 @@ export const LargeSize: Story = {
   },
 }
 
-export const Hoverable: Story = {
-  render: Template,
-  args: {
-    hoverable: true,
-  },
-}
-
 export const Borderless: Story = {
   render: Template,
   args: {
