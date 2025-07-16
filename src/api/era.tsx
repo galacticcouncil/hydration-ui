@@ -24,6 +24,7 @@ export const useEra = (
 
       const birth = new BN(mortal.birth(blockNumber))
       const death = new BN(mortal.death(blockNumber))
+
       return {
         birth,
         death,
@@ -33,6 +34,13 @@ export const useEra = (
 
     const birth = new BN(blockNumber.toString())
     const period = new BN(DEFAULT_PERIOD)
+
+    console.log({
+      blockNumber: blockNumber.toString(),
+      birth: birth.toString(),
+      death: birth.plus(period),
+      period: period.toString(),
+    })
     return {
       birth,
       death: birth.plus(period),
