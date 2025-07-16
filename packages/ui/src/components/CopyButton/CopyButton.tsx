@@ -3,12 +3,17 @@ import { useCopy } from "@galacticcouncil/utils"
 import { CheckIcon, CopyIcon } from "@/assets/icons"
 import { Icon } from "@/components"
 
+type RenderProps = {
+  copied: boolean
+}
+
 export type CopyButtonProps = {
   text: string
   delay?: number
   defaultIcon?: React.ComponentType
   copiedIcon?: React.ComponentType
   iconSize?: number
+  children?: (props: RenderProps) => React.ReactNode
 } & Omit<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   "onClick" | "disabled" | "type" | "children"
@@ -20,6 +25,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   defaultIcon = CopyIcon,
   copiedIcon = CheckIcon,
   iconSize = 14,
+  children,
   ...props
 }) => {
   const { copied, copy } = useCopy(delay)
@@ -34,7 +40,11 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
         copy(text)
       }}
     >
-      <Icon size={iconSize} component={copied ? copiedIcon : defaultIcon} />
+      {children ? (
+        children({ copied })
+      ) : (
+        <Icon size={iconSize} component={copied ? copiedIcon : defaultIcon} />
+      )}
     </button>
   )
 }

@@ -25,6 +25,8 @@ export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   const observer = tx
     .signSubmitAndWatch(signer, {
       nonce: options?.nonce,
+      tip: options?.tip,
+      mortality: { mortal: true, period: options.mortalityPeriod },
     })
     .pipe(
       catchError((error) => of({ type: "error" as const, error })),
