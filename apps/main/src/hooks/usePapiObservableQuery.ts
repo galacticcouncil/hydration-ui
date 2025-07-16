@@ -9,6 +9,7 @@ import {
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 
 const PAPI_OBSERVER_MAP = {
+  "System.Account": (papi: Papi) => papi.query.System.Account,
   "System.Number": (papi: Papi) => papi.query.System.Number,
   "MultiTransactionPayment.AccountCurrencyMap": (papi: Papi) =>
     papi.query.MultiTransactionPayment.AccountCurrencyMap,
@@ -46,16 +47,15 @@ export const usePapiObservableQuery = <
     if (!isApiLoaded) return
     const observable = PAPI_OBSERVER_MAP[key](papi)
 
-    return (
-      observable
-        // @ts-expect-error Args are union here, so TS complains, but they are correctly inferred in the input of the function
-        .watchValue(...args)
-        .pipe(
-          shareReplay(1),
-          // react-query doesn't like undefined values, so we map them to null
-          map((value) => (value === undefined ? null : value)),
-        ) as Observable<T>
-    )
+    const watcher = observable
+      // @ts-expect-error Args are union here, so TS complains, but they are correctly inferred in the input of the function
+      .watchValue(...args) as Observable<T>
+
+    return watcher.pipe(
+      shareReplay(1),
+      // react-query doesn't like undefined values, so we map them to null
+      map((value) => (value === undefined ? null : value)),
+    ) as Observable<T>
     // Disabling exhaustive-deps because spreading args makes sense here
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, papi, isApiLoaded, ...args])
