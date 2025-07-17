@@ -1,5 +1,4 @@
 import styled from "@emotion/styled"
-import { theme } from "theme"
 import { ResponsiveValue, getResponsiveStyles } from "utils/responsive"
 
 export const IconsWrapper = styled.div<{
@@ -9,13 +8,14 @@ export const IconsWrapper = styled.div<{
   ${({ size }) =>
     getResponsiveStyles(size, (value) => ({
       "--logo-size": `${value}px`,
-      "--logo-overlap": `${value * 0.3}px`,
+      "--logo-overlap": "4px",
       "--chain-size": `${value / 2}px`,
       "--chain-offset": `${value * 0.1}px`,
     }))};
 
   position: relative;
-
+  flex-shrink: 0;
+  position: relative;
   display: flex;
 
   & > span {
@@ -31,39 +31,74 @@ export const IconsWrapper = styled.div<{
     margin-left: calc(var(--logo-overlap) * -1);
   }
 
-  &::before {
+  &[data-atokens]::before {
     content: "";
     position: absolute;
-    inset: 0;
+    background: linear-gradient(to right, #39a5ff, #0063b5 50%, transparent);
+    padding: 2px;
+    inset: -5px;
+  }
 
-    pointer-events: none;
+  &[data-atokens="2"]::before {
+    mask-image: radial-gradient(
+        circle var(--logo-size) at calc(35% - calc(var(--logo-size) * 0.09)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle var(--logo-size) at calc(65% + calc(var(--logo-size) * 0.09)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      );
+  }
 
-    padding: var(--chain-offset) var(--chain-offset) 0 0;
-    margin-top: calc(var(--chain-offset) * -1);
-    margin-right: calc(var(--chain-offset) * -1);
+  &[data-atokens="3"]::before {
+    mask-image: radial-gradient(
+        circle var(--logo-size) at calc(25% - calc(var(--logo-size) * 0.09)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle var(--logo-size) at calc(50%),
+        black 0%,
+        black 56%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle var(--logo-size) at calc(75% + calc(var(--logo-size) * 0.09)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      );
+  }
 
-    --mask-space: 1px;
-    --mask-gradient: calc(var(--chain-size) / 2),
-      black calc(var(--chain-size) / 2 - 1px),
-      transparent calc(var(--chain-size) / 2 - 1px),
-      transparent calc(var(--chain-size) / 2 + var(--mask-space)),
-      black calc(var(--chain-size) / 2 + var(--mask-space) + 0.5px);
-
-    --mask-offset: calc(
-      var(--logo-size) - var(--chain-size) / 2 + var(--chain-offset)
-    );
-
-    @media (${theme.viewport.gte.sm}) {
-      mask: ${({ maskConfig }) => maskConfig.map(mapToMask).join(",")},
-        linear-gradient(black, black);
-    }
-
-    -webkit-mask-composite: destination-in;
-    mask-composite: exclude;
+  &[data-atokens="4"]::before {
+    mask-image: radial-gradient(
+        circle var(--logo-size) at calc(20% - calc(var(--logo-size) * 0.09)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle var(--logo-size) at calc(40% - calc(var(--logo-size) * 0.045)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle var(--logo-size) at calc(60% + calc(var(--logo-size) * 0.045)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      ),
+      radial-gradient(
+        circle var(--logo-size) at calc(80% + calc(var(--logo-size) * 0.09)),
+        black 0%,
+        black 56%,
+        transparent 58%
+      );
   }
 `
-
-function mapToMask(hasMask: boolean, index: number) {
-  const shape = hasMask ? "circle" : "0 0"
-  return `radial-gradient(${shape} at calc(var(--logo-size) * ${index} - var(--logo-overlap) * ${index} + var(--mask-offset)) var(--mask-gradient))`
-}

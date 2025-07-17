@@ -5,10 +5,10 @@ import { theme } from "theme"
 import { SupplyGigadotMobileRow } from "sections/lending/ui/table/supply-assets/SupplyGigaMobileRow"
 import { SupplyGigadotDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigaDesktopRow"
 import { getAssetIdFromAddress } from "utils/evm"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { SupplyAssetModal } from "./SupplyAssetModal"
 import { Modal } from "components/Modal/Modal"
 import { DialogTitle } from "@radix-ui/react-dialog"
+import { useATokens } from "api/borrow"
 
 export type SupplyGigaRowData = Pick<
   ComputedReserveData,
@@ -23,12 +23,11 @@ type Props = {
 
 export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { aTokenReverseMap } = useATokens()
   const [supplyModal, setSupplyModal] = useState("")
 
   const assetId =
-    REVERSE_A_TOKEN_UNDERLYING_ID_MAP[
-      getAssetIdFromAddress(reserve.underlyingAsset)
-    ]
+    aTokenReverseMap.get(getAssetIdFromAddress(reserve.underlyingAsset)) ?? ""
 
   const onClose = () => setSupplyModal("")
 

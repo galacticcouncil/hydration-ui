@@ -43,6 +43,8 @@ import { useStablepoolFees } from "./stableswap"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { useLIDOEthAPR } from "./external/ethereum"
 import { TFarmAprData, useOmnipoolFarm } from "./farms"
+import { useAssetRegistry } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -635,4 +637,20 @@ export const useBorrowAssetApy = (
     incentives: assetReserve?.aIncentivesData ?? [],
     farms: farms?.farms,
   }
+}
+
+export const useATokens = () => {
+  const aTokenPairs = useAssetRegistry(useShallow((state) => state.aTokenPairs))
+
+  return useMemo(() => {
+    const aTokenMap = new Map(aTokenPairs)
+    const aTokenReverseMap = new Map(
+      aTokenPairs.map(([aToken, underlying]) => [underlying, aToken]),
+    )
+    return {
+      aTokenMap,
+      aTokenPairs,
+      aTokenReverseMap,
+    }
+  }, [aTokenPairs])
 }

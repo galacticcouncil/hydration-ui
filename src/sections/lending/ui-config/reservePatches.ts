@@ -1,4 +1,6 @@
 import { unPrefixSymbol } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { ASSET_METADATA_OVERRIDES } from "utils/assets"
+import { getAddressFromAssetId } from "utils/evm"
 
 export interface IconSymbolInterface {
   underlyingAsset: string
@@ -12,18 +14,21 @@ interface IconMapInterface {
   symbol?: string
 }
 
-const underlyingAssetMap: Record<string, IconMapInterface> = {
-  "0x00000000000000000000000000000001000002b2": {
-    name: "GIGADOT",
-    symbol: "GDOT",
-    iconSymbol: "GDOT",
-  },
-  "0x0000000000000000000000000000000100001068": {
-    name: "GIGAETH",
-    symbol: "GETH",
-    iconSymbol: "GETH",
-  },
-}
+const assetOverridesEntries = Object.entries(ASSET_METADATA_OVERRIDES)
+const underlyingAssetMapEntries = assetOverridesEntries.map(
+  ([assetId, overrides]) => [
+    getAddressFromAssetId(assetId),
+    {
+      name: overrides.name,
+      symbol: overrides.symbol,
+      iconSymbol: overrides.symbol ?? "",
+    },
+  ],
+)
+
+const underlyingAssetMap: Record<string, IconMapInterface> = Object.fromEntries(
+  underlyingAssetMapEntries,
+)
 
 export function fetchIconSymbolAndName({
   symbol,

@@ -18,10 +18,11 @@ import {
 } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useATokens } from "api/borrow"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
+  const { aTokenReverseMap } = useATokens()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
@@ -29,23 +30,12 @@ export const WithdrawModal = () => {
 
   const assetId = getAssetIdFromAddress(args.underlyingAsset)
 
-  const reserveAssetsCount =
-    user?.userReservesData.filter(
-      ({ scaledATokenBalance }) => scaledATokenBalance !== "0",
-    ).length ?? 0
-  const borrowAssetsCount =
-    user?.userReservesData.filter(
-      ({ variableBorrows }) => variableBorrows !== "0",
-    ).length ?? 0
-  const isBorrowing = user?.totalBorrowsUSD !== "0"
-  const fallbackWithdraw =
-    isBorrowing && reserveAssetsCount + borrowAssetsCount > 3
+  const aTokenId = aTokenReverseMap.get(assetId)
 
-  if (
-    (assetId === GDOT_STABLESWAP_ASSET_ID ||
-      assetId === GETH_STABLESWAP_ASSET_ID) &&
-    !fallbackWithdraw
-  ) {
+  const isGigaAsset =
+    assetId === GDOT_STABLESWAP_ASSET_ID || assetId === GETH_STABLESWAP_ASSET_ID
+
+  if (!!aTokenId && isGigaAsset) {
     const userReserve = user?.userReservesData.find((userReserve) => {
       return args.underlyingAsset === userReserve?.underlyingAsset
     })
@@ -53,7 +43,7 @@ export const WithdrawModal = () => {
     return (
       <BasicModal open={type === ModalType.Withdraw} setOpen={close}>
         <RemoveDepositModal
-          assetId={REVERSE_A_TOKEN_UNDERLYING_ID_MAP[assetId]}
+          assetId={aTokenId}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
           assetReceiveId={

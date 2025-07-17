@@ -20,8 +20,8 @@ import { noop } from "utils/helpers"
 import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/SupplyAssetSummary"
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
+import { useATokens } from "api/borrow"
 
 type Props = {
   readonly assetId: string
@@ -30,16 +30,18 @@ type Props = {
 
 export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
+  const { aTokenMap } = useATokens()
 
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
     useNewDepositDefaultAssetId(assetId)
-  const allowedAssets = useNewDepositAssets([
-    assetId,
-    A_TOKEN_UNDERLYING_ID_MAP[assetId],
-  ])
+
+  const aTokenId = aTokenMap.get(assetId)
+  const allowedAssets = useNewDepositAssets(
+    [assetId].concat(aTokenId ? [aTokenId] : []),
+  )
 
   const { page, direction, back, next } = useModalPagination()
 
