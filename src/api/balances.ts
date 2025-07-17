@@ -12,28 +12,26 @@ import {
   PalletBalancesAccountData,
   OrmlTokensAccountData,
 } from "@polkadot/types/lookup"
-import { BalanceClient } from "@galacticcouncil/sdk"
+import { Balance, BalanceClient } from "@galacticcouncil/sdk"
 import { millisecondsInMinute } from "date-fns/constants"
 
-export type TBalance = ReturnType<typeof parseBalanceData>
+export type TBalance = Balance
 
 export const parseBalanceData = (
   data: PalletBalancesAccountData | OrmlTokensAccountData,
   id: string,
-  address: string,
 ) => {
   const freeBalance = data.free.toString()
   const frozenBalance = data.frozen.toString()
   const reservedBalance = data.reserved.toString()
 
-  const balance = BigNumber(freeBalance).lt(frozenBalance)
+  const transferable = BigNumber(freeBalance).lt(frozenBalance)
     ? "0"
     : BigNumber(freeBalance).minus(frozenBalance).toString()
 
   return {
-    accountId: address,
     assetId: id,
-    balance,
+    transferable,
     total: BigNumber(freeBalance).plus(reservedBalance).toString(),
     freeBalance,
     reservedBalance,
@@ -51,7 +49,7 @@ export const getTokenBalance = (
       id.toString(),
     )
 
-    return parseBalanceData(res, id.toString(), account.toString())
+    return parseBalanceData(res, id.toString())
   }
 }
 

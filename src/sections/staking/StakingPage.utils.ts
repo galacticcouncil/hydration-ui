@@ -145,7 +145,7 @@ export const useStakeData = () => {
   const accumulatedLockedRewards =
     stake.data?.stakePosition?.accumulatedLockedRewards ?? BN_0
 
-  const rawAvailableBalance = BN(balance?.freeBalance ?? "0")
+  const rawAvailableBalance = BN(balance?.free ?? "0")
     .minus(vested)
     .minus(staked)
     .minus(accumulatedLockedRewards)
@@ -255,7 +255,9 @@ export const useStakeARP = () => {
       ? currentBlockNumber.minus(sixBlockSince).gt(blocksPerYear.times(2))
       : false
 
-    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.transferable).minus(
+      potReservedBalance,
+    )
 
     const { accumulatedRpsUpdated, stakingInitialized } = stakingEvents.data
 
@@ -457,7 +459,9 @@ export const useClaimReward = () => {
       sixBlockSince,
     } = stakingConsts.data
 
-    const pendingRewards = BN(potBalance.data.balance).minus(potReservedBalance)
+    const pendingRewards = BN(potBalance.data.transferable).minus(
+      potReservedBalance,
+    )
 
     let rewardPerStake = accumulatedRewardPerStake.toString()
     const currentBlokNumber = bestNumber.data.parachainBlockNumber.toString()

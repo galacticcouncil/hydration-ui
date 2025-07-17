@@ -33,7 +33,7 @@ export const useSDKPools = () => {
       const omnipoolTokens: TOmnipoolAssetsData = []
       let hub: PoolToken | undefined
 
-      pools.forEach((pool) => {
+      for (const pool of pools) {
         if (pool.type === PoolType.Stable) {
           stablePools.push(pool as StableSwap)
         } else if (pool.type === PoolType.XYK) {
@@ -49,7 +49,7 @@ export const useSDKPools = () => {
         } else if (pool.type === PoolType.Omni) {
           const tokens = pool.tokens as OmniPoolToken[]
 
-          tokens.forEach((tokenRaw) => {
+          for (const tokenRaw of tokens) {
             const token = {
               ...tokenRaw,
               shares: tokenRaw.shares?.toString(),
@@ -81,9 +81,9 @@ export const useSDKPools = () => {
                 balance,
               })
             }
-          })
+          }
         }
-      })
+      }
 
       queryClient.setQueryData(QUERY_KEYS.omnipoolTokens, omnipoolTokens)
       queryClient.setQueryData(QUERY_KEYS.stablePools, stablePools)
@@ -95,6 +95,7 @@ export const useSDKPools = () => {
       return false
     },
     enabled: isLoaded && !!activeQueriesAmount && isWhitelistLoaded,
+    refetchInterval: millisecondsInMinute,
     staleTime: millisecondsInMinute,
   })
 }

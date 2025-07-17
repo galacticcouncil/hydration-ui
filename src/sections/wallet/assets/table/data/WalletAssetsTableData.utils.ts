@@ -1,4 +1,4 @@
-import { TBalance, useTokenLocks } from "api/balances"
+import { useTokenLocks } from "api/balances"
 import { useMemo } from "react"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { BN_NAN, GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
@@ -14,7 +14,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useExternalTokenMeta } from "sections/wallet/addToken/AddToken.utils"
 import { useAssets } from "providers/assets"
 import { useExternalTokensRugCheck } from "api/external"
-import { useAccountBalances } from "api/deposits"
+import { AccountBalance, useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { scaleHuman } from "utils/balance"
 import { useAssetsPrice } from "state/displayPrice"
@@ -29,15 +29,7 @@ export const useAssetsData = ({
   address?: string
 } = {}) => {
   const { account } = useAccount()
-  const {
-    tradable,
-    stableswap,
-    external,
-    erc20,
-    getAsset,
-    tokens,
-    getAssetWithFallback,
-  } = useAssets()
+  const { stableswap, external, erc20, tokens } = useAssets()
   const address = givenAddress ?? account?.address
 
   const rugCheck = useExternalTokensRugCheck()
@@ -46,46 +38,42 @@ export const useAssetsData = ({
     useAccountBalances(address)
   const getExternalMeta = useExternalTokenMeta()
 
-  const { balances = [] } = accountAssets ?? {}
+  const { balances } = accountAssets ?? {}
 
   const { tokensWithBalance, validTokensIdsWithBalance } = useMemo(() => {
-    if (balances.length) {
-      const filteredTokens = balances.reduce<{
-        tokensWithBalance: TBalance[]
-        validTokensIdsWithBalance: string[]
-      }>(
-        (acc, balance) => {
-          const meta = getAsset(balance.assetId)
-          const isVisible =
-            meta && meta.id === GDOT_STABLESWAP_ASSET_ID
-              ? BigNumber(balance.total).shiftedBy(-meta.decimals).gt(1)
-              : true
+    if (balances?.length) {
+      const tokensWithBalance: AccountBalance[] = []
+      const validTokensIdsWithBalance: string[] = []
 
-          if (meta && isVisible) {
-            if (
-              meta.isToken ||
-              meta.isStableSwap ||
-              meta.isExternal ||
-              meta.isErc20
-            ) {
-              acc.tokensWithBalance.push(balance)
+      for (const accountBalance of balances) {
+        const { asset, balance } = accountBalance
 
-              if (meta.symbol) {
-                acc.validTokensIdsWithBalance.push(balance.assetId)
-              }
+        const isVisible =
+          asset.id === GDOT_STABLESWAP_ASSET_ID
+            ? BigNumber(balance.total).shiftedBy(-asset.decimals).gt(1)
+            : true
+
+        if (asset && isVisible) {
+          if (
+            asset.isToken ||
+            asset.isStableSwap ||
+            asset.isExternal ||
+            asset.isErc20
+          ) {
+            tokensWithBalance.push(accountBalance)
+
+            if (asset.symbol) {
+              validTokensIdsWithBalance.push(asset.id)
             }
           }
+        }
+      }
 
-          return acc
-        },
-        { tokensWithBalance: [], validTokensIdsWithBalance: [] },
-      )
-
-      return filteredTokens
+      return { tokensWithBalance, validTokensIdsWithBalance }
     }
 
     return { tokensWithBalance: [], validTokensIdsWithBalance: [] }
-  }, [balances, getAsset])
+  }, [balances])
 
   const { data: currencyId } = useAccountCurrency(address)
   const { data: acceptedCurrencies } = useAcceptedCurrencies(
@@ -104,8 +92,9 @@ export const useAssetsData = ({
   const data = useMemo(() => {
     if (isBalancesLoading || isPriceLoading) return []
 
-    const rowsWithBalance = tokensWithBalance.map((balance) => {
-      const asset = getAssetWithFallback(balance.assetId)
+    const rowsWithBalance = tokensWithBalance.map((accountBalance) => {
+      const { balance, asset } = accountBalance
+
       const isExternalInvalid = asset.isExternal && !asset.symbol
       const meta = isExternalInvalid
         ? getExternalMeta(asset.id) ?? asset
@@ -116,10 +105,10 @@ export const useAssetsData = ({
         : undefined
 
       const { decimals, id, name, symbol } = meta
-      const inTradeRouter = tradable.some((tradeAsset) => tradeAsset.id === id)
+      const inTradeRouter = asset.isTradable
       const spotPrice = getAssetPrice(id).price
 
-      const reserved = BigNumber(balance.reservedBalance).shiftedBy(-decimals)
+      const reserved = BigNumber(balance.reserved).shiftedBy(-decimals)
       const reservedDisplay =
         spotPrice && BigNumber(spotPrice).isFinite()
           ? reserved.times(spotPrice).toString()
@@ -133,7 +122,7 @@ export const useAssetsData = ({
 
       const transferable = isExternalInvalid
         ? BN_NAN
-        : BigNumber(balance.balance).shiftedBy(-decimals)
+        : BigNumber(balance.transferable).shiftedBy(-decimals)
       const transferableDisplay =
         spotPrice && BigNumber(spotPrice).isFinite()
           ? transferable.times(spotPrice).toString()
@@ -175,18 +164,14 @@ export const useAssetsData = ({
       ? [
           ...rowsWithBalance,
           ...allAssets.reduce<typeof rowsWithBalance>((acc, meta) => {
-            const { id, symbol, name, isExternal } = meta
+            const { id, symbol, name, isExternal, isTradable } = meta
             const isWithBalance = rowsWithBalance.some((row) => row.id === id)
 
             if (!isWithBalance && id !== GDOT_STABLESWAP_ASSET_ID) {
-              const inTradeRouter = tradable.some(
-                (tradeAsset) => tradeAsset.id === id,
-              )
-
               const tradability = {
-                canBuy: inTradeRouter,
-                canSell: inTradeRouter,
-                inTradeRouter,
+                canBuy: isTradable,
+                canSell: isTradable,
+                inTradeRouter: isTradable,
               }
 
               const isExternalInvalid = isExternal && !symbol
@@ -231,9 +216,7 @@ export const useAssetsData = ({
     isAllAssets,
     allAssets,
     search,
-    getAssetWithFallback,
     getExternalMeta,
-    tradable,
     acceptedCurrencies,
     currencyId,
     isBalancesLoading,

@@ -23,7 +23,7 @@ const useSchema = () => {
     .refine(
       ({ asset, amount }) => {
         const selectedAssetBalance =
-          accountAssetsMap?.get(asset?.id ?? "")?.balance?.balance || "0"
+          accountAssetsMap?.get(asset?.id ?? "")?.balance?.transferable || "0"
 
         return validateMaxBalance(
           selectedAssetBalance,

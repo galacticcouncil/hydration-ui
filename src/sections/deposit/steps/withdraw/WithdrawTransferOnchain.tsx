@@ -61,7 +61,7 @@ export const WithdrawTransferOnchain: React.FC<
         decimals: 0,
       }
     }
-    const balance = BN(tokenBalance?.balance ?? "0")
+    const balance = BN(tokenBalance?.transferable ?? "0")
     const max =
       estimatedFees.accountCurrencyId === asset?.assetId
         ? balance
@@ -85,7 +85,7 @@ export const WithdrawTransferOnchain: React.FC<
     assetMeta,
     estimatedFees.accountCurrencyFee,
     estimatedFees.accountCurrencyId,
-    tokenBalance?.balance,
+    tokenBalance?.transferable,
   ])
 
   const zodSchema = useTransferSchema({

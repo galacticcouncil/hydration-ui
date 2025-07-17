@@ -262,30 +262,15 @@ const storage: StateStorage = {
     const storage = await db
 
     if (storage) {
-      const data = await getItems(storage, IndexedDBStores.Assets)
+      setItems(storage, IndexedDBStores.Assets, {
+        key: "tokens",
+        data: parsedState.state.assets,
+      })
 
-      const tokens = data.find((e) => e.key === "tokens")?.data ?? []
-      const shareTokens = data.find((e) => e.key === "shareTokens")?.data ?? []
-
-      const areTokensEqual = arraysEqual(parsedState.state.assets, tokens)
-      const areShareTokensEqual = arraysEqual(
-        parsedState.state.shareTokens,
-        shareTokens,
-      )
-
-      if (!areTokensEqual) {
-        setItems(storage, IndexedDBStores.Assets, {
-          key: "tokens",
-          data: parsedState.state.assets,
-        })
-      }
-
-      if (!areShareTokensEqual) {
-        setItems(storage, IndexedDBStores.Assets, {
-          key: "shareTokens",
-          data: parsedState.state.shareTokens,
-        })
-      }
+      setItems(storage, IndexedDBStores.Assets, {
+        key: "shareTokens",
+        data: parsedState.state.shareTokens,
+      })
     }
   },
   removeItem: () => {},
@@ -293,18 +278,30 @@ const storage: StateStorage = {
 
 export const useAssetRegistry = create<AssetRegistryStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       assets: [],
       shareTokens: [],
       sync(assets) {
-        set({
-          assets,
-        })
+        const storedAssets = get().assets
+
+        const areTokensEqual = arraysEqual(storedAssets, assets)
+
+        if (!areTokensEqual) {
+          set({
+            assets,
+          })
+        }
       },
       syncShareTokens(shareTokens) {
-        set({
-          shareTokens,
-        })
+        const storedShareTokens = get().shareTokens
+
+        const areShareTokensEqual = arraysEqual(storedShareTokens, shareTokens)
+
+        if (!areShareTokensEqual) {
+          set({
+            shareTokens,
+          })
+        }
       },
     }),
     {

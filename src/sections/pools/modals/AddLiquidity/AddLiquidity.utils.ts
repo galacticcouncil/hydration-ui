@@ -178,7 +178,7 @@ export const useAddToOmnipoolZod = (
     .pipe(
       isStablepool
         ? z.string()
-        : maxBalance(assetBalance?.balance ?? "0", decimals),
+        : maxBalance(assetBalance?.transferable ?? "0", decimals),
     )
     .refine(
       (value) => BigNumber(value).shiftedBy(decimals).gte(minPoolLiquidity),
@@ -287,8 +287,8 @@ export const useXYKZodSchema = (
   const assetBBalances =
     accountAssets.data?.accountAssetsMap.get(assetBId)?.balance
 
-  const balanceA = assetABalances?.balance ?? "0"
-  const balanceB = assetBBalances?.balance ?? "0"
+  const balanceA = assetABalances?.transferable ?? "0"
+  const balanceB = assetBBalances?.transferable ?? "0"
 
   const balanceAMax =
     estimatedFees.accountCurrencyId === assetAId

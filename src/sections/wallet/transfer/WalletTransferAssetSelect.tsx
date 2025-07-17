@@ -28,7 +28,7 @@ export const WalletTransferAssetSelect = (props: {
   const accountAssets = useAccountBalances()
   const balance = accountAssets.data?.accountAssetsMap.get(
     props.asset.toString(),
-  )?.balance?.balance
+  )?.balance?.transferable
 
   return (
     <AssetSelect
