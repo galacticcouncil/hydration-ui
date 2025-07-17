@@ -32,19 +32,17 @@ export const useStableSDKPools = () => {
   })
 }
 
-export const useStablepoolFees = (poolIds: string[], disabled?: boolean) => {
+export const useStablepoolFees = (disabled?: boolean) => {
   const url = useSquidUrl()
 
   return useQuery({
-    queryKey: QUERY_KEYS.stablepoolFees(poolIds),
+    queryKey: QUERY_KEYS.stablepoolFees,
     queryFn: async () => {
-      const data = await request(url, StableswapYieldMetricsDocument, {
-        filter: { poolIds },
-      })
+      const data = await request(url, StableswapYieldMetricsDocument)
 
       return data.stableswapYieldMetrics.nodes.filter(isNotNil)
     },
     staleTime: millisecondsInHour,
-    enabled: !!poolIds.length && !disabled,
+    enabled: !disabled,
   })
 }
