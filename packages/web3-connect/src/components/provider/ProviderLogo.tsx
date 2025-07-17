@@ -1,9 +1,11 @@
+import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
+
 import { Wallet } from "@/types/wallet"
 
 type Props = {
   readonly wallet: Wallet
   readonly className?: string
-  readonly size?: number
+  readonly size?: ThemeUICSSProperties["size"]
 }
 
 export const ProviderLogo = ({ wallet, className, size = 32 }: Props) => {
@@ -13,8 +15,7 @@ export const ProviderLogo = ({ wallet, className, size = 32 }: Props) => {
       loading="lazy"
       src={wallet.logo}
       alt={wallet.title}
-      width={size}
-      height={size}
+      sx={{ size }}
     />
   )
 }

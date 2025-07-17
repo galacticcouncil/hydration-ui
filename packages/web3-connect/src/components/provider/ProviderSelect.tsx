@@ -1,34 +1,34 @@
-import { Box, Grid, Stack, Text } from "@galacticcouncil/ui/components"
+import { Grid, Stack, Text } from "@galacticcouncil/ui/components"
+import { useState } from "react"
 import { isNot, prop } from "remeda"
 
+import {
+  AccountFilter,
+  AccountFilterOption,
+} from "@/components/account/AccountFilter"
 import { ProviderButton } from "@/components/provider/ProviderButton"
 import { SProviderButton } from "@/components/provider/ProviderButton.styled"
 import { ProviderExternalButton } from "@/components/provider/ProviderExternalButton"
-import { ProviderIcons } from "@/components/provider/ProviderIcons"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
+import { ProviderLastConnectedButton } from "@/components/provider/ProviderLastConnectedButton"
 import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
+import { useWalletProviders } from "@/hooks/useWalletProviders"
 import {
   COMPATIBLE_WALLET_PROVIDERS,
   useWeb3Connect,
   WalletMode,
 } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
-import { getWalletData, getWallets } from "@/wallets"
+import { getWalletData } from "@/wallets"
 
 export const ProviderSelect = () => {
   const { setPage } = useWeb3ConnectContext()
   const { enable } = useWeb3Enable()
-  const { getConnectedProviders, mode } = useWeb3Connect()
+  const mode = useWeb3Connect((state) => state.mode)
 
-  const providers = getConnectedProviders()
-
-  const wallets = Object.groupBy(getWallets(), (wallet) =>
-    wallet?.installed ? "installed" : "other",
-  )
-
-  const installed = wallets?.installed || []
-  const other = wallets?.other || []
+  const [filter, setFilter] = useState<AccountFilterOption>(WalletMode.Default)
+  const [installed, other] = useWalletProviders(filter)
 
   const installedCompatible = installed.filter(({ provider }) =>
     COMPATIBLE_WALLET_PROVIDERS.includes(provider),
@@ -43,19 +43,14 @@ export const ProviderSelect = () => {
   }
   return (
     <Stack gap={20}>
-      <Box>
-        <Text mb={4}>Installed</Text>
+      <Stack gap={10}>
+        <AccountFilter active={filter} onSetActive={setFilter} />
+        <Text>Installed</Text>
         <Grid columns={[2, 4]} gap={10}>
-          {providers.length > 0 && mode === WalletMode.Default && (
-            <SProviderButton
-              type="button"
+          {mode === WalletMode.Default && (
+            <ProviderLastConnectedButton
               onClick={() => setPage(Web3ConnectModalPage.AccountSelect)}
-            >
-              <ProviderIcons providers={providers.map(prop("type"))} />
-              <Text fs={[12, 14]} sx={{ mt: 8 }} align="center">
-                Last connected
-              </Text>
-            </SProviderButton>
+            />
           )}
           {installedCompatible.map(getWalletData).map((props) => (
             <ProviderInstalledButton key={props.provider} {...props} />
@@ -71,15 +66,15 @@ export const ProviderSelect = () => {
             Connect all
           </SProviderButton>
         )}
-      </Box>
-      <Box>
-        <Text mb={4}>Other</Text>
+      </Stack>
+      <Stack gap={10}>
+        <Text>Other</Text>
         <Grid columns={[2, 4]} gap={10}>
           {other.map(getWalletData).map((props) => (
             <ProviderButton key={props.provider} {...props} />
           ))}
         </Grid>
-      </Box>
+      </Stack>
     </Stack>
   )
 }
