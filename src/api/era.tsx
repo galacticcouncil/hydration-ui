@@ -33,7 +33,6 @@ export const useEra = (
 
     const birth = new BN(blockNumber.toString())
     const period = new BN(DEFAULT_PERIOD)
-
     return {
       birth,
       death: birth.plus(period),
