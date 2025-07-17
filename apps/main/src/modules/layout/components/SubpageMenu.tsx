@@ -24,5 +24,7 @@ export const SubpageMenu = () => {
     [pathname, translations],
   )
 
+  if (subnav.length < 2) return null
+
   return <TabMenu items={subnav} size="large" variant="transparent" />
 }

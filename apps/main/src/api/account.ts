@@ -7,6 +7,7 @@ import { useCallback } from "react"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
@@ -79,7 +80,7 @@ export const useRefetchAccountBalance = () => {
 
 export const useAccountBalance = () => {
   const address = useAccount().account?.address
-  const { papi, isLoaded } = useRpcProvider()
+  const { papi, sdk, isLoaded } = useRpcProvider()
   const setBalance = useAccountData(prop("setBalance"))
 
   return useQuery({
@@ -94,10 +95,21 @@ export const useAccountBalance = () => {
         return null
       }
 
+      const maxReserves = await sdk.api.aave.getMaxWithdrawAll(address)
+
+      const maxReservesMap = new Map(
+        Object.entries(maxReserves).map(([token, amount]) => [token, amount]),
+      )
+
       const balances = balancesRaw.map(([assetId, balance]) => {
-        const free = balance.free
+        const registryId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+        const maxReserve = registryId
+          ? maxReservesMap.get(registryId)
+          : undefined
+
+        const free = maxReserve?.amount ?? balance.free
         const reserved = balance.reserved
-        const total = free + reserved
+        const total = (balance.free > free ? balance.free : free) + reserved
 
         return {
           free,

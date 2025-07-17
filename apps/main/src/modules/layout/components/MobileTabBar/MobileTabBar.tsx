@@ -60,7 +60,7 @@ export const MobileTabBar: FC = () => {
                 <STabBarLabel>{translations[key]?.title}</STabBarLabel>
               </STabBarItem>
             </DropdownMenuTrigger>
-            {children && (
+            {children && children.length > 1 && (
               <DropdownMenuContent fullWidth>
                 {children.map((item) => (
                   <DropdownMenuItem key={item.key} asChild>
