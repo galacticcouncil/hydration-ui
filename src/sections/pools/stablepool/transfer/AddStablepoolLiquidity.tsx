@@ -49,14 +49,11 @@ import { useStableswapPool } from "api/stableswap"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { AddOmnipoolLiquiditySummary } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
-import {
-  useATokens,
-  useHealthFactorChange,
-  useMaxWithdrawAmount,
-} from "api/borrow"
+import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
+import { useATokens } from "sections/lending/hooks/useATokens"
 
 type Props = {
   asset: TAsset

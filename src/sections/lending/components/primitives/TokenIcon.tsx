@@ -1,4 +1,4 @@
-import { useATokens } from "api/borrow"
+import { useATokens } from "sections/lending/hooks/useATokens"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"

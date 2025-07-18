@@ -18,7 +18,7 @@ import {
 } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useATokens } from "api/borrow"
+import { useATokens } from "sections/lending/hooks/useATokens"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()

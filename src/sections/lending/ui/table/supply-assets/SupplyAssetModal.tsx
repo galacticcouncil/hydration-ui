@@ -21,7 +21,7 @@ import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/Supp
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import { useATokens } from "api/borrow"
+import { useATokens } from "sections/lending/hooks/useATokens"
 
 type Props = {
   readonly assetId: string

@@ -24,7 +24,7 @@ import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { setAccountBalances, setIsAccountBalance } from "./deposits"
 import { percentageDifference } from "utils/helpers"
 import { produce } from "immer"
-import { useATokens } from "api/borrow"
+import { useATokens } from "sections/lending/hooks/useATokens"
 
 const ERC20_THRESHOLD = 0.01
 

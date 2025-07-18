@@ -8,7 +8,7 @@ import { getAssetIdFromAddress } from "utils/evm"
 import { SupplyAssetModal } from "./SupplyAssetModal"
 import { Modal } from "components/Modal/Modal"
 import { DialogTitle } from "@radix-ui/react-dialog"
-import { useATokens } from "api/borrow"
+import { useATokens } from "sections/lending/hooks/useATokens"
 
 export type SupplyGigaRowData = Pick<
   ComputedReserveData,

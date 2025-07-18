@@ -20,7 +20,7 @@ import { useShallow } from "hooks/useShallow"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { pick } from "utils/rx"
 import { GDOT_ERC20_ASSET_ID, GETH_ERC20_ASSET_ID } from "utils/constants"
-import { useATokens } from "api/borrow"
+import { useATokens } from "sections/lending/hooks/useATokens"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
