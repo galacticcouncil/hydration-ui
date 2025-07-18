@@ -244,6 +244,7 @@ const getSnowbridgeStatusToPolkadot = async (txHash: string) => {
         query SnowbridgeTransferStatus($hash: String!) {
           transferStatusToPolkadots(
             where: { messageId_eq: $hash, OR: { txHash_eq: $hash } }
+            limit: 10
           ) {
             status
             timestamp
@@ -270,6 +271,7 @@ const getSnowbridgeStatusToEth = async (txHash: string) => {
         query SnowbridgeTransferStatus($hash: String!) {
           transferStatusToEthereums(
             where: { messageId_eq: $hash, OR: { txHash_eq: $hash } }
+            limit: 10
           ) {
             status
             timestamp
@@ -574,13 +576,13 @@ export const useBridgeToast = (toasts: ToastData[]) => {
 
               const { status, messageId } = data.transferStatusToEthereums?.[0]
 
-              pullSnowbridgeToast(status, messageId)
+              if (pullSnowbridgeToast(status, messageId)) return true
             } else {
               const data = await getSnowbridgeStatusToPolkadot(hash)
 
               const { status, messageId } = data.transferStatusToPolkadots?.[0]
 
-              pullSnowbridgeToast(status, messageId)
+              if (pullSnowbridgeToast(status, messageId)) return true
             }
           }
 
