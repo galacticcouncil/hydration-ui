@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useMedia } from "react-use"
 import { theme } from "theme"
@@ -21,13 +21,23 @@ type Props = {
   readonly reserve: ComputedReserveData
 }
 
-export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
+export const SupplyGigaRow: FC<Props> = ({ reserve: givenReserve }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const { getRelatedAToken } = useAssets()
   const [supplyModal, setSupplyModal] = useState("")
 
-  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
-  const aTokenId = getRelatedAToken(assetId)?.id ?? ""
+  const assetId = getAssetIdFromAddress(givenReserve.underlyingAsset)
+  const aToken = getRelatedAToken(assetId)
+  const aTokenId = aToken?.id ?? ""
+
+  const reserve = useMemo(() => {
+    if (!aToken) return givenReserve
+    return {
+      ...givenReserve,
+      name: aToken.name,
+      symbol: aToken.symbol,
+    }
+  }, [aToken, givenReserve])
 
   const onClose = () => setSupplyModal("")
 

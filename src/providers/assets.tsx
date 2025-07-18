@@ -12,7 +12,6 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { ASSETHUB_ID_BLACKLIST } from "api/external/assethub"
-import { ASSET_METADATA_OVERRIDES } from "utils/assets"
 
 const bannedAssets = ["1000042"]
 
@@ -96,26 +95,21 @@ const fallbackAsset: TAsset = {
 }
 
 const getAdjustedAssetProps = (assetRaw: TAssetStored) => {
-  const propsOverride = ASSET_METADATA_OVERRIDES[assetRaw.id]
-
   if (assetRaw.type === "Bond") {
     const bond = assetRaw as TBond
     return {
       iconId: bond.underlyingAssetId,
-      ...propsOverride,
     }
   }
 
   if (assetRaw.meta) {
     return {
       iconId: Object.keys(assetRaw.meta),
-      ...propsOverride,
     }
   }
 
   return {
     iconId: assetRaw.id,
-    ...propsOverride,
   }
 }
 

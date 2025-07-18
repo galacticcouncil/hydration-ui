@@ -21,6 +21,7 @@ import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/Supp
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
+import { HOLLAR_POOLS } from "utils/constants"
 
 type Props = {
   readonly assetId: string
@@ -30,18 +31,36 @@ type Props = {
 export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
 
-  const { getAssetWithFallback, getRelatedAToken } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken, getErc20 } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
     useNewDepositDefaultAssetId(assetId)
 
+  const underlyingAssetId = getErc20(assetId)?.underlyingAssetId
   const aTokenId = getRelatedAToken(assetId)?.id
   const allowedAssets = useNewDepositAssets(
     [assetId].concat(aTokenId ? [aTokenId] : []),
   )
 
   const { page, direction, back, next } = useModalPagination()
+
+  if (underlyingAssetId && HOLLAR_POOLS.includes(underlyingAssetId)) {
+    return (
+      <ModalContents
+        page={page}
+        direction={direction}
+        onBack={back}
+        onClose={onClose}
+        contents={[
+          {
+            title: t("lending.supply.modal.title", { name: asset.name }),
+            content: <div sx={{ color: "white" }}>TODO HOLLAR</div>,
+          },
+        ]}
+      />
+    )
+  }
 
   return isLoading ? (
     <ModalContents
