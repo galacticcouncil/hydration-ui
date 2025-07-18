@@ -24,7 +24,6 @@ import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { setAccountBalances, setIsAccountBalance } from "./deposits"
 import { percentageDifference } from "utils/helpers"
 import { produce } from "immer"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 
 const ERC20_THRESHOLD = 0.01
 
@@ -134,7 +133,8 @@ export function useBalanceSubscription() {
   const { isLoaded, sdk } = useRpcProvider()
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  const { all, erc20, native, getAssetWithFallback, shareTokens } = useAssets()
+  const { all, erc20, getErc20, native, getAssetWithFallback, shareTokens } =
+    useAssets()
 
   const accountAddress = account?.address
   const { client, api } = sdk ?? {}
@@ -275,7 +275,7 @@ export function useBalanceSubscription() {
 
           const adjustedBalances = produce(validBalances, (validBalances) => {
             for (const [assetId, balance] of validBalances.entries()) {
-              const registryId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+              const registryId = getErc20(assetId)?.underlyingAssetId ?? ""
               const maxReserve = maxReservesMap.get(registryId)
 
               if (maxReserve) {
@@ -311,6 +311,7 @@ export function useBalanceSubscription() {
     followedAssetIds,
     erc20AssetIds,
     api,
+    getErc20,
   ])
 
   const getIsPoolPositions = (asset: TAsset, balance: Balance) =>

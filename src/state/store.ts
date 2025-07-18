@@ -180,11 +180,15 @@ export type TShareTokenStored = {
   shareTokenId: string
 }
 
+export type TATokenPairStored = [string, string]
+
 type AssetRegistryStore = {
   assets: Array<TAssetStored>
   shareTokens: Array<TShareTokenStored>
+  aTokenPairs: TATokenPairStored[]
   sync: (assets: TAssetStored[]) => void
   syncShareTokens: (shareTokens: TShareTokenStored[]) => void
+  syncATokenPairs: (pairs: TATokenPairStored[]) => void
 }
 
 export enum IndexedDBStores {
@@ -192,8 +196,10 @@ export enum IndexedDBStores {
   ApiMetadata = "apiMetadata",
 }
 
+const IDB_STORE_VERSION = 3
+
 const db: IDBDatabase | null = await new Promise((resolve) => {
-  const request = indexedDB.open("storage", 2)
+  const request = indexedDB.open("storage", IDB_STORE_VERSION)
 
   request.onsuccess = () => resolve(request.result)
 
@@ -249,28 +255,30 @@ const storage: StateStorage = {
 
     const data = await getItems(storage, IndexedDBStores.Assets)
 
-    const tokens = data.find((e) => e.key === "tokens")?.data ?? []
-    const shareTokens = data.find((e) => e.key === "shareTokens")?.data ?? []
-
     return JSON.stringify({
-      version: 0,
-      state: { assets: tokens, shareTokens },
+      version: IDB_STORE_VERSION,
+      state: Object.fromEntries(
+        data.map((item) => [item.key, item.data ?? []]),
+      ),
     })
   },
   setItem: async (_, value) => {
-    const parsedState = JSON.parse(value)
-    const storage = await db
+    try {
+      const parsedState = JSON.parse(value)
+      const storage = await db
 
-    if (storage) {
-      setItems(storage, IndexedDBStores.Assets, {
-        key: "tokens",
-        data: parsedState.state.assets,
-      })
+      const keys = Object.keys(parsedState.state)
 
-      setItems(storage, IndexedDBStores.Assets, {
-        key: "shareTokens",
-        data: parsedState.state.shareTokens,
-      })
+      if (storage) {
+        for (const key of keys) {
+          setItems(storage, IndexedDBStores.Assets, {
+            key,
+            data: parsedState.state[key],
+          })
+        }
+      }
+    } catch (error) {
+      console.error("Error setting item in storage:", error)
     }
   },
   removeItem: () => {},
@@ -281,6 +289,7 @@ export const useAssetRegistry = create<AssetRegistryStore>()(
     (set, get) => ({
       assets: [],
       shareTokens: [],
+      aTokenPairs: [],
       sync(assets) {
         const storedAssets = get().assets
 
@@ -300,6 +309,17 @@ export const useAssetRegistry = create<AssetRegistryStore>()(
         if (!areShareTokensEqual) {
           set({
             shareTokens,
+          })
+        }
+      },
+      syncATokenPairs(pairs) {
+        const storedPairs = get().aTokenPairs
+
+        const arePairsEqual = arraysEqual(storedPairs, pairs)
+
+        if (!arePairsEqual) {
+          set({
+            aTokenPairs: pairs,
           })
         }
       },

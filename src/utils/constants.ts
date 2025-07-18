@@ -62,6 +62,18 @@ export const DOT_ASSET_ID = "5"
 export const ETH_ASSET_ID = "34"
 export const WSTETH_ASSET_ID = "1000809"
 
+export const HUSDC_ASSET_ID = "103"
+export const HUSDT_ASSET_ID = "104"
+export const HUSDS_ASSET_ID = "105"
+export const HUSDE_ASSET_ID = "106"
+
+export const HOLLAR_POOLS = [
+  HUSDC_ASSET_ID,
+  HUSDT_ASSET_ID,
+  HUSDS_ASSET_ID,
+  HUSDE_ASSET_ID,
+]
+
 export const STRATEGY_ASSETS_BLACKLIST = [
   GDOT_STABLESWAP_ASSET_ID,
   GDOT_ERC20_ASSET_ID,

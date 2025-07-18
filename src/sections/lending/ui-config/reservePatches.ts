@@ -1,4 +1,12 @@
-import { unPrefixSymbol } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import {
+  ComputedReserveData,
+  unPrefixSymbol,
+} from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import {
+  GDOT_STABLESWAP_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
+} from "utils/constants"
+import { getAddressFromAssetId } from "utils/evm"
 
 export interface IconSymbolInterface {
   underlyingAsset: string
@@ -12,17 +20,36 @@ interface IconMapInterface {
   symbol?: string
 }
 
-const underlyingAssetMap: Record<string, IconMapInterface> = {
-  "0x00000000000000000000000000000001000002b2": {
+const underlyingAssetMap: Record<string, IconMapInterface> = {}
+
+const gigaReserveAssetMap: Record<string, IconMapInterface> = {
+  [getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)]: {
     name: "GIGADOT",
     symbol: "GDOT",
     iconSymbol: "GDOT",
   },
-  "0x0000000000000000000000000000000100001068": {
+  [getAddressFromAssetId(GETH_STABLESWAP_ASSET_ID)]: {
     name: "GIGAETH",
     symbol: "GETH",
     iconSymbol: "GETH",
   },
+}
+
+export const patchGigaReserveSymbolAndName = ({
+  symbol,
+  name,
+  underlyingAsset,
+}: ComputedReserveData): IconMapInterface => {
+  const lowerUnderlyingAsset = underlyingAsset.toLowerCase()
+  if (gigaReserveAssetMap.hasOwnProperty(lowerUnderlyingAsset)) {
+    return gigaReserveAssetMap[lowerUnderlyingAsset]
+  }
+
+  return {
+    name,
+    symbol,
+    iconSymbol: symbol,
+  }
 }
 
 export function fetchIconSymbolAndName({

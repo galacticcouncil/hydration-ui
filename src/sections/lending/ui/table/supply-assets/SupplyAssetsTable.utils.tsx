@@ -225,13 +225,13 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
         gigaReserves: ComputedReserveData[]
       }>(
         (acc, reserve: ComputedReserveData) => {
+          const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
+
           if (MONEY_MARKET_SUPPLY_BLACKLIST.includes(reserve.underlyingAsset)) {
             acc.gigaReserves.push(reserve)
 
-            return acc
+            if (walletBalance === "0") return acc
           }
-
-          const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
 
           const walletBalanceUSD =
             walletBalances[reserve.underlyingAsset]?.amountUSD

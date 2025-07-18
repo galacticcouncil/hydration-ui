@@ -1,14 +1,14 @@
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { SupplyGigadotMobileRow } from "sections/lending/ui/table/supply-assets/SupplyGigaMobileRow"
 import { SupplyGigadotDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigaDesktopRow"
 import { getAssetIdFromAddress } from "utils/evm"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { SupplyAssetModal } from "./SupplyAssetModal"
 import { Modal } from "components/Modal/Modal"
 import { DialogTitle } from "@radix-ui/react-dialog"
+import { useAssets } from "providers/assets"
 
 export type SupplyGigaRowData = Pick<
   ComputedReserveData,
@@ -21,14 +21,23 @@ type Props = {
   readonly reserve: ComputedReserveData
 }
 
-export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
+export const SupplyGigaRow: FC<Props> = ({ reserve: givenReserve }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
+  const { getRelatedAToken } = useAssets()
   const [supplyModal, setSupplyModal] = useState("")
 
-  const assetId =
-    REVERSE_A_TOKEN_UNDERLYING_ID_MAP[
-      getAssetIdFromAddress(reserve.underlyingAsset)
-    ]
+  const assetId = getAssetIdFromAddress(givenReserve.underlyingAsset)
+  const aToken = getRelatedAToken(assetId)
+  const aTokenId = aToken?.id ?? ""
+
+  const reserve = useMemo(() => {
+    if (!aToken) return givenReserve
+    return {
+      ...givenReserve,
+      name: aToken.name,
+      symbol: aToken.symbol,
+    }
+  }, [aToken, givenReserve])
 
   const onClose = () => setSupplyModal("")
 
@@ -37,18 +46,18 @@ export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
       {isDesktop ? (
         <SupplyGigadotDesktopRow
           reserve={reserve}
-          onOpenSupply={() => setSupplyModal(assetId)}
+          onOpenSupply={() => setSupplyModal(aTokenId)}
         />
       ) : (
         <SupplyGigadotMobileRow
           reserve={reserve}
-          onOpenSupply={() => setSupplyModal(assetId)}
+          onOpenSupply={() => setSupplyModal(aTokenId)}
         />
       )}
       <Modal open={!!supplyModal} onClose={onClose}>
         <DialogTitle />
         {!!supplyModal && (
-          <SupplyAssetModal assetId={assetId} onClose={onClose} />
+          <SupplyAssetModal assetId={aTokenId} onClose={onClose} />
         )}
       </Modal>
     </>

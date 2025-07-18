@@ -50,11 +50,12 @@ export const useSubmitNewDepositForm = (assetId: string) => {
 
   const underlyingReserve = useMemo(() => {
     const erc20 = getErc20(assetId)
-    if (!erc20) return undefined
+    const underlyingAssetId = erc20?.underlyingAssetId
+
+    if (!underlyingAssetId) return undefined
 
     return reserves.find(
-      (r) =>
-        r.underlyingAsset === getAddressFromAssetId(erc20.underlyingAssetId),
+      (r) => r.underlyingAsset === getAddressFromAssetId(underlyingAssetId),
     )
   }, [assetId, getErc20, reserves])
 
