@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { getSupplyGigaRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigaRow.styled"
-import { GigaAPY } from "sections/pools/stablepool/components/GigaIncentives"
+import { MoneyMarketAPY } from "sections/pools/stablepool/components/GigaIncentives"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getAssetIdFromAddress } from "utils/evm"
 
@@ -37,7 +37,7 @@ export const SupplyGigadotMobileRow: FC<Props> = ({
               textAlign: "center",
             },
           },
-          cell: () => <GigaAPY type="supply" assetId={assetId} />,
+          cell: () => <MoneyMarketAPY type="supply" assetId={assetId} />,
         }),
       ],
       [t, assetId],

@@ -39,8 +39,6 @@ export const REFETCH_INTERVAL = 60000
 
 export const STABLEPOOL_TOKEN_DECIMALS = 18
 
-export const SLIPPAGE_LIMIT = new BN(3)
-
 //decimals
 export const TRILL = 12
 export const QUINTILL = 18
@@ -61,6 +59,7 @@ export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
 export const ETH_ASSET_ID = "34"
 export const WSTETH_ASSET_ID = "1000809"
+export const USDT_POOL_ASSET_ID = "103"
 
 export const STRATEGY_ASSETS_BLACKLIST = [
   GDOT_STABLESWAP_ASSET_ID,

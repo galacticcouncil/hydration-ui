@@ -168,12 +168,11 @@ export const AssetInput = <T extends Asset = Asset>({
           }}
         >
           {!onSelect || assets.length === 1 ? (
-            <div sx={{ flex: "row", align: "center" }}>
+            <div sx={{ flex: "row", align: "center", gap: 8 }}>
               <TokenIcon
                 aToken={asset.aToken}
                 address={asset.address}
                 size={28}
-                sx={{ mr: 8 }}
               />
               <Text font="GeistSemiBold">{asset.symbol}</Text>
             </div>

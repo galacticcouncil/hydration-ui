@@ -17,6 +17,7 @@ import { TLPData } from "utils/omnipool"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useStableswapPool } from "api/stableswap"
 import { BN_MILL } from "utils/constants"
+import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -24,6 +25,7 @@ enum RemoveStablepoolLiquidityPage {
   WAIT,
   REMOVE_FROM_STABLEPOOL,
   ASSETS,
+  LIMIT_LIQUIDITY,
 }
 
 type RemoveStableSwapAssetProps = {
@@ -74,6 +76,10 @@ export const RemoveLiquidityModal = ({
       return paginateTo(RemoveStablepoolLiquidityPage.REMOVE_FROM_OMNIPOOL)
     }
 
+    if (page === RemoveStablepoolLiquidityPage.LIMIT_LIQUIDITY) {
+      return paginateTo(RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL)
+    }
+
     paginateTo(page - 1)
     setCurrentStep((step) => step - 1)
   }
@@ -86,7 +92,10 @@ export const RemoveLiquidityModal = ({
   ]
 
   const canGoBack =
-    isRemovingOmnipoolPosition || page === RemoveStablepoolLiquidityPage.ASSETS
+    isRemovingOmnipoolPosition ||
+    page === RemoveStablepoolLiquidityPage.ASSETS ||
+    page === RemoveStablepoolLiquidityPage.LIMIT_LIQUIDITY
+
   const stablepoolFee = BN(data?.fee.toString() ?? 0).div(BN_MILL)
 
   if (!assetId || !assets.length) return null
@@ -228,6 +237,9 @@ export const RemoveLiquidityModal = ({
                 }
                 splitRemove={splitRemove}
                 setSplitRemove={setSplitRemove}
+                setLiquidityLimit={() =>
+                  paginateTo(RemoveStablepoolLiquidityPage.LIMIT_LIQUIDITY)
+                }
               />
             ),
           },
@@ -243,6 +255,20 @@ export const RemoveLiquidityModal = ({
                   setAssetId(asset.id)
                   handleBack()
                 }}
+              />
+            ),
+          },
+          {
+            title: t("liquidity.add.modal.limit.title"),
+            noPadding: true,
+            headerVariant: "GeistMono",
+            content: (
+              <LimitModal
+                onConfirm={() =>
+                  paginateTo(
+                    RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
+                  )
+                }
               />
             ),
           },

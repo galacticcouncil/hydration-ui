@@ -11,11 +11,13 @@ const chains = Array.from(chainsMap.values())
 type DualAssetIconsProps = {
   size?: ResponsiveValue<number>
   icons: Array<IconProps>
+  isATokenPool?: boolean
 }
 
 export const MultipleIcons: FC<DualAssetIconsProps> = ({
   icons,
   size = 28,
+  isATokenPool,
 }) => {
   const { getAssets } = useAssets()
 
@@ -39,6 +41,7 @@ export const MultipleIcons: FC<DualAssetIconsProps> = ({
 
   return (
     <IconsWrapper
+      {...(isATokenPool && { "data-atokens": icons.length })}
       size={size}
       maskConfig={maskConfig}
       sx={{ flexDirection: "row" }}

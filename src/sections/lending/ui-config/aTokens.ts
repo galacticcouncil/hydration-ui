@@ -16,12 +16,14 @@ export const A_TOKEN_UNDERLYING_ID_MAP_TESTNET: { [key: string]: string } = {
   "1005": "15",
   // atBTC
   "1006": "1000765",
-  //GDOT
+  // GDOT
   "690": "69",
-  //GETH
+  // GETH
   "420": "4200",
-  //aETH
+  // aETH
   "1007": "34",
+  // a3pool
+  "1008": "103",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
@@ -39,10 +41,12 @@ export const A_TOKEN_UNDERLYING_ID_MAP_MAINNET: { [key: string]: string } = {
   "1006": "1000765",
   // GDOT
   "69": "690",
-  //GETH
+  // GETH
   "420": "4200",
-  //aETH
+  // aETH
   "1007": "34",
+  // a3pool
+  "1008": "103",
 }
 
 export const A_TOKEN_UNDERLYING_ID_MAP =
