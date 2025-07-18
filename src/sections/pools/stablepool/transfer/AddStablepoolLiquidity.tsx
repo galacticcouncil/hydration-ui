@@ -54,6 +54,7 @@ import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
+import { Switch } from "components/Switch/Switch"
 
 type Props = {
   asset: TAsset
@@ -86,6 +87,7 @@ export const AddStablepoolLiquidity = ({
   const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
   const { addLiquidityLimit } = useLiquidityLimit()
+  const [splitRemove, setSplitRemove] = useState(true)
 
   const { account } = useAccount()
 
@@ -433,6 +435,31 @@ export const AddStablepoolLiquidity = ({
       }}
     >
       <div sx={{ flex: "column" }}>
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "center",
+            mx: -24,
+            mb: 16,
+            px: 24,
+            py: 8,
+          }}
+          css={{
+            borderTop: "1px solid #1C2038",
+            borderBottom: "1px solid #1C2038",
+          }}
+        >
+          <Text fs={14} color="brightBlue300">
+            {t("liquidity.add.modal.split")}
+          </Text>
+          <Switch
+            value={splitRemove}
+            onCheckedChange={setSplitRemove}
+            label={t("yes")}
+            name={t("liquidity.add.modal.split")}
+          />
+        </div>
         <Controller
           name="value"
           control={form.control}
