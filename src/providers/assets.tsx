@@ -12,22 +12,25 @@ import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.uti
 import { HUB_ID, NATIVE_ASSET_ID } from "utils/api"
 import { ExternalAssetCursor } from "@galacticcouncil/apps"
 import { ASSETHUB_ID_BLACKLIST } from "api/external/assethub"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { ASSET_METADATA_OVERRIDES } from "utils/assets"
 
 const bannedAssets = ["1000042"]
 
-type TAssetsContext = {
+type TAssetsState = {
   all: Map<string, TAsset>
+  tradable: TAsset[]
   tokens: TAsset[]
   stableswap: TAsset[]
   bonds: TBond[]
   external: TExternal[]
   externalInvalid: TExternal[]
-  erc20: TAsset[]
-  tradable: TAsset[]
+  erc20: TErc20[]
   shareTokens: TShareToken[]
   native: TAsset
   hub: TAsset
+}
+
+type TAssetsContext = TAssetsState & {
   getAsset: (id: string) => TAsset | TShareToken | TErc20 | undefined
   getShareToken: (id: string) => TShareToken | undefined
   getShareTokens: (ids: string[]) => (TShareToken | undefined)[]
@@ -37,6 +40,7 @@ type TAssetsContext = {
   getExternalByExternalId: (externalId: string) => TExternal | undefined
   getShareTokenByAddress: (poolAddress: string) => TShareToken | undefined
   getErc20: (id: string) => TErc20 | undefined
+  getRelatedAToken: (id: string) => TErc20 | undefined
   isExternal: (asset: TAsset) => asset is TExternal
   isBond: (asset: TAsset) => asset is TBond
   isErc20: (asset: TAsset) => asset is TErc20
@@ -92,21 +96,26 @@ const fallbackAsset: TAsset = {
 }
 
 const getAdjustedAssetProps = (assetRaw: TAssetStored) => {
+  const propsOverride = ASSET_METADATA_OVERRIDES[assetRaw.id]
+
   if (assetRaw.type === "Bond") {
     const bond = assetRaw as TBond
     return {
       iconId: bond.underlyingAssetId,
+      ...propsOverride,
     }
   }
 
   if (assetRaw.meta) {
     return {
       iconId: Object.keys(assetRaw.meta),
+      ...propsOverride,
     }
   }
 
   return {
     iconId: assetRaw.id,
+    ...propsOverride,
   }
 }
 
@@ -115,7 +124,7 @@ export type TAsset = ReturnType<typeof getFullAsset> & {
 }
 
 export type TErc20 = TAsset & {
-  underlyingAssetId: string
+  underlyingAssetId?: string
 }
 
 export type TBond = TAsset & Bond
@@ -128,13 +137,28 @@ export type TShareToken = TAsset & {
 }
 
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
-  const { assets, shareTokens: shareTokensRaw } = useAssetRegistry()
+  const {
+    assets,
+    shareTokens: shareTokensRaw,
+    aTokenPairs,
+  } = useAssetRegistry()
   const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
   const degenMode = useSettingsStore.getState().degenMode
   const { tokens: externalTokens } =
     degenMode && ExternalAssetCursor.deref()
       ? ExternalAssetCursor.deref().state
       : useUserExternalTokenStore.getState()
+
+  const { aTokenMap, aTokenReverseMap } = useMemo(() => {
+    const aTokenMap = new Map(aTokenPairs)
+    const aTokenReverseMap = new Map(
+      aTokenPairs.map(([aToken, underlying]) => [underlying, aToken]),
+    )
+    return {
+      aTokenMap,
+      aTokenReverseMap,
+    }
+  }, [aTokenPairs])
 
   const {
     all,
@@ -148,18 +172,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     hub,
     tokens,
   } = useMemo(() => {
-    return assets.reduce<{
-      all: Map<string, TAsset>
-      tradable: TAsset[]
-      tokens: TAsset[]
-      stableswap: TAsset[]
-      bonds: TBond[]
-      external: TExternal[]
-      externalInvalid: TExternal[]
-      erc20: TErc20[]
-      native: TAsset
-      hub: TAsset
-    }>(
+    return assets.reduce<Omit<TAssetsState, "shareTokens">>(
       (acc, assetRaw) => {
         if (bannedAssets.includes(assetRaw.id)) return acc
 
@@ -208,7 +221,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         } else if (asset.isErc20) {
           acc.erc20.push({
             ...asset,
-            underlyingAssetId: A_TOKEN_UNDERLYING_ID_MAP[asset.id],
+            underlyingAssetId: aTokenMap.get(asset.id),
           })
         }
 
@@ -227,7 +240,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         hub: {} as TAsset,
       },
     )
-  }, [assets, dataEnv, externalTokens])
+  }, [aTokenMap, assets, dataEnv, externalTokens])
 
   const isExternal = (asset: TAsset): asset is TExternal => asset.isExternal
   const isBond = (asset: TAsset): asset is TBond => asset.isBond
@@ -323,6 +336,15 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     [erc20],
   )
 
+  const getRelatedAToken = useCallback(
+    (id: string) => {
+      const aTokenId = aTokenReverseMap.get(id)
+      if (!aTokenId) return undefined
+      return getErc20(aTokenId)
+    },
+    [aTokenReverseMap, getErc20],
+  )
+
   return (
     <AssetsContext.Provider
       value={{
@@ -346,6 +368,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         getExternalByExternalId,
         getShareTokenByAddress,
         getErc20,
+        getRelatedAToken,
         isExternal,
         isBond,
         isErc20,

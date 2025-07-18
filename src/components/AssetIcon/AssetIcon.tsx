@@ -57,30 +57,52 @@ export const MultipleAssetLogo = ({
   iconId: string | string[] | undefined
   size?: ResponsiveValue<number>
 }) => {
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getErc20 } = useAssets()
   if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
-  const allIconIds = Array.isArray(iconId)
-    ? iconId
+
+  const underlyingAssetId =
+    typeof iconId === "string" &&
+    !A_TOKEN_HIGHLIGHT_RING_BLACKLIST.includes(iconId)
+      ? getErc20(iconId)?.underlyingAssetId
+      : undefined
+
+  const underlyingAsset = underlyingAssetId
+    ? getAssetWithFallback(underlyingAssetId)
+    : undefined
+
+  const isATokenPool = !!underlyingAsset?.isStableSwap
+  const icons = isATokenPool ? underlyingAsset?.iconId : iconId
+
+  const allIconIds = Array.isArray(icons)
+    ? icons
         .map((id) => {
           const { iconId } = getAssetWithFallback(id)
 
           return iconId
         })
         .flat()
-    : iconId
+    : icons
+
   return typeof allIconIds === "string" ? (
     <Icon size={size} icon={<AssetLogo id={allIconIds} />} />
   ) : (
     <MultipleIcons
+      isATokenPool={isATokenPool}
       size={size}
       icons={allIconIds.map((id) => ({
-        icon: <AssetLogo key={id} id={id} />,
+        icon: <AssetLogo key={id} id={id} isATokenPool={isATokenPool} />,
       }))}
     />
   )
 }
 
-export const AssetLogo = ({ id }: { id?: string }) => {
+export const AssetLogo = ({
+  id,
+  isATokenPool,
+}: {
+  id?: string
+  isATokenPool?: boolean
+}) => {
   const { t } = useTranslation()
   const { getAsset, getErc20, isErc20 } = useAssets()
   const { getExternalAssetMetadata, isInitialized } = useExternalAssetsMetadata(
@@ -149,6 +171,15 @@ export const AssetLogo = ({ id }: { id?: string }) => {
       ? details.underlyingAssetId
       : undefined
 
+    const isAToken =
+      !!underlyingAssetId &&
+      !A_TOKEN_HIGHLIGHT_RING_BLACKLIST.includes(details.id)
+
+    const decoration = (() => {
+      if (isATokenPool) return "atoken-pool"
+      if (isAToken) return "atoken"
+    })()
+
     const ethereumNetworkEntry = findNestedKey(details.location, "ethereum")
 
     if (ethereumNetworkEntry) {
@@ -173,6 +204,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
           asset={ethereumAssetId}
           chain={ethereumChain?.chainId}
           chainOrigin={ethereumChain?.chainId}
+          decoration={decoration}
         >
           {badgeVariant && (
             <UigcAssetBadge
@@ -195,10 +227,7 @@ export const AssetLogo = ({ id }: { id?: string }) => {
           el && el.setAttribute("fit", "")
         }}
         ecosystem="polkadot"
-        isAToken={
-          !!underlyingAssetId &&
-          !A_TOKEN_HIGHLIGHT_RING_BLACKLIST.includes(details.id)
-        }
+        decoration={decoration}
         asset={underlyingAssetId ?? details.id}
         chain={HYDRADX_PARACHAIN_ID.toString()}
         chainOrigin={details.parachainId}
