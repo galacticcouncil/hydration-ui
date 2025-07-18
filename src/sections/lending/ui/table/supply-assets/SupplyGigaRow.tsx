@@ -8,7 +8,7 @@ import { getAssetIdFromAddress } from "utils/evm"
 import { SupplyAssetModal } from "./SupplyAssetModal"
 import { Modal } from "components/Modal/Modal"
 import { DialogTitle } from "@radix-ui/react-dialog"
-import { useATokens } from "sections/lending/hooks/useATokens"
+import { useAssets } from "providers/assets"
 
 export type SupplyGigaRowData = Pick<
   ComputedReserveData,
@@ -23,11 +23,11 @@ type Props = {
 
 export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
-  const { aTokenReverseMap } = useATokens()
+  const { getRelatedAToken } = useAssets()
   const [supplyModal, setSupplyModal] = useState("")
 
-  const assetId =
-    aTokenReverseMap.get(getAssetIdFromAddress(reserve.underlyingAsset)) ?? ""
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
+  const aTokenId = getRelatedAToken(assetId)?.id ?? ""
 
   const onClose = () => setSupplyModal("")
 
@@ -36,18 +36,18 @@ export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
       {isDesktop ? (
         <SupplyGigadotDesktopRow
           reserve={reserve}
-          onOpenSupply={() => setSupplyModal(assetId)}
+          onOpenSupply={() => setSupplyModal(aTokenId)}
         />
       ) : (
         <SupplyGigadotMobileRow
           reserve={reserve}
-          onOpenSupply={() => setSupplyModal(assetId)}
+          onOpenSupply={() => setSupplyModal(aTokenId)}
         />
       )}
       <Modal open={!!supplyModal} onClose={onClose}>
         <DialogTitle />
         {!!supplyModal && (
-          <SupplyAssetModal assetId={assetId} onClose={onClose} />
+          <SupplyAssetModal assetId={aTokenId} onClose={onClose} />
         )}
       </Modal>
     </>

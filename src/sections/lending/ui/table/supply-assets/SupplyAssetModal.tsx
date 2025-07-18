@@ -21,7 +21,6 @@ import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/Supp
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import { useATokens } from "sections/lending/hooks/useATokens"
 
 type Props = {
   readonly assetId: string
@@ -30,15 +29,14 @@ type Props = {
 
 export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
-  const { aTokenMap } = useATokens()
 
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken } = useAssets()
   const asset = getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
     useNewDepositDefaultAssetId(assetId)
 
-  const aTokenId = aTokenMap.get(assetId)
+  const aTokenId = getRelatedAToken(assetId)?.id
   const allowedAssets = useNewDepositAssets(
     [assetId].concat(aTokenId ? [aTokenId] : []),
   )

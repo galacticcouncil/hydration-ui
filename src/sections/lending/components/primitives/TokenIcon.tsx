@@ -1,9 +1,9 @@
-import { useATokens } from "sections/lending/hooks/useATokens"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Icon } from "components/Icon/Icon"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { GHO_ASSET_ID } from "sections/lending/utils/ghoUtilities"
 import { getAssetIdFromAddress } from "utils/evm"
+import { useAssets } from "providers/assets"
 
 interface TokenIconProps {
   address: string
@@ -19,7 +19,7 @@ export function TokenIcon({
   ...rest
 }: TokenIconProps) {
   const { currentMarketData } = useProtocolDataContext()
-  const { aTokenReverseMap } = useATokens()
+  const { getRelatedAToken } = useAssets()
 
   const isGho =
     currentMarketData.addresses.GHO_TOKEN_ADDRESS?.toLowerCase() ===
@@ -30,7 +30,7 @@ export function TokenIcon({
   return (
     <Icon
       size={size}
-      icon={<AssetLogo id={aToken ? aTokenReverseMap.get(assetId) : assetId} />}
+      icon={<AssetLogo id={aToken ? getRelatedAToken(assetId)?.id : assetId} />}
       {...rest}
     />
   )

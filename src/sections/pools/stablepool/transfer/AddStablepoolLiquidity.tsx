@@ -53,7 +53,6 @@ import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
-import { useATokens } from "sections/lending/hooks/useATokens"
 
 type Props = {
   asset: TAsset
@@ -604,10 +603,9 @@ const GigaDotSummary = ({
   poolId: string
 }) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
-  const { aTokenReverseMap } = useATokens()
+  const { getAssetWithFallback, getRelatedAToken } = useAssets()
 
-  const aTokenId = aTokenReverseMap.get(poolId)
+  const aTokenId = getRelatedAToken(poolId)?.id
 
   const meta = getAssetWithFallback(aTokenId ?? "")
   const { data } = useSpotPrice(aTokenId, selectedAsset.id)

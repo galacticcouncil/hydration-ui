@@ -18,11 +18,11 @@ import {
 } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useATokens } from "sections/lending/hooks/useATokens"
+import { useAssets } from "providers/assets"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
-  const { aTokenReverseMap } = useATokens()
+  const { getRelatedAToken } = useAssets()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
@@ -30,7 +30,7 @@ export const WithdrawModal = () => {
 
   const assetId = getAssetIdFromAddress(args.underlyingAsset)
 
-  const aTokenId = aTokenReverseMap.get(assetId)
+  const aTokenId = getRelatedAToken(assetId)?.id
 
   const isGigaAsset =
     assetId === GDOT_STABLESWAP_ASSET_ID || assetId === GETH_STABLESWAP_ASSET_ID
