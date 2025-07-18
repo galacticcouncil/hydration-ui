@@ -29,6 +29,7 @@ export const CurrentDepositClaimReward: React.FC<
         isWrongNetwork: false,
         blocked: false,
         selectedReward: reward,
+        claimableUsd: reward.balanceUsd,
       })
     },
     deps: [reward],

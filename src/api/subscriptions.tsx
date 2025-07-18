@@ -23,6 +23,8 @@ import { TBalance } from "./balances"
 import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { setAccountBalances, setIsAccountBalance } from "./deposits"
 import { percentageDifference } from "utils/helpers"
+import { produce } from "immer"
+import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 
 const ERC20_THRESHOLD = 0.01
 
@@ -135,7 +137,7 @@ export function useBalanceSubscription() {
   const { all, erc20, native, getAssetWithFallback, shareTokens } = useAssets()
 
   const accountAddress = account?.address
-  const { client } = sdk ?? {}
+  const { client, api } = sdk ?? {}
   const { balanceV2 } = client ?? {}
 
   const {
@@ -232,8 +234,8 @@ export function useBalanceSubscription() {
     const subscribeErc20Balance = async () => {
       unsubErcBalance = await balanceV2.subscribeErc20Balance(
         accountAddress,
-        (balances) => {
-          const validBalances = new Map([])
+        async (balances) => {
+          const validBalances = new Map<string, Balance>([])
 
           let shouldSync = false
 
@@ -258,12 +260,34 @@ export function useBalanceSubscription() {
             }
           }
 
-          if (shouldSync || !validBalances.size) {
-            queryClient.setQueryData(
-              QUERY_KEYS.accountErc20Balance,
-              validBalances,
-            )
+          if (!shouldSync && validBalances.size) {
+            return
           }
+
+          const maxReserves = await api.aave.getMaxWithdrawAll(accountAddress)
+
+          const maxReservesMap = new Map(
+            Object.entries(maxReserves).map(([token, amount]) => [
+              token,
+              amount,
+            ]),
+          )
+
+          const adjustedBalances = produce(validBalances, (validBalances) => {
+            for (const [assetId, balance] of validBalances.entries()) {
+              const registryId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+              const maxReserve = maxReservesMap.get(registryId)
+
+              if (maxReserve) {
+                balance.transferable = maxReserve.amount.toString()
+              }
+            }
+          })
+
+          queryClient.setQueryData(
+            QUERY_KEYS.accountErc20Balance,
+            adjustedBalances,
+          )
         },
         erc20AssetIds,
       )
@@ -286,6 +310,7 @@ export function useBalanceSubscription() {
     isLoaded,
     followedAssetIds,
     erc20AssetIds,
+    api,
   ])
 
   const getIsPoolPositions = (asset: TAsset, balance: Balance) =>

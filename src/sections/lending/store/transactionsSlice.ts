@@ -4,6 +4,7 @@ import { CustomMarket } from "sections/lending/ui-config/marketsConfig"
 import { StateCreator } from "zustand"
 
 import { RootStore } from "./root"
+import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
 
 export type Transactions = {
   [chainId: number]: {
@@ -12,7 +13,7 @@ export type Transactions = {
 }
 
 export type TransactionDetails = {
-  action?: ProtocolAction | string
+  action?: ProtocolAction | ExtendedProtocolAction
   txState?: TransactionState
   asset?: string
   amount?: string
