@@ -28,7 +28,7 @@ export const ProviderSelect = () => {
   const mode = useWeb3Connect((state) => state.mode)
 
   const [filter, setFilter] = useState<AccountFilterOption>(WalletMode.Default)
-  const [installed, other] = useWalletProviders(filter)
+  const { installed, other } = useWalletProviders(filter)
 
   const installedCompatible = installed.filter(({ provider }) =>
     COMPATIBLE_WALLET_PROVIDERS.includes(provider),

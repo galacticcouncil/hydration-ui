@@ -22,9 +22,9 @@ const getImgSize = (count: number) => {
 
 const getFilteredWallets = (providers: WalletProviderType[]) => {
   const maxVisible =
-    providers.length === DISPLAY_THRESHOLD
-      ? DISPLAY_THRESHOLD
-      : DISPLAY_THRESHOLD - 1
+    providers.length > DISPLAY_THRESHOLD
+      ? DISPLAY_THRESHOLD - 1 // reserve one slot for an overflow indicator
+      : DISPLAY_THRESHOLD
   return reverse(providers)
     .slice(0, maxVisible)
     .map(getWallet)
@@ -34,7 +34,7 @@ export const ProviderIcons: React.FC<ProviderIconsProps> = ({
   providers = [],
 }) => {
   const wallets = getFilteredWallets(providers)
-  const remainingCount = Math.max(0, providers.length - wallets.length)
+  const overflowCount = Math.max(0, providers.length - wallets.length)
 
   return (
     <SContainer>
@@ -47,12 +47,12 @@ export const ProviderIcons: React.FC<ProviderIconsProps> = ({
           <ProviderLogo wallet={wallet} size="100%" />
         </SWalletBox>
       ))}
-      {remainingCount > 0 && (
+      {overflowCount > 0 && (
         <SWalletBox
           bg={getToken("buttons.primary.low.rest")}
           size={getImgSize(providers.length)}
         >
-          +{remainingCount}
+          +{overflowCount}
         </SWalletBox>
       )}
     </SContainer>

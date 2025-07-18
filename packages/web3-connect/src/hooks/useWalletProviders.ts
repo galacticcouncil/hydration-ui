@@ -11,9 +11,14 @@ import { PROVIDERS_BY_WALLET_MODE } from "@/hooks/useWeb3Connect"
 import { Wallet } from "@/types/wallet"
 import { getWallets } from "@/wallets"
 
+type UseWalletProvidersResult = {
+  installed: Wallet[]
+  other: Wallet[]
+}
+
 export const useWalletProviders = (
   filter: AccountFilterOption,
-): [Wallet[], Wallet[]] => {
+): UseWalletProvidersResult => {
   const { isDesktop } = useBreakpoints()
 
   return useMemo(() => {
@@ -39,9 +44,9 @@ export const useWalletProviders = (
       wallet?.installed ? "installed" : "other",
     )
 
-    const installed = groups?.installed || []
-    const other = groups?.other || []
-
-    return [installed, other]
+    return {
+      installed: groups?.installed || [],
+      other: groups?.other || [],
+    }
   }, [isDesktop, filter])
 }
