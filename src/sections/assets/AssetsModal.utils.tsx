@@ -1,8 +1,6 @@
-import { u32 } from "@polkadot/types"
 import { Modal } from "components/Modal/Modal"
 import { useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { Maybe } from "utils/helpers"
 import { AssetsModalContent } from "./AssetsModal"
 import { TAsset, TBond, useAssets } from "providers/assets"
 import BN from "bignumber.js"
@@ -12,7 +10,7 @@ import { useAssetsPrice } from "state/displayPrice"
 
 interface useAssetsModalProps {
   onSelect?: (asset: NonNullable<TAsset>) => void
-  allowedAssets?: Maybe<u32 | string>[]
+  allowedAssets?: string[]
   title?: string
   hideInactiveAssets?: boolean
   allAssets?: boolean
@@ -99,7 +97,7 @@ const getAssetBalances = (
 
 const getValidTokens = (
   assets: TAssetSelector[],
-  allowedAssets?: Maybe<u32 | string>[],
+  allowedAssets?: string[],
   search?: string,
 ) => {
   return assets.reduce<{
@@ -137,12 +135,14 @@ export const useAssetsData = ({
   withBonds,
   allAssets,
   allowedAssets,
+  displayZeroBalance,
 }: {
   search?: string
   withExternal?: boolean
   withBonds?: boolean
   allAssets?: boolean
-  allowedAssets?: Maybe<u32 | string>[]
+  allowedAssets?: string[]
+  displayZeroBalance?: boolean
 }) => {
   const {
     external,
@@ -151,8 +151,10 @@ export const useAssetsData = ({
     isBond,
     tokens: tokenAssets,
     erc20,
+    getAssetWithFallback,
   } = useAssets()
   const { data } = useAccountBalances()
+  const { accountAssetsMap } = data ?? {}
 
   const {
     tokensWithBalance,
@@ -165,8 +167,8 @@ export const useAssetsData = ({
     const tokensWithBalanceId = []
     const bondsWithBalanceId = []
 
-    if (data?.accountAssetsMap) {
-      for (const [, accountAsset] of data.accountAssetsMap) {
+    if (accountAssetsMap) {
+      for (const [, accountAsset] of accountAssetsMap) {
         if (accountAsset.balance) {
           if (
             accountAsset.asset.isToken ||
@@ -202,7 +204,7 @@ export const useAssetsData = ({
       tokensWithBalanceId,
       bondsWithBalanceId,
     }
-  }, [data?.accountAssetsMap, isBond, withExternal])
+  }, [accountAssetsMap, isBond, withExternal])
 
   const { getAssetPrice, isLoading } = useAssetsPrice([
     ...tokensWithBalanceId,
@@ -225,16 +227,23 @@ export const useAssetsData = ({
       },
     )
 
-    const tokens = allAssets
-      ? getAssetBalances(
-          [
-            ...tokenAssets,
-            ...stableswap,
-            ...(withExternal ? external : []),
-            ...erc20,
-          ],
-          tokensData,
-        )
+    let assetsZeroBalance: TAsset[] = []
+
+    if (allAssets) {
+      assetsZeroBalance = [
+        ...tokenAssets,
+        ...stableswap,
+        ...(withExternal ? external : []),
+        ...erc20,
+      ]
+    } else if (displayZeroBalance && allowedAssets) {
+      assetsZeroBalance = allowedAssets.map((asset) =>
+        getAssetWithFallback(asset),
+      )
+    }
+
+    const tokens = assetsZeroBalance.length
+      ? getAssetBalances(assetsZeroBalance, tokensData)
       : tokensData
 
     return search || allowedAssets
@@ -252,6 +261,8 @@ export const useAssetsData = ({
     getAssetPrice,
     isLoading,
     erc20,
+    displayZeroBalance,
+    getAssetWithFallback,
   ])
 
   const bonds = useMemo(() => {
