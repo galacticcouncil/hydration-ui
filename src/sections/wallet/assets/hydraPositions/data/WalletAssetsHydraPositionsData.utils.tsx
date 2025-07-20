@@ -14,7 +14,8 @@ export const useOmnipoolPositionsData = ({
   search,
   address,
 }: { search?: string; address?: string } = {}) => {
-  const { data: accountPositions, isInitialLoading } = useAccountPositions()
+  const { data: accountPositions, isInitialLoading } =
+    useAccountPositions(address)
   const { liquidityPositions } = accountPositions ?? {}
 
   const positionIds = liquidityPositions?.map((position) => position.assetId)

@@ -10,7 +10,7 @@ import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataCo
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { SSupplyGigaDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigaRow.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { GigaAPY } from "sections/pools/stablepool/components/GigaIncentives"
+import { MoneyMarketAPY } from "sections/pools/stablepool/components/GigaIncentives"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAssetIdFromAddress } from "utils/evm"
 
@@ -56,7 +56,7 @@ export const SupplyGigadotDesktopRow: FC<Props> = ({
             <Text fw={500} fs={11} lh="1.4" tAlign="center" color="whiteish500">
               {t("lending.apy")}
             </Text>
-            <GigaAPY
+            <MoneyMarketAPY
               type="supply"
               assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
             />
