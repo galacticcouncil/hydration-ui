@@ -10,6 +10,7 @@ import {
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
+  USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
   WSTETH_ASSET_ID,
 } from "utils/constants"
@@ -47,7 +48,7 @@ export const GigaIncentives = ({ id }: { id: string }) => {
             {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
           </Text>
         </div>
-        <GigaAPY withLabel type="supply" assetId={id} />
+        <MoneyMarketAPY withLabel type="supply" assetId={id} />
       </SContainer>
     </>
   )
@@ -102,15 +103,17 @@ type APYProps = {
   readonly color?: ResponsiveValue<keyof typeof theme.colors>
   readonly assetId: string
   readonly withFarms?: boolean
+  readonly omnipoolFee?: string
 }
 
-export const GigaAPY = ({
+export const MoneyMarketAPY = ({
   withLabel,
   type,
   color,
   assetId,
   size,
   withFarms,
+  omnipoolFee,
 }: APYProps) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
@@ -122,13 +125,17 @@ export const GigaAPY = ({
     underlyingAssetsAPY,
     incentives,
     farms,
+    vDotApy,
   } = useBorrowAssetApy(assetId, withFarms)
 
   const isSupply = type === "supply"
-  const apy = isSupply ? totalSupplyApy : totalBorrowApy
+  const apy = BN(isSupply ? totalSupplyApy : totalBorrowApy)
+    .plus(omnipoolFee ?? 0)
+    .toNumber()
 
   const hasFarms = farms && farms.length > 0
   const defaultColor = withFarms && hasFarms ? "brightBlue200" : "white"
+  const isVDOT = assetId === VDOT_ASSET_ID
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
@@ -157,17 +164,38 @@ export const GigaAPY = ({
         text={
           <>
             <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
-            {BN(apy).gt(0) && (
+            {omnipoolFee && (
               <div
                 sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
               >
                 <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
-                  {t("liquidity.table.farms.apr.lpFee")}
+                  {t("liquidity.table.farms.apr.lpFeeOmnipool")}
                 </Text>
                 <Text fs={12} font="GeistSemiBold">
-                  <FormattedNumber percent value={lpAPY / 100} />
+                  {t("value.percentage", { value: BN(omnipoolFee) })}
                 </Text>
               </div>
+            )}
+            {BN(apy).gt(0) && BN(lpAPY).gt(0) && (
+              <div
+                sx={{ flex: "row", gap: 4, justify: "space-between", mt: 6 }}
+              >
+                <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
+                  {t(
+                    `liquidity.table.farms.apr.${omnipoolFee ? "lpFeeStablepool" : "lpFee"}`,
+                  )}
+                </Text>
+                <Text fs={12} font="GeistSemiBold">
+                  {t("value.percentage", { value: BN(lpAPY) })}
+                </Text>
+              </div>
+            )}
+            {isVDOT && (
+              <APYRow
+                id={VDOT_ASSET_ID}
+                label={t("stakeApy")}
+                value={vDotApy}
+              />
             )}
             {underlyingAssetsAPY.map(({ id, borrowApy, supplyApy }) => {
               return (
@@ -176,14 +204,19 @@ export const GigaAPY = ({
                     <Icon size={14} icon={<AssetLogo id={id} />} />
                     <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
                     <Text fs={11} lh={15} color="basic400">
-                      {gDotSummary[id]}
+                      {isVDOT
+                        ? isSupply
+                          ? t("supplyApy")
+                          : t("borrowApy")
+                        : labels[id] ?? t("supplyApy")}
                     </Text>
                   </div>
                   <Text fs={12} font="GeistSemiBold">
-                    <FormattedNumber
-                      percent
-                      value={(isSupply ? supplyApy : borrowApy) / 100}
-                    />
+                    {t("value.percentage", {
+                      value: BN(isSupply ? supplyApy : borrowApy).minus(
+                        id === VDOT_ASSET_ID && isVDOT ? vDotApy ?? 0 : 0,
+                      ),
+                    })}
                   </Text>
                 </SIncentiveRow>
               )
@@ -250,56 +283,11 @@ export const GigaAPY = ({
   )
 }
 
-const gDotSummary: ApySummary = {
+const labels: ApySummary = {
   [DOT_ASSET_ID]: i18n.t("supplyApy"),
   [VDOT_ASSET_ID]: i18n.t("stakeApy"),
   [ETH_ASSET_ID]: i18n.t("supplyApy"),
   [WSTETH_ASSET_ID]: i18n.t("stakeApy"),
-}
-
-export const VDOTAPY = ({ withLabel, type, size, color }: APYProps) => {
-  const { t } = useTranslation()
-  const { totalSupplyApy, totalBorrowApy, underlyingAssetsAPY, vDotApy } =
-    useBorrowAssetApy(VDOT_ASSET_ID)
-
-  const isSupply = type === "supply"
-  const apy = isSupply ? totalSupplyApy : totalBorrowApy
-
-  return (
-    <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <Text
-        color={color ?? "white"}
-        fs={size ?? 14}
-        tTransform={withLabel ? "uppercase" : "none"}
-      >
-        {t(
-          withLabel
-            ? "liquidity.stablepool.incetives.value"
-            : "value.percentage",
-          { value: apy },
-        )}
-      </Text>
-      <InfoTooltip
-        preventDefault
-        text={
-          <>
-            <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
-            <APYRow id={VDOT_ASSET_ID} label={t("stakeApy")} value={vDotApy} />
-            {underlyingAssetsAPY.map(({ id, borrowApy, supplyApy }) => (
-              <APYRow
-                key={id}
-                id={id}
-                label={isSupply ? t("supplyApy") : t("borrowApy")}
-                value={BN(isSupply ? supplyApy : borrowApy)
-                  .minus(id === VDOT_ASSET_ID ? vDotApy ?? 0 : 0)
-                  .toString()}
-              />
-            ))}
-          </>
-        }
-      />
-    </div>
-  )
 }
 
 type OverrideApyProps = APYProps & {
@@ -311,11 +299,13 @@ type OverrideApyProps = APYProps & {
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (props.assetId) {
     case GDOT_STABLESWAP_ASSET_ID:
-      return props.type === "supply" ? <GigaAPY {...props} /> : children
+      return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
     case GETH_STABLESWAP_ASSET_ID:
-      return props.type === "supply" ? <GigaAPY {...props} /> : children
+      return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
     case VDOT_ASSET_ID:
-      return <VDOTAPY {...props} />
+      return <MoneyMarketAPY {...props} />
+    case USDT_POOL_ASSET_ID:
+      return <MoneyMarketAPY {...props} />
     default:
       return children
   }

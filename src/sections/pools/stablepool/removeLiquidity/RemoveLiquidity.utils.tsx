@@ -7,6 +7,7 @@ import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useCallback, useMemo } from "react"
+import BN from "bignumber.js"
 
 type Args = {
   poolId: string
@@ -54,7 +55,22 @@ export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
     [pool, amplification, fee, reserves, shareIssuance],
   )
 
+  const getAssetOutProportionally = useCallback(
+    (reserveAmount: string, removeTotalShares: string) => {
+      if (shareIssuance) {
+        return BN(removeTotalShares)
+          .div(shareIssuance)
+          .times(reserveAmount)
+          .toString()
+      }
+
+      return "0"
+    },
+    [shareIssuance],
+  )
+
   return {
     getAssetOutValue,
+    getAssetOutProportionally,
   }
 }
