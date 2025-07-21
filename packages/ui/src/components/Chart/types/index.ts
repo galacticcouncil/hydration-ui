@@ -2,20 +2,20 @@ import { ThemeUICSSProperties } from "@theme-ui/css"
 import { XAxisProps, YAxisProps } from "recharts"
 import { BaseAxisProps } from "recharts/types/util/types"
 
-export type TChartData = Array<Record<string, unknown>>
+export type TChartData = Record<string, unknown>
 
-export type ExtractDataKey<TData extends TChartData> = Extract<
-  keyof TData[number],
+type ExtractDataKeyOfType<TData extends TChartData, TType> = {
+  [K in keyof TData]: TData[K] extends TType ? K : never
+}[keyof TData] &
   string
->
 
 export type ChartSeriesType = "time" | "number" | "category"
 export type ChartTooltipType = "none" | "legend" | "timeTop" | "timeBottom"
 
 export type ChartConfig<TData extends TChartData> = {
-  xAxisKey: ExtractDataKey<TData>
+  xAxisKey: keyof TData & string
   xAxisType?: ChartSeriesType
-  xAxisFormatter?: (value: TData[number][ExtractDataKey<TData>]) => string
+  xAxisFormatter?: (value: TData[keyof TData]) => string
 
   yAxisType?: ChartSeriesType
   yAxisFormatter?: (value: number) => string
@@ -24,7 +24,7 @@ export type ChartConfig<TData extends TChartData> = {
 
   seriesLabel?: string
   series: {
-    key: ExtractDataKey<TData>
+    key: ExtractDataKeyOfType<TData, number>
     label: string
     color?: string | [string, string]
   }[]
@@ -37,7 +37,7 @@ export type ChartSizeProps = {
 
 export type ChartSharedProps<TData extends TChartData> = {
   config: ChartConfig<TData>
-  data: TData
+  data: Array<TData>
   horizontalGridHidden?: boolean
   verticalGridHidden?: boolean
   xAxisHidden?: boolean
@@ -46,7 +46,7 @@ export type ChartSharedProps<TData extends TChartData> = {
   yAxisHidden?: boolean
   yAxisProps?: YAxisProps
   yAxisLabel?: BaseAxisProps["label"]
-  onCrosshairMove?: (data: TData[number] | null) => void
+  onCrosshairMove?: (data: TData | null) => void
 } & ChartSizeProps
 
 export type ChartContextProps<TData extends TChartData> = {
