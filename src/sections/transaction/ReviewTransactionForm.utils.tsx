@@ -33,9 +33,10 @@ import { useAccountBalances } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
 import BN from "bignumber.js"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { TradeMetadata, TxType, XcmMetadata } from "@galacticcouncil/apps"
+import { TxType, XcmMetadata } from "@galacticcouncil/apps"
 import { ApiPromise } from "@polkadot/api"
 import { formatEther } from "@ethersproject/units"
+import { TxMetadata } from "state/store"
 
 export const isTxType = (
   tx: SubmittableExtrinsic<"promise"> | TxType,
@@ -313,17 +314,16 @@ export const useEditFeePaymentAsset = (
 }
 
 export const useHealthFactorChangeFromTxMetadata = (
-  txMetadata?: TradeMetadata,
+  txMetadata?: TxMetadata,
 ) => {
-  const { assetIn, assetOut, amountIn } = txMetadata || {}
-  const amountOut = null
+  const { assetIn, assetOut, amountIn, amountOut } = txMetadata || {}
   return useHealthFactorChange({
-    assetId: assetIn?.id || "",
+    assetId: assetIn || "",
     amount: amountIn || "",
     action: ProtocolAction.withdraw,
     swapAsset:
       assetOut && amountOut
-        ? { assetId: assetOut.id, amount: amountOut }
+        ? { assetId: assetOut, amount: amountOut }
         : undefined,
   })
 }

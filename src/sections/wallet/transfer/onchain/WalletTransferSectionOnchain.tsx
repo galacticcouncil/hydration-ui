@@ -27,7 +27,10 @@ import {
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { H160, safeConvertAddressH160 } from "utils/evm"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
-import { usePaymentFees } from "./WalletTransferSectionOnchain.utils"
+import {
+  getAssetTransferTx,
+  usePaymentFees,
+} from "./WalletTransferSectionOnchain.utils"
 import { useInsufficientFee } from "api/consts"
 import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
@@ -89,7 +92,7 @@ export function WalletTransferSectionOnchain({
     .decimalPlaces(0)
 
   const { currentFee, maxFee } = usePaymentFees({
-    asset,
+    asset: assetMeta,
     currentAmount: amount,
     maxAmount: balance,
   })
@@ -126,14 +129,18 @@ export function WalletTransferSectionOnchain({
 
     return await createTransaction(
       {
-        tx:
-          asset.toString() === native.id || assetMeta.isErc20
-            ? api.tx.currencies.transfer(
-                normalizedDest,
-                asset.toString(),
-                amount.toFixed(),
-              )
-            : api.tx.tokens.transfer(normalizedDest, asset, amount.toFixed()),
+        tx: getAssetTransferTx(
+          api,
+          assetMeta,
+          normalizedDest,
+          amount.toFixed(),
+        ),
+        txMeta: {
+          assetIn: assetMeta.id,
+          amountIn: values.amount,
+          assetOut: "",
+          amountOut: "",
+        },
         overrides: insufficientFee
           ? {
               fee: currentFee,
