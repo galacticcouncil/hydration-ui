@@ -180,6 +180,7 @@ export const RepayActions = ({
 
         signedRepayWithPermitTxData = await estimateGasLimit(
           signedRepayWithPermitTxData,
+          action,
         )
         response = await sendTx(signedRepayWithPermitTxData, action)
       } else {

@@ -178,7 +178,7 @@ export const SupplyActions = React.memo(
             amount: parseUnits(amountToSupply, decimals).toString(),
             reserve: poolAddress,
           })
-          supplyTxData = await estimateGasLimit(supplyTxData)
+          supplyTxData = await estimateGasLimit(supplyTxData, action)
 
           response = await sendTx(supplyTxData, action)
         }
