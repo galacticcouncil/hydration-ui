@@ -3,11 +3,7 @@ import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
-import {
-  BN_0,
-  GDOT_STABLESWAP_ASSET_ID,
-  STABLEPOOL_TOKEN_DECIMALS,
-} from "utils/constants"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
@@ -30,7 +26,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const pool = usePoolData().pool as TStablepool
   const refetchAccountAssets = useRefetchAccountAssets()
 
-  const { meta, isGDOT, isGETH } = pool
+  const { meta, isGDOT, isGETH, isInOmnipool } = pool
 
   const [transferOpen, setTransferOpen] = useState(false)
 
@@ -154,7 +150,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   gap: 12,
                 }}
               >
-                {pool.id !== GDOT_STABLESWAP_ASSET_ID && (
+                {isInOmnipool && (
                   <SOmnipoolButton
                     size="small"
                     fullWidth

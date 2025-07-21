@@ -42,7 +42,7 @@ import {
 import { PoolContext } from "sections/pools/pool/Pool"
 import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
-import { GigaAPY } from "sections/pools/stablepool/components/GigaIncentives"
+import { MoneyMarketAPY } from "sections/pools/stablepool/components/GigaIncentives"
 
 const NonClickableContainer = ({
   children,
@@ -517,7 +517,7 @@ export const usePoolTable = (
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
                     {row.original.isGDOT || row.original.isGETH ? (
-                      <GigaAPY
+                      <MoneyMarketAPY
                         type="supply"
                         assetId={row.original.poolId}
                         omnipoolFee={row.original.lpFeeOmnipool}

@@ -1,6 +1,5 @@
-import { u32 } from "@polkadot/types"
 import { useTranslation } from "react-i18next"
-import { Maybe, sortAssets } from "utils/helpers"
+import { sortAssets } from "utils/helpers"
 import { Text } from "components/Typography/Text/Text"
 import {
   SAssetsModalHeader,
@@ -18,7 +17,7 @@ import { TAsset } from "providers/assets"
 import BN from "bignumber.js"
 
 type Props = {
-  allowedAssets?: Maybe<u32 | string>[]
+  allowedAssets?: string[]
   onSelect?: (asset: NonNullable<TAsset>) => void
   hideInactiveAssets?: boolean
   allAssets?: boolean
@@ -26,6 +25,7 @@ type Props = {
   withExternal?: boolean
   confirmRequired?: boolean
   defaultSelectedAsssetId?: string
+  displayZeroBalance?: boolean
 }
 
 export const AssetsModalContent = ({
@@ -37,6 +37,7 @@ export const AssetsModalContent = ({
   confirmRequired,
   defaultSelectedAsssetId,
   withExternal,
+  displayZeroBalance,
 }: Props) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
@@ -50,6 +51,7 @@ export const AssetsModalContent = ({
     allAssets,
     withExternal,
     allowedAssets,
+    displayZeroBalance,
   })
 
   const onSelectHandler = (assetData: TAsset) => {

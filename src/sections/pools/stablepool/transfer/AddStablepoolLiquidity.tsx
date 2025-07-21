@@ -1,5 +1,5 @@
 import BN from "bignumber.js"
-import { Button } from "components/Button/Button"
+import { Button, ButtonTransparent } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Summary } from "components/Summary/Summary"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -66,6 +66,7 @@ type Props = {
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
   initialAmount?: string
+  setLiquidityLimit: () => void
 }
 
 const createFormSchema = (balance: string, decimals: number) =>
@@ -83,6 +84,7 @@ export const AddStablepoolLiquidity = ({
   isJoinFarms,
   setIsJoinFarms,
   initialAmount,
+  setLiquidityLimit,
 }: Props) => {
   const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -184,19 +186,28 @@ export const AddStablepoolLiquidity = ({
     const shares = getShares(value)
 
     if (shares) {
-      form.setValue("amount", shares, { shouldValidate: true })
+      form.setValue("amount", shares, {
+        shouldValidate: true,
+      })
     }
   }
 
-  const onSubmit = async (values: FormValues<typeof form>) => {
+  const onSubmit = async () => {
     if (asset.decimals == null) {
       throw new Error("Missing asset meta")
     }
 
-    const shiftedAmount = scale(
+    const values = form.getValues()
+
+    const shiftedShares = scale(
       values.amount,
       STABLEPOOL_TOKEN_DECIMALS,
     ).toString()
+
+    const limitShares = BN(shiftedShares)
+      .times(BN_100.minus(addLiquidityLimit).div(BN_100))
+      .toFixed(0)
+
     const secondStepperLabel = t(
       `liquidity.add.modal.geth.stepper.second${isJoinFarms ? ".joinFarms" : ""}`,
     )
@@ -215,12 +226,6 @@ export const AddStablepoolLiquidity = ({
     )
 
     if (isGETHSelected) {
-      const shares = shiftedAmount
-
-      const limitShares = BN(shares)
-        .times(BN_100.minus(addLiquidityLimit).div(BN_100))
-        .toFixed(0)
-
       const secondTx = api.tx.dispatcher.dispatchWithExtraGas(
         isJoinFarms
           ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
@@ -232,7 +237,11 @@ export const AddStablepoolLiquidity = ({
               scale(values.value, STABLEPOOL_TOKEN_DECIMALS).toString(),
               limitShares,
             )
-          : api.tx.omnipool.addLiquidityWithLimit(id, shares, limitShares),
+          : api.tx.omnipool.addLiquidityWithLimit(
+              id,
+              shiftedShares,
+              limitShares,
+            ),
         AAVE_EXTRA_GAS,
       )
 
@@ -242,9 +251,9 @@ export const AddStablepoolLiquidity = ({
           title: secondStepperLabel,
         },
         {
-          onSuccess: (result) => onSuccess(result, shiftedAmount),
+          onSuccess: (result) => onSuccess(result, shiftedShares),
           onSubmitted: () => {
-            onSubmitted(shares)
+            onSubmitted(shiftedShares)
             form.reset()
           },
           onError: () => onClose(),
@@ -268,12 +277,16 @@ export const AddStablepoolLiquidity = ({
     })
 
     const tx = isStablepoolOnly
-      ? api.tx.stableswap.addLiquidity(poolId, [
-          {
-            assetId: asset.id,
-            amount: scale(values.value, asset.decimals).toString(),
-          },
-        ])
+      ? api.tx.stableswap.addAssetsLiquidity(
+          poolId,
+          [
+            {
+              assetId: asset.id,
+              amount: scale(values.value, asset.decimals).toString(),
+            },
+          ],
+          limitShares,
+        )
       : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
           poolId,
           [
@@ -303,7 +316,7 @@ export const AddStablepoolLiquidity = ({
         title: isGETH ? t("liquidity.add.modal.geth.stepper.first") : undefined,
       },
       {
-        onSuccess: (result) => onSuccess(result, shiftedAmount),
+        onSuccess: (result) => onSuccess(result, shiftedShares),
         onSubmitted: () => {
           if (!isTwoStepsTx) {
             onSubmitted(shares)
@@ -338,7 +351,7 @@ export const AddStablepoolLiquidity = ({
 
     const diffBalance = BN(balanceApi).minus(initialBalance).toString()
 
-    const limitShares = BN(diffBalance)
+    const limitGETHShares = BN(diffBalance)
       .times(BN_100.minus(addLiquidityLimit).div(BN_100))
       .toFixed(0)
 
@@ -351,9 +364,13 @@ export const AddStablepoolLiquidity = ({
             ]),
             id,
             diffBalance,
-            limitShares,
+            limitGETHShares,
           )
-        : api.tx.omnipool.addLiquidityWithLimit(id, diffBalance, limitShares),
+        : api.tx.omnipool.addLiquidityWithLimit(
+            id,
+            diffBalance,
+            limitGETHShares,
+          ),
       AAVE_EXTRA_GAS,
     )
 
@@ -363,7 +380,7 @@ export const AddStablepoolLiquidity = ({
         title: secondStepperLabel,
       },
       {
-        onSuccess: (result) => onSuccess(result, shiftedAmount),
+        onSuccess: (result) => onSuccess(result, shiftedShares),
         onSubmitted: () => {
           onSubmitted(shares)
           form.reset()
@@ -391,7 +408,7 @@ export const AddStablepoolLiquidity = ({
       !isJoinFarms &&
       (errors.amount as { farm?: { message: string } })?.farm
     ) {
-      onSubmit(form.getValues())
+      onSubmit()
     }
   }
 
@@ -484,6 +501,30 @@ export const AddStablepoolLiquidity = ({
           )}
         />
         <Spacer size={20} />
+
+        <SummaryRow
+          label={t("liquidity.add.modal.tradeLimit")}
+          content={
+            <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
+              <Text fs={14} color="white" tAlign="right">
+                {t("value.percentage", { value: addLiquidityLimit })}
+              </Text>
+              <ButtonTransparent onClick={() => setLiquidityLimit()}>
+                <Text color="brightBlue200" fs={14}>
+                  {t("edit")}
+                </Text>
+              </ButtonTransparent>
+            </div>
+          }
+        />
+
+        <Separator
+          color="darkBlue401"
+          sx={{
+            my: 4,
+            width: "auto",
+          }}
+        />
 
         <FeeRow poolId={poolId} />
 
