@@ -31,12 +31,12 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
 
   const { getAssetWithFallback, getRelatedAToken } = useAssets()
-  const asset = getAssetWithFallback(assetId)
+  const aToken = getRelatedAToken(assetId) ?? getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
     useNewDepositDefaultAssetId(assetId)
 
-  const aTokenId = getRelatedAToken(assetId)?.id
+  const aTokenId = aToken.id
   const allowedAssets = useNewDepositAssets(
     [assetId].concat(aTokenId ? [aTokenId] : []),
   )
@@ -51,7 +51,7 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
       onClose={onClose}
       contents={[
         {
-          title: t("lending.supply.modal.title", { name: asset.name }),
+          title: t("lending.supply.modal.title", { name: aToken.name }),
           content: (
             <AssetSelectSkeleton
               title={t("wallet.strategy.deposit.depositAsset")}
@@ -71,11 +71,11 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
         onClose={onClose}
         contents={[
           {
-            title: t("lending.supply.modal.title", { name: asset.name }),
+            title: t("lending.supply.modal.title", { name: aToken.name }),
             content: (
               <SupplyModalForm
                 onClose={onClose}
-                asset={asset}
+                asset={aToken}
                 allowedAssets={allowedAssets}
                 onAssetSelect={next}
               />

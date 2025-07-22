@@ -20,7 +20,6 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TAsset, useAssets } from "providers/assets"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { TBalance } from "./balances"
-import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { setAccountBalances, setIsAccountBalance } from "./deposits"
 import { percentageDifference } from "utils/helpers"
 import { produce } from "immer"
@@ -315,9 +314,7 @@ export function useBalanceSubscription() {
   ])
 
   const getIsPoolPositions = (asset: TAsset, balance: Balance) =>
-    (asset.isShareToken ||
-      asset.isStableSwap ||
-      asset.id === GETH_ERC20_ASSET_ID) &&
+    (asset.isShareToken || asset.isStableSwap || asset.isErc20) &&
     balance.total !== "0"
 
   const data = useMemo(() => {

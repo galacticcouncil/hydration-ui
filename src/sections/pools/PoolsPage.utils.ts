@@ -9,7 +9,6 @@ import {
   BN_0,
   BN_1,
   BN_NAN,
-  GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
@@ -88,7 +87,7 @@ const getTradeFee = (fee: string[]) => {
 }
 
 export const usePools = () => {
-  const { native, getAssetWithFallback } = useAssets()
+  const { native, getAssetWithFallback, getRelatedAToken } = useAssets()
 
   const { data: omnipoolAssets, isLoading: isOmnipoolAssetLoading } =
     useOmnipoolDataObserver()
@@ -157,13 +156,17 @@ export const usePools = () => {
         const isGETH = asset.id === GETH_ERC20_ASSET_ID
         const isGDOT = asset.id === GDOT_STABLESWAP_ASSET_ID
         const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
+        const relatedAToken = getRelatedAToken(poolId)
 
         const isStablepoolOnly = isStablepoolData(asset)
         const isStableInOmnipool = stableInOmnipool.get(poolId)
 
-        const meta = getAssetWithFallback(asset.id)
+        const meta = getAssetWithFallback(poolId)
 
         const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
+        const accountAAsset = relatedAToken
+          ? accountAssets?.accountAssetsMap.get(relatedAToken.id)
+          : undefined
         const positions = accountPositions?.accountAssetsMap.get(asset.id)
 
         const spotPrice = getAssetPrice(asset.id).price
@@ -257,29 +260,21 @@ export const usePools = () => {
         const filteredOmnipoolPositions = positions?.liquidityPositions ?? []
         const filteredMiningPositions = positions?.omnipoolDeposits ?? []
         const isPositions =
-          !!positions?.isPoolPositions || !!accountAsset?.isPoolPositions
+          !!positions?.isPoolPositions ||
+          !!accountAsset?.isPoolPositions ||
+          !!accountAAsset?.isPoolPositions
 
-        const metaOverride = isGDOT
-          ? getAssetWithFallback(GDOT_ERC20_ASSET_ID)
-          : undefined
+        const metaOverride = isGDOT || isGETH ? relatedAToken : meta
 
         const name = metaOverride?.name || meta.name
         const symbol = metaOverride?.symbol || meta.symbol
-        const iconId = metaOverride?.iconId || meta.iconId
 
         return {
           id: asset.id,
           poolId,
           name,
           symbol,
-          meta: isGDOT
-            ? {
-                ...meta,
-                name,
-                symbol,
-                iconId,
-              }
-            : meta,
+          meta: metaOverride ?? meta,
           tvlDisplay,
           spotPrice,
           canAddLiquidity: tradability.canAddLiquidity,
@@ -302,6 +297,8 @@ export const usePools = () => {
           isGETH,
           isStablePool: isStablepoolOnly || !!isStableInOmnipool,
           isInOmnipool: !isStablepoolOnly,
+          relatedAToken,
+          aBalance: accountAAsset?.balance,
         }
       })
       .sort((poolA, poolB) => {
@@ -341,6 +338,7 @@ export const usePools = () => {
     gdotBorrowApy.totalSupplyApy,
     gethBorrowApy.totalSupplyApy,
     accountPositions,
+    getRelatedAToken,
   ])
 
   useEffect(() => {

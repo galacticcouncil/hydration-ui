@@ -48,7 +48,7 @@ export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
       <Modal open={!!supplyModal} onClose={onClose}>
         <DialogTitle />
         {!!supplyModal && (
-          <SupplyAssetModal assetId={aTokenId} onClose={onClose} />
+          <SupplyAssetModal assetId={assetId} onClose={onClose} />
         )}
       </Modal>
     </>

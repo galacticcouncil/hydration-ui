@@ -12,15 +12,16 @@ import { GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 type Props = {
   pool: TStablepool
+  type: STABLEPOOLTYPE
   onSuccess: () => void
 }
 
-enum STABLEPOOLTYPE {
+export enum STABLEPOOLTYPE {
   CLASSIC,
   GIGA,
 }
 
-export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
+export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
   const { t } = useTranslation()
 
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
@@ -37,13 +38,7 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
         variant="error"
         size="small"
         fullWidth
-        onClick={() =>
-          setOpenRemove(
-            pool.isGDOT || pool.isGETH
-              ? STABLEPOOLTYPE.GIGA
-              : STABLEPOOLTYPE.CLASSIC,
-          )
-        }
+        onClick={() => setOpenRemove(type)}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />

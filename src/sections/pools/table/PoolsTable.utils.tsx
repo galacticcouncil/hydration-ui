@@ -257,10 +257,6 @@ const ManageLiquidityButton: React.FC<{
 
   const isXykPool = isXYKPoolType(pool)
 
-  const userStablePoolBalance = pool.isStablePool
-    ? pool.balance?.transferable ?? "0"
-    : "0"
-
   let positionsAmount: BN = BN_0
 
   if (isXykPool) {
@@ -268,9 +264,13 @@ const ManageLiquidityButton: React.FC<{
       pool.shareTokenIssuance?.myPoolShare?.gt(0) ? 1 : 0,
     )
   } else {
+    const stablepoolBalance = pool.relatedAToken
+      ? pool.aBalance?.transferable ?? "0"
+      : pool.balance?.transferable ?? "0"
+
     positionsAmount = BN(pool.omnipoolPositions.length)
       .plus(pool.miningPositions.length)
-      .plus(BN(userStablePoolBalance).gt(0) ? 1 : 0)
+      .plus(BN(pool.isStablePool ? stablepoolBalance : "0").gt(0) ? 1 : 0)
   }
 
   const isPositions = positionsAmount.gt(0)

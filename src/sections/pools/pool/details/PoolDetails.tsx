@@ -125,7 +125,7 @@ export const PoolDetails = () => {
             variant="primary"
             sx={{ width: ["100%", "auto"] }}
             disabled={
-              (!pool.canAddLiquidity && !pool.meta.isStableSwap) ||
+              (!pool.canAddLiquidity && !pool.isStablePool) ||
               native.id === pool.id
             }
             onClick={() => setOpen(true)}

@@ -12,11 +12,6 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import {
-  GDOT_ERC20_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
 import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
 export enum Page {
@@ -52,21 +47,21 @@ export const TransferModal = ({
   const {
     id: poolId,
     canAddLiquidity,
-    isGDOT,
     isGETH,
     smallestPercentage,
     symbol,
+    relatedAToken,
   } = pool as TStablepool
 
   const assetIds = Object.keys(pool.meta.meta ?? {})
 
-  const { data: defaultAssetId } = useNewDepositDefaultAssetId(poolId)
+  const { data: defaultAssetId } = useNewDepositDefaultAssetId(pool.poolId)
 
   const { t } = useTranslation()
 
   const [assetId, setAssetId] = useState<string | undefined>(
     initialAssetId ??
-      (isGDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId),
+      (relatedAToken ? defaultAssetId : smallestPercentage?.assetId),
   )
 
   const isOnlyStablepool = disabledOmnipool || !canAddLiquidity
@@ -78,18 +73,12 @@ export const TransferModal = ({
   const [stablepoolSelected, setStablepoolSelected] = useState(isOnlyStablepool)
 
   const selectableAssets = useMemo(() => {
-    const invalidAssets = isGDOT
-      ? [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
-      : isGETH
-        ? [GETH_STABLESWAP_ASSET_ID]
-        : []
-
-    return isGDOT || isGETH
+    return relatedAToken
       ? tradable
           .map((asset) => asset.id)
-          .filter((assetId) => !invalidAssets.includes(assetId))
+          .filter((assetId) => assetId !== relatedAToken.id)
       : assetIds
-  }, [assetIds, isGDOT, isGETH, tradable])
+  }, [assetIds, relatedAToken, tradable])
 
   const goBack = () => {
     if (page === Page.LIMIT_LIQUIDITY) {
@@ -109,7 +98,7 @@ export const TransferModal = ({
 
   const title = stablepoolSelected
     ? t(
-        `liquidity.stablepool.transfer.stablepool${isGDOT || isGETH ? ".custom" : ""}`,
+        `liquidity.stablepool.transfer.stablepool${!!relatedAToken ? ".custom" : ""}`,
         { symbol },
       )
     : isGETH
@@ -155,6 +144,7 @@ export const TransferModal = ({
                 setIsJoinFarms={setIsJoinFarms}
                 initialAmount={initialAmount}
                 setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                relatedAToken={relatedAToken}
               />
             ),
           },
