@@ -12,6 +12,7 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
+  USDT_POOL_ASSET_ID,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStablepoolFees, useStableSDKPools } from "api/stableswap"
@@ -122,6 +123,7 @@ export const usePools = () => {
 
   const gdotBorrowApy = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
   const gethBorrowApy = useBorrowAssetApy(GETH_STABLESWAP_ASSET_ID)
+  const usdtBorrowApy = useBorrowAssetApy(USDT_POOL_ASSET_ID)
 
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
@@ -224,6 +226,10 @@ export const usePools = () => {
 
           if (isGDOT) {
             totalFee = BN(gdotBorrowApy.totalSupplyApy)
+          } else if (poolId === USDT_POOL_ASSET_ID) {
+            totalFee = BN(lpFeeStablepool ?? 0).plus(
+              usdtBorrowApy.totalSupplyApy,
+            )
           } else {
             totalFee = BN(lpFeeStablepool ?? 0).plus(farmsApr ?? 0)
           }
@@ -339,6 +345,7 @@ export const usePools = () => {
     gethBorrowApy.totalSupplyApy,
     accountPositions,
     getRelatedAToken,
+    usdtBorrowApy.totalSupplyApy,
   ])
 
   useEffect(() => {
