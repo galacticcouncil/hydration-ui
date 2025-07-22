@@ -35,6 +35,10 @@ export const numericallyStr: Compare<string> = (a, b) =>
   numericallyBig(new Big(a), new Big(b))
 export const numericallyStrDesc = descending(numericallyStr)
 
+export const chronologically: Compare<Date> = (a, b) =>
+  a.valueOf() - b.valueOf()
+export const chronologicallyDesc = descending(chronologically)
+
 export const chronologicallyStr: Compare<string> = (a, b) =>
   new Date(a).valueOf() - new Date(b).valueOf()
 export const chronologicallyStrDesc = descending(chronologicallyStr)

@@ -1,30 +1,46 @@
 import { AreaChart, Flex, ValueStats } from "@galacticcouncil/ui/components"
-import { MOCK_TIME_DATA } from "@galacticcouncil/ui/components/Chart/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
+import { PeriodType, periodTypes } from "@/components/PeriodInput/PeriodInput"
+import i18n from "@/i18n"
+import {
+  TradeChartInterval,
+  TradeChartIntervalOptionType,
+} from "@/modules/trade/swap/components/TradeChart/TradeChartInterval"
+import {
+  NetWorthData,
+  useNetWorthData,
+} from "@/modules/wallet/assets/Balances/NetWorth.data"
+import { USDT_ASSET_ID } from "@/utils/consts"
 
-// TODO wallet net worth
+const intervalOptions = (["all", ...periodTypes] as const).map<
+  TradeChartIntervalOptionType<PeriodType | "all">
+>((option) => ({
+  key: option,
+  label: i18n.t(`period.${option}`),
+}))
+
 export const NetWorth: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const [crosshair, setCrosshair] = useState<
-    (typeof MOCK_TIME_DATA)[number] | null
-  >(null)
+  const [interval, setInterval] = useState<PeriodType | "all">("all")
+  const [crosshair, setCrosshair] = useState<NetWorthData | null>(null)
 
-  const lastDataPoint = last(MOCK_TIME_DATA)
-  const value = crosshair?.value ?? lastDataPoint?.value ?? 0
+  const { balances, assetId, isLoading, isSuccess, isError } = useNetWorthData(
+    interval === "all" ? null : interval,
+  )
 
-  const [netWorth] = useDisplayAssetPrice("10", value)
+  const lastDataPoint = last(balances)
+  const value = (crosshair ?? lastDataPoint)?.netWorth ?? 0
 
-  // mock fetch status for now
-  const isSuccess = false
-  const isError = false
-  const isLoading = false
-  const isEmpty = false
+  const [netWorth] = useDisplayAssetPrice(assetId ?? USDT_ASSET_ID, value)
+
+  const isEmpty = isSuccess && !balances.length
+  const chartDisplayValue = !isEmpty && !isError ? netWorth : ""
 
   return (
     <Flex
@@ -36,7 +52,7 @@ export const NetWorth: FC = () => {
         alwaysWrap
         size="medium"
         label={t("balances.header.netWorth")}
-        value={netWorth}
+        value={chartDisplayValue}
       />
       <Flex
         align="center"
@@ -52,27 +68,32 @@ export const NetWorth: FC = () => {
           isEmpty={isEmpty}
         >
           <AreaChart
-            data={MOCK_TIME_DATA}
+            data={balances}
             xAxisHidden
             yAxisHidden
             verticalGridHidden
             curveType="linear"
             onCrosshairMove={setCrosshair}
             config={{
-              xAxisKey: "timestamp",
+              xAxisKey: "time",
               xAxisType: "time",
               yAxisFormatter: (value) => t("common:currency", { value }),
               tooltipType: "timeBottom",
               series: [
                 {
                   label: t("balances.header.netWorth"),
-                  key: "value",
+                  key: "netWorth",
                 },
               ],
             }}
           />
         </ChartState>
       </Flex>
+      <TradeChartInterval
+        options={intervalOptions}
+        selectedOption={interval}
+        onSelect={(option) => setInterval(option.key)}
+      />
     </Flex>
   )
 }

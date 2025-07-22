@@ -36,7 +36,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
   strokeWidth?: number
   customDot?: (
     props: Required<DotProps> & {
-      payload: TData[number]
+      payload: TData
     },
   ) => React.ReactElement
   referenceLines?: React.ComponentPropsWithoutRef<typeof ReferenceLine>[]
