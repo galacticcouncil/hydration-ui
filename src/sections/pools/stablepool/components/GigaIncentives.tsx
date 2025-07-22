@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 import i18n from "i18next"
 import {
+  BN_NAN,
   DOT_ASSET_ID,
   ETH_ASSET_ID,
   GDOT_ERC20_ASSET_ID,
@@ -156,7 +157,7 @@ export const MoneyMarketAPY = ({
           withLabel
             ? "liquidity.stablepool.incetives.value"
             : "value.percentage",
-          { value: apy },
+          { value: apy === Infinity ? BN_NAN : apy },
         )}
       </Text>
       <InfoTooltip

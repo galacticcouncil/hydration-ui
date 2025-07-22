@@ -11,17 +11,15 @@ import { BasicModal } from "sections/lending/components/primitives/BasicModal"
 import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
-import {
-  ETH_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
+import { ETH_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useAssets } from "providers/assets"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
+  const { getRelatedAToken } = useAssets()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
@@ -29,10 +27,11 @@ export const WithdrawModal = () => {
 
   const assetId = getAssetIdFromAddress(args.underlyingAsset)
 
-  if (
-    assetId === GDOT_STABLESWAP_ASSET_ID ||
-    assetId === GETH_STABLESWAP_ASSET_ID
-  ) {
+  const aTokenId = getRelatedAToken(assetId)?.id
+
+  const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(args.underlyingAsset)
+
+  if (!!aTokenId && isGigaAsset) {
     const userReserve = user?.userReservesData.find((userReserve) => {
       return args.underlyingAsset === userReserve?.underlyingAsset
     })
@@ -40,7 +39,7 @@ export const WithdrawModal = () => {
     return (
       <BasicModal open={type === ModalType.Withdraw} setOpen={close}>
         <RemoveDepositModal
-          assetId={REVERSE_A_TOKEN_UNDERLYING_ID_MAP[assetId]}
+          assetId={aTokenId}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
           assetReceiveId={

@@ -46,7 +46,6 @@ import { useBestTradeSell } from "api/trade"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useSpotPrice } from "api/spotPrice"
 import { useStableswapPool } from "api/stableswap"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { AddOmnipoolLiquiditySummary } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
@@ -645,10 +644,11 @@ const GigaDotSummary = ({
   poolId: string
 }) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken } = useAssets()
 
-  const aTokenId = REVERSE_A_TOKEN_UNDERLYING_ID_MAP[poolId]
-  const meta = getAssetWithFallback(aTokenId)
+  const aTokenId = getRelatedAToken(poolId)?.id
+
+  const meta = getAssetWithFallback(aTokenId ?? "")
   const { data } = useSpotPrice(aTokenId, selectedAsset.id)
 
   return (
