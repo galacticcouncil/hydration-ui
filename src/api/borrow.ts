@@ -554,8 +554,6 @@ export const useBorrowAssetApy = (
         ? incentivesAPRSum || 0
         : Infinity
 
-    const numberOfReserves = assetsAmount
-
     const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
       const isVdot =
         reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
@@ -569,8 +567,8 @@ export const useBorrowAssetApy = (
         : BN(reserve.variableBorrowAPY)
 
       return {
-        supplyApy: supplyAPY.div(numberOfReserves).times(100).toNumber(),
-        borrowApy: borrowAPY.div(numberOfReserves).times(100).toNumber(),
+        supplyApy: supplyAPY.div(assetsAmount).times(100).toNumber(),
+        borrowApy: borrowAPY.div(assetsAmount).times(100).toNumber(),
         id: getAssetIdFromAddress(reserve.underlyingAsset),
       }
     })
@@ -579,10 +577,10 @@ export const useBorrowAssetApy = (
       underlyingAssetsAPY.push({
         id: WSTETH_ASSET_ID,
         supplyApy: BN(ethApr ?? 0)
-          .div(numberOfReserves)
+          .div(assetsAmount)
           .toNumber(),
         borrowApy: BN(ethApr ?? 0)
-          .div(numberOfReserves)
+          .div(assetsAmount)
           .toNumber(),
       })
     }
