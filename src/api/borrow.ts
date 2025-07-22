@@ -499,7 +499,7 @@ export const useBorrowAssetApy = (
       asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId],
     [asset, assetId],
   )
-
+  const assetsAmount = assetIds.length
   const isGETH = assetIds.includes(WSTETH_ASSET_ID)
 
   const { data: vDotApy } = useBifrostVDotApy({
@@ -556,7 +556,7 @@ export const useBorrowAssetApy = (
 
     // GETH consits of aETH and wstETH,
     // but wstETH is not Money Market reserve, so we need to account for that separately
-    const numberOfReserves = isGETH ? 2 : underlyingReserves.length
+    const numberOfReserves = assetsAmount
 
     const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
       const isVdot =
@@ -622,6 +622,7 @@ export const useBorrowAssetApy = (
     ethApr,
     isGETH,
     farms?.totalApr,
+    assetsAmount,
   ])
 
   return {
