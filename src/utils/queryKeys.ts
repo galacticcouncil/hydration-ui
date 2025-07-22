@@ -254,7 +254,7 @@ export const QUERY_KEYS = {
     txHex,
     address,
   ],
-  evmGasPrice: () => ["evmGasPrice"],
+  evmGasPrice: () => [QUERY_KEY_PREFIX, "evmGasPrice"],
   referralCodes: (accountAddress?: string) => [
     "referralsCodes",
     accountAddress,
