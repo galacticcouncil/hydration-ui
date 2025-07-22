@@ -299,12 +299,10 @@ type OverrideApyProps = APYProps & {
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (props.assetId) {
     case GDOT_STABLESWAP_ASSET_ID:
-      return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
     case GETH_STABLESWAP_ASSET_ID:
+    case USDT_POOL_ASSET_ID:
       return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
     case VDOT_ASSET_ID:
-      return <MoneyMarketAPY {...props} />
-    case USDT_POOL_ASSET_ID:
       return <MoneyMarketAPY {...props} />
     default:
       return children
