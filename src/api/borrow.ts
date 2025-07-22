@@ -499,7 +499,7 @@ export const useBorrowAssetApy = (
       asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId],
     [asset, assetId],
   )
-
+  const assetsAmount = assetIds.length
   const isGETH = assetIds.includes(WSTETH_ASSET_ID)
 
   const { data: vDotApy } = useBifrostVDotApy({
@@ -554,10 +554,6 @@ export const useBorrowAssetApy = (
         ? incentivesAPRSum || 0
         : Infinity
 
-    // GETH consits of aETH and wstETH,
-    // but wstETH is not Money Market reserve, so we need to account for that separately
-    const numberOfReserves = isGETH ? 2 : underlyingReserves.length
-
     const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
       const isVdot =
         reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
@@ -571,8 +567,8 @@ export const useBorrowAssetApy = (
         : BN(reserve.variableBorrowAPY)
 
       return {
-        supplyApy: supplyAPY.div(numberOfReserves).times(100).toNumber(),
-        borrowApy: borrowAPY.div(numberOfReserves).times(100).toNumber(),
+        supplyApy: supplyAPY.div(assetsAmount).times(100).toNumber(),
+        borrowApy: borrowAPY.div(assetsAmount).times(100).toNumber(),
         id: getAssetIdFromAddress(reserve.underlyingAsset),
       }
     })
@@ -581,10 +577,10 @@ export const useBorrowAssetApy = (
       underlyingAssetsAPY.push({
         id: WSTETH_ASSET_ID,
         supplyApy: BN(ethApr ?? 0)
-          .div(numberOfReserves)
+          .div(assetsAmount)
           .toNumber(),
         borrowApy: BN(ethApr ?? 0)
-          .div(numberOfReserves)
+          .div(assetsAmount)
           .toNumber(),
       })
     }
@@ -622,6 +618,7 @@ export const useBorrowAssetApy = (
     ethApr,
     isGETH,
     farms?.totalApr,
+    assetsAmount,
   ])
 
   return {

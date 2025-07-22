@@ -26,7 +26,12 @@ import { APY } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMul
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
+import {
+  BN_0,
+  BN_NAN,
+  GETH_ERC20_ASSET_ID,
+  USDT_POOL_ASSET_ID,
+} from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -516,7 +521,9 @@ export const usePoolTable = (
               cell: ({ row }) =>
                 !isXYKPoolType(row.original) ? (
                   <NonClickableContainer>
-                    {row.original.isGDOT || row.original.isGETH ? (
+                    {row.original.isGDOT ||
+                    row.original.isGETH ||
+                    row.original.poolId === USDT_POOL_ASSET_ID ? (
                       <MoneyMarketAPY
                         type="supply"
                         assetId={row.original.poolId}
