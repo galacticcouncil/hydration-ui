@@ -554,8 +554,6 @@ export const useBorrowAssetApy = (
         ? incentivesAPRSum || 0
         : Infinity
 
-    // GETH consits of aETH and wstETH,
-    // but wstETH is not Money Market reserve, so we need to account for that separately
     const numberOfReserves = assetsAmount
 
     const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
