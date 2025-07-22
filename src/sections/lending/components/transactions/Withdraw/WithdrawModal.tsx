@@ -11,14 +11,11 @@ import { BasicModal } from "sections/lending/components/primitives/BasicModal"
 import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
-import {
-  ETH_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
+import { ETH_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssets } from "providers/assets"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
@@ -32,8 +29,7 @@ export const WithdrawModal = () => {
 
   const aTokenId = getRelatedAToken(assetId)?.id
 
-  const isGigaAsset =
-    assetId === GDOT_STABLESWAP_ASSET_ID || assetId === GETH_STABLESWAP_ASSET_ID
+  const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(args.underlyingAsset)
 
   if (!!aTokenId && isGigaAsset) {
     const userReserve = user?.userReservesData.find((userReserve) => {

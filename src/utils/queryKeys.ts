@@ -312,6 +312,8 @@ export const QUERY_KEYS = {
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
   lidoEthAPR: ["lidoEthAPR"],
+  ethenaUsdAPR: ["ethenaUsdAPR"],
+  skyUsdApr: ["skyUsdApr"],
   borrowUserSummary: (address: string) => [
     QUERY_KEY_PREFIX,
     "borrowUserSummary",

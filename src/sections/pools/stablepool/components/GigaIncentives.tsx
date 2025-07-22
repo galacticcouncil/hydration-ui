@@ -11,6 +11,10 @@ import {
   GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
+  HUSDC_ASSET_ID,
+  HUSDE_ASSET_ID,
+  HUSDS_ASSET_ID,
+  HUSDT_ASSET_ID,
   USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
   WSTETH_ASSET_ID,
@@ -304,8 +308,11 @@ export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
     case GETH_STABLESWAP_ASSET_ID:
       return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
     case VDOT_ASSET_ID:
-      return <MoneyMarketAPY {...props} />
     case USDT_POOL_ASSET_ID:
+    case HUSDC_ASSET_ID:
+    case HUSDT_ASSET_ID:
+    case HUSDS_ASSET_ID:
+    case HUSDE_ASSET_ID:
       return <MoneyMarketAPY {...props} />
     default:
       return children

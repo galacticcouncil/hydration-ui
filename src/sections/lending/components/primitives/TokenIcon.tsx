@@ -35,7 +35,12 @@ export function TokenIcon({
     meta.meta &&
     !STRATEGY_ASSETS_BLACKLIST.includes(meta.id)
   ) {
-    return <MultipleAssetLogo size={size} iconId={meta.iconId} />
+    return (
+      <MultipleAssetLogo
+        size={size}
+        iconId={aToken ? getRelatedAToken(assetId)?.id : meta.iconId}
+      />
+    )
   }
 
   return (

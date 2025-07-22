@@ -20,7 +20,7 @@ import { ReserveActionsSkeleton } from "sections/lending/skeleton/LendingReserve
 import { useRootStore } from "sections/lending/store/root"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { GhoReserveConfiguration } from "sections/lending/ui/reserve-overview/gho/GhoReserveConfiguration"
-import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
 export type LendingReserveOverviewPageProps = {
   underlyingAsset: string
@@ -36,8 +36,7 @@ export const LendingReserveOverviewPage: React.FC<
 
   const { isBound, isLoading } = useEvmAccount()
 
-  const isActionsDisabled =
-    MONEY_MARKET_SUPPLY_BLACKLIST.includes(underlyingAsset)
+  const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(underlyingAsset)
 
   const reserve = reserves.find(
     (reserve) => reserve.underlyingAsset === underlyingAsset,
@@ -55,6 +54,7 @@ export const LendingReserveOverviewPage: React.FC<
       <ReserveOverviewHeaderValues
         sx={{ mb: [10, 40] }}
         underlyingAsset={underlyingAsset}
+        aToken={isGigaAsset}
       />
       <SFilterContainer>
         <Button
@@ -90,7 +90,7 @@ export const LendingReserveOverviewPage: React.FC<
           </SContainer>
         ) : (
           <>
-            {isBound && !isActionsDisabled && (
+            {isBound && !isGigaAsset && (
               <SContainer>
                 <ReserveActions reserve={reserve} />
               </SContainer>

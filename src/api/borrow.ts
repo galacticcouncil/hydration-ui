@@ -35,13 +35,19 @@ import { calculateMaxWithdrawAmount } from "sections/lending/components/transact
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
 import {
   GETH_ERC20_ASSET_ID,
+  SUSDE_ASSET_ID,
+  SUSDS_ASSET_ID,
   VDOT_ASSET_ID,
   WSTETH_ASSET_ID,
 } from "utils/constants"
 import { useBifrostVDotApy } from "api/external/bifrost"
 import { useStablepoolFees } from "./stableswap"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
-import { useLIDOEthAPR } from "./external/ethereum"
+import {
+  useEthenaUsdAPR,
+  useLIDOEthAPR,
+  useSkyUsdAPR,
+} from "./external/ethereum"
 import { TFarmAprData, useOmnipoolFarm } from "./farms"
 
 export const useBorrowContractAddresses = () => {
@@ -501,6 +507,8 @@ export const useBorrowAssetApy = (
   )
 
   const isGETH = assetIds.includes(WSTETH_ASSET_ID)
+  const isSUSDE = assetIds.includes(SUSDE_ASSET_ID)
+  const isSUSDS = assetIds.includes(SUSDS_ASSET_ID)
 
   const { data: vDotApy } = useBifrostVDotApy({
     enabled: assetIds.includes(VDOT_ASSET_ID),
@@ -508,6 +516,14 @@ export const useBorrowAssetApy = (
 
   const { data: ethApr } = useLIDOEthAPR({
     enabled: isGETH,
+  })
+
+  const { data: susdeApr } = useEthenaUsdAPR({
+    enabled: isSUSDE,
+  })
+
+  const { data: susdsApr } = useSkyUsdAPR({
+    enabled: isSUSDS,
   })
 
   const { data: stablepoolFees } = useStablepoolFees(!asset?.isStableSwap)
@@ -577,6 +593,22 @@ export const useBorrowAssetApy = (
       }
     })
 
+    if (isSUSDE) {
+      underlyingAssetsAPY.push({
+        id: SUSDE_ASSET_ID,
+        supplyApy: BN(susdeApr ?? 0).toNumber(),
+        borrowApy: BN(susdeApr ?? 0).toNumber(),
+      })
+    }
+
+    if (isSUSDS) {
+      underlyingAssetsAPY.push({
+        id: SUSDS_ASSET_ID,
+        supplyApy: BN(susdsApr ?? 0).toNumber(),
+        borrowApy: BN(susdsApr ?? 0).toNumber(),
+      })
+    }
+
     if (isGETH) {
       underlyingAssetsAPY.push({
         id: WSTETH_ASSET_ID,
@@ -615,13 +647,17 @@ export const useBorrowAssetApy = (
   }, [
     assetIds,
     assetReserve?.aIncentivesData,
-    getErc20,
-    reserves,
-    vDotApy,
-    stablepoolFee,
     ethApr,
-    isGETH,
     farms?.totalApr,
+    getErc20,
+    isGETH,
+    isSUSDE,
+    isSUSDS,
+    reserves,
+    stablepoolFee?.projectedApyPerc,
+    susdeApr,
+    susdsApr,
+    vDotApy,
   ])
 
   return {

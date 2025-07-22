@@ -8,13 +8,13 @@ import { useMedia } from "react-use"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
-import { patchGigaReserveSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
 import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
 export type TSuppliedAssetsTable = typeof useSuppliedAssetsTableData
 export type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
@@ -38,6 +38,9 @@ export const useSuppliedAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.reserve.symbol}
+            aToken={MONEY_MARKET_GIGA_RESERVES.includes(
+              row.original.underlyingAsset,
+            )}
           />
         ),
       }),
@@ -181,10 +184,7 @@ export const useSuppliedAssetsTableData = () => {
       .map((userReserve) => ({
         ...userReserve,
         supplyAPY: userReserve.reserve.supplyAPY, // Note: added only for table sort
-        reserve: {
-          ...userReserve.reserve,
-          ...patchGigaReserveSymbolAndName(userReserve.reserve),
-        },
+        reserve: userReserve.reserve,
       }))
   }, [user.userReservesData])
 

@@ -58,3 +58,47 @@ export const useLIDOEthAPR = (options: UseQueryOptions<number> = {}) => {
     ...options,
   })
 }
+
+const fetchEthenaUsdAPR = async () => {
+  const res = await fetch(
+    "https://app.ethena.fi/api/yields/protocol-and-staking-yield",
+  )
+  const data = await res.json()
+  return Number(data?.stakingYield?.value || 0)
+}
+
+export const ethenaUsdAPRQuery: UseQueryOptions<number> = {
+  queryKey: QUERY_KEYS.ethenaUsdAPR,
+  queryFn: fetchEthenaUsdAPR,
+  staleTime: millisecondsInHour,
+  refetchOnWindowFocus: false,
+}
+
+export const useEthenaUsdAPR = (options: UseQueryOptions<number> = {}) => {
+  return useQuery({
+    ...ethenaUsdAPRQuery,
+    ...options,
+  })
+}
+
+const fetchSkyUsdAPR = async () => {
+  const res = await fetch(
+    "https://info-sky.blockanalitica.com/farms/0x0650caf159c5a49f711e8169d4336ecb9b950275",
+  )
+  const data = await res.json()
+  return Number(data?.apy || 0) * 100
+}
+
+export const skyUsdAPRQuery: UseQueryOptions<number> = {
+  queryKey: QUERY_KEYS.skyUsdApr,
+  queryFn: fetchSkyUsdAPR,
+  staleTime: millisecondsInHour,
+  refetchOnWindowFocus: false,
+}
+
+export const useSkyUsdAPR = (options: UseQueryOptions<number> = {}) => {
+  return useQuery({
+    ...skyUsdAPRQuery,
+    ...options,
+  })
+}

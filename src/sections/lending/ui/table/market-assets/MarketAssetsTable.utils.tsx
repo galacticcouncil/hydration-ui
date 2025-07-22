@@ -11,7 +11,6 @@ import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useRootStore } from "sections/lending/store/root"
-import { patchGigaReserveSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
@@ -205,15 +204,10 @@ export const useMarketAssetsTableData = ({
   const { currentMarket } = useProtocolDataContext()
 
   const data = useMemo(() => {
-    const data = reserves
-      .filter((r) => {
-        const isGho = displayGho({ symbol: r.symbol, currentMarket })
-        return !isGho && r.isActive && !r.isFrozen && !r.isPaused
-      })
-      .map((reserve) => ({
-        ...reserve,
-        ...patchGigaReserveSymbolAndName(reserve),
-      }))
+    const data = reserves.filter((r) => {
+      const isGho = displayGho({ symbol: r.symbol, currentMarket })
+      return !isGho && r.isActive && !r.isFrozen && !r.isPaused
+    })
 
     return search
       ? arraySearch(data, search, ["name", "symbol", "underlyingAsset"])

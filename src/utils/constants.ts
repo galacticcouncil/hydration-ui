@@ -59,6 +59,8 @@ export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
 export const ETH_ASSET_ID = "34"
 export const WSTETH_ASSET_ID = "1000809"
+export const SUSDE_ASSET_ID = "1000625"
+export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 
 export const HUSDC_ASSET_ID = "103"

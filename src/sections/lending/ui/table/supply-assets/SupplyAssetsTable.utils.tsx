@@ -21,11 +21,12 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
-import { MONEY_MARKET_SUPPLY_BLACKLIST } from "sections/lending/ui-config/misc"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NoData } from "sections/lending/components/primitives/NoData"
+import { useAssets } from "providers/assets"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -204,6 +205,7 @@ export const useSupplyAssetsTableColumns = () => {
 
 export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   const displayGho = useRootStore((store) => store.displayGho)
+  const { getAsset } = useAssets()
   const { currentMarket, currentMarketData } = useProtocolDataContext()
   const {
     user,
@@ -227,7 +229,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
         (acc, reserve: ComputedReserveData) => {
           const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
 
-          if (MONEY_MARKET_SUPPLY_BLACKLIST.includes(reserve.underlyingAsset)) {
+          if (MONEY_MARKET_GIGA_RESERVES.includes(reserve.underlyingAsset)) {
             acc.gigaReserves.push(reserve)
 
             if (walletBalance === "0") return acc
@@ -266,8 +268,19 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
               ? false
               : !hasDifferentCollateral
 
+          const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(
+            reserve.underlyingAsset,
+          )
+
+          // display share token name and symbol for giga assets in the supply table
+          const gigaAssetMeta = isGigaAsset
+            ? getAsset(getAssetIdFromAddress(reserve.underlyingAsset))
+            : undefined
+
           acc.tokensToSupply.push({
             ...reserve,
+            symbol: gigaAssetMeta?.symbol || reserve.symbol,
+            name: gigaAssetMeta?.name || reserve.name,
             reserve,
             walletBalance,
             walletBalanceUSD,
@@ -310,6 +323,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   }, [
     currentMarket,
     displayGho,
+    getAsset,
     marketReferencePriceInUsd,
     reserves,
     showAll,
