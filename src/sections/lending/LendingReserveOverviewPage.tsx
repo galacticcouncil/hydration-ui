@@ -55,26 +55,28 @@ export const LendingReserveOverviewPage: React.FC<
         sx={{ mb: [10, 40] }}
         underlyingAsset={underlyingAsset}
       />
-      <SFilterContainer>
-        <Button
-          active={mode === "overview"}
-          fullWidth
-          variant="outline"
-          size="small"
-          onClick={() => setMode("overview")}
-        >
-          {t("lending.reserve.overview")}
-        </Button>
-        <Button
-          active={mode === "actions"}
-          fullWidth
-          variant="outline"
-          size="small"
-          onClick={() => setMode("actions")}
-        >
-          {t("lending.reserve.yourInfo")}
-        </Button>
-      </SFilterContainer>
+      {!isActionsDisabled && (
+        <SFilterContainer>
+          <Button
+            active={mode === "overview"}
+            fullWidth
+            variant="outline"
+            size="small"
+            onClick={() => setMode("overview")}
+          >
+            {t("lending.reserve.overview")}
+          </Button>
+          <Button
+            active={mode === "actions"}
+            fullWidth
+            variant="outline"
+            size="small"
+            onClick={() => setMode("actions")}
+          >
+            {t("lending.reserve.yourInfo")}
+          </Button>
+        </SFilterContainer>
+      )}
       <SContent>
         <SContainer active={mode === "overview"}>
           {isGho ? (
@@ -90,7 +92,7 @@ export const LendingReserveOverviewPage: React.FC<
         ) : (
           <>
             {isBound && !isActionsDisabled && (
-              <SContainer>
+              <SContainer active={mode === "actions"}>
                 <ReserveActions reserve={reserve} />
               </SContainer>
             )}

@@ -31,6 +31,7 @@ export const SupplyGigadotMobileRow: FC<Props> = ({
     columns: useMemo(
       () => [
         columnHelper.display({
+          id: "supplyAPY",
           header: t("lending.apy"),
           meta: {
             sx: {
