@@ -9,15 +9,23 @@ import BN from "bignumber.js"
 import { TLPData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { useAccountBalances } from "api/deposits"
+import { useXYKPoolJoinFarmMinShares } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
+import { scale } from "@galacticcouncil/sdk"
+
+type XYKProps = {
+  poolAddress: string
+}
 
 export const useZodSchema = ({
   id,
   farms,
+  xykProps,
   position,
   enabled,
 }: {
   id: string
   farms: TFarmAprData[]
+  xykProps?: XYKProps
   position?: TLPData
   enabled: boolean
 }) => {
@@ -49,33 +57,51 @@ export const useZodSchema = ({
 
   const oraclePrice = useOraclePrice(minDeposit.assetId, assetId)
 
+  const xykRequiredMinShares = useXYKPoolJoinFarmMinShares(
+    xykProps?.poolAddress ?? "",
+    minDeposit.value,
+  )
+
   if (!oraclePrice.data || assetId === undefined) return undefined
 
-  const rule = required.refine(
-    () => {
-      if (position?.amount) {
-        const valueInIncentivizedAsset = BN(position.amount)
-          .times(oraclePrice.data?.price?.n ?? 1)
-          .div(oraclePrice.data?.price?.d ?? 1)
+  const rule = required
+    .refine(
+      () => {
+        if (position?.amount) {
+          const valueInIncentivizedAsset = BN(position.amount)
+            .times(oraclePrice.data?.price?.n ?? 1)
+            .div(oraclePrice.data?.price?.d ?? 1)
 
-        return valueInIncentivizedAsset.gte(minDeposit.value)
-      }
+          return valueInIncentivizedAsset.gte(minDeposit.value)
+        }
 
-      return true
-    },
-    () => {
-      const maxValue = minDeposit.value
-        .times(oraclePrice.data?.price?.d ?? 1)
-        .div(oraclePrice.data?.price?.n ?? 1)
+        return true
+      },
+      () => {
+        const maxValue = minDeposit.value
+          .times(oraclePrice.data?.price?.d ?? 1)
+          .div(oraclePrice.data?.price?.n ?? 1)
 
-      return {
+        return {
+          message: t("farms.modal.join.minDeposit", {
+            value: scaleHuman(maxValue, meta.decimals).times(1.02),
+            symbol: meta.symbol,
+          }),
+        }
+      },
+    )
+    .refine(
+      (value) =>
+        !xykProps ||
+        xykRequiredMinShares.lte(0) ||
+        scale(BN(value), meta.decimals).gte(xykRequiredMinShares),
+      {
         message: t("farms.modal.join.minDeposit", {
-          value: scaleHuman(maxValue, meta.decimals).times(1.02),
+          value: scaleHuman(xykRequiredMinShares, meta.decimals),
           symbol: meta.symbol,
         }),
-      }
-    },
-  )
+      },
+    )
 
   return z.object({
     amount: position
