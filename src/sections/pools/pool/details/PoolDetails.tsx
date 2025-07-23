@@ -269,7 +269,7 @@ export const PoolDetails = () => {
 
             <CurrencyReserves reserves={pool.reserves} />
 
-            {pool.isGDOT && (
+            {pool.relatedAToken && !pool.isInOmnipool && (
               <>
                 <Separator
                   color="white"
@@ -277,7 +277,7 @@ export const PoolDetails = () => {
                   sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
                 />
 
-                <GigaIncentives id={pool.poolId} />
+                <GigaIncentives pool={pool} />
               </>
             )}
           </>

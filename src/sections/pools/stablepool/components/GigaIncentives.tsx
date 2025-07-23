@@ -5,10 +5,10 @@ import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 import i18n from "i18next"
 import {
+  BN_0,
   BN_NAN,
   DOT_ASSET_ID,
   ETH_ASSET_ID,
-  GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
   USDT_POOL_ASSET_ID,
@@ -26,10 +26,21 @@ import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
 
-export const GigaIncentives = ({ id }: { id: string }) => {
+export const GigaIncentives = ({
+  pool: { moneyMarketApy },
+}: {
+  pool: TStablepool
+}) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+
+  if (!moneyMarketApy) return null
+
+  const totalApr = moneyMarketApy.incentives.reduce(
+    (acc, incentive) => acc.plus(incentive.incentiveAPR),
+    BN_0,
+  )
 
   return (
     <>
@@ -43,13 +54,19 @@ export const GigaIncentives = ({ id }: { id: string }) => {
         {t("liquidity.stablepool.incetives")}
       </Heading>
       <SContainer sx={{ flex: "row", gap: 6, justify: "space-between" }}>
-        <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={20} icon={<AssetLogo id={GDOT_ERC20_ASSET_ID} />} />
-          <Text fs={16} fw={600} font="GeistSemiBold" color="basic100">
-            {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
-          </Text>
-        </div>
-        <MoneyMarketAPYWrapper withLabel type="supply" assetId={id} />
+        <MultipleIcons
+          size={20}
+          icons={moneyMarketApy.incentives.map((incentive) => {
+            const id = getAssetIdFromAddress(incentive.rewardTokenAddress)
+            return {
+              icon: <AssetLogo key={id} id={id} />,
+            }
+          })}
+        />
+
+        <Text color="white" fs={14}>
+          <FormattedNumber percent value={totalApr.toString()} />
+        </Text>
       </SContainer>
     </>
   )
