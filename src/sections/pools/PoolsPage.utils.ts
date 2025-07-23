@@ -12,7 +12,6 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
-  USDT_POOL_ASSET_ID,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStablepoolFees, useStableSDKPools } from "api/stableswap"
@@ -28,7 +27,7 @@ import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useBorrowAssetApy } from "api/borrow"
+import { BorrowAssetApyData, useMoneyMarketAssetsAPY } from "api/borrow"
 import {
   setOmnipoolTvlTotal,
   setOmnipoolVolumeTotal,
@@ -67,6 +66,7 @@ type TStablepoolData = {
   balance: string
   isStablepoolData: boolean
   lpFee: string | undefined
+  moneyMarketApy: BorrowAssetApyData | undefined
 }
 
 const isStablepoolData = (
@@ -121,10 +121,6 @@ export const usePools = () => {
   const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
     useOmnipoolYieldMetrics(isInitialLoading)
 
-  const gdotBorrowApy = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
-  const gethBorrowApy = useBorrowAssetApy(GETH_STABLESWAP_ASSET_ID)
-  const usdtBorrowApy = useBorrowAssetApy(USDT_POOL_ASSET_ID)
-
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
   const { data, tvlTotal, volumeTotal, stablepoolTotal } = useMemo(() => {
@@ -162,7 +158,9 @@ export const usePools = () => {
 
         const isStablepoolOnly = isStablepoolData(asset)
         const isStableInOmnipool = stableInOmnipool.get(poolId)
-
+        const moneyMarketApy = isStablepoolOnly
+          ? asset.moneyMarketApy
+          : isStableInOmnipool?.moneyMarketApy
         const meta = getAssetWithFallback(poolId)
 
         const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
@@ -224,12 +222,8 @@ export const usePools = () => {
         if (isStablepoolOnly) {
           lpFeeStablepool = asset.lpFee
 
-          if (isGDOT) {
-            totalFee = BN(gdotBorrowApy.totalSupplyApy)
-          } else if (poolId === USDT_POOL_ASSET_ID) {
-            totalFee = BN(lpFeeStablepool ?? 0).plus(
-              usdtBorrowApy.totalSupplyApy,
-            )
+          if (moneyMarketApy) {
+            totalFee = BN(moneyMarketApy.totalSupplyApy)
           } else {
             totalFee = BN(lpFeeStablepool ?? 0).plus(farmsApr ?? 0)
           }
@@ -243,10 +237,10 @@ export const usePools = () => {
               return id === asset.id
             })?.projectedAprPerc ?? "0"
 
-          if (isGETH) {
-            totalFee = BN(lpFeeOmnipool ?? 0)
-              .plus(gethBorrowApy.totalSupplyApy)
-              .plus(farmsApr ?? 0)
+          if (moneyMarketApy) {
+            totalFee = BN(lpFeeOmnipool ?? 0).plus(
+              moneyMarketApy.totalSupplyApy,
+            )
           } else {
             totalFee = BN(lpFeeStablepool)
               .plus(lpFeeOmnipool ?? 0)
@@ -305,6 +299,7 @@ export const usePools = () => {
           isInOmnipool: !isStablepoolOnly,
           relatedAToken,
           aBalance: accountAAsset?.balance,
+          moneyMarketApy,
         }
       })
       .sort((poolA, poolB) => {
@@ -341,11 +336,8 @@ export const usePools = () => {
     isVolumeLoading,
     omnipoolMetrics,
     stablepoolData,
-    gdotBorrowApy.totalSupplyApy,
-    gethBorrowApy.totalSupplyApy,
     accountPositions,
     getRelatedAToken,
-    usdtBorrowApy.totalSupplyApy,
   ])
 
   useEffect(() => {
@@ -816,6 +808,10 @@ export const useStablepoolsData = (disabled?: boolean) => {
     return { poolId: stablePool.id, tokens: filteredTokens }
   })
 
+  const moneyMarketAssetsApy = useMoneyMarketAssetsAPY(
+    stablePoolData?.map((stablepool) => stablepool.poolId) ?? [],
+  )
+
   const { isLoading, getAssetPrice } = useAssetsPrice([...tokensSet])
 
   const data = stablePoolData?.map((stablepool) => {
@@ -845,6 +841,10 @@ export const useStablepoolsData = (disabled?: boolean) => {
       (stablepoolFee) => stablepoolFee.poolId === poolId,
     )?.projectedApyPerc
 
+    const moneyMarketApy = moneyMarketAssetsApy.find(
+      (moneyMarketApy) => moneyMarketApy.assetId === stablepool.poolId,
+    )
+
     const data: TStablepoolData = {
       poolId,
       id,
@@ -852,6 +852,7 @@ export const useStablepoolsData = (disabled?: boolean) => {
       balance: totalBalance.toString(),
       isStablepoolData: true,
       lpFee,
+      moneyMarketApy,
     }
 
     return data

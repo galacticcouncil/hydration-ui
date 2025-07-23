@@ -11,7 +11,10 @@ import { useQuery } from "@tanstack/react-query"
 import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
-import { ExtendedFormattedUser } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import {
+  ComputedReserveData,
+  ExtendedFormattedUser,
+} from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import {
   formatReserveIncentives,
   reserveSortFn,
@@ -468,6 +471,7 @@ export const useMaxWithdrawAmount = (assetId: string) => {
 }
 
 export type BorrowAssetApyData = {
+  assetId: string
   tvl: string
   vDotApy?: number
   totalSupplyApy: number
@@ -477,6 +481,175 @@ export type BorrowAssetApyData = {
   incentives: ReserveIncentiveResponse[]
   underlyingAssetsAPY: { supplyApy: number; borrowApy: number; id: string }[]
   farms: TFarmAprData[] | undefined
+}
+
+export const useMoneyMarketAssetsAPY = (assetIds: string[]) => {
+  const { getAssetWithFallback, getErc20, getRelatedAToken } = useAssets()
+
+  const { data: reserves } = useBorrowReserves()
+  const { data: stablepoolFees } = useStablepoolFees()
+
+  const aTokens = useMemo(() => {
+    return assetIds.reduce<
+      {
+        assetId: string
+        reserve: ComputedReserveData
+        lpFee: number
+        stableswapAssets: string[]
+        isGETH: boolean
+      }[]
+    >((acc, assetId) => {
+      const relatedAToken = getRelatedAToken(assetId)
+
+      if (relatedAToken) {
+        const reserve = reserves?.formattedReserves.find(
+          ({ underlyingAsset }) =>
+            underlyingAsset === getAddressFromAssetId(assetId),
+        )
+
+        if (reserve) {
+          const lpFee = Number(
+            stablepoolFees?.find((fee) => fee.poolId === assetId)
+              ?.projectedApyPerc ?? 0,
+          )
+          const meta = getAssetWithFallback(assetId)
+          const stableswapAssets = meta.meta ? Object.keys(meta.meta) : []
+          const isGETH = stableswapAssets.includes(WSTETH_ASSET_ID)
+
+          acc.push({ assetId, reserve, lpFee, stableswapAssets, isGETH })
+        }
+      }
+
+      return acc
+    }, [])
+  }, [
+    assetIds,
+    getRelatedAToken,
+    getAssetWithFallback,
+    reserves,
+    stablepoolFees,
+  ])
+
+  const { data: vDotApy } = useBifrostVDotApy({
+    enabled: aTokens.some((aToken) =>
+      aToken.stableswapAssets.includes(VDOT_ASSET_ID),
+    ),
+  })
+
+  const isGETH = aTokens.some((aToken) => aToken.isGETH)
+
+  const { data: wsethApr } = useLIDOEthAPR({
+    enabled: isGETH,
+  })
+
+  const { data: gethFarms } = useOmnipoolFarm(
+    isGETH ? GETH_ERC20_ASSET_ID : undefined,
+  )
+
+  const data = useMemo<BorrowAssetApyData[]>(() => {
+    return aTokens.map((aToken) => {
+      const isWseth = aToken.stableswapAssets.includes(WSTETH_ASSET_ID)
+      const assetsAmount = aToken.stableswapAssets.length
+
+      const underlyingAssetIds = aToken.stableswapAssets.map((assetId) => {
+        return getErc20(assetId)?.underlyingAssetId ?? assetId
+      })
+
+      const underlyingReserves =
+        reserves?.formattedReserves?.filter((reserve) => {
+          return underlyingAssetIds
+            .map(getAddressFromAssetId)
+            .includes(reserve.underlyingAsset)
+        }) ?? []
+
+      const incentives = aToken.reserve.aIncentivesData ?? []
+
+      const isIncentivesInfinity = incentives.some(
+        (incentive) => incentive.incentiveAPR === "Infinity",
+      )
+
+      const incentivesAPRSum = isIncentivesInfinity
+        ? Infinity
+        : incentives.reduce(
+            (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
+            0,
+          ) * 100
+
+      const incentivesNetAPR = isIncentivesInfinity
+        ? Infinity
+        : incentivesAPRSum !== Infinity
+          ? incentivesAPRSum || 0
+          : Infinity
+
+      const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
+        const isVdot =
+          reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
+
+        const supplyAPY = isVdot
+          ? BN(reserve.supplyAPY).plus(BN(vDotApy ?? 0).div(100))
+          : BN(reserve.supplyAPY)
+
+        const borrowAPY = isVdot
+          ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy ?? 0).div(100))
+          : BN(reserve.variableBorrowAPY)
+
+        return {
+          supplyApy: supplyAPY.div(assetsAmount).times(100).toNumber(),
+          borrowApy: borrowAPY.div(assetsAmount).times(100).toNumber(),
+          id: getAssetIdFromAddress(reserve.underlyingAsset),
+        }
+      })
+
+      if (isWseth) {
+        underlyingAssetsAPY.push({
+          id: WSTETH_ASSET_ID,
+          supplyApy: BN(wsethApr ?? 0)
+            .div(assetsAmount)
+            .toNumber(),
+          borrowApy: BN(wsethApr ?? 0)
+            .div(assetsAmount)
+            .toNumber(),
+        })
+      }
+
+      const supplyAPYSum = underlyingAssetsAPY.reduce(
+        (a, b) => a + b.supplyApy,
+        0,
+      )
+
+      const borrowAPYSum = underlyingAssetsAPY.reduce(
+        (a, b) => a + b.borrowApy,
+        0,
+      )
+      const lpAPY = aToken.lpFee
+      const totalApr = aToken.isGETH ? gethFarms?.totalApr : undefined
+      const farms = aToken.isGETH ? gethFarms?.farms : undefined
+
+      return {
+        assetId: aToken.assetId,
+        tvl: aToken.reserve?.totalLiquidityUSD || "0",
+        totalSupplyApy: isIncentivesInfinity
+          ? Infinity
+          : supplyAPYSum + incentivesNetAPR + lpAPY + Number(totalApr ?? 0),
+        totalBorrowApy: borrowAPYSum + incentivesNetAPR + lpAPY,
+        lpAPY: lpAPY,
+        underlyingAssetsAPY,
+        incentivesNetAPR,
+        incentives: aToken.reserve?.aIncentivesData ?? [],
+        vDotApy,
+        farms,
+      }
+    })
+  }, [
+    aTokens,
+    getErc20,
+    reserves?.formattedReserves,
+    vDotApy,
+    wsethApr,
+    gethFarms,
+  ])
+
+  return data
 }
 
 export const useBorrowAssetApy = (
@@ -622,6 +795,7 @@ export const useBorrowAssetApy = (
   ])
 
   return {
+    assetId,
     tvl: assetReserve?.totalLiquidityUSD || "0",
     totalSupplyApy,
     totalBorrowApy,

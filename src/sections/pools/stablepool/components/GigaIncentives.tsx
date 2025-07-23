@@ -19,7 +19,7 @@ import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { SContainer, SIncentiveRow } from "./GigaIncentives.styled"
 import { ReactNode } from "react"
-import { useBorrowAssetApy } from "api/borrow"
+import { BorrowAssetApyData, useBorrowAssetApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { ResponsiveValue } from "utils/responsive"
 import { theme } from "theme"
@@ -49,7 +49,7 @@ export const GigaIncentives = ({ id }: { id: string }) => {
             {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
           </Text>
         </div>
-        <MoneyMarketAPY withLabel type="supply" assetId={id} />
+        <MoneyMarketAPYWrapper withLabel type="supply" assetId={id} />
       </SContainer>
     </>
   )
@@ -107,6 +107,12 @@ type APYProps = {
   readonly omnipoolFee?: string
 }
 
+export const MoneyMarketAPYWrapper = (props: APYProps) => {
+  const moneyMarketApy = useBorrowAssetApy(props.assetId, props.withFarms)
+
+  return <MoneyMarketAPY moneyMarketApy={moneyMarketApy} {...props} />
+}
+
 export const MoneyMarketAPY = ({
   withLabel,
   type,
@@ -115,7 +121,8 @@ export const MoneyMarketAPY = ({
   size,
   withFarms,
   omnipoolFee,
-}: APYProps) => {
+  moneyMarketApy,
+}: APYProps & { moneyMarketApy: BorrowAssetApyData }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
@@ -127,7 +134,7 @@ export const MoneyMarketAPY = ({
     incentives,
     farms,
     vDotApy,
-  } = useBorrowAssetApy(assetId, withFarms)
+  } = moneyMarketApy
 
   const isSupply = type === "supply"
   const apy = BN(isSupply ? totalSupplyApy : totalBorrowApy)
@@ -302,9 +309,13 @@ export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
     case GDOT_STABLESWAP_ASSET_ID:
     case GETH_STABLESWAP_ASSET_ID:
     case USDT_POOL_ASSET_ID:
-      return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
+      return props.type === "supply" ? (
+        <MoneyMarketAPYWrapper {...props} />
+      ) : (
+        children
+      )
     case VDOT_ASSET_ID:
-      return <MoneyMarketAPY {...props} />
+      return <MoneyMarketAPYWrapper {...props} />
     default:
       return children
   }
