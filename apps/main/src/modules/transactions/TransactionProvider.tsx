@@ -1,18 +1,19 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xcm-core"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
-import { useNonce } from "@/api/account"
+import { useAccountInfo } from "@/api/account"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
 import { useTransactionEcosystem } from "@/modules/transactions/hooks/useTransactionEcosystem"
+import { useTransactionTip } from "@/modules/transactions/hooks/useTransactionTip"
 import { useTransactionToasts } from "@/modules/transactions/hooks/useTransactionToasts"
 import {
   doClose,
   doReset,
   doSetError,
   doSetStatus,
+  doSetTip,
   doSign,
   INITIAL_STATUS,
   transactionStatusReducer,
@@ -40,6 +41,8 @@ export type TransactionContext = Transaction &
     isLoadingFeeEstimate: boolean
 
     isLoading: boolean
+
+    setTip: (tip: string) => void
     setStatus: (status: TxStatus) => void
     signAndSubmit: () => void
     reset: () => void
@@ -60,15 +63,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   ...transaction
 }) => {
   const { cancelTransaction } = useTransactionsStore()
-  const { account } = useAccount()
 
   const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
   const ecosystem = useTransactionEcosystem(transaction)
   const toasts = useTransactionToasts(transaction, ecosystem)
 
-  const { data: nonce, isLoading: isLoadingNonce } = useNonce({
-    address: account?.address,
-  })
+  const { data: accountInfo, isLoading: isLoadingNonce } = useAccountInfo()
+  const nonce = accountInfo?.nonce
 
   const { data: fee, isLoading: isLoadingFeeEstimate } =
     useEstimateFee(transaction)
@@ -92,6 +93,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     dispatch(doSetStatus(status))
   }, [])
 
+  const setTip = useCallback(
+    (tip: string) => {
+      dispatch(doSetTip(tip))
+    },
+    [dispatch],
+  )
+
   const signAndSubmitMutation = useSignAndSubmit(transaction, {
     onMutate: () => dispatch(doSign()),
     onError: (err) => doSetError(err.message),
@@ -99,10 +107,14 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
   const openRef = useLatest(state.open)
 
+  const tip = useTransactionTip(state.tip, state.tipAssetId)
+
   const signAndSubmit = () => {
     signAndSubmitMutation.mutate({
       chainKey: transaction.meta.srcChainKey,
       feeAssetId,
+      tip,
+      mortalityPeriod: state.mortalityPeriod,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
@@ -153,12 +165,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
         isLoading,
 
+        setTip,
         onClose,
-
         setStatus,
-
         signAndSubmit,
-
         reset,
       }}
     >
