@@ -8,7 +8,6 @@ import { Button } from "components/Button/Button"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { Modal } from "components/Modal/Modal"
 import { scaleHuman } from "utils/balance"
-import { GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 type Props = {
   pool: TStablepool
@@ -26,11 +25,16 @@ export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
 
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
 
-  const { balance, meta, isGDOT, id, biggestPercentage } = pool
+  const { balance, aBalance, meta, isGDOT, biggestPercentage, relatedAToken } =
+    pool
 
-  const balanceHuman = balance?.transferable
-    ? scaleHuman(balance.transferable, meta.decimals).toString()
-    : undefined
+  const balanceHuman =
+    type === STABLEPOOLTYPE.GIGA && relatedAToken
+      ? scaleHuman(
+          aBalance?.transferable ?? 0,
+          relatedAToken.decimals,
+        ).toString()
+      : scaleHuman(balance?.transferable ?? 0, meta.decimals).toString()
 
   return (
     <>
@@ -53,10 +57,10 @@ export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
           onClose={() => setOpenRemove(null)}
         />
       )}
-      {STABLEPOOLTYPE.GIGA === openRemove && (
+      {STABLEPOOLTYPE.GIGA === openRemove && relatedAToken && (
         <Modal open onClose={() => setOpenRemove(null)}>
           <RemoveDepositModal
-            assetId={isGDOT ? GDOT_ERC20_ASSET_ID : id}
+            assetId={relatedAToken.id}
             balance={balanceHuman ?? "0"}
             assetReceiveId={isGDOT ? undefined : biggestPercentage?.assetId}
             onClose={() => setOpenRemove(null)}

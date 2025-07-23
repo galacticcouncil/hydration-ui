@@ -11,7 +11,7 @@ import { useRemoveDepositForm } from "sections/wallet/strategy/RemoveDepositModa
 import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositSummary"
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
-import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
+import { useHealthFactorChange } from "api/borrow"
 import { useAssets } from "providers/assets"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useBestTradeSell } from "api/trade"
@@ -46,8 +46,7 @@ export const RemoveDepositModal: FC<Props> = ({
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
-  const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
-  const maxBalance = BigNumber.min(maxBalanceToWithdraw, balance).toString()
+  const maxBalance = balance
 
   const form = useRemoveDepositForm({ maxBalance, assetReceiveId })
   const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
