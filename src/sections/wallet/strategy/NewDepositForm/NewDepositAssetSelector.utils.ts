@@ -93,7 +93,8 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
         return (
           balance.displayBalance.gt(0) &&
           balance.asset.isTradable &&
-          !balance.asset.isExternal
+          !balance.asset.isExternal &&
+          relatedAToken?.id !== balance.asset.id
         )
       })
 
@@ -107,6 +108,7 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
     assetId,
     accountBalances,
     getAssetPrice,
+    relatedAToken,
   ])
 
   return {
