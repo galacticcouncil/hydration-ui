@@ -163,7 +163,7 @@ export const usePools = () => {
           : isStableInOmnipool?.moneyMarketApy
         const meta = getAssetWithFallback(poolId)
 
-        const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
+        const accountAsset = accountAssets?.accountAssetsMap.get(poolId)
         const accountAAsset = relatedAToken
           ? accountAssets?.accountAssetsMap.get(relatedAToken.id)
           : undefined

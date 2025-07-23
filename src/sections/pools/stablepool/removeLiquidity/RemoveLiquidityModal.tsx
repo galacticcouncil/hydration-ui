@@ -224,7 +224,7 @@ export const RemoveLiquidityModal = ({
                 position={{
                   reserves: pool.reserves,
                   fee: stablepoolFee,
-                  poolId: pool.id,
+                  poolId: pool.poolId,
                   amount:
                     isRemovingOmnipoolPosition && !removeAll
                       ? BN(sharesAmount ?? 0)
