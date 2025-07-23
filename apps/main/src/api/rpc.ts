@@ -1,4 +1,4 @@
-import { PingResponse, pingRpc, sleep } from "@galacticcouncil/utils"
+import { PingResponse, pingRpc, sleep, wsToHttp } from "@galacticcouncil/utils"
 import {
   keepPreviousData,
   queryOptions,
@@ -8,12 +8,23 @@ import {
 import { useRef } from "react"
 
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import { pingWorker } from "@/workers/ping"
 
 export const rpcStatusQueryOptions = (url: string) =>
   queryOptions({
     enabled: !!url,
     queryKey: ["rpcStatus", url],
-    queryFn: () => pingRpc(url),
+    queryFn: async () => {
+      const [ping, status] = await Promise.all([
+        pingWorker.getPing(wsToHttp(url)),
+        pingRpc(url),
+      ])
+
+      return {
+        ...status,
+        ping,
+      }
+    },
     retry: 0,
     refetchInterval: PARACHAIN_BLOCK_TIME / 2,
     placeholderData: keepPreviousData,
@@ -40,7 +51,15 @@ export const useRpcsStatus = (
       queryFn: async () => {
         const delay = index * 150 // stagger queries for more accurate measurements
         if (delay > 0) await sleep(delay)
-        const result = await pingRpc(url)
+        const [ping, status] = await Promise.all([
+          pingWorker.getPing(wsToHttp(url)),
+          pingRpc(url),
+        ])
+
+        const result: PingResponse = {
+          ...status,
+          ping,
+        }
 
         if (!options.calculateAvgPing) return result
 
