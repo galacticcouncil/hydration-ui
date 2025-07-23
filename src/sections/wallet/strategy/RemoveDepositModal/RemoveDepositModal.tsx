@@ -19,8 +19,8 @@ import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
 import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
+import { prop } from "utils/rx"
 
 type Props = {
   readonly assetId: string
@@ -38,10 +38,14 @@ export const RemoveDepositModal: FC<Props> = ({
   positions,
 }) => {
   const { createTransaction } = useStore()
-  const { tradable, getAssetWithFallback } = useAssets()
+  const { tradable, getAssetWithFallback, stableswap, getRelatedAToken } =
+    useAssets()
   const { t } = useTranslation()
 
   const asset = getAssetWithFallback(assetId)
+  const blockeAssets = stableswap
+    .filter((asset) => !!getRelatedAToken(asset.id))
+    .map(prop("id"))
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -170,7 +174,9 @@ export const RemoveDepositModal: FC<Props> = ({
               allowedAssets={tradable
                 .map((asset) => asset.id)
                 .filter(
-                  (assetId) => !STRATEGY_ASSETS_BLACKLIST.includes(assetId),
+                  (tradableAsset) =>
+                    !blockeAssets.includes(tradableAsset) &&
+                    tradableAsset !== assetId,
                 )}
               onSelect={(asset) => {
                 form.setValue("assetReceived", asset, { shouldValidate: true })
