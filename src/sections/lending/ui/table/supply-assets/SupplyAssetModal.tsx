@@ -37,9 +37,7 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
     useNewDepositDefaultAssetId(assetId)
 
   const aTokenId = aToken.id
-  const allowedAssets = useNewDepositAssets(
-    [assetId].concat(aTokenId ? [aTokenId] : []),
-  )
+  const allowedAssets = useNewDepositAssets(aTokenId ? [aTokenId] : [])
 
   const { page, direction, back, next } = useModalPagination()
 
