@@ -16,6 +16,8 @@ import { TJoinFarmsInput } from "utils/farms/deposit"
 import { scale } from "utils/balance"
 import { TDeposit } from "api/deposits"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
+import { BN_0 } from "utils/constants"
 
 type FormProps = {
   position?: TLPData
@@ -41,6 +43,12 @@ export const JoinFarmsForm = ({
   const zodSchema = useZodSchema({
     id: meta.id,
     farms,
+    xykProps: isXYKPoolType(pool)
+      ? {
+          poolAddress: pool.poolAddress,
+          totalShare: pool.shareTokenIssuance?.totalShare ?? BN_0,
+        }
+      : undefined,
     position,
     enabled: shouldValidate,
   })

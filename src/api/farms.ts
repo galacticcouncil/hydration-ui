@@ -83,6 +83,8 @@ export type TFarmAprData = {
   diffRewards: string
 }
 
+export type OraclePricePoolType = "omnipool" | "hydraxyk"
+
 const getActiveFarms =
   (api: ApiPromise, isXyk: boolean = false) =>
   async () => {
@@ -548,12 +550,13 @@ function getFarmApr(
 export const useOraclePrice = (
   rewardCurrency: string | undefined,
   incentivizedAsset: string | undefined,
+  type: OraclePricePoolType = "omnipool",
 ) => {
   const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
     rewardCurrency != null && incentivizedAsset != null
-      ? getOraclePrice(api, rewardCurrency, incentivizedAsset)
+      ? getOraclePrice(api, rewardCurrency, incentivizedAsset, type)
       : undefinedNoop,
     {
       enabled: rewardCurrency != null && incentivizedAsset != null && isLoaded,
@@ -562,7 +565,12 @@ export const useOraclePrice = (
 }
 
 const getOraclePrice =
-  (api: ApiPromise, rewardCurrency: string, incentivizedAsset: string) =>
+  (
+    api: ApiPromise,
+    rewardCurrency: string,
+    incentivizedAsset: string,
+    type: OraclePricePoolType = "omnipool",
+  ) =>
   async () => {
     const orderedAssets = [rewardCurrency, incentivizedAsset].sort(
       (a, b) => Number(a) - Number(b),
@@ -574,7 +582,7 @@ const getOraclePrice =
         oraclePrice: scale(BN_1, "q"),
       }
     const res = await api.query.emaOracle.oracles(
-      "omnipool",
+      "hydraxyk",
       orderedAssets,
       "TenMinutes",
     )
