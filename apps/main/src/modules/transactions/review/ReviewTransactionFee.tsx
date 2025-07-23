@@ -37,36 +37,40 @@ export const ReviewTransactionFee = () => {
     )
   }
 
+  if (isLoadingFeeEstimate) {
+    return (
+      <Text fs="p5" fw={500} color={getToken("text.high")}>
+        <Skeleton width={60} height="1em" />
+      </Text>
+    )
+  }
+
   return (
     <Text fs="p5" fw={500} color={getToken("text.high")}>
-      {isLoadingFeeEstimate ? (
-        <Skeleton width={60} height="1em" />
-      ) : (
-        <Flex as="span" gap={4}>
-          {t("approx.short")}{" "}
-          {t("currency", {
-            symbol: feeAsset?.symbol,
-            value: feeEstimate,
-          })}
-          {!isChangingFeeAsset && (
-            <>
-              <ButtonTransparent onClick={() => setIsFeePaymentModalOpen(true)}>
-                <Text as="span" color={getToken("accents.info.onPrimary")}>
-                  {t("edit")}
-                </Text>
-              </ButtonTransparent>
-              <Modal
-                open={isFeePaymentModalOpen}
-                onOpenChange={setIsFeePaymentModalOpen}
-              >
-                <TransactionFeePaymentAssetModal
-                  onSubmitted={() => setIsFeePaymentModalOpen(false)}
-                />
-              </Modal>
-            </>
-          )}
-        </Flex>
-      )}
+      <Flex as="span" gap={4}>
+        {t("approx.short")}{" "}
+        {t("currency", {
+          symbol: feeAsset?.symbol,
+          value: feeEstimate,
+        })}
+        {!isChangingFeeAsset && (
+          <>
+            <ButtonTransparent onClick={() => setIsFeePaymentModalOpen(true)}>
+              <Text as="span" color={getToken("accents.info.onPrimary")}>
+                {t("edit")}
+              </Text>
+            </ButtonTransparent>
+            <Modal
+              open={isFeePaymentModalOpen}
+              onOpenChange={setIsFeePaymentModalOpen}
+            >
+              <TransactionFeePaymentAssetModal
+                onSubmitted={() => setIsFeePaymentModalOpen(false)}
+              />
+            </Modal>
+          </>
+        )}
+      </Flex>
     </Text>
   )
 }

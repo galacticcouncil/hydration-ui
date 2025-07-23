@@ -1,20 +1,21 @@
 import { NumberInput, NumberInputProps } from "@galacticcouncil/ui/components"
-import React, { useEffect, useRef } from "react"
+import React, { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
 export const TipInput: React.FC<NumberInputProps> = (props) => {
   const { t } = useTranslation("common")
-  const inputRef = useRef<HTMLInputElement>(null)
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus()
-      inputRef.current.select()
+
+  const focusInput = useCallback((input: HTMLInputElement) => {
+    if (input) {
+      input.focus()
+      input.select()
     }
   }, [])
 
   return (
     <NumberInput
-      getInputRef={inputRef}
+      ref={(e) => console.log({ eee: e })}
+      getInputRef={focusInput}
       customSize="small"
       placeholder={t("amount")}
       onClick={(e) => e.currentTarget.select()}

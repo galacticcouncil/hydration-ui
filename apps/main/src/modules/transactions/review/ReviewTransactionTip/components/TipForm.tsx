@@ -1,52 +1,27 @@
 import { Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { preventDefault } from "@galacticcouncil/utils"
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import React, { useEffect, useRef } from "react"
-import { Controller, useForm } from "react-hook-form"
-import z from "zod/v4"
+import { Controller } from "react-hook-form"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { TAsset } from "@/providers/assetsProvider"
-import {
-  positive,
-  required,
-  requiredObject,
-  useValidateFormMaxBalance,
-} from "@/utils/validators"
+import { useTipForm } from "@/modules/transactions/review/ReviewTransactionTip/components/TipForm.form"
 
 import { TipInput } from "./TipInput"
 
-type TipFormValues = { amount: string; asset: TAsset }
-
 type TipFormProps = {
-  asset: TAsset
+  assetId: string
   onAmountChange: (amount: string) => void
 }
 
-const schema = z.object({
-  amount: required.pipe(positive),
-  asset: requiredObject<TAsset>(),
-})
+export const TipForm: React.FC<TipFormProps> = ({
+  assetId,
+  onAmountChange,
+}) => {
+  const { watch, control, subscribe } = useTipForm({ assetId })
 
-export const TipForm: React.FC<TipFormProps> = ({ asset, onAmountChange }) => {
-  const refineMaxBalance = useValidateFormMaxBalance()
-
-  const { watch, control, subscribe } = useForm<TipFormValues>({
-    mode: "onChange",
-    defaultValues: {
-      amount: "",
-      asset,
-    },
-    resolver: standardSchemaResolver(
-      schema.check(
-        refineMaxBalance("amount", (form) => [form.asset, form.amount]),
-      ),
-    ),
-  })
-
-  const amount = watch("amount")
-  const [tipUsd] = useDisplayAssetPrice(asset.id, amount || "0")
+  const [amount, asset] = watch(["amount", "asset"])
+  const [tipUsd] = useDisplayAssetPrice(assetId, amount || "0")
 
   const onAmountChangeRef = useRef(onAmountChange)
   useEffect(() => {
@@ -74,7 +49,7 @@ export const TipForm: React.FC<TipFormProps> = ({ asset, onAmountChange }) => {
           <Stack gap={2} align="end">
             <TipInput
               value={field.value}
-              unit={asset.symbol}
+              unit={asset?.symbol}
               isError={!!error}
               onValueChange={({ value }) => field.onChange(value)}
             />
