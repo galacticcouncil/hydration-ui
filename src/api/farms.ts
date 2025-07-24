@@ -56,7 +56,7 @@ export type TClaimableFarmValue = {
   isXyk: boolean
   liquidityPositionId?: string
   shares: string
-  loyaltyFactor: string
+  loyaltyFactor: string | undefined
   isClaimable: boolean
   isActiveFarm: boolean
 }
@@ -720,7 +720,7 @@ export const useAccountClaimableFarmValues = () => {
           const rewardCurrency = globalFarm.rewardCurrency.toString()
           const incentivizedAsset = globalFarm.incentivizedAsset.toString()
 
-          const loyaltyCurve = yieldFarm.loyaltyCurve.unwrap()
+          const loyaltyCurve = yieldFarm.loyaltyCurve.unwrapOr(null)
 
           const currentPeriod = relayChainBlockNumber.dividedToIntegerBy(
             globalFarm.blocksPerPeriod.toString(),
@@ -729,14 +729,16 @@ export const useAccountClaimableFarmValues = () => {
           const currentPeriodInFarm = BN(currentPeriod).minus(
             farmEntry.enteredAt.toString(),
           )
-          const loyaltyFactor = getCurrentLoyaltyFactor(
-            {
-              initialRewardPercentage:
-                loyaltyCurve.initialRewardPercentage.toString(),
-              scaleCoef: loyaltyCurve.scaleCoef.toString(),
-            },
-            currentPeriodInFarm,
-          )
+          const loyaltyFactor = loyaltyCurve
+            ? getCurrentLoyaltyFactor(
+                {
+                  initialRewardPercentage:
+                    loyaltyCurve.initialRewardPercentage.toString(),
+                  scaleCoef: loyaltyCurve.scaleCoef.toString(),
+                },
+                currentPeriodInFarm,
+              )
+            : undefined
 
           const accountAddresses: Array<[address: AccountId32, assetId: u32]> =
             [
