@@ -73,7 +73,7 @@ export type TFarmAprData = {
   blocksPerPeriod: string
   plannedYieldingPeriods: string
   estimatedEndBlock: string
-  loyaltyCurve: {
+  loyaltyCurve?: {
     initialRewardPercentage: string
     scaleCoef: string
   }
@@ -193,7 +193,7 @@ const getFarmsData =
         balance.freeBalance,
       )
 
-      const loyaltyCurve = yieldFarm.loyaltyCurve.unwrap()
+      const loyaltyCurve = yieldFarm.loyaltyCurve.unwrapOr(null)
       const meta = getAsset(rewardCurrency)
 
       return {
@@ -208,11 +208,13 @@ const getFarmsData =
         blocksPerPeriod: globalFarm.blocksPerPeriod.toString(),
         plannedYieldingPeriods: globalFarm.plannedYieldingPeriods.toString(),
         estimatedEndBlock: farmDetails.estimatedEndBlock.toString(),
-        loyaltyCurve: {
-          initialRewardPercentage:
-            loyaltyCurve.initialRewardPercentage.toString(),
-          scaleCoef: loyaltyCurve.scaleCoef.toString(),
-        },
+        loyaltyCurve: loyaltyCurve
+          ? {
+              initialRewardPercentage:
+                loyaltyCurve.initialRewardPercentage.toString(),
+              scaleCoef: loyaltyCurve.scaleCoef.toString(),
+            }
+          : undefined,
         fullness: farmDetails.fullness.toFixed(2),
         diffRewards: farmDetails.distributedRewards
           .div(farmDetails.potMaxRewards)
