@@ -25,8 +25,7 @@ export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
 
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
 
-  const { balance, aBalance, meta, isGDOT, biggestPercentage, relatedAToken } =
-    pool
+  const { balance, aBalance, meta, relatedAToken } = pool
 
   const balanceHuman =
     type === STABLEPOOLTYPE.GIGA && relatedAToken
@@ -62,7 +61,6 @@ export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
           <RemoveDepositModal
             assetId={relatedAToken.id}
             balance={balanceHuman ?? "0"}
-            assetReceiveId={isGDOT ? undefined : biggestPercentage?.assetId}
             onClose={() => setOpenRemove(null)}
           />
         </Modal>

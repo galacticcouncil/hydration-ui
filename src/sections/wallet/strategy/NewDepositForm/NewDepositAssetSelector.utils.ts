@@ -14,35 +14,35 @@ import { uniqBy } from "utils/rx"
 type UseNewDepositAssetsOptions = {
   firstAssetId?: string
   blacklist?: ReadonlyArray<string>
+  underlyingAssetsFirst?: boolean
 }
 
 export const useNewDepositAssets = (
   assetId: string,
   options: UseNewDepositAssetsOptions = {},
 ): Array<string> => {
-  const { firstAssetId, blacklist = [] } = options
+  const {
+    firstAssetId,
+    blacklist = [],
+    underlyingAssetsFirst = false,
+  } = options
 
-  const { account } = useAccount()
   const { data: accountAssets } = useAccountBalances()
+  const { accountAssetsMap } = accountAssets ?? {}
+  const { getAsset, getErc20, tradable } = useAssets()
+
+  const asset = getAsset(assetId)
 
   const assets = useMemo(() => {
-    return account && accountAssets?.balances
-      ? accountAssets.balances
-          .map(({ asset }) => asset.id)
-          .filter((id) => !blacklist.includes(id))
-      : []
-  }, [account, accountAssets?.balances, blacklist])
-
-  const { data } = useAccountBalances()
-  const { accountAssetsMap } = data ?? {}
-  const { getAsset, getErc20 } = useAssets()
+    return tradable
+      .map((asset) => asset.id)
+      .filter((id) => !blacklist.includes(id))
+  }, [blacklist, tradable])
 
   const { tokens } = useAssetsData({
     allowedAssets: assets,
     displayZeroBalance: true,
   })
-
-  const asset = getAsset(assetId)
 
   return useMemo(() => {
     if (!accountAssetsMap) return []
@@ -61,7 +61,7 @@ export const useNewDepositAssets = (
       },
     )
 
-    const assetsWithBalance = [assetId, ...underlyingAssetsIds]
+    const assetsWithBalance = underlyingAssetsIds
       .map((id) => {
         const meta = getAsset(id)
         const balance = accountAssetsMap.get(id)?.balance.transferable
@@ -82,17 +82,23 @@ export const useNewDepositAssets = (
       },
     )
 
-    const ids = sortedAssets.map((asset) => asset.meta.id)
+    const sortedAssetsIds = sortedAssets.map((asset) => asset.meta.id)
+
+    const ids = underlyingAssetsFirst
+      ? [firstAssetId, ...underlyingAssetsIds, ...sortedAssetsIds].filter(
+          isNotNil,
+        )
+      : sortedAssetsIds
 
     return uniqBy(identity, ids)
   }, [
     accountAssetsMap,
     asset?.meta,
-    assetId,
     firstAssetId,
     getAsset,
     getErc20,
     tokens.allowed,
+    underlyingAssetsFirst,
   ])
 }
 

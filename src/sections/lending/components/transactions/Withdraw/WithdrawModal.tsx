@@ -11,7 +11,6 @@ import { BasicModal } from "sections/lending/components/primitives/BasicModal"
 import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
-import { ETH_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssets } from "providers/assets"
@@ -42,9 +41,6 @@ export const WithdrawModal = () => {
           assetId={aTokenId}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
-          assetReceiveId={
-            assetId === GETH_STABLESWAP_ASSET_ID ? ETH_ASSET_ID : undefined
-          }
         />
       </BasicModal>
     )

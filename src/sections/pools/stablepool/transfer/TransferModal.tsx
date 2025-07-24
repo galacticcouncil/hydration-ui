@@ -67,8 +67,6 @@ export const TransferModal = ({
     firstAssetId: defaultAssetId,
   })
 
-  console.log({ selectableDepositAssets, defaultAssetId })
-
   const selectableAssets = relatedAToken ? selectableDepositAssets : assetIds
 
   const { t } = useTranslation()

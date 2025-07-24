@@ -20,12 +20,12 @@ import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/He
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
-import { prop } from "utils/rx"
+import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
+import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   readonly assetId: string
   readonly balance: string
-  readonly assetReceiveId?: string
   readonly onClose: () => void
   readonly positions?: TRemoveFarmingPosition[]
 }
@@ -34,25 +34,42 @@ export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
   onClose,
-  assetReceiveId,
   positions,
 }) => {
   const { createTransaction } = useStore()
-  const { tradable, getAssetWithFallback, stableswap, getRelatedAToken } =
-    useAssets()
+  const { getErc20, getAsset, getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
 
   const asset = getAssetWithFallback(assetId)
-  const blockeAssets = stableswap
-    .filter((asset) => !!getRelatedAToken(asset.id))
-    .map(prop("id"))
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
-  const maxBalance = balance
+  const underlyingAssetId = getErc20(assetId)?.underlyingAssetId ?? ""
 
-  const form = useRemoveDepositForm({ maxBalance, assetReceiveId })
+  const { data: pool } = useStableSwapReserves(underlyingAssetId)
+
+  const uderlyingAsset = getAsset(underlyingAssetId)
+  const firstAssetIdInPool = uderlyingAsset?.isStableSwap
+    ? Object.keys(uderlyingAsset?.meta ?? {})[0]
+    : ""
+
+  const defaultAssetReceivedId =
+    pool?.biggestPercentage?.assetId || // prioritize asset with biggest percentage in pool
+    getErc20(firstAssetIdInPool)?.underlyingAssetId || // if first asset is aToken, fallback to its underlying asset
+    firstAssetIdInPool // fallback to first asset in pool
+
+  const form = useRemoveDepositForm({
+    maxBalance: balance,
+    assetReceiveId: defaultAssetReceivedId,
+  })
+
+  const selectableAssets = useNewDepositAssets(underlyingAssetId, {
+    blacklist: [assetId, underlyingAssetId],
+    firstAssetId: defaultAssetReceivedId,
+    underlyingAssetsFirst: true,
+  })
+
   const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
 
   const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
@@ -127,10 +144,7 @@ export const RemoveDepositModal: FC<Props> = ({
               >
                 <div sx={{ flex: "column", gap: 8 }}>
                   <div sx={{ flex: "column", gap: 16 }}>
-                    <RemoveDepositAmount
-                      assetId={assetId}
-                      balance={maxBalance}
-                    />
+                    <RemoveDepositAmount assetId={assetId} balance={balance} />
                     <RemoveDepositAsset
                       assetId={assetReceived?.id ?? ""}
                       amountOut={amountOutFormatted}
@@ -169,15 +183,10 @@ export const RemoveDepositModal: FC<Props> = ({
           noPadding: true,
           content: (
             <AssetsModalContent
-              allAssets
               hideInactiveAssets
-              allowedAssets={tradable
-                .map((asset) => asset.id)
-                .filter(
-                  (tradableAsset) =>
-                    !blockeAssets.includes(tradableAsset) &&
-                    tradableAsset !== assetId,
-                )}
+              naturallySorted
+              displayZeroBalance
+              allowedAssets={selectableAssets}
               onSelect={(asset) => {
                 form.setValue("assetReceived", asset, { shouldValidate: true })
                 paginateTo(0)
