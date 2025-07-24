@@ -332,8 +332,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getRelatedAToken = useCallback(
     (id: string) => {
-      const aTokenId = aTokenReverseMap.get(id)
-      if (!aTokenId) return undefined
+      const aTokenId = aTokenReverseMap.get(id) ?? ""
       return getErc20(aTokenId)
     },
     [aTokenReverseMap, getErc20],
