@@ -7,20 +7,93 @@ import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { NATIVE_ASSET_ID } from "utils/api"
 import { useAssets } from "providers/assets"
+import { useAssetsData } from "sections/assets/AssetsModal.utils"
+import { identity, isNotNil, sortAssets } from "utils/helpers"
+import { uniqBy } from "utils/rx"
+
+type UseNewDepositAssetsOptions = {
+  firstAssetId?: string
+  blacklist?: ReadonlyArray<string>
+}
 
 export const useNewDepositAssets = (
-  assetsBlacklist: ReadonlyArray<string>,
+  assetId: string,
+  options: UseNewDepositAssetsOptions = {},
 ): Array<string> => {
+  const { firstAssetId, blacklist = [] } = options
+
   const { account } = useAccount()
   const { data: accountAssets } = useAccountBalances()
 
-  return useMemo(() => {
+  const assets = useMemo(() => {
     return account && accountAssets?.balances
       ? accountAssets.balances
           .map(({ asset }) => asset.id)
-          .filter((id) => !assetsBlacklist.includes(id))
+          .filter((id) => !blacklist.includes(id))
       : []
-  }, [account, accountAssets?.balances, assetsBlacklist])
+  }, [account, accountAssets?.balances, blacklist])
+
+  const { data } = useAccountBalances()
+  const { accountAssetsMap } = data ?? {}
+  const { getAsset, getErc20 } = useAssets()
+
+  const { tokens } = useAssetsData({
+    allowedAssets: assets,
+    displayZeroBalance: true,
+  })
+
+  const asset = getAsset(assetId)
+
+  return useMemo(() => {
+    if (!accountAssetsMap) return []
+
+    const underlyingAssetsIds = Object.keys(asset?.meta ?? {}).flatMap(
+      (assetId) => {
+        const assets = [assetId]
+
+        const erc20 = getErc20(assetId)
+        // If the asset is an aToken, we also want to include its underlying asset
+        if (erc20?.underlyingAssetId) {
+          assets.push(erc20.underlyingAssetId)
+        }
+
+        return assets
+      },
+    )
+
+    const assetsWithBalance = [assetId, ...underlyingAssetsIds]
+      .map((id) => {
+        const meta = getAsset(id)
+        const balance = accountAssetsMap.get(id)?.balance.transferable
+        if (!meta || !balance) return null
+        return {
+          meta,
+          displayValue: balance,
+        }
+      })
+      .filter(isNotNil)
+
+    const sortedAssets = sortAssets(
+      [...assetsWithBalance, ...tokens.allowed],
+      "displayValue",
+      {
+        firstAssetId,
+        lowPriorityAssetIds: [NATIVE_ASSET_ID],
+      },
+    )
+
+    const ids = sortedAssets.map((asset) => asset.meta.id)
+
+    return uniqBy(identity, ids)
+  }, [
+    accountAssetsMap,
+    asset?.meta,
+    assetId,
+    firstAssetId,
+    getAsset,
+    getErc20,
+    tokens.allowed,
+  ])
 }
 
 export const useNewDepositDefaultAssetId = (assetId?: string) => {

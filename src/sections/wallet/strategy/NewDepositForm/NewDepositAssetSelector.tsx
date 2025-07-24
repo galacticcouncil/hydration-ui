@@ -18,8 +18,9 @@ export const NewDepositAssetSelector: FC<Props> = ({
     <AssetsModalContent
       allowedAssets={allowedAssets}
       defaultSelectedAsssetId={getValues("asset")?.id}
-      allAssets
+      naturallySorted
       hideInactiveAssets
+      displayZeroBalance
       onSelect={(asset) => {
         setValue("asset", asset, { shouldValidate: true })
         onClose()

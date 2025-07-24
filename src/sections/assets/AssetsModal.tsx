@@ -26,6 +26,7 @@ type Props = {
   confirmRequired?: boolean
   defaultSelectedAsssetId?: string
   displayZeroBalance?: boolean
+  naturallySorted?: boolean
 }
 
 export const AssetsModalContent = ({
@@ -38,6 +39,7 @@ export const AssetsModalContent = ({
   defaultSelectedAsssetId,
   withExternal,
   displayZeroBalance,
+  naturallySorted,
 }: Props) => {
   const { t } = useTranslation()
   const [search, setSearch] = useState("")
@@ -77,10 +79,14 @@ export const AssetsModalContent = ({
     }
   }
 
-  const sortedTokens = useMemo(
-    () => sortAssets(tokens.allowed, "displayValue", defaultSelectedAsssetId),
-    [defaultSelectedAsssetId, tokens.allowed],
-  )
+  const sortedTokens = useMemo(() => {
+    if (naturallySorted) return tokens.allowed
+
+    return sortAssets(tokens.allowed, "displayValue", {
+      firstAssetId: defaultSelectedAsssetId,
+    })
+  }, [defaultSelectedAsssetId, naturallySorted, tokens.allowed])
+
   const sortedBonds = useMemo(
     () =>
       [...bonds.allowed].sort((a, b) => {

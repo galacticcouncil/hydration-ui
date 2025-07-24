@@ -28,6 +28,7 @@ type Props = {
 
 export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation()
+  const { getErc20 } = useAssets()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
 
   const { account } = useAccount()
@@ -43,7 +44,11 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const selectedAssetBalance =
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.transferable || "0"
 
-  const allowedAssets = useNewDepositAssets(STRATEGY_ASSETS_BLACKLIST)
+  const allowedAssets = useNewDepositAssets(
+    getErc20(assetId)?.underlyingAssetId ?? "",
+    { blacklist: STRATEGY_ASSETS_BLACKLIST },
+  )
+
   const { minAmountOut, submit, supplyCapReached } =
     useSubmitNewDepositForm(assetId)
 

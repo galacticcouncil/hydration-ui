@@ -1,7 +1,7 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./TransferOptions"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -12,7 +12,10 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
+import {
+  useNewDepositAssets,
+  useNewDepositDefaultAssetId,
+} from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
 export enum Page {
   OPTIONS,
@@ -38,7 +41,7 @@ export const TransferModal = ({
   initialAssetId,
   skipOptions,
 }: Props) => {
-  const { getAssetWithFallback, tradable } = useAssets()
+  const { getAssetWithFallback, getErc20 } = useAssets()
   const { pool } = usePoolData()
   const refetch = useRefetchAccountAssets()
 
@@ -56,6 +59,17 @@ export const TransferModal = ({
   const assetIds = Object.keys(pool.meta.meta ?? {})
 
   const { data: defaultAssetId } = useNewDepositDefaultAssetId(pool.poolId)
+  const depositAssetId = relatedAToken
+    ? getErc20(relatedAToken.id)?.underlyingAssetId
+    : undefined
+
+  const selectableDepositAssets = useNewDepositAssets(depositAssetId ?? "", {
+    firstAssetId: defaultAssetId,
+  })
+
+  console.log({ selectableDepositAssets, defaultAssetId })
+
+  const selectableAssets = relatedAToken ? selectableDepositAssets : assetIds
 
   const { t } = useTranslation()
 
@@ -71,14 +85,6 @@ export const TransferModal = ({
   )
 
   const [stablepoolSelected, setStablepoolSelected] = useState(isOnlyStablepool)
-
-  const selectableAssets = useMemo(() => {
-    return relatedAToken
-      ? tradable
-          .map((asset) => asset.id)
-          .filter((assetId) => assetId !== relatedAToken.id)
-      : assetIds
-  }, [assetIds, relatedAToken, tradable])
 
   const goBack = () => {
     if (page === Page.LIMIT_LIQUIDITY) {
@@ -157,6 +163,7 @@ export const TransferModal = ({
                 hideInactiveAssets
                 allowedAssets={selectableAssets}
                 displayZeroBalance
+                naturallySorted
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)

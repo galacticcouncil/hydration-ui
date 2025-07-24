@@ -53,7 +53,9 @@ export const GigaIncentives = ({
       >
         {t("liquidity.stablepool.incetives")}
       </Heading>
-      <SContainer sx={{ flex: "row", gap: 6, justify: "space-between" }}>
+      <SContainer
+        sx={{ flex: "row", gap: 6, justify: "space-between", align: "center" }}
+      >
         <MultipleIcons
           size={20}
           icons={moneyMarketApy.incentives.map((incentive) => {
@@ -63,6 +65,18 @@ export const GigaIncentives = ({
             }
           })}
         />
+
+        <Text
+          fs={14}
+          fw={600}
+          font="GeistSemiBold"
+          color="basic100"
+          sx={{ mr: "auto" }}
+        >
+          {moneyMarketApy.incentives
+            .map(({ rewardTokenSymbol }) => rewardTokenSymbol)
+            .join(", ")}
+        </Text>
 
         <Text color="white" fs={14}>
           <FormattedNumber percent value={totalApr.toString()} />
