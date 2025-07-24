@@ -27,8 +27,8 @@ export const useNewDepositAssets = (
     underlyingAssetsFirst = false,
   } = options
 
-  const { data: accountAssets } = useAccountBalances()
-  const { accountAssetsMap } = accountAssets ?? {}
+  const { data } = useAccountBalances()
+  const { accountAssetsMap } = data ?? {}
   const { getAsset, getErc20, tradable } = useAssets()
 
   const asset = getAsset(assetId)
@@ -45,8 +45,6 @@ export const useNewDepositAssets = (
   })
 
   return useMemo(() => {
-    if (!accountAssetsMap) return []
-
     const underlyingAssetsIds = Object.keys(asset?.meta ?? {}).flatMap(
       (assetId) => {
         const assets = [assetId]
@@ -61,10 +59,10 @@ export const useNewDepositAssets = (
       },
     )
 
-    const assetsWithBalance = underlyingAssetsIds
+    const underlyingAssets = underlyingAssetsIds
       .map((id) => {
         const meta = getAsset(id)
-        const balance = accountAssetsMap.get(id)?.balance.transferable
+        const balance = accountAssetsMap?.get(id)?.balance.transferable
         if (!meta || !balance) return null
         return {
           meta,
@@ -74,7 +72,7 @@ export const useNewDepositAssets = (
       .filter(isNotNil)
 
     const sortedAssets = sortAssets(
-      [...assetsWithBalance, ...tokens.allowed],
+      [...underlyingAssets, ...tokens.allowed],
       "displayValue",
       {
         firstAssetId,
