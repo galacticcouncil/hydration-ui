@@ -13,7 +13,8 @@ import { uniqBy } from "utils/rx"
 
 type UseNewDepositAssetsOptions = {
   firstAssetId?: string
-  blacklist?: ReadonlyArray<string>
+  blacklist?: string[]
+  lowPriorityAssetIds?: string[]
   underlyingAssetsFirst?: boolean
 }
 
@@ -23,7 +24,8 @@ export const useNewDepositAssets = (
 ): Array<string> => {
   const {
     firstAssetId,
-    blacklist = [],
+    blacklist,
+    lowPriorityAssetIds,
     underlyingAssetsFirst = false,
   } = options
 
@@ -34,9 +36,9 @@ export const useNewDepositAssets = (
   const asset = getAsset(assetId)
 
   const assets = useMemo(() => {
-    return tradable
-      .map((asset) => asset.id)
-      .filter((id) => !blacklist.includes(id))
+    const ids = tradable.map((asset) => asset.id)
+    if (!blacklist) return ids
+    return ids.filter((id) => !blacklist.includes(id))
   }, [blacklist, tradable])
 
   const { tokens } = useAssetsData({
@@ -76,7 +78,7 @@ export const useNewDepositAssets = (
       "displayValue",
       {
         firstAssetId,
-        lowPriorityAssetIds: [NATIVE_ASSET_ID],
+        lowPriorityAssetIds,
       },
     )
 
@@ -95,6 +97,7 @@ export const useNewDepositAssets = (
     firstAssetId,
     getAsset,
     getErc20,
+    lowPriorityAssetIds,
     tokens.allowed,
     underlyingAssetsFirst,
   ])

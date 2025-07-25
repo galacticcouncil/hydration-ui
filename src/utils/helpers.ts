@@ -376,6 +376,7 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
   const isLowPriority = (id: string) => lowPriorityAssetIds.includes(id)
 
   return [...assets].sort((a, b) => {
+    // 1. Prioritize first asset if provided
     if (a.meta.id === firstAssetId) return -1
     if (b.meta.id === firstAssetId) return 1
 
@@ -388,24 +389,24 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
     const isLowPrioA = isLowPriority(a.meta.id)
     const isLowPrioB = isLowPriority(b.meta.id)
 
-    // 1. Assets with balance first, low priority last (if both have balance)
+    // 2. Assets with balance first, low priority last (if both have balance)
     if (hasBalanceA && hasBalanceB) {
       if (isLowPrioA !== isLowPrioB) return isLowPrioA ? 1 : -1
       return balanceB.minus(balanceA).toNumber()
     }
 
-    // 2. One has balance, the other doesn't
+    // 3. One has balance, the other doesn't
     if (hasBalanceA !== hasBalanceB) return hasBalanceA ? -1 : 1
 
-    // 3. Both have no balance → prioritize non-low-priority
+    // 4. Both have no balance → prioritize non-low-priority
     if (isLowPrioA !== isLowPrioB) return isLowPrioA ? 1 : -1
 
-    // 4. Sort by external flag
+    // 5. Sort by external flag
     if (a.meta.isExternal !== b.meta.isExternal) {
       return a.meta.isExternal ? 1 : -1
     }
 
-    // 5. Use ticker order
+    // 6. Use ticker order
     const tickerIndexA = getTickerIndex(a.meta.symbol)
     const tickerIndexB = getTickerIndex(b.meta.symbol)
 
@@ -413,7 +414,7 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
       return tickerIndexA - tickerIndexB
     }
 
-    // 6. Fallback: alphabetical
+    // 7. Fallback: alphabetical
     return a.meta.symbol.localeCompare(b.meta.symbol)
   })
 }

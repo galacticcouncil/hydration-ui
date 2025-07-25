@@ -21,6 +21,7 @@ import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/Supp
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 type Props = {
   readonly assetId: string
@@ -41,6 +42,7 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const allowedAssets = useNewDepositAssets(assetId, {
     blacklist: aTokenId ? [aTokenId] : [],
     firstAssetId: defaultAssetId,
+    lowPriorityAssetIds: [NATIVE_ASSET_ID],
   })
 
   const { page, direction, back, next } = useModalPagination()

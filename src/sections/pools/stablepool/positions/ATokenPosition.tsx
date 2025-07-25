@@ -22,6 +22,8 @@ import { Icon } from "components/Icon/Icon"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
 import { useState } from "react"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
+import IconPercentageSquare from "assets/icons/IconPercentageSquare.svg?react"
+import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 
 export const ATokenPosition = () => {
   const { t } = useTranslation()
@@ -53,6 +55,27 @@ export const ATokenPosition = () => {
         sx={{ height: ["auto", "auto"], p: [12, 20] }}
         css={{ background: "transparent" }}
       >
+        <div
+          sx={{
+            flex: "row",
+            align: "center",
+            gap: 8,
+            mb: [5, 0],
+            mt: [5, 0],
+          }}
+        >
+          <Icon
+            size={15}
+            sx={{ color: "vibrantBlue200" }}
+            icon={<IconPercentageSquare />}
+          />
+          <Text fs={[16, 16]} color="vibrantBlue200">
+            {t("liquidity.stablepool.atoken.positions.title")}
+          </Text>
+          <InfoTooltip
+            text={t("liquidity.stablepool.atoken.positions.description")}
+          />
+        </div>
         <div sx={{ flex: "column", gap: 16 }}>
           <SContainer sx={{ height: ["auto", "auto"] }}>
             <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>

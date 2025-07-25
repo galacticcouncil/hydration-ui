@@ -21,6 +21,7 @@ import { Alert } from "components/Alert/Alert"
 import { usePools, useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { PoolContext } from "sections/pools/pool/Pool"
 import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 type Props = {
   readonly assetId: string
@@ -46,7 +47,10 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
 
   const allowedAssets = useNewDepositAssets(
     getErc20(assetId)?.underlyingAssetId ?? "",
-    { blacklist: STRATEGY_ASSETS_BLACKLIST },
+    {
+      blacklist: STRATEGY_ASSETS_BLACKLIST,
+      lowPriorityAssetIds: [NATIVE_ASSET_ID],
+    },
   )
 
   const { minAmountOut, submit, supplyCapReached } =
