@@ -37,7 +37,7 @@ export const RemoveDepositModal: FC<Props> = ({
   positions,
 }) => {
   const { createTransaction } = useStore()
-  const { getErc20, getAsset, getAssetWithFallback } = useAssets()
+  const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
   const { t } = useTranslation()
 
   const asset = getAssetWithFallback(assetId)
@@ -65,7 +65,7 @@ export const RemoveDepositModal: FC<Props> = ({
   })
 
   const selectableAssets = useNewDepositAssets(underlyingAssetId, {
-    blacklist: [assetId, underlyingAssetId],
+    blacklist: [assetId, underlyingAssetId, hub.id],
     firstAssetId: defaultAssetReceivedId,
     underlyingAssetsFirst: true,
   })

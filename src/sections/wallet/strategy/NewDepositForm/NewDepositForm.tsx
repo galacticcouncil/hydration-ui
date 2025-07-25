@@ -28,7 +28,7 @@ type Props = {
 
 export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation()
-  const { getErc20, hub, native } = useAssets()
+  const { getErc20, native } = useAssets()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
 
   const { account } = useAccount()
@@ -47,7 +47,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const allowedAssets = useNewDepositAssets(
     getErc20(assetId)?.underlyingAssetId ?? "",
     {
-      blacklist: [assetId, hub.id],
+      blacklist: [assetId],
       lowPriorityAssetIds: [native.id],
     },
   )

@@ -22,12 +22,19 @@ export const useNewDepositAssets = (
   assetId: string,
   options: UseNewDepositAssetsOptions = {},
 ): Array<string> => {
-  const {
-    firstAssetId,
-    blacklist,
-    lowPriorityAssetIds,
-    underlyingAssetsFirst = false,
-  } = options
+  const { firstAssetId, underlyingAssetsFirst = false } = options
+
+  const blacklist = useMemo(
+    () => options?.blacklist ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [options.blacklist?.join(",")],
+  )
+
+  const lowPriorityAssetIds = useMemo(
+    () => options?.lowPriorityAssetIds ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [options.lowPriorityAssetIds?.join(",")],
+  )
 
   const { data } = useAccountBalances()
   const { accountAssetsMap } = data ?? {}
@@ -36,9 +43,9 @@ export const useNewDepositAssets = (
   const asset = getAsset(assetId)
 
   const assets = useMemo(() => {
-    const ids = tradable.map((asset) => asset.id)
-    if (!blacklist) return ids
-    return ids.filter((id) => !blacklist.includes(id))
+    return tradable
+      .map((asset) => asset.id)
+      .filter((id) => !blacklist.includes(id))
   }, [blacklist, tradable])
 
   const { tokens } = useAssetsData({

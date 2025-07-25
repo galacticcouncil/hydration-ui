@@ -30,7 +30,7 @@ type Props = {
 export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
 
-  const { getAssetWithFallback, getRelatedAToken, native, hub } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken, native } = useAssets()
   const aToken = getRelatedAToken(assetId) ?? getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
@@ -38,9 +38,8 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
 
   const aTokenId = aToken.id
 
-  const blacklist = [hub.id].concat(aTokenId ? [aTokenId] : [])
   const allowedAssets = useNewDepositAssets(assetId, {
-    blacklist,
+    blacklist: aTokenId ? [aTokenId] : [],
     firstAssetId: defaultAssetId,
     lowPriorityAssetIds: [native.id],
   })
