@@ -9,12 +9,11 @@ import { FearlessWallet } from "@/wallets/FearlessWallet"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask } from "@/wallets/MetaMask"
 import { NovaWallet } from "@/wallets/NovaWallet"
+import { PolkadotJS } from "@/wallets/PolkadotJS"
 import { PolkaGate } from "@/wallets/PolkaGate"
 import { RabbyWallet } from "@/wallets/RabbyWallet"
 import { SubWallet, SubWalletEvm } from "@/wallets/SubWallet"
 import { Talisman, TalismanEvm } from "@/wallets/Talisman"
-
-import { PolkadotJS } from "./PolkadotJS"
 
 export {
   AlephZero,
@@ -49,7 +48,6 @@ const wallets = [
   new Talisman(),
   new TalismanEvm(),
 ]
-
 export function getWallets(): Wallet[] {
   return wallets
 }

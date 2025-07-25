@@ -1,17 +1,12 @@
-import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { Transaction as AnyPapiTx } from "@galacticcouncil/sdk-next/build/types/tx"
 import { uuid } from "@galacticcouncil/utils"
 import { tags } from "@galacticcouncil/xcm-cfg"
-import { Call } from "@galacticcouncil/xcm-sdk"
 import { create } from "zustand"
 
+import { AnyTransaction } from "@/modules/transactions/types"
 import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
-
-export type { AnyPapiTx }
-export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
 export enum TransactionType {
   Onchain = "Onchain",

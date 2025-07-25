@@ -1,8 +1,7 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { EthereumSigner } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 
-import { TxSignAndSubmitFn } from "@/modules/transactions/types"
-import { AnyPapiTx } from "@/states/transactions"
+import { AnyPapiTx, TxSignAndSubmitFn } from "@/modules/transactions/types"
 import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<

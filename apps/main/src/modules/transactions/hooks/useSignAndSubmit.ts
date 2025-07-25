@@ -18,13 +18,14 @@ import {
   submitUnsignedPolkadotTx,
 } from "@/modules/transactions/utils/polkadot"
 import {
+  isValidEvmCallForPermit,
+  isValidPapiTxForPermit,
   transformEvmCallToPapiTx,
   transformPermitToPapiTx,
 } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { Transaction } from "@/states/transactions"
-import { HYDRATION_CHAIN_KEY, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const useSignAndSubmit = (
   transaction: Transaction,
@@ -43,15 +44,15 @@ export const useSignAndSubmit = (
       const { tx } = transaction
       const signer = wallet?.signer
 
-      const shouldUsePermit =
-        isPapiTransaction(tx) &&
-        isEthereumSigner(signer) &&
-        txOptions.chainKey === HYDRATION_CHAIN_KEY &&
-        txOptions.feeAssetId !== NATIVE_EVM_ASSET_ID
+      if (isValidEvmCallForPermit(tx, txOptions) && isEthereumSigner(signer)) {
+        const permit = await signer.getPermit(tx.data)
+        const permitTx = transformPermitToPapiTx(papi, permit)
+        return submitUnsignedPolkadotTx(permitTx, papiClient, txOptions)
+      }
 
-      if (shouldUsePermit) {
-        const data = (await tx.getEncodedData()).asHex()
-        const permit = await signer.getPermit(data)
+      if (isValidPapiTxForPermit(tx, txOptions) && isEthereumSigner(signer)) {
+        const data = await tx.getEncodedData()
+        const permit = await signer.getPermit(data.asHex())
         const permitTx = transformPermitToPapiTx(papi, permit)
         return submitUnsignedPolkadotTx(permitTx, papiClient, txOptions)
       }

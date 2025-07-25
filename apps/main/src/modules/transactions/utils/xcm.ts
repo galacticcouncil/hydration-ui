@@ -3,7 +3,7 @@ import { CallType } from "@galacticcouncil/xcm-core"
 import { Call } from "@galacticcouncil/xcm-sdk"
 import { isObjectType } from "remeda"
 
-import { AnyTransaction } from "@/states/transactions"
+import { AnyTransaction } from "@/modules/transactions/types"
 
 export function isCall(x: AnyTransaction): x is Call {
   return isObjectType(x) && "type" in x

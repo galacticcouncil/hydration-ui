@@ -2,10 +2,15 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary } from "polkadot-api"
 
+import {
+  AnyPapiTx,
+  AnyTransaction,
+  TxOptions,
+} from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { Papi } from "@/providers/rpcProvider"
-import { AnyPapiTx, AnyTransaction } from "@/states/transactions"
+import { HYDRATION_CHAIN_KEY, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
   papi: Papi,
@@ -54,3 +59,19 @@ export const transformAnyToPapiTx = (
 
   return null
 }
+
+export const isValidTxOptionsForPermit = (txOptions: TxOptions) =>
+  txOptions.chainKey === HYDRATION_CHAIN_KEY &&
+  txOptions.feeAssetId !== NATIVE_EVM_ASSET_ID
+
+export const isValidEvmCallForPermit = (
+  tx: AnyTransaction,
+  txOptions: TxOptions,
+): tx is ExtendedEvmCall =>
+  isEvmCall(tx) && isValidTxOptionsForPermit(txOptions)
+
+export const isValidPapiTxForPermit = (
+  tx: AnyTransaction,
+  txOptions: TxOptions,
+): tx is AnyPapiTx =>
+  isPapiTransaction(tx) && isValidTxOptionsForPermit(txOptions)
