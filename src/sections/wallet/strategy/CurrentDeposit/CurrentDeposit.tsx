@@ -6,7 +6,6 @@ import { useAssets } from "providers/assets"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Reward } from "sections/lending/helpers/types"
-import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
@@ -17,11 +16,7 @@ import {
   useEvmAccount,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
-import {
-  BN_0,
-  GETH_ERC20_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
+import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { TDeposit, useAccountBalances, useAccountPositions } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
@@ -150,8 +145,6 @@ const FarmsDepositBalance = ({
   const { t } = useTranslation()
   const { account } = useAccount()
 
-  const { data: gethReserves } = useStableSwapReserves(GETH_STABLESWAP_ASSET_ID)
-
   const omnipoolDepositValues = useAllOmnipoolDeposits(account?.address)
   const assetDeposits = omnipoolDepositValues[assetId] ?? []
 
@@ -191,7 +184,6 @@ const FarmsDepositBalance = ({
       <CurrentDepositRemoveButton
         assetId={assetId}
         depositBalance={totalValue.toString()}
-        assetReceiveId={gethReserves.biggestPercentage?.assetId}
         positions={positions}
       />
     </>
@@ -201,12 +193,10 @@ const FarmsDepositBalance = ({
 const CurrentDepositRemoveButton = ({
   assetId,
   depositBalance,
-  assetReceiveId,
   positions,
 }: {
   assetId: string
   depositBalance: string
-  assetReceiveId?: string
   positions?: TRemoveFarmingPosition[]
 }) => {
   const { t } = useTranslation()
@@ -236,7 +226,6 @@ const CurrentDepositRemoveButton = ({
           assetId={assetId}
           balance={depositBalance}
           onClose={() => setIsRemoveModalOpen(false)}
-          assetReceiveId={assetReceiveId}
           positions={positions}
         />
       </Modal>

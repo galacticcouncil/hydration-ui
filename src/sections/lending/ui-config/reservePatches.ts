@@ -1,4 +1,9 @@
 import { unPrefixSymbol } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import {
+  GDOT_STABLESWAP_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
+} from "utils/constants"
+import { getAddressFromAssetId } from "utils/evm"
 
 export interface IconSymbolInterface {
   underlyingAsset: string
@@ -13,12 +18,12 @@ interface IconMapInterface {
 }
 
 const underlyingAssetMap: Record<string, IconMapInterface> = {
-  "0x00000000000000000000000000000001000002b2": {
+  [getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)]: {
     name: "GIGADOT",
     symbol: "GDOT",
     iconSymbol: "GDOT",
   },
-  "0x0000000000000000000000000000000100001068": {
+  [getAddressFromAssetId(GETH_STABLESWAP_ASSET_ID)]: {
     name: "GIGAETH",
     symbol: "GETH",
     iconSymbol: "GETH",

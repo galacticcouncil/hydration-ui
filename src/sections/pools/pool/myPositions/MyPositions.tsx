@@ -1,6 +1,6 @@
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { TXYKPool } from "sections/pools/PoolsPage.utils"
+import { TPool, TXYKPool } from "sections/pools/PoolsPage.utils"
 import { FarmingPositionWrapper } from "sections/pools/farms/FarmingPositionWrapper"
 import { LiquidityPositionWrapper } from "sections/pools/pool/positions/LiquidityPositionWrapper"
 import { XYKPosition } from "sections/pools/pool/xykPosition/XYKPosition"
@@ -18,10 +18,11 @@ import {
 import { LazyMotion, domAnimation } from "framer-motion"
 import { usePoolData } from "sections/pools/pool/Pool"
 import BN from "bignumber.js"
+import { ATokenPosition } from "sections/pools/stablepool/positions/ATokenPosition"
 
 export const MyPositions = () => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
+  const pool = usePoolData().pool as TPool
 
   const stablepoolAmount = pool.balance?.transferable ?? "0"
   const isPositions = pool.isPositions
@@ -42,6 +43,7 @@ export const MyPositions = () => {
       {pool.isStablePool && (
         <StablepoolPosition amount={BN(stablepoolAmount)} />
       )}
+      {!!pool.relatedAToken && <ATokenPosition />}
       <FarmingPositionWrapper />
       <LiquidityPositionWrapper />
     </>

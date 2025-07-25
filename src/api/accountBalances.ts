@@ -9,7 +9,6 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { millisecondsInMinute } from "date-fns"
 import { TBalance } from "./balances"
 import { TAsset, TShareToken, useAssets } from "providers/assets"
-import { GETH_ERC20_ASSET_ID } from "utils/constants"
 
 export const getAccountAssetBalances =
   (
@@ -124,9 +123,7 @@ export const useAccountBalance = (address?: string) => {
       for (const { balance, asset } of balances) {
         if (!BigNumber(balance.total).isZero()) {
           const isPoolPositions =
-            asset.isShareToken ||
-            asset.isStableSwap ||
-            asset.id === GETH_ERC20_ASSET_ID
+            asset.isShareToken || asset.isStableSwap || asset.isErc20
 
           if (isPoolPositions) {
             isBalance = true

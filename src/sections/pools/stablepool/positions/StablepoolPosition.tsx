@@ -6,7 +6,10 @@ import { SContainer, SOmnipoolButton } from "./StablepoolPosition.styled"
 import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import DropletIcon from "assets/icons/DropletIcon.svg?react"
 import PlusIcon from "assets/icons/PlusIcon.svg?react"
-import { RemoveLiquidityButton } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
+import {
+  RemoveLiquidityButton,
+  STABLEPOOLTYPE,
+} from "sections/pools/stablepool/removeLiquidity/RemoveLiquidityButton"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { DollarAssetValue } from "components/DollarAssetValue/DollarAssetValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -19,14 +22,17 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { SPoolDetailsContainer } from "sections/pools/pool/details/PoolDetails.styled"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { AddLiquidity } from "sections/pools/modals/AddLiquidity/AddLiquidity"
+import { useAssets } from "providers/assets"
 
 export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const { t } = useTranslation()
   const isDesktop = useMedia(theme.viewport.gte.sm)
   const pool = usePoolData().pool as TStablepool
   const refetchAccountAssets = useRefetchAccountAssets()
+  const { getAssetWithFallback } = useAssets()
 
-  const { meta, isGDOT, isGETH, isInOmnipool } = pool
+  const { isGETH, isInOmnipool, poolId } = pool
+  const meta = getAssetWithFallback(poolId)
 
   const [transferOpen, setTransferOpen] = useState(false)
 
@@ -41,32 +47,30 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
           sx={{ height: ["auto", "auto"], p: [12, 20] }}
           css={{ background: "transparent" }}
         >
-          {!(isGDOT || isGETH) && (
-            <div
-              sx={{
-                flex: "row",
-                align: "center",
-                gap: 8,
-                mb: [5, 0],
-                mt: [5, 0],
-              }}
-            >
-              <Icon
-                size={15}
-                sx={{ color: "vibrantBlue200" }}
-                icon={<DropletIcon />}
-              />
-              <Text fs={[16, 16]} color="vibrantBlue200">
-                {t("liquidity.stablepool.asset.positions.title")}
-              </Text>
-            </div>
-          )}
+          <div
+            sx={{
+              flex: "row",
+              align: "center",
+              gap: 8,
+              mb: [5, 0],
+              mt: [5, 0],
+            }}
+          >
+            <Icon
+              size={15}
+              sx={{ color: "vibrantBlue200" }}
+              icon={<DropletIcon />}
+            />
+            <Text fs={[16, 16]} color="vibrantBlue200">
+              {t("liquidity.stablepool.asset.positions.title")}
+            </Text>
+          </div>
           <div sx={{ flex: "column", gap: 16 }}>
             <SContainer sx={{ height: ["auto", "auto"] }}>
               <div sx={{ flex: "column", gap: 24 }} css={{ flex: 1 }}>
                 <div sx={{ flex: "row", gap: 7, align: "center" }}>
                   <MultipleAssetLogo iconId={meta.iconId} size={26} />
-                  {(isGDOT || isGETH) && <Text>{meta.symbol}</Text>}
+                  <Text>{meta.symbol}</Text>
                 </div>
                 <div
                   sx={{
@@ -90,9 +94,9 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                         {t("value.token", {
                           value: amount,
                           fixedPointScale: STABLEPOOL_TOKEN_DECIMALS,
-                          numberSuffix: !isGDOT
-                            ? ` ${t("liquidity.stablepool.position.token")}`
-                            : undefined,
+                          numberSuffix: ` ${t(
+                            "liquidity.stablepool.position.token",
+                          )}`,
                         })}
                       </Text>
                       <DollarAssetValue
@@ -150,7 +154,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   gap: 12,
                 }}
               >
-                {isInOmnipool && (
+                {isInOmnipool && !isGETH && (
                   <SOmnipoolButton
                     size="small"
                     fullWidth
@@ -166,10 +170,9 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   </SOmnipoolButton>
                 )}
                 <RemoveLiquidityButton
-                  onSuccess={() => {
-                    refetchAccountAssets()
-                  }}
+                  onSuccess={refetchAccountAssets}
                   pool={pool}
+                  type={STABLEPOOLTYPE.CLASSIC}
                 />
               </div>
             </SContainer>
