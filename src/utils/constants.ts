@@ -54,6 +54,7 @@ export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
 export const GETH_STABLESWAP_ASSET_ID = "4200"
 export const GETH_ERC20_ASSET_ID = "420"
+export const USDT_ASSET_ID = "10"
 export const VDOT_ASSET_ID = "15"
 export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
@@ -75,7 +76,7 @@ export const HOLLAR_POOLS = [
   HUSDE_ASSET_ID,
 ]
 
-export const STRATEGY_ASSETS_BLACKLIST = [
+export const STRATEGY_ASSETS = [
   GDOT_STABLESWAP_ASSET_ID,
   GDOT_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,

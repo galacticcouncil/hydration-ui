@@ -23,6 +23,8 @@ import { getAddressFromAssetId } from "utils/evm"
 import {
   DOT_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
+  USDT_ASSET_ID,
+  USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
 } from "utils/constants"
 
@@ -210,6 +212,10 @@ export const selectFormattedReserves = (
     const gDotReserve = reserveMap.get(
       getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
     )
+    const usdtReserve = reserveMap.get(getAddressFromAssetId(USDT_ASSET_ID))
+    const usdPoolReserve = reserveMap.get(
+      getAddressFromAssetId(USDT_POOL_ASSET_ID),
+    )
 
     if (gDotReserve && dotReserve && vDotReserve) {
       const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
@@ -222,6 +228,12 @@ export const selectFormattedReserves = (
         .plus(dotApyHalf)
         .plus(gdotLpFee)
         .toString()
+    }
+
+    if (usdPoolReserve && usdtReserve) {
+      // 1/3 of USDT APY since its a 3-pool
+      const usdApyThird = valueToBigNumber(usdtReserve.supplyAPY).div(3)
+      usdPoolReserve.supplyAPY = usdApyThird.toString()
     }
   })
 }

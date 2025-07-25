@@ -5,17 +5,10 @@ import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
 import i18n from "i18next"
 import {
+  BN_0,
   BN_NAN,
   DOT_ASSET_ID,
   ETH_ASSET_ID,
-  GDOT_ERC20_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-  HUSDC_ASSET_ID,
-  HUSDE_ASSET_ID,
-  HUSDS_ASSET_ID,
-  HUSDT_ASSET_ID,
-  USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
   WSTETH_ASSET_ID,
 } from "utils/constants"
@@ -23,17 +16,29 @@ import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { SContainer, SIncentiveRow } from "./GigaIncentives.styled"
 import { ReactNode } from "react"
-import { useBorrowAssetApy } from "api/borrow"
+import { BorrowAssetApyData, useBorrowAssetApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { ResponsiveValue } from "utils/responsive"
 import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
+import { TStablepool } from "sections/pools/PoolsPage.utils"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
-export const GigaIncentives = ({ id }: { id: string }) => {
+export const GigaIncentives = ({
+  pool: { moneyMarketApy },
+}: {
+  pool: TStablepool
+}) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+
+  if (!moneyMarketApy) return null
+
+  const totalApr = moneyMarketApy.incentives.reduce(
+    (acc, incentive) => acc.plus(incentive.incentiveAPR),
+    BN_0,
+  )
 
   return (
     <>
@@ -46,14 +51,34 @@ export const GigaIncentives = ({ id }: { id: string }) => {
       >
         {t("liquidity.stablepool.incetives")}
       </Heading>
-      <SContainer sx={{ flex: "row", gap: 6, justify: "space-between" }}>
-        <div sx={{ flex: "row", align: "center", gap: 6 }}>
-          <Icon size={20} icon={<AssetLogo id={GDOT_ERC20_ASSET_ID} />} />
-          <Text fs={16} fw={600} font="GeistSemiBold" color="basic100">
-            {getAssetWithFallback(GDOT_ERC20_ASSET_ID).symbol}
-          </Text>
-        </div>
-        <MoneyMarketAPY withLabel type="supply" assetId={id} />
+      <SContainer
+        sx={{ flex: "row", gap: 6, justify: "space-between", align: "center" }}
+      >
+        <MultipleIcons
+          size={20}
+          icons={moneyMarketApy.incentives.map((incentive) => {
+            const id = getAssetIdFromAddress(incentive.rewardTokenAddress)
+            return {
+              icon: <AssetLogo key={id} id={id} />,
+            }
+          })}
+        />
+
+        <Text
+          fs={14}
+          fw={600}
+          font="GeistSemiBold"
+          color="basic100"
+          sx={{ mr: "auto" }}
+        >
+          {moneyMarketApy.incentives
+            .map(({ rewardTokenSymbol }) => rewardTokenSymbol)
+            .join(", ")}
+        </Text>
+
+        <Text color="white" fs={14}>
+          <FormattedNumber percent value={totalApr.toString()} />
+        </Text>
       </SContainer>
     </>
   )
@@ -111,6 +136,12 @@ type APYProps = {
   readonly omnipoolFee?: string
 }
 
+export const MoneyMarketAPYWrapper = (props: APYProps) => {
+  const moneyMarketApy = useBorrowAssetApy(props.assetId, props.withFarms)
+
+  return <MoneyMarketAPY moneyMarketApy={moneyMarketApy} {...props} />
+}
+
 export const MoneyMarketAPY = ({
   withLabel,
   type,
@@ -119,7 +150,8 @@ export const MoneyMarketAPY = ({
   size,
   withFarms,
   omnipoolFee,
-}: APYProps) => {
+  moneyMarketApy,
+}: APYProps & { moneyMarketApy: BorrowAssetApyData }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
@@ -131,7 +163,7 @@ export const MoneyMarketAPY = ({
     incentives,
     farms,
     vDotApy,
-  } = useBorrowAssetApy(assetId, withFarms)
+  } = moneyMarketApy
 
   const isSupply = type === "supply"
   const apy = BN(isSupply ? totalSupplyApy : totalBorrowApy)
@@ -302,17 +334,15 @@ type OverrideApyProps = APYProps & {
 }
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
-  switch (props.assetId) {
-    case GDOT_STABLESWAP_ASSET_ID:
-    case GETH_STABLESWAP_ASSET_ID:
-    case USDT_POOL_ASSET_ID:
-    case HUSDC_ASSET_ID:
-    case HUSDT_ASSET_ID:
-    case HUSDS_ASSET_ID:
-    case HUSDE_ASSET_ID:
-      return props.type === "supply" ? <MoneyMarketAPY {...props} /> : children
-    case VDOT_ASSET_ID:
-      return <MoneyMarketAPY {...props} />
+  switch (true) {
+    case MONEY_MARKET_GIGA_RESERVES.includes(props.assetId):
+      return props.type === "supply" ? (
+        <MoneyMarketAPYWrapper {...props} />
+      ) : (
+        children
+      )
+    case props.assetId === VDOT_ASSET_ID:
+      return <MoneyMarketAPYWrapper {...props} />
     default:
       return children
   }

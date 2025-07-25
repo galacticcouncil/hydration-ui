@@ -9,7 +9,6 @@ import {
   BN_0,
   BN_1,
   BN_NAN,
-  GDOT_ERC20_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
@@ -28,7 +27,7 @@ import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useBorrowAssetApy } from "api/borrow"
+import { BorrowAssetApyData, useMoneyMarketAssetsAPY } from "api/borrow"
 import {
   setOmnipoolTvlTotal,
   setOmnipoolVolumeTotal,
@@ -67,6 +66,7 @@ type TStablepoolData = {
   balance: string
   isStablepoolData: boolean
   lpFee: string | undefined
+  moneyMarketApy: BorrowAssetApyData | undefined
 }
 
 const isStablepoolData = (
@@ -88,7 +88,7 @@ const getTradeFee = (fee: string[]) => {
 }
 
 export const usePools = () => {
-  const { native, getAssetWithFallback } = useAssets()
+  const { native, getAssetWithFallback, getRelatedAToken } = useAssets()
 
   const { data: omnipoolAssets, isLoading: isOmnipoolAssetLoading } =
     useOmnipoolDataObserver()
@@ -120,9 +120,6 @@ export const usePools = () => {
     useOmnipoolVolumes(isInitialLoading)
   const { data: omnipoolMetrics = [], isLoading: isOmnipoolMetricsLoading } =
     useOmnipoolYieldMetrics(isInitialLoading)
-
-  const gdotBorrowApy = useBorrowAssetApy(GDOT_STABLESWAP_ASSET_ID)
-  const gethBorrowApy = useBorrowAssetApy(GETH_STABLESWAP_ASSET_ID)
 
   const isTotalFeeLoading = isOmnipoolMetricsLoading || isAllFarmsLoading
 
@@ -157,13 +154,19 @@ export const usePools = () => {
         const isGETH = asset.id === GETH_ERC20_ASSET_ID
         const isGDOT = asset.id === GDOT_STABLESWAP_ASSET_ID
         const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
+        const relatedAToken = getRelatedAToken(poolId)
 
         const isStablepoolOnly = isStablepoolData(asset)
         const isStableInOmnipool = stableInOmnipool.get(poolId)
+        const moneyMarketApy = isStablepoolOnly
+          ? asset.moneyMarketApy
+          : isStableInOmnipool?.moneyMarketApy
+        const meta = getAssetWithFallback(poolId)
 
-        const meta = getAssetWithFallback(asset.id)
-
-        const accountAsset = accountAssets?.accountAssetsMap.get(asset.id)
+        const accountAsset = accountAssets?.accountAssetsMap.get(poolId)
+        const accountAAsset = relatedAToken
+          ? accountAssets?.accountAssetsMap.get(relatedAToken.id)
+          : undefined
         const positions = accountPositions?.accountAssetsMap.get(asset.id)
 
         const spotPrice = getAssetPrice(asset.id).price
@@ -219,8 +222,8 @@ export const usePools = () => {
         if (isStablepoolOnly) {
           lpFeeStablepool = asset.lpFee
 
-          if (isGDOT) {
-            totalFee = BN(gdotBorrowApy.totalSupplyApy)
+          if (moneyMarketApy) {
+            totalFee = BN(moneyMarketApy.totalSupplyApy)
           } else {
             totalFee = BN(lpFeeStablepool ?? 0).plus(farmsApr ?? 0)
           }
@@ -234,10 +237,10 @@ export const usePools = () => {
               return id === asset.id
             })?.projectedAprPerc ?? "0"
 
-          if (isGETH) {
-            totalFee = BN(lpFeeOmnipool ?? 0)
-              .plus(gethBorrowApy.totalSupplyApy)
-              .plus(farmsApr ?? 0)
+          if (moneyMarketApy) {
+            totalFee = BN(lpFeeOmnipool ?? 0).plus(
+              moneyMarketApy.totalSupplyApy,
+            )
           } else {
             totalFee = BN(lpFeeStablepool)
               .plus(lpFeeOmnipool ?? 0)
@@ -257,29 +260,21 @@ export const usePools = () => {
         const filteredOmnipoolPositions = positions?.liquidityPositions ?? []
         const filteredMiningPositions = positions?.omnipoolDeposits ?? []
         const isPositions =
-          !!positions?.isPoolPositions || !!accountAsset?.isPoolPositions
+          !!positions?.isPoolPositions ||
+          !!accountAsset?.isPoolPositions ||
+          !!accountAAsset?.isPoolPositions
 
-        const metaOverride = isGDOT
-          ? getAssetWithFallback(GDOT_ERC20_ASSET_ID)
-          : undefined
+        const metaOverride = isGDOT || isGETH ? relatedAToken : meta
 
         const name = metaOverride?.name || meta.name
         const symbol = metaOverride?.symbol || meta.symbol
-        const iconId = metaOverride?.iconId || meta.iconId
 
         return {
           id: asset.id,
           poolId,
           name,
           symbol,
-          meta: isGDOT
-            ? {
-                ...meta,
-                name,
-                symbol,
-                iconId,
-              }
-            : meta,
+          meta: metaOverride ?? meta,
           tvlDisplay,
           spotPrice,
           canAddLiquidity: tradability.canAddLiquidity,
@@ -302,6 +297,9 @@ export const usePools = () => {
           isGETH,
           isStablePool: isStablepoolOnly || !!isStableInOmnipool,
           isInOmnipool: !isStablepoolOnly,
+          relatedAToken,
+          aBalance: accountAAsset?.balance,
+          moneyMarketApy,
         }
       })
       .sort((poolA, poolB) => {
@@ -338,9 +336,8 @@ export const usePools = () => {
     isVolumeLoading,
     omnipoolMetrics,
     stablepoolData,
-    gdotBorrowApy.totalSupplyApy,
-    gethBorrowApy.totalSupplyApy,
     accountPositions,
+    getRelatedAToken,
   ])
 
   useEffect(() => {
@@ -811,6 +808,10 @@ export const useStablepoolsData = (disabled?: boolean) => {
     return { poolId: stablePool.id, tokens: filteredTokens }
   })
 
+  const moneyMarketAssetsApy = useMoneyMarketAssetsAPY(
+    stablePoolData?.map((stablepool) => stablepool.poolId) ?? [],
+  )
+
   const { isLoading, getAssetPrice } = useAssetsPrice([...tokensSet])
 
   const data = stablePoolData?.map((stablepool) => {
@@ -840,6 +841,10 @@ export const useStablepoolsData = (disabled?: boolean) => {
       (stablepoolFee) => stablepoolFee.poolId === poolId,
     )?.projectedApyPerc
 
+    const moneyMarketApy = moneyMarketAssetsApy.find(
+      (moneyMarketApy) => moneyMarketApy.assetId === stablepool.poolId,
+    )
+
     const data: TStablepoolData = {
       poolId,
       id,
@@ -847,6 +852,7 @@ export const useStablepoolsData = (disabled?: boolean) => {
       balance: totalBalance.toString(),
       isStablepoolData: true,
       lpFee,
+      moneyMarketApy,
     }
 
     return data

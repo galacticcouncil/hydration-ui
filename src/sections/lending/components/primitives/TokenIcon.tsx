@@ -3,7 +3,7 @@ import { Icon } from "components/Icon/Icon"
 import { useAssets } from "providers/assets"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { GHO_ASSET_ID } from "sections/lending/utils/ghoUtilities"
-import { STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
+import { STRATEGY_ASSETS } from "utils/constants"
 import { getAssetIdFromAddress } from "utils/evm"
 
 interface TokenIconProps {
@@ -20,8 +20,7 @@ export function TokenIcon({
   ...rest
 }: TokenIconProps) {
   const { currentMarketData } = useProtocolDataContext()
-  const { getRelatedAToken } = useAssets()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken } = useAssets()
 
   const isGho =
     currentMarketData.addresses.GHO_TOKEN_ADDRESS?.toLowerCase() ===
@@ -33,7 +32,7 @@ export function TokenIcon({
   if (
     meta.isStableSwap &&
     meta.meta &&
-    !STRATEGY_ASSETS_BLACKLIST.includes(meta.id)
+    !STRATEGY_ASSETS.includes(meta.id)
   ) {
     return (
       <MultipleAssetLogo

@@ -6,11 +6,12 @@ import {
   skyUsdAPRQuery,
 } from "api/external/ethereum"
 import {
-  GETH_STABLESWAP_ASSET_ID,
   HOLLAR_POOLS,
   HUSDE_ASSET_ID,
   HUSDS_ASSET_ID,
-  STRATEGY_ASSETS_BLACKLIST,
+  GETH_STABLESWAP_ASSET_ID,
+  STRATEGY_ASSETS,
+  USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
 } from "utils/constants"
 import { getAddressFromAssetId } from "utils/evm"
@@ -25,6 +26,7 @@ export const EXTERNAL_APY_QUERIES: Record<string, UseQueryOptions<number>> = {
 }
 
 export const MONEY_MARKET_GIGA_RESERVES = [
-  ...STRATEGY_ASSETS_BLACKLIST,
+  ...STRATEGY_ASSETS,
   ...HOLLAR_POOLS,
+  USDT_POOL_ASSET_ID,
 ].map(getAddressFromAssetId)
