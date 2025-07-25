@@ -21,7 +21,6 @@ import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/Supp
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
-import { NATIVE_ASSET_ID } from "utils/api"
 
 type Props = {
   readonly assetId: string
@@ -31,7 +30,7 @@ type Props = {
 export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
 
-  const { getAssetWithFallback, getRelatedAToken } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken, native, hub } = useAssets()
   const aToken = getRelatedAToken(assetId) ?? getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
@@ -39,10 +38,11 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
 
   const aTokenId = aToken.id
 
+  const blacklist = [hub.id].concat(aTokenId ? [aTokenId] : [])
   const allowedAssets = useNewDepositAssets(assetId, {
-    blacklist: aTokenId ? [aTokenId] : [],
+    blacklist,
     firstAssetId: defaultAssetId,
-    lowPriorityAssetIds: [NATIVE_ASSET_ID],
+    lowPriorityAssetIds: [native.id],
   })
 
   const { page, direction, back, next } = useModalPagination()

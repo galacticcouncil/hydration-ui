@@ -369,7 +369,9 @@ export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
   } = options ?? {}
 
   const getTickerIndex = (ticker: string) => {
-    const index = tickerOrder.indexOf(ticker.toUpperCase())
+    // include aTokens of assets in ticker order
+    const formattedTicker = ticker.startsWith("a") ? ticker.slice(1) : ticker
+    const index = tickerOrder.indexOf(formattedTicker.toUpperCase())
     return index === -1 ? Infinity : index
   }
 

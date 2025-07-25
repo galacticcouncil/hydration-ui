@@ -2,7 +2,6 @@ import { TAsset, useAssets } from "providers/assets"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
-import { NATIVE_ASSET_ID } from "utils/api"
 
 type TransferAssetSelectorProps = {
   pool: TStablepool
@@ -15,16 +14,17 @@ const TransferErc20AssetSelector: React.FC<TransferAssetSelectorProps> = ({
   firstAssetId,
   onSelect,
 }) => {
-  const { getErc20 } = useAssets()
+  const { getErc20, native, hub } = useAssets()
 
   const aTokenId = pool.relatedAToken?.id ?? ""
 
   const depositAssetId = getErc20(aTokenId)?.underlyingAssetId ?? ""
 
+  const blacklist = [hub.id].concat(aTokenId ? [aTokenId] : [])
   const selectableAssets = useNewDepositAssets(depositAssetId, {
+    blacklist,
     firstAssetId,
-    blacklist: aTokenId ? [aTokenId] : [],
-    lowPriorityAssetIds: [NATIVE_ASSET_ID],
+    lowPriorityAssetIds: [native.id],
   })
 
   return (

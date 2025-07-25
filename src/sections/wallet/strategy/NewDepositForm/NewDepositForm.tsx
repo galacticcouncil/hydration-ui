@@ -15,13 +15,12 @@ import { Modal } from "components/Modal/Modal"
 import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { noop } from "utils/helpers"
-import { GETH_ERC20_ASSET_ID, STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
+import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { Alert } from "components/Alert/Alert"
 import { usePools, useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { PoolContext } from "sections/pools/pool/Pool"
 import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
-import { NATIVE_ASSET_ID } from "utils/api"
 
 type Props = {
   readonly assetId: string
@@ -29,7 +28,7 @@ type Props = {
 
 export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation()
-  const { getErc20 } = useAssets()
+  const { getErc20, hub, native } = useAssets()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
 
   const { account } = useAccount()
@@ -48,8 +47,8 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const allowedAssets = useNewDepositAssets(
     getErc20(assetId)?.underlyingAssetId ?? "",
     {
-      blacklist: STRATEGY_ASSETS_BLACKLIST,
-      lowPriorityAssetIds: [NATIVE_ASSET_ID],
+      blacklist: [assetId, hub.id],
+      lowPriorityAssetIds: [native.id],
     },
   )
 
