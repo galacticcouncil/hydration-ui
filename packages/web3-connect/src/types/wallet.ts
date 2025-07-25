@@ -6,6 +6,8 @@ import { WalletError } from "@/utils/errors"
 
 export type DummySigner = object
 
+export type AnySigner = PolkadotSigner | EthereumSigner | DummySigner
+
 export type SubscriptionFn = (
   accounts: WalletAccount[] | undefined,
 ) => void | Promise<void>
