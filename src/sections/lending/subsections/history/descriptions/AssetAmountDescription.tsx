@@ -1,8 +1,7 @@
 import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { FC } from "react"
-import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 
@@ -27,7 +26,7 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
         flexWrap: "wrap",
       }}
     >
-      <Icon icon={<AssetLogo id={assetId ?? undefined} />} size={16} />
+      <MultipleAssetLogo size={24} iconId={asset.iconId} />
       <Text fs={14} css={{ whiteSpace: "nowrap" }}>
         {t("value.tokenWithSymbol", {
           value: new BigNumber(amount).shiftedBy(-asset.decimals).toString(),

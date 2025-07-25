@@ -33,7 +33,7 @@ export const StrategyTile: FC<Props> = ({
 }) => {
   const { account } = useAccount()
   const { data: defaultAssetId, isLoading } =
-    useNewDepositDefaultAssetId(underlyingAssetId)
+    useNewDepositDefaultAssetId(assetId)
 
   return (
     <SStrategyTile variant={variant}>

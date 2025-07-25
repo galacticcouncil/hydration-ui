@@ -288,6 +288,8 @@
   "liquidity.stablepool.transfer.moveAndJoinFarms": "Add to Omnipool and join farms",
   "liquidity.stablepool.asset.details.total": "Value in Stablepool",
   "liquidity.stablepool.asset.positions.title": "Stablepool positions",
+  "liquidity.stablepool.atoken.positions.title": "Your supplies",
+  "liquidity.stablepool.atoken.positions.description": "Balance of assets supplied to Supply & Borrow.",
   "liquidity.stablepool.asset.incentives.title": "Farming incentives",
   "liquidity.stablepool.reserves": "Stable reserves",
   "liquidity.stablepool.incetives": "Available incentives",
