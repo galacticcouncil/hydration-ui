@@ -1,4 +1,5 @@
 import { isSS58Address } from "@galacticcouncil/utils"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -10,7 +11,6 @@ import { useShallow } from "zustand/shallow"
 import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 import { uniquesIds } from "./constants"
 

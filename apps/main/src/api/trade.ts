@@ -1,8 +1,9 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TProviderContext } from "@/providers/rpcProvider"
-import { GC_TIME, QUERY_KEY_BLOCK_PREFIX, STALE_TIME } from "@/utils/consts"
+import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 type BestSellArgs = {
   readonly assetIn: string

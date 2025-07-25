@@ -1,7 +1,6 @@
 import { sleep } from "@galacticcouncil/utils"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
-
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export const transactionTypesMock = ["deposit", "withdraw"] as const
 export type TransactionTypeMock = (typeof transactionTypesMock)[number]

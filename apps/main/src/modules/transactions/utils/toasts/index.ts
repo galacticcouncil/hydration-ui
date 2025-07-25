@@ -1,9 +1,9 @@
+import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { CallType } from "@galacticcouncil/xcm-core"
 import { QueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
 import { PublicClient } from "viem"
 
-import { GraphqlClient } from "@/api/provider"
 import {
   processors,
   ToastProcessorFn,
@@ -74,11 +74,11 @@ const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
 
 export const createToastProcessorFn = (
   queryClient: QueryClient,
-  indexerClient: GraphqlClient,
+  indexerSdk: IndexerSdk,
   evm: PublicClient,
 ): ToastProcessorFn => {
-  const substrateProcessor = processors.substrate(queryClient, indexerClient)
-  const evmProcessor = processors.evm(queryClient, indexerClient, evm)
+  const substrateProcessor = processors.substrate(queryClient, indexerSdk)
+  const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
   const wormholeProcessor = processors.wormhole()
   const snowbridgeProcessor = processors.snowbridge()
   const invalidProcessor = processors.invalid()

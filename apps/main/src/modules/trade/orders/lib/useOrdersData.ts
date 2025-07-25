@@ -1,14 +1,14 @@
+import {
+  DcaScheduleStatus,
+  isDcaScheduleStatus,
+  userOrdersQuery,
+} from "@galacticcouncil/indexer/squid"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
-import {
-  DcaScheduleStatus,
-  isDcaScheduleStatus,
-  userOrdersQuery,
-} from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -101,7 +101,7 @@ export const useOrdersData = (
             status: isDcaScheduleStatus(schedule.status)
               ? schedule.status
               : null,
-            blocksPeriod: schedule.period,
+            blocksPeriod: schedule.period ?? null,
           }
         }) ?? [],
     [data, getAssetWithFallback],

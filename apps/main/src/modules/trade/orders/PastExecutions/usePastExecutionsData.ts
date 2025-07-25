@@ -1,12 +1,12 @@
-import { subscan } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
-
 import {
   dcaScheduleExecutionsQuery,
   DcaScheduleExecutionStatus,
   isDcaScheduleExecutionStatus,
-} from "@/api/graphql/trade-orders"
+} from "@galacticcouncil/indexer/squid"
+import { subscan } from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
+
 import { useSquidClient } from "@/api/provider"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
 import { useAssets } from "@/providers/assetsProvider"

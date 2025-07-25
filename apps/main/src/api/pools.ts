@@ -5,6 +5,7 @@ import {
   TradeRouter,
 } from "@galacticcouncil/sdk"
 import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import {
   type QueryClient,
   queryOptions,
@@ -15,7 +16,7 @@ import {
 import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { setOmnipoolIds } from "@/states/liquidity"
-import { HUB_ID, QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { HUB_ID } from "@/utils/consts"
 
 export type TOmnipoolAssetsData = Array<{
   id: string
