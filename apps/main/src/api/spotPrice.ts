@@ -1,4 +1,5 @@
 import { sor } from "@galacticcouncil/sdk-next"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import {
   queryOptions,
   useQueries,
@@ -14,7 +15,6 @@ import {
   useDisplayAssetStore,
   useDisplaySpotPriceStore,
 } from "@/states/displayAsset"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export const usePriceSubscriber = () => {

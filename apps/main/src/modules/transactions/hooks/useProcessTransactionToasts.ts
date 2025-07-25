@@ -1,3 +1,4 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions, useQueries } from "@tanstack/react-query"
 import { prop } from "remeda"
 
@@ -5,7 +6,6 @@ import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/use
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { ToastData, useToasts } from "@/states/toasts"
 import { useTransactionsStore } from "@/states/transactions"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export const useProcessTransactionToasts = (toasts: ToastData[]) => {
   const { isLoaded } = useRpcProvider()

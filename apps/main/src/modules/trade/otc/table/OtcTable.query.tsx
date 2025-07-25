@@ -1,8 +1,8 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export type OtcOffer = {
   readonly id: string | undefined

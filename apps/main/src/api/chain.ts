@@ -1,9 +1,9 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions, useQueryClient } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useObservable } from "@/hooks/useObservable"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 export const bestNumberQuery = (context: TProviderContext) => {
   const { isApiLoaded, papi, endpoint } = context
