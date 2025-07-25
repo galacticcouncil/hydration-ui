@@ -484,7 +484,7 @@ export type BorrowAssetApyData = {
 }
 
 export const useMoneyMarketAssetsAPY = (assetIds: string[]) => {
-  const { getAssetWithFallback, getErc20, getRelatedAToken } = useAssets()
+  const { getAssetWithFallback, getErc20 } = useAssets()
 
   const { data: reserves } = useBorrowReserves()
   const { data: stablepoolFees } = useStablepoolFees()
@@ -499,36 +499,26 @@ export const useMoneyMarketAssetsAPY = (assetIds: string[]) => {
         isGETH: boolean
       }[]
     >((acc, assetId) => {
-      const relatedAToken = getRelatedAToken(assetId)
+      const reserve = reserves?.formattedReserves.find(
+        ({ underlyingAsset }) =>
+          underlyingAsset === getAddressFromAssetId(assetId),
+      )
 
-      if (relatedAToken) {
-        const reserve = reserves?.formattedReserves.find(
-          ({ underlyingAsset }) =>
-            underlyingAsset === getAddressFromAssetId(assetId),
+      if (reserve) {
+        const lpFee = Number(
+          stablepoolFees?.find((fee) => fee.poolId === assetId)
+            ?.projectedApyPerc ?? 0,
         )
+        const meta = getAssetWithFallback(assetId)
+        const stableswapAssets = meta.meta ? Object.keys(meta.meta) : []
+        const isGETH = stableswapAssets.includes(WSTETH_ASSET_ID)
 
-        if (reserve) {
-          const lpFee = Number(
-            stablepoolFees?.find((fee) => fee.poolId === assetId)
-              ?.projectedApyPerc ?? 0,
-          )
-          const meta = getAssetWithFallback(assetId)
-          const stableswapAssets = meta.meta ? Object.keys(meta.meta) : []
-          const isGETH = stableswapAssets.includes(WSTETH_ASSET_ID)
-
-          acc.push({ assetId, reserve, lpFee, stableswapAssets, isGETH })
-        }
+        acc.push({ assetId, reserve, lpFee, stableswapAssets, isGETH })
       }
 
       return acc
     }, [])
-  }, [
-    assetIds,
-    getRelatedAToken,
-    getAssetWithFallback,
-    reserves,
-    stablepoolFees,
-  ])
+  }, [assetIds, getAssetWithFallback, reserves, stablepoolFees])
 
   const { data: vDotApy } = useBifrostVDotApy({
     enabled: aTokens.some((aToken) =>
@@ -552,20 +542,20 @@ export const useMoneyMarketAssetsAPY = (assetIds: string[]) => {
       const assetsAmount = aToken.stableswapAssets.length
 
       const underlyingAssetIds = aToken.stableswapAssets.map((assetId) => {
-        return getErc20(assetId)?.underlyingAssetId ?? assetId
+        return getAddressFromAssetId(
+          getErc20(assetId)?.underlyingAssetId ?? assetId,
+        )
       })
 
       const underlyingReserves =
         reserves?.formattedReserves?.filter((reserve) => {
-          return underlyingAssetIds
-            .map(getAddressFromAssetId)
-            .includes(reserve.underlyingAsset)
+          return underlyingAssetIds.includes(reserve.underlyingAsset)
         }) ?? []
 
       const incentives = aToken.reserve.aIncentivesData ?? []
 
       const isIncentivesInfinity = incentives.some(
-        (incentive) => incentive.incentiveAPR === "Infinity",
+        (incentive) => !BN(incentive.incentiveAPR).isFinite(),
       )
 
       const incentivesAPRSum = isIncentivesInfinity
