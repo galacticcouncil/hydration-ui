@@ -118,7 +118,7 @@ export const ReserveOverviewHeaderValues: FC<
                 label={t("lending.reserve.utilRate")}
               >
                 <PercentageValue
-                  value={Number(poolReserve.borrowUsageRatio ?? 0) * 100}
+                  value={Number(poolReserve?.borrowUsageRatio ?? 0) * 100}
                 />
               </DataValue>
             )}
