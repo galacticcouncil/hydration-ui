@@ -132,7 +132,10 @@ export const BorrowActions = React.memo(
               ? poolReserve.variableDebtTokenAddress
               : poolReserve.stableDebtTokenAddress,
         })
-        borrowTxData = await estimateGasLimit(borrowTxData)
+        borrowTxData = await estimateGasLimit(
+          borrowTxData,
+          ProtocolAction.borrow,
+        )
         const response = await sendTx(borrowTxData, ProtocolAction.borrow)
         setMainTxState({
           txHash: response.hash,

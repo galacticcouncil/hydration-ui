@@ -70,6 +70,19 @@ export const useEvmPaymentFee = (txHex: string, address?: string) => {
   )
 }
 
+export const useEvmGasPrice = () => {
+  const { isLoaded, evm } = useRpcProvider()
+
+  return useQuery({
+    enabled: isLoaded,
+    queryKey: QUERY_KEYS.evmGasPrice(),
+    queryFn: async () => {
+      const gasPrice = await evm.getGasPrice()
+      return gasPrice.toString()
+    },
+  })
+}
+
 export const useEvmAccountBind = (options: TransactionOptions = {}) => {
   const { t } = useTranslation()
   const { account } = useAccount()

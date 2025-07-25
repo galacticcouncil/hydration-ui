@@ -180,6 +180,7 @@ export const RepayActions = ({
 
         signedRepayWithPermitTxData = await estimateGasLimit(
           signedRepayWithPermitTxData,
+          action,
         )
         response = await sendTx(signedRepayWithPermitTxData, action)
       } else {
@@ -203,7 +204,7 @@ export const RepayActions = ({
           ...repayParams,
           encodedTxData: encodedParams,
         })
-        repayTxData = await estimateGasLimit(repayTxData)
+        repayTxData = await estimateGasLimit(repayTxData, action)
         response = await sendTx(repayTxData, action)
       }
       setMainTxState({

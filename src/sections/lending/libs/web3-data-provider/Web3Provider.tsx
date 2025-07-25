@@ -42,6 +42,8 @@ import { useTranslation } from "react-i18next"
 import { decodeEvmCall } from "sections/transaction/ReviewTransactionData.utils"
 import { PoolReserve } from "sections/lending/store/poolSlice"
 import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
+import { AAVE_EXTRA_GAS } from "utils/constants"
+import BN from "bignumber.js"
 
 export type ERC20TokenType = {
   address: string
@@ -271,7 +273,12 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
       createTransaction(
         {
           evmTx: {
-            data: txData,
+            data: {
+              ...txData,
+              gasLimit: BN(AAVE_EXTRA_GAS.toString())
+                .plus(txData?.gasLimit?.toString() ?? "0")
+                .toString(),
+            },
             abi,
           },
         },

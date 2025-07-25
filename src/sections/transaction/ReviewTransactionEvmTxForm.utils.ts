@@ -1,29 +1,29 @@
 import { TransactionRequest } from "@ethersproject/providers"
 import { useQuery } from "@tanstack/react-query"
-import BigNumber from "bignumber.js"
-import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
-import { useWallet } from "sections/web3-connect/Web3Connect.utils"
+import { useEvmGasPrice } from "api/evm"
+import { useRpcProvider } from "providers/rpcProvider"
 import { BN_NAN } from "utils/constants"
 import { QUERY_KEYS } from "utils/queryKeys"
+import BN from "bignumber.js"
+import { NATIVE_EVM_ASSET_DECIMALS } from "utils/evm"
 
 export const useEvmTxFee = (tx: TransactionRequest) => {
-  const { wallet } = useWallet()
+  const { evm } = useRpcProvider()
+  const { data: gasPrice, isLoading: isGasPriceLoading } = useEvmGasPrice()
   return useQuery(
     QUERY_KEYS.evmPaymentFee(tx.data?.toString() ?? "", tx.from),
     async () => {
-      if (wallet?.signer instanceof EthereumSigner) {
-        const { gas, maxFeePerGas, maxPriorityFeePerGas } =
-          await wallet.signer.getGasValues(tx)
-        const estimatedGas = new BigNumber(gas.toString())
-        const baseFee = new BigNumber(maxFeePerGas?.toString() ?? "0")
-        const effectiveGasPrice = baseFee.plus(maxPriorityFeePerGas.toString())
-        return estimatedGas.multipliedBy(effectiveGasPrice).shiftedBy(-18)
+      if (gasPrice) {
+        const gas = await evm.estimateGas(tx)
+        return BN(gas.toString())
+          .multipliedBy(gasPrice)
+          .shiftedBy(-NATIVE_EVM_ASSET_DECIMALS)
       }
 
       return BN_NAN
     },
     {
-      enabled: wallet?.signer instanceof EthereumSigner && !!tx,
+      enabled: !isGasPriceLoading && !!tx,
     },
   )
 }
