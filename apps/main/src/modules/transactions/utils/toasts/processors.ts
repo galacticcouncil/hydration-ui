@@ -1,12 +1,12 @@
+import {
+  extrinsicByBlockAndIndexQuery,
+  extrinsicByHashQuery,
+  IndexerSdk,
+} from "@galacticcouncil/indexer/indexer"
 import { QueryClient } from "@tanstack/react-query"
 import { first } from "remeda"
 import { PublicClient } from "viem"
 
-import {
-  extrinsicByBlockAndIndexQuery,
-  extrinsicByHashQuery,
-} from "@/api/graphql/extrinsics"
-import { GraphqlClient } from "@/api/provider"
 import { ToastData } from "@/states/toasts"
 
 type ToastStatus = {
@@ -27,7 +27,7 @@ const invalid = (): ToastProcessorFn => async (toast) =>
 const evm =
   (
     queryClient: QueryClient,
-    indexerClient: GraphqlClient,
+    indexerSdk: IndexerSdk,
     evm: PublicClient,
   ): ToastProcessorFn =>
   async (toast) => {
@@ -38,7 +38,7 @@ const evm =
 
     const res = await queryClient.fetchQuery(
       extrinsicByBlockAndIndexQuery(
-        indexerClient,
+        indexerSdk,
         Number(receipt.blockNumber),
         Number(receipt.transactionIndex),
       ),
@@ -68,11 +68,11 @@ const evm =
   }
 
 const substrate =
-  (queryClient: QueryClient, indexerClient: GraphqlClient): ToastProcessorFn =>
+  (queryClient: QueryClient, indexerSdk: IndexerSdk): ToastProcessorFn =>
   async (toast) => {
     const hash = toast.meta.txHash
     const res = await queryClient.fetchQuery(
-      extrinsicByHashQuery(indexerClient, hash),
+      extrinsicByHashQuery(indexerSdk, hash),
     )
 
     const extrinsic = first(res?.extrinsics ?? [])

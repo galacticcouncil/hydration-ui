@@ -1,3 +1,4 @@
+import { userOpenOrdersCountQuery } from "@galacticcouncil/indexer/squid"
 import {
   Box,
   Flex,
@@ -13,7 +14,6 @@ import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useLocation } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
-import { userOpenOrdersCountQuery } from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"

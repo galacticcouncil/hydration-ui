@@ -1,10 +1,10 @@
+import { accountNetWorthHistoricalDataQuery } from "@galacticcouncil/indexer/squid"
+import { TimeSeriesBucketTimeRange } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-import { accountNetWorthHistoricalDataQuery } from "@/api/graphql/account-balances"
 import { useSquidClient } from "@/api/provider"
-import { TimeSeriesBucketTimeRange } from "@/codegen/__generated__/squid/graphql"
 import { PeriodType } from "@/components/PeriodInput/PeriodInput"
 import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
 import { chronologically, sortBy } from "@/utils/sort"

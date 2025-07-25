@@ -1,8 +1,8 @@
+import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { DataTable } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
-import { DcaScheduleStatus } from "@/api/graphql/trade-orders"
 import { useOrdersData } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOrderHistoryColumns } from "@/modules/trade/orders/OrderHistory/OrderHistory.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"

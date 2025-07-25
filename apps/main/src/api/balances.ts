@@ -1,12 +1,9 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
-import {
-  NATIVE_ASSET_DECIMALS,
-  NATIVE_ASSET_ID,
-  QUERY_KEY_BLOCK_PREFIX,
-} from "@/utils/consts"
+import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export enum TokenLockType {

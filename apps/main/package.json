@@ -18,9 +18,7 @@
     "lint": "yarn lint:eslint && yarn lint:ts",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
-    "i18n": "i18next src/**/*.{js,jsx,ts,tsx}",
-    "codegen:indexer": "graphql-codegen --require dotenv/config --config src/codegen/indexer.ts dotenv_config_path=.env.development",
-    "codegen:squid": "graphql-codegen --require dotenv/config --config src/codegen/squid.ts dotenv_config_path=.env.development"
+    "i18n": "i18next src/**/*.{js,jsx,ts,tsx}"
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.12.0",
@@ -38,8 +36,6 @@
     "big.js": "^6.2.2",
     "comlink": "^4.4.2",
     "date-fns": "^4.1.0",
-    "graffle": "^8.0.0-next.163",
-    "graphql": "^16.11.0",
     "i18next": "^23.16.4",
     "papaparse": "^5.5.2",
     "react": "^18.3.1",
@@ -51,7 +47,6 @@
   "devDependencies": {
     "@galacticcouncil/eslint-config": "*",
     "@galacticcouncil/typescript-config": "*",
-    "@graphql-codegen/cli": "^5.0.6",
     "@tanstack/react-query-devtools": "^5.59.15",
     "@tanstack/react-router-devtools": "^1.120.3",
     "@types/big.js": "^6.2.2",
@@ -59,7 +54,6 @@
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
-    "graphql-config": "^5.1.5",
     "i18next-parser": "^9.0.2",
     "vite": "^5.1.4",
     "vite-plugin-html": "^3.2.2",

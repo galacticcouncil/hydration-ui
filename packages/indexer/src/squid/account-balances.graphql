@@ -1,0 +1,23 @@
+query AccountTotalBalancesByPeriod(
+  $accountId: String!
+  $startTimestamp: String
+  $endTimestamp: String
+  $bucketSize: TimeSeriesBucketTimeRange
+) {
+  accountTotalBalancesByPeriod(
+    filter: {
+      accountId: $accountId
+      startTimestamp: $startTimestamp
+      endTimestamp: $endTimestamp
+      bucketSize: $bucketSize
+    }
+  ) {
+    nodes {
+      referenceAssetId
+      buckets {
+        transferableNorm
+        timestamp
+      }
+    }
+  }
+}

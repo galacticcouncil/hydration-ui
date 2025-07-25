@@ -1,13 +1,12 @@
+import { MoneyMarketEventName } from "@galacticcouncil/indexer/squid"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-
-import { EventName } from "@/modules/borrow/history/types"
 
 export const useFormatEventName = () => {
   const { t } = useTranslation(["borrow"])
 
   return useCallback(
-    (name: EventName): string => {
+    (name: MoneyMarketEventName): string => {
       switch (name) {
         case "ReserveUsedAsCollateralEnabled":
         case "ReserveUsedAsCollateralDisabled":
