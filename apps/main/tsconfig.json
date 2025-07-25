@@ -1,12 +1,12 @@
 {
   "extends": "@galacticcouncil/typescript-config/vite.json",
   "include": ["src"],
-  "exclude": ["src/codegen/__generated__"],
   "references": [
     { "path": "../../packages/ui" },
     { "path": "../../packages/utils" },
     { "path": "../../packages/web3-connect" },
-    { "path": "../../packages/money-market" }
+    { "path": "../../packages/money-market" },
+    { "path": "../../packages/indexer" }
   ],
   "compilerOptions": {
     "baseUrl": ".",

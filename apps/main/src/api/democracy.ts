@@ -1,8 +1,9 @@
 import { bigMax } from "@galacticcouncil/utils"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
 import { TProviderContext } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_DECIMALS, QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { NATIVE_ASSET_DECIMALS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 const CONVICTIONS_BLOCKS: { [key: string]: number } = {
