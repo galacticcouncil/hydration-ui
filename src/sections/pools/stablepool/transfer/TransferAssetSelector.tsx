@@ -42,7 +42,6 @@ const TransferStabepoolAssetSelector: React.FC<TransferAssetSelectorProps> = ({
   onSelect,
 }) => {
   const assetIds = Object.keys(pool.meta.meta ?? {})
-  console.log({ assetIds })
   return (
     <AssetsModalContent
       hideInactiveAssets
