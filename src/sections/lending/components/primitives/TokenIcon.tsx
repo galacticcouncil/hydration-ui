@@ -29,11 +29,7 @@ export function TokenIcon({
   const assetId = isGho ? GHO_ASSET_ID : getAssetIdFromAddress(address)
   const meta = getAssetWithFallback(assetId)
 
-  if (
-    meta.isStableSwap &&
-    meta.meta &&
-    !STRATEGY_ASSETS.includes(meta.id)
-  ) {
+  if (meta.isStableSwap && meta.meta && !STRATEGY_ASSETS.includes(meta.id)) {
     return (
       <MultipleAssetLogo
         size={size}
