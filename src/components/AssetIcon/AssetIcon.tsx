@@ -20,7 +20,6 @@ import { useShallow } from "hooks/useShallow"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { pick } from "utils/rx"
 import { GDOT_ERC20_ASSET_ID, GETH_ERC20_ASSET_ID } from "utils/constants"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -58,21 +57,21 @@ export const MultipleAssetLogo = ({
   iconId: string | string[] | undefined
   size?: ResponsiveValue<number>
 }) => {
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getErc20 } = useAssets()
   if (!iconId) return <Icon size={size} icon={<AssetLogo id={iconId} />} />
 
-  const underlyingATokenId =
+  const underlyingAssetId =
     typeof iconId === "string" &&
     !A_TOKEN_HIGHLIGHT_RING_BLACKLIST.includes(iconId)
-      ? A_TOKEN_UNDERLYING_ID_MAP[iconId]
+      ? getErc20(iconId)?.underlyingAssetId
       : undefined
 
-  const underlyingAToken = underlyingATokenId
-    ? getAssetWithFallback(underlyingATokenId)
+  const underlyingAsset = underlyingAssetId
+    ? getAssetWithFallback(underlyingAssetId)
     : undefined
 
-  const isATokenPool = !!underlyingAToken && underlyingAToken?.isStableSwap
-  const icons = isATokenPool ? underlyingAToken?.iconId : iconId
+  const isATokenPool = !!underlyingAsset?.isStableSwap
+  const icons = isATokenPool ? underlyingAsset?.iconId : iconId
 
   const allIconIds = Array.isArray(icons)
     ? icons

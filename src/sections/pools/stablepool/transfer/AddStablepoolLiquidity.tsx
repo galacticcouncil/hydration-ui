@@ -14,7 +14,7 @@ import { useStablepoolShares } from "./AddStablepoolLiquidity.utils"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { required, maxBalance } from "utils/validators"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { TAsset, useAssets } from "providers/assets"
+import { TAsset, TErc20, useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
 import { CurrencyReserves } from "sections/pools/stablepool/components/CurrencyReserves"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -23,7 +23,6 @@ import {
   AAVE_EXTRA_GAS,
   BN_100,
   BN_MILL,
-  GDOT_ERC20_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
@@ -46,7 +45,6 @@ import { useBestTradeSell } from "api/trade"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useSpotPrice } from "api/spotPrice"
 import { useStableswapPool } from "api/stableswap"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { AddOmnipoolLiquiditySummary } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
@@ -66,6 +64,7 @@ type Props = {
   setIsJoinFarms: (value: boolean) => void
   initialAmount?: string
   setLiquidityLimit: () => void
+  relatedAToken?: TErc20
 }
 
 const createFormSchema = (balance: string, decimals: number) =>
@@ -84,6 +83,7 @@ export const AddStablepoolLiquidity = ({
   setIsJoinFarms,
   initialAmount,
   setLiquidityLimit,
+  relatedAToken,
 }: Props) => {
   const { api, sdk } = useRpcProvider()
   const { createTransaction } = useStore()
@@ -95,7 +95,7 @@ export const AddStablepoolLiquidity = ({
     useState(false)
 
   const { data: accountBalances } = useAccountBalances()
-  const { reserves, farms, isGDOT, poolId, isGETH, id, symbol } = usePoolData()
+  const { reserves, farms, poolId, isGETH, id, symbol } = usePoolData()
     .pool as TStablepool
 
   const { t } = useTranslation()
@@ -113,7 +113,7 @@ export const AddStablepoolLiquidity = ({
   ]
 
   const isGETHSelected = isGETH && asset.id === GETH_ERC20_ASSET_ID
-  const isSwap = isGDOT || (isGETH && !isGETHSelected)
+  const isSwap = relatedAToken && !isGETHSelected
 
   const estimatedFees = useEstimatedFees(estimationTxs)
   const maxBalanceToWithdraw = useMaxWithdrawAmount(asset.id)
@@ -153,10 +153,10 @@ export const AddStablepoolLiquidity = ({
   const [debouncedValue] = useDebouncedValue(value, 300)
 
   const { getSwapTx } = useBestTradeSell(
-    isSwap ? asset.id : "",
-    isGDOT ? GDOT_ERC20_ASSET_ID : isGETH && !!resolver ? id : "",
+    asset.id,
+    resolver ? relatedAToken?.id ?? "" : "",
     debouncedValue ?? "0",
-    isGETH
+    relatedAToken
       ? (minAmount) => {
           form.setValue(
             "amount",
@@ -426,7 +426,7 @@ export const AddStablepoolLiquidity = ({
           (key) => key !== "farm",
         ).length
 
-  const isHFDisabled = isGETH
+  const isHFDisabled = relatedAToken
     ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
     : false
 
@@ -463,7 +463,7 @@ export const AddStablepoolLiquidity = ({
               value={value}
               onChange={(v) => {
                 onChange(v)
-                if (!isGETH || isGETHSelected) handleShares(v)
+                if (isGETHSelected) handleShares(v)
               }}
               balance={BN(balanceMax)}
               balanceMax={BN(balanceMax)}
@@ -529,7 +529,7 @@ export const AddStablepoolLiquidity = ({
             sharesToGet={scale(shares, STABLEPOOL_TOKEN_DECIMALS).toString()}
             totalShares={totalShares ?? "0"}
           />
-        ) : isGDOT || isGETH ? (
+        ) : !!relatedAToken ? (
           <GigaDotSummary
             selectedAsset={asset}
             minAmountOut={shares}
@@ -645,10 +645,11 @@ const GigaDotSummary = ({
   poolId: string
 }) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getRelatedAToken } = useAssets()
 
-  const aTokenId = REVERSE_A_TOKEN_UNDERLYING_ID_MAP[poolId]
-  const meta = getAssetWithFallback(aTokenId)
+  const aTokenId = getRelatedAToken(poolId)?.id
+
+  const meta = getAssetWithFallback(aTokenId ?? "")
   const { data } = useSpotPrice(aTokenId, selectedAsset.id)
 
   return (

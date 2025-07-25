@@ -419,7 +419,7 @@ type AccountBalancesStore = {
 
 export const useAccountBalances = (givenAddress?: string) => {
   const { account } = useAccount()
-  const address = givenAddress ?? account?.address
+  const address = givenAddress ?? account?.address ?? ""
   const isConnectedAccount = account?.address === address
 
   const connectedAccountBalances = useAccountBalancesStore()

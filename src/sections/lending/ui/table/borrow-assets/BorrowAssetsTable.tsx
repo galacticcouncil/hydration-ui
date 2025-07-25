@@ -80,7 +80,7 @@ export const BorrowAssetsTable = () => {
           </Alert>
         </TableAddons>
       )}
-      {ghoEnabled && (
+      {ghoEnabled && hollar.length > 0 && (
         <DataTable
           css={css`
             --border-color: transparent;

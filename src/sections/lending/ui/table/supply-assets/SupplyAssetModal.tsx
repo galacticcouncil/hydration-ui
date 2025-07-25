@@ -20,7 +20,6 @@ import { noop } from "utils/helpers"
 import { SupplyAssetSummary } from "sections/lending/ui/table/supply-assets/SupplyAssetSummary"
 import { Alert } from "components/Alert/Alert"
 import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/NewDepositFormWrapper"
-import { A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
 import { AssetSelectSkeleton } from "components/AssetSelect/AssetSelectSkeleton"
 
 type Props = {
@@ -31,15 +30,19 @@ type Props = {
 export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation()
 
-  const { getAssetWithFallback } = useAssets()
-  const asset = getAssetWithFallback(assetId)
+  const { getAssetWithFallback, getRelatedAToken, native } = useAssets()
+  const aToken = getRelatedAToken(assetId) ?? getAssetWithFallback(assetId)
 
   const { data: defaultAssetId, isLoading } =
     useNewDepositDefaultAssetId(assetId)
-  const allowedAssets = useNewDepositAssets([
-    assetId,
-    A_TOKEN_UNDERLYING_ID_MAP[assetId],
-  ])
+
+  const aTokenId = aToken.id
+
+  const allowedAssets = useNewDepositAssets(assetId, {
+    blacklist: aTokenId ? [aTokenId] : [],
+    firstAssetId: defaultAssetId,
+    lowPriorityAssetIds: [native.id],
+  })
 
   const { page, direction, back, next } = useModalPagination()
 
@@ -51,7 +54,7 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
       onClose={onClose}
       contents={[
         {
-          title: t("lending.supply.modal.title", { name: asset.name }),
+          title: t("lending.supply.modal.title", { name: aToken.name }),
           content: (
             <AssetSelectSkeleton
               title={t("wallet.strategy.deposit.depositAsset")}
@@ -71,11 +74,11 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
         onClose={onClose}
         contents={[
           {
-            title: t("lending.supply.modal.title", { name: asset.name }),
+            title: t("lending.supply.modal.title", { name: aToken.name }),
             content: (
               <SupplyModalForm
                 onClose={onClose}
-                asset={asset}
+                asset={aToken}
                 allowedAssets={allowedAssets}
                 onAssetSelect={next}
               />
