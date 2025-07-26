@@ -3,6 +3,7 @@ import {
   calculate_shares,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
+import { calculate_liquidity_out_asset_a } from "@galacticcouncil/math-xyk"
 import { useMaxAddLiquidityLimit } from "api/consts"
 import {
   useOmnipoolFee,
@@ -21,7 +22,7 @@ import { TFarmAprData, useOraclePrice } from "api/farms"
 import { BN_0, BN_NAN } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useXYKConsts } from "api/xyk"
+import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
@@ -265,6 +266,8 @@ export const useXYKZodSchema = (
   assetBMeta: TAsset,
   meta: TAsset,
   farms: TFarmAprData[],
+  totalShare: BN,
+  poolAddress: string,
 ) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
@@ -322,6 +325,12 @@ export const useXYKZodSchema = (
     )
   }, [farms])
 
+  const requiredMinShares = useXYKPoolJoinFarmMinShares(
+    poolAddress,
+    totalShare,
+    minDeposit.value,
+  )
+
   if (balanceA === undefined || balanceB === undefined) return {}
 
   const zodSchema = z
@@ -335,14 +344,14 @@ export const useXYKZodSchema = (
         .pipe(maxBalance(balanceBMax, assetBMeta.decimals)),
       shares: z.string().refine(
         (value) => {
-          if (minDeposit.value.isZero()) return true
+          if (requiredMinShares.isLessThanOrEqualTo(0)) return true
 
-          return BigNumber(value).gte(minDeposit.value)
+          return BigNumber(value).gte(requiredMinShares)
         },
         () => {
           return {
             message: t("farms.modal.join.minDeposit", {
-              value: scaleHuman(minDeposit.value, meta.decimals).times(1.02),
+              value: scaleHuman(requiredMinShares, meta.decimals),
               symbol: meta.symbol,
             }),
             path: ["farm"],
@@ -388,3 +397,27 @@ export const useXYKZodSchema = (
 
 export const getXYKPoolShare = (total: BigNumber, add: BigNumber) =>
   add.div(total.plus(add)).multipliedBy(100)
+
+export const useXYKPoolJoinFarmMinShares = (
+  poolAddress: string,
+  totalShare: BN,
+  minDeposit: BN,
+) => {
+  const { data: xykPools } = useXYKSDKPools()
+
+  const [assetAReserve, assetBReserve] =
+    xykPools?.find((xykPool) => xykPool.address === poolAddress)?.tokens ?? []
+
+  return useMemo(() => {
+    const sharesNew = calculate_liquidity_out_asset_a(
+      assetAReserve.balance.toString(),
+      assetBReserve.balance.toString(),
+      "10000",
+      totalShare.toString(),
+    )
+
+    const valuedSharePrice = BN(sharesNew).div("10000").toString()
+
+    return BN(minDeposit).div(valuedSharePrice)
+  }, [minDeposit, totalShare, assetAReserve, assetBReserve])
+}
