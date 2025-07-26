@@ -1,9 +1,11 @@
-import { unPrefixSymbol } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { useAssets } from "providers/assets"
+import { useCallback } from "react"
 import {
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
-import { getAddressFromAssetId } from "utils/evm"
+  ComputedReserveData,
+  unPrefixSymbol,
+} from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import { getAssetIdFromAddress } from "utils/evm"
 
 export interface IconSymbolInterface {
   underlyingAsset: string
@@ -17,17 +19,29 @@ interface IconMapInterface {
   symbol?: string
 }
 
-const underlyingAssetMap: Record<string, IconMapInterface> = {
-  [getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID)]: {
-    name: "GIGADOT",
-    symbol: "GDOT",
-    iconSymbol: "GDOT",
-  },
-  [getAddressFromAssetId(GETH_STABLESWAP_ASSET_ID)]: {
-    name: "GIGAETH",
-    symbol: "GETH",
-    iconSymbol: "GETH",
-  },
+const underlyingAssetMap: Record<string, IconMapInterface> = {}
+
+export const usePatchReserve = () => {
+  const { getRelatedAToken } = useAssets()
+
+  return useCallback(
+    (reserve: ComputedReserveData): ComputedReserveData => {
+      if (!MONEY_MARKET_GIGA_RESERVES.includes(reserve.underlyingAsset))
+        return reserve
+
+      const aToken = getRelatedAToken(
+        getAssetIdFromAddress(reserve.underlyingAsset),
+      )
+      if (!aToken) return reserve
+
+      return {
+        ...reserve,
+        name: aToken.name,
+        symbol: aToken.symbol,
+      }
+    },
+    [getRelatedAToken],
+  )
 }
 
 export function fetchIconSymbolAndName({

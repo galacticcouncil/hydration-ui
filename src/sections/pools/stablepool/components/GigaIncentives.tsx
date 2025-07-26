@@ -9,9 +9,6 @@ import {
   BN_NAN,
   DOT_ASSET_ID,
   ETH_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-  USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
   WSTETH_ASSET_ID,
 } from "utils/constants"
@@ -27,6 +24,7 @@ import { getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
 export const GigaIncentives = ({
   pool: { moneyMarketApy },
@@ -336,16 +334,14 @@ type OverrideApyProps = APYProps & {
 }
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
-  switch (props.assetId) {
-    case GDOT_STABLESWAP_ASSET_ID:
-    case GETH_STABLESWAP_ASSET_ID:
-    case USDT_POOL_ASSET_ID:
+  switch (true) {
+    case MONEY_MARKET_GIGA_RESERVES.includes(props.assetId):
       return props.type === "supply" ? (
         <MoneyMarketAPYWrapper {...props} />
       ) : (
         children
       )
-    case VDOT_ASSET_ID:
+    case props.assetId === VDOT_ASSET_ID:
       return <MoneyMarketAPYWrapper {...props} />
     default:
       return children
