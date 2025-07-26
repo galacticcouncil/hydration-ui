@@ -65,8 +65,9 @@ export const RemoveDepositModal: FC<Props> = ({
   })
 
   const selectableAssets = useNewDepositAssets(underlyingAssetId, {
-    blacklist: [assetId, underlyingAssetId, hub.id],
+    blacklist: [assetId, hub.id],
     firstAssetId: defaultAssetReceivedId,
+    lowPriorityAssetIds: [underlyingAssetId],
     underlyingAssetsFirst: true,
   })
 
