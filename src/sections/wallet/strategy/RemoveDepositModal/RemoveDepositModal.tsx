@@ -22,6 +22,7 @@ import { ProtocolAction } from "@aave/contract-helpers"
 import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
+import { USDT_POOL_ASSET_ID } from "utils/constants"
 
 type Props = {
   readonly assetId: string
@@ -65,7 +66,10 @@ export const RemoveDepositModal: FC<Props> = ({
   })
 
   const selectableAssets = useNewDepositAssets(underlyingAssetId, {
-    blacklist: [assetId, underlyingAssetId, hub.id],
+    //allow withdraw a3Pool for 3Pool
+    blacklist: [assetId, hub.id].concat(
+      USDT_POOL_ASSET_ID === underlyingAssetId ? [] : [underlyingAssetId],
+    ),
     firstAssetId: defaultAssetReceivedId,
     underlyingAssetsFirst: true,
   })
