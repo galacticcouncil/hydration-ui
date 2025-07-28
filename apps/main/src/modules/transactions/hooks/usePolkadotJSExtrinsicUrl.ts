@@ -1,9 +1,9 @@
 import { isBinary } from "@galacticcouncil/utils"
 
+import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
-import { AnyTransaction } from "@/states/transactions"
 
 export const usePolkadotJSExtrinsicUrl = (tx: AnyTransaction): string => {
   const { papiCompatibilityToken } = useRpcProvider()
