@@ -1,8 +1,13 @@
+import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import { isEvmAccount } from "@galacticcouncil/sdk"
 import { arraySearch, isSS58Address } from "@galacticcouncil/utils"
+import { useQueries } from "@tanstack/react-query"
+import { useMemo } from "react"
 import { pipe, sortBy } from "remeda"
 
 import { WalletProviderType } from "@/config/providers"
+import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
+import { useAccount } from "@/hooks"
 import {
   Account,
   PROVIDERS_BY_WALLET_MODE,
@@ -60,4 +65,64 @@ export const getFilteredAccounts = (
     searchAccounts(search),
     filterAccounts(mode),
   )
+}
+
+export const useAccountsWithBalance = (accounts: Account[]) => {
+  const { account: currentAccount } = useAccount()
+  const { squidSdk } = useWeb3ConnectContext()
+
+  const accountBalancesQueries = useQueries({
+    queries: accounts.map((account) =>
+      latestAccountBalanceQuery(squidSdk, account.publicKey),
+    ),
+  })
+
+  const areBalancesLoading = accountBalancesQueries.some(
+    (query) => query.isLoading,
+  )
+
+  const accountsWithBalances = useMemo(
+    () =>
+      areBalancesLoading
+        ? []
+        : accounts
+            .map((account, index) => {
+              const data = accountBalancesQueries[index]?.data
+              const balance =
+                Number(
+                  data?.accountTotalBalanceHistoricalData?.nodes.at(0)
+                    ?.totalTransferableNorm,
+                ) || 0
+
+              const isActive =
+                currentAccount?.address === account.address &&
+                currentAccount?.provider === account.provider
+
+              return {
+                ...account,
+                balance,
+                isActive,
+              }
+            })
+            .sort((a, b) => {
+              if (a.isActive) {
+                return -1
+              }
+
+              if (b.isActive) {
+                return 1
+              }
+
+              return b.balance - a.balance
+            }),
+    [
+      accounts,
+      accountBalancesQueries,
+      areBalancesLoading,
+      currentAccount?.address,
+      currentAccount?.provider,
+    ],
+  )
+
+  return { accountsWithBalances, areBalancesLoading }
 }

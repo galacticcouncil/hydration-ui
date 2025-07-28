@@ -1,6 +1,6 @@
+import { otcOrderStatusQuery } from "@galacticcouncil/indexer/indexer"
 import { useQuery } from "@tanstack/react-query"
 
-import { otcOrderStatusQuery } from "@/api/graphql/otc"
 import { useIndexerClient } from "@/api/provider"
 
 export const useInitialOtcOfferAmount = (

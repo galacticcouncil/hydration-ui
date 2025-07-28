@@ -1,14 +1,16 @@
+import {
+  MoneyMarketEventName,
+  moneyMarketQuery,
+} from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import { PaginationState } from "@tanstack/react-table"
-import request from "graphql-request"
 
-import { MoneyMarketEventsDocument } from "@/codegen/__generated__/squid/graphql"
+import { useSquidClient } from "@/api/provider"
 import {
   borrowHistoryFilters,
   BorrowHistoryFilterType,
 } from "@/modules/borrow/history/BorrowHistoryFilter.utils"
-import { EventName } from "@/modules/borrow/history/types"
 
 export const useMoneyMarketEvents = (
   filter: ReadonlyArray<BorrowHistoryFilterType> | undefined,
@@ -22,36 +24,24 @@ export const useMoneyMarketEvents = (
     mapFilterToEventName,
   )
 
-  const squidUrl = import.meta.env.VITE_SQUID_URL
+  const squidSdk = useSquidClient()
 
   return useQuery({
-    queryKey: [
-      "accountMoneyMarketEvents",
+    ...moneyMarketQuery(
+      squidSdk,
       address,
       eventNames,
       searchPhrase,
-      pagination,
-    ],
+      pagination.pageSize,
+      pagination.pageIndex,
+    ),
     placeholderData: keepPreviousData,
-    queryFn: () =>
-      request(squidUrl, MoneyMarketEventsDocument, {
-        first: pagination.pageSize,
-        offset: pagination.pageIndex * pagination.pageSize,
-        filter: {
-          allInvolvedParticipants: { contains: [address] },
-          ...(eventNames.length && { eventName: { in: eventNames } }),
-          ...(searchPhrase.length && {
-            allInvolvedAssetDetails: { includesInsensitive: searchPhrase },
-          }),
-        },
-      }),
-    enabled: !!address,
   })
 }
 
 const mapFilterToEventName = (
   type: BorrowHistoryFilterType,
-): Array<EventName> => {
+): Array<MoneyMarketEventName> => {
   switch (type) {
     case "borrow":
       return ["Borrow"]

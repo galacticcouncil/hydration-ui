@@ -1,6 +1,6 @@
+import { MoneyMarketEventsQuery } from "@galacticcouncil/indexer/squid"
 import { getToken } from "@galacticcouncil/ui/utils"
 
-import { MoneyMarketEventsQuery } from "@/codegen/__generated__/squid/graphql"
 import {
   BorrowHistoryRow,
   MoneyMarketEventWithDate,

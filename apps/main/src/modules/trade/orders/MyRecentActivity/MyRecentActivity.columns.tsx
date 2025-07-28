@@ -1,3 +1,4 @@
+import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { ArrowRightLeft, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
@@ -12,7 +13,6 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { DcaScheduleStatus } from "@/api/graphql/trade-orders"
 import { AmountMobile } from "@/modules/trade/orders/columns/AmountMobile"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"

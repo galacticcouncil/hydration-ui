@@ -19,7 +19,11 @@ import {
   AccountFilterOption,
 } from "@/components/account/AccountFilter"
 import { AccountOption } from "@/components/account/AccountOption"
-import { getFilteredAccounts } from "@/components/content/AccountSelectContent.utils"
+import { AccountOptionSkeleton } from "@/components/account/AccountOptionSkeleton"
+import {
+  getFilteredAccounts,
+  useAccountsWithBalance,
+} from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
@@ -96,6 +100,9 @@ export const AccountSelectContent = () => {
   const shouldRenderHeader =
     !isProvidersConnecting && (shouldRenderFilter || shouldRenderSearch)
 
+  const { accountsWithBalances, areBalancesLoading } =
+    useAccountsWithBalance(accountList)
+
   return (
     <>
       <ModalHeader
@@ -129,13 +136,21 @@ export const AccountSelectContent = () => {
           ) : (
             <>
               {hasNoResults && <Text>No accounts found</Text>}
-              {accountList.map((account) => (
-                <AccountOption
-                  key={`${account.address}-${account.provider}`}
-                  {...account}
-                  onSelect={onAccountSelect}
-                />
-              ))}
+              {areBalancesLoading &&
+                accountList.map((_, index) => (
+                  <AccountOptionSkeleton key={index} />
+                ))}
+              {!areBalancesLoading &&
+                accountsWithBalances.map(({ balance, ...account }) => {
+                  return (
+                    <AccountOption
+                      key={`${account.address}-${account.provider}`}
+                      {...account}
+                      balance={`$${Number(balance).toFixed(2)}`}
+                      onSelect={onAccountSelect}
+                    />
+                  )
+                })}
             </>
           )}
         </Grid>

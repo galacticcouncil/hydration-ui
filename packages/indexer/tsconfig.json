@@ -1,0 +1,18 @@
+{
+    "extends": "@galacticcouncil/typescript-config/base.json",
+    "include": ["src", "graphql.config.ts"],
+    "references": [
+      { "path": "../utils" }
+    ],
+    "compilerOptions": {
+      "composite": true,
+      "outDir": "./build",
+      "baseUrl": ".",
+      "paths": {
+        "@/*": [
+          "./src/*"
+        ]
+      }
+    }
+  }
+  
