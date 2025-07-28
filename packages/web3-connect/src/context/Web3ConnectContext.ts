@@ -1,10 +1,12 @@
+import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createContext, useContext } from "react"
 
 import { Web3ConnectModalPage } from "@/config/modal"
 
-type Web3ConnectContextType = {
+export type Web3ConnectContextType = {
   page: Web3ConnectModalPage
   setPage: (page: Web3ConnectModalPage) => void
+  squidSdk: SquidSdk
 }
 
 const Web3ConnectContext = createContext<Web3ConnectContextType | null>(null)

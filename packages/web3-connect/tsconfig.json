@@ -3,7 +3,8 @@
   "include": ["src"],
   "references": [
     { "path": "../ui" },
-    { "path": "../utils" }
+    { "path": "../utils" },
+    { "path": "../indexer" }
   ],
   "compilerOptions": {
     "composite": true,

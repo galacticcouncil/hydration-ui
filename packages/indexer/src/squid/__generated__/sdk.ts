@@ -161,6 +161,15 @@ export const AccountTotalBalancesByPeriodDocument = `
   }
 }
     `;
+export const LatestAccountBalanceDocument = `
+    query LatestAccountBalance($accountId: String!) {
+  accountTotalBalanceHistoricalData(condition: {accountId: $accountId}, last: 1) {
+    nodes {
+      totalTransferableNorm
+    }
+  }
+}
+    `;
 export const MoneyMarketEventsDocument = `
     query MoneyMarketEvents($filter: MoneyMarketEventFilter, $first: Int, $offset: Int) {
   moneyMarketEvents(
@@ -288,6 +297,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
   return {
     AccountTotalBalancesByPeriod(variables: Types.AccountTotalBalancesByPeriodQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.AccountTotalBalancesByPeriodQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.AccountTotalBalancesByPeriodQuery>({ document: AccountTotalBalancesByPeriodDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AccountTotalBalancesByPeriod', 'query', variables);
+    },
+    LatestAccountBalance(variables: Types.LatestAccountBalanceQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.LatestAccountBalanceQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.LatestAccountBalanceQuery>({ document: LatestAccountBalanceDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'LatestAccountBalance', 'query', variables);
     },
     MoneyMarketEvents(variables?: Types.MoneyMarketEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.MoneyMarketEventsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.MoneyMarketEventsQuery>({ document: MoneyMarketEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'MoneyMarketEvents', 'query', variables);
