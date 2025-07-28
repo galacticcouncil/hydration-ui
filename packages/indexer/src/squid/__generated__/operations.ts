@@ -10,6 +10,13 @@ export type AccountTotalBalancesByPeriodQueryVariables = Types.Exact<{
 
 export type AccountTotalBalancesByPeriodQuery = { __typename?: 'Query', accountTotalBalancesByPeriod: { __typename?: 'AccountTotalBalancesByPeriodResponse', nodes: Array<{ __typename?: 'AccountTotalBalanceSnapshot', referenceAssetId: string, buckets: Array<{ __typename?: 'AccountTotalBalanceBucket', transferableNorm: string, timestamp: string }> } | null> } };
 
+export type LatestAccountBalanceQueryVariables = Types.Exact<{
+  accountId: Types.Scalars['String']['input'];
+}>;
+
+
+export type LatestAccountBalanceQuery = { __typename?: 'Query', accountTotalBalanceHistoricalData?: { __typename?: 'AccountTotalBalanceHistoricalDataConnection', nodes: Array<{ __typename?: 'AccountTotalBalanceHistoricalDatum', totalTransferableNorm: string } | null> } | null };
+
 export type SupplyFragment = { __typename?: 'MmSupply', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null };
 
 export type WithdrawFragment = { __typename?: 'MmWithdraw', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null };

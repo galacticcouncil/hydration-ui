@@ -1,3 +1,4 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
 import { SquidSdk } from "@/squid"
@@ -28,5 +29,21 @@ export const accountNetWorthHistoricalDataQuery = (
         bucketSize,
       }),
     enabled: !!accountId,
+  })
+}
+
+export const latestAccountBalanceQuery = (
+  squidSdk: SquidSdk,
+  accountId: string,
+) => {
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "account",
+      "balance",
+      "latest",
+      accountId,
+    ],
+    queryFn: () => squidSdk.LatestAccountBalance({ accountId }),
   })
 }

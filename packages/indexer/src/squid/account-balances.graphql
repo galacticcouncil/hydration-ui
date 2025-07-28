@@ -21,3 +21,14 @@ query AccountTotalBalancesByPeriod(
     }
   }
 }
+
+query LatestAccountsBalances($accountIds: [String!]!) {
+  accountTotalBalanceHistoricalData(
+    filter: { accountId: $accountIds }
+    last: 1
+  ) {
+    nodes {
+      totalTransferableNorm
+    }
+  }
+}
