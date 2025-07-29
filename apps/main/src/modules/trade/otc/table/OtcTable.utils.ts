@@ -6,17 +6,13 @@ import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { OtcOffersType } from "@/routes/trade/otc"
 import { AssetPrice } from "@/states/displayAsset"
 import { Predicate } from "@/types/helpers"
-import { scaleHuman } from "@/utils/formatting"
 
 export const mapOtcOffersToTableData =
   (assetPrices: Record<string, AssetPrice>) =>
   (offer: OtcOffer): OtcOfferTabular => {
-    const { assetIn, amountIn, assetOut, amountOut } = offer
+    const { assetIn, assetOut, assetAmountIn, assetAmountOut } = offer
     const usdPriceIn = assetPrices[assetIn.id]
     const usdPriceOut = assetPrices[assetOut.id]
-
-    const assetAmountIn = scaleHuman(amountIn, assetIn?.decimals ?? 12)
-    const assetAmountOut = scaleHuman(amountOut, assetOut?.decimals ?? 12)
 
     const offerPrice = usdPriceIn?.isValid
       ? new Big(assetAmountIn)

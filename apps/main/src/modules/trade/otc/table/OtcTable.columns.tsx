@@ -30,8 +30,6 @@ export enum OtcColumn {
 }
 
 export type OtcOfferTabular = OtcOffer & {
-  readonly assetAmountIn: string
-  readonly assetAmountOut: string
   readonly offerPrice: string | null
   readonly marketPricePercentage: number | null
 }
