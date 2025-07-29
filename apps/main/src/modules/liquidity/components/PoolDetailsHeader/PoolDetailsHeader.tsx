@@ -10,6 +10,7 @@ import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
+import { USDT_ASSET_ID } from "@/utils/consts"
 export const PoolDetailsHeader = ({
   data,
 }: {
@@ -40,7 +41,7 @@ export const PoolDetailsHeader = ({
               <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
                 {t("details.header.apr", { value: 20 })}
               </Text>
-              <Logo id="10" size="small" />
+              <Logo id={USDT_ASSET_ID} size="small" />
             </Flex>
             <Text fw={600} fs={11} color={getToken("text.medium")}>
               {data.meta.symbol}
