@@ -28,12 +28,13 @@ import { calculateLimitShares } from "sections/pools/modals/AddLiquidity/AddLiqu
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
+import { useForm, useFormContext, useWatch } from "react-hook-form"
 import { useBestTradeSellTx } from "api/trade"
 import { StepProps } from "components/Stepper/Stepper"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { t } from "i18next"
+import { useCallback, useEffect } from "react"
 
 export type TStablepoolFormValue = {
   assetId: string
@@ -77,58 +78,85 @@ export type AddMoneyMarketStablepoolProps = AddStablepoolProps & {
 }
 
 export const useStablepoolShares = ({ poolId, reserves }: TStablepool) => {
-  const { data: stableswapPool } = useStableswapPool(poolId)
   const { getAssetWithFallback } = useAssets()
 
+  const { data: stableswapPool } = useStableswapPool(poolId)
   const { data: bestNumber } = useBestNumber()
-  const currentBlock = bestNumber?.relaychainBlockNumber
-
   const { data: issuances } = useTotalIssuances()
 
-  const shareIssuance = issuances?.get(poolId)
-  const totalShares = shareIssuance?.toString()
+  const form = useFormContext<TAddStablepoolFormValues>()
 
-  const getShares = (assets: TStablepoolFormValue[]) => {
-    if (!stableswapPool || !currentBlock || !shareIssuance) {
-      return undefined
+  const { control, setValue, trigger, watch } = form
+
+  const formValues = useWatch({ name: "reserves", control })
+
+  const currentBlock = bestNumber?.relaychainBlockNumber.toString()
+  const shareIssuance = issuances?.get(poolId)?.toString()
+
+  const stablepoolShares = watch("amount") || "0"
+
+  const getShares = useCallback(
+    (assets: TStablepoolFormValue[]) => {
+      if (!stableswapPool || !currentBlock || !shareIssuance) {
+        return undefined
+      }
+
+      const amplification = calculate_amplification(
+        stableswapPool.initialAmplification.toString(),
+        stableswapPool.finalAmplification.toString(),
+        stableswapPool.initialBlock.toString(),
+        stableswapPool.finalBlock.toString(),
+        currentBlock,
+      )
+
+      const validAssets = assets
+        .filter(({ amount }) => BigNumber(amount).isPositive())
+        .map(({ assetId, amount }) => ({
+          asset_id: Number(assetId),
+          amount: scale(
+            amount,
+            getAssetWithFallback(assetId).decimals,
+          ).toString(),
+        }))
+
+      const pegs = StableMath.defaultPegs(stableswapPool.assets.length)
+
+      const shares = calculate_shares(
+        JSON.stringify(reserves),
+        JSON.stringify(validAssets),
+        amplification,
+        shareIssuance,
+        new BigNumber(stableswapPool.fee.toString()).div(BN_MILL).toString(),
+        JSON.stringify(pegs),
+      )
+
+      return BigNumber.maximum(
+        scaleHuman(shares, STABLEPOOL_TOKEN_DECIMALS),
+        BN_0,
+      ).toString()
+    },
+    [
+      currentBlock,
+      getAssetWithFallback,
+      reserves,
+      shareIssuance,
+      stableswapPool,
+    ],
+  )
+
+  useEffect(() => {
+    const newStablepoolShares = getShares(formValues)
+
+    if (
+      newStablepoolShares &&
+      !BigNumber(newStablepoolShares).eq(stablepoolShares)
+    ) {
+      setValue("amount", newStablepoolShares)
+      trigger()
     }
+  }, [formValues, stablepoolShares, getShares, setValue, trigger])
 
-    const amplification = calculate_amplification(
-      stableswapPool.initialAmplification.toString(),
-      stableswapPool.finalAmplification.toString(),
-      stableswapPool.initialBlock.toString(),
-      stableswapPool.finalBlock.toString(),
-      currentBlock.toString(),
-    )
-
-    const validAssets = assets
-      .filter(({ amount }) => BigNumber(amount).isPositive())
-      .map(({ assetId, amount }) => ({
-        asset_id: Number(assetId),
-        amount: scale(
-          amount,
-          getAssetWithFallback(assetId).decimals,
-        ).toString(),
-      }))
-
-    const pegs = StableMath.defaultPegs(stableswapPool.assets.length)
-
-    const shares = calculate_shares(
-      JSON.stringify(reserves),
-      JSON.stringify(validAssets),
-      amplification,
-      shareIssuance.toString(),
-      new BigNumber(stableswapPool.fee.toString()).div(BN_MILL).toString(),
-      JSON.stringify(pegs),
-    )
-
-    return BigNumber.maximum(
-      scaleHuman(shares, STABLEPOOL_TOKEN_DECIMALS),
-      BN_0,
-    ).toString()
-  }
-
-  return { getShares, totalShares }
+  return stablepoolShares
 }
 
 export const stablepoolZodSchema = (balances: TTransferableBalance[]) =>

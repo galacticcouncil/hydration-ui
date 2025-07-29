@@ -212,9 +212,6 @@ const StablepoolForm = (
   const {
     control,
     formState: { errors },
-    setValue,
-    trigger,
-    watch,
     getValues,
   } = form
 
@@ -223,18 +220,7 @@ const StablepoolForm = (
     name: "reserves",
   })
 
-  const stablepoolShares = watch("amount")
-
-  const { getShares } = useStablepoolShares(props.pool)
-
-  const getStablepoolShares = () => {
-    const shares = getShares(getValues("reserves"))
-
-    if (shares) {
-      setValue("amount", shares)
-      trigger()
-    }
-  }
+  const stablepoolShares = useStablepoolShares(props.pool)
 
   const onInvalidSubmit = (errors: FieldErrors<TAddStablepoolFormValues>) => {
     const { farms, ...blockingErrors } = errors
@@ -272,14 +258,13 @@ const StablepoolForm = (
                   name={name}
                   title={t("selectAsset")}
                   value={value.amount}
-                  onChange={(v) => {
+                  onChange={(v) =>
                     onChange({
                       assetId: field.assetId,
                       amount: v,
                       decimals: field.decimals,
                     })
-                    getStablepoolShares()
-                  }}
+                  }
                   balance={BN(balanceMax)}
                   balanceMax={BN(balanceMax)}
                   asset={value.assetId}

@@ -404,9 +404,6 @@ export const SplitMoneyMarketStablepoolForm = (
   const {
     formState: { errors },
     getValues,
-    setValue,
-    trigger,
-    watch,
     control,
   } = form
 
@@ -415,16 +412,7 @@ export const SplitMoneyMarketStablepoolForm = (
     name: "reserves",
   })
 
-  const { getShares } = useStablepoolShares(props.pool)
-
-  const getStablepoolShares = () => {
-    const shares = getShares(getValues("reserves"))
-
-    if (shares) {
-      setValue("amount", shares, { shouldValidate: true })
-      trigger()
-    }
-  }
+  const stablepoolShares = useStablepoolShares(props.pool)
 
   const onInvalidSubmit = (errors: FieldErrors<TAddStablepoolFormValues>) => {
     const { farms, ...blockingErrors } = errors
@@ -462,14 +450,13 @@ export const SplitMoneyMarketStablepoolForm = (
                   name={name}
                   title={t("selectAsset")}
                   value={value.amount}
-                  onChange={(v) => {
+                  onChange={(v) =>
                     onChange({
                       assetId: field.assetId,
                       decimals: field.decimals,
                       amount: v,
                     })
-                    getStablepoolShares()
-                  }}
+                  }
                   balance={BN(balanceMax)}
                   balanceMax={BN(balanceMax)}
                   asset={value.assetId}
@@ -503,7 +490,7 @@ export const SplitMoneyMarketStablepoolForm = (
         label={t("liquidity.stablepool.add.minimalReceived")}
         withSeparator
         content={t("value.tokenWithSymbol", {
-          value: BN(watch("amount")),
+          value: BN(stablepoolShares),
           symbol: relatedAToken.name,
         })}
       />
