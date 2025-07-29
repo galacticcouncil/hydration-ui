@@ -95,11 +95,21 @@ export const useAccountBalance = () => {
         return null
       }
 
-      const maxReserves = await sdk.api.aave.getMaxWithdrawAll(address)
+      const maxReservesMap = await (async () => {
+        try {
+          const maxReserves = await sdk.api.aave.getMaxWithdrawAll(address)
 
-      const maxReservesMap = new Map(
-        Object.entries(maxReserves).map(([token, amount]) => [token, amount]),
-      )
+          return new Map(
+            Object.entries(maxReserves).map(([token, amount]) => [
+              token,
+              amount,
+            ]),
+          )
+        } catch (err) {
+          console.error(err)
+          return new Map()
+        }
+      })()
 
       const balances = balancesRaw.map(([assetId, balance]) => {
         const registryId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
