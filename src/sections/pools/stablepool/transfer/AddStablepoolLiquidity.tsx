@@ -463,7 +463,7 @@ export const AddStablepoolLiquidity = ({
               value={value}
               onChange={(v) => {
                 onChange(v)
-                if (isGETHSelected) handleShares(v)
+                if (isGETHSelected || !relatedAToken) handleShares(v)
               }}
               balance={BN(balanceMax)}
               balanceMax={BN(balanceMax)}
