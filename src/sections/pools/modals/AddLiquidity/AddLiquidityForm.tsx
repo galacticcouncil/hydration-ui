@@ -352,8 +352,10 @@ const AddOmnipoolLiquiditySummary = ({
 
 export const LiquidityLimitField = ({
   setLiquidityLimit,
+  withSeparator = true,
 }: {
   setLiquidityLimit: () => void
+  withSeparator?: boolean
 }) => {
   const { t } = useTranslation()
   const { addLiquidityLimit } = useLiquidityLimit()
@@ -361,7 +363,7 @@ export const LiquidityLimitField = ({
   return (
     <SummaryRow
       label={t("liquidity.add.modal.tradeLimit")}
-      withSeparator
+      withSeparator={withSeparator}
       content={
         <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
           <Text fs={14} color="white" tAlign="right">

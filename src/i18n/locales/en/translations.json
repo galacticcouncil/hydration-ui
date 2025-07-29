@@ -711,6 +711,8 @@
   "wallet.strategy.remove.assetToReceive": "Asset to receive",
   "wallet.strategy.remove.toast.onLoading": "Withdrawing <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0> from <0>{{ strategy }}</0>...",
   "wallet.strategy.remove.toast.onSuccess": "Withdrew <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0> from <0>{{ strategy }}</0>.",
+  "wallet.strategy.remove.proportionally.toast.onLoading": "Withdrawing <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0> proportionally...",
+  "wallet.strategy.remove.proportionally.toast.onSuccess": "Withdrew <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0> proportionally.",
   "wallet.addToken.header.addCustom": "Add custom asset",
   "wallet.addToken.header.availableAssets": "Available assets",
   "wallet.addToken.button.customAsset": "Add Custom Asset",

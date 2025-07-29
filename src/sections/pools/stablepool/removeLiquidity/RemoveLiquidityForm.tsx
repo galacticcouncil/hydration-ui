@@ -18,9 +18,9 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { createToastMessages } from "state/toasts"
 import { scaleHuman } from "utils/balance"
-import { Switch } from "components/Switch/Switch"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { Summary } from "components/Summary/Summary"
+import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -70,7 +70,6 @@ export const RemoveStablepoolLiquidityForm = ({
     useStablepoolLiquidityOut({
       reserves: position.reserves,
       poolId: position.poolId,
-      fee: position.fee.toString(),
     })
 
   const feeDisplay = useMemo(
@@ -177,31 +176,11 @@ export const RemoveStablepoolLiquidityForm = ({
       }}
     >
       <div>
-        <div
-          sx={{
-            flex: "row",
-            justify: "space-between",
-            align: "center",
-            mx: -24,
-            mb: 16,
-            px: 24,
-            py: 8,
-          }}
-          css={{
-            borderTop: "1px solid #1C2038",
-            borderBottom: "1px solid #1C2038",
-          }}
-        >
-          <Text fs={14} color="brightBlue300">
-            {t("liquidity.remove.modal.split")}
-          </Text>
-          <Switch
-            value={splitRemove}
-            onCheckedChange={setSplitRemove}
-            label={t("yes")}
-            name={t("liquidity.remove.modal.split")}
-          />
-        </div>
+        <SplitSwitcher
+          value={splitRemove}
+          title={t("liquidity.remove.modal.split")}
+          onChange={setSplitRemove}
+        />
 
         <div sx={{ flex: "row", justify: "space-between" }}>
           <div>

@@ -12,7 +12,7 @@ import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
 import { useSelectedDefaultAssetId } from "sections/pools/stablepool/transfer/TransferModal.utils"
 import { TransferAssetSelector } from "sections/pools/stablepool/transfer/TransferAssetSelector"
-import { AddProportionallySwitcher } from "sections/pools/stablepool/components/AddProportionallySwitcher"
+import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
 
 export enum Page {
   OPTIONS,
@@ -123,7 +123,11 @@ export const TransferModal = ({
             headerVariant: "gradient",
             content: (
               <>
-                <AddProportionallySwitcher value={split} onChange={setSplit} />
+                <SplitSwitcher
+                  value={split}
+                  title={t("liquidity.add.modal.split")}
+                  onChange={setSplit}
+                />
                 <AddStablepoolLiquidityWrapper
                   key={`${split}`}
                   isStablepoolOnly={stablepoolSelected}

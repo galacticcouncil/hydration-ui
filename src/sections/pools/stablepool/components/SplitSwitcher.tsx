@@ -2,11 +2,13 @@ import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 
-export const AddProportionallySwitcher = ({
+export const SplitSwitcher = ({
   value,
+  title,
   onChange,
 }: {
   value: boolean
+  title: string
   onChange: (value: boolean) => void
 }) => {
   const { t } = useTranslation()
@@ -28,13 +30,13 @@ export const AddProportionallySwitcher = ({
       }}
     >
       <Text fs={14} color="brightBlue300">
-        {t("liquidity.add.modal.split")}
+        {title}
       </Text>
       <Switch
         value={value}
         onCheckedChange={onChange}
         label={t("yes")}
-        name={t("liquidity.add.modal.split")}
+        name={title}
       />
     </div>
   )

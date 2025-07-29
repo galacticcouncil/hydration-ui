@@ -8,14 +8,14 @@ import { useStableswapPool } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
 import { useCallback, useMemo } from "react"
 import BN from "bignumber.js"
+import { BN_MILL } from "utils/constants"
 
 type Args = {
   poolId: string
-  fee: string
   reserves: { asset_id: number; amount: string }[]
 }
 
-export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
+export const useStablepoolLiquidityOut = ({ poolId, reserves }: Args) => {
   const { data: pool } = useStableswapPool(poolId)
   const { data: bestNumber } = useBestNumber()
   const { data: issuances } = useTotalIssuances()
@@ -38,6 +38,7 @@ export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
   const getAssetOutValue = useCallback(
     (assetId: number, shares: string) => {
       if (amplification && shareIssuance && pool) {
+        const stablepoolFee = BN(pool.fee.toString()).div(BN_MILL).toString()
         const pegs = StableMath.defaultPegs(pool.assets.length)
         return calculate_liquidity_out_one_asset(
           JSON.stringify(reserves),
@@ -45,14 +46,14 @@ export const useStablepoolLiquidityOut = ({ poolId, fee, reserves }: Args) => {
           assetId,
           amplification,
           shareIssuance,
-          fee,
+          stablepoolFee,
           JSON.stringify(pegs),
         )
       }
 
       return "0"
     },
-    [pool, amplification, fee, reserves, shareIssuance],
+    [pool, amplification, reserves, shareIssuance],
   )
 
   const getAssetOutProportionally = useCallback(

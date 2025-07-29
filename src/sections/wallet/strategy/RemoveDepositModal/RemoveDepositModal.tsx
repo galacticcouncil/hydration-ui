@@ -3,7 +3,7 @@ import { Button } from "components/Button/Button"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { ModalHorizontalSeparator } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
@@ -19,26 +19,40 @@ import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
+import { Text } from "components/Typography/Text/Text"
+import { useStablepoolLiquidityOut } from "sections/pools/stablepool/removeLiquidity/RemoveLiquidity.utils"
+import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
+import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
+import { useLiquidityLimit } from "state/liquidityLimit"
+import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
+import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
+import { scale } from "utils/balance"
+import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { SummaryRow } from "components/Summary/SummaryRow"
+import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { useRpcProvider } from "providers/rpcProvider"
+import { Spacer } from "components/Spacer/Spacer"
+import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
 
 type Props = {
   readonly assetId: string
   readonly balance: string
   readonly onClose: () => void
-  readonly positions?: TRemoveFarmingPosition[]
 }
 
 export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
   onClose,
-  positions,
 }) => {
   const { createTransaction } = useStore()
+  const [splitRemove, setSplitRemove] = useState(true)
+  const { addLiquidityLimit } = useLiquidityLimit()
   const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
   const { t } = useTranslation()
+  const { api } = useRpcProvider()
 
   const asset = getAssetWithFallback(assetId)
 
@@ -77,11 +91,45 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const { minAmountOut, getSwapTx, amountOut } = useBestTradeSell(
     assetId,
-    assetReceived?.id ?? "",
+    splitRemove ? underlyingAssetId : assetReceived?.id ?? "",
     debouncedBalance,
   )
+  const { getAssetOutProportionally } = useStablepoolLiquidityOut({
+    reserves: pool.reserves,
+    poolId: underlyingAssetId,
+  })
 
   const { page, direction, paginateTo } = useModalPagination()
+
+  const minAssetsOut = useMemo(() => {
+    if (!splitRemove) return []
+
+    return pool.reserves.map((reserve) => {
+      const meta = getAssetWithFallback(reserve.asset_id.toString())
+      const assetOutValue = getAssetOutProportionally(
+        reserve.amount,
+        scale(debouncedBalance, STABLEPOOL_TOKEN_DECIMALS).toString(),
+      )
+
+      const minValue = BigNumber(assetOutValue)
+        .minus(BigNumber(addLiquidityLimit).times(assetOutValue).div(100))
+        .dp(0)
+        .toString()
+
+      return {
+        minValue,
+        assetOutValue,
+        meta,
+      }
+    })
+  }, [
+    splitRemove,
+    pool.reserves,
+    getAssetWithFallback,
+    getAssetOutProportionally,
+    debouncedBalance,
+    addLiquidityLimit,
+  ])
 
   const amountOutFormatted = new BigNumber(amountOut)
     .shiftedBy(-(assetReceived?.decimals ?? 0))
@@ -92,20 +140,45 @@ export const RemoveDepositModal: FC<Props> = ({
     .toString()
 
   const onSubmit = async () => {
-    const tx = await getSwapTx()
+    const swapTx = await getSwapTx()
+
+    if (!swapTx) throw new Error("Missing swap tx")
+
+    const tx = splitRemove
+      ? api.tx.utility.batchAll([
+          swapTx,
+          api.tx.stableswap.removeLiquidity(
+            underlyingAssetId,
+            scale(debouncedBalance, STABLEPOOL_TOKEN_DECIMALS).toString(),
+            minAssetsOut.map((minAssetOut) => ({
+              assetId: minAssetOut.meta.id,
+              amount: minAssetOut.minValue,
+            })),
+          ),
+        ])
+      : swapTx
 
     createTransaction(
       { tx },
       {
-        toast: createToastMessages("wallet.strategy.remove.toast", {
-          t,
-          tOptions: {
-            strategy: asset.name,
-            amount: amountOutFormatted,
-            symbol: assetReceived?.symbol,
-          },
-          components: ["span.highlight"],
-        }),
+        toast: splitRemove
+          ? createToastMessages("wallet.strategy.remove.proportionally.toast", {
+              t,
+              tOptions: {
+                amount: BigNumber(debouncedBalance),
+                symbol: asset.symbol,
+              },
+              components: ["span.highlight"],
+            })
+          : createToastMessages("wallet.strategy.remove.toast", {
+              t,
+              tOptions: {
+                strategy: asset.name,
+                amount: amountOutFormatted,
+                symbol: assetReceived?.symbol,
+              },
+              components: ["span.highlight"],
+            }),
       },
     )
   }
@@ -143,29 +216,76 @@ export const RemoveDepositModal: FC<Props> = ({
                 sx={{ display: "grid" }}
                 onSubmit={form.handleSubmit(onSubmit)}
               >
+                <SplitSwitcher
+                  value={splitRemove}
+                  title={t("liquidity.remove.modal.split")}
+                  onChange={setSplitRemove}
+                />
                 <div sx={{ flex: "column", gap: 8 }}>
-                  <div sx={{ flex: "column", gap: 16 }}>
-                    <RemoveDepositAmount assetId={assetId} balance={balance} />
-                    <RemoveDepositAsset
-                      assetId={assetReceived?.id ?? ""}
-                      amountOut={amountOutFormatted}
-                      onSelectorOpen={() => paginateTo(1)}
-                    />
-                  </div>
-                  <RemoveDepositSummary
-                    assetId={assetId}
-                    hfChange={hfChange}
-                    minReceived={minAmountOutFormatted}
-                    assetReceived={assetReceived}
-                  />
+                  <RemoveDepositAmount assetId={assetId} balance={balance} />
+
+                  {splitRemove ? (
+                    <>
+                      <LiquidityLimitField
+                        setLiquidityLimit={() => paginateTo(2)}
+                        withSeparator={false}
+                      />
+                      <STradingPairContainer sx={{ mb: 12 }}>
+                        <Text color="brightBlue300">
+                          {t("liquidity.remove.modal.receive")}
+                        </Text>
+                        {minAssetsOut.map(({ assetOutValue, meta }) => (
+                          <RemoveLiquidityReward
+                            key={meta.id}
+                            id={meta.id}
+                            name={meta.symbol}
+                            symbol={meta.symbol}
+                            amount={t("value", {
+                              value: BigNumber(assetOutValue),
+                              fixedPointScale: meta.decimals,
+                              numberSuffix: ` ${meta.symbol}`,
+                              numberPrefix: splitRemove ? "~" : "",
+                            })}
+                          />
+                        ))}
+                      </STradingPairContainer>
+                    </>
+                  ) : (
+                    <>
+                      <Spacer size={8} />
+                      <RemoveDepositAsset
+                        assetId={assetReceived?.id ?? ""}
+                        amountOut={amountOutFormatted}
+                        onSelectorOpen={() => paginateTo(1)}
+                      />
+                      <RemoveDepositSummary
+                        assetId={assetId}
+                        hfChange={hfChange}
+                        minReceived={minAmountOutFormatted}
+                        assetReceived={assetReceived}
+                      />
+                    </>
+                  )}
                 </div>
+
                 {hfChange && (
-                  <HealthFactorRiskWarning
-                    accepted={healthFactorRiskAccepted}
-                    onAcceptedChange={setHealthFactorRiskAccepted}
-                    isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
-                    sx={{ mb: 16 }}
-                  />
+                  <>
+                    <SummaryRow
+                      label={t("healthFactor")}
+                      content={
+                        <HealthFactorChange
+                          healthFactor={hfChange.currentHealthFactor}
+                          futureHealthFactor={hfChange.futureHealthFactor}
+                        />
+                      }
+                    />
+                    <HealthFactorRiskWarning
+                      accepted={healthFactorRiskAccepted}
+                      onAcceptedChange={setHealthFactorRiskAccepted}
+                      isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+                      sx={{ mb: 16 }}
+                    />
+                  </>
                 )}
                 <ModalHorizontalSeparator mb={16} />
                 <Button
@@ -194,6 +314,12 @@ export const RemoveDepositModal: FC<Props> = ({
               }}
             />
           ),
+        },
+        {
+          title: t("liquidity.add.modal.limit.title"),
+          noPadding: true,
+          headerVariant: "GeistMono",
+          content: <LimitModal onConfirm={() => paginateTo(0)} />,
         },
       ]}
     />
