@@ -226,7 +226,6 @@ const CurrentDepositRemoveButton = ({
           assetId={assetId}
           balance={depositBalance}
           onClose={() => setIsRemoveModalOpen(false)}
-          positions={positions}
         />
       </Modal>
     </>
