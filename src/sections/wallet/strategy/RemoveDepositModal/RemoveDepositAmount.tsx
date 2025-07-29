@@ -9,15 +9,21 @@ import { RemoveDepositFormValues } from "sections/wallet/strategy/RemoveDepositM
 type Props = {
   readonly assetId: string
   readonly balance: string
+  readonly maxBalance: string
 }
 
-export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
+export const RemoveDepositAmount: FC<Props> = ({
+  assetId,
+  balance,
+  maxBalance,
+}) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const { control } = useFormContext<RemoveDepositFormValues>()
   const assetMeta = getAssetWithFallback(assetId)
 
-  const maxBalance = BN(balance).shiftedBy(assetMeta.decimals)
+  const balanceBn = BN(balance).shiftedBy(assetMeta.decimals)
+  const maxBalanceBn = BN(maxBalance).shiftedBy(assetMeta.decimals)
 
   return (
     <Controller
@@ -31,8 +37,8 @@ export const RemoveDepositAmount: FC<Props> = ({ assetId, balance }) => {
           id={assetId}
           title={t("amount")}
           error={fieldState?.error?.message}
-          balance={maxBalance}
-          balanceMax={maxBalance}
+          balance={balanceBn}
+          balanceMax={maxBalanceBn}
           balanceLabel={t("balance")}
         />
       )}

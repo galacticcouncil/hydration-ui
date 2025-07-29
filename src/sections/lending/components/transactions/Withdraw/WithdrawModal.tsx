@@ -15,6 +15,7 @@ import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssets } from "providers/assets"
 import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 
 export const WithdrawModal = () => {
   const { user } = useAppDataContext()
@@ -35,12 +36,21 @@ export const WithdrawModal = () => {
       return args.underlyingAsset === userReserve?.underlyingAsset
     })
 
+    const maxAmountToWithdraw = userReserve
+      ? calculateMaxWithdrawAmount(
+          user,
+          userReserve,
+          userReserve.reserve,
+        ).toString()
+      : "0"
+
     return (
       <BasicModal open={type === ModalType.Withdraw} setOpen={close}>
         <RemoveDepositModal
           assetId={aTokenId}
           onClose={close}
           balance={userReserve?.underlyingBalance ?? "0"}
+          maxBalance={maxAmountToWithdraw}
         />
       </BasicModal>
     )

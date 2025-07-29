@@ -29,11 +29,13 @@ export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
 
   const balanceHuman =
     type === STABLEPOOLTYPE.GIGA && relatedAToken
-      ? scaleHuman(
-          aBalance?.transferable ?? 0,
-          relatedAToken.decimals,
-        ).toString()
-      : scaleHuman(balance?.transferable ?? 0, meta.decimals).toString()
+      ? scaleHuman(aBalance?.total ?? 0, relatedAToken.decimals)
+      : scaleHuman(balance?.total ?? 0, meta.decimals)
+
+  const maxBalanceHuman =
+    type === STABLEPOOLTYPE.GIGA && relatedAToken
+      ? scaleHuman(aBalance?.transferable ?? 0, relatedAToken.decimals)
+      : scaleHuman(balance?.transferable ?? 0, meta.decimals)
 
   return (
     <>
@@ -60,7 +62,8 @@ export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
         <Modal open onClose={() => setOpenRemove(null)}>
           <RemoveDepositModal
             assetId={relatedAToken.id}
-            balance={balanceHuman ?? "0"}
+            balance={balanceHuman.toString()}
+            maxBalance={maxBalanceHuman.toString()}
             onClose={() => setOpenRemove(null)}
           />
         </Modal>
