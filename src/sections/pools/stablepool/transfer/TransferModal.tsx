@@ -3,16 +3,16 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./TransferOptions"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
+import { AddStablepoolLiquidityWrapper } from "./AddStablepoolLiquidity"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { TFarmAprData } from "api/farms"
-import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
 import { useSelectedDefaultAssetId } from "sections/pools/stablepool/transfer/TransferModal.utils"
 import { TransferAssetSelector } from "sections/pools/stablepool/transfer/TransferAssetSelector"
+import { AddProportionallySwitcher } from "sections/pools/stablepool/components/AddProportionallySwitcher"
 
 export enum Page {
   OPTIONS,
@@ -38,11 +38,12 @@ export const TransferModal = ({
   initialAssetId,
   skipOptions,
 }: Props) => {
+  const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { pool } = usePoolData()
-  const refetch = useRefetchAccountAssets()
+  const pool = usePoolData().pool as TStablepool
 
   const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
+  const [split, setSplit] = useState(false)
 
   const stablepool = pool as TStablepool
 
@@ -55,8 +56,6 @@ export const TransferModal = ({
   } = stablepool
 
   const defaultAssetId = useSelectedDefaultAssetId(stablepool)
-
-  const { t } = useTranslation()
 
   const [assetId, setAssetId] = useState<string | undefined>(
     initialAssetId ?? defaultAssetId,
@@ -123,19 +122,23 @@ export const TransferModal = ({
             title,
             headerVariant: "gradient",
             content: (
-              <AddStablepoolLiquidity
-                isStablepoolOnly={stablepoolSelected}
-                onClose={onClose}
-                onSubmitted={onClose}
-                onSuccess={refetch}
-                onAssetOpen={() => paginateTo(Page.ASSETS)}
-                asset={getAssetWithFallback(assetId ?? poolId)}
-                isJoinFarms={isJoinFarms && !stablepoolSelected}
-                setIsJoinFarms={setIsJoinFarms}
-                initialAmount={initialAmount}
-                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
-                relatedAToken={relatedAToken}
-              />
+              <>
+                <AddProportionallySwitcher value={split} onChange={setSplit} />
+                <AddStablepoolLiquidityWrapper
+                  key={`${split}`}
+                  isStablepoolOnly={stablepoolSelected}
+                  onClose={onClose}
+                  onAssetOpen={() => paginateTo(Page.ASSETS)}
+                  asset={getAssetWithFallback(assetId ?? poolId)}
+                  isJoinFarms={isJoinFarms && !stablepoolSelected}
+                  setIsJoinFarms={setIsJoinFarms}
+                  initialAmount={initialAmount}
+                  setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                  relatedAToken={relatedAToken}
+                  pool={pool}
+                  split={split}
+                />
+              </>
             ),
           },
           {

@@ -70,3 +70,31 @@ export const useBestTradeSell = (
     isLoading: isInitialLoading,
   }
 }
+
+export const useBestTradeSellTx = (
+  assetInId: string,
+  assetOutId: string,
+  amountIn: string,
+) => {
+  const { api, sdk, isLoaded } = useRpcProvider()
+  const { account } = useAccount()
+
+  const { api: sdkApi, tx: sdkTx } = sdk
+  const slippageData = TradeConfigCursor.deref().slippage
+
+  return useQuery({
+    queryKey: QUERY_KEYS.bestTradeSellTx(assetInId, assetOutId, amountIn),
+    queryFn: async () => {
+      if (!account) return undefined
+
+      const builtTx = await sdkTx
+        .trade(await sdkApi.router.getBestSell(assetInId, assetOutId, amountIn))
+        .withSlippage(Number(slippageData))
+        .withBeneficiary(account.address)
+        .build()
+
+      return await api.tx(builtTx.hex)
+    },
+    enabled: isLoaded && !!assetInId && !!assetOutId && !!amountIn && !!account,
+  })
+}

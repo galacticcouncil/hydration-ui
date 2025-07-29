@@ -14,14 +14,13 @@ const TransferErc20AssetSelector: React.FC<TransferAssetSelectorProps> = ({
   firstAssetId,
   onSelect,
 }) => {
-  const { getErc20, native } = useAssets()
+  const { native } = useAssets()
+  const { relatedAToken: aToken, isGETH } = pool
 
-  const aTokenId = pool.relatedAToken?.id ?? ""
-
-  const depositAssetId = getErc20(aTokenId)?.underlyingAssetId ?? ""
+  const depositAssetId = aToken?.underlyingAssetId ?? ""
 
   const selectableAssets = useNewDepositAssets(depositAssetId, {
-    blacklist: aTokenId ? [aTokenId] : [],
+    blacklist: aToken && !isGETH ? [aToken.id] : [],
     firstAssetId,
     lowPriorityAssetIds: [native.id],
   })

@@ -360,6 +360,11 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
+  bestTradeSellTx: (
+    assetInId: string,
+    assetOutId: string,
+    amountIn: string,
+  ) => ["bestTradeSellTx", assetInId, assetOutId, amountIn],
 } as const
 
 export const WS_QUERY_KEYS = {
