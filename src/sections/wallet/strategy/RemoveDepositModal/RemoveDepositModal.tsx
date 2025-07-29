@@ -19,7 +19,6 @@ import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 
@@ -136,7 +135,9 @@ export const RemoveDepositModal: FC<Props> = ({
       onBack={() => paginateTo(0)}
       contents={[
         {
-          title: t("wallet.strategy.remove.title"),
+          title: t("lending.withdraw.modal.title", {
+            symbol: asset.symbol,
+          }),
           content: (
             <FormProvider {...form}>
               <form

@@ -22,7 +22,6 @@ export const RemoveDepositAmount: FC<Props> = ({
   const { control } = useFormContext<RemoveDepositFormValues>()
   const assetMeta = getAssetWithFallback(assetId)
 
-  const balanceBn = BN(balance).shiftedBy(assetMeta.decimals)
   const maxBalanceBn = BN(maxBalance).shiftedBy(assetMeta.decimals)
 
   return (
@@ -37,9 +36,9 @@ export const RemoveDepositAmount: FC<Props> = ({
           id={assetId}
           title={t("amount")}
           error={fieldState?.error?.message}
-          balance={balanceBn}
+          balance={maxBalanceBn}
           balanceMax={maxBalanceBn}
-          balanceLabel={t("balance")}
+          balanceLabel={t("lending.withdraw.balance")}
         />
       )}
     />
