@@ -33,11 +33,15 @@ export const AddStablepoolLiquidityWrapper = (
     onAssetOpen,
     setLiquidityLimit,
     isStablepoolOnly,
-    pool: { isGETH, farms, reserves, relatedAToken },
+    farms,
+    reserves,
+    stablepoolAsset,
     asset: { id: selectedAssetId, decimals },
   } = props
 
-  const isMoveGETHToOmnipool = isGETH && selectedAssetId === GETH_ERC20_ASSET_ID
+  const isMoveGETHToOmnipool =
+    stablepoolAsset.id === GETH_ERC20_ASSET_ID &&
+    selectedAssetId === GETH_ERC20_ASSET_ID
 
   const initialAmounts = split
     ? reserves.map((reserve) => ({
@@ -67,21 +71,19 @@ export const AddStablepoolLiquidityWrapper = (
     )
   }
 
-  if (relatedAToken) {
+  if (stablepoolAsset.isErc20) {
     if (split)
       return isStablepoolOnly ? (
         <AddSplitMoneyMarketStablepool
           transferableBalances={transferableBalances}
           initialAmounts={initialAmounts}
           {...props}
-          relatedAToken={relatedAToken}
         />
       ) : (
         <AddSplitMoneyMarketStablepoolOmnipool
           transferableBalances={transferableBalances}
           initialAmounts={initialAmounts}
           {...props}
-          relatedAToken={relatedAToken}
         />
       )
 
@@ -90,14 +92,12 @@ export const AddStablepoolLiquidityWrapper = (
         transferableBalances={transferableBalances}
         initialAmounts={initialAmounts}
         {...props}
-        relatedAToken={relatedAToken}
       />
     ) : (
       <AddMoneyMarketStablepoolOmnipool
         transferableBalances={transferableBalances}
         initialAmounts={initialAmounts}
         {...props}
-        relatedAToken={relatedAToken}
       />
     )
   }
@@ -127,13 +127,12 @@ const StablepoolOnly = (props: AddStablepoolProps) => {
     stablepoolZodSchema(balancesMax),
   )
 
-  useStablepoolShares(props.pool, form)
+  useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
-        assetToGet={props.pool.meta}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
       />
@@ -142,10 +141,6 @@ const StablepoolOnly = (props: AddStablepoolProps) => {
 }
 
 const StablepoolOmnipool = (props: AddStablepoolProps) => {
-  const {
-    pool: { poolId },
-  } = props
-
   const tx = useStablepoolExtimationTx(props)
   const balancesMax = useMaxBalances(props, tx)
 
@@ -153,16 +148,19 @@ const StablepoolOmnipool = (props: AddStablepoolProps) => {
 
   const { form, handleSubmit } = useAddStablepoolForm(
     props,
-    useAddToOmnipoolZod(poolId, getReservesZodSchema(balancesMax)),
+    useAddToOmnipoolZod(
+      props.stablepoolAsset,
+      props.farms,
+      getReservesZodSchema(balancesMax),
+    ),
   )
 
-  useStablepoolShares(props.pool, form)
+  useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
-        assetToGet={props.pool.meta}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
       />

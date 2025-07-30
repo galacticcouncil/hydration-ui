@@ -297,7 +297,7 @@
   "liquidity.stablepool.incetives.value": "Up to {{value, bignumber(type: 'percentage'; decimalPlaces: 1) }} % APY",
   "liquidity.stablepool.transfer.options": "Add Liquidity",
   "liquidity.stablepool.transfer.addLiquidity": "Add liquidity",
-  "liquidity.stablepool.transfer.addLiquidity.joinFarms": "Add liquidity and join farms",
+  "liquidity.stablepool.transfer.addLiquidity.joinFarms": "Add {{symbol}} liquidity and join farms",
   "liquidity.stablepool.transfer.stablepool": "Add liquidity to stablepool",
   "liquidity.stablepool.transfer.stablepool.custom": "Add {{symbol}} liquidity",
   "liquidity.stablepool.position.title": "Your share tokens",

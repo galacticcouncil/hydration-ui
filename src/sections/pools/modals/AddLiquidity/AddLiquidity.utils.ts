@@ -111,16 +111,12 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
 }
 
 export const useAddToOmnipoolZod = (
-  assetId: string,
+  asset: TAsset,
+  farms: TFarmAprData[],
   stablepoolRules?: ZodTypeAny,
 ) => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
-
-  const {
-    meta: { decimals, symbol },
-    farms,
-  } = pool
+  const { id: assetId, symbol, decimals } = asset
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 

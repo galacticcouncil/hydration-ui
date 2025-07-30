@@ -58,7 +58,7 @@ export const AddLiquidityForm = ({
 }: Props) => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const { createTransaction } = useStore()
   const isFarms = farms.length > 0
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
@@ -68,7 +68,8 @@ export const AddLiquidityForm = ({
   const refetchAccountAssets = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
 
-  const zodSchema = useAddToOmnipoolZod(assetId)
+  const assetMeta = getAssetWithFallback(assetId)
+  const zodSchema = useAddToOmnipoolZod(assetMeta, farms)
   const form = useForm<{
     amount: string
     farms: boolean
@@ -89,14 +90,8 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const {
-    totalShares,
-    omnipoolFee,
-    assetMeta,
-    assetBalance,
-    sharesToGet,
-    isGETH,
-  } = useAddLiquidity(assetId, debouncedAmount)
+  const { totalShares, omnipoolFee, assetBalance, sharesToGet, isGETH } =
+    useAddLiquidity(assetId, debouncedAmount)
 
   const hfChange = useHealthFactorChange({
     assetId,

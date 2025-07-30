@@ -59,6 +59,8 @@ export type TXYKPool = NonNullable<
   ReturnType<typeof useXYKPools>["data"]
 >[number]
 
+export type TReserves = TStablepool["reserves"]
+
 type TStablepoolData = {
   poolId: string
   id: string

@@ -46,8 +46,7 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const isTransferModalOpen =
-    isOpen && (pool.meta.isStableSwap || pool.meta.isErc20)
+  const isTransferModalOpen = isOpen && isStablepoolType(pool)
   const isGeth = !ixXYKPool && pool.isGETH
 
   const initialAssetId = (() => {
@@ -65,10 +64,13 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     isTransferModalOpen ? (
       <TransferModal
+        farms={pool.farms}
+        poolId={pool.poolId}
+        stablepoolAssetId={pool.relatedAToken?.id ?? pool.id}
         onClose={() => setOpen(false)}
-        farms={pool.farms ?? []}
         skipOptions={isGeth}
         initialAssetId={initialAssetId}
+        disabledOmnipool={!pool.canAddLiquidity}
       />
     ) : (
       <AddLiquidity isOpen onClose={() => setOpen(false)} />

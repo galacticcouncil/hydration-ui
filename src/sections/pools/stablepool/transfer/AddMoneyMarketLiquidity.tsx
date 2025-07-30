@@ -41,7 +41,6 @@ import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiqui
 import { StablepoolFeeSummaryRow } from "sections/pools/stablepool/components/StablepoolFeeSummaryRow"
 import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 import { PriceSummaryRow } from "sections/pools/stablepool/components/PriceSummaryRow"
-import { TAsset } from "providers/assets"
 
 export const AddSplitMoneyMarketStablepool = (
   props: AddMoneyMarketStablepoolProps,
@@ -54,13 +53,12 @@ export const AddSplitMoneyMarketStablepool = (
     stablepoolZodSchema(balancesMax),
   )
 
-  useStablepoolShares(props.pool, form)
+  useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
-        assetToGet={props.relatedAToken}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
       />
@@ -76,16 +74,19 @@ export const AddSplitMoneyMarketStablepoolOmnipool = (
   const { onSubmit } = useSplitMoneyMarketStablepoolSubmitHandler(props)
   const { form, handleSubmit } = useAddStablepoolForm(
     props,
-    useAddToOmnipoolZod(props.pool.id, getReservesZodSchema(balancesMax)),
+    useAddToOmnipoolZod(
+      props.stablepoolAsset,
+      props.farms,
+      getReservesZodSchema(balancesMax),
+    ),
   )
 
-  useStablepoolShares(props.pool, form)
+  useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
-        assetToGet={props.relatedAToken}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
       />
@@ -106,7 +107,7 @@ export const AddMoneyMarketStablepool = (
 
   const { tradeData, hfChange } = useStablepoolTradeShares(
     props.asset,
-    props.relatedAToken,
+    props.stablepoolAsset,
     form,
   )
 
@@ -116,7 +117,6 @@ export const AddMoneyMarketStablepool = (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
-        assetToGet={props.relatedAToken}
         hfChange={hfChange}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
@@ -133,12 +133,16 @@ export const AddMoneyMarketStablepoolOmnipool = (
 
   const { form, handleSubmit } = useAddStablepoolForm(
     props,
-    useAddToOmnipoolZod(props.pool.id, getReservesZodSchema(balancesMax)),
+    useAddToOmnipoolZod(
+      props.stablepoolAsset,
+      props.farms,
+      getReservesZodSchema(balancesMax),
+    ),
   )
 
   const { tradeData, hfChange } = useStablepoolTradeShares(
     props.asset,
-    props.relatedAToken,
+    props.stablepoolAsset,
     form,
   )
 
@@ -148,7 +152,6 @@ export const AddMoneyMarketStablepoolOmnipool = (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
-        assetToGet={props.relatedAToken}
         hfChange={hfChange}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
@@ -160,7 +163,6 @@ export const AddMoneyMarketStablepoolOmnipool = (
 export const StablepoolForm = (
   props: AddStablepoolProps & {
     balancesMax: TTransferableBalance[]
-    assetToGet: TAsset
     hfChange?: UseHealthFactorChangeResult
     handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void
   },
@@ -175,9 +177,10 @@ export const StablepoolForm = (
     setLiquidityLimit,
     isJoinFarms,
     balancesMax,
-    pool: { poolId, reserves, farms },
-    assetToGet,
-    relatedAToken,
+    poolId,
+    reserves,
+    farms,
+    stablepoolAsset,
     handleSubmit,
     hfChange,
     split,
@@ -268,19 +271,19 @@ export const StablepoolForm = (
 
       <SummaryRow
         label={t(
-          relatedAToken
+          stablepoolAsset.isErc20
             ? "liquidity.stablepool.add.minimalReceived"
             : "liquidity.add.modal.shareTokens",
         )}
         content={t("value.tokenWithSymbol", {
           value: BN(watch("amount")),
-          symbol: assetToGet.name,
+          symbol: stablepoolAsset.name,
         })}
         withSeparator
       />
 
       {!split && (
-        <PriceSummaryRow selectedAsset={asset} poolAsset={assetToGet} />
+        <PriceSummaryRow selectedAsset={asset} poolAsset={stablepoolAsset} />
       )}
 
       {hfChange && (
@@ -311,7 +314,7 @@ export const StablepoolForm = (
             </Alert>
           ))}
         <PoolAddLiquidityInformationCard />
-        {!!relatedAToken && <TradeAlert />}
+        {stablepoolAsset.isErc20 && <TradeAlert />}
       </div>
 
       <Separator

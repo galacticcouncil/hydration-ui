@@ -18,9 +18,8 @@ import { noop } from "utils/helpers"
 import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { Alert } from "components/Alert/Alert"
-import { usePools, useStableSwapReserves } from "sections/pools/PoolsPage.utils"
-import { PoolContext } from "sections/pools/pool/Pool"
 import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
+import { useOmnipoolFarm } from "api/farms"
 
 type Props = {
   readonly assetId: string
@@ -86,6 +85,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
         {isGETH && account && (
           <GETHDepositButton
             assetId={assetId}
+            poolId={getErc20(assetId)?.underlyingAssetId ?? assetId}
             symbol={asset.symbol}
             disabled={supplyCapReached}
             initialAssetId={selectedAsset?.id}
@@ -124,12 +124,14 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
 
 export const GETHDepositButton = ({
   assetId,
+  poolId,
   symbol,
   disabled,
   initialAmount,
   initialAssetId,
 }: {
   assetId: string
+  poolId: string
   symbol: string
   disabled: boolean
   initialAssetId?: string
@@ -138,39 +140,30 @@ export const GETHDepositButton = ({
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
-  const { data } = usePools()
-
-  const pool = data?.find((pool) => pool.id === assetId)
-
-  const stablepoolDetails = useStableSwapReserves(pool?.poolId ?? "")
+  const { data: omnipoolFarm } = useOmnipoolFarm(GETH_ERC20_ASSET_ID)
 
   return (
     <>
       <Button
         type="button"
         variant="primary"
-        disabled={disabled || !pool}
+        disabled={disabled}
         onClick={() => setOpen(true)}
       >
         {t("wallet.strategy.deposit.cta", {
           symbol,
         })}
       </Button>
-      {pool && open && (
-        <PoolContext.Provider
-          value={{
-            pool: { ...pool, ...stablepoolDetails.data },
-            isXYK: false,
-          }}
-        >
-          <TransferModal
-            onClose={() => setOpen(false)}
-            farms={pool.farms}
-            initialAmount={initialAmount}
-            initialAssetId={initialAssetId}
-            skipOptions
-          />
-        </PoolContext.Provider>
+      {open && (
+        <TransferModal
+          poolId={poolId}
+          stablepoolAssetId={assetId}
+          onClose={() => setOpen(false)}
+          initialAmount={initialAmount}
+          initialAssetId={initialAssetId}
+          farms={omnipoolFarm?.farms ?? []}
+          skipOptions
+        />
       )}
     </>
   )
