@@ -3,24 +3,16 @@ import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
-import i18n from "i18next"
-import {
-  BN_0,
-  BN_NAN,
-  DOT_ASSET_ID,
-  ETH_ASSET_ID,
-  VDOT_ASSET_ID,
-  WSTETH_ASSET_ID,
-} from "utils/constants"
+import { BN_0, VDOT_ASSET_ID } from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { SContainer, SIncentiveRow } from "./GigaIncentives.styled"
 import { ReactNode } from "react"
-import { BorrowAssetApyData, useBorrowAssetApy } from "api/borrow"
+import { BorrowAssetApyData, useBorrowAssetsApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { ResponsiveValue } from "utils/responsive"
 import { theme } from "theme"
-import { getAssetIdFromAddress } from "utils/evm"
+import { getAddressFromAssetId, getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
@@ -84,28 +76,19 @@ export const GigaIncentives = ({
   )
 }
 
-const APYRow = ({
+const IncentiveRow = ({
   id,
   value,
   label,
 }: {
   id: string
-  value?: string | number
+  value: string | number
   label: string
 }) => {
-  const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
 
   return (
-    <div
-      key={id}
-      sx={{
-        flex: "row",
-        gap: 4,
-        justify: "space-between",
-        mt: 6,
-      }}
-    >
+    <SIncentiveRow>
       <div sx={{ flex: "row", gap: 4, align: "center" }}>
         <Icon size={14} icon={<AssetLogo id={id} />} />
         <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
@@ -114,15 +97,11 @@ const APYRow = ({
         </Text>
       </div>
       <Text fs={12} font="GeistSemiBold">
-        {t("value.percentage", {
-          value,
-        })}
+        {value}
       </Text>
-    </div>
+    </SIncentiveRow>
   )
 }
-
-type ApySummary = Record<string, string>
 
 type ApyType = "supply" | "borrow"
 
@@ -137,9 +116,8 @@ type APYProps = {
 }
 
 export const MoneyMarketAPYWrapper = (props: APYProps) => {
-  const moneyMarketApy = useBorrowAssetApy(props.assetId, props.withFarms)
-
-  return <MoneyMarketAPY moneyMarketApy={moneyMarketApy} {...props} />
+  const { data } = useBorrowAssetsApy([props.assetId], props.withFarms)
+  return data[0] && <MoneyMarketAPY moneyMarketApy={data[0]} {...props} />
 }
 
 export const MoneyMarketAPY = ({
@@ -159,10 +137,9 @@ export const MoneyMarketAPY = ({
     totalSupplyApy,
     totalBorrowApy,
     lpAPY,
-    underlyingAssetsAPY,
+    underlyingAssetsApyData,
     incentives,
     farms,
-    vDotApy,
   } = moneyMarketApy
 
   const isSupply = type === "supply"
@@ -172,7 +149,6 @@ export const MoneyMarketAPY = ({
 
   const hasFarms = farms && farms.length > 0
   const defaultColor = withFarms && hasFarms ? "brightBlue200" : "white"
-  const isVDOT = assetId === VDOT_ASSET_ID
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
@@ -193,7 +169,7 @@ export const MoneyMarketAPY = ({
           withLabel
             ? "liquidity.stablepool.incetives.value"
             : "value.percentage",
-          { value: apy === Infinity ? BN_NAN : apy },
+          { value: apy },
         )}
       </Text>
       <InfoTooltip
@@ -227,52 +203,37 @@ export const MoneyMarketAPY = ({
                 </Text>
               </div>
             )}
-            {isVDOT && (
-              <APYRow
-                id={VDOT_ASSET_ID}
-                label={t("stakeApy")}
-                value={vDotApy}
-              />
-            )}
-            {underlyingAssetsAPY.map(({ id, borrowApy, supplyApy }) => {
-              return (
-                <SIncentiveRow key={id}>
-                  <div sx={{ flex: "row", gap: 4, align: "center" }}>
-                    <Icon size={14} icon={<AssetLogo id={id} />} />
-                    <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
-                    <Text fs={11} lh={15} color="basic400">
-                      {isVDOT
-                        ? isSupply
-                          ? t("supplyApy")
-                          : t("borrowApy")
-                        : labels[id] ?? t("supplyApy")}
-                    </Text>
-                  </div>
-                  <Text fs={12} font="GeistSemiBold">
-                    {t("value.percentage", {
-                      value: BN(isSupply ? supplyApy : borrowApy).minus(
-                        id === VDOT_ASSET_ID && isVDOT ? vDotApy ?? 0 : 0,
-                      ),
+
+            {underlyingAssetsApyData.map(
+              ({ id, isStaked, borrowApy, supplyApy }) => {
+                const label = isStaked
+                  ? t("stakeApy")
+                  : isSupply
+                    ? t("supplyApy")
+                    : t("borrowApy")
+                return (
+                  <IncentiveRow
+                    key={id}
+                    id={id}
+                    label={label}
+                    value={t("value.percentage", {
+                      value: BN(isSupply ? supplyApy : borrowApy),
                     })}
-                  </Text>
-                </SIncentiveRow>
-              )
-            })}
+                  />
+                )
+              },
+            )}
             {incentives.map(({ rewardTokenAddress, incentiveAPR }) => {
               const id = getAssetIdFromAddress(rewardTokenAddress)
               return (
-                <SIncentiveRow key={id}>
-                  <div sx={{ flex: "row", gap: 4, align: "center" }}>
-                    <Icon size={14} icon={<AssetLogo id={id} />} />
-                    <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
-                    <Text fs={11} lh={15} color="basic400">
-                      {t("incentivesApr")}
-                    </Text>
-                  </div>
-                  <Text fs={12} font="GeistSemiBold">
-                    <FormattedNumber percent value={incentiveAPR} />
-                  </Text>
-                </SIncentiveRow>
+                <IncentiveRow
+                  key={id}
+                  id={id}
+                  label={t("incentivesApr")}
+                  value={t("value.percentage", {
+                    value: BN(incentiveAPR).times(100),
+                  })}
+                />
               )
             })}
             {farms && (
@@ -295,20 +256,12 @@ export const MoneyMarketAPY = ({
                 </div>
                 {farms.map(({ apr, rewardCurrency }) => {
                   return (
-                    <SIncentiveRow key={rewardCurrency}>
-                      <div sx={{ flex: "row", gap: 4, align: "center" }}>
-                        <Icon
-                          size={14}
-                          icon={<AssetLogo id={rewardCurrency} />}
-                        />
-                        <Text fs={12}>
-                          {getAssetWithFallback(rewardCurrency).symbol}
-                        </Text>
-                      </div>
-                      <Text fs={12} font="GeistSemiBold">
-                        {t("value.percentage", { value: apr })}
-                      </Text>
-                    </SIncentiveRow>
+                    <IncentiveRow
+                      key={rewardCurrency}
+                      id={rewardCurrency}
+                      label={getAssetWithFallback(rewardCurrency).symbol}
+                      value={t("value.percentage", { value: apr })}
+                    />
                   )
                 })}
               </>
@@ -320,13 +273,6 @@ export const MoneyMarketAPY = ({
   )
 }
 
-const labels: ApySummary = {
-  [DOT_ASSET_ID]: i18n.t("supplyApy"),
-  [VDOT_ASSET_ID]: i18n.t("stakeApy"),
-  [ETH_ASSET_ID]: i18n.t("supplyApy"),
-  [WSTETH_ASSET_ID]: i18n.t("stakeApy"),
-}
-
 type OverrideApyProps = APYProps & {
   readonly children: ReactNode
   readonly assetId: string
@@ -335,7 +281,9 @@ type OverrideApyProps = APYProps & {
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (true) {
-    case MONEY_MARKET_GIGA_RESERVES.includes(props.assetId):
+    case MONEY_MARKET_GIGA_RESERVES.includes(
+      getAddressFromAssetId(props.assetId),
+    ):
       return props.type === "supply" ? (
         <MoneyMarketAPYWrapper {...props} />
       ) : (

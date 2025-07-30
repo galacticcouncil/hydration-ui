@@ -69,12 +69,14 @@ export const HUSDT_ASSET_ID = "104"
 export const HUSDS_ASSET_ID = "105"
 export const HUSDE_ASSET_ID = "106"
 
-export const HOLLAR_POOLS = [
+export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
   HUSDT_ASSET_ID,
   HUSDS_ASSET_ID,
   HUSDE_ASSET_ID,
 ]
+
+export const GIGA_ASSETS = [GDOT_STABLESWAP_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
 
 export const STRATEGY_ASSETS = [
   GDOT_STABLESWAP_ASSET_ID,

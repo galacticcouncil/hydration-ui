@@ -7,22 +7,28 @@ import { TxActionsWrapper } from "sections/lending/components/transactions/TxAct
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { ExternalApyData } from "sections/lending/hooks/app-data-provider/useExternalApyData"
 
 export type ClaimRewardsActionsProps = {
   isWrongNetwork?: boolean
   blocked: boolean
   claimableUsd: string
   selectedReward: Reward
+  externalApyData: ExternalApyData
 }
+
+type ClaimRewardsProps = Omit<ClaimRewardsActionsProps, "externalApyData">
 
 export const ClaimRewardsActions = ({
   isWrongNetwork = false,
   blocked,
   claimableUsd,
   selectedReward,
-}: ClaimRewardsActionsProps) => {
+}: ClaimRewardsProps) => {
   const { t } = useTranslation()
   const claimRewards = useRootStore((state) => state.claimRewards)
+  const { externalApyData } = useAppDataContext()
 
   const isClaimAllRewards = selectedReward?.symbol === "all"
 
@@ -43,6 +49,7 @@ export const ClaimRewardsActions = ({
           blocked,
           selectedReward,
           claimableUsd,
+          externalApyData,
         })
       },
       skip: Object.keys(selectedReward).length === 0 || blocked,

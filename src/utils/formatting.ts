@@ -23,6 +23,8 @@ import {
 } from "utils/evm"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
+const MIN_PERCENTAGE_THRESHOLD = BigNumber(0.01)
+
 export const formatNum = (
   number?: number | string,
   options?: Intl.NumberFormatOptions,
@@ -162,6 +164,7 @@ export function formatBigNumber(
   if (value == null) return null
   let num = normalizeBigNumber(value)
   if (num.isNaN()) return "-"
+  if (!num.isFinite()) return "∞"
 
   const localeOptions = getFormatSeparators(locale)
   const fmtConfig = {
@@ -204,7 +207,15 @@ export function formatBigNumber(
 
   /* If decimal places is not set, display 2 decimals by default for percentages */
   if (options?.type === "percentage" && !options.decimalPlaces) {
-    return num.toFormat(2, BigNumber.ROUND_HALF_UP, fmtConfig)
+    const isBelowThreshold = num.gt(0) && num.lt(MIN_PERCENTAGE_THRESHOLD)
+    const numAdjusted = isBelowThreshold ? MIN_PERCENTAGE_THRESHOLD : num
+    const prefix = isBelowThreshold ? "<" : ""
+    const formatted = numAdjusted.toFormat(
+      2,
+      BigNumber.ROUND_HALF_UP,
+      fmtConfig,
+    )
+    return `${prefix}${formatted}`
   }
 
   /* Display only 2 decimals, by cutting them not rounding */
