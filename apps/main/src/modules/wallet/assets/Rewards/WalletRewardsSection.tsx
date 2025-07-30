@@ -8,11 +8,12 @@ import {
   SWalletRewardsActionItem,
   SWalletRewardsSection,
 } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
+import { USDT_ASSET_ID } from "@/utils/consts"
 
 // TODO wallet rewards
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
-  const [totalRewards] = useDisplayAssetPrice("10", 14143000)
+  const [totalRewards] = useDisplayAssetPrice(USDT_ASSET_ID, 14143000)
 
   return (
     <SWalletRewardsSection separated>

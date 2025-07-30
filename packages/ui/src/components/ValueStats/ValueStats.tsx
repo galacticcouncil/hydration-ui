@@ -45,19 +45,26 @@ export const ValueStats: FC<ValueStatsProps> = ({
     <SValueStats alwaysWrap={alwaysWrap} size={size}>
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
       <SValueStatsValueContainer size={size}>
-        {customValue ?? (
+        {isLoading ? (
           <SValueStatsValue font={font} size={size}>
-            {isLoading ? <Skeleton width={120} height="100%" /> : value}
+            <Skeleton width={120} height="100%" />
           </SValueStatsValue>
+        ) : (
+          (customValue ?? (
+            <SValueStatsValue font={font} size={size}>
+              {value}
+            </SValueStatsValue>
+          ))
         )}
-        {customBottomLabel ?? (
+
+        {isLoading && (bottomLabel || customBottomLabel) ? (
           <SValueStatsBottomValue>
-            {isLoading && bottomLabel ? (
-              <Skeleton width="100%" height="100%" />
-            ) : (
-              bottomLabel
-            )}
+            <Skeleton width="100%" height="100%" />
           </SValueStatsBottomValue>
+        ) : (
+          (customBottomLabel ?? (
+            <SValueStatsBottomValue>{bottomLabel}</SValueStatsBottomValue>
+          ))
         )}
       </SValueStatsValueContainer>
     </SValueStats>
