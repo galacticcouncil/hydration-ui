@@ -60,9 +60,25 @@ export const VDOT_ERC20_ASSET_ID = "1005"
 export const DOT_ASSET_ID = "5"
 export const ETH_ASSET_ID = "34"
 export const WSTETH_ASSET_ID = "1000809"
+export const SUSDE_ASSET_ID = "1000625"
+export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 
-export const STRATEGY_ASSETS_BLACKLIST = [
+export const HUSDC_ASSET_ID = "103"
+export const HUSDT_ASSET_ID = "104"
+export const HUSDS_ASSET_ID = "105"
+export const HUSDE_ASSET_ID = "106"
+
+export const HOLLAR_ASSETS = [
+  HUSDC_ASSET_ID,
+  HUSDT_ASSET_ID,
+  HUSDS_ASSET_ID,
+  HUSDE_ASSET_ID,
+]
+
+export const GIGA_ASSETS = [GDOT_STABLESWAP_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
+
+export const STRATEGY_ASSETS = [
   GDOT_STABLESWAP_ASSET_ID,
   GDOT_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
