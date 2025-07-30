@@ -2,7 +2,7 @@ import {
   calculate_amplification,
   calculate_shares,
 } from "@galacticcouncil/math-stableswap"
-import { StableMath } from "@galacticcouncil/sdk"
+import { StableMath, Trade } from "@galacticcouncil/sdk"
 import { useBestNumber } from "api/chain"
 import { useStableswapPool } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
@@ -28,13 +28,23 @@ import { calculateLimitShares } from "sections/pools/modals/AddLiquidity/AddLiqu
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm, useFormContext, useWatch } from "react-hook-form"
-import { useBestTradeSellTx } from "api/trade"
+import {
+  FieldErrors,
+  SubmitHandler,
+  useForm,
+  UseFormReturn,
+  useWatch,
+} from "react-hook-form"
+import { useBestTradeSell, useBestTradeSellTx } from "api/trade"
 import { StepProps } from "components/Stepper/Stepper"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { t } from "i18next"
 import { useCallback, useEffect } from "react"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
+import { useDebouncedValue } from "hooks/useDebouncedValue"
+import { useHealthFactorChange } from "api/borrow"
+import { ProtocolAction } from "@aave/contract-helpers"
 
 export type TStablepoolFormValue = {
   assetId: string
@@ -77,14 +87,52 @@ export type AddMoneyMarketStablepoolProps = AddStablepoolProps & {
   relatedAToken: TErc20
 }
 
-export const useStablepoolShares = ({ poolId, reserves }: TStablepool) => {
+export const stablepoolZodSchema = (balances: TTransferableBalance[]) =>
+  z.object({
+    reserves: getReservesZodSchema(balances),
+    amount: z.string(),
+    stablepoolShares: z.string(),
+  })
+
+export const getReservesZodSchema = (balances: TTransferableBalance[]) => {
+  const valueItemSchema = z.object({
+    amount: z.string(),
+    decimals: z.number(),
+    assetId: z.string(),
+  })
+
+  const schema = z.array(valueItemSchema).superRefine((data, ctx) => {
+    data.forEach((item, index) => {
+      const maxBalance = balances.find(
+        ({ assetId }) => assetId === item.assetId,
+      )
+
+      const maxbalanceShifted = maxBalance
+        ? scaleHuman(maxBalance.balance, maxBalance.decimals)
+        : "0"
+
+      if (BigNumber(item.amount).gt(maxbalanceShifted)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: i18n.t("error.maxBalance"),
+          path: [index],
+        })
+      }
+    })
+  })
+
+  return schema
+}
+
+export const useStablepoolShares = (
+  { poolId, reserves }: TStablepool,
+  form: UseFormReturn<TAddStablepoolFormValues, any, undefined>,
+) => {
   const { getAssetWithFallback } = useAssets()
 
   const { data: stableswapPool } = useStableswapPool(poolId)
   const { data: bestNumber } = useBestNumber()
   const { data: issuances } = useTotalIssuances()
-
-  const form = useFormContext<TAddStablepoolFormValues>()
 
   const { control, setValue, trigger, watch } = form
 
@@ -159,58 +207,74 @@ export const useStablepoolShares = ({ poolId, reserves }: TStablepool) => {
   return stablepoolShares
 }
 
-export const stablepoolZodSchema = (balances: TTransferableBalance[]) =>
-  z.object({
-    reserves: getReservesZodSchema(balances),
-    amount: z.string(),
-    stablepoolShares: z.string(),
-  })
+export const useStablepoolTradeShares = (
+  asset: TAsset,
+  relatedAToken: TErc20,
+  form: UseFormReturn<TAddStablepoolFormValues, any, undefined>,
+) => {
+  const { control, setValue, trigger } = form
 
-export const getReservesZodSchema = (balances: TTransferableBalance[]) => {
-  const valueItemSchema = z.object({
-    amount: z.string(),
-    decimals: z.number(),
-    assetId: z.string(),
-  })
+  const formValues = useWatch({ name: "reserves", control })
+  const [debouncedValue = "0"] = useDebouncedValue(formValues[0].amount, 300)
 
-  const schema = z.array(valueItemSchema).superRefine((data, ctx) => {
-    data.forEach((item, index) => {
-      const maxBalance = balances.find(
-        ({ assetId }) => assetId === item.assetId,
+  const { getSwapTx, tradeData } = useBestTradeSell(
+    asset.id,
+    relatedAToken.id,
+    debouncedValue,
+    (minAmount) => {
+      setValue(
+        "amount",
+        scaleHuman(minAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
       )
+      trigger()
+    },
+  )
 
-      const maxbalanceShifted = maxBalance
-        ? scaleHuman(maxBalance.balance, maxBalance.decimals)
-        : "0"
-
-      if (BigNumber(item.amount).gt(maxbalanceShifted)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: i18n.t("error.maxBalance"),
-          path: [index],
-        })
-      }
-    })
+  const hfChange = useHealthFactorChange({
+    assetId: asset.id,
+    amount: debouncedValue,
+    action: ProtocolAction.withdraw,
   })
 
-  return schema
+  return { getSwapTx, tradeData, hfChange }
 }
 
-export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
+export const useMaxBalances = (
+  props: AddMoneyMarketStablepoolProps | AddStablepoolProps,
+  tx: SubmittableExtrinsic,
+) => {
+  const estimatedFees = useEstimatedFees(tx)
+
+  return props.transferableBalances.map(({ assetId, decimals, balance }) => {
+    const isFeePaymentAsset = estimatedFees.accountCurrencyId === assetId
+
+    if (isFeePaymentAsset) {
+      return {
+        assetId,
+        decimals,
+        balance: BigNumber(balance)
+          .minus(estimatedFees.accountCurrencyFee)
+          .minus(props.asset.existentialDeposit)
+          .toString(),
+      }
+    }
+
+    return {
+      assetId,
+      decimals,
+      balance: BigNumber(balance).toString(),
+    }
+  })
+}
+
+export const useMoneyMarketStablepoolExtimationTx = (
+  props: AddMoneyMarketStablepoolProps,
+) => {
   const { api } = useRpcProvider()
-  const { createTransaction } = useStore()
-  const { getAssetWithFallback } = useAssets()
-  const refetchPositions = useRefetchAccountAssets()
-  const { addLiquidityLimit } = useLiquidityLimit()
 
   const {
-    isJoinFarms,
-    asset,
-    isStablepoolOnly,
     initialAmounts,
-    transferableBalances,
-    pool: { poolId, farms },
-    onClose,
+    pool: { poolId },
   } = props
 
   const amounts = initialAmounts.map(({ assetId }) => ({
@@ -218,7 +282,52 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
     amount: "1",
   }))
 
-  const estimationTx = isStablepoolOnly
+  const { data: tradeTx } = useBestTradeSellTx(poolId, "0", "1")
+
+  return tradeTx ?? api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
+}
+
+export const useMoneyMarketSplitStablepoolExtimationTx = (
+  props: AddMoneyMarketStablepoolProps,
+) => {
+  const { api } = useRpcProvider()
+
+  const {
+    initialAmounts,
+    pool: { poolId },
+  } = props
+
+  const amounts = initialAmounts.map(({ assetId }) => ({
+    assetId,
+    amount: "1",
+  }))
+
+  const { data: tradeTx } = useBestTradeSellTx(poolId, "0", "1")
+
+  return tradeTx
+    ? api.tx.utility.batchAll([
+        api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1"),
+        tradeTx,
+      ])
+    : api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
+}
+
+export const useStablepoolExtimationTx = (props: AddStablepoolProps) => {
+  const { api } = useRpcProvider()
+
+  const {
+    isJoinFarms,
+    isStablepoolOnly,
+    initialAmounts,
+    pool: { poolId, farms },
+  } = props
+
+  const amounts = initialAmounts.map(({ assetId }) => ({
+    assetId,
+    amount: "1",
+  }))
+
+  return isStablepoolOnly
     ? api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
     : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
         poolId,
@@ -230,31 +339,21 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
             ])
           : null,
       )
+}
 
-  const estimatedFees = useEstimatedFees(estimationTx)
+export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
+  const { api } = useRpcProvider()
+  const { createTransaction } = useStore()
+  const { getAssetWithFallback } = useAssets()
+  const refetchPositions = useRefetchAccountAssets()
+  const { addLiquidityLimit } = useLiquidityLimit()
 
-  const balancesMax = transferableBalances.map(
-    ({ assetId, decimals, balance }) => {
-      const isFeePaymentAsset = estimatedFees.accountCurrencyId === assetId
-
-      if (isFeePaymentAsset) {
-        return {
-          assetId,
-          decimals,
-          balance: BigNumber(balance)
-            .minus(estimatedFees.accountCurrencyFee)
-            .minus(asset.existentialDeposit)
-            .toString(),
-        }
-      }
-
-      return {
-        assetId,
-        decimals,
-        balance: BigNumber(balance).toString(),
-      }
-    },
-  )
+  const {
+    isJoinFarms,
+    isStablepoolOnly,
+    pool: { poolId, farms },
+    onClose,
+  } = props
 
   const onSubmit = async (values: TAddStablepoolFormValues) => {
     const shiftedShares = scale(
@@ -298,7 +397,7 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
     )
   }
 
-  return { balancesMax, onSubmit }
+  return { onSubmit }
 }
 
 export const useSplitMoneyMarketStablepoolSubmitHandler = (
@@ -314,53 +413,11 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
 
   const {
     isJoinFarms,
-    asset,
     isStablepoolOnly,
-    initialAmounts,
-    transferableBalances,
     relatedAToken,
     pool: { poolId, farms, balance },
     onClose,
   } = props
-
-  const amounts = initialAmounts.map(({ assetId }) => ({
-    assetId,
-    amount: "1",
-  }))
-
-  const { data: tradeTx } = useBestTradeSellTx(poolId, "0", "1")
-
-  const estimationTx = tradeTx
-    ? api.tx.utility.batchAll([
-        api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1"),
-        tradeTx,
-      ])
-    : api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
-
-  const estimatedFees = useEstimatedFees(estimationTx)
-
-  const balancesMax = transferableBalances.map(
-    ({ assetId, decimals, balance }) => {
-      const isFeePaymentAsset = estimatedFees.accountCurrencyId === assetId
-
-      if (isFeePaymentAsset) {
-        return {
-          assetId,
-          decimals,
-          balance: BigNumber(balance)
-            .minus(estimatedFees.accountCurrencyFee)
-            .minus(asset.existentialDeposit)
-            .toString(),
-        }
-      }
-
-      return {
-        assetId,
-        decimals,
-        balance: BigNumber(balance).toString(),
-      }
-    },
-  )
 
   const onSubmit = async (values: TAddStablepoolFormValues) => {
     const getStepper = (activeIndex: number): StepProps[] => {
@@ -502,62 +559,28 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
     )
   }
 
-  return { balancesMax, onSubmit }
+  return { onSubmit }
 }
 
-export const useMoneyMarketStablepoolSubmitHandler = (
+export const useMoneyMarketStablepoolSubmit = (
   props: AddMoneyMarketStablepoolProps,
+  trade: Trade | undefined,
 ) => {
   const { t } = useTranslation()
   const { api, sdk } = useRpcProvider()
-  const { account } = useAccount()
   const { createTransaction } = useStore()
+  const { account } = useAccount()
+  const { getAssetWithFallback } = useAssets()
   const refetchPositions = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
 
   const {
     isJoinFarms,
-    asset,
-    initialAmounts,
+    isStablepoolOnly,
     relatedAToken,
-    transferableBalances,
-    pool: { poolId, farms, aBalance },
+    pool: { farms, aBalance },
     onClose,
   } = props
-
-  const amounts = initialAmounts.map(({ assetId }) => ({
-    assetId,
-    amount: "1",
-  }))
-
-  const { data: tradeTx } = useBestTradeSellTx(poolId, "0", "1")
-
-  const estimatedFees = useEstimatedFees(
-    tradeTx ?? api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1"),
-  )
-
-  const balancesMax = transferableBalances.map(
-    ({ assetId, decimals, balance }) => {
-      const isFeePaymentAsset = estimatedFees.accountCurrencyId === assetId
-
-      if (isFeePaymentAsset) {
-        return {
-          assetId,
-          decimals,
-          balance: BigNumber(balance)
-            .minus(estimatedFees.accountCurrencyFee)
-            .minus(asset.existentialDeposit)
-            .toString(),
-        }
-      }
-
-      return {
-        assetId,
-        decimals,
-        balance: BigNumber(balance).toString(),
-      }
-    },
-  )
 
   const getStepper = (activeIndex: number): StepProps[] => {
     const labels = [
@@ -640,7 +663,42 @@ export const useMoneyMarketStablepoolSubmitHandler = (
     )
   }
 
-  return { balancesMax, getStepper, onJoinOmnipool }
+  const onSubmit = async (values: TAddStablepoolFormValues) => {
+    if (!account || !trade) throw new Error("Account is not found")
+
+    const slippageData = TradeConfigCursor.deref().slippage
+    const { tx: sdkTx } = sdk
+
+    const builtTx = await sdkTx
+      .trade(trade)
+      .withSlippage(Number(slippageData))
+      .withBeneficiary(account.address)
+      .build()
+
+    const tx = await api.tx(builtTx.hex)
+
+    await createTransaction(
+      {
+        tx,
+      },
+      {
+        onSuccess: refetchPositions,
+        onSubmitted: onClose,
+        onError: onClose,
+        onClose,
+        onBack: () => {},
+        toast: addStablepoolToast(values.reserves, getAssetWithFallback),
+        disableAutoClose: !isStablepoolOnly,
+        steps: !isStablepoolOnly ? getStepper(0) : undefined,
+      },
+    )
+
+    if (isStablepoolOnly) return
+
+    await onJoinOmnipool()
+  }
+
+  return { onSubmit }
 }
 
 export const useAddStablepoolForm = (
@@ -649,10 +707,11 @@ export const useAddStablepoolForm = (
 ) => {
   const {
     initialAmounts,
+    isJoinFarms,
     pool: { farms },
   } = props
 
-  return useForm<TAddStablepoolFormValues>({
+  const form = useForm<TAddStablepoolFormValues>({
     mode: "onChange",
     defaultValues: {
       reserves: initialAmounts,
@@ -662,6 +721,22 @@ export const useAddStablepoolForm = (
     },
     resolver: resolver ? zodResolver(resolver) : undefined,
   })
+
+  const onInvalidSubmit = (
+    errors: FieldErrors<TAddStablepoolFormValues>,
+    onSubmit: SubmitHandler<TAddStablepoolFormValues>,
+  ) => {
+    const { farms, ...blockingErrors } = errors
+
+    if (!isJoinFarms && !Object.keys(blockingErrors).length) {
+      onSubmit(form.getValues())
+    }
+  }
+
+  const handleSubmit = (onSubmit: SubmitHandler<TAddStablepoolFormValues>) =>
+    form.handleSubmit(onSubmit, (e) => onInvalidSubmit(e, onSubmit))
+
+  return { form, handleSubmit }
 }
 
 export const addStablepoolToast = (

@@ -35,6 +35,7 @@ import { HealthFactorChange } from "sections/lending/components/HealthFactorChan
 import { useRpcProvider } from "providers/rpcProvider"
 import { Spacer } from "components/Spacer/Spacer"
 import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
+import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 
 type Props = {
   readonly assetId: string
@@ -264,6 +265,7 @@ export const RemoveDepositModal: FC<Props> = ({
                         minReceived={minAmountOutFormatted}
                         assetReceived={assetReceived}
                       />
+                      <TradeAlert />
                     </>
                   )}
                 </div>

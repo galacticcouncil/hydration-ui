@@ -67,6 +67,7 @@ export const useBestTradeSell = (
     minAmountOut,
     getSwapTx,
     amountOut,
+    tradeData,
     isLoading: isInitialLoading,
   }
 }

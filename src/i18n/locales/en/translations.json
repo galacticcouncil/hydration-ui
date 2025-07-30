@@ -340,7 +340,7 @@
   "liquidity.asset.capacity.full": "<0>Asset cap reached:</0> <1>{{ filled, compact }} / {{ capacity, compact }} {{ symbol }}</1>",
   "liquidity.add.modal.button.joinFarms": "Add liquidity & Join Farms",
   "liquidity.add.modal.split": "Add assets proportionally",
-  "liquidity.add.modal.trade.alert": "Supplying {{symbol}} exposes you to Slippage through swapping selected asset. Edit it in case trade doesn’t go through.",
+  "liquidity.add.modal.trade.alert": "This operation include swap, and which might be affected by slippage",
   "liquidity.add.modal.title": "Add liquidity",
   "liquidity.add.modal.title.geth": "Add GETH liquidity and join farms",
   "liquidity.add.modal.limit.title": "Add Liquidity Limit",
