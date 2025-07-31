@@ -10,7 +10,7 @@ import { SAccountOption } from "@/components/account/AccountOption.styled"
 
 export const AccountOptionSkeleton: FC = () => {
   return (
-    <SAccountOption>
+    <SAccountOption disabled>
       <Flex align="center" gap={12}>
         <Box sx={{ flexShrink: 0 }}>
           <AccountAvatar address="" />

@@ -89,7 +89,9 @@ export const useAccountBalance = () => {
     queryFn: async () => {
       if (!address) return null
 
-      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address)
+      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address, {
+        at: "best",
+      })
 
       if (!balancesRaw) {
         return null
