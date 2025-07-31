@@ -2,9 +2,9 @@ import { safeParse } from "@galacticcouncil/utils"
 import { fromEntries, isFunction, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
+import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { AnyTransaction } from "@/states/transactions"
 
 export const decodeEvmCall = (abi: Abi, data: Hex) => {
   try {

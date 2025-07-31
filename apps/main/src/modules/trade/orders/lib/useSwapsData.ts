@@ -1,18 +1,18 @@
+import {
+  DcaScheduleStatus,
+  isDcaScheduleStatus,
+  isTradeOperation,
+  SwapFragment,
+  SwapsQueryAddress,
+  TradeOperation,
+  userSwapsQuery,
+} from "@galacticcouncil/indexer/squid"
 import { safeConvertAddressSS58, subscan } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
-import {
-  DcaScheduleStatus,
-  isDcaScheduleStatus,
-  isTradeOperation,
-  SwapsQueryAddress,
-  TradeOperation,
-  userSwapsQuery,
-} from "@/api/graphql/trade-orders"
 import { useSquidClient } from "@/api/provider"
-import { SwapFragment } from "@/codegen/__generated__/squid/graphql"
 import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { HYDRATION_CHAIN_KEY } from "@/utils/consts"

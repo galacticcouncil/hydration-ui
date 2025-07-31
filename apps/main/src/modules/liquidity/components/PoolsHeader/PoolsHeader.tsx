@@ -32,7 +32,7 @@ export const PoolsHeader = () => {
   }, [data])
 
   return (
-    <Flex gap={20} justify="space-between" sx={{ py: 20, overflowX: "auto" }}>
+    <Flex gap={20} justify="space-between" sx={{ overflowX: "auto" }}>
       <ValueStats
         label={t("liquidity:header.totalLiquidity")}
         value={t("common:currency", {

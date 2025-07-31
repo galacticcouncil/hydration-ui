@@ -36,7 +36,6 @@
   "history.event.supply": "Supply",
   "history.event.withdraw": "Withdraw",
   "history.filter.title": "Filter by",
-  "history.search.placeholder": "Search by asset name or symbol",
   "history.table.collateralization": "Collateralization <0>{{ state }}</0> for",
   "history.table.emodeDisabled": "<0>{{ emode }}</0> <1>Disabled</1>",
   "history.table.emodeEnabled": "<0>{{ emode }}</0> <1>Enabled</1>",

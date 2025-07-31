@@ -1,8 +1,8 @@
 import Jazzicon, { jsNumberForAddress } from "react-jazzicon"
 
-import { Box, BoxProps } from "@/components/Box"
+import { Flex, FlexProps } from "@/components/Flex"
 
-export type EthereumIdenticonProps = BoxProps & {
+export type EthereumIdenticonProps = FlexProps & {
   address: string
   size: number
 }
@@ -12,7 +12,7 @@ export const EthereumIdenticon: React.FC<EthereumIdenticonProps> = ({
   size,
   ...props
 }) => (
-  <Box {...props}>
+  <Flex {...props}>
     <Jazzicon diameter={size} seed={jsNumberForAddress(address)} />
-  </Box>
+  </Flex>
 )

@@ -1,6 +1,6 @@
+import Flamingo from "@galacticcouncil/ui/assets/images/Flamingo.webp"
 import { Button, ButtonProps, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Flamingo from "public/images/Flamingo.webp"
 import { FC, Fragment, ReactNode } from "react"
 
 type Props = {
@@ -14,7 +14,7 @@ export const EmptyState: FC<Props> = ({ header, description, action }) => {
     <Flex
       direction="column"
       align="center"
-      gap={12}
+      gap={6}
       m="auto"
       pb={50}
       maxWidth={230}

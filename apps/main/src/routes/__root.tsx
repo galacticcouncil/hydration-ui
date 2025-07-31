@@ -11,7 +11,7 @@ import { useAccountBalance, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useAllPools, useOmnipoolIds } from "@/api/pools"
-import { useProviderMetadata } from "@/api/provider"
+import { useProviderMetadata, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
@@ -72,7 +72,13 @@ function RootComponent() {
       {!hasTopNavbar && <MobileTabBar />}
       <ProviderRpcSelect />
       <TransactionManager />
-      <Web3ConnectModal />
+      <Web3Connect />
     </>
   )
+}
+
+function Web3Connect() {
+  const squidSdk = useSquidClient()
+
+  return <Web3ConnectModal squidSdk={squidSdk} />
 }

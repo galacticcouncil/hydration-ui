@@ -1,4 +1,8 @@
 import {
+  TimeSeriesBucketTimeRange,
+  tradePricesQuery,
+} from "@galacticcouncil/indexer/squid"
+import {
   OhlcData,
   toUTCTimestamp,
 } from "@galacticcouncil/ui/components/TradingViewChart/utils"
@@ -6,10 +10,8 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
-import { tradePricesQuery } from "@/api/graphql/trade-prices"
 import { useSquidClient } from "@/api/provider"
 import { spotPrice } from "@/api/spotPrice"
-import { TimeSeriesBucketTimeRange } from "@/codegen/__generated__/squid/graphql"
 import { PeriodType } from "@/components/PeriodInput/PeriodInput"
 import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"

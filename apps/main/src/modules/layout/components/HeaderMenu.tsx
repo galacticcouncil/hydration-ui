@@ -30,7 +30,11 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
     <SHeaderMenu ref={observe} {...props}>
       {items.map(({ key, to, children, search }) => {
         const isMoreButton = key === moreButtonKey
-        const subItems = isMoreButton ? hiddenItems : children
+        const subItems = isMoreButton
+          ? hiddenItems
+          : children && children.length > 1
+            ? children
+            : null
 
         return (
           <HoverCard key={key}>

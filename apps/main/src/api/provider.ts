@@ -1,10 +1,11 @@
+import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
+import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { getProviderInstance, hasOwn } from "@galacticcouncil/utils"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { Graffle } from "graffle"
 import { PolkadotClient } from "polkadot-api"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -181,27 +182,23 @@ export const useProviderMetadata = () => {
   })
 }
 
-const getClient = (url: string) => Graffle.create().transport({ url })
-
-export type GraphqlClient = ReturnType<typeof getClient>
-
-export const useSquidClient = (): GraphqlClient => {
+export const useSquidClient = (): SquidSdk => {
   const url = useSquidUrl()
-  const [client, setClient] = useState<GraphqlClient>(() => getClient(url))
+  const [client, setClient] = useState<SquidSdk>(() => getSquidSdk(url))
 
   useEffect(() => {
-    setClient(getClient(url))
+    setClient(getSquidSdk(url))
   }, [url])
 
   return client
 }
 
-export const useIndexerClient = (): GraphqlClient => {
+export const useIndexerClient = (): IndexerSdk => {
   const url = useIndexerUrl()
-  const [client, setClient] = useState<GraphqlClient>(() => getClient(url))
+  const [client, setClient] = useState<IndexerSdk>(() => getIndexerSdk(url))
 
   useEffect(() => {
-    setClient(getClient(url))
+    setClient(getIndexerSdk(url))
   }, [url])
 
   return client

@@ -1,0 +1,30 @@
+{
+  "name": "@galacticcouncil/indexer",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc --build",
+    "lint": "yarn lint:eslint && yarn lint:ts",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "lint:eslint": "eslint src",
+    "codegen:indexer": "graphql-codegen --config src/indexer/codegen.ts",
+    "codegen:squid": "graphql-codegen --config src/squid/codegen.ts"
+  },
+  "exports": {
+    "./indexer": "./src/indexer/index.ts",
+    "./squid": "./src/squid/index.ts"
+  },
+  "dependencies": {
+    "graphql": "^16.11.0",
+    "graphql-request": "^7.2.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/import-types-preset": "^3.0.1",
+    "@graphql-codegen/typescript-graphql-request": "^6.3.0",
+    "graphql-config": "^5.1.5"
+  }
+}

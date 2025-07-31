@@ -1,7 +1,7 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Grid, Input } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -13,7 +13,7 @@ import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
 import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSubpageMenu"
 
 export const WalletAssetsPage = () => {
-  const { t } = useTranslation("wallet")
+  const { t } = useTranslation("common")
   const { account } = useAccount()
   const { isMobile } = useBreakpoints()
   const [searchPhrase, setSearchPhrase] = useState("")
@@ -27,8 +27,8 @@ export const WalletAssetsPage = () => {
   }, [isMobile])
 
   if (!account) {
-    // TODO empty state
-    return null
+    // TODO add real fallback, this is placeholder
+    return <Web3ConnectButton size="large" />
   }
 
   return (
@@ -44,7 +44,7 @@ export const WalletAssetsPage = () => {
         <Flex pt={12} align="flex-end" justify="space-between">
           <WalletAssetsSubpageMenu />
           <Input
-            placeholder={t("searchAssets")}
+            placeholder={t("search.placeholder.assets")}
             iconStart={Search}
             onChange={(e) => setSearchPhrase(e.target.value)}
           />

@@ -1,8 +1,9 @@
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
+import { scaleHuman } from "@/utils/formatting"
 
 export type OtcOffer = {
   readonly id: string | undefined
@@ -11,6 +12,8 @@ export type OtcOffer = {
   readonly assetOut: TAsset
   readonly amountIn: string
   readonly amountOut: string
+  readonly assetAmountIn: string
+  readonly assetAmountOut: string
   readonly isPartiallyFillable: boolean
 }
 
@@ -45,13 +48,21 @@ export const useOtcOffersQuery = () => {
             return null
           }
 
+          const amountIn = offer.amount_in.toString()
+          const amountOut = offer.amount_out.toString()
+
+          const assetAmountIn = scaleHuman(amountIn, assetIn.decimals)
+          const assetAmountOut = scaleHuman(amountOut, assetOut.decimals)
+
           return {
             id: keyArgs[0].toString(),
             owner: offer.owner.toString(),
             assetIn: assetIn,
             assetOut: assetOut,
-            amountIn: offer.amount_in.toString(),
-            amountOut: offer.amount_out.toString(),
+            amountIn,
+            amountOut,
+            assetAmountIn,
+            assetAmountOut,
             isPartiallyFillable: offer.partially_fillable,
           }
         })

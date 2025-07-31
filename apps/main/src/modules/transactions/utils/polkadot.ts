@@ -1,15 +1,17 @@
 import { logger } from "@galacticcouncil/utils"
+import { Binary, compactNumber } from "@polkadot-api/substrate-bindings"
 import { InvalidTxError, PolkadotSigner } from "polkadot-api"
+import { mergeUint8 } from "polkadot-api/utils"
 import { isFunction, isObjectType } from "remeda"
 import { catchError, Observable, of, shareReplay } from "rxjs"
 
 import {
+  AnyPapiTx,
   TxEventOrError,
   TxOptions,
   TxSignAndSubmitFn,
   UnsignedTxSubmitFn,
 } from "@/modules/transactions/types"
-import { AnyPapiTx } from "@/states/transactions"
 
 export const isPapiTransaction = (tx: unknown): tx is AnyPapiTx =>
   isObjectType(tx) &&
@@ -32,13 +34,27 @@ export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   return observeTransactionEvents(observer, options)
 }
 
+const unsigedTxFromCallData = (callData: Binary): Binary => {
+  const rawCallData = callData.asBytes()
+  return Binary.fromBytes(
+    mergeUint8(
+      compactNumber.enc(rawCallData.length + 1),
+      new Uint8Array([4]),
+      rawCallData,
+    ),
+  )
+}
+
+const txToUnsigedTx = async (tx: AnyPapiTx) =>
+  unsigedTxFromCallData(await tx.getEncodedData())
+
 export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
   tx,
   client,
   options,
 ) => {
-  const callData = await tx.getEncodedData()
-  const observer = client.submitAndWatch(callData.asHex()).pipe(
+  const unsignedTx = await txToUnsigedTx(tx)
+  const observer = client.submitAndWatch(unsignedTx.asHex()).pipe(
     catchError((error) => of({ type: "error" as const, error })),
     shareReplay(1),
   )

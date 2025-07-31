@@ -1,4 +1,5 @@
 import { isSS58Address } from "@galacticcouncil/utils"
+import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -7,9 +8,9 @@ import { useCallback } from "react"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
-import { QUERY_KEY_BLOCK_PREFIX } from "@/utils/consts"
 
 import { uniquesIds } from "./constants"
 
@@ -79,7 +80,7 @@ export const useRefetchAccountBalance = () => {
 
 export const useAccountBalance = () => {
   const address = useAccount().account?.address
-  const { papi, isLoaded } = useRpcProvider()
+  const { papi, sdk, isLoaded } = useRpcProvider()
   const setBalance = useAccountData(prop("setBalance"))
 
   return useQuery({
@@ -88,16 +89,39 @@ export const useAccountBalance = () => {
     queryFn: async () => {
       if (!address) return null
 
-      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address)
+      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address, {
+        at: "best",
+      })
 
       if (!balancesRaw) {
         return null
       }
 
+      const maxReservesMap = await (async () => {
+        try {
+          const maxReserves = await sdk.api.aave.getMaxWithdrawAll(address)
+
+          return new Map(
+            Object.entries(maxReserves).map(([token, amount]) => [
+              token,
+              amount,
+            ]),
+          )
+        } catch (err) {
+          console.error(err)
+          return new Map()
+        }
+      })()
+
       const balances = balancesRaw.map(([assetId, balance]) => {
-        const free = balance.free
+        const registryId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+        const maxReserve = registryId
+          ? maxReservesMap.get(registryId)
+          : undefined
+
+        const free = maxReserve?.amount ?? balance.free
         const reserved = balance.reserved
-        const total = free + reserved
+        const total = (balance.free > free ? balance.free : free) + reserved
 
         return {
           free,

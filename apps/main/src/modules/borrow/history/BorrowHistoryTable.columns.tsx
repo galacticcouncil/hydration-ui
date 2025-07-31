@@ -1,15 +1,17 @@
+import {
+  MoneyMarketEventFragment,
+  MoneyMarketEventName,
+} from "@galacticcouncil/indexer/squid"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MoneyMarketEventFragment } from "@/codegen/__generated__/squid/graphql"
 import { AssetAmountDescription } from "@/modules/borrow/history/descriptions/AssetAmountDescription"
 import { CollateralDescription } from "@/modules/borrow/history/descriptions/CollateralDescription"
 import { EModeDescription } from "@/modules/borrow/history/descriptions/EModeDescription"
 import { LiquidationCallDescription } from "@/modules/borrow/history/descriptions/LiquidationCallDescription"
-import { EventName } from "@/modules/borrow/history/types"
 import { useFormatEventName } from "@/modules/borrow/history/utils"
 
 export type MoneyMarketEventWithDate = MoneyMarketEventFragment & {
@@ -44,7 +46,7 @@ export const useBorrowHistoryColumns = () => {
         return (
           <div>
             <Text fs={14} fw={500}>
-              {formatEventName(row.original.eventName as EventName)}
+              {formatEventName(row.original.eventName as MoneyMarketEventName)}
             </Text>
             <Text color={getToken("text.medium")} fs={12}>
               <span
@@ -76,7 +78,7 @@ export const useBorrowHistoryColumns = () => {
 
         const event = row.original
 
-        switch (event.eventName as EventName) {
+        switch (event.eventName as MoneyMarketEventName) {
           case "Supply":
             return (
               event.supply && (

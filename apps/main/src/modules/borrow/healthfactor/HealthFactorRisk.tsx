@@ -34,7 +34,11 @@ export const HealthFactorRisk = () => {
       <HealthFactorRiskInfo
         title={t("borrow:healthFactor")}
         description={t("borrow:risk.hf.description")}
-        value={t("number", { value: healthFactor })}
+        value={t("number", {
+          value: healthFactor,
+          maximumFractionDigits: 2,
+          notation: "compact",
+        })}
         hint={t("borrow:risk.hf.hint")}
         scale={<HealthFactorRiskScale healthFactor={healthFactor} />}
         color={healthFactorColor}

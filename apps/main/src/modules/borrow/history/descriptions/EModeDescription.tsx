@@ -1,16 +1,15 @@
+import { UserEModeFragment } from "@galacticcouncil/indexer/squid"
 import { useMoneyMarketData } from "@galacticcouncil/money-market/hooks"
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { UserEModeFragment } from "@/codegen/__generated__/squid/graphql"
-
 export const EModeDescription: FC<UserEModeFragment> = ({ categoryId }) => {
   const { t } = useTranslation(["borrow"])
   const { eModes } = useMoneyMarketData()
 
-  if (categoryId === null) {
+  if (categoryId === null || categoryId === undefined) {
     return null
   }
 

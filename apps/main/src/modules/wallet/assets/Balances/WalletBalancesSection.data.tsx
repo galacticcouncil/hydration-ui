@@ -2,14 +2,16 @@ import Big from "big.js"
 
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
-import { useAssetPrice } from "@/states/displayAsset"
+import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
 // TODO is this correct? - useWalletAssetsTotals
 export const useWalletBalancesSectionData = () => {
   const { getAsset } = useAssets()
   const { balances } = useAccountBalances()
-  const { price, isValid } = useAssetPrice("10")
+  const { getAssetPrice } = useAssetsPrice(
+    Array.from(new Set(Object.keys(balances))),
+  )
 
   const totalAssets = Object.values(balances).reduce((acc, balance) => {
     const asset = getAsset(balance.assetId)
@@ -19,9 +21,12 @@ export const useWalletBalancesSectionData = () => {
     }
 
     const assetBalance = scaleHuman(balance.total, asset.decimals)
-    const assetPrice = new Big(isValid ? price : 0).times(assetBalance)
+    const assetPrice = getAssetPrice(balance.assetId)
+    const balancePrice = new Big(
+      assetPrice.isValid ? assetPrice.price : 0,
+    ).times(assetBalance)
 
-    return acc.plus(assetPrice)
+    return acc.plus(balancePrice)
   }, new Big(0))
 
   return {

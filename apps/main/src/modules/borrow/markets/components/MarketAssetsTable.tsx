@@ -30,7 +30,6 @@ export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
             to: `/borrow/markets/${row.underlyingAsset}`,
           })
         }
-        hoverable
         data={data}
         columns={columns}
       />

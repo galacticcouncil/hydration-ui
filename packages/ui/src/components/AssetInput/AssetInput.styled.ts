@@ -15,8 +15,8 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
 
     transition: ${theme.transitions.colors};
 
-    padding: 4px;
-    height: 38px;
+    padding: ${theme.scales.paddings.s}px;
+    padding-right: ${theme.scales.paddings.m}px;
     min-width: fit-content;
 
     border-radius: 30px;

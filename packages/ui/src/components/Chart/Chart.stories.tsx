@@ -27,7 +27,8 @@ const SINGLE_SERIES_CONFIG = {
       color: "#6fc272",
     },
   ],
-} satisfies ChartConfig<typeof MOCK_CATEGORY_DATA>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any satisfies ChartConfig<(typeof MOCK_CATEGORY_DATA)[number]>
 
 const MULTI_SERIES_CONFIG = {
   xAxisKey: "month",
@@ -43,7 +44,8 @@ const MULTI_SERIES_CONFIG = {
       color: "#98C8F8",
     },
   ],
-} satisfies ChartConfig<typeof MOCK_CATEGORY_DATA>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any satisfies ChartConfig<(typeof MOCK_CATEGORY_DATA)[number]>
 
 const TIME_SERIES_CONFIG = {
   xAxisKey: "timestamp",
@@ -55,7 +57,8 @@ const TIME_SERIES_CONFIG = {
       key: "value",
     },
   ],
-} satisfies ChartConfig<typeof MOCK_TIME_DATA>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any satisfies ChartConfig<(typeof MOCK_TIME_DATA)[number]>
 
 const CURVE_SERIES_CONFIG = {
   xAxisKey: "x",
@@ -66,7 +69,8 @@ const CURVE_SERIES_CONFIG = {
       color: ["#FC408C", "#57B3EB"],
     },
   ],
-} satisfies ChartConfig<typeof MOCK_CURVE_DATA>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any satisfies ChartConfig<(typeof MOCK_CURVE_DATA)[number]>
 
 export const Area: Story = {
   render: (args) => (

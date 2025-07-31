@@ -1,9 +1,11 @@
-import { Box } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useMemo } from "react"
 import { isNonNullish, reverse } from "remeda"
 
-import { SContainer } from "@/components/provider/ProviderIcons.styled"
+import {
+  SContainer,
+  SWalletBox,
+} from "@/components/provider/ProviderIcons.styled"
+import { ProviderLogo } from "@/components/provider/ProviderLogo"
 import { WalletProviderType } from "@/config/providers"
 import { getWallet } from "@/wallets"
 
@@ -14,59 +16,44 @@ export type ProviderIconsProps = {
 const DISPLAY_THRESHOLD = 4
 
 const getImgSize = (count: number) => {
-  switch (count) {
-    case 1:
-      return 48
-    case 2:
-      return 40
-    case 3:
-      return 30
-    default:
-      return 28
-  }
+  if (count >= 4) return 28
+  return 32
 }
 
+const getFilteredWallets = (providers: WalletProviderType[]) => {
+  const maxVisible =
+    providers.length > DISPLAY_THRESHOLD
+      ? DISPLAY_THRESHOLD - 1 // reserve one slot for an overflow indicator
+      : DISPLAY_THRESHOLD
+  return reverse(providers)
+    .slice(0, maxVisible)
+    .map(getWallet)
+    .filter(isNonNullish)
+}
 export const ProviderIcons: React.FC<ProviderIconsProps> = ({
   providers = [],
 }) => {
-  const connectedWallets = useMemo(() => {
-    const maxVisible =
-      providers.length === DISPLAY_THRESHOLD
-        ? DISPLAY_THRESHOLD
-        : DISPLAY_THRESHOLD - 1
-    return reverse(providers)
-      .slice(0, maxVisible)
-      .map(getWallet)
-      .filter(isNonNullish)
-  }, [providers])
-
-  const remainingCount = Math.max(0, providers.length - connectedWallets.length)
+  const wallets = getFilteredWallets(providers)
+  const overflowCount = Math.max(0, providers.length - wallets.length)
 
   return (
     <SContainer>
-      {connectedWallets.map(({ provider, logo, title }) => (
-        <Box
-          key={provider}
-          sx={{ bg: "darkBlue401", size: getImgSize(providers.length) }}
+      {wallets.map((wallet) => (
+        <SWalletBox
+          key={wallet.provider}
+          size={getImgSize(providers.length)}
+          bg={getToken("surfaces.containers.high.hover")}
         >
-          <img
-            loading="lazy"
-            src={logo}
-            alt={title}
-            width="100%"
-            height="100%"
-          />
-        </Box>
+          <ProviderLogo wallet={wallet} size="100%" />
+        </SWalletBox>
       ))}
-      {remainingCount > 0 && (
-        <Box
-          sx={{
-            bg: getToken("buttons.primary.low.rest"),
-            size: getImgSize(providers.length),
-          }}
+      {overflowCount > 0 && (
+        <SWalletBox
+          bg={getToken("buttons.primary.low.rest")}
+          size={getImgSize(providers.length)}
         >
-          +{remainingCount}
-        </Box>
+          +{overflowCount}
+        </SWalletBox>
       )}
     </SContainer>
   )

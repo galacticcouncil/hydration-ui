@@ -9,7 +9,6 @@ import { createStyles, createVariants } from "@/utils"
 export type TableSize = "small" | "medium" | "large"
 export type TableProps = {
   size?: TableSize
-  hoverable?: boolean
   borderless?: boolean
   fixedLayout?: boolean
 }
@@ -35,13 +34,11 @@ const columnSizeStyles = createVariants<TableSize>((theme) => ({
   `,
 }))
 
-const pinnedColumnStyles = createVariants((theme) => ({
+const pinnedColumnStyles = createVariants<ColumnPinningPosition>(() => ({
   left: css`
-    background: ${theme.surfaces.containers.high.primary};
     left: 0;
   `,
   right: css`
-    background: ${theme.surfaces.containers.high.primary};
     right: 0;
   `,
 }))
@@ -76,15 +73,6 @@ const borderStyles = createStyles(
   `,
 )
 
-const hoverStyles = createStyles(
-  (theme) => css`
-    tbody tr:hover {
-      transition: ${theme.transitions.colors};
-      background: ${theme.surfaces.containers.dim.dimOnBg};
-    }
-  `,
-)
-
 export const TableContainer = styled(Box)`
   width: 100%;
   overflow-x: auto;
@@ -92,16 +80,9 @@ export const TableContainer = styled(Box)`
 `
 
 export const Table = styled.table<TableProps>(
-  ({
-    theme,
-    size = "medium",
-    fixedLayout = false,
-    borderless = false,
-    hoverable = false,
-  }) => {
+  ({ theme, size = "medium", fixedLayout = false, borderless = false }) => {
     return [
       !borderless && borderStyles,
-      hoverable && hoverStyles,
       css`
         width: 100%;
         border-spacing: 0;
@@ -149,6 +130,11 @@ export const TableRow = styled.tr<{
     css`
       ${TableBody} &:hover {
         background: ${theme.surfaces.containers.high.hover};
+        transition: ${theme.transitions.colors};
+        ${TableCell}[data-pinned] {
+          background: ${theme.surfaces.containers.high.hover};
+          transition: ${theme.transitions.colors};
+        }
       }
     `}
 
@@ -175,11 +161,11 @@ export const TableCell = styled.td<{
 }>(({ theme, isPinned }) => {
   if (isPinned) {
     return [
-      pinnedColumnStyles(isPinned)({ theme }),
+      pinnedColumnStyles(isPinned),
       css`
+        background: ${theme.surfaces.containers.high.primary};
         position: sticky;
         z-index: 1;
-        background: ${theme.surfaces.containers.high.primary};
       `,
     ]
   }
@@ -188,21 +174,21 @@ export const TableCell = styled.td<{
 export const TableHead = styled.th<{
   canSort?: boolean
   isPinned?: ColumnPinningPosition
+  isSorting?: boolean
 }>(
-  ({ theme, canSort, isPinned }) => css`
+  ({ theme, canSort, isPinned, isSorting }) => css`
     text-align: start;
     font-weight: 500;
-
+    color: ${isSorting ? theme.text.medium : theme.text.low};
     ${canSort && "cursor:pointer;"}
-
     ${isPinned && [
       pinnedColumnStyles(isPinned)({ theme }),
       css`
+        background: ${theme.surfaces.containers.high.primary};
         position: sticky;
         z-index: 1;
-        background: ${theme.surfaces.containers.high.primary};
       `,
-    ]}
+    ]};
   `,
 )
 

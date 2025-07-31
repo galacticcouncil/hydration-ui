@@ -57,8 +57,10 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
   return (
     <Flex gap={10}>
       <Button
-        variant={active === WalletMode.Default ? "secondary" : "tertiary"}
+        variant={active === WalletMode.Default ? "secondary" : "muted"}
+        outline={active !== WalletMode.Default}
         onClick={() => onSetActive(WalletMode.Default)}
+        sx={{ py: 6 }}
       >
         All
       </Button>
@@ -75,11 +77,12 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
         )
         .map(([mode, [name, icon]]) => (
           <Button
-            variant={active === mode ? "secondary" : "tertiary"}
+            variant={active === mode ? "secondary" : "muted"}
+            outline={active !== mode}
             size="small"
             key={mode}
             onClick={() => onSetActive(mode as AccountFilterOption)}
-            sx={{ position: "relative", pl: 6 }}
+            sx={{ position: "relative", pl: 6, py: 6 }}
           >
             <img sx={{ size: 20 }} src={icon} alt={name} />
             {name}

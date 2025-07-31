@@ -2,20 +2,29 @@ import { pick } from "remeda"
 
 import { WalletProviderType } from "@/config/providers"
 import { Wallet, WalletData } from "@/types/wallet"
+import { AlephZero } from "@/wallets/AlephZeroSigner"
 import { Enkrypt } from "@/wallets/Enkrypt"
 import { ExternalWallet } from "@/wallets/ExternalWallet"
+import { FearlessWallet } from "@/wallets/FearlessWallet"
+import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask } from "@/wallets/MetaMask"
+import { NovaWallet } from "@/wallets/NovaWallet"
+import { PolkadotJS } from "@/wallets/PolkadotJS"
+import { PolkaGate } from "@/wallets/PolkaGate"
 import { RabbyWallet } from "@/wallets/RabbyWallet"
 import { SubWallet, SubWalletEvm } from "@/wallets/SubWallet"
 import { Talisman, TalismanEvm } from "@/wallets/Talisman"
 
-import { PolkadotJS } from "./PolkadotJS"
-
 export {
+  AlephZero,
   Enkrypt,
   ExternalWallet,
+  FearlessWallet,
+  MantaWallet,
   MetaMask,
+  NovaWallet,
   PolkadotJS,
+  PolkaGate,
   RabbyWallet,
   SubWallet,
   SubWalletEvm,
@@ -24,17 +33,21 @@ export {
 }
 
 const wallets = [
+  new AlephZero(),
   new Enkrypt(),
+  new ExternalWallet(),
+  new FearlessWallet(),
+  new MantaWallet(),
   new MetaMask(),
+  new NovaWallet(),
+  new PolkaGate(),
   new PolkadotJS(),
   new RabbyWallet(),
   new SubWallet(),
   new SubWalletEvm(),
   new Talisman(),
   new TalismanEvm(),
-  new ExternalWallet(),
 ]
-
 export function getWallets(): Wallet[] {
   return wallets
 }

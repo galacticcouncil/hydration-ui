@@ -57,7 +57,7 @@ export const Web3ConnectButton = forwardRef<
 
   return (
     <Button ref={ref} onClick={() => toggle()} {...props}>
-      <Icon size={16} component={Wallet} ml={-8} mr={4} />
+      <Icon size={16} component={Wallet} mr={4} />
       <Text fs="p3">Connect Wallet</Text>
     </Button>
   )

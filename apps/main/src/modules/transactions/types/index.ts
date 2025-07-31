@@ -1,8 +1,14 @@
+import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { Transaction as AnyPapiTx } from "@galacticcouncil/sdk-next/build/types/tx"
+import { Call } from "@galacticcouncil/xcm-sdk"
 import { InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
 import { Subscription } from "rxjs"
 import { TransactionReceipt } from "viem"
 
 import { Transaction } from "@/states/transactions"
+
+export type { AnyPapiTx }
+export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
 export enum TxActionType {
   CLOSE = "CLOSE",

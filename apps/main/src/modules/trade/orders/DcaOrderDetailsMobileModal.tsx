@@ -1,3 +1,4 @@
+import { DcaScheduleStatus } from "@galacticcouncil/indexer/squid"
 import { Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -16,7 +17,6 @@ import { formatDistanceToNow } from "date-fns"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { DcaScheduleStatus } from "@/api/graphql/trade-orders"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"

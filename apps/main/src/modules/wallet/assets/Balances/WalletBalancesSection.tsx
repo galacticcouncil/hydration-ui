@@ -4,16 +4,20 @@ import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useWalletBalancesSectionData } from "@/modules/wallet/assets/Balances/WalletBalancesSection.data"
+import { USDT_ASSET_ID } from "@/utils/consts"
 
 export const WalletBalancesSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
   const { assets, liquidity, farms, supplyBorrow } =
     useWalletBalancesSectionData()
 
-  const [assetsDisplay] = useDisplayAssetPrice("10", assets)
-  const [liquidityDisplay] = useDisplayAssetPrice("10", liquidity)
-  const [farmsDisplay] = useDisplayAssetPrice("10", farms)
-  const [supplyBorrowDisplay] = useDisplayAssetPrice("10", supplyBorrow)
+  const [assetsDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, assets)
+  const [liquidityDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, liquidity)
+  const [farmsDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, farms)
+  const [supplyBorrowDisplay] = useDisplayAssetPrice(
+    USDT_ASSET_ID,
+    supplyBorrow,
+  )
 
   return (
     <Stack separated direction="column" justify="space-between" gap={[8, 0]}>

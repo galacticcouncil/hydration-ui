@@ -224,6 +224,7 @@ export const AssetButton = ({
           {onAsssetBtnClick && (
             <Icon
               size={20}
+              mr={-8}
               component={ChevronDown}
               color={getToken("icons.onContainer")}
             />

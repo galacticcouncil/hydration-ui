@@ -11,12 +11,12 @@ import {
   SCopyButton,
 } from "@/components/account/AccountOption.styled"
 import { ProviderLogo } from "@/components/provider/ProviderLogo"
-import { useAccount } from "@/hooks/useAccount"
 import { Account } from "@/hooks/useWeb3Connect"
 import { getAccountAvatarTheme } from "@/utils"
 import { getWallet } from "@/wallets"
 
 export type AccountOptionProps = Account & {
+  isActive?: boolean
   isProxy?: boolean
   balance?: string
   onSelect?: (account: Account) => void
@@ -25,7 +25,9 @@ export type AccountOptionProps = Account & {
 }
 
 export const AccountOption: React.FC<AccountOptionProps> = ({
+  isActive,
   isProxy = false,
+  balance,
   onSelect,
   onEdit,
   onDelete,
@@ -33,12 +35,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false)
 
-  const { account: currentAccount } = useAccount()
   const wallet = getWallet(account.provider)
-
-  const isActive =
-    currentAccount?.address === account.address &&
-    currentAccount?.provider === account.provider
 
   return (
     <SAccountOption
@@ -60,7 +57,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
           />
         </Box>
         <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
-          <Flex align="center" justify="space-between" gap={40}>
+          <Flex align="center" justify="space-between">
             {isEditing ? (
               <AccountNameEdit
                 name={account.name}
@@ -79,6 +76,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
                 </Text>
               </Flex>
             )}
+            {balance && <Text fs="p3">{balance}</Text>}
             {onEdit && <AccountEditButton onClick={() => setIsEditing(true)} />}
           </Flex>
           <Flex align="center" justify="space-between" gap={4}>

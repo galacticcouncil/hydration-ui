@@ -1,10 +1,7 @@
 import { useLocation } from "@tanstack/react-router"
 import { useMemo } from "react"
 
-import {
-  SubpageItem,
-  SubpageMenu as SubpageMenuComponent,
-} from "@/components/SubpageMenu/SubpageMenu"
+import { TabItem, TabMenu } from "@/components/TabMenu/TabMenu"
 import { NAVIGATION } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 
@@ -18,7 +15,7 @@ export const SubpageMenu = () => {
     () =>
       NAVIGATION.find(({ to }) =>
         pathname.startsWith(to),
-      )?.children?.map<SubpageItem>((nav) => ({
+      )?.children?.map<TabItem>((nav) => ({
         to: nav.to,
         title: translations[nav.key].title,
         icon: nav.icon,
@@ -27,5 +24,7 @@ export const SubpageMenu = () => {
     [pathname, translations],
   )
 
-  return <SubpageMenuComponent items={subnav} />
+  if (subnav.length < 2) return null
+
+  return <TabMenu items={subnav} size="large" variant="transparent" />
 }

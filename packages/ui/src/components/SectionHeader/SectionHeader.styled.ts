@@ -15,7 +15,7 @@ export const SSectionHeader = styled.div(
 
     ${mq("sm")} {
       padding-inline: 0;
-      padding-top: ${theme.containers.paddings.primary}px;
+      padding-top: 0;
       padding-bottom: ${theme.containers.paddings.tertiary}px;
 
       font-weight: 500;

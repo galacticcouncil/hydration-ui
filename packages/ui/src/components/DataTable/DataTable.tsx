@@ -8,7 +8,7 @@ import {
   SortingState,
   Table as TableDef,
 } from "@tanstack/react-table"
-import { ChevronDown, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react"
 import {
   ComponentProps,
   FC,
@@ -23,6 +23,7 @@ import {
 
 import { Box } from "@/components/Box"
 import { Button } from "@/components/Button"
+import { SPagination } from "@/components/DataTable/DataTable.styled"
 import { ExternalLink } from "@/components/ExternalLink"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -92,7 +93,6 @@ const DataTable = forwardRef(
       pageSize = 20,
       pageNumber = 1,
       borderless,
-      hoverable,
       isLoading,
       skeletonRowCount,
       globalFilter,
@@ -118,7 +118,6 @@ const DataTable = forwardRef(
       fixedLayout,
       size,
       borderless,
-      hoverable,
     }
 
     const isControlledSorting =
@@ -256,6 +255,7 @@ const DataTable = forwardRef(
                               className={meta?.className}
                               sx={meta?.sx}
                               isPinned={isPinned}
+                              data-pinned={isPinned}
                             >
                               {flexRender(
                                 cell.column.columnDef.cell,
@@ -267,12 +267,12 @@ const DataTable = forwardRef(
 
                         {isRowExpandable && (
                           <TableCell>
-                            <Flex justify="center" align="center">
+                            <Flex justify="end" align="center">
                               <Icon
                                 size={18}
                                 color={getToken("icons.onSurface")}
                                 component={
-                                  isRowExpanded ? ChevronDown : ChevronUp
+                                  isRowExpanded ? ChevronUp : ChevronDown
                                 }
                               />
                             </Flex>
@@ -341,14 +341,19 @@ export const DataTablePagination = <T,>({
   }
 
   return (
-    <Flex gap={6} p={10} justify="center">
+    <SPagination>
       <Button
         size="small"
         variant="tertiary"
+        outline
         disabled={!table.getCanPreviousPage()}
         onClick={() => table.previousPage()}
+        sx={{ px: 10 }}
       >
-        Prev
+        <Icon size={16} component={ChevronLeft} display={["block", "none"]} />
+        <Text as="span" display={["none", "inline"]}>
+          Prev
+        </Text>
       </Button>
       {pagination.map((pageNumber, index) =>
         typeof pageNumber === "string" ? (
@@ -364,11 +369,11 @@ export const DataTablePagination = <T,>({
         ) : (
           <Button
             key={`${index}-page`}
-            minWidth={32}
             size="small"
-            variant={pageNumber === currentPage ? "primary" : "tertiary"}
+            variant={pageNumber === currentPage ? "secondary" : "tertiary"}
+            outline={pageNumber !== currentPage}
             onClick={() => onPageClickHandler(pageNumber)}
-            sx={{ textAlign: "center" }}
+            sx={{ px: 10, minWidth: 28 }}
           >
             {pageNumber}
           </Button>
@@ -377,12 +382,17 @@ export const DataTablePagination = <T,>({
       <Button
         size="small"
         variant="tertiary"
+        outline
         disabled={!table.getCanNextPage()}
         onClick={() => table.nextPage()}
+        sx={{ px: 10 }}
       >
-        Next
+        <Text as="span" display={["none", "inline"]}>
+          Next
+        </Text>
+        <Icon size={16} component={ChevronRight} display={["block", "none"]} />
       </Button>
-    </Flex>
+    </SPagination>
   )
 }
 

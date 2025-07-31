@@ -1,9 +1,8 @@
+import { TradeOperation } from "@galacticcouncil/indexer/squid"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
-
-import { TradeOperation } from "@/api/graphql/trade-orders"
 
 type Props = {
   readonly type: TradeOperation

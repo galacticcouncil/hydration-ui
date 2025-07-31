@@ -200,10 +200,10 @@ export const AssetSelectModalContent = ({
                     <AssetLabelFull asset={asset} />
                     <Flex direction="column" align="flex-end">
                       <Text fs="p4" fw={500} color={getToken("text.high")}>
-                        {t("number", { value: asset.balance })}
+                        {t("number", { value: asset.balance || "0" })}
                       </Text>
                       <Text fs="p6" fw={400} color={getToken("text.medium")}>
-                        {t("currency", { value: asset.balanceDisplay })}
+                        {t("currency", { value: asset.balanceDisplay || "0" })}
                       </Text>
                     </Flex>
                   </SOption>
