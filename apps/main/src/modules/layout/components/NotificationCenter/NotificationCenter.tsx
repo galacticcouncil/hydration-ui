@@ -1,6 +1,7 @@
 import { Bell as BellIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   ButtonIcon,
+  Collapsible,
   SheetBody,
   SheetContent,
   SheetHeader,
@@ -48,24 +49,46 @@ export const NotificationCenter: FC = () => {
       </SheetTrigger>
       <SheetContent>
         <SheetHeader title={t("notifications")} />
-        <SheetBody>
-          <Stack gap={12}>
+        <SheetBody sx={{ pt: 10 }}>
+          <Stack gap={20}>
             {pending.length > 0 && (
-              <Text as="h3" fs={14} fw={600}>
-                {t("pending")}
-              </Text>
+              <Collapsible
+                label={
+                  <Text as="h3" fs={14} fw={600}>
+                    {t("pending")}
+                  </Text>
+                }
+                actionLabel={t("show")}
+                actionLabelWhenOpen={t("hide")}
+                defaultOpen
+              >
+                <Stack gap={12}>
+                  {pending.map((props) => (
+                    <NotificationToast key={props.id} {...props} />
+                  ))}
+                </Stack>
+              </Collapsible>
             )}
-            {pending.map((props) => (
-              <NotificationToast key={props.id} {...props} />
-            ))}
+
             {completed.length > 0 && (
-              <Text as="h3" fs={14} fw={600}>
-                {t("completed")}
-              </Text>
+              <Collapsible
+                label={
+                  <Text as="h3" fs={14} fw={600}>
+                    {t("completed")}
+                  </Text>
+                }
+                actionLabel={t("show")}
+                actionLabelWhenOpen={t("hide")}
+                defaultOpen
+              >
+                <Stack gap={12}>
+                  {completed.map((props) => (
+                    <NotificationToast key={props.id} {...props} />
+                  ))}
+                </Stack>
+              </Collapsible>
             )}
-            {completed.map((props) => (
-              <NotificationToast key={props.id} {...props} />
-            ))}
+
             {toasts.length === 0 && (
               <EmptyState
                 header={t("notifications.empty.title")}

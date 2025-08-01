@@ -1,58 +1,76 @@
-import { css } from "@emotion/react"
+import { css, keyframes } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content } from "@radix-ui/react-collapsible"
 
 import { ButtonTransparent } from "../Button"
 
-export const STrigger = styled(ButtonTransparent)(
+export const SActionLabel = styled.span()
+export const SActionLabelWhenOpen = styled.span()
+
+export const SCollapsibleTrigger = styled(ButtonTransparent)(
   ({ theme }) => css`
     width: 100%;
     display: block;
 
-    &[data-state="open"] svg {
+    svg {
       transition: ${theme.transitions.transform};
-
-      transform: rotate(180deg);
+      transition-duration: 0.2s;
     }
 
-    &[data-state="closed"] svg {
-      transition: ${theme.transitions.transform};
+    &:hover,
+    &:hover p,
+    &:hover svg {
+      color: ${theme.accents.info.onPrimary};
+    }
 
-      transform: rotate(0deg);
+    &[data-state="open"] {
+      ${SActionLabel} {
+        display: none;
+      }
+      svg {
+        transform: rotate(180deg);
+      }
+    }
+
+    &[data-state="closed"] {
+      ${SActionLabelWhenOpen} {
+        display: none;
+      }
+      svg {
+        transform: rotate(0deg);
+      }
     }
   `,
 )
 
-export const SContent = styled(Content)(
+const slideDown = keyframes`
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+  }
+`
+
+const slideUp = keyframes`
+  from {
+    height: var(--radix-collapsible-content-height);
+  }
+  to {
+    height: 0;
+  }
+`
+
+export const SCollapsibleContent = styled(Content)(
   ({ theme }) => css`
     overflow: hidden;
 
-    @keyframes slideDown {
-      from {
-        height: 0;
-      }
-      to {
-        height: var(--radix-collapsible-content-height);
-      }
-    }
-
-    @keyframes slideUp {
-      from {
-        height: var(--radix-collapsible-content-height);
-      }
-      to {
-        height: 0;
-      }
-    }
-
-    transition: ${theme.transitions.transform};
-
     &[data-state="open"] {
-      animation: slideDown 0.15s ${theme.easings.easeInOut};
+      animation: ${slideDown} 0.2s ${theme.easings.outExpo};
     }
 
     &[data-state="closed"] {
-      animation: slideUp 0.15s ${theme.easings.easeInOut};
+      animation: ${slideUp} 0.2s ${theme.easings.outExpo};
     }
   `,
 )
