@@ -4,12 +4,16 @@ import {
   TxStateAction,
   TxStatus,
 } from "@/modules/transactions/types"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 export const INITIAL_STATUS: TxState = {
   open: true,
   status: "idle",
   error: null,
   isSigning: false,
+  tip: "0",
+  tipAssetId: NATIVE_ASSET_ID,
+  mortalityPeriod: 512,
 }
 
 export const transactionStatusReducer = (
@@ -39,6 +43,11 @@ export const transactionStatusReducer = (
         status: action.payload,
         open: action.payload === "submitted" ? false : state.open,
       }
+    case TxActionType.SET_TIP:
+      return {
+        ...state,
+        tip: action.payload,
+      }
     case TxActionType.RESET:
       return INITIAL_STATUS
     default:
@@ -57,5 +66,10 @@ export const doSetError = (payload: string) =>
 export const doSetStatus = (payload: TxStatus) =>
   ({
     type: TxActionType.SET_STATUS,
+    payload,
+  }) as const
+export const doSetTip = (payload: string) =>
+  ({
+    type: TxActionType.SET_TIP,
     payload,
   }) as const

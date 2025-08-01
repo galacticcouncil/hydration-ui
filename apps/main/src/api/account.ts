@@ -1,4 +1,3 @@
-import { isSS58Address } from "@galacticcouncil/utils"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
@@ -9,14 +8,12 @@ import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
+import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
+import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 
 import { uniquesIds } from "./constants"
-
-type UseNonceProps = {
-  address?: string
-}
 
 type OmnipoolWarehouseLMDeposit =
   HydrationQueries["OmnipoolWarehouseLM"]["Deposit"]["Value"]
@@ -47,17 +44,11 @@ export type OmnipoolPosition = Omit<
   assetId: string
 }
 
-export const useNonce = ({ address }: UseNonceProps) => {
-  const { papi } = useRpcProvider()
-  return useQuery({
-    enabled: isSS58Address(address),
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "nonce", address],
-    queryFn: async () => {
-      if (!isSS58Address(address)) throw new Error("Invalid address format")
-      const res = await papi.query.System.Account.getValue(address)
-      return res.nonce
-    },
-  })
+export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
+  const { isConnected, account } = useAccount()
+  const address = isConnected ? account.address : ""
+
+  return usePapiObservableQuery("System.Account", [address, "best"], options)
 }
 
 export const accountBalanceQueryKey = (address: string | undefined) => [
