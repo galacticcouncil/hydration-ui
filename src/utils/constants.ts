@@ -64,10 +64,10 @@ export const SUSDE_ASSET_ID = "1000625"
 export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 
-export const HUSDC_ASSET_ID = "103"
-export const HUSDT_ASSET_ID = "104"
-export const HUSDS_ASSET_ID = "105"
-export const HUSDE_ASSET_ID = "106"
+export const HUSDC_ASSET_ID = "110"
+export const HUSDT_ASSET_ID = "111"
+export const HUSDS_ASSET_ID = "112"
+export const HUSDE_ASSET_ID = "113"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
