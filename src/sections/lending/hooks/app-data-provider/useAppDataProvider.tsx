@@ -35,6 +35,11 @@ import {
 } from "sections/lending/store/poolSelectors"
 import { useCurrentTimestamp } from "sections/lending/hooks/useCurrentTimestamp"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { usePatchReserve } from "sections/lending/ui-config/reservePatches"
+import {
+  ExternalApyData,
+  useExternalApyData,
+} from "sections/lending/hooks/app-data-provider/useExternalApyData"
 
 /**
  * removes the marketPrefix from a symbol
@@ -84,6 +89,7 @@ export interface AppDataContextType {
   ghoUserData: FormattedGhoUserData
   ghoLoadingData: boolean
   ghoEnabled: boolean
+  externalApyData: ExternalApyData
 }
 
 const AppDataContext = React.createContext<AppDataContextType>(
@@ -100,6 +106,8 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
   const currentTimestamp = useCurrentTimestamp(60)
   const { currentAccount } = useWeb3Context()
   const { currentMarket } = useProtocolDataContext()
+  const externalApyData = useExternalApyData()
+
   const [
     reserves,
     baseCurrencyData,
@@ -109,7 +117,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
     ghoReserveData,
     ghoUserData,
     ghoReserveDataFetched,
-    formattedPoolReserves,
+    formattedReserves,
     userSummary,
     displayGho,
   ] = useRootStore((state) => [
@@ -121,10 +129,14 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
     state.ghoReserveData,
     state.ghoUserData,
     state.ghoReserveDataFetched,
-    selectFormattedReserves(state, currentTimestamp),
-    selectUserSummaryAndIncentives(state, currentTimestamp),
+    selectFormattedReserves(state, currentTimestamp, externalApyData),
+    selectUserSummaryAndIncentives(state, currentTimestamp, externalApyData),
     state.displayGho,
   ])
+
+  const patchReserve = usePatchReserve()
+
+  const formattedPoolReserves = formattedReserves.map(patchReserve)
 
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {
@@ -295,9 +307,12 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
             user.totalBorrowsMarketReferenceCurrency,
           userEmodeCategoryId,
           isInEmode: userEmodeCategoryId !== 0,
-          userReservesData: user.userReservesData.sort((a, b) =>
-            reserveSortFn(a.reserve, b.reserve),
-          ),
+          userReservesData: user.userReservesData
+            .map((userReserve) => ({
+              ...userReserve,
+              reserve: patchReserve(userReserve.reserve),
+            }))
+            .sort((a, b) => reserveSortFn(a.reserve, b.reserve)),
           earnedAPY,
           debtAPY,
           netAPY,
@@ -318,6 +333,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
         ghoUserData: formattedGhoUserData,
         ghoLoadingData: !ghoReserveDataFetched,
         ghoEnabled: formattedGhoReserveData.ghoBaseVariableBorrowRate > 0,
+        externalApyData,
       }}
     >
       {children}
