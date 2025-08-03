@@ -12,7 +12,7 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
-  HOLLAR_POOLS,
+  HOLLAR_ASSETS,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStablepoolFees, useStableSDKPools } from "api/stableswap"
@@ -79,7 +79,7 @@ const isStablepoolData = (
 export type TAnyPool = TPool | TStablepool | TXYKPool
 
 const GASSETS = [GDOT_STABLESWAP_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
-const OVERRIDE_META = [...GASSETS, ...HOLLAR_POOLS]
+const OVERRIDE_META = [...GASSETS, ...HOLLAR_ASSETS]
 
 const getTradeFee = (fee: string[]) => {
   if (fee?.length !== 2) return BN_NAN
