@@ -28,7 +28,7 @@ import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { BorrowAssetApyData, useMoneyMarketAssetsAPY } from "api/borrow"
+import { BorrowAssetApyData, useBorrowAssetsApy } from "api/borrow"
 import {
   setOmnipoolTvlTotal,
   setOmnipoolVolumeTotal,
@@ -792,6 +792,8 @@ export const useStablepoolsData = (disabled?: boolean) => {
   const { data: volumes, isLoading: isVolumeLoading } =
     useStablepoolVolumes(disabled)
 
+  const { getRelatedAToken } = useAssets()
+
   const { data: stablePools, isLoading: isPoolLoading } = useStableSDKPools()
   const { data: stablepoolFees } = useStablepoolFees()
 
@@ -816,8 +818,17 @@ export const useStablepoolsData = (disabled?: boolean) => {
     return { poolId: stablePool.id, tokens: filteredTokens }
   })
 
-  const moneyMarketAssetsApy = useMoneyMarketAssetsAPY(
-    stablePoolData?.map((stablepool) => stablepool.poolId) ?? [],
+  const moneyMarketAssetsIds = useMemo(
+    () =>
+      stablePoolData
+        ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+        .map((stablepool) => stablepool.poolId) ?? [],
+    [stablePoolData, getRelatedAToken],
+  )
+
+  const { data: moneyMarketAssetsApy } = useBorrowAssetsApy(
+    moneyMarketAssetsIds,
+    true,
   )
 
   const { isLoading, getAssetPrice } = useAssetsPrice([...tokensSet])

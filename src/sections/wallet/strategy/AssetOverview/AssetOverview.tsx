@@ -1,4 +1,4 @@
-import { useBorrowAssetApy } from "api/borrow"
+import { useBorrowAssetsApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
@@ -25,7 +25,9 @@ export const AssetOverview: FC<Props> = ({
   riskTooltip,
 }) => {
   const { t } = useTranslation()
-  const { totalSupplyApy, tvl } = useBorrowAssetApy(assetId)
+  const { data } = useBorrowAssetsApy([assetId])
+
+  const { totalSupplyApy, tvl } = data[0] || {}
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>

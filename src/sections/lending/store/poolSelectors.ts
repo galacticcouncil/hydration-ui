@@ -20,13 +20,7 @@ import { RootStore } from "./root"
 import { GHO_SYMBOL } from "sections/lending/utils/ghoUtilities"
 import { produce } from "immer"
 import { getAddressFromAssetId } from "utils/evm"
-import {
-  DOT_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  USDT_ASSET_ID,
-  USDT_POOL_ASSET_ID,
-  VDOT_ASSET_ID,
-} from "utils/constants"
+import { ExternalApyData } from "sections/lending/hooks/app-data-provider/useExternalApyData"
 
 export const selectCurrentChainIdMarkets = (state: RootStore) => {
   const marketNames = Object.keys(marketsData)
@@ -162,6 +156,7 @@ export const formatReserveIncentives = (
 export const selectFormattedReserves = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
   const reserves = selectCurrentReserves(state)
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
@@ -190,50 +185,18 @@ export const selectFormattedReserves = (
     }))
     .sort(reserveSortFn)
 
+  if (externalApyData.size === 0) return formattedPoolReserves
+
   return produce(formattedPoolReserves, (draft) => {
     const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
 
-    const externalApyDataEntries = [...state.externalApyData.entries()]
-
-    externalApyDataEntries.forEach(([assetId, apy]) => {
+    // override the APY values from external source if available
+    for (const [assetId, data] of externalApyData.entries()) {
       const reserve = reserveMap.get(getAddressFromAssetId(assetId))
       if (reserve) {
-        reserve.supplyAPY = valueToBigNumber(reserve.supplyAPY)
-          .plus(apy)
-          .toString()
-        reserve.variableBorrowAPY = valueToBigNumber(reserve.variableBorrowAPY)
-          .plus(apy)
-          .toString()
+        reserve.supplyAPY = data.supplyApy
+        reserve.variableBorrowAPY = data.borrowApy
       }
-    })
-
-    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
-    const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
-    const gDotReserve = reserveMap.get(
-      getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
-    )
-    const usdtReserve = reserveMap.get(getAddressFromAssetId(USDT_ASSET_ID))
-    const usdPoolReserve = reserveMap.get(
-      getAddressFromAssetId(USDT_POOL_ASSET_ID),
-    )
-
-    if (gDotReserve && dotReserve && vDotReserve) {
-      const dotApyHalf = valueToBigNumber(dotReserve.supplyAPY).div(2)
-      const vdotApyHalf = valueToBigNumber(vDotReserve.supplyAPY).div(2)
-
-      // @TODO: Add GDOT LP Fee when available
-      const gdotLpFee = "0"
-
-      gDotReserve.supplyAPY = vdotApyHalf
-        .plus(dotApyHalf)
-        .plus(gdotLpFee)
-        .toString()
-    }
-
-    if (usdPoolReserve && usdtReserve) {
-      // 1/3 of USDT APY since its a 3-pool
-      const usdApyThird = valueToBigNumber(usdtReserve.supplyAPY).div(3)
-      usdPoolReserve.supplyAPY = usdApyThird.toString()
     }
   })
 }
@@ -241,10 +204,15 @@ export const selectFormattedReserves = (
 export const selectUserSummaryAndIncentives = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
   const userReserves = selectCurrentUserReserves(state)
-  const formattedPoolReserves = selectFormattedReserves(state, currentTimestamp)
+  const formattedPoolReserves = selectFormattedReserves(
+    state,
+    currentTimestamp,
+    externalApyData,
+  )
   const userEmodeCategoryId = selectCurrentUserEmodeCategoryId(state)
   const reserveIncentiveData = state.reserveIncentiveData
   const userIncentiveData = state.userIncentiveData
@@ -266,8 +234,13 @@ export const selectUserSummaryAndIncentives = (
 export const selectUserNonEmtpySummaryAndIncentive = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
-  const user = selectUserSummaryAndIncentives(state, currentTimestamp)
+  const user = selectUserSummaryAndIncentives(
+    state,
+    currentTimestamp,
+    externalApyData,
+  )
   const userReservesData = user.userReservesData.filter(
     (userReserve) => userReserve.underlyingBalance !== "0",
   )
@@ -280,8 +253,13 @@ export const selectUserNonEmtpySummaryAndIncentive = (
 export const selectNonEmptyUserBorrowPositions = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
-  const user = selectUserSummaryAndIncentives(state, currentTimestamp)
+  const user = selectUserSummaryAndIncentives(
+    state,
+    currentTimestamp,
+    externalApyData,
+  )
   const borrowedPositions = user.userReservesData.filter(
     (reserve) =>
       reserve.variableBorrows !== "0" || reserve.stableBorrows !== "0",

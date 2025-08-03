@@ -2596,6 +2596,11 @@
     short-uuid "^4.2.0"
     viem "^2.23.7"
 
+"@galacticcouncil/math-hsm@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.1.0.tgz#51a13c336cf8949602925624b2ef21ed29903e89"
+  integrity sha512-S6dGohpr+TejaFc4+heMQbp/r7PWUJLDotocCVC5XIJLfMwfwQgqifU9rg5rzwdrhWNUaqLX02D2ya6ouJt/Eg==
+
 "@galacticcouncil/math-lbp@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-1.2.0.tgz#43600f837fb095729b8b62a3d74c348be6452702"
@@ -2626,11 +2631,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk@^9.9.1":
-  version "9.9.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.9.1.tgz#967e827a8d12e4802465e64727c750820b8da77e"
-  integrity sha512-L3gUUPXtohNFGwjXcUNZn8Hn2Ge/jC+nVR/7RAYRDvMw4L7gsR5IgD2nh379yCmHCOmshCIgXnZDtcMYZ9w2AQ==
+"@galacticcouncil/sdk@9.10.0-pr180-6e91811":
+  version "9.10.0-pr180-6e91811"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.10.0-pr180-6e91811.tgz#baab33dc52e8a656c3c92f90c15dcb0ee24aad29"
+  integrity sha512-ZhrDetCQRaoU2402/gIoR7LjUQuPdddDLuJkMhq43Kr2ylPVhCZeyjeR5E1ZFyqaD1xlgtAyH1UcXnrVxfQhqQ==
   dependencies:
+    "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
     "@galacticcouncil/math-liquidity-mining" "^1.2.0"
     "@galacticcouncil/math-omnipool" "^1.3.0"

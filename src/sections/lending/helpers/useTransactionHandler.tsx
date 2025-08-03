@@ -77,7 +77,6 @@ export const useTransactionHandler = ({
     signPoolERC20Approval,
     walletApprovalMethodPreference,
     generateCreditDelegationSignatureRequest,
-    generatePermitPayloadForMigrationSupplyAsset,
     addTransaction,
     currentMarketData,
     jsonRpcProvider,
@@ -85,7 +84,6 @@ export const useTransactionHandler = ({
     state.signERC20Approval,
     state.walletApprovalMethodPreference,
     state.generateCreditDelegationSignatureRequest,
-    state.generatePermitPayloadForMigrationSupplyAsset,
     state.addTransaction,
     state.currentMarketData,
     state.jsonRpcProvider,
@@ -187,13 +185,6 @@ export const useTransactionHandler = ({
                 signPoolERC20Approval({
                   reserve: approval.underlyingAsset,
                   amount: approval.amount,
-                  deadline,
-                }),
-              )
-            } else if (approval.permitType === "SUPPLY_MIGRATOR_V3") {
-              unsignedPromisePayloads.push(
-                generatePermitPayloadForMigrationSupplyAsset({
-                  ...approval,
                   deadline,
                 }),
               )
