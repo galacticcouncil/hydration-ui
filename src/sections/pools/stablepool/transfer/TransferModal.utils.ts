@@ -11,10 +11,10 @@ export const useSelectedDefaultAssetId = ({
     percentage: number
   }
 }) => {
-  const { isErc20 } = useAssets()
+  const { isErc20, getErc20 } = useAssets()
 
   const depositAssetId = isErc20(stablepoolAsset)
-    ? stablepoolAsset.underlyingAssetId
+    ? getErc20(stablepoolAsset.id)?.underlyingAssetId
     : undefined
 
   const { data: depositDefaultAssetId } =
