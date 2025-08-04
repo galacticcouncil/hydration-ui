@@ -12,9 +12,9 @@ type TransferAssetSelectorProps = {
 const TransferErc20AssetSelector: React.FC<
   TransferAssetSelectorProps & { stablepoolAsset: TErc20 }
 > = ({ stablepoolAsset, firstAssetId, onSelect }) => {
-  const { native } = useAssets()
+  const { native, getErc20 } = useAssets()
 
-  const depositAssetId = stablepoolAsset.underlyingAssetId ?? ""
+  const depositAssetId = getErc20(stablepoolAsset.id)?.underlyingAssetId ?? ""
 
   const selectableAssets = useNewDepositAssets(depositAssetId, {
     blacklist:
