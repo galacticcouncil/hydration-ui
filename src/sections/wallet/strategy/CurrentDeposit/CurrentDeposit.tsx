@@ -51,6 +51,10 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
   const positions = accountPositions?.accountAssetsMap.get(assetId)
 
   const depositBalance = new BigNumber(
+    accountAsset?.balance?.total || "0",
+  ).shiftedBy(-asset.decimals)
+
+  const maxBalance = new BigNumber(
     accountAsset?.balance?.transferable || "0",
   ).shiftedBy(-asset.decimals)
 
@@ -88,6 +92,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
           assetId={assetId}
           symbol={asset.symbol}
           balance={depositBalance.toString()}
+          maxBalance={maxBalance.toString()}
         />
       )}
       <CurrentDepositSeparator />
@@ -106,10 +111,12 @@ const DepositBalance = ({
   assetId,
   symbol,
   balance,
+  maxBalance,
 }: {
   assetId: string
   symbol: string
   balance: string
+  maxBalance: string
 }) => {
   const { t } = useTranslation()
   const { getAssetPrice, isLoading } = useAssetsPrice([assetId])
@@ -128,7 +135,11 @@ const DepositBalance = ({
         isLoading={isLoading}
         value={t("value.usd", { amount: depositValue })}
       />
-      <CurrentDepositRemoveButton assetId={assetId} depositBalance={balance} />
+      <CurrentDepositRemoveButton
+        assetId={assetId}
+        depositBalance={balance}
+        maxBalance={maxBalance}
+      />
     </>
   )
 }
@@ -184,6 +195,7 @@ const FarmsDepositBalance = ({
       <CurrentDepositRemoveButton
         assetId={assetId}
         depositBalance={totalValue.toString()}
+        maxBalance={totalValue.toString()}
         positions={positions}
       />
     </>
@@ -194,10 +206,12 @@ const CurrentDepositRemoveButton = ({
   assetId,
   depositBalance,
   positions,
+  maxBalance,
 }: {
   assetId: string
   depositBalance: string
   positions?: TRemoveFarmingPosition[]
+  maxBalance: string
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -225,8 +239,8 @@ const CurrentDepositRemoveButton = ({
         <RemoveDepositModal
           assetId={assetId}
           balance={depositBalance}
+          maxBalance={maxBalance}
           onClose={() => setIsRemoveModalOpen(false)}
-          positions={positions}
         />
       </Modal>
     </>

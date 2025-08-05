@@ -12,12 +12,43 @@ import { ModalWrapper } from "sections/lending/components/transactions/FlowCommo
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useAssets } from "providers/assets"
 import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import { useAccountBalances } from "api/deposits"
+import BN from "bignumber.js"
+import { BN_NAN } from "utils/constants"
+
+const WithdrawGigaAssetModal: React.FC<{
+  assetId: string
+  onClose: () => void
+}> = ({ assetId, onClose }) => {
+  const { getAsset } = useAssets()
+  const { data: accountAssets } = useAccountBalances()
+
+  const asset = getAsset(assetId)
+  const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
+
+  const depositBalance = asset
+    ? new BN(accountAsset?.balance?.total || "0").shiftedBy(-asset.decimals)
+    : BN_NAN
+
+  const maxBalance = asset
+    ? new BN(accountAsset?.balance?.transferable || "0").shiftedBy(
+        -asset.decimals,
+      )
+    : BN_NAN
+
+  return (
+    <RemoveDepositModal
+      assetId={assetId}
+      onClose={onClose}
+      balance={depositBalance.toString()}
+      maxBalance={maxBalance.toString()}
+    />
+  )
+}
 
 export const WithdrawModal = () => {
-  const { user } = useAppDataContext()
   const { getRelatedAToken } = useAssets()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
@@ -31,17 +62,9 @@ export const WithdrawModal = () => {
   const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(args.underlyingAsset)
 
   if (!!aTokenId && isGigaAsset) {
-    const userReserve = user?.userReservesData.find((userReserve) => {
-      return args.underlyingAsset === userReserve?.underlyingAsset
-    })
-
     return (
       <BasicModal open={type === ModalType.Withdraw} setOpen={close}>
-        <RemoveDepositModal
-          assetId={aTokenId}
-          onClose={close}
-          balance={userReserve?.underlyingBalance ?? "0"}
-        />
+        <WithdrawGigaAssetModal assetId={aTokenId} onClose={close} />
       </BasicModal>
     )
   }
