@@ -1257,6 +1257,8 @@
   "lending.bind.banner.button": "Enable Borrowing",
   "lending.hollar.banner.title": "Meet HOLLAR",
   "lending.hollar.banner.description": "HOLLAR is a native decentralized, collateral-backed digital asset",
+  "lending.hollar.reserve.title": "About HOLLAR",
+  "lending.hollar.reserve.description": "TODO: Hollar description",
   "lending.risk.liquidationValue": "Liquidation value",
   "lending.risk.liquidationThreshold": "Liquidation threshold",
   "lending.risk.liquidationPenalty": "Liquidation penalty",

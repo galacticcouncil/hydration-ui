@@ -179,6 +179,7 @@ export const selectFormattedReserves = (
       ...r,
       ...fetchIconSymbolAndName(r),
       isEmodeEnabled: r.eModeCategoryId !== 0,
+
       isWrappedBaseAsset:
         r.symbol.toLowerCase() ===
         currentNetworkConfig.wrappedBaseAssetSymbol?.toLowerCase(),

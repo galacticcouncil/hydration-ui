@@ -65,7 +65,7 @@ export const useSupplyAssetsTableColumns = () => {
         ),
       }),
       accessor("walletBalanceUSD", {
-        header: t("lending.walletBalance"),
+        header: t("lending.balance"),
         meta: {
           sx: {
             textAlign: "right",
@@ -228,16 +228,18 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
       }>(
         (acc, reserve: ComputedReserveData) => {
           const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
+          const walletBalanceUSD =
+            walletBalances[reserve.underlyingAsset]?.amountUSD
+
+          let availableToDeposit = valueToBigNumber(walletBalance)
 
           if (MONEY_MARKET_GIGA_RESERVES.includes(reserve.underlyingAsset)) {
             acc.gigaReserves.push(reserve)
 
-            if (walletBalance === "0") return acc
+            if (availableToDeposit.isNaN() || availableToDeposit.isZero())
+              return acc
           }
 
-          const walletBalanceUSD =
-            walletBalances[reserve.underlyingAsset]?.amountUSD
-          let availableToDeposit = valueToBigNumber(walletBalance)
           if (reserve.supplyCap !== "0") {
             availableToDeposit = availableToDeposit.isNaN()
               ? new BigNumber(0)
