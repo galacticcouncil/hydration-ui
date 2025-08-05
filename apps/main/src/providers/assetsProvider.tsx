@@ -12,6 +12,7 @@ import {
   TAssetData,
   TBond,
   TErc20,
+  TErc20AToken,
   TExternal,
   TStableswap,
   TToken,
@@ -23,27 +24,35 @@ import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
 
 const bannedAssets = ["1000042"]
 
-type TAssetsContext = {
+type TAssetsState = {
   all: Map<string, TAsset>
   tokens: TAsset[]
   stableswap: TStableswap[]
   bonds: TBond[]
   external: TExternal[]
   externalInvalid: TExternal[]
-  erc20: TAsset[]
+  erc20: TErc20[]
   tradable: TAsset[]
   native: TAsset
   hub: TAsset
-  getAsset: (id: string) => TAsset | undefined
-  getAssets: (ids: string[]) => (TAsset | undefined)[]
-  getBond: (id: string) => TBond | undefined
-  getAssetWithFallback: (id?: string) => TAsset
-  getExternalByExternalId: (externalId: string) => TExternal | undefined
-  getErc20: (id: string) => TErc20 | undefined
+}
+
+type AssetId = string | number
+
+type TAssetsContext = TAssetsState & {
+  getAsset: (id: AssetId) => TAsset | undefined
+  getAssets: (ids: AssetId[]) => (TAsset | undefined)[]
+  getBond: (id: AssetId) => TBond | undefined
+  getAssetWithFallback: (id: AssetId) => TAsset
+  getExternalByExternalId: (externalId: AssetId) => TExternal | undefined
+  getErc20: (id: AssetId) => TErc20 | TErc20AToken | undefined
+  getErc20AToken: (id: AssetId) => TErc20AToken | undefined
+  getRelatedAToken: (id: AssetId) => TErc20 | undefined
   isToken: (asset: TAsset) => asset is TToken
   isExternal: (asset: TAsset) => asset is TExternal
   isBond: (asset: TAsset) => asset is TBond
   isErc20: (asset: TAsset) => asset is TErc20
+  isErc20AToken: (asset: TAsset) => asset is TErc20AToken
   isStableSwap: (asset: TAsset) => asset is TStableswap
   getMetaFromXYKPoolTokens: (tokens: PoolToken[]) => {
     symbol: string
@@ -65,6 +74,10 @@ export const isBond = (asset: TAssetStored): asset is TBond =>
   asset.type === AssetType.BOND
 export const isErc20 = (asset: TAssetStored): asset is TErc20 =>
   asset.type === AssetType.ERC20
+export const isErc20AToken = (asset: TAssetStored): asset is TErc20AToken =>
+  asset.type === AssetType.ERC20 &&
+  "underlyingAssetId" in asset &&
+  !!asset.underlyingAssetId
 export const isStableSwap = (asset: TAssetStored): asset is TStableswap =>
   asset.type === AssetType.STABLESWAP
 
@@ -96,14 +109,8 @@ export type XYKPoolMeta = {
 }
 
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
-  const { assets } = useAssetRegistry()
-  //const dataEnv = useProviderRpcUrlStore.getState().getDataEnv()
-  //const degenMode = useSettingsStore.getState().degenMode
-  //   const { tokens: externalTokens } =
-  //     degenMode && ExternalAssetCursor.deref()
-  //       ? ExternalAssetCursor.deref().state
-  //       : useUserExternalTokenStore.getState()
-  console.log("Loading stored assets from local storage")
+  const { assets, aTokenReverseMap } = useAssetRegistry()
+
   const {
     all,
     stableswap,
@@ -116,18 +123,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     hub,
     tokens,
   } = useMemo(() => {
-    return assets.reduce<{
-      all: Map<string, TAsset>
-      tradable: TAsset[]
-      tokens: TAsset[]
-      stableswap: TStableswap[]
-      bonds: TBond[]
-      external: TExternal[]
-      externalInvalid: TExternal[]
-      erc20: TErc20[]
-      native: TAsset
-      hub: TAsset
-    }>(
+    return assets.reduce<TAssetsState>(
       (acc, asset) => {
         if (bannedAssets.includes(asset.id)) return acc
 
@@ -220,31 +216,47 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     [all],
   )
 
-  const getAsset = useCallback((id: string) => all.get(id), [all])
+  const getAsset = useCallback((id: AssetId) => all.get(id.toString()), [all])
   const getAssetWithFallback = useCallback(
-    (id?: string) => (id ? (getAsset(id) ?? fallbackAsset) : fallbackAsset),
+    (id: AssetId) => getAsset(id.toString()) ?? fallbackAsset,
     [getAsset],
   )
   const getAssets = useCallback(
-    (ids: string[]) => ids.map((id) => getAsset(id)),
+    (ids: AssetId[]) => ids.map((id) => getAsset(id)),
     [getAsset],
   )
 
   const getExternalByExternalId = useCallback(
-    (externalId: string) =>
+    (externalId: AssetId) =>
       [...external, ...externalInvalid].find(
-        (token) => token.externalId === externalId,
+        (token) => token.externalId === externalId.toString(),
       ),
     [external, externalInvalid],
   )
   const getBond = useCallback(
-    (id: string) => bonds.find((token) => token.id === id),
+    (id: AssetId) => bonds.find((token) => token.id === id.toString()),
     [bonds],
   )
 
   const getErc20 = useCallback(
-    (id: string) => erc20.find((token) => token.id === id),
+    (id: AssetId) => erc20.find((token) => token.id === id.toString()),
     [erc20],
+  )
+
+  const getErc20AToken = useCallback(
+    (id: AssetId) => {
+      const asset = getErc20(id)
+      return asset && isErc20AToken(asset) ? asset : undefined
+    },
+    [getErc20],
+  )
+
+  const getRelatedAToken = useCallback(
+    (id: AssetId) => {
+      const aTokenId = aTokenReverseMap.get(id.toString()) ?? ""
+      return getErc20(aTokenId)
+    },
+    [aTokenReverseMap, getErc20],
   )
 
   return (
@@ -266,8 +278,11 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         getAssetWithFallback,
         getExternalByExternalId,
         getMetaFromXYKPoolTokens,
-        isToken,
         getErc20,
+        getErc20AToken,
+        getRelatedAToken,
+        isToken,
+        isErc20AToken,
         isExternal,
         isBond,
         isErc20,

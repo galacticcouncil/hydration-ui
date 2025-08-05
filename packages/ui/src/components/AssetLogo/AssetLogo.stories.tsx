@@ -2,7 +2,9 @@ import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import type { Meta, StoryObj } from "@storybook/react"
 import React from "react"
 
-import { AssetLogo } from "./AssetLogo"
+import { Stack } from "@/components/Stack"
+
+import { AssetLogo, MultipleAssetLogoWrapper } from "./AssetLogo"
 
 type Story = StoryObj<typeof AssetLogo>
 
@@ -10,63 +12,100 @@ export default {
   component: AssetLogo,
 } satisfies Meta<typeof AssetLogo>
 
+const ETH_SRC =
+  "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
+const AAVE_SRC =
+  "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/assets/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9/icon.svg"
+const HDX_SRC =
+  "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"
+const USDT_SRC =
+  "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/10/icon.svg"
+
 const Template = (args: React.ComponentPropsWithoutRef<typeof AssetLogo>) => (
   <TooltipProvider>
-    <AssetLogo {...args} alt="HDX" />
+    <Stack gap={20}>
+      <AssetLogo {...args} size="extra-small" />
+      <AssetLogo {...args} size="small" />
+      <AssetLogo {...args} size="medium" />
+      <AssetLogo {...args} size="large" />
+    </Stack>
   </TooltipProvider>
 )
 
-export const AssetLogoWithOriginChain: Story = {
+const MultipleAssetsTemplate = (
+  args: Omit<
+    React.ComponentPropsWithoutRef<typeof MultipleAssetLogoWrapper>,
+    "children"
+  >,
+) => (
+  <MultipleAssetLogoWrapper {...args}>
+    <AssetLogo src={HDX_SRC} />
+    <AssetLogo src={AAVE_SRC} />
+    <AssetLogo src={ETH_SRC} />
+    <AssetLogo src={USDT_SRC} />
+  </MultipleAssetLogoWrapper>
+)
+
+export const Default: Story = {
   render: Template,
   args: {
-    src: "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000019/icon.svg",
-    chainSrc:
-      "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg",
+    src: HDX_SRC,
   },
 }
 
-export const BigAssetLogoWithOriginChain: Story = {
+export const WithChain: Story = {
   render: Template,
   args: {
-    size: "large",
-    src: "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000019/icon.svg",
-    chainSrc:
-      "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg",
+    src: AAVE_SRC,
+    chainSrc: ETH_SRC,
   },
 }
 
-export const SimpleAssetLogo: Story = {
-  render: Template,
+export const WithMultipleAssets: Story = {
+  render: () => (
+    <Stack gap={20}>
+      <MultipleAssetsTemplate size="extra-small" />
+      <MultipleAssetsTemplate size="small" />
+      <MultipleAssetsTemplate size="medium" />
+      <MultipleAssetsTemplate size="large" />
+    </Stack>
+  ),
+}
+
+export const WithAtokenDecoration: Story = {
+  render: (args) => (
+    <Stack gap={20}>
+      <Template {...args} />
+      <MultipleAssetsTemplate decoration={args.decoration} size="extra-small" />
+      <MultipleAssetsTemplate decoration={args.decoration} size="small" />
+      <MultipleAssetsTemplate decoration={args.decoration} size="medium" />
+      <MultipleAssetsTemplate decoration={args.decoration} size="large" />
+    </Stack>
+  ),
   args: {
-    src: "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg",
+    decoration: "atoken",
+    src: AAVE_SRC,
   },
 }
 
-export const SimpleAssetLogoWithRedBadge: Story = {
+export const WithYellowBadge: Story = {
+  render: Template,
+  args: {
+    badge: "yellow",
+    badgeTooltip: "Warning",
+    src: HDX_SRC,
+  },
+}
+
+export const WithRedBadge: Story = {
   render: Template,
   args: {
     badge: "red",
-    src: "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg",
+    badgeTooltip: "Danger",
+    src: HDX_SRC,
   },
 }
 
-export const SimpleAssetLogoWithYellowBadge: Story = {
-  render: Template,
-  args: {
-    badge: "yellow",
-    src: "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg",
-  },
-}
-
-export const SimpleAssetLogoWithYellowBadgeAndTooltip: Story = {
-  render: Template,
-  args: {
-    badge: "yellow",
-    badgeTooltip: "Test",
-    src: "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg",
-  },
-}
-
-export const NoLogoAsset: Story = {
+export const Placeholder: Story = {
   render: Template,
 }

@@ -1,141 +1,242 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { linearScale } from "@galacticcouncil/utils"
 
+import { ThemeProps } from "@/theme"
 import { createVariants } from "@/utils"
 
 import { Icon } from "../Icon"
-import { AssetLogoSize } from "./AssetLogo"
+import { AssetLogoDecoration, AssetLogoSize } from "./AssetLogo"
 
-export const getSizeValue = (size: AssetLogoSize) => {
-  if (size === "small") return 18
+const LOGO_DIAMETER = {
+  "extra-small": 12,
+  small: 18,
+  medium: 24,
+  large: 36,
+} as const
 
-  if (size === "large") return 34
+const LOGO_OVERLAP = {
+  "extra-small": 2,
+  small: 4,
+  medium: 6,
+  large: 8,
+} as const
 
-  return 24
-}
+const DECOR_THICKNESS = {
+  "extra-small": 1,
+  small: 1.5,
+  medium: 1.5,
+  large: 2,
+} as const
 
-const sizes = createVariants(() => ({
+const DECOR_PADDING = {
+  "extra-small": 1,
+  small: 1.5,
+  medium: 1.5,
+  large: 2,
+} as const
+
+const sizes = createVariants<AssetLogoSize>(() => ({
   "extra-small": css`
-    width: 12px;
-    height: 12px;
+    width: ${LOGO_DIAMETER["extra-small"]}px;
+    height: ${LOGO_DIAMETER["extra-small"]}px;
+    font-size: ${LOGO_DIAMETER["extra-small"]}px;
   `,
   small: css`
-    width: 18px;
-    height: 18px;
+    width: ${LOGO_DIAMETER.small}px;
+    height: ${LOGO_DIAMETER.small}px;
+    font-size: ${LOGO_DIAMETER.small}px;
   `,
   medium: css`
-    width: 26px;
-    height: 26px;
+    width: ${LOGO_DIAMETER.medium}px;
+    height: ${LOGO_DIAMETER.medium}px;
+    font-size: ${LOGO_DIAMETER.medium}px;
   `,
   large: css`
-    width: 34px;
-    height: 34px;
+    width: ${LOGO_DIAMETER.large}px;
+    height: ${LOGO_DIAMETER.large}px;
+    font-size: ${LOGO_DIAMETER.large}px;
   `,
 }))
 
-export const SAssetLogo = styled.img<{
-  withChainLogo: boolean
-  size: AssetLogoSize
-}>(({ withChainLogo, size }) => [
-  css`
-    ${withChainLogo &&
-    "mask: radial-gradient(112% 112% at 84% 16%, #0000 25%, #fff 25%);"}
-
-    border-radius: 9999px;
-  `,
-  sizes(size),
-])
-
-export const SChainLogo = styled.img`
-  display: flex;
-  position: absolute;
-  width: 50%;
-  height: 50%;
-  z-index: 1;
-  right: -10%;
-  top: -10%;
-`
-
-export const SAssetBadge = styled(Icon)<{ type: "red" | "yellow" }>(
-  ({ theme, type }) => css`
-    display: flex;
-
-    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.85));
-
-    color: ${type === "red"
-      ? theme.colors.utility.warningPrimary[500]
-      : theme.colors.utility.warningSecondary[500]};
-  `,
-)
-
-export const SPlaceholder = styled(Icon)<{ size: AssetLogoSize }>(({ size }) =>
-  sizes(size),
-)
-
-export const SBadgeSlot = styled.div`
-  display: flex;
-  align-items: center;
-
-  position: absolute;
-  width: 50%;
-  height: 50%;
-  z-index: 1;
-  right: -10%;
-  bottom: -10%;
-`
-
-export const IconsWrapper = styled.div<{
-  size: AssetLogoSize
-}>(({ size }) => {
-  const value = getSizeValue(size)
-
+const getATokenDecorationStyles = (
+  theme: ThemeProps,
+  thickness: number,
+  padding: number,
+) => {
+  const backdropColor = theme.surfaces.themeBasePalette.background
   return css`
-    --logo-size: ${value}px;
-    --logo-overlap: ${value * 0.3}px;
-    --chain-size: ${value / 2}px;
-    --chain-offset: ${value * 0.1}px;
-    position: relative;
-
-    display: flex;
-    flex-shrink: 0;
-
-    & > span {
-      width: var(--logo-size);
-      height: var(--logo-size);
-      > svg {
-        width: var(--logo-size);
-        height: var(--logo-size);
-      }
-    }
-
-    > :not(:first-of-type) {
-      margin-left: calc(var(--logo-overlap) * -1);
+    ${SAssetLogo} {
+      border: ${padding}px solid ${backdropColor};
+      background: ${backdropColor};
     }
 
     &::before {
       content: "";
       position: absolute;
-      inset: 0;
-
-      pointer-events: none;
-
-      padding: var(--chain-offset) var(--chain-offset) 0 0;
-      margin-top: calc(var(--chain-offset) * -1);
-      margin-right: calc(var(--chain-offset) * -1);
-
-      --mask-space: 1px;
-      --mask-gradient: calc(var(--chain-size) / 2),
-        black calc(var(--chain-size) / 2 - 1px),
-        transparent calc(var(--chain-size) / 2 - 1px),
-        transparent calc(var(--chain-size) / 2 + var(--mask-space)),
-        black calc(var(--chain-size) / 2 + var(--mask-space) + 0.5px);
-
-      --mask-offset: calc(
-        var(--logo-size) - var(--chain-size) / 2 + var(--chain-offset)
-      );
-
-      -webkit-mask-composite: destination-in;
-      mask-composite: exclude;
+      inset: -${thickness}px;
+      background: linear-gradient(to right, #39a5ff, #0063b5 50%, transparent);
     }
   `
+}
+
+const calculateCircleOffset = (
+  percentage: number,
+  diameter: number,
+): number => {
+  const radius = diameter / 2
+  const offset = linearScale([0, 50], [0, radius])(percentage)
+  return radius - offset
+}
+
+const getCirclePosition = (
+  percentage: number,
+  diameter: number,
+  thickness: number,
+  overlap: number,
+): string => {
+  const offset = calculateCircleOffset(
+    percentage,
+    diameter - thickness * 2 - overlap * 2,
+  )
+  return `calc(${percentage}% - ${offset}px)`
+}
+
+const generateATokenMask = (
+  count: number,
+  diameter: number,
+  overlap: number,
+  thickness: number,
+): string => {
+  const maskDiameter = diameter + thickness * 2
+  const maskRadius = maskDiameter / 2
+
+  const positions = Array.from({ length: count }, (_, i) => {
+    const step = 100 / (count + 1)
+    return step * (i + 1)
+  })
+
+  const masks = positions.map(
+    (position) =>
+      `radial-gradient(
+      circle ${maskRadius}px at ${getCirclePosition(position, diameter, thickness, overlap)},
+      black 0%,
+      black 98%,
+      transparent 100%
+    )`,
+  )
+
+  return masks.join(", ")
+}
+
+const decorations = (thickness: number, padding: number) =>
+  createVariants<AssetLogoDecoration>((theme) => ({
+    none: css``,
+    atoken: css`
+      ${getATokenDecorationStyles(theme, thickness, padding)}
+    `,
+  }))
+
+export const SAssetLogo = styled.img<{
+  size: AssetLogoSize
+}>(({ size, theme }) => [
+  sizes(size),
+  css`
+    position: relative;
+    border-radius: ${theme.radii.full}px;
+  `,
+])
+
+export const SChainLogo = styled.img<{ size: AssetLogoSize }>(
+  ({ size, theme }) => {
+    const backdropColor = theme.surfaces.themeBasePalette.background
+    const borderSize = ["medium", "large"].includes(size) ? 2 : 1
+    return css`
+      --border-size: ${borderSize}px;
+      display: flex;
+
+      position: absolute;
+      right: -10%;
+      top: -10%;
+
+      z-index: 1;
+
+      width: 50%;
+      height: 50%;
+
+      border-radius: ${theme.radii.full}px;
+      border: var(--border-size) solid ${backdropColor};
+      background: ${backdropColor};
+    `
+  },
+)
+
+export const SAssetBadge = styled(Icon)<{
+  type: "red" | "yellow"
+}>(({ theme, type }) => {
+  const colorMap = {
+    red: theme.colors.utility.warningPrimary[500],
+    yellow: theme.colors.utility.warningSecondary[500],
+  }
+
+  return css`
+    display: flex;
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.85));
+    color: ${colorMap[type]};
+  `
+})
+
+export const SPlaceholder = styled(Icon)<{
+  size: AssetLogoSize
+}>(({ size }) => sizes(size))
+
+export const SBadgeSlot = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: absolute;
+  right: -10%;
+  bottom: -10%;
+
+  z-index: 1;
+
+  width: 50%;
+  height: 50%;
+`
+
+export const SDecorationContainer = styled.div<{
+  size: AssetLogoSize
+  count: number
+  decoration?: AssetLogoDecoration
+}>(({ decoration = "none", count, size }) => {
+  const overlap = LOGO_OVERLAP[size]
+  const thickness = DECOR_THICKNESS[size]
+  const padding = DECOR_PADDING[size]
+  const diameter = LOGO_DIAMETER[size]
+  return [
+    css`
+      font-size: ${diameter}px;
+      position: relative;
+      display: inline-flex;
+      width: fit-content;
+      flex-shrink: 0;
+
+      > :not(:first-of-type) {
+        margin-left: -${overlap}px;
+      }
+    `,
+    decorations(thickness, padding)(decoration),
+    decoration === "atoken" &&
+      css`
+        &::before {
+          mask-image: ${generateATokenMask(
+            count,
+            diameter,
+            overlap,
+            thickness,
+          )};
+        }
+      `,
+  ]
 })
