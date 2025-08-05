@@ -30,7 +30,7 @@ const CollapsibleContent = ({
 }
 
 type CollapsibleTriggerProps = {
-  label: React.ReactNode
+  label: string | React.ReactNode
   actionLabel: string
   actionLabelWhenOpen?: string
 }
@@ -80,7 +80,7 @@ type CollapsibleProps = CollapsibleRootProps &
       }
     | {
         trigger?: never
-        label: React.ReactNode
+        label: string | React.ReactNode
         actionLabel: string
         actionLabelWhenOpen?: string
       }
