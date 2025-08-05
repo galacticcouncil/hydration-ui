@@ -45,7 +45,7 @@ export const ATokenPosition = () => {
 
   const price = getAssetPrice(relatedAToken.id).price
 
-  const balance = aBalance.transferable ?? "0"
+  const balance = aBalance.total ?? "0"
   const scaledBalance = BN(balance).shiftedBy(-relatedAToken.decimals)
   const balanceDisplay = price ? scaledBalance.multipliedBy(price) : BN_0
 

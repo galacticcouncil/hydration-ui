@@ -13,7 +13,7 @@ import { Asset } from "@galacticcouncil/sdk"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { Parachain } from "@galacticcouncil/xcm-core"
-import { TradeMetadata, TxType, XcmMetadata } from "@galacticcouncil/apps"
+import { TxType, XcmMetadata } from "@galacticcouncil/apps"
 
 export interface ToastMessage {
   onLoading?: ReactElement
@@ -29,12 +29,19 @@ export interface Account {
   delegate?: string
 }
 
+export type TxMetadata = {
+  assetIn: string
+  assetOut: string
+  amountIn: string
+  amountOut: string
+}
+
 export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic | TxType
   txOptions?: SubstrateCall["txOptions"]
-  txMeta?: TradeMetadata
+  txMeta?: TxMetadata
   evmTx?: {
     data: TransactionRequest
     abi?: string

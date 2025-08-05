@@ -40,12 +40,14 @@ import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 type Props = {
   readonly assetId: string
   readonly balance: string
+  readonly maxBalance: string
   readonly onClose: () => void
 }
 
 export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
+  maxBalance,
   onClose,
 }) => {
   const { createTransaction } = useStore()
@@ -75,7 +77,7 @@ export const RemoveDepositModal: FC<Props> = ({
     firstAssetIdInPool // fallback to first asset in pool
 
   const form = useRemoveDepositForm({
-    maxBalance: balance,
+    maxBalance,
     assetReceiveId: defaultAssetReceivedId,
   })
 
@@ -210,7 +212,9 @@ export const RemoveDepositModal: FC<Props> = ({
       onBack={() => paginateTo(0)}
       contents={[
         {
-          title: t("wallet.strategy.remove.title"),
+          title: t("lending.withdraw.modal.title", {
+            symbol: asset.symbol,
+          }),
           content: (
             <FormProvider {...form}>
               <form
@@ -223,7 +227,11 @@ export const RemoveDepositModal: FC<Props> = ({
                   onChange={setSplitRemove}
                 />
                 <div sx={{ flex: "column", gap: 8 }}>
-                  <RemoveDepositAmount assetId={assetId} balance={balance} />
+                  <RemoveDepositAmount
+                    assetId={assetId}
+                    balance={balance}
+                    maxBalance={maxBalance}
+                  />
 
                   {splitRemove ? (
                     <>
