@@ -202,11 +202,9 @@ export const useAssetsData = ({
         ]
       : rowsWithBalance
 
-    const sortedAssets = sortAssets(
-      rows,
-      "transferableDisplay",
-      NATIVE_ASSET_ID,
-    )
+    const sortedAssets = sortAssets(rows, "transferableDisplay", {
+      firstAssetId: NATIVE_ASSET_ID,
+    })
 
     return search
       ? arraySearch(sortedAssets, search, ["symbol", "name"])

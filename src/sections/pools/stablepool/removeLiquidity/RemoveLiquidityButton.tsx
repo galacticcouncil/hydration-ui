@@ -8,28 +8,32 @@ import { Button } from "components/Button/Button"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { Modal } from "components/Modal/Modal"
 import { scaleHuman } from "utils/balance"
-import { GDOT_ERC20_ASSET_ID } from "utils/constants"
 
 type Props = {
   pool: TStablepool
+  type: STABLEPOOLTYPE
   onSuccess: () => void
 }
 
-enum STABLEPOOLTYPE {
+export enum STABLEPOOLTYPE {
   CLASSIC,
   GIGA,
 }
 
-export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
+export const RemoveLiquidityButton = ({ pool, type, onSuccess }: Props) => {
   const { t } = useTranslation()
 
   const [openRemove, setOpenRemove] = useState<STABLEPOOLTYPE | null>(null)
 
-  const { balance, meta, isGDOT, id, biggestPercentage } = pool
+  const { balance, aBalance, meta, relatedAToken } = pool
 
-  const balanceHuman = balance?.transferable
-    ? scaleHuman(balance.transferable, meta.decimals).toString()
-    : undefined
+  const balanceHuman =
+    type === STABLEPOOLTYPE.GIGA && relatedAToken
+      ? scaleHuman(
+          aBalance?.transferable ?? 0,
+          relatedAToken.decimals,
+        ).toString()
+      : scaleHuman(balance?.transferable ?? 0, meta.decimals).toString()
 
   return (
     <>
@@ -37,13 +41,7 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
         variant="error"
         size="small"
         fullWidth
-        onClick={() =>
-          setOpenRemove(
-            pool.isGDOT || pool.isGETH
-              ? STABLEPOOLTYPE.GIGA
-              : STABLEPOOLTYPE.CLASSIC,
-          )
-        }
+        onClick={() => setOpenRemove(type)}
       >
         <div sx={{ flex: "row", align: "center", justify: "center" }}>
           <Icon icon={<MinusIcon />} sx={{ mr: 8 }} />
@@ -58,12 +56,11 @@ export const RemoveLiquidityButton = ({ pool, onSuccess }: Props) => {
           onClose={() => setOpenRemove(null)}
         />
       )}
-      {STABLEPOOLTYPE.GIGA === openRemove && (
+      {STABLEPOOLTYPE.GIGA === openRemove && relatedAToken && (
         <Modal open onClose={() => setOpenRemove(null)}>
           <RemoveDepositModal
-            assetId={isGDOT ? GDOT_ERC20_ASSET_ID : id}
+            assetId={relatedAToken.id}
             balance={balanceHuman ?? "0"}
-            assetReceiveId={isGDOT ? undefined : biggestPercentage?.assetId}
             onClose={() => setOpenRemove(null)}
           />
         </Modal>

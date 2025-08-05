@@ -105,16 +105,18 @@ export const ReserveOverviewHeaderValues: FC<
                 value={Math.max(Number(poolReserve?.availableLiquidityUSD), 0)}
               />
             </DataValue>
-            <DataValue
-              size="medium"
-              isLoading={loading}
-              labelColor="brightBlue300"
-              label={t("lending.reserve.utilRate")}
-            >
-              <PercentageValue
-                value={Number(poolReserve?.borrowUsageRatio ?? 0) * 100}
-              />
-            </DataValue>
+            {poolReserve?.borrowUsageRatio !== "0" && (
+              <DataValue
+                size="medium"
+                isLoading={loading}
+                labelColor="brightBlue300"
+                label={t("lending.reserve.utilRate")}
+              >
+                <PercentageValue
+                  value={Number(poolReserve?.borrowUsageRatio ?? 0) * 100}
+                />
+              </DataValue>
+            )}
             <DataValue
               size="medium"
               isLoading={loading}
