@@ -19,22 +19,21 @@ import { useStore } from "state/store"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { TRemoveFarmingPosition } from "./RemoveDeposit.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 
 type Props = {
   readonly assetId: string
   readonly balance: string
+  readonly maxBalance: string
   readonly onClose: () => void
-  readonly positions?: TRemoveFarmingPosition[]
 }
 
 export const RemoveDepositModal: FC<Props> = ({
   assetId,
   balance,
+  maxBalance,
   onClose,
-  positions,
 }) => {
   const { createTransaction } = useStore()
   const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
@@ -60,7 +59,7 @@ export const RemoveDepositModal: FC<Props> = ({
     firstAssetIdInPool // fallback to first asset in pool
 
   const form = useRemoveDepositForm({
-    maxBalance: balance,
+    maxBalance,
     assetReceiveId: defaultAssetReceivedId,
   })
 
@@ -136,7 +135,9 @@ export const RemoveDepositModal: FC<Props> = ({
       onBack={() => paginateTo(0)}
       contents={[
         {
-          title: t("wallet.strategy.remove.title"),
+          title: t("lending.withdraw.modal.title", {
+            symbol: asset.symbol,
+          }),
           content: (
             <FormProvider {...form}>
               <form
@@ -145,7 +146,11 @@ export const RemoveDepositModal: FC<Props> = ({
               >
                 <div sx={{ flex: "column", gap: 8 }}>
                   <div sx={{ flex: "column", gap: 16 }}>
-                    <RemoveDepositAmount assetId={assetId} balance={balance} />
+                    <RemoveDepositAmount
+                      assetId={assetId}
+                      balance={balance}
+                      maxBalance={maxBalance}
+                    />
                     <RemoveDepositAsset
                       assetId={assetReceived?.id ?? ""}
                       amountOut={amountOutFormatted}
