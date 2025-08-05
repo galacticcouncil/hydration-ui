@@ -1,7 +1,6 @@
 import { queryOptions } from "@tanstack/react-query"
 import { AggregationTimeRange, SquidSdk } from "@/squid"
-import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
-
+import { safeConvertAddressSS58, safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 
 
 export const omnipoolVolumeQuery = (squidSdk: SquidSdk) => queryOptions({
@@ -50,14 +49,16 @@ export const omnipoolVolumeQuery = (squidSdk: SquidSdk) => queryOptions({
       
   })
 
-  export const xykVolumeQuery = (squidSdk: SquidSdk, ids: string[]) => queryOptions({
+  export const xykVolumeQuery = (squidSdk: SquidSdk, addresses: string[]) => queryOptions({
     queryKey: [
       "xykVolumes"
     ],
     queryFn: async () => {
         const data = await squidSdk.XykVolume({
             filter: {
-                poolIds: ids,
+                poolIds: addresses.map((address) =>
+                  safeConvertSS58toPublicKey(address),
+                ),
                 period: AggregationTimeRange["24H"],
             }
         })
@@ -70,11 +71,13 @@ export const omnipoolVolumeQuery = (squidSdk: SquidSdk) => queryOptions({
                 poolId: safeConvertAddressSS58(node.poolId),
                 assetId,
                 assetIdB,
-                [assetId]: node.assetAVol.toString() as string,
-                [assetIdB]: node.assetBVol.toString() as string,
+                poolVolume: node.assetAVolNorm.toString() as string,
+                [assetId]: node.assetAVolNorm.toString() as string,
+                [assetIdB]: node.assetBVolNorm.toString() as string,
             }
         })
-    }
+    },
+    enabled: !!addresses.length
   })
   
   

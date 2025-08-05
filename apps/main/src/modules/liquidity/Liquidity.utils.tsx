@@ -3,6 +3,7 @@ import {
   omnipoolYieldMetricsQuery,
   stablepoolVolumeQuery,
   stablepoolYieldMetricsQuery,
+  xykVolumeQuery,
 } from "@galacticcouncil/indexer/squid"
 import { OmniMath } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
@@ -67,7 +68,7 @@ export type IsolatedPoolTable = {
   tvlDisplay: string
   meta: XYKPoolMeta
   isPositions: boolean
-  volumeDisplay: string
+  volumeDisplay: string | undefined
   balance: bigint | undefined
   positionsAmount: number
   price: string | undefined
@@ -339,11 +340,15 @@ export const useOmnipoolStablepools = () => {
 }
 
 export const useIsolatedPools = () => {
+  const squidClient = useSquidClient()
   const { data: pools, isLoading: isPoolsLoading } = useXykPools()
-  const { getMetaFromXYKPoolTokens, getAssetWithFallback } = useAssets()
+  const { getMetaFromXYKPoolTokens } = useAssets()
   const { getPositions } = useAccountPositions()
   const { data: xykPoolsIds, isLoading: isXykPoolsIdsLoading } =
     useXykPoolsIds()
+  const { data: xykVolumes, isLoading: isVolumeLoading } = useQuery(
+    xykVolumeQuery(squidClient, pools?.map((pool) => pool.address) ?? []),
+  )
   const { getFreeBalance } = useAccountBalances()
 
   const { pricesIds, poolsData } = useMemo(() => {
@@ -417,15 +422,9 @@ export const useIsolatedPools = () => {
 
         const { xykMiningPositions } = getPositions(pool.address)
 
-        const volume = "0"
-        const volumeDisplay =
-          volume && price
-            ? Big(
-                scaleHuman(volume, getAssetWithFallback(spotPriceId).decimals),
-              )
-                .times(price)
-                .toString()
-            : "0"
+        const volumeDisplay = xykVolumes?.find(
+          (volume) => volume.poolId === pool.address,
+        )?.poolVolume
 
         const balance = shareTokenId ? getFreeBalance(shareTokenId) : undefined
 
@@ -446,7 +445,7 @@ export const useIsolatedPools = () => {
           shareTokenId,
           positions: xykMiningPositions,
           minTradingLimit: pool.minTradingLimit,
-          isVolumeLoading: false,
+          isVolumeLoading,
           isFarms: false,
         })
 
@@ -459,10 +458,11 @@ export const useIsolatedPools = () => {
     getAssetPrice,
     getMetaFromXYKPoolTokens,
     getPositions,
-    getAssetWithFallback,
     getFreeBalance,
     xykPoolsIds,
     isLoading,
+    xykVolumes,
+    isVolumeLoading,
   ])
 
   useEffect(() => {
