@@ -22,6 +22,7 @@ import { useWithdrawError } from "./WithdrawError"
 import { calculateMaxWithdrawAmount } from "./utils"
 import { Text } from "components/Typography/Text/Text"
 import { CheckBox } from "components/CheckBox/CheckBox"
+import { useTranslation } from "react-i18next"
 
 export enum ErrorType {
   CAN_NOT_WITHDRAW_THIS_AMOUNT,
@@ -40,6 +41,7 @@ export const WithdrawModalContent = ({
   unwrap: boolean
   setUnwrap: (unwrap: boolean) => void
 }) => {
+  const { t } = useTranslation()
   const { mainTxState: withdrawTxState, txError } = useModalContext()
   const { user } = useAppDataContext()
   const { currentNetworkConfig } = useProtocolDataContext()
@@ -57,7 +59,7 @@ export const WithdrawModalContent = ({
   const underlyingBalance = valueToBigNumber(
     userReserve?.underlyingBalance || "0",
   )
-  const unborrowedLiquidity = valueToBigNumber(poolReserve.unborrowedLiquidity)
+
   const withdrawAmount = isMaxSelected
     ? maxAmountToWithdraw.toString(10)
     : _amount
@@ -137,13 +139,7 @@ export const WithdrawModalContent = ({
         isMaxSelected={isMaxSelected}
         disabled={withdrawTxState.loading}
         maxValue={maxAmountToWithdraw.toString(10)}
-        balanceText={
-          unborrowedLiquidity.lt(underlyingBalance) ? (
-            <span>Available</span>
-          ) : (
-            <span>Supply balance</span>
-          )
-        }
+        balanceText={t("lending.withdraw.balance")}
         sx={{ mb: 20 }}
         error={
           isMaxExceeded ? "Insufficient balance on your account." : errorText
