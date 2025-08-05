@@ -1,10 +1,13 @@
-import { Asset, Bond } from "@galacticcouncil/sdk-next"
+import { Asset, Bond, pool } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
+import { isNonNullish } from "remeda"
 
-import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
 import { TProviderContext } from "@/providers/rpcProvider"
-import { useAssetRegistry } from "@/states/assetRegistry"
+import {
+  TATokenPairStored,
+  useAssetRegistryStore,
+} from "@/states/assetRegistry"
 import {
   GDOT_ASSET_ID,
   GDOT_ERC20_ID,
@@ -53,7 +56,10 @@ export type TToken = TCommonAssetData & {
 
 export type TErc20 = TCommonAssetData & {
   type: AssetType.ERC20
-  underlyingAssetId?: string
+}
+
+export type TErc20AToken = TErc20 & {
+  underlyingAssetId: string
 }
 
 export type TBond = TCommonAssetData & {
@@ -80,6 +86,7 @@ export type TUnknown = TCommonAssetData & {
 export type TAssetData =
   | TToken
   | TErc20
+  | TErc20AToken
   | TBond
   | TStableswap
   | TExternal
@@ -109,16 +116,32 @@ export const assetsQuery = (data: TProviderContext) => {
     queryFn: async () => {
       const metadata = AssetMetadataFactory.getInstance()
 
-      const { sync } = useAssetRegistry.getState()
+      const { syncAssets, syncATokenPairs } = useAssetRegistryStore.getState()
 
-      const [tradeAssets, assets] = await Promise.all([
+      const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
+        sdk.api.router.getPools(),
         sdk.client.asset.getOnChainAssets(true),
         metadata.fetchAssets(),
         metadata.fetchChains(),
       ])
 
-      const syncData = assets.map((asset): TAssetData => {
+      const aTokenPairs: TATokenPairStored[] = pools
+        .filter((p) => p.type === pool.PoolType.Aave)
+        .map((p) => {
+          const [reserve, atoken] = p.tokens
+
+          if (!atoken || !reserve) return
+
+          return [atoken.id.toString(), reserve.id.toString()] as const
+        })
+        .filter(isNonNullish)
+
+      const aTokenMap = new Map(aTokenPairs)
+
+      syncATokenPairs(aTokenPairs)
+
+      const assetsData = assets.map((asset): TAssetData => {
         const isTradable = tradeAssets.some((id) => id === asset.id)
 
         const commonAssetData: TCommonAssetData = {
@@ -134,7 +157,7 @@ export const assetsQuery = (data: TProviderContext) => {
         if (asset.type === AssetType.TOKEN) {
           return assetToTokenType(asset, commonAssetData, metadata)
         } else if (asset.type === AssetType.ERC20) {
-          return assetToErc20Type(asset, commonAssetData)
+          return assetToErc20Type(asset, commonAssetData, aTokenMap)
         } else if (asset.type === AssetType.BOND) {
           return assetToBondType(asset, commonAssetData)
         } else if (asset.type === AssetType.STABLESWAP) {
@@ -149,7 +172,7 @@ export const assetsQuery = (data: TProviderContext) => {
         }
       })
 
-      sync(syncData)
+      syncAssets(assetsData)
 
       return []
     },
@@ -201,13 +224,13 @@ function assetToTokenType(
 function assetToErc20Type(
   asset: Asset,
   commonAssetData: TCommonAssetData,
-): TErc20 {
-  const underlyingAssetId = A_TOKEN_UNDERLYING_ID_MAP[asset.id]
-
+  aTokenMap: Map<string, string>,
+): TErc20 | TErc20AToken {
+  const underlyingAssetId = aTokenMap.get(asset.id.toString())
   return {
     ...commonAssetData,
     type: AssetType.ERC20,
-    underlyingAssetId,
+    ...(underlyingAssetId && { underlyingAssetId }),
   }
 }
 

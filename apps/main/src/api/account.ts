@@ -7,9 +7,9 @@ import { useCallback } from "react"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { A_TOKEN_UNDERLYING_ID_MAP } from "@/config/atokens"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 
@@ -73,6 +73,7 @@ export const useAccountBalance = () => {
   const address = useAccount().account?.address
   const { papi, sdk, isLoaded } = useRpcProvider()
   const setBalance = useAccountData(prop("setBalance"))
+  const { getErc20AToken } = useAssets()
 
   return useQuery({
     enabled: !!address && isLoaded,
@@ -105,7 +106,8 @@ export const useAccountBalance = () => {
       })()
 
       const balances = balancesRaw.map(([assetId, balance]) => {
-        const registryId = A_TOKEN_UNDERLYING_ID_MAP[assetId]
+        const registryId = getErc20AToken(assetId)?.underlyingAssetId
+
         const maxReserve = registryId
           ? maxReservesMap.get(registryId)
           : undefined

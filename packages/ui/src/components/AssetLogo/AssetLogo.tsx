@@ -1,17 +1,20 @@
+import { Children, cloneElement, isValidElement } from "react"
+
 import { PlaceholderAssetLogo, TriangleAlert } from "@/assets/icons"
-import { Box, Tooltip } from "@/components"
+import { Tooltip } from "@/components"
 
 import {
-  IconsWrapper,
   SAssetBadge,
   SAssetLogo,
   SBadgeSlot,
   SChainLogo,
+  SDecorationContainer,
   SPlaceholder,
 } from "./AssetLogo.styled"
 
 export type AssetLogoSize = "large" | "medium" | "small" | "extra-small"
 export type TBadge = "red" | "yellow"
+export type AssetLogoDecoration = "none" | "atoken"
 
 export type AssetLogoProps = {
   src?: string
@@ -21,6 +24,7 @@ export type AssetLogoProps = {
   badge?: TBadge
   badgeTooltip?: string
   className?: string
+  decoration?: AssetLogoDecoration
 }
 
 export const AssetLogo = ({
@@ -30,44 +34,53 @@ export const AssetLogo = ({
   chainSrc,
   badge,
   badgeTooltip,
-  className,
+  decoration = "none",
 }: AssetLogoProps) => {
   if (!src)
     return (
-      <SPlaceholder
-        component={PlaceholderAssetLogo}
-        size={size}
-        className={className}
-      />
+      <SDecorationContainer count={1} size={size}>
+        <SPlaceholder component={PlaceholderAssetLogo} size={size} />
+      </SDecorationContainer>
     )
 
   return (
-    <Box
-      sx={{ position: "relative", width: "fit-content", flexShrink: 0 }}
-      className={className}
-    >
-      <SAssetLogo
-        loading="lazy"
-        src={src}
-        alt={alt}
-        withChainLogo={!!chainSrc}
-        size={size}
-      />
-      {chainSrc && <SChainLogo loading="lazy" src={chainSrc} />}
-
+    <SDecorationContainer count={1} decoration={decoration} size={size}>
+      <SAssetLogo loading="lazy" src={src} alt={alt} size={size} />
+      {chainSrc && <SChainLogo size={size} loading="lazy" src={chainSrc} />}
       {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
-    </Box>
+    </SDecorationContainer>
   )
 }
 
 export const MultipleAssetLogoWrapper = ({
-  size,
+  size = "medium",
   children,
+  decoration,
 }: {
-  size: AssetLogoSize
+  size?: AssetLogoSize
   children: React.ReactNode
+  decoration?: AssetLogoDecoration
 }) => {
-  return <IconsWrapper size={size}>{children}</IconsWrapper>
+  return (
+    <SDecorationContainer
+      size={size}
+      count={Children.count(children)}
+      decoration={decoration}
+    >
+      {Children.map(children, (child) => {
+        if (isValidElement(child)) {
+          return cloneElement(child, {
+            ...child.props,
+            size,
+            // override child decor to "none" if decoration from parent is the same
+            ...(decoration === child.props.decoration && {
+              decoration: "none",
+            }),
+          })
+        }
+      })}
+    </SDecorationContainer>
+  )
 }
 
 const Badge = ({ badge, tooltip }: { badge: TBadge; tooltip?: string }) => {

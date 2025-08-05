@@ -1,4 +1,5 @@
-import { isDeepEqual } from "remeda"
+import { useMemo } from "react"
+import { isDeepEqual, isShallowEqual } from "remeda"
 
 import { TAssetData } from "@/api/assets"
 import { createIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
@@ -9,20 +10,27 @@ export type TShareTokenStored = {
   assets: string[]
   shareTokenId: string
 }
+export type TATokenPairStored = readonly [
+  aTokenId: string,
+  underlyingAssetId: string,
+]
 
 type AssetRegistryStore = {
   assets: Array<TAssetStored>
   shareTokens: Array<TShareTokenStored>
-  sync: (assets: TAssetStored[]) => void
+  aTokenPairs: TATokenPairStored[]
+  syncAssets: (assets: TAssetStored[]) => void
   syncShareTokens: (shareTokens: TShareTokenStored[]) => void
+  syncATokenPairs: (pairs: TATokenPairStored[]) => void
 }
 
-export const useAssetRegistry = createIndexedDBStore<AssetRegistryStore>(
+export const useAssetRegistryStore = createIndexedDBStore<AssetRegistryStore>(
   IndexedDBStores.AssetRegistry,
   (set, get) => ({
     assets: [],
     shareTokens: [],
-    sync(assets) {
+    aTokenPairs: [],
+    syncAssets(assets) {
       const storedAssets = get().assets
       const areDataEqual = isDeepEqual(storedAssets, assets)
 
@@ -42,5 +50,32 @@ export const useAssetRegistry = createIndexedDBStore<AssetRegistryStore>(
         })
       }
     },
+    syncATokenPairs(pairs) {
+      const storedPairs = get().aTokenPairs
+
+      const arePairsEqual = isShallowEqual(storedPairs, pairs)
+
+      if (!arePairsEqual) {
+        set({
+          aTokenPairs: pairs,
+        })
+      }
+    },
   }),
 )
+
+export const useAssetRegistry = () => {
+  const assetRegistry = useAssetRegistryStore()
+  return useMemo(() => {
+    return {
+      ...assetRegistry,
+      aTokenMap: new Map(assetRegistry.aTokenPairs),
+      aTokenReverseMap: new Map(
+        assetRegistry.aTokenPairs.map(([aToken, underlying]) => [
+          underlying,
+          aToken,
+        ]),
+      ),
+    }
+  }, [assetRegistry])
+}
