@@ -19,7 +19,6 @@ import {
   AccountFilterOption,
 } from "@/components/account/AccountFilter"
 import { AccountOption } from "@/components/account/AccountOption"
-import { AccountOptionSkeleton } from "@/components/account/AccountOptionSkeleton"
 import {
   getFilteredAccounts,
   useAccountsWithBalance,
@@ -136,21 +135,14 @@ export const AccountSelectContent = () => {
           ) : (
             <>
               {hasNoResults && <Text>No accounts found</Text>}
-              {areBalancesLoading &&
-                accountList.map((_, index) => (
-                  <AccountOptionSkeleton key={index} />
-                ))}
-              {!areBalancesLoading &&
-                accountsWithBalances.map(({ balance, ...account }) => {
-                  return (
-                    <AccountOption
-                      key={`${account.address}-${account.provider}`}
-                      {...account}
-                      balance={`$${Number(balance).toFixed(2)}`}
-                      onSelect={onAccountSelect}
-                    />
-                  )
-                })}
+              {accountsWithBalances.map((account) => (
+                <AccountOption
+                  key={`${account.address}-${account.provider}`}
+                  {...account}
+                  isBalanceLoading={areBalancesLoading}
+                  onSelect={onAccountSelect}
+                />
+              ))}
             </>
           )}
         </Grid>
