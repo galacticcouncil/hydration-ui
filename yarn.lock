@@ -2596,6 +2596,11 @@
     short-uuid "^4.2.0"
     viem "^2.23.7"
 
+"@galacticcouncil/math-hsm@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.1.0.tgz#51a13c336cf8949602925624b2ef21ed29903e89"
+  integrity sha512-S6dGohpr+TejaFc4+heMQbp/r7PWUJLDotocCVC5XIJLfMwfwQgqifU9rg5rzwdrhWNUaqLX02D2ya6ouJt/Eg==
+
 "@galacticcouncil/math-lbp@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-1.2.0.tgz#43600f837fb095729b8b62a3d74c348be6452702"
@@ -2626,11 +2631,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk@^9.9.1":
-  version "9.9.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.9.1.tgz#967e827a8d12e4802465e64727c750820b8da77e"
-  integrity sha512-L3gUUPXtohNFGwjXcUNZn8Hn2Ge/jC+nVR/7RAYRDvMw4L7gsR5IgD2nh379yCmHCOmshCIgXnZDtcMYZ9w2AQ==
+"@galacticcouncil/sdk@9.10.0-pr182-f091023":
+  version "9.10.0-pr182-f091023"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.10.0-pr182-f091023.tgz#26316ede6cea74f8662eee5bee8a27537ac703a4"
+  integrity sha512-dKXckkYcQ6Lxe+pw6WqKOyA9E03J8OnC9oClnFMiQWyhmAfC6RihSvHExAiQijV+ppEpKCmdDBTbCgygw2NuhQ==
   dependencies:
+    "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
     "@galacticcouncil/math-liquidity-mining" "^1.2.0"
     "@galacticcouncil/math-omnipool" "^1.3.0"
@@ -2654,10 +2660,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^10.4.0":
-  version "10.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.4.0.tgz#e14130c2da0448d115393b4371154352d3e60ea7"
-  integrity sha512-VRfqYlrKvoFgxCS+OgvhcWBHt4E8aM3xXjNSvf5Rgzlixt/EBx+VATSfuDJSne0Xlp0O4qx9Qtr9HwvewPxxvg==
+"@galacticcouncil/xcm-cfg@10.5.0-pr182-f091023":
+  version "10.5.0-pr182-f091023"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.5.0-pr182-f091023.tgz#664580d2ce9dbb562556ed8d8858dca94500ada5"
+  integrity sha512-mtE8piNPNNUj2yFNrg27SwYg4dwpKmii4hpulMpvBr4iimo2OZAVmO3sjzqNm6mQAGyao+Y4WxoZkEwQhR8+TA==
   dependencies:
     "@galacticcouncil/xcm-core" "^8.0.0"
 
