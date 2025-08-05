@@ -260,23 +260,25 @@ export const MoneyMarketAPY = ({
                 </SIncentiveRow>
               )
             })}
-            {incentives.map(({ rewardTokenAddress, incentiveAPR }) => {
-              const id = getAssetIdFromAddress(rewardTokenAddress)
-              return (
-                <SIncentiveRow key={id}>
-                  <div sx={{ flex: "row", gap: 4, align: "center" }}>
-                    <Icon size={14} icon={<AssetLogo id={id} />} />
-                    <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
-                    <Text fs={11} lh={15} color="basic400">
-                      {t("incentivesApr")}
+            {incentives
+              .filter(({ incentiveAPR }) => BN(incentiveAPR).gt(0))
+              .map(({ rewardTokenAddress, incentiveAPR }) => {
+                const id = getAssetIdFromAddress(rewardTokenAddress)
+                return (
+                  <SIncentiveRow key={id}>
+                    <div sx={{ flex: "row", gap: 4, align: "center" }}>
+                      <Icon size={14} icon={<AssetLogo id={id} />} />
+                      <Text fs={12}>{getAssetWithFallback(id).symbol}</Text>
+                      <Text fs={11} lh={15} color="basic400">
+                        {t("incentivesApr")}
+                      </Text>
+                    </div>
+                    <Text fs={12} font="GeistSemiBold">
+                      <FormattedNumber percent value={incentiveAPR} />
                     </Text>
-                  </div>
-                  <Text fs={12} font="GeistSemiBold">
-                    <FormattedNumber percent value={incentiveAPR} />
-                  </Text>
-                </SIncentiveRow>
-              )
-            })}
+                  </SIncentiveRow>
+                )
+              })}
             {farms && (
               <>
                 <div
