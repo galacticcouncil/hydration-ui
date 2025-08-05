@@ -1,133 +1,83 @@
-import {
-  PoolBase,
-  PoolToken,
-  PoolType,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
-import { OmniPoolToken } from "@galacticcouncil/sdk/build/types/pool/omni/OmniPool"
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+import { pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   type QueryClient,
   queryOptions,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import { useEffect } from "react"
+import { useShallow } from "zustand/shallow"
 
 import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { setOmnipoolIds } from "@/states/liquidity"
+import {
+  setOmnipoolIds,
+  setXYKPools,
+  useXYKPoolsStore,
+} from "@/states/liquidity"
 import { HUB_ID } from "@/utils/consts"
 
-export type TOmnipoolAssetsData = Array<{
-  id: string
-  hubReserve: string
-  cap: string
-  protocolShares: string
-  shares: string
-  bits: number
-  balance: string
-  symbol: string
-  decimals: number
-  name: string
-}>
+export type OmniPoolToken = pool.omni.OmniPoolToken
+type StableSwap = pool.stable.StableSwap
+export type PoolBase = pool.PoolBase
+export type PoolToken = pool.PoolToken
 
-export const allPools = (tradeRouter: TradeRouter, queryClient: QueryClient) =>
+const PoolType = pool.PoolType
+
+export const allPools = (
+  tradeRouter: SdkCtx["api"]["router"],
+  queryClient: QueryClient,
+) =>
   queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "allPools"],
+    queryKey: ["allPools"],
     queryFn: async () => {
       const pools = await tradeRouter.getPools()
 
-      const stablePoolsData = pools.filter(
-        (pool) => pool.type === PoolType.Stable,
-      )
+      const stablePools_: StableSwap[] = []
+      const xykPools_: PoolBase[] = []
+      const omnipoolTokens_: OmniPoolToken[] = []
+      let hub: PoolToken | undefined
 
-      const omnipoolTokensData =
-        (
-          pools.find((pool) => pool.type === PoolType.Omni)?.tokens as
-            | OmniPoolToken[]
-            | undefined
-        )?.map((token) => {
-          return {
-            ...token,
-            shares: token.shares?.toString(),
-            protocolShares: token.protocolShares?.toString(),
-            cap: token.cap?.toString(),
-            hubReserves: token.hubReserves?.toString(),
+      for (const pool of pools) {
+        if (pool.type === PoolType.Stable) {
+          stablePools_.push(pool as StableSwap)
+        } else if (pool.type === PoolType.XYK) {
+          xykPools_.push(pool)
+        } else if (pool.type === PoolType.Omni) {
+          const tokens = pool.tokens as OmniPoolToken[]
+
+          for (const tokenRaw of tokens) {
+            if (tokenRaw.id === Number(HUB_ID)) {
+              hub = tokenRaw
+            } else {
+              omnipoolTokens_.push(tokenRaw)
+            }
           }
-        }) ?? []
+        }
+      }
 
-      const { tokens, hub } = omnipoolTokensData.reduce<{
-        tokens: TOmnipoolAssetsData
-        hub: PoolToken
-      }>(
-        (acc, token) => {
-          if (token.id === HUB_ID) {
-            acc.hub = token
-          } else {
-            const {
-              id,
-              hubReserves,
-              cap,
-              protocolShares,
-              shares,
-              tradeable,
-              balance,
-              symbol,
-              decimals,
-              name,
-            } = token
-
-            acc.tokens.push({
-              id,
-              hubReserve: hubReserves,
-              cap,
-              protocolShares,
-              shares,
-              bits: tradeable,
-              balance,
-              symbol,
-              decimals,
-              name,
-            } as TOmnipoolAssetsData[number])
-          }
-
-          return acc
-        },
-        { tokens: [], hub: {} as PoolToken },
-      )
-
-      const xykPoolsData = pools.filter((pool) => pool.type === PoolType.XYK)
-
-      queryClient.setQueryData(omnipoolTokens.queryKey, tokens)
-      queryClient.setQueryData(stablePools.queryKey, stablePoolsData)
+      queryClient.setQueryData(omnipoolTokens.queryKey, omnipoolTokens_)
+      queryClient.setQueryData(stablePools.queryKey, stablePools_)
       queryClient.setQueryData(hubToken.queryKey, hub)
-      queryClient.setQueryData(xykPools.queryKey, xykPoolsData)
+      queryClient.setQueryData(xykPools.queryKey, xykPools_)
 
       return false
     },
   })
 
 export const useAllPools = () => {
-  const { isApiLoaded, legacy_tradeRouter } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
   const activeQueriesAmount = useIsActiveQueries(["pools"])
 
   return useQuery({
-    ...allPools(legacy_tradeRouter, queryClient),
+    ...allPools(sdk.api.router, queryClient),
     notifyOnChangeProps: [],
     enabled: isApiLoaded && activeQueriesAmount,
   })
 }
 
-export const xykPools = queryOptions<PoolBase[]>({
-  queryKey: ["pools", "xyk"],
-  queryFn: () => {
-    throw new Error("queryFn should not run")
-  },
-  staleTime: Infinity,
-})
-
-export const stablePools = queryOptions<PoolBase[]>({
+export const stablePools = queryOptions<StableSwap[]>({
   queryKey: ["pools", "stable"],
   queryFn: () => {
     throw new Error("queryFn should not run")
@@ -143,13 +93,43 @@ export const hubToken = queryOptions<PoolToken>({
   staleTime: Infinity,
 })
 
-export const omnipoolTokens = queryOptions<TOmnipoolAssetsData>({
+export const omnipoolTokens = queryOptions<OmniPoolToken[]>({
   queryKey: ["pools", "omnipool"],
   queryFn: () => {
     throw new Error("queryFn should not run")
   },
   staleTime: Infinity,
 })
+
+const xykPools = queryOptions<PoolBase[]>({
+  queryKey: ["pools", "xyk"],
+  queryFn: () => {
+    throw new Error("queryFn should not run")
+  },
+  staleTime: Infinity,
+})
+
+export const useXykPools = () => {
+  const storedXykPoolsLength = useXYKPoolsStore(
+    useShallow((state) => state.data?.length),
+  )
+
+  const query = useQuery(xykPools)
+
+  const data = query.data
+
+  useEffect(() => {
+    if (data && data.length !== storedXykPoolsLength) {
+      const validAddresses = data
+        .filter((pool) => pool.tokens.some((asset) => asset))
+        .map((pool) => pool.address)
+
+      setXYKPools({ validAddresses })
+    }
+  }, [data, storedXykPoolsLength])
+
+  return query
+}
 
 export const useOmnipoolIds = () => {
   const { isApiLoaded, papi } = useRpcProvider()
@@ -163,6 +143,24 @@ export const useOmnipoolIds = () => {
       setOmnipoolIds(ids)
 
       return null
+    },
+    staleTime: Infinity,
+    enabled: isApiLoaded,
+    notifyOnChangeProps: [],
+  })
+}
+
+export const useXykPoolsIds = () => {
+  const { isApiLoaded, papi } = useRpcProvider()
+
+  return useQuery({
+    queryKey: ["xykPoolsIds"],
+    queryFn: async () => {
+      const pools = await papi.query.XYK.ShareToken.getEntries()
+
+      return new Map(
+        pools.map((pool) => [pool.keyArgs[0], pool.value.toString()]),
+      )
     },
     staleTime: Infinity,
     enabled: isApiLoaded,

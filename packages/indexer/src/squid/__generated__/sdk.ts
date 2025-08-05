@@ -161,9 +161,9 @@ export const AccountTotalBalancesByPeriodDocument = `
   }
 }
     `;
-export const LatestAccountBalanceDocument = `
-    query LatestAccountBalance($accountId: String!) {
-  accountTotalBalanceHistoricalData(condition: {accountId: $accountId}, last: 1) {
+export const LatestAccountsBalancesDocument = `
+    query LatestAccountsBalances($accountIds: StringFilter) {
+  accountTotalBalanceHistoricalData(filter: {accountId: $accountIds}, last: 1) {
     nodes {
       totalTransferableNorm
     }
@@ -185,6 +185,28 @@ export const MoneyMarketEventsDocument = `
   }
 }
     ${MoneyMarketEventFragmentDoc}`;
+export const OmnipoolYieldMetricsDocument = `
+    query OmnipoolYieldMetrics {
+  omnipoolAssetsYieldMetrics {
+    nodes {
+      assetId
+      assetRegistryId
+      projectedAprPerc
+    }
+  }
+}
+    `;
+export const StableswapYieldMetricsDocument = `
+    query StableswapYieldMetrics {
+  stableswapYieldMetrics {
+    nodes {
+      poolId
+      projectedAprPerc
+      projectedApyPerc
+    }
+  }
+}
+    `;
 export const UserSwapsDocument = `
     query UserSwaps($swapperIdFilter: StringFilter, $allInvolvedAssetRegistryIds: StringListFilter, $offset: Int!, $pageSize: Int!) {
   swaps(
@@ -287,6 +309,51 @@ export const TradePricesDocument = `
   }
 }
     `;
+export const XykVolumeDocument = `
+    query XykVolume($filter: XykpoolVolumeHistoricalDataByPeriodFilter!) {
+  xykpoolVolumeHistoricalDataByPeriod(filter: $filter) {
+    nodes {
+      assetAAssetRegistryId
+      assetAId
+      assetAVol
+      assetAVolNorm
+      assetBAssetRegistryId
+      assetBId
+      assetBVol
+      assetBVolNorm
+      poolId
+    }
+  }
+}
+    `;
+export const OmnipoolVolumeDocument = `
+    query OmnipoolVolume($filter: OmnipoolAssetVolumeHistoricalDataByPeriodFilter!) {
+  omnipoolAssetVolumeHistoricalDataByPeriod(filter: $filter) {
+    nodes {
+      assetId
+      assetRegistryId
+      assetVol
+      assetVolNormalized
+    }
+  }
+}
+    `;
+export const StablepoolVolumeDocument = `
+    query StablepoolVolume($filter: StableswapVolumeHistoricalDataByPeriodFilter!) {
+  stableswapVolumeHistoricalDataByPeriod(filter: $filter) {
+    nodes {
+      poolId
+      poolVolNorm
+      assetVolumes {
+        assetRegistryId
+        assetId
+        assetVol
+        assetVolNorm
+      }
+    }
+  }
+}
+    `;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
@@ -298,11 +365,17 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     AccountTotalBalancesByPeriod(variables: Types.AccountTotalBalancesByPeriodQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.AccountTotalBalancesByPeriodQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.AccountTotalBalancesByPeriodQuery>({ document: AccountTotalBalancesByPeriodDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AccountTotalBalancesByPeriod', 'query', variables);
     },
-    LatestAccountBalance(variables: Types.LatestAccountBalanceQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.LatestAccountBalanceQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<Types.LatestAccountBalanceQuery>({ document: LatestAccountBalanceDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'LatestAccountBalance', 'query', variables);
+    LatestAccountsBalances(variables?: Types.LatestAccountsBalancesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.LatestAccountsBalancesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.LatestAccountsBalancesQuery>({ document: LatestAccountsBalancesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'LatestAccountsBalances', 'query', variables);
     },
     MoneyMarketEvents(variables?: Types.MoneyMarketEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.MoneyMarketEventsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.MoneyMarketEventsQuery>({ document: MoneyMarketEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'MoneyMarketEvents', 'query', variables);
+    },
+    OmnipoolYieldMetrics(variables?: Types.OmnipoolYieldMetricsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.OmnipoolYieldMetricsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.OmnipoolYieldMetricsQuery>({ document: OmnipoolYieldMetricsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'OmnipoolYieldMetrics', 'query', variables);
+    },
+    StableswapYieldMetrics(variables?: Types.StableswapYieldMetricsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.StableswapYieldMetricsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.StableswapYieldMetricsQuery>({ document: StableswapYieldMetricsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'StableswapYieldMetrics', 'query', variables);
     },
     UserSwaps(variables: Types.UserSwapsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.UserSwapsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.UserSwapsQuery>({ document: UserSwapsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'UserSwaps', 'query', variables);
@@ -318,6 +391,15 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     TradePrices(variables: Types.TradePricesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.TradePricesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.TradePricesQuery>({ document: TradePricesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'TradePrices', 'query', variables);
+    },
+    XykVolume(variables: Types.XykVolumeQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.XykVolumeQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.XykVolumeQuery>({ document: XykVolumeDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'XykVolume', 'query', variables);
+    },
+    OmnipoolVolume(variables: Types.OmnipoolVolumeQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.OmnipoolVolumeQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.OmnipoolVolumeQuery>({ document: OmnipoolVolumeDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'OmnipoolVolume', 'query', variables);
+    },
+    StablepoolVolume(variables: Types.StablepoolVolumeQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.StablepoolVolumeQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.StablepoolVolumeQuery>({ document: StablepoolVolumeDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'StablepoolVolume', 'query', variables);
     }
   };
 }

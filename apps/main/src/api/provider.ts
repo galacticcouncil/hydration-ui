@@ -128,8 +128,6 @@ export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
 
   return useMemo(() => {
-    if (!endpoint) return null
-
     return (
       getProviderProps(endpoint) ||
       createProvider(

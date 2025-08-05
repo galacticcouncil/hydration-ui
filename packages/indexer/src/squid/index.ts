@@ -8,6 +8,8 @@ export * from "./trade-orders"
 export * from "./trade-prices"
 export * from "@/squid/__generated__/operations"
 export * from "@/squid/__generated__/types"
+export * from "./volume"
+export * from "./pool-metrics"
 
 export const getSquidSdk = (url: string) => getSdk(new GraphQLClient(url))
 

@@ -1,0 +1,43 @@
+query XykVolume($filter: XykpoolVolumeHistoricalDataByPeriodFilter!) {
+  xykpoolVolumeHistoricalDataByPeriod(filter: $filter) {
+    nodes {
+      assetAAssetRegistryId
+      assetAId
+      assetAVol
+      assetAVolNorm
+      assetBAssetRegistryId
+      assetBId
+      assetBVol
+      assetBVolNorm
+      poolId
+    }
+  }
+}
+
+query OmnipoolVolume(
+  $filter: OmnipoolAssetVolumeHistoricalDataByPeriodFilter!
+) {
+  omnipoolAssetVolumeHistoricalDataByPeriod(filter: $filter) {
+    nodes {
+      assetId
+      assetRegistryId
+      assetVol
+      assetVolNormalized
+    }
+  }
+}
+
+query StablepoolVolume($filter: StableswapVolumeHistoricalDataByPeriodFilter!) {
+  stableswapVolumeHistoricalDataByPeriod(filter: $filter) {
+    nodes {
+      poolId
+      poolVolNorm
+      assetVolumes {
+        assetRegistryId
+        assetId
+        assetVol
+        assetVolNorm
+      }
+    }
+  }
+}

@@ -22,7 +22,7 @@ query AccountTotalBalancesByPeriod(
   }
 }
 
-query LatestAccountsBalances($accountIds: [String!]!) {
+query LatestAccountsBalances($accountIds: StringFilter) {
   accountTotalBalanceHistoricalData(
     filter: { accountId: $accountIds }
     last: 1
