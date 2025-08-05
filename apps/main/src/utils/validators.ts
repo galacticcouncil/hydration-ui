@@ -42,9 +42,9 @@ export const positive = z
   .pipe(validNumberBig)
   .refine((value) => new Big(value || "0").gt(0), i18n.t("error.positive"))
 
-const maxBalanceError = i18n.t("error.maxBalance")
+export const maxBalanceError = i18n.t("error.maxBalance")
 
-const validateMaxBalance = (
+export const validateMaxBalance = (
   balance: string | number,
   amount: string,
 ): boolean => new Big(amount || "0").lte(balance)

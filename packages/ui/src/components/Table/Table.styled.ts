@@ -16,20 +16,19 @@ export type TableProps = {
 const columnSizeStyles = createVariants<TableSize>((theme) => ({
   small: css`
     --table-column-padding-x: 16px;
-    height: 44px;
-    padding: 0 var(--table-column-padding-x);
+
+    padding: var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p5};
   `,
   medium: css`
     --table-column-padding-x: 18px;
-    height: 54px;
-    padding: 0 var(--table-column-padding-x);
+    padding: var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p4};
   `,
   large: css`
     --table-column-padding-x: 20px;
-    height: 68px;
-    padding: 0 var(--table-column-padding-x);
+
+    padding: var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p3};
   `,
 }))
@@ -126,8 +125,7 @@ export const TableRow = styled.tr<{
       background: ${theme.surfaces.containers.high.primary};
     }
 
-    ${!isEmptyState &&
-    css`
+    ${!isEmptyState && isClickable && css`
       ${TableBody} &:hover {
         background: ${theme.surfaces.containers.high.hover};
         transition: ${theme.transitions.colors};
@@ -137,28 +135,28 @@ export const TableRow = styled.tr<{
         }
       }
     `}
+    color: ${theme.text.medium};
 
     ${isClickable &&
     css`
       cursor: pointer;
     `}
-
     ${isExpandable &&
     css`
       cursor: pointer;
       align-items: center;
     `}
-
-    ${hasOverride &&
+      ${hasOverride &&
     css`
       position: relative;
       pointer-events: none;
-    `}
+    `};
   `,
 )
 export const TableCell = styled.td<{
   isPinned?: ColumnPinningPosition
-}>(({ theme, isPinned }) => {
+  isClickable?: boolean
+}>(({ theme, isPinned, isClickable }) => {
   if (isPinned) {
     return [
       pinnedColumnStyles(isPinned),
@@ -166,6 +164,14 @@ export const TableCell = styled.td<{
         background: ${theme.surfaces.containers.high.primary};
         position: sticky;
         z-index: 1;
+
+        background: ${theme.surfaces.containers.high.primary};
+
+        ${isClickable && css`
+            tr:hover & {
+              background: ${theme.surfaces.containers.high.hover};
+            }
+          `}
       `,
     ]
   }

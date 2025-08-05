@@ -5,11 +5,11 @@ import { SubpageLayout } from "@/modules/layout/SubpageLayout"
 import { LiquiditySubpageMenu } from "@/modules/liquidity/components/LiquiditySubpageMenu"
 import {
   useIsolatedPools,
-  useOmnipools,
+  useOmnipoolStablepools,
 } from "@/modules/liquidity/Liquidity.utils"
 
 const OmnipoolSubscriber = () => {
-  useOmnipools()
+  useOmnipoolStablepools()
 
   return null
 }
@@ -23,7 +23,6 @@ const IsolatedPoolsSubscriber = () => {
 const Liquidity = () => {
   const isActiveOmnipool = useIsActiveQueries(["omnipoolAssets"])
   const isActiveXYK = useIsActiveQueries(["xykLiquidityPools"])
-
   return (
     <>
       <SubpageLayout subpageMenu={<LiquiditySubpageMenu />} />

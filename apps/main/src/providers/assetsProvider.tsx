@@ -1,4 +1,3 @@
-import { PoolToken } from "@galacticcouncil/sdk"
 import {
   createContext,
   ReactNode,
@@ -17,6 +16,7 @@ import {
   TStableswap,
   TToken,
 } from "@/api/assets"
+import { PoolToken } from "@/api/pools"
 import { TAssetStored, useAssetRegistry } from "@/states/assetRegistry"
 import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
@@ -37,7 +37,7 @@ type TAssetsContext = {
   getAsset: (id: string) => TAsset | undefined
   getAssets: (ids: string[]) => (TAsset | undefined)[]
   getBond: (id: string) => TBond | undefined
-  getAssetWithFallback: (id: string) => TAsset
+  getAssetWithFallback: (id?: string) => TAsset
   getExternalByExternalId: (externalId: string) => TExternal | undefined
   getErc20: (id: string) => TErc20 | undefined
   isToken: (asset: TAsset) => asset is TToken
@@ -194,8 +194,8 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getMetaFromXYKPoolTokens = useCallback(
     (tokens: PoolToken[]): XYKPoolMeta | null => {
-      const assetA = all.get(tokens[0]?.id ?? "")
-      const assetB = all.get(tokens[1]?.id ?? "")
+      const assetA = all.get(tokens[0]?.id.toString() ?? "")
+      const assetB = all.get(tokens[1]?.id.toString() ?? "")
 
       if (!assetA || !assetB) return null
 
@@ -222,7 +222,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getAsset = useCallback((id: string) => all.get(id), [all])
   const getAssetWithFallback = useCallback(
-    (id: string) => getAsset(id) ?? fallbackAsset,
+    (id?: string) => (id ? (getAsset(id) ?? fallbackAsset) : fallbackAsset),
     [getAsset],
   )
   const getAssets = useCallback(

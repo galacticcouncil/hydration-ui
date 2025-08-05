@@ -1,7 +1,8 @@
 import { PlaceholderAssetLogo, TriangleAlert } from "@/assets/icons"
-import { Box, Tooltip } from "@/components"
+import { Box, Skeleton, Tooltip } from "@/components"
 
 import {
+  getSizeValue,
   IconsWrapper,
   SAssetBadge,
   SAssetLogo,
@@ -21,6 +22,7 @@ export type AssetLogoProps = {
   badge?: TBadge
   badgeTooltip?: string
   className?: string
+  isLoading?: boolean
 }
 
 export const AssetLogo = ({
@@ -31,6 +33,7 @@ export const AssetLogo = ({
   badge,
   badgeTooltip,
   className,
+  isLoading,
 }: AssetLogoProps) => {
   if (!src)
     return (
@@ -40,6 +43,12 @@ export const AssetLogo = ({
         className={className}
       />
     )
+
+  if (isLoading) {
+    const skeletonSize = getSizeValue(size)
+
+    return <Skeleton width={skeletonSize} height={skeletonSize} circle />
+  }
 
   return (
     <Box

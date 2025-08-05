@@ -6,7 +6,7 @@ import { createVariants } from "@/utils"
 import { Icon } from "../Icon"
 import { AssetLogoSize } from "./AssetLogo"
 
-const getSizeValue = (size: AssetLogoSize) => {
+export const getSizeValue = (size: AssetLogoSize) => {
   if (size === "small") return 18
 
   if (size === "large") return 34

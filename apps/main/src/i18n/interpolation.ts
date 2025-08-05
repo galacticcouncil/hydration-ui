@@ -13,6 +13,12 @@ const formatNumberParts = (part: Intl.NumberFormatPart) => {
   return part.value
 }
 
+const isValidValue = (
+  value: number | bigint | string | null | undefined,
+): value is number | bigint | string => {
+  return !isNullish(value) && !Number.isNaN(Number(value)) && value !== ""
+}
+
 const getMaxSignificantDigits = (
   value: number | bigint | string,
   options: Intl.NumberFormatOptions,
@@ -42,7 +48,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (isNullish(value) || Number.isNaN(Number(value))) {
+    if (!isValidValue(value)) {
       return "N / A"
     }
 
@@ -63,7 +69,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (isNullish(value) || Number.isNaN(Number(value))) {
+    if (!isValidValue(value)) {
       return "N / A"
     }
 
@@ -94,7 +100,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (isNullish(value) || Number.isNaN(Number(value))) {
+    if (!isValidValue(value)) {
       return "N / A"
     }
 
