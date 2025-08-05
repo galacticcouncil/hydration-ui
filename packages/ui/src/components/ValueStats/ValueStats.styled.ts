@@ -3,6 +3,7 @@ import { mq, ThemeFont } from "@galacticcouncil/ui/theme"
 import { createVariants, css } from "@galacticcouncil/ui/utils"
 
 export type ValueStatsSize = "small" | "medium" | "large"
+export type ValueStatsFont = Exclude<ThemeFont, "mono">
 
 const containerSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   small: css`
@@ -98,7 +99,7 @@ const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
 
 export const SValueStatsValue = styled.div<{
   readonly size?: ValueStatsSize
-  readonly font?: ThemeFont
+  readonly font?: ValueStatsFont
 }>(({ theme, size = "large", font = "primary" }) => [
   css`
     font-family: ${theme.fontFamilies1[font]};

@@ -1,7 +1,16 @@
 import Big from "big.js"
-import { format as formatDate, isDate } from "date-fns"
+import {
+  differenceInSeconds,
+  format as formatDate,
+  formatDuration,
+  intervalToDuration,
+  isBefore,
+  isDate,
+} from "date-fns"
 import { FormatFunction } from "i18next"
 import { isNullish } from "remeda"
+
+import i18n from "@/i18n"
 
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
 const MIN_PERCENTAGE_THRESHOLD = Big(0.01)
@@ -140,27 +149,29 @@ const formatters = {
     return ""
   },
 
-  relativeTime: (value: Date, targetDate: Date, lng?: string) => {
-    const units = {
-      year: 24 * 60 * 60 * 1000 * 365,
-      month: (24 * 60 * 60 * 1000 * 365) / 12,
-      day: 24 * 60 * 60 * 1000,
-      hour: 60 * 60 * 1000,
-      minute: 60 * 1000,
-      second: 1000,
-    } as const
+  relativeTime: (date: Date, targetDate: Date) => {
+    const isPast = isBefore(date, targetDate)
+    const duration = intervalToDuration({
+      start: isPast ? date : targetDate,
+      end: isPast ? targetDate : date,
+    })
 
-    const formatter = new Intl.RelativeTimeFormat(lng, { numeric: "auto" })
-    const elapsed = value.valueOf() - targetDate.valueOf()
+    const diffInSec = Math.abs(differenceInSeconds(date, targetDate))
 
-    for (const key in units) {
-      const unit = key as keyof typeof units
-      if (Math.abs(elapsed) > units[unit] || unit === "second") {
-        return formatter.format(Math.round(elapsed / units[unit]), unit)
-      }
+    if (diffInSec < 1) {
+      return i18n.t("date.relative.now")
     }
 
-    return null
+    const formatted = formatDuration(duration, {
+      format:
+        diffInSec < 60
+          ? ["seconds"]
+          : ["years", "months", "days", "hours", "minutes"],
+    })
+
+    return isPast
+      ? i18n.t("date.relative.past", { value: formatted })
+      : i18n.t("date.relative.future", { value: formatted })
   },
 }
 
@@ -215,11 +226,7 @@ export const interpolationFormat: FormatFunction = (
       return formatters.date(value, options)
 
     case "relative":
-      return formatters.relativeTime(
-        value,
-        options.targetDate ?? new Date(),
-        lng,
-      )
+      return formatters.relativeTime(value, options.targetDate ?? new Date())
 
     default:
       return value ?? null

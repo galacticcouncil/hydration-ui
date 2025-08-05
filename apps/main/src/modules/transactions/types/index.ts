@@ -5,8 +5,6 @@ import { InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
 import { Subscription } from "rxjs"
 import { TransactionReceipt } from "viem"
 
-import { Transaction } from "@/states/transactions"
-
 export type { AnyPapiTx }
 export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
@@ -16,9 +14,11 @@ export enum TxActionType {
   SET_ERROR = "SET_ERROR",
   SET_STATUS = "SET_STATUS",
   RESET = "RESET",
+  SET_TIP = "SET_TIP",
 }
 
 export type TxStatus = "idle" | "submitted" | "success" | "error"
+export type TxMortalityPeriod = 32 | 64 | 128 | 256 | 512 | 1024
 
 export type TxStatusCallbacks = {
   onSubmitted: (txHash: string) => void
@@ -29,6 +29,8 @@ export type TxStatusCallbacks = {
 
 export type TxOptions = TxStatusCallbacks & {
   nonce?: number
+  tip?: bigint
+  mortalityPeriod: TxMortalityPeriod
   chainKey: string
   feeAssetId: string
 }
@@ -56,6 +58,9 @@ export type TxState = {
   status: TxStatus
   error: string | null
   isSigning: boolean
+  tip: string
+  tipAssetId: string
+  mortalityPeriod: TxMortalityPeriod
 }
 
 export type TxStateAction =
@@ -63,10 +68,5 @@ export type TxStateAction =
   | { type: TxActionType.SIGN }
   | { type: TxActionType.SET_ERROR; payload: string }
   | { type: TxActionType.SET_STATUS; payload: TxStatus }
+  | { type: TxActionType.SET_TIP; payload: string }
   | { type: TxActionType.RESET }
-
-export interface TxContext extends Transaction, TxState {
-  setStatus: (status: TxStatus) => void
-  signAndSubmit: () => void
-  reset: () => void
-}
