@@ -136,13 +136,16 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   const patchReserve = usePatchReserve()
 
-  const formattedPoolReserves = formattedReserves.map(patchReserve)
-
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {
       ghoReserveData,
     },
   )
+
+  const formattedPoolReserves = formattedReserves.map((reserve) =>
+    patchReserve(reserve, formattedGhoReserveData),
+  )
+
   const formattedGhoUserData: FormattedGhoUserData = formatGhoUserData({
     ghoReserveData,
     ghoUserData,
@@ -310,7 +313,10 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
           userReservesData: user.userReservesData
             .map((userReserve) => ({
               ...userReserve,
-              reserve: patchReserve(userReserve.reserve),
+              reserve: patchReserve(
+                userReserve.reserve,
+                formattedGhoReserveData,
+              ),
             }))
             .sort((a, b) => reserveSortFn(a.reserve, b.reserve)),
           earnedAPY,
