@@ -223,19 +223,21 @@ export const MoneyMarketAPY = ({
                 )
               },
             )}
-            {incentives.map(({ rewardTokenAddress, incentiveAPR }) => {
-              const id = getAssetIdFromAddress(rewardTokenAddress)
-              return (
-                <IncentiveRow
-                  key={id}
-                  id={id}
-                  label={t("incentivesApr")}
-                  value={t("value.percentage", {
-                    value: BN(incentiveAPR).times(100),
-                  })}
-                />
-              )
-            })}
+            {incentives
+              .filter(({ incentiveAPR }) => BN(incentiveAPR).gt(0))
+              .map(({ rewardTokenAddress, incentiveAPR }) => {
+                const id = getAssetIdFromAddress(rewardTokenAddress)
+                return (
+                  <IncentiveRow
+                    key={id}
+                    id={id}
+                    label={t("incentivesApr")}
+                    value={t("value.percentage", {
+                      value: BN(incentiveAPR).times(100),
+                    })}
+                  />
+                )
+              })}
             {farms && (
               <>
                 <div
