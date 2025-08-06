@@ -2575,10 +2575,10 @@
     "@polkadot/rpc-provider" "^10.7.3"
     "@polkadot/types" "^10.7.3"
 
-"@galacticcouncil/api-augment@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.6.0.tgz#a24f87c2dfc05a8904748d1dfa6c35d0f2a09a55"
-  integrity sha512-b76kkmd4mJd0Iev9pI1IuP3WB3FV0V/XOAVNEv1/BvfpXd/JdNC/1GeTsfuaAZ8+4yFY/m3/xLdKEpvVurL9KQ==
+"@galacticcouncil/api-augment@^0.8.1":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.8.1.tgz#90458395e2f0334c5ab73f76f3fd981ed2d09e56"
+  integrity sha512-Wb2Fify+4MJKpCbIBTCNZkMV0zULjn79WIuRvk3u1Nybu2DHAP/6t+Gi6Q9cd9KfjYoBNLwghArlnFytk1mtkQ==
 
 "@galacticcouncil/apps@^13.5.0":
   version "13.5.0"
