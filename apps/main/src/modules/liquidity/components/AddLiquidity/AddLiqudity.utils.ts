@@ -36,25 +36,25 @@ export const getCustomErrors = (errors?: FieldError) =>
 
 export const useLiquidityShares = (assetId: string, value: string) => {
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
-  const omnipoolAssetData = omnipoolAssetsData?.get(assetId)
+  const omnipoolAssetData = omnipoolAssetsData?.get(Number(assetId))
 
   if (!omnipoolAssetData || !value) return undefined
 
   const {
-    hubReserve,
+    hubReserves,
     shares,
     balance: assetReserve,
     decimals,
   } = omnipoolAssetData
 
   const sharesToGet = calculate_shares(
-    assetReserve,
-    hubReserve,
-    shares,
-    scale(value, decimals),
+    assetReserve.toString(),
+    hubReserves.toString(),
+    shares.toString(),
+    scale(value, decimals ?? 0),
   )
 
-  const totalShares = Big(shares).plus(sharesToGet).toString()
+  const totalShares = Big(shares.toString()).plus(sharesToGet).toString()
   const poolShare = Big(sharesToGet).div(totalShares).times(100).toString()
 
   return { totalShares, poolShare, sharesToGet }
@@ -74,7 +74,7 @@ export const useAddToOmnipoolZod = (
   const { getBalance } = useAccountBalances()
   const accountBalance = getBalance(assetId)?.free ?? "0"
 
-  const omnipoolAssetData = omnipoolAssetsData?.get(assetId)
+  const omnipoolAssetData = omnipoolAssetsData?.get(Number(assetId))
   const hubBalance = hubToken?.balance
 
   if (
@@ -87,10 +87,10 @@ export const useAddToOmnipoolZod = (
     return undefined
 
   const { decimals, symbol } = omnipoolAsset.meta
-  const { balance: assetReserve, hubReserve, shares, cap } = omnipoolAssetData
+  const { balance: assetReserve, hubReserves, shares, cap } = omnipoolAssetData
 
   const circuitBreakerLimit = scaleHuman(
-    Big(maxAddLiquidityLimit).times(assetReserve).toString(),
+    Big(maxAddLiquidityLimit).times(assetReserve.toString()).toString(),
     decimals,
   )
 
@@ -112,17 +112,17 @@ export const useAddToOmnipoolZod = (
         if (!value) return true
 
         const hubIn = calculate_liquidity_hub_in(
-          assetReserve,
-          hubReserve,
-          shares,
+          assetReserve.toString(),
+          hubReserves.toString(),
+          shares.toString(),
           scale(value, decimals),
         )
 
         const isWithinLimit = verify_asset_cap(
-          assetReserve,
-          cap,
+          assetReserve.toString(),
+          cap.toString(),
           hubIn,
-          hubBalance,
+          hubBalance.toString(),
         )
 
         return isWithinLimit

@@ -68,7 +68,7 @@ export const useRemoveLiquidity = (
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
   const { all: omnipoolPositions } = getAssetPositions(poolId)
 
-  const omnipoolAssetData = omnipoolAssetsData?.get(poolId)
+  const omnipoolAssetData = omnipoolAssetsData?.get(Number(poolId))
   const isRemoveAll = getIsRemoveAll(positionId)
 
   const removePosition = omnipoolPositions.find(
@@ -134,8 +134,8 @@ export const useRemoveLiquidity = (
     ) => {
       if (omnipoolAssetData && oraclePrice && minWithdrawalFee) {
         const lrnaSpotPrice = calculate_lrna_spot_price(
-          omnipoolAssetData.balance,
-          omnipoolAssetData.hubReserve,
+          omnipoolAssetData.balance.toString(),
+          omnipoolAssetData.hubReserves.toString(),
         )
 
         const withdrawalFee = calculate_withdrawal_fee(
