@@ -1,14 +1,8 @@
-import {
-  calculate_amplification,
-  calculate_liquidity_out_one_asset,
-} from "@galacticcouncil/math-stableswap"
-import { StableMath } from "@galacticcouncil/sdk"
-import { useBestNumber } from "api/chain"
-import { useStableswapPool } from "api/stableswap"
+import { calculate_liquidity_out_one_asset } from "@galacticcouncil/math-stableswap"
+import { useStableSDKPools } from "api/stableswap"
 import { useTotalIssuances } from "api/totalIssuance"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import BN from "bignumber.js"
-import { BN_MILL } from "utils/constants"
 
 type Args = {
   poolId: string
@@ -16,44 +10,33 @@ type Args = {
 }
 
 export const useStablepoolLiquidityOut = ({ poolId, reserves }: Args) => {
-  const { data: pool } = useStableswapPool(poolId)
-  const { data: bestNumber } = useBestNumber()
+  const { data: stablePools } = useStableSDKPools()
+  const stableswapSdkData = stablePools?.find((pool) => pool.id === poolId)
   const { data: issuances } = useTotalIssuances()
 
-  const currentBlock = bestNumber?.relaychainBlockNumber.toString()
   const shareIssuance = issuances?.get(poolId)?.toString()
-
-  const amplification = useMemo(() => {
-    if (pool && currentBlock) {
-      return calculate_amplification(
-        pool.initialAmplification.toString(),
-        pool.finalAmplification.toString(),
-        pool.initialBlock.toString(),
-        pool.finalBlock.toString(),
-        currentBlock,
-      )
-    }
-  }, [pool, currentBlock])
 
   const getAssetOutValue = useCallback(
     (assetId: number, shares: string) => {
-      if (amplification && shareIssuance && pool) {
-        const stablepoolFee = BN(pool.fee.toString()).div(BN_MILL).toString()
-        const pegs = StableMath.defaultPegs(pool.assets.length)
+      if (stableswapSdkData) {
+        const fee = BN(stableswapSdkData.pegsFee[0])
+          .div(stableswapSdkData.pegsFee[1])
+          .toString()
+
         return calculate_liquidity_out_one_asset(
           JSON.stringify(reserves),
           shares,
           assetId,
-          amplification,
-          shareIssuance,
-          stablepoolFee,
-          JSON.stringify(pegs),
+          stableswapSdkData.amplification,
+          stableswapSdkData.totalIssuance,
+          fee,
+          JSON.stringify(stableswapSdkData.pegs),
         )
       }
 
       return "0"
     },
-    [pool, amplification, reserves, shareIssuance],
+    [reserves, stableswapSdkData],
   )
 
   const getAssetOutProportionally = useCallback(

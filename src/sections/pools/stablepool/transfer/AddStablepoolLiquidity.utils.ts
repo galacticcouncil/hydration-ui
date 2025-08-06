@@ -1,16 +1,10 @@
-import {
-  calculate_amplification,
-  calculate_shares,
-} from "@galacticcouncil/math-stableswap"
-import { StableMath, Trade } from "@galacticcouncil/sdk"
-import { useBestNumber } from "api/chain"
-import { useStableswapPool } from "api/stableswap"
-import { useTotalIssuances } from "api/totalIssuance"
+import { calculate_shares } from "@galacticcouncil/math-stableswap"
+import { Trade } from "@galacticcouncil/sdk"
+import { useStableSDKPools } from "api/stableswap"
 import { scale } from "utils/balance"
 import {
   AAVE_EXTRA_GAS,
   BN_0,
-  BN_MILL,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import BigNumber from "bignumber.js"
@@ -130,33 +124,20 @@ export const useStablepoolShares = (
   form: UseFormReturn<TAddStablepoolFormValues, any, undefined>,
 ) => {
   const { getAssetWithFallback } = useAssets()
-
-  const { data: stableswapPool } = useStableswapPool(poolId)
-  const { data: bestNumber } = useBestNumber()
-  const { data: issuances } = useTotalIssuances()
-
+  const { data: stablePools } = useStableSDKPools()
   const { control, setValue, trigger, watch } = form
 
   const formValues = useWatch({ name: "reserves", control })
 
-  const currentBlock = bestNumber?.relaychainBlockNumber.toString()
-  const shareIssuance = issuances?.get(poolId)?.toString()
+  const stableswapSdkData = stablePools?.find((pool) => pool.id === poolId)
 
   const stablepoolShares = watch("amount") || "0"
 
   const getShares = useCallback(
     (assets: TStablepoolFormValue[]) => {
-      if (!stableswapPool || !currentBlock || !shareIssuance) {
+      if (!stableswapSdkData) {
         return undefined
       }
-
-      const amplification = calculate_amplification(
-        stableswapPool.initialAmplification.toString(),
-        stableswapPool.finalAmplification.toString(),
-        stableswapPool.initialBlock.toString(),
-        stableswapPool.finalBlock.toString(),
-        currentBlock,
-      )
 
       const validAssets = assets
         .filter(({ amount }) => BigNumber(amount).isPositive())
@@ -168,15 +149,17 @@ export const useStablepoolShares = (
           ).toString(),
         }))
 
-      const pegs = StableMath.defaultPegs(stableswapPool.assets.length)
+      const fee = BigNumber(stableswapSdkData.pegsFee[0])
+        .div(stableswapSdkData.pegsFee[1])
+        .toString()
 
       const shares = calculate_shares(
         JSON.stringify(reserves),
         JSON.stringify(validAssets),
-        amplification,
-        shareIssuance,
-        new BigNumber(stableswapPool.fee.toString()).div(BN_MILL).toString(),
-        JSON.stringify(pegs),
+        stableswapSdkData.amplification,
+        stableswapSdkData.totalIssuance,
+        fee,
+        JSON.stringify(stableswapSdkData.pegs),
       )
 
       return BigNumber.maximum(
@@ -184,13 +167,7 @@ export const useStablepoolShares = (
         BN_0,
       ).toString()
     },
-    [
-      currentBlock,
-      getAssetWithFallback,
-      reserves,
-      shareIssuance,
-      stableswapPool,
-    ],
+    [getAssetWithFallback, reserves, stableswapSdkData],
   )
 
   useEffect(() => {
@@ -440,13 +417,16 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
       BigNumber(amount).isPositive(),
     )
 
-    const stableswapTx = api.tx.stableswap.addAssetsLiquidity(
-      poolId,
-      assetsToAdd.map((v) => ({
-        assetId: v.assetId,
-        amount: scale(v.amount, v.decimals).toString(),
-      })),
-      limitShares,
+    const stableswapTx = api.tx.dispatcher.dispatchWithExtraGas(
+      api.tx.stableswap.addAssetsLiquidity(
+        poolId,
+        assetsToAdd.map((v) => ({
+          assetId: v.assetId,
+          amount: scale(v.amount, v.decimals).toString(),
+        })),
+        limitShares,
+      ),
+      AAVE_EXTRA_GAS,
     )
 
     const toastValue = assetsToAdd
