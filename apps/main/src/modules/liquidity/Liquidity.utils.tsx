@@ -11,7 +11,7 @@ import Big from "big.js"
 import { useEffect, useMemo } from "react"
 
 import { XykDeposit } from "@/api/account"
-import { AssetType, TAssetData } from "@/api/assets"
+import { AssetType, TAssetData, TErc20 } from "@/api/assets"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
   OmniPoolToken,
@@ -93,6 +93,7 @@ export type TStablepoolData = {
   balance: string
   isStablepool: boolean
   lpFee: string | undefined
+  aToken: TErc20 | undefined
 }
 
 const isStablepoolData = (
@@ -108,6 +109,7 @@ export const useStablepools = () => {
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
     stablepoolYieldMetricsQuery(squidClient),
   )
+  const { getRelatedAToken } = useAssets()
 
   const tokensSet = new Set<string>()
 
@@ -152,12 +154,15 @@ export const useStablepools = () => {
       (stablepoolFee) => stablepoolFee.poolId === poolId.toString(),
     )?.projectedApyPerc
 
+    const aToken = getRelatedAToken(poolId.toString())
+
     const data: TStablepoolData = {
       id: poolId,
       volume: stablepool.volume,
       balance: totalBalance.toFixed(0),
       isStablepool: true,
       lpFee,
+      aToken,
     }
 
     return data
@@ -215,8 +220,11 @@ export const useOmnipoolStablepools = () => {
 
     stablepools?.forEach((stablepoolData) => {
       if (
-        !omnipoolAssets.find((asset) => asset.id === stablepoolData.id) &&
-        stablepoolData.id !== 4200 //TODO: update when atoken map is ready
+        !omnipoolAssets.find(
+          (asset) =>
+            asset.id === stablepoolData.id ||
+            asset.id.toString() === stablepoolData.aToken?.id,
+        )
       ) {
         onlyStablepool.push(stablepoolData)
       } else {
