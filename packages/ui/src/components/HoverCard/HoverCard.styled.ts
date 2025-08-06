@@ -15,6 +15,8 @@ export const animateIn = keyframes`
 `
 
 export const SHoverCardContent = styled(Content)`
+  z-index: ${({ theme }) => theme.zIndices.modal};
+  
   &[data-state="open"] {
     animation: 0.15s cubic-bezier(0.16, 1, 0.3, 1) ${animateIn};
   }
