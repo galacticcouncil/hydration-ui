@@ -162,8 +162,11 @@ export const AccountTotalBalancesByPeriodDocument = `
 }
     `;
 export const LatestAccountsBalancesDocument = `
-    query LatestAccountsBalances($accountIds: StringFilter) {
-  accountTotalBalanceHistoricalData(filter: {accountId: $accountIds}, last: 1) {
+    query LatestAccountsBalances($accountId: String) {
+  accountTotalBalanceHistoricalData(
+    filter: {accountId: {equalTo: $accountId}}
+    last: 1
+  ) {
     nodes {
       totalTransferableNorm
     }

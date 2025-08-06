@@ -22,9 +22,9 @@ query AccountTotalBalancesByPeriod(
   }
 }
 
-query LatestAccountsBalances($accountIds: StringFilter) {
+query LatestAccountsBalances($accountId: String) {
   accountTotalBalanceHistoricalData(
-    filter: { accountId: $accountIds }
+    filter: { accountId: { equalTo: $accountId } }
     last: 1
   ) {
     nodes {

@@ -11,7 +11,7 @@ export type AccountTotalBalancesByPeriodQueryVariables = Types.Exact<{
 export type AccountTotalBalancesByPeriodQuery = { __typename?: 'Query', accountTotalBalancesByPeriod: { __typename?: 'AccountTotalBalancesByPeriodResponse', nodes: Array<{ __typename?: 'AccountTotalBalanceSnapshot', referenceAssetId: string, buckets: Array<{ __typename?: 'AccountTotalBalanceBucket', transferableNorm: string, timestamp: string }> } | null> } };
 
 export type LatestAccountsBalancesQueryVariables = Types.Exact<{
-  accountIds?: Types.InputMaybe<Types.StringFilter>;
+  accountId?: Types.InputMaybe<Types.Scalars['String']['input']>;
 }>;
 
 
