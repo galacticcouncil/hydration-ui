@@ -60,6 +60,8 @@ export type OmnipoolAssetTable = {
   isFarms: boolean
   isStablepoolOnly: boolean
   isStablepoolInOmnipool: boolean
+  aStableswapBalance: bigint | undefined
+  aStableswapAsset: TErc20 | undefined
 }
 
 export type IsolatedPoolTable = {
@@ -245,6 +247,14 @@ export const useOmnipoolStablepools = () => {
       const isStablepoolOnly = isStablepoolData(pool)
       const stablepoolInOmnipool = stableInOmnipool.get(poolId)
       const isStablepoolInOmnipool = !!stablepoolInOmnipool
+      const isStablePool = isStablepoolOnly || isStablepoolInOmnipool
+
+      const aStableswapAsset = isStablepoolOnly
+        ? pool.aToken
+        : stablepoolInOmnipool?.aToken
+      const aStableswapBalance = aStableswapAsset
+        ? getFreeBalance(aStableswapAsset.id.toString())
+        : undefined
 
       let volume: string | undefined
       let lpFeeOmnipool: string | undefined
@@ -288,7 +298,6 @@ export const useOmnipoolStablepools = () => {
       const positionsAmount = positions.length
       const balance = getFreeBalance(poolId)
 
-      const isStablePool = isStablepoolOnly || isStablepoolInOmnipool
       const isPositions =
         positionsAmount > 0 || (Big(balance.toString()).gt(0) && isStablePool)
 
@@ -323,6 +332,8 @@ export const useOmnipoolStablepools = () => {
         isFarms: false,
         isStablepoolOnly,
         isStablepoolInOmnipool,
+        aStableswapBalance,
+        aStableswapAsset,
       }
     })
 
