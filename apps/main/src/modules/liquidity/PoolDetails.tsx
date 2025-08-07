@@ -1,53 +1,42 @@
 import { Flex, Paper } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Outlet, useParams } from "@tanstack/react-router"
-import { useTranslation } from "react-i18next"
 
 import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
-import { BalancePosition } from "@/modules/liquidity/components/BalancePosition"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
 import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"
 import { PositionsTable } from "@/modules/liquidity/components/PositionsTable"
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
+import { PoolDetailsSkeleton } from "./PoolDetailsSkeleton"
+
 export const PoolDetails = () => {
-  const { t } = useTranslation("liquidity")
   const { id } = useParams({ from: "/liquidity/$id" })
 
-  const { data: omnipool } = useOmnipoolAsset(id)
-  const { data: xykData } = useXYKPool(id)
+  const { data: omnipoolData, isLoading: isOmnipoolLoading } =
+    useOmnipoolAsset(id)
+  const { data: xykData, isLoading: isXYKLoading } = useXYKPool(id)
 
-  const data = omnipool || xykData
+  const data = omnipoolData || xykData
+  const isLoading = isOmnipoolLoading || isXYKLoading
+
+  if (isLoading) return <PoolDetailsSkeleton />
 
   if (!data) return null
 
   return (
     <Flex direction="column" sx={{ position: "relative" }}>
       <PoolDetailsHeader data={data} />
+
+      {data && <PositionsTable pool={data} />}
+
       <Flex gap={20}>
         <Paper sx={{ flex: 1 }}></Paper>
 
-        <Paper
-          as={Flex}
-          width={360}
-          p={getTokenPx("containers.paddings.primary")}
-          gap={getTokenPx("containers.paddings.primary")}
-          sx={{ flexDirection: "column" }}
-        >
-          <PoolDetailsValues data={data} />
-        </Paper>
+        <PoolDetailsValues data={data} />
       </Flex>
 
       <AvailableFarmsSection />
 
-      {omnipool?.isStablePool ? (
-        <BalancePosition
-          label={t("liquidity.stablepool.position.label")}
-          pool={omnipool}
-        />
-      ) : null}
-
-      <PositionsTable assetId={id} />
       <Outlet />
     </Flex>
   )
