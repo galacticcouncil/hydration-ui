@@ -63,6 +63,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms, pool.poolAddress)
+
   const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
@@ -72,7 +73,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
       shares: "",
       ratio: "",
     },
-    resolver: zodResolver(zodSchema),
+  resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
   const { formState, reset } = form
