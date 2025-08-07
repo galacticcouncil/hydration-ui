@@ -62,7 +62,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
-    useXYKZodSchema(assetA, assetB, pool.meta, farms)
+    useXYKZodSchema(assetA, assetB, pool.meta, farms, pool.poolAddress)
   const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
