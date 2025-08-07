@@ -26,7 +26,7 @@ export const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   const { t } = useTranslation("common")
 
   const [isSectionExpanded, setIsSectionExpanded] = useState(true)
-  const [isContentExpanded, setisContentExpanded] = useState(
+  const [isContentExpanded, setIsContentExpanded] = useState(
     maxContentHeight === "100%",
   )
 
@@ -60,9 +60,9 @@ export const ExpandableSection: React.FC<ExpandableSectionProps> = ({
       {shouldRenderExpandButton && (
         <ExpandButton
           type="button"
-          onClick={() => setisContentExpanded((prev) => !prev)}
+          onClick={() => setIsContentExpanded((prev) => !prev)}
         >
-          {t("transaction.jsonview.expand")}
+          {t("showMore")}
         </ExpandButton>
       )}
     </Box>
