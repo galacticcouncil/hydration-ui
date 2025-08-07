@@ -73,7 +73,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
       shares: "",
       ratio: "",
     },
-  resolver: zodSchema ? zodResolver(zodSchema) : undefined,
+    resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
   const { formState, reset } = form
