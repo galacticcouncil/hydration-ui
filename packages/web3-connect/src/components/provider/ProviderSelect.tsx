@@ -1,4 +1,10 @@
-import { Grid, Stack, Text } from "@galacticcouncil/ui/components"
+import {
+  Collapsible,
+  Grid,
+  Separator,
+  Stack,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { useState } from "react"
 import { isNot, prop } from "remeda"
 
@@ -42,10 +48,14 @@ export const ProviderSelect = () => {
     )
   }
   return (
-    <Stack gap={20}>
-      <Stack gap={10}>
-        <AccountFilter active={filter} onSetActive={setFilter} />
-        <Text>Installed</Text>
+    <Stack gap={10}>
+      <AccountFilter active={filter} onSetActive={setFilter} />
+      <Collapsible
+        label={<Text fs="p3">Installed & recently used</Text>}
+        actionLabel="Show"
+        actionLabelWhenOpen="Hide"
+        defaultOpen
+      >
         <Grid columns={[2, 4]} gap={10}>
           {mode === WalletMode.Default && (
             <ProviderLastConnectedButton
@@ -66,15 +76,20 @@ export const ProviderSelect = () => {
             Connect all
           </SProviderButton>
         )}
-      </Stack>
-      <Stack gap={10}>
-        <Text>Other</Text>
+      </Collapsible>
+      <Separator />
+      <Collapsible
+        label={<Text fs="p3">Other Wallets</Text>}
+        actionLabel="Show"
+        actionLabelWhenOpen="Hide"
+        defaultOpen={installedCompatible.length === 0}
+      >
         <Grid columns={[2, 4]} gap={10}>
           {other.map(getWalletData).map((props) => (
             <ProviderButton key={props.provider} {...props} />
           ))}
         </Grid>
-      </Stack>
+      </Collapsible>
     </Stack>
   )
 }

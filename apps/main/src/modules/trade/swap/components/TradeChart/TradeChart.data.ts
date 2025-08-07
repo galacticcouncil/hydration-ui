@@ -111,8 +111,8 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
 }
 
 const bucketSizes: Record<PeriodType, TimeSeriesBucketTimeRange> = {
-  hour: TimeSeriesBucketTimeRange["1M"],
-  day: TimeSeriesBucketTimeRange["30M"],
-  week: TimeSeriesBucketTimeRange["4H"],
+  hour: TimeSeriesBucketTimeRange["15S"],
+  day: TimeSeriesBucketTimeRange["5M"],
+  week: TimeSeriesBucketTimeRange["1H"],
   month: TimeSeriesBucketTimeRange["4H"],
 }
