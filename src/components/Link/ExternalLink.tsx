@@ -9,13 +9,18 @@ const ExternalLinkAdornment = () => (
   </SExternalLinkAdornment>
 )
 
-type Props = { href?: string } & ComponentProps<typeof SExternalLink>
+type Props = { href?: string; withArrow?: boolean } & ComponentProps<
+  typeof SExternalLink
+>
 
 export const ExternalLink: FC<PropsWithChildren<Props>> = ({
   href,
   className,
   children,
   onClick,
+  withArrow = false,
+  target = "_blank",
+  rel = "noopener noreferrer",
   ...props
 }) => {
   return (
@@ -23,9 +28,11 @@ export const ExternalLink: FC<PropsWithChildren<Props>> = ({
       href={href}
       className={className}
       onClick={onClick}
+      target={target}
+      rel={rel}
       {...props}
     >
-      {children} <ExternalLinkAdornment />
+      {children} {withArrow && <ExternalLinkAdornment />}
     </SExternalLink>
   )
 }

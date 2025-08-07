@@ -169,6 +169,8 @@
   "header.xcm.deposit.subtitle": "Deposit your assets to Hydration",
   "header.xcm.withdraw.title": "Withdraw",
   "header.xcm.withdraw.subtitle": "Withdraw your assets from Hydration",
+  "header.xcm.wormhole.title": "Wormhole",
+  "header.xcm.wormhole.subtitle": "Redeem your assets from Wormhole",
   "header.stats": "Stats",
   "header.stats.overview.title": "Overview",
   "header.stats.overview.subtitle": " ",
@@ -1520,5 +1522,12 @@
   "giga.campaign.title": "Polkadot GIGAHydration",
   "giga.campaign.description": "The new farms with GIGA incentives are live.",
   "giga.campaign.description2": "Add your liquidity to new farm.",
-  "join": "Join!"
+  "join": "Join!",
+  "wormhole.transfers.table.title": "Wormhole Transfers",
+  "wormhole.transfers.table.empty": "No transfers found.",
+  "wormhole.transfers.table.column.status": "Status",
+  "wormhole.transfers.table.column.from": "From",
+  "wormhole.transfers.table.column.to": "To",
+  "wormhole.transfers.table.column.time": "Time",
+  "wormhole.transfers.table.column.pair": "From / To"
 }

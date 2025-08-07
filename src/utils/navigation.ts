@@ -22,6 +22,7 @@ import PositionsIcon from "assets/icons/PositionsIcon.svg?react"
 import DownloadIcon from "assets/icons/DownloadIcon.svg?react"
 import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import TreasuryIcon from "assets/icons/Treasury.svg?react"
+import WormholeLogo from "assets/icons/WormholeLogo.svg?react"
 import BarChartDecreasingIcon from "assets/icons/BarChartDecreasingIcon.svg?react"
 import { Search } from "@tanstack/react-location"
 
@@ -39,6 +40,7 @@ export const LINKS = {
   walletTransactions: "/wallet/transactions",
   walletVesting: "/wallet/vesting",
   cross_chain: "/cross-chain",
+  wormhole: "/cross-chain/wormhole",
   bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
@@ -234,6 +236,12 @@ export const MENU_ITEMS = [
         key: "xcm.withdraw",
         href: LINKS.withdraw,
         Icon: UploadIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.wormhole",
+        href: LINKS.wormhole,
+        Icon: WormholeLogo,
         enabled: true,
       },
     ],
