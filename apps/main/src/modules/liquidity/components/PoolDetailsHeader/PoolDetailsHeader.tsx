@@ -61,10 +61,7 @@ export const PoolDetailsHeader = ({
         <Button
           onClick={() =>
             navigate({
-              to:
-                isOmnipool && data.isStablePool
-                  ? "/liquidity/$id/add"
-                  : "/liquidity/$id/add",
+              to: "/liquidity/$id/add",
               params: { id: data.id },
               resetScroll: false,
             })

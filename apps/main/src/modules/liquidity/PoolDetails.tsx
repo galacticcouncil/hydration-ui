@@ -26,8 +26,6 @@ export const PoolDetails = () => {
     <Flex direction="column" sx={{ position: "relative" }}>
       <PoolDetailsHeader data={data} />
 
-      {/* {data && <PositionsTable pool={data} />} */}
-
       <Flex gap={20}>
         <Paper sx={{ flex: 1 }}></Paper>
 

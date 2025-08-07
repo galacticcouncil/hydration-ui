@@ -26,18 +26,18 @@ export const ClaimRewardsButton = () => {
         borderRadius="xl"
         asChild
         p={getTokenPx("containers.paddings.primary")}
-        // sx={{ zIndex: 1000 }}
       >
         <Flex direction="column" gap={getTokenPx("scales.paddings.m")}>
           <Text fs="p5" color={getToken("text.medium")} fw={400}>
             {t("header.claim.claimableFromAllPositions")}
           </Text>
+          {/* TODO: add claimable amount */}
           <Text fs={16} color={getToken("text.high")} fw={500}>
             130 100 HDX
           </Text>
 
           <Separator />
-
+          {/* TODO: add total amount */}
           <Text fs="p5" color={getToken("text.high")} fw={400}>
             Total of ≈ $2855.24
           </Text>
