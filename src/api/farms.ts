@@ -605,7 +605,7 @@ const getOraclePrice =
     const bOut = data.volume.bOut.toString()
     const liquidityA = data.liquidity.a.toString()
     const liquidityB = data.liquidity.b.toString()
-    const sharesIssuance = data.sharesIssuance.toString()
+    const sharesIssuance = data.sharesIssuance?.unwrapOr(null)?.toString()
 
     let oraclePrice
     if (Number(rewardCurrency) < Number(incentivizedAsset)) {
