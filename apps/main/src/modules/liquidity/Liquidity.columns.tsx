@@ -251,7 +251,7 @@ export const usePoolColumns = () => {
                   onClick={() =>
                     navigate({
                       to: row.original.isStablePool
-                        ? "/liquidity/$id/addStablepool"
+                        ? "/liquidity/$id/add"
                         : "/liquidity/$id/add",
                       params: { id: row.original.id },
                       resetScroll: false,

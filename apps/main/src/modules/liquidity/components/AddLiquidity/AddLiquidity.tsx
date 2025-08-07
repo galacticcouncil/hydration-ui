@@ -137,7 +137,7 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
                 mb: getTokenPx("containers.paddings.quart"),
               }}
             >
-              {t("liquidity.add.modal.positionDetails")}
+              {t("liquidity:positionDetails")}
             </Text>
 
             <ModalContentDivider />

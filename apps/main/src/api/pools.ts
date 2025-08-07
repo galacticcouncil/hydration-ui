@@ -46,11 +46,11 @@ export const allPools = (
         } else if (pool.type === PoolType.Omni) {
           const tokens = pool.tokens as OmniPoolToken[]
 
-          for (const tokenRaw of tokens) {
-            if (tokenRaw.id === Number(HUB_ID)) {
-              hub = tokenRaw
+          for (const token of tokens) {
+            if (token.id === Number(HUB_ID)) {
+              hub = token
             } else {
-              omnipoolTokens_.push(tokenRaw)
+              omnipoolTokens_.push(token)
             }
           }
         }
