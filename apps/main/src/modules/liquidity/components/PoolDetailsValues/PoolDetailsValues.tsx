@@ -1,6 +1,7 @@
-import { PoolToken, XykMath } from "@galacticcouncil/sdk"
+import { XykMath } from "@galacticcouncil/sdk"
 import {
   Flex,
+  Paper,
   ProgressBar,
   Separator,
   Skeleton,
@@ -11,12 +12,14 @@ import {
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { PoolToken } from "@/api/pools"
 import { Logo } from "@/components/Logo"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
   useOmnipoolCapacity,
+  useOmnipoolShare,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
@@ -31,13 +34,19 @@ export const PoolDetailsValues = ({
   const isOmnipool = !isIsolatedPool(data)
 
   return (
-    <>
+    <Paper
+      as={Flex}
+      width={360}
+      p={getTokenPx("containers.paddings.primary")}
+      gap={getTokenPx("containers.paddings.primary")}
+      sx={{ flexDirection: "column" }}
+    >
       {isOmnipool ? (
         <OmnipoolValues data={data} />
       ) : (
         <IsolatedPoolValues data={data} />
       )}
-    </>
+    </Paper>
   )
 }
 
@@ -45,6 +54,9 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
   const { data: capacity, isLoading } = useOmnipoolCapacity(data.id)
+  const { omnipoolShare, isLoading: isOmnipoolShareLoading } = useOmnipoolShare(
+    data.id,
+  )
 
   return (
     <>
@@ -75,13 +87,13 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
 
       <ValueStats
         label={t("liquidity:details.values.volume")}
-        value={t("currency", { value: "10000000000" })}
+        value={t("currency", { value: data.volumeDisplay })}
       />
 
       <Separator mx={-20} />
 
       <ValueStats
-        label={t("liquidity:details.values.tvl")}
+        label={t("liquidity:totalValueLocked")}
         value={t("currency", { value: data.tvlDisplay })}
       />
 
@@ -89,14 +101,15 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
 
       <ValueStats
         label={t("liquidity:details.values.feeFarmApr")}
-        value={t("percent", { value: "5" })}
+        value={t("percent", { value: data.totalFee })}
       />
 
       <Separator mx={-20} />
 
       <ValueStats
         label={t("liquidity:details.values.omnipoolShare")}
-        value={t("percent", { value: 10 })}
+        value={t("percent", { value: omnipoolShare })}
+        isLoading={isOmnipoolShareLoading}
       />
 
       {data.isStablePool && <CurrencyReserves id={data.id} />}
@@ -113,11 +126,11 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
     assetA && assetB
       ? scaleHuman(
           XykMath.getSpotPrice(
-            assetA.balance,
-            assetB.balance,
-            scale(1, assetA.decimals),
+            assetA.balance.toString(),
+            assetB.balance.toString(),
+            scale(1, assetA.decimals ?? 0),
           ),
-          assetB.decimals,
+          assetB.decimals ?? 0,
         )
       : undefined
 
@@ -125,11 +138,11 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
     assetA && assetB
       ? scaleHuman(
           XykMath.getSpotPrice(
-            assetB.balance,
-            assetA.balance,
-            scale(1, assetB.decimals),
+            assetB.balance.toString(),
+            assetA.balance.toString(),
+            scale(1, assetB.decimals ?? 0),
           ),
-          assetA.decimals,
+          assetA.decimals ?? 0,
         )
       : undefined
 
@@ -184,7 +197,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       )}
 
       <ValueStats
-        label={t("liquidity:details.values.tvl")}
+        label={t("liquidity:totalValueLocked")}
         value={t("currency", { value: data.tvlDisplay })}
       />
 
@@ -192,7 +205,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
 
       <ValueStats
         label={t("liquidity:details.values.volume")}
-        value={t("currency", { value: "10000000000" })}
+        value={t("currency", { value: data.volumeDisplay })}
       />
 
       <Separator mx={-20} />
@@ -209,13 +222,14 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
 
 const AssetPrice = ({ asset }: { asset: PoolToken }) => {
   const { t } = useTranslation("liquidity")
-  const { price } = useAssetPrice(asset.id)
+  const { price } = useAssetPrice(asset.id.toString())
 
   return (
     <Text fs="p6" fw={400} color={getToken("text.medium")}>
       {t("details.values.xyk.price", {
         value: price,
-        priceSymbol: asset.symbol,
+        //TODO: add price symbol
+        priceSymbol: "",
       })}
     </Text>
   )
