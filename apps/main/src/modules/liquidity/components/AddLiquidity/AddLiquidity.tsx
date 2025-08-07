@@ -2,7 +2,6 @@ import {
   Alert,
   Button,
   Flex,
-  LinkTextButton,
   ModalBody,
   ModalContainer,
   ModalContentDivider,
@@ -10,16 +9,14 @@ import {
   Skeleton,
   Summary,
   SummaryRowValue,
-  Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useAssetFeeParameters } from "@/api/omnipool"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
-import { IMPERMANENT_LOSS_LINK } from "@/config/links"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -32,6 +29,8 @@ import {
   useLiquidityShares,
   useSubmitAddLiquidity,
 } from "./AddLiqudity.utils"
+import { AddLiquidityAlert } from "./AddLiquidityAlert"
+import { PositionDetailsLabel } from "./PositionDetailsLabel"
 
 type TFormValues = { amount: string }
 
@@ -46,7 +45,7 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(assetId)
 
-  const { getBalance } = useAccountBalances()
+  const { getFreeBalance } = useAccountBalances()
   const zodSchema = useAddToOmnipoolZod(assetId)
   const { mutate: submitAddLiquidity } = useSubmitAddLiquidity()
 
@@ -58,8 +57,8 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
 
   const isFarms = farms.length > 0
 
-  const liquidityShares = useLiquidityShares(assetId, form.watch("amount"))
-  const balance = scaleHuman(getBalance(assetId)?.free ?? 0n, meta.decimals)
+  const liquidityShares = useLiquidityShares(form.watch("amount"), assetId)
+  const balance = scaleHuman(getFreeBalance(assetId), meta.decimals)
 
   const onSubmit = async (values: TFormValues) => {
     if (!liquidityShares || !values.amount)
@@ -127,18 +126,7 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
 
             <ModalContentDivider />
 
-            <Text
-              color={getToken("text.tint.secondary")}
-              fw={500}
-              font="primary"
-              fs="h7"
-              sx={{
-                mt: getTokenPx("containers.paddings.primary"),
-                mb: getTokenPx("containers.paddings.quart"),
-              }}
-            >
-              {t("liquidity:positionDetails")}
-            </Text>
+            <PositionDetailsLabel />
 
             <ModalContentDivider />
 
@@ -146,14 +134,16 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
               separator={<ModalContentDivider />}
               rows={[
                 {
-                  label: t("liquidity.add.modal.receivedAmountOfPoolShares"),
+                  label: t("liquidity.add.modal.shareOfPool"),
                   content: t("common:percent", {
                     value: liquidityShares?.poolShare,
                   }),
                 },
                 {
                   label: t("common:price"),
-                  content: <Price assetId={assetId} symbol={meta.symbol} />,
+                  content: (
+                    <AddLiquidityPrice assetId={assetId} symbol={meta.symbol} />
+                  ),
                 },
               ]}
             />
@@ -175,16 +165,7 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
               />
             ) : null}
 
-            <Alert
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
-              displayIcon={false}
-              title={t("liquidity.add.modal.info.description")}
-              description={
-                <LinkTextButton direction="none" href={IMPERMANENT_LOSS_LINK}>
-                  {t("liquidity.add.modal.info.learnMoreAboutRisks")}
-                </LinkTextButton>
-              }
-            />
+            <AddLiquidityAlert />
 
             <ModalContentDivider />
 
@@ -228,13 +209,25 @@ const RewardsFromFees = ({ assetId }: { assetId: string }) => {
   )
 }
 
-const Price = ({ assetId, symbol }: { assetId: string; symbol: string }) => {
+export const AddLiquidityPrice = ({
+  assetId,
+  symbol,
+  loading,
+}: {
+  assetId: string
+  symbol: string
+  loading?: boolean
+}) => {
   const { t } = useTranslation("liquidity")
-  const { price } = useAssetPrice(assetId)
+  const { price, isLoading } = useAssetPrice(assetId)
 
   return (
     <SummaryRowValue>
-      {t("liquidity.add.modal.price", { value: price, assetSymbol: symbol })}
+      {isLoading || loading ? (
+        <Skeleton width={50} height="100%" />
+      ) : (
+        t("liquidity.add.modal.price", { value: price, assetSymbol: symbol })
+      )}
     </SummaryRowValue>
   )
 }

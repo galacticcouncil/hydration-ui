@@ -34,7 +34,7 @@ export const getCustomErrors = (errors?: FieldError) =>
       })
     : undefined
 
-export const useLiquidityShares = (assetId: string, value: string) => {
+export const useLiquidityShares = (value: string, assetId: string) => {
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
   const omnipoolAssetData = omnipoolAssetsData?.get(Number(assetId))
 
@@ -177,6 +177,7 @@ export const useSubmitAddLiquidity = () => {
         min_shares_limit: BigInt(shares),
       })
       const shiftedAmount = scaleHuman(amount, decimals)
+
       await createTransaction({
         tx,
         toasts: {

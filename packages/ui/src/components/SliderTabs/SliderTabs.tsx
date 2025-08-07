@@ -12,12 +12,16 @@ type SliderTabsProps<TKey extends SliderTabsOptionKey> = {
   readonly options: ReadonlyArray<SliderTabsOption<TKey>>
   readonly selected?: NoInfer<TKey>
   readonly onSelect: (option: SliderTabsOption<NoInfer<TKey>>) => void
+  readonly disabled?: boolean
+  readonly children?: React.ReactNode
 }
 
 export const SliderTabs = <TKey extends SliderTabsOptionKey>({
   options,
   selected,
   onSelect,
+  disabled,
+  children,
 }: SliderTabsProps<TKey>) => {
   return (
     <SSliderTabs>
@@ -30,11 +34,14 @@ export const SliderTabs = <TKey extends SliderTabsOptionKey>({
             aria-label={option.label}
             variant={isSelected ? "sliderTabActive" : "sliderTabInactive"}
             onClick={() => onSelect(option)}
+            disabled={disabled}
+            sx={{ flex: 1 }}
           >
             {option.label}
           </Button>
         )
       })}
+      {children}
     </SSliderTabs>
   )
 }
