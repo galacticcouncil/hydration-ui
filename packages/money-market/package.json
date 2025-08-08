@@ -20,7 +20,6 @@
     "@galacticcouncil/utils": "*",
     "@galacticcouncil/web3-connect": "*",
     "ethers": "5.7.0",
-    "immer": "^10.0.3",
     "reflect-metadata": "0.1.13"
   }
 }

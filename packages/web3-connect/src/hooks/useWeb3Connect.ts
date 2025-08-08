@@ -1,3 +1,4 @@
+import { produce } from "immer"
 import { omit } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -55,6 +56,7 @@ export type StoredAccount = {
   address: string
   provider: WalletProviderType
   delegate?: string
+  balance?: number
 }
 
 export type Account = StoredAccount & {
@@ -88,6 +90,7 @@ export type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
   setAccount: (account: StoredAccount | null) => void
   setAccounts: (accounts: StoredAccount[]) => void
+  setBalances: (balances: ReadonlyMap<string, number>) => void
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
@@ -129,6 +132,19 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           accounts: [...state.accounts, ...accounts],
         })),
       setAccount: (account) => set((state) => ({ ...state, account })),
+      setBalances: (balances) => {
+        return set((state) =>
+          produce(state, ({ accounts }) => {
+            for (const account of accounts) {
+              const balance = balances.get(account.publicKey)
+
+              if (balance !== undefined) {
+                account.balance = balance
+              }
+            }
+          }),
+        )
+      },
       setStatus: (provider, status) => {
         const isError = status === WalletProviderStatus.Error
         return set((state) => ({

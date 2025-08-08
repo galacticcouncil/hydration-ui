@@ -1,4 +1,10 @@
-import { AccountAvatar, Box, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  AccountAvatar,
+  Box,
+  Flex,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { useState } from "react"
@@ -18,7 +24,7 @@ import { getWallet } from "@/wallets"
 export type AccountOptionProps = Account & {
   isActive?: boolean
   isProxy?: boolean
-  balance?: string
+  isBalanceLoading?: boolean
   onSelect?: (account: Account) => void
   onEdit?: (name: string) => void
   onDelete?: () => void
@@ -28,6 +34,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
   isActive,
   isProxy = false,
   balance,
+  isBalanceLoading,
   onSelect,
   onEdit,
   onDelete,
@@ -76,7 +83,13 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
                 </Text>
               </Flex>
             )}
-            {balance && <Text fs="p3">{balance}</Text>}
+            {isBalanceLoading && balance === undefined ? (
+              <Skeleton sx={{ width: 75, ml: "auto" }} />
+            ) : (
+              balance !== undefined && (
+                <Text fs="p3">${balance.toFixed(2)}</Text>
+              )
+            )}
             {onEdit && <AccountEditButton onClick={() => setIsEditing(true)} />}
           </Flex>
           <Flex align="center" justify="space-between" gap={4}>

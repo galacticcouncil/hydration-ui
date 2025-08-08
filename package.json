@@ -52,6 +52,7 @@
     "@polkadot/networks": "^13.2.3",
     "@polkadot/ui-shared": "^3.1.4",
     "big.js": "^6.2.2",
+    "immer": "^10.0.3",
     "polkadot-api": "^1.11.2",
     "react-hook-form": "^7.54.2",
     "react-use": "^17.6.0",
