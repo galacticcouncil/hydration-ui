@@ -24,7 +24,7 @@ export const usePriceSubscriber = () => {
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
 
   return useQuery({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "displayPrices", stableCoinId],
+    queryKey: ["displayPrices", stableCoinId],
     queryFn: async () => {
       const activeAssetsIds = queryClient
         .getQueriesData({

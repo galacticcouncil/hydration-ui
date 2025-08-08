@@ -44,6 +44,6 @@ export const latestAccountBalanceQuery = (
       "latest",
       accountId,
     ],
-    queryFn: () => squidSdk.LatestAccountBalance({ accountId }),
+    queryFn: () => squidSdk.LatestAccountsBalances({ accountId }),
   })
 }

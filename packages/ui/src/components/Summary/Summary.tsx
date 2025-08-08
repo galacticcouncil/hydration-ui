@@ -26,7 +26,9 @@ export const Summary = ({
       <SummaryRow
         key={`${row.label}_${i}`}
         label={row.label}
+        description={row.description}
         content={row.content}
+        loading={row.loading}
       />
     )) ?? children}
   </Stack>

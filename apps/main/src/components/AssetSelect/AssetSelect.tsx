@@ -27,7 +27,7 @@ export const AssetSelect = ({
   setSelectedAsset,
   ...props
 }: AssetSelectProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
   const [openModal, setOpeModal] = useState(false)
 
   const {
@@ -65,11 +65,12 @@ export const AssetSelect = ({
         }
         symbol={selectedAsset?.symbol}
         modalDisabled={!setSelectedAsset}
-        dollarValue={price}
+        dollarValue={t("number", { value: price })}
         dollarValueLoading={assetPriceLoading}
         maxBalance={maxBalance}
-        formatValue={(value) => t("number", { value })}
-        onAsssetBtnClick={() => setOpeModal(true)}
+        onAsssetBtnClick={
+          setSelectedAsset ? () => setOpeModal(true) : undefined
+        }
       />
 
       <AssetSelectModal

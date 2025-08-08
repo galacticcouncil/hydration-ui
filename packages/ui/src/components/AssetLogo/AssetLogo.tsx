@@ -1,9 +1,10 @@
 import { Children, cloneElement, isValidElement } from "react"
 
 import { PlaceholderAssetLogo, TriangleAlert } from "@/assets/icons"
-import { Tooltip } from "@/components"
+import { Skeleton, Tooltip } from "@/components"
 
 import {
+  LOGO_DIAMETER,
   SAssetBadge,
   SAssetLogo,
   SBadgeSlot,
@@ -25,6 +26,7 @@ export type AssetLogoProps = {
   badgeTooltip?: string
   className?: string
   decoration?: AssetLogoDecoration
+  isLoading?: boolean
 }
 
 export const AssetLogo = ({
@@ -34,6 +36,7 @@ export const AssetLogo = ({
   chainSrc,
   badge,
   badgeTooltip,
+  isLoading,
   decoration = "none",
 }: AssetLogoProps) => {
   if (!src)
@@ -42,6 +45,12 @@ export const AssetLogo = ({
         <SPlaceholder component={PlaceholderAssetLogo} size={size} />
       </SDecorationContainer>
     )
+
+  if (isLoading) {
+    const skeletonSize = LOGO_DIAMETER[size]
+
+    return <Skeleton width={skeletonSize} height={skeletonSize} circle />
+  }
 
   return (
     <SDecorationContainer count={1} decoration={decoration} size={size}>

@@ -10,12 +10,12 @@ export type AccountTotalBalancesByPeriodQueryVariables = Types.Exact<{
 
 export type AccountTotalBalancesByPeriodQuery = { __typename?: 'Query', accountTotalBalancesByPeriod: { __typename?: 'AccountTotalBalancesByPeriodResponse', nodes: Array<{ __typename?: 'AccountTotalBalanceSnapshot', referenceAssetId: string, buckets: Array<{ __typename?: 'AccountTotalBalanceBucket', transferableNorm: string, timestamp: string }> } | null> } };
 
-export type LatestAccountBalanceQueryVariables = Types.Exact<{
-  accountId: Types.Scalars['String']['input'];
+export type LatestAccountsBalancesQueryVariables = Types.Exact<{
+  accountId?: Types.InputMaybe<Types.Scalars['String']['input']>;
 }>;
 
 
-export type LatestAccountBalanceQuery = { __typename?: 'Query', accountTotalBalanceHistoricalData?: { __typename?: 'AccountTotalBalanceHistoricalDataConnection', nodes: Array<{ __typename?: 'AccountTotalBalanceHistoricalDatum', totalTransferableNorm: string } | null> } | null };
+export type LatestAccountsBalancesQuery = { __typename?: 'Query', accountTotalBalanceHistoricalData?: { __typename?: 'AccountTotalBalanceHistoricalDataConnection', nodes: Array<{ __typename?: 'AccountTotalBalanceHistoricalDatum', totalTransferableNorm: string } | null> } | null };
 
 export type SupplyFragment = { __typename?: 'MmSupply', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null };
 
@@ -45,6 +45,16 @@ export type MoneyMarketEventsQueryVariables = Types.Exact<{
 
 
 export type MoneyMarketEventsQuery = { __typename?: 'Query', moneyMarketEvents?: { __typename?: 'MoneyMarketEventsConnection', totalCount: number, nodes: Array<{ __typename?: 'MoneyMarketEvent', eventName: string, event?: { __typename?: 'Event', block?: { __typename?: 'Block', timestamp: any } | null } | null, supply?: { __typename?: 'MmSupply', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, withdraw?: { __typename?: 'MmWithdraw', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, borrow?: { __typename?: 'MmBorrow', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, repay?: { __typename?: 'MmRepay', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, reserveUsedAsCollateralEnabled?: { __typename?: 'MmReserveUsedAsCollateralEnabledEvent', asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, reserveUsedAsCollateralDisabled?: { __typename?: 'MmReserveUsedAsCollateralDisabledEvent', asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, liquidationCall?: { __typename?: 'MmLiquidationCall', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, userEModeSet?: { __typename?: 'MmUserEModeSet', categoryId?: number | null } | null } | null> } | null };
+
+export type OmnipoolYieldMetricsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type OmnipoolYieldMetricsQuery = { __typename?: 'Query', omnipoolAssetsYieldMetrics: { __typename?: 'OmnipoolAssetsYieldMetricsResponse', nodes: Array<{ __typename?: 'OmnipoolAssetYieldMetricsAggregated', assetId: string, assetRegistryId: string, projectedAprPerc: any } | null> } };
+
+export type StableswapYieldMetricsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type StableswapYieldMetricsQuery = { __typename?: 'Query', stableswapYieldMetrics: { __typename?: 'StableswapYieldMetricsResponse', nodes: Array<{ __typename?: 'StableswapYieldMetricsAggregated', poolId: string, projectedAprPerc: string, projectedApyPerc: string } | null> } };
 
 export type SwapFragment = { __typename?: 'Swap', paraTimestamp: any, operationType: string, swapperId?: string | null, event?: { __typename?: 'Event', paraBlockHeight: number, indexInBlock: number } | null, swapInputs: { __typename?: 'SwapInputRecordsConnection', nodes: Array<{ __typename?: 'SwapInputRecord', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, swapOutputs: { __typename?: 'SwapOutputsConnection', nodes: Array<{ __typename?: 'SwapOutput', amount?: any | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, dcaScheduleExecutionEvent?: { __typename?: 'DcaScheduleExecutionEvent', scheduleExecution?: { __typename?: 'DcaScheduleExecution', status?: string | null, schedule?: { __typename?: 'DcaSchedule', id: string, status?: string | null, assetInId?: string | null, totalExecutedAmountIn?: any | null, budgetAmountIn?: any | null } | null } | null } | null };
 
@@ -95,3 +105,24 @@ export type TradePricesQueryVariables = Types.Exact<{
 
 
 export type TradePricesQuery = { __typename?: 'Query', assetPairPricesAndVolumesByPeriod: { __typename?: 'AssetPairPricesAndVolumeByPeriodResponse', nodes: Array<{ __typename?: 'AssetPairPriceSnapshot', buckets: Array<{ __typename?: 'AssetPairPriceBucket', timestamp: string, priceAvrgNorm: string }> } | null> } };
+
+export type XykVolumeQueryVariables = Types.Exact<{
+  filter: Types.XykpoolVolumeHistoricalDataByPeriodFilter;
+}>;
+
+
+export type XykVolumeQuery = { __typename?: 'Query', xykpoolVolumeHistoricalDataByPeriod: { __typename?: 'XykpoolVolumeHistoricalDataByPeriodResponse', nodes: Array<{ __typename?: 'XykpoolVolumeAggregated', assetAAssetRegistryId?: string | null, assetAId: string, assetAVol: any, assetAVolNorm: string, assetBAssetRegistryId?: string | null, assetBId: string, assetBVol: any, assetBVolNorm: string, poolId: string } | null> } };
+
+export type OmnipoolVolumeQueryVariables = Types.Exact<{
+  filter: Types.OmnipoolAssetVolumeHistoricalDataByPeriodFilter;
+}>;
+
+
+export type OmnipoolVolumeQuery = { __typename?: 'Query', omnipoolAssetVolumeHistoricalDataByPeriod: { __typename?: 'OmnipoolAssetVolumeHistoricalDataByPeriodResponse', nodes: Array<{ __typename?: 'OmnipoolAssetVolumeAggregated', assetId: string, assetRegistryId?: string | null, assetVol: any, assetVolNormalized: string } | null> } };
+
+export type StablepoolVolumeQueryVariables = Types.Exact<{
+  filter: Types.StableswapVolumeHistoricalDataByPeriodFilter;
+}>;
+
+
+export type StablepoolVolumeQuery = { __typename?: 'Query', stableswapVolumeHistoricalDataByPeriod: { __typename?: 'StableswapVolumeHistoricalDataByPeriodResponse', nodes: Array<{ __typename?: 'StableswapVolumeAggregated', poolId: string, poolVolNorm: string, assetVolumes: Array<{ __typename?: 'StablepoolAssetVolumeAggregated', assetRegistryId?: string | null, assetId: string, assetVol: any, assetVolNorm: string }> } | null> } };

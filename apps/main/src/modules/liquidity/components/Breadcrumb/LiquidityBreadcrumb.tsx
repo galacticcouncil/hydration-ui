@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/Breadcrumb"
 
 export const liquidityActions = [
   { key: "add", label: t("liquidity:addLiquidity") },
+  { key: "addStablepool", label: t("liquidity:addLiquidity") },
   { key: "remove", label: t("liquidity:removeLiquidity") },
   { key: "join", label: t("liquidity:joinFarms") },
 ]
@@ -27,7 +28,7 @@ const getBreadcrumbLabel = (path: string): string => {
   const action = liquidityActions.find((action) => action.key === lastItem)
   if (action) return action.label
 
-  return "N/a"
+  return t("liquidity:isolatedPool")
 }
 
 export const LiquidityBreadcrumb = () => {

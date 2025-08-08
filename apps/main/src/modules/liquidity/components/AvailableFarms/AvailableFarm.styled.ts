@@ -3,7 +3,11 @@ import { Grid } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 import { styled } from "@galacticcouncil/ui/utils"
 
-export const SContainer = styled(Grid)<{ isSelectable?: boolean }>(
+const shouldForwardProp = (prop: string) => prop !== "isSelectable"
+
+export const SContainer = styled(Grid, { shouldForwardProp })<{
+  isSelectable?: boolean
+}>(
   ({ theme, isSelectable }) => css`
     min-width: 350px;
     padding: ${isSelectable ? theme.containers.paddings.primary : 0}px;

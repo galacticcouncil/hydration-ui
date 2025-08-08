@@ -4,21 +4,11 @@ import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary, Enum } from "polkadot-api"
 import { useMemo } from "react"
-import { z } from "zod/v4"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scale } from "@/utils/formatting"
 
 import { hubToken, omnipoolTokens } from "./pools"
-
-const feeItemSchema = z.object({
-  asset_id: z.number(),
-  accrued_fees_usd: z.number(),
-  projected_apy_perc: z.number(),
-  projected_apr_perc: z.number(),
-})
-
-const feeResponseSchema = z.array(feeItemSchema)
 
 export const useOmnipoolAssetsData = () => {
   const { data: omnipoolTokensData, isLoading: isOmnipoolTokensLoading } =
@@ -40,26 +30,6 @@ export const useOmnipoolAssetsData = () => {
     hubToken: hubTokenData,
     dataMap,
     isLoading: isHubTokenLoading || isOmnipoolTokensLoading,
-  }
-}
-
-export const useFee = () =>
-  useQuery({
-    queryKey: ["omnipool", "fee"],
-    queryFn: () => geFee(),
-  })
-
-const geFee = async () => {
-  try {
-    const res = await fetch("https://api.hydradx.io/hydradx-ui/v2/stats/fees")
-    const rawData = await res.json()
-
-    return feeResponseSchema.parse(rawData)
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error("Invalid fee data:", z.prettifyError(error))
-    }
-    throw error
   }
 }
 

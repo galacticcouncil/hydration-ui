@@ -27,6 +27,7 @@ type LogoProps = {
   id: string | string[]
   size?: AssetLogoSize
   className?: string
+  isLoading?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [GDOT_ERC20_ID, GETH_ERC20_ID]
@@ -35,6 +36,7 @@ export const Logo: React.FC<LogoProps> = ({
   id,
   size = "medium",
   className,
+  isLoading,
 }) => {
   const { getAssetWithFallback } = useAssets()
 
@@ -71,6 +73,10 @@ export const Logo: React.FC<LogoProps> = ({
   }
 
   const singleIconMetadata = logoMetadata[0]
+
+  if (isLoading) {
+    return <AssetLogo size={size} isLoading />
+  }
 
   return (
     <AssetLogo

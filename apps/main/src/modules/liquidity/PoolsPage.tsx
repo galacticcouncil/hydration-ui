@@ -15,9 +15,10 @@ import { useTranslation } from "react-i18next"
 
 import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
-import { useOmnipoolAssets, useXYKPools } from "@/states/liquidity"
+import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { useIsolatedPoolsColumns, usePoolColumns } from "./Liquidity.utils"
+import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
+import { usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
   const [search, setSearch] = useState("")
@@ -52,7 +53,7 @@ export const OmnipoolAndStablepoolTable = ({
   withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
-  const { data, isLoading } = useOmnipoolAssets()
+  const { data, isLoading } = useOmnipoolStablepoolAssets()
   const columns = usePoolColumns()
 
   const router = useRouter()
@@ -66,16 +67,17 @@ export const OmnipoolAndStablepoolTable = ({
       <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
-          columnPinning={{
-            left: ["meta_name"],
-          }}
           isLoading={isLoading}
           globalFilter={search}
           data={filteredData ?? []}
           columns={columns}
           initialSorting={[{ id: "id", desc: true }]}
+          columnPinning={{
+            left: ["meta_name"],
+          }}
           onRowClick={(asset) => {
             router.navigate({
+              resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
             })
@@ -101,7 +103,9 @@ export const IsolatedPoolsTable = ({
   const router = useRouter()
 
   const filteredData = useMemo(() => {
-    return withPositions ? data?.filter((asset) => asset.isPositions) : data
+    return (
+      (withPositions ? data?.filter((asset) => asset.isPositions) : data) ?? []
+    )
   }, [data, withPositions])
 
   return (
@@ -121,7 +125,7 @@ export const IsolatedPoolsTable = ({
       </Flex>
       <TableContainer as={Paper}>
         <DataTable
-          data={filteredData ?? []}
+          data={filteredData}
           globalFilter={search}
           columns={columns}
           isLoading={isLoading}
@@ -130,6 +134,7 @@ export const IsolatedPoolsTable = ({
           initialSorting={[{ id: "tvlDisplay", desc: true }]}
           onRowClick={(asset) =>
             router.navigate({
+              resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
             })

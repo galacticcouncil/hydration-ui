@@ -1,4 +1,3 @@
-import { PoolToken } from "@galacticcouncil/sdk"
 import {
   createContext,
   ReactNode,
@@ -18,6 +17,7 @@ import {
   TStableswap,
   TToken,
 } from "@/api/assets"
+import { PoolToken } from "@/api/pools"
 import { TAssetStored, useAssetRegistry } from "@/states/assetRegistry"
 import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
@@ -190,8 +190,8 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
 
   const getMetaFromXYKPoolTokens = useCallback(
     (tokens: PoolToken[]): XYKPoolMeta | null => {
-      const assetA = all.get(tokens[0]?.id ?? "")
-      const assetB = all.get(tokens[1]?.id ?? "")
+      const assetA = all.get(tokens[0]?.id.toString() ?? "")
+      const assetB = all.get(tokens[1]?.id.toString() ?? "")
 
       if (!assetA || !assetB) return null
 

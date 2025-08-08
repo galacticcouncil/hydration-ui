@@ -256,6 +256,7 @@ const DataTable = forwardRef(
                               sx={meta?.sx}
                               isPinned={isPinned}
                               data-pinned={isPinned}
+                              isClickable={!!onRowClick}
                             >
                               {flexRender(
                                 cell.column.columnDef.cell,

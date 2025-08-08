@@ -17,7 +17,7 @@ import { useShallow } from "zustand/shallow"
 
 import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { omnipoolTokens, TOmnipoolAssetsData } from "@/api/pools"
+import { OmniPoolToken, omnipoolTokens } from "@/api/pools"
 import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
@@ -56,7 +56,7 @@ export const calculateLiquidityOut = (args: LiquidityOutParams) => {
 }
 
 export const getLiquidityOutParams = (
-  omnipoolData: TOmnipoolAssetsData[number],
+  omnipoolData: OmniPoolToken,
   position: OmnipoolPosition | OmnipoolDepositFull,
   options?: LiquidityOutOptions,
 ): LiquidityOutParams => {
@@ -68,8 +68,8 @@ export const getLiquidityOutParams = (
 
   return [
     omnipoolData.balance.toString(),
-    omnipoolData.hubReserve,
-    omnipoolData.shares,
+    omnipoolData.hubReserves.toString(),
+    omnipoolData.shares.toString(),
     position.amount.toString(),
     position.shares.toString(),
     Big(scale(price, "q")).toFixed(0),
@@ -121,7 +121,8 @@ export const useOmnipoolPositionData = (
       const price = getAssetPrice(position.assetId).price
       const meta = getAssetWithFallback(position.assetId)
       const omnipoolData = omnipoolTokensData.find(
-        (omnipoolTokenData) => omnipoolTokenData.id === position.assetId,
+        (omnipoolTokenData) =>
+          omnipoolTokenData.id.toString() === position.assetId,
       )
 
       if (omnipoolData && price) {
@@ -210,21 +211,23 @@ export const setOmnipoolAssets = (
   isLoading: boolean,
 ) => useOmnipoolAssetsStore.setState({ data, isLoading })
 
-export const useOmnipoolAssets = () => {
+export const useOmnipoolStablepoolAssets = () => {
   useQuery({
     queryKey: ["omnipoolAssets"],
     queryFn: () => {
       throw new Error("queryFn should not run")
     },
   })
-  const store = useOmnipoolAssetsStore()
+
+  const data = useOmnipoolAssetsStore((s) => s.data)
+  const isLoading = useOmnipoolAssetsStore((s) => s.isLoading)
 
   const getOmnipoolAsset = useCallback(
-    (assetId: string) => store.data?.find((asset) => asset.id === assetId),
-    [store.data],
+    (assetId: string) => data?.find((asset) => asset.id === assetId),
+    [data],
   )
 
-  return { ...store, getOmnipoolAsset }
+  return { data, isLoading, getOmnipoolAsset }
 }
 
 export const useOmnipoolAsset = (assetId: string) => {
@@ -240,22 +243,23 @@ export const useOmnipoolAsset = (assetId: string) => {
   const data = useOmnipoolAssetsStore(
     useShallow((state) => state.data?.find((asset) => asset.id === assetId)),
   )
-
   return { isLoading, data }
 }
 
 type XYKPoolsStore = {
-  data: IsolatedPoolTable[] | undefined
-  isLoading: boolean
+  data?: IsolatedPoolTable[]
+  validAddresses?: string[]
+  isLoading?: boolean
 }
 
 export const useXYKPoolsStore = create<XYKPoolsStore>(() => ({
   data: undefined,
+  validAddresses: undefined,
   isLoading: true,
 }))
 
-export const setXYKPools = (data: IsolatedPoolTable[], isLoading: boolean) =>
-  useXYKPoolsStore.setState({ data, isLoading })
+export const setXYKPools = (data: XYKPoolsStore) =>
+  useXYKPoolsStore.setState((prevState) => ({ ...prevState, ...data }))
 
 export const useXYKPools = () => {
   useQuery({

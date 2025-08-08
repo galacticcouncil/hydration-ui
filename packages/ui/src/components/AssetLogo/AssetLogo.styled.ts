@@ -8,7 +8,7 @@ import { createVariants } from "@/utils"
 import { Icon } from "../Icon"
 import { AssetLogoDecoration, AssetLogoSize } from "./AssetLogo"
 
-const LOGO_DIAMETER = {
+export const LOGO_DIAMETER = {
   "extra-small": 12,
   small: 18,
   medium: 24,

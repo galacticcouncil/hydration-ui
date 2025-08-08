@@ -19,6 +19,7 @@ type Props<TFormValues extends FieldValues> = Omit<
   readonly amountFieldName: FieldPathByValue<TFormValues, string>
   readonly onAssetChange?: (asset: TAsset, previousAsset: TAsset | null) => void
   readonly onAmountChange?: (amount: string) => void
+  readonly disabledAssetSelector?: boolean
 }
 
 export const AssetSelectFormField = <TFormValues extends FieldValues>({
@@ -26,12 +27,14 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
   amountFieldName,
   onAssetChange,
   onAmountChange,
+  disabledAssetSelector = false,
   ...assetSelectProps
 }: Props<TFormValues>) => {
   const { control } = useFormContext<TFormValues>()
   const { field: assetField, fieldState: assetFieldState } = useController({
     control,
     name: assetFieldName,
+    disabled: disabledAssetSelector,
   })
   const { field: amountField, fieldState: amountFieldState } = useController({
     control,
@@ -43,6 +46,8 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
       {...assetSelectProps}
       selectedAsset={assetField.value}
       setSelectedAsset={(asset) => {
+        if (disabledAssetSelector) return
+
         assetField.onChange(asset)
         onAssetChange?.(asset, assetField.value)
       }}

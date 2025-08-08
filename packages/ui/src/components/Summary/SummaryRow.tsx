@@ -1,4 +1,4 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
+import { Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ReactNode } from "react"
 
@@ -7,6 +7,7 @@ export type RowModel = {
   content: ReactNode | string
   description?: string
   className?: string
+  loading?: boolean
 }
 
 export const SummaryRow = ({
@@ -14,12 +15,10 @@ export const SummaryRow = ({
   content,
   description,
   className,
+  loading,
 }: RowModel) => {
   return (
-    <Flex
-      sx={{ justifyContent: "space-between", alignItems: "center", my: 8 }}
-      className={className}
-    >
+    <Flex sx={{ justifyContent: "space-between", my: 8 }} className={className}>
       <Flex
         direction="column"
         sx={{
@@ -31,10 +30,16 @@ export const SummaryRow = ({
           {label}
         </Text>
 
-        {description && <Text fs="p4">{description}</Text>}
+        {description && (
+          <Text fs="p6" fw={400} color={getToken("text.low")}>
+            {description}
+          </Text>
+        )}
       </Flex>
 
-      {typeof content === "string" ? (
+      {loading ? (
+        <Skeleton width={50} height={12} />
+      ) : typeof content === "string" ? (
         <SummaryRowValue>{content}</SummaryRowValue>
       ) : (
         content
