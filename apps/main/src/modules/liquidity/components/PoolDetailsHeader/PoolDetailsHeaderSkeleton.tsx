@@ -23,23 +23,21 @@ export const PoolDetailsHeaderSkeleton = () => {
       }}
     >
       <Flex>
-        <Flex gap={8} align="center">
-          <Logo id="0" isLoading size="large" />
+        <Logo id="0" isLoading size="large" />
 
-          <Flex direction="column">
-            <Flex gap={4} align="center">
-              <Text font="primary" fw={700} fs={18} lh="130%">
-                <Skeleton width={100} height="100%" />
-              </Text>
-              <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
-                {t("details.header.apr", { value: 20 })}
-              </Text>
-              <Logo id="10" size="small" />
-            </Flex>
-            <Text fw={600} fs={11} color={getToken("text.medium")}>
-              <Skeleton width={40} height="100%" />
+        <Flex direction="column">
+          <Flex gap={4} align="center">
+            <Text font="primary" fw={700} fs={18} lh="130%">
+              <Skeleton width={100} height="100%" />
             </Text>
+            <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
+              {t("details.header.apr", { value: 20 })}
+            </Text>
+            <Logo id="10" size="small" />
           </Flex>
+          <Text fw={600} fs={11} color={getToken("text.medium")}>
+            <Skeleton width={40} height="100%" />
+          </Text>
         </Flex>
       </Flex>
       <Flex

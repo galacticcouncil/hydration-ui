@@ -22,7 +22,7 @@ const formatNumberParts = (part: Intl.NumberFormatPart) => {
   return part.value
 }
 
-const isValidValue = (
+const isValidNumber = (
   value: number | bigint | string | null | undefined,
 ): value is number | bigint | string => {
   return !isNullish(value) && !Number.isNaN(Number(value)) && value !== ""
@@ -57,7 +57,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (!isValidValue(value)) {
+    if (!isValidNumber(value)) {
       return "N / A"
     }
 
@@ -78,7 +78,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (!isValidValue(value)) {
+    if (!isValidNumber(value)) {
       return "N / A"
     }
 
@@ -109,7 +109,7 @@ const formatters = {
     lng?: string,
     options: Record<string, unknown> = {},
   ) => {
-    if (!isValidValue(value)) {
+    if (!isValidNumber(value)) {
       return "N / A"
     }
 

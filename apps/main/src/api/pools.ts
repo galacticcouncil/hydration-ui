@@ -6,7 +6,6 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import { useEffect } from "react"
-import { useShallow } from "zustand/shallow"
 
 import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -110,9 +109,7 @@ const xykPools = queryOptions<PoolBase[]>({
 })
 
 export const useXykPools = () => {
-  const storedXykPoolsLength = useXYKPoolsStore(
-    useShallow((state) => state.data?.length),
-  )
+  const storedXykPoolsLength = useXYKPoolsStore((state) => state.data?.length)
 
   const query = useQuery(xykPools)
 

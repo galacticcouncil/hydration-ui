@@ -17,7 +17,8 @@ import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { useIsolatedPoolsColumns, usePoolColumns } from "./Liquidity.columns"
+import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
+import { usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
   const [search, setSearch] = useState("")

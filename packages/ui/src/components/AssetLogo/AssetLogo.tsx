@@ -1,8 +1,7 @@
 import { Children, cloneElement, isValidElement } from "react"
 
 import { PlaceholderAssetLogo, TriangleAlert } from "@/assets/icons"
-import {  Skeleton, Tooltip } from "@/components"
-
+import { Skeleton, Tooltip } from "@/components"
 
 import {
   LOGO_DIAMETER,
@@ -37,7 +36,6 @@ export const AssetLogo = ({
   chainSrc,
   badge,
   badgeTooltip,
-  className,
   isLoading,
   decoration = "none",
 }: AssetLogoProps) => {

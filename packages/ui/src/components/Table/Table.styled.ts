@@ -125,7 +125,9 @@ export const TableRow = styled.tr<{
       background: ${theme.surfaces.containers.high.primary};
     }
 
-    ${!isEmptyState && isClickable && css`
+    ${!isEmptyState &&
+    isClickable &&
+    css`
       ${TableBody} &:hover {
         background: ${theme.surfaces.containers.high.hover};
         transition: ${theme.transitions.colors};
@@ -167,11 +169,12 @@ export const TableCell = styled.td<{
 
         background: ${theme.surfaces.containers.high.primary};
 
-        ${isClickable && css`
-            tr:hover & {
-              background: ${theme.surfaces.containers.high.hover};
-            }
-          `}
+        ${isClickable &&
+        css`
+          tr:hover & {
+            background: ${theme.surfaces.containers.high.hover};
+          }
+        `}
       `,
     ]
   }

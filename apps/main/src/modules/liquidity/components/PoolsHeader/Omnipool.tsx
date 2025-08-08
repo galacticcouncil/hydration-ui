@@ -1,6 +1,5 @@
 import { Separator, ValueStats } from "@galacticcouncil/ui/components"
 import Big from "big.js"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolStablepoolAssets } from "@/states/liquidity"
@@ -10,28 +9,20 @@ export const Omnipool = () => {
   const { data: omnipoolStablepoolAssets = [], isLoading } =
     useOmnipoolStablepoolAssets()
 
-  const totals = useMemo(() => {
-    const totals = omnipoolStablepoolAssets.reduce(
-      (acc, asset) => ({
-        liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
-        stablepool: asset.isStablePool
-          ? acc.stablepool.plus(asset.tvlDisplay ?? 0)
-          : acc.stablepool,
-        volume: acc.volume.plus(asset.volumeDisplay ?? 0),
-      }),
-      {
-        liquidity: Big(0),
-        stablepool: Big(0),
-        volume: Big(0),
-      },
-    )
-
-    return {
-      liquidity: totals.liquidity.toString(),
-      stablepool: totals.stablepool.toString(),
-      volume: totals.volume.toString(),
-    }
-  }, [omnipoolStablepoolAssets])
+  const totals = omnipoolStablepoolAssets.reduce(
+    (acc, asset) => ({
+      liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
+      stablepool: asset.isStablePool
+        ? acc.stablepool.plus(asset.tvlDisplay ?? 0)
+        : acc.stablepool,
+      volume: acc.volume.plus(asset.volumeDisplay ?? 0),
+    }),
+    {
+      liquidity: Big(0),
+      stablepool: Big(0),
+      volume: Big(0),
+    },
+  )
 
   return (
     <>

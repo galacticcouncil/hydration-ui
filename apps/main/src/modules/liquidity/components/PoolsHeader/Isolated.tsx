@@ -1,6 +1,5 @@
 import { Separator, ValueStats } from "@galacticcouncil/ui/components"
 import Big from "big.js"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useXYKPools } from "@/states/liquidity"
@@ -9,23 +8,16 @@ export const Isolated = () => {
   const { t } = useTranslation(["liquidity", "common"])
   const { data: xykPools = [], isLoading: isLoadingXYK } = useXYKPools()
 
-  const totals = useMemo(() => {
-    const totals = xykPools.reduce(
-      (acc, asset) => ({
-        liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
-        volume: acc.volume.plus(asset.volumeDisplay ?? 0),
-      }),
-      {
-        liquidity: Big(0),
-        volume: Big(0),
-      },
-    )
-
-    return {
-      liquidity: totals.liquidity.toString(),
-      volume: totals.volume.toString(),
-    }
-  }, [xykPools])
+  const totals = xykPools.reduce(
+    (acc, asset) => ({
+      liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
+      volume: acc.volume.plus(asset.volumeDisplay ?? 0),
+    }),
+    {
+      liquidity: Big(0),
+      volume: Big(0),
+    },
+  )
 
   return (
     <>
