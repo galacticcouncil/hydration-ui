@@ -327,11 +327,11 @@ export const useOmnipoolStablepools = () => {
       const tvlDisplay = isStablepoolOnly
         ? pool.balance
         : price
-          ? Big(scaleHuman(pool.balance, meta.decimals)).times(price).toString()
+          ? Big(scaleHuman(pool.balance, meta.decimals)).times(price).toFixed(2)
           : undefined
 
       const balanceDisplay = price
-        ? Big(scaleHuman(balance, meta.decimals)).times(price).toString()
+        ? Big(scaleHuman(balance, meta.decimals)).times(price).toFixed(2)
         : undefined
 
       return {

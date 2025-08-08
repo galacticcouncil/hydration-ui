@@ -20,8 +20,7 @@ export const omnipoolVolumeQuery = (squidSdk: SquidSdk) =>
         .filter((node) => node !== null)
         .map((node) => ({
           assetId: node.assetRegistryId ?? node.assetId,
-          assetVol: node.assetVol.toString() as string,
-          assetVolNorm: node.assetVolNormalized,
+          assetVolNorm: Number(node.assetVolNormalized).toFixed(2),
         }))
     },
   })
@@ -43,8 +42,7 @@ export const stablepoolVolumeQuery = (squidSdk: SquidSdk) =>
           poolVolNorm: node.poolVolNorm,
           assetVolumes: node.assetVolumes.map((assetVolume) => ({
             assetId: assetVolume.assetId,
-            assetVol: assetVolume.assetVol.toString() as string,
-            assetVolNorm: assetVolume.assetVolNorm,
+            assetVolNorm: Number(assetVolume.assetVolNorm).toFixed(2),
           })),
         }))
     },
@@ -73,9 +71,9 @@ export const xykVolumeQuery = (squidSdk: SquidSdk, addresses: string[]) =>
             poolId: safeConvertAddressSS58(node.poolId),
             assetId,
             assetIdB,
-            poolVolume: node.assetAVolNorm.toString() as string,
-            [assetId]: node.assetAVolNorm.toString() as string,
-            [assetIdB]: node.assetBVolNorm.toString() as string,
+            poolVolume: Number(node.assetAVolNorm).toFixed(2),
+            [assetId]: Number(node.assetAVolNorm).toFixed(2),
+            [assetIdB]: Number(node.assetBVolNorm).toFixed(2),
           }
         })
     },
