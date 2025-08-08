@@ -113,62 +113,79 @@ export const useStablepools = () => {
   )
   const { getRelatedAToken } = useAssets()
 
-  const tokensSet = new Set<string>()
+  const volumeByAsset = useMemo(
+    () => new Map((volumes ?? []).map((v) => [v.poolId, v.poolVolNorm])),
+    [volumes],
+  )
 
-  const stablePoolData = pools?.map((stablePool) => {
-    const filteredTokens: PoolToken[] = []
+  const feeByAsset = useMemo(
+    () =>
+      new Map((yieldMetrics ?? []).map((m) => [m.poolId, m.projectedApyPerc])),
+    [yieldMetrics],
+  )
 
-    const volume = volumes?.find(
-      (volume) => volume.poolId === stablePool.id.toString(),
-    )?.poolVolNorm
+  const { stablePoolData, tokenIds } = useMemo(() => {
+    const tokenSet = new Set<string>()
+    const list =
+      pools?.map((stablePool) => {
+        const filteredTokens: PoolToken[] = []
 
-    stablePool.tokens.forEach((token) => {
-      if (token.type !== AssetType.STABLESWAP) {
-        tokensSet.add(token.id.toString())
-        filteredTokens.push(token)
-      }
-    })
-    return { poolId: stablePool.id, tokens: filteredTokens, volume }
-  })
+        stablePool.tokens.forEach((token) => {
+          if (token.type !== AssetType.STABLESWAP) {
+            tokenSet.add(String(token.id))
+            filteredTokens.push(token)
+          }
+        })
 
-  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
-    ...tokensSet,
-  ])
+        return { poolId: stablePool.id, tokens: filteredTokens }
+      }) ?? []
 
-  const data = stablePoolData?.map((stablepool) => {
-    let totalBalance = Big(0)
+    return { stablePoolData: list, tokenIds: [...tokenSet] }
+  }, [pools])
 
-    const poolId = stablepool.poolId
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(tokenIds)
 
-    stablepool.tokens.forEach((token) => {
-      const assetPrice = getAssetPrice(token.id.toString())
+  const data = useMemo(
+    () =>
+      stablePoolData?.map((stablepool) => {
+        let totalBalance = Big(0)
 
-      const displayBalance = assetPrice.isValid
-        ? Big(scaleHuman(token.balance, token.decimals ?? 0))
-            .times(assetPrice.price)
-            .toString()
-        : undefined
+        const poolId = stablepool.poolId
 
-      totalBalance = totalBalance.plus(displayBalance ?? 0)
-    })
+        stablepool.tokens.forEach((token) => {
+          const price = getAssetPrice(String(token.id))
+          if (price.isValid) {
+            const usd = Big(
+              scaleHuman(token.balance, token.decimals ?? 0),
+            ).times(price.price)
+            totalBalance = totalBalance.plus(usd)
+          }
+        })
 
-    const lpFee = yieldMetrics?.find(
-      (stablepoolFee) => stablepoolFee.poolId === poolId.toString(),
-    )?.projectedApyPerc
+        const lpFee = feeByAsset.get(poolId.toString())
+        const volume = volumeByAsset.get(poolId.toString())
 
-    const aToken = getRelatedAToken(poolId.toString())
+        const aToken = getRelatedAToken(poolId.toString())
 
-    const data: TStablepoolData = {
-      id: poolId,
-      volume: stablepool.volume,
-      balance: totalBalance.toFixed(0),
-      isStablepool: true,
-      lpFee,
-      aToken,
-    }
+        const data: TStablepoolData = {
+          id: poolId,
+          balance: totalBalance.toFixed(0),
+          isStablepool: true,
+          lpFee,
+          volume,
+          aToken,
+        }
 
-    return data
-  })
+        return data
+      }),
+    [
+      stablePoolData,
+      getAssetPrice,
+      volumeByAsset,
+      feeByAsset,
+      getRelatedAToken,
+    ],
+  )
 
   return {
     data,
@@ -199,6 +216,16 @@ export const useOmnipoolStablepools = () => {
 
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
     omnipoolYieldMetricsQuery(squidClient),
+  )
+
+  const volumeByAsset = useMemo(
+    () =>
+      new Map((omnipoolVolumes ?? []).map((v) => [v.assetId, v.assetVolNorm])),
+    [omnipoolVolumes],
+  )
+  const feeByAsset = useMemo(
+    () => new Map((yieldMetrics ?? []).map((m) => [m.assetId, m.fee])),
+    [yieldMetrics],
   )
 
   const stablepoolsIds = useMemo(
@@ -269,17 +296,13 @@ export const useOmnipoolStablepools = () => {
         const stablepoolVolume = stablepoolInOmnipool?.volume
         lpFeeStablepool = stablepoolInOmnipool?.lpFee
 
-        const omnipoolVolume = omnipoolVolumes?.find(
-          (volume) => volume.assetId === poolId,
-        )?.assetVolNorm
+        const omnipoolVolume = volumeByAsset.get(poolId)
 
         volume = Big(stablepoolVolume ?? 0)
           .plus(omnipoolVolume ?? 0)
           .toString()
 
-        lpFeeOmnipool = isNative
-          ? undefined
-          : yieldMetrics?.find((metric) => metric.assetId === poolId)?.fee
+        lpFeeOmnipool = isNative ? undefined : feeByAsset.get(poolId)
 
         totalFee =
           lpFeeStablepool || lpFeeOmnipool
@@ -346,10 +369,10 @@ export const useOmnipoolStablepools = () => {
     getAssetPositions,
     getFreeBalance,
     omnipoolAssets,
-    omnipoolVolumes,
+    volumeByAsset,
     isVolumeLoading,
     isYieldMetricsLoading,
-    yieldMetrics,
+    feeByAsset,
     stablepools,
   ])
 

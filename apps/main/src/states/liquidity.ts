@@ -218,14 +218,16 @@ export const useOmnipoolStablepoolAssets = () => {
       throw new Error("queryFn should not run")
     },
   })
-  const store = useOmnipoolAssetsStore()
+
+  const data = useOmnipoolAssetsStore((s) => s.data)
+  const isLoading = useOmnipoolAssetsStore((s) => s.isLoading)
 
   const getOmnipoolAsset = useCallback(
-    (assetId: string) => store.data?.find((asset) => asset.id === assetId),
-    [store.data],
+    (assetId: string) => data?.find((asset) => asset.id === assetId),
+    [data],
   )
 
-  return { ...store, getOmnipoolAsset }
+  return { data, isLoading, getOmnipoolAsset }
 }
 
 export const useOmnipoolAsset = (assetId: string) => {
@@ -239,9 +241,8 @@ export const useOmnipoolAsset = (assetId: string) => {
 
   const isLoading = useOmnipoolAssetsStore(prop("isLoading"))
   const data = useOmnipoolAssetsStore(
-    useShallow((state) => state.data?.find((asset) => asset.id === assetId)),
+    useCallback((s) => s.data?.find((a) => a.id === assetId), [assetId]),
   )
-
   return { isLoading, data }
 }
 
