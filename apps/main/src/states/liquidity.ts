@@ -241,7 +241,7 @@ export const useOmnipoolAsset = (assetId: string) => {
 
   const isLoading = useOmnipoolAssetsStore(prop("isLoading"))
   const data = useOmnipoolAssetsStore(
-    useCallback((s) => s.data?.find((a) => a.id === assetId), [assetId]),
+    useShallow((state) => state.data?.find((asset) => asset.id === assetId)),
   )
   return { isLoading, data }
 }
