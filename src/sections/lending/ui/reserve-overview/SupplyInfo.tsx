@@ -12,7 +12,7 @@ import { CapsCircularStatus } from "sections/lending/components/caps/CapsCircula
 import { DebtCeilingStatus } from "sections/lending/components/caps/DebtCeilingStatus"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { AssetCapHookData } from "sections/lending/hooks/useAssetCaps"
-import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
+import { SupplyApyChart } from "sections/lending/ui/reserve-overview/chart/SupplyApyChart"
 import { MarketDataType } from "sections/lending/utils/marketsAndNetworksConfig"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
@@ -20,7 +20,6 @@ import { getAssetIdFromAddress } from "utils/evm"
 type SupplyInfoProps = {
   reserve: ComputedReserveData
   currentMarketData: MarketDataType
-  renderCharts: boolean
   showSupplyCapStatus: boolean
   supplyCap: AssetCapHookData
   debtCeiling: AssetCapHookData
@@ -29,13 +28,13 @@ type SupplyInfoProps = {
 export const SupplyInfo = ({
   reserve,
   currentMarketData,
-  renderCharts,
   showSupplyCapStatus,
   supplyCap,
   debtCeiling,
 }: SupplyInfoProps) => {
   const { t } = useTranslation()
 
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
   const hasUnbacked = reserve.unbacked && reserve.unbacked !== "0"
 
   const CapProgress = () => (
@@ -135,7 +134,7 @@ export const SupplyInfo = ({
               font="GeistSemiBold"
             >
               <OverrideApy
-                assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
+                assetId={assetId}
                 color="basic100"
                 size={19}
                 type="supply"
@@ -165,14 +164,9 @@ export const SupplyInfo = ({
           </DataValueList>
         </div>
       </div>
-      {renderCharts &&
-        (reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
-          <ApyChartContainer
-            type="supply"
-            reserve={reserve}
-            currentMarketData={currentMarketData}
-          />
-        )}
+      {(reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
+        <SupplyApyChart assetId={assetId} />
+      )}
       <div sx={{ mb: 10, mt: 20 }}>
         {reserve.isIsolated ? (
           <div>
