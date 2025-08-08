@@ -20,7 +20,6 @@ export type TxModalWrapperRenderProps = {
   symbol: string
   tokenBalance: string
   nativeBalance: string
-  isWrongNetwork: boolean
   action?: string
 }
 
@@ -73,7 +72,6 @@ export const TxModalWrapper: React.FC<TxModalWrapperProps> = ({
   return (
     <AssetCapsProvider asset={poolReserve}>
       {children({
-        isWrongNetwork: false,
         nativeBalance:
           walletBalances[API_ETH_MOCK_ADDRESS.toLowerCase()]?.amount || "0",
         tokenBalance:

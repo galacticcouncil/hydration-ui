@@ -55,6 +55,9 @@ export const useBorrowedAssetsTableColumns = () => {
         select: (row) => row.original.totalBorrowsUSD,
         compare: numericallyStr,
       }),
+      meta: {
+        sx: { textAlign: "right" },
+      },
       cell: ({ row }) => {
         const { totalBorrows, totalBorrowsUSD } = row.original
 

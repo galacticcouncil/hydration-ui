@@ -41,7 +41,6 @@ export const RepayModalContent: React.FC<
   symbol: modalSymbol,
   tokenBalance,
   nativeBalance,
-  isWrongNetwork,
   debtType,
 }) => {
   const { formatCurrency } = useAppFormatters()
@@ -307,7 +306,6 @@ export const RepayModalContent: React.FC<
             ? poolReserve.underlyingAsset
             : (tokenToRepayWith.address ?? "")
         }
-        isWrongNetwork={isWrongNetwork}
         symbol={modalSymbol}
         debtType={debtType}
         repayWithATokens={repayWithATokens}

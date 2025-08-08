@@ -4,7 +4,9 @@ import { parseUnits } from "ethers/lib/utils"
 import { memo, useEffect } from "react"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
+import { useProtocolActionToasts } from "@/hooks"
 import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { usePoolApprovedAmount } from "@/hooks/useApprovedAmount"
 import { useModalContext } from "@/hooks/useModal"
 import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
@@ -14,7 +16,6 @@ import { queryKeysFactory } from "@/ui-config/queries"
 
 export interface SupplyActionProps {
   amountToSupply: string
-  isWrongNetwork: boolean
   customGasPrice?: string
   poolAddress: string
   symbol: string
@@ -28,12 +29,12 @@ export const SupplyActions = memo(
   ({
     amountToSupply,
     poolAddress,
-    isWrongNetwork,
     symbol,
     blocked,
     decimals,
     className,
   }: SupplyActionProps) => {
+    const { formatCurrency } = useAppFormatters()
     const queryClient = useQueryClient()
     const [supply, estimateGasLimit, currentMarketData] = useRootStore(
       (state) => [
@@ -102,20 +103,25 @@ export const SupplyActions = memo(
       setGasLimit(supplyGasLimit.toString())
     }, [approvalTxState, usePermit, setGasLimit])
 
+    const protocolAction = ProtocolAction.supply
+    const toasts = useProtocolActionToasts(protocolAction, {
+      value: formatCurrency(amountToSupply || "0", { symbol }),
+    })
+
     const action = async () => {
       try {
         setMainTxState({ ...mainTxState, loading: true })
 
         // determine if approval is signature or transaction
         // checking user preference is not sufficient because permit may be available but the user has an existing approval
-        const action = ProtocolAction.supply
+
         let supplyTxData = supply({
           amount: parseUnits(amountToSupply, decimals).toString(),
           reserve: poolAddress,
         })
-        supplyTxData = await estimateGasLimit(supplyTxData)
+        supplyTxData = await estimateGasLimit(supplyTxData, protocolAction)
 
-        await sendTx(supplyTxData, action)
+        await sendTx(supplyTxData, toasts, protocolAction)
 
         queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
         refetchPoolData && refetchPoolData()
@@ -143,7 +149,6 @@ export const SupplyActions = memo(
         blocked={blocked}
         mainTxState={mainTxState}
         approvalTxState={approvalTxState}
-        isWrongNetwork={isWrongNetwork}
         requiresAmount
         amount={amountToSupply}
         preparingTransactions={loadingTxns || !approvedAmount}

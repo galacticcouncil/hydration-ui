@@ -55,6 +55,9 @@ export const useBorrowAssetsTableColumns = () => {
         select: (row) => row.original.availableBorrowsInUSD,
         compare: numericallyStr,
       }),
+      meta: {
+        sx: { textAlign: "right" },
+      },
       cell: ({ row }) => {
         const { availableBorrows, availableBorrowsInUSD } = row.original
 

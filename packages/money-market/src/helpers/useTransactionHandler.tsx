@@ -13,6 +13,7 @@ import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
 import { useRootStore } from "@/store/root"
 import { TransactionDetails } from "@/store/transactionsSlice"
 import { ApprovalMethod } from "@/store/walletSlice"
+import { ToastsConfig } from "@/types"
 import { getErrorTextFromError, TxAction } from "@/ui-config/errorMapping"
 import { gasLimitRecommendations } from "@/ui-config/gasLimit"
 import { queryKeysFactory } from "@/ui-config/queries"
@@ -29,6 +30,7 @@ interface UseTransactionHandlerProps {
   protocolAction?: ProtocolAction
   deps?: DependencyList
   eventTxInfo?: TransactionDetails
+  toasts: ToastsConfig
 }
 
 export type Approval = {
@@ -45,6 +47,7 @@ export const useTransactionHandler = ({
   skip,
   protocolAction,
   deps = [],
+  toasts,
 }: UseTransactionHandlerProps) => {
   const queryClient = useQueryClient()
 
@@ -133,7 +136,8 @@ export const useTransactionHandler = ({
           maxPriorityFeePerGas: gasPricePlus,
         })
         return processTx({
-          tx: () => sendTx(params as PopulatedTransaction, protocolAction),
+          tx: () =>
+            sendTx(params as PopulatedTransaction, toasts, protocolAction),
           errorCallback: (error, hash) => {
             const parsedError = getErrorTextFromError(
               error,

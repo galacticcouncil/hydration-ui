@@ -4,7 +4,7 @@ import {
   useModalContext,
 } from "@galacticcouncil/money-market/hooks"
 import { DashboardReserve } from "@galacticcouncil/money-market/utils"
-import { Check, ChevronRight } from "@galacticcouncil/ui/assets/icons"
+import { Check, ChevronRight, Minus } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -56,6 +56,9 @@ export const useSupplyAssetsTableColumns = () => {
         select: (row) => row.original.walletBalanceUSD,
         compare: numericallyStr,
       }),
+      meta: {
+        sx: { textAlign: "right" },
+      },
       cell: ({ row }) => {
         const { walletBalance, walletBalanceUSD } = row.original
 
@@ -108,11 +111,22 @@ export const useSupplyAssetsTableColumns = () => {
       },
       cell: ({ row }) => {
         const { isIsolated, usageAsCollateralEnabledOnUser } = row.original
+        const { debtCeiling } = getAssetCapData(row.original.reserve)
+        if (debtCeiling.isMaxed) return
+        if (!usageAsCollateralEnabledOnUser)
+          return (
+            <Icon
+              display="inline-flex"
+              color={getToken("text.low")}
+              component={Minus}
+              size={16}
+            />
+          )
         if (usageAsCollateralEnabledOnUser && !isIsolated) {
           return (
             <Icon
               display="inline-flex"
-              color={getToken("colors.successGreen.400")}
+              color={getToken("accents.success.emphasis")}
               component={Check}
               size={16}
             />

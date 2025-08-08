@@ -2,12 +2,12 @@ import { ProtocolAction } from "@aave/contract-helpers"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
 import { useTransactionHandler } from "@/helpers/useTransactionHandler"
+import { useProtocolActionToasts } from "@/hooks"
 import { ComputedReserveData } from "@/hooks/commonTypes"
 import { useRootStore } from "@/store/root"
 
 export type CollateralChangeActionsProps = {
   poolReserve: ComputedReserveData
-  isWrongNetwork: boolean
   usageAsCollateral: boolean
   blocked: boolean
   symbol: string
@@ -15,7 +15,6 @@ export type CollateralChangeActionsProps = {
 
 export const CollateralChangeActions = ({
   poolReserve,
-  isWrongNetwork,
   usageAsCollateral,
   blocked,
   symbol,
@@ -23,6 +22,11 @@ export const CollateralChangeActions = ({
   const setUsageAsCollateral = useRootStore(
     (state) => state.setUsageAsCollateral,
   )
+
+  const toasts = useProtocolActionToasts(ProtocolAction.setUsageAsCollateral, {
+    value: poolReserve.symbol,
+    state: usageAsCollateral ? "on" : "off",
+  })
 
   const { action, loadingTxns, mainTxState, requiresApproval } =
     useTransactionHandler({
@@ -42,6 +46,7 @@ export const CollateralChangeActions = ({
         })
       },
       skip: blocked,
+      toasts,
     })
 
   return (
@@ -50,7 +55,6 @@ export const CollateralChangeActions = ({
       blocked={blocked}
       preparingTransactions={loadingTxns}
       mainTxState={mainTxState}
-      isWrongNetwork={isWrongNetwork}
       actionText={
         usageAsCollateral ? (
           <span>Enable {symbol} as collateral</span>
