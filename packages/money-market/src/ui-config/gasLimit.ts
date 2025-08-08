@@ -7,12 +7,12 @@ import {
 export const gasLimitRecommendations: GasRecommendationType = {
   ...gasLimits,
   [ProtocolAction.withdraw]: {
-    limit: "800000",
-    recommended: "800000",
+    limit: "600000",
+    recommended: "600000",
   },
   [ProtocolAction.borrow]: {
-    limit: "800000",
-    recommended: "800000",
+    limit: "600000",
+    recommended: "600000",
   },
   [ProtocolAction.setUsageAsCollateral]: {
     limit: "500000",

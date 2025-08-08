@@ -4,12 +4,12 @@ import { useMemo } from "react"
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
 import { EmodeCategory } from "@/helpers/types"
 import { useTransactionHandler } from "@/helpers/useTransactionHandler"
+import { useProtocolActionToasts } from "@/hooks"
 import { useRootStore } from "@/store/root"
 
 import { getAction, getEmodeMessage } from "./emode.utils"
 
 export type EmodeActionsProps = {
-  isWrongNetwork: boolean
   blocked: boolean
   selectedEmode: number
   activeEmode: number
@@ -17,13 +17,22 @@ export type EmodeActionsProps = {
 }
 
 export const EmodeActions = ({
-  isWrongNetwork,
   blocked,
   selectedEmode,
   activeEmode,
   eModes,
 }: EmodeActionsProps) => {
   const setUserEMode = useRootStore((state) => state.setUserEMode)
+
+  const protocolAction = ProtocolAction.setEModeUsage
+  const previousState = getEmodeMessage(eModes[activeEmode].label)
+  const newState = getEmodeMessage(eModes[selectedEmode].label)
+
+  const isDisabling = selectedEmode === 0
+  const toasts = useProtocolActionToasts(protocolAction, {
+    value: isDisabling ? previousState : newState,
+    state: isDisabling ? "off" : "on",
+  })
 
   const { action, loadingTxns, mainTxState, requiresApproval } =
     useTransactionHandler({
@@ -33,11 +42,12 @@ export const EmodeActions = ({
       },
       skip: blocked,
       deps: [selectedEmode],
-      protocolAction: ProtocolAction.setEModeUsage,
+      protocolAction,
       eventTxInfo: {
-        previousState: getEmodeMessage(eModes[activeEmode].label),
-        newState: getEmodeMessage(eModes[selectedEmode].label),
+        previousState,
+        newState,
       },
+      toasts,
     })
 
   const getActionData = useMemo(
@@ -62,7 +72,6 @@ export const EmodeActions = ({
         disable: "Disabling E-Mode",
         switch: "Switching E-Mode",
       })}
-      isWrongNetwork={isWrongNetwork}
     />
   )
 }

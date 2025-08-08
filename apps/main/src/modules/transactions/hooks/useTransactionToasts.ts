@@ -40,7 +40,10 @@ export const useTransactionToasts = (
       onError: (message) => {
         edit(id, {
           variant: "error",
-          title: toasts?.error ?? t("transaction.status.error.title"),
+          title:
+            toasts?.error ??
+            toasts?.submitted ??
+            t("transaction.status.error.title"),
           dateCreated: new Date().toISOString(),
           hint: message,
         })

@@ -4,7 +4,9 @@ import { parseUnits } from "ethers/lib/utils"
 import { useEffect } from "react"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
+import { useProtocolActionToasts } from "@/hooks"
 import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { ComputedReserveData } from "@/hooks/commonTypes"
 import { usePoolApprovedAmount } from "@/hooks/useApprovedAmount"
 import { useModalContext } from "@/hooks/useModal"
@@ -16,7 +18,6 @@ import { queryKeysFactory } from "@/ui-config/queries"
 export interface RepayActionProps {
   amountToRepay: string
   poolReserve: ComputedReserveData
-  isWrongNetwork: boolean
   customGasPrice?: string
   poolAddress: string
   symbol: string
@@ -31,13 +32,13 @@ export const RepayActions = ({
   amountToRepay,
   poolReserve,
   poolAddress,
-  isWrongNetwork,
   symbol,
   debtType,
   repayWithATokens,
   blocked,
   className,
 }: RepayActionProps) => {
+  const { formatCurrency } = useAppFormatters()
   const queryClient = useQueryClient()
   const [
     repay,
@@ -81,11 +82,14 @@ export const RepayActions = ({
     }
   }, [fetchApprovedAmount, isFetchedAfterMount, repayWithATokens])
 
+  const protocolAction = ProtocolAction.repay
+  const toasts = useProtocolActionToasts(protocolAction, {
+    value: formatCurrency(amountToRepay || "0", { symbol }),
+  })
+
   const action = async () => {
     try {
       setMainTxState({ ...mainTxState, loading: true })
-
-      const action = ProtocolAction.repay
 
       const repayParams = {
         amountToRepay:
@@ -106,8 +110,8 @@ export const RepayActions = ({
         ...repayParams,
         encodedTxData: encodedParams,
       })
-      repayTxData = await estimateGasLimit(repayTxData)
-      await sendTx(repayTxData, action)
+      repayTxData = await estimateGasLimit(repayTxData, protocolAction)
+      await sendTx(repayTxData, toasts, protocolAction)
 
       queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
       refetchPoolData && refetchPoolData()
@@ -137,7 +141,6 @@ export const RepayActions = ({
       approvalTxState={approvalTxState}
       requiresAmount
       amount={amountToRepay}
-      isWrongNetwork={isWrongNetwork}
       className={className}
       handleAction={action}
       actionText={<span>Repay {symbol}</span>}

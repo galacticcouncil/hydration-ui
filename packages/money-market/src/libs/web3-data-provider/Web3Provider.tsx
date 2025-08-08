@@ -11,7 +11,7 @@ import React, { ReactElement, useCallback, useEffect } from "react"
 import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "@/libs/hooks/useWeb3Context"
 import { useRootStore } from "@/store/root"
-import { ExtendedEvmCall, MoneyMarketTxFn } from "@/types"
+import { ExtendedEvmCall, MoneyMarketTxFn, ToastsConfig } from "@/types"
 import { queryKeysFactory } from "@/ui-config/queries"
 import { getFunctionDefsFromAbi } from "@/utils/utils"
 
@@ -23,13 +23,15 @@ export type ERC20TokenType = {
   aToken?: boolean
 }
 
+type SendTxFn = (
+  txData: PopulatedTransaction,
+  toasts: ToastsConfig,
+  action?: ProtocolAction,
+) => Promise<void>
+
 export type Web3Data = {
   currentAccount: string
-  chainId: number
-  sendTx: (
-    txData: PopulatedTransaction,
-    action?: ProtocolAction,
-  ) => Promise<void>
+  sendTx: SendTxFn
 }
 
 const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
@@ -75,12 +77,10 @@ export const Web3ContextProvider: React.FC<{
   const accountAddress = account?.address ?? ""
   const address = safeConvertSS58toH160(accountAddress)
 
-  const chainId = 222222
-
   const [setAccount] = useRootStore((store) => [store.setAccount])
 
-  const sendTx = useCallback(
-    async (tx: PopulatedTransaction, action?: ProtocolAction) => {
+  const sendTx = useCallback<SendTxFn>(
+    async (tx, toasts, action) => {
       const abi = getTransactionAbi(action)
 
       const evmCall: ExtendedEvmCall = {
@@ -96,14 +96,21 @@ export const Web3ContextProvider: React.FC<{
           : 0n,
         dryRun: (() => {}) as ExtendedEvmCall["dryRun"],
       }
-      onCreateTransaction(evmCall, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-          refetchPoolData?.()
-          refetchIncentiveData?.()
-          refetchGhoData?.()
+
+      onCreateTransaction(
+        {
+          tx: evmCall,
+          toasts,
         },
-      })
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
+            refetchPoolData?.()
+            refetchIncentiveData?.()
+            refetchGhoData?.()
+          },
+        },
+      )
     },
     [
       onCreateTransaction,
@@ -122,7 +129,6 @@ export const Web3ContextProvider: React.FC<{
     <Web3Context.Provider
       value={{
         web3ProviderData: {
-          chainId,
           sendTx,
           currentAccount: address?.toLowerCase() || "",
         },

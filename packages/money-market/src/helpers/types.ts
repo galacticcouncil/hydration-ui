@@ -54,7 +54,6 @@ interface DebtSwitchBaseProps {
   amountToReceive: string
   poolReserve: ComputedReserveData
   targetReserve: ComputedReserveData
-  isWrongNetwork: boolean
   customGasPrice?: string
   symbol?: string
   blocked?: boolean
@@ -74,7 +73,6 @@ interface CollateralRepayBaseProps {
   repayWithAmount: string
   fromAssetData: ComputedReserveData
   poolReserve: ComputedReserveData
-  isWrongNetwork: boolean
   customGasPrice?: string
   symbol: string
   repayAllDebt: boolean
@@ -96,7 +94,6 @@ interface SwapBaseProps {
   amountToReceive: string
   poolReserve: ComputedReserveData
   targetReserve: ComputedReserveData
-  isWrongNetwork: boolean
   customGasPrice?: string
   symbol: string
   blocked: boolean
@@ -118,7 +115,6 @@ interface WithdrawAndSwitchProps {
   amountToReceive: string
   poolReserve: ComputedReserveData
   targetReserve: ComputedReserveData
-  isWrongNetwork: boolean
   blocked: boolean
   isMaxSelected: boolean
   loading?: boolean

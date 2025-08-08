@@ -103,7 +103,6 @@ const BorrowModeSwitch: React.FC<BoxProps & BorrowModeSwitchProps> = ({
 }
 
 export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
-  isWrongNetwork,
   poolReserve,
   userReserve,
   symbol,
@@ -299,7 +298,6 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         amountToBorrow={amount}
         poolAddress={poolReserve.underlyingAsset}
         interestRateMode={interestRateMode}
-        isWrongNetwork={isWrongNetwork}
         symbol={symbol}
         blocked={
           blockingError !== undefined ||

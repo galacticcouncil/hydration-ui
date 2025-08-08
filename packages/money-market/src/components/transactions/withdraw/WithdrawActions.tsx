@@ -2,6 +2,8 @@ import { ProtocolAction } from "@aave/contract-helpers"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
 import { useTransactionHandler } from "@/helpers/useTransactionHandler"
+import { useProtocolActionToasts } from "@/hooks"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { ComputedReserveData } from "@/hooks/commonTypes"
 import { useRootStore } from "@/store/root"
 
@@ -9,7 +11,6 @@ export interface WithdrawActionsProps {
   poolReserve: ComputedReserveData
   amountToWithdraw: string
   poolAddress: string
-  isWrongNetwork: boolean
   symbol: string
   blocked: boolean
   className?: string
@@ -19,12 +20,19 @@ export const WithdrawActions = ({
   poolReserve,
   amountToWithdraw,
   poolAddress,
-  isWrongNetwork,
   symbol,
   blocked,
   className,
 }: WithdrawActionsProps) => {
+  const { formatCurrency } = useAppFormatters()
   const withdraw = useRootStore((state) => state.withdraw)
+
+  const protocolAction = ProtocolAction.withdraw
+  const toasts = useProtocolActionToasts(protocolAction, {
+    value: formatCurrency(amountToWithdraw || "0", {
+      symbol,
+    }),
+  })
 
   const {
     action,
@@ -33,6 +41,7 @@ export const WithdrawActions = ({
     approvalTxState,
     requiresApproval,
   } = useTransactionHandler({
+    protocolAction,
     tryPermit: false,
     handleGetTxns: async () =>
       withdraw({
@@ -47,7 +56,7 @@ export const WithdrawActions = ({
       assetName: poolReserve.name,
       asset: poolReserve.underlyingAsset,
     },
-    protocolAction: ProtocolAction.withdraw,
+    toasts,
   })
 
   return (
@@ -57,7 +66,6 @@ export const WithdrawActions = ({
       approvalTxState={approvalTxState}
       mainTxState={mainTxState}
       amount={amountToWithdraw}
-      isWrongNetwork={isWrongNetwork}
       requiresAmount
       actionInProgressText={<span>Withdrawing {symbol}</span>}
       actionText={<span>Withdraw {symbol}</span>}

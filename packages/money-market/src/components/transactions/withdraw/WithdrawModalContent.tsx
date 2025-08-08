@@ -27,7 +27,6 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
   poolReserve,
   userReserve,
   symbol,
-  isWrongNetwork,
 }) => {
   const { formatCurrency } = useAppFormatters()
   const { mainTxState: withdrawTxState } = useModalContext()
@@ -173,7 +172,6 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
         poolReserve={poolReserve}
         amountToWithdraw={isMaxSelected ? withdrawMax : withdrawAmount}
         poolAddress={poolReserve.underlyingAsset}
-        isWrongNetwork={isWrongNetwork}
         symbol={symbol}
         blocked={
           blockingError !== undefined ||

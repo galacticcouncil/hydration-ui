@@ -10,7 +10,6 @@ interface TxActionsWrapperProps {
   amount?: string
   approvalTxState?: TxStateType
   handleAction: () => Promise<void>
-  isWrongNetwork: boolean
   mainTxState: TxStateType
   preparingTransactions: boolean
   requiresAmount?: boolean
@@ -33,7 +32,6 @@ export const TxActionsWrapper = ({
   amount,
   approvalTxState,
   handleAction,
-  isWrongNetwork,
   mainTxState,
   preparingTransactions,
   requiresAmount,
@@ -58,12 +56,7 @@ export const TxActionsWrapper = ({
       if (errorParams) return errorParams
       return { loading: false, disabled: true, content: actionText }
     }
-    if (isWrongNetwork)
-      return {
-        loading: false,
-        disabled: true,
-        content: <span>Wrong Network</span>,
-      }
+
     if (fetchingData)
       return {
         loading: false,

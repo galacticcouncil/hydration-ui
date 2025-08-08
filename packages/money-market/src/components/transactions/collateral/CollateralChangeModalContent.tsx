@@ -36,7 +36,7 @@ export enum ErrorType {
 
 export const CollateralChangeModalContent: React.FC<
   TxModalWrapperRenderProps
-> = ({ poolReserve, userReserve, isWrongNetwork, symbol }) => {
+> = ({ poolReserve, userReserve, symbol }) => {
   const { user } = useAppDataContext()
   const { debtCeiling } = useAssetCaps()
   const { formatCurrency } = useAppFormatters()
@@ -214,7 +214,6 @@ export const CollateralChangeModalContent: React.FC<
         symbol={symbol}
         poolReserve={poolReserve}
         usageAsCollateral={usageAsCollateralModeAfterSwitch}
-        isWrongNetwork={isWrongNetwork}
         blocked={blockingError !== undefined}
       />
     </>
