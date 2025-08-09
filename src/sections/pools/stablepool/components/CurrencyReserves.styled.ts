@@ -7,5 +7,5 @@ export const SRow = styled.div`
 
   padding: 12px 0;
   gap: 10px;
-  border-bottom: 1px solid ${theme.colors.darkBlue400};
+  border-bottom: 1px solid ${theme.colors.darkBlue401};
 `
