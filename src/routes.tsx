@@ -92,6 +92,10 @@ const XcmPage = lazy(async () => ({
   default: (await import("sections/xcm/XcmPage")).XcmPage,
 }))
 
+const WormholePage = lazy(async () => ({
+  default: (await import("sections/xcm/wormhole/WormholePage")).WormholePage,
+}))
+
 const StatsOverview = lazy(async () => ({
   default: (await import("sections/stats/sections/overview/StatsOverview"))
     .StatsOverview,
@@ -372,13 +376,26 @@ export const routes: Route[] = [
   },
   {
     path: "cross-chain",
-    element: (
-      <Suspense
-        fallback={<SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto" }} />}
-      >
-        <XcmPage />
-      </Suspense>
-    ),
+    children: [
+      {
+        path: "/",
+        element: (
+          <Suspense
+            fallback={<SwapAppSkeleton sx={{ maxWidth: 570, mx: "auto" }} />}
+          >
+            <XcmPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "wormhole",
+        element: (
+          <Suspense fallback={<TableSkeleton />}>
+            <WormholePage />
+          </Suspense>
+        ),
+      },
+    ],
   },
   {
     path: "stats",

@@ -416,3 +416,7 @@ export const wsToHttp = (url: string) =>
 export const humanizeUnderscoredString = (value: string) => {
   return value.split("_").join(" ").toUpperCase()
 }
+
+export const removeTrailingSlash = (value: string) => {
+  return value.replace(/\/+$/, "")
+}
