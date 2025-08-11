@@ -188,7 +188,7 @@ export function useBalanceSubscription() {
     )
       return
 
-    console.log("Subscribe to balances")
+    console.log("Subscribe to balances", followedAssetIds)
 
     let unsubSystemBalance: VoidFn | null = null
     let unsubTokensBalance: VoidFn | null = null
@@ -212,7 +212,7 @@ export function useBalanceSubscription() {
         accountAddress,
         (balances) => {
           const validBalances = new Map([])
-
+          console.log(balances)
           for (const [assetId, balance] of balances) {
             if (balance.total !== "0") {
               validBalances.set(assetId, balance)

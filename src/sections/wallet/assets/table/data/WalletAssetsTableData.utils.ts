@@ -39,7 +39,7 @@ export const useAssetsData = ({
   const getExternalMeta = useExternalTokenMeta()
 
   const { balances } = accountAssets ?? {}
-
+  console.log({ balances })
   const { tokensWithBalance, validTokensIdsWithBalance } = useMemo(() => {
     if (balances?.length) {
       const tokensWithBalance: AccountBalance[] = []
@@ -159,7 +159,7 @@ export const useAssetsData = ({
         rugCheckData,
       }
     })
-
+    console.log({ rowsWithBalance })
     const rows = isAllAssets
       ? [
           ...rowsWithBalance,
@@ -205,7 +205,7 @@ export const useAssetsData = ({
     const sortedAssets = sortAssets(rows, "transferableDisplay", {
       firstAssetId: NATIVE_ASSET_ID,
     })
-
+    console.log({ rows })
     return search
       ? arraySearch(sortedAssets, search, ["symbol", "name"])
       : sortedAssets
