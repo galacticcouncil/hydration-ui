@@ -414,7 +414,12 @@ export const useXYKPoolJoinFarmMinShares = (
   )
 
   return useMemo(() => {
-    if (!oracle || !oracle.liquidity || !oracle.sharesIssuance) {
+    if (
+      !oracle ||
+      !oracle.liquidity ||
+      !oracle.sharesIssuance ||
+      !assetAReserve?.decimals
+    ) {
       return BN_0
     }
 
