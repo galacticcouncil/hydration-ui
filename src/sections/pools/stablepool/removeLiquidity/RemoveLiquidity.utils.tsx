@@ -18,7 +18,7 @@ export const useStablepoolLiquidityOut = ({ poolId, reserves }: Args) => {
 
   const getAssetOutValue = useCallback(
     (assetId: number, shares: string) => {
-      if (stableswapSdkData) {
+      if (stableswapSdkData && BN(shares).gt(0)) {
         const fee = BN(stableswapSdkData.pegsFee[0])
           .div(stableswapSdkData.pegsFee[1])
           .toString()

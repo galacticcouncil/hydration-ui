@@ -1,4 +1,4 @@
-import { default as BigNumber } from "bignumber.js"
+import BigNumber from "bignumber.js"
 import { Button, ButtonTransparent } from "components/Button/Button"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
@@ -6,14 +6,10 @@ import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useStore } from "state/store"
-import { getFloatingPointAmount } from "utils/balance"
 import { BN_100, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
-import { theme } from "theme"
-import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 import { useStablepoolLiquidityOut } from "./RemoveLiquidity.utils"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
-import { RemoveLiquidityInput } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityInput"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { createToastMessages } from "state/toasts"
@@ -21,6 +17,12 @@ import { scaleHuman } from "utils/balance"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { Summary } from "components/Summary/Summary"
 import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
+import { AssetSelect } from "components/AssetSelect/AssetSelect"
+import { scale } from "utils/balance"
+import { z } from "zod"
+import { maxBalance, required } from "utils/validators"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { AssetSelectButton } from "components/AssetSelect/AssetSelectButton"
 
 type RemoveLiquidityProps = {
   assetId: string
@@ -28,12 +30,11 @@ type RemoveLiquidityProps = {
   position: {
     reserves: { asset_id: number; amount: string }[]
     poolId: string
-    amount: BigNumber
-    fee: BigNumber
+    amount: string
+    fee: string
   }
   onSuccess: () => void
   onAssetOpen: () => void
-  defaultValue?: number
   splitRemove: boolean
   setSplitRemove: (enabled: boolean) => void
   setLiquidityLimit: () => void
@@ -45,26 +46,29 @@ export const RemoveStablepoolLiquidityForm = ({
   onSuccess,
   position,
   onAssetOpen,
-  defaultValue,
   splitRemove,
   setSplitRemove,
   setLiquidityLimit,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
-  const form = useForm<{ value: number }>({
-    defaultValues: { value: defaultValue ?? 25 },
-  })
   const { api } = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-
   const { addLiquidityLimit } = useLiquidityLimit()
   const { createTransaction } = useStore()
+  const { getAssetWithFallback } = useAssets()
+  const meta = getAssetWithFallback(position.poolId)
 
-  const value = form.watch("value")
+  const form = useForm<{ amount: string }>({
+    defaultValues: { amount: "" },
+    mode: "onChange",
+    resolver: zodResolver(
+      z.object({
+        amount: required.pipe(maxBalance(position.amount, meta.decimals)),
+      }),
+    ),
+  })
 
-  const removeSharesValue = useMemo(() => {
-    return position.amount.div(100).times(value).dp(0).toString()
-  }, [value, position])
+  const value = form.watch("amount")
+  const removeSharesValue = scale(value, meta.decimals).toString()
 
   const { getAssetOutValue, getAssetOutProportionally } =
     useStablepoolLiquidityOut({
@@ -73,7 +77,7 @@ export const RemoveStablepoolLiquidityForm = ({
     })
 
   const feeDisplay = useMemo(
-    () => position.fee.times(BN_100).toString(),
+    () => BigNumber(position.fee).times(BN_100).toString(),
     [position.fee],
   )
 
@@ -182,75 +186,65 @@ export const RemoveStablepoolLiquidityForm = ({
           onChange={setSplitRemove}
         />
 
-        <div sx={{ flex: "row", justify: "space-between" }}>
-          <div>
-            <Text
-              fs={13}
-              lh={13}
-              sx={{ mb: 15 }}
-              css={{
-                whiteSpace: "nowrap",
-                textTransform: "uppercase",
-                color: `rgba(${theme.rgbColors.whiteish500}, 0.6)`,
-              }}
-            >
-              {t("selectAsset.title")}
-            </Text>
-            <AssetSelectButton
-              assetId={assetId}
-              onClick={onAssetOpen}
-              disabled={splitRemove}
-            />
-          </div>
-          <div>
-            <Text fs={32} sx={{ mt: 24 }}>
-              {t("liquidity.remove.modal.value", {
-                value: getFloatingPointAmount(
-                  removeSharesValue,
-                  STABLEPOOL_TOKEN_DECIMALS,
-                ),
-              })}
-            </Text>
-            <Text fs={18} color="pink500" sx={{ mb: 20 }} tAlign="right">
-              {t("value.percentage", { value })}
-            </Text>
-          </div>
-        </div>
         <Controller
-          name="value"
           control={form.control}
-          render={({ field }) => (
-            <RemoveLiquidityInput
-              value={field.value}
+          name="amount"
+          render={({ field, fieldState }) => (
+            <AssetSelect
+              name={field.name}
               onChange={field.onChange}
-              balance={t("value.token", {
-                value: getFloatingPointAmount(
-                  position.amount,
-                  STABLEPOOL_TOKEN_DECIMALS,
-                ),
-              })}
+              value={field.value}
+              id={position.poolId}
+              title={t("amount")}
+              error={fieldState?.error?.message}
+              balance={BigNumber(position.amount)}
+              balanceMax={BigNumber(position.amount)}
+              balanceLabel={t("lending.withdraw.balance")}
             />
           )}
         />
+
+        <Spacer size={16} />
 
         <STradingPairContainer>
           <Text color="brightBlue300">
             {t("liquidity.remove.modal.receive")}
           </Text>
-          {minAssetsOut.map(({ assetOutValue, meta }) => (
-            <RemoveLiquidityReward
-              key={meta.id}
-              id={meta.id}
-              name={meta.symbol}
-              symbol={meta.symbol}
-              amount={t("value", {
-                value: BigNumber(assetOutValue),
-                fixedPointScale: meta.decimals,
-                numberSuffix: ` ${meta.symbol}`,
-                numberPrefix: splitRemove ? "~" : "",
-              })}
-            />
-          ))}
+          {splitRemove ? (
+            minAssetsOut.map(({ assetOutValue, meta }) => (
+              <RemoveLiquidityReward
+                key={meta.id}
+                id={meta.id}
+                name={meta.symbol}
+                symbol={meta.symbol}
+                amount={t("value", {
+                  value: BigNumber(assetOutValue),
+                  fixedPointScale: meta.decimals,
+                  numberSuffix: ` ${meta.symbol}`,
+                  numberPrefix: splitRemove ? "~" : "",
+                })}
+              />
+            ))
+          ) : (
+            <div
+              sx={{ flex: "row", justify: "space-between", align: "center" }}
+            >
+              <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
+
+              {minAssetsOut.map(({ assetOutValue, meta }) => (
+                <div sx={{ flex: "column", align: "flex-end" }}>
+                  <Text fs={[16, 18]} fw={[500, 700]}>
+                    {t("value.tokenWithSymbol", {
+                      value: assetOutValue
+                        ? scaleHuman(assetOutValue, meta.decimals)
+                        : "-",
+                      symbol: meta.symbol,
+                    })}
+                  </Text>
+                </div>
+              ))}
+            </div>
+          )}
         </STradingPairContainer>
       </div>
       <Spacer size={17} />
