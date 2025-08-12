@@ -435,5 +435,5 @@ export const useXYKPoolJoinFarmMinShares = (
         .dp(1, BN.ROUND_UP)
         .shiftedBy(assetAReserve.decimals)
     )
-  }, [minDeposit, oracle, assetAReserve.decimals])
+  }, [minDeposit, oracle, assetAReserve?.decimals])
 }
