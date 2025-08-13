@@ -18,6 +18,7 @@ import { AccountBalance, useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { scaleHuman } from "utils/balance"
 import { useAssetsPrice } from "state/displayPrice"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
 
 export const useAssetsData = ({
   isAllAssets,
@@ -375,6 +376,7 @@ export const useUnlockTokens = ({
   const { native } = useAssets()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { createBatch } = useCreateBatchTx()
 
   return useMutation(async () => {
     const txs = ids.map((id) => api.tx.democracy.removeVote(id))
@@ -390,19 +392,33 @@ export const useUnlockTokens = ({
 
     if (!account?.address) return null
 
+    if (txs.length || openGovTxs.length) {
+      const batchTxs = [
+        ...txs,
+        ...openGovTxs,
+        api.tx.democracy.unlock(account.address),
+        ...opneGovUnlock.map((classId) =>
+          api.tx.convictionVoting.unlock(classId, account.address),
+        ),
+      ]
+
+      return await createBatch(
+        batchTxs,
+        {},
+        {
+          toast,
+          onSuccess: () => {
+            queryClient.invalidateQueries(
+              QUERY_KEYS.lock(account?.address, native.id),
+            )
+          },
+        },
+      )
+    }
+
     return await createTransaction(
       {
-        tx:
-          txs.length || openGovTxs.length
-            ? api.tx.utility.batchAll([
-                ...txs,
-                ...openGovTxs,
-                api.tx.democracy.unlock(account.address),
-                ...opneGovUnlock.map((classId) =>
-                  api.tx.convictionVoting.unlock(classId, account.address),
-                ),
-              ])
-            : api.tx.democracy.unlock(account.address),
+        tx: api.tx.democracy.unlock(account.address),
       },
       {
         toast,
