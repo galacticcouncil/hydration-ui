@@ -200,6 +200,15 @@ const createResultOnCompleteHandler =
   ) =>
   (result: ISubmittableResult) => {
     if (result.isCompleted) {
+      const isEvmError = result.events.some(({ event }) => {
+        const json = event.toHuman()
+        return json.section === "evm" && json.method === "ExecutedFailed"
+      })
+
+      if (isEvmError) {
+        return onError(new Error("evm.ExecutedFailed"))
+      }
+
       if (result.dispatchError) {
         let errorMessage = result.dispatchError.toString()
 

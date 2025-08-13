@@ -18,6 +18,7 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useStableswapPool } from "api/stableswap"
 import { BN_MILL } from "utils/constants"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
+import { useAssets } from "providers/assets"
 
 enum RemoveStablepoolLiquidityPage {
   OPTIONS,
@@ -43,7 +44,8 @@ export const RemoveLiquidityModal = ({
   pool,
   position,
 }: RemoveStableSwapAssetProps) => {
-  const stableSwapMeta = pool.meta
+  const { getAssetWithFallback } = useAssets()
+  const stableSwapMeta = getAssetWithFallback(pool.poolId)
   const assets = Object.keys(stableSwapMeta.meta ?? {})
   const refetch = useRefetchAccountAssets()
   const { data } = useStableswapPool(pool.id)
@@ -222,7 +224,7 @@ export const RemoveLiquidityModal = ({
                 position={{
                   reserves: pool.reserves,
                   fee: stablepoolFee,
-                  poolId: pool.id,
+                  poolId: pool.poolId,
                   amount:
                     isRemovingOmnipoolPosition && !removeAll
                       ? BN(sharesAmount ?? 0)

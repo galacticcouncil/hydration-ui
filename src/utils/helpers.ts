@@ -340,60 +340,84 @@ export const isJson = (item: string) => {
   return typeof value === "object" && value !== null
 }
 
+const SORT_ASSETS_TICKER_ORDER = [
+  "HDX",
+  "DOT",
+  "USDC",
+  "USDT",
+  "IBTC",
+  "VDOT",
+  "WETH",
+  "WBTC",
+]
+
+type SortAssetsOptions = {
+  firstAssetId?: string
+  tickerOrder?: string[]
+  lowPriorityAssetIds?: string[]
+}
+
 export const sortAssets = <T extends { meta: TAsset; [key: string]: any }>(
   assets: Array<T>,
   balanceKey: Extract<KeyOfType<T, string | undefined>, string>,
-  firstAssetId?: string,
+  options?: SortAssetsOptions,
 ) => {
-  const tickerOrder = [
-    "HDX",
-    "DOT",
-    "USDC",
-    "USDT",
-    "IBTC",
-    "VDOT",
-    "WETH",
-    "WBTC",
-  ]
+  const {
+    firstAssetId,
+    lowPriorityAssetIds = [],
+    tickerOrder = SORT_ASSETS_TICKER_ORDER,
+  } = options ?? {}
+
   const getTickerIndex = (ticker: string) => {
-    const index = tickerOrder.indexOf(ticker.toUpperCase())
+    // include aTokens of assets in ticker order
+    const formattedTicker = ticker.startsWith("a") ? ticker.slice(1) : ticker
+    const index = tickerOrder.indexOf(formattedTicker.toUpperCase())
     return index === -1 ? Infinity : index
   }
 
+  const isLowPriority = (id: string) => lowPriorityAssetIds.includes(id)
+
   return [...assets].sort((a, b) => {
-    if (firstAssetId) {
-      if (a.meta.id === firstAssetId) return -1
-      if (b.meta.id === firstAssetId) return 1
-    }
+    // 1. Prioritize first asset if provided
+    if (a.meta.id === firstAssetId) return -1
+    if (b.meta.id === firstAssetId) return 1
+
     const balanceA = BN(a[balanceKey])
     const balanceB = BN(b[balanceKey])
 
-    if (balanceA.isNaN() || balanceB.isNaN()) {
-      if (balanceA.isNaN() && !balanceB.isNaN()) return 1
-      if (!balanceA.isNaN() && balanceB.isNaN()) return -1
+    const hasBalanceA = balanceA.gt(0)
+    const hasBalanceB = balanceB.gt(0)
 
-      if (a.meta.symbol && b.meta.symbol)
-        return a.meta.symbol.localeCompare(b.meta.symbol)
+    const isLowPrioA = isLowPriority(a.meta.id)
+    const isLowPrioB = isLowPriority(b.meta.id)
+
+    // 2. Assets with balance first, low priority last (if both have balance)
+    if (hasBalanceA && hasBalanceB) {
+      if (isLowPrioA !== isLowPrioB) return isLowPrioA ? 1 : -1
+      return balanceB.minus(balanceA).toNumber()
     }
 
-    if (balanceB.isZero() && balanceA.isZero()) {
-      const tickerIndexA = getTickerIndex(a.meta.symbol)
-      const tickerIndexB = getTickerIndex(b.meta.symbol)
+    // 3. One has balance, the other doesn't
+    if (hasBalanceA !== hasBalanceB) return hasBalanceA ? -1 : 1
 
-      if (a.meta.isExternal && !b.meta.isExternal) return 1
-      if (!a.meta.isExternal && b.meta.isExternal) return -1
+    // 4. Both have no balance → prioritize non-low-priority
+    if (isLowPrioA !== isLowPrioB) return isLowPrioA ? 1 : -1
 
-      if (
-        tickerIndexA === tickerIndexB ||
-        (a.meta.isExternal && b.meta.isExternal)
-      ) {
-        return a.meta.symbol.localeCompare(b.meta.symbol)
-      } else {
-        return tickerIndexA - tickerIndexB
-      }
+    // 5. Sort by external flag
+    if (a.meta.isExternal !== b.meta.isExternal) {
+      return a.meta.isExternal ? 1 : -1
     }
 
-    return balanceB.minus(balanceA).toNumber()
+    // 6. Use ticker order
+    const tickerIndexA = getTickerIndex(a.meta.symbol)
+    const tickerIndexB = getTickerIndex(b.meta.symbol)
+
+    if (tickerIndexA !== tickerIndexB) {
+      return tickerIndexA - tickerIndexB
+    }
+
+    // 7. Fallback: alphabetical
+    return a.meta.symbol.localeCompare(b.meta.symbol)
   })
 }
 

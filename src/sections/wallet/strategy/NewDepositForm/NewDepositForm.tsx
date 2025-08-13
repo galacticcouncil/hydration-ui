@@ -15,7 +15,7 @@ import { Modal } from "components/Modal/Modal"
 import { NewDepositAssetSelector } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { noop } from "utils/helpers"
-import { GETH_ERC20_ASSET_ID, STRATEGY_ASSETS_BLACKLIST } from "utils/constants"
+import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { Alert } from "components/Alert/Alert"
 import { usePools, useStableSwapReserves } from "sections/pools/PoolsPage.utils"
@@ -28,6 +28,7 @@ type Props = {
 
 export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation()
+  const { getErc20, native } = useAssets()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
 
   const { account } = useAccount()
@@ -43,7 +44,14 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const selectedAssetBalance =
     accountAssetsMap?.get(selectedAsset?.id ?? "")?.balance?.transferable || "0"
 
-  const allowedAssets = useNewDepositAssets(STRATEGY_ASSETS_BLACKLIST)
+  const allowedAssets = useNewDepositAssets(
+    getErc20(assetId)?.underlyingAssetId ?? "",
+    {
+      blacklist: [assetId],
+      lowPriorityAssetIds: [native.id],
+    },
+  )
+
   const { minAmountOut, submit, supplyCapReached } =
     useSubmitNewDepositForm(assetId)
 

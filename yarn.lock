@@ -2575,15 +2575,15 @@
     "@polkadot/rpc-provider" "^10.7.3"
     "@polkadot/types" "^10.7.3"
 
-"@galacticcouncil/api-augment@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.6.0.tgz#a24f87c2dfc05a8904748d1dfa6c35d0f2a09a55"
-  integrity sha512-b76kkmd4mJd0Iev9pI1IuP3WB3FV0V/XOAVNEv1/BvfpXd/JdNC/1GeTsfuaAZ8+4yFY/m3/xLdKEpvVurL9KQ==
+"@galacticcouncil/api-augment@^0.8.1":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.8.1.tgz#90458395e2f0334c5ab73f76f3fd981ed2d09e56"
+  integrity sha512-Wb2Fify+4MJKpCbIBTCNZkMV0zULjn79WIuRvk3u1Nybu2DHAP/6t+Gi6Q9cd9KfjYoBNLwghArlnFytk1mtkQ==
 
-"@galacticcouncil/apps@^13.4.0":
-  version "13.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-13.4.0.tgz#c51008984fcf006e0abc89e8b759bec8d7357c5c"
-  integrity sha512-UAuAdRTbUtDo39w1E6Fy4emFQcikXda3rfVPk5WliTmrp+xERhmvpWttqQoaQtd82QfdhWwmcbq6p8EPM9KhJg==
+"@galacticcouncil/apps@^13.5.0":
+  version "13.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/apps/-/apps-13.5.0.tgz#8d0902db1f40cc32e8a732150bfb9bffdd750894"
+  integrity sha512-7gAq9tG3CDThgGLlKxCX+Dkcgc5BGqqPbtLmeff9zuM1vRelgsx+KTf4nFQ6wt1cjyAB5mc28Sc4+TpD0mH/Tg==
   dependencies:
     "@cfx-kit/wallet-avatar" "0.0.5"
     "@thi.ng/atom" "^5.1.3"
@@ -2595,6 +2595,11 @@
     lightweight-charts "^4.1.3"
     short-uuid "^4.2.0"
     viem "^2.23.7"
+
+"@galacticcouncil/math-hsm@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.1.0.tgz#51a13c336cf8949602925624b2ef21ed29903e89"
+  integrity sha512-S6dGohpr+TejaFc4+heMQbp/r7PWUJLDotocCVC5XIJLfMwfwQgqifU9rg5rzwdrhWNUaqLX02D2ya6ouJt/Eg==
 
 "@galacticcouncil/math-lbp@^1.2.0":
   version "1.2.0"
@@ -2626,11 +2631,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk@^9.9.1":
-  version "9.9.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.9.1.tgz#967e827a8d12e4802465e64727c750820b8da77e"
-  integrity sha512-L3gUUPXtohNFGwjXcUNZn8Hn2Ge/jC+nVR/7RAYRDvMw4L7gsR5IgD2nh379yCmHCOmshCIgXnZDtcMYZ9w2AQ==
+"@galacticcouncil/sdk@^9.11.0":
+  version "9.11.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.11.0.tgz#e567e47b02f0e1e4515b8ca210d228dfd882eaed"
+  integrity sha512-Ss9qPRR+6sVeI5SAuf7stT+KQod5PLmHBACyFNtxW0j9AOe1u2V3uR6V+xDXTQ71iOpCETcI7NczfD+lwNCU5w==
   dependencies:
+    "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
     "@galacticcouncil/math-liquidity-mining" "^1.2.0"
     "@galacticcouncil/math-omnipool" "^1.3.0"
@@ -2654,10 +2660,10 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^10.4.0":
-  version "10.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.4.0.tgz#e14130c2da0448d115393b4371154352d3e60ea7"
-  integrity sha512-VRfqYlrKvoFgxCS+OgvhcWBHt4E8aM3xXjNSvf5Rgzlixt/EBx+VATSfuDJSne0Xlp0O4qx9Qtr9HwvewPxxvg==
+"@galacticcouncil/xcm-cfg@^10.5.0":
+  version "10.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.5.0.tgz#c25b18894e6f3bcb552d80092c92357e06fb7348"
+  integrity sha512-XLzdr0Xq8i2hy8LlXLXdqp3ZNL+I8nvx7KakQyU3CbV5I0jUxVnnODQoAVM8Dr6fmALRR8N/yFKtP0bYCMkkLA==
   dependencies:
     "@galacticcouncil/xcm-core" "^8.0.0"
 

@@ -8,9 +8,14 @@ import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
 import { useRpcProvider } from "providers/rpcProvider"
-import { createSdkContext } from "@galacticcouncil/sdk"
+import { createSdkContext, PoolType } from "@galacticcouncil/sdk"
 import { useUserExternalTokenStore } from "sections/wallet/addToken/AddToken.utils"
-import { useApiMetadata, useAssetRegistry, useSettingsStore } from "state/store"
+import {
+  TATokenPairStored,
+  useApiMetadata,
+  useAssetRegistry,
+  useSettingsStore,
+} from "state/store"
 import { undefinedNoop } from "utils/helpers"
 import {
   ChainCursor,
@@ -278,6 +283,7 @@ export const useProviderAssets = () => {
     [...QUERY_KEYS.assets(dataEnv), provider?.timestamp],
     provider
       ? async () => {
+          const { sync, syncATokenPairs } = useAssetRegistry.getState()
           const degenMode = useSettingsStore.getState().degenMode
           const { tokens: externalTokens } = degenMode
             ? ExternalAssetCursor.deref().state
@@ -285,14 +291,24 @@ export const useProviderAssets = () => {
 
           const { api, client } = provider.sdk
 
-          const [tradeAssets, sdkAssets] = await Promise.all([
+          const [tradeAssets, pools, sdkAssets] = await Promise.all([
             api.router.getAllAssets(),
+            api.router.getPools(),
             client.asset.getOnChainAssets(true, externalTokens[dataEnv]),
           ])
 
-          if (sdkAssets?.length && tradeAssets?.length) {
-            const { sync } = useAssetRegistry.getState()
+          const aTokenPairs: TATokenPairStored[] = pools
+            .filter((p) => p.type === PoolType.Aave)
+            .map((p) => {
+              const [reserve, atoken] = p.tokens
+              return [atoken.id, reserve.id]
+            })
 
+          if (aTokenPairs.length) {
+            syncATokenPairs(aTokenPairs)
+          }
+
+          if (sdkAssets?.length && tradeAssets?.length) {
             sync(
               sdkAssets.map((asset) => {
                 const isTradable = tradeAssets.some(

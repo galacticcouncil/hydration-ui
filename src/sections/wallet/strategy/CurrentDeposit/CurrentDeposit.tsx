@@ -6,7 +6,6 @@ import { useAssets } from "providers/assets"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Reward } from "sections/lending/helpers/types"
-import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
@@ -17,11 +16,7 @@ import {
   useEvmAccount,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
-import {
-  BN_0,
-  GETH_ERC20_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
+import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { TDeposit, useAccountBalances, useAccountPositions } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
@@ -56,6 +51,10 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
   const positions = accountPositions?.accountAssetsMap.get(assetId)
 
   const depositBalance = new BigNumber(
+    accountAsset?.balance?.total || "0",
+  ).shiftedBy(-asset.decimals)
+
+  const maxBalance = new BigNumber(
     accountAsset?.balance?.transferable || "0",
   ).shiftedBy(-asset.decimals)
 
@@ -93,6 +92,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
           assetId={assetId}
           symbol={asset.symbol}
           balance={depositBalance.toString()}
+          maxBalance={maxBalance.toString()}
         />
       )}
       <CurrentDepositSeparator />
@@ -111,10 +111,12 @@ const DepositBalance = ({
   assetId,
   symbol,
   balance,
+  maxBalance,
 }: {
   assetId: string
   symbol: string
   balance: string
+  maxBalance: string
 }) => {
   const { t } = useTranslation()
   const { getAssetPrice, isLoading } = useAssetsPrice([assetId])
@@ -133,7 +135,11 @@ const DepositBalance = ({
         isLoading={isLoading}
         value={t("value.usd", { amount: depositValue })}
       />
-      <CurrentDepositRemoveButton assetId={assetId} depositBalance={balance} />
+      <CurrentDepositRemoveButton
+        assetId={assetId}
+        depositBalance={balance}
+        maxBalance={maxBalance}
+      />
     </>
   )
 }
@@ -149,8 +155,6 @@ const FarmsDepositBalance = ({
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-
-  const { data: gethReserves } = useStableSwapReserves(GETH_STABLESWAP_ASSET_ID)
 
   const omnipoolDepositValues = useAllOmnipoolDeposits(account?.address)
   const assetDeposits = omnipoolDepositValues[assetId] ?? []
@@ -191,7 +195,7 @@ const FarmsDepositBalance = ({
       <CurrentDepositRemoveButton
         assetId={assetId}
         depositBalance={totalValue.toString()}
-        assetReceiveId={gethReserves.biggestPercentage?.assetId}
+        maxBalance={totalValue.toString()}
         positions={positions}
       />
     </>
@@ -201,13 +205,13 @@ const FarmsDepositBalance = ({
 const CurrentDepositRemoveButton = ({
   assetId,
   depositBalance,
-  assetReceiveId,
   positions,
+  maxBalance,
 }: {
   assetId: string
   depositBalance: string
-  assetReceiveId?: string
   positions?: TRemoveFarmingPosition[]
+  maxBalance: string
 }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -235,9 +239,8 @@ const CurrentDepositRemoveButton = ({
         <RemoveDepositModal
           assetId={assetId}
           balance={depositBalance}
+          maxBalance={maxBalance}
           onClose={() => setIsRemoveModalOpen(false)}
-          assetReceiveId={assetReceiveId}
-          positions={positions}
         />
       </Modal>
     </>

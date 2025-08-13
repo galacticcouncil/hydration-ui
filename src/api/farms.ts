@@ -56,7 +56,7 @@ export type TClaimableFarmValue = {
   isXyk: boolean
   liquidityPositionId?: string
   shares: string
-  loyaltyFactor: string
+  loyaltyFactor: string | undefined
   isClaimable: boolean
   isActiveFarm: boolean
 }
@@ -73,7 +73,7 @@ export type TFarmAprData = {
   blocksPerPeriod: string
   plannedYieldingPeriods: string
   estimatedEndBlock: string
-  loyaltyCurve: {
+  loyaltyCurve?: {
     initialRewardPercentage: string
     scaleCoef: string
   }
@@ -82,6 +82,8 @@ export type TFarmAprData = {
   distributedRewards: string
   diffRewards: string
 }
+
+export type OraclePricePoolType = "omnipool" | "hydraxyk"
 
 const getActiveFarms =
   (api: ApiPromise, isXyk: boolean = false) =>
@@ -193,7 +195,7 @@ const getFarmsData =
         balance.freeBalance,
       )
 
-      const loyaltyCurve = yieldFarm.loyaltyCurve.unwrap()
+      const loyaltyCurve = yieldFarm.loyaltyCurve.unwrapOr(null)
       const meta = getAsset(rewardCurrency)
 
       return {
@@ -208,11 +210,13 @@ const getFarmsData =
         blocksPerPeriod: globalFarm.blocksPerPeriod.toString(),
         plannedYieldingPeriods: globalFarm.plannedYieldingPeriods.toString(),
         estimatedEndBlock: farmDetails.estimatedEndBlock.toString(),
-        loyaltyCurve: {
-          initialRewardPercentage:
-            loyaltyCurve.initialRewardPercentage.toString(),
-          scaleCoef: loyaltyCurve.scaleCoef.toString(),
-        },
+        loyaltyCurve: loyaltyCurve
+          ? {
+              initialRewardPercentage:
+                loyaltyCurve.initialRewardPercentage.toString(),
+              scaleCoef: loyaltyCurve.scaleCoef.toString(),
+            }
+          : undefined,
         fullness: farmDetails.fullness.toFixed(2),
         diffRewards: farmDetails.distributedRewards
           .div(farmDetails.potMaxRewards)
@@ -548,12 +552,13 @@ function getFarmApr(
 export const useOraclePrice = (
   rewardCurrency: string | undefined,
   incentivizedAsset: string | undefined,
+  type: OraclePricePoolType = "omnipool",
 ) => {
   const { api, isLoaded } = useRpcProvider()
   return useQuery(
     QUERY_KEYS.oraclePrice(rewardCurrency, incentivizedAsset),
     rewardCurrency != null && incentivizedAsset != null
-      ? getOraclePrice(api, rewardCurrency, incentivizedAsset)
+      ? getOraclePrice(api, rewardCurrency, incentivizedAsset, type)
       : undefinedNoop,
     {
       enabled: rewardCurrency != null && incentivizedAsset != null && isLoaded,
@@ -562,7 +567,12 @@ export const useOraclePrice = (
 }
 
 const getOraclePrice =
-  (api: ApiPromise, rewardCurrency: string, incentivizedAsset: string) =>
+  (
+    api: ApiPromise,
+    rewardCurrency: string,
+    incentivizedAsset: string,
+    type: OraclePricePoolType = "omnipool",
+  ) =>
   async () => {
     const orderedAssets = [rewardCurrency, incentivizedAsset].sort(
       (a, b) => Number(a) - Number(b),
@@ -574,7 +584,7 @@ const getOraclePrice =
         oraclePrice: scale(BN_1, "q"),
       }
     const res = await api.query.emaOracle.oracles(
-      "omnipool",
+      type,
       orderedAssets,
       "TenMinutes",
     )
@@ -586,8 +596,16 @@ const getOraclePrice =
       }
 
     const [data] = res.unwrap()
+
     const n = data.price.n.toString()
     const d = data.price.d.toString()
+    const aIn = data.volume.aIn.toString()
+    const aOut = data.volume.aOut.toString()
+    const bIn = data.volume.bIn.toString()
+    const bOut = data.volume.bOut.toString()
+    const liquidityA = data.liquidity.a.toString()
+    const liquidityB = data.liquidity.b.toString()
+    const sharesIssuance = data.sharesIssuance.toString()
 
     let oraclePrice
     if (Number(rewardCurrency) < Number(incentivizedAsset)) {
@@ -600,6 +618,17 @@ const getOraclePrice =
       id: { rewardCurrency, incentivizedAsset },
       oraclePrice: BN(oraclePrice),
       price: { n, d },
+      volume: {
+        aIn,
+        aOut,
+        bIn,
+        bOut,
+      },
+      liquidity: {
+        a: liquidityA,
+        b: liquidityB,
+      },
+      sharesIssuance,
     }
   }
 
@@ -718,7 +747,7 @@ export const useAccountClaimableFarmValues = () => {
           const rewardCurrency = globalFarm.rewardCurrency.toString()
           const incentivizedAsset = globalFarm.incentivizedAsset.toString()
 
-          const loyaltyCurve = yieldFarm.loyaltyCurve.unwrap()
+          const loyaltyCurve = yieldFarm.loyaltyCurve.unwrapOr(null)
 
           const currentPeriod = relayChainBlockNumber.dividedToIntegerBy(
             globalFarm.blocksPerPeriod.toString(),
@@ -727,14 +756,16 @@ export const useAccountClaimableFarmValues = () => {
           const currentPeriodInFarm = BN(currentPeriod).minus(
             farmEntry.enteredAt.toString(),
           )
-          const loyaltyFactor = getCurrentLoyaltyFactor(
-            {
-              initialRewardPercentage:
-                loyaltyCurve.initialRewardPercentage.toString(),
-              scaleCoef: loyaltyCurve.scaleCoef.toString(),
-            },
-            currentPeriodInFarm,
-          )
+          const loyaltyFactor = loyaltyCurve
+            ? getCurrentLoyaltyFactor(
+                {
+                  initialRewardPercentage:
+                    loyaltyCurve.initialRewardPercentage.toString(),
+                  scaleCoef: loyaltyCurve.scaleCoef.toString(),
+                },
+                currentPeriodInFarm,
+              )
+            : undefined
 
           const accountAddresses: Array<[address: AccountId32, assetId: u32]> =
             [

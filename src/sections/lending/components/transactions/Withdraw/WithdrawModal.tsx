@@ -11,17 +11,45 @@ import { BasicModal } from "sections/lending/components/primitives/BasicModal"
 import { ModalWrapper } from "sections/lending/components/transactions/FlowCommons/ModalWrapper"
 import { WithdrawModalContent } from "./WithdrawModalContent"
 import { getAssetIdFromAddress } from "utils/evm"
-import {
-  ETH_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { REVERSE_A_TOKEN_UNDERLYING_ID_MAP } from "sections/lending/ui-config/aTokens"
+import { useAssets } from "providers/assets"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import { useAccountBalances } from "api/deposits"
+import BN from "bignumber.js"
+import { BN_NAN } from "utils/constants"
+
+const WithdrawGigaAssetModal: React.FC<{
+  assetId: string
+  onClose: () => void
+}> = ({ assetId, onClose }) => {
+  const { getAsset } = useAssets()
+  const { data: accountAssets } = useAccountBalances()
+
+  const asset = getAsset(assetId)
+  const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
+
+  const depositBalance = asset
+    ? new BN(accountAsset?.balance?.total || "0").shiftedBy(-asset.decimals)
+    : BN_NAN
+
+  const maxBalance = asset
+    ? new BN(accountAsset?.balance?.transferable || "0").shiftedBy(
+        -asset.decimals,
+      )
+    : BN_NAN
+
+  return (
+    <RemoveDepositModal
+      assetId={assetId}
+      onClose={onClose}
+      balance={depositBalance.toString()}
+      maxBalance={maxBalance.toString()}
+    />
+  )
+}
 
 export const WithdrawModal = () => {
-  const { user } = useAppDataContext()
+  const { getRelatedAToken } = useAssets()
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
   }>
@@ -29,24 +57,14 @@ export const WithdrawModal = () => {
 
   const assetId = getAssetIdFromAddress(args.underlyingAsset)
 
-  if (
-    assetId === GDOT_STABLESWAP_ASSET_ID ||
-    assetId === GETH_STABLESWAP_ASSET_ID
-  ) {
-    const userReserve = user?.userReservesData.find((userReserve) => {
-      return args.underlyingAsset === userReserve?.underlyingAsset
-    })
+  const aTokenId = getRelatedAToken(assetId)?.id
 
+  const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(args.underlyingAsset)
+
+  if (!!aTokenId && isGigaAsset) {
     return (
       <BasicModal open={type === ModalType.Withdraw} setOpen={close}>
-        <RemoveDepositModal
-          assetId={REVERSE_A_TOKEN_UNDERLYING_ID_MAP[assetId]}
-          onClose={close}
-          balance={userReserve?.underlyingBalance ?? "0"}
-          assetReceiveId={
-            assetId === GETH_STABLESWAP_ASSET_ID ? ETH_ASSET_ID : undefined
-          }
-        />
+        <WithdrawGigaAssetModal assetId={aTokenId} onClose={close} />
       </BasicModal>
     )
   }

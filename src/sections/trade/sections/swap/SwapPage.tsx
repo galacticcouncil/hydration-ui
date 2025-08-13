@@ -1,6 +1,6 @@
 import { SContainer } from "./SwapPage.styled"
 
-import type { TxInfo } from "@galacticcouncil/apps"
+import type { TxInfo, TradeMetadata } from "@galacticcouncil/apps"
 
 import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
@@ -71,12 +71,17 @@ export function SwapPage() {
   const rawSearch = useSearch<SearchGenerics>()
   const search = TradeAppSearch.safeParse(rawSearch)
 
-  const handleSubmit = async (e: CustomEvent<TxInfo>) => {
+  const handleSubmit = async (e: CustomEvent<TxInfo<TradeMetadata>>) => {
     const { transaction, notification, meta } = e.detail
     await createTransaction(
       {
         tx: transaction,
-        txMeta: meta,
+        txMeta: meta && {
+          assetIn: meta?.assetIn.id,
+          assetOut: meta?.assetOut.id,
+          amountIn: meta?.amountIn,
+          amountOut: "",
+        },
       },
       {
         onSuccess: () => {},

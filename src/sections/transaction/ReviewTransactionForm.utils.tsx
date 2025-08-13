@@ -8,9 +8,10 @@ import BigNumber from "bignumber.js"
 import { useTranslation } from "react-i18next"
 import { useAssetsModal } from "sections/assets/AssetsModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_1 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_0, BN_1 } from "utils/constants"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
+  GAS_TO_WEIGHT,
   NATIVE_EVM_ASSET_DECIMALS,
   NATIVE_EVM_ASSET_ID,
   isEvmAccount,
@@ -19,11 +20,12 @@ import { BN_NAN } from "utils/constants"
 import { useUserReferrer } from "api/referrals"
 import { HYDRATION_CHAIN_KEY } from "sections/xcm/XcmPage.utils"
 import { useReferralCodesStore } from "sections/referrals/store/useReferralCodesStore"
-import { useEvmPaymentFee } from "api/evm"
+import { useEvmGasPrice, useEvmPaymentFee } from "api/evm"
 import { useProviderRpcUrlStore } from "api/provider"
 import { useMemo } from "react"
 import { useAssets } from "providers/assets"
 import {
+  getTransactionJSON,
   useNextEvmPermitNonce,
   usePendingDispatchPermit,
 } from "sections/transaction/ReviewTransaction.utils"
@@ -31,8 +33,10 @@ import { useAccountBalances } from "api/deposits"
 import { useHealthFactorChange } from "api/borrow"
 import BN from "bignumber.js"
 import { ProtocolAction } from "@aave/contract-helpers"
-import { TradeMetadata, TxType, XcmMetadata } from "@galacticcouncil/apps"
+import { TxType, XcmMetadata } from "@galacticcouncil/apps"
 import { ApiPromise } from "@polkadot/api"
+import { formatEther } from "@ethersproject/units"
+import { TxMetadata } from "state/store"
 
 export const isTxType = (
   tx: SubmittableExtrinsic<"promise"> | TxType,
@@ -151,11 +155,20 @@ export const useTransactionValues = ({
 
   const txWeight = paymentInfo?.weight.refTime.toString()
   const feePaymentValue = paymentInfo?.partialFee.toBigNumber() ?? BN_NAN
-  const paymentFeeHDX = paymentInfo
+
+  const { data: paymentFeeExtraHDX, isLoading: isExtraEvmFeeLoading } =
+    useExtraEvmFeePaymentByWeight(txWeight ?? "0")
+
+  const paymentFeeBaseHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
         -native.decimals,
       )
     : null
+
+  const isWrappedEvmTx = !!getTransactionJSON(tx)?.method.startsWith("evm.call")
+  const paymentFeeHDX = isWrappedEvmTx
+    ? paymentFeeBaseHDX?.plus(paymentFeeExtraHDX)
+    : paymentFeeBaseHDX
 
   const isLoading =
     feePaymentAssets.isInitialLoading ||
@@ -163,6 +176,7 @@ export const useTransactionValues = ({
     isPaymentInfoLoading ||
     isPriceLoading ||
     isNonceLoading ||
+    isExtraEvmFeeLoading ||
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
@@ -300,17 +314,16 @@ export const useEditFeePaymentAsset = (
 }
 
 export const useHealthFactorChangeFromTxMetadata = (
-  txMetadata?: TradeMetadata,
+  txMetadata?: TxMetadata,
 ) => {
-  const { assetIn, assetOut, amountIn } = txMetadata || {}
-  const amountOut = null
+  const { assetIn, assetOut, amountIn, amountOut } = txMetadata || {}
   return useHealthFactorChange({
-    assetId: assetIn?.id || "",
+    assetId: assetIn || "",
     amount: amountIn || "",
     action: ProtocolAction.withdraw,
     swapAsset:
       assetOut && amountOut
-        ? { assetId: assetOut.id, amount: amountOut }
+        ? { assetId: assetOut, amount: amountOut }
         : undefined,
   })
 }
@@ -436,5 +449,43 @@ export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
     amountIn,
     assetOutId,
     amountOut,
+  }
+}
+
+export const useExtraEvmFeePaymentByWeight = (weight: string) => {
+  const { native } = useAssets()
+
+  const {
+    data: gasPrice,
+    isSuccess: isGasPriceSuccess,
+    isLoading: isGasPriceLoading,
+  } = useEvmGasPrice()
+
+  const {
+    data: spot,
+    isSuccess: isSpotSuccess,
+    isLoading: isSpotLoading,
+  } = useSpotPrice(NATIVE_EVM_ASSET_ID, native.id)
+
+  const data = useMemo(() => {
+    if (!isGasPriceSuccess || !isSpotSuccess) return "0"
+
+    const gas = weight
+      ? BigNumber(weight)
+          .div(GAS_TO_WEIGHT)
+          .plus(AAVE_EXTRA_GAS.toString())
+          .decimalPlaces(0)
+      : BN_0
+
+    const wei = BN(gasPrice).times(gas.toString())
+    const eth = formatEther(wei.toString())
+    const hdx = BigNumber(eth).times(spot.spotPrice)
+
+    return hdx.toString()
+  }, [gasPrice, isGasPriceSuccess, isSpotSuccess, spot, weight])
+
+  return {
+    data,
+    isLoading: isGasPriceLoading || isSpotLoading,
   }
 }

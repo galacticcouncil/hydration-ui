@@ -1,44 +1,41 @@
-import { useAssets } from "providers/assets"
+import { TAsset, useAssets } from "providers/assets"
 import { usePaymentInfo } from "api/transaction"
 import BN from "bignumber.js"
 import { t } from "i18next"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { BN_0 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_0 } from "utils/constants"
 import { H160, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { maxBalance, required } from "utils/validators"
 import { z } from "zod"
 import { useAccountBalances } from "api/deposits"
+import { ApiPromise } from "@polkadot/api"
+import { NATIVE_ASSET_ID } from "utils/api"
 
 export function usePaymentFees({
   asset,
   currentAmount,
   maxAmount,
 }: {
-  asset: string
+  asset: TAsset
   currentAmount: BN
   maxAmount: BN
 }) {
   const { api } = useRpcProvider()
-  const { native } = useAssets()
 
   const formattedCurrentAmount = !currentAmount?.isNaN()
     ? currentAmount.toString()
     : "0"
 
   const { data: currentData } = usePaymentInfo(
-    asset.toString() === native.id
-      ? api.tx.currencies.transfer("", native.id, formattedCurrentAmount)
-      : api.tx.tokens.transfer("", asset, formattedCurrentAmount),
+    getAssetTransferTx(api, asset, "", formattedCurrentAmount),
   )
 
   const formattedMaxAmount = !maxAmount?.isNaN() ? maxAmount.toString() : "0"
 
   const { data: maxData } = usePaymentInfo(
-    asset.toString() === native.id
-      ? api.tx.currencies.transfer("", native.id, formattedMaxAmount)
-      : api.tx.tokens.transfer("", asset, formattedMaxAmount),
+    getAssetTransferTx(api, asset, "", formattedMaxAmount),
   )
 
   return {
@@ -100,4 +97,23 @@ export const useTransferZodSchema = (assetId: string) => {
       amount: required.pipe(maxBalance(assetBalance.transferable, decimals)),
     })
     .merge(getDestZodSchema(account?.address))
+}
+
+export const getAssetTransferTx = (
+  api: ApiPromise,
+  asset: TAsset,
+  dest: string,
+  amount: string,
+) => {
+  if (asset.id === NATIVE_ASSET_ID) {
+    return api.tx.currencies.transfer(dest, asset.id, amount)
+  }
+  if (asset.isErc20) {
+    return api.tx.dispatcher.dispatchWithExtraGas(
+      api.tx.currencies.transfer(dest, asset.id, amount),
+      AAVE_EXTRA_GAS,
+    )
+  }
+
+  return api.tx.tokens.transfer(dest, asset.id, amount)
 }

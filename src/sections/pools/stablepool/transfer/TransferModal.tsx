@@ -1,10 +1,9 @@
 import { Modal } from "components/Modal/Modal"
 import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./TransferOptions"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
-import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { TFarmAprData } from "api/farms"
@@ -12,12 +11,8 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import {
-  GDOT_ERC20_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-} from "utils/constants"
-import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
+import { useSelectedDefaultAssetId } from "sections/pools/stablepool/transfer/TransferModal.utils"
+import { TransferAssetSelector } from "sections/pools/stablepool/transfer/TransferAssetSelector"
 
 export enum Page {
   OPTIONS,
@@ -43,30 +38,28 @@ export const TransferModal = ({
   initialAssetId,
   skipOptions,
 }: Props) => {
-  const { getAssetWithFallback, tradable } = useAssets()
+  const { getAssetWithFallback } = useAssets()
   const { pool } = usePoolData()
   const refetch = useRefetchAccountAssets()
 
   const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
 
+  const stablepool = pool as TStablepool
+
   const {
     id: poolId,
     canAddLiquidity,
-    isGDOT,
     isGETH,
-    smallestPercentage,
     symbol,
-  } = pool as TStablepool
+    relatedAToken,
+  } = stablepool
 
-  const assetIds = Object.keys(pool.meta.meta ?? {})
-
-  const { data: defaultAssetId } = useNewDepositDefaultAssetId(poolId)
+  const defaultAssetId = useSelectedDefaultAssetId(stablepool)
 
   const { t } = useTranslation()
 
   const [assetId, setAssetId] = useState<string | undefined>(
-    initialAssetId ??
-      (isGDOT || isGETH ? defaultAssetId : smallestPercentage?.assetId),
+    initialAssetId ?? defaultAssetId,
   )
 
   const isOnlyStablepool = disabledOmnipool || !canAddLiquidity
@@ -76,20 +69,6 @@ export const TransferModal = ({
   )
 
   const [stablepoolSelected, setStablepoolSelected] = useState(isOnlyStablepool)
-
-  const selectableAssets = useMemo(() => {
-    const invalidAssets = isGDOT
-      ? [GDOT_ERC20_ASSET_ID, GDOT_STABLESWAP_ASSET_ID]
-      : isGETH
-        ? [GETH_STABLESWAP_ASSET_ID]
-        : []
-
-    return isGDOT || isGETH
-      ? tradable
-          .map((asset) => asset.id)
-          .filter((assetId) => !invalidAssets.includes(assetId))
-      : assetIds
-  }, [assetIds, isGDOT, isGETH, tradable])
 
   const goBack = () => {
     if (page === Page.LIMIT_LIQUIDITY) {
@@ -109,7 +88,7 @@ export const TransferModal = ({
 
   const title = stablepoolSelected
     ? t(
-        `liquidity.stablepool.transfer.stablepool${isGDOT || isGETH ? ".custom" : ""}`,
+        `liquidity.stablepool.transfer.stablepool${!!relatedAToken ? ".custom" : ""}`,
         { symbol },
       )
     : isGETH
@@ -155,6 +134,7 @@ export const TransferModal = ({
                 setIsJoinFarms={setIsJoinFarms}
                 initialAmount={initialAmount}
                 setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                relatedAToken={relatedAToken}
               />
             ),
           },
@@ -163,10 +143,9 @@ export const TransferModal = ({
             headerVariant: "GeistMono",
             noPadding: true,
             content: (
-              <AssetsModalContent
-                hideInactiveAssets
-                allowedAssets={selectableAssets}
-                displayZeroBalance
+              <TransferAssetSelector
+                pool={stablepool}
+                firstAssetId={defaultAssetId}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   paginateTo(Page.ADD_LIQUIDITY)
