@@ -9,14 +9,12 @@ import { millisecondsInMinute } from "date-fns"
 import { TOmnipoolAssetsData } from "./omnipool"
 import { HUB_ID } from "utils/api"
 import { BN_NAN } from "utils/constants"
-import { useActiveQueries } from "hooks/useActiveQueries"
 import { setValidXYKPoolAddresses } from "state/store"
 import { useExternalWhitelist } from "./external"
 
 export const useSDKPools = () => {
   const { isLoaded, sdk, timestamp } = useRpcProvider()
   const queryClient = useQueryClient()
-  const activeQueriesAmount = useActiveQueries(["pools"])
   const { data: whitelist, isSuccess: isWhitelistLoaded } =
     useExternalWhitelist()
 
@@ -94,7 +92,7 @@ export const useSDKPools = () => {
 
       return false
     },
-    enabled: isLoaded && !!activeQueriesAmount && isWhitelistLoaded,
+    enabled: isLoaded && isWhitelistLoaded,
     refetchInterval: millisecondsInMinute,
     staleTime: millisecondsInMinute,
   })

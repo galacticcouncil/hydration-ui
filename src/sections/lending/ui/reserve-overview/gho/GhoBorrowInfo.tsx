@@ -29,7 +29,7 @@ export const GhoBorrowInfo = ({
 }: GhoBorrowInfoProps) => {
   const { t } = useTranslation()
 
-  const hasBorrowCap = reserve.borrowCapUSD && reserve.borrowCapUSD !== "0"
+  const hasBorrowCap = true
 
   const CapProgress = () => (
     <CapsCircularStatus
@@ -84,8 +84,8 @@ export const GhoBorrowInfo = ({
               font="GeistSemiBold"
             >
               {t("lending.cap.range", {
-                valueA: reserve.totalDebt,
-                valueB: reserve.borrowCap,
+                valueA: totalBorrowed,
+                valueB: maxAvailableToBorrow,
               })}
               <Text
                 fs={12}
@@ -94,8 +94,8 @@ export const GhoBorrowInfo = ({
                 tAlign={["right", "left"]}
               >
                 {t("lending.cap.range.usd", {
-                  valueA: reserve.totalDebtUSD,
-                  valueB: reserve.borrowCapUSD,
+                  valueA: totalBorrowedUSD,
+                  valueB: maxAvailableToBorrowUSD,
                 })}
               </Text>
             </DataValue>

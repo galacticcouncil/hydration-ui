@@ -1,4 +1,4 @@
-import { Controller, FieldErrors, useForm } from "react-hook-form"
+import { Controller, FieldErrors, FormProvider, useForm } from "react-hook-form"
 import BN from "bignumber.js"
 import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -11,7 +11,7 @@ import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { scale, scaleHuman } from "utils/balance"
 import { useStore } from "state/store"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useSpotPrice } from "api/spotPrice"
 import { TXYKPool } from "sections/pools/PoolsPage.utils"
@@ -26,7 +26,7 @@ import { createToastMessages } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { useRefetchAccountAssets } from "api/deposits"
-import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
+import { AvailableFarmsForm } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useXYKSDKPools } from "api/xyk"
 
 type Props = {
@@ -63,6 +63,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms, pool.poolAddress)
+
   const form = useForm<FormValues>({
     mode: "onChange",
     defaultValues: {
@@ -168,14 +169,12 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
   }
 
   const onInvalidSubmit = (errors: FieldErrors<FormValues>) => {
-    if (
-      !isJoinFarms &&
-      (errors.shares as { farm?: { message: string } }).farm
-    ) {
+    const { shares, ...blockingErrors } = errors
+
+    if (!isJoinFarms && !Object.keys(blockingErrors).length) {
       onSubmit()
     }
   }
-
   const handleChange = useCallback(
     (value: string, name: "assetA" | "assetB") => {
       const assetDecimals = assetValues[name].meta.decimals
@@ -228,141 +227,126 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
 
   const minAddLiquidityValidation =
     form.formState.errors.shares?.message === "minAddLiquidity"
-  const customErrors = form.formState.errors.shares as unknown as
-    | {
-        farm?: { message: string }
-      }
-    | undefined
-
-  const isJoinFarmDisabled = !!customErrors?.farm
 
   const isSubmitDisabled =
-    !!Object.keys(formState.errors.shares ?? {}).filter((key) => key !== "farm")
-      .length ||
     !!formState.errors.assetA ||
-    !!formState.errors.assetB
-
-  useEffect(() => {
-    if (!isFarms) return
-    if (isJoinFarmDisabled) {
-      setIsJoinFarms(false)
-    } else {
-      setIsJoinFarms(true)
-    }
-  }, [isFarms, isJoinFarmDisabled, setIsJoinFarms])
+    !!formState.errors.assetB ||
+    minAddLiquidityValidation
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
-      autoComplete="off"
-      sx={{
-        flex: "column",
-        justify: "space-between",
-        minHeight: "100%",
-      }}
-    >
-      <div sx={{ flex: "column" }}>
-        <Controller
-          name="assetA"
-          control={form.control}
-          render={({ field: { name, value }, fieldState: { error } }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.assets.transfer.asset.label_mob")}
-              name={name}
-              value={value}
-              onChange={(value) => handleChange(value, name)}
-              asset={assetA.id}
-              error={error?.message}
-              disabled={!assetAReserve}
-              balance={balanceA ? BN(balanceA) : undefined}
-              balanceMax={balanceAMax ? BN(balanceAMax) : undefined}
-            />
-          )}
-        />
-        <TokensConversion
-          firstValue={{ amount: BN_1, symbol: assetValues.assetA.meta.symbol }}
-          secondValue={{
-            amount: spotPrice?.spotPrice ? BN(spotPrice.spotPrice) : BN_0,
-            symbol: assetValues.assetB.meta.symbol,
-          }}
-        />
-        <Controller
-          name="assetB"
-          control={form.control}
-          render={({ field: { name, value }, fieldState: { error } }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.assets.transfer.asset.label_mob")}
-              name={name}
-              value={value}
-              onChange={(value) => handleChange(value, name)}
-              asset={assetB.id}
-              error={error?.message}
-              disabled={!assetBReserve}
-              balance={balanceB ? BN(balanceB) : undefined}
-              balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
-            />
-          )}
-        />
-        <Spacer size={4} />
-        <SummaryRow
-          label={t("liquidity.add.modal.poolTradeFee")}
-          content={t("value.percentage", {
-            value: pool.fee,
-          })}
-        />
+    <FormProvider {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit, onInvalidSubmit)}
+        autoComplete="off"
+        sx={{
+          flex: "column",
+          justify: "space-between",
+          minHeight: "100%",
+        }}
+      >
+        <div sx={{ flex: "column" }}>
+          <Controller
+            name="assetA"
+            control={form.control}
+            render={({ field: { name, value }, fieldState: { error } }) => (
+              <WalletTransferAssetSelect
+                title={t("wallet.assets.transfer.asset.label_mob")}
+                name={name}
+                value={value}
+                onChange={(value) => handleChange(value, name)}
+                asset={assetA.id}
+                error={error?.message}
+                disabled={!assetAReserve}
+                balance={balanceA ? BN(balanceA) : undefined}
+                balanceMax={balanceAMax ? BN(balanceAMax) : undefined}
+              />
+            )}
+          />
+          <TokensConversion
+            firstValue={{
+              amount: BN_1,
+              symbol: assetValues.assetA.meta.symbol,
+            }}
+            secondValue={{
+              amount: spotPrice?.spotPrice ? BN(spotPrice.spotPrice) : BN_0,
+              symbol: assetValues.assetB.meta.symbol,
+            }}
+          />
+          <Controller
+            name="assetB"
+            control={form.control}
+            render={({ field: { name, value }, fieldState: { error } }) => (
+              <WalletTransferAssetSelect
+                title={t("wallet.assets.transfer.asset.label_mob")}
+                name={name}
+                value={value}
+                onChange={(value) => handleChange(value, name)}
+                asset={assetB.id}
+                error={error?.message}
+                disabled={!assetBReserve}
+                balance={balanceB ? BN(balanceB) : undefined}
+                balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
+              />
+            )}
+          />
+          <Spacer size={4} />
+          <SummaryRow
+            label={t("liquidity.add.modal.poolTradeFee")}
+            content={t("value.percentage", {
+              value: pool.fee,
+            })}
+          />
 
-        {farms.length > 0 ? (
-          <JoinFarmsSection
+          <AvailableFarmsForm
+            name="shares"
             farms={farms}
             isJoinFarms={isJoinFarms}
             setIsJoinFarms={setIsJoinFarms}
-            error={customErrors?.farm?.message}
-            isJoinFarmDisabled={isJoinFarmDisabled}
           />
-        ) : null}
 
-        <Spacer size={24} />
-        <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
-          {t("liquidity.add.modal.positionDetails")}
-        </Text>
-        <SummaryRow
-          label="Share of pool:"
-          content={t("value.percentage", {
-            value: ratio,
-            type: "token",
-          })}
-        />
-        <Separator color="darkBlue400" opacity={0.3} />
-        <SummaryRow
-          label="Received amount of Pool Shares:"
-          content={t("value.token", {
-            value: shares,
-            fixedPointScale: decimals,
-          })}
-        />
+          <Spacer size={24} />
+          <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
+            {t("liquidity.add.modal.positionDetails")}
+          </Text>
+          <SummaryRow
+            label="Share of pool:"
+            content={t("value.percentage", {
+              value: ratio,
+              type: "token",
+            })}
+          />
+          <Separator color="darkBlue400" opacity={0.3} />
+          <SummaryRow
+            label="Received amount of Pool Shares:"
+            content={t("value.token", {
+              value: shares,
+              fixedPointScale: decimals,
+            })}
+          />
 
-        {minAddLiquidityValidation && (
-          <Alert variant="warning" css={{ marginBottom: 8 }}>
-            {t("liquidity.xyk.addLiquidity.warning")}
-          </Alert>
-        )}
-        <Spacer size={20} />
-        <PoolAddLiquidityInformationCard />
-        <Spacer size={20} />
-      </div>
-      <Separator
-        color="darkBlue401"
-        sx={{
-          mx: "calc(-1 * var(--modal-content-padding))",
-          mb: 20,
-          width: "auto",
-        }}
-      />
-      <Button variant="primary" disabled={isSubmitDisabled}>
-        {isJoinFarms
-          ? t("liquidity.add.modal.button.joinFarms")
-          : t("liquidity.add.modal.confirmButton")}
-      </Button>
-    </form>
+          {minAddLiquidityValidation && (
+            <Alert variant="warning" css={{ marginBottom: 8 }}>
+              {t("liquidity.xyk.addLiquidity.warning")}
+            </Alert>
+          )}
+          <Spacer size={20} />
+          <PoolAddLiquidityInformationCard />
+          <Spacer size={20} />
+        </div>
+        <Separator
+          color="darkBlue401"
+          sx={{
+            mx: "calc(-1 * var(--modal-content-padding))",
+            mb: 20,
+            width: "auto",
+          }}
+        />
+        <Button variant="primary" disabled={isSubmitDisabled}>
+          {isJoinFarms
+            ? t("liquidity.add.modal.button.joinFarms")
+            : t("liquidity.add.modal.confirmButton")}
+        </Button>
+      </form>
+    </FormProvider>
   )
 }

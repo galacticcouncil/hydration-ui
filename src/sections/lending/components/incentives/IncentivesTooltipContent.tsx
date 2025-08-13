@@ -47,7 +47,7 @@ export const IncentivesTooltipContent = ({
 
   return (
     <div sx={{ flex: "column", justify: "center", align: "center" }}>
-      <Text fs={14} color="basic400" sx={{ mb: 4 }}>
+      <Text fs={13} sx={{ mb: 4 }}>
         Participating in this {symbol} reserve gives annualized rewards.
       </Text>
       <div sx={{ width: "100%" }}>

@@ -311,8 +311,7 @@ export const QUERY_KEYS = {
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
-  bifrostVDotApy: ["bifrostVDotApy"],
-  lidoEthAPR: ["lidoEthAPR"],
+  defillamaApyHistory: (id: string) => ["defillamaApyHistory", id],
   borrowUserSummary: (address: string) => [
     QUERY_KEY_PREFIX,
     "borrowUserSummary",
@@ -359,6 +358,11 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
+  bestTradeSellTx: (
+    assetInId: string,
+    assetOutId: string,
+    amountIn: string,
+  ) => ["bestTradeSellTx", assetInId, assetOutId, amountIn],
 } as const
 
 export const WS_QUERY_KEYS = {
