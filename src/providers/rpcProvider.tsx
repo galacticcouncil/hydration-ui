@@ -8,7 +8,6 @@ import {
   useProviderData,
 } from "api/provider"
 import { ReactNode, createContext, useContext, useMemo } from "react"
-import { useWindowFocus } from "hooks/useWindowFocus"
 import { useAssetRegistry } from "state/store"
 import { useDisplayAssetStore } from "utils/displayAsset"
 import { useShareTokens } from "api/xyk"
@@ -58,16 +57,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const displayAsset = useDisplayAssetStore()
   useProviderAssets()
   useShareTokens()
-
-  useWindowFocus({
-    onFocus: () => {
-      const provider = providerData?.api
-
-      if (provider && !provider.isConnected) {
-        provider.connect()
-      }
-    },
-  })
 
   const value = useMemo(() => {
     if (!!providerData && isAssets) {
