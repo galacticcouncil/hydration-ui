@@ -75,16 +75,6 @@ export const ReviewTransactionXCallForm: FC<Props> = ({
               nonce: evmTx.nonce,
               to: evmTx.to as `0x${string}`,
             })
-
-            const isApproveTx = evmTx.data.startsWith("0x095ea7b3")
-            if (isApproveTx) {
-              XItemCursor.reset({
-                data: evmTx.data as `0x${string}`,
-                hash: evmTx.hash as `0x${string}`,
-                nonce: evmTx.nonce,
-                to: evmTx.to as `0x${string}`,
-              })
-            }
           }
 
           onEvmSigned({ evmTx })

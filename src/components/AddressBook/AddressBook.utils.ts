@@ -10,9 +10,10 @@ import { safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { diffBy } from "utils/rx"
-import { isSolanaAddress } from "utils/solana"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+
+const { Ss58Addr, EvmAddr, SolanaAddr } = addr
 
 export const useProviderAccounts = (
   provider: string | undefined,
@@ -29,15 +30,16 @@ export const useProviderAccounts = (
 }
 
 export function validateAddress(address: string) {
-  if (addr.isH160(address)) {
-    return WalletMode.EVM
-  } else if (addr.isSs58(address)) {
-    return WalletMode.Substrate
-  } else if (addr.isSolana(address) || isSolanaAddress(address)) {
-    return WalletMode.Solana
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return WalletMode.EVM
+    case Ss58Addr.isValid(address):
+      return WalletMode.Substrate
+    case SolanaAddr.isValid(address):
+      return WalletMode.Solana
+    default:
+      return null
   }
-
-  return null
 }
 
 export type Address = {
