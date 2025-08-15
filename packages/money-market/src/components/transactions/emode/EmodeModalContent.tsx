@@ -21,9 +21,6 @@ import {
 } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useCurrentTimestamp } from "@/hooks/useCurrentTimestamp"
-import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
-import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
-import { ChainId } from "@/ui-config/networksConfig"
 
 import { getEmodeMessage } from "./emode.utils"
 import { EmodeActions } from "./EmodeActions"
@@ -70,8 +67,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     userReserves,
   } = useAppDataContext()
   const { formatPercent } = useAppFormatters()
-  const { currentChainId: chainId } = useProtocolDataContext()
-  const { chainId: connectedChainId } = useWeb3Context()
   const currentTimestamp = useCurrentTimestamp(1)
 
   const [selectedEmode, setSelectedEmode] = useState<EmodeCategory | undefined>(
@@ -79,9 +74,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   )
 
   const [disableMode, setDisableMode] = useState(false)
-
-  const currentChainId =
-    chainId === ChainId.hydration_testnet ? ChainId.hydration : chainId
 
   // calcs
   const newSummary = formatUserSummary({
@@ -153,9 +145,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   const showCategorySelect: boolean =
     (Object.keys(eModes).length >= 3 && mode === EmodeModalType.ENABLE) ||
     (Object.keys(eModes).length >= 4 && mode === EmodeModalType.SWITCH)
-
-  // is Network mismatched
-  const isWrongNetwork: boolean = currentChainId !== connectedChainId
 
   // Shown only if the user is disabling eMode, is not blocked from disabling, and has a health factor that is decreasing
   // HF will never decrease on enable or switch because all borrow positions must initially be in the eMode category
@@ -372,7 +361,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
       <Separator mx="var(--modal-content-inset)" />
 
       <EmodeActions
-        isWrongNetwork={isWrongNetwork}
         blocked={blockingError !== undefined || !selectedEmode}
         selectedEmode={disableMode ? 0 : selectedEmode?.id || 0}
         activeEmode={user.userEmodeCategoryId}

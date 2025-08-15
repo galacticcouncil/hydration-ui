@@ -7,8 +7,16 @@ export enum CapType {
 
 export type MoneyMarketEnv = "mainnet" | "testnet"
 
+export type ToastsConfig = {
+  submitted: string
+  success: string
+}
+
 export type MoneyMarketTxFn = (
-  call: ExtendedEvmCall,
+  data: {
+    tx: ExtendedEvmCall
+    toasts?: ToastsConfig
+  },
   options: {
     onSuccess: () => void
   },

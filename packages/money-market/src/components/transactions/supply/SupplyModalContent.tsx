@@ -36,7 +36,6 @@ export const SupplyModalContent = React.memo(
     underlyingAsset,
     poolReserve,
     userReserve,
-    isWrongNetwork,
     nativeBalance,
     tokenBalance,
   }: TxModalWrapperRenderProps) => {
@@ -120,16 +119,19 @@ export const SupplyModalContent = React.memo(
     )
     const totalCollateralMarketReferenceCurrencyAfter = user
       ? Big(user.totalCollateralMarketReferenceCurrency).plus(amountIntEth)
-      : "-1"
+      : Big(-1)
 
-    const liquidationThresholdAfter = user
-      ? Big(user.totalCollateralMarketReferenceCurrency)
-          .mul(user.currentLiquidationThreshold)
-          .plus(
-            amountIntEth.mul(poolReserve.formattedReserveLiquidationThreshold),
-          )
-          .div(totalCollateralMarketReferenceCurrencyAfter)
-      : "-1"
+    const liquidationThresholdAfter =
+      user && totalCollateralMarketReferenceCurrencyAfter.gt(0)
+        ? Big(user.totalCollateralMarketReferenceCurrency)
+            .mul(user.currentLiquidationThreshold)
+            .plus(
+              amountIntEth.mul(
+                poolReserve.formattedReserveLiquidationThreshold,
+              ),
+            )
+            .div(totalCollateralMarketReferenceCurrencyAfter)
+        : "-1"
 
     const isMaxSelected = amount === maxAmountToSupply
     const isMaxExceeded = !!amount && Big(amount).gt(maxAmountToSupply)
@@ -179,7 +181,6 @@ export const SupplyModalContent = React.memo(
 
     const supplyActionsProps = {
       amountToSupply: amount,
-      isWrongNetwork,
       poolAddress: supplyUnWrapped
         ? API_ETH_MOCK_ADDRESS
         : poolReserve.underlyingAsset,

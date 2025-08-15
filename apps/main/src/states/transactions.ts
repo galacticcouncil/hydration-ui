@@ -30,7 +30,7 @@ export type TransactionProps = Omit<TransactionInput, "meta"> & {
 export interface TransactionToasts {
   submitted: string
   success: string
-  error: string
+  error?: string
 }
 
 type TransactionFee = {

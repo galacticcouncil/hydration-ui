@@ -4,7 +4,9 @@ import { parseUnits } from "ethers/lib/utils"
 import React, { useEffect } from "react"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
+import { useProtocolActionToasts } from "@/hooks"
 import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { ComputedReserveData } from "@/hooks/commonTypes"
 import { useModalContext } from "@/hooks/useModal"
 import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
@@ -18,7 +20,6 @@ export interface BorrowActionsProps {
   amountToBorrow: string
   poolAddress: string
   interestRateMode: InterestRate
-  isWrongNetwork: boolean
   symbol: string
   blocked: boolean
   className?: string
@@ -31,10 +32,10 @@ export const BorrowActions = React.memo(
     amountToBorrow,
     poolAddress,
     interestRateMode,
-    isWrongNetwork,
     blocked,
     className,
   }: BorrowActionsProps) => {
+    const { formatCurrency } = useAppFormatters()
     const queryClient = useQueryClient()
     const [borrow, estimateGasLimit] = useRootStore((state) => [
       state.borrow,
@@ -53,6 +54,11 @@ export const BorrowActions = React.memo(
       useBackgroundDataProvider()
     const { sendTx } = useWeb3Context()
 
+    const protocolAction = ProtocolAction.borrow
+    const toasts = useProtocolActionToasts(protocolAction, {
+      value: formatCurrency(amountToBorrow || "0", { symbol }),
+    })
+
     const action = async () => {
       try {
         setMainTxState({ ...mainTxState, loading: true })
@@ -65,8 +71,9 @@ export const BorrowActions = React.memo(
               ? poolReserve.variableDebtTokenAddress
               : poolReserve.stableDebtTokenAddress,
         })
-        borrowTxData = await estimateGasLimit(borrowTxData)
-        await sendTx(borrowTxData, ProtocolAction.borrow)
+
+        borrowTxData = await estimateGasLimit(borrowTxData, protocolAction)
+        await sendTx(borrowTxData, toasts, protocolAction)
 
         queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
         refetchPoolData && refetchPoolData()
@@ -103,7 +110,6 @@ export const BorrowActions = React.memo(
         approvalTxState={approvalTxState}
         requiresAmount={true}
         amount={amountToBorrow}
-        isWrongNetwork={isWrongNetwork}
         handleAction={action}
         actionText={<span>Borrow {symbol}</span>}
         actionInProgressText={<span>Borrowing {symbol}</span>}

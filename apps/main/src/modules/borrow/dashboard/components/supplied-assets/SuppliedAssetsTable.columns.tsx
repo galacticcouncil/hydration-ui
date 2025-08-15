@@ -64,6 +64,9 @@ export const useSuppliedAssetsTableColumns = () => {
         select: (row) => row.original.underlyingBalanceUSD,
         compare: numericallyStr,
       }),
+      meta: {
+        sx: { textAlign: "right" },
+      },
       cell: ({ row }) => {
         const { underlyingBalanceUSD, underlyingBalance } = row.original
 
@@ -106,6 +109,7 @@ export const useSuppliedAssetsTableColumns = () => {
       header: t("borrow:collateral"),
       meta: {
         sx: {
+          px: 0,
           textAlign: "center",
         },
       },

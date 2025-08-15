@@ -23,9 +23,10 @@ export type ClaimRewardsSelectProps = {
 }
 
 type ClaimRewardsSelectItemProps = {
+  key: string
   label: string
   icon: React.ReactNode
-  onClick: () => void
+  onClick?: () => void
   isTrigger?: boolean
 }
 
@@ -52,9 +53,7 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
 }) => {
   const [open, setOpen] = useState(false)
 
-  const selectItems = useMemo<
-    (ClaimRewardsSelectItemProps & { key: string })[]
-  >(() => {
+  const selectItems = useMemo<ClaimRewardsSelectItemProps[]>(() => {
     return [
       {
         key: "all",
@@ -66,10 +65,6 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
             component={BadgeDollarSign}
           />
         ),
-        onClick: () => {
-          setSelectedReward("all")
-          setOpen(false)
-        },
       },
       ...rewards.map((reward) => ({
         key: reward.symbol,
@@ -77,13 +72,9 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
         icon: (
           <TokenIcon id={getAssetIdFromAddress(reward.rewardTokenAddress)} />
         ),
-        onClick: () => {
-          setSelectedReward(reward.symbol)
-          setOpen(false)
-        },
       })),
     ]
-  }, [rewards, setSelectedReward])
+  }, [rewards])
 
   const selectedItem = selectItems.find(({ key }) => key === selectedReward)
 
@@ -102,9 +93,15 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {selectItems.map(({ key, ...item }) => (
-          <DropdownMenuItem key={key} asChild>
-            <ClaimRewardsSelectItem {...item} />
+        {selectItems.map((item) => (
+          <DropdownMenuItem key={item.key} asChild>
+            <ClaimRewardsSelectItem
+              {...item}
+              onClick={() => {
+                setSelectedReward(item.key)
+                setOpen(false)
+              }}
+            />
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

@@ -23,7 +23,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const { evm, dataEnv } = useRpcProvider()
 
   const createTx = useCallback<MoneyMarketTxFn>(
-    (tx, options) => createTransaction({ tx }, options),
+    (tx, options) => createTransaction(tx, options),
     [createTransaction],
   )
 
