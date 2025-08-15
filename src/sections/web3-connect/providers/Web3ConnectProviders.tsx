@@ -145,7 +145,7 @@ export const Web3ConnectProviders: React.FC<Web3ConnectProvidersProps> = ({
             <Web3ConnectModeFilter
               active={modeFilter}
               onSetActive={(mode) => setModeFilter(mode)}
-              blacklist={[WalletMode.Solana]}
+              blacklist={[WalletMode.Solana, WalletMode.Sui]}
             />
           </div>
           <Separator

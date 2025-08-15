@@ -20,6 +20,10 @@ export enum WalletProviderType {
   FearlessWallet = "fearless-wallet",
   Polkagate = "polkagate",
   AlephZero = "aleph-zero",
+  Slush = "slush",
+  Suiet = "suiet",
+  PhantomSui = "phantom-sui",
+  NightlySui = "nightly-sui",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
   ExternalWallet = "external",
@@ -68,6 +72,13 @@ export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
   WalletProviderType.BraveWalletSol,
+]
+
+export const SUI_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.Suiet,
+  WalletProviderType.Slush,
+  WalletProviderType.PhantomSui,
+  WalletProviderType.NightlySui,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

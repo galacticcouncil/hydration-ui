@@ -8,6 +8,7 @@ const WALLET_MODES = [
   WalletMode.Substrate,
   WalletMode.EVM,
   WalletMode.Solana,
+  WalletMode.Sui,
 ] as const
 
 export type Web3ConnectModeFilterProps = {
