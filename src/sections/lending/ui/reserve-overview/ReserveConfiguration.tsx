@@ -18,9 +18,6 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
 }) => {
   const { currentNetworkConfig, currentMarketData } = useProtocolDataContext()
 
-  const renderCharts =
-    !!currentNetworkConfig.ratesHistoryApiUrl &&
-    !currentMarketData.disableCharts
   const { supplyCap, debtCeiling, borrowCap } = useAssetCaps()
   const showSupplyCapStatus: boolean = reserve.supplyCap !== "0"
   const showBorrowCapStatus: boolean = reserve.borrowCap !== "0"
@@ -42,7 +39,6 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
       <SupplyInfo
         reserve={reserve}
         currentMarketData={currentMarketData}
-        renderCharts={renderCharts}
         showSupplyCapStatus={showSupplyCapStatus}
         supplyCap={supplyCap}
         debtCeiling={debtCeiling}
@@ -58,7 +54,6 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
             reserve={reserve}
             currentMarketData={currentMarketData}
             currentNetworkConfig={currentNetworkConfig}
-            renderCharts={renderCharts}
             showBorrowCapStatus={showBorrowCapStatus}
             borrowCap={borrowCap}
           />

@@ -17,7 +17,6 @@ import { scale } from "utils/balance"
 import { TDeposit } from "api/deposits"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
-import { BN_0 } from "utils/constants"
 
 type FormProps = {
   position?: TLPData
