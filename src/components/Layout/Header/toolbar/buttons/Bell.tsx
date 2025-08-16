@@ -25,8 +25,7 @@ export const Bell = () => {
   const { t } = useTranslation()
 
   const { account } = useAccount()
-  const address = account?.address ?? ""
-  const { data: transfers } = useWormholeTransfersQuery(address, "redeemable")
+  const { data: transfers } = useWormholeTransfersQuery(account, "redeemable")
 
   const { isLoading: isOpenGovLoading, data: openGovReferendas } =
     useOpenGovReferendas()

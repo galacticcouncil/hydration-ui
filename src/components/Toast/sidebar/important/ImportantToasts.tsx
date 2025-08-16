@@ -13,8 +13,7 @@ export const ImportantToasts: React.FC<
 > = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const address = account?.address ?? ""
-  const { data: transfers } = useWormholeTransfersQuery(address, "redeemable")
+  const { data: transfers } = useWormholeTransfersQuery(account, "redeemable")
 
   const toasts = useMemo(() => {
     if (!transfers) return []

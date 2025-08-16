@@ -39,7 +39,10 @@ export const useWormholeTransfersColumns = () => {
       cell: ({ row }) => {
         const { fromChain, toChain } = row.original
         return (
-          <TransferChainPairColumn fromChain={fromChain} toChain={toChain} />
+          fromChain &&
+          toChain && (
+            <TransferChainPairColumn fromChain={fromChain} toChain={toChain} />
+          )
         )
       },
     })
