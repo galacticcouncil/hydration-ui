@@ -21,6 +21,7 @@ import { ToastSidebarReferendums } from "./referendums/ToastSidebarReferendums"
 import { SkeletonTheme } from "react-loading-skeleton"
 import { theme } from "theme"
 import { useRpcProvider } from "providers/rpcProvider"
+import { ImportantToasts } from "components/Toast/sidebar/important/ImportantToasts"
 
 export function ToastSidebar() {
   const { t } = useTranslation()
@@ -62,6 +63,7 @@ export function ToastSidebar() {
                 </div>
                 <SSidebarBody>
                   {isLoaded && <ToastSidebarReferendums />}
+                  <ImportantToasts />
                   {!sortedToasts.length ? (
                     <SNoActivitiesContainer>
                       <SNoActivitiesIcon />
