@@ -78,7 +78,7 @@ export function XcmPage() {
   const { isLoaded } = useRpcProvider()
   const { account } = useAccount()
   const { createTransaction } = useStore()
-  const location = useLocation()
+  const location = useLocation<SearchGenerics>()
   const { disconnectIncompatible } = useWeb3ConnectStore()
   const [tokenCheck, setTokenCheck] = React.useState<Asset | null>(null)
   const [openAddressBook, setOpenAddressBook] = React.useState(false)
@@ -127,12 +127,19 @@ export function XcmPage() {
         state.account && state.account.address !== prevState.account?.address
 
       if (hasAccountChanged) {
-        setSrcChain(
-          incomingSrcChain || getDefaultSrcChain(state.account?.provider),
-        )
+        const nextSrcChain =
+          incomingSrcChain || getDefaultSrcChain(state.account?.provider)
+        setSrcChain(nextSrcChain)
+        const nextLocation = location.buildNext(undefined, {
+          search: {
+            ...location.current.search,
+            srcChain: nextSrcChain,
+          },
+        })
+        location.navigate(nextLocation)
       }
     })
-  }, [incomingSrcChain])
+  }, [incomingSrcChain, location])
 
   const handleWalletChange = (e: CustomEvent<WalletChangeDetail>) => {
     const { srcChain } = e.detail

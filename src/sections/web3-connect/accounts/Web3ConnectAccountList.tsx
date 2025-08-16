@@ -30,22 +30,28 @@ import { Alert } from "components/Alert/Alert"
 import {
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
+  SUI_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import { Web3ConnectModeFilter } from "sections/web3-connect/modal/Web3ConnectModeFilter"
 import { useShallow } from "hooks/useShallow"
 import BigNumber from "bignumber.js"
 import { Web3ConnectAccountPlaceholder } from "sections/web3-connect/accounts/Web3ConnectAccountPlaceholder"
+import { Web3ConnectSuiAccount } from "sections/web3-connect/accounts/Web3ConnectSuiAccount"
 
 const getAccountComponentByType = (type: WalletProviderType | null) => {
   if (!type) return Fragment
-
-  if (type === WalletProviderType.ExternalWallet)
-    return Web3ConnectExternalAccount
-
-  if (EVM_PROVIDERS.includes(type)) return Web3ConnectEvmAccount
-  if (SOLANA_PROVIDERS.includes(type)) return Web3ConnectSolanaAccount
-
-  return Web3ConnectSubstrateAccount
+  switch (true) {
+    case type === WalletProviderType.ExternalWallet:
+      return Web3ConnectExternalAccount
+    case EVM_PROVIDERS.includes(type):
+      return Web3ConnectEvmAccount
+    case SOLANA_PROVIDERS.includes(type):
+      return Web3ConnectSolanaAccount
+    case SUI_PROVIDERS.includes(type):
+      return Web3ConnectSuiAccount
+    default:
+      return Web3ConnectSubstrateAccount
+  }
 }
 
 const AccountComponent: FC<Account> = (account) => {

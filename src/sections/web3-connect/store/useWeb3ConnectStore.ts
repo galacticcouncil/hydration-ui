@@ -8,6 +8,7 @@ import {
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
+  SUI_PROVIDERS,
 } from "sections/web3-connect/constants/providers"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { produce } from "immer"
@@ -26,6 +27,7 @@ export enum WalletMode {
   SubstrateEVM = "substrate-evm",
   SubstrateH160 = "substrate-h160",
   Solana = "solana",
+  Sui = "sui",
 }
 
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
@@ -44,6 +46,7 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
   [WalletMode.Solana]: SOLANA_PROVIDERS,
+  [WalletMode.Sui]: SUI_PROVIDERS,
 }
 
 export type Account = {
@@ -220,17 +223,17 @@ export const useWeb3ConnectStore = create<WalletProviderStore>()(
 
 const getDefaultWalletMode = () => {
   const params = new URLSearchParams(window.location.search)
-  if (params.get("srcChain") === "solana") {
-    return WalletMode.Solana
-  }
 
-  if (params.get("srcChain") === "mythos") {
-    return WalletMode.SubstrateH160
+  switch (params.get("srcChain")) {
+    case "solana":
+      return WalletMode.Solana
+    case "mythos":
+      return WalletMode.SubstrateH160
+    case "ethereum":
+      return WalletMode.EVM
+    case "sui":
+      return WalletMode.Sui
+    default:
+      return WalletMode.Default
   }
-
-  if (params.get("srcChain") === "ethereum") {
-    return WalletMode.EVM
-  }
-
-  return WalletMode.Default
 }

@@ -25,6 +25,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import {
   Account,
   COMPATIBLE_WALLET_PROVIDERS,
+  PROVIDERS_BY_WALLET_MODE,
   WalletMode,
   WalletProviderStatus,
   useWeb3ConnectStore,
@@ -32,6 +33,7 @@ import {
 import {
   getSupportedWallets,
   handleAnnounceProvider,
+  handleAnnounceSuiProvider,
   normalizeProviderType,
   WalletProvider,
 } from "./wallets"
@@ -62,6 +64,7 @@ import { Talisman } from "sections/web3-connect/wallets/Talisman"
 import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
 import { persist } from "zustand/middleware"
+import { getWallets as getStandardizedWallets } from "@mysten/wallet-standard"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -230,6 +233,15 @@ export const useAnnounceProviders = () => {
 
     return () => {
       window.removeEventListener("eip6963:announceProvider", announceProvider)
+    }
+  }, [])
+
+  useEffect(() => {
+    const wallets = getStandardizedWallets()
+    for (const wallet of wallets.get()) {
+      if (wallet.chains.includes("sui:mainnet")) {
+        handleAnnounceSuiProvider(wallet)
+      }
     }
   }, [])
 }
@@ -562,14 +574,19 @@ export function mapWalletAccount({
     wallet &&
     SOLANA_PROVIDERS.includes(wallet.extensionName as WalletProviderType)
 
+  const isIncompatible = !COMPATIBLE_WALLET_PROVIDERS.includes(
+    wallet?.extensionName as WalletProviderType,
+  )
+
   return {
     address: isEvm
       ? new H160(address).toAccount()
       : isSolana
         ? safeConvertSolanaAddressToSS58(address)
         : address,
-    displayAddress:
-      isEvm || isSolana ? address : safeConvertAddressSS58(address) || address,
+    displayAddress: isIncompatible
+      ? address
+      : safeConvertAddressSS58(address) || address,
     genesisHash,
     name: name ?? "",
     provider: normalizeProviderType(wallet!),
@@ -578,20 +595,26 @@ export function mapWalletAccount({
 }
 
 export function getWalletModeIcon(mode: WalletMode) {
-  try {
-    if (mode === WalletMode.EVM) {
+  switch (mode) {
+    case WalletMode.EVM:
       return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
-    }
-    if (mode === WalletMode.Substrate) {
+    case WalletMode.Substrate:
       return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
-    }
-
-    if (mode === WalletMode.Solana) {
+    case WalletMode.Solana:
       return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
-    }
+    case WalletMode.Sui:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
+    default:
+      return ""
+  }
+}
 
-    return ""
-  } catch (e) {}
+export function getWalletModesByType(
+  walletType: WalletProviderType,
+): WalletMode[] {
+  return Object.entries(PROVIDERS_BY_WALLET_MODE)
+    .filter(([_, providers]) => providers.includes(walletType))
+    .map(([mode, _]) => mode as WalletMode)
 }
 
 export const useAccountBalanceMap = create(
