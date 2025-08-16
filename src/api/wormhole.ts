@@ -1,25 +1,18 @@
-import { H160, HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
-import {
-  assetsMap,
-  chainsMap,
-  HydrationConfigService,
-  routesMap,
-} from "@galacticcouncil/xcm-cfg"
+import { HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
 import { WhTransfer, WormholeTransfer } from "@galacticcouncil/xcm-sdk"
 import { useQuery } from "@tanstack/react-query"
+import { useHydrationConfigService } from "api/xcm"
 import { minutesToMilliseconds } from "date-fns"
 import { useMemo } from "react"
+import { Account } from "sections/web3-connect/store/useWeb3ConnectStore"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useWormholeTransfersApi = () => {
-  return useMemo(() => {
-    const configService = new HydrationConfigService({
-      assets: assetsMap,
-      chains: chainsMap,
-      routes: routesMap,
-    })
-    return new WormholeTransfer(configService, HYDRADX_PARACHAIN_ID)
-  }, [])
+  const configService = useHydrationConfigService()
+  return useMemo(
+    () => new WormholeTransfer(configService, HYDRADX_PARACHAIN_ID),
+    [configService],
+  )
 }
 
 type WormholeTransfersFilter = "all" | "redeemable"
@@ -29,18 +22,20 @@ const sortTransfersByTimestamp = (a: WhTransfer, b: WhTransfer) =>
   new Date(a.operation.sourceChain.timestamp).getTime()
 
 export const useWormholeTransfersQuery = (
-  address: string,
+  account: Account | null,
   filter: WormholeTransfersFilter = "all",
 ) => {
+  const ss58Addr = account?.address ?? ""
+  const rawAddr = account?.displayAddress ?? ""
   const api = useWormholeTransfersApi()
   return useQuery({
-    enabled: !!address,
+    enabled: !!account,
     staleTime: minutesToMilliseconds(30),
-    queryKey: QUERY_KEYS.wormholeTransfers(address),
+    queryKey: QUERY_KEYS.wormholeTransfers(ss58Addr),
     queryFn: async () => {
       const [deposits, withdraws] = await Promise.all([
-        api.getDeposits(H160.fromAny(address)),
-        api.getWithdraws(address),
+        api.getDeposits(rawAddr),
+        api.getWithdraws(ss58Addr),
       ])
 
       return [...deposits, ...withdraws].sort(sortTransfersByTimestamp)

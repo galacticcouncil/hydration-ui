@@ -13,10 +13,8 @@ export const WalletWormholeRedeemTable = () => {
   const { isLoaded: isApiLoaded } = useRpcProvider()
   const { account } = useAccount()
 
-  const address = account?.address ?? ""
-
   const { data, isLoading: isTransfersLoading } = useWormholeTransfersQuery(
-    address,
+    account,
     "redeemable",
   )
 

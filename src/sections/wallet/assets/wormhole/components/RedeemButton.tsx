@@ -20,7 +20,7 @@ export const RedeemButton: React.FC<RedeemButtonProps> = ({ transfer }) => {
   const isEvm = isEvmAccount(address)
 
   const { redeem, toChain, assetSymbol: symbol, amount } = transfer
-  const call = (address && redeem ? redeem(address) : undefined) as EvmCall
+  const call = address && redeem ? (redeem(address) as EvmCall) : undefined
   const chain =
     // incoming transfers are always redeemed on Moonbeam
     toChain.key === HYDRATION_CHAIN_KEY
@@ -28,12 +28,14 @@ export const RedeemButton: React.FC<RedeemButtonProps> = ({ transfer }) => {
       : toChain
 
   const { mutate, isLoading } = useWormholeRedeem(address)
-  const onRedeem = async () => mutate({ call, chain, symbol, amount })
+  const onRedeem = call
+    ? async () => mutate({ call, chain, symbol, amount })
+    : undefined
 
   return (
     <Button
       size="micro"
-      disabled={!isEvm || isLoading}
+      disabled={!call || !isEvm || isLoading}
       isLoading={isLoading}
       onClick={onRedeem}
     >
