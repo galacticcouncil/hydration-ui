@@ -21,11 +21,9 @@ import {
   getFunctionDefsFromAbi,
   hexToAscii,
 } from "sections/lending/utils/utils"
-import { useQueryClient } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import {
   useAccount,
   useEnableWallet,
@@ -44,6 +42,8 @@ import { PoolReserve } from "sections/lending/store/poolSlice"
 import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
 import { AAVE_EXTRA_GAS } from "utils/constants"
 import BN from "bignumber.js"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
+import { transformEvmTxToExtrinsic } from "api/evm"
 
 export type ERC20TokenType = {
   address: string
@@ -183,10 +183,9 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
   const { error } = useWeb3React<providers.Web3Provider>()
-  const queryClient = useQueryClient()
 
-  const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
-    useBackgroundDataProvider()
+  const { poolData } = useBackgroundDataProvider()
+  const refetchMarketData = useRefetchMarketData()
 
   const accountAddress = account?.address ?? ""
 
@@ -236,26 +235,11 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       const txOptions: TransactionOptions = {
         toast,
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-          refetchPoolData?.()
-          refetchIncentiveData?.()
-          refetchGhoData?.()
-        },
+        onSuccess: refetchMarketData,
       }
 
       if (!provider) {
-        const tx = api.tx.evm.call(
-          txData.from ?? "",
-          txData.to ?? "",
-          txData.data ?? "",
-          "0",
-          txData.gasLimit?.toString() ?? "0",
-          txData.maxFeePerGas?.toString() ?? "0",
-          txData.maxPriorityFeePerGas?.toString() ?? "0",
-          null,
-          [],
-        )
+        const tx = transformEvmTxToExtrinsic(api, txData)
 
         createTransaction(
           {
@@ -287,17 +271,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       return {} as TransactionResponse
     },
-    [
-      api,
-      createTransaction,
-      poolData,
-      provider,
-      queryClient,
-      refetchGhoData,
-      refetchIncentiveData,
-      refetchPoolData,
-      t,
-    ],
+    [api, createTransaction, poolData, provider, refetchMarketData, t],
   )
 
   // TODO: recheck that it works on all wallets
