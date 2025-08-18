@@ -1,11 +1,12 @@
+import { useUserData } from "@galacticcouncil/money-market/hooks"
 import Big from "big.js"
 
+import { useMyLiquidityAmount } from "@/modules/liquidity/components/PoolsHeader/MyLiquidity.data"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
-// TODO is this correct? - useWalletAssetsTotals
 export const useWalletBalancesSectionData = () => {
   const { getAsset } = useAssets()
   const { balances } = useAccountBalances()
@@ -29,11 +30,14 @@ export const useWalletBalancesSectionData = () => {
     return acc.plus(balancePrice)
   }, new Big(0))
 
+  const { totalAmount, omnipool } = useMyLiquidityAmount()
+  const { totalBorrowsUSD, totalLiquidityUSD } = useUserData()
+
   return {
     assets: totalAssets.toString(),
-    // TODO integrate wallet header balances
-    liquidity: "10301874",
-    farms: "10301874",
-    supplyBorrow: "10301874",
+    liquidity: totalAmount,
+    farms: omnipool?.farming.toString() ?? "0",
+    supply: totalLiquidityUSD,
+    borrow: totalBorrowsUSD,
   }
 }

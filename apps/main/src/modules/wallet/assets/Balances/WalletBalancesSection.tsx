@@ -1,4 +1,9 @@
-import { Stack, ValueStats } from "@galacticcouncil/ui/components"
+import {
+  Stack,
+  ValueStats,
+  ValueStatsBottomValue,
+  ValueStatsValue,
+} from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,16 +13,14 @@ import { USDT_ASSET_ID } from "@/utils/consts"
 
 export const WalletBalancesSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
-  const { assets, liquidity, farms, supplyBorrow } =
+  const { assets, liquidity, farms, supply, borrow } =
     useWalletBalancesSectionData()
 
   const [assetsDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, assets)
   const [liquidityDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, liquidity)
   const [farmsDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, farms)
-  const [supplyBorrowDisplay] = useDisplayAssetPrice(
-    USDT_ASSET_ID,
-    supplyBorrow,
-  )
+  const [supplyDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, supply)
+  const [borrowDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, borrow)
 
   return (
     <Stack separated direction="column" justify="space-between" gap={[8, 0]}>
@@ -42,8 +45,18 @@ export const WalletBalancesSection: FC = () => {
       <ValueStats
         size="small"
         label={t("balances.header.supplyBorrow")}
-        value={t("common:currency", { value: supplyBorrow })}
-        bottomLabel={supplyBorrowDisplay}
+        customValue={
+          <ValueStatsValue size="small">
+            {t("common:currency", { value: supply })}
+            {" / "}
+            {t("common:currency", { value: borrow })}
+          </ValueStatsValue>
+        }
+        customBottomLabel={
+          <ValueStatsBottomValue>
+            {supplyDisplay} / {borrowDisplay}
+          </ValueStatsBottomValue>
+        }
       />
     </Stack>
   )
