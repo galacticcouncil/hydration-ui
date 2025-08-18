@@ -58,10 +58,11 @@ export const MarketSummarySwap: FC<Props> = ({ swap }) => {
           label={t("trade:market.summary.estTradeFees")}
           content={
             <DynamicFee
+              displayValue
               value={tradeFeePct}
               rangeLow={mediumLow}
               rangeHigh={mediumHigh}
-              tooltip={`TODO ${t("percent", { value: tradeFeePct })}`}
+              tooltip="TODO"
             />
           }
         />
