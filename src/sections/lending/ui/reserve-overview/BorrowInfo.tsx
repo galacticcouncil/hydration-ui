@@ -16,15 +16,14 @@ import {
   MarketDataType,
   NetworkConfig,
 } from "sections/lending/utils/marketsAndNetworksConfig"
-import { ApyChartContainer } from "sections/lending/ui/reserve-overview/chart/ApyChartContainer"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
+import { BorrowApyChart } from "sections/lending/ui/reserve-overview/chart/BorrowApyChart"
 
 interface BorrowInfoProps {
   reserve: ComputedReserveData
   currentMarketData: MarketDataType
   currentNetworkConfig: NetworkConfig
-  renderCharts: boolean
   showBorrowCapStatus: boolean
   borrowCap: AssetCapHookData
 }
@@ -33,7 +32,6 @@ export const BorrowInfo = ({
   reserve,
   currentMarketData,
   currentNetworkConfig,
-  renderCharts,
   showBorrowCapStatus,
   borrowCap,
 }: BorrowInfoProps) => {
@@ -52,6 +50,7 @@ export const BorrowInfo = ({
     0,
   ).toNumber()
 
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
   const hasBorrowCap = reserve.borrowCapUSD && reserve.borrowCapUSD !== "0"
 
   const CapProgress = () => (
@@ -156,7 +155,7 @@ export const BorrowInfo = ({
               font="GeistSemiBold"
             >
               <OverrideApy
-                assetId={getAssetIdFromAddress(reserve.underlyingAsset)}
+                assetId={assetId}
                 color="basic100"
                 size={19}
                 type="borrow"
@@ -197,13 +196,7 @@ export const BorrowInfo = ({
           </DataValueList>
         </div>
       </div>
-      {renderCharts && (
-        <ApyChartContainer
-          type="borrow"
-          reserve={reserve}
-          currentMarketData={currentMarketData}
-        />
-      )}
+      <BorrowApyChart assetId={assetId} />
       {currentMarketData.addresses.COLLECTOR && (
         <>
           <div sx={{ mt: 20 }}>
