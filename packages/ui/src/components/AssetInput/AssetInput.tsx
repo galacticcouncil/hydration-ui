@@ -20,6 +20,7 @@ export type AssetInputProps = {
   dollarValueLoading?: boolean
   maxBalance?: string
   ignoreBalance?: boolean
+  hideMaxBalanceAction?: boolean
   error?: string
   disabled?: boolean
   modalDisabled?: boolean
@@ -40,6 +41,7 @@ export const AssetInput = ({
   label,
   maxBalance,
   ignoreBalance,
+  hideMaxBalanceAction,
   onChange,
   error,
   disabled,
@@ -89,18 +91,20 @@ export const AssetInput = ({
                 <span>{maxBalance ? formatValue(maxBalance) : ""}</span>
               )}
             </Text>
-            <MicroButton
-              aria-label="Max balance button"
-              onClick={onMaxButtonClick}
-              disabled={
-                Big(maxBalance || "0").lte(0) ||
-                loading ||
-                !onChange ||
-                !!disabled
-              }
-            >
-              max
-            </MicroButton>
+            {!hideMaxBalanceAction && (
+              <MicroButton
+                aria-label="Max balance button"
+                onClick={onMaxButtonClick}
+                disabled={
+                  Big(maxBalance || "0").lte(0) ||
+                  loading ||
+                  !onChange ||
+                  !!disabled
+                }
+              >
+                max
+              </MicroButton>
+            )}
           </Flex>
         )}
       </Flex>

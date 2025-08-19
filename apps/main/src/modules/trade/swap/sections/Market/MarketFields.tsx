@@ -118,7 +118,7 @@ export const MarketFields: FC = () => {
         amountFieldName="buyAmount"
         label={t("buy")}
         assets={buyableAssets}
-        ignoreBalance
+        hideMaxBalanceAction
         onAssetChange={(buyAsset, previousBuyAsset) => {
           const { sellAsset } = getValues()
           const isSwitch = buyAsset.id === sellAsset?.id
