@@ -1,9 +1,11 @@
+import { ReactNode } from "react"
+
 import { Flex, FlexProps, Skeleton, Text } from "@/components"
 import { getToken } from "@/utils"
 
 export type ChartValuesProps = {
-  value: string
-  displayValue?: string
+  value: ReactNode
+  displayValue?: ReactNode
   isLoading?: boolean
 } & FlexProps
 

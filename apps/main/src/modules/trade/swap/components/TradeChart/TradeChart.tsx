@@ -1,14 +1,11 @@
 import {
+  Box,
   ChartValues,
   Flex,
   Paper,
   TradingViewChart,
-  type TradingViewChartProps,
 } from "@galacticcouncil/ui/components"
-import {
-  CrosshairCallbackData,
-  getCrosshairValue,
-} from "@galacticcouncil/ui/components/TradingViewChart/utils"
+import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { useSearch } from "@tanstack/react-router"
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -32,15 +29,17 @@ const intervalOptions = (["all", ...periodTypes] as const).map<
   label: i18n.t(`period.${option}`),
 }))
 
-export type TradeChartProps = Pick<TradingViewChartProps, "height">
+type TradeChartProps = {
+  readonly height: number
+}
 
-export const TradeChart: React.FC<TradeChartProps> = (props) => {
+export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const { t } = useTranslation()
 
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const [interval, setInterval] = useState<PeriodType | "all">("all")
-  const [crosshair, setCrosshair] = useState<CrosshairCallbackData>(null)
+  const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
     assetInId: assetIn,
@@ -51,22 +50,36 @@ export const TradeChart: React.FC<TradeChartProps> = (props) => {
   const isEmpty = isSuccess && !prices.length
 
   const lastDataPoint = last(prices)
-  const value = getCrosshairValue(crosshair) ?? lastDataPoint?.close ?? 0
+  const value = crosshair?.value ?? lastDataPoint?.close ?? 0
+  const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
   const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
     useDisplayAssetPrice(assetIn, value)
+
+  const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
+    useDisplayAssetPrice(assetIn, volume)
 
   const { getAssetWithFallback } = useAssets()
 
   const chartValue =
     !isEmpty && !isError
       ? t("currency", {
-          value: value,
+          value,
           symbol: getAssetWithFallback(assetIn).symbol,
         })
       : ""
 
-  const chartDisplayValue = !isEmpty && !isError ? formattedAssetPrice : ""
+  const chartDisplayValue =
+    !isEmpty && !isError ? (
+      <Box>
+        <Box>
+          {t("price")}: {formattedAssetPrice}
+        </Box>
+        <Box visibility={volume > 0 ? "visible" : "hidden"}>
+          {t("vol")}: {formattedVolumePrice}
+        </Box>
+      </Box>
+    ) : undefined
 
   return (
     <Paper p={20}>
@@ -74,7 +87,7 @@ export const TradeChart: React.FC<TradeChartProps> = (props) => {
         <ChartValues
           value={chartValue}
           displayValue={chartDisplayValue}
-          isLoading={isLoading || isAssetPriceLoading}
+          isLoading={isLoading || isAssetPriceLoading || isVolumePriceLoading}
         />
         <TradeChartInterval
           options={intervalOptions}
@@ -83,14 +96,14 @@ export const TradeChart: React.FC<TradeChartProps> = (props) => {
         />
       </Flex>
       <ChartState
-        height={props.height}
+        height={height}
         isSuccess={isSuccess}
         isError={isError}
         isLoading={isLoading}
         isEmpty={isEmpty}
       >
         <TradingViewChart
-          {...props}
+          height={height}
           data={prices}
           hidePriceIndicator
           onCrosshairMove={setCrosshair}

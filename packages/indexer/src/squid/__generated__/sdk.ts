@@ -307,6 +307,7 @@ export const TradePricesDocument = `
       buckets {
         timestamp
         priceAvrgNorm
+        referenceAssetVolNorm
       }
     }
   }

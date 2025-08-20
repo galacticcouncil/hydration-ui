@@ -18,6 +18,7 @@ query TradePrices(
       buckets {
         timestamp
         priceAvrgNorm
+        referenceAssetVolNorm
       }
     }
   }
