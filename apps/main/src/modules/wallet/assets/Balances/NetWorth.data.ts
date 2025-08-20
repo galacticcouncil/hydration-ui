@@ -31,7 +31,7 @@ export const useNetWorthData = (period: PeriodType | null) => {
 
   const bucketSize = period
     ? bucketSizes[period]
-    : TimeSeriesBucketTimeRange["4H"]
+    : TimeSeriesBucketTimeRange["1D"]
 
   const { data, isError, isLoading, isSuccess } = useQuery(
     accountNetWorthHistoricalDataQuery(
@@ -48,8 +48,8 @@ export const useNetWorthData = (period: PeriodType | null) => {
       return []
     }
 
-    return data.accountTotalBalancesByPeriod.nodes
-      .flatMap<NetWorthData>((node) => {
+    const balances =
+      data.accountTotalBalancesByPeriod.nodes.flatMap<NetWorthData>((node) => {
         if (!node?.buckets) {
           return []
         }
@@ -59,12 +59,25 @@ export const useNetWorthData = (period: PeriodType | null) => {
           time: new Date(Number(bucket.timestamp)),
         }))
       })
-      .sort(
-        sortBy({
-          select: (balances) => balances.time,
-          compare: chronologically,
-        }),
-      )
+
+    const firstBalance = balances[0]
+
+    if (balances.length === 1 && firstBalance) {
+      return [
+        ...balances,
+        {
+          netWorth: firstBalance.netWorth,
+          time: new Date(firstBalance.time.valueOf() + 1),
+        } satisfies NetWorthData,
+      ]
+    }
+
+    return balances.sort(
+      sortBy({
+        select: (balances) => balances.time,
+        compare: chronologically,
+      }),
+    )
   }, [data, isLoading])
 
   return {
@@ -77,8 +90,8 @@ export const useNetWorthData = (period: PeriodType | null) => {
 }
 
 const bucketSizes: Record<PeriodType, TimeSeriesBucketTimeRange> = {
-  hour: TimeSeriesBucketTimeRange["1M"],
-  day: TimeSeriesBucketTimeRange["30M"],
-  week: TimeSeriesBucketTimeRange["4H"],
-  month: TimeSeriesBucketTimeRange["4H"],
+  hour: TimeSeriesBucketTimeRange["15S"],
+  day: TimeSeriesBucketTimeRange["5M"],
+  week: TimeSeriesBucketTimeRange["1H"],
+  month: TimeSeriesBucketTimeRange["1D"],
 }
