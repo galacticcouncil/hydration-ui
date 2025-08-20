@@ -133,7 +133,7 @@ const DataTable = forwardRef(
       manualSorting,
       enableSortingRemoval,
       globalFilterFn: globalFilterFn ?? "auto",
-      ...(rowCount && {
+      ...(rowCount !== undefined && {
         rowCount,
         manualPagination: true,
       }),
