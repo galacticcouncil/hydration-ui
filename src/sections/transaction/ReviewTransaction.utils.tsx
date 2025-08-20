@@ -29,7 +29,13 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { MetaTags, useToast } from "state/toasts"
 import { PermitResult } from "sections/web3-connect/signer/EthereumSigner"
-import { ToastMessage, useSettingsStore } from "state/store"
+import {
+  ToastMessage,
+  TransactionInput,
+  TransactionOptions,
+  useSettingsStore,
+  useStore,
+} from "state/store"
 import {
   CALL_PERMIT_ABI,
   CALL_PERMIT_ADDRESS,
@@ -53,6 +59,7 @@ import { TxEvent } from "polkadot-api"
 import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
 import { XcmMetadata } from "@galacticcouncil/apps"
+import { useBlockWeight } from "api/transaction"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -1212,4 +1219,81 @@ async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
 
     checkBlock()
   })
+}
+
+export const useCreateBatchTx = () => {
+  const { api } = useRpcProvider()
+  const { createTransaction } = useStore()
+  const { account } = useAccount()
+  const { data: blockWeight } = useBlockWeight()
+
+  const createBatch = useCallback(
+    async (
+      txs: SubmittableExtrinsic<"promise">[],
+      transaction: Omit<TransactionInput, "tx">,
+      options?: TransactionOptions,
+    ) => {
+      const address = account?.address
+
+      if (!txs.length || !address || !blockWeight) return
+
+      const batchTx = api.tx.utility.batchAll(txs)
+
+      const paymentInfo = await batchTx.paymentInfo(address)
+
+      const refTimeTx = paymentInfo.weight.refTime.toString()
+      const proofSizeTx = paymentInfo.weight.proofSize.toString()
+
+      const isFitBlock =
+        BN(blockWeight.proofSize).gt(proofSizeTx) &&
+        BN(blockWeight.refTime).gt(refTimeTx)
+
+      if (isFitBlock) {
+        return createTransaction({ ...transaction, tx: batchTx }, options)
+      }
+
+      const splitIndex = Math.ceil(txs.length / 2)
+
+      const calls1 = txs.slice(0, splitIndex)
+      const calls2 = txs.slice(splitIndex)
+
+      await createTransaction(
+        { ...transaction, tx: api.tx.utility.batchAll(calls1) },
+        {
+          ...options,
+          steps: [
+            {
+              label: "First Tx",
+              state: "active",
+            },
+            {
+              label: "Second Tx",
+              state: "todo",
+            },
+          ],
+          disableAutoClose: true,
+        },
+      )
+
+      await createTransaction(
+        { ...transaction, tx: api.tx.utility.batchAll(calls2) },
+        {
+          ...options,
+          steps: [
+            {
+              label: "First Tx",
+              state: "done",
+            },
+            {
+              label: "Second Tx",
+              state: "active",
+            },
+          ],
+        },
+      )
+    },
+    [account?.address, api, blockWeight, createTransaction],
+  )
+
+  return { createBatch }
 }
