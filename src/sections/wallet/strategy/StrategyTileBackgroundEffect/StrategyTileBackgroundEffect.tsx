@@ -21,18 +21,18 @@ const StrategyTileBackgroundVariant1Desktop2 = lazy(async () => ({
   ).default,
 }))
 
-const StrategyTileBackgroundVariant2Desktop = lazy(async () => ({
-  default: (
-    await import(
-      "sections/wallet/strategy/StrategyTileBackgroundEffect/StrategyTileBackgroundEffectDesktop1.svg?react"
-    )
-  ).default,
-}))
-
 const HollarEffect = lazy(async () => ({
   default: (
     await import(
       "sections/wallet/strategy/StrategyTileBackgroundEffect/HollarEffect.svg?react"
+    )
+  ).default,
+}))
+
+const GETHEffect = lazy(async () => ({
+  default: (
+    await import(
+      "sections/wallet/strategy/StrategyTileBackgroundEffect/GETHEffect.svg?react"
     )
   ).default,
 }))
@@ -61,12 +61,21 @@ export const StrategyTileBackgroundEffect: FC<Props> = ({ variant }) => {
   const isMobile = useMedia(theme.viewport.lt.md)
 
   if (isMobile) {
-    return (
-      <>
-        <StrategyTileBackgroundMobile1 />
-        <StrategyTileBackgroundMobile2 />
-      </>
-    )
+    switch (variant) {
+      case StrategyTileVariant.One:
+        return (
+          <>
+            <StrategyTileBackgroundMobile1 />
+            <StrategyTileBackgroundMobile2 />
+          </>
+        )
+      case StrategyTileVariant.Two:
+        return <GETHEffect />
+      case StrategyTileVariant.Hollar:
+        return <HollarEffect />
+      default:
+        neverGuard(variant)
+    }
   }
 
   switch (variant) {
@@ -78,7 +87,7 @@ export const StrategyTileBackgroundEffect: FC<Props> = ({ variant }) => {
         </>
       )
     case StrategyTileVariant.Two:
-      return <StrategyTileBackgroundVariant2Desktop />
+      return <GETHEffect />
     case StrategyTileVariant.Hollar:
       return <HollarEffect />
     default:
