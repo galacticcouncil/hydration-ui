@@ -16,7 +16,7 @@ export const SWalletBalances = styled.div(
     grid-template-rows: 1fr auto auto;
     row-gap: 4px;
 
-    ${mq("sm")} {
+    ${mq("md")} {
       padding: ${theme.containers.paddings.primary}px;
 
       grid-template-rows: auto;

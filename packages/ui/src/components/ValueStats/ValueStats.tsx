@@ -19,6 +19,7 @@ export const ValueStatsBottomValue = SValueStatsBottomValue
 type ValueStatsProps = {
   readonly font?: ValueStatsFont
   readonly alwaysWrap?: boolean
+  readonly wrapThreshold?: "sm" | "md"
   readonly size?: ValueStatsSize
   readonly label?: string
   readonly customLabel?: ReactNode
@@ -32,6 +33,7 @@ type ValueStatsProps = {
 export const ValueStats: FC<ValueStatsProps> = ({
   font = "primary",
   alwaysWrap,
+  wrapThreshold,
   size,
   label,
   customLabel,
@@ -42,7 +44,11 @@ export const ValueStats: FC<ValueStatsProps> = ({
   isLoading,
 }) => {
   return (
-    <SValueStats alwaysWrap={alwaysWrap} size={size}>
+    <SValueStats
+      alwaysWrap={alwaysWrap}
+      wrapThreshold={wrapThreshold}
+      size={size}
+    >
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
       <SValueStatsValueContainer size={size}>
         {isLoading ? (
@@ -59,7 +65,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
 
         {isLoading && (bottomLabel || customBottomLabel) ? (
           <SValueStatsBottomValue>
-            <Skeleton width="100%" height="100%" />
+            <Skeleton width={120} height="100%" />
           </SValueStatsBottomValue>
         ) : (
           (customBottomLabel ?? (

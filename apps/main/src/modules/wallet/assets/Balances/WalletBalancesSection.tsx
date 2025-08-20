@@ -16,9 +16,10 @@ export const WalletBalancesSection: FC = () => {
   } = useWalletBalancesSectionData()
 
   return (
-    <Stack separated direction="column" gap={[8, 0]}>
+    <Stack separated direction="column" gap={[8, 4]}>
       <ValueStats
         size="small"
+        wrapThreshold="md"
         label={t("balances.header.liquidity")}
         value={t("common:currency", { value: liquidity })}
         bottomLabel={t("balances.header.liquidity.inFarms", {
@@ -28,12 +29,14 @@ export const WalletBalancesSection: FC = () => {
       />
       <ValueStats
         size="small"
+        wrapThreshold="md"
         label={t("balances.header.borrow")}
         value={t("common:currency", { value: borrow })}
         isLoading={isBorrowLoading}
       />
       <ValueStats
         size="small"
+        wrapThreshold="md"
         label={t("balances.header.supply")}
         value={t("common:currency", { value: supply })}
         isLoading={isBorrowLoading}

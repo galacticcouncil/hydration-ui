@@ -30,7 +30,8 @@ export const SValueStatsValueContainer = styled.div<{
 export const SValueStats = styled.div<{
   readonly size?: ValueStatsSize
   readonly alwaysWrap?: boolean
-}>(({ size = "large", alwaysWrap }) => [
+  readonly wrapThreshold?: "sm" | "md"
+}>(({ size = "large", alwaysWrap, wrapThreshold = "sm" }) => [
   alwaysWrap
     ? css`
         display: flex;
@@ -41,7 +42,7 @@ export const SValueStats = styled.div<{
         flex-direction: row;
         justify-content: space-between;
 
-        ${mq("sm")} {
+        ${mq(wrapThreshold)} {
           flex-direction: column;
           justify-content: initial;
         }

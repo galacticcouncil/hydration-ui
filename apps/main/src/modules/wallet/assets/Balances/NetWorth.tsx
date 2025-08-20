@@ -1,4 +1,9 @@
-import { AreaChart, Flex, ValueStats } from "@galacticcouncil/ui/components"
+import {
+  AreaChart,
+  Flex,
+  Grid,
+  ValueStats,
+} from "@galacticcouncil/ui/components"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
@@ -43,10 +48,12 @@ export const NetWorth: FC = () => {
   const chartDisplayValue = !isEmpty && !isError ? netWorth : ""
 
   return (
-    <Flex
-      direction={["row", "column"]}
-      align={["center", "flex-start"]}
-      pb={[8, 0]}
+    <Grid
+      minWidth={320}
+      columnTemplate={["auto 1fr", null, "auto"]}
+      columnGap={8}
+      align={["center"]}
+      justifyItems={["center", null, "start"]}
     >
       <ValueStats
         alwaysWrap
@@ -90,10 +97,11 @@ export const NetWorth: FC = () => {
         </ChartState>
       </Flex>
       <TradeChartInterval
+        sx={{ gridColumn: "1/-1" }}
         options={intervalOptions}
         selectedOption={interval}
         onSelect={(option) => setInterval(option.key)}
       />
-    </Flex>
+    </Grid>
   )
 }
