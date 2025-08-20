@@ -6,7 +6,7 @@ export const SWalletBalances = styled.div(
     display: grid;
     row-gap: ${theme.containers.paddings.tertiary}px;
 
-    height: 292px;
+    min-height: 292px;
     padding: ${theme.containers.paddings.secondary}px;
     border-radius: 16px;
     border: 1px solid ${theme.details.borders};

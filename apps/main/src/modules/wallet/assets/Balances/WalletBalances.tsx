@@ -10,7 +10,7 @@ export const WalletBalances: FC = () => {
   const { t } = useTranslation("wallet")
 
   return (
-    <Grid height="100%" sx={{ gridTemplateRows: "auto 1fr" }}>
+    <Grid sx={{ gridTemplateRows: "auto 1fr" }}>
       <SectionHeader>{t("balances.title")}</SectionHeader>
       <SWalletBalances>
         <NetWorth />

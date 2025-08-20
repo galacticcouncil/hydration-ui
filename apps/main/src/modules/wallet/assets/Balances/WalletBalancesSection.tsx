@@ -25,25 +25,25 @@ export const WalletBalancesSection: FC = () => {
         size="small"
         label={t("balances.header.assets")}
         value={t("common:currency", { value: assets })}
-        bottomLabel={assetsDisplay}
+        bottomLabel={assetsDisplay || "0"}
       />
       <ValueStats
         size="small"
         label={t("balances.header.liquidity")}
         value={t("common:currency", { value: liquidity })}
-        bottomLabel={liquidityDisplay}
+        bottomLabel={liquidityDisplay || "0"}
       />
       <ValueStats
         size="small"
         label={t("balances.header.farms")}
         value={t("common:currency", { value: farms })}
-        bottomLabel={farmsDisplay}
+        bottomLabel={farmsDisplay || "0"}
       />
       <ValueStats
         size="small"
         label={t("balances.header.supplyBorrow")}
         value={t("common:currency", { value: supplyBorrow })}
-        bottomLabel={supplyBorrowDisplay}
+        bottomLabel={supplyBorrowDisplay || "0"}
       />
     </Stack>
   )
