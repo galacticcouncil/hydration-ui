@@ -45,7 +45,7 @@ export const TransferModal = ({
   const { getAssetWithFallback } = useAssets()
 
   const {
-    data: { reserves, smallestPercentage },
+    data: { balances: reserves, smallestPercentage },
   } = useStableSwapReserves(poolId)
 
   const stablepoolAsset = getAssetWithFallback(stablepoolAssetId)

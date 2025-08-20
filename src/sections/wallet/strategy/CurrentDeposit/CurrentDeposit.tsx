@@ -220,7 +220,7 @@ const CurrentDepositRemoveButton = ({
   return (
     <>
       <Button
-        size="small"
+        size="compact"
         variant="outline"
         css={{ borderColor: "rgba(255,255,255,0.2)" }}
         disabled={new BigNumber(depositBalance).lte(0)}
@@ -238,7 +238,6 @@ const CurrentDepositRemoveButton = ({
       >
         <RemoveDepositModal
           assetId={assetId}
-          balance={depositBalance}
           maxBalance={maxBalance}
           onClose={() => setIsRemoveModalOpen(false)}
         />

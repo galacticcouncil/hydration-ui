@@ -1,19 +1,16 @@
+import { UseHealthFactorChangeResult } from "api/borrow"
+import { useAccountBalances } from "api/deposits"
 import { useState } from "react"
-import BN from "bignumber.js"
 import {
   Controller,
   FormProvider,
   useFieldArray,
   useFormContext,
 } from "react-hook-form"
-import { UseHealthFactorChangeResult } from "api/borrow"
-import { useAddToOmnipoolZod } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
 import { useTranslation } from "react-i18next"
-import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import {
-  AddMoneyMarketStablepoolProps,
   AddStablepoolProps,
-  getReservesZodSchema,
+  AddStablepoolWrapperProps,
   stablepoolZodSchema,
   TAddStablepoolFormValues,
   TTransferableBalance,
@@ -25,78 +22,66 @@ import {
   useSplitMoneyMarketStablepoolSubmitHandler,
   useStablepoolShares,
   useStablepoolTradeShares,
-} from "./AddStablepoolLiquidity.utils"
-import { Alert } from "components/Alert/Alert"
+} from "sections/pools/stablepool/transfer/AddStablepoolLiquidity.utils"
+import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
+import BN from "bignumber.js"
+import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 import { Spacer } from "components/Spacer/Spacer"
-import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
-import { Separator } from "components/Separator/Separator"
-import { Text } from "components/Typography/Text/Text"
-import { Button } from "components/Button/Button"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
-import { AvailableFarmsForm } from "sections/pools/modals/AddLiquidity/components/JoinFarmsSection/JoinFarmsSection"
-import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
-import { StablepoolFeeSummaryRow } from "sections/pools/stablepool/components/StablepoolFeeSummaryRow"
+import { Alert } from "components/Alert"
 import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
-import { PriceSummaryRow } from "sections/pools/stablepool/components/PriceSummaryRow"
-import { Reserves } from "sections/pools/stablepool/components/Reserves"
+import { Separator } from "components/Separator/Separator"
+import { Button } from "components/Button/Button"
+import { Text } from "components/Typography/Text/Text"
 
-export const AddSplitMoneyMarketStablepool = (
-  props: AddMoneyMarketStablepoolProps,
+type APY = { apy: number }
+type JoinStrategyFormWrapperProps = AddStablepoolWrapperProps & APY
+type JoinStrategyProps = AddStablepoolProps & APY
+
+export const JoinStrategyFormWrapper = (
+  props: JoinStrategyFormWrapperProps,
 ) => {
-  const tx = useMoneyMarketSplitStablepoolExtimationTx(props)
-  const balancesMax = useMaxBalances(props, tx)
-  const { onSubmit } = useSplitMoneyMarketStablepoolSubmitHandler(props)
-  const { form, handleSubmit } = useAddStablepoolForm(
-    props,
-    stablepoolZodSchema(balancesMax),
-  )
+  const { data: accountBalances } = useAccountBalances()
+  const {
+    split,
+    reserves,
+    asset: { id: selectedAssetId, decimals },
+  } = props
 
-  useStablepoolShares(props, form)
+  const initialAmounts = split
+    ? reserves.map((reserve) => ({
+        assetId: reserve.id,
+        decimals: reserve.decimals,
+        amount: "",
+      }))
+    : [{ assetId: selectedAssetId, decimals, amount: "" }]
 
-  return (
-    <FormProvider {...form}>
-      <StablepoolForm
-        balancesMax={balancesMax}
-        handleSubmit={handleSubmit(onSubmit)}
-        {...props}
-      />
-    </FormProvider>
+  const transferableBalances = initialAmounts.map(({ assetId, decimals }) => ({
+    assetId,
+    decimals,
+    balance:
+      accountBalances?.accountAssetsMap.get(assetId)?.balance?.transferable ??
+      "0",
+  }))
+
+  return split ? (
+    <JoinHollarPoolSplit
+      transferableBalances={transferableBalances}
+      initialAmounts={initialAmounts}
+      {...props}
+    />
+  ) : (
+    <JoinHollarPool
+      transferableBalances={transferableBalances}
+      initialAmounts={initialAmounts}
+      {...props}
+    />
   )
 }
 
-export const AddSplitMoneyMarketStablepoolOmnipool = (
-  props: AddMoneyMarketStablepoolProps,
-) => {
-  const tx = useMoneyMarketSplitStablepoolExtimationTx(props)
-  const balancesMax = useMaxBalances(props, tx)
-  const { onSubmit } = useSplitMoneyMarketStablepoolSubmitHandler(props)
-  const { form, handleSubmit } = useAddStablepoolForm(
-    props,
-    useAddToOmnipoolZod(
-      props.stablepoolAsset,
-      props.farms,
-      getReservesZodSchema(balancesMax),
-    ),
-  )
-
-  useStablepoolShares(props, form)
-
-  return (
-    <FormProvider {...form}>
-      <StablepoolForm
-        balancesMax={balancesMax}
-        handleSubmit={handleSubmit(onSubmit)}
-        {...props}
-      />
-    </FormProvider>
-  )
-}
-
-export const AddMoneyMarketStablepool = (
-  props: AddMoneyMarketStablepoolProps,
-) => {
+const JoinHollarPool = (props: JoinStrategyProps) => {
   const tx = useMoneyMarketStablepoolExtimationTx(props)
   const balancesMax = useMaxBalances(props, tx)
 
@@ -115,7 +100,7 @@ export const AddMoneyMarketStablepool = (
 
   return (
     <FormProvider {...form}>
-      <StablepoolForm
+      <JoinStrategyForm
         balancesMax={balancesMax}
         hfChange={hfChange}
         handleSubmit={handleSubmit(onSubmit)}
@@ -125,34 +110,22 @@ export const AddMoneyMarketStablepool = (
   )
 }
 
-export const AddMoneyMarketStablepoolOmnipool = (
-  props: AddMoneyMarketStablepoolProps,
-) => {
-  const tx = useMoneyMarketStablepoolExtimationTx(props)
+const JoinHollarPoolSplit = (props: JoinStrategyProps) => {
+  const tx = useMoneyMarketSplitStablepoolExtimationTx(props)
   const balancesMax = useMaxBalances(props, tx)
 
+  const { onSubmit } = useSplitMoneyMarketStablepoolSubmitHandler(props)
   const { form, handleSubmit } = useAddStablepoolForm(
     props,
-    useAddToOmnipoolZod(
-      props.stablepoolAsset,
-      props.farms,
-      getReservesZodSchema(balancesMax),
-    ),
+    stablepoolZodSchema(balancesMax),
   )
 
-  const { tradeData, hfChange } = useStablepoolTradeShares(
-    props.asset,
-    props.stablepoolAsset,
-    form,
-  )
-
-  const { onSubmit } = useMoneyMarketStablepoolSubmit(props, tradeData)
+  useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
-      <StablepoolForm
+      <JoinStrategyForm
         balancesMax={balancesMax}
-        hfChange={hfChange}
         handleSubmit={handleSubmit(onSubmit)}
         {...props}
       />
@@ -160,8 +133,8 @@ export const AddMoneyMarketStablepoolOmnipool = (
   )
 }
 
-export const StablepoolForm = (
-  props: AddStablepoolProps & {
+const JoinStrategyForm = (
+  props: JoinStrategyProps & {
     balancesMax: TTransferableBalance[]
     hfChange?: UseHealthFactorChangeResult
     handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void
@@ -173,19 +146,15 @@ export const StablepoolForm = (
     useState(false)
 
   const {
-    asset,
     setLiquidityLimit,
     isJoinFarms,
     balancesMax,
-    poolId,
-    reserves,
-    farms,
     stablepoolAsset,
     handleSubmit,
     hfChange,
     split,
-    setIsJoinFarms,
     onAssetOpen,
+    apy,
   } = props
 
   const {
@@ -250,21 +219,6 @@ export const StablepoolForm = (
 
       <LiquidityLimitField setLiquidityLimit={setLiquidityLimit} />
 
-      <StablepoolFeeSummaryRow poolId={poolId} />
-
-      <AvailableFarmsForm
-        name="farms"
-        farms={farms}
-        isJoinFarms={isJoinFarms}
-        setIsJoinFarms={setIsJoinFarms}
-      />
-
-      <Reserves reserves={reserves} />
-
-      <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
-        {t("liquidity.add.modal.positionDetails")}
-      </Text>
-
       <SummaryRow
         label={t(
           stablepoolAsset.isErc20
@@ -277,10 +231,17 @@ export const StablepoolForm = (
         })}
         withSeparator
       />
-
-      {!split && (
-        <PriceSummaryRow selectedAsset={asset} poolAsset={stablepoolAsset} />
-      )}
+      <SummaryRow
+        label={t("apy")}
+        content={
+          <Text fs={14} color="brightBlue200">
+            {t("value.percentage", {
+              value: BN(apy),
+            })}
+          </Text>
+        }
+        withSeparator
+      />
 
       {hfChange && (
         <>
@@ -297,10 +258,11 @@ export const StablepoolForm = (
             accepted={healthFactorRiskAccepted}
             onAcceptedChange={setHealthFactorRiskAccepted}
             isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
-            sx={{ mb: 16 }}
           />
         </>
       )}
+
+      <Spacer size={20} />
 
       <div sx={{ flex: "column", gap: 20 }}>
         {Array.isArray(errors.amount) &&
@@ -309,7 +271,7 @@ export const StablepoolForm = (
               {e.message}
             </Alert>
           ))}
-        <PoolAddLiquidityInformationCard />
+
         {stablepoolAsset.isErc20 && <TradeAlert />}
       </div>
 

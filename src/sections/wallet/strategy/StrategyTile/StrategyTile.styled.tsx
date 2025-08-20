@@ -7,6 +7,7 @@ import { css, SerializedStyles } from "@emotion/react"
 export enum StrategyTileVariant {
   One = "One",
   Two = "Two",
+  Hollar = "Hollar",
 }
 
 const desktopBackgroundVariantStyles: Record<
@@ -25,6 +26,14 @@ const desktopBackgroundVariantStyles: Record<
     background: radial-gradient(
         50.55% 157.06% at 4.5% 150.85%,
         #525252 5.78%,
+        rgba(32, 32, 32, 0) 89.15%
+      ),
+      ${theme.colors.darkBlue700};
+  `,
+  [StrategyTileVariant.Hollar]: css`
+    background: radial-gradient(
+        50.55% 157.06% at 4.5% 150.85%,
+        #b3cf92 5.78%,
         rgba(32, 32, 32, 0) 89.15%
       ),
       ${theme.colors.darkBlue700};
@@ -85,7 +94,7 @@ export const SStrategyTile = styled.div<{
     padding-right: 40px;
 
     display: grid;
-    grid-template-columns: 5fr auto 4fr;
+    grid-template-columns: 3fr auto 2fr;
     column-gap: 40px;
 
     ${({ variant }) => desktopBackgroundVariantStyles[variant]}

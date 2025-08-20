@@ -16,7 +16,7 @@ import { NewDepositFormWrapper } from "sections/wallet/strategy/NewDepositForm/N
 import { WalletStrategyFormSkeleton } from "sections/wallet/strategy/WalletStrategy.skeleton"
 import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
-type Props = {
+export type StrategyTileProps = {
   readonly assetId: string
   readonly underlyingAssetId: string
   readonly emptyState: string
@@ -24,7 +24,7 @@ type Props = {
   readonly variant: StrategyTileVariant
 }
 
-export const StrategyTile: FC<Props> = ({
+export const StrategyTile: FC<StrategyTileProps> = ({
   assetId,
   underlyingAssetId,
   emptyState,

@@ -11,14 +11,14 @@ import {
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 
-type Props = {
+export type AssetOverviewProps = {
   readonly assetId: string
   readonly underlyingAssetId: string
   readonly riskLevel: StrategyRiskLevel
   readonly riskTooltip: string
 }
 
-export const AssetOverview: FC<Props> = ({
+export const AssetOverview: FC<AssetOverviewProps> = ({
   assetId,
   underlyingAssetId,
   riskLevel,
@@ -76,12 +76,10 @@ export const AssetOverview: FC<Props> = ({
   )
 }
 
-const AssetOverviewSeparator: FC = () => {
-  return (
-    <Separator
-      orientation="vertical"
-      color="white"
-      sx={{ height: "100%", opacity: 0.06 }}
-    />
-  )
-}
+export const AssetOverviewSeparator: FC = () => (
+  <Separator
+    orientation="vertical"
+    color="white"
+    sx={{ height: "100%", opacity: 0.06 }}
+  />
+)

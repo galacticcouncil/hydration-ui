@@ -52,7 +52,7 @@ export const CurrentDepositClaimReward: React.FC<
 
       <Button
         variant="primary"
-        size="small"
+        size="compact"
         disabled={new BN(reward.balance).lte(0)}
         onClick={() => action()}
       >

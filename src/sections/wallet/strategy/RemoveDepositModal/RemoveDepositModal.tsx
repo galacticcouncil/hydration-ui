@@ -39,16 +39,25 @@ import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 
 type Props = {
   readonly assetId: string
-  readonly balance: string
   readonly maxBalance: string
+  readonly removeAssets?: string[]
   readonly onClose: () => void
+  readonly setRemoveAsset?: (id: string) => void
+}
+
+enum PAGES {
+  FORM,
+  GET_ASSET,
+  TRADE_LIMIT,
+  REMOVE_ASSET,
 }
 
 export const RemoveDepositModal: FC<Props> = ({
   assetId,
-  balance,
   maxBalance,
+  removeAssets,
   onClose,
+  setRemoveAsset,
 }) => {
   const { createTransaction } = useStore()
   const [splitRemove, setSplitRemove] = useState(true)
@@ -209,7 +218,7 @@ export const RemoveDepositModal: FC<Props> = ({
       page={page}
       direction={direction}
       onClose={onClose}
-      onBack={() => paginateTo(0)}
+      onBack={() => paginateTo(PAGES.FORM)}
       contents={[
         {
           title: t("lending.withdraw.modal.title", {
@@ -229,14 +238,18 @@ export const RemoveDepositModal: FC<Props> = ({
                 <div sx={{ flex: "column", gap: 8 }}>
                   <RemoveDepositAmount
                     assetId={assetId}
-                    balance={balance}
                     maxBalance={maxBalance}
+                    onSelectorOpen={
+                      removeAssets
+                        ? () => paginateTo(PAGES.REMOVE_ASSET)
+                        : undefined
+                    }
                   />
 
                   {splitRemove ? (
                     <>
                       <LiquidityLimitField
-                        setLiquidityLimit={() => paginateTo(2)}
+                        setLiquidityLimit={() => paginateTo(PAGES.TRADE_LIMIT)}
                         withSeparator={false}
                       />
                       <STradingPairContainer sx={{ mb: 12 }}>
@@ -265,7 +278,7 @@ export const RemoveDepositModal: FC<Props> = ({
                       <RemoveDepositAsset
                         assetId={assetReceived?.id ?? ""}
                         amountOut={amountOutFormatted}
-                        onSelectorOpen={() => paginateTo(1)}
+                        onSelectorOpen={() => paginateTo(PAGES.GET_ASSET)}
                       />
                       <RemoveDepositSummary
                         assetId={assetId}
@@ -320,7 +333,7 @@ export const RemoveDepositModal: FC<Props> = ({
               allowedAssets={selectableAssets}
               onSelect={(asset) => {
                 form.setValue("assetReceived", asset, { shouldValidate: true })
-                paginateTo(0)
+                paginateTo(PAGES.FORM)
               }}
             />
           ),
@@ -329,7 +342,22 @@ export const RemoveDepositModal: FC<Props> = ({
           title: t("liquidity.add.modal.limit.title"),
           noPadding: true,
           headerVariant: "GeistMono",
-          content: <LimitModal onConfirm={() => paginateTo(0)} />,
+          content: <LimitModal onConfirm={() => paginateTo(PAGES.FORM)} />,
+        },
+        {
+          title: t("selectAsset.title"),
+          noPadding: true,
+          content: (
+            <AssetsModalContent
+              hideInactiveAssets
+              displayZeroBalance
+              allowedAssets={removeAssets}
+              onSelect={(asset) => {
+                setRemoveAsset?.(asset.id)
+                paginateTo(PAGES.FORM)
+              }}
+            />
+          ),
         },
       ]}
     />

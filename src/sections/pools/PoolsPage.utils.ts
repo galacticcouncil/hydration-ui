@@ -61,6 +61,7 @@ export type TXYKPool = NonNullable<
 >[number]
 
 export type TReserves = TStablepool["reserves"]
+export type TReservesBalance = TStablepool["balances"]
 
 type TStablepoolData = {
   poolId: string
@@ -689,6 +690,7 @@ export const useStableSwapReserves = (poolId: string) => {
         return {
           id,
           symbol: reserve.symbol,
+          decimals: reserve.decimals,
           balance: balance.toString(),
           balanceDisplay: balance.multipliedBy(spotPrice).toString(),
         }

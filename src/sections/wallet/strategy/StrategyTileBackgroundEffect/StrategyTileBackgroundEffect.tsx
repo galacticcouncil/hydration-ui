@@ -29,6 +29,14 @@ const StrategyTileBackgroundVariant2Desktop = lazy(async () => ({
   ).default,
 }))
 
+const HollarEffect = lazy(async () => ({
+  default: (
+    await import(
+      "sections/wallet/strategy/StrategyTileBackgroundEffect/HollarEffect.svg?react"
+    )
+  ).default,
+}))
+
 const StrategyTileBackgroundMobile1 = lazy(async () => ({
   default: (
     await import(
@@ -71,6 +79,8 @@ export const StrategyTileBackgroundEffect: FC<Props> = ({ variant }) => {
       )
     case StrategyTileVariant.Two:
       return <StrategyTileBackgroundVariant2Desktop />
+    case StrategyTileVariant.Hollar:
+      return <HollarEffect />
     default:
       neverGuard(variant)
   }

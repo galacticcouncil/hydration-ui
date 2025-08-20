@@ -12,7 +12,7 @@ import { scaleHuman } from "utils/balance"
 import { z, ZodTypeAny } from "zod"
 import { TAsset, TErc20, useAssets } from "providers/assets"
 import i18n from "i18n/i18n"
-import { TReserves } from "sections/pools/PoolsPage.utils"
+import { TReservesBalance } from "sections/pools/PoolsPage.utils"
 import { useTranslation } from "react-i18next"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useStore } from "state/store"
@@ -63,7 +63,7 @@ export type AddStablepoolWrapperProps = {
   asset: TAsset
   onClose: () => void
   onAssetOpen: () => void
-  isStablepoolOnly: boolean
+  isStablepoolOnly?: boolean
   isJoinFarms: boolean
   setIsJoinFarms: (value: boolean) => void
   initialAmount?: string
@@ -72,7 +72,7 @@ export type AddStablepoolWrapperProps = {
   stablepoolAsset: TAsset
   poolId: string
   farms: TFarmAprData[]
-  reserves: TReserves
+  reserves: TReservesBalance
 }
 
 export type AddStablepoolProps = AddStablepoolWrapperProps & {
@@ -154,7 +154,13 @@ export const useStablepoolShares = (
         .toString()
 
       const shares = calculate_shares(
-        JSON.stringify(reserves),
+        JSON.stringify(
+          reserves.map((reserve) => ({
+            asset_id: Number(reserve.id),
+            decimals: reserve.decimals,
+            amount: scale(reserve.balance, reserve.decimals).toString(),
+          })),
+        ),
         JSON.stringify(validAssets),
         stableswapSdkData.amplification,
         stableswapSdkData.totalIssuance,

@@ -45,7 +45,7 @@ export const AddStablepoolLiquidityWrapper = (
 
   const initialAmounts = split
     ? reserves.map((reserve) => ({
-        assetId: reserve.asset_id.toString(),
+        assetId: reserve.id,
         decimals: reserve.decimals,
         amount: "",
       }))
