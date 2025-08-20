@@ -314,6 +314,18 @@ export const QUERY_KEYS = {
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
   lidoEthAPR: ["lidoEthAPR"],
+  variableBorrowRates: (assetId: string, from: string, to: string) => [
+    "variableBorrowRates",
+    assetId,
+    from,
+    to,
+  ],
+  variableSupplyRates: (assetId: string, from: string, to: string) => [
+    "variableSupplyRates",
+    assetId,
+    from,
+    to,
+  ],
   borrowUserSummary: (address: string) => [
     QUERY_KEY_PREFIX,
     "borrowUserSummary",
