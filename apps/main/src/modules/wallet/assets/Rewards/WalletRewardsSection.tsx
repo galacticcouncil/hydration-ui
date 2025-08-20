@@ -1,49 +1,45 @@
 import { Button, ValueStats } from "@galacticcouncil/ui/components"
-import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import {
-  SWalletRewardsActionItem,
-  SWalletRewardsSection,
-} from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
+import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 import { USDT_ASSET_ID } from "@/utils/consts"
 
-// TODO wallet rewards
+// TODO integrate wallet rewards
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
-  const [totalRewards] = useDisplayAssetPrice(USDT_ASSET_ID, 14143000)
+  const [incentives] = useDisplayAssetPrice(USDT_ASSET_ID, 60)
+  const [farmingRewards] = useDisplayAssetPrice(USDT_ASSET_ID, 424)
 
   return (
     <SWalletRewardsSection separated>
       <ValueStats
         alwaysWrap
         size="medium"
-        label={t("rewards.allocated")}
-        value={`${t("common:number", { value: 200000 })} HDX`}
+        label={t("rewards.incentives")}
+        value={incentives}
       />
-      <SWalletRewardsActionItem>
-        <ValueStats
-          alwaysWrap
-          size="medium"
-          label={t("rewards.claimable")}
-          value={`${t("common:number", { value: 15000 })} HDX`}
-        />
-        <Button size="medium" variant="tertiary" asChild>
-          <Link to="/staking">{t("rewards.goToStaking")}</Link>
-        </Button>
-      </SWalletRewardsActionItem>
-      <SWalletRewardsActionItem>
-        <ValueStats
-          alwaysWrap
-          size="medium"
-          label={t("rewards.total")}
-          value={totalRewards}
-        />
-        {/* TODO wallet rewards claim */}
-        <Button size="medium">{t("common:claim")}</Button>
-      </SWalletRewardsActionItem>
+      <ValueStats
+        alwaysWrap
+        size="medium"
+        label={t("rewards.farmingRewards")}
+        value={farmingRewards}
+      />
+      <ValueStats
+        alwaysWrap
+        size="medium"
+        label={t("rewards.allocated")}
+        value={t("common:currency", { value: 15000, symbol: "HDX" })}
+      />
+      <ValueStats
+        alwaysWrap
+        size="medium"
+        label={t("rewards.referrals")}
+        value={t("common:currency", { value: 300, symbol: "HDX" })}
+      />
+      {/* TODO wallet rewards claim */}
+      <Button width="max-content">{t("rewards.claim")}</Button>
     </SWalletRewardsSection>
   )
 }
