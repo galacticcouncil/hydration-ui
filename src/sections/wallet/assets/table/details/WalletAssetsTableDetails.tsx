@@ -270,7 +270,7 @@ const NativeAssetDetails = ({
 
   const unlock = useUnlockTokens({
     ids: unlocable.ids,
-    openGovIds,
+    openGovIds: unlocable.openGovIds,
     toast,
   })
 
