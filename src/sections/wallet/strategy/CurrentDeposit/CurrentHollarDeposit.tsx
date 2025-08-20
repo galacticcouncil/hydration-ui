@@ -7,8 +7,8 @@ import { useState } from "react"
 import { Modal } from "components/Modal/Modal"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAssetsPrice } from "state/displayPrice"
-import { Text } from "components/Typography/Text/Text"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
+import { SCurrentHollarDeposit } from "./CurrentDeposit.styled"
 
 export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
   const { t } = useTranslation()
@@ -31,40 +31,42 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
 
   return (
     <>
-      <div sx={{ flex: "column", gap: 8 }}>
-        <Text fw={500} fs={14} lh="1">
-          {t("wallet.strategy.deposit.myDeposit")}
-        </Text>
-        <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
-          {userBalances.map(({ userShiftedBalance, meta }, index) => {
-            const assetPrice = getAssetPrice(meta.id)
+      <SCurrentHollarDeposit>
+        {userBalances.map(({ userShiftedBalance, meta }, index) => {
+          const assetPrice = getAssetPrice(meta.id)
 
-            const balance = BN(userShiftedBalance)
+          const balance = BN(userShiftedBalance)
 
-            return (
-              <CurrentDepositBalance
-                key={meta.id}
-                balance={t("value.tokenWithSymbol", {
-                  value: balance,
-                  symbol: meta.symbol,
-                })}
-                value={t("value.usd", {
-                  amount: balance.times(assetPrice.price),
-                })}
-              />
-            )
-          })}
-          <Button
-            size="compact"
-            variant="outline"
-            disabled={!userBalances.length}
-            css={{ borderColor: "rgba(255,255,255,0.2)", alignSelf: "start" }}
-            onClick={() => setIsRemoveModalOpen(true)}
-          >
-            {t("withdraw")}
-          </Button>
-        </div>
-      </div>
+          return (
+            <CurrentDepositBalance
+              key={meta.id}
+              label={
+                index === 0 ? t("wallet.strategy.deposit.myDeposit") : undefined
+              }
+              balance={t("value.tokenWithSymbol", {
+                value: balance,
+                symbol: meta.symbol,
+              })}
+              value={t("value.usd", {
+                amount: balance.times(assetPrice.price),
+              })}
+            />
+          )
+        })}
+        <Button
+          size="compact"
+          variant="outline"
+          disabled={!userBalances.length}
+          css={{
+            borderColor: "rgba(255,255,255,0.2)",
+            alignSelf: "center",
+            width: "fit-content",
+          }}
+          onClick={() => setIsRemoveModalOpen(true)}
+        >
+          {t("withdraw")}
+        </Button>
+      </SCurrentHollarDeposit>
 
       {isRemoveModalOpen && (
         <Modal
