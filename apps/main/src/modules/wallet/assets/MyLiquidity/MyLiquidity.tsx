@@ -13,12 +13,12 @@ export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("wallet")
 
   return (
-    <div>
+    <Flex direction="column" gap={8}>
       <Flex justify="space-between" align="center">
         <SectionHeader>{t("myLiquidity.header.title")}</SectionHeader>
         <MyLiquidityActions />
       </Flex>
       <MyLiquidityTable searchPhrase={searchPhrase} />
-    </div>
+    </Flex>
   )
 }
