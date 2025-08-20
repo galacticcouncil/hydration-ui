@@ -1,39 +1,18 @@
-import Big from "big.js"
+import { useUserData } from "@galacticcouncil/money-market/hooks"
 
-import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
-import { useAssetsPrice } from "@/states/displayAsset"
-import { scaleHuman } from "@/utils/formatting"
+import { useMyLiquidityAmount } from "@/modules/liquidity/components/PoolsHeader/MyLiquidity.data"
 
-// TODO is this correct? - useWalletAssetsTotals
 export const useWalletBalancesSectionData = () => {
-  const { getAsset } = useAssets()
-  const { balances } = useAccountBalances()
-  const { getAssetPrice } = useAssetsPrice(
-    Array.from(new Set(Object.keys(balances))),
-  )
-
-  const totalAssets = Object.values(balances).reduce((acc, balance) => {
-    const asset = getAsset(balance.assetId)
-
-    if (!asset) {
-      return acc
-    }
-
-    const assetBalance = scaleHuman(balance.total, asset.decimals)
-    const assetPrice = getAssetPrice(balance.assetId)
-    const balancePrice = new Big(
-      assetPrice.isValid ? assetPrice.price : 0,
-    ).times(assetBalance)
-
-    return acc.plus(balancePrice)
-  }, new Big(0))
+  const { totalAmount, omnipool, isLoading, isLoadingPositions } =
+    useMyLiquidityAmount()
+  const { totalBorrowsUSD, totalLiquidityUSD, loading } = useUserData()
 
   return {
-    assets: totalAssets.toString(),
-    // TODO integrate wallet header balances
-    liquidity: "10301874",
-    farms: "10301874",
-    supplyBorrow: "10301874",
+    liquidity: totalAmount,
+    farms: omnipool?.farming.toString() ?? "0",
+    isLiquidityLoading: isLoading || isLoadingPositions,
+    supply: totalLiquidityUSD,
+    borrow: totalBorrowsUSD,
+    isBorrowLoading: loading,
   }
 }
