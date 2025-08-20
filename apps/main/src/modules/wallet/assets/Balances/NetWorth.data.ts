@@ -1,4 +1,7 @@
-import { accountNetWorthHistoricalDataQuery } from "@galacticcouncil/indexer/squid"
+import {
+  accountNetWorthHistoricalDataQuery,
+  latestAccountBalanceQuery,
+} from "@galacticcouncil/indexer/squid"
 import { TimeSeriesBucketTimeRange } from "@galacticcouncil/indexer/squid"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -43,48 +46,79 @@ export const useNetWorthData = (period: PeriodType | null) => {
     ),
   )
 
+  const { data: latestBalanceData, isLoading: isLatestBalanceLoading } =
+    useQuery(latestAccountBalanceQuery(squidClient, account?.publicKey ?? ""))
+
   const balances = useMemo(() => {
-    if (isLoading || !data?.accountTotalBalancesByPeriod) {
+    if (isLoading || isLatestBalanceLoading) {
       return []
     }
 
-    const balances =
-      data.accountTotalBalancesByPeriod.nodes.flatMap<NetWorthData>((node) => {
-        if (!node?.buckets) {
-          return []
-        }
+    const buckets =
+      data?.accountTotalBalancesByPeriod.nodes.flatMap(
+        (node) => node?.buckets ?? [],
+      ) ?? []
 
-        return node.buckets.map<NetWorthData>((bucket) => ({
-          netWorth: Number(bucket.transferableNorm) || 0,
-          time: new Date(Number(bucket.timestamp)),
-        }))
-      })
+    const latestNetWorth = Number(
+      latestBalanceData?.accountTotalBalanceHistoricalData?.nodes[0]
+        ?.totalTransferableNorm,
+    )
 
-    const firstBalance = balances[0]
+    if (!buckets.length) {
+      if (!latestNetWorth) {
+        return []
+      }
 
-    if (balances.length === 1 && firstBalance) {
       return [
-        ...balances,
         {
-          netWorth: firstBalance.netWorth,
-          time: new Date(firstBalance.time.valueOf() + 1),
-        } satisfies NetWorthData,
+          netWorth: latestNetWorth,
+          time: new Date(),
+        },
+        {
+          netWorth: latestNetWorth,
+          time: new Date(Date.now() + 1),
+        },
       ]
     }
 
-    return balances.sort(
-      sortBy({
-        select: (balances) => balances.time,
-        compare: chronologically,
-      }),
-    )
-  }, [data, isLoading])
+    const balances = buckets.map<NetWorthData>((bucket) => ({
+      netWorth: Number(bucket.transferableNorm) || 0,
+      time: new Date(Number(bucket.timestamp)),
+    }))
+
+    const firstBalance = balances[0]
+
+    const withCurrentBalance = latestNetWorth
+      ? balances.concat([
+          {
+            netWorth: latestNetWorth,
+            time: new Date(),
+          },
+        ])
+      : balances.length === 1 && firstBalance
+        ? balances.concat([
+            {
+              netWorth: firstBalance.netWorth,
+              time: new Date(firstBalance.time.valueOf() + 1),
+            },
+          ])
+        : balances
+
+    return withCurrentBalance
+      .sort(
+        sortBy({
+          select: (balances) => balances.time,
+          compare: chronologically,
+        }),
+      )
+      .concat()
+  }, [data, isLoading, latestBalanceData, isLatestBalanceLoading])
 
   return {
     balances,
     assetId: data?.accountTotalBalancesByPeriod.nodes[0]?.referenceAssetId,
     isError,
-    isLoading,
+    isLoading: isLoading || isLatestBalanceLoading,
     isSuccess,
   }
 }
