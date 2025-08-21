@@ -372,6 +372,7 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
+  wormholeTransfers: (address: string) => ["wormholeTransfers", address],
 } as const
 
 export const WS_QUERY_KEYS = {

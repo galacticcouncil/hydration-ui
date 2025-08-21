@@ -89,6 +89,8 @@ export const Web3ConnectAccountSelect = ({
   const isSol = !!provider && SOLANA_PROVIDERS.includes(provider)
   const isSui = !!provider && SUI_PROVIDERS.includes(provider)
 
+  const isNonSubstrate = isEvm || isSol || isSui
+
   const addressOldFormat = safeConvertAddressSS58(
     address,
     genesisHashToChain(genesisHash).prefix,
@@ -168,7 +170,7 @@ export const Web3ConnectAccountSelect = ({
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
           <div sx={{ mt: -4 }}>
-            {isEvm ? (
+            {isNonSubstrate ? (
               <CopyButton
                 address={address}
                 sx={{

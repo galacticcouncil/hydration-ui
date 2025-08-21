@@ -28,12 +28,19 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   fullWidth?: boolean
 }
 
+const spinnerSize: Record<ButtonSize, number> = {
+  micro: 10,
+  small: 12,
+  medium: 16,
+  compact: 16,
+}
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ variant = "secondary", size = "medium", ...props }, ref) => {
     return (
       <SButton variant={variant} size={size} {...props} ref={ref}>
         <SContent size={size}>
-          {props.isLoading && <Spinner size={size === "small" ? 12 : 16} />}
+          {props.isLoading && <Spinner size={spinnerSize[size]} />}
           {props.text || props.children}
         </SContent>
       </SButton>

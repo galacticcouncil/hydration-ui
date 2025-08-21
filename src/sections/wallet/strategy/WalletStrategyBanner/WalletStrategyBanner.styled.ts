@@ -7,9 +7,9 @@ export const SWalletStrategyBanner = styled.div`
   position: relative;
 
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-direction: column;
 
   gap: 8px;
 
@@ -20,9 +20,12 @@ export const SWalletStrategyBanner = styled.div`
   border: 1px solid ${theme.colors.darkBlue400};
   border-radius: 8px;
 
-  background: linear-gradient(180deg, #ff268b 0, rgba(196, 6, 85, 0) 70%);
+  background: linear-gradient(89.8deg, #ff268b 0.05%, rgba(196, 6, 85, 0) 42%);
 
   @media ${theme.viewport.gte.sm} {
+    flex-direction: row;
+    align-items: center;
+
     height: 89px;
     padding-left: 125px;
     padding-right: 40px;
@@ -46,13 +49,15 @@ export const SWalletStrategyBanner = styled.div`
 export const SCansImage = styled.img`
   position: absolute;
 
-  top: -12px;
-  left: -10px;
+  top: 4px;
+  left: 14px;
 
-  width: 90px;
+  width: 55px;
   height: auto;
 
   @media ${theme.viewport.gte.sm} {
+    top: -12px;
+    width: 90px;
     left: 20px;
   }
 `
