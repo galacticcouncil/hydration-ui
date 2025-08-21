@@ -54,6 +54,7 @@ import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
 import { XcmMetadata } from "@galacticcouncil/apps"
 import { SuiSignedTransaction } from "sections/web3-connect/signer/SuiSigner"
+import { HYDRATION_CHAIN_KEY } from "utils/constants"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -615,7 +616,7 @@ const getTransactionData = (
   txHash: string | undefined,
   xcallMeta?: XcmMetadata,
 ) => {
-  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? HYDRATION_CHAIN_KEY)
   const metaTags = xcallMeta?.tags
 
   const xcmDstChain = xcallMeta?.dstChain
@@ -628,7 +629,7 @@ const getTransactionData = (
       : undefined
 
   const bridge =
-    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()
+    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana() || xcmDstChain?.isSui()
       ? getXcmTag(metaTags)
       : undefined
 
