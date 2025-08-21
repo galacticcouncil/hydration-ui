@@ -33,6 +33,7 @@ import { Call } from "@galacticcouncil/xcm-sdk"
 import {
   isEvmCall,
   isSolanaCall,
+  isSuiCall,
 } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { XcmMetadata } from "@galacticcouncil/apps"
 
@@ -48,7 +49,7 @@ type Props = {
   xcallMeta?: XcmMetadata
 }
 
-type TransactionMode = "auto" | "evm" | "solana" | "substrate"
+type TransactionMode = "auto" | "evm" | "solana" | "sui" | "substrate"
 
 const TransactionData: FC<{ data: string }> = ({ data }) => {
   return (
@@ -166,8 +167,9 @@ export const ReviewTransactionData: FC<Props> = ({
 
   const isSubstrateTx = !!tx && !!txJson
   const isEvmTx = (!!evmTx || isEvmCall(xcall)) && !!evmTxJson
-  const isSolanaTx = isSolanaCall(xcall)
   const isWrappedEvmTx = isSubstrateTx && txJson?.method.startsWith("evm.call")
+  const isSolanaTx = isSolanaCall(xcall)
+  const isSuiTx = isSuiCall(xcall)
 
   const [mode, setMode] = useState<TransactionMode>(
     isWrappedEvmTx ? "evm" : "auto",
@@ -178,6 +180,7 @@ export const ReviewTransactionData: FC<Props> = ({
     isSolanaTx && (mode === "solana" || mode === "auto")
   const shouldRenderSubstrate =
     isSubstrateTx && (mode === "substrate" || mode === "auto")
+  const shouldRenderSui = isSuiTx && (mode === "sui" || mode === "auto")
 
   useEffect(() => {
     if (!copied) return
@@ -305,6 +308,14 @@ export const ReviewTransactionData: FC<Props> = ({
             encodedCall={<TransactionData data={xcall.data} />}
           />
         )}
+        {shouldRenderSui && (
+          <TransactionExpander
+            decodedCall={
+              <TransactionCode name={xcall.type} src={xcall.commands} />
+            }
+            encodedCall={<TransactionData data={xcall.data} />}
+          />
+        )}
         {shouldRenderSubstrate && (
           <TransactionExpander
             decodedCall={
@@ -315,26 +326,28 @@ export const ReviewTransactionData: FC<Props> = ({
           />
         )}
       </SScrollableContent>
-      <Dropdown
-        asChild
-        align="end"
-        items={dropdownItems}
-        onSelect={(item) => item.onSelect?.()}
-      >
-        <Button
-          size="micro"
-          variant="outline"
-          sx={{ p: 4 }}
-          css={{ position: "absolute", top: 6, right: 12 }}
+      {dropdownItems.length > 0 && (
+        <Dropdown
+          asChild
+          align="end"
+          items={dropdownItems}
+          onSelect={(item) => item.onSelect?.()}
         >
-          {copied ? (
-            <SuccessIcon width={18} height={18} css={{ scale: "75%" }} />
-          ) : (
-            <CopyIcon width={18} height={18} />
-          )}
-          {t("copy")}
-        </Button>
-      </Dropdown>
+          <Button
+            size="micro"
+            variant="outline"
+            sx={{ p: 4 }}
+            css={{ position: "absolute", top: 6, right: 12 }}
+          >
+            {copied ? (
+              <SuccessIcon width={18} height={18} css={{ scale: "75%" }} />
+            ) : (
+              <CopyIcon width={18} height={18} />
+            )}
+            {t("copy")}
+          </Button>
+        </Dropdown>
+      )}
     </SContainer>
   )
 }
