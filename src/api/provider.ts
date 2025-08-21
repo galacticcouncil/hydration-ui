@@ -516,6 +516,15 @@ export const useRefetchProviderData = () => {
   }
 }
 
+export const useRefetchAssets = () => {
+  const queryClient = useQueryClient()
+  const { dataEnv } = useActiveRpcUrlList()
+
+  return () => {
+    queryClient.invalidateQueries(QUERY_KEYS.assets(dataEnv))
+  }
+}
+
 export const useIndexerUrl = () => {
   const activeProvider = useActiveProvider()
   return activeProvider.indexerUrl

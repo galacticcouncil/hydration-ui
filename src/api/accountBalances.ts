@@ -137,7 +137,11 @@ export const useAccountBalance = (address?: string) => {
         }
       }
 
-      return { accountAssetsMap, balances, isBalance }
+      return {
+        accountAssetsMap,
+        balances: [...accountAssetsMap.values()],
+        isBalance,
+      }
     },
     {
       enabled: isLoaded && !!address && !!balanceV2,
