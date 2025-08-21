@@ -74,7 +74,8 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
       </SCurrentHollarDeposit>
 
       <Separator
-        sx={{ height: 1, width: "100%", color: "white", opacity: 0.6 }}
+        color="white"
+        sx={{ height: 1, width: "100%", opacity: 0.06 }}
       />
 
       <div sx={{ flex: "row", align: "center", gap: 20 }}>
