@@ -15,32 +15,37 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { FormattedReserveHistoryItem } from "sections/lending/hooks/useReservesHistory"
 import { ChartField } from "sections/lending/ui/reserve-overview/chart/ChartLegend"
 import { theme } from "theme"
+import { KeyOfType } from "utils/types"
 
-type ApyChartProps = {
-  data: FormattedReserveHistoryItem[]
+type ApyChartProps<TData extends Record<string, unknown>> = {
+  data: TData[]
   loading: boolean
   error: boolean
   fields: ChartField[]
-  avgFieldName: keyof FormattedReserveHistoryItem
+  avgFieldName: KeyOfType<TData, number>
+  dateFieldName: KeyOfType<TData, number>
 }
 
 const CustomizedDot = ({ cx, cy }: { cx: number; cy: number }) => (
   <CustomDot x={cx - 17.5} y={cy - 17.5} />
 )
 
-export const ApyChart = ({
+export const ApyChart = <TData extends Record<string, unknown>>({
   data,
   loading,
   error,
   fields = [],
   avgFieldName,
-}: ApyChartProps) => {
+  dateFieldName,
+}: ApyChartProps<TData>) => {
   const avg = useMemo(() => {
     if (!data?.length || !avgFieldName) return -1
-    return data.reduce((acc, cur) => acc + cur[avgFieldName], 0) / data.length
+    return (
+      data.reduce((acc, cur) => acc + (cur[avgFieldName] as number), 0) /
+      data.length
+    )
   }, [avgFieldName, data])
 
   const mainColor = fields?.[0]?.lineColor
@@ -116,7 +121,7 @@ export const ApyChart = ({
           <XAxis
             axisLine={false}
             tickLine={false}
-            dataKey="date"
+            dataKey={dateFieldName as string}
             strokeWidth={1}
             shapeRendering="crispEdges"
             stroke={theme.colors.darkBlue400}
@@ -138,7 +143,7 @@ export const ApyChart = ({
               width={40}
               stroke={theme.colors.darkBlue400}
               tickFormatter={(data) => {
-                const value = Number(data * 100)
+                const value = Number(data)
                 return `${value.toFixed(2).replace(".00", "")}%`
               }}
               tickLine={false}
@@ -180,7 +185,7 @@ const AvgLine = (props: {
         css={{ borderRadius: 20 }}
         sx={{ bg: "darkBlue400", width: "fit-content", px: 6, py: 4 }}
       >
-        Avg <PercentageValue value={props.value * 100} />
+        Avg <PercentageValue value={props.value} />
       </Text>
     </foreignObject>
   )
@@ -225,7 +230,7 @@ const CustomTooltip = ({
                   bg: fields[index]?.lineColor ?? "brightBlue300",
                 }}
               />
-              <PercentageValue value={Number(value) * 100} />
+              <PercentageValue value={Number(value)} />
             </Text>
           ) : null,
         )}
