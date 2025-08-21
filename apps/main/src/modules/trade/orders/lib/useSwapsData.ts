@@ -2,6 +2,7 @@ import {
   DcaScheduleStatus,
   isDcaScheduleStatus,
   isTradeOperation,
+  RoutedTradeSwapFragment,
   SwapFragment,
   SwapsQueryAddress,
   TradeOperation,
@@ -116,11 +117,14 @@ export const useSwapsData = (
   return { swaps, totalCount, isLoading }
 }
 
-const getOrderStatus = (
-  swap: SwapFragment,
+export const getOrderStatus = (
+  swap: SwapFragment | RoutedTradeSwapFragment,
   getAsset: (id: string) => TAsset,
 ): OrderStatus | null => {
-  if (!swap.dcaScheduleExecutionEvent) {
+  if (
+    !("dcaScheduleExecutionEvent" in swap) ||
+    !swap.dcaScheduleExecutionEvent
+  ) {
     return { kind: "market", status: "filled" }
   }
 

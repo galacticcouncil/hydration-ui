@@ -107,6 +107,15 @@ export const MoneyMarketEventFragmentDoc = `
   }
 }
     ${EventDataFragmentDoc}`;
+export const SwapDcaScheduleFragmentDoc = `
+    fragment SwapDcaSchedule on DcaSchedule {
+  id
+  status
+  assetInId
+  budgetAmountIn: totalAmount
+  totalExecutedAmountIn
+}
+    `;
 export const SwapFragmentDoc = `
     fragment Swap on Swap {
   paraTimestamp
@@ -135,17 +144,24 @@ export const SwapFragmentDoc = `
   dcaScheduleExecutionEvent {
     scheduleExecution {
       schedule {
-        id
-        status
-        assetInId
-        budgetAmountIn: totalAmount
-        totalExecutedAmountIn
+        ...SwapDcaSchedule
       }
       status
     }
   }
 }
-    `;
+    ${SwapDcaScheduleFragmentDoc}`;
+export const RoutedTradeSwapFragmentDoc = `
+    fragment RoutedTradeSwap on Swap {
+  dcaScheduleExecutionEvent {
+    scheduleExecution {
+      schedule {
+        ...SwapDcaSchedule
+      }
+    }
+  }
+}
+    ${SwapDcaScheduleFragmentDoc}`;
 export const AccountTotalBalancesByPeriodDocument = `
     query AccountTotalBalancesByPeriod($accountId: String!, $startTimestamp: String, $endTimestamp: String, $bucketSize: TimeSeriesBucketTimeRange) {
   accountTotalBalancesByPeriod(
@@ -298,6 +314,44 @@ export const DcaScheduleExecutionsDocument = `
   }
 }
     `;
+export const RoutedTradesDocument = `
+    query RoutedTrades($address: String!, $inputAssetRegistryIds: StringListFilter, $outputAssetRegistryIds: StringListFilter, $offset: Int!, $pageSize: Int!) {
+  routedTrades(
+    filter: {participantSwappers: {contains: [$address]}, inputAssetRegistryIds: $inputAssetRegistryIds, outputAssetRegistryIds: $outputAssetRegistryIds}
+    offset: $offset
+    first: $pageSize
+    orderBy: PARA_BLOCK_HEIGHT_DESC
+  ) {
+    totalCount
+    nodes {
+      block {
+        timestamp
+      }
+      routeTradeInputs {
+        nodes {
+          asset {
+            assetRegistryId
+          }
+          amount
+        }
+      }
+      routeTradeOutputs {
+        nodes {
+          asset {
+            assetRegistryId
+          }
+          amount
+        }
+      }
+      swaps(first: 1) {
+        nodes {
+          ...RoutedTradeSwap
+        }
+      }
+    }
+  }
+}
+    ${RoutedTradeSwapFragmentDoc}`;
 export const TradePricesDocument = `
     query TradePrices($assetInId: String!, $assetOutId: String!, $startTimestamp: String, $endTimestamp: String, $bucketSize: TimeSeriesBucketTimeRange) {
   assetPairPricesAndVolumesByPeriod(
@@ -391,6 +445,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     DcaScheduleExecutions(variables: Types.DcaScheduleExecutionsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.DcaScheduleExecutionsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.DcaScheduleExecutionsQuery>({ document: DcaScheduleExecutionsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'DcaScheduleExecutions', 'query', variables);
+    },
+    RoutedTrades(variables: Types.RoutedTradesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.RoutedTradesQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.RoutedTradesQuery>({ document: RoutedTradesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'RoutedTrades', 'query', variables);
     },
     TradePrices(variables: Types.TradePricesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.TradePricesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.TradePricesQuery>({ document: TradePricesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'TradePrices', 'query', variables);

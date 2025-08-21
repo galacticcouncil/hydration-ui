@@ -155,3 +155,33 @@ export const dcaScheduleExecutionsQuery = (
       }),
     enabled: !!scheduleId,
   })
+
+export const useRoutedTradesQuery = (
+  squidSdk: SquidSdk,
+  address: string,
+  assetIds: Array<string>,
+  page: number,
+  pageSize: number,
+) =>
+  queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "routedTrades",
+      address,
+      assetIds,
+      page,
+      pageSize,
+    ],
+    queryFn: () =>
+      squidSdk.RoutedTrades({
+        address,
+        ...(assetIds.length && {
+          inputAssetRegistryIds: { containedBy: assetIds },
+          outputAssetRegistryIds: { containedBy: assetIds },
+        }),
+        offset: (page - 1) * pageSize,
+        pageSize,
+      }),
+    enabled: !!address,
+  })
