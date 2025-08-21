@@ -3,12 +3,14 @@ import {
   BaselineSeries,
   BaselineStyleOptions,
   CandlestickSeries,
+  HistogramData,
   HistogramSeries,
   type IChartApi,
   type ISeriesApi,
   type SingleValueData,
   type Time,
   type UTCTimestamp,
+  WhitespaceData,
 } from "lightweight-charts"
 import { isNumber, last } from "remeda"
 
@@ -21,9 +23,14 @@ export type OhlcData = {
   volume?: number
 }
 
+export type BaselineChartData = SingleValueData & { volume?: number }
+
 export type ChartDataExtended =
   | { type: "Candlestick"; data: OhlcData }
-  | { type: "Baseline"; data: SingleValueData }
+  | {
+      type: "Baseline"
+      data: BaselineChartData
+    }
 
 export type SeriesType = ChartDataExtended["type"]
 
@@ -147,7 +154,10 @@ export const renderSeries = (
   data: Array<OhlcData> = [],
   color: ColorOptions,
   baseline: Partial<BaselineStyleOptions> = {},
-): ISeriesApi<SeriesType> => {
+): [
+  ISeriesApi<SeriesType>,
+  ISeriesApi<"Histogram", Time, WhitespaceData<Time> | HistogramData<Time>>?,
+] => {
   const series = getMainSeries(chart, type, color, baseline)
   const seriesData = getMainSeriesData(type, data)
   series.setData(seriesData)
@@ -159,16 +169,21 @@ export const renderSeries = (
     const volumeSeries = getVolumeSeries(chart, color)
     const volumeData = getVolumeData(data)
     volumeSeries.setData(volumeData)
+
+    return [series, volumeSeries]
   }
 
-  return series
+  return [series]
 }
 
 export type CrosshairCallbackData = ChartDataExtended | null
 
 export const subscribeCrosshairMove = (
   chart: IChartApi,
-  series: ISeriesApi<SeriesType>,
+  [series, volumeSeries]: [
+    ISeriesApi<SeriesType>,
+    ISeriesApi<"Histogram", Time, WhitespaceData<Time> | HistogramData<Time>>?,
+  ],
   chartContainerElement: HTMLDivElement,
   crosshairElement: HTMLDivElement,
   priceIndicatorElement: HTMLDivElement | null,
@@ -208,10 +223,20 @@ export const subscribeCrosshairMove = (
       return
     }
 
+    const volumeDataPoint =
+      volumeSeries &&
+      (param.seriesData.get(volumeSeries) as HistogramData | undefined)
+
     const data: CrosshairCallbackData =
       series.seriesType() === "Candlestick"
         ? { type: "Candlestick", data: dataPoint as OhlcData }
-        : { type: "Baseline", data: dataPoint as SingleValueData }
+        : {
+            type: "Baseline",
+            data: {
+              ...(dataPoint as SingleValueData),
+              volume: volumeDataPoint?.value,
+            },
+          }
 
     const chartRect = chartContainerElement.getBoundingClientRect()
     const tooltipWidth = crosshairElement.offsetWidth

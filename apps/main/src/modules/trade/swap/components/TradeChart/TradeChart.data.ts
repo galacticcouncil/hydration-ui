@@ -78,6 +78,7 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
         amount: isAssetInFirst
           ? Big(1).div(bucket.priceAvrgNorm).toString()
           : bucket.priceAvrgNorm,
+        volume: bucket.referenceAssetVolNorm,
       }))
 
     const withCurrentPrice = currentPrice
@@ -85,6 +86,7 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
           {
             timestamp: Date.now(),
             amount: currentPrice,
+            volume: "0",
           },
         ])
       : prices
@@ -99,6 +101,7 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
       .map<OhlcData>((bucket) => ({
         time: toUTCTimestamp(bucket.timestamp),
         close: Number(bucket.amount),
+        volume: Number(bucket.volume),
       }))
   }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPriceData])
 

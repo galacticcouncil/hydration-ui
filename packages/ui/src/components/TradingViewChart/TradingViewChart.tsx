@@ -1,5 +1,5 @@
 import { hexToRgba } from "@galacticcouncil/utils"
-import { createChart, LineType } from "lightweight-charts"
+import { createChart, LineType, SeriesType } from "lightweight-charts"
 import { useEffect, useRef, useState } from "react"
 
 import { Box } from "@/components"
@@ -14,20 +14,28 @@ import {
   timeScale,
 } from "@/components/TradingViewChart/config"
 import {
+  BaselineChartData,
   CrosshairCallbackData,
   OhlcData,
   renderSeries,
-  SeriesType,
   subscribeCrosshairMove,
 } from "@/components/TradingViewChart/utils"
 import { useTheme } from "@/theme"
 
-export type TradingViewChartProps = {
+type ChartTypeProps =
+  | {
+      type: Extract<SeriesType, "Candlestick">
+      onCrosshairMove?: (data: OhlcData | null) => void
+    }
+  | {
+      type?: Extract<SeriesType, "Baseline">
+      onCrosshairMove?: (data: BaselineChartData | null) => void
+    }
+
+export type TradingViewChartProps = ChartTypeProps & {
   data: Array<OhlcData>
-  type?: SeriesType
   height?: number
   hidePriceIndicator?: boolean
-  onCrosshairMove?: (data: CrosshairCallbackData) => void
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
@@ -65,7 +73,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       crosshair: crosshair(themeProps),
     })
 
-    const series = renderSeries(
+    const [series, volumeSeries] = renderSeries(
       chart,
       type,
       data,
@@ -88,13 +96,13 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     ) {
       subscribeCrosshairMove(
         chart,
-        series,
+        [series, volumeSeries],
         chartContainerRef.current,
         crosshairRef.current,
         priceIndicatorRef.current,
         (data) => {
           setCrosshairData(data)
-          onCrosshairMoveRef.current?.(data)
+          onCrosshairMoveRef.current?.((data?.data ?? null) as never)
         },
       )
     }
