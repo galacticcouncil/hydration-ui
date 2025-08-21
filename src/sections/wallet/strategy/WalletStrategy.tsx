@@ -29,15 +29,15 @@ export const WalletStrategy: FC = () => {
         <WalletStrategyHeader />
         <HollarTile />
         <StrategyTile
-          assetId={gdotAssetId}
-          underlyingAssetId={underlyingGdotAssetId}
+          stableswapId={gdotAssetId}
+          aTokenId={underlyingGdotAssetId}
           emptyState={t("wallet.strategy.gigadot.emptyState")}
           riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
           variant={StrategyTileVariant.One}
         />
         <StrategyTile
-          assetId={GETH_STABLESWAP_ASSET_ID}
-          underlyingAssetId={GETH_ERC20_ASSET_ID}
+          stableswapId={GETH_STABLESWAP_ASSET_ID}
+          aTokenId={GETH_ERC20_ASSET_ID}
           emptyState={t("wallet.strategy.geth.emptyState")}
           riskTooltip={t("wallet.strategy.geth.risk.tooltip")}
           variant={StrategyTileVariant.Two}

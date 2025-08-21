@@ -123,6 +123,9 @@ export interface PoolSlice {
   claimRewards: (
     args: ClaimRewardsActionsProps,
   ) => Promise<EthereumTransactionTypeExtended[]>
+  claimStrategyRewards: (
+    args: ClaimRewardsActionsProps,
+  ) => Promise<EthereumTransactionTypeExtended[]>
   // TODO: optimize types to use only neccessary properties
   swapCollateral: (
     args: SwapActionProps,
@@ -910,6 +913,20 @@ export const createPoolSlice: StateCreator<
             selectedReward.incentiveControllerAddress,
         })
       }
+    },
+    claimStrategyRewards: async ({ selectedReward }) => {
+      const currentAccount = get().account
+
+      const incentivesTxBuilderV2: IncentivesControllerV2Interface =
+        new IncentivesControllerV2(get().jsonRpcProvider())
+
+      return incentivesTxBuilderV2.claimRewards({
+        user: currentAccount,
+        assets: selectedReward.assets,
+        to: currentAccount,
+        incentivesControllerAddress: selectedReward.incentiveControllerAddress,
+        reward: selectedReward.rewardTokenAddress,
+      })
     },
     useOptimizedPath: () => {
       return get().currentMarketData.v3 && optimizedPath(get().currentChainId)

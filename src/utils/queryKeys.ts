@@ -335,6 +335,11 @@ export const QUERY_KEYS = {
     "borrowReserves",
     poolContractAddress,
   ],
+  borrowUserReserves: (poolContractAddress: string, address: string) => [
+    "borrowReserves",
+    poolContractAddress,
+    address,
+  ],
   borrowIncentives: (
     incentivesContractAddress: string,
     accounntAddress?: string,

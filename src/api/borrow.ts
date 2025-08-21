@@ -140,6 +140,36 @@ export const useBorrowUserIncentives = (givenAddress?: string) => {
   )
 }
 
+export const useBorrowUserReserves = (givenAddress?: string) => {
+  const poolDataContract = useBorrowPoolDataContract()
+  const addresses = useBorrowContractAddresses()
+
+  const { account } = useAccount()
+
+  const address = givenAddress || account?.address || ""
+
+  const evmAddress = H160.fromAny(address)
+
+  const lendingPoolAddressProvider = addresses?.POOL_ADDRESSES_PROVIDER ?? ""
+
+  return useQuery(
+    QUERY_KEYS.borrowUserReserves(lendingPoolAddressProvider, evmAddress),
+    async () => {
+      if (!poolDataContract || !evmAddress) return null
+
+      return poolDataContract.getUserReservesHumanized({
+        lendingPoolAddressProvider,
+        user: evmAddress,
+      })
+    },
+    {
+      retry: false,
+      enabled:
+        !!evmAddress && !!lendingPoolAddressProvider && !!poolDataContract,
+    },
+  )
+}
+
 export const useBorrowReserves = () => {
   const { api } = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()

@@ -9,6 +9,9 @@ import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/
 import { useAssetsPrice } from "state/displayPrice"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { SCurrentHollarDeposit } from "./CurrentDeposit.styled"
+import { useUserRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { CurrentDepositClaimReward } from "./CurrentDepositClaimReward"
+import { Separator } from "components/Separator/Separator"
 
 export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
   const { t } = useTranslation()
@@ -18,6 +21,8 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
   const userBalancesIds = userBalances.map((userBalance) => userBalance.meta.id)
 
   const { getAssetPrice } = useAssetsPrice(userBalancesIds)
+
+  const reward = useUserRewards(pools.map((pool) => pool.stablepoolId))
 
   const [removeAsset, setRemoveAsset] = useState(userBalances[0]?.meta.id)
 
@@ -67,6 +72,14 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
           {t("withdraw")}
         </Button>
       </SCurrentHollarDeposit>
+
+      <Separator
+        sx={{ height: 1, width: "100%", color: "white", opacity: 0.6 }}
+      />
+
+      <div sx={{ flex: "row", align: "center", gap: 20 }}>
+        <CurrentDepositClaimReward reward={reward} />
+      </div>
 
       {isRemoveModalOpen && (
         <Modal

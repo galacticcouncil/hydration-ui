@@ -17,37 +17,41 @@ import { WalletStrategyFormSkeleton } from "sections/wallet/strategy/WalletStrat
 import { useNewDepositDefaultAssetId } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 
 export type StrategyTileProps = {
-  readonly assetId: string
-  readonly underlyingAssetId: string
+  readonly stableswapId: string
+  readonly aTokenId: string
   readonly emptyState: string
   readonly riskTooltip: string
   readonly variant: StrategyTileVariant
 }
 
 export const StrategyTile: FC<StrategyTileProps> = ({
-  assetId,
-  underlyingAssetId,
+  stableswapId,
+  aTokenId,
   emptyState,
   riskTooltip,
   variant,
 }) => {
   const { account } = useAccount()
   const { data: defaultAssetId, isLoading } =
-    useNewDepositDefaultAssetId(assetId)
+    useNewDepositDefaultAssetId(stableswapId)
 
   return (
     <SStrategyTile variant={variant}>
       <StrategyTileBackgroundEffect variant={variant} />
       <div sx={{ flex: "column", gap: [20, 20, 35] }}>
         <AssetOverview
-          assetId={assetId}
-          underlyingAssetId={underlyingAssetId}
+          assetId={stableswapId}
+          underlyingAssetId={aTokenId}
           riskLevel="low"
           riskTooltip={riskTooltip}
         />
         <Separator color="white" sx={{ opacity: 0.06 }} />
         {account ? (
-          <CurrentDeposit assetId={underlyingAssetId} emptyState={emptyState} />
+          <CurrentDeposit
+            stableswapId={stableswapId}
+            aTokenId={aTokenId}
+            emptyState={emptyState}
+          />
         ) : (
           <CurrentDepositEmptyState emptyState={emptyState} />
         )}
@@ -57,7 +61,7 @@ export const StrategyTile: FC<StrategyTileProps> = ({
         <WalletStrategyFormSkeleton />
       ) : (
         <NewDepositFormWrapper defaultAssetId={defaultAssetId}>
-          <NewDepositForm assetId={underlyingAssetId} />
+          <NewDepositForm assetId={aTokenId} />
         </NewDepositFormWrapper>
       )}
     </SStrategyTile>

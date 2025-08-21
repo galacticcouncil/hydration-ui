@@ -17,7 +17,7 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
-import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { useUserRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { TDeposit, useAccountBalances, useAccountPositions } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward"
@@ -33,22 +33,27 @@ export type CurrentDepositData = {
 }
 
 type Props = {
-  readonly assetId: string
+  readonly stableswapId: string
+  readonly aTokenId: string
   readonly emptyState: string
 }
 
-export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
+export const CurrentDeposit: FC<Props> = ({
+  aTokenId,
+  stableswapId,
+  emptyState,
+}) => {
   const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
 
   const { getAssetWithFallback } = useAssets()
-  const asset = getAssetWithFallback(assetId)
+  const asset = getAssetWithFallback(aTokenId)
 
   const { data: accountAssets, isLoading: isAccountAssetsLoading } =
     useAccountBalances()
   const { data: accountPositions } = useAccountPositions()
 
-  const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
-  const positions = accountPositions?.accountAssetsMap.get(assetId)
+  const accountAsset = accountAssets?.accountAssetsMap.get(aTokenId)
+  const positions = accountPositions?.accountAssetsMap.get(aTokenId)
 
   const depositBalance = new BigNumber(
     accountAsset?.balance?.total || "0",
@@ -60,12 +65,13 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
 
   const miningPositions = positions?.omnipoolDeposits ?? []
   const isMiningPositions = !!miningPositions.length
-  const reward = useAssetReward(assetId)
+
+  const reward = useUserRewards([stableswapId])
 
   const hasBalance =
     depositBalance.gt(0) || BigNumber(reward.balance).gt(0) || isMiningPositions
 
-  const isGETH = assetId && assetId === GETH_ERC20_ASSET_ID
+  const isGETH = aTokenId && aTokenId === GETH_ERC20_ASSET_ID
 
   if (isAccountAssetsLoading)
     return (
@@ -83,13 +89,13 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
     <SCurrentDeposit>
       {isGETH ? (
         <FarmsDepositBalance
-          assetId={assetId}
+          assetId={aTokenId}
           symbol={asset.symbol}
           miningPositions={miningPositions}
         />
       ) : (
         <DepositBalance
-          assetId={assetId}
+          assetId={aTokenId}
           symbol={asset.symbol}
           balance={depositBalance.toString()}
           maxBalance={maxBalance.toString()}
@@ -99,7 +105,7 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
       {isAccountBindingRequired ? (
         <CurrentDepositBindAccount />
       ) : isGETH ? (
-        <CurrentDepositFarmsClaimReward assetId={assetId} />
+        <CurrentDepositFarmsClaimReward assetId={aTokenId} />
       ) : (
         <CurrentDepositClaimReward reward={reward} />
       )}

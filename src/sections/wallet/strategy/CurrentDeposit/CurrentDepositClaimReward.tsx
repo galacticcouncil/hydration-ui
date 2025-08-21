@@ -15,7 +15,7 @@ export type CurrentDepositClaimRewardProps = {
 export const CurrentDepositClaimReward: React.FC<
   CurrentDepositClaimRewardProps
 > = ({ reward }) => {
-  const claimRewards = useRootStore((state) => state.claimRewards)
+  const claimRewards = useRootStore((state) => state.claimStrategyRewards)
   const { externalApyData } = useAppDataContext()
   const { t } = useTranslation()
 
