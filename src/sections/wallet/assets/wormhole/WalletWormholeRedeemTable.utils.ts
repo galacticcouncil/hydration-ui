@@ -10,6 +10,7 @@ import {
   EvmChain,
   Parachain,
   SolanaChain,
+  SuiChain,
 } from "@galacticcouncil/xcm-core"
 import { EvmCall, WormholeTransfer } from "@galacticcouncil/xcm-sdk"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -20,14 +21,14 @@ import { createToastMessages } from "state/toasts"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const getChainId = (chain: AnyChain) => {
-  if (chain instanceof SolanaChain) {
-    return chain.id
-  }
-  if (chain instanceof EvmChain) {
-    return chain.evmChain.id
-  }
-  if (chain instanceof Parachain) {
-    return chain.parachainId
+  switch (true) {
+    case chain instanceof SolanaChain:
+    case chain instanceof SuiChain:
+      return chain.id
+    case chain instanceof EvmChain:
+      return chain.evmChain.id
+    case chain instanceof Parachain:
+      return chain.parachainId
   }
 }
 

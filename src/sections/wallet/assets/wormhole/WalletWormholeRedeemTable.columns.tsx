@@ -21,15 +21,18 @@ export const useWormholeTransfersColumns = () => {
       id: "amount",
       header: t("amount"),
       cell: ({ row }) => {
-        const { amount, asset } = row.original
+        const { amount, asset, assetSymbol } = row.original
 
         const assetData = tokens.get(asset.toLowerCase())
 
-        return (
-          assetData && (
-            <TransferAmountColumn asset={assetData} amount={amount} />
-          )
-        )
+        if (!assetData) {
+          return t("value.tokenWithSymbol", {
+            value: amount,
+            symbol: assetSymbol,
+          })
+        }
+
+        return <TransferAmountColumn asset={assetData} amount={amount} />
       },
     })
 

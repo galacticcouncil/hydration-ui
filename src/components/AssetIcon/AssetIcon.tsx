@@ -286,7 +286,7 @@ export const ExternalAssetLogo = ({
     </UigcAssetId>
   )
 }
-type ChainLogoProps = { id?: number; ecosystem?: ChainEcosystem }
+type ChainLogoProps = { id?: number | string; ecosystem?: ChainEcosystem }
 
 export const ChainLogo: React.FC<ChainLogoProps> = ({
   id,
