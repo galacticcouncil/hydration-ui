@@ -1,6 +1,5 @@
 import { ChainIdToNetwork } from "@aave/contract-helpers"
-
-import { StaticJsonRpcProvider } from "@ethersproject/providers"
+import { Provider } from "@ethersproject/providers"
 
 import {
   CustomMarket,
@@ -15,15 +14,14 @@ import {
   NetworkConfig,
   networkConfigs as _networkConfigs,
 } from "sections/lending/ui-config/networksConfig"
-import { RotationProvider } from "./rotationProvider"
-import { ProviderWithSend, wssToHttps } from "sections/lending/utils/utils"
 import {
   isPaseoRpcUrl,
   isTestnetRpcUrl,
   useProviderRpcUrlStore,
 } from "api/provider"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useEffect } from "react"
+import { useRootStore } from "sections/lending/store/root"
+import { useRpcProvider } from "providers/rpcProvider"
 
 export type Pool = {
   address: string
@@ -128,62 +126,33 @@ export const isFeatureEnabled = {
   switch: (data: MarketDataType) => data.enabledFeatures?.switch,
 }
 
-const providers: { [network: string]: ProviderWithSend } = {}
-
-/**
- * Created a fallback rpc provider in which providers are prioritized from private to public and in case there are multiple public ones, from top to bottom.
- * @param chainId
- * @returns provider or fallbackprovider in case multiple rpcs are configured
- */
-export const getProvider = (chainId: ChainId): ProviderWithSend => {
-  if (!providers[chainId]) {
-    const config = getNetworkConfig(chainId)
-    const chainProviders: string[] = []
-    if (config.privateJsonRPCUrl) {
-      chainProviders.push(config.privateJsonRPCUrl)
-    }
-    if (config.publicJsonRPCUrl.length) {
-      const rpcUrls = getRpcUrls().map(wssToHttps)
-      if (rpcUrls.length === 1) {
-        chainProviders.push(rpcUrls[0])
-      } else {
-        const rpcUrlsByPriority = [...config.publicJsonRPCUrl].sort(
-          (a, b) => rpcUrls.indexOf(a) - rpcUrls.indexOf(b),
-        )
-        rpcUrlsByPriority.forEach((rpc) => chainProviders.push(rpc))
-      }
-    }
-    if (!chainProviders.length) {
-      throw new Error(`${chainId} has no jsonRPCUrl configured`)
-    }
-    providers[chainId] = new StaticJsonRpcProvider(chainProviders[0], chainId)
-    if (chainProviders.length === 1) {
-    } else {
-      providers[chainId] = new RotationProvider(chainProviders, chainId)
-    }
-  }
-
-  return providers[chainId]
+export const getProvider = (_chainId: ChainId): Provider => {
+  const { provider } = useRootStore.getState()
+  if (!provider) throw new Error("Provider not set")
+  return provider
 }
 
-export const useMarketChangeSubscription = () => {
-  const { setCurrentMarket } = useProtocolDataContext()
-  useEffect(() => {
-    return useProviderRpcUrlStore.subscribe((state, prevState) => {
-      const autoModeChanged = prevState.autoMode !== state.autoMode
-      const rpcUrlChanged = prevState.rpcUrl !== state.rpcUrl
+export const useMoneyMarketInit = () => {
+  const { isLoaded, evm, dataEnv } = useRpcProvider()
+  const [provider, setProvider, setCurrentMarket] = useRootStore((state) => [
+    state.provider,
+    state.setProvider,
+    state.setCurrentMarket,
+  ])
 
-      if (autoModeChanged || rpcUrlChanged) {
-        const newUrl = state.autoMode ? state.rpcUrlList[0] : state.rpcUrl
-        const isTestnet = isTestnetRpcUrl(newUrl)
-        setCurrentMarket(
-          isTestnet
-            ? CustomMarket.hydration_testnet_v3
-            : CustomMarket.hydration_v3,
-        )
-      }
-    })
-  }, [setCurrentMarket])
+  useEffect(() => {
+    setProvider(null)
+    if (isLoaded && evm) {
+      setCurrentMarket(
+        dataEnv === "mainnet"
+          ? CustomMarket.hydration_v3
+          : CustomMarket.hydration_testnet_v3,
+      )
+      setProvider(evm)
+    }
+  }, [dataEnv, evm, isLoaded, setCurrentMarket, setProvider])
+
+  return { isLoading: !isLoaded || !provider }
 }
 
 export { CustomMarket }

@@ -5,15 +5,11 @@ import {
   valueToBigNumber,
 } from "@aave/math-utils"
 import BigNumber from "bignumber.js"
-import { Provider } from "@ethersproject/providers"
 import { theme } from "theme"
+import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { getAddressFromAssetId } from "utils/evm"
 
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
-
-export interface ProviderWithSend extends Provider {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  send<P = any, R = any>(method: string, params: Array<P>): Promise<R>
-}
 
 export function hexToAscii(_hex: string): string {
   const hex = _hex.toString()
@@ -143,4 +139,13 @@ export const wssToHttps = (url: string) => {
   if (url.includes("ws://")) return url.replace("ws://", "http://")
 
   return url.replace("wss://", "https://")
+}
+
+export const getReserveByAssetId = (
+  reserves: ComputedReserveData[],
+  assetId: string,
+): ComputedReserveData | undefined => {
+  return reserves.find(
+    (reserve) => reserve.underlyingAsset === getAddressFromAssetId(assetId),
+  )
 }

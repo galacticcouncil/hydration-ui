@@ -19,6 +19,7 @@ const useSchema = () => {
     .object({
       asset: z.custom<TAsset | null>().refine(...requiredAny),
       amount: z.string().pipe(required).pipe(positive),
+      loopingMultiplier: z.number(),
     })
     .refine(
       ({ asset, amount }) => {
@@ -51,6 +52,7 @@ export const useNewDepositForm = ({
   const defaultValues: NewDepositFormValues = {
     asset: getAsset(defaultAssetId) ?? null,
     amount: "",
+    loopingMultiplier: 1,
   }
 
   const form = useForm<NewDepositFormValues>({

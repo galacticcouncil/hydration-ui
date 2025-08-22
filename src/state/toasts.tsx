@@ -266,6 +266,7 @@ export const createToastMessages = (
     memo[type] = (
       <Trans
         t={t}
+        key={type}
         tOptions={tOptions}
         {...rest}
         i18nKey={`${i18nKeyPrefix}.${msType}` as TransProps["i18nKey"]}

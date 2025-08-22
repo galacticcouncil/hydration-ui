@@ -7,7 +7,7 @@ import { NewDepositFormValues } from "sections/wallet/strategy/NewDepositForm/Ne
 
 type Props = {
   readonly selectedAssetBalance: string
-  readonly onSelectAssetClick: () => void
+  readonly onSelectAssetClick?: () => void
 }
 
 export const NewDepositAssetField: FC<Props> = ({

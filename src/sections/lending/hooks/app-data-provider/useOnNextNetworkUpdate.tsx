@@ -1,7 +1,7 @@
+import { Provider } from "@ethersproject/providers"
 import { useCallback } from "react"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { getProvider } from "sections/lending/utils/marketsAndNetworksConfig"
-import { ProviderWithSend } from "sections/lending/utils/utils"
 
 export const useOnNextNetworkUpdate = () => {
   const { currentMarketData } = useProtocolDataContext()
@@ -15,7 +15,7 @@ export const useOnNextNetworkUpdate = () => {
   )
 }
 
-export async function waitForBlock(provider: ProviderWithSend): Promise<void> {
+export async function waitForBlock(provider: Provider): Promise<void> {
   const currentBlock = await provider.getBlockNumber()
   return new Promise((resolve, reject) => {
     let timeout: NodeJS.Timeout | null = null
