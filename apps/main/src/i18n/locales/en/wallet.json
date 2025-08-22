@@ -71,6 +71,7 @@
   "myLiquidity.position.rewards": "Rew.",
   "myLiquidity.position.name": "#{{ number }} Position",
   "myLiquidity.position.farmName": "#{{ number }} Farm position",
+  "myLiquidity.expanded.actions.claimRewards": "Claim rewards",
   "myLiquidity.expanded.actions.removeLiquidity": "Remove liquidity",
   "myLiquidity.expanded.actions.joinFarms": "Join farms",
   "transfer.modal.title": "Transfer position",
