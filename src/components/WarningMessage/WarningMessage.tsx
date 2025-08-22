@@ -47,6 +47,7 @@ export const WarningMessage = (props: {
             <ExternalLink
               sx={{ color: "pink600" }}
               href="https://www.coingecko.com/en/coins/dai"
+              withArrow
             >
               {t("depeg.modal.check.price")}
             </ExternalLink>
