@@ -27,6 +27,7 @@ type Props = {
   readonly balance: string
   readonly maxBalance: string
   readonly onClose: () => void
+  readonly onSuccess?: () => void
 }
 
 export const RemoveDepositModal: FC<Props> = ({
@@ -34,6 +35,7 @@ export const RemoveDepositModal: FC<Props> = ({
   balance,
   maxBalance,
   onClose,
+  onSuccess,
 }) => {
   const { createTransaction } = useStore()
   const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
@@ -96,6 +98,7 @@ export const RemoveDepositModal: FC<Props> = ({
     createTransaction(
       { tx },
       {
+        onSuccess,
         toast: createToastMessages("wallet.strategy.remove.toast", {
           t,
           tOptions: {

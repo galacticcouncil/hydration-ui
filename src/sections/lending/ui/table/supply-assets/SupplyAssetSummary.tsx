@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { TAsset } from "providers/assets"
 import { UseHealthFactorChangeResult } from "api/borrow"
 import { SummaryRow } from "components/Summary/SummaryRow"
+import { Text } from "components/Typography/Text/Text"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
@@ -25,6 +26,9 @@ export const SupplyAssetSummary: FC<Props> = ({
 
   return (
     <div>
+      <Text font="Geist" color="pink500" fs={15} sx={{ mb: 16 }}>
+        {t("lending.summary.overview")}
+      </Text>
       <SummaryRow
         label={t("wallet.strategy.deposit.minReceived")}
         content={t("value.tokenApproxWithSymbol", {

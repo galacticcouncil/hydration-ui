@@ -1,5 +1,3 @@
-import { Web3ReactProvider } from "@web3-react/core"
-import { providers } from "ethers"
 import { lazy, Suspense } from "react"
 import { GasStationProvider } from "sections/lending/components/transactions/GasStation/GasStationProvider"
 import { BackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
@@ -18,38 +16,30 @@ const ClaimRewardsModal = lazy(async () => ({
   ).ClaimRewardsModal,
 }))
 
-function getWeb3Library(provider: any): providers.Web3Provider {
-  const library = new providers.Web3Provider(provider)
-  library.pollingInterval = 12000
-  return library
-}
-
 export const WalletStrategyProviders = ({
   children,
 }: {
   children: React.ReactNode
 }) => {
   return (
-    <Web3ReactProvider getLibrary={getWeb3Library}>
-      <BackgroundDataProvider>
-        <Web3ContextProvider>
-          <PermissionProvider>
-            <ModalContextProvider>
-              <AppDataProvider>
-                <GasStationProvider>
-                  <SharedDependenciesProvider>
-                    {children}
-                    <Suspense>
-                      <ClaimRewardsModal />
-                      <TransactionEventHandler />
-                    </Suspense>
-                  </SharedDependenciesProvider>
-                </GasStationProvider>
-              </AppDataProvider>
-            </ModalContextProvider>
-          </PermissionProvider>
-        </Web3ContextProvider>
-      </BackgroundDataProvider>
-    </Web3ReactProvider>
+    <BackgroundDataProvider>
+      <Web3ContextProvider>
+        <PermissionProvider>
+          <ModalContextProvider>
+            <AppDataProvider>
+              <GasStationProvider>
+                <SharedDependenciesProvider>
+                  {children}
+                  <Suspense>
+                    <ClaimRewardsModal />
+                    <TransactionEventHandler />
+                  </Suspense>
+                </SharedDependenciesProvider>
+              </GasStationProvider>
+            </AppDataProvider>
+          </ModalContextProvider>
+        </PermissionProvider>
+      </Web3ContextProvider>
+    </BackgroundDataProvider>
   )
 }

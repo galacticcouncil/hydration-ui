@@ -6,8 +6,7 @@ import {
   TransactionResponse,
   Web3Provider,
 } from "@ethersproject/providers"
-import { useWeb3React } from "@web3-react/core"
-import { constants, PopulatedTransaction, providers } from "ethers"
+import { constants, PopulatedTransaction } from "ethers"
 import React, {
   ReactElement,
   useCallback,
@@ -21,11 +20,9 @@ import {
   getFunctionDefsFromAbi,
   hexToAscii,
 } from "sections/lending/utils/utils"
-import { useQueryClient } from "@tanstack/react-query"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import {
   useAccount,
   useEnableWallet,
@@ -44,6 +41,7 @@ import { PoolReserve } from "sections/lending/store/poolSlice"
 import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolAction"
 import { AAVE_EXTRA_GAS } from "utils/constants"
 import BN from "bignumber.js"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 
 export type ERC20TokenType = {
   address: string
@@ -69,7 +67,6 @@ export type Web3Data = {
   ) => Promise<TransactionResponse>
   addERC20Token: (args: ERC20TokenType) => Promise<boolean>
   signTxData: (unsignedData: string) => Promise<SignatureLike>
-  error: Error | undefined
   switchNetworkError: Error | undefined
   setSwitchNetworkError: (err: Error | undefined) => void
   readOnlyModeAddress: string | undefined
@@ -182,11 +179,8 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const evm = useEvmAccount()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
-  const { error } = useWeb3React<providers.Web3Provider>()
-  const queryClient = useQueryClient()
-
-  const { refetchPoolData, refetchIncentiveData, refetchGhoData, poolData } =
-    useBackgroundDataProvider()
+  const refetchMarketData = useRefetchMarketData()
+  const { poolData } = useBackgroundDataProvider()
 
   const accountAddress = account?.address ?? ""
 
@@ -236,12 +230,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       const txOptions: TransactionOptions = {
         toast,
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-          refetchPoolData?.()
-          refetchIncentiveData?.()
-          refetchGhoData?.()
-        },
+        onSuccess: refetchMarketData,
       }
 
       if (!provider) {
@@ -287,17 +276,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       return {} as TransactionResponse
     },
-    [
-      api,
-      createTransaction,
-      poolData,
-      provider,
-      queryClient,
-      refetchGhoData,
-      refetchIncentiveData,
-      refetchPoolData,
-      t,
-    ],
+    [api.tx.evm, createTransaction, poolData, provider, refetchMarketData, t],
   )
 
   // TODO: recheck that it works on all wallets
@@ -425,7 +404,6 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
           signTxData,
           currentAccount: address?.toLowerCase() || "",
           addERC20Token,
-          error,
           switchNetworkError,
           setSwitchNetworkError,
           readOnlyModeAddress: readOnlyMode
