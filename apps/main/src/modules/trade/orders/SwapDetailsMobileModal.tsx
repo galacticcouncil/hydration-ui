@@ -18,10 +18,11 @@ import { useTranslation } from "react-i18next"
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
+import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
 import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
 
 type Props = {
-  readonly details: SwapData
+  readonly details: SwapData | RoutedTradeData
 }
 
 export const SwapDetailsMobileModal = ({ details }: Props) => {
@@ -99,7 +100,7 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
             })}
           />
         </Box>
-        {details.link && (
+        {"link" in details && details.link && (
           <>
             <ModalContentDivider />
             <Flex

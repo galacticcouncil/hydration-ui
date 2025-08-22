@@ -1,3 +1,11 @@
+fragment SwapDcaSchedule on DcaSchedule {
+  id
+  status
+  assetInId
+  budgetAmountIn: totalAmount
+  totalExecutedAmountIn
+}
+
 fragment Swap on Swap {
   paraTimestamp
   operationType
@@ -25,11 +33,7 @@ fragment Swap on Swap {
   dcaScheduleExecutionEvent {
     scheduleExecution {
       schedule {
-        id
-        status
-        assetInId
-        budgetAmountIn: totalAmount
-        totalExecutedAmountIn
+        ...SwapDcaSchedule
       }
       status
     }
@@ -135,6 +139,63 @@ query DcaScheduleExecutions($scheduleId: String!) {
               }
             }
           }
+        }
+      }
+    }
+  }
+}
+
+fragment RoutedTradeSwap on Swap {
+  dcaScheduleExecutionEvent {
+    scheduleExecution {
+      schedule {
+        ...SwapDcaSchedule
+      }
+    }
+  }
+}
+
+query RoutedTrades(
+  $address: String!
+  $inputAssetRegistryIds: StringListFilter
+  $outputAssetRegistryIds: StringListFilter
+  $offset: Int!
+  $pageSize: Int!
+) {
+  routedTrades(
+    filter: {
+      participantSwappers: { contains: [$address] }
+      inputAssetRegistryIds: $inputAssetRegistryIds
+      outputAssetRegistryIds: $outputAssetRegistryIds
+    }
+    offset: $offset
+    first: $pageSize
+    orderBy: PARA_BLOCK_HEIGHT_DESC
+  ) {
+    totalCount
+    nodes {
+      block {
+        timestamp
+      }
+      routeTradeInputs {
+        nodes {
+          asset {
+            assetRegistryId
+          }
+          amount
+        }
+      }
+      routeTradeOutputs {
+        nodes {
+          asset {
+            assetRegistryId
+          }
+          amount
+        }
+      }
+      swaps(first: 1) {
+        nodes {
+          ...RoutedTradeSwap
         }
       }
     }

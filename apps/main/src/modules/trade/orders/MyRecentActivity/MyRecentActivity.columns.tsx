@@ -20,11 +20,11 @@ import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
+import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
 import { SwapDetailsMobileModal } from "@/modules/trade/orders/SwapDetailsMobileModal"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
-const columnHelper = createColumnHelper<SwapData>()
+const columnHelper = createColumnHelper<RoutedTradeData>()
 
 export const useMyRecentActivityColumns = () => {
   const { t } = useTranslation(["common", "trade"])
