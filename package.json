@@ -79,8 +79,6 @@
     "@walletconnect/sign-client": "2.12.2",
     "@walletconnect/types": "2.12.2",
     "@walletconnect/universal-provider": "2.12.2",
-    "@web3-react/core": "6.1.9",
-    "@web3-react/types": "6.0.7",
     "bignumber.js": "^9.1.0",
     "buffer": "^6.0.3",
     "color": "^4.2.3",
