@@ -36,15 +36,16 @@ export const useNetWorthData = (period: PeriodType | null) => {
     ? bucketSizes[period]
     : TimeSeriesBucketTimeRange["1D"]
 
-  const { data, isError, isLoading, isSuccess } = useQuery(
-    accountNetWorthHistoricalDataQuery(
+  const { data, isError, isLoading, isSuccess } = useQuery({
+    ...accountNetWorthHistoricalDataQuery(
       squidClient,
       account?.publicKey ?? "",
       startTimestamp,
       endTimestamp,
       bucketSize,
     ),
-  )
+    placeholderData: (prev) => prev,
+  })
 
   const { data: latestBalanceData, isLoading: isLatestBalanceLoading } =
     useQuery(latestAccountBalanceQuery(squidClient, account?.publicKey ?? ""))

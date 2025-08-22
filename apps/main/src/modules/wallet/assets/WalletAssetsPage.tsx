@@ -10,6 +10,7 @@ import { BorrowContextProvider } from "@/modules/borrow/BorrowContextProvider"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
+import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
 import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSubpageMenu"
 import { OmnipoolSubscriber } from "@/routes/liquidity/route"
@@ -27,6 +28,9 @@ export const WalletAssetsPage = () => {
   useEffect(() => {
     setSearchPhrase("")
   }, [isMobile])
+
+  const { data: liquidityData, isLoading: liquidityLoading } =
+    useMyLiquidityTableData()
 
   if (!account) {
     // TODO add real fallback, this is placeholder
@@ -55,12 +59,19 @@ export const WalletAssetsPage = () => {
               />
             </Flex>
           )}
-          {(isMobile || category === "all" || category === "assets") && (
-            <MyAssets searchPhrase={searchPhrase} />
-          )}
-          {(isMobile || category === "all" || category === "liquidity") && (
-            <MyLiquidity searchPhrase={searchPhrase} />
-          )}
+          <Flex direction="column" gap={12}>
+            {(isMobile || category === "all" || category === "assets") && (
+              <MyAssets searchPhrase={searchPhrase} sx={{ pt: 8 }} />
+            )}
+            {(((isMobile || category === "all") && liquidityData.length > 0) ||
+              category === "liquidity") && (
+              <MyLiquidity
+                data={liquidityData}
+                isLoading={liquidityLoading}
+                searchPhrase={searchPhrase}
+              />
+            )}
+          </Flex>
         </Flex>
       </BorrowContextProvider>
     </>

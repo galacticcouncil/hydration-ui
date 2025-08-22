@@ -11,17 +11,21 @@ import {
   MyLiquidityTableColumnId,
   useMyLiquidityColumns,
 } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
-import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 
 type Props = {
   readonly searchPhrase: string
+  readonly data: Array<LiquidityPositionByAsset>
+  readonly isLoading: boolean
 }
 
-export const MyLiquidityTable: FC<Props> = ({ searchPhrase }) => {
+export const MyLiquidityTable: FC<Props> = ({
+  searchPhrase,
+  data,
+  isLoading,
+}) => {
   const { isMobile } = useBreakpoints()
   const columns = useMyLiquidityColumns()
-
-  const { data, isLoading } = useMyLiquidityTableData()
 
   return (
     <TableContainer as={Paper}>
