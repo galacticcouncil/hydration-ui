@@ -67,7 +67,7 @@ export const useTransactionHandler = ({
     setTxError,
     close,
   } = useModalContext()
-  const { signTxData, sendTx, getTxError } = useWeb3Context()
+  const { signTxData, sendTx } = useWeb3Context()
   const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
     useBackgroundDataProvider()
   const [signatures, setSignatures] = useState<SignatureLike[]>([])
@@ -145,24 +145,11 @@ export const useTransactionHandler = ({
         refetchGhoData && refetchGhoData()
         refetchIncentiveData && refetchIncentiveData()
       } catch (e) {
-        // TODO: what to do with this error?
-        try {
-          // TODO: what to do with this error?
-          const error = await getTxError(txnResult.hash)
-          mounted.current &&
-            errorCallback &&
-            errorCallback(new Error(error), txnResult.hash)
-          return
-        } catch (e) {
-          mounted.current && errorCallback && errorCallback(e, txnResult.hash)
-          return
-        } finally {
-          addTransaction(txnResult.hash, {
-            txState: "failed",
-            action: protocolAction || ProtocolAction.default,
-            ...eventTxInfo,
-          })
-        }
+        addTransaction(txnResult.hash, {
+          txState: "failed",
+          action: protocolAction || ProtocolAction.default,
+          ...eventTxInfo,
+        })
       } finally {
         close()
       }

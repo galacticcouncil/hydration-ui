@@ -6,26 +6,21 @@ import { useBestTradeSell } from "api/trade"
 import { useFormContext } from "react-hook-form"
 import { NewDepositFormValues } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.form"
 import { useAssets } from "providers/assets"
-import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
-import { useQueryClient } from "@tanstack/react-query"
-import { queryKeysFactory } from "sections/lending/ui-config/queries"
-import { useOnNextNetworkUpdate } from "sections/lending/hooks/app-data-provider/useOnNextNetworkUpdate"
 import { useHealthFactorChange } from "api/borrow"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAddressFromAssetId } from "utils/evm"
 import BN from "bignumber.js"
 import { getSupplyCapData } from "sections/lending/hooks/useAssetCaps"
 import { ProtocolAction } from "@aave/contract-helpers"
+import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
 
 export const useSubmitNewDepositForm = (assetId: string) => {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
   const { createTransaction } = useStore()
   const { getAssetWithFallback, getErc20 } = useAssets()
   const asset = getAssetWithFallback(assetId)
   const { reserves } = useAppDataContext()
-  const { refetchPoolData, refetchIncentiveData } = useBackgroundDataProvider()
-  const onNextNetworkUpdate = useOnNextNetworkUpdate()
+  const refetchMarketData = useRefetchMarketData()
 
   const { watch } = useFormContext<NewDepositFormValues>()
   const [selectedAsset, amount] = watch(["asset", "amount"])
@@ -71,13 +66,7 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     return createTransaction(
       { tx },
       {
-        onSuccess: () => {
-          onNextNetworkUpdate(() => {
-            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-            refetchPoolData?.()
-            refetchIncentiveData?.()
-          })
-        },
+        onSuccess: refetchMarketData,
         toast: createToastMessages("wallet.strategy.deposit.toast", {
           t,
           tOptions: {
@@ -93,12 +82,9 @@ export const useSubmitNewDepositForm = (assetId: string) => {
     amount,
     asset.name,
     createTransaction,
-    onNextNetworkUpdate,
-    queryClient,
-    refetchIncentiveData,
-    refetchPoolData,
     selectedAsset?.symbol,
     getSwapTx,
+    refetchMarketData,
     t,
   ])
 
