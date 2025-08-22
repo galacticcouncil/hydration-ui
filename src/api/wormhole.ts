@@ -26,7 +26,6 @@ export const useWormholeTransfersQuery = (
   filter: WormholeTransfersFilter = "all",
 ) => {
   const ss58Addr = account?.address ?? ""
-  const rawAddr = account?.displayAddress ?? ""
   const api = useWormholeTransfersApi()
   return useQuery({
     enabled: !!account,
@@ -34,7 +33,7 @@ export const useWormholeTransfersQuery = (
     queryKey: QUERY_KEYS.wormholeTransfers(ss58Addr),
     queryFn: async () => {
       const [deposits, withdraws] = await Promise.all([
-        api.getDeposits(rawAddr),
+        api.getDeposits(ss58Addr),
         api.getWithdraws(ss58Addr),
       ])
 

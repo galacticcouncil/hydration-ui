@@ -41,7 +41,7 @@ export const ImportantToasts: React.FC<
   if (!toasts.length) return null
   return (
     <ToastSidebarGroup title={t("toast.sidebar.important.title")} open>
-      {toasts}
+      <div sx={{ flex: "column", gap: 6 }}>{toasts}</div>
     </ToastSidebarGroup>
   )
 }
