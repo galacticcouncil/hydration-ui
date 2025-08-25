@@ -14,7 +14,7 @@ export const useWalletBalancesSectionData = () => {
 
   const { getAsset } = useAssets()
   const { balances, isBalanceLoading } = useAccountBalances()
-  const { getAssetPrice } = useAssetsPrice(
+  const { getAssetPrice, isLoading: isAssetPriceLoading } = useAssetsPrice(
     Array.from(new Set(Object.keys(balances))),
   )
 
@@ -36,7 +36,7 @@ export const useWalletBalancesSectionData = () => {
 
   return {
     assets: totalAssets.toString(),
-    isAssetsLoading: isBalanceLoading,
+    isAssetsLoading: isBalanceLoading || isAssetPriceLoading,
     liquidity: totalAmount,
     farms: omnipool?.farming.toString() ?? "0",
     isLiquidityLoading: isLoading || isLoadingPositions,
