@@ -4,6 +4,7 @@ import { Outlet, useParams } from "@tanstack/react-router"
 import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
 import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"
+import { PositionsTable } from "@/modules/liquidity/components/PositionsTable"
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
 import { PoolDetailsSkeleton } from "./PoolDetailsSkeleton"
@@ -25,6 +26,8 @@ export const PoolDetails = () => {
   return (
     <Flex direction="column" sx={{ position: "relative" }}>
       <PoolDetailsHeader data={data} />
+
+      {data && <PositionsTable pool={data} />}
 
       <Flex gap={20}>
         <Paper sx={{ flex: 1 }}></Paper>

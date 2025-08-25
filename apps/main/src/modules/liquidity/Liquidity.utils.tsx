@@ -52,8 +52,8 @@ export type OmnipoolAssetTable = {
   isPositions: boolean
   positionsAmount: number
   isStablePool: boolean
-  balance: bigint | undefined
-  balanceDisplay: string | undefined
+  stableswapBalance: bigint | undefined
+  stableswapBalanceDisplay: string | undefined
   volumeDisplay: string | undefined
   positions: AccountOmnipoolPosition[]
   isVolumeLoading: boolean
@@ -244,20 +244,21 @@ export const useOmnipoolStablepools = () => {
   const data = useMemo(() => {
     if (isLoading || !omnipoolAssets) return []
 
+    const omnipoolIds = new Set(omnipoolAssets.map((a) => a.id.toString()))
+
     const onlyStablepool: TStablepoolData[] = []
     const stableInOmnipool: Map<string, TStablepoolData> = new Map()
 
     stablepools?.forEach((stablepoolData) => {
-      if (
-        !omnipoolAssets.find(
-          (asset) =>
-            asset.id === stablepoolData.id ||
-            asset.id.toString() === stablepoolData.aToken?.id,
-        )
-      ) {
-        onlyStablepool.push(stablepoolData)
+      const id = stablepoolData.id.toString()
+      const aTokenId = stablepoolData.aToken?.id
+
+      if (omnipoolIds.has(id)) {
+        stableInOmnipool.set(id, stablepoolData)
+      } else if (aTokenId && omnipoolIds.has(aTokenId.toString())) {
+        stableInOmnipool.set(aTokenId.toString(), stablepoolData)
       } else {
-        stableInOmnipool.set(stablepoolData.id.toString(), stablepoolData)
+        onlyStablepool.push(stablepoolData)
       }
     })
 
@@ -319,10 +320,13 @@ export const useOmnipoolStablepools = () => {
       const { all: positions } = getAssetPositions(poolId)
 
       const positionsAmount = positions.length
-      const balance = getFreeBalance(poolId)
+      const stableswapBalance = isStablePool
+        ? getFreeBalance(stablepoolInOmnipool?.id.toString() ?? poolId)
+        : 0n
 
       const isPositions =
-        positionsAmount > 0 || (Big(balance.toString()).gt(0) && isStablePool)
+        positionsAmount > 0 ||
+        (Big(stableswapBalance.toString()).gt(0) && isStablePool)
 
       const tvlDisplay = isStablepoolOnly
         ? pool.balance
@@ -330,8 +334,10 @@ export const useOmnipoolStablepools = () => {
           ? Big(scaleHuman(pool.balance, meta.decimals)).times(price).toFixed(2)
           : undefined
 
-      const balanceDisplay = price
-        ? Big(scaleHuman(balance, meta.decimals)).times(price).toFixed(2)
+      const stableswapBalanceDisplay = price
+        ? Big(scaleHuman(stableswapBalance, meta.decimals))
+            .times(price)
+            .toFixed(2)
         : undefined
 
       return {
@@ -347,8 +353,8 @@ export const useOmnipoolStablepools = () => {
         isPositions,
         positionsAmount,
         isStablePool,
-        balance,
-        balanceDisplay,
+        stableswapBalance,
+        stableswapBalanceDisplay,
         volumeDisplay: volume,
         positions,
         isVolumeLoading,

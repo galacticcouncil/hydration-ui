@@ -14,7 +14,9 @@ export const useMyLiquidityAmount = () => {
   const stablepoolTotal = data
     .reduce(
       (acc, asset) =>
-        asset.isStablePool ? acc.plus(asset.balanceDisplay ?? 0) : acc,
+        asset.isStablePool
+          ? acc.plus(asset.stableswapBalanceDisplay ?? 0)
+          : acc,
       Big(0),
     )
     .toString()

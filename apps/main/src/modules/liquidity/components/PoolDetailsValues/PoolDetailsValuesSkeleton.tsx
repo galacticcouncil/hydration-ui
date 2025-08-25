@@ -43,22 +43,19 @@ export const PoolDetailsValuesSkeleton = () => {
 
       <Separator mx={-20} />
 
-      <ValueStats
-        label={t("details.values.volume")}
-        value="0"
-        isLoading={true}
-      />
+      <ValueStats label={t("details.values.volume")} value="0" isLoading wrap />
 
       <Separator mx={-20} />
 
-      <ValueStats label={t("totalValueLocked")} value="0" isLoading={true} />
+      <ValueStats label={t("totalValueLocked")} value="0" isLoading wrap />
 
       <Separator mx={-20} />
 
       <ValueStats
         label={t("details.values.feeFarmApr")}
         value="0"
-        isLoading={true}
+        isLoading
+        wrap
       />
 
       <Separator mx={-20} />
@@ -67,6 +64,7 @@ export const PoolDetailsValuesSkeleton = () => {
         label={t("details.values.omnipoolShare")}
         value="0"
         isLoading={true}
+        wrap
       />
     </Paper>
   )

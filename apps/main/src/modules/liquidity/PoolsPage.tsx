@@ -110,7 +110,7 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <Flex justify="space-between" align="center" gap={20}>
+      <Flex justify="space-between" align="center" gap={20} sx={{ my: 12 }}>
         <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
         <Button asChild>
           <Link to="/liquidity/create">
