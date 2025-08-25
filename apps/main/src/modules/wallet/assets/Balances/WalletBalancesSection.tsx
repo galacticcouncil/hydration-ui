@@ -20,7 +20,7 @@ export const WalletBalancesSection: FC = () => {
     <Flex direction="column" gap={[20, 10]}>
       <ValueStats
         size="small"
-        wrapThreshold="md"
+        wrap={[false, false, true]}
         label={t("balances.header.assets")}
         value={t("common:currency", { value: assets })}
         bottomLabel={t("balances.header.assets.borrowed", {
@@ -31,7 +31,7 @@ export const WalletBalancesSection: FC = () => {
       <Separator />
       <ValueStats
         size="small"
-        wrapThreshold="md"
+        wrap={[false, false, true]}
         label={t("balances.header.liquidity")}
         value={t("common:currency", { value: liquidity })}
         bottomLabel={t("balances.header.liquidity.farming", {

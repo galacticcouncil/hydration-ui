@@ -15,25 +15,25 @@ export const WalletRewardsSection: FC = () => {
   return (
     <SWalletRewardsSection separated>
       <ValueStats
-        alwaysWrap
+        wrap
         size="medium"
         label={t("rewards.incentives")}
         value={incentives}
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="medium"
         label={t("rewards.farmingRewards")}
         value={farmingRewards}
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="medium"
         label={t("rewards.allocated")}
         value={t("common:currency", { value: 15000, symbol: "HDX" })}
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="medium"
         label={t("rewards.referrals")}
         value={t("common:currency", { value: 300, symbol: "HDX" })}

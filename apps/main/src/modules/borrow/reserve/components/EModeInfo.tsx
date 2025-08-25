@@ -13,7 +13,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
       <ValueStats
         size="small"
         font="secondary"
-        alwaysWrap
+        wrap
         label={t("borrow:emode.category")}
         value={reserve.eModeLabel}
       />
@@ -21,7 +21,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
       <Stack direction="row" gap={40} sx={{ mt: 20 }}>
         <ValueStats
           size="small"
-          alwaysWrap
+          wrap
           font="secondary"
           label={t("borrow:maxLTV")}
           value={t("percent", {
@@ -30,7 +30,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
         />
         <ValueStats
           size="small"
-          alwaysWrap
+          wrap
           font="secondary"
           label={t("borrow:risk.liquidationThreshold")}
           value={t("percent", {
@@ -39,7 +39,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
         />
         <ValueStats
           size="small"
-          alwaysWrap
+          wrap
           font="secondary"
           label={t("borrow:risk.liquidationPenalty")}
           value={t("percent", {

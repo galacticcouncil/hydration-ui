@@ -27,7 +27,7 @@ export const MyLiquidity = () => {
         })}
         size="medium"
         isLoading={isLoading || isLoadingPositions}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -37,7 +37,7 @@ export const MyLiquidity = () => {
         })}
         size="medium"
         isLoading={isLoadingPositions}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -45,14 +45,14 @@ export const MyLiquidity = () => {
         value={t("common:currency", { value: stablepoolTotal })}
         size="medium"
         isLoading={isLoading}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
         value={t("common:currency", { value: "0" })}
         size="medium"
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ClaimRewardsButton />

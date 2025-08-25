@@ -56,7 +56,7 @@ export const NetWorth: FC = () => {
       justifyItems={["center", null, "start"]}
     >
       <ValueStats
-        alwaysWrap
+        wrap
         size="medium"
         label={t("balances.header.netWorth")}
         value={chartDisplayValue}

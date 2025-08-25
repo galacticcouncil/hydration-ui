@@ -1,3 +1,4 @@
+import { ResponsiveStyleValue } from "@theme-ui/css"
 import { FC, ReactNode } from "react"
 
 import {
@@ -9,6 +10,7 @@ import {
   ValueStatsFont,
   ValueStatsSize,
 } from "@/components/ValueStats/ValueStats.styled"
+import { useResponsiveValue } from "@/styles/media"
 
 import { Skeleton } from "../Skeleton"
 
@@ -18,8 +20,7 @@ export const ValueStatsBottomValue = SValueStatsBottomValue
 
 type ValueStatsProps = {
   readonly font?: ValueStatsFont
-  readonly alwaysWrap?: boolean
-  readonly wrapThreshold?: "sm" | "md"
+  readonly wrap?: ResponsiveStyleValue<boolean>
   readonly size?: ValueStatsSize
   readonly label?: string
   readonly customLabel?: ReactNode
@@ -32,8 +33,7 @@ type ValueStatsProps = {
 
 export const ValueStats: FC<ValueStatsProps> = ({
   font = "primary",
-  alwaysWrap,
-  wrapThreshold,
+  wrap,
   size,
   label,
   customLabel,
@@ -43,12 +43,10 @@ export const ValueStats: FC<ValueStatsProps> = ({
   customBottomLabel,
   isLoading,
 }) => {
+  const shouldWrap = useResponsiveValue(wrap, false)
+
   return (
-    <SValueStats
-      alwaysWrap={alwaysWrap}
-      wrapThreshold={wrapThreshold}
-      size={size}
-    >
+    <SValueStats shouldWrap={shouldWrap} size={size}>
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
       <SValueStatsValueContainer size={size}>
         {isLoading ? (

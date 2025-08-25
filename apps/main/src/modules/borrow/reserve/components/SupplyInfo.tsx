@@ -155,7 +155,7 @@ export const SupplyInfo = ({
               <ValueStats
                 size="small"
                 font="secondary"
-                alwaysWrap
+                wrap
                 label={t("borrow:maxLTV")}
                 //tooltip={t("borrow:tooltip.maxLTV")}
                 value={t("percent", {
@@ -166,7 +166,7 @@ export const SupplyInfo = ({
               <ValueStats
                 size="small"
                 font="secondary"
-                alwaysWrap
+                wrap
                 label={t("borrow:risk.liquidationThreshold")}
                 //tooltip={t("borrow:tooltip.liquidationThreshold")}
                 value={t("percent", {
@@ -177,7 +177,7 @@ export const SupplyInfo = ({
               <ValueStats
                 size="small"
                 font="secondary"
-                alwaysWrap
+                wrap
                 label={t("borrow:risk.liquidationPenalty")}
                 //tooltip={t("borrow:tooltip.liquidationPenalty")}
                 value={t("percent", {
