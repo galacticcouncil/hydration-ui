@@ -88,6 +88,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
       <ValueStats
         label={t("liquidity:details.values.volume")}
         value={t("currency", { value: data.volumeDisplay })}
+        wrap
       />
 
       <Separator mx={-20} />
@@ -95,6 +96,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
       <ValueStats
         label={t("liquidity:totalValueLocked")}
         value={t("currency", { value: data.tvlDisplay })}
+        wrap
       />
 
       <Separator mx={-20} />
@@ -102,6 +104,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
       <ValueStats
         label={t("liquidity:details.values.feeFarmApr")}
         value={t("percent", { value: data.totalFee })}
+        wrap
       />
 
       <Separator mx={-20} />
@@ -110,6 +113,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
         label={t("liquidity:details.values.omnipoolShare")}
         value={t("percent", { value: omnipoolShare })}
         isLoading={isOmnipoolShareLoading}
+        wrap
       />
 
       {data.isStablePool && <CurrencyReserves id={data.id} />}
@@ -197,6 +201,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       )}
 
       <ValueStats
+        wrap
         label={t("liquidity:totalValueLocked")}
         value={t("currency", { value: data.tvlDisplay })}
       />
@@ -204,6 +209,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       <Separator mx={-20} />
 
       <ValueStats
+        wrap
         label={t("liquidity:details.values.volume")}
         value={t("currency", { value: data.volumeDisplay })}
       />
@@ -211,6 +217,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       <Separator mx={-20} />
 
       <ValueStats
+        wrap
         label={t("liquidity:details.values.feeFarmApr")}
         value={t("percent", { value: "5" })}
       />

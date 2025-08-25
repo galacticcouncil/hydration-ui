@@ -99,7 +99,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         cell: ({ row }) => (
           <Flex gap={getTokenPx("containers.paddings.tertiary")} justify="end">
             {isFarms && !row.original.joinedFarms.length && (
-              <Button variant="primary" asChild>
+              <Button variant="primary">
                 {/* <Link
                   to="/liquidity/$id/join"
                   params={{
@@ -114,7 +114,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                 {/* </Link> */}
               </Button>
             )}
-            <Button variant="tertiary" outline sx={{ flexShrink: 0 }} asChild>
+            <Button variant="tertiary" outline sx={{ flexShrink: 0 }}>
               {/* <Link
                 to="/liquidity/$id/remove"
                 params={{
@@ -193,7 +193,7 @@ export const useBalanceTableColumns = () => {
         }) => (
           <Flex gap={12} align="center">
             {isStablepoolInOmnipool && (
-              <Button variant="primary" sx={{ flex: [1, "auto"] }} asChild>
+              <Button variant="primary" sx={{ flex: [1, "auto"] }}>
                 {/* <Link
                   to="/liquidity/$id/add"
                   params={{
@@ -209,7 +209,7 @@ export const useBalanceTableColumns = () => {
               variant="tertiary"
               outline
               sx={{ flex: [1, "auto"] }}
-              asChild
+              //asChild
             >
               {/* <Link
                 to="/liquidity/$id/remove"
@@ -287,7 +287,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         }) => (
           <Flex gap={12} align="center" justify="end">
             {isFarms && !positionId && (
-              <Button variant="primary" asChild>
+              <Button variant="primary">
                 {/* <Link
                   to="/liquidity/$id/add"
                   params={{
@@ -299,7 +299,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
                 {/* </Link> */}
               </Button>
             )}
-            <Button variant="tertiary" outline asChild>
+            <Button variant="tertiary" outline>
               {/* <Link
                 to="/liquidity/$id/remove"
                 params={{

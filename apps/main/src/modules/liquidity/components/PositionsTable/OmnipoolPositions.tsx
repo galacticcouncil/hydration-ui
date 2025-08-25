@@ -42,7 +42,7 @@ export const OmnipoolPositions = ({
           </Text>
         </Flex>
 
-        <Button variant="tertiary" outline asChild>
+        <Button variant="tertiary" outline>
           {/* <Link
             to="/liquidity/$id/remove"
             params={{

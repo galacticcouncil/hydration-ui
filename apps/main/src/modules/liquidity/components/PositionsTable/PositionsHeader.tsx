@@ -85,6 +85,7 @@ export const PositionsHeader = ({
       >
         <ValueStats
           label={t("liquidity:liquidity.positions.header.locked")}
+          wrap
           customValue={
             <Text
               font="primary"
@@ -117,6 +118,7 @@ export const PositionsHeader = ({
 
         <ValueStats
           label={t("totalValue")}
+          wrap
           customValue={
             <Text
               font="primary"
