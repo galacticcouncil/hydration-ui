@@ -152,10 +152,6 @@ export const Web3ConnectAccountList: FC<{
     search,
   ])
 
-  const hasSolanaAccounts = accountList.some(({ provider }) =>
-    SOLANA_PROVIDERS.includes(provider),
-  )
-
   const shouldRenderFilter = accounts.length > 1 || isLoading
   const shouldRenderNoResults = accountList.length === 0 && !isLoading
 
@@ -172,7 +168,7 @@ export const Web3ConnectAccountList: FC<{
             <Web3ConnectModeFilter
               active={filter}
               onSetActive={(mode) => setFilter(mode)}
-              blacklist={!hasSolanaAccounts ? [WalletMode.Solana] : []}
+              blacklist={[WalletMode.Solana, WalletMode.Sui]}
             />
           )}
         </div>

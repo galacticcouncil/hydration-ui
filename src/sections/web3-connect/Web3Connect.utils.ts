@@ -655,11 +655,11 @@ export const isHydrationIncompatibleAccount = (
   account: Account | null,
 ): account is Account => {
   if (!account) return false
+  if (account.isExternalWalletConnected && account.delegate) return false
 
-  const notDelegate = !!account.isExternalWalletConnected && !account.delegate
-
-  const isIncompatibleProvider =
-    !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider) && notDelegate
+  const isIncompatibleProvider = !COMPATIBLE_WALLET_PROVIDERS.includes(
+    account.provider,
+  )
 
   const isIncompatibleH160Account =
     SUBSTRATE_H160_PROVIDERS.includes(account.provider) &&
