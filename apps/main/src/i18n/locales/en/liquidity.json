@@ -47,6 +47,7 @@
   "liquidity.availableFarms.modal.graph.xAxisLabel": "Days",
   "liquidity.stablepool.position.label": "In Stablepool",
   "liquidity.stablepool.position.shares": "Stablepool shares",
+  "liquidity.stablepool.position.supplied": "Supplied liquidity",
   "liquidity.stablepool.position": "#{{ value }} Position",
   "liquidity.stablepool.currencyReserves.label": "Currency Reserves",
   "liquidity.stablepool.currencyReserves.amount": "<0>{{ value, number }}</0> <1>({{ percentage, percent }})</1>",

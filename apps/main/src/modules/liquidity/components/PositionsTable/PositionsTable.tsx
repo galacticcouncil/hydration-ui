@@ -1,99 +1,178 @@
 import {
-  Button,
+  CollapsibleContent,
+  CollapsibleRoot,
   DataTable,
-  Flex,
+  Icon,
   Paper,
-  SectionHeader,
+  Separator,
   TableContainer,
+  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { Link } from "@tanstack/react-router"
-import { Minus } from "lucide-react"
-import { useMemo } from "react"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
+import { Circle } from "lucide-react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
-  AccountOmnipoolPosition,
-  isOmnipoolDepositPosition,
-  useAccountOmnipoolPositionsData,
-} from "@/states/account"
-import { numericallyStrDesc } from "@/utils/sort"
+  isIsolatedPool,
+  IsolatedPoolTable,
+  OmnipoolAssetTable,
+} from "@/modules/liquidity/Liquidity.utils"
 
+import { ATokenBalanceTable } from "./ATokenBalanceTable"
 import { ClaimCard } from "./ClaimCard"
+import { OmnipoolPositions } from "./OmnipoolPositions"
 import { PositionsHeader } from "./PositionsHeader"
-import { usePositionsTableColumns } from "./PositionsTable.columns"
+import { useIsolatedPositionsTableColumns } from "./PositionsTable.columns"
+import { STableHeader } from "./PositionsTable.styled"
+import {
+  useIsolatedPositions,
+  useOmnipoolPositions,
+} from "./PositionsTable.utils"
+import { BalanceTable } from "./StableswapBalanceTable"
 
-export type PositionTableData = {
-  poolId: string
-  joinedFarms: string[]
-} & AccountOmnipoolPosition
+export const PositionsTable = ({
+  pool,
+}: {
+  pool: OmnipoolAssetTable | IsolatedPoolTable
+}) =>
+  isIsolatedPool(pool) ? (
+    <IsolatedPoolPositions pool={pool} />
+  ) : (
+    <OmnipoolStablepoolPositions pool={pool} />
+  )
 
-export const PositionsTable = ({ assetId }: { assetId: string }) => {
+const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
   const { t } = useTranslation("liquidity")
-  const { isTablet, isMobile } = useBreakpoints()
-  const columns = usePositionsTableColumns()
+  const columns = useIsolatedPositionsTableColumns(pool.isFarms)
 
-  const { getAssetPositions } = useAccountOmnipoolPositionsData()
+  const { positions, totalBalance, totalInFarms, totalBalanceDisplay } =
+    useIsolatedPositions(pool)
 
-  const tableData = useMemo(() => {
-    const { all: omnipoolPositions } = getAssetPositions(assetId)
+  return (
+    <PositionsTableBody
+      symbol={pool.meta.symbol}
+      totalBalance={totalBalance}
+      totalInFarms={totalInFarms}
+      totalBalanceDisplay={totalBalanceDisplay}
+    >
+      <STableHeader>
+        <Icon component={Circle} size={12} />
+        <Text fw={500} font="primary">
+          {t("liquidity.positions.label.isolated")}
+        </Text>
+      </STableHeader>
+      <DataTable
+        data={positions}
+        columns={columns}
+        paginated
+        pageSize={10}
+        columnPinning={{
+          left: ["position"],
+        }}
+      />
+    </PositionsTableBody>
+  )
+}
 
-    return omnipoolPositions
-      .sort((a, b) => {
-        return numericallyStrDesc(a.positionId, b.positionId)
-      })
-      .map((position): PositionTableData => {
-        const joinedFarms = isOmnipoolDepositPosition(position)
-          ? position.yield_farm_entries.map((entry) =>
-              entry.global_farm_id.toString(),
-            )
-          : []
+const OmnipoolStablepoolPositions = ({
+  pool,
+}: {
+  pool: OmnipoolAssetTable
+}) => {
+  const {
+    positions,
+    totalBalance,
+    totalHubBalance,
+    totalInFarms,
+    totalBalanceDisplay,
+  } = useOmnipoolPositions(pool)
 
-        return {
-          poolId: assetId,
-          joinedFarms,
-          ...position,
-        }
-      })
-  }, [assetId, getAssetPositions])
+  const isVisibleOmnipool = !pool.isStablePool || pool.isStablepoolInOmnipool
+  const isVisibleABalance = Big(pool.aStableswapBalance?.toString() ?? 0).gt(0)
+  const isVisibleStableswapBalance = Big(
+    pool.stableswapBalance?.toString() ?? 0,
+  ).gt(0)
 
-  if (tableData.length === 0) {
-    return null
+  const tables: React.ReactNode[] = []
+
+  if (isVisibleOmnipool) {
+    tables.push(
+      <OmnipoolPositions pool={pool} positions={positions} key="omnipool" />,
+    )
   }
+
+  if (isVisibleStableswapBalance) {
+    if (tables.length > 0) {
+      tables.push(<Separator key="separator-stableswap" />)
+    }
+
+    tables.push(<BalanceTable pool={pool} key="balance" />)
+  }
+
+  if (isVisibleABalance) {
+    if (tables.length > 0) {
+      tables.push(<Separator key="separator-atoken" />)
+    }
+
+    tables.push(<ATokenBalanceTable pool={pool} key="atoken" />)
+  }
+
+  if (tables.length === 0) return null
+
+  return (
+    <PositionsTableBody
+      symbol={pool.meta.symbol}
+      totalBalance={totalBalance}
+      totalHubBalance={totalHubBalance}
+      totalInFarms={totalInFarms}
+      totalBalanceDisplay={totalBalanceDisplay}
+    >
+      {tables}
+    </PositionsTableBody>
+  )
+}
+
+const PositionsTableBody = ({
+  symbol,
+  totalBalance,
+  totalHubBalance,
+  totalInFarms,
+  totalBalanceDisplay,
+  children,
+}: {
+  symbol: string
+  children?: React.ReactNode
+  totalBalance: string
+  totalInFarms: string
+  totalBalanceDisplay: string
+  totalHubBalance?: string
+}) => {
+  const { isTablet, isMobile } = useBreakpoints()
+  const [showMore, setShowMore] = useState(false)
 
   return (
     <>
-      <Flex align="center" justify="space-between">
-        <SectionHeader>{t("details.section.yourPositions")}</SectionHeader>
-        <Button variant="tertiary" outline asChild>
-          <Link
-            to="/liquidity/$id/remove"
-            params={{
-              id: assetId,
-            }}
-            search={{
-              positionId: "all",
-            }}
-          >
-            <Minus />
-            {t("liquidity.positions.removeAll")}
-          </Link>
-        </Button>
-      </Flex>
-
       {(isTablet || isMobile) && <ClaimCard sx={{ mb: 12 }} />}
-      <TableContainer as={Paper}>
-        <PositionsHeader assetId={assetId} data={tableData} />
-        <DataTable
-          data={tableData}
-          columns={columns}
-          paginated
-          pageSize={10}
-          columnPinning={{
-            left: ["position"],
-          }}
-        />
-      </TableContainer>
+      <CollapsibleRoot>
+        <TableContainer
+          as={Paper}
+          sx={{ mb: getTokenPx("containers.paddings.primary") }}
+        >
+          <PositionsHeader
+            onClick={() => setShowMore((v) => !v)}
+            showMore={showMore}
+            symbol={symbol}
+            totalBalance={totalBalance}
+            totalHubBalance={totalHubBalance}
+            totalInFarms={totalInFarms}
+            totalBalanceDisplay={totalBalanceDisplay}
+          />
+          <CollapsibleContent>{children}</CollapsibleContent>
+        </TableContainer>
+      </CollapsibleRoot>
     </>
   )
 }
