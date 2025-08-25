@@ -11,16 +11,17 @@ import { MyAssetsTable } from "@/modules/wallet/assets/MyAssets/MyAssetsTable"
 
 type Props = {
   readonly searchPhrase: string
+  readonly className?: string
 }
 
-export const MyAssets: FC<Props> = ({ searchPhrase }) => {
+export const MyAssets: FC<Props> = ({ searchPhrase, className }) => {
   const { t } = useTranslation("wallet")
   const [showAllAssets, setShowAllAssets] = useState(false)
 
   const tableRef = useRef<DataTableRef>(null)
 
   return (
-    <div>
+    <div className={className}>
       <Flex justify="space-between" align="center">
         <SectionHeader>{t("myAssets.header.title")}</SectionHeader>
         <MyAssetsActions

@@ -7,7 +7,7 @@ import {
   useOmnipoolStablepools,
 } from "@/modules/liquidity/Liquidity.utils"
 
-const OmnipoolSubscriber = () => {
+export const OmnipoolSubscriber = () => {
   useOmnipoolStablepools()
 
   return null

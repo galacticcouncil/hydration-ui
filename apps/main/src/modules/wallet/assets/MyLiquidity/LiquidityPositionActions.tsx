@@ -1,4 +1,4 @@
-import { Farm, Trash2 } from "@galacticcouncil/ui/assets/icons"
+import { Award, CircleMinus, Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   DropdownMenuItem,
   MenuItemIcon,
@@ -24,12 +24,27 @@ export const LiquidityPositionActions: FC<Props> = ({
     <>
       <DropdownMenuItem asChild>
         <MenuSelectionItem variant="filterLink" asChild>
+          {/* TODO claim liquidity position rewards */}
+          <Link
+            to="/liquidity/$id/join"
+            params={{ id: assetId }}
+            search={{ positionId }}
+          >
+            <MenuItemIcon component={Award} />
+            <MenuItemLabel>
+              {t("myLiquidity.expanded.actions.claimRewards")}
+            </MenuItemLabel>
+          </Link>
+        </MenuSelectionItem>
+      </DropdownMenuItem>
+      <DropdownMenuItem asChild>
+        <MenuSelectionItem variant="filterLink" asChild>
           <Link
             to="/liquidity/$id/remove"
             params={{ id: assetId }}
             search={{ positionId }}
           >
-            <MenuItemIcon component={Trash2} />
+            <MenuItemIcon component={CircleMinus} />
             <MenuItemLabel>
               {t("myLiquidity.expanded.actions.removeLiquidity")}
             </MenuItemLabel>
@@ -43,7 +58,7 @@ export const LiquidityPositionActions: FC<Props> = ({
             params={{ id: assetId }}
             search={{ positionId }}
           >
-            <MenuItemIcon component={Farm} />
+            <MenuItemIcon component={Plus} />
             <MenuItemLabel>
               {t("myLiquidity.expanded.actions.joinFarms")}
             </MenuItemLabel>

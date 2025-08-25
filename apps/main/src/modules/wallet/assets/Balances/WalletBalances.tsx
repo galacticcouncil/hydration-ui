@@ -10,12 +10,16 @@ export const WalletBalances: FC = () => {
   const { t } = useTranslation("wallet")
 
   return (
-    <Grid height="100%" sx={{ gridTemplateRows: "auto 1fr" }}>
+    <Grid rowTemplate="auto 1fr">
       <SectionHeader>{t("balances.title")}</SectionHeader>
       <SWalletBalances>
         <NetWorth />
-        <Separator orientation="vertical" display={["none", "initial"]} />
-        <Separator display={["initial", "none"]} />
+        <Separator
+          mt={8}
+          orientation="vertical"
+          display={["none", null, "initial"]}
+        />
+        <Separator mt={8} display={["initial", null, "none"]} />
         <WalletBalancesSection />
       </SWalletBalances>
     </Grid>

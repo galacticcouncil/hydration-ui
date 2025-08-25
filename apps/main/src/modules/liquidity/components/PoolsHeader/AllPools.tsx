@@ -48,7 +48,7 @@ export const AllPools = () => {
         })}
         size="medium"
         isLoading={isLoading || isLoadingXYK}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -58,7 +58,7 @@ export const AllPools = () => {
         })}
         isLoading={isLoading}
         size="medium"
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -66,7 +66,7 @@ export const AllPools = () => {
         value={t("common:currency", { value: totals.liquidity })}
         size="medium"
         isLoading={isLoading}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -74,14 +74,14 @@ export const AllPools = () => {
         value={t("common:currency", { value: totals.stablepool })}
         size="medium"
         isLoading={isLoading}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
         value={t("common:currency", { value: xykTotals.liquidity })}
         size="medium"
-        alwaysWrap
+        wrap
       />
     </>
   )

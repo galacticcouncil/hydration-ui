@@ -24,7 +24,7 @@ export const BorrowedAssetsHeader = () => {
   return (
     <Flex gap={40} p={20}>
       <ValueStats
-        alwaysWrap
+        wrap
         size="small"
         label={t("balance")}
         customValue={
@@ -41,7 +41,7 @@ export const BorrowedAssetsHeader = () => {
         }
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="small"
         label={t("apy")}
         customValue={
@@ -57,7 +57,7 @@ export const BorrowedAssetsHeader = () => {
         }
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="small"
         label={t("borrow:borrowPower")}
         value={t("currency", { value: 12245 })}

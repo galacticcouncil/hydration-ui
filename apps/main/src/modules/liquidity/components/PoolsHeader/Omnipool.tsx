@@ -33,7 +33,7 @@ export const Omnipool = () => {
         })}
         size="medium"
         isLoading={isLoading}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -41,7 +41,7 @@ export const Omnipool = () => {
         value={t("common:currency", { value: totals.volume })}
         isLoading={isLoading}
         size="medium"
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -49,7 +49,7 @@ export const Omnipool = () => {
         value={t("common:currency", { value: totals.liquidity })}
         size="medium"
         isLoading={isLoading}
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -57,7 +57,7 @@ export const Omnipool = () => {
         value={t("common:currency", { value: totals.stablepool })}
         size="medium"
         isLoading={isLoading}
-        alwaysWrap
+        wrap
       />
     </>
   )
