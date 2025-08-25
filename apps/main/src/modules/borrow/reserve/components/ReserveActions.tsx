@@ -49,7 +49,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
             value: balance?.amountUSD || "0",
             maximumFractionDigits: 2,
           })}
-          alwaysWrap
+          wrap
         />
       </Flex>
       <Flex gap={20} justify="space-between" align="center">
@@ -65,7 +65,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
             value: maxAmountToSupplyUsd,
             maximumFractionDigits: 2,
           })}
-          alwaysWrap
+          wrap
         />
         <Button
           disabled={disableSupplyButton}
@@ -87,7 +87,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
             value: maxAmountToBorrowUsd,
             maximumFractionDigits: 2,
           })}
-          alwaysWrap
+          wrap
         />
         <Button
           disabled={disableBorrowButton}

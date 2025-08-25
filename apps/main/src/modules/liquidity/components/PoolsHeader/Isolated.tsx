@@ -26,7 +26,7 @@ export const Isolated = () => {
         value={t("common:currency", { value: totals.liquidity })}
         isLoading={isLoadingXYK}
         size="medium"
-        alwaysWrap
+        wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
@@ -34,7 +34,7 @@ export const Isolated = () => {
         value={t("common:currency", { value: totals.volume })}
         isLoading={false}
         size="medium"
-        alwaysWrap
+        wrap
       />
     </>
   )

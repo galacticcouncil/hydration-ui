@@ -15,7 +15,7 @@ export const SuppliedAssetsHeader = () => {
   return (
     <Flex gap={40} p={20}>
       <ValueStats
-        alwaysWrap
+        wrap
         size="small"
         label={t("balance")}
         customValue={
@@ -32,7 +32,7 @@ export const SuppliedAssetsHeader = () => {
         }
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="small"
         label={t("apy")}
         customValue={
@@ -50,7 +50,7 @@ export const SuppliedAssetsHeader = () => {
         }
       />
       <ValueStats
-        alwaysWrap
+        wrap
         size="small"
         label={t("borrow:collateral")}
         customValue={

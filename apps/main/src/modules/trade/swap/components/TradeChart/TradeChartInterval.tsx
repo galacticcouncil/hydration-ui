@@ -13,6 +13,7 @@ type Props<
 > = {
   readonly options: ReadonlyArray<TOption>
   readonly selectedOption: TKey
+  readonly className?: string
   readonly onSelect: (option: TOption) => void
 }
 
@@ -22,10 +23,11 @@ export const TradeChartInterval = <
 >({
   options,
   selectedOption,
+  className,
   onSelect,
 }: Props<TKey, TOption>) => {
   return (
-    <Flex py={2} px={8} align="center" gap={2}>
+    <Flex py={2} px={8} align="center" gap={2} className={className}>
       {options.map((option) => (
         <TradeChartIntervalOption
           key={option.key}

@@ -29,9 +29,9 @@ export const SValueStatsValueContainer = styled.div<{
 
 export const SValueStats = styled.div<{
   readonly size?: ValueStatsSize
-  readonly alwaysWrap?: boolean
-}>(({ size = "large", alwaysWrap }) => [
-  alwaysWrap
+  readonly shouldWrap: boolean
+}>(({ size = "large", shouldWrap }) => [
+  shouldWrap
     ? css`
         display: flex;
         flex-direction: column;
@@ -40,11 +40,6 @@ export const SValueStats = styled.div<{
         display: flex;
         flex-direction: row;
         justify-content: space-between;
-
-        ${mq("sm")} {
-          flex-direction: column;
-          justify-content: initial;
-        }
       `,
   containerSizeVariants(size),
 ])

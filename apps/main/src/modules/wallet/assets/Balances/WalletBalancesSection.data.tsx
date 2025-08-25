@@ -1,15 +1,20 @@
+import { useUserData } from "@galacticcouncil/money-market/hooks"
 import Big from "big.js"
 
+import { useMyLiquidityAmount } from "@/modules/liquidity/components/PoolsHeader/MyLiquidity.data"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
-// TODO is this correct? - useWalletAssetsTotals
 export const useWalletBalancesSectionData = () => {
+  const { totalAmount, omnipool, isLoading, isLoadingPositions } =
+    useMyLiquidityAmount()
+  const { totalBorrowsUSD, totalLiquidityUSD, loading } = useUserData()
+
   const { getAsset } = useAssets()
-  const { balances } = useAccountBalances()
-  const { getAssetPrice } = useAssetsPrice(
+  const { balances, isBalanceLoading } = useAccountBalances()
+  const { getAssetPrice, isLoading: isAssetPriceLoading } = useAssetsPrice(
     Array.from(new Set(Object.keys(balances))),
   )
 
@@ -31,9 +36,12 @@ export const useWalletBalancesSectionData = () => {
 
   return {
     assets: totalAssets.toString(),
-    // TODO integrate wallet header balances
-    liquidity: "10301874",
-    farms: "10301874",
-    supplyBorrow: "10301874",
+    isAssetsLoading: isBalanceLoading || isAssetPriceLoading,
+    liquidity: totalAmount,
+    farms: omnipool?.farming.toString() ?? "0",
+    isLiquidityLoading: isLoading || isLoadingPositions,
+    supply: totalLiquidityUSD,
+    borrow: totalBorrowsUSD,
+    isBorrowLoading: loading,
   }
 }
