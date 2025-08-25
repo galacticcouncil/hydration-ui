@@ -269,7 +269,7 @@ export const PoolDetails = () => {
               sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
             />
 
-            <CurrencyReserves reserves={pool.reserves} />
+            <CurrencyReserves pool={pool} />
 
             {pool.relatedAToken && !pool.isInOmnipool && (
               <>

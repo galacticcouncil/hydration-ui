@@ -33,7 +33,7 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getAddressFromAssetId, getAssetIdFromAddress, H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { useAssets } from "providers/assets"
+import { TErc20, useAssets } from "providers/assets"
 import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
 import { useStablepoolFees } from "./stableswap"
@@ -42,6 +42,11 @@ import { TFarmAprData, useOmnipoolFarms } from "./farms"
 import { useDefillamaLatestApyQueries } from "api/external/defillama"
 import { uniqBy, zipArrays } from "utils/rx"
 import { identity } from "utils/helpers"
+import {
+  StableSwapResererveBalanceWithPercentage,
+  useStableSwapReservesMulti,
+} from "sections/pools/PoolsPage.utils"
+import { useStableArray } from "hooks/useStableArray"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -575,38 +580,60 @@ type CalculatedAssetApyTotals = Pick<
   | "incentivesNetAPR"
 >
 
+type StableSwapBalancesMap = Map<
+  string,
+  StableSwapResererveBalanceWithPercentage[]
+>
+
 const calculateAssetApyTotals = (
-  stablewapAssetIds: string[],
+  stableSwapAssetIds: string[],
+  stableSwapBalances: StableSwapResererveBalanceWithPercentage[],
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
   externalApysMap: Map<string, UseQueryResult<number>>,
   lpAPY: number,
   farmsAPR: number,
+  getRelatedAToken: (id: string) => TErc20 | undefined,
 ): CalculatedAssetApyTotals => {
-  const assetCount = stablewapAssetIds.length
+  const assetCount = stableSwapAssetIds.length
   const incentivesNetAPR = calculateIncentivesNetAPR(incentives)
 
   const underlyingAssetsApyData = underlyingReserves.map<UnderlyingAssetApy>(
     (reserve) => {
+      const id = getAssetIdFromAddress(reserve.underlyingAsset)
       const supplyAPY = BN(reserve.supplyAPY)
       const borrowAPY = BN(reserve.variableBorrowAPY)
+      const balanceId = getRelatedAToken(id)?.id ?? id
+      const percentage =
+        stableSwapBalances.find((bal) => bal.id === balanceId)?.percentage ??
+        100 / assetCount
+
+      const proportion = percentage / 100
+
       return {
-        id: getAssetIdFromAddress(reserve.underlyingAsset),
+        id,
         isStaked: false,
-        supplyApy: supplyAPY.div(assetCount).times(100).toNumber(),
-        borrowApy: borrowAPY.div(assetCount).times(100).toNumber(),
+        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
+        borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
       }
     },
   )
 
-  for (const assetId of stablewapAssetIds) {
-    const externalApy = externalApysMap.get(assetId)
+  for (const id of stableSwapAssetIds) {
+    const externalApy = externalApysMap.get(id)
+
     if (externalApy?.data) {
+      const percentage =
+        stableSwapBalances.find((bal) => bal.id === id)?.percentage ??
+        100 / assetCount
+
+      const proportion = percentage / 100
+
       underlyingAssetsApyData.push({
-        id: assetId,
+        id,
         isStaked: true,
-        supplyApy: BN(externalApy.data).div(assetCount).toNumber(),
-        borrowApy: BN(externalApy.data).div(assetCount).toNumber(),
+        supplyApy: BN(externalApy.data).times(proportion).toNumber(),
+        borrowApy: BN(externalApy.data).times(proportion).toNumber(),
       })
     }
   }
@@ -632,8 +659,15 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
   const { data: stablepoolFees, isLoading: isLoadingStablepoolFees } =
     useStablepoolFees()
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const assetIdsMemo = useMemo(() => assetIds, [assetIds.join(",")])
+  const assetIdsMemo = useStableArray(assetIds)
+
+  const { data: stableSwapReserves, isLoading: isLoadingStableSwapReserves } =
+    useStableSwapReservesMulti(assetIdsMemo)
+  const stableSwapBalancesMap = useMemo<StableSwapBalancesMap>(() => {
+    return new Map(
+      stableSwapReserves.map((item) => [item.poolId, item.data.balances]),
+    )
+  }, [stableSwapReserves])
 
   const farmsConfig = useMemo<Record<string, string>>(() => {
     if (!withFarms) return {}
@@ -669,10 +703,13 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
     return uniqBy(identity, ids)
   }, [assetIdsMemo, getAsset])
 
+  const isLoadingBase =
+    isLoadingStableSwapReserves || isLoadingReserves || isLoadingStablepoolFees
+
   const isLoading =
     omnipoolAssetIdsWithFarms.length > 0
-      ? isLoadingReserves || isLoadingStablepoolFees || isLoadingFarms
-      : isLoadingReserves || isLoadingStablepoolFees
+      ? isLoadingBase || isLoadingFarms
+      : isLoadingBase
 
   const externalApys = useDefillamaLatestApyQueries(allAssetIds)
   const externalApysMap = useMemo(() => {
@@ -699,10 +736,10 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
           ? omnipoolFarms.get(farmsAssetId)
           : undefined
 
-      const stableswapAssetIds =
+      const stableSwapAssetIds =
         asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId]
 
-      const underlyingAssetIds = stableswapAssetIds.map((assetId) => {
+      const underlyingAssetIds = stableSwapAssetIds.map((assetId) => {
         return getErc20(assetId)?.underlyingAssetId ?? assetId
       })
 
@@ -716,13 +753,17 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
       const farmsAPR = Number(farmsData?.totalApr ?? 0)
       const incentives = assetReserve?.aIncentivesData ?? []
 
+      const stableSwapBalances = stableSwapBalancesMap.get(assetId)
+
       const calculatedData = calculateAssetApyTotals(
-        stableswapAssetIds,
+        stableSwapAssetIds,
+        stableSwapBalances ?? [],
         underlyingReserves,
         assetReserve?.aIncentivesData ?? [],
         externalApysMap,
         lpAPY,
         farmsAPR,
+        getRelatedAToken,
       )
 
       return {
@@ -741,9 +782,11 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
     farmsConfig,
     getAsset,
     getErc20,
+    getRelatedAToken,
     isLoading,
     omnipoolFarms,
     reserves,
+    stableSwapBalancesMap,
     stablepoolFees,
   ])
 
