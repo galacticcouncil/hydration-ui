@@ -100,7 +100,7 @@ export const Stake = ({
     [api.tx, positionId, votes],
   )
 
-  const estimatedFees = useEstimatedFees(!loading ? [getExtrinsic("1")] : [])
+  const estimatedFees = useEstimatedFees(getExtrinsic("1"))
 
   const balanceMax =
     estimatedFees.accountCurrencyId === native.id

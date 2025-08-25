@@ -5,10 +5,10 @@ import { theme } from "theme"
 import { SupplyGigadotMobileRow } from "sections/lending/ui/table/supply-assets/SupplyGigaMobileRow"
 import { SupplyGigadotDesktopRow } from "sections/lending/ui/table/supply-assets/SupplyGigaDesktopRow"
 import { getAssetIdFromAddress } from "utils/evm"
-import { SupplyAssetModal } from "./SupplyAssetModal"
 import { Modal } from "components/Modal/Modal"
 import { DialogTitle } from "@radix-ui/react-dialog"
 import { useAssets } from "providers/assets"
+import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
 
 export type SupplyGigaRowData = Pick<
   ComputedReserveData,
@@ -48,7 +48,14 @@ export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
       <Modal open={!!supplyModal} onClose={onClose}>
         <DialogTitle />
         {!!supplyModal && (
-          <SupplyAssetModal assetId={assetId} onClose={onClose} />
+          <TransferModal
+            poolId={assetId}
+            onClose={onClose}
+            stablepoolAssetId={aTokenId}
+            farms={[]}
+            skipOptions
+            disabledOmnipool
+          />
         )}
       </Modal>
     </>

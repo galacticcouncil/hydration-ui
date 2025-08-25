@@ -7,6 +7,7 @@ import { css, SerializedStyles } from "@emotion/react"
 export enum StrategyTileVariant {
   One = "One",
   Two = "Two",
+  Hollar = "Hollar",
 }
 
 const desktopBackgroundVariantStyles: Record<
@@ -14,20 +15,62 @@ const desktopBackgroundVariantStyles: Record<
   SerializedStyles
 > = {
   [StrategyTileVariant.One]: css`
-    background: radial-gradient(
-        50.55% 157.06% at 4.5% 150.85%,
-        #f80b6b 5.78%,
-        rgba(79, 31, 71, 0) 89.15%
+    background: linear-gradient(
+        180deg,
+        rgba(248, 11, 107, 0.6) -0.47%,
+        rgba(79, 31, 71, 0) 27.64%
       ),
       ${theme.colors.darkBlue700};
+
+    @media ${theme.viewport.gte.md} {
+      background: radial-gradient(
+          50.55% 157.06% at 4.5% 150.85%,
+          #f80b6b 5.78%,
+          rgba(79, 31, 71, 0) 89.15%
+        ),
+        ${theme.colors.darkBlue700};
+    }
   `,
   [StrategyTileVariant.Two]: css`
-    background: radial-gradient(
-        50.55% 157.06% at 4.5% 150.85%,
-        #525252 5.78%,
-        rgba(32, 32, 32, 0) 89.15%
+    background: linear-gradient(
+        180deg,
+        rgba(82, 82, 82, 1) -0.47%,
+        rgba(79, 31, 71, 0) 27.64%
       ),
       ${theme.colors.darkBlue700};
+
+    @media ${theme.viewport.gte.md} {
+      background: radial-gradient(
+          50.55% 157.06% at 4.5% 150.85%,
+          #525252 5.78%,
+          rgba(32, 32, 32, 0) 89.15%
+        ),
+        ${theme.colors.darkBlue700};
+    }
+  `,
+  [StrategyTileVariant.Hollar]: css`
+    background: linear-gradient(
+        180deg,
+        rgba(248, 11, 107, 0.6) -0.47%,
+        rgba(79, 31, 71, 0) 27.64%
+      ),
+      ${theme.colors.darkBlue700};
+
+    background: linear-gradient(
+        180deg,
+        rgba(179, 207, 146, 0.5) -0.47%,
+        rgba(84, 101, 63, 0) 46.94%
+      ),
+      var(--primary-dark-blue-700, #111320);
+
+    @media ${theme.viewport.gte.md} {
+      background: radial-gradient(
+          50.55% 157.06% at 4.5% 150.85%,
+          #b3cf92 5.78%,
+          rgba(32, 32, 32, 0) 89.15%
+        ),
+        ${theme.colors.darkBlue700};
+    }
   `,
 }
 
@@ -46,13 +89,6 @@ export const SStrategyTile = styled.div<{
   padding-top: 12px;
   padding-bottom: 18px;
   padding-inline: 12px;
-
-  background: linear-gradient(
-      180deg,
-      rgba(248, 11, 107, 0.6) -0.47%,
-      rgba(79, 31, 71, 0) 27.64%
-    ),
-    ${theme.colors.darkBlue700};
 
   border-radius: 8px;
   border: 1px solid ${theme.colors.darkBlue400};
@@ -73,6 +109,8 @@ export const SStrategyTile = styled.div<{
     z-index: -10;
   }
 
+  ${({ variant }) => desktopBackgroundVariantStyles[variant]}
+
   @media ${theme.viewport.gte.sm} {
     padding-left: 20px;
     padding-right: 20px;
@@ -85,10 +123,8 @@ export const SStrategyTile = styled.div<{
     padding-right: 40px;
 
     display: grid;
-    grid-template-columns: 5fr auto 4fr;
+    grid-template-columns: 3fr auto 2fr;
     column-gap: 40px;
-
-    ${({ variant }) => desktopBackgroundVariantStyles[variant]}
   }
 `
 

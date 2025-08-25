@@ -156,6 +156,14 @@ export const PROVIDERS: ProviderProps[] = [
     env: ["rococo", "development"],
     dataEnv: "testnet",
   },
+  // TODO: remove before merging
+  {
+    name: "HOLLAR",
+    url: "wss://1.lark.hydration.cloud",
+    ...defaultProvider,
+    squidUrl:
+      "https://galacticcouncil.squids.live/hydration-pools-hollar-testnet:hsm-hollar-sandbox-unified/api/graphql",
+  },
 ]
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>

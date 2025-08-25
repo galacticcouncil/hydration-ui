@@ -6,6 +6,7 @@ import { useTransactionHandler } from "sections/lending/helpers/useTransactionHa
 import { useRootStore } from "sections/lending/store/root"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import BN from "bignumber.js"
+import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 
 export type CurrentDepositClaimRewardProps = {
   reward: Reward
@@ -14,7 +15,8 @@ export type CurrentDepositClaimRewardProps = {
 export const CurrentDepositClaimReward: React.FC<
   CurrentDepositClaimRewardProps
 > = ({ reward }) => {
-  const claimRewards = useRootStore((state) => state.claimRewards)
+  const claimRewards = useRootStore((state) => state.claimStrategyRewards)
+  const { externalApyData } = useAppDataContext()
   const { t } = useTranslation()
 
   const { action } = useTransactionHandler({
@@ -30,6 +32,7 @@ export const CurrentDepositClaimReward: React.FC<
         blocked: false,
         selectedReward: reward,
         claimableUsd: reward.balanceUsd,
+        externalApyData,
       })
     },
     deps: [reward],
@@ -49,7 +52,7 @@ export const CurrentDepositClaimReward: React.FC<
 
       <Button
         variant="primary"
-        size="small"
+        size="compact"
         disabled={new BN(reward.balance).lte(0)}
         onClick={() => action()}
       >

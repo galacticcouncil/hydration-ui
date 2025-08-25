@@ -7,7 +7,7 @@ import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
 } from "@aave/math-utils"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
@@ -33,19 +33,20 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { getAddressFromAssetId, getAssetIdFromAddress, H160 } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 import BN from "bignumber.js"
-import { useAssets } from "providers/assets"
+import { TErc20, useAssets } from "providers/assets"
 import { calculateMaxWithdrawAmount } from "sections/lending/components/transactions/Withdraw/utils"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
-import {
-  GETH_ERC20_ASSET_ID,
-  VDOT_ASSET_ID,
-  WSTETH_ASSET_ID,
-} from "utils/constants"
-import { useBifrostVDotApy } from "api/external/bifrost"
 import { useStablepoolFees } from "./stableswap"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
-import { useLIDOEthAPR } from "./external/ethereum"
-import { TFarmAprData, useOmnipoolFarm } from "./farms"
+import { TFarmAprData, useOmnipoolFarms } from "./farms"
+import { useDefillamaLatestApyQueries } from "api/external/defillama"
+import { uniqBy, zipArrays } from "utils/rx"
+import { identity } from "utils/helpers"
+import {
+  StableSwapResererveBalanceWithPercentage,
+  useStableSwapReservesMulti,
+} from "sections/pools/PoolsPage.utils"
+import { useStableArray } from "hooks/useStableArray"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -140,6 +141,36 @@ export const useBorrowUserIncentives = (givenAddress?: string) => {
       retry: false,
       enabled:
         !!evmAddress && !!lendingPoolAddressProvider && !!incentivesContract,
+    },
+  )
+}
+
+export const useBorrowUserReserves = (givenAddress?: string) => {
+  const poolDataContract = useBorrowPoolDataContract()
+  const addresses = useBorrowContractAddresses()
+
+  const { account } = useAccount()
+
+  const address = givenAddress || account?.address || ""
+
+  const evmAddress = H160.fromAny(address)
+
+  const lendingPoolAddressProvider = addresses?.POOL_ADDRESSES_PROVIDER ?? ""
+
+  return useQuery(
+    QUERY_KEYS.borrowUserReserves(lendingPoolAddressProvider, evmAddress),
+    async () => {
+      if (!poolDataContract || !evmAddress) return null
+
+      return poolDataContract.getUserReservesHumanized({
+        lendingPoolAddressProvider,
+        user: evmAddress,
+      })
+    },
+    {
+      retry: false,
+      enabled:
+        !!evmAddress && !!lendingPoolAddressProvider && !!poolDataContract,
     },
   )
 }
@@ -470,330 +501,297 @@ export const useMaxWithdrawAmount = (assetId: string) => {
   }, [underlyingAssetId, user])
 }
 
+type UnderlyingAssetApy = {
+  id: string
+  isStaked: boolean
+  supplyApy: number
+  borrowApy: number
+}
+
 export type BorrowAssetApyData = {
   assetId: string
   tvl: string
   vDotApy?: number
-  totalSupplyApy: number
-  totalBorrowApy: number
   lpAPY: number
   incentivesNetAPR: number
   incentives: ReserveIncentiveResponse[]
-  underlyingAssetsAPY: { supplyApy: number; borrowApy: number; id: string }[]
+  underlyingAssetsApyData: UnderlyingAssetApy[]
+  underlyingSupplyApy: number
+  underlyingBorrowApy: number
+  totalSupplyApy: number
+  totalBorrowApy: number
   farms: TFarmAprData[] | undefined
 }
 
-export const useMoneyMarketAssetsAPY = (assetIds: string[]) => {
-  const { getAssetWithFallback, getErc20 } = useAssets()
+const calculateIncentivesNetAPR = (incentives: any[]) => {
+  const isIncentivesInfinity = incentives.some(
+    (incentive) => incentive.incentiveAPR === "Infinity",
+  )
 
-  const { data: reserves } = useBorrowReserves()
-  const { data: stablepoolFees } = useStablepoolFees()
+  if (isIncentivesInfinity) {
+    return Infinity
+  }
 
-  const aTokens = useMemo(() => {
-    return assetIds.reduce<
-      {
-        assetId: string
-        reserve: ComputedReserveData
-        lpFee: number
-        stableswapAssets: string[]
-        isGETH: boolean
-      }[]
-    >((acc, assetId) => {
-      const reserve = reserves?.formattedReserves.find(
+  const total = incentives.reduce(
+    (total, incentive) => total + Number(incentive.incentiveAPR),
+    0,
+  )
+
+  const percent = total * 100
+
+  return percent
+}
+
+const calculateTotalSupplyAndBorrowApy = (
+  underlyingAssetsApyData: UnderlyingAssetApy[],
+  incentivesNetAPR: number,
+  lpAPY: number,
+  farmsAPR: number,
+) => {
+  const underlyingSupplyApy = underlyingAssetsApyData.reduce(
+    (total, asset) => total + asset.supplyApy,
+    0,
+  )
+
+  const underlyingBorrowApy = underlyingAssetsApyData.reduce(
+    (total, asset) => total + asset.borrowApy,
+    0,
+  )
+
+  const totalSupplyApy =
+    underlyingSupplyApy + incentivesNetAPR + lpAPY + farmsAPR
+  const totalBorrowApy = underlyingBorrowApy + incentivesNetAPR + lpAPY
+
+  return {
+    underlyingSupplyApy,
+    underlyingBorrowApy,
+    totalSupplyApy,
+    totalBorrowApy,
+  }
+}
+
+type CalculatedAssetApyTotals = Pick<
+  BorrowAssetApyData,
+  | "totalSupplyApy"
+  | "totalBorrowApy"
+  | "underlyingBorrowApy"
+  | "underlyingSupplyApy"
+  | "underlyingAssetsApyData"
+  | "incentivesNetAPR"
+>
+
+type StableSwapBalancesMap = Map<
+  string,
+  StableSwapResererveBalanceWithPercentage[]
+>
+
+const calculateAssetApyTotals = (
+  stableSwapAssetIds: string[],
+  stableSwapBalances: StableSwapResererveBalanceWithPercentage[],
+  underlyingReserves: ComputedReserveData[],
+  incentives: ReserveIncentiveResponse[],
+  externalApysMap: Map<string, UseQueryResult<number>>,
+  lpAPY: number,
+  farmsAPR: number,
+  getRelatedAToken: (id: string) => TErc20 | undefined,
+): CalculatedAssetApyTotals => {
+  const assetCount = stableSwapAssetIds.length
+  const incentivesNetAPR = calculateIncentivesNetAPR(incentives)
+
+  const underlyingAssetsApyData = underlyingReserves.map<UnderlyingAssetApy>(
+    (reserve) => {
+      const id = getAssetIdFromAddress(reserve.underlyingAsset)
+      const supplyAPY = BN(reserve.supplyAPY)
+      const borrowAPY = BN(reserve.variableBorrowAPY)
+      const balanceId = getRelatedAToken(id)?.id ?? id
+      const percentage =
+        stableSwapBalances.find((bal) => bal.id === balanceId)?.percentage ??
+        100 / assetCount
+
+      const proportion = percentage / 100
+
+      return {
+        id,
+        isStaked: false,
+        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
+        borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
+      }
+    },
+  )
+
+  for (const id of stableSwapAssetIds) {
+    const externalApy = externalApysMap.get(id)
+
+    if (externalApy?.data) {
+      const percentage =
+        stableSwapBalances.find((bal) => bal.id === id)?.percentage ??
+        100 / assetCount
+
+      const proportion = percentage / 100
+
+      underlyingAssetsApyData.push({
+        id,
+        isStaked: true,
+        supplyApy: BN(externalApy.data).times(proportion).toNumber(),
+        borrowApy: BN(externalApy.data).times(proportion).toNumber(),
+      })
+    }
+  }
+
+  const apySums = calculateTotalSupplyAndBorrowApy(
+    underlyingAssetsApyData,
+    incentivesNetAPR,
+    lpAPY,
+    farmsAPR,
+  )
+
+  return {
+    ...apySums,
+    underlyingAssetsApyData,
+    incentivesNetAPR,
+  }
+}
+
+export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
+  const { getAsset, getErc20, getRelatedAToken } = useAssets()
+  const { data: borrowReserves, isLoading: isLoadingReserves } =
+    useBorrowReserves()
+  const { data: stablepoolFees, isLoading: isLoadingStablepoolFees } =
+    useStablepoolFees()
+
+  const assetIdsMemo = useStableArray(assetIds)
+
+  const { data: stableSwapReserves, isLoading: isLoadingStableSwapReserves } =
+    useStableSwapReservesMulti(assetIdsMemo)
+  const stableSwapBalancesMap = useMemo<StableSwapBalancesMap>(() => {
+    return new Map(
+      stableSwapReserves.map((item) => [item.poolId, item.data.balances]),
+    )
+  }, [stableSwapReserves])
+
+  const farmsConfig = useMemo<Record<string, string>>(() => {
+    if (!withFarms) return {}
+    return Object.fromEntries(
+      assetIdsMemo.map((assetId) => [
+        assetId,
+        getRelatedAToken(assetId)?.id ?? "",
+      ]),
+    )
+  }, [assetIdsMemo, getRelatedAToken, withFarms])
+
+  const omnipoolAssetIdsWithFarms = useMemo(
+    () => Object.values(farmsConfig),
+    [farmsConfig],
+  )
+
+  const { data: omnipoolFarms, isLoading: isLoadingFarms } = useOmnipoolFarms(
+    omnipoolAssetIdsWithFarms,
+  )
+
+  const reserves = useMemo(
+    () => borrowReserves?.formattedReserves ?? [],
+    [borrowReserves],
+  )
+
+  const allAssetIds = useMemo(() => {
+    const ids = assetIdsMemo.flatMap((assetId) => {
+      const asset = getAsset(assetId)
+      return asset?.isStableSwap && asset.meta
+        ? Object.keys(asset.meta)
+        : [assetId]
+    })
+    return uniqBy(identity, ids)
+  }, [assetIdsMemo, getAsset])
+
+  const isLoadingBase =
+    isLoadingStableSwapReserves || isLoadingReserves || isLoadingStablepoolFees
+
+  const isLoading =
+    omnipoolAssetIdsWithFarms.length > 0
+      ? isLoadingBase || isLoadingFarms
+      : isLoadingBase
+
+  const externalApys = useDefillamaLatestApyQueries(allAssetIds)
+  const externalApysMap = useMemo(() => {
+    const externalApyEntries = zipArrays(allAssetIds, externalApys)
+    return new Map(externalApyEntries)
+  }, [allAssetIds, externalApys])
+
+  const data = useMemo<BorrowAssetApyData[]>(() => {
+    if (isLoading) return []
+    return assetIdsMemo.map((assetId) => {
+      const asset = getAsset(assetId)
+      const assetReserve = reserves.find(
         ({ underlyingAsset }) =>
           underlyingAsset === getAddressFromAssetId(assetId),
       )
 
-      if (reserve) {
-        const lpFee = Number(
-          stablepoolFees?.find((fee) => fee.poolId === assetId)
-            ?.projectedApyPerc ?? 0,
-        )
-        const meta = getAssetWithFallback(assetId)
-        const stableswapAssets = meta.meta ? Object.keys(meta.meta) : []
-        const isGETH = stableswapAssets.includes(WSTETH_ASSET_ID)
+      const stablepoolFee = stablepoolFees?.find(
+        (fee) => fee.poolId === assetId,
+      )
 
-        acc.push({ assetId, reserve, lpFee, stableswapAssets, isGETH })
-      }
+      const farmsAssetId = farmsConfig?.[assetId] ?? ""
+      const farmsData =
+        farmsAssetId && omnipoolFarms
+          ? omnipoolFarms.get(farmsAssetId)
+          : undefined
 
-      return acc
-    }, [])
-  }, [assetIds, getAssetWithFallback, reserves, stablepoolFees])
+      const stableSwapAssetIds =
+        asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId]
 
-  const { data: vDotApy } = useBifrostVDotApy({
-    enabled: aTokens.some((aToken) =>
-      aToken.stableswapAssets.includes(VDOT_ASSET_ID),
-    ),
-  })
-
-  const isGETH = aTokens.some((aToken) => aToken.isGETH)
-
-  const { data: wsethApr } = useLIDOEthAPR({
-    enabled: isGETH,
-  })
-
-  const { data: gethFarms } = useOmnipoolFarm(
-    isGETH ? GETH_ERC20_ASSET_ID : undefined,
-  )
-
-  const data = useMemo<BorrowAssetApyData[]>(() => {
-    return aTokens.map((aToken) => {
-      const isWseth = aToken.stableswapAssets.includes(WSTETH_ASSET_ID)
-      const assetsAmount = aToken.stableswapAssets.length
-
-      const underlyingAssetIds = aToken.stableswapAssets.map((assetId) => {
-        return getAddressFromAssetId(
-          getErc20(assetId)?.underlyingAssetId ?? assetId,
-        )
+      const underlyingAssetIds = stableSwapAssetIds.map((assetId) => {
+        return getErc20(assetId)?.underlyingAssetId ?? assetId
       })
 
-      const underlyingReserves =
-        reserves?.formattedReserves?.filter((reserve) => {
-          return underlyingAssetIds.includes(reserve.underlyingAsset)
-        }) ?? []
-
-      const incentives = aToken.reserve.aIncentivesData ?? []
-
-      const isIncentivesInfinity = incentives.some(
-        (incentive) => !BN(incentive.incentiveAPR).isFinite(),
-      )
-
-      const incentivesAPRSum = isIncentivesInfinity
-        ? Infinity
-        : incentives.reduce(
-            (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
-            0,
-          ) * 100
-
-      const incentivesNetAPR = isIncentivesInfinity
-        ? Infinity
-        : incentivesAPRSum !== Infinity
-          ? incentivesAPRSum || 0
-          : Infinity
-
-      const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
-        const isVdot =
-          reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
-
-        const supplyAPY = isVdot
-          ? BN(reserve.supplyAPY).plus(BN(vDotApy ?? 0).div(100))
-          : BN(reserve.supplyAPY)
-
-        const borrowAPY = isVdot
-          ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy ?? 0).div(100))
-          : BN(reserve.variableBorrowAPY)
-
-        return {
-          supplyApy: supplyAPY.div(assetsAmount).times(100).toNumber(),
-          borrowApy: borrowAPY.div(assetsAmount).times(100).toNumber(),
-          id: getAssetIdFromAddress(reserve.underlyingAsset),
-        }
+      const underlyingReserves = reserves.filter((reserve) => {
+        return underlyingAssetIds
+          .map(getAddressFromAssetId)
+          .includes(reserve.underlyingAsset)
       })
 
-      if (isWseth) {
-        underlyingAssetsAPY.push({
-          id: WSTETH_ASSET_ID,
-          supplyApy: BN(wsethApr ?? 0)
-            .div(assetsAmount)
-            .toNumber(),
-          borrowApy: BN(wsethApr ?? 0)
-            .div(assetsAmount)
-            .toNumber(),
-        })
-      }
+      const lpAPY = Number(stablepoolFee?.projectedApyPerc ?? 0)
+      const farmsAPR = Number(farmsData?.totalApr ?? 0)
+      const incentives = assetReserve?.aIncentivesData ?? []
 
-      const supplyAPYSum = underlyingAssetsAPY.reduce(
-        (a, b) => a + b.supplyApy,
-        0,
-      )
+      const stableSwapBalances = stableSwapBalancesMap.get(assetId)
 
-      const borrowAPYSum = underlyingAssetsAPY.reduce(
-        (a, b) => a + b.borrowApy,
-        0,
+      const calculatedData = calculateAssetApyTotals(
+        stableSwapAssetIds,
+        stableSwapBalances ?? [],
+        underlyingReserves,
+        assetReserve?.aIncentivesData ?? [],
+        externalApysMap,
+        lpAPY,
+        farmsAPR,
+        getRelatedAToken,
       )
-      const lpAPY = aToken.lpFee
-      const totalApr = aToken.isGETH ? gethFarms?.totalApr : undefined
-      const farms = aToken.isGETH ? gethFarms?.farms : undefined
 
       return {
-        assetId: aToken.assetId,
-        tvl: aToken.reserve?.totalLiquidityUSD || "0",
-        totalSupplyApy: isIncentivesInfinity
-          ? Infinity
-          : supplyAPYSum + incentivesNetAPR + lpAPY + Number(totalApr ?? 0),
-        totalBorrowApy: borrowAPYSum + incentivesNetAPR + lpAPY,
-        lpAPY: lpAPY,
-        underlyingAssetsAPY,
-        incentivesNetAPR,
-        incentives: aToken.reserve?.aIncentivesData ?? [],
-        vDotApy,
-        farms,
+        assetId,
+        tvl: assetReserve?.totalLiquidityUSD || "0",
+        farms: farmsData?.farms,
+        lpAPY,
+        farmsAPR,
+        incentives,
+        ...calculatedData,
       }
     })
   }, [
-    aTokens,
+    assetIdsMemo,
+    externalApysMap,
+    farmsConfig,
+    getAsset,
     getErc20,
-    reserves?.formattedReserves,
-    vDotApy,
-    wsethApr,
-    gethFarms,
-  ])
-
-  return data
-}
-
-export const useBorrowAssetApy = (
-  assetId: string,
-  withFarms: boolean | undefined = false,
-): BorrowAssetApyData => {
-  const { getAsset, getErc20 } = useAssets()
-  const { data } = useBorrowReserves()
-
-  const reserves = useMemo(() => data?.formattedReserves ?? [], [data])
-
-  const asset = getAsset(assetId)
-
-  const assetReserve = reserves.find(
-    ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(assetId),
-  )
-
-  const assetIds = useMemo(
-    () =>
-      asset?.isStableSwap && asset.meta ? Object.keys(asset.meta) : [assetId],
-    [asset, assetId],
-  )
-  const assetsAmount = assetIds.length
-  const isGETH = assetIds.includes(WSTETH_ASSET_ID)
-
-  const { data: vDotApy } = useBifrostVDotApy({
-    enabled: assetIds.includes(VDOT_ASSET_ID),
-  })
-
-  const { data: ethApr } = useLIDOEthAPR({
-    enabled: isGETH,
-  })
-
-  const { data: stablepoolFees } = useStablepoolFees(!asset?.isStableSwap)
-
-  const { data: farms } = useOmnipoolFarm(
-    isGETH && withFarms ? GETH_ERC20_ASSET_ID : undefined,
-  )
-
-  const stablepoolFee = stablepoolFees?.find((fee) => fee.poolId === assetId)
-
-  const {
-    totalSupplyApy,
-    lpAPY,
-    incentivesNetAPR,
-    underlyingAssetsAPY,
-    totalBorrowApy,
-  } = useMemo(() => {
-    const underlyingAssetIds = assetIds.map((assetId) => {
-      return getErc20(assetId)?.underlyingAssetId ?? assetId
-    })
-
-    const underlyingReserves = reserves.filter((reserve) => {
-      return underlyingAssetIds
-        .map(getAddressFromAssetId)
-        .includes(reserve.underlyingAsset)
-    })
-
-    const incentives = assetReserve?.aIncentivesData ?? []
-
-    const isIncentivesInfinity = incentives.some(
-      (incentive) => incentive.incentiveAPR === "Infinity",
-    )
-
-    const incentivesAPRSum = isIncentivesInfinity
-      ? Infinity
-      : incentives.reduce(
-          (aIncentive, bIncentive) => aIncentive + +bIncentive.incentiveAPR,
-          0,
-        ) * 100
-
-    const incentivesNetAPR = isIncentivesInfinity
-      ? Infinity
-      : incentivesAPRSum !== Infinity
-        ? incentivesAPRSum || 0
-        : Infinity
-
-    const underlyingAssetsAPY = underlyingReserves.map((reserve) => {
-      const isVdot =
-        reserve.underlyingAsset === getAddressFromAssetId(VDOT_ASSET_ID)
-
-      const supplyAPY = isVdot
-        ? BN(reserve.supplyAPY).plus(BN(vDotApy ?? 0).div(100))
-        : BN(reserve.supplyAPY)
-
-      const borrowAPY = isVdot
-        ? BN(reserve.variableBorrowAPY).plus(BN(vDotApy ?? 0).div(100))
-        : BN(reserve.variableBorrowAPY)
-
-      return {
-        supplyApy: supplyAPY.div(assetsAmount).times(100).toNumber(),
-        borrowApy: borrowAPY.div(assetsAmount).times(100).toNumber(),
-        id: getAssetIdFromAddress(reserve.underlyingAsset),
-      }
-    })
-
-    if (isGETH) {
-      underlyingAssetsAPY.push({
-        id: WSTETH_ASSET_ID,
-        supplyApy: BN(ethApr ?? 0)
-          .div(assetsAmount)
-          .toNumber(),
-        borrowApy: BN(ethApr ?? 0)
-          .div(assetsAmount)
-          .toNumber(),
-      })
-    }
-
-    const supplyAPYSum = underlyingAssetsAPY.reduce(
-      (a, b) => a + b.supplyApy,
-      0,
-    )
-
-    const borrowAPYSum = underlyingAssetsAPY.reduce(
-      (a, b) => a + b.borrowApy,
-      0,
-    )
-    const lpAPY = Number(stablepoolFee?.projectedApyPerc ?? 0)
-
-    return {
-      totalSupplyApy: isIncentivesInfinity
-        ? Infinity
-        : supplyAPYSum +
-          incentivesNetAPR +
-          lpAPY +
-          Number(farms?.totalApr ?? 0),
-      totalBorrowApy: borrowAPYSum + incentivesNetAPR + lpAPY,
-      lpAPY: lpAPY,
-      underlyingAssetsAPY,
-      incentivesNetAPR,
-    }
-  }, [
-    assetIds,
-    assetReserve?.aIncentivesData,
-    getErc20,
+    getRelatedAToken,
+    isLoading,
+    omnipoolFarms,
     reserves,
-    vDotApy,
-    stablepoolFee,
-    ethApr,
-    isGETH,
-    farms?.totalApr,
-    assetsAmount,
+    stableSwapBalancesMap,
+    stablepoolFees,
   ])
 
   return {
-    assetId,
-    tvl: assetReserve?.totalLiquidityUSD || "0",
-    totalSupplyApy,
-    totalBorrowApy,
-    lpAPY,
-    incentivesNetAPR,
-    underlyingAssetsAPY,
-    vDotApy,
-    incentives: assetReserve?.aIncentivesData ?? [],
-    farms: farms?.farms,
+    data,
+    isLoading,
   }
 }
