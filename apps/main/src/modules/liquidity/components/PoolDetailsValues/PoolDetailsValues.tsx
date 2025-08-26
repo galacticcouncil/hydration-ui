@@ -18,6 +18,7 @@ import {
   OmnipoolAssetTable,
   useOmnipoolShare,
 } from "@/modules/liquidity/Liquidity.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
@@ -208,14 +209,14 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
 
 const AssetPrice = ({ asset }: { asset: PoolToken }) => {
   const { t } = useTranslation("liquidity")
+  const { getAssetWithFallback } = useAssets()
   const { price } = useAssetPrice(asset.id.toString())
 
   return (
     <Text fs="p6" fw={400} color={getToken("text.medium")}>
       {t("details.values.xyk.price", {
         value: price,
-        //TODO: add price symbol
-        priceSymbol: "",
+        priceSymbol: getAssetWithFallback(asset.id).symbol,
       })}
     </Text>
   )
