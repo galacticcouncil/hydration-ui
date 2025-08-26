@@ -22,3 +22,5 @@ export const SELL_ONLY_ASSETS = [H2O_ASSET_ID, GDOT_ASSET_ID]
 
 export const GC_TIME = millisecondsInDay
 export const STALE_TIME = millisecondsInHour
+
+export const POT_ADDRESS = "7L53bUTCCAvmCxhe15maHwJZbjQYH89LkXuyTnTi1J58xyFC"
