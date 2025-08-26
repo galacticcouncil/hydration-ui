@@ -2,9 +2,7 @@ import { XykMath } from "@galacticcouncil/sdk"
 import {
   Flex,
   Paper,
-  ProgressBar,
   Separator,
-  Skeleton,
   SValueStatsValue,
   Text,
   ValueStats,
@@ -18,13 +16,13 @@ import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
-  useOmnipoolCapacity,
   useOmnipoolShare,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import { CurrencyReserves } from "./CurrencyReserves"
+import { LiquidityLimit } from "./LiquidityLimit"
 
 export const PoolDetailsValues = ({
   data,
@@ -220,35 +218,5 @@ const AssetPrice = ({ asset }: { asset: PoolToken }) => {
         priceSymbol: "",
       })}
     </Text>
-  )
-}
-
-const LiquidityLimit = ({ poolId }: { poolId: string }) => {
-  const { t } = useTranslation(["common", "liquidity"])
-  const { data: capacity, isLoading } = useOmnipoolCapacity(poolId)
-
-  return (
-    <Flex direction="column">
-      <Text
-        font="primary"
-        fw={700}
-        fs={14}
-        lh="130%"
-        color={getToken("text.tint.secondary")}
-        sx={{ pb: getTokenPx("containers.paddings.primary") }}
-      >
-        {t("liquidity:details.values.liquidityLimit")}
-      </Text>
-
-      <ProgressBar
-        value={Number(capacity?.filledPercent ?? 0)}
-        size="large"
-        orientation="vertical"
-        format={() =>
-          `${t("number.compact", { value: capacity?.filled })} / ${t("number.compact", { value: capacity?.capacity })}`
-        }
-        customLabel={isLoading ? <Skeleton width={100} /> : undefined}
-      />
-    </Flex>
   )
 }

@@ -31,7 +31,7 @@ import {
   useIsolatedPositions,
   useOmnipoolPositions,
 } from "./PositionsTable.utils"
-import { BalanceTable } from "./StableswapBalanceTable"
+import { StableswapBalanceTable } from "./StableswapBalanceTable"
 
 export const PositionsTable = ({
   pool,
@@ -109,7 +109,7 @@ const OmnipoolStablepoolPositions = ({
       tables.push(<Separator key="separator-stableswap" />)
     }
 
-    tables.push(<BalanceTable pool={pool} key="balance" />)
+    tables.push(<StableswapBalanceTable pool={pool} key="balance" />)
   }
 
   if (isVisibleABalance) {

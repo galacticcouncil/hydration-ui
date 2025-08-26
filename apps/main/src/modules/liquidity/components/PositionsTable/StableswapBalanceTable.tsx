@@ -1,6 +1,7 @@
 import { Circle } from "@galacticcouncil/ui/assets/icons"
 import { DataTable, Icon, Text } from "@galacticcouncil/ui/components"
 import Big from "big.js"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { OmnipoolAssetTable } from "@/modules/liquidity/Liquidity.utils"
@@ -17,29 +18,35 @@ export type BalanceTableData = {
   valueDisplay: string | undefined
 }
 
-export const BalanceTable = ({ pool }: { pool: OmnipoolAssetTable }) => {
+export const StableswapBalanceTable = ({
+  pool,
+}: {
+  pool: OmnipoolAssetTable
+}) => {
   const { t } = useTranslation(["liquidity"])
   const balanceColumns = useBalanceTableColumns()
 
   const { stableswapBalance, price, id, meta, isStablepoolInOmnipool } = pool
 
-  const freeBalance = stableswapBalance
-    ? scaleHuman(stableswapBalance, meta.decimals)
-    : undefined
+  const tableData: BalanceTableData[] = useMemo(() => {
+    if (!stableswapBalance) return []
 
-  if (!freeBalance) return null
+    const freeBalance = scaleHuman(stableswapBalance, meta.decimals)
 
-  const tableData: BalanceTableData[] = [
-    {
-      label: t("liquidity:liquidity.stablepool.position.shares"),
-      poolId: id,
-      isStablepoolInOmnipool,
-      value: freeBalance,
-      valueDisplay: price
-        ? Big(price).times(freeBalance).toString()
-        : undefined,
-    },
-  ]
+    return [
+      {
+        label: t("liquidity:liquidity.stablepool.position.shares"),
+        poolId: id,
+        isStablepoolInOmnipool,
+        value: freeBalance,
+        valueDisplay: price
+          ? Big(price).times(freeBalance).toString()
+          : undefined,
+      },
+    ]
+  }, [t, id, isStablepoolInOmnipool, stableswapBalance, price, meta.decimals])
+
+  if (!tableData.length) return null
 
   return (
     <>

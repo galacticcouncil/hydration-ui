@@ -255,7 +255,7 @@ export const useOmnipoolStablepools = () => {
 
       if (omnipoolIds.has(id)) {
         stableInOmnipool.set(id, stablepoolData)
-      } else if (aTokenId && omnipoolIds.has(aTokenId.toString())) {
+      } else if (aTokenId && omnipoolIds.has(aTokenId)) {
         stableInOmnipool.set(aTokenId.toString(), stablepoolData)
       } else {
         onlyStablepool.push(stablepoolData)
