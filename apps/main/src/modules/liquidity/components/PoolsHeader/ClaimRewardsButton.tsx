@@ -11,8 +11,11 @@ import {
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { useLiquidityMiningRewards } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
+
 export const ClaimRewardsButton = () => {
-  const { t } = useTranslation("liquidity")
+  const { t } = useTranslation(["liquidity", "common"])
+  const { claimableAmount, totalAmount } = useLiquidityMiningRewards()
 
   return (
     <HoverCard>
@@ -31,17 +34,13 @@ export const ClaimRewardsButton = () => {
           <Text fs="p5" color={getToken("text.medium")} fw={400}>
             {t("header.claim.claimableFromAllPositions")}
           </Text>
-          {/* TODO: add claimable amount */}
           <Text fs={16} color={getToken("text.high")} fw={500}>
-            130 100 HDX
+            {t("common:currency", { value: claimableAmount, symbol: "HDX" })}
           </Text>
-
           <Separator />
-          {/* TODO: add total amount */}
           <Text fs="p5" color={getToken("text.high")} fw={400}>
-            Total of ≈ $2855.24
+            Total of ≈ {t("common:currency", { value: totalAmount })}
           </Text>
-
           <Button>{t("header.claim.button")}</Button>
         </Flex>
       </HoverCardContent>
