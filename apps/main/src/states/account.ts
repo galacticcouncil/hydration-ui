@@ -53,6 +53,7 @@ type BalanceStorageSlice = {
   balances: BalanceRecord
   isBalanceLoading: boolean
   setBalance: (balances: Balance[]) => void
+  resetBalances: () => void
 }
 
 type PositionsStorageSlice = {
@@ -67,7 +68,7 @@ const createAccountsBalances: StateCreator<
   [],
   [],
   BalanceStorageSlice
-> = (set) => ({
+> = (set, _get, store) => ({
   balances: {},
   isBalanceLoading: true,
   setBalance: (balances) =>
@@ -82,6 +83,7 @@ const createAccountsBalances: StateCreator<
 
       return { balances: newBalances, isBalanceLoading: false }
     }),
+  resetBalances: () => set(store.getInitialState()),
 })
 
 const createAccountsUniques: StateCreator<

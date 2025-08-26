@@ -3,7 +3,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { millisecondsInHour } from "date-fns/constants"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -73,7 +73,12 @@ export const useAccountBalance = () => {
   const address = useAccount().account?.address
   const { papi, sdk, isLoaded } = useRpcProvider()
   const setBalance = useAccountData(prop("setBalance"))
+  const resetBalances = useAccountData(prop("resetBalances"))
   const { getErc20AToken } = useAssets()
+
+  useEffect(() => {
+    resetBalances()
+  }, [address, resetBalances])
 
   return useQuery({
     enabled: !!address && isLoaded,
