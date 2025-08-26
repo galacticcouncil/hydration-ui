@@ -26,4 +26,8 @@ export class Phantom extends BaseSolanaWallet {
   get rawExtension() {
     return window?.phantom?.solana
   }
+
+  transformError = () => {
+    return new Error("Could not connect to Solana with current account.")
+  }
 }

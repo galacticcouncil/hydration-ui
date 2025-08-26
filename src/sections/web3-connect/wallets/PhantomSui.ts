@@ -10,4 +10,8 @@ export class PhantomSui extends BaseSuiWallet {
     src: PhantomLogo,
     alt: "Phantom Logo",
   }
+
+  transformError = () => {
+    return new Error("Could not connect to Sui with current account.")
+  }
 }
