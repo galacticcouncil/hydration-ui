@@ -16,7 +16,7 @@ import {
   useAssetRegistry,
   useSettingsStore,
 } from "state/store"
-import { undefinedNoop } from "utils/helpers"
+import { getDeploymentType, undefinedNoop } from "utils/helpers"
 import {
   ChainCursor,
   Ecosystem,
@@ -156,21 +156,24 @@ export const PROVIDERS: ProviderProps[] = [
     env: ["rococo", "development"],
     dataEnv: "testnet",
   },
-  // TODO: remove before merging
-  {
-    name: "HOLLAR",
-    url: "wss://1.lark.hydration.cloud",
-    ...defaultProvider,
-    squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools-hollar-testnet:hsm-hollar-sandbox-unified/api/graphql",
-  },
 ]
 
-export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
-  typeof provider.env === "string"
-    ? provider.env === import.meta.env.VITE_ENV
-    : provider.env.includes(import.meta.env.VITE_ENV),
-)
+export const PROVIDER_LIST =
+  getDeploymentType() === "hollarnet"
+    ? [
+        {
+          name: "HOLLAR",
+          url: "wss://1.lark.hydration.cloud",
+          ...defaultProvider,
+          squidUrl:
+            "https://galacticcouncil.squids.live/hydration-pools-hollar-testnet:hsm-hollar-sandbox-unified/api/graphql",
+        },
+      ]
+    : PROVIDERS.filter((provider) =>
+        typeof provider.env === "string"
+          ? provider.env === import.meta.env.VITE_ENV
+          : provider.env.includes(import.meta.env.VITE_ENV),
+      )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
@@ -550,21 +553,12 @@ export const useActiveProvider = (): ProviderProps => {
     return rpcUrl
   }, [api, isLoaded])
 
-  return (
-    PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
-      name: "",
-      url: import.meta.env.VITE_PROVIDER_URL,
-      indexerUrl: import.meta.env.VITE_INDEXER_URL,
-      squidUrl: import.meta.env.VITE_SQUID_URL,
-      env: import.meta.env.VITE_ENV,
-      dataEnv: getDefaultDataEnv(),
-    }
-  )
+  return getProviderData(activeRpcUrl)
 }
 
 function getProviderData(url: string): ProviderProps {
   return (
-    PROVIDERS.find((provider) => provider.url === url) || {
+    PROVIDER_LIST.find((provider) => provider.url === url) || {
       name: "",
       url: import.meta.env.VITE_PROVIDER_URL,
       indexerUrl: import.meta.env.VITE_INDEXER_URL,
