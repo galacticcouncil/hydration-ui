@@ -48,6 +48,7 @@ export const DashboardHeader = () => {
         <ValueStats
           isLoading={loading}
           label={t("borrow:netWorth")}
+          wrap={[false, false, true]}
           value={
             isConnected
               ? t("currency", {
@@ -60,6 +61,7 @@ export const DashboardHeader = () => {
         <ValueStats
           isLoading={loading}
           label={t("borrow:netApy")}
+          wrap={[false, false, true]}
           value={
             isConnected
               ? t("percent", {
@@ -71,6 +73,7 @@ export const DashboardHeader = () => {
         />
         <ValueStats
           label={t("borrow:healthFactor")}
+          wrap={[false, false, true]}
           customValue={
             <Flex align="center" gap={10}>
               <SValueStatsValue size="large" sx={{ color: healthFactorColor }}>
@@ -104,6 +107,7 @@ export const DashboardHeader = () => {
         {Big(claimableRewardsUsd).gte(0.01) && (
           <ValueStats
             label={t("borrow:availableRewards")}
+            wrap={[false, false, true]}
             customValue={
               <SValueStatsValue size="large">
                 {loading ? (

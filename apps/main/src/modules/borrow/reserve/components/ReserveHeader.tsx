@@ -17,6 +17,7 @@ export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
           value: Math.max(Number(reserve.totalLiquidityUSD), 0),
         })}
         size="large"
+        wrap={[false, false, true]}
       />
       <ValueStats
         label={t("borrow:reserve.availableLiq")}
@@ -24,6 +25,7 @@ export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
           value: Math.max(Number(reserve.availableLiquidityUSD), 0),
         })}
         size="large"
+        wrap={[false, false, true]}
       />
       <ValueStats
         label={t("borrow:reserve.utilRate")}
@@ -31,6 +33,7 @@ export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
           value: Number(reserve.borrowUsageRatio ?? 0) * 100,
         })}
         size="large"
+        wrap={[false, false, true]}
       />
       <ValueStats
         label={t("borrow:reserve.oraclePrice")}
@@ -38,6 +41,7 @@ export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
           value: Number(reserve.priceInUSD ?? 0),
         })}
         size="large"
+        wrap={[false, false, true]}
       />
     </Stack>
   )
