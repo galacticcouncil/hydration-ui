@@ -428,7 +428,11 @@ export const useXYKPools = () => {
     let tvlTotal = BN_0
 
     if (!shareTokeSpotPrices.data || !totalIssuances)
-      return { data: undefined, volumeTotal, tvlTotal }
+      return {
+        data: undefined,
+        volumeTotal: volumeTotal.toFixed(0),
+        tvlTotal: tvlTotal.toFixed(0),
+      }
 
     const data = allShareTokens
       .map((shareToken) => {
@@ -456,9 +460,9 @@ export const useXYKPools = () => {
             ?.shiftedBy(-shareToken.decimals)
             ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? BN_NAN) ?? BN_NAN
 
-        const volume = volumes?.find(
-          (volume) => volume.poolAddress === poolAddress,
-        )?.volume
+        const volume =
+          volumes?.find((volume) => volume.poolAddress === poolAddress)
+            ?.volume ?? "0"
 
         const isFeeLoading = isLoadingAllFarms
         const { totalApr, farms = [] } =
@@ -520,7 +524,11 @@ export const useXYKPools = () => {
         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
       })
 
-    return { data, volumeTotal, tvlTotal }
+    return {
+      data,
+      volumeTotal: volumeTotal.toFixed(0),
+      tvlTotal: tvlTotal.toFixed(0),
+    }
   }, [
     shareTokeSpotPrices.data,
     totalIssuances,
@@ -535,15 +543,11 @@ export const useXYKPools = () => {
   ])
 
   useEffect(() => {
-    if (!tvlTotal.isZero()) {
-      setXykTvlTotal(tvlTotal.toFixed(0))
-    }
+    setXykTvlTotal(tvlTotal)
   }, [tvlTotal])
 
   useEffect(() => {
-    if (!volumeTotal.isZero()) {
-      setXykVolumeTotal(volumeTotal.toFixed(0))
-    }
+    setXykVolumeTotal(volumeTotal)
   }, [volumeTotal])
 
   return { data, isInitialLoading }
