@@ -69,8 +69,9 @@ export const ATokenBalanceTable = ({
         paginated
         pageSize={10}
         columnPinning={{
-          left: ["position"],
+          left: ["meta_name"],
         }}
+        sx={{ minWidth: 900 }}
       />
     </>
   )

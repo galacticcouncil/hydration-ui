@@ -61,6 +61,7 @@ export const OmnipoolPositions = ({
         columnPinning={{
           left: ["position"],
         }}
+        sx={{ minWidth: 900 }}
       />
     </>
   )

@@ -39,7 +39,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
     () => [
       omnipoolColumnHelper.display({
         id: "position",
-        size: 200,
+        size: 175,
         header: t("position"),
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) ? (
@@ -184,8 +184,8 @@ export const useBalanceTableColumns = () => {
   return useMemo(
     () => [
       balanceColumnHelper.display({
-        id: "label",
-        size: 250,
+        id: "meta_name",
+        size: 175,
         header: t("position"),
         cell: ({ row: { original } }) => (
           <AssetLabelFull asset={original.meta} withName={false} />

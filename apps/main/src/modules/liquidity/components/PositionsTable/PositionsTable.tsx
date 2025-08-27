@@ -99,7 +99,7 @@ const OmnipoolStablepoolPositions = ({
 
   if (isVisibleABalance) {
     if (tables.length > 0) {
-      tables.push(<Separator key="separator-atoken" />)
+      tables.push(<Separator key="separator-atoken" sx={{ minWidth: 900 }} />)
     }
 
     tables.push(
@@ -149,7 +149,9 @@ const PositionsTableBody = ({
             totalInFarms={totalInFarms}
             totalBalanceDisplay={totalBalanceDisplay}
           />
-          <CollapsibleContent>{children}</CollapsibleContent>
+          <CollapsibleContent css={{ overflowX: "auto" }}>
+            {children}
+          </CollapsibleContent>
         </TableContainer>
       </CollapsibleRoot>
     </>
