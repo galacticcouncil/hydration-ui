@@ -3,7 +3,6 @@ import {
   CollapsibleTrigger,
   Flex,
   Icon,
-  Separator,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
@@ -12,16 +11,11 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { useAssets } from "@/providers/assetsProvider"
-
 import { ClaimCard } from "./ClaimCard"
 
 type PositionsHeaderProps = {
   onClick: () => void
   showMore: boolean
-  symbol: string
-  totalBalance: string
-  totalHubBalance?: string
   totalInFarms: string
   totalBalanceDisplay: string
 }
@@ -29,14 +23,10 @@ type PositionsHeaderProps = {
 export const PositionsHeader = ({
   onClick,
   showMore,
-  symbol,
-  totalBalance,
-  totalHubBalance,
   totalInFarms,
   totalBalanceDisplay,
 }: PositionsHeaderProps) => {
   const { t } = useTranslation(["common", "liquidity"])
-  const { hub } = useAssets()
   const { isTablet, isMobile } = useBreakpoints()
 
   return (
@@ -84,39 +74,6 @@ export const PositionsHeader = ({
         }}
       >
         <ValueStats
-          label={t("liquidity:liquidity.positions.header.locked")}
-          wrap
-          customValue={
-            <Text
-              font="primary"
-              fs="h7"
-              lh={1}
-              fw={700}
-              color={getToken("text.high")}
-            >
-              {t("currency", { value: totalBalance, symbol })}
-              {totalHubBalance &&
-                Big(totalHubBalance).gt(0) &&
-                t("currency", {
-                  value: totalHubBalance,
-                  symbol: hub.symbol,
-                  prefix: " + ",
-                })}
-            </Text>
-          }
-          bottomLabel={
-            Big(totalInFarms).gt(0)
-              ? t("liquidity:header.myLiquidity.value", {
-                  value: totalInFarms,
-                })
-              : undefined
-          }
-          size="medium"
-        />
-
-        <Separator orientation="vertical" sx={{ height: 30 }} />
-
-        <ValueStats
           label={t("totalValue")}
           wrap
           customValue={
@@ -130,15 +87,17 @@ export const PositionsHeader = ({
               {t("currency", { value: totalBalanceDisplay })}
             </Text>
           }
+          bottomLabel={
+            Big(totalInFarms).gt(0)
+              ? t("liquidity:header.myLiquidity.value", {
+                  value: totalInFarms,
+                })
+              : undefined
+          }
           size="medium"
         />
 
-        {!isTablet && !isMobile && (
-          <>
-            <Separator orientation="vertical" sx={{ height: 30 }} />
-            <ClaimCard />
-          </>
-        )}
+        {!isTablet && !isMobile && <ClaimCard />}
       </Flex>
     </Flex>
   )

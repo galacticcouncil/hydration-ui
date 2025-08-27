@@ -14,14 +14,22 @@ import { Logo } from "@/components/Logo/Logo"
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
+  BalanceTableData,
   IsolatedPositionTableData,
   OmnipoolPositionTableData,
 } from "./PositionsTable.utils"
-import { BalanceTableData } from "./StableswapBalanceTable"
 
-const omnipoolColumnHelper = createColumnHelper<OmnipoolPositionTableData>()
+const omnipoolColumnHelper = createColumnHelper<
+  OmnipoolPositionTableData | BalanceTableData
+>()
 const balanceColumnHelper = createColumnHelper<BalanceTableData>()
 const isolatedColumnHelper = createColumnHelper<IsolatedPositionTableData>()
+
+const isOmnipoolPosition = (
+  row: OmnipoolPositionTableData | BalanceTableData,
+): row is OmnipoolPositionTableData => {
+  return "meta" in row && "data" in row
+}
 
 export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
   const { hub } = useAssets()
@@ -33,43 +41,57 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         id: "position",
         size: 200,
         header: t("position"),
-        cell: ({ row }) => (
-          <AssetLabelFull asset={row.original.meta} withName={false} />
-        ),
+        cell: ({ row: { original } }) =>
+          isOmnipoolPosition(original) ? (
+            <AssetLabelFull asset={original.meta} withName={false} />
+          ) : (
+            <Text
+              fs="p5"
+              fw={500}
+              color={getToken("text.high")}
+              sx={{ whiteSpace: "nowrap" }}
+            >
+              {original.label}
+            </Text>
+          ),
       }),
       omnipoolColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.initialAmount"),
-        cell: ({
-          row: {
-            original: { data },
-          },
-        }) =>
-          data?.initialValueHuman ? (
+        cell: ({ row: { original } }) =>
+          isOmnipoolPosition(original) ? (
+            original.data?.initialValueHuman ? (
+              <Amount
+                value={t("currency", {
+                  value: original.data.initialValueHuman,
+                  symbol: original.data.meta.symbol,
+                })}
+                displayValue={t("currency", {
+                  value: original.data.initialDisplay,
+                })}
+              />
+            ) : (
+              "-"
+            )
+          ) : (
             <Amount
               value={t("currency", {
-                value: data.initialValueHuman,
-                symbol: data.meta?.symbol,
+                value: original.value,
+                symbol: "Shares",
               })}
               displayValue={t("currency", {
-                value: data.initialDisplay,
+                value: original.valueDisplay,
               })}
             />
-          ) : (
-            "-"
           ),
       }),
       omnipoolColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.currentValue"),
-        cell: ({
-          row: {
-            original: { data },
-          },
-        }) =>
-          data?.currentValueHuman ? (
+        cell: ({ row: { original } }) =>
+          isOmnipoolPosition(original) && original.data?.currentValueHuman ? (
             <Amount
-              value={`${t("currency", { value: data.currentValueHuman, symbol: data.meta?.symbol })} ${data.currentHubValueHuman && Big(data.currentHubValueHuman).gt(0) ? t("currency", { value: data.currentHubValueHuman, symbol: hub.symbol, prefix: " + " }) : ""}`}
+              value={`${t("currency", { value: original.data.currentValueHuman, symbol: original.data.meta?.symbol })} ${original.data.currentHubValueHuman && Big(original.data.currentHubValueHuman).gt(0) ? t("currency", { value: original.data.currentHubValueHuman, symbol: hub.symbol, prefix: " + " }) : ""}`}
               displayValue={t("currency", {
-                value: data.currentTotalDisplay,
+                value: original.data.currentTotalDisplay,
               })}
             />
           ) : (
@@ -83,11 +105,10 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         },
         enableSorting: false,
         size: 100,
-        cell: ({
-          row: {
-            original: { joinedFarms },
-          },
-        }) => (joinedFarms.length ? <Logo id={joinedFarms} /> : null),
+        cell: ({ row: { original } }) =>
+          isOmnipoolPosition(original) && original.joinedFarms.length ? (
+            <Logo id={original.joinedFarms} />
+          ) : null,
       }),
       omnipoolColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.actions"),
@@ -96,11 +117,18 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
             textAlign: "right",
           },
         },
-        cell: ({ row }) => (
-          <Flex gap={getTokenPx("containers.paddings.tertiary")} justify="end">
-            {isFarms && !row.original.joinedFarms.length && (
-              <Button variant="primary">
-                {/* <Link
+        cell: ({ row: { original } }) => {
+          const isOmnipool = isOmnipoolPosition(original)
+
+          return (
+            <Flex
+              gap={getTokenPx("containers.paddings.tertiary")}
+              justify="end"
+            >
+              {isOmnipool ? (
+                isFarms && original ? (
+                  <Button variant="primary">
+                    {/* <Link
                   to="/liquidity/$id/join"
                   params={{
                     id: row.original.poolId,
@@ -109,27 +137,41 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                     positionId: row.original.positionId,
                   }}
                 > */}
-                <CupSoda />
-                {t("liquidity:joinFarms")}
+                    <CupSoda />
+                    {t("liquidity:joinFarms")}
+                    {/* </Link> */}
+                  </Button>
+                ) : null
+              ) : original.isStablepoolInOmnipool ? (
+                <Button variant="primary">
+                  {/* <Link
+                  to="/liquidity/$id/add"
+                  params={{
+                    id: poolId,
+                  }}
+                > */}
+                  <Plus />
+                  {t("liquidity:addLiquidity")}
+                  {/* </Link> */}
+                </Button>
+              ) : null}
+              <Button variant="tertiary" outline sx={{ flexShrink: 0 }}>
+                {/* <Link
+                  to="/liquidity/$id/remove"
+                  params={{
+                    id: original.poolId,
+                  }}
+                  search={{
+                    positionId: isOmnipool ? original.positionId : "",
+                  }}
+                > */}
+                <Trash />
+                {t("remove")}
                 {/* </Link> */}
               </Button>
-            )}
-            <Button variant="tertiary" outline sx={{ flexShrink: 0 }}>
-              {/* <Link
-                to="/liquidity/$id/remove"
-                params={{
-                  id: row.original.poolId,
-                }}
-                search={{
-                  positionId: row.original.positionId,
-                }}
-              > */}
-              <Trash />
-              {t("remove")}
-              {/* </Link> */}
-            </Button>
-          </Flex>
-        ),
+            </Flex>
+          )
+        },
       }),
     ],
     [t, hub.symbol, isFarms],
@@ -145,32 +187,21 @@ export const useBalanceTableColumns = () => {
         id: "label",
         size: 250,
         header: t("position"),
-        cell: ({
-          row: {
-            original: { label },
-          },
-        }) => (
-          <Text
-            fs="p5"
-            fw={500}
-            color={getToken("text.high")}
-            sx={{ whiteSpace: "nowrap" }}
-          >
-            {label}
-          </Text>
+        cell: ({ row: { original } }) => (
+          <AssetLabelFull asset={original.meta} withName={false} />
         ),
       }),
       balanceColumnHelper.display({
         header: t("totalValue"),
         cell: ({
           row: {
-            original: { value, valueDisplay },
+            original: { value, valueDisplay, meta },
           },
         }) => (
           <Amount
             value={t("currency", {
               value: value,
-              symbol: "Shares",
+              symbol: meta.symbol,
             })}
             displayValue={t("currency", {
               value: valueDisplay,

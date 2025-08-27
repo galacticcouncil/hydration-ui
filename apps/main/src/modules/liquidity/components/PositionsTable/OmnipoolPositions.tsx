@@ -1,44 +1,40 @@
+import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { DataTable } from "@galacticcouncil/ui/components/DataTable"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { Circle, Minus } from "lucide-react"
+import { Minus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { OmnipoolAssetTable } from "@/modules/liquidity/Liquidity.utils"
 
 import { useOmnipoolPositionsTableColumns } from "./PositionsTable.columns"
-import { OmnipoolPositionTableData } from "./PositionsTable.utils"
+import { STableHeader } from "./PositionsTable.styled"
+import {
+  BalanceTableData,
+  OmnipoolPositionTableData,
+} from "./PositionsTable.utils"
 
 export const OmnipoolPositions = ({
   pool,
   positions,
 }: {
   pool: OmnipoolAssetTable
-  positions: OmnipoolPositionTableData[]
+  positions: (OmnipoolPositionTableData | BalanceTableData)[]
 }) => {
-  const { t } = useTranslation("liquidity")
+  const { t } = useTranslation(["liquidity", "common"])
   const columns = useOmnipoolPositionsTableColumns(pool.isFarms)
 
   return (
     <>
-      <Flex
-        align="center"
-        justify="space-between"
-        sx={{
-          px: getTokenPx("containers.paddings.primary"),
-          pt: getTokenPx("containers.paddings.tertiary"),
-          position: "sticky",
-          left: 0,
-        }}
-      >
+      <STableHeader sx={{ justifyContent: "space-between" }}>
         <Flex
           align="center"
           gap={getTokenPx("scales.paddings.s")}
-          sx={{ color: getToken("buttons.primary.high.hover") }}
+          color={getToken("buttons.primary.high.hover")}
         >
-          <Icon component={Circle} size={12} />
+          <Icon component={LiquidityIcon} size={12} />
           <Text fw={500} font="primary">
-            {t("liquidity.positions.label.omnipool")}
+            {t("common:liquidity")}
           </Text>
         </Flex>
 
@@ -56,7 +52,7 @@ export const OmnipoolPositions = ({
           {t("liquidity.positions.removeAll")}
           {/* </Link> */}
         </Button>
-      </Flex>
+      </STableHeader>
       <DataTable
         data={positions}
         columns={columns}
