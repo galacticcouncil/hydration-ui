@@ -23,7 +23,10 @@ import {
 
 import { Box } from "@/components/Box"
 import { Button } from "@/components/Button"
-import { SPagination } from "@/components/DataTable/DataTable.styled"
+import {
+  SCollapsible,
+  SPagination,
+} from "@/components/DataTable/DataTable.styled"
 import { ExternalLink } from "@/components/ExternalLink"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -293,7 +296,11 @@ const DataTable = forwardRef(
                         <TableCell
                           colSpan={table.getVisibleLeafColumns().length + 1}
                         >
-                          <Box py={16}>{renderSubComponent(row.original)}</Box>
+                          <SCollapsible>
+                            <Box py={16}>
+                              {renderSubComponent(row.original)}
+                            </Box>
+                          </SCollapsible>
                         </TableCell>
                       </TableRow>
                     )}
