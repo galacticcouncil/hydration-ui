@@ -65,6 +65,7 @@ useThemeStore.subscribe(() => {
   const html = window.document.documentElement
   html.classList.remove("light", "dark")
   html.classList.add(theme)
+  html.style.colorScheme = theme
 })
 
 const getCurrentTheme = (theme: ThemeName) =>

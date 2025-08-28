@@ -36,13 +36,19 @@ export const SModalClose = styled(Close)`
 `
 
 export const SModalWrapper = styled(Overlay)`
+  --modal-content-padding: 20px;
+  --modal-content-inset: calc(var(--modal-content-padding) * -1);
+  --modal-block-offset: 10vh;
+
   position: fixed;
   inset: 0;
-  top: 10vh;
+  padding-block: var(--modal-block-offset);
 
   display: grid;
   gap: 4px;
   justify-items: center;
+
+  overflow-y: auto;
 
   z-index: ${({ theme }) => theme.zIndices.modal};
 
@@ -52,9 +58,6 @@ export const SModalWrapper = styled(Overlay)`
 `
 
 export const SModalContent = styled(Content)`
-  --modal-content-padding: 20px;
-  --modal-content-inset: calc(var(--modal-content-padding) * -1);
-
   position: fixed;
   inset: 0;
   outline: none;
@@ -103,11 +106,6 @@ export const SModalPaper = styled(Paper)`
     border: 0;
     border-radius: 0;
   }
-
-  ${mq("sm")} {
-    height: auto;
-    max-height: 75vh;
-  }
 `
 
 export const SModalHeader = styled(Flex)`
@@ -126,11 +124,10 @@ export const SModalHeader = styled(Flex)`
   }
 `
 
-export const SModalBody = styled(Box)`
-  padding: var(--modal-content-padding);
+export const SModalBody = styled(Box)<{ noPadding?: boolean }>`
+  padding: ${({ noPadding }) =>
+    noPadding ? 0 : "var(--modal-content-padding)"};
 
-  overflow: overlay;
-  -webkit-overflow-scrolling: touch;
   flex: 1;
 
   &:last-of-type {

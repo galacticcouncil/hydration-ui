@@ -20,13 +20,15 @@ export const SDrawerOverlay = styled(Overlay)`
 export const SDrawerContent = styled(Content)`
   --modal-content-padding: 12px;
   --modal-content-inset: calc(-1 * var(--modal-content-padding));
+  --modal-block-offset: 30px;
 
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
+  outline: none;
 
-  max-height: calc(100dvh - 30px);
+  max-height: calc(100dvh - var(--modal-block-offset));
 
   background: ${({ theme }) => theme.surfaces.themeBasePalette.surfaceHigh};
 
@@ -56,8 +58,6 @@ export const SDrawerHeader = styled(Flex)`
 export const SDrawerBody = styled(Box)`
   padding: var(--modal-content-padding);
 
-  overflow: overlay;
-  -webkit-overflow-scrolling: touch;
   flex: 1;
 `
 

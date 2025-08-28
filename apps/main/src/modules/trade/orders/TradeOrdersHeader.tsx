@@ -61,7 +61,6 @@ export const TradeOrdersHeader = () => {
     >
       <TabMenu
         gap={8}
-        sx={{ overflowX: "unset" }}
         items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(`trade.orders.${tab}`),

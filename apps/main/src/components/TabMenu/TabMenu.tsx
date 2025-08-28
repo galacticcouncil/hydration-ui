@@ -1,4 +1,4 @@
-import { Flex, FlexProps } from "@galacticcouncil/ui/components"
+import { Flex, FlexProps, ScrollArea } from "@galacticcouncil/ui/components"
 import { FC, Fragment } from "react"
 
 import {
@@ -30,20 +30,22 @@ export const TabMenu: FC<Props> = ({
   ...props
 }) => {
   return (
-    <Flex sx={{ overflowX: "auto" }} gap={gap} {...props}>
-      {items.map((item, index) =>
-        renderItem ? (
-          <Fragment key={`${item.to}_${index}`}>{renderItem(item)}</Fragment>
-        ) : (
-          <TabMenuItem
-            key={`${item.to}_${index}`}
-            item={item}
-            size={size}
-            variant={variant}
-            activeVariant={activeVariant}
-          />
-        ),
-      )}
-    </Flex>
+    <ScrollArea orientation="horizontal" sx={{ overflowX: "auto" }}>
+      <Flex gap={gap} {...props}>
+        {items.map((item, index) =>
+          renderItem ? (
+            <Fragment key={`${item.to}_${index}`}>{renderItem(item)}</Fragment>
+          ) : (
+            <TabMenuItem
+              key={`${item.to}_${index}`}
+              item={item}
+              size={size}
+              variant={variant}
+              activeVariant={activeVariant}
+            />
+          ),
+        )}
+      </Flex>
+    </ScrollArea>
   )
 }

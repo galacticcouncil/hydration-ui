@@ -14,6 +14,7 @@ import { BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
+import { ScrollArea } from "@/components/ScrollArea"
 import { useBreakpoints } from "@/theme"
 
 import { Paper } from "../Paper"
@@ -168,10 +169,33 @@ const ModalHeader: FC<ModalHeaderProps> = ({
 }
 ModalHeader.displayName = "ModalHeader"
 
-const ModalBody = (props: BoxProps) => (
-  <SModalBody {...props}>{props.children}</SModalBody>
-)
-ModalBody.displayName = "ModalBody"
+type ModalBodyProps = BoxProps & {
+  scrollable?: boolean
+  noPadding?: boolean
+}
+
+const ModalBody = ({
+  scrollable = true,
+  children,
+  ...props
+}: ModalBodyProps) => {
+  if (scrollable) {
+    return (
+      <ScrollArea sx={{ flex: 1, height: "auto", minHeight: 0 }}>
+        <SModalBody
+          sx={{
+            maxHeight:
+              props.maxHeight ?? "calc(75vh - var(--modal-block-offset) * 2)",
+          }}
+          {...props}
+        >
+          {children}
+        </SModalBody>
+      </ScrollArea>
+    )
+  }
+  return <SModalBody {...props}>{children}</SModalBody>
+}
 
 const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
 ModalFooter.displayName = "ModalFooter"
