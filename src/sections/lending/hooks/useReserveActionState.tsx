@@ -1,6 +1,7 @@
 import { ChainId } from "@aave/contract-helpers"
 import { Alert } from "components/Alert"
 import { Text } from "components/Typography/Text/Text"
+import { useShallow } from "hooks/useShallow"
 import { useTranslation } from "react-i18next"
 import { Link, ROUTES } from "sections/lending/components/primitives/Link"
 import { getEmodeMessage } from "sections/lending/components/transactions/Emode/EmodeNaming"
@@ -29,12 +30,14 @@ export const useReserveActionState = ({
   const { user, eModes } = useAppDataContext()
   const { supplyCap, borrowCap, debtCeiling } = useAssetCaps()
   const [currentMarket, currentNetworkConfig, currentChainId, displayGho] =
-    useRootStore((store) => [
-      store.currentMarket,
-      store.currentNetworkConfig,
-      store.currentChainId,
-      store.displayGho,
-    ])
+    useRootStore(
+      useShallow((store) => [
+        store.currentMarket,
+        store.currentNetworkConfig,
+        store.currentChainId,
+        store.displayGho,
+      ]),
+    )
 
   const { bridge, name: networkName } = currentNetworkConfig
 
