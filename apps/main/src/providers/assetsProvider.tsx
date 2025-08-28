@@ -54,12 +54,10 @@ type TAssetsContext = TAssetsState & {
   isErc20: (asset: TAsset) => asset is TErc20
   isErc20AToken: (asset: TAsset) => asset is TErc20AToken
   isStableSwap: (asset: TAsset) => asset is TStableswap
-  getMetaFromXYKPoolTokens: (tokens: PoolToken[]) => {
-    symbol: string
-    name: string
-    iconId: string[]
-    decimals: number
-  } | null
+  getMetaFromXYKPoolTokens: (
+    id: string,
+    tokens: PoolToken[],
+  ) => XYKPoolMeta | null
 }
 
 const AssetsContext = createContext<TAssetsContext>({} as TAssetsContext)
@@ -102,6 +100,7 @@ export type TShareToken = TAsset & {
 }
 
 export type XYKPoolMeta = {
+  id: string
   symbol: string
   name: string
   iconId: string[]
@@ -189,7 +188,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   }, [assets])
 
   const getMetaFromXYKPoolTokens = useCallback(
-    (tokens: PoolToken[]): XYKPoolMeta | null => {
+    (id: string, tokens: PoolToken[]): XYKPoolMeta | null => {
       const assetA = all.get(tokens[0]?.id.toString() ?? "")
       const assetB = all.get(tokens[1]?.id.toString() ?? "")
 
@@ -207,6 +206,7 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
       ]
 
       return {
+        id,
         symbol,
         name,
         iconId,

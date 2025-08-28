@@ -164,6 +164,7 @@ export const useOmnipoolPositionData = (
           currentTotalValueHuman = Big(currentTotalDisplay)
             .div(price)
             .toString()
+
           currentTotalValue = Big(
             scale(currentTotalValueHuman, meta.decimals),
           ).toFixed(0)

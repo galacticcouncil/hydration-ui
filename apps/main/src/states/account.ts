@@ -30,11 +30,11 @@ export const isOmnipoolDepositPosition = (
 ): position is OmnipoolDepositFull => "yield_farm_entries" in position
 
 export type OmnipoolPositionWithData = OmnipoolPosition & {
-  data: OmnipoolPositionData | undefined
+  data: OmnipoolPositionData
 }
 
 export type OmnipoolDepositFullWithData = OmnipoolDepositFull & {
-  data: OmnipoolPositionData | undefined
+  data: OmnipoolPositionData
 }
 
 export type AccountOmnipoolPosition =
@@ -185,25 +185,31 @@ export const useAccountOmnipoolPositionsData = () => {
   const { isLoading, getData } = useOmnipoolPositionData(isPositions)
 
   const data = useMemo((): AccountOmnipoolPositions | undefined => {
-    if (!isLoading) {
-      const omnipool = omnipoolPositions.map<OmnipoolPositionWithData>(
-        (position) => {
-          const data = getData(position)
-          return { ...position, data }
-        },
-      )
+    if (isLoading) return undefined
 
-      const omnipoolMining =
-        omnipoolMiningPositions.map<OmnipoolDepositFullWithData>((position) => {
-          const data = getData(position)
-          return { ...position, data }
-        })
+    const omnipool: OmnipoolPositionWithData[] = []
+    const omnipoolMining: OmnipoolDepositFullWithData[] = []
 
-      return {
-        omnipool,
-        omnipoolMining,
-        all: [...omnipool, ...omnipoolMining],
+    for (const position of omnipoolPositions) {
+      const data = getData(position)
+
+      if (data) {
+        omnipool.push({ ...position, data })
       }
+    }
+
+    for (const position of omnipoolMiningPositions) {
+      const data = getData(position)
+
+      if (data) {
+        omnipoolMining.push({ ...position, data })
+      }
+    }
+
+    return {
+      omnipool,
+      omnipoolMining,
+      all: [...omnipool, ...omnipoolMining],
     }
   }, [getData, isLoading, omnipoolPositions, omnipoolMiningPositions])
 

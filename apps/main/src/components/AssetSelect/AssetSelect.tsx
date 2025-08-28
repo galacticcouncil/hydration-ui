@@ -16,7 +16,15 @@ export type AssetSelectProps = Omit<
   "dollarValue" | "dollarValueLoading"
 > & {
   assets: TAssetData[]
-  selectedAsset: TAssetData | undefined | null
+  selectedAsset:
+    | {
+        id: string
+        decimals: number
+        symbol: string
+        iconId?: string | string[]
+      }
+    | undefined
+    | null
   setSelectedAsset?: (asset: TAssetData) => void
 }
 
@@ -34,9 +42,9 @@ export const AssetSelect = ({
     price: assetPrice,
     isLoading: assetPriceLoading,
     isValid,
-  } = useAssetPrice(selectedAsset?.id)
+  } = useAssetPrice(props.ignoreDollarValue ? undefined : selectedAsset?.id)
 
-  const price = isValid
+  const dollarValue = isValid
     ? new Big(assetPrice).times(props.value || "0").toString()
     : "NaN"
 
@@ -61,11 +69,13 @@ export const AssetSelect = ({
       <AssetInput
         {...props}
         selectedAssetIcon={
-          selectedAsset ? <Logo id={selectedAsset.id} /> : undefined
+          selectedAsset ? (
+            <Logo id={selectedAsset.iconId ?? selectedAsset.id} />
+          ) : undefined
         }
         symbol={selectedAsset?.symbol}
         modalDisabled={!setSelectedAsset}
-        dollarValue={t("number", { value: price })}
+        dollarValue={t("number", { value: dollarValue })}
         dollarValueLoading={assetPriceLoading}
         maxBalance={maxBalance}
         onAsssetBtnClick={
