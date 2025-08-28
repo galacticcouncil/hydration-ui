@@ -2,9 +2,7 @@ import { XykMath } from "@galacticcouncil/sdk"
 import {
   Flex,
   Paper,
-  ProgressBar,
   Separator,
-  Skeleton,
   SValueStatsValue,
   Text,
   ValueStats,
@@ -18,13 +16,14 @@ import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
-  useOmnipoolCapacity,
   useOmnipoolShare,
 } from "@/modules/liquidity/Liquidity.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import { CurrencyReserves } from "./CurrencyReserves"
+import { LiquidityLimit } from "./LiquidityLimit"
 
 export const PoolDetailsValues = ({
   data,
@@ -53,41 +52,23 @@ export const PoolDetailsValues = ({
 const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
-  const { data: capacity, isLoading } = useOmnipoolCapacity(data.id)
   const { omnipoolShare, isLoading: isOmnipoolShareLoading } = useOmnipoolShare(
     data.id,
   )
 
   return (
     <>
-      <Flex direction="column">
-        <Text
-          font="primary"
-          fw={700}
-          fs={14}
-          lh="130%"
-          color={getToken("text.tint.secondary")}
-          sx={{ pb: getTokenPx("containers.paddings.primary") }}
-        >
-          {t("liquidity:details.values.liquidityLimit")}
-        </Text>
-
-        <ProgressBar
-          value={Number(capacity?.filledPercent ?? 0)}
-          size="large"
-          orientation="vertical"
-          format={() =>
-            `${t("number.compact", { value: capacity?.filled })} / ${t("number.compact", { value: capacity?.capacity })}`
-          }
-          customLabel={isLoading ? <Skeleton width={100} /> : undefined}
-        />
-      </Flex>
-
-      <Separator mx={-20} />
+      {!data.isStablepoolOnly && (
+        <>
+          <LiquidityLimit poolId={data.id} />
+          <Separator mx={-20} />
+        </>
+      )}
 
       <ValueStats
         label={t("liquidity:details.values.volume")}
         value={t("currency", { value: data.volumeDisplay })}
+        wrap
       />
 
       <Separator mx={-20} />
@@ -95,6 +76,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
       <ValueStats
         label={t("liquidity:totalValueLocked")}
         value={t("currency", { value: data.tvlDisplay })}
+        wrap
       />
 
       <Separator mx={-20} />
@@ -102,6 +84,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
       <ValueStats
         label={t("liquidity:details.values.feeFarmApr")}
         value={t("percent", { value: data.totalFee })}
+        wrap
       />
 
       <Separator mx={-20} />
@@ -110,6 +93,7 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
         label={t("liquidity:details.values.omnipoolShare")}
         value={t("percent", { value: omnipoolShare })}
         isLoading={isOmnipoolShareLoading}
+        wrap
       />
 
       {data.isStablePool && <CurrencyReserves id={data.id} />}
@@ -197,6 +181,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       )}
 
       <ValueStats
+        wrap
         label={t("liquidity:totalValueLocked")}
         value={t("currency", { value: data.tvlDisplay })}
       />
@@ -204,6 +189,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       <Separator mx={-20} />
 
       <ValueStats
+        wrap
         label={t("liquidity:details.values.volume")}
         value={t("currency", { value: data.volumeDisplay })}
       />
@@ -211,6 +197,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       <Separator mx={-20} />
 
       <ValueStats
+        wrap
         label={t("liquidity:details.values.feeFarmApr")}
         value={t("percent", { value: "5" })}
       />
@@ -222,14 +209,14 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
 
 const AssetPrice = ({ asset }: { asset: PoolToken }) => {
   const { t } = useTranslation("liquidity")
+  const { getAssetWithFallback } = useAssets()
   const { price } = useAssetPrice(asset.id.toString())
 
   return (
     <Text fs="p6" fw={400} color={getToken("text.medium")}>
       {t("details.values.xyk.price", {
         value: price,
-        //TODO: add price symbol
-        priceSymbol: "",
+        priceSymbol: getAssetWithFallback(asset.id).symbol,
       })}
     </Text>
   )

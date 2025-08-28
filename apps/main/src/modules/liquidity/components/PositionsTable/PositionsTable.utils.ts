@@ -1,0 +1,209 @@
+import Big from "big.js"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+
+import { TAssetData } from "@/api/assets"
+import { useXYKPoolsLiquidity } from "@/api/xyk"
+import {
+  IsolatedPoolTable,
+  OmnipoolAssetTable,
+} from "@/modules/liquidity/Liquidity.utils"
+import { XYKPoolMeta } from "@/providers/assetsProvider"
+import {
+  AccountOmnipoolPosition,
+  isOmnipoolDepositPosition,
+} from "@/states/account"
+import { useAssetPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
+import { numericallyStrDesc } from "@/utils/sort"
+
+export type IsolatedPositionTableData = {
+  poolId: string
+  joinedFarms: string[]
+  shareTokens: string
+  shareTokensDisplay: string
+  shareTokenId: string
+  positionId?: string
+  meta: XYKPoolMeta
+}
+
+export type BalanceTableData = {
+  label: string
+  poolId: string
+  isStablepoolInOmnipool: boolean
+  value: string
+  valueDisplay: string | undefined
+  meta: TAssetData
+}
+
+export type OmnipoolPositionTableData = {
+  poolId: string
+  joinedFarms: string[]
+  meta: TAssetData
+} & AccountOmnipoolPosition
+
+export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
+  const { balance, meta, shareTokenId, positions, id } = pool
+
+  const { data: liquidity } = useXYKPoolsLiquidity(id)
+
+  const price = Big(pool.tvlDisplay)
+    .div(liquidity ? scaleHuman(liquidity, pool.meta.decimals) : 1)
+    .toString()
+
+  const data = useMemo(() => {
+    const freeBalance = Big(scaleHuman(balance ?? 0, meta.decimals))
+
+    let totalBalance = Big(0)
+    let totalInFarms = Big(0)
+    let totalBalanceDisplay = Big(0)
+
+    const positionsData = positions
+      .sort((a, b) => numericallyStrDesc(a.id, b.id))
+      .map((position): IsolatedPositionTableData => {
+        const joinedFarms = position.yield_farm_entries.map((entry) =>
+          entry.global_farm_id.toString(),
+        )
+
+        const shareTokens = scaleHuman(position.shares, meta.decimals)
+        const shareTokensDisplay = Big(shareTokens).times(price).toString()
+
+        totalInFarms = totalInFarms.plus(shareTokens)
+
+        return {
+          poolId: id,
+          joinedFarms,
+          shareTokens,
+          shareTokensDisplay,
+          positionId: position.id,
+          shareTokenId,
+          meta,
+        }
+      })
+
+    totalBalance = totalBalance.plus(totalInFarms)
+
+    if (freeBalance.gt(0)) {
+      const shareTokensDisplay = freeBalance.times(price).toString()
+
+      totalBalance = totalBalance.plus(freeBalance)
+
+      const liquidity = {
+        poolId: id,
+        joinedFarms: [],
+        shareTokens: freeBalance.toString(),
+        shareTokensDisplay,
+        shareTokenId,
+        meta,
+      }
+
+      positionsData.push(liquidity)
+    }
+
+    totalBalanceDisplay = totalBalance.times(price)
+
+    return {
+      positions: positionsData,
+      totalBalance: totalBalance.toString(),
+      totalInFarms: totalInFarms.toString(),
+      totalBalanceDisplay: totalBalanceDisplay.toString(),
+    }
+  }, [balance, id, meta, positions, price, shareTokenId])
+
+  return data
+}
+
+export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
+  const { t } = useTranslation(["liquidity"])
+  const {
+    meta,
+    positions,
+    id,
+    stableswapBalance,
+    isStablepoolInOmnipool,
+    price,
+    aStableswapAsset,
+    aStableswapBalance,
+  } = pool
+
+  const { price: aStableswapPrice, isValid: aStableswapIsValid } =
+    useAssetPrice(aStableswapAsset?.id)
+
+  const aStableswapDisplayBalance = useMemo(() => {
+    if (!aStableswapBalance || !aStableswapAsset || !aStableswapIsValid)
+      return undefined
+
+    return Big(scaleHuman(aStableswapBalance, aStableswapAsset.decimals))
+      .times(aStableswapPrice)
+      .toString()
+  }, [
+    aStableswapBalance,
+    aStableswapAsset,
+    aStableswapPrice,
+    aStableswapIsValid,
+  ])
+
+  const stablepoolPosition: BalanceTableData | undefined = useMemo(() => {
+    if (!stableswapBalance) return undefined
+
+    const freeBalance = scaleHuman(stableswapBalance, meta.decimals)
+
+    return {
+      meta,
+      label: t("liquidity:liquidity.stablepool.position.shares"),
+      poolId: id,
+      isStablepoolInOmnipool,
+      value: freeBalance,
+      valueDisplay: price
+        ? Big(price).times(freeBalance).toString()
+        : undefined,
+    }
+  }, [t, id, isStablepoolInOmnipool, stableswapBalance, price, meta])
+
+  const data = useMemo(() => {
+    let totalInFarms = Big(0)
+    let totalBalanceDisplay = Big(stablepoolPosition?.valueDisplay ?? 0)
+
+    const positionData = positions
+      .sort((a, b) => numericallyStrDesc(a.positionId, b.positionId))
+      .map((position): OmnipoolPositionTableData => {
+        const joinedFarms = isOmnipoolDepositPosition(position)
+          ? position.yield_farm_entries.map((entry) =>
+              entry.global_farm_id.toString(),
+            )
+          : []
+
+        if (joinedFarms.length > 0) {
+          totalInFarms = totalInFarms.plus(
+            position.data?.currentValueHuman ?? 0,
+          )
+        }
+
+        totalBalanceDisplay = totalBalanceDisplay.plus(
+          position.data?.currentTotalDisplay ?? 0,
+        )
+
+        return {
+          poolId: id,
+          joinedFarms,
+          meta,
+          ...position,
+        }
+      })
+
+    if (aStableswapDisplayBalance) {
+      totalBalanceDisplay = totalBalanceDisplay.plus(aStableswapDisplayBalance)
+    }
+
+    return {
+      positions: stablepoolPosition
+        ? [stablepoolPosition, ...positionData]
+        : positionData,
+      totalInFarms: totalInFarms.toString(),
+      totalBalanceDisplay: totalBalanceDisplay.toString(),
+      aStableswapDisplayBalance,
+    }
+  }, [id, meta, positions, stablepoolPosition, aStableswapDisplayBalance])
+
+  return data
+}

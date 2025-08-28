@@ -1,110 +1,104 @@
-import { Flex, Separator, Text } from "@galacticcouncil/ui/components"
+import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
+import {
+  CollapsibleTrigger,
+  Flex,
+  Icon,
+  Text,
+  ValueStats,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useAssets } from "@/providers/assetsProvider"
-
 import { ClaimCard } from "./ClaimCard"
-import { PositionTableData } from "./PositionsTable"
 
 type PositionsHeaderProps = {
-  assetId: string
-  data: PositionTableData[]
+  onClick: () => void
+  showMore: boolean
+  totalInFarms: string
+  totalBalanceDisplay: string
 }
 
-export const PositionsHeader = ({ assetId, data }: PositionsHeaderProps) => {
+export const PositionsHeader = ({
+  onClick,
+  showMore,
+  totalInFarms,
+  totalBalanceDisplay,
+}: PositionsHeaderProps) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { isTablet, isMobile } = useBreakpoints()
-  const { hub, getAssetWithFallback } = useAssets()
-  const meta = getAssetWithFallback(assetId)
-
-  const totals = useMemo(() => {
-    return data.reduce(
-      (acc, curr) => {
-        return {
-          value: Big(acc.value)
-            .plus(curr.data?.currentValueHuman ?? 0)
-            .toString(),
-          hubValue: Big(acc.hubValue)
-            .plus(curr.data?.currentHubValueHuman ?? 0)
-            .toString(),
-          valueDisplay: Big(acc.valueDisplay)
-            .plus(curr.data?.currentTotalDisplay ?? 0)
-            .toString(),
-        }
-      },
-      {
-        value: "0",
-        hubValue: "0",
-        valueDisplay: "0",
-      },
-    )
-  }, [data])
 
   return (
-    <Flex
-      justify="space-between"
-      align="center"
-      gap={24}
-      sx={{
-        px: getTokenPx("containers.paddings.primary"),
-        py: getTokenPx("containers.paddings.secondary"),
-        borderBottom: "1px solid",
-        borderColor: getToken("details.separators"),
-        position: "sticky",
-        left: 0,
-      }}
-    >
-      <Flex direction="column">
-        <Text fs="p6" fw={400} color={getToken("text.medium")} sx={{ mb: 4 }}>
-          {t("liquidity:liquidity.positions.header.locked")}
-        </Text>
-        <Text
-          font="primary"
-          fs="h7"
-          lh={1}
-          fw={700}
-          color={getToken("text.high")}
+    <Flex direction="column" sx={{ position: "sticky", left: 0 }}>
+      <CollapsibleTrigger onClick={onClick} sx={{ cursor: "pointer" }}>
+        <Flex
+          align="center"
+          justify="space-between"
+          sx={{
+            px: getTokenPx("containers.paddings.primary"),
+            py: getTokenPx("containers.paddings.secondary"),
+            borderBottom: "1px solid",
+            borderColor: getToken("details.separators"),
+          }}
         >
-          {t("currency", { value: totals.value, symbol: meta.symbol })}
-          {totals.hubValue !== "0" &&
-            t("currency", {
-              value: totals.hubValue,
-              symbol: hub.symbol,
-              prefix: " + ",
-            })}
-        </Text>
-        <Text fs="p6" fw={400} lh={1} color={getToken("text.medium")}>
-          {t("currency", { value: totals.valueDisplay })}
-        </Text>
+          <Text fs="p3" fw={500} font="primary" color={getToken("text.high")}>
+            {t("myPositions")}
+          </Text>
+
+          <Flex align="center" gap={getTokenPx("scales.paddings.s")}>
+            <Text fs="p5" fw={500} color={getToken("text.low")}>
+              {showMore ? t("showLess") : t("showMore")}
+            </Text>
+            <Icon
+              component={ChevronDown}
+              size={18}
+              color={getToken("text.low")}
+              sx={{
+                transition: getToken("transitions.transform"),
+                transform: showMore ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+            />
+          </Flex>
+        </Flex>
+      </CollapsibleTrigger>
+      <Flex
+        justify="space-between"
+        align="center"
+        gap={24}
+        sx={{
+          px: getTokenPx("containers.paddings.primary"),
+          py: getTokenPx("containers.paddings.secondary"),
+          borderBottom: showMore ? "1px solid" : "none",
+          borderColor: getToken("details.separators"),
+        }}
+      >
+        <ValueStats
+          label={t("totalValue")}
+          wrap
+          customValue={
+            <Text
+              font="primary"
+              fs="h7"
+              lh={1}
+              fw={700}
+              color={getToken("text.high")}
+            >
+              {t("currency", { value: totalBalanceDisplay })}
+            </Text>
+          }
+          bottomLabel={
+            Big(totalInFarms).gt(0)
+              ? t("liquidity:header.myLiquidity.value", {
+                  value: totalInFarms,
+                })
+              : undefined
+          }
+          size="medium"
+        />
+
+        {!isTablet && !isMobile && <ClaimCard />}
       </Flex>
-
-      <Separator orientation="vertical" sx={{ height: 30 }} />
-
-      <Flex direction="column">
-        <Text fs="p6" fw={400} color={getToken("text.medium")} sx={{ mb: 4 }}>
-          {t("liquidity:liquidity.positions.header.liquidityPositions")}
-        </Text>
-        <Text
-          font="primary"
-          fs="h7"
-          fw={700}
-          color={getToken("text.high")}
-          lh={1}
-        >
-          {data.length}
-        </Text>
-      </Flex>
-
-      {!isTablet && !isMobile && (
-        <>
-          <Separator orientation="vertical" sx={{ height: 30 }} />
-          <ClaimCard />
-        </>
-      )}
     </Flex>
   )
 }
