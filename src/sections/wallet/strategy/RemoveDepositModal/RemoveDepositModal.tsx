@@ -11,7 +11,7 @@ import { useRemoveDepositForm } from "sections/wallet/strategy/RemoveDepositModa
 import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositSummary"
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
-import { useHealthFactorChange } from "api/borrow"
+import { useHealthFactorChange, useUserBorrowSummary } from "api/borrow"
 import { useAssets } from "providers/assets"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useBestTradeSell } from "api/trade"
@@ -21,6 +21,9 @@ import { createToastMessages } from "state/toasts"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
 import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
+import { useWithdrawAndSellAll } from "sections/lending/components/transactions/Withdraw/utils"
+import { getAddressFromAssetId } from "utils/evm"
+import BN from "bignumber.js"
 
 type Props = {
   readonly assetId: string
@@ -38,6 +41,7 @@ export const RemoveDepositModal: FC<Props> = ({
   const { createTransaction } = useStore()
   const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
   const { t } = useTranslation()
+  const { data: user } = useUserBorrowSummary()
 
   const asset = getAssetWithFallback(assetId)
 
@@ -70,15 +74,37 @@ export const RemoveDepositModal: FC<Props> = ({
     underlyingAssetsFirst: true,
   })
 
-  const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
+  const [assetReceived, assetAmount] = form.watch(["assetReceived", "amount"])
 
-  const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
-
-  const { minAmountOut, getSwapTx, amountOut } = useBestTradeSell(
-    assetId,
-    assetReceived?.id ?? "",
-    debouncedBalance,
+  const underlyingUserReserve = user?.userReservesData.find(
+    ({ underlyingAsset }) =>
+      underlyingAsset === getAddressFromAssetId(underlyingAssetId),
   )
+
+  const isWithdrawingMax =
+    !!underlyingUserReserve &&
+    assetAmount ===
+      BN(underlyingUserReserve.scaledATokenBalance)
+        .shiftedBy(-underlyingUserReserve.reserve.decimals)
+        .toString()
+
+  const [debouncedBalance] = useDebouncedValue(assetAmount, 300)
+
+  const {
+    minAmountOut,
+    getSwapTx,
+    amountOut,
+    isLoading: isLoadingSell,
+  } = useBestTradeSell(assetId, assetReceived?.id ?? "", debouncedBalance)
+
+  const { data: withdrawAndSellAllTx, isLoading: isLoadingWithdrawAndSellAll } =
+    useWithdrawAndSellAll(
+      underlyingUserReserve?.underlyingAsset ?? "",
+      underlyingUserReserve?.reserve?.aTokenAddress ?? "",
+      assetReceived?.id ?? "",
+      debouncedBalance,
+      { enabled: isWithdrawingMax },
+    )
 
   const { page, direction, paginateTo } = useModalPagination()
 
@@ -91,7 +117,7 @@ export const RemoveDepositModal: FC<Props> = ({
     .toString()
 
   const onSubmit = async () => {
-    const tx = await getSwapTx()
+    const tx = isWithdrawingMax ? withdrawAndSellAllTx : await getSwapTx()
 
     createTransaction(
       { tx },
@@ -111,7 +137,7 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const hfChange = useHealthFactorChange({
     assetId,
-    amount: balanceAmount,
+    amount: assetAmount,
     action: ProtocolAction.withdraw,
     swapAsset: assetReceived
       ? {
@@ -122,6 +148,10 @@ export const RemoveDepositModal: FC<Props> = ({
   })
 
   const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
+
+  const isLoading = isWithdrawingMax
+    ? isLoadingWithdrawAndSellAll
+    : isLoadingSell
 
   const isSubmitDisabled = displayRiskCheckbox
     ? !healthFactorRiskAccepted
@@ -176,7 +206,8 @@ export const RemoveDepositModal: FC<Props> = ({
                 <Button
                   variant="primary"
                   type="submit"
-                  disabled={isSubmitDisabled}
+                  isLoading={isLoading}
+                  disabled={isSubmitDisabled || isLoading}
                 >
                   {t("wallet.strategy.remove.confirm")}
                 </Button>

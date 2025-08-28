@@ -45,6 +45,7 @@ export const GigaIncentives = ({
   return (
     <>
       <Heading
+        as="h2"
         color="white"
         fs={15}
         sx={{ mb: 5 }}
