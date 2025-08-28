@@ -11,20 +11,19 @@ import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
+type TSelectedAsset = {
+  id: string
+  decimals: number
+  symbol: string
+  iconId?: string | string[]
+}
+
 export type AssetSelectProps = Omit<
   AssetInputProps,
   "dollarValue" | "dollarValueLoading"
 > & {
   assets: TAssetData[]
-  selectedAsset:
-    | {
-        id: string
-        decimals: number
-        symbol: string
-        iconId?: string | string[]
-      }
-    | undefined
-    | null
+  selectedAsset: TSelectedAsset | undefined | null
   setSelectedAsset?: (asset: TAssetData) => void
 }
 
