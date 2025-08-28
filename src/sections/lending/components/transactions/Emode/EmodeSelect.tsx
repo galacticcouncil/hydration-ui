@@ -45,7 +45,7 @@ export const EmodeSelect = ({
           <Text sx={{ flex: "row", align: "center", color: "brightBlue300" }}>
             {selectedEmode !== 0 ? (
               <span>
-                {getEmodeMessage(emodeCategories[Number(selectedEmode)].label)}
+                {getEmodeMessage(emodeCategories[Number(selectedEmode)]?.label)}
               </span>
             ) : (
               <span>Select</span>

@@ -29,6 +29,7 @@ import { getEmodeMessage } from "./EmodeNaming"
 import { EmodeSelect } from "./EmodeSelect"
 import { ChainId } from "sections/lending/ui-config/networksConfig"
 import { Switch } from "components/Switch/Switch"
+import { IncompatibleEmodePositionsWarning } from "sections/lending/components/transactions/Warnings/IncompatibleEmodePositionsWarning"
 
 export enum ErrorType {
   EMODE_DISABLED_LIQUIDATION,
@@ -127,16 +128,12 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     switch (blockingError) {
       case ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING:
         return (
-          <Alert variant="info" sx={{ mt: 12, align: "center" }}>
-            <Text fs={13}>
-              <span>
-                To enable E-mode for the{" "}
-                {selectedEmode && getEmodeMessage(selectedEmode.label)}{" "}
-                category, all borrow positions outside of this category must be
-                closed.
-              </span>
-            </Text>
-          </Alert>
+          <IncompatibleEmodePositionsWarning
+            eModeLabel={
+              selectedEmode ? getEmodeMessage(selectedEmode.label) : ""
+            }
+            sx={{ mt: 12, align: "center" }}
+          />
         )
       case ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING:
         return (

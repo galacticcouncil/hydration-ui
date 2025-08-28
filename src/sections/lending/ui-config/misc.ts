@@ -2,6 +2,9 @@ import { UseQueryOptions } from "@tanstack/react-query"
 import { vdotApyQuery } from "api/external/bifrost"
 import { lidoEthAPRQuery } from "api/external/ethereum"
 import {
+  DOT_ASSET_ID,
+  ETH_ASSET_ID,
+  GDOT_STABLESWAP_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
   STRATEGY_ASSETS_BLACKLIST,
   USDT_POOL_ASSET_ID,
@@ -20,3 +23,8 @@ export const MONEY_MARKET_GIGA_RESERVES = [
   USDT_POOL_ASSET_ID,
   ...STRATEGY_ASSETS_BLACKLIST,
 ].map(getAddressFromAssetId)
+
+export const LOOPING_ASSET_PAIRS: Record<string, string> = {
+  [GDOT_STABLESWAP_ASSET_ID]: DOT_ASSET_ID,
+  [GETH_STABLESWAP_ASSET_ID]: ETH_ASSET_ID,
+}

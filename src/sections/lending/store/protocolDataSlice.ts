@@ -1,4 +1,4 @@
-import { providers } from "ethers"
+import { Provider } from "@ethersproject/providers"
 import {
   availableMarkets,
   getInitialMarket,
@@ -26,7 +26,9 @@ export interface ProtocolDataSlice {
   currentMarketData: MarketDataType
   currentChainId: number
   currentNetworkConfig: NetworkConfig
-  jsonRpcProvider: (chainId?: number) => providers.Provider
+  provider: Provider | null
+  setProvider: (provider: Provider | null) => void
+  jsonRpcProvider: (chainId?: number) => Provider
   setCurrentMarket: (
     market: CustomMarket,
     omitQueryParameterUpdate?: boolean,
@@ -50,7 +52,9 @@ export const createProtocolDataSlice: StateCreator<
     currentMarketData: marketsData[initialMarket],
     currentChainId: initialMarketData.chainId,
     currentNetworkConfig: getNetworkConfig(initialMarketData.chainId),
+    provider: null,
     jsonRpcProvider: (chainId) => getProvider(chainId ?? get().currentChainId),
+    setProvider: (provider) => set({ provider }),
     setCurrentMarket: (market, omitQueryParameterUpdate) => {
       if (!availableMarkets.includes(market as CustomMarket)) return
       const nextMarketData = marketsData[market]
