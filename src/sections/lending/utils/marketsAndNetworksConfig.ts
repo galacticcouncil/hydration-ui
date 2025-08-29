@@ -19,9 +19,10 @@ import {
   isTestnetRpcUrl,
   useProviderRpcUrlStore,
 } from "api/provider"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { useRootStore } from "sections/lending/store/root"
 import { useRpcProvider } from "providers/rpcProvider"
+import { pick } from "utils/rx"
 
 export type Pool = {
   address: string
@@ -134,11 +135,12 @@ export const getProvider = (_chainId: ChainId): Provider => {
 
 export const useMoneyMarketInit = () => {
   const { isLoaded, evm, dataEnv } = useRpcProvider()
-  const [provider, setProvider, setCurrentMarket] = useRootStore((state) => [
-    state.provider,
-    state.setProvider,
-    state.setCurrentMarket,
-  ])
+  const { provider, setProvider, setCurrentMarket } = useRootStore(
+    useCallback(
+      (state) => pick(state, ["provider", "setProvider", "setCurrentMarket"]),
+      [],
+    ),
+  )
 
   useEffect(() => {
     setProvider(null)
