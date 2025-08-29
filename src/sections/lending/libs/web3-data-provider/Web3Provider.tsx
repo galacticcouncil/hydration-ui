@@ -204,7 +204,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   const [loading, setLoading] = useState(false)
   const [readOnlyMode] = useState(false)
   const [switchNetworkError, setSwitchNetworkError] = useState<Error>()
-  const [setAccount] = useRootStore((store) => [store.setAccount])
+  const setAccount = useRootStore((store) => store.setAccount)
   const setAccountLoading = useRootStore((store) => store.setAccountLoading)
   const setWalletType = useRootStore((store) => store.setWalletType)
 
