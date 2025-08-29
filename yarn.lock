@@ -2295,7 +2295,7 @@
     aes-js "3.0.0"
     scrypt-js "3.0.1"
 
-"@ethersproject/keccak256@5.7.0", "@ethersproject/keccak256@^5.0.0-beta.130", "@ethersproject/keccak256@^5.7.0":
+"@ethersproject/keccak256@5.7.0", "@ethersproject/keccak256@^5.7.0":
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/@ethersproject/keccak256/-/keccak256-5.7.0.tgz#3186350c6e1cd6aba7940384ec7d6d9db01f335a"
   integrity sha512-2UcPboeL/iW+pSg6vZ6ydF8tCnv3Iu/8tUmLLzWWGzxWKFFqOBQFLo6uLUv6BDrLgCDfN28RJ/wtByx+jZ4KBg==
@@ -2632,9 +2632,9 @@
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
 "@galacticcouncil/sdk@^9.11.0":
-  version "9.11.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.11.0.tgz#e567e47b02f0e1e4515b8ca210d228dfd882eaed"
-  integrity sha512-Ss9qPRR+6sVeI5SAuf7stT+KQod5PLmHBACyFNtxW0j9AOe1u2V3uR6V+xDXTQ71iOpCETcI7NczfD+lwNCU5w==
+  version "9.14.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.14.0.tgz#c3101779004e354af0797459573d9a759a31ccb8"
+  integrity sha512-m+YnoXU3fTlhpuZ5wysElzEK03cbZSiwHLsdTRaT1v7+I9q1WHRBojgRUuLC+MycnErBOc+o+ejhDTw3Qm+Psw==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
@@ -7769,29 +7769,6 @@
   dependencies:
     "@walletconnect/window-getters" "^1.0.1"
     tslib "1.14.1"
-
-"@web3-react/abstract-connector@^6.0.7":
-  version "6.0.7"
-  resolved "https://registry.yarnpkg.com/@web3-react/abstract-connector/-/abstract-connector-6.0.7.tgz#401b3c045f1e0fab04256311be49d5144e9badc6"
-  integrity sha512-RhQasA4Ox8CxUC0OENc1AJJm8UTybu/oOCM61Zjg6y0iF7Z0sqv1Ai1VdhC33hrQpA8qSBgoXN9PaP8jKmtdqg==
-  dependencies:
-    "@web3-react/types" "^6.0.7"
-
-"@web3-react/core@6.1.9":
-  version "6.1.9"
-  resolved "https://registry.yarnpkg.com/@web3-react/core/-/core-6.1.9.tgz#5f5daa0545a8ea07770a699580ced552583afc97"
-  integrity sha512-P877DslsbAkWIlMANpWiK7pCvNwlz0kJC0EGckuVh0wlA23J4UnFxq6xyOaxkxaDCu14rA/tAO0NbwjcXTQgSA==
-  dependencies:
-    "@ethersproject/keccak256" "^5.0.0-beta.130"
-    "@web3-react/abstract-connector" "^6.0.7"
-    "@web3-react/types" "^6.0.7"
-    tiny-invariant "^1.0.6"
-    tiny-warning "^1.0.3"
-
-"@web3-react/types@6.0.7", "@web3-react/types@^6.0.7":
-  version "6.0.7"
-  resolved "https://registry.yarnpkg.com/@web3-react/types/-/types-6.0.7.tgz#34a6204224467eedc6123abaf55fbb6baeb2809f"
-  integrity sha512-ofGmfDhxmNT1/P/MgVa8IKSkCStFiyvXe+U5tyZurKdrtTDFU+wJ/LxClPDtFerWpczNFPUSrKcuhfPX1sI6+A==
 
 "@whatwg-node/disposablestack@^0.0.5":
   version "0.0.5"
@@ -14025,7 +14002,7 @@ prelude-ls@^1.2.1:
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-"prettier-fallback@npm:prettier@^3", prettier@^2.8.0, prettier@^3.1.1, prettier@^3.3.2:
+"prettier-fallback@npm:prettier@^3":
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.3.2.tgz#03ff86dc7c835f2d2559ee76876a3914cec4a90a"
   integrity sha512-rAVeHYMcv8ATV5d508CFdn+8/pHPpXeIid1DdrPwXnaAdH7cqjVbpJaT5eq4yRAFU/lsbwYwSF/n5iNrdJHPQA==
@@ -14036,6 +14013,11 @@ prettier-linter-helpers@^1.0.0:
   integrity sha512-GbK2cP9nraSSUF9N2XwUwqfzlAFlMNYYl+ShE/V+H8a9uNl/oUqB1w2EL54Jh0OlyRSd8RfWYJ3coVS4TROP2w==
   dependencies:
     fast-diff "^1.1.2"
+
+prettier@^2.8.0, prettier@^3.1.1, prettier@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/prettier/-/prettier-3.3.2.tgz#03ff86dc7c835f2d2559ee76876a3914cec4a90a"
+  integrity sha512-rAVeHYMcv8ATV5d508CFdn+8/pHPpXeIid1DdrPwXnaAdH7cqjVbpJaT5eq4yRAFU/lsbwYwSF/n5iNrdJHPQA==
 
 pretty-format@^27.0.0, pretty-format@^27.0.2, pretty-format@^27.5.1:
   version "27.5.1"
@@ -15569,7 +15551,14 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1, strip-ansi@^7.1.0:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
+  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
+  dependencies:
+    ansi-regex "^5.0.1"
+
+strip-ansi@6.0.1, strip-ansi@^6.0.0, strip-ansi@^6.0.1, strip-ansi@^7.0.1, strip-ansi@^7.1.0:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -15856,15 +15845,10 @@ timeout-signal@^2.0.0:
   resolved "https://registry.yarnpkg.com/timeout-signal/-/timeout-signal-2.0.0.tgz#23207ea448d50258bb0defe3beea4a467643abba"
   integrity sha512-YBGpG4bWsHoPvofT6y/5iqulfXIiIErl5B0LdtHT1mGXDFTAhhRrbUpTvBgYbovr+3cKblya2WAOcpoy90XguA==
 
-tiny-invariant@^1.0.6, tiny-invariant@^1.3.1, tiny-invariant@^1.3.3:
+tiny-invariant@^1.3.1, tiny-invariant@^1.3.3:
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/tiny-invariant/-/tiny-invariant-1.3.3.tgz#46680b7a873a0d5d10005995eb90a70d74d60127"
   integrity sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==
-
-tiny-warning@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/tiny-warning/-/tiny-warning-1.0.3.tgz#94a30db453df4c643d0fd566060d60a875d84754"
-  integrity sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==
 
 tinybench@^2.5.1:
   version "2.8.0"
@@ -16825,7 +16809,16 @@ wordwrap@^1.0.0:
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-1.0.0.tgz#27584810891456a4171c8d0226441ade90cbcaeb"
   integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
-"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@7.0.0, wrap-ansi@^6.0.1, wrap-ansi@^6.2.0, wrap-ansi@^7.0.0, wrap-ansi@^8.1.0:
+"wrap-ansi-cjs@npm:wrap-ansi@^7.0.0":
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
+  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+  dependencies:
+    ansi-styles "^4.0.0"
+    string-width "^4.1.0"
+    strip-ansi "^6.0.0"
+
+wrap-ansi@7.0.0, wrap-ansi@^6.0.1, wrap-ansi@^6.2.0, wrap-ansi@^7.0.0, wrap-ansi@^8.1.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
