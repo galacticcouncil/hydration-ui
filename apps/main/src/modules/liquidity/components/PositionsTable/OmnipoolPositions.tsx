@@ -2,6 +2,7 @@ import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { DataTable } from "@galacticcouncil/ui/components/DataTable"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { Link } from "@tanstack/react-router"
 import { Minus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -38,8 +39,8 @@ export const OmnipoolPositions = ({
           </Text>
         </Flex>
 
-        <Button variant="tertiary" outline>
-          {/* <Link
+        <Button variant="tertiary" outline asChild>
+          <Link
             to="/liquidity/$id/remove"
             params={{
               id: pool.id,
@@ -47,10 +48,10 @@ export const OmnipoolPositions = ({
             search={{
               all: true,
             }}
-          > */}
-          <Minus />
-          {t("liquidity.positions.removeAll")}
-          {/* </Link> */}
+          >
+            <Minus />
+            {t("liquidity.positions.removeAll")}
+          </Link>
         </Button>
       </STableHeader>
       <DataTable

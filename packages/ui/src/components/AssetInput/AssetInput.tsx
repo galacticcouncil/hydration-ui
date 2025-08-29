@@ -20,6 +20,7 @@ export type AssetInputProps = {
   dollarValueLoading?: boolean
   maxBalance?: string
   ignoreBalance?: boolean
+  ignoreDollarValue?: boolean
   hideMaxBalanceAction?: boolean
   error?: string
   disabled?: boolean
@@ -41,6 +42,7 @@ export const AssetInput = ({
   label,
   maxBalance,
   ignoreBalance,
+  ignoreDollarValue,
   hideMaxBalanceAction,
   onChange,
   error,
@@ -143,25 +145,27 @@ export const AssetInput = ({
               }}
             />
 
-            <Text
-              color={getToken("text.low")}
-              fs={10}
-              fw={400}
-              sx={{ width: "fit-content" }}
-            >
-              {(() => {
-                if (dollarValueLoading) {
-                  return <Skeleton width={48} />
-                }
-                if (dollarValue === "NaN") {
-                  return "-"
-                }
-                if (!dollarValue) {
-                  return "$0"
-                }
-                return `$${formatValue(dollarValue)}`
-              })()}
-            </Text>
+            {!ignoreDollarValue && (
+              <Text
+                color={getToken("text.low")}
+                fs={10}
+                fw={400}
+                sx={{ width: "fit-content" }}
+              >
+                {(() => {
+                  if (dollarValueLoading) {
+                    return <Skeleton width={48} />
+                  }
+                  if (dollarValue === "NaN") {
+                    return "-"
+                  }
+                  if (!dollarValue) {
+                    return "$0"
+                  }
+                  return `$${formatValue(dollarValue)}`
+                })()}
+              </Text>
+            )}
           </Flex>
         </Flex>
         {error && (

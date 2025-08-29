@@ -39,18 +39,18 @@ export const AssetLogo = ({
   isLoading,
   decoration = "none",
 }: AssetLogoProps) => {
+  if (isLoading) {
+    const skeletonSize = LOGO_DIAMETER[size]
+
+    return <Skeleton width={skeletonSize} height={skeletonSize} circle />
+  }
+
   if (!src)
     return (
       <SDecorationContainer count={1} size={size}>
         <SPlaceholder component={PlaceholderAssetLogo} size={size} />
       </SDecorationContainer>
     )
-
-  if (isLoading) {
-    const skeletonSize = LOGO_DIAMETER[size]
-
-    return <Skeleton width={skeletonSize} height={skeletonSize} circle />
-  }
 
   return (
     <SDecorationContainer count={1} decoration={decoration} size={size}>

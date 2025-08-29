@@ -50,6 +50,10 @@ export const Logo: React.FC<LogoProps> = ({
     }
   }, [getAssetWithFallback, id])
 
+  if (isLoading) {
+    return <AssetLogo size={size} isLoading />
+  }
+
   if (logoMetadata.length > 1) {
     const isATokenPool = logoMetadata.every(
       (data) => data.decoration === "atoken",
@@ -73,10 +77,6 @@ export const Logo: React.FC<LogoProps> = ({
   }
 
   const singleIconMetadata = logoMetadata[0]
-
-  if (isLoading) {
-    return <AssetLogo size={size} isLoading />
-  }
 
   return (
     <AssetLogo

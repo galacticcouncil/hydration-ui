@@ -1,6 +1,7 @@
 import { CupSoda, Plus, Trash } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -143,20 +144,20 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   </Button>
                 ) : null
               ) : original.isStablepoolInOmnipool ? (
-                <Button variant="primary">
-                  {/* <Link
-                  to="/liquidity/$id/add"
-                  params={{
-                    id: poolId,
-                  }}
-                > */}
-                  <Plus />
-                  {t("liquidity:addLiquidity")}
-                  {/* </Link> */}
+                <Button variant="primary" asChild>
+                  <Link
+                    to="/liquidity/$id/add"
+                    params={{
+                      id: original.poolId,
+                    }}
+                  >
+                    <Plus />
+                    {t("liquidity:addLiquidity")}
+                  </Link>
                 </Button>
               ) : null}
-              <Button variant="tertiary" outline sx={{ flexShrink: 0 }}>
-                {/* <Link
+              <Button variant="tertiary" outline sx={{ flexShrink: 0 }} asChild>
+                <Link
                   to="/liquidity/$id/remove"
                   params={{
                     id: original.poolId,
@@ -164,10 +165,10 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   search={{
                     positionId: isOmnipool ? original.positionId : "",
                   }}
-                > */}
-                <Trash />
-                {t("remove")}
-                {/* </Link> */}
+                >
+                  <Trash />
+                  {t("remove")}
+                </Link>
               </Button>
             </Flex>
           )
@@ -313,25 +314,25 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         },
         cell: ({
           row: {
-            original: { positionId },
+            original: { poolId, positionId, shareTokenId },
           },
         }) => (
           <Flex gap={12} align="center" justify="end">
             {isFarms && !positionId && (
-              <Button variant="primary">
-                {/* <Link
+              <Button variant="primary" asChild>
+                <Link
                   to="/liquidity/$id/add"
                   params={{
                     id: poolId,
                   }}
-                > */}
-                <Plus />
-                {t("liquidity:joinFarms")}
-                {/* </Link> */}
+                >
+                  <Plus />
+                  {t("liquidity:joinFarms")}
+                </Link>
               </Button>
             )}
-            <Button variant="tertiary" outline>
-              {/* <Link
+            <Button variant="tertiary" outline asChild>
+              <Link
                 to="/liquidity/$id/remove"
                 params={{
                   id: poolId,
@@ -341,10 +342,10 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
                   positionId,
                   shareTokenId: !positionId ? shareTokenId : undefined,
                 }}
-              > */}
-              <Trash />
-              {t("remove")}
-              {/* </Link> */}
+              >
+                <Trash />
+                {t("remove")}
+              </Link>
             </Button>
           </Flex>
         ),

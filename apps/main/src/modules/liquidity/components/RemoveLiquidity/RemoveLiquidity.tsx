@@ -1,74 +1,121 @@
 import {
-  AssetButton,
   Button,
   Flex,
-  Input,
   ModalBody,
   ModalContainer,
   ModalContentDivider,
   ModalHeader,
-  Slider,
-  SSliderTabs,
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import Big from "big.js"
-import { useState } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { isSS58Address } from "@galacticcouncil/utils"
+import { UseMutationResult } from "@tanstack/react-query"
+import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
-import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { DynamicFee } from "@/components/DynamicFee"
 import { Logo } from "@/components/Logo"
-import { useAssets } from "@/providers/assetsProvider"
+import { XYKPoolMeta } from "@/providers/assetsProvider"
+import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 
-import { getIsRemoveAll, useRemoveLiquidity } from "./RemoveLiquidity.utils"
+import { RecieveAssets, TReceiveAsset } from "./RecieveAssets"
+import {
+  TRemoveLiquidityFormValues,
+  useRemoveIsolatedLiquidity,
+  useRemoveLiquidity,
+} from "./RemoveLiquidity.utils"
+import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
 
-type RemoveLiquidityProps = {
-  positionId: string
-  poolId: string
+type RemoveLiquidityProps = RemoveLiquidityType & { poolId: string }
+
+export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
+  const isIsolatedPool = isSS58Address(props.poolId)
+
+  if (isIsolatedPool) {
+    return <RemoveIsolatedLiquidity {...props} />
+  }
+
+  return <RemoveOmnipoolLiquidity {...props} />
 }
 
-const options = [
-  { id: "25", label: "25%" },
-  { id: "50", label: "50%" },
-  { id: "75", label: "75%" },
-  { id: "100", label: "100%" },
-]
-
-export const RemoveLiquidity = ({
+export const RemoveIsolatedLiquidity = ({
   positionId,
   poolId,
+  shareTokenId,
+  all,
 }: RemoveLiquidityProps) => {
-  const { t } = useTranslation(["liquidity", "common"])
-  const [customValue, setCustomValue] = useState("")
-  const { getAssetWithFallback, hub } = useAssets()
-  const asset = getAssetWithFallback(poolId)
-
-  const isRemoveAll = getIsRemoveAll(positionId)
-
-  const form = useForm<{ value: number }>({
-    mode: "onChange",
-    defaultValues: { value: isRemoveAll ? 100 : 25 },
-    resolver: standardSchemaResolver(
-      z.object({
-        value: z
-          .number()
-          .min(0.01, t("common:error.minNumber", { value: 0.01 }))
-          .max(100, t("common:error.maxNumber", { value: 100 })),
-      }),
-    ),
-  })
-
-  const { values, mutation, totalValue } = useRemoveLiquidity(
-    form.watch("value"),
+  const isRemoveAll = !!all
+  const removeLiquidity = useRemoveIsolatedLiquidity({
     poolId,
     positionId,
+    shareTokenId,
+    isRemoveAll,
+  })
+
+  if (!removeLiquidity) return <RemoveLiquiditySkeleton />
+
+  const { form, ...props } = removeLiquidity
+
+  return (
+    <FormProvider {...form}>
+      <RemoveLiquidityJSX isIsolatedPool isRemoveAll={isRemoveAll} {...props} />
+    </FormProvider>
   )
+}
+
+export const RemoveOmnipoolLiquidity = ({
+  positionId,
+  poolId,
+  all,
+}: RemoveLiquidityProps) => {
+  const isRemoveAll = !!all
+  const removeLiquidity = useRemoveLiquidity({
+    poolId,
+    positionId,
+    isRemoveAll,
+  })
+
+  if (!removeLiquidity) return <RemoveLiquiditySkeleton />
+  console.log("removeLiquidity", removeLiquidity)
+  const { form, ...props } = removeLiquidity
+
+  return (
+    <FormProvider {...form}>
+      <RemoveLiquidityJSX isRemoveAll={isRemoveAll} {...props} />
+    </FormProvider>
+  )
+}
+
+const RemoveLiquidityJSX = ({
+  fee,
+  balance,
+  receiveAssets,
+  totalValue,
+  isRemoveAll,
+  mutation,
+  logoId,
+  isIsolatedPool,
+  meta,
+}: {
+  fee?: string
+  totalValue: string
+  balance: string
+  receiveAssets: TReceiveAsset[]
+  isRemoveAll: boolean
+  mutation: UseMutationResult<void, Error, void>
+  logoId: string | string[]
+  isIsolatedPool?: boolean
+  meta: TAssetData | XYKPoolMeta
+}) => {
+  const { t } = useTranslation(["liquidity", "common"])
+  const {
+    control,
+    formState: { isValid },
+    handleSubmit,
+  } = useFormContext<TRemoveLiquidityFormValues>()
 
   const onSubmit = () => {
     mutation.mutate()
@@ -79,238 +126,95 @@ export const RemoveLiquidity = ({
       <ModalContainer open>
         <ModalHeader title={t("removeLiquidity")} closable={false} />
         <ModalBody>
-          <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
-            {isRemoveAll ? (
-              <Flex
-                align="center"
-                gap={getTokenPx("containers.paddings.quart")}
-                pb={getTokenPx("containers.paddings.primary")}
-              >
-                <Logo id={asset.id} size="large" />
-                <Text
-                  fs="h5"
-                  fw={500}
-                  color={getToken("text.high")}
-                  font="primary"
+          <Flex
+            direction="column"
+            gap={getTokenPx("containers.paddings.secondary")}
+            asChild
+          >
+            <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+              {isRemoveAll ? (
+                <Flex
+                  align="center"
+                  gap={getTokenPx("containers.paddings.quart")}
                 >
-                  {t("common:currency", {
-                    value: totalValue,
-                    symbol: asset.symbol,
-                  })}
-                </Text>
-              </Flex>
-            ) : (
-              <Controller
-                name="value"
-                control={form.control}
-                render={({
-                  field: { value, onChange },
-                  fieldState: { error },
-                }) => (
-                  <>
-                    <Flex
-                      direction="column"
-                      gap={12}
-                      pb={getTokenPx("containers.paddings.primary")}
-                    >
-                      <Flex
-                        align="center"
-                        justify="space-between"
-                        gap={getTokenPx("containers.paddings.quart")}
-                        pb={getTokenPx("containers.paddings.quart")}
-                      >
-                        <AssetButton
-                          symbol={asset.symbol}
-                          icon={<Logo id={asset.id} />}
-                          error={false}
-                          disabled
-                        />
-                        <Text
-                          color={
-                            form.formState.isValid
-                              ? getToken("text.tint.secondary")
-                              : getToken("accents.danger.secondary")
-                          }
-                          fw={400}
-                          fs="h5"
-                          font="primary"
-                        >
-                          {t("common:percent", { value })}
-                        </Text>
-                      </Flex>
-                      <Slider
-                        min={0}
-                        max={100}
-                        step={1}
+                  <Logo id={logoId} size="large" />
+                  <Text
+                    fs="h5"
+                    fw={500}
+                    color={getToken("text.high")}
+                    font="primary"
+                  >
+                    {t("common:currency", {
+                      value: totalValue,
+                      symbol: meta.symbol,
+                    })}
+                  </Text>
+                </Flex>
+              ) : (
+                <Flex direction="column" gap={12}>
+                  <Controller
+                    name="amount"
+                    control={control}
+                    render={({
+                      field: { value, onChange },
+                      fieldState: { error },
+                    }) => (
+                      <AssetSelect
+                        assets={[]}
+                        selectedAsset={meta}
+                        maxBalance={balance}
                         value={value}
-                        onChange={(val) => {
-                          setCustomValue("")
-                          onChange(val)
-                        }}
+                        onChange={onChange}
+                        error={error?.message}
+                        ignoreDollarValue={isIsolatedPool}
+                        sx={{ pt: 0 }}
                       />
-                    </Flex>
-
-                    <ModalContentDivider />
-
-                    <Flex
-                      direction="column"
-                      gap={12}
-                      py={getTokenPx("containers.paddings.tertiary")}
-                    >
-                      <Flex align="center" justify="space-between">
-                        <Text color={getToken("text.medium")} fw={400} fs="p5">
-                          {t("common:amount")}
-                        </Text>
-                        <Text color={getToken("text.low")} fw={500} fs="p5">
-                          {t("liquidity.remove.modal.balance", {
-                            value: totalValue,
-                          })}
-                        </Text>
-                      </Flex>
-
-                      <SSliderTabs>
-                        {options.map((option) => {
-                          const isSelected = option.id === value.toString()
-
-                          return (
-                            <Button
-                              key={option.id}
-                              variant={isSelected ? "secondary" : "tertiary"}
-                              onClick={() => {
-                                setCustomValue("")
-                                onChange(Number(option.id))
-                              }}
-                              sx={{
-                                flex: 1,
-                                background: !isSelected && "transparent",
-                              }}
-                            >
-                              {option.label}
-                            </Button>
-                          )
-                        })}
-
-                        <Input
-                          unit={asset.symbol}
-                          sx={{ flexBasis: "20%" }}
-                          value={customValue}
-                          disabled={totalValue === "0"}
-                          onChange={(e) => {
-                            const value = e.target.value
-                              .replace(/\s+/g, "")
-                              .replace(/,/g, ".")
-
-                            if (!value) {
-                              setCustomValue("")
-                              return
-                            }
-
-                            const isValid = !Number.isNaN(value)
-
-                            if (isValid) {
-                              const percentage = Big(value)
-                                .div(Big(totalValue).div(100))
-                                .toNumber()
-
-                              setCustomValue(value.toString())
-                              onChange(percentage)
-                            }
-                          }}
-                        />
-                      </SSliderTabs>
-                    </Flex>
-                    {error?.message && (
-                      <Text
-                        fs="p5"
-                        color={getToken("accents.danger.secondary")}
-                        sx={{ textAlign: "right" }}
-                      >
-                        {error.message}
-                      </Text>
                     )}
-                  </>
-                )}
-              />
-            )}
-
-            <ModalContentDivider />
-
-            <Text
-              color={getToken("text.tint.secondary")}
-              fw={700}
-              font="primary"
-              sx={{
-                pt: getTokenPx("containers.paddings.secondary"),
-                pb: getTokenPx("containers.paddings.quart"),
-              }}
-            >
-              {t("liquidity.remove.modal.receive")}
-            </Text>
-
-            <Flex
-              direction="column"
-              gap={12}
-              p={getTokenPx("containers.paddings.tertiary")}
-              sx={{
-                borderRadius: getTokenPx(
-                  "containers.cornerRadius.internalPrimary",
-                ),
-                backgroundColor: getToken("surfaces.containers.dim.dimOnHigh"),
-              }}
-            >
-              <RecieveAsset
-                asset={asset}
-                value={values?.tokensToGetShifted ?? "0"}
-              />
-              {values?.hubToGet && values?.hubToGet !== "0" && (
-                <RecieveAsset asset={hub} value={values.hubToGet} />
+                  />
+                </Flex>
               )}
-            </Flex>
 
-            <SummaryRow
-              label={t("liquidity.remove.modal.withdrawalFees")}
-              content={
-                <DynamicFee
-                  rangeLow={0.34}
-                  rangeHigh={0.66}
-                  value={Number(values?.withdrawalFee)}
+              <ModalContentDivider />
+
+              <Text
+                color={getToken("text.tint.secondary")}
+                font="primary"
+                fw={700}
+              >
+                {t("liquidity.remove.modal.receive")}
+              </Text>
+
+              <RecieveAssets assets={receiveAssets} />
+
+              {fee && (
+                <SummaryRow
+                  label={t("liquidity.remove.modal.withdrawalFees")}
+                  sx={{ m: 0 }}
+                  content={
+                    <DynamicFee
+                      rangeLow={0.34}
+                      rangeHigh={0.66}
+                      value={Number(fee)}
+                      displayValue
+                    />
+                  }
                 />
-              }
-              sx={{ px: getTokenPx("containers.paddings.primary") }}
-            />
+              )}
 
-            <ModalContentDivider />
+              <ModalContentDivider />
 
-            <Button
-              type="submit"
-              size="large"
-              width="100%"
-              mt={getTokenPx("containers.paddings.primary")}
-              disabled={!form.formState.isValid}
-            >
-              {t("liquidity.remove.modal.submit")}
-            </Button>
-          </form>
+              <Button
+                type="submit"
+                size="large"
+                width="100%"
+                disabled={!isValid}
+              >
+                {t("removeLiquidity")}
+              </Button>
+            </form>
+          </Flex>
         </ModalBody>
       </ModalContainer>
-    </Flex>
-  )
-}
-
-const RecieveAsset = ({
-  asset,
-  value,
-}: {
-  asset: TAssetData
-  value: string
-}) => {
-  const { t } = useTranslation("common")
-  return (
-    <Flex gap={12} justify="space-between" align="center">
-      <AssetLabelFull asset={asset} withName={false} size="large" />
-      <Text fw={600} color={getToken("text.high")} fs="p2">
-        {t("number", { value })}
-      </Text>
     </Flex>
   )
 }
