@@ -25,6 +25,7 @@ import {
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
+import { useShallow } from "hooks/useShallow"
 
 export interface BorrowActionsProps {
   poolReserve: ComputedReserveData
@@ -56,14 +57,16 @@ export const BorrowActions = React.memo(
       generateApproveDelegation,
       estimateGasLimit,
       addTransaction,
-    ] = useRootStore((state) => [
-      state.borrow,
-      state.getCreditDelegationApprovedAmount,
-      state.currentMarketData,
-      state.generateApproveDelegation,
-      state.estimateGasLimit,
-      state.addTransaction,
-    ])
+    ] = useRootStore(
+      useShallow((state) => [
+        state.borrow,
+        state.getCreditDelegationApprovedAmount,
+        state.currentMarketData,
+        state.generateApproveDelegation,
+        state.estimateGasLimit,
+        state.addTransaction,
+      ]),
+    )
     const {
       approvalTxState,
       mainTxState,

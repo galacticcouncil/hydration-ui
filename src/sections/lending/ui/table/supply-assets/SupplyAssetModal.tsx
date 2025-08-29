@@ -54,7 +54,7 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
       onClose={onClose}
       contents={[
         {
-          title: t("lending.supply.modal.title", { name: aToken.name }),
+          title: t("lending.supply.modal.title", { name: aToken.symbol }),
           content: (
             <AssetSelectSkeleton
               title={t("wallet.strategy.deposit.depositAsset")}
@@ -74,7 +74,7 @@ export const SupplyAssetModal: FC<Props> = ({ assetId, onClose }) => {
         onClose={onClose}
         contents={[
           {
-            title: t("lending.supply.modal.title", { name: aToken.name }),
+            title: t("lending.supply.modal.title", { name: aToken.symbol }),
             content: (
               <SupplyModalForm
                 onClose={onClose}
