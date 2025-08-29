@@ -180,6 +180,10 @@ const AddLiquidityButton: React.FC<{
             },
           ]}
           onClick={onClick}
+          disabled={
+            (!pool.canAddLiquidity && !pool.isStablePool) ||
+            native.id === pool.id
+          }
         >
           {t("liquidity.asset.actions.joinPool")}
         </Button>
