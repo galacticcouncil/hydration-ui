@@ -2631,10 +2631,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk@^9.11.0":
-  version "9.11.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.11.0.tgz#e567e47b02f0e1e4515b8ca210d228dfd882eaed"
-  integrity sha512-Ss9qPRR+6sVeI5SAuf7stT+KQod5PLmHBACyFNtxW0j9AOe1u2V3uR6V+xDXTQ71iOpCETcI7NczfD+lwNCU5w==
+"@galacticcouncil/sdk@^9.14.0":
+  version "9.14.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.14.0.tgz#c3101779004e354af0797459573d9a759a31ccb8"
+  integrity sha512-m+YnoXU3fTlhpuZ5wysElzEK03cbZSiwHLsdTRaT1v7+I9q1WHRBojgRUuLC+MycnErBOc+o+ejhDTw3Qm+Psw==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
