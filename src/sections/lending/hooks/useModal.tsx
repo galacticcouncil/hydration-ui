@@ -1,7 +1,6 @@
 import { ChainId, InterestRate, Stake } from "@aave/contract-helpers"
 import { createContext, useContext, useState } from "react"
 import { EmodeModalType } from "sections/lending/components/transactions/Emode/EmodeModalContent"
-import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
 export enum ModalType {
@@ -86,7 +85,6 @@ export const ModalContext = createContext<ModalContextType<ModalArgsType>>(
 export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const { setSwitchNetworkError } = useWeb3Context()
   // contains the current modal open state if any
   const [type, setType] = useState<ModalType>()
   // contains arbitrary key-value pairs as a modal context
@@ -139,7 +137,6 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
           setApprovalTxState({})
           setGasLimit("")
           setTxError(undefined)
-          setSwitchNetworkError(undefined)
         },
         type,
         args,
