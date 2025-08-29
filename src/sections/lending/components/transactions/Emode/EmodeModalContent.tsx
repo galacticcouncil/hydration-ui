@@ -11,7 +11,6 @@ import { useCurrentTimestamp } from "sections/lending/hooks/useCurrentTimestamp"
 import { useModalContext } from "sections/lending/hooks/useModal"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
 import { useWeb3Context } from "sections/lending/libs/hooks/useWeb3Context"
-import { getNetworkConfig } from "sections/lending/utils/marketsAndNetworksConfig"
 
 import ArrowRightIcon from "assets/icons/ArrowRightIcon.svg?react"
 import { Alert } from "components/Alert"
@@ -23,7 +22,6 @@ import {
   DetailsHFLine,
   TxModalDetails,
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
-import { ChangeNetworkWarning } from "sections/lending/components/transactions/Warnings/ChangeNetworkWarning"
 import { EmodeActions } from "./EmodeActions"
 import { getEmodeMessage } from "./EmodeNaming"
 import { EmodeSelect } from "./EmodeSelect"
@@ -71,7 +69,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
     userReserves,
   } = useAppDataContext()
   const { currentChainId: chainId } = useProtocolDataContext()
-  const { chainId: connectedChainId, readOnlyModeAddress } = useWeb3Context()
+  const { chainId: connectedChainId } = useWeb3Context()
   const currentTimestamp = useCurrentTimestamp(1)
   const { mainTxState: emodeTxState, txError } = useModalContext()
 
@@ -83,8 +81,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
   const currentChainId =
     chainId === ChainId.hydration_testnet ? ChainId.hydration : chainId
-
-  const networkConfig = getNetworkConfig(currentChainId)
 
   // calcs
   const newSummary = formatUserSummary({
@@ -340,13 +336,6 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         <Blocked />
       )}
       {txError && <GasEstimationError txError={txError} sx={{ mt: 12 }} />}
-      {isWrongNetwork && !readOnlyModeAddress && (
-        <ChangeNetworkWarning
-          sx={{ mt: 12 }}
-          networkName={networkConfig.name}
-          chainId={currentChainId}
-        />
-      )}
       {user.userEmodeCategoryId === 0 && (
         <Alert variant="warning" sx={{ mt: 12 }}>
           <Text fs={13}>
