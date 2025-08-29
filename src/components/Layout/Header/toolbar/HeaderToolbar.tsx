@@ -20,7 +20,7 @@ export const HeaderToolbar = () => {
         {!isSmallMedia && <Documentation />}
         <Bell />
         {!isSmallMedia && !isSubmitTransactionPath && <Settings />}
-        {!isSmallMedia && <DepositButton />}
+        {/* {!isSmallMedia && <DepositButton />} */}
       </div>
       <Web3ConnectModalButton size="small" css={{ maxHeight: 40 }} />
     </div>
