@@ -29,6 +29,7 @@ type Props = {
   initialAmount?: string
   initialAssetId?: string
   skipOptions?: boolean
+  supply?: boolean
 }
 
 export const TransferModal = ({
@@ -40,6 +41,7 @@ export const TransferModal = ({
   initialAmount,
   initialAssetId,
   skipOptions,
+  supply,
 }: Props) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
@@ -89,12 +91,16 @@ export const TransferModal = ({
 
   const title = stablepoolSelected
     ? t(
-        `liquidity.stablepool.transfer.stablepool${stablepoolAsset.isErc20 ? ".custom" : ""}`,
-        { symbol: stablepoolAsset.symbol },
+        !!supply
+          ? "lending.supply.liquidity.modal.title"
+          : "liquidity.stablepool.transfer.stablepool",
+        {
+          symbol: stablepoolAsset.symbol,
+        },
       )
     : t(
         `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
-        { symbol: stablepoolAsset.isErc20 ? stablepoolAsset.symbol : "" },
+        { symbol: stablepoolAsset.symbol },
       )
 
   return (
@@ -144,6 +150,7 @@ export const TransferModal = ({
                   setIsJoinFarms={setIsJoinFarms}
                   setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
                   onAssetOpen={() => paginateTo(Page.ASSETS)}
+                  supply={supply}
                 />
               </>
             ),

@@ -1,6 +1,6 @@
 import { UseHealthFactorChangeResult } from "api/borrow"
 import { useAccountBalances } from "api/deposits"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   Controller,
   FormProvider,
@@ -35,6 +35,7 @@ import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
+import { useAssets } from "providers/assets"
 
 type APY = { apy: number }
 type JoinStrategyFormWrapperProps = AddStablepoolWrapperProps & APY
@@ -141,11 +142,13 @@ const JoinStrategyForm = (
   },
 ) => {
   const { t } = useTranslation()
+  const { getErc20 } = useAssets()
   const form = useFormContext<TAddStablepoolFormValues>()
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
   const {
+    asset,
     setLiquidityLimit,
     isJoinFarms,
     balancesMax,
@@ -155,6 +158,8 @@ const JoinStrategyForm = (
     split,
     onAssetOpen,
     apy,
+    poolId,
+    reserves,
   } = props
 
   const {
@@ -167,6 +172,18 @@ const JoinStrategyForm = (
     control,
     name: "reserves",
   })
+
+  const displayTradeAlert = useMemo(
+    () =>
+      stablepoolAsset.isErc20 &&
+      poolId !== asset.id &&
+      !reserves.some(
+        (reserve) =>
+          reserve.id === asset.id ||
+          getErc20(reserve.id)?.underlyingAssetId === asset.id,
+      ),
+    [asset.id, getErc20, poolId, reserves, stablepoolAsset.isErc20],
+  )
 
   const isSubmitDisabled =
     !!errors.amount ||
@@ -272,7 +289,7 @@ const JoinStrategyForm = (
             </Alert>
           ))}
 
-        {stablepoolAsset.isErc20 && <TradeAlert />}
+        {displayTradeAlert && <TradeAlert />}
       </div>
 
       <Separator

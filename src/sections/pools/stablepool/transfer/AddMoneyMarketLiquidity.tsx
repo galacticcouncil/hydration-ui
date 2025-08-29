@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import BN from "bignumber.js"
 import {
   Controller,
@@ -6,7 +6,7 @@ import {
   useFieldArray,
   useFormContext,
 } from "react-hook-form"
-import { UseHealthFactorChangeResult } from "api/borrow"
+import { useBorrowAssetsApy, UseHealthFactorChangeResult } from "api/borrow"
 import { useAddToOmnipoolZod } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
 import { useTranslation } from "react-i18next"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
@@ -27,7 +27,6 @@ import {
   useStablepoolTradeShares,
 } from "./AddStablepoolLiquidity.utils"
 import { Alert } from "components/Alert/Alert"
-import { Spacer } from "components/Spacer/Spacer"
 import { PoolAddLiquidityInformationCard } from "sections/pools/modals/AddLiquidity/AddLiquidityInfoCard"
 import { Separator } from "components/Separator/Separator"
 import { Text } from "components/Typography/Text/Text"
@@ -41,6 +40,8 @@ import { StablepoolFeeSummaryRow } from "sections/pools/stablepool/components/St
 import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 import { PriceSummaryRow } from "sections/pools/stablepool/components/PriceSummaryRow"
 import { Reserves } from "sections/pools/stablepool/components/Reserves"
+import { useAssets } from "providers/assets"
+import { IncentivesButton } from "sections/lending/components/incentives/IncentivesButton"
 
 export const AddSplitMoneyMarketStablepool = (
   props: AddMoneyMarketStablepoolProps,
@@ -168,6 +169,7 @@ export const StablepoolForm = (
   },
 ) => {
   const { t } = useTranslation()
+  const { getErc20 } = useAssets()
   const form = useFormContext<TAddStablepoolFormValues>()
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -186,6 +188,7 @@ export const StablepoolForm = (
     split,
     setIsJoinFarms,
     onAssetOpen,
+    supply,
   } = props
 
   const {
@@ -198,6 +201,18 @@ export const StablepoolForm = (
     control,
     name: "reserves",
   })
+
+  const displayTradeAlert = useMemo(
+    () =>
+      stablepoolAsset.isErc20 &&
+      poolId !== asset.id &&
+      !reserves.some(
+        (reserve) =>
+          reserve.id === asset.id ||
+          getErc20(reserve.id)?.underlyingAssetId === asset.id,
+      ),
+    [asset.id, getErc20, poolId, reserves, stablepoolAsset.isErc20],
+  )
 
   const isSubmitDisabled =
     !!errors.amount ||
@@ -246,40 +261,67 @@ export const StablepoolForm = (
         })}
       </div>
 
-      <Spacer size={20} />
-
-      <LiquidityLimitField setLiquidityLimit={setLiquidityLimit} />
-
-      <StablepoolFeeSummaryRow poolId={poolId} />
-
-      <AvailableFarmsForm
-        name="farms"
-        farms={farms}
-        isJoinFarms={isJoinFarms}
-        setIsJoinFarms={setIsJoinFarms}
-      />
-
       <Reserves reserves={reserves} />
 
-      <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
-        {t("liquidity.add.modal.positionDetails")}
-      </Text>
+      {!!supply ? (
+        <>
+          <SummaryRow
+            label={t(
+              stablepoolAsset.isErc20
+                ? "liquidity.stablepool.add.minimalReceived"
+                : "liquidity.add.modal.shareTokens",
+            )}
+            content={t("value.tokenWithSymbol", {
+              value: BN(watch("amount")),
+              symbol: stablepoolAsset.name,
+            })}
+            withSeparator
+          />
+          <SupplyModalDetails {...props} />
+        </>
+      ) : (
+        <>
+          <LiquidityLimitField setLiquidityLimit={setLiquidityLimit} />
 
-      <SummaryRow
-        label={t(
-          stablepoolAsset.isErc20
-            ? "liquidity.stablepool.add.minimalReceived"
-            : "liquidity.add.modal.shareTokens",
-        )}
-        content={t("value.tokenWithSymbol", {
-          value: BN(watch("amount")),
-          symbol: stablepoolAsset.name,
-        })}
-        withSeparator
-      />
+          <StablepoolFeeSummaryRow poolId={poolId} />
 
-      {!split && (
-        <PriceSummaryRow selectedAsset={asset} poolAsset={stablepoolAsset} />
+          <AvailableFarmsForm
+            name="farms"
+            farms={farms}
+            isJoinFarms={isJoinFarms}
+            setIsJoinFarms={setIsJoinFarms}
+          />
+
+          <Text
+            color="pink500"
+            fs={15}
+            font="GeistMono"
+            tTransform="uppercase"
+            sx={{ mt: 16 }}
+          >
+            {t("liquidity.add.modal.positionDetails")}
+          </Text>
+
+          <SummaryRow
+            label={t(
+              stablepoolAsset.isErc20
+                ? "liquidity.stablepool.add.minimalReceived"
+                : "liquidity.add.modal.shareTokens",
+            )}
+            content={t("value.tokenWithSymbol", {
+              value: BN(watch("amount")),
+              symbol: stablepoolAsset.name,
+            })}
+            withSeparator
+          />
+
+          {!split && (
+            <PriceSummaryRow
+              selectedAsset={asset}
+              poolAsset={stablepoolAsset}
+            />
+          )}
+        </>
       )}
 
       {hfChange && (
@@ -309,8 +351,8 @@ export const StablepoolForm = (
               {e.message}
             </Alert>
           ))}
-        <PoolAddLiquidityInformationCard />
-        {stablepoolAsset.isErc20 && <TradeAlert />}
+        {!supply && <PoolAddLiquidityInformationCard />}
+        {displayTradeAlert && <TradeAlert />}
       </div>
 
       <Separator
@@ -328,5 +370,41 @@ export const StablepoolForm = (
           : t("liquidity.add.modal.confirmButton")}
       </Button>
     </form>
+  )
+}
+
+const SupplyModalDetails = ({
+  stablepoolAsset,
+  poolId,
+}: AddStablepoolProps) => {
+  const { t } = useTranslation()
+  const { data: apys } = useBorrowAssetsApy([poolId])
+  const apy = apys[0]
+
+  if (!apy) return null
+
+  const supplyApy = BN(apy.underlyingSupplyApy).plus(apy.lpAPY)
+
+  return (
+    <>
+      <SummaryRow
+        label={t("supplyApy")}
+        withSeparator
+        content={t("value.percentage", { value: supplyApy })}
+      />
+
+      {!!apy.incentives.length && (
+        <SummaryRow
+          label={t("lending.rewardsAPR")}
+          withSeparator
+          content={
+            <IncentivesButton
+              incentives={apy.incentives}
+              symbol={stablepoolAsset.symbol}
+            />
+          }
+        />
+      )}
+    </>
   )
 }

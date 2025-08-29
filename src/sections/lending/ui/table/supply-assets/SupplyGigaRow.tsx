@@ -55,6 +55,7 @@ export const SupplyGigaRow: FC<Props> = ({ reserve }) => {
             farms={[]}
             skipOptions
             disabledOmnipool
+            supply
           />
         )}
       </Modal>

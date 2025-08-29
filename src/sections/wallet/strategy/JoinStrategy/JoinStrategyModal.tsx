@@ -88,6 +88,7 @@ export const JoinStrategyModal = ({
                   setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
                   onAssetOpen={() => paginateTo(Page.ASSETS)}
                   apy={selectedPool.apy}
+                  isStablepoolOnly
                 />
               </>
             ),

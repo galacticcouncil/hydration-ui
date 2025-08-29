@@ -73,6 +73,7 @@ export type AddStablepoolWrapperProps = {
   poolId: string
   farms: TFarmAprData[]
   reserves: TReservesBalance
+  supply?: boolean
 }
 
 export type AddStablepoolProps = AddStablepoolWrapperProps & {
@@ -201,7 +202,7 @@ export const useStablepoolTradeShares = (
   const formValues = useWatch({ name: "reserves", control })
   const [debouncedValue = "0"] = useDebouncedValue(formValues[0].amount, 300)
 
-  const { getSwapTx, tradeData } = useBestTradeSell(
+  const { getSwapTx, tradeData, minAmountOut } = useBestTradeSell(
     asset.id,
     relatedAToken.id,
     debouncedValue,
@@ -215,9 +216,12 @@ export const useStablepoolTradeShares = (
   )
 
   const hfChange = useHealthFactorChange({
-    assetId: asset.id,
-    amount: debouncedValue,
-    action: ProtocolAction.withdraw,
+    assetId: relatedAToken.id,
+    amount: BigNumber(minAmountOut)
+      .shiftedBy(-STABLEPOOL_TOKEN_DECIMALS)
+      .toString(),
+    action: ProtocolAction.supply,
+    swapAsset: { assetId: asset.id, amount: debouncedValue },
   })
 
   return { getSwapTx, tradeData, hfChange }

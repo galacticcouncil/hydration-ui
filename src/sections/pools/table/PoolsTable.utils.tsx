@@ -232,7 +232,7 @@ const StablePoolModalWrapper = ({
       initialAssetId={initialAssetId}
       farms={pool.farms}
       poolId={pool.poolId}
-      stablepoolAssetId={pool.id}
+      stablepoolAssetId={pool.relatedAToken?.id ?? pool.id}
     />
   )
 }
