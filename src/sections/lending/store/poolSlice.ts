@@ -56,21 +56,14 @@ import {
   WithdrawAndSwitchActionProps,
 } from "sections/lending/helpers/types"
 import { Approval } from "sections/lending/helpers/useTransactionHandler"
-import { MarketDataType } from "sections/lending/ui-config/marketsConfig"
 import {
   minBaseTokenRemainingByNetwork,
   optimizedPath,
 } from "sections/lending/utils/utils"
 import { StateCreator } from "zustand"
 
-import {
-  selectCurrentChainIdV3MarketData,
-  selectFormattedReserves,
-} from "./poolSelectors"
+import { selectFormattedReserves } from "./poolSelectors"
 import { RootStore } from "./root"
-import BN from "bignumber.js"
-import { QueryClient } from "@tanstack/react-query"
-import { EXTERNAL_APY_QUERIES } from "sections/lending/ui-config/misc"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 // TODO: what is the better name for this type?
@@ -101,11 +94,7 @@ type GenerateSignatureRequestOpts = {
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
   data: Map<number, Map<string, PoolReserve>>
-  externalApyData: Map<string, string>
-  refreshPoolData: (options: {
-    marketData?: MarketDataType
-    queryClient?: QueryClient
-  }) => Promise<void>
+  refreshPoolData: () => Promise<void>
   refreshPoolV3Data: () => Promise<void>
   // methods
   useOptimizedPath: () => boolean | undefined
@@ -132,6 +121,9 @@ export interface PoolSlice {
     args: Omit<LPSignERC20ApprovalType, "user">,
   ) => Promise<string>
   claimRewards: (
+    args: ClaimRewardsActionsProps,
+  ) => Promise<EthereumTransactionTypeExtended[]>
+  claimStrategyRewards: (
     args: ClaimRewardsActionsProps,
   ) => Promise<EthereumTransactionTypeExtended[]>
   // TODO: optimize types to use only neccessary properties
@@ -222,7 +214,6 @@ export const createPoolSlice: StateCreator<
   }
   return {
     data: new Map(),
-    externalApyData: new Map(),
     getCorrectPoolBundle() {
       const currentMarketData = get().currentMarketData
       const provider = get().jsonRpcProvider()
@@ -239,11 +230,11 @@ export const createPoolSlice: StateCreator<
         })
       }
     },
-    refreshPoolData: async ({ marketData, queryClient }) => {
+    refreshPoolData: async () => {
       const account = get().account
       const currentChainId = get().currentChainId
 
-      const currentMarketData = marketData || get().currentMarketData
+      const currentMarketData = get().currentMarketData
       const poolDataProviderContract = new UiPoolDataProvider({
         uiPoolDataProviderAddress:
           currentMarketData.addresses.UI_POOL_DATA_PROVIDER,
@@ -366,34 +357,13 @@ export const createPoolSlice: StateCreator<
           )
         }
 
-        if (!queryClient) {
-          Promise.all(promises)
-          return
-        }
-
-        Object.entries(EXTERNAL_APY_QUERIES).forEach(([assetId, query]) => {
-          promises.push(
-            queryClient.fetchQuery(query).then((apy) => {
-              set(
-                produce((draft) => {
-                  draft.externalApyData.set(
-                    assetId,
-                    BN(apy).div(100).toString(),
-                  )
-                }),
-              )
-            }),
-          )
-        })
-
         await Promise.all(promises)
       } catch (e) {
         console.log("error fetching pool data", e)
       }
     },
     refreshPoolV3Data: async () => {
-      const v3MarketData = selectCurrentChainIdV3MarketData(get())
-      get().refreshPoolData({ marketData: v3MarketData })
+      get().refreshPoolData()
     },
     generateApproval: (args: ApproveType, ops = {}) => {
       const provider = get().jsonRpcProvider(ops.chainId)
@@ -893,7 +863,7 @@ export const createPoolSlice: StateCreator<
     claimRewards: async ({ selectedReward }) => {
       // TODO: think about moving timestamp from hook to EventEmitter
       const timestamp = dayjs().unix()
-      const reserves = selectFormattedReserves(get(), timestamp)
+      const reserves = selectFormattedReserves(get(), timestamp, new Map())
       const currentAccount = get().account
 
       const allReserves: string[] = []
@@ -943,6 +913,20 @@ export const createPoolSlice: StateCreator<
             selectedReward.incentiveControllerAddress,
         })
       }
+    },
+    claimStrategyRewards: async ({ selectedReward }) => {
+      const currentAccount = get().account
+
+      const incentivesTxBuilderV2: IncentivesControllerV2Interface =
+        new IncentivesControllerV2(get().jsonRpcProvider())
+
+      return incentivesTxBuilderV2.claimRewards({
+        user: currentAccount,
+        assets: selectedReward.assets,
+        to: currentAccount,
+        incentivesControllerAddress: selectedReward.incentiveControllerAddress,
+        reward: selectedReward.rewardTokenAddress,
+      })
     },
     useOptimizedPath: () => {
       return get().currentMarketData.v3 && optimizedPath(get().currentChainId)

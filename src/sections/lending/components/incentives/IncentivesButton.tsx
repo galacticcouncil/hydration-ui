@@ -51,7 +51,7 @@ export const IncentivesButton = ({
           sx={{ color: "basic400" }}
           value={incentivesNetAPR}
           percent
-          compact={incentivesNetAPR > 9999}
+          compact={incentivesNetAPR > 99}
         />
       )
     } else {

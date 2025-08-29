@@ -28,10 +28,6 @@ const WithdrawGigaAssetModal: React.FC<{
   const asset = getAsset(assetId)
   const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
 
-  const depositBalance = asset
-    ? new BN(accountAsset?.balance?.total || "0").shiftedBy(-asset.decimals)
-    : BN_NAN
-
   const maxBalance = asset
     ? new BN(accountAsset?.balance?.transferable || "0").shiftedBy(
         -asset.decimals,
@@ -42,7 +38,6 @@ const WithdrawGigaAssetModal: React.FC<{
     <RemoveDepositModal
       assetId={assetId}
       onClose={onClose}
-      balance={depositBalance.toString()}
       maxBalance={maxBalance.toString()}
     />
   )

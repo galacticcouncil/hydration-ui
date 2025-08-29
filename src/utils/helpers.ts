@@ -500,3 +500,23 @@ export function neverGuard(value: never) {
 export function percentageDifference(a: string, b: string): BN {
   return BN(a).minus(b).abs().div(BN(a).plus(b).div(2)).multipliedBy(100)
 }
+
+export const getDeploymentType = () => {
+  const hostname = window.location.hostname
+
+  if (hostname === "localhost") {
+    return "localhost"
+  } else if (hostname.includes("testnet-app")) {
+    return "testnet"
+  } else if (hostname.includes("paseo-app")) {
+    return "paseo"
+  } else if (hostname.includes("edge-app")) {
+    return "edge"
+  } else if (hostname.includes("hollarnet")) {
+    return "hollarnet"
+  } else if (hostname.includes("deploy-preview")) {
+    return hostname.match(/--([^-\s]+)-/)?.[1]
+  } else {
+    return undefined
+  }
+}

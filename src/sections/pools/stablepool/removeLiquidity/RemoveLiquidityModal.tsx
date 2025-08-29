@@ -62,7 +62,9 @@ export const RemoveLiquidityModal = ({
       : RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
   )
 
-  const [assetId, setAssetId] = useState<string | undefined>(assets[0])
+  const [assetId, setAssetId] = useState<string | undefined>(
+    pool.biggestPercentage?.assetId,
+  )
   const [selectedOption, setSelectedOption] = useState<RemoveOption>("SHARES")
   const [sharesAmount, setSharesAmount] = useState<string>()
   const [removeAll, setRemoveAll] = useState(false)
@@ -218,17 +220,16 @@ export const RemoveLiquidityModal = ({
             headerVariant: "gradient",
             content: (
               <RemoveStablepoolLiquidityForm
-                defaultValue={isRemovingOmnipoolPosition ? 100 : 25}
                 assetId={assetId}
                 onClose={onClose}
                 position={{
                   reserves: pool.reserves,
-                  fee: stablepoolFee,
+                  fee: stablepoolFee.toString(),
                   poolId: pool.poolId,
                   amount:
                     isRemovingOmnipoolPosition && !removeAll
-                      ? BN(sharesAmount ?? 0)
-                      : BN(stablepoolPositionAmount),
+                      ? sharesAmount ?? "0"
+                      : stablepoolPositionAmount,
                 }}
                 onSuccess={() => {
                   onSuccess()
@@ -247,6 +248,7 @@ export const RemoveLiquidityModal = ({
           },
           {
             title: t("selectAsset.title"),
+            noPadding: true,
             headerVariant: "gradient",
             content: (
               <AssetsModalContent

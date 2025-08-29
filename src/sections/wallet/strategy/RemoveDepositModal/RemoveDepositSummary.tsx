@@ -6,7 +6,6 @@ import { TAsset, useAssets } from "providers/assets"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
-import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 
 type Props = {
   readonly assetId: string
@@ -66,17 +65,6 @@ export const RemoveDepositSummary: FC<Props> = ({
           </Text>
         }
       />
-      {hfChange && (
-        <SummaryRow
-          label={t("healthFactor")}
-          content={
-            <HealthFactorChange
-              healthFactor={hfChange.currentHealthFactor}
-              futureHealthFactor={hfChange.futureHealthFactor}
-            />
-          }
-        />
-      )}
     </div>
   )
 }

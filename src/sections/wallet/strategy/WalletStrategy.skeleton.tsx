@@ -22,6 +22,7 @@ export const WalletStrategySkeleton: FC = () => {
   return (
     <SWalletStrategy>
       <WalletStrategyHeader />
+      <WalletStrategyTileSkeleton variant={StrategyTileVariant.Hollar} />
       <WalletStrategyTileSkeleton variant={StrategyTileVariant.One} />
       <WalletStrategyTileSkeleton variant={StrategyTileVariant.Two} />
     </SWalletStrategy>

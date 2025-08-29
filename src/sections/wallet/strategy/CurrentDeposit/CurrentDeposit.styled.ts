@@ -13,3 +13,21 @@ export const SCurrentDeposit = styled.div`
     justify-content: space-between;
   }
 `
+
+export const SCurrentHollarDeposit = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  align-items: end;
+
+  & > div:last-child {
+    grid-column: 1 / -1;
+  }
+
+  @media ${theme.viewport.gte.md} {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+  }
+`
