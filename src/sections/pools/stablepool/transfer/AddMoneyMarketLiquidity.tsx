@@ -325,26 +325,24 @@ export const StablepoolForm = (
       )}
 
       {hfChange && (
-        <>
-          <SummaryRow
-            label={t("healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={hfChange.currentHealthFactor}
-                futureHealthFactor={hfChange.futureHealthFactor}
-              />
-            }
-          />
-          <HealthFactorRiskWarning
-            accepted={healthFactorRiskAccepted}
-            onAcceptedChange={setHealthFactorRiskAccepted}
-            isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
-            sx={{ mb: 16 }}
-          />
-        </>
+        <SummaryRow
+          label={t("healthFactor")}
+          content={
+            <HealthFactorChange
+              healthFactor={hfChange.currentHealthFactor}
+              futureHealthFactor={hfChange.futureHealthFactor}
+            />
+          }
+        />
       )}
 
       <div sx={{ flex: "column", gap: 20 }}>
+        <HealthFactorRiskWarning
+          accepted={healthFactorRiskAccepted}
+          onAcceptedChange={setHealthFactorRiskAccepted}
+          isBelowThreshold={hfChange?.isHealthFactorBelowThreshold ?? false}
+        />
+
         {Array.isArray(errors.amount) &&
           errors.amount.map((e, i) => (
             <Alert key={i} variant="warning">
