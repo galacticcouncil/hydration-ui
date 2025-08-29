@@ -10,7 +10,7 @@ import {
   useMemo,
 } from "react"
 
-import { BoxProps } from "@/components/Box"
+import { Box, BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -177,24 +177,25 @@ type ModalBodyProps = BoxProps & {
 const ModalBody = ({
   scrollable = true,
   children,
+  maxHeight,
   ...props
 }: ModalBodyProps) => {
   if (scrollable) {
     return (
       <ScrollArea sx={{ flex: 1, height: "auto", minHeight: 0 }}>
-        <SModalBody
-          sx={{
-            maxHeight:
-              props.maxHeight ?? "calc(75vh - var(--modal-block-offset) * 2)",
-          }}
-          {...props}
+        <Box
+          maxHeight={maxHeight ?? "calc(75vh - var(--modal-block-offset) * 2)"}
         >
-          {children}
-        </SModalBody>
+          <SModalBody {...props}>{children}</SModalBody>
+        </Box>
       </ScrollArea>
     )
   }
-  return <SModalBody {...props}>{children}</SModalBody>
+  return (
+    <SModalBody {...props} maxHeight={maxHeight}>
+      {children}
+    </SModalBody>
+  )
 }
 
 const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />

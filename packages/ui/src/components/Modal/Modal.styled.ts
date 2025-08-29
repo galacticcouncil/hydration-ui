@@ -36,8 +36,6 @@ export const SModalClose = styled(Close)`
 `
 
 export const SModalWrapper = styled(Overlay)`
-  --modal-content-padding: 20px;
-  --modal-content-inset: calc(var(--modal-content-padding) * -1);
   --modal-block-offset: 10vh;
 
   position: fixed;
@@ -58,6 +56,9 @@ export const SModalWrapper = styled(Overlay)`
 `
 
 export const SModalContent = styled(Content)`
+  --modal-content-padding: 20px;
+  --modal-content-inset: calc(var(--modal-content-padding) * -1);
+
   position: fixed;
   inset: 0;
   outline: none;
