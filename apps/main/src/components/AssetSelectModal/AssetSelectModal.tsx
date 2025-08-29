@@ -8,9 +8,9 @@ import {
   ModalHeader,
   Skeleton,
   Text,
+  VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { useVirtualizer } from "@tanstack/react-virtual"
 import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -19,6 +19,8 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 
 import { SOption } from "./AssetSelectModal.styled"
 import { useAssetSelectModalAssets } from "./AssetSelectModal.utils"
+
+const VIRTUALIZED_ITEM_HEIGHT = 50
 
 export type AssetSelectProps = {
   assets: TAssetData[]
@@ -50,13 +52,6 @@ export const AssetSelectModalContent = ({
     search,
     selectedAssetId,
   )
-
-  const virtualizer = useVirtualizer({
-    count: sortedAssets.length,
-    getScrollElement: () => divRef.current,
-    estimateSize: () => 50,
-    overscan: 5,
-  })
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -128,17 +123,12 @@ export const AssetSelectModalContent = ({
           />
         }
       />
-      <ModalBody>
+      <ModalBody scrollable={false} noPadding>
         <Box
           ref={divRef}
           tabIndex={0}
           onKeyDown={handleKeyDown}
-          m="var(--modal-content-inset)"
-          sx={{
-            height: ["calc(100vh - 120px)", 450],
-            outline: "none",
-            overflowY: "auto",
-          }}
+          sx={{ outline: "none" }}
         >
           <Flex
             pt={getTokenPx("scales.paddings.m")}
@@ -157,59 +147,48 @@ export const AssetSelectModalContent = ({
 
           {isLoading ? (
             <Flex direction="column" gap={10}>
-              {[...Array(8)].map((_, index) => (
+              {[...Array(10)].map((_, index) => (
                 <Flex
                   key={index}
                   justify="space-between"
                   align="center"
+                  width="100%"
+                  height={VIRTUALIZED_ITEM_HEIGHT}
                   px={getTokenPx("containers.paddings.primary")}
                 >
                   <AssetLabelFull loading />
-                  <Skeleton width={50} height={20} />
+                  <Text align="right">
+                    <Skeleton height="1em" width={40} />
+                    <Skeleton height="0.8em" width={30} />
+                  </Text>
                 </Flex>
               ))}
             </Flex>
           ) : sortedAssets.length ? (
-            <div
-              sx={{
-                width: "100%",
-                height: virtualizer.getTotalSize(),
-                position: "relative",
-              }}
-            >
-              {virtualizer.getVirtualItems().map((virtualRow) => {
-                const asset = sortedAssets[virtualRow.index]
-
-                if (!asset) {
-                  return null
-                }
-
-                return (
-                  <SOption
-                    key={virtualRow.key}
-                    id={`asset-${virtualRow.key}`}
-                    role="option"
-                    highlighted={highlighted === virtualRow.index}
-                    onMouseMove={() => setHighlighted(virtualRow.index)}
-                    onClick={() => onSelectOption(asset)}
-                    sx={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                    }}
-                  >
-                    <AssetLabelFull asset={asset} />
-                    <Flex direction="column" align="flex-end">
-                      <Text fs="p4" fw={500} color={getToken("text.high")}>
-                        {t("number", { value: asset.balance || "0" })}
-                      </Text>
-                      <Text fs="p6" fw={400} color={getToken("text.medium")}>
-                        {t("currency", { value: asset.balanceDisplay || "0" })}
-                      </Text>
-                    </Flex>
-                  </SOption>
-                )
-              })}
-            </div>
+            <VirtualizedList
+              items={sortedAssets}
+              maxVisibleItems={[8, null, null, 10]}
+              itemSize={VIRTUALIZED_ITEM_HEIGHT}
+              renderItem={(item, { key, index }) => (
+                <SOption
+                  id={`asset-${key}`}
+                  role="option"
+                  highlighted={highlighted === index}
+                  onMouseMove={() => setHighlighted(index)}
+                  onClick={() => onSelectOption(item)}
+                >
+                  <AssetLabelFull asset={item} />
+                  <Flex direction="column" align="flex-end">
+                    <Text fs="p4" fw={500} color={getToken("text.high")}>
+                      {t("number", { value: item.balance || "0" })}
+                    </Text>
+                    <Text fs="p6" fw={400} color={getToken("text.medium")}>
+                      {t("currency", { value: item.balanceDisplay || "0" })}
+                    </Text>
+                  </Flex>
+                </SOption>
+              )}
+            />
           ) : (
             emptyState
           )}

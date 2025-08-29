@@ -7,14 +7,10 @@ export const SOption = styled.div<{ highlighted: boolean }>(
     justify-content: space-between;
     align-items: center;
 
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    padding: 0 var(--modal-content-padding);
+    height: 100%;
 
-    padding: 12px var(--modal-content-padding);
-
-    border-bottom: 1px solid ${theme.details.borders};
+    border-top: 1px solid ${theme.details.borders};
 
     cursor: pointer;
 

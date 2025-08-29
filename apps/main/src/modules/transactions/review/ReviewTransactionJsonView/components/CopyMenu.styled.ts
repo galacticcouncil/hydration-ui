@@ -15,8 +15,8 @@ export const CopyMenuTrigger = styled(DropdownMenuTrigger)`
   align-items: center;
   padding: 8px;
 
-  top: 0;
-  right: 0;
+  top: 2px;
+  right: 4px;
 
   z-index: 1;
 

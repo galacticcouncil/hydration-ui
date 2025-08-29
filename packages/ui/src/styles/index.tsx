@@ -77,23 +77,19 @@ const normalize = css`
 
 const scrollbar = (theme: Theme) => css`
   .windows ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
+    background: ${theme.controls.dim.base};
   }
 
-  .windows ::-webkit-scrollbar:horizontal {
-    width: 0px;
-    height: 0px;
-  }
-
-  .windows ::-webkit-scrollbar-thumb:vertical {
-    background: ${theme.details.borders};
-    border-radius: 3px;
+  .windows ::-webkit-scrollbar-thumb {
+    background: ${theme.controls.solid.activeHover};
+    border-radius: 4px;
   }
 
   .windows ::-webkit-scrollbar-track {
     background: transparent;
-    border-radius: 3px;
+    border-radius: 4px;
   }
 
   .windows ::-webkit-scrollbar-corner {
@@ -108,7 +104,6 @@ const scrollbar = (theme: Theme) => css`
 const globalStyles = (theme: Theme) => css`
   ${normalize}
   ${scrollbar(theme)}
-
   body {
     font-family: ${theme.fontFamilies1.secondary};
     font-size: 14px;

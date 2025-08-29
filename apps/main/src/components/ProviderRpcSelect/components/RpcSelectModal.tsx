@@ -76,7 +76,7 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
         </ModalBody>
       )}
       {!autoMode && (
-        <ModalBody sx={{ p: 0 }}>
+        <ModalBody noPadding scrollable={false}>
           <RpcList />
         </ModalBody>
       )}

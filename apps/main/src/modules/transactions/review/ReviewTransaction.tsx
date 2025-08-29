@@ -28,15 +28,22 @@ export const ReviewTransaction = () => {
         title={title ?? t("transaction.title")}
         description={description ?? t("transaction.description")}
       />
-      <ModalBody>
-        {!isIdle && <ReviewTransactionStatus />}
-        {isIdle && (
-          <>
+      {isIdle && (
+        <>
+          <ModalBody scrollable={false} noPadding>
             <ReviewTransactionJsonView />
+          </ModalBody>
+          <ModalBody scrollable={false}>
             <ReviewTransactionSummary />
-          </>
-        )}
-      </ModalBody>
+          </ModalBody>
+        </>
+      )}
+      {!isIdle && (
+        <ModalBody>
+          <ReviewTransactionStatus />
+        </ModalBody>
+      )}
+
       <ModalFooter justify="space-between">
         <ReviewTransactionFooter />
       </ModalFooter>

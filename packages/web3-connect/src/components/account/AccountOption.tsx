@@ -78,7 +78,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
               <Flex align="center" gap={4} sx={{ minWidth: 0 }}>
                 {onDelete && <AccountDeleteButton onClick={onDelete} />}
                 {wallet && <ProviderLogo size={12} wallet={wallet} />}
-                <Text fs="p3" truncate>
+                <Text fs="p3" truncate={200}>
                   {account.name}
                 </Text>
               </Flex>

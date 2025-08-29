@@ -3,6 +3,7 @@ import {
   Box,
   ButtonTransparent,
   Flex,
+  Grid,
   Icon,
   Input,
   Spinner,
@@ -39,7 +40,12 @@ export type RpcListItemProps = {
 export const RpcListHeader: React.FC = () => {
   const { t } = useTranslation()
   return (
-    <SRpcListItem bg={getToken("details.separatorsOnDim")}>
+    <Grid
+      columnTemplate="3fr 2fr 1fr"
+      gap={10}
+      p={"6px var(--modal-content-padding)"}
+      bg={getToken("details.separatorsOnDim")}
+    >
       <Text fs="p5" color={getToken("text.medium")}>
         {t("rpc.change.modal.column.name")}
       </Text>
@@ -54,7 +60,7 @@ export const RpcListHeader: React.FC = () => {
       >
         {t("rpc.change.modal.column.rpc")}
       </Text>
-    </SRpcListItem>
+    </Grid>
   )
 }
 

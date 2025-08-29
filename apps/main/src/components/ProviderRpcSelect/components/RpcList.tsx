@@ -1,3 +1,4 @@
+import { VirtualizedList } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { prop, uniqueBy } from "remeda"
@@ -48,20 +49,24 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
   return (
     <SRpcList className={className}>
       <RpcListHeader />
-      {providerList.map((props, index) => {
-        const rpcStatusQuery = rpcsStatusQueries[index]
-        return (
-          <RpcListItem
-            key={props.url}
-            {...props}
-            {...rpcStatusQuery?.data}
-            isLoading={!!rpcStatusQuery?.isLoading}
-            isActive={rpcUrl === props.url}
-            onClick={setRpcUrl}
-            onRemove={removeRpc}
-          />
-        )
-      })}
+      <VirtualizedList
+        items={providerList}
+        maxVisibleItems={5}
+        itemSize={56}
+        renderItem={(props, { index }) => {
+          const rpcStatusQuery = rpcsStatusQueries[index]
+          return (
+            <RpcListItem
+              {...props}
+              {...rpcStatusQuery?.data}
+              isLoading={!!rpcStatusQuery?.isLoading}
+              isActive={rpcUrl === props.url}
+              onClick={setRpcUrl}
+              onRemove={removeRpc}
+            />
+          )
+        }}
+      />
     </SRpcList>
   )
 }

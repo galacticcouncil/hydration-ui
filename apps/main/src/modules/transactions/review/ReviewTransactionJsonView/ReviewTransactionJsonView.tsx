@@ -1,4 +1,5 @@
-import { JsonView } from "@galacticcouncil/ui/components"
+import { JsonView, ScrollArea, Separator } from "@galacticcouncil/ui/components"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { t } from "i18next"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
@@ -21,16 +22,22 @@ export const ReviewTransactionJsonView = () => {
 
   return (
     <JsonViewContainer>
-      <CopyMenu txUrl={txUrl} txCallHash={txCallHash} txJson={txJson} />
-      <ExpandableSection title={t("transaction.jsonview.decoded")}>
-        <JsonView fs={13} src={txJson} />
-      </ExpandableSection>
-      <ExpandableSection
-        title={t("transaction.jsonview.calldata")}
-        maxContentHeight="100%"
-      >
-        <CallHashText hash={txCallHash} />
-      </ExpandableSection>
+      <ScrollArea>
+        <CopyMenu txUrl={txUrl} txCallHash={txCallHash} txJson={txJson} />
+        <ExpandableSection title={t("transaction.jsonview.decoded")}>
+          <JsonView fs={13} src={txJson} />
+        </ExpandableSection>
+        <Separator
+          my={getTokenPx("scales.paddings.base")}
+          sx={{ background: getToken("details.borders") }}
+        />
+        <ExpandableSection
+          title={t("transaction.jsonview.calldata")}
+          maxContentHeight="100%"
+        >
+          <CallHashText hash={txCallHash} />
+        </ExpandableSection>
+      </ScrollArea>
     </JsonViewContainer>
   )
 }
