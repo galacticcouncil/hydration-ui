@@ -22,15 +22,9 @@ import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
-import {
-  MoneyMarketAPYWrapper,
-  OverrideApy,
-} from "sections/pools/stablepool/components/GigaIncentives"
+import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
-import {
-  useAccount,
-  useEvmAccount,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NoData } from "sections/lending/components/primitives/NoData"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
@@ -49,8 +43,7 @@ type TSupplyAsset = ComputedReserveData & {
   detailsAddress: string
 }
 
-const supplyAssetColHelper = createColumnHelper<TSupplyAssetsRow>()
-const gigaAssetColHelper = createColumnHelper<ComputedReserveData>()
+const columnHelper = createColumnHelper<TSupplyAssetsRow>()
 
 export const useSupplyAssetsTableColumns = () => {
   const { t } = useTranslation()
@@ -61,7 +54,7 @@ export const useSupplyAssetsTableColumns = () => {
 
   return useMemo(
     () => [
-      supplyAssetColHelper.accessor("symbol", {
+      columnHelper.accessor("symbol", {
         header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
@@ -70,7 +63,7 @@ export const useSupplyAssetsTableColumns = () => {
           />
         ),
       }),
-      supplyAssetColHelper.accessor("walletBalanceUSD", {
+      columnHelper.accessor("walletBalanceUSD", {
         header: t("lending.walletBalance"),
         meta: {
           sx: {
@@ -107,7 +100,7 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      supplyAssetColHelper.accessor("supplyAPY", {
+      columnHelper.accessor("supplyAPY", {
         header: t("lending.apy"),
         meta: {
           sx: {
@@ -131,7 +124,7 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      supplyAssetColHelper.accessor("usageAsCollateralEnabledOnUser", {
+      columnHelper.accessor("usageAsCollateralEnabledOnUser", {
         header: t("lending.supply.table.canBeCollateral"),
         meta: {
           sx: {
@@ -155,7 +148,7 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      supplyAssetColHelper.display({
+      columnHelper.display({
         id: "actions",
         meta: {
           sx: {
@@ -206,94 +199,6 @@ export const useSupplyAssetsTableColumns = () => {
       }),
     ],
     [isBound, currentMarket, openSupply, t],
-  )
-}
-
-export const useSupplyGigaAssetsTableColumns = (
-  onOpenSupply: (reserve: ComputedReserveData) => void,
-) => {
-  const { t } = useTranslation()
-
-  const { account } = useAccount()
-
-  return useMemo(
-    () => [
-      gigaAssetColHelper.accessor("symbol", {
-        header: t("lending.asset"),
-        meta: {
-          sx: {
-            width: "40%",
-          },
-        },
-        cell: ({ row }) => (
-          <AssetNameColumn
-            detailsAddress={row.original.underlyingAsset}
-            symbol={row.original.symbol}
-          />
-        ),
-      }),
-      gigaAssetColHelper.accessor("supplyAPY", {
-        header: t("lending.apy"),
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
-        cell: ({ row }) => {
-          return (
-            <MoneyMarketAPYWrapper
-              type="supply"
-              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
-            />
-          )
-        },
-      }),
-      gigaAssetColHelper.accessor("usageAsCollateralEnabled", {
-        header: t("lending.supply.table.canBeCollateral"),
-        meta: {
-          sx: {
-            textAlign: "center",
-          },
-        },
-        cell: ({ row }) => {
-          const { isIsolated, usageAsCollateralEnabled } = row.original
-          return (
-            <CollateralColumn
-              isIsolated={isIsolated}
-              usageAsCollateralEnabled={usageAsCollateralEnabled}
-            />
-          )
-        },
-      }),
-      gigaAssetColHelper.display({
-        id: "actions",
-        meta: {
-          sx: {
-            textAlign: "end",
-          },
-        },
-        cell: ({ row }) => {
-          return (
-            <div sx={{ flex: "row", align: "center", justify: "end" }}>
-              <Button
-                sx={{ py: 4 }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onOpenSupply(row.original)
-                }}
-                size="micro"
-                disabled={!account}
-              >
-                {t("lending.supply")}
-              </Button>
-
-              <ChevronRight sx={{ color: "iconGray", mr: -8 }} />
-            </div>
-          )
-        },
-      }),
-    ],
-    [account, onOpenSupply, t],
   )
 }
 

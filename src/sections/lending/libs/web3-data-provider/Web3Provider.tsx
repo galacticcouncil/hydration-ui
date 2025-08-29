@@ -21,7 +21,6 @@ import {
   getFunctionDefsFromAbi,
   hexToAscii,
 } from "sections/lending/utils/utils"
-import { useRpcProvider } from "providers/rpcProvider"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { Web3Context } from "sections/lending/libs/hooks/useWeb3Context"
 import {
@@ -43,7 +42,7 @@ import { ExtendedProtocolAction } from "sections/lending/ui-config/protocolActio
 import { AAVE_EXTRA_GAS } from "utils/constants"
 import BN from "bignumber.js"
 import { useRefetchMarketData } from "sections/lending/hooks/useRefetchMarketData"
-import { transformEvmTxToExtrinsic } from "api/evm"
+import { useTransformEvmTxToExtrinsic } from "api/evm"
 
 export type ERC20TokenType = {
   address: string
@@ -176,10 +175,10 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
   children,
 }) => {
   const { t } = useTranslation()
-  const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const evm = useEvmAccount()
+  const transformTx = useTransformEvmTxToExtrinsic()
   const { wallet, type } = useWallet()
   const { disconnect: deactivate } = useEnableWallet(type)
   const { error } = useWeb3React<providers.Web3Provider>()
@@ -239,7 +238,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
       }
 
       if (!provider) {
-        const tx = transformEvmTxToExtrinsic(api, txData)
+        const tx = transformTx(txData)
 
         createTransaction(
           {
@@ -271,7 +270,7 @@ export const Web3ContextProvider: React.FC<{ children: ReactElement }> = ({
 
       return {} as TransactionResponse
     },
-    [api, createTransaction, poolData, provider, refetchMarketData, t],
+    [createTransaction, poolData, provider, refetchMarketData, t, transformTx],
   )
 
   // TODO: recheck that it works on all wallets

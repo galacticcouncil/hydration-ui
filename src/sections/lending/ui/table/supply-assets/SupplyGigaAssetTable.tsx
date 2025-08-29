@@ -11,16 +11,10 @@ import {
   supplyAssetsTableSize,
   supplyAssetsTableSpacing,
 } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable.constants"
-import { useSupplyGigaAssetsTableColumns } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable.utils"
 import { getSupplyGigaRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigaAssetTable.styled"
 import { SupplyGigaAssetMobileRow } from "sections/lending/ui/table/supply-assets/SupplyGigaAssetMobileRow"
-import { SupplyAssetModal } from "./SupplyAssetModal"
-import { Modal } from "components/Modal/Modal"
-import { DialogTitle } from "@radix-ui/react-dialog"
 import { theme } from "theme"
-import { useCallback, useState } from "react"
-import { getAssetIdFromAddress } from "utils/evm"
-import { Row } from "@tanstack/react-table"
+import { useSupplyGigaAssetsTableColumns } from "sections/lending/ui/table/supply-assets/SupplyGigaAssetTable.utils"
 
 export type SupplyGigaAssetTableProps = {
   data: ComputedReserveData[]
@@ -33,60 +27,36 @@ export const SupplyGigaAssetTable: React.FC<SupplyGigaAssetTableProps> = ({
   const { currentMarket } = useProtocolDataContext()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
-  const [supplyModal, setSupplyModal] = useState("")
-
-  const onClose = () => setSupplyModal("")
-
-  const onOpenSupply = useCallback((reserve: ComputedReserveData) => {
-    const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
-    setSupplyModal(assetId)
-  }, [])
-
-  const columns = useSupplyGigaAssetsTableColumns(onOpenSupply)
+  const columns = useSupplyGigaAssetsTableColumns()
   const table = useReactTable({
     data,
     columns,
   })
 
-  const renderMobileRow = useCallback(
-    (row: Row<ComputedReserveData>) => (
-      <SupplyGigaAssetMobileRow {...row} onOpenSupply={onOpenSupply} />
-    ),
-    [onOpenSupply],
-  )
-
   return (
-    <>
-      <DataTable
-        fixedLayout
-        css={[
-          css`
-            --border-color: transparent;
-          `,
-          { "tbody > tr": getSupplyGigaRowGradient(90) },
-        ]}
-        table={table}
-        spacing={supplyAssetsTableSpacing}
-        size={supplyAssetsTableSize}
-        background={supplyAssetsTableBackground}
-        customContainer
-        renderRow={isDesktop ? undefined : renderMobileRow}
-        hoverable
-        onRowClick={(row) => {
-          navigate({
-            to: ROUTES.reserveOverview(
-              row.original.underlyingAsset,
-              currentMarket,
-            ),
-          })
-        }}
-      />
-      <Modal open={!!supplyModal} onClose={onClose}>
-        <DialogTitle />
-        {!!supplyModal && (
-          <SupplyAssetModal assetId={supplyModal} onClose={onClose} />
-        )}
-      </Modal>
-    </>
+    <DataTable
+      fixedLayout
+      css={[
+        css`
+          --border-color: transparent;
+        `,
+        { "tbody > tr": getSupplyGigaRowGradient(90) },
+      ]}
+      table={table}
+      spacing={supplyAssetsTableSpacing}
+      size={supplyAssetsTableSize}
+      background={supplyAssetsTableBackground}
+      customContainer
+      renderRow={isDesktop ? undefined : SupplyGigaAssetMobileRow}
+      hoverable
+      onRowClick={(row) => {
+        navigate({
+          to: ROUTES.reserveOverview(
+            row.original.underlyingAsset,
+            currentMarket,
+          ),
+        })
+      }}
+    />
   )
 }

@@ -81,30 +81,26 @@ export const RemoveDepositModal: FC<Props> = ({
       underlyingAsset === getAddressFromAssetId(underlyingAssetId),
   )
 
-  const isWithdrawingMax =
-    !!underlyingUserReserve &&
-    assetAmount ===
-      BN(underlyingUserReserve.scaledATokenBalance)
-        .shiftedBy(-underlyingUserReserve.reserve.decimals)
-        .toString()
+  const isWithdrawingMax = BN(assetAmount).gte(balance)
 
-  const [debouncedBalance] = useDebouncedValue(assetAmount, 300)
+  const [debouncedAmount] = useDebouncedValue(assetAmount, 300)
 
   const {
     minAmountOut,
     getSwapTx,
     amountOut,
     isLoading: isLoadingSell,
-  } = useBestTradeSell(assetId, assetReceived?.id ?? "", debouncedBalance)
+  } = useBestTradeSell(assetId, assetReceived?.id ?? "", debouncedAmount)
 
-  const { data: withdrawAndSellAllTx, isLoading: isLoadingWithdrawAndSellAll } =
-    useWithdrawAndSellAll(
-      underlyingUserReserve?.underlyingAsset ?? "",
-      underlyingUserReserve?.reserve?.aTokenAddress ?? "",
-      assetReceived?.id ?? "",
-      debouncedBalance,
-      { enabled: isWithdrawingMax },
-    )
+  const {
+    isLoading: isLoadingWithdrawAndSellAll,
+    mutateAsync: getWithdrawAndSellAllTx,
+  } = useWithdrawAndSellAll(
+    underlyingUserReserve?.underlyingAsset ?? "",
+    underlyingUserReserve?.reserve?.aTokenAddress ?? "",
+    assetReceived?.id ?? "",
+    debouncedAmount,
+  )
 
   const { page, direction, paginateTo } = useModalPagination()
 
@@ -117,7 +113,9 @@ export const RemoveDepositModal: FC<Props> = ({
     .toString()
 
   const onSubmit = async () => {
-    const tx = isWithdrawingMax ? withdrawAndSellAllTx : await getSwapTx()
+    const tx = isWithdrawingMax
+      ? await getWithdrawAndSellAllTx()
+      : await getSwapTx()
 
     createTransaction(
       { tx },

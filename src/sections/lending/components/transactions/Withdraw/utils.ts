@@ -1,10 +1,11 @@
 import { ProtocolAction } from "@aave/contract-helpers"
 import { valueToBigNumber } from "@aave/math-utils"
-import { UseBaseQueryOptions, useQuery } from "@tanstack/react-query"
-import { transformEvmTxToExtrinsic } from "api/evm"
+import { useMutation } from "@tanstack/react-query"
+import { useTransformEvmTxToExtrinsic } from "api/evm"
 import { useBestTradeSell } from "api/trade"
 import BigNumber from "bignumber.js"
 import { parseUnits } from "ethers/lib/utils"
+import { useShallow } from "hooks/useShallow"
 import { useRpcProvider } from "providers/rpcProvider"
 import {
   ComputedReserveData,
@@ -14,7 +15,6 @@ import {
 import { useRootStore } from "sections/lending/store/root"
 import { AAVE_EXTRA_GAS } from "utils/constants"
 import { getAssetIdFromAddress } from "utils/evm"
-import { QUERY_KEYS } from "utils/queryKeys"
 
 export const calculateMaxWithdrawAmount = (
   user: ExtendedFormattedUser,
@@ -62,28 +62,22 @@ export const useWithdrawAndSellAll = (
   aTokenAddress: string,
   assetReceivedId: string,
   amount: string,
-  options: UseBaseQueryOptions = {},
 ) => {
   const { api } = useRpcProvider()
-  const [withdraw, estimateGasLimit] = useRootStore((state) => [
-    state.withdraw,
-    state.estimateGasLimit,
-  ])
+  const [withdraw, estimateGasLimit] = useRootStore(
+    useShallow((state) => [state.withdraw, state.estimateGasLimit]),
+  )
 
-  const { getSwapTx, isLoading: isLoadingSell } = useBestTradeSell(
+  const transformTx = useTransformEvmTxToExtrinsic()
+
+  const { getSwapTx } = useBestTradeSell(
     getAssetIdFromAddress(reserveAddress),
     assetReceivedId,
     amount,
   )
 
-  return useQuery({
-    enabled: (options.enabled ?? true) && !!amount && !isLoadingSell,
-    queryKey: QUERY_KEYS.moneyMarketMaxWithdraw(
-      reserveAddress,
-      assetReceivedId,
-      amount,
-    ),
-    queryFn: async () => {
+  return useMutation({
+    mutationFn: async () => {
       const config = await withdraw({
         reserve: reserveAddress,
         amount: "-1", // Withdraw all
@@ -108,7 +102,7 @@ export const useWithdrawAndSellAll = (
       }
 
       const withdrawEvmTx = api.tx.dispatcher.dispatchEvmCall(
-        transformEvmTxToExtrinsic(api, withdrawTx),
+        transformTx(withdrawTx),
       )
 
       return api.tx.utility.batchAll([
