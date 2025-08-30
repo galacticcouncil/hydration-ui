@@ -16,15 +16,17 @@ import { BraveWalletSol } from "./BraveWalletSol"
 import { WalletConnectEvm } from "./WalletConnectEvm"
 import { RabbyWallet } from "./RabbyWallet"
 import { CoinbaseWallet } from "./CoinbaseWallet"
-import { Nightly } from "./Nightly"
-import { NightlyEvm } from "./NightlyEvm"
 import { TrustWallet } from "./TrustWallet"
+import { Slush } from "./Slush"
+import { Suiet } from "./Suiet"
+import { PhantomSui } from "./PhantomSui"
 import { EIP6963AnnounceProviderEvent } from "sections/web3-connect/types"
 import {
   SUBSTRATE_H160_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import { useWeb3ConnectStore } from "sections/web3-connect/store/useWeb3ConnectStore"
+import { Wallet as StandardWallet } from "@mysten/wallet-standard"
 
 declare module "@talismn/connect-wallets" {
   interface Wallet {
@@ -93,11 +95,6 @@ const coinbaseWallet: Wallet = new CoinbaseWallet({
   ),
 })
 
-const nightly: Wallet = new Nightly()
-const nightlyEvm: Wallet = new NightlyEvm({
-  onAccountsChanged: onMetaMaskLikeAccountChange(WalletProviderType.NightlyEvm),
-})
-
 const rabbyWallet: Wallet = new RabbyWallet({
   onAccountsChanged: onMetaMaskLikeAccountChange(
     WalletProviderType.RabbyWallet,
@@ -126,10 +123,15 @@ const walletConnectEvm: Wallet = new WalletConnectEvm()
 
 const externalWallet: Wallet = new ExternalWallet()
 
+// Solana wallets
 const phantomWallet: Wallet = new Phantom()
 const solflareWallet: Wallet = new Solflare()
-
 const braveWalletSol: Wallet = new BraveWalletSol()
+
+// Sui wallets
+const slushWallet: Wallet = new Slush()
+const suietWallet: Wallet = new Suiet()
+const phantomSuiWallet: Wallet = new PhantomSui()
 
 export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   ...wallets,
@@ -139,14 +141,15 @@ export let SUPPORTED_WALLET_PROVIDERS: WalletProvider[] = [
   subwalletEvm,
   subwallet,
   coinbaseWallet,
-  nightly,
-  nightlyEvm,
   rabbyWallet,
   trustWallet,
   novaWallet,
   phantomWallet,
   solflareWallet,
   braveWalletSol,
+  slushWallet,
+  suietWallet,
+  phantomSuiWallet,
   walletConnect,
   walletConnectEvm,
   externalWallet,
@@ -196,7 +199,6 @@ const eip6963ProvidersByRdns = new Map([
     "com.coinbase.wallet",
     { Wallet: CoinbaseWallet, type: WalletProviderType.CoinbaseWallet },
   ],
-  ["app.nightly", { Wallet: NightlyEvm, type: WalletProviderType.NightlyEvm }],
   ["io.rabby", { Wallet: RabbyWallet, type: WalletProviderType.RabbyWallet }],
 ])
 
@@ -212,6 +214,24 @@ export function handleAnnounceProvider(event: EIP6963AnnounceProviderEvent) {
       new provider.Wallet({
         provider: event.detail.provider,
         onAccountsChanged: onMetaMaskLikeAccountChange(provider.type),
+      }),
+    )
+  }
+}
+
+const suiProvidersMapByName = new Map([
+  ["Slush", { Wallet: Slush, type: WalletProviderType.Slush }],
+  ["Suiet", { Wallet: Suiet, type: WalletProviderType.Suiet }],
+  ["Phantom", { Wallet: PhantomSui, type: WalletProviderType.PhantomSui }],
+])
+
+export const handleAnnounceSuiProvider = (wallet: StandardWallet) => {
+  const provider = suiProvidersMapByName.get(wallet.name)
+
+  if (provider) {
+    syncSupportedWalletProviders(
+      new provider.Wallet({
+        provider: wallet,
       }),
     )
   }
