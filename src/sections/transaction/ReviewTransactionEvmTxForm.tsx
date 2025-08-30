@@ -1,7 +1,4 @@
-import {
-  TransactionRequest,
-  TransactionResponse,
-} from "@ethersproject/providers"
+import { TransactionResponse } from "@ethersproject/providers"
 import { useMutation } from "@tanstack/react-query"
 import { useAccountFeePaymentAssets } from "api/payments"
 import { useSpotPrice } from "api/spotPrice"
@@ -24,16 +21,15 @@ import {
   useEvmAccount,
   useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
+import { EvmTxConfig } from "state/store"
 import { theme } from "theme"
+import { HYDRATION_CHAIN_KEY } from "utils/constants"
 import { NATIVE_EVM_ASSET_ID } from "utils/evm"
 
 type Props = {
   title?: string
   onCancel: () => void
-  tx: {
-    data: TransactionRequest
-    abi?: string
-  }
+  tx: EvmTxConfig
   onPermitDispatched: ({ permit }: { permit: PermitResult }) => void
   onEvmSigned: (data: { evmTx: TransactionResponse }) => void
 }
@@ -57,9 +53,15 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
     feePaymentAssetId,
   )
 
-  const shouldUsePermit = feePaymentAssetId !== NATIVE_EVM_ASSET_ID
+  const chainKey = tx?.chain ?? HYDRATION_CHAIN_KEY
+  const isHydrationChain = chainKey === HYDRATION_CHAIN_KEY
 
-  const { data: feeWETH, isLoading: isFeeLoading } = useEvmTxFee(tx.data)
+  const shouldUsePermit =
+    isHydrationChain && feePaymentAssetId !== NATIVE_EVM_ASSET_ID
+
+  const { data: feeWETH, isLoading: isFeeLoading } = useEvmTxFee(tx.data, {
+    enabled: isHydrationChain,
+  })
 
   const { mutate: signTx, isLoading } = useMutation(async () => {
     if (!account?.address) throw new Error("Missing active account")
@@ -72,7 +74,9 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
         const permit = await wallet.signer.getPermit(tx.data, { nonce })
         return onPermitDispatched({ permit })
       }
-      const evmTx = await wallet.signer.sendTransaction(tx.data)
+      const evmTx = await wallet.signer.sendTransaction(tx.data, {
+        chain: chainKey,
+      })
       onEvmSigned({ evmTx })
     }
   })
@@ -97,28 +101,30 @@ export const ReviewTransactionEvmTxForm: FC<Props> = ({
         content={<ReviewTransactionData evmTx={tx} />}
         footer={
           <div sx={{ mt: 15 }}>
-            <Summary
-              rows={[
-                {
-                  label: t("liquidity.reviewTransaction.modal.detail.cost"),
-                  content: (
-                    <>
-                      {isFeeLoading ? (
-                        <Skeleton width={100} height={16} />
-                      ) : (
-                        <Text fs={14}>
-                          {t("liquidity.add.modal.row.transactionCostValue", {
-                            amount: formattedFee,
-                            symbol: feePaymentAsset?.symbol,
-                            type: "token",
-                          })}
-                        </Text>
-                      )}
-                    </>
-                  ),
-                },
-              ]}
-            />
+            {isHydrationChain && (
+              <Summary
+                rows={[
+                  {
+                    label: t("liquidity.reviewTransaction.modal.detail.cost"),
+                    content: (
+                      <>
+                        {isFeeLoading ? (
+                          <Skeleton width={100} height={16} />
+                        ) : (
+                          <Text fs={14}>
+                            {t("liquidity.add.modal.row.transactionCostValue", {
+                              amount: formattedFee,
+                              symbol: feePaymentAsset?.symbol,
+                              type: "token",
+                            })}
+                          </Text>
+                        )}
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            )}
             <div
               sx={{
                 mt: ["auto", 24],
