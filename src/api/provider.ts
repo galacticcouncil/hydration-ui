@@ -294,6 +294,7 @@ export const useProviderAssets = () => {
             true,
             externalTokens[dataEnv],
           )
+
           const [tradeAssets, pools] = await Promise.all([
             api.router.getAllAssets(),
             api.router.getPools(),
