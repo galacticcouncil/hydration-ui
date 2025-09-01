@@ -290,11 +290,13 @@ export const useProviderAssets = () => {
             : useUserExternalTokenStore.getState()
 
           const { api, client } = provider.sdk
-
-          const [tradeAssets, pools, sdkAssets] = await Promise.all([
+          const sdkAssets = await client.asset.getOnChainAssets(
+            true,
+            externalTokens[dataEnv],
+          )
+          const [tradeAssets, pools] = await Promise.all([
             api.router.getAllAssets(),
             api.router.getPools(),
-            client.asset.getOnChainAssets(true, externalTokens[dataEnv]),
           ])
 
           const aTokenPairs: TATokenPairStored[] = pools
