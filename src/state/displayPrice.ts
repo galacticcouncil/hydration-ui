@@ -35,18 +35,13 @@ export const useAssetsPrice = (assetIds: string[]) => {
   usePriceKeys(assetIds)
 
   const assets = useDisplaySpotPriceStore(
-    useShallow((state) =>
-      assetIds.reduce<Record<string, string>>((acc, assetId) => {
-        acc[assetId] = state.assets[assetId]
-        return acc
-      }, {}),
-    ),
+    useShallow((state) => assetIds.map((id) => [id, state.assets[id]])),
   )
 
   const prices = useMemo(() => {
     const result: AssetPrice = {}
 
-    Object.entries(assets).forEach(([key, price]) => {
+    assets.forEach(([key, price]) => {
       result[key] = {
         price,
         isLoading: isNil(price),
