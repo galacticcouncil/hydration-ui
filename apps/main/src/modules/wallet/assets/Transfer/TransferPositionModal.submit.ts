@@ -5,7 +5,6 @@ import {
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { useRefetchAccountBalance } from "@/api/account"
 import { TransferPositionFormValues } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -23,8 +22,6 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
 
   const rpc = useRpcProvider()
   const { papi } = rpc
-
-  const refetchAccountBalance = useRefetchAccountBalance()
 
   return useMutation({
     mutationFn: async ({
@@ -80,6 +77,5 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       })
     },
     onMutate: onClose,
-    onSuccess: () => refetchAccountBalance(),
   })
 }

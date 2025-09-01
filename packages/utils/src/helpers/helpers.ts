@@ -1,3 +1,4 @@
+import Big from "big.js"
 import { isNullish } from "remeda"
 
 export const sleep = (ms: number) =>
@@ -64,4 +65,14 @@ export const getRdnsFromUrl = (url: string): string => {
   } catch {
     return ""
   }
+}
+
+export const percentageDifference = (
+  a: string | bigint,
+  b: string | bigint,
+): Big => {
+  const aStr = typeof a === "bigint" ? a.toString() : a
+  const bStr = typeof b === "bigint" ? b.toString() : b
+
+  return Big(aStr).minus(bStr).abs().div(Big(aStr).plus(bStr).div(2)).mul(100)
 }
