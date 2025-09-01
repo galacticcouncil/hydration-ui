@@ -4,12 +4,13 @@ import { createRootRouteWithContext } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { lazy } from "react"
 
-import { useAccountBalance, useAccountUniques } from "@/api/account"
+import { useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useAllPools, useOmnipoolIds } from "@/api/pools"
 import { useProviderMetadata, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
+import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
@@ -39,7 +40,7 @@ const Subscriptions = () => {
   useProviderMetadata()
   useOmnipoolIds()
   useInvalidateOnBlock()
-  useAccountBalance()
+  useAccountBalanceSubscription()
   useAccountUniques()
   usePriceSubscriber()
   useAllPools()

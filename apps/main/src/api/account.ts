@@ -1,15 +1,13 @@
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { millisecondsInHour } from "date-fns/constants"
-import { useCallback, useEffect } from "react"
-import { pick, prop } from "remeda"
+import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
-import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 
@@ -49,93 +47,6 @@ export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
   const address = isConnected ? account.address : ""
 
   return usePapiObservableQuery("System.Account", [address, "best"], options)
-}
-
-export const accountBalanceQueryKey = (address: string | undefined) => [
-  QUERY_KEY_BLOCK_PREFIX,
-  "account",
-  "balance",
-  address,
-]
-
-export const useRefetchAccountBalance = () => {
-  const queryClient = useQueryClient()
-  const { account } = useAccount()
-
-  return useCallback(() => {
-    queryClient.refetchQueries({
-      queryKey: accountBalanceQueryKey(account?.address),
-    })
-  }, [account?.address, queryClient])
-}
-
-export const useAccountBalance = () => {
-  const address = useAccount().account?.address
-  const { papi, sdk, isLoaded } = useRpcProvider()
-  const setBalance = useAccountData(prop("setBalance"))
-  const resetBalances = useAccountData(prop("resetBalances"))
-  const { getErc20AToken } = useAssets()
-
-  useEffect(() => {
-    resetBalances()
-  }, [address, resetBalances])
-
-  return useQuery({
-    enabled: !!address && isLoaded,
-    queryKey: accountBalanceQueryKey(address),
-    queryFn: async () => {
-      if (!address) return null
-
-      const balancesRaw = await papi.apis.CurrenciesApi.accounts(address, {
-        at: "best",
-      })
-
-      if (!balancesRaw) {
-        return null
-      }
-
-      const maxReservesMap = await (async () => {
-        try {
-          const maxReserves = await sdk.api.aave.getMaxWithdrawAll(address)
-
-          return new Map(
-            Object.entries(maxReserves).map(([token, amount]) => [
-              token,
-              amount,
-            ]),
-          )
-        } catch (err) {
-          console.error(err)
-          return new Map()
-        }
-      })()
-
-      const balances = balancesRaw.map(([assetId, balance]) => {
-        const registryId = getErc20AToken(assetId)?.underlyingAssetId
-
-        const maxReserve = registryId
-          ? maxReservesMap.get(registryId)
-          : undefined
-
-        const free = maxReserve?.amount ?? balance.free
-        const reserved = balance.reserved
-        const total = (balance.free > free ? balance.free : free) + reserved
-
-        return {
-          free,
-          total,
-          reserved,
-          assetId: assetId.toString(),
-        }
-      })
-
-      setBalance(balances)
-
-      return null
-    },
-    notifyOnChangeProps: [],
-    staleTime: millisecondsInHour,
-  })
 }
 
 export const useAccountUniques = () => {
