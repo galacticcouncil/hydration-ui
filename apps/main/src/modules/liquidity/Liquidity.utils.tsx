@@ -66,7 +66,7 @@ export type OmnipoolAssetTable = {
 
 export type IsolatedPoolTable = {
   id: string
-  tokens: PoolToken[]
+  tokens: [PoolToken, PoolToken]
   tvlDisplay: string
   meta: XYKPoolMeta
   isPositions: boolean
@@ -468,7 +468,10 @@ export const useIsolatedPools = () => {
           pool.tokens,
         )
 
-        if (!meta || !shareTokenId) return acc
+        const tokenA = pool.tokens[0]
+        const tokenB = pool.tokens[1]
+
+        if (!meta || !shareTokenId || !tokenA || !tokenB) return acc
 
         const { xykMiningPositions } = getPositions(pool.address)
 
@@ -484,7 +487,7 @@ export const useIsolatedPools = () => {
 
         acc.push({
           id: pool.address,
-          tokens: pool.tokens,
+          tokens: [tokenA, tokenB],
           meta,
           tvlDisplay,
           isPositions: positionsAmount > 0,

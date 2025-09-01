@@ -15,7 +15,7 @@ export const Skeleton: React.FC<SkeletonProps> = (props) => {
     <ClassNames>
       {({ css }) => (
         <SkeletonPrimitive
-          containerClassName={css({ display: "contents" })}
+          containerClassName={css(props.className)}
           baseColor={getToken("details.skeleton")}
           highlightColor={getToken("details.skeleton")}
           {...props}
