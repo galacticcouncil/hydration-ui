@@ -277,6 +277,13 @@ export const StablepoolForm = (
             })}
             withSeparator
           />
+          {!split && (
+            <PriceSummaryRow
+              selectedAsset={asset}
+              poolAsset={stablepoolAsset}
+            />
+          )}
+
           <SupplyModalDetails {...props} />
         </>
       ) : (
