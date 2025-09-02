@@ -31,7 +31,7 @@ export const AvailableIncentives = ({ pool }: { pool: TStablepool }) => {
     .plus(lpFeeStablepool ?? 0)
 
   return (
-    <div sx={{ flex: "column", gap: 10 }}>
+    <div sx={{ flex: "column", gap: 12 }}>
       <Text fs={18} font="GeistMono" tTransform="uppercase">
         {t("liquidity.pool.details.incetives.label")}
       </Text>
