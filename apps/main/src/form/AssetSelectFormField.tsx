@@ -45,12 +45,14 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
     <AssetSelect
       {...assetSelectProps}
       selectedAsset={assetField.value}
-      setSelectedAsset={(asset) => {
-        if (disabledAssetSelector) return
-
-        assetField.onChange(asset)
-        onAssetChange?.(asset, assetField.value)
-      }}
+      setSelectedAsset={
+        !disabledAssetSelector
+          ? (asset) => {
+              assetField.onChange(asset)
+              onAssetChange?.(asset, assetField.value)
+            }
+          : undefined
+      }
       value={amountField.value}
       onChange={(value) => {
         amountField.onChange(value)

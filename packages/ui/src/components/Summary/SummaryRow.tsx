@@ -18,14 +18,8 @@ export const SummaryRow = ({
   loading,
 }: RowModel) => {
   return (
-    <Flex sx={{ justifyContent: "space-between", my: 8 }} className={className}>
-      <Flex
-        direction="column"
-        sx={{
-          gap: 4,
-          justifyContent: "space-between",
-        }}
-      >
+    <Flex align="center" justify="space-between" my={8} className={className}>
+      <Flex direction="column" justify="space-between" gap={4}>
         <Text fs="p5" color={getToken("text.medium")}>
           {label}
         </Text>

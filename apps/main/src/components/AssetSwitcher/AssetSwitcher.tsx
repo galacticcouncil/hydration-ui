@@ -21,7 +21,7 @@ type AssetSwitcherProps = {
   readonly disabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean
-  readonly onSwitchAssets: () => void
+  readonly onSwitchAssets?: () => void
 }
 
 export const AssetSwitcher = ({
@@ -57,7 +57,7 @@ export const AssetSwitcher = ({
 
   const switchAssets = (): void => {
     setIsReversed(false)
-    onSwitchAssets()
+    onSwitchAssets?.()
   }
 
   const isPriceReady = canCalculatePrice || !isFallbackPriceLoading
@@ -67,9 +67,11 @@ export const AssetSwitcher = ({
   return (
     <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
       <Separator />
-      <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
-        <Icon size={16} component={ArrowDown} />
-      </SSwitchContainer>
+      {onSwitchAssets && (
+        <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
+          <Icon size={16} component={ArrowDown} />
+        </SSwitchContainer>
+      )}
       <>
         <Separator />
         <SPriceContainer
