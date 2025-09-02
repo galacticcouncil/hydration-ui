@@ -1,6 +1,5 @@
 import { calculate_liquidity_in } from "@galacticcouncil/math-xyk"
 import { Alert, Button, Summary } from "@galacticcouncil/ui/components"
-import { Flex } from "@galacticcouncil/ui/components/Flex"
 import {
   ModalBody,
   ModalContentDivider,
@@ -131,137 +130,138 @@ export const AddIsolatedLiquidityForm = ({
   const sharesError = form.formState.errors.shares
 
   return (
-    <Flex justify="center" mt={getTokenPx("containers.paddings.primary")}>
-      <ModalContainer open>
-        <ModalHeader title={t("addLiquidity")} closable={false} />
-        <ModalBody>
-          <FormProvider {...form}>
-            <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
-              <AssetSelectFormField<FormValues>
-                label={t("liquidity.createPool.modal.assetA")}
-                assetFieldName="assetA"
-                amountFieldName="amountA"
-                assets={[]}
-                maxBalance={assetABalance}
-                disabledAssetSelector
-                onAmountChange={(value) => {
-                  form.setValue("lastUpdated", "assetA")
+    <ModalContainer
+      open
+      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+    >
+      <ModalHeader title={t("addLiquidity")} closable={false} />
+      <ModalBody>
+        <FormProvider {...form}>
+          <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
+            <AssetSelectFormField<FormValues>
+              label={t("liquidity.createPool.modal.assetA")}
+              assetFieldName="assetA"
+              amountFieldName="amountA"
+              assets={[]}
+              maxBalance={assetABalance}
+              disabledAssetSelector
+              onAmountChange={(value) => {
+                form.setValue("lastUpdated", "assetA")
 
-                  const amountB = scaleHuman(
-                    calculate_liquidity_in(
-                      reserveA,
-                      reserveB,
-                      scale(value, assetA.decimals),
-                    ),
-                    assetB.decimals,
-                  )
+                const amountB = scaleHuman(
+                  calculate_liquidity_in(
+                    reserveA,
+                    reserveB,
+                    scale(value, assetA.decimals),
+                  ),
+                  assetB.decimals,
+                )
 
-                  form.setValue("amountB", amountB, {
-                    shouldValidate: true,
-                    shouldTouch: true,
-                  })
+                form.setValue("amountB", amountB, {
+                  shouldValidate: true,
+                  shouldTouch: true,
+                })
 
-                  form.setValue("shares", getShares(value), {
-                    shouldValidate: true,
-                    shouldTouch: true,
-                  })
-                }}
+                form.setValue("shares", getShares(value), {
+                  shouldValidate: true,
+                  shouldTouch: true,
+                })
+              }}
+            />
+
+            <AssetSwitcher
+              assetInId={assetA.id}
+              assetOutId={assetB.id}
+              priceIn=""
+              priceOut=""
+              fallbackPrice={spotPriceData?.spotPrice?.toString()}
+              isFallbackPriceLoading={isSpotPricePending}
+            />
+
+            <AssetSelectFormField<FormValues>
+              label={t("liquidity.createPool.modal.assetB")}
+              assetFieldName="assetB"
+              amountFieldName="amountB"
+              assets={[]}
+              maxBalance={assetBBalance}
+              disabledAssetSelector
+              onAmountChange={(value) => {
+                form.setValue("lastUpdated", "assetB")
+
+                const amountA = scaleHuman(
+                  calculate_liquidity_in(
+                    reserveB,
+                    reserveA,
+                    scale(value, assetB.decimals),
+                  ),
+                  assetA.decimals,
+                )
+
+                form.setValue("shares", getShares(amountA), {
+                  shouldValidate: true,
+                  shouldTouch: true,
+                })
+
+                form.setValue("amountA", amountA, {
+                  shouldValidate: true,
+                  shouldTouch: true,
+                })
+              }}
+            />
+
+            <ModalContentDivider />
+
+            <PositionDetailsLabel />
+
+            <Summary
+              separator={<ModalContentDivider />}
+              rows={[
+                {
+                  label: t("liquidity.add.modal.shareOfPool"),
+                  content: t("common:percent", { value: ratio }),
+                  loading: isLoading,
+                },
+                {
+                  label: t("liquidity.add.modal.receivedAmountOfPoolShares"),
+                  content: t("common:number", {
+                    value: scaleHuman(shares ?? 0, pool.meta.decimals),
+                  }),
+                  loading: isLoading,
+                },
+                {
+                  label: t("liquidity.add.modal.rewardsFromFees.label"),
+                  content: t("common:percent", { value: fee }),
+                  loading: isLoading,
+                },
+              ]}
+            />
+
+            <ModalContentDivider />
+
+            <AddLiquidityAlert />
+
+            {sharesError && (
+              <Alert
+                variant="error"
+                description={sharesError.message}
+                sx={{ mb: getTokenPx("containers.paddings.secondary") }}
               />
+            )}
 
-              <AssetSwitcher
-                assetInId={assetA.id}
-                assetOutId={assetB.id}
-                priceIn=""
-                priceOut=""
-                fallbackPrice={spotPriceData?.spotPrice?.toString()}
-                isFallbackPriceLoading={isSpotPricePending}
-              />
+            <ModalContentDivider />
 
-              <AssetSelectFormField<FormValues>
-                label={t("liquidity.createPool.modal.assetB")}
-                assetFieldName="assetB"
-                amountFieldName="amountB"
-                assets={[]}
-                maxBalance={assetBBalance}
-                disabledAssetSelector
-                onAmountChange={(value) => {
-                  form.setValue("lastUpdated", "assetB")
-
-                  const amountA = scaleHuman(
-                    calculate_liquidity_in(
-                      reserveB,
-                      reserveA,
-                      scale(value, assetB.decimals),
-                    ),
-                    assetA.decimals,
-                  )
-
-                  form.setValue("shares", getShares(amountA), {
-                    shouldValidate: true,
-                    shouldTouch: true,
-                  })
-
-                  form.setValue("amountA", amountA, {
-                    shouldValidate: true,
-                    shouldTouch: true,
-                  })
-                }}
-              />
-
-              <ModalContentDivider />
-
-              <PositionDetailsLabel />
-
-              <Summary
-                separator={<ModalContentDivider />}
-                rows={[
-                  {
-                    label: t("liquidity.add.modal.shareOfPool"),
-                    content: t("common:percent", { value: ratio }),
-                    loading: isLoading,
-                  },
-                  {
-                    label: t("liquidity.add.modal.receivedAmountOfPoolShares"),
-                    content: t("common:number", {
-                      value: scaleHuman(shares ?? 0, pool.meta.decimals),
-                    }),
-                    loading: isLoading,
-                  },
-                  {
-                    label: t("liquidity.add.modal.rewardsFromFees.label"),
-                    content: t("common:percent", { value: fee }),
-                    loading: isLoading,
-                  },
-                ]}
-              />
-
-              <ModalContentDivider />
-
-              <AddLiquidityAlert />
-
-              {sharesError && (
-                <Alert
-                  variant="error"
-                  description={sharesError.message}
-                  sx={{ mb: getTokenPx("containers.paddings.secondary") }}
-                />
-              )}
-
-              <ModalContentDivider />
-
-              <Button
-                type="submit"
-                size="large"
-                width="100%"
-                mt={getTokenPx("containers.paddings.primary")}
-                disabled={!form.formState.isValid}
-              >
-                {t("liquidity.add.modal.submit")}
-              </Button>
-            </form>
-          </FormProvider>
-        </ModalBody>
-      </ModalContainer>
-    </Flex>
+            <Button
+              type="submit"
+              size="large"
+              width="100%"
+              mt={getTokenPx("containers.paddings.primary")}
+              disabled={!form.formState.isValid}
+            >
+              {t("liquidity.add.modal.submit")}
+            </Button>
+          </form>
+        </FormProvider>
+      </ModalBody>
+    </ModalContainer>
   )
 }

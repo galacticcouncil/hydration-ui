@@ -1,6 +1,7 @@
 import { calculate_shares } from "@galacticcouncil/math-xyk"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
+import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
@@ -36,15 +37,17 @@ export const useAddIsolatedLiquidityData = (
   const { data: consts, isLoading: isConstsLoading } = useXYKConsts()
   const assetA = pool.tokens[0]
 
-  const getShares = (amountA: string) =>
-    liquidity && assetA && amountA.length
-      ? calculate_shares(
-          assetA.balance.toString(),
-          scale(amountA, assetA.decimals ?? 0),
-          liquidity.toString(),
-        )
-      : "0"
-
+  const getShares = useCallback(
+    (amountA: string) =>
+      liquidity && assetA && amountA.length
+        ? calculate_shares(
+            assetA.balance.toString(),
+            scale(amountA, assetA.decimals ?? 0),
+            liquidity.toString(),
+          )
+        : "0",
+    [liquidity, assetA],
+  )
   const ratio =
     liquidity && shares
       ? Big(shares)
