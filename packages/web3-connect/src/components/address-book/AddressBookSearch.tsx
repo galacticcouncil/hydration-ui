@@ -26,10 +26,12 @@ export const AddressBookSearch: FC<Props> = ({
       />
       {canAdd && (
         <Button
-          position="absolute"
-          right={20}
-          top="50%"
-          transform="translateY(-50%)"
+          sx={{
+            position: "absolute",
+            right: 4,
+            top: "50%",
+            transform: "translateY(-50%)",
+          }}
           variant="secondary"
           size="small"
           onClick={onAdd}

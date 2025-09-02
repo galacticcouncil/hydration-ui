@@ -1,15 +1,15 @@
 import { AccountAvatarTheme } from "@galacticcouncil/ui/components"
 import {
+  EvmAddr,
   isEvmParachainAccount,
   isH160Address,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
   safeConvertSS58toH160,
   safeConvertSS58toPublicKey,
+  SolanaAddr,
+  Ss58Addr,
 } from "@galacticcouncil/utils"
-import { addr } from "@galacticcouncil/xcm-core"
-
-const { Ss58Addr, EvmAddr, SolanaAddr } = addr
 
 import { WalletProviderType } from "@/config/providers"
 import {
@@ -36,6 +36,7 @@ export const toStoredAccount = ({
   return {
     publicKey,
     address: ss58Format,
+    rawAddress: address,
     name: name ?? "",
     provider: provider,
   }
@@ -65,13 +66,14 @@ export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
 }
 
 export function getWalletModeFromAddress(address: string) {
-  if (EvmAddr.isValid(address)) {
-    return WalletMode.EVM
-  } else if (Ss58Addr.isValid(address)) {
-    return WalletMode.Substrate
-  } else if (SolanaAddr.isValid(address)) {
-    return WalletMode.Solana
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return WalletMode.EVM
+    case Ss58Addr.isValid(address):
+      return WalletMode.Substrate
+    case SolanaAddr.isValid(address):
+      return WalletMode.Solana
+    default:
+      return null
   }
-
-  return null
 }
