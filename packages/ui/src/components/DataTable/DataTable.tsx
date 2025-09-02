@@ -21,7 +21,6 @@ import {
   useMemo,
 } from "react"
 
-import { Box } from "@/components/Box"
 import { Button } from "@/components/Button"
 import {
   SCollapsible,
@@ -297,9 +296,7 @@ const DataTable = forwardRef(
                           colSpan={table.getVisibleLeafColumns().length + 1}
                         >
                           <SCollapsible>
-                            <Box py={16}>
-                              {renderSubComponent(row.original)}
-                            </Box>
+                            {renderSubComponent(row.original)}
                           </SCollapsible>
                         </TableCell>
                       </TableRow>

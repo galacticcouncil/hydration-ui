@@ -10,8 +10,8 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
-import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
 import { SLiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"
+import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { TAsset } from "@/providers/assetsProvider"
 
@@ -37,9 +37,10 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <LiquidityPositionActions
+          <LiquidityPositionMoreActions
             assetId={asset.id}
             positionId={position.id}
+            hasJoinFarm
           />
         </DropdownMenuContent>
       </DropdownMenu>

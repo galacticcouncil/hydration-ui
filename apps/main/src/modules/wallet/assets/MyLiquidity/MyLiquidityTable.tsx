@@ -48,7 +48,7 @@ export const MyLiquidityTable: FC<Props> = ({
             .includes(searchPhrase.toLowerCase())
         }
         expandable={isMobile ? false : "single"}
-        getIsExpandable={({ positions }) => positions.length > 1}
+        getIsExpandable={({ positions }) => positions.length >= 1}
         renderSubComponent={({ asset, positions }) => (
           <LiquidityDetailExpanded asset={asset} positions={positions} />
         )}

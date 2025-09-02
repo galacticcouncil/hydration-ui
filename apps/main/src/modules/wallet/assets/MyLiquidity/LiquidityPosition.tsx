@@ -1,12 +1,4 @@
-import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
-import {
-  Amount,
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Amount, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -60,20 +52,7 @@ export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
         displayValue={currentDisplayPrice}
       />
       <LiquidityFarms assetId={asset.id} rewards={position.rewards} />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="tertiary" outline>
-            {t("common:actions")}
-            <ChevronDown />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <LiquidityPositionActions
-            assetId={asset.id}
-            positionId={position.id}
-          />
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <LiquidityPositionActions assetId={asset.id} positionId={position.id} />
     </SLiquidityPosition>
   )
 }
