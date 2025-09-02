@@ -9,7 +9,7 @@ export const MyLiquidityActions: FC = () => {
 
   return (
     <Button size="medium" asChild>
-      <Link to="/liquidity/create">
+      <Link to="/wallet/assets/liquidity/create">
         <Plus />
         {t("myLiquidity.header.cta")}
       </Link>

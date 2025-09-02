@@ -35,7 +35,7 @@ type Props = {
 
 export const WalletTransactionsTable = ({ searchPhrase }: Props) => {
   const { type } = useSearch({
-    from: "/_wallet/wallet/transactions",
+    from: "/wallet/transactions",
   })
 
   const { getAssetWithFallback } = useAssets()

@@ -26,7 +26,7 @@ export const WalletTransactionsTableHeader: FC<Props> = ({ data }) => {
   const { isMobile } = useBreakpoints()
 
   const { type } = useSearch({
-    from: "/_wallet/wallet/transactions",
+    from: "/wallet/transactions",
   })
 
   const navigate = useNavigate()
