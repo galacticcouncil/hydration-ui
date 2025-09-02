@@ -31,7 +31,12 @@ export const AccountTile: FC<Props> = ({
   onClick,
 }) => {
   return (
-    <Flex direction="column" gap={getTokenPx("containers.paddings.quint")}>
+    <Flex
+      direction="column"
+      gap={getTokenPx("containers.paddings.quint")}
+      onClick={onClick}
+      tabIndex={-1}
+    >
       {label && (
         <Text fw={500} fs="p5" lh={1.2} color={getToken("text.medium")}>
           {label}

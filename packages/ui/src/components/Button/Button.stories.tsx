@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react"
 
 import { Flex } from "@/components"
 
-import { Button } from "./Button"
+import { Button, LoadingButton } from "./Button"
 
 type Story = StoryObj<typeof Button>
 
@@ -103,5 +103,12 @@ export const Transparent: Story = {
   render: VariantTemplate,
   args: {
     variant: "transparent",
+  },
+}
+
+export const WithSpinner: StoryObj<typeof LoadingButton> = {
+  render: (args) => <LoadingButton {...args}>Loading</LoadingButton>,
+  args: {
+    isLoading: true,
   },
 }

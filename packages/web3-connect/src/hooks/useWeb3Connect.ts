@@ -11,6 +11,8 @@ import {
   SUBSTRATE_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
+import { getWallet } from "@/wallets"
+import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export enum WalletProviderStatus {
   Connected = "connected",
@@ -54,6 +56,7 @@ export type StoredAccount = {
   name: string
   publicKey: string
   address: string
+  rawAddress: string
   provider: WalletProviderType
   delegate?: string
   balance?: number
@@ -131,7 +134,15 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           ...state,
           accounts: [...state.accounts, ...accounts],
         })),
-      setAccount: (account) => set((state) => ({ ...state, account })),
+      setAccount: (account) => {
+        if (account) {
+          const wallet = getWallet(account.provider)
+          if (wallet instanceof BaseSubstrateWallet) {
+            wallet.setSigner(account.address)
+          }
+        }
+        return set((state) => ({ ...state, account }))
+      },
       setBalances: (balances) => {
         return set((state) =>
           produce(state, ({ accounts }) => {

@@ -3,6 +3,7 @@ import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
 
 import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
 
 import {
@@ -178,17 +179,7 @@ export const AssetInput = ({
             )}
           </Flex>
         </Flex>
-        {error && (
-          <Text
-            fs={12}
-            font="secondary"
-            fw={400}
-            color={getToken("accents.danger.secondary")}
-            sx={{ marginLeft: "auto", lineHeight: 1 }}
-          >
-            {error}
-          </Text>
-        )}
+        {error && <FormError ml="auto">{error}</FormError>}
       </Flex>
     </Flex>
   )
