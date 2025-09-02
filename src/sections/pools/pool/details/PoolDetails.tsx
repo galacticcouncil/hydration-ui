@@ -32,8 +32,8 @@ import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarm
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
-import { GigaIncentives } from "sections/pools/stablepool/components/GigaIncentives"
 import { useStableswapPool } from "api/stableswap"
+import { AvailableIncentives } from "./AvailableIncentives"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -271,7 +271,7 @@ export const PoolDetails = () => {
 
             <CurrencyReserves pool={pool} />
 
-            {pool.relatedAToken && !pool.isInOmnipool && (
+            {pool.relatedAToken && (
               <>
                 <Separator
                   color="white"
@@ -279,7 +279,7 @@ export const PoolDetails = () => {
                   sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
                 />
 
-                <GigaIncentives pool={pool} />
+                <AvailableIncentives pool={pool} />
               </>
             )}
           </>

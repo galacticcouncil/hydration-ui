@@ -76,7 +76,7 @@ export const GigaIncentives = ({
   )
 }
 
-const IncentiveRow = ({
+export const IncentiveRow = ({
   id,
   value,
   label,
@@ -124,7 +124,6 @@ export const MoneyMarketAPY = ({
   withLabel,
   type,
   color,
-  assetId,
   size,
   withFarms,
   omnipoolFee,
