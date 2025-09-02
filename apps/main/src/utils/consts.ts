@@ -18,7 +18,7 @@ export const DOT_ASSET_ID = "5"
 
 export const PARACHAIN_BLOCK_TIME = 12_000
 
-export const SELL_ONLY_ASSETS = [H2O_ASSET_ID, GDOT_ASSET_ID]
+export const SELL_ONLY_ASSETS = [H2O_ASSET_ID, GDOT_ASSET_ID, GETH_ASSET_ID]
 
 export const GC_TIME = millisecondsInDay
 export const STALE_TIME = millisecondsInHour

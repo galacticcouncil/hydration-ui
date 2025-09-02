@@ -8,6 +8,8 @@ import {
   Parachain,
 } from "@galacticcouncil/xcm-core"
 
+import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
+
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
   if (chain instanceof Parachain) {
     return chain.getMetadataAssetId(asset) || 0
@@ -24,6 +26,29 @@ export function getChainId(chain: AnyChain) {
     default:
       return chain.id
   }
+}
+
+export function isValidAddressOnChain(address: string, chain: AnyChain) {
+  switch (true) {
+    case chain.isParachain():
+      return isParachain(chain) && chain.usesH160Acc
+        ? EvmAddr.isValid(address)
+        : Ss58Addr.isValid(address)
+    case chain.isEvmParachain():
+      return EvmAddr.isValid(address) || Ss58Addr.isValid(address)
+    case chain.isEvm():
+      return EvmAddr.isValid(address)
+    case chain.isSolana():
+      return SolanaAddr.isValid(address)
+    case chain.isSui():
+      return SuiAddr.isValid(address)
+    default:
+      return false
+  }
+}
+
+export function isParachain(chain: AnyChain): chain is Parachain {
+  return chain.getType() === ChainType.Parachain
 }
 
 export function isAnyParachain(chain: AnyChain): chain is AnyParachain {

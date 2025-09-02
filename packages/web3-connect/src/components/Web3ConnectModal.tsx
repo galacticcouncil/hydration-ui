@@ -12,6 +12,7 @@ import {
   Web3ConnectContextType,
   Web3ConnectProvider,
 } from "@/context/Web3ConnectContext"
+import { Account, useWeb3Connect } from "@/hooks/useWeb3Connect"
 import { useWeb3ConnectInit } from "@/hooks/useWeb3ConnectInit"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 
@@ -22,22 +23,51 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
   [Web3ConnectModalPage.Error]: <ErrorContent />,
 }
 
-type Props = {
+type ControlledProps = {
+  readonly squidSdk: SquidSdk
+  readonly open: boolean
+  readonly onOpenChange: (open: boolean) => void
+  readonly onAccountSelect: (account: Account) => void
+}
+
+type UncontrolledProps = {
   readonly squidSdk: SquidSdk
 }
 
-export const Web3ConnectModal: FC<Props> = ({ squidSdk }) => {
-  const { page, setPage } = useWeb3ConnectInit()
+type Props = ControlledProps | UncontrolledProps
 
-  const { open, toggle } = useWeb3ConnectModal()
+export const Web3ConnectModal: FC<Props> = (props) => {
+  const { squidSdk } = props
+
+  const isControlled =
+    "open" in props && "onOpenChange" in props && "onAccountSelect" in props
+
+  const { page, setPage } = useWeb3ConnectInit({
+    eagerEnable: !isControlled,
+  })
+
+  const modalState = useWeb3ConnectModal()
+  const setAccount = useWeb3Connect((state) => state.setAccount)
+
+  const open = isControlled ? props.open : modalState.open
+  const onOpenChange = isControlled
+    ? props.onOpenChange
+    : () => modalState.toggle()
+  const onAccountSelect = isControlled ? props.onAccountSelect : setAccount
 
   const context = useMemo<Web3ConnectContextType>(
-    () => ({ page, setPage, squidSdk }),
-    [page, setPage, squidSdk],
+    () => ({
+      isControlled,
+      page,
+      setPage,
+      squidSdk,
+      onAccountSelect,
+    }),
+    [page, setPage, squidSdk, onAccountSelect, isControlled],
   )
 
   return (
-    <Modal open={open} onOpenChange={() => toggle()} disableInteractOutside>
+    <Modal open={open} onOpenChange={onOpenChange} disableInteractOutside>
       <Web3ConnectProvider value={context}>
         {contentMap[page]}
         {page !== Web3ConnectModalPage.ProviderSelect && (

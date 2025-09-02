@@ -41,6 +41,7 @@ const defaultData: TProviderContext = {
   featureFlags: {} as TProviderData["featureFlags"],
   poolService: {} as TProviderData["poolService"],
   metadata: AssetMetadataFactory.getInstance(),
+  legacy_api: {} as TProviderData["legacy_api"],
   legacy_poolService: {} as TProviderData["legacy_poolService"],
   legacy_tradeRouter: {} as TProviderData["legacy_tradeRouter"],
 }

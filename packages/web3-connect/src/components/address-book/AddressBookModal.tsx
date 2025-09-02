@@ -144,6 +144,7 @@ export const AddressBookModal: FC<Props> = ({
             {searchedAddresses.map((address) => (
               <Web3ConnectAccount
                 key={address.publicKey}
+                rawAddress={address.address}
                 publicKey={address.publicKey}
                 name={address.name}
                 address={address.address}
