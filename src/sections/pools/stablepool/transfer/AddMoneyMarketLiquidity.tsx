@@ -273,7 +273,7 @@ export const StablepoolForm = (
             )}
             content={t("value.tokenWithSymbol", {
               value: BN(watch("amount")),
-              symbol: stablepoolAsset.name,
+              symbol: stablepoolAsset.symbol,
             })}
             withSeparator
           />
@@ -317,7 +317,7 @@ export const StablepoolForm = (
             )}
             content={t("value.tokenWithSymbol", {
               value: BN(watch("amount")),
-              symbol: stablepoolAsset.name,
+              symbol: stablepoolAsset.symbol,
             })}
             withSeparator
           />
