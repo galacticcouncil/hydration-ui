@@ -1,5 +1,4 @@
 export * from "./useAccount"
-export * from "./useHydraAccountAddress"
 export * from "./useWallet"
 export * from "./useWeb3Connect"
 export * from "./useWeb3ConnectInit"

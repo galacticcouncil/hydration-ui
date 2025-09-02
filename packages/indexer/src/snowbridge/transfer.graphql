@@ -1,0 +1,21 @@
+query TransferStatusToPolkadot($hash: String!, $limit: Int = 10) {
+  transferStatusToPolkadots(
+    where: { messageId_eq: $hash, OR: { txHash_eq: $hash } }
+    limit: $limit
+  ) {
+    status
+    timestamp
+    messageId
+  }
+}
+
+query TransferStatusToEth($hash: String!, $limit: Int = 10) {
+  transferStatusToEthereums(
+    where: { messageId_eq: $hash, OR: { txHash_eq: $hash } }
+    limit: $limit
+  ) {
+    status
+    timestamp
+    messageId
+  }
+}

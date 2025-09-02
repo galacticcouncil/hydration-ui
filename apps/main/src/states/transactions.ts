@@ -11,9 +11,12 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
+export const XCM_BRIDGE_TAGS: XcmTags = [XcmTag.Wormhole, XcmTag.Snowbridge]
+
 export enum TransactionType {
   Onchain = "Onchain",
   Xcm = "Xcm",
+  EvmApprove = "EvmApprove",
 }
 
 export type TransactionCommon = {
@@ -77,10 +80,17 @@ export type TransactionXcmMeta = TransactionMetaCommon & {
   dstChainKey: string
   dstChainFee?: string
   dstChainFeeSymbol?: string
-  tags?: XcmTags
+  tags: XcmTags
 }
 
-export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta
+export type TransactionErc20ApproveMeta = TransactionMetaCommon & {
+  type: TransactionType.EvmApprove
+}
+
+export type TransactionMeta =
+  | TransactionOnchainMeta
+  | TransactionXcmMeta
+  | TransactionErc20ApproveMeta
 
 export type TSuccessResult = TxBestBlocksStateResult | TransactionReceipt
 
@@ -126,6 +136,13 @@ export const isSubstrateTxResult = (
   result: TSuccessResult,
 ): result is TxBestBlocksStateResult => {
   return "type" in result && result.type === "txBestBlocksState"
+}
+
+export const isBridgeTransaction = (meta: TransactionMeta) => {
+  return (
+    meta.type === TransactionType.Xcm &&
+    meta.tags.some((tag) => XCM_BRIDGE_TAGS.includes(tag))
+  )
 }
 
 interface TransactionsStore {

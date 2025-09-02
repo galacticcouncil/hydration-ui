@@ -5,6 +5,8 @@ import {
   SummaryRow,
 } from "@galacticcouncil/ui/components"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 import { useTranslation } from "react-i18next"
 
 import { ReviewTransactionFee } from "@/modules/transactions/review/ReviewTransactionFee"
@@ -19,6 +21,10 @@ export const ReviewTransactionSummary = () => {
   const { t } = useTranslation(["common"])
 
   const { nonce, isLoadingNonce, meta } = useTransaction()
+
+  const srcChain = chainsMap.get(meta.srcChainKey)
+
+  const isPolkadotEcosystem = srcChain?.ecosystem === ChainEcosystem.Polkadot
 
   return (
     <Stack
@@ -39,20 +45,27 @@ export const ReviewTransactionSummary = () => {
           })}
         />
       )}
-      <SummaryRow
-        label={t("transaction.summary.mortality.label")}
-        content={<ReviewTransactionMortality />}
-      />
-      <SummaryRow
-        label={t("transaction.summary.nonce.label")}
-        content={isLoadingNonce ? <Skeleton width={30} /> : nonce?.toString()}
-      />
+      {isPolkadotEcosystem && (
+        <SummaryRow
+          label={t("transaction.summary.mortality.label")}
+          content={<ReviewTransactionMortality />}
+        />
+      )}
+
       {meta.type === TransactionType.Onchain &&
         meta.srcChainKey === HYDRATION_CHAIN_KEY && (
-          <SummaryRow
-            label={t("transaction.summary.tip.label")}
-            content={<ReviewTransactionTip />}
-          />
+          <>
+            <SummaryRow
+              label={t("transaction.summary.nonce.label")}
+              content={
+                isLoadingNonce ? <Skeleton width={30} /> : nonce?.toString()
+              }
+            />
+            <SummaryRow
+              label={t("transaction.summary.tip.label")}
+              content={<ReviewTransactionTip />}
+            />
+          </>
         )}
     </Stack>
   )

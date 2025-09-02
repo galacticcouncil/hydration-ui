@@ -3,7 +3,7 @@ import {
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
-import { useHydraAccountAddress } from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -32,7 +32,8 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { data, isLoading } = useOtcOffers()
   const columns = useOtcTableColums()
 
-  const userAddress = useHydraAccountAddress()
+  const { account } = useAccount()
+  const userAddress = account?.address ?? ""
 
   const filteredOffers = useMemo(
     () => data?.filter(getOtcOfferFilter(offersType, userAddress)) ?? [],

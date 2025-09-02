@@ -9,7 +9,11 @@ import {
 } from "@galacticcouncil/utils"
 import { addr } from "@galacticcouncil/xcm-core"
 
-import { WalletProviderType } from "@/config/providers"
+import {
+  AccountFilterOption,
+  allAccountFilterOptions,
+} from "@/components/account/AccountFilter"
+import { SOLANA_PROVIDERS, WalletProviderType } from "@/config/providers"
 import {
   Account,
   COMPATIBLE_WALLET_PROVIDERS,
@@ -18,10 +22,26 @@ import {
   WalletMode,
 } from "@/hooks/useWeb3Connect"
 import { Wallet, WalletAccount } from "@/types/wallet"
+import { safeConvertSolanaAddressToSS58 } from "@/utils/solana"
 
 const { Ss58Addr, EvmAddr, SolanaAddr } = addr
 
-export const toStoredAccount = ({
+const toStoredSolanaAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => {
+  const ss58Format = safeConvertSolanaAddressToSS58(address)
+  return {
+    publicKey: safeConvertSS58toPublicKey(ss58Format),
+    address: ss58Format,
+    rawAddress: address,
+    name: name ?? "",
+    provider: provider,
+  }
+}
+
+const toStoredDefaultAccount = ({
   address,
   name,
   provider,
@@ -37,8 +57,22 @@ export const toStoredAccount = ({
   return {
     publicKey,
     address: ss58Format,
+    rawAddress: address,
     name: name ?? "",
     provider: provider,
+  }
+}
+
+export const toStoredAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => {
+  switch (true) {
+    case SOLANA_PROVIDERS.includes(provider):
+      return toStoredSolanaAccount({ address, name, provider })
+    default:
+      return toStoredDefaultAccount({ address, name, provider })
   }
 }
 
@@ -65,16 +99,28 @@ export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
   return "auto"
 }
 
-export function getWalletModeFromAddress(address: string) {
-  if (EvmAddr.isValid(address)) {
-    return WalletMode.EVM
-  } else if (Ss58Addr.isValid(address)) {
-    return WalletMode.Substrate
-  } else if (SolanaAddr.isValid(address)) {
-    return WalletMode.Solana
+export const getWalletModeByAddress = (address: string) => {
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return WalletMode.EVM
+    case Ss58Addr.isValid(address):
+      return WalletMode.Substrate
+    case SolanaAddr.isValid(address):
+      return WalletMode.Solana
+    default:
+      return null
   }
+}
 
-  return null
+export const getDefaultAccountFilterByMode = (
+  mode: WalletMode,
+): AccountFilterOption => {
+  if (mode !== WalletMode.Default)
+    return (
+      allAccountFilterOptions.find((option) => option === mode) ||
+      WalletMode.Default
+    )
+  return WalletMode.Default
 }
 
 export type AccountsSubscribeOptions = {
