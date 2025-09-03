@@ -30,6 +30,7 @@ import {
   APPROVAL_GAS_LIMIT,
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
+import { useShallow } from "hooks/useShallow"
 
 export interface RepayActionProps {
   amountToRepay: string
@@ -69,18 +70,20 @@ export const RepayActions = ({
     addTransaction,
     optimizedPath,
     currentMarketData,
-  ] = useRootStore((store) => [
-    store.repay,
-    store.repayWithPermit,
-    store.encodeRepayParams,
-    store.encodeRepayWithPermitParams,
-    store.tryPermit,
-    store.walletApprovalMethodPreference,
-    store.estimateGasLimit,
-    store.addTransaction,
-    store.useOptimizedPath,
-    store.currentMarketData,
-  ])
+  ] = useRootStore(
+    useShallow((store) => [
+      store.repay,
+      store.repayWithPermit,
+      store.encodeRepayParams,
+      store.encodeRepayWithPermitParams,
+      store.tryPermit,
+      store.walletApprovalMethodPreference,
+      store.estimateGasLimit,
+      store.addTransaction,
+      store.useOptimizedPath,
+      store.currentMarketData,
+    ]),
+  )
   const { sendTx } = useWeb3Context()
   const { refetchGhoData, refetchIncentiveData, refetchPoolData } =
     useBackgroundDataProvider()
