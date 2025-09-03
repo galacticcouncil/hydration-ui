@@ -54,13 +54,14 @@ export const AddSplitMoneyMarketStablepool = (
     stablepoolZodSchema(balancesMax),
   )
 
-  useStablepoolShares(props, form)
+  const { hfChange } = useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
         handleSubmit={handleSubmit(onSubmit)}
+        hfChange={hfChange}
         {...props}
       />
     </FormProvider>
@@ -82,13 +83,14 @@ export const AddSplitMoneyMarketStablepoolOmnipool = (
     ),
   )
 
-  useStablepoolShares(props, form)
+  const { hfChange } = useStablepoolShares(props, form)
 
   return (
     <FormProvider {...form}>
       <StablepoolForm
         balancesMax={balancesMax}
         handleSubmit={handleSubmit(onSubmit)}
+        hfChange={hfChange}
         {...props}
       />
     </FormProvider>
@@ -344,11 +346,13 @@ export const StablepoolForm = (
       )}
 
       <div sx={{ flex: "column", gap: 20 }}>
-        <HealthFactorRiskWarning
-          accepted={healthFactorRiskAccepted}
-          onAcceptedChange={setHealthFactorRiskAccepted}
-          isBelowThreshold={hfChange?.isHealthFactorBelowThreshold ?? false}
-        />
+        {hfChange && (
+          <HealthFactorRiskWarning
+            accepted={healthFactorRiskAccepted}
+            onAcceptedChange={setHealthFactorRiskAccepted}
+            isBelowThreshold={hfChange?.isHealthFactorBelowThreshold ?? false}
+          />
+        )}
 
         {Array.isArray(errors.amount) &&
           errors.amount.map((e, i) => (
@@ -372,7 +376,9 @@ export const StablepoolForm = (
       <Button variant="primary" fullWidth disabled={isSubmitDisabled}>
         {isJoinFarms
           ? t("liquidity.add.modal.button.joinFarms")
-          : t("liquidity.add.modal.confirmButton")}
+          : supply
+            ? t("supply")
+            : t("liquidity.add.modal.confirmButton")}
       </Button>
     </form>
   )

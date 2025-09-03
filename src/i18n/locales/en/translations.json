@@ -27,6 +27,7 @@
   "type": "Type",
   "description": "Description",
   "submit": "Submit",
+  "supply": "Supply",
   "continue": "Continue",
   "transfer": "Transfer",
   "threshold": "Threshold",

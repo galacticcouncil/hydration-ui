@@ -1,34 +1,23 @@
 import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
+import { SSwitcherContainer } from "./SplitSwithcer.styled"
 
 export const SplitSwitcher = ({
   value,
   title,
+  className,
   onChange,
 }: {
   value: boolean
   title: string
+  className?: string
   onChange: (value: boolean) => void
 }) => {
   const { t } = useTranslation()
 
   return (
-    <div
-      sx={{
-        flex: "row",
-        justify: "space-between",
-        align: "center",
-        mx: -24,
-        mb: 12,
-        px: 24,
-        py: 8,
-      }}
-      css={{
-        borderTop: "1px solid #1C2038",
-        borderBottom: "1px solid #1C2038",
-      }}
-    >
+    <SSwitcherContainer className={className}>
       <Text fs={14} color="brightBlue300">
         {title}
       </Text>
@@ -38,6 +27,6 @@ export const SplitSwitcher = ({
         label={t("yes")}
         name={title}
       />
-    </div>
+    </SSwitcherContainer>
   )
 }

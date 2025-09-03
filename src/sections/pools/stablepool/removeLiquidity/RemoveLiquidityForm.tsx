@@ -180,12 +180,6 @@ export const RemoveStablepoolLiquidityForm = ({
       }}
     >
       <div>
-        <SplitSwitcher
-          value={splitRemove}
-          title={t("liquidity.remove.modal.split")}
-          onChange={setSplitRemove}
-        />
-
         <Controller
           control={form.control}
           name="amount"
@@ -204,7 +198,12 @@ export const RemoveStablepoolLiquidityForm = ({
           )}
         />
 
-        <Spacer size={16} />
+        <SplitSwitcher
+          value={splitRemove}
+          title={t("liquidity.remove.modal.split")}
+          onChange={setSplitRemove}
+          css={{ border: "none", margin: "16px 0", padding: 0 }}
+        />
 
         <STradingPairContainer>
           <Text color="brightBlue300">
@@ -214,15 +213,9 @@ export const RemoveStablepoolLiquidityForm = ({
             minAssetsOut.map(({ assetOutValue, meta }) => (
               <RemoveLiquidityReward
                 key={meta.id}
-                id={meta.id}
-                name={meta.symbol}
-                symbol={meta.symbol}
-                amount={t("value", {
-                  value: BigNumber(assetOutValue),
-                  fixedPointScale: meta.decimals,
-                  numberSuffix: ` ${meta.symbol}`,
-                  numberPrefix: splitRemove ? "~" : "",
-                })}
+                meta={meta}
+                amount={assetOutValue}
+                withDollarPrice
               />
             ))
           ) : (

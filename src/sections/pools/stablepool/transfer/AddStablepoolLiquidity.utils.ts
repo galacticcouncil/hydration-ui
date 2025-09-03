@@ -121,7 +121,7 @@ export const getReservesZodSchema = (balances: TTransferableBalance[]) => {
 }
 
 export const useStablepoolShares = (
-  { poolId, reserves }: AddStablepoolWrapperProps,
+  { poolId, reserves, stablepoolAsset }: AddStablepoolWrapperProps,
   form: UseFormReturn<TAddStablepoolFormValues, any, undefined>,
 ) => {
   const { getAssetWithFallback } = useAssets()
@@ -189,7 +189,14 @@ export const useStablepoolShares = (
     }
   }, [formValues, stablepoolShares, getShares, setValue, trigger])
 
-  return stablepoolShares
+  const hfChange = useHealthFactorChange({
+    assetId: stablepoolAsset.id,
+    amount: stablepoolShares,
+    action: ProtocolAction.supply,
+    swapAsset: { assetId: poolId, amount: stablepoolShares },
+  })
+
+  return { stablepoolShares, hfChange }
 }
 
 export const useStablepoolTradeShares = (

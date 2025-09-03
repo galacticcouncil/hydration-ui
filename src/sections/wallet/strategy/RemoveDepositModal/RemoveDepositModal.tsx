@@ -33,7 +33,6 @@ import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { useRpcProvider } from "providers/rpcProvider"
-import { Spacer } from "components/Spacer/Spacer"
 import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
 import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 
@@ -207,6 +206,18 @@ export const RemoveDepositModal: FC<Props> = ({
       : undefined,
   })
 
+  const displayTradeAlert = useMemo(
+    () =>
+      assetReceived?.isErc20 &&
+      underlyingAssetId !== assetReceived.id &&
+      !pool.balances.some(
+        (reserve) =>
+          reserve.id === assetReceived?.id ||
+          getErc20(reserve.id)?.underlyingAssetId === asset.id,
+      ),
+    [asset.id, getErc20, underlyingAssetId, pool.balances, assetReceived],
+  )
+
   const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
 
   const isSubmitDisabled = displayRiskCheckbox
@@ -230,11 +241,6 @@ export const RemoveDepositModal: FC<Props> = ({
                 sx={{ display: "grid" }}
                 onSubmit={form.handleSubmit(onSubmit)}
               >
-                <SplitSwitcher
-                  value={splitRemove}
-                  title={t("liquidity.remove.modal.split")}
-                  onChange={setSplitRemove}
-                />
                 <div sx={{ flex: "column", gap: 8 }}>
                   <RemoveDepositAmount
                     assetId={assetId}
@@ -246,12 +252,15 @@ export const RemoveDepositModal: FC<Props> = ({
                     }
                   />
 
+                  <SplitSwitcher
+                    value={splitRemove}
+                    title={t("liquidity.remove.modal.split")}
+                    onChange={setSplitRemove}
+                    css={{ border: "none", marginBottom: 0 }}
+                  />
+
                   {splitRemove ? (
                     <>
-                      <LiquidityLimitField
-                        setLiquidityLimit={() => paginateTo(PAGES.TRADE_LIMIT)}
-                        withSeparator={false}
-                      />
                       <STradingPairContainer sx={{ mb: 12 }}>
                         <Text color="brightBlue300">
                           {t("liquidity.remove.modal.receive")}
@@ -259,22 +268,19 @@ export const RemoveDepositModal: FC<Props> = ({
                         {minAssetsOut.map(({ assetOutValue, meta }) => (
                           <RemoveLiquidityReward
                             key={meta.id}
-                            id={meta.id}
-                            name={meta.symbol}
-                            symbol={meta.symbol}
-                            amount={t("value", {
-                              value: BigNumber(assetOutValue),
-                              fixedPointScale: meta.decimals,
-                              numberSuffix: ` ${meta.symbol}`,
-                              numberPrefix: splitRemove ? "~" : "",
-                            })}
+                            meta={meta}
+                            amount={assetOutValue}
+                            withDollarPrice
                           />
                         ))}
                       </STradingPairContainer>
+                      <LiquidityLimitField
+                        setLiquidityLimit={() => paginateTo(PAGES.TRADE_LIMIT)}
+                        withSeparator
+                      />
                     </>
                   ) : (
                     <>
-                      <Spacer size={8} />
                       <RemoveDepositAsset
                         assetId={assetReceived?.id ?? ""}
                         amountOut={amountOutFormatted}
@@ -286,7 +292,7 @@ export const RemoveDepositModal: FC<Props> = ({
                         minReceived={minAmountOutFormatted}
                         assetReceived={assetReceived}
                       />
-                      <TradeAlert />
+                      {displayTradeAlert && <TradeAlert />}
                     </>
                   )}
                 </div>
