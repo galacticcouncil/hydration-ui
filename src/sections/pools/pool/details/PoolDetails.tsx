@@ -28,7 +28,6 @@ import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
 import { BN_1, BN_MILL, GETH_ERC20_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
-import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
@@ -261,7 +260,7 @@ export const PoolDetails = () => {
             </SValuesContainer>
           </div>
         </div>
-        {!ixXYKPool && isStablepoolType(pool) ? (
+        {isStablepoolType(pool) ? (
           <>
             <Separator
               color="white"
@@ -270,22 +269,10 @@ export const PoolDetails = () => {
             />
 
             <CurrencyReserves pool={pool} />
-
-            {pool.relatedAToken && (
-              <>
-                <Separator
-                  color="white"
-                  opacity={0.06}
-                  sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
-                />
-
-                <AvailableIncentives pool={pool} />
-              </>
-            )}
           </>
         ) : null}
 
-        <AvailableFarms />
+        <AvailableIncentives pool={pool} />
       </SPoolDetailsContainer>
       {modal}
     </>

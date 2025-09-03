@@ -101,7 +101,7 @@ export const FarmDetailsCard = ({
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Icon size={24} icon={<AssetLogo id={asset.id} />} />
             <Text fs={16} font="GeistMedium">
-              {asset.symbol}
+              {t("farms.details.card.symbol.label", { symbol: asset.symbol })}
             </Text>
           </div>
           <Text

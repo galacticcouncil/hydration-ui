@@ -1,158 +1,32 @@
-import BN from "bignumber.js"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
+import { isStablepoolType, TAnyPool } from "sections/pools/PoolsPage.utils"
+import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
+import { MoneyMarketIncentives } from "./MoneyMarketIncentives"
 import { Text } from "components/Typography/Text/Text"
-import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
-import { SContainer } from "sections/pools/farms/components/detailsCard/FarmDetailsCard.styled"
-import { TStablepool } from "sections/pools/PoolsPage.utils"
-import { BN_0 } from "utils/constants"
-import { IncentiveRow } from "sections/pools/stablepool/components/GigaIncentives"
-import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
-import { getAssetIdFromAddress } from "utils/evm"
-import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { Separator } from "components/Separator/Separator"
 
-export const AvailableIncentives = ({ pool }: { pool: TStablepool }) => {
+export const AvailableIncentives = ({ pool }: { pool: TAnyPool }) => {
   const { t } = useTranslation()
 
-  const { moneyMarketApy, lpFeeOmnipool, lpFeeStablepool } = pool
+  const isFarms = !!pool.allFarms.length
+  const isMoneyMarketIncentives = isStablepoolType(pool) && !!pool.relatedAToken
 
-  if (!moneyMarketApy) return null
-
-  const validIncentives = moneyMarketApy.incentives.filter(({ incentiveAPR }) =>
-    BN(incentiveAPR).gt(0),
-  )
-  const totalApr = validIncentives
-    .reduce((acc, incentive) => acc.plus(incentive.incentiveAPR), BN_0)
-    .times(100)
-
-  const totalApy = moneyMarketApy.underlyingAssetsApyData
-    .reduce((acc, asset) => acc.plus(asset.supplyApy), BN_0)
-    .plus(lpFeeOmnipool ?? 0)
-    .plus(lpFeeStablepool ?? 0)
+  if (!isFarms && !isMoneyMarketIncentives) return null
 
   return (
-    <div sx={{ flex: "column", gap: 12 }}>
-      <Text fs={18} font="GeistMono" tTransform="uppercase">
-        {t("liquidity.pool.details.incetives.label")}
-      </Text>
-      {totalApr.gt(0) && (
-        <AvailableIncentive
-          label={t("liquidity.pool.details.incetives.rewards.label")}
-          description={t(
-            "liquidity.pool.details.incetives.rewards.description",
-          )}
-        >
-          <div sx={{ flex: "row", gap: 6 }}>
-            <Text fs={16} color="brightBlue200">
-              {t("value.percentage", { value: totalApr })}
-            </Text>
-            <MultipleIcons
-              size={20}
-              icons={validIncentives.map((incentive) => {
-                const id = getAssetIdFromAddress(incentive.rewardTokenAddress)
-
-                return {
-                  icon: <AssetLogo key={id} id={id} />,
-                }
-              })}
-            />
-          </div>
-        </AvailableIncentive>
-      )}
-      <AvailableIncentive
-        label={t("apy")}
-        description={t("liquidity.pool.details.incetives.apy.description")}
-      >
-        <div sx={{ flex: "row", gap: 6 }}>
-          <Text fs={16} color="brightBlue200">
-            {t("value.percentage", { value: totalApy })}
-          </Text>
-          <InfoTooltip
-            preventDefault
-            text={
-              <>
-                <Text fs={12}>{t("lending.tooltip.estimatedRewards")}</Text>
-                {lpFeeOmnipool && (
-                  <div
-                    sx={{
-                      flex: "row",
-                      gap: 4,
-                      justify: "space-between",
-                      mt: 6,
-                    }}
-                  >
-                    <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
-                      {t("liquidity.table.farms.apr.lpFeeOmnipool")}
-                    </Text>
-                    <Text fs={12} font="GeistSemiBold">
-                      {t("value.percentage", { value: BN(lpFeeOmnipool) })}
-                    </Text>
-                  </div>
-                )}
-                {lpFeeStablepool && (
-                  <div
-                    sx={{
-                      flex: "row",
-                      gap: 4,
-                      justify: "space-between",
-                      mt: 6,
-                    }}
-                  >
-                    <Text fs={10} tTransform="uppercase" sx={{ opacity: 0.8 }}>
-                      {t("liquidity.table.farms.apr.lpFeeStablepool")}
-                    </Text>
-                    <Text fs={12} font="GeistSemiBold">
-                      {t("value.percentage", { value: BN(lpFeeStablepool) })}
-                    </Text>
-                  </div>
-                )}
-
-                {moneyMarketApy.underlyingAssetsApyData.map(
-                  ({ id, isStaked, supplyApy }) => {
-                    const label = isStaked ? t("stakeApy") : t("supplyApy")
-                    return (
-                      <IncentiveRow
-                        key={id}
-                        id={id}
-                        label={label}
-                        value={t("value.percentage", {
-                          value: BN(supplyApy),
-                        })}
-                      />
-                    )
-                  },
-                )}
-              </>
-            }
-          />
-        </div>
-      </AvailableIncentive>
-    </div>
+    <>
+      <Separator
+        color="white"
+        opacity={0.06}
+        sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
+      />
+      <div sx={{ flex: "column", gap: 12 }}>
+        <Text fs={16} font="GeistMono" tTransform="uppercase">
+          {t("liquidity.pool.details.incentives.label")}
+        </Text>
+        {isMoneyMarketIncentives && <MoneyMarketIncentives pool={pool} />}
+        {isFarms && <AvailableFarms farms={pool.allFarms} />}
+      </div>
+    </>
   )
 }
-
-const AvailableIncentive = ({
-  label,
-  description,
-  children,
-}: {
-  label: string
-  description: string
-  children: ReactNode
-}) => (
-  <SContainer
-    sx={{
-      flexDirection: "row",
-      align: "center",
-      py: [8, 8],
-    }}
-  >
-    <div sx={{ flex: "column", gap: 6 }}>
-      <Text fs={16}>{label}</Text>
-      <Text fs={11} color="darkBlue200">
-        {description}
-      </Text>
-    </div>
-    {children}
-  </SContainer>
-)

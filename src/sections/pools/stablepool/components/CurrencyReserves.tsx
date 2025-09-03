@@ -1,4 +1,3 @@
-import { Heading } from "components/Typography/Heading/Heading"
 import { Icon } from "components/Icon/Icon"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
 import { Text } from "components/Typography/Text/Text"
@@ -17,15 +16,9 @@ export const CurrencyReserves = ({ pool }: Props) => {
 
   return (
     <>
-      <Heading
-        color="white"
-        fs={15}
-        sx={{ mb: 5 }}
-        tTransform="uppercase"
-        font="GeistMono"
-      >
+      <Text fs={16} font="GeistMono" tTransform="uppercase" sx={{ mb: 5 }}>
         {t("liquidity.stablepool.reserves")}
-      </Heading>
+      </Text>
       {balances.map(({ id, symbol, percentage, balanceDisplay }) => (
         <SRow key={id}>
           <div sx={{ flex: "row", align: "center", gap: 8 }}>
