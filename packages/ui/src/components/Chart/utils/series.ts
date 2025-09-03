@@ -68,8 +68,14 @@ export const getConfigWithDefaults = <T extends TChartData>(
 export const getDerivedChartProps = <T extends TChartData>(
   config: ChartConfig<T>,
 ) => {
-  const { yAxisFormatter, yAxisType, xAxisFormatter, xAxisType, tooltipType } =
-    getConfigWithDefaults(config)
+  const {
+    yAxisFormatter,
+    yAxisType,
+    xAxisFormatter,
+    tooltipFormatter,
+    xAxisType,
+    tooltipType,
+  } = getConfigWithDefaults(config)
 
   const labelFormatter = xAxisFormatter || getDefaultFormatterByType(xAxisType)
   const valueFormatter = yAxisFormatter || getDefaultFormatterByType(yAxisType)
@@ -88,6 +94,7 @@ export const getDerivedChartProps = <T extends TChartData>(
   return {
     margin,
     labelFormatter,
+    tooltipFormatter: tooltipFormatter || labelFormatter,
     valueFormatter,
     tooltipWrapperStyles,
   }

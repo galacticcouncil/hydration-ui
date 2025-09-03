@@ -17,10 +17,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { ThemeProps, useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { CapProgressCircle } from "@/modules/borrow/reserve/components/CapProgressCircle"
+import { SupplyApyChart } from "@/modules/borrow/reserve/components/SupplyApyChart"
 
 type SupplyInfoProps = {
   reserve: ComputedReserveData
@@ -39,12 +41,14 @@ export const SupplyInfo = ({
   const { themeProps } = useTheme()
   const { t } = useTranslation(["common", "borrow"])
 
+  const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
+
   return (
     <>
       <Flex
         direction={["column", "row"]}
         gap={[20, 40]}
-        mb={20}
+        mb={10}
         align={["start", "center"]}
       >
         {showSupplyCapStatus && (
@@ -73,6 +77,7 @@ export const SupplyInfo = ({
             <ValueStats
               size="small"
               font="secondary"
+              wrap
               label={t("borrow:totalSupplied")}
               value={t("borrow:cap.range", {
                 valueA: reserve.totalLiquidity,
@@ -87,6 +92,7 @@ export const SupplyInfo = ({
             <ValueStats
               size="small"
               font="secondary"
+              wrap
               label={t("borrow:totalSupplied")}
               value={t("number.compact", {
                 value: reserve.totalLiquidity,
@@ -99,6 +105,7 @@ export const SupplyInfo = ({
           <ValueStats
             size="small"
             font="secondary"
+            wrap
             label={t("apy")}
             value={t("percent", {
               value: Number(reserve.supplyAPY) * 100,
@@ -108,6 +115,9 @@ export const SupplyInfo = ({
       </Flex>
 
       <Stack gap={14}>
+        {(reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
+          <SupplyApyChart assetId={assetId} />
+        )}
         <Box>
           {reserve.isIsolated ? (
             <Box>

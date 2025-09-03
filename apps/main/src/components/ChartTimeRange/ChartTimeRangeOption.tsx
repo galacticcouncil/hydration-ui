@@ -8,7 +8,7 @@ type Props = {
   readonly onClick: () => void
 }
 
-export const TradeChartIntervalOption: FC<Props> = ({
+export const ChartTimeRangeOption: FC<Props> = ({
   children,
   isSelected,
   onClick,

@@ -66,6 +66,8 @@
   "reserve.supplyInfo": "Supply info",
   "reserve.utilRate": "Utilization rate",
   "reserve.yourInfo": "Your info",
+  "reserve.supplyApyChart.header": "SUPPLY APR",
+  "reserve.borrowApyChart.header": "BORROW APR, VARIABLE",
   "risk.description": "Your health factor and loan to value determine the assurance of your collateral. To avoid liquidations you can supply more collateral or repay borrow positions.",
   "risk.details": "Risk details",
   "risk.hf.description": "Safety of your deposited collateral against the borrowed assets and its underlying value.",

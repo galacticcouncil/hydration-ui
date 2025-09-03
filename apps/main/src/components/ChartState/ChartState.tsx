@@ -9,12 +9,12 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 export type ChartStateProps = {
-  height?: number
   isLoading: boolean
   isError: boolean
   isSuccess: boolean
   isEmpty: boolean
   children: React.ReactNode
+  className?: string
 }
 
 export const ChartState: React.FC<ChartStateProps> = ({
@@ -22,14 +22,14 @@ export const ChartState: React.FC<ChartStateProps> = ({
   isError,
   isSuccess,
   isEmpty,
-  height,
+  className,
   children,
 }) => {
   const { t } = useTranslation()
 
   if (isLoading) {
     return (
-      <ChartSkeleton height={height}>
+      <ChartSkeleton className={className}>
         <ChartStatus icon={<Spinner />} />
       </ChartSkeleton>
     )
@@ -37,7 +37,10 @@ export const ChartState: React.FC<ChartStateProps> = ({
 
   if (isError) {
     return (
-      <ChartSkeleton height={height} color={getToken("colors.skyBlue.700")}>
+      <ChartSkeleton
+        className={className}
+        color={getToken("colors.skyBlue.700")}
+      >
         <ChartStatus
           icon={
             <img
@@ -56,7 +59,10 @@ export const ChartState: React.FC<ChartStateProps> = ({
 
   if (isSuccess && isEmpty) {
     return (
-      <ChartSkeleton height={height} color={getToken("colors.skyBlue.700")}>
+      <ChartSkeleton
+        className={className}
+        color={getToken("colors.skyBlue.700")}
+      >
         <ChartStatus
           icon={
             <img

@@ -13,17 +13,17 @@ import { last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
+import {
+  ChartTimeRange,
+  ChartTimeRangeOptionType,
+} from "@/components/ChartTimeRange/ChartTimeRange"
 import { PeriodType, periodTypes } from "@/components/PeriodInput/PeriodInput"
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
-import {
-  TradeChartInterval,
-  TradeChartIntervalOptionType,
-} from "@/modules/trade/swap/components/TradeChart/TradeChartInterval"
 import { useAssets } from "@/providers/assetsProvider"
 
 const intervalOptions = (["all", ...periodTypes] as const).map<
-  TradeChartIntervalOptionType<PeriodType | "all">
+  ChartTimeRangeOptionType<PeriodType | "all">
 >((option) => ({
   key: option,
   label: i18n.t(`period.${option}`),
@@ -89,14 +89,14 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           displayValue={chartDisplayValue}
           isLoading={isLoading || isAssetPriceLoading || isVolumePriceLoading}
         />
-        <TradeChartInterval
+        <ChartTimeRange
           options={intervalOptions}
           selectedOption={interval}
           onSelect={(option) => setInterval(option.key)}
         />
       </Flex>
       <ChartState
-        height={height}
+        sx={{ height }}
         isSuccess={isSuccess}
         isError={isError}
         isLoading={isLoading}

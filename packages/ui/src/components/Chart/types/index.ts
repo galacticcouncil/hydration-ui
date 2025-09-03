@@ -16,6 +16,7 @@ export type ChartConfig<TData extends TChartData> = {
   xAxisKey: keyof TData & string
   xAxisType?: ChartSeriesType
   xAxisFormatter?: (value: TData[keyof TData]) => string
+  tooltipFormatter?: (value: TData[keyof TData]) => string
 
   yAxisType?: ChartSeriesType
   yAxisFormatter?: (value: number) => string
@@ -25,7 +26,7 @@ export type ChartConfig<TData extends TChartData> = {
   seriesLabel?: string
   series: {
     key: ExtractDataKeyOfType<TData, number>
-    label: string
+    label?: string
     color?: string | [string, string]
   }[]
 }
