@@ -1,12 +1,10 @@
 import {
   Modal,
-  TableRowAction,
   TableRowDetailsExpand,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { Link } from "@tanstack/react-router"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,6 +12,7 @@ import { useTranslation } from "react-i18next"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { MyLiquidityCurrentValue } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityCurrentValue"
+import { MyLiquidityTableActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.actions"
 import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
 
@@ -90,13 +89,7 @@ export const useMyLiquidityColumns = () => {
         },
       },
       cell: ({ row }) => {
-        return (
-          <TableRowAction asChild>
-            <Link to="/liquidity/$id" params={{ id: row.original.asset.id }}>
-              {t("myLiquidity.actions.poolDetails")}
-            </Link>
-          </TableRowAction>
-        )
+        return <MyLiquidityTableActions assetId={row.original.asset.id} />
       },
     })
 

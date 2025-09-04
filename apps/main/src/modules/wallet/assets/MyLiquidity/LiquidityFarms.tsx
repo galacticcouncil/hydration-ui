@@ -1,5 +1,5 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
-import { px } from "@galacticcouncil/ui/utils"
+import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,6 +13,9 @@ type Props = {
 export const LiquidityFarms: FC<Props> = ({ assetId, rewards }) => {
   const { t } = useTranslation(["wallet", "common"])
 
+  // TODO integrate
+  const farmsAvailable = 1
+
   return (
     <Flex gap={4} align="center">
       <Logo id={assetId} size="small" />
@@ -20,6 +23,25 @@ export const LiquidityFarms: FC<Props> = ({ assetId, rewards }) => {
         {t("common:percent", { value: rewards })}{" "}
         {t("myLiquidity.position.rewards")}
       </Text>
+      {farmsAvailable >= 1 && (
+        <Flex
+          sx={{ borderRadius: 8 }}
+          bg={getToken("textButtons.small.rest")}
+          justify="center"
+          align="center"
+          height={15}
+          minWidth={15}
+        >
+          <Text
+            fw={700}
+            fs={8}
+            lh={px(18)}
+            color={getToken("buttons.primary.medium.onButton")}
+          >
+            +{farmsAvailable}
+          </Text>
+        </Flex>
+      )}
     </Flex>
   )
 }
