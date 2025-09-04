@@ -11,6 +11,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
@@ -24,10 +25,9 @@ import {
   zodCreateIsolatedPool,
 } from "./CreateIsolatedPool.utils"
 
-export type CreateIsolatedPoolFormData = {
-  amountA: string
-  amountB: string
-}
+export type CreateIsolatedPoolFormData = z.infer<
+  ReturnType<typeof zodCreateIsolatedPool>
+>
 
 export const CreateIsolatedPool = () => {
   const { t } = useTranslation("liquidity")

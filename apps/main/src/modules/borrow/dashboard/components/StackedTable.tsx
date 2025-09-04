@@ -80,7 +80,7 @@ const StackedTable = forwardRef(
 StackedTable.displayName = "StackedTable"
 
 type StackedTableComponent = {
-  <TData>(props: StackedTableProps<TData>): JSX.Element
+  <TData>(props: StackedTableProps<TData>): React.JSX.Element
 }
 
 const StackedTableWithType = StackedTable as unknown as StackedTableComponent

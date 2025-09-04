@@ -2,21 +2,19 @@ import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { t } from "i18next"
 import { useTranslation } from "react-i18next"
-import { z, ZodType } from "zod/v4"
+import { z } from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
-import { CreateIsolatedPoolFormData } from "./CreateIsolatedPool"
-
 export const zodCreateIsolatedPool = (
   balanceA: string,
   balanceB: string,
   assetA?: TAssetData,
   assetB?: TAssetData,
-): ZodType<CreateIsolatedPoolFormData> =>
+) =>
   z.object({
     amountA: required
       .pipe(positive)

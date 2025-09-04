@@ -404,7 +404,7 @@ export const DataTablePagination = <T,>({
 type DataTableComponent = {
   <TData>(
     props: DataTableProps<TData> & { readonly ref?: Ref<DataTableRef> },
-  ): JSX.Element
+  ): React.JSX.Element
 }
 
 const DataTableWithType = DataTable as unknown as DataTableComponent

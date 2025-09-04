@@ -38,7 +38,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
     props: Required<DotProps> & {
       payload: TData
     },
-  ) => React.ReactElement
+  ) => React.ReactElement<SVGElement>
   referenceLines?: React.ComponentPropsWithoutRef<typeof ReferenceLine>[]
   xAxisLabelProps?: AxisLabelCssProps
   yAxisLabelProps?: AxisLabelCssProps
