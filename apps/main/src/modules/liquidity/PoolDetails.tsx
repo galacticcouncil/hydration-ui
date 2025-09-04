@@ -1,5 +1,6 @@
 import { Flex, Paper } from "@galacticcouncil/ui/components"
-import { Outlet, useParams } from "@tanstack/react-router"
+import { Outlet } from "@tanstack/react-router"
+import { FC } from "react"
 
 import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
@@ -9,9 +10,11 @@ import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
 import { PoolDetailsSkeleton } from "./PoolDetailsSkeleton"
 
-export const PoolDetails = () => {
-  const { id } = useParams({ from: "/liquidity/$id" })
+type Props = {
+  readonly id: string
+}
 
+export const PoolDetails: FC<Props> = ({ id }) => {
   const { data: omnipoolData, isLoading: isOmnipoolLoading } =
     useOmnipoolAsset(id)
   const { data: xykData, isLoading: isXYKLoading } = useXYKPool(id)

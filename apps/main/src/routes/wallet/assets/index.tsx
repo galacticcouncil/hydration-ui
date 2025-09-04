@@ -74,7 +74,7 @@ const WalletAssetsSkeleton = () => {
   )
 }
 
-export const Route = createFileRoute("/_wallet/wallet/assets")({
+export const Route = createFileRoute("/wallet/assets/")({
   component: WalletAssetsPage,
   pendingComponent: WalletAssetsSkeleton,
   validateSearch: searchSchema,

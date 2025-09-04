@@ -28,7 +28,7 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
         <MenuSelectionItem variant="filterLink" asChild>
           {/* TODO claim liquidity position rewards */}
           <Link
-            to="/liquidity/$id/join"
+            to="/wallet/assets/liquidity/$id/join"
             params={{ id: assetId }}
             search={{ positionId }}
           >
@@ -42,7 +42,7 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
       <DropdownMenuItem asChild>
         <MenuSelectionItem variant="filterLink" asChild>
           <Link
-            to="/liquidity/$id/remove"
+            to="/wallet/assets/liquidity/$id/remove"
             params={{ id: assetId }}
             search={{ positionId }}
           >

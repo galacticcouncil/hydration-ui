@@ -31,7 +31,7 @@ const WalletTransactionsSkeleton: FC = () => {
   )
 }
 
-export const Route = createFileRoute("/_wallet/wallet/transactions")({
+export const Route = createFileRoute("/wallet/transactions")({
   component: WalletTransactionsPage,
   pendingComponent: WalletTransactionsSkeleton,
   validateSearch: typeSchema,

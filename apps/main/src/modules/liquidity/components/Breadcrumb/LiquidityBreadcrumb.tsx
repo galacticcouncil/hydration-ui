@@ -1,8 +1,10 @@
-import { useRouterState } from "@tanstack/react-router"
+import { useMatches } from "@tanstack/react-router"
 import { t } from "i18next"
+import { FC } from "react"
 import { isNumber } from "remeda"
 
 import { Breadcrumb } from "@/components/Breadcrumb"
+import { FileRouteTypes } from "@/routeTree.gen"
 
 export const liquidityActions = [
   { key: "add", label: t("liquidity:addLiquidity") },
@@ -11,36 +13,53 @@ export const liquidityActions = [
   { key: "join", label: t("liquidity:joinFarms") },
 ]
 
-const getBreadcrumbLabel = (path: string): string => {
-  if (path === "/liquidity") return t("liquidity:pools")
+const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
+  switch (path) {
+    case "/liquidity":
+      return t("liquidity:pools")
+    case "/wallet/assets/liquidity":
+      return t("navigation.wallet.title")
 
-  if (path.includes("remove")) return t("liquidity:removeLiquidity")
+    case "/liquidity/$id/remove":
+    case "/wallet/assets/liquidity/$id/remove":
+      return t("liquidity:removeLiquidity")
 
-  if (path.includes("join")) return t("liquidity:joinFarms")
+    case "/liquidity/$id/join":
+    case "/wallet/assets/liquidity/$id/join":
+      return t("liquidity:joinFarms")
 
-  if (path.includes("create")) return t("liquidity:createPool")
+    case "/liquidity/create":
+    case "/wallet/assets/liquidity/create":
+      return t("liquidity:createPool")
 
-  const lastItem = path.split("/").pop()
-  const isLastItemId = isNumber(Number(lastItem))
+    default: {
+      const lastItem = path.split("/").pop()
+      const isLastItemId = isNumber(Number(lastItem))
 
-  if (isLastItemId) return t("liquidity:omnipool")
+      if (isLastItemId) return t("liquidity:omnipool")
 
-  const action = liquidityActions.find((action) => action.key === lastItem)
-  if (action) return action.label
+      const action = liquidityActions.find((action) => action.key === lastItem)
+      if (action) return action.label
 
-  return t("liquidity:isolatedPool")
+      return t("liquidity:isolatedPool")
+    }
+  }
 }
 
-export const LiquidityBreadcrumb = () => {
-  const matches = useRouterState({ select: (s) => s.matches })
+export const LiquidityBreadcrumb: FC = () => {
+  const paths = useMatches({
+    select: (matches) => matches.map((match) => match.fullPath),
+  })
 
-  const crumbs = matches
-    .filter((match) => match.pathname.includes("liquidity"))
-    .map((match) => {
-      const path = match.pathname
+  const crumbs = paths
+    .filter((path) => path.includes("liquidity"))
+    .map((path) => {
       const label = getBreadcrumbLabel(path)
 
-      return { label, path }
+      return {
+        label,
+        path: path === "/wallet/assets/liquidity" ? "/wallet/assets" : path,
+      }
     })
 
   return <Breadcrumb crumbs={crumbs} />

@@ -28,7 +28,7 @@ export const LiquidityPositionActions: FC<Props> = ({
     <Flex align="center" gap={6}>
       <Button variant="sliderTabActive" asChild>
         <Link
-          to="/liquidity/$id/join"
+          to="/wallet/assets/liquidity/$id/join"
           params={{ id: assetId }}
           search={{ positionId: positionId }}
         >

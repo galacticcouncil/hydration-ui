@@ -24,12 +24,12 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
   return (
     <Flex gap={12} align="center" justify="flex-end">
       <TableRowAction variant="primary" outline={false} asChild>
-        <Link to="/liquidity/$id/add" params={{ id: assetId }}>
+        <Link to="/wallet/assets/liquidity/$id/add" params={{ id: assetId }}>
           {t("myLiquidity.actions.addLiquidity")}
         </Link>
       </TableRowAction>
       <TableRowAction asChild>
-        <Link to="/liquidity/$id" params={{ id: assetId }}>
+        <Link to="/wallet/assets/liquidity/$id" params={{ id: assetId }}>
           {t("myLiquidity.actions.poolDetails")}
         </Link>
       </TableRowAction>
@@ -43,7 +43,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
           <DropdownMenuItem asChild>
             <MenuSelectionItem variant="filterLink" asChild>
               <Link
-                to="/liquidity/$id/remove"
+                to="/wallet/assets/liquidity/$id/remove"
                 params={{ id: assetId }}
                 search={{ all: true }}
               >

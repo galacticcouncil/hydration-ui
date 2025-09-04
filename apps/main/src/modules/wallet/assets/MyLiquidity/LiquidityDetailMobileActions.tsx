@@ -13,12 +13,12 @@ export const LiquidityDetailMobileActions: FC<Props> = ({ assetId }) => {
   return (
     <Grid columnGap={8} sx={{ gridTemplateColumns: "1fr 1fr" }}>
       <Button size="large" asChild>
-        <Link to={"/liquidity/$id"} params={{ id: assetId }}>
+        <Link to={"/wallet/assets/liquidity/$id"} params={{ id: assetId }}>
           {t("myLiquidity.actions.poolDetails")}
         </Link>
       </Button>
       <Button variant="tertiary" size="large" asChild>
-        <Link to="/liquidity/$id/add" params={{ id: assetId }}>
+        <Link to="/wallet/assets/liquidity/$id/add" params={{ id: assetId }}>
           {t("myLiquidity.actions.addLiquidity")}
         </Link>
       </Button>

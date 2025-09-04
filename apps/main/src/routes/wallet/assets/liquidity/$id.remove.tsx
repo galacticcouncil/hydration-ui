@@ -1,0 +1,31 @@
+import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
+import z from "zod/v4"
+
+import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
+import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
+
+const RemoveLiquiditySchema = z.object({
+  positionId: z.string().optional(),
+  shareTokenId: z.string().optional(),
+  all: z.boolean().optional(),
+})
+
+export type RemoveLiquidityType = z.infer<typeof RemoveLiquiditySchema>
+
+export const Route = createFileRoute("/wallet/assets/liquidity/$id/remove")({
+  component: RouteComponent,
+  validateSearch: RemoveLiquiditySchema,
+  pendingComponent: RemoveLiquiditySkeleton,
+})
+
+function RouteComponent() {
+  const { id: poolId } = useParams({
+    from: "/wallet/assets/liquidity/$id/remove",
+  })
+
+  const search = useSearch({
+    from: "/wallet/assets/liquidity/$id/remove",
+  })
+
+  return <RemoveLiquidity poolId={poolId} {...search} />
+}
