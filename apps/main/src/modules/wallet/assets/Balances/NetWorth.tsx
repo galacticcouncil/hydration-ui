@@ -10,12 +10,12 @@ import { last } from "remeda"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { ChartState } from "@/components/ChartState"
+import {
+  ChartTimeRange,
+  ChartTimeRangeOptionType,
+} from "@/components/ChartTimeRange/ChartTimeRange"
 import { PeriodType, periodTypes } from "@/components/PeriodInput/PeriodInput"
 import i18n from "@/i18n"
-import {
-  TradeChartInterval,
-  TradeChartIntervalOptionType,
-} from "@/modules/trade/swap/components/TradeChart/TradeChartInterval"
 import {
   NetWorthData,
   useNetWorthData,
@@ -23,7 +23,7 @@ import {
 import { USDT_ASSET_ID } from "@/utils/consts"
 
 const intervalOptions = (["all", ...periodTypes] as const).map<
-  TradeChartIntervalOptionType<PeriodType | "all">
+  ChartTimeRangeOptionType<PeriodType | "all">
 >((option) => ({
   key: option,
   label: i18n.t(`period.${option}`),
@@ -96,7 +96,7 @@ export const NetWorth: FC = () => {
           />
         </ChartState>
       </Flex>
-      <TradeChartInterval
+      <ChartTimeRange
         sx={{ gridColumn: "1/-1" }}
         options={intervalOptions}
         selectedOption={interval}

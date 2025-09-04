@@ -5,21 +5,22 @@ import { Box, Flex } from "@/components"
 import { getToken } from "@/utils"
 
 export type ChartSkeletonProps = {
-  height?: number
   children?: React.ReactNode
   color?: StylePropertyValue<"color">
+  className?: string
 }
 
 export const ChartSkeleton: React.FC<ChartSkeletonProps> = ({
-  height,
   children,
   color,
+  className,
 }) => {
   return (
     <Flex
       align="end"
       justify="center"
-      sx={{ position: "relative", height, width: "100%" }}
+      sx={{ position: "relative", width: "100%" }}
+      className={className}
     >
       <LineChartSkeleton
         width="95%"

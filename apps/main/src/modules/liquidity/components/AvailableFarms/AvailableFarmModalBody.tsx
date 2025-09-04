@@ -82,6 +82,7 @@ export const AvailableFarmModalBody = ({
             xAxisLabel={t("liquidity.availableFarms.modal.graph.xAxisLabel")}
             strokeWidth={4}
             withoutReferenceLine
+            withoutTooltip
             horizontalGridHidden={false}
             gradient="none"
             config={{

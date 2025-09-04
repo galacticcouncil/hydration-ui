@@ -1,5 +1,5 @@
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import { useState } from "react"
+import { useId, useState } from "react"
 import {
   Area,
   AreaChart as AreaChartPrimitive,
@@ -43,6 +43,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
   xAxisLabelProps?: AxisLabelCssProps
   yAxisLabelProps?: AxisLabelCssProps
   withoutReferenceLine?: boolean
+  withoutTooltip?: boolean
 }
 
 export type AreaChartProps<TData extends TChartData> =
@@ -70,9 +71,11 @@ export function AreaChart<TData extends TChartData>({
   xAxisLabelProps,
   yAxisLabelProps,
   withoutReferenceLine,
+  withoutTooltip,
 }: AreaChartProps<TData>) {
   const { series, xAxisKey } = getConfigWithDefaults(config)
   const { themeProps: theme } = useTheme()
+  const chartId = useId()
 
   const primarySeries = pickPrimarySeries(config)
   const primarySeriesKey = primarySeries?.key
@@ -90,8 +93,13 @@ export function AreaChart<TData extends TChartData>({
     }
   }
 
-  const { margin, labelFormatter, valueFormatter, tooltipWrapperStyles } =
-    getDerivedChartProps(config)
+  const {
+    margin,
+    labelFormatter,
+    tooltipFormatter,
+    valueFormatter,
+    tooltipWrapperStyles,
+  } = getDerivedChartProps(config)
 
   const isAreaGradientFill = gradient === "area" || gradient === "all"
   const isLineGradientFill = gradient === "line" || gradient === "all"
@@ -140,46 +148,42 @@ export function AreaChart<TData extends TChartData>({
           {...yAxisProps}
           label={getAxisLabelProps(yAxisLabel, true, yAxisLabelProps)}
         />
-        {withoutReferenceLine ? null : (
-          <>
-            <Tooltip
-              content={ChartTooltip}
-              labelFormatter={labelFormatter}
-              formatter={(value) => {
-                if (valueFormatter && isNumber(value)) {
-                  return valueFormatter(value)
-                }
-                return value
-              }}
-              wrapperStyle={tooltipWrapperStyles}
-              cursor={{
-                shapeRendering: "crispEdges",
-                stroke: theme.text.low,
-                strokeWidth: 1,
-                strokeDasharray: "6 6",
-              }}
-            />
-            <ReferenceLine
-              y={activePointValue ?? 0}
-              stroke={theme.text.low}
-              strokeDasharray="6 6"
-              opacity={activePointValue ? 1 : 0}
-              shapeRendering="crispEdges"
-            />
-          </>
+        {!withoutTooltip && (
+          <Tooltip
+            content={ChartTooltip}
+            labelFormatter={tooltipFormatter}
+            formatter={(value) => {
+              if (valueFormatter && isNumber(value)) {
+                return valueFormatter(value)
+              }
+              return value
+            }}
+            wrapperStyle={tooltipWrapperStyles}
+            cursor={{
+              shapeRendering: "crispEdges",
+              stroke: theme.text.low,
+              strokeWidth: 1,
+              strokeDasharray: "6 6",
+            }}
+          />
+        )}
+        {!withoutReferenceLine && (
+          <ReferenceLine
+            y={activePointValue ?? 0}
+            stroke={theme.text.low}
+            strokeDasharray="6 6"
+            opacity={activePointValue ? 1 : 0}
+            shapeRendering="crispEdges"
+          />
         )}
         {series.map(({ key, color }) => {
           const colors = getColorSet(color, theme.details.chart)
+          const gradientId = `${chartId}-${key}-gradient`
+
           return (
             <Fragment key={key}>
               <defs>
-                <linearGradient
-                  id={`${key}-gradient`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                   <stop
                     offset="5%"
                     stopColor={colors.primary}
@@ -196,10 +200,10 @@ export function AreaChart<TData extends TChartData>({
                 dataKey={key}
                 type={curveType}
                 strokeWidth={strokeWidth}
-                fill={isAreaGradientFill ? `url(#${key}-gradient)` : "none"}
+                fill={isAreaGradientFill ? `url(#${gradientId})` : "none"}
                 fillOpacity={0.4}
                 stroke={
-                  isLineGradientFill ? `url(#${key}-gradient)` : colors.primary
+                  isLineGradientFill ? `url(#${gradientId})` : colors.primary
                 }
                 dot={customDot}
                 activeDot={{ fill: colors.primary, r: 5 }}

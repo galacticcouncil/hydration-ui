@@ -82,9 +82,11 @@ export const ChartTooltipLegendType = ({
                 }}
               />
               <Flex justify="space-between" gap={20} sx={{ flex: 1 }}>
-                <Text color={getToken("text.medium")} fs={14} fw={500} lh={1}>
-                  {itemConfig?.label || item.name}
-                </Text>
+                {itemConfig?.label && (
+                  <Text color={getToken("text.medium")} fs={14} fw={500} lh={1}>
+                    {itemConfig.label}
+                  </Text>
+                )}
                 <Text
                   color={getToken("text.high")}
                   fs={14}

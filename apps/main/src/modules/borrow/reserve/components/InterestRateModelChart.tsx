@@ -15,6 +15,7 @@ export type InterestRateModelChartProps = {
 }
 
 const REFERENCE_LABEL_WIDTH = 95
+export const VARIABLE_BORROW_RATE_COLOR = "#E53E76"
 
 const ReferenceLineLabel = (props: {
   value: number
@@ -82,7 +83,7 @@ export const InterestRateModelChart: React.FC<InterestRateModelChartProps> = ({
           {
             key: "variableRate",
             label: t("borrow:market.table.borrowAprVariable"),
-            color: "#E53E76",
+            color: VARIABLE_BORROW_RATE_COLOR,
           },
         ],
       }}
