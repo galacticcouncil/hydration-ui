@@ -52,6 +52,7 @@ export const NetWorth: FC = () => {
       minWidth={320}
       columnTemplate={["auto 1fr", null, "auto"]}
       columnGap={8}
+      rowTemplate="auto 1fr"
       align={["center"]}
       justifyItems={["center", null, "start"]}
     >

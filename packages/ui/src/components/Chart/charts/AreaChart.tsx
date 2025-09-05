@@ -10,7 +10,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { CategoricalChartFunc } from "recharts/types/chart/generateCategoricalChart"
+import { CategoricalChartFunc } from "recharts/types/chart/types"
 import { CurveType } from "recharts/types/shape/Curve"
 import { isNumber, isString } from "remeda"
 
@@ -35,7 +35,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
   gradient?: "area" | "line" | "all" | "none"
   strokeWidth?: number
   customDot?: (
-    props: Required<DotProps> & {
+    props: DotProps & {
       payload: TData
     },
   ) => React.ReactElement<SVGElement>

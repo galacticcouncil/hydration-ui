@@ -182,7 +182,7 @@ export const AreaCustomDot: Story = {
       yAxisLabel="Payable Percentage"
       xAxisLabel="Days"
       strokeWidth={4}
-      customDot={({ key, payload, cx, cy }) => (
+      customDot={({ key, payload, cx = 0, cy = 0 }) => (
         <>
           {payload.current && (
             <PlusIcon key={key} x={cx - 12} y={cy - 12} color="#FFD230" />
