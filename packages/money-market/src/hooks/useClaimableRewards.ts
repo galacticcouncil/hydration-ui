@@ -3,8 +3,9 @@ import { normalize, UserIncentiveData } from "@aave/math-utils"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 
 export const useClaimableRewards = () => {
-  const { user } = useAppDataContext()
-  return Object.keys(user.calculatedUserIncentives).reduce(
+  const { user, loading } = useAppDataContext()
+
+  const rewards = Object.keys(user.calculatedUserIncentives).reduce(
     (acc, rewardTokenAddress) => {
       const incentive: UserIncentiveData =
         user.calculatedUserIncentives[rewardTokenAddress]
@@ -31,4 +32,9 @@ export const useClaimableRewards = () => {
       assets: string[]
     },
   )
+
+  return {
+    ...rewards,
+    loading,
+  }
 }

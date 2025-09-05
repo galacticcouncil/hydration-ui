@@ -8,6 +8,7 @@
   "header.valueInIsolatedPools": "Value in Isolated Pools",
   "header.claim.title": "Claim rewards",
   "header.claim.claimableFromAllPositions": "Claimable from all positions",
+  "header.claim.totalUsdValue": "Total of ≈ {{ value }}",
   "header.claim.button": "Claim all",
   "tab.allPools": "All pools",
   "tab.omnipoolStablepool": "Omnipool & stablepool",
