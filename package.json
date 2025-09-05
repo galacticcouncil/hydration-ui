@@ -41,6 +41,7 @@
     "@galacticcouncil/apps": "^13.5.0",
     "@galacticcouncil/math-staking": "^1.2.0",
     "@galacticcouncil/sdk": "^9.14.0",
+    "@galacticcouncil/sdk-next": "0.6.0-pr192-1d1a581",
     "@galacticcouncil/ui": "^5.7.0",
     "@galacticcouncil/xcm-cfg": "^10.5.0",
     "@galacticcouncil/xcm-core": "^8.0.0",
