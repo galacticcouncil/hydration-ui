@@ -156,22 +156,12 @@ export const RemoveXYKLiquidityForm = ({
             </Text>
 
             <RemoveLiquidityReward
-              id={assetAMeta.id}
-              name={assetAMeta.name}
-              symbol={assetAMeta.symbol}
-              amount={t("value.token", {
-                value: removeAmount[0],
-                fixedPointScale: assetAMeta.decimals,
-              })}
+              meta={assetAMeta}
+              amount={removeAmount[0].toString()}
             />
             <RemoveLiquidityReward
-              id={assetBMeta.id}
-              name={assetBMeta.name}
-              symbol={assetBMeta.symbol}
-              amount={t("value.token", {
-                value: removeAmount[1],
-                fixedPointScale: assetBMeta.decimals,
-              })}
+              meta={assetBMeta}
+              amount={removeAmount[1].toString()}
             />
           </STradingPairContainer>
         </div>

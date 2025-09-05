@@ -1,6 +1,7 @@
 import { Icon } from "components/Icon/Icon"
 import { Text } from "components/Typography/Text/Text"
 import { FC, ReactNode } from "react"
+import Skeleton from "react-loading-skeleton"
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 
 type Variant = "default" | `risk:${StrategyRiskLevel}`
@@ -11,6 +12,7 @@ type Props = {
   readonly customValue?: ReactNode
   readonly icon?: ReactNode
   readonly variant?: Variant
+  readonly isLoading?: boolean
 }
 
 export const AssetOverviewTile: FC<Props> = ({
@@ -19,6 +21,7 @@ export const AssetOverviewTile: FC<Props> = ({
   customValue,
   icon,
   variant,
+  isLoading,
 }) => {
   return (
     <div sx={{ flex: "column", gap: 8 }}>
@@ -28,10 +31,14 @@ export const AssetOverviewTile: FC<Props> = ({
         </Text>
         {icon && <Icon icon={icon} size={14} />}
       </div>
-      {customValue ?? (
-        <AssetOverviewTileValue variant={variant}>
-          {value}
-        </AssetOverviewTileValue>
+      {isLoading ? (
+        <Skeleton sx={{ height: 16, width: 80 }} />
+      ) : (
+        customValue ?? (
+          <AssetOverviewTileValue variant={variant}>
+            {value}
+          </AssetOverviewTileValue>
+        )
       )}
     </div>
   )

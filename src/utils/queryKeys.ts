@@ -312,6 +312,7 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  defillamaApyHistory: (id: string) => ["defillamaApyHistory", id],
   lidoEthAPR: ["lidoEthAPR"],
   variableBorrowRates: (assetId: string, from: string, to: string) => [
     "variableBorrowRates",
@@ -333,6 +334,11 @@ export const QUERY_KEYS = {
   borrowReserves: (poolContractAddress: string) => [
     "borrowReserves",
     poolContractAddress,
+  ],
+  borrowUserReserves: (poolContractAddress: string, address: string) => [
+    "borrowReserves",
+    poolContractAddress,
+    address,
   ],
   borrowIncentives: (
     incentivesContractAddress: string,
@@ -371,6 +377,11 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
+  bestTradeSellTx: (
+    assetInId: string,
+    assetOutId: string,
+    amountIn: string,
+  ) => ["bestTradeSellTx", assetInId, assetOutId, amountIn],
 } as const
 
 export const WS_QUERY_KEYS = {

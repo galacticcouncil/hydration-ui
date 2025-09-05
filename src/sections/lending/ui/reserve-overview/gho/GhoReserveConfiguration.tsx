@@ -35,16 +35,12 @@ export const GhoReserveConfiguration: React.FC<
   ).toString()
 
   const maxAvailableToBorrow = BN.max(
-    valueToBigNumber(reserve.borrowCap).minus(
-      valueToBigNumber(reserve.totalDebt),
-    ),
+    valueToBigNumber(reserve.borrowCap),
     0,
   ).toNumber()
 
   const maxAvailableToBorrowUSD = BN.max(
-    valueToBigNumber(reserve.borrowCapUSD).minus(
-      valueToBigNumber(reserve.totalDebtUSD),
-    ),
+    valueToBigNumber(reserve.borrowCapUSD),
     0,
   ).toNumber()
 
@@ -53,10 +49,10 @@ export const GhoReserveConfiguration: React.FC<
   return (
     <>
       <Text fs={15} font="Geist" sx={{ mb: 30 }}>
-        About HOLLAR
+        {t("lending.hollar.reserve.title")}
       </Text>
       <Text fs={14} color="basic400">
-        {t("lending.hollar.banner.description")}
+        {t("lending.hollar.reserve.description")}
       </Text>
       <ReserveSectionDivider />
       <Text color="pink500" fs={14} sx={{ mb: 30 }}>

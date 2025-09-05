@@ -217,16 +217,22 @@ export const useAccountPositions = (givenAddress?: string) => {
             api.query.xykWarehouseLM.deposit.key(nft.instanceId),
           )
 
+          const omniPositionIdsRaw = await Promise.all(
+            miningNfts.map((pos) =>
+              api.query.omnipoolLiquidityMining.omniPositionId(pos.instanceId),
+            ),
+          )
+
           const [
             liquidityPos,
-            omniPositionIdsRaw,
+            // omniPositionIdsRaw,
             omnipoolData = [],
             xykData = [],
           ] = await Promise.all([
             api.query.omnipool.positions.multi(liquidityPositionIds),
-            api.query.omnipoolLiquidityMining.omniPositionId.multi(
-              miningNfts.map((nft) => nft.instanceId),
-            ),
+            // api.query.omnipoolLiquidityMining.omniPositionId.multi(
+            //   miningNfts.map((nft) => nft.instanceId),
+            // ),
             omnipoolKeys.length
               ? (api.rpc.state.queryStorageAt(omnipoolKeys) as Promise<
                   Option<PalletLiquidityMiningDepositData>[]
