@@ -1,3 +1,4 @@
+import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
 import Big from "big.js"
 import { useCallback, useMemo } from "react"
 import { isDeepEqual, pick, prop } from "remeda"
@@ -12,11 +13,8 @@ import {
 
 import { OmnipoolPositionData, useOmnipoolPositionData } from "./liquidity"
 
-export type Balance = {
+export type Balance = SdkBalance & {
   assetId: string
-  free: bigint
-  reserved: bigint
-  total: bigint
 }
 
 type Positions = {

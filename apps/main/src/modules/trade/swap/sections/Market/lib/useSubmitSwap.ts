@@ -4,7 +4,6 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
-import { useRefetchAccountBalance } from "@/api/account"
 import {
   MarketFormValues,
   TradeType,
@@ -27,7 +26,6 @@ export const useSubmitSwap = () => {
   const address = account?.address ?? ""
 
   const { createTransaction } = useTransactionsStore()
-  const refetchAccountBalance = useRefetchAccountBalance()
 
   return useMutation({
     mutationFn: async ([values, swap]: [
@@ -86,6 +84,5 @@ export const useSubmitSwap = () => {
         },
       })
     },
-    onSuccess: () => refetchAccountBalance(),
   })
 }
