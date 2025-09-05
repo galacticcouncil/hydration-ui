@@ -7,7 +7,9 @@ export const SHeaderMenu = styled(Flex)`
   overflow: hidden;
 `
 
-export const SHeaderMenuItem = styled(Text)<{
+export const SHeaderMenuItem = styled(Text, {
+  shouldForwardProp: (prop) => prop !== "isHidden",
+})<{
   readonly isHidden?: boolean
 }>(
   ({ theme, isHidden }) => css`

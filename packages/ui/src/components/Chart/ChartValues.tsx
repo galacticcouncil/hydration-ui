@@ -17,10 +17,14 @@ export const ChartValues: React.FC<ChartValuesProps> = ({
 }) => {
   return (
     <Flex direction="column" {...props}>
-      <Text fs="p3" fw={600}>
+      <Text fs="p3" fw={600} asChild={typeof value !== "string"}>
         {isLoading ? <Skeleton width={100} /> : value || <>&nbsp;</>}
       </Text>
-      <Text fs="p5" color={getToken("text.medium")}>
+      <Text
+        fs="p5"
+        color={getToken("text.medium")}
+        asChild={typeof displayValue !== "string"}
+      >
         {isLoading ? <Skeleton width={50} /> : displayValue || <>&nbsp;</>}
       </Text>
     </Flex>

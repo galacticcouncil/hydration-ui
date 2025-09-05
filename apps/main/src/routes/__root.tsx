@@ -1,9 +1,6 @@
 import { QueryClient, useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import {
-  createRootRouteWithContext,
-  ScrollRestoration,
-} from "@tanstack/react-router"
+import { createRootRouteWithContext } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { lazy } from "react"
 
@@ -65,7 +62,6 @@ function RootComponent() {
   return (
     <>
       <MainLayout />
-      <ScrollRestoration />
       {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
       {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
       {isApiLoaded && <Subscriptions />}

@@ -139,11 +139,12 @@ export const SupplyInfo = ({
                 fs={14}
                 fw={600}
                 color={getToken("accents.success.emphasis")}
-                display="flex"
-                sx={{ alignItems: "center", gap: 4 }}
+                asChild
               >
-                <Icon component={Check} size={16} />
-                <Text as="span">{t("borrow:canBeCollateral")}</Text>
+                <Flex align="center" gap={4}>
+                  <Icon component={Check} size={16} />
+                  <Text as="span">{t("borrow:canBeCollateral")}</Text>
+                </Flex>
               </Text>
             </Flex>
           ) : (
