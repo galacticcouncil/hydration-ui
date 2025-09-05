@@ -273,6 +273,7 @@ export const RemoveLiquidityModal = ({
                     RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
                   )
                 }
+                type="liquidity"
               />
             ),
           },

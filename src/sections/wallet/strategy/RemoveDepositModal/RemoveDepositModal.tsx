@@ -277,6 +277,7 @@ export const RemoveDepositModal: FC<Props> = ({
                       <LiquidityLimitField
                         setLiquidityLimit={() => paginateTo(PAGES.TRADE_LIMIT)}
                         withSeparator
+                        type="liquidity"
                       />
                     </>
                   ) : (
@@ -291,6 +292,7 @@ export const RemoveDepositModal: FC<Props> = ({
                         hfChange={hfChange}
                         minReceived={minAmountOutFormatted}
                         assetReceived={assetReceived}
+                        setLiquidityLimit={() => paginateTo(PAGES.TRADE_LIMIT)}
                       />
                       {displayTradeAlert && <TradeAlert />}
                     </>
@@ -348,7 +350,12 @@ export const RemoveDepositModal: FC<Props> = ({
           title: t("liquidity.add.modal.limit.title"),
           noPadding: true,
           headerVariant: "GeistMono",
-          content: <LimitModal onConfirm={() => paginateTo(PAGES.FORM)} />,
+          content: (
+            <LimitModal
+              onConfirm={() => paginateTo(PAGES.FORM)}
+              type={splitRemove ? "liquidity" : "swap"}
+            />
+          ),
         },
         {
           title: t("selectAsset.title"),

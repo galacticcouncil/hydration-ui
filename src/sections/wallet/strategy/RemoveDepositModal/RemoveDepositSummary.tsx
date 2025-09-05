@@ -6,12 +6,14 @@ import { TAsset, useAssets } from "providers/assets"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import Skeleton from "react-loading-skeleton"
+import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 
 type Props = {
   readonly assetId: string
   readonly hfChange: UseHealthFactorChangeResult
   readonly minReceived: string
   readonly assetReceived: TAsset | null
+  readonly setLiquidityLimit: () => void
 }
 
 export const RemoveDepositSummary: FC<Props> = ({
@@ -19,6 +21,7 @@ export const RemoveDepositSummary: FC<Props> = ({
   hfChange,
   minReceived,
   assetReceived,
+  setLiquidityLimit,
 }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
@@ -28,6 +31,11 @@ export const RemoveDepositSummary: FC<Props> = ({
 
   return (
     <div>
+      <LiquidityLimitField
+        setLiquidityLimit={setLiquidityLimit}
+        withSeparator
+        type="swap"
+      />
       <SummaryRow
         label={t("wallet.strategy.deposit.minReceived")}
         withSeparator

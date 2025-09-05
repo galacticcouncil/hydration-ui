@@ -32,7 +32,6 @@ import {
 import { useBestTradeSell, useBestTradeSellTx } from "api/trade"
 import { StepProps } from "components/Stepper/Stepper"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { t } from "i18next"
 import { useCallback, useEffect } from "react"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
@@ -40,6 +39,7 @@ import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useHealthFactorChange } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { TFarmAprData } from "api/farms"
+import { useSwapLimit } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal.utils"
 
 export type TStablepoolFormValue = {
   assetId: string
@@ -390,6 +390,7 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
   const refetchPositions = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
   const { data: accountAssets } = useAccountBalances()
+  const { swapLimit: slippageData } = useSwapLimit()
 
   const {
     isJoinFarms,
@@ -479,8 +480,6 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
       STABLEPOOL_TOKEN_DECIMALS,
     ).toString()
 
-    const slippageData = TradeConfigCursor.deref().slippage
-
     const builtTx = await sdk.tx
       .trade(
         await sdk.api.router.getBestSell(
@@ -559,6 +558,7 @@ export const useMoneyMarketStablepoolSubmit = (
   const refetchPositions = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
   const { data: accountAssets } = useAccountBalances()
+  const { swapLimit: slippageData } = useSwapLimit()
 
   const { isJoinFarms, isStablepoolOnly, stablepoolAsset, farms, onClose } =
     props
@@ -649,7 +649,6 @@ export const useMoneyMarketStablepoolSubmit = (
   const onSubmit = async (values: TAddStablepoolFormValues) => {
     if (!account || !trade) throw new Error("Account is not found")
 
-    const slippageData = TradeConfigCursor.deref().slippage
     const { tx: sdkTx } = sdk
 
     const builtTx = await sdkTx

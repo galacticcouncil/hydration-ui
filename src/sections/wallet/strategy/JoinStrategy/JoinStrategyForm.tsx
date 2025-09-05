@@ -234,7 +234,10 @@ const JoinStrategyForm = (
 
       <Spacer size={20} />
 
-      <LiquidityLimitField setLiquidityLimit={setLiquidityLimit} />
+      <LiquidityLimitField
+        setLiquidityLimit={setLiquidityLimit}
+        type={split || !stablepoolAsset.isErc20 ? "liquidity" : "swap"}
+      />
 
       <SummaryRow
         label={t(

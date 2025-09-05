@@ -290,7 +290,10 @@ export const StablepoolForm = (
         </>
       ) : (
         <>
-          <LiquidityLimitField setLiquidityLimit={setLiquidityLimit} />
+          <LiquidityLimitField
+            setLiquidityLimit={setLiquidityLimit}
+            type={split || !stablepoolAsset.isErc20 ? "liquidity" : "swap"}
+          />
 
           <StablepoolFeeSummaryRow poolId={poolId} />
 

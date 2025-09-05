@@ -36,6 +36,7 @@ import { useHealthFactorChange } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { useSwapLimit } from "./components/LimitModal/LimitModal.utils"
 
 type Props = {
   assetId: string
@@ -216,7 +217,10 @@ export const AddLiquidityForm = ({
           />
           <Spacer size={20} />
 
-          <LiquidityLimitField setLiquidityLimit={setLiquidityLimit} />
+          <LiquidityLimitField
+            setLiquidityLimit={setLiquidityLimit}
+            type="liquidity"
+          />
 
           <SummaryRow
             label={t("liquidity.add.modal.tradeFee")}
@@ -348,12 +352,15 @@ const AddOmnipoolLiquiditySummary = ({
 export const LiquidityLimitField = ({
   setLiquidityLimit,
   withSeparator = true,
+  type,
 }: {
   setLiquidityLimit: () => void
   withSeparator?: boolean
+  type: "liquidity" | "swap"
 }) => {
   const { t } = useTranslation()
   const { addLiquidityLimit } = useLiquidityLimit()
+  const { swapLimit } = useSwapLimit()
 
   return (
     <SummaryRow
@@ -362,7 +369,9 @@ export const LiquidityLimitField = ({
       content={
         <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
           <Text fs={14} color="white" tAlign="right">
-            {t("value.percentage", { value: addLiquidityLimit })}
+            {t("value.percentage", {
+              value: type === "liquidity" ? addLiquidityLimit : swapLimit,
+            })}
           </Text>
           <ButtonTransparent onClick={setLiquidityLimit}>
             <Text color="brightBlue200" fs={14}>

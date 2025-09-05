@@ -1,7 +1,7 @@
-import { TradeConfigCursor } from "@galacticcouncil/apps"
 import { useQuery } from "@tanstack/react-query"
 import BN from "bignumber.js"
 import { useRpcProvider } from "providers/rpcProvider"
+import { useSwapLimit } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { QUERY_KEYS } from "utils/queryKeys"
 
@@ -27,8 +27,7 @@ export const useBestTradeSell = (
   const { account } = useAccount()
 
   const { api: sdkApi, tx: sdkTx } = sdk
-
-  const slippageData = TradeConfigCursor.deref().slippage
+  const { swapLimit: slippageData } = useSwapLimit()
 
   const { data: tradeData, isInitialLoading } = useQuery({
     queryKey: QUERY_KEYS.bestTradeSell(assetInId, assetOutId, amountIn),
@@ -81,7 +80,7 @@ export const useBestTradeSellTx = (
   const { account } = useAccount()
 
   const { api: sdkApi, tx: sdkTx } = sdk
-  const slippageData = TradeConfigCursor.deref().slippage
+  const { swapLimit: slippageData } = useSwapLimit()
 
   return useQuery({
     queryKey: QUERY_KEYS.bestTradeSellTx(assetInId, assetOutId, amountIn),

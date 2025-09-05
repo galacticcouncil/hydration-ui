@@ -113,7 +113,10 @@ export const JoinStrategyModal = ({
             noPadding: true,
             headerVariant: "GeistMono",
             content: (
-              <LimitModal onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)} />
+              <LimitModal
+                onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)}
+                type={split || !stablepoolAsset.isErc20 ? "liquidity" : "swap"}
+              />
             ),
           },
         ]}
