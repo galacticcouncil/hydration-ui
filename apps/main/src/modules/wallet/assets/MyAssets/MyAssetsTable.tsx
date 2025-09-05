@@ -5,7 +5,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { ForwardedRef, forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow"
@@ -19,53 +19,54 @@ import { useAssets } from "@/providers/assetsProvider"
 type Props = {
   readonly searchPhrase: string
   readonly showAllAssets: boolean
+  readonly ref?: Ref<DataTableRef>
 }
 
-export const MyAssetsTable = forwardRef(
-  ({ searchPhrase, showAllAssets }: Props, ref: ForwardedRef<DataTableRef>) => {
-    const { isMobile } = useBreakpoints()
-    const { native } = useAssets()
+export const MyAssetsTable: FC<Props> = ({
+  searchPhrase,
+  showAllAssets,
+  ref,
+}) => {
+  const { isMobile } = useBreakpoints()
+  const { native } = useAssets()
 
-    const { data: tableAssets, isLoading: arePricesLoading } =
-      useMyAssetsTableData(showAllAssets)
-    const columns = useMyAssetsColumns()
+  const { data: tableAssets, isLoading: arePricesLoading } =
+    useMyAssetsTableData(showAllAssets)
+  const columns = useMyAssetsColumns()
 
-    return (
-      <TableContainer as={Paper}>
-        <DataTable
-          ref={ref}
-          isLoading={arePricesLoading}
-          paginated
-          pageSize={10}
-          globalFilter={searchPhrase}
-          globalFilterFn={(row) =>
-            row.original.symbol
-              .toLowerCase()
-              .includes(searchPhrase.toLowerCase()) ||
-            row.original.name.toLowerCase().includes(searchPhrase.toLowerCase())
-          }
-          data={tableAssets}
-          columns={columns}
-          expandable={!isMobile}
-          initialSorting={[
-            {
-              id: isMobile
-                ? MyAssetsTableColumn.Total
-                : MyAssetsTableColumn.Transferable,
-              desc: true,
-            },
-          ]}
-          renderSubComponent={(asset) =>
-            asset.id === native.id ? (
-              <ExpandedNativeRow asset={asset} />
-            ) : (
-              <AssetDetailExpanded asset={asset} />
-            )
-          }
-        />
-      </TableContainer>
-    )
-  },
-)
-
-MyAssetsTable.displayName = "MyAssetsTable"
+  return (
+    <TableContainer as={Paper}>
+      <DataTable
+        ref={ref}
+        isLoading={arePricesLoading}
+        paginated
+        pageSize={10}
+        globalFilter={searchPhrase}
+        globalFilterFn={(row) =>
+          row.original.symbol
+            .toLowerCase()
+            .includes(searchPhrase.toLowerCase()) ||
+          row.original.name.toLowerCase().includes(searchPhrase.toLowerCase())
+        }
+        data={tableAssets}
+        columns={columns}
+        expandable={!isMobile}
+        initialSorting={[
+          {
+            id: isMobile
+              ? MyAssetsTableColumn.Total
+              : MyAssetsTableColumn.Transferable,
+            desc: true,
+          },
+        ]}
+        renderSubComponent={(asset) =>
+          asset.id === native.id ? (
+            <ExpandedNativeRow asset={asset} />
+          ) : (
+            <AssetDetailExpanded asset={asset} />
+          )
+        }
+      />
+    </TableContainer>
+  )
+}

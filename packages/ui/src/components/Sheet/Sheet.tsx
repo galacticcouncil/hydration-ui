@@ -1,6 +1,6 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
-import { FC, forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { FlexProps } from "@/components/Flex"
 
@@ -23,16 +23,17 @@ const SheetPortal = DialogPrimitive.Portal
 
 const SheetClose = DialogPrimitive.Close
 
-const SheetOverlay = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->((props, ref) => <SSheetOverlay ref={ref} {...props} />)
-SheetOverlay.displayName = DialogPrimitive.Overlay.displayName
+const SheetOverlay: FC<
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
+    ref?: Ref<React.ElementRef<typeof DialogPrimitive.Overlay>>
+  }
+> = ({ ref, ...props }) => <SSheetOverlay ref={ref} {...props} />
 
-const SheetContent = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ children, ...props }, ref) => (
+const SheetContent: FC<
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
+  }
+> = ({ children, ref, ...props }) => (
   <SheetPortal>
     <SheetOverlay />
     <SSheetWrapper>
@@ -41,18 +42,17 @@ const SheetContent = forwardRef<
       </SSheetContent>
     </SSheetWrapper>
   </SheetPortal>
-))
-SheetContent.displayName = DialogPrimitive.Content.displayName
+)
 
-const SheetTitle = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ children, ...props }, ref) => (
+const SheetTitle: FC<
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title> & {
+    ref?: Ref<React.ElementRef<typeof DialogPrimitive.Title>>
+  }
+> = ({ children, ref, ...props }) => (
   <DialogPrimitive.Title ref={ref} asChild {...props}>
     <SSheetTitle as="h2">{children}</SSheetTitle>
   </DialogPrimitive.Title>
-))
-SheetTitle.displayName = DialogPrimitive.Title.displayName
+)
 
 type SheetHeaderProps = Omit<FlexProps, "title"> & {
   title?: string
@@ -66,10 +66,8 @@ const SheetHeader: FC<SheetHeaderProps> = ({ title, ...props }) => (
     </SSheetClose>
   </SSheetHeader>
 )
-SheetHeader.displayName = "SheetHeader"
 
 const SheetBody = (props: FlexProps) => <SSheetBody {...props} />
-SheetBody.displayName = "SheetBody"
 
 export type SheetProps = React.ComponentProps<typeof SheetRoot> & {
   title?: string

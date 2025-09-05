@@ -1,4 +1,4 @@
-import { ComponentProps, FC, forwardRef } from "react"
+import { ComponentProps, FC, Ref } from "react"
 
 import { Flex } from "@/components/Flex"
 import { Text } from "@/components/Text"
@@ -52,81 +52,61 @@ export const Amount: FC<AmountProps> = ({
 
 type AmountMediumLabelProps = ComponentProps<typeof Text> & {
   readonly variant?: AmountVariant
+  readonly ref?: Ref<HTMLParagraphElement>
 }
 
-const AmountLabel = forwardRef<HTMLParagraphElement, AmountMediumLabelProps>(
-  ({ variant = "default", ...props }, ref) => {
-    return variant === "default" ? (
-      <Text
-        ref={ref}
-        fs={12}
-        lh={px(15)}
-        color={getToken("text.medium")}
-        {...props}
-      />
-    ) : (
-      <Text
-        ref={ref}
-        fs={13}
-        lh={px(15)}
-        color={getToken("text.low")}
-        {...props}
-      />
-    )
-  },
-)
-
-AmountLabel.displayName = "AmountLabel"
+const AmountLabel: FC<AmountMediumLabelProps> = ({
+  variant = "default",
+  ...props
+}) => {
+  return variant === "default" ? (
+    <Text fs={12} lh={px(15)} color={getToken("text.medium")} {...props} />
+  ) : (
+    <Text fs={13} lh={px(15)} color={getToken("text.low")} {...props} />
+  )
+}
 
 type AmountValueProps = ComponentProps<typeof Text> & {
   readonly variant?: AmountVariant
+  readonly ref?: HTMLParagraphElement
 }
 
-const AmountValue = forwardRef<HTMLParagraphElement, AmountValueProps>(
-  ({ variant = "default", size = "default", ...props }, ref) => {
-    return variant === "default" ? (
-      <Text
-        ref={ref}
-        fw={500}
-        fs={size === "large" ? "p2" : "p4"}
-        lh={1}
-        color={getToken("text.high")}
-        {...props}
-      />
-    ) : (
-      <Text
-        ref={ref}
-        fw={600}
-        fs={size === "large" ? "p2" : 12}
-        lh={px(15)}
-        color={getToken("text.high")}
-        {...props}
-      />
-    )
-  },
-)
-
-AmountValue.displayName = "AmountValue"
-
-type AmountDisplayValueProps = ComponentProps<typeof Text> & {
-  readonly variant?: AmountVariant
-}
-
-const AmountDisplayValue = forwardRef<
-  HTMLParagraphElement,
-  AmountDisplayValueProps
->(({ variant = "default", ...props }, ref) => {
+const AmountValue: FC<AmountValueProps> = ({
+  variant = "default",
+  size = "default",
+  ...props
+}) => {
   return variant === "default" ? (
-    <Text ref={ref} fs={10} lh={1} color={getToken("text.low")} {...props} />
+    <Text
+      fw={500}
+      fs={size === "large" ? "p2" : "p4"}
+      lh={1}
+      color={getToken("text.high")}
+      {...props}
+    />
   ) : (
     <Text
-      ref={ref}
-      fs={11}
+      fw={600}
+      fs={size === "large" ? "p2" : 12}
       lh={px(15)}
-      color={getToken("text.low")}
+      color={getToken("text.high")}
       {...props}
     />
   )
-})
+}
 
-AmountDisplayValue.displayName = "AmountDisplayValue"
+type AmountDisplayValueProps = ComponentProps<typeof Text> & {
+  readonly variant?: AmountVariant
+  readonly ref?: HTMLParagraphElement
+}
+
+const AmountDisplayValue: FC<AmountDisplayValueProps> = ({
+  variant = "default",
+  ...props
+}) => {
+  return variant === "default" ? (
+    <Text fs={10} lh={1} color={getToken("text.low")} {...props} />
+  ) : (
+    <Text fs={11} lh={px(15)} color={getToken("text.low")} {...props} />
+  )
+}

@@ -9,7 +9,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
-import { forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { SConnectedButton } from "@/components/Web3ConnectButton.styled"
 import { useAccount } from "@/hooks/useAccount"
@@ -18,10 +18,9 @@ import { getAccountAvatarTheme } from "@/utils"
 
 export type Web3ConnectButtonProps = ButtonProps
 
-export const Web3ConnectButton = forwardRef<
-  HTMLButtonElement,
-  Web3ConnectButtonProps
->((props, ref) => {
+export const Web3ConnectButton: FC<
+  Web3ConnectButtonProps & { ref?: Ref<HTMLButtonElement> }
+> = ({ ref, ...props }) => {
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
   if (account) {
@@ -61,6 +60,4 @@ export const Web3ConnectButton = forwardRef<
       <Text fs="p3">Connect Wallet</Text>
     </Button>
   )
-})
-
-Web3ConnectButton.displayName = "Web3ConnectButton"
+}

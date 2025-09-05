@@ -1,4 +1,4 @@
-import { forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { ChevronRight } from "@/assets/icons"
 import { MoveUpRight } from "@/assets/icons"
@@ -25,24 +25,21 @@ const TextButtonIcon = ({
   return null
 }
 
-export const TextButton = forwardRef<HTMLButtonElement, TextButtonProps>(
-  ({ direction = "none", ...props }, ref) => (
-    <STextButton ref={ref} type="button" {...props}>
-      {props.children}
-      <TextButtonIcon direction={direction} />
-    </STextButton>
-  ),
+export const TextButton: FC<
+  TextButtonProps & { ref?: Ref<HTMLButtonElement> }
+> = ({ direction = "none", ref, ...props }) => (
+  <STextButton ref={ref} type="button" {...props}>
+    {props.children}
+    <TextButtonIcon direction={direction} />
+  </STextButton>
 )
-
-TextButton.displayName = "TextButton"
 
 export type LinkTextButtonProps = React.ComponentPropsWithoutRef<"a"> &
   CustomTextButtonProps
 
-export const LinkTextButton = forwardRef<
-  HTMLAnchorElement,
-  LinkTextButtonProps
->(({ direction = "external", variant = "plain", ...props }, ref) => (
+export const LinkTextButton: FC<
+  LinkTextButtonProps & { ref?: Ref<HTMLAnchorElement> }
+> = ({ direction = "external", variant = "plain", ref, ...props }) => (
   <SLinkTextButton
     ref={ref}
     target="_blank"
@@ -54,6 +51,4 @@ export const LinkTextButton = forwardRef<
     {props.children}
     <TextButtonIcon direction={direction} />
   </SLinkTextButton>
-))
-
-LinkTextButton.displayName = "LinkButton"
+)

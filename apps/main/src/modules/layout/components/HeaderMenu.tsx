@@ -24,7 +24,7 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
   const translations = useMenuTranslations()
 
   const { items, visibleItemKeys, hiddenItems, observe, moreButtonKey } =
-    useVisibleHeaderMenuItems()
+    useVisibleHeaderMenuItems<HTMLDivElement>()
 
   return (
     <SHeaderMenu ref={observe} {...props}>
