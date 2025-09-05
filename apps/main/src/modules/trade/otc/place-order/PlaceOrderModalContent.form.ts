@@ -87,6 +87,13 @@ export const usePlaceOrderForm = () => {
           return
         }
 
+        if (
+          (name === "offerAmount" && !offerAmount) ||
+          (name === "buyAmount" && !buyAmount)
+        ) {
+          return
+        }
+
         const priceBn = new Big(price || "0")
         const offerAmountBn = new Big(offerAmount || "0")
         const buyAmountBn = new Big(buyAmount || "0")
