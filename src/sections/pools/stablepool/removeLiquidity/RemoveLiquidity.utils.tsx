@@ -1,6 +1,5 @@
 import { calculate_liquidity_out_one_asset } from "@galacticcouncil/math-stableswap"
 import { useStableSDKPools } from "api/stableswap"
-import { useTotalIssuances } from "api/totalIssuance"
 import { useCallback } from "react"
 import BN from "bignumber.js"
 
@@ -12,9 +11,8 @@ type Args = {
 export const useStablepoolLiquidityOut = ({ poolId, reserves }: Args) => {
   const { data: stablePools } = useStableSDKPools()
   const stableswapSdkData = stablePools?.find((pool) => pool.id === poolId)
-  const { data: issuances } = useTotalIssuances()
 
-  const shareIssuance = issuances?.get(poolId)?.toString()
+  const shareIssuance = stableswapSdkData?.totalIssuance
 
   const getAssetOutValue = useCallback(
     (assetId: number, shares: string) => {
