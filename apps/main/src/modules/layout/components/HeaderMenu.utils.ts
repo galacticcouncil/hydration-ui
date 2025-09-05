@@ -124,9 +124,9 @@ export const useMenuTranslations = () => {
   )
 }
 
-export const useVisibleHeaderMenuItems = () => {
+export const useVisibleHeaderMenuItems = <T extends HTMLElement>() => {
   const hasTopNavbar = useHasTopNavbar()
-  const { hiddenElementsKeys, observe } = useVisibleElements()
+  const { hiddenElementsKeys, observe } = useVisibleElements<T>()
 
   return useMemo(() => {
     const order = hasTopNavbar ? topNavOrder : bottomNavOrder

@@ -7,7 +7,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { ColumnDef, flexRender, RowData } from "@tanstack/react-table"
-import { forwardRef } from "react"
 
 export type StackedTableProps<TData extends RowData> = TableProps & {
   isLoading?: boolean
@@ -20,67 +19,63 @@ export type StackedTableProps<TData extends RowData> = TableProps & {
     | ColumnDef<TData>[]
 }
 
-const StackedTable = forwardRef(
-  <TData,>({
+const StackedTable = <TData,>({
+  data,
+  columns,
+  isLoading,
+  skeletonRowCount = 10,
+}: StackedTableProps<TData>) => {
+  const table = useDataTable({
     data,
     columns,
     isLoading,
-    skeletonRowCount = 10,
-  }: StackedTableProps<TData>) => {
-    const table = useDataTable({
-      data,
-      columns,
-      isLoading,
-      skeletonRowCount,
-    })
+    skeletonRowCount,
+  })
 
-    const headers = table.getHeaderGroups()[0]?.headers ?? []
+  const headers = table.getHeaderGroups()[0]?.headers ?? []
 
-    return (
-      <Stack separated>
-        {table.getRowModel().rows.map((row) => (
-          <Stack separated key={row.id}>
-            {row.getVisibleCells().map((cell) => {
-              const header = headers.find((h) => h.column.id === cell.column.id)
+  return (
+    <Stack separated>
+      {table.getRowModel().rows.map((row) => (
+        <Stack separated key={row.id}>
+          {row.getVisibleCells().map((cell) => {
+            const header = headers.find((h) => h.column.id === cell.column.id)
 
-              const shouldRenderHeader = !!header?.column.columnDef.header
+            const shouldRenderHeader = !!header?.column.columnDef.header
 
-              return (
+            return (
+              <Flex
+                key={cell.id}
+                p={getTokenPx("scales.paddings.m")}
+                align="center"
+                justify="space-between"
+              >
+                {shouldRenderHeader && (
+                  <Text fs="p4" color={getToken("text.low")}>
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
+                  </Text>
+                )}
                 <Flex
-                  key={cell.id}
-                  p={getTokenPx("scales.paddings.m")}
-                  align="center"
-                  justify="space-between"
+                  flex={1}
+                  justify={shouldRenderHeader ? "flex-end" : "flex-start"}
+                  sx={{ textAlign: shouldRenderHeader ? "right" : "left" }}
                 >
-                  {shouldRenderHeader && (
-                    <Text fs="p4" color={getToken("text.low")}>
-                      {flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                    </Text>
-                  )}
-                  <Flex
-                    flex={1}
-                    justify={shouldRenderHeader ? "flex-end" : "flex-start"}
-                    sx={{ textAlign: shouldRenderHeader ? "right" : "left" }}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </Flex>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </Flex>
-              )
-            })}
-          </Stack>
-        ))}
-      </Stack>
-    )
-  },
-)
-
-StackedTable.displayName = "StackedTable"
+              </Flex>
+            )
+          })}
+        </Stack>
+      ))}
+    </Stack>
+  )
+}
 
 type StackedTableComponent = {
-  <TData>(props: StackedTableProps<TData>): JSX.Element
+  <TData>(props: StackedTableProps<TData>): React.JSX.Element
 }
 
 const StackedTableWithType = StackedTable as unknown as StackedTableComponent

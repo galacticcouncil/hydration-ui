@@ -1,14 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
 import { ArrowLeft, X } from "lucide-react"
-import {
-  createContext,
-  FC,
-  forwardRef,
-  ReactNode,
-  useContext,
-  useMemo,
-} from "react"
+import { createContext, FC, ReactNode, Ref, useContext, useMemo } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
@@ -48,16 +41,23 @@ const ModalPortal = DialogPrimitive.Portal
 
 const ModalClose = DialogPrimitive.Close
 
-const ModalOverlay = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->((props, ref) => <SModalOverlay ref={ref} {...props} />)
-ModalOverlay.displayName = DialogPrimitive.Overlay.displayName
+type ModalOverlayProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Overlay
+> & {
+  ref?: Ref<React.ElementRef<typeof DialogPrimitive.Overlay>>
+}
 
-const ModalContent = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ children, ...props }, ref) => (
+const ModalOverlay: FC<ModalOverlayProps> = (props) => (
+  <SModalOverlay ref={props.ref} {...props} />
+)
+
+type ModalContentProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> & {
+  ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
+}
+
+const ModalContent: FC<ModalContentProps> = ({ children, ref, ...props }) => (
   <ModalPortal>
     <ModalOverlay />
     <SModalWrapper onClick={(e) => e.stopPropagation()}>
@@ -66,28 +66,35 @@ const ModalContent = forwardRef<
       </SModalContent>
     </SModalWrapper>
   </ModalPortal>
-))
-ModalContent.displayName = DialogPrimitive.Content.displayName
+)
 
-const ModalTitle = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ children, ...props }, ref) => (
+type ModalTitleProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Title
+> & {
+  ref?: Ref<React.ElementRef<typeof DialogPrimitive.Title>>
+}
+
+const ModalTitle: FC<ModalTitleProps> = ({ children, ref, ...props }) => (
   <DialogPrimitive.Title ref={ref} asChild {...props}>
     <SModalTitle as="h2">{children}</SModalTitle>
   </DialogPrimitive.Title>
-))
-ModalTitle.displayName = DialogPrimitive.Title.displayName
+)
 
-const ModalDescription = forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ children, ...props }, ref) => (
+type ModalDescriptionProps = React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Description
+> & {
+  ref?: Ref<React.ElementRef<typeof DialogPrimitive.Description>>
+}
+
+const ModalDescription: FC<ModalDescriptionProps> = ({
+  children,
+  ref,
+  ...props
+}) => (
   <DialogPrimitive.Description ref={ref} asChild {...props}>
     <SModalDescription>{children}</SModalDescription>
   </DialogPrimitive.Description>
-))
-ModalDescription.displayName = DialogPrimitive.Description.displayName
+)
 
 type ModalHeaderProps = Omit<FlexProps, "title"> & {
   title: string
@@ -167,7 +174,6 @@ const ModalHeader: FC<ModalHeaderProps> = ({
     </SModalHeader>
   )
 }
-ModalHeader.displayName = "ModalHeader"
 
 type ModalBodyProps = BoxProps & {
   scrollable?: boolean
@@ -199,7 +205,6 @@ const ModalBody = ({
 }
 
 const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
-ModalFooter.displayName = "ModalFooter"
 
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   variant?: ModalVariant

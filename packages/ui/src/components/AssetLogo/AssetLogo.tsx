@@ -79,12 +79,15 @@ export const MultipleAssetLogoWrapper = ({
       {Children.map(children, (child) => {
         if (isValidElement(child)) {
           return cloneElement(child, {
-            ...child.props,
-            size,
+            ...(child.props ?? {}),
+            ...{ size },
             // override child decor to "none" if decoration from parent is the same
-            ...(decoration === child.props.decoration && {
-              decoration: "none",
-            }),
+            ...(typeof child.props === "object" &&
+              child.props !== null &&
+              "decoration" in child.props &&
+              decoration === child.props.decoration && {
+                decoration: "none",
+              }),
           })
         }
       })}

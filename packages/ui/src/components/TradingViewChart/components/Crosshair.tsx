@@ -1,4 +1,4 @@
-import { forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { ChartCrosshair } from "@/components"
 import { dateFormatter, timeFormatter } from "@/components/Chart/utils"
@@ -7,10 +7,9 @@ import {
   parseTradingViewTime,
 } from "@/components/TradingViewChart/utils"
 
-export const Crosshair = forwardRef<
-  HTMLDivElement,
-  Partial<NonNullable<CrosshairCallbackData>>
->(({ data }, ref) => {
+export const Crosshair: FC<
+  Partial<NonNullable<CrosshairCallbackData>> & { ref?: Ref<HTMLDivElement> }
+> = ({ data, ref }) => {
   const timestamp = data?.time ? parseTradingViewTime(data.time) : null
 
   return (
@@ -23,5 +22,4 @@ export const Crosshair = forwardRef<
       )}
     </div>
   )
-})
-Crosshair.displayName = "Crosshair"
+}

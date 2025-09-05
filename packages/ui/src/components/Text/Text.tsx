@@ -1,5 +1,5 @@
 import { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/core"
-import { forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { Box, BoxProps } from "@/components"
 import { ThemeFont, ThemeProps } from "@/theme"
@@ -18,6 +18,7 @@ export type TextProps = BoxProps & {
   whiteSpace?: ThemeUICSSProperties["whiteSpace"]
   wordBreak?: ThemeUICSSProperties["wordBreak"]
   truncate?: true | ResponsiveStyleValue<number | string>
+  ref?: Ref<HTMLParagraphElement>
 }
 
 export const getFontSizeProps = (fs: TextProps["fs"]) => {
@@ -34,45 +35,39 @@ const getTruncateProps = (truncate: TextProps["truncate"]) => ({
   maxWidth: typeof truncate === "boolean" ? undefined : truncate,
 })
 
-export const Text = forwardRef<HTMLParagraphElement, TextProps>(
-  (
-    {
-      as = "p",
-      fs,
-      lh,
-      fw,
-      align,
-      transform,
-      decoration,
-      whiteSpace,
-      font = "secondary",
-      truncate,
-      wordBreak,
-      ...props
-    },
-    ref,
-  ) => {
-    return (
-      <Box
-        as={as}
-        ref={ref}
-        sx={{
-          fontFamily:
-            font === "mono" ? "GeistMono" : getToken(`fontFamilies1.${font}`),
-          fontWeight: fw,
-          textAlign: align,
-          textTransform: transform,
-          textDecoration: decoration,
-          lineHeight: lh,
-          whiteSpace,
-          wordBreak,
-          ...getFontSizeProps(fs),
-          ...(truncate && getTruncateProps(truncate)),
-        }}
-        {...props}
-      />
-    )
-  },
-)
-
-Text.displayName = "Text"
+export const Text: FC<TextProps> = ({
+  as = "p",
+  fs,
+  lh,
+  fw,
+  align,
+  transform,
+  decoration,
+  whiteSpace,
+  font = "secondary",
+  truncate,
+  wordBreak,
+  ref,
+  ...props
+}) => {
+  return (
+    <Box
+      as={as}
+      ref={ref}
+      sx={{
+        fontFamily:
+          font === "mono" ? "GeistMono" : getToken(`fontFamilies1.${font}`),
+        fontWeight: fw,
+        textAlign: align,
+        textTransform: transform,
+        textDecoration: decoration,
+        lineHeight: lh,
+        whiteSpace,
+        wordBreak,
+        ...getFontSizeProps(fs),
+        ...(truncate && getTruncateProps(truncate)),
+      }}
+      {...props}
+    />
+  )
+}

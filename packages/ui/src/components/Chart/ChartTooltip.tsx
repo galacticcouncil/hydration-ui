@@ -1,4 +1,13 @@
-import { Tooltip } from "recharts"
+import React from "react"
+import {
+  DefaultTooltipContentProps,
+  Tooltip,
+  TooltipContentProps,
+} from "recharts"
+import {
+  NameType,
+  ValueType,
+} from "recharts/types/component/DefaultTooltipContent"
 
 import { Flex, Grid, Text } from "@/components"
 import { ChartCrosshair, useChart } from "@/components/Chart"
@@ -11,7 +20,13 @@ import {
 import { useTheme } from "@/theme"
 import { getToken } from "@/utils"
 
-type RechartsTooltipProps = React.ComponentProps<typeof Tooltip>
+type RechartsTooltipProps = React.ComponentProps<typeof Tooltip> &
+  Omit<DefaultTooltipContentProps<ValueType, NameType>, "accessibilityLayer">
+
+type CoordinateProps = Pick<
+  TooltipContentProps<ValueType, NameType>,
+  "coordinate"
+>
 
 const ChartTooltipLegendLabel = ({
   payload = [],
@@ -72,7 +87,15 @@ export const ChartTooltipLegendType = ({
               : item.value
 
           return (
-            <Flex gap={8} align="center" key={item.dataKey}>
+            <Flex
+              gap={8}
+              align="center"
+              key={
+                typeof item.dataKey === "function"
+                  ? item.dataKey(index)
+                  : item.dataKey
+              }
+            >
               <Flex
                 sx={{
                   background: colors.primary,
@@ -112,7 +135,7 @@ export const ChartTooltipTimeType = ({
   active,
   payload,
   coordinate,
-}: React.ComponentProps<typeof Tooltip>) => {
+}: RechartsTooltipProps & CoordinateProps) => {
   const { config } = useChart()
 
   if (!active || !payload?.length || !coordinate) {
@@ -146,7 +169,9 @@ export const ChartTooltipTimeType = ({
   )
 }
 
-export const ChartTooltip = (props: React.ComponentProps<typeof Tooltip>) => {
+export const ChartTooltip = (
+  props: React.ComponentProps<typeof Tooltip> & CoordinateProps,
+) => {
   const { config } = useChart()
 
   if (config.tooltipType === "none") {

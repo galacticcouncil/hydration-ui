@@ -1,5 +1,5 @@
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden"
-import { forwardRef, ReactNode } from "react"
+import { FC, ReactNode, Ref } from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
 import { Flex, FlexProps } from "@/components/Flex"
@@ -23,16 +23,17 @@ const DrawerPortal = DrawerPrimitive.Portal
 
 const DrawerClose = DrawerPrimitive.Close
 
-const DrawerOverlay = forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay>
->((props, ref) => <SDrawerOverlay ref={ref} {...props} />)
-DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName
+const DrawerOverlay: FC<
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Overlay> & {
+    ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Overlay>>
+  }
+> = ({ ref, ...props }) => <SDrawerOverlay ref={ref} {...props} />
 
-const DrawerContent = forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+const DrawerContent: FC<
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
+    ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Content>>
+  }
+> = ({ className, children, ref, ...props }) => (
   <DrawerPortal>
     <DrawerOverlay />
     <SDrawerContent ref={ref} className={className} {...props}>
@@ -40,33 +41,31 @@ const DrawerContent = forwardRef<
       {children}
     </SDrawerContent>
   </DrawerPortal>
-))
-DrawerContent.displayName = DrawerPrimitive.Content.displayName
+)
 
 const DrawerBody = (props: FlexProps) => (
   <SDrawerBody {...props}>{props.children}</SDrawerBody>
 )
-DrawerBody.displayName = "DrawerBody"
 
-const DrawerTitle = forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title>
->(({ children, ...props }, ref) => (
+const DrawerTitle: FC<
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Title> & {
+    ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Title>>
+  }
+> = ({ children, ref, ...props }) => (
   <DrawerPrimitive.Title ref={ref} asChild {...props}>
     <SDrawerTitle as="h2">{children}</SDrawerTitle>
   </DrawerPrimitive.Title>
-))
-DrawerTitle.displayName = DrawerPrimitive.Title.displayName
+)
 
-const DrawerDescription = forwardRef<
-  React.ElementRef<typeof DrawerPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description>
->(({ children, ...props }, ref) => (
+const DrawerDescription: FC<
+  React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Description> & {
+    ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Description>>
+  }
+> = ({ children, ref, ...props }) => (
   <DrawerPrimitive.Description ref={ref} asChild {...props}>
     <SDrawerDescription>{children}</SDrawerDescription>
   </DrawerPrimitive.Description>
-))
-DrawerDescription.displayName = DrawerPrimitive.Description.displayName
+)
 
 const DrawerHeader = ({
   title,
@@ -98,10 +97,8 @@ const DrawerHeader = ({
     {customHeader}
   </SDrawerHeader>
 )
-DrawerHeader.displayName = "DrawerHeader"
 
 const DrawerFooter = (props: FlexProps) => <SDrawerFooter {...props} />
-DrawerFooter.displayName = "DrawerFooter"
 
 export type DrawerProps = React.ComponentProps<typeof DrawerRoot> & {
   disableInteractOutside?: boolean

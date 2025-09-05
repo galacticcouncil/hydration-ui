@@ -6,7 +6,7 @@ import Big from "big.js"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import z, { ZodTypeAny } from "zod/v4"
+import z, { ZodType } from "zod/v4"
 
 import { OmnipoolDepositFull } from "@/api/account"
 import { OmnipoolPosition } from "@/api/account"
@@ -578,7 +578,7 @@ export const useRemoveLiquidityForm = ({
   rule,
 }: {
   initialAmount?: string
-  rule?: ZodTypeAny | undefined
+  rule?: ZodType<string, string> | undefined
 }) => {
   return useForm<TRemoveLiquidityFormValues>({
     mode: "onChange",

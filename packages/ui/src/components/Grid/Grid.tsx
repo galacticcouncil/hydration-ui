@@ -3,7 +3,7 @@ import type {
   ThemeUICSSProperties,
   ThemeUIEmpty,
 } from "@theme-ui/css"
-import { forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
 import { px } from "@/utils"
@@ -43,50 +43,44 @@ type GridOwnProps = {
 
 export type GridProps = GridOwnProps & BoxProps
 
-export const Grid = forwardRef<HTMLElement, GridProps>(
-  (
-    {
-      columns,
-      columnWidth,
-      columnTemplate = "auto",
-      rowTemplate = "auto",
-      gap = 0,
-      columnGap = 0,
-      rowGap = 0,
-      repeat = "fit",
-      justify,
-      justifyItems,
-      align,
-      sx,
-      ...props
-    },
-    ref,
-  ) => {
-    const gridTemplateColumns = columnWidth
-      ? widthToColumns(columnWidth, repeat)
-      : columns
-        ? countToColumns(columns)
-        : columnTemplate
+export const Grid: FC<GridProps & { ref?: Ref<HTMLElement> }> = ({
+  columns,
+  columnWidth,
+  columnTemplate = "auto",
+  rowTemplate = "auto",
+  gap = 0,
+  columnGap = 0,
+  rowGap = 0,
+  repeat = "fit",
+  justify,
+  justifyItems,
+  align,
+  sx,
+  ref,
+  ...props
+}) => {
+  const gridTemplateColumns = columnWidth
+    ? widthToColumns(columnWidth, repeat)
+    : columns
+      ? countToColumns(columns)
+      : columnTemplate
 
-    const gapProps = gap ? { gap } : { columnGap, rowGap }
+  const gapProps = gap ? { gap } : { columnGap, rowGap }
 
-    return (
-      <Box
-        ref={ref}
-        display="grid"
-        sx={{
-          gridTemplateColumns,
-          gridTemplateRows: rowTemplate,
-          justify,
-          justifyItems,
-          alignItems: align,
-          ...gapProps,
-          ...sx,
-        }}
-        {...props}
-      />
-    )
-  },
-)
-
-Grid.displayName = "Grid"
+  return (
+    <Box
+      ref={ref}
+      display="grid"
+      sx={{
+        gridTemplateColumns,
+        gridTemplateRows: rowTemplate,
+        justify,
+        justifyItems,
+        alignItems: align,
+        ...gapProps,
+        ...sx,
+      }}
+      {...props}
+    />
+  )
+}

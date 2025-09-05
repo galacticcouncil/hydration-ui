@@ -63,7 +63,7 @@ export const RepayModalContent: React.FC<
   const [assets, setAssets] = useState<RepayAsset[]>([tokenToRepayWith])
   const [repayMax, setRepayMax] = useState("")
   const [_amount, setAmount] = useState("")
-  const amountRef = useRef<string>()
+  const amountRef = useRef<string>(null)
 
   const networkConfig = getNetworkConfig(currentChainId)
 

@@ -6,7 +6,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts"
-import { LayoutType } from "recharts/types/util/types"
+import { CartesianLayout } from "recharts/types/util/types"
 import { isNumber } from "remeda"
 
 import { ChartContainer } from "@/components/Chart"
@@ -22,7 +22,7 @@ import {
 import { useTheme } from "@/theme"
 
 type BarChartOwnProps = {
-  layout?: LayoutType
+  layout?: CartesianLayout
   barSize?: number
   barGap?: number
   barCategoryGap?: number
@@ -75,9 +75,10 @@ export function BarChart<TData extends TChartData>({
           if (
             chartState &&
             chartState.activeTooltipIndex !== undefined &&
+            chartState.activeTooltipIndex !== null &&
             series.length > 0
           ) {
-            const activeData = data[chartState.activeTooltipIndex]
+            const activeData = data[chartState.activeTooltipIndex as number]
             onCrosshairMove?.(activeData)
           }
         }}

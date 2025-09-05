@@ -10,7 +10,7 @@ import { useAssetPrice, useDisplayAssetStore } from "@/states/displayAsset"
 type AssetPriceProps = {
   assetId: string
   value?: number
-  wrapper?: JSX.Element
+  wrapper?: React.JSX.Element
   compact?: boolean
 }
 

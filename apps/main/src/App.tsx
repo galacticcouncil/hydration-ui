@@ -25,6 +25,7 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
   defaultPendingMs: 0,
   defaultNotFoundComponent: Page404,
+  scrollRestoration: true,
 })
 
 declare module "@tanstack/react-router" {

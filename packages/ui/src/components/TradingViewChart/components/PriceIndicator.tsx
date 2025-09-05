@@ -1,11 +1,10 @@
-import { forwardRef } from "react"
+import { FC, Ref } from "react"
 
 import { Chip } from "@/components"
 
-export const PriceIndicator = forwardRef<
-  HTMLDivElement,
-  React.ComponentPropsWithRef<typeof Chip>
->((props, ref) => {
+export const PriceIndicator: FC<
+  React.ComponentPropsWithRef<typeof Chip> & { ref?: Ref<HTMLDivElement> }
+> = ({ ref, ...props }) => {
   return (
     <Chip
       ref={ref}
@@ -15,5 +14,4 @@ export const PriceIndicator = forwardRef<
       {...props}
     />
   )
-})
-PriceIndicator.displayName = "PriceIndicator"
+}
