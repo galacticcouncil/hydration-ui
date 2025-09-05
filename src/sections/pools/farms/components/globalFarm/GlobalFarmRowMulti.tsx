@@ -7,9 +7,11 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Icon } from "components/Icon/Icon"
 import { useAssets } from "providers/assets"
 import BN from "bignumber.js"
+import { BorrowAssetApyData } from "api/borrow"
+import { getAssetIdFromAddress } from "utils/evm"
 
 export const APY = ({
-  farms,
+  farms = [],
   totalFee,
   fontSize = 14,
   iconSize = 14,
@@ -17,6 +19,7 @@ export const APY = ({
   className,
   lpFeeOmnipool,
   lpFeeStablepool,
+  moneyMarketApy,
 }: {
   farms?: TFarmAprData[]
   totalFee?: BN
@@ -26,6 +29,7 @@ export const APY = ({
   className?: string
   lpFeeOmnipool?: string
   lpFeeStablepool?: string
+  moneyMarketApy?: BorrowAssetApyData
 }) => {
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation()
@@ -33,23 +37,34 @@ export const APY = ({
   const apr =
     totalFee && !totalFee.isNaN()
       ? totalFee
-      : getTotalAPR(farms ?? [])
+      : getTotalAPR(farms)
           .plus(lpFeeOmnipool ?? 0)
           .plus(lpFeeStablepool ?? 0)
 
-  const isFarms = farms && !!farms.length
+  const validIncentives =
+    moneyMarketApy?.incentives
+      .filter(({ incentiveAPR }) => BN(incentiveAPR).gt(0))
+      .map((incentive) => ({
+        ...incentive,
+        id: getAssetIdFromAddress(incentive.rewardTokenAddress),
+      })) ?? []
+
+  const isFarms = !!farms.length
   const isVisibleTooltip = isFarms || (lpFeeOmnipool && lpFeeStablepool)
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }} className={className}>
-      {isFarms && (
-        <MultipleIcons
-          size={iconSize}
-          icons={farms.map((farm) => ({
+      <MultipleIcons
+        size={iconSize}
+        icons={[
+          ...farms.map((farm) => ({
             icon: <AssetLogo id={farm.rewardCurrency} />,
-          }))}
-        />
-      )}
+          })),
+          ...validIncentives.map((incentive) => ({
+            icon: <AssetLogo id={incentive.id} />,
+          })),
+        ]}
+      />
       <Text fs={fontSize} color={isFarms ? "brightBlue200" : undefined}>
         {t(`value.percentage`, { value: apr })}
         {withAprSuffix ? ` ${t("apr")}` : ""}

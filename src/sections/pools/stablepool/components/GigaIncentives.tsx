@@ -138,7 +138,7 @@ export const MoneyMarketAPY = ({
     lpAPY,
     underlyingAssetsApyData,
     incentives,
-    farms,
+    farms = [],
   } = moneyMarketApy
 
   const isSupply = type === "supply"
@@ -146,19 +146,30 @@ export const MoneyMarketAPY = ({
     .plus(omnipoolFee ?? 0)
     .toNumber()
 
-  const hasFarms = farms && farms.length > 0
+  const validIncentives = incentives
+    .filter(({ incentiveAPR }) => BN(incentiveAPR).gt(0))
+    .map((incentive) => ({
+      ...incentive,
+      id: getAssetIdFromAddress(incentive.rewardTokenAddress),
+    }))
+
+  const hasFarms = farms.length > 0
   const defaultColor = withFarms && hasFarms ? "brightBlue200" : "white"
 
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      {hasFarms && (
-        <MultipleIcons
-          size={size ?? 14}
-          icons={farms.map((farm) => ({
+      <MultipleIcons
+        size={size ?? 14}
+        icons={[
+          ...farms.map((farm) => ({
             icon: <AssetLogo id={farm.rewardCurrency} />,
-          }))}
-        />
-      )}
+          })),
+          ...validIncentives.map((incentive) => ({
+            icon: <AssetLogo id={incentive.id} />,
+          })),
+        ]}
+      />
+
       <Text
         color={color ?? defaultColor}
         fs={size ?? 14}
@@ -222,22 +233,17 @@ export const MoneyMarketAPY = ({
                 )
               },
             )}
-            {incentives
-              .filter(({ incentiveAPR }) => BN(incentiveAPR).gt(0))
-              .map(({ rewardTokenAddress, incentiveAPR }) => {
-                const id = getAssetIdFromAddress(rewardTokenAddress)
-                return (
-                  <IncentiveRow
-                    key={id}
-                    id={id}
-                    label={t("incentivesApr")}
-                    value={t("value.percentage", {
-                      value: BN(incentiveAPR).times(100),
-                    })}
-                  />
-                )
-              })}
-            {farms && (
+            {validIncentives.map(({ incentiveAPR, id }) => (
+              <IncentiveRow
+                key={id}
+                id={id}
+                label={t("incentivesApr")}
+                value={t("value.percentage", {
+                  value: BN(incentiveAPR).times(100),
+                })}
+              />
+            ))}
+            {hasFarms && (
               <>
                 <div
                   sx={{
@@ -255,16 +261,14 @@ export const MoneyMarketAPY = ({
                     {t("liquidity.table.farms.apr")}
                   </Text>
                 </div>
-                {farms.map(({ apr, rewardCurrency }) => {
-                  return (
-                    <IncentiveRow
-                      key={rewardCurrency}
-                      id={rewardCurrency}
-                      label={getAssetWithFallback(rewardCurrency).symbol}
-                      value={t("value.percentage", { value: apr })}
-                    />
-                  )
-                })}
+                {farms.map(({ apr, rewardCurrency }) => (
+                  <IncentiveRow
+                    key={rewardCurrency}
+                    id={rewardCurrency}
+                    label={getAssetWithFallback(rewardCurrency).symbol}
+                    value={t("value.percentage", { value: apr })}
+                  />
+                ))}
               </>
             )}
           </>

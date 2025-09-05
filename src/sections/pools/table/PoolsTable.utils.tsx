@@ -123,6 +123,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             lpFeeStablepool={!isXyK ? pool.lpFeeStablepool : undefined}
             totalFee={!isXyK ? totalFee : undefined}
             farms={farms}
+            moneyMarketApy={!isXyK ? pool.moneyMarketApy : undefined}
             withAprSuffix
           />
         )}
