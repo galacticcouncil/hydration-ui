@@ -79,9 +79,9 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           totalDisplay: priceBig.times(total).toString(),
           transferable,
           transferableDisplay: priceBig.times(transferable).toString(),
-          reserved,
-          // TODO how to get reserved DCA
-          reservedDca: "1234567890",
+          // TODO what is this other reserved?
+          reserved: "0",
+          reservedDca: reserved,
           canStake: asset.id === native.id,
           rugCheckData: undefined,
           isTradeable: tradable.some(
