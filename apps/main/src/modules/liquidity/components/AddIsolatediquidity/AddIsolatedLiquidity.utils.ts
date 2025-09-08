@@ -124,6 +124,7 @@ export const useAddIsolatedLiquidityZod = (
       amountB: required.check(validateFieldMaxBalance(balanceB)),
       assetA: z.custom<TAssetData>(),
       assetB: z.custom<TAssetData>(),
+      lastUpdated: z.literal(["assetA", "assetB"]),
       shares: z
         .string()
         .refine(

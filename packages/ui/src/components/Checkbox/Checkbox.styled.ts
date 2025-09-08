@@ -6,6 +6,7 @@ export type CheckboxSize = "small" | "medium" | "large"
 
 export type TCheckbox = CheckboxProps & {
   size?: CheckboxSize
+  ref?: React.Ref<HTMLButtonElement>
 }
 
 const disabledStyles = css`

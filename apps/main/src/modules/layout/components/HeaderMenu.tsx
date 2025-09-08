@@ -24,7 +24,7 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
   const translations = useMenuTranslations()
 
   const { items, visibleItemKeys, hiddenItems, observe, moreButtonKey } =
-    useVisibleHeaderMenuItems()
+    useVisibleHeaderMenuItems<HTMLDivElement>()
 
   return (
     <SHeaderMenu ref={observe} {...props}>
@@ -41,21 +41,24 @@ export const HeaderMenu: React.FC<FlexProps> = (props) => {
             <HoverCardTrigger
               sx={{ position: "relative" }}
               data-intersect={key}
+              asChild
             >
-              <SHeaderMenuItem
-                isHidden={isMoreButton || !visibleItemKeys.includes(key)}
-                asChild
-              >
-                <Link to={to} search={search}>
-                  {translations[key].title}
-                </Link>
-              </SHeaderMenuItem>
-              {isMoreButton && (
-                <SHeaderMoreMenuItem>
-                  {t("more")}
-                  <ChevronDown />
-                </SHeaderMoreMenuItem>
-              )}
+              <div>
+                <SHeaderMenuItem
+                  isHidden={isMoreButton || !visibleItemKeys.includes(key)}
+                  asChild
+                >
+                  <Link to={to} search={search}>
+                    {translations[key].title}
+                  </Link>
+                </SHeaderMenuItem>
+                {isMoreButton && (
+                  <SHeaderMoreMenuItem>
+                    {t("more")}
+                    <ChevronDown />
+                  </SHeaderMoreMenuItem>
+                )}
+              </div>
             </HoverCardTrigger>
             {subItems && (
               <HoverCardContent

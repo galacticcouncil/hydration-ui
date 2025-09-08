@@ -2,7 +2,7 @@ import "react18-json-view/src/style.css"
 
 import { safeStringify } from "@galacticcouncil/utils"
 import { ResponsiveStyleValue } from "@theme-ui/css"
-import React, { forwardRef, lazy, Suspense } from "react"
+import React, { FC, lazy, Ref, Suspense } from "react"
 import { type JsonViewProps as ReactJsonViewProps } from "react18-json-view"
 
 import { Spinner } from "@/components/Spinner"
@@ -16,23 +16,24 @@ export type JsonViewProps = ReactJsonViewProps & {
   fs?: ResponsiveStyleValue<number>
 }
 
-export const JsonView = forwardRef<HTMLDivElement, JsonViewProps>(
-  ({ fs, className, ...props }, ref) => {
-    return (
-      <SRoot ref={ref} className={className} sx={{ fontSize: fs }}>
-        <Suspense fallback={<JsonViewFallback src={props.src} />}>
-          <ReactJsonView
-            collapseStringsAfterLength={42}
-            enableClipboard={false}
-            {...props}
-          />
-        </Suspense>
-      </SRoot>
-    )
-  },
-)
-
-JsonView.displayName = "JsonView"
+export const JsonView: FC<JsonViewProps & { ref?: Ref<HTMLDivElement> }> = ({
+  fs,
+  className,
+  ref,
+  ...props
+}) => {
+  return (
+    <SRoot ref={ref} className={className} sx={{ fontSize: fs }}>
+      <Suspense fallback={<JsonViewFallback src={props.src} />}>
+        <ReactJsonView
+          collapseStringsAfterLength={42}
+          enableClipboard={false}
+          {...props}
+        />
+      </Suspense>
+    </SRoot>
+  )
+}
 
 export const JsonViewFallback: React.FC<{ src: ReactJsonViewProps["src"] }> = ({
   src,

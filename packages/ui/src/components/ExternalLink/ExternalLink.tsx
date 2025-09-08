@@ -1,10 +1,11 @@
-import { AnchorHTMLAttributes, forwardRef } from "react"
+import { AnchorHTMLAttributes, FC, Ref } from "react"
 
-export const ExternalLink = forwardRef<
-  HTMLAnchorElement,
-  AnchorHTMLAttributes<HTMLAnchorElement>
->((props, ref) => {
-  return <a target="_blank" rel="noopener noreferrer" ref={ref} {...props} />
-})
+type ExternalLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  readonly ref?: Ref<HTMLAnchorElement>
+}
 
-ExternalLink.displayName = "ExternalLink"
+export const ExternalLink: FC<ExternalLinkProps> = (props) => {
+  return (
+    <a target="_blank" rel="noopener noreferrer" ref={props.ref} {...props} />
+  )
+}

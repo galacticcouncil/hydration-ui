@@ -12,8 +12,6 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react"
 import {
   ComponentProps,
   FC,
-  ForwardedRef,
-  forwardRef,
   Fragment,
   ReactNode,
   Ref,
@@ -76,252 +74,246 @@ export type DataTableProps<TData extends RowData> = TableProps &
     onSortingChange?: OnChangeFn<SortingState>
     onPageClick?: (number: number) => void
     getExternalLink?: (item: TData) => string | undefined
+    ref?: Ref<DataTableRef>
   }
 
 export type DataTableRef = {
   readonly onPaginationReset: () => void
 }
 
-const DataTable = forwardRef(
-  <TData,>(
-    {
-      data,
-      columns,
-      className,
-      size = "medium",
-      fixedLayout = false,
-      paginated = false,
-      expandable = false,
-      pageSize = 20,
-      pageNumber = 1,
-      borderless,
-      isLoading,
-      skeletonRowCount,
-      globalFilter,
-      initialSorting,
-      sorting,
-      manualSorting,
-      enableSortingRemoval,
-      globalFilterFn,
-      emptyState,
-      columnPinning,
+const DataTable = <TData,>({
+  data,
+  columns,
+  className,
+  size = "medium",
+  fixedLayout = false,
+  paginated = false,
+  expandable = false,
+  pageSize = 20,
+  pageNumber = 1,
+  borderless,
+  isLoading,
+  skeletonRowCount,
+  globalFilter,
+  initialSorting,
+  sorting,
+  manualSorting,
+  enableSortingRemoval,
+  globalFilterFn,
+  emptyState,
+  columnPinning,
+  rowCount,
+  getIsExpandable,
+  renderSubComponent,
+  renderOverride,
+  onRowClick,
+  onSortingChange,
+  onPageClick,
+  getExternalLink,
+  ref,
+}: DataTableProps<TData>) => {
+  const tableProps = {
+    fixedLayout,
+    size,
+    borderless,
+  }
+
+  const isControlledSorting =
+    sorting !== undefined && onSortingChange !== undefined
+
+  const table = useDataTable({
+    data,
+    columns,
+    isLoading,
+    paginated,
+    expandable,
+    skeletonRowCount,
+    manualSorting,
+    enableSortingRemoval,
+    globalFilterFn: globalFilterFn ?? "auto",
+    ...(rowCount !== undefined && {
       rowCount,
-      getIsExpandable,
-      renderSubComponent,
-      renderOverride,
-      onRowClick,
-      onSortingChange,
-      onPageClick,
-      getExternalLink,
-    }: DataTableProps<TData>,
-    ref: ForwardedRef<DataTableRef>,
-  ) => {
-    const tableProps = {
-      fixedLayout,
-      size,
-      borderless,
-    }
-
-    const isControlledSorting =
-      sorting !== undefined && onSortingChange !== undefined
-
-    const table = useDataTable({
-      data,
-      columns,
-      isLoading,
-      paginated,
-      expandable,
-      skeletonRowCount,
-      manualSorting,
-      enableSortingRemoval,
-      globalFilterFn: globalFilterFn ?? "auto",
-      ...(rowCount !== undefined && {
-        rowCount,
-        manualPagination: true,
-      }),
-      initialState: {
-        pagination: {
-          pageIndex: pageNumber - 1,
-          pageSize,
-        },
-        sorting: initialSorting,
+      manualPagination: true,
+    }),
+    initialState: {
+      pagination: {
+        pageIndex: pageNumber - 1,
+        pageSize,
       },
-      state: {
-        globalFilter,
-        columnPinning: columnPinning ?? {},
-        // need this prevent disabling native sorting, cause undefined value disable it
-        ...(isControlledSorting && {
-          sorting,
-        }),
-      },
+      sorting: initialSorting,
+    },
+    state: {
+      globalFilter,
+      columnPinning: columnPinning ?? {},
+      // need this prevent disabling native sorting, cause undefined value disable it
       ...(isControlledSorting && {
-        onSortingChange,
+        sorting,
       }),
-    })
+    },
+    ...(isControlledSorting && {
+      onSortingChange,
+    }),
+  })
 
-    useImperativeHandle(ref, () => ({
-      onPaginationReset: () => table.resetPagination(),
-    }))
+  useImperativeHandle(ref, () => ({
+    onPaginationReset: () => table.resetPagination(),
+  }))
 
-    return (
-      <>
-        <Table {...tableProps} className={className}>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const { meta } = header.getContext().column.columnDef
-                  const isPinned = header.getContext().column.getIsPinned()
-                  const size = header.getSize()
-
-                  return (
-                    <TableHead
-                      key={header.id}
-                      canSort={header.column.getCanSort()}
-                      sortDirection={header.column.getIsSorted()}
-                      onSort={header.column.getToggleSortingHandler()}
-                      className={meta?.className}
-                      sx={{
-                        ...meta?.sx,
-                        width: size !== 150 ? `${size}px` : "auto",
-                      }}
-                      isPinned={isPinned}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length || isLoading ? (
-              table.getRowModel().rows.map((row) => {
-                const override = isLoading
-                  ? renderOverride?.(row.original)
-                  : undefined
-
-                const isRowExpanded = row.getIsExpanded()
-                const isRowExpandable =
-                  isRowExpanded ||
-                  (!isLoading &&
-                    !!expandable &&
-                    !override &&
-                    (getIsExpandable?.(row.original) ?? true))
+  return (
+    <>
+      <Table {...tableProps} className={className}>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => {
+                const { meta } = header.getContext().column.columnDef
+                const isPinned = header.getContext().column.getIsPinned()
+                const size = header.getSize()
 
                 return (
-                  <Fragment key={row.id}>
-                    <DataTableExternalLink
-                      sx={{
-                        display: "contents",
-                        textDecoration: "none",
-                        color: "inherit",
-                        "& td": {
-                          verticalAlign: "middle",
-                        },
-                      }}
-                      href={getExternalLink?.(row.original)}
-                    >
-                      <TableRow
-                        data-expanded={isRowExpanded}
-                        data-selected={row.getIsSelected()}
-                        onClick={() => {
-                          if (isRowExpandable) {
-                            if (expandable === "single" && !isRowExpanded) {
-                              table.resetExpanded()
-                            }
-
-                            row.toggleExpanded()
-                          }
-                          onRowClick?.(row.original)
-                        }}
-                        isExpandable={isRowExpandable}
-                        hasOverride={!!override}
-                        isClickable={!!onRowClick}
-                      >
-                        {row.getVisibleCells().map((cell) => {
-                          const { meta } =
-                            cell.getContext().cell.column.columnDef
-                          const isPinned = cell
-                            .getContext()
-                            .cell.column.getIsPinned()
-
-                          return (
-                            <TableCell
-                              key={cell.id}
-                              className={meta?.className}
-                              sx={meta?.sx}
-                              isPinned={isPinned}
-                              data-pinned={isPinned}
-                              isClickable={!!onRowClick}
-                            >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext(),
-                              )}
-                            </TableCell>
-                          )
-                        })}
-
-                        {isRowExpandable && (
-                          <TableCell>
-                            <Flex justify="end" align="center">
-                              <Icon
-                                size={18}
-                                color={getToken("icons.onSurface")}
-                                component={
-                                  isRowExpanded ? ChevronUp : ChevronDown
-                                }
-                              />
-                            </Flex>
-                          </TableCell>
+                  <TableHead
+                    key={header.id}
+                    canSort={header.column.getCanSort()}
+                    sortDirection={header.column.getIsSorted()}
+                    onSort={header.column.getToggleSortingHandler()}
+                    className={meta?.className}
+                    sx={{
+                      ...meta?.sx,
+                      width: size !== 150 ? `${size}px` : "auto",
+                    }}
+                    isPinned={isPinned}
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
                         )}
-                      </TableRow>
-                    </DataTableExternalLink>
-                    {override && (
-                      <TableRowOverride
+                  </TableHead>
+                )
+              })}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows?.length || isLoading ? (
+            table.getRowModel().rows.map((row) => {
+              const override = isLoading
+                ? renderOverride?.(row.original)
+                : undefined
+
+              const isRowExpanded = row.getIsExpanded()
+              const isRowExpandable =
+                isRowExpanded ||
+                (!isLoading &&
+                  !!expandable &&
+                  !override &&
+                  (getIsExpandable?.(row.original) ?? true))
+
+              return (
+                <Fragment key={row.id}>
+                  <DataTableExternalLink
+                    sx={{
+                      display: "contents",
+                      textDecoration: "none",
+                      color: "inherit",
+                      "& td": {
+                        verticalAlign: "middle",
+                      },
+                    }}
+                    href={getExternalLink?.(row.original)}
+                  >
+                    <TableRow
+                      data-expanded={isRowExpanded}
+                      data-selected={row.getIsSelected()}
+                      onClick={() => {
+                        if (isRowExpandable) {
+                          if (expandable === "single" && !isRowExpanded) {
+                            table.resetExpanded()
+                          }
+
+                          row.toggleExpanded()
+                        }
+                        onRowClick?.(row.original)
+                      }}
+                      isExpandable={isRowExpandable}
+                      hasOverride={!!override}
+                      isClickable={!!onRowClick}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        const { meta } = cell.getContext().cell.column.columnDef
+                        const isPinned = cell
+                          .getContext()
+                          .cell.column.getIsPinned()
+
+                        return (
+                          <TableCell
+                            key={cell.id}
+                            className={meta?.className}
+                            sx={meta?.sx}
+                            isPinned={isPinned}
+                            data-pinned={isPinned}
+                            isClickable={!!onRowClick}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
+                          </TableCell>
+                        )
+                      })}
+
+                      {isRowExpandable && (
+                        <TableCell>
+                          <Flex justify="end" align="center">
+                            <Icon
+                              size={18}
+                              color={getToken("icons.onSurface")}
+                              component={
+                                isRowExpanded ? ChevronUp : ChevronDown
+                              }
+                            />
+                          </Flex>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  </DataTableExternalLink>
+                  {override && (
+                    <TableRowOverride
+                      colSpan={table.getVisibleLeafColumns().length + 1}
+                    >
+                      {override}
+                    </TableRowOverride>
+                  )}
+                  {isRowExpandable && renderSubComponent && isRowExpanded && (
+                    <TableRow>
+                      <TableCell
                         colSpan={table.getVisibleLeafColumns().length + 1}
                       >
-                        {override}
-                      </TableRowOverride>
-                    )}
-                    {isRowExpandable && renderSubComponent && isRowExpanded && (
-                      <TableRow>
-                        <TableCell
-                          colSpan={table.getVisibleLeafColumns().length + 1}
-                        >
-                          <SCollapsible>
-                            {renderSubComponent(row.original)}
-                          </SCollapsible>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                )
-              })
-            ) : (
-              <TableRow isEmptyState>
-                <TableCell colSpan={columns.length}>
-                  {emptyState ?? "No results."}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-        {!isLoading && paginated && table.getPageCount() > 1 && (
-          <DataTablePagination table={table} onPageClick={onPageClick} />
-        )}
-      </>
-    )
-  },
-)
-
-DataTable.displayName = "DataTable"
+                        <SCollapsible>
+                          {renderSubComponent(row.original)}
+                        </SCollapsible>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </Fragment>
+              )
+            })
+          ) : (
+            <TableRow isEmptyState>
+              <TableCell colSpan={columns.length}>
+                {emptyState ?? "No results."}
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+      {!isLoading && paginated && table.getPageCount() > 1 && (
+        <DataTablePagination table={table} onPageClick={onPageClick} />
+      )}
+    </>
+  )
+}
 
 type DataTablePaginationProps<T> = {
   table: TableDef<T>
@@ -404,7 +396,7 @@ export const DataTablePagination = <T,>({
 type DataTableComponent = {
   <TData>(
     props: DataTableProps<TData> & { readonly ref?: Ref<DataTableRef> },
-  ): JSX.Element
+  ): React.JSX.Element
 }
 
 const DataTableWithType = DataTable as unknown as DataTableComponent

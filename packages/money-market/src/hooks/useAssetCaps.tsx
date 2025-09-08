@@ -19,8 +19,10 @@ type WarningDisplayProps = {
 }
 
 export type AssetCapHookData = AssetCapData & {
-  determineWarningDisplay: (props: WarningDisplayProps) => JSX.Element | null
-  displayMaxedTooltip: (props: WarningDisplayProps) => JSX.Element | null
+  determineWarningDisplay: (
+    props: WarningDisplayProps,
+  ) => React.JSX.Element | null
+  displayMaxedTooltip: (props: WarningDisplayProps) => React.JSX.Element | null
 }
 
 export type AssetCapUsageData = {
@@ -106,7 +108,7 @@ export const AssetCapsProvider = ({
 }: {
   children: ReactNode
   asset: ComputedReserveData
-}): JSX.Element | null => {
+}): React.JSX.Element | null => {
   // Return if no reserve is provided
   if (!asset) {
     console.warn(

@@ -78,7 +78,7 @@ const RpcListItemEdit: React.FC<RpcListItemEditProps> = ({
   const [error, setError] = useState("")
   const { renameRpc } = useRpcListStore()
 
-  const formRef = useRef<HTMLFormElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useClickAway(formRef, () => onCancel())
