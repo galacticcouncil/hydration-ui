@@ -41,7 +41,7 @@ export default defineConfig({
     react({
       jsxImportSource: "@galacticcouncil/ui/jsx",
       babel: {
-        plugins: ["@emotion/babel-plugin"],
+        plugins: ["babel-plugin-react-compiler", "@emotion/babel-plugin"],
       },
     }),
     wasm(),
