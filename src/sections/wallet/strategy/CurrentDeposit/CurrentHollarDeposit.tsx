@@ -4,14 +4,12 @@ import { CurrentDepositBalance } from "./CurrentDepositBalance"
 import { useTranslation } from "react-i18next"
 import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { useState } from "react"
-import { Modal } from "components/Modal/Modal"
-import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import { useAssetsPrice } from "state/displayPrice"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { SCurrentHollarDeposit } from "./CurrentDeposit.styled"
-import { useUserRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
-import { CurrentDepositClaimReward } from "./CurrentDepositClaimReward"
 import { Separator } from "components/Separator/Separator"
+import { CurrentHollarDepositModal } from "./CurrentHollarDepositModal"
+import { BN_0 } from "utils/constants"
 
 export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
   const { t } = useTranslation()
@@ -22,10 +20,6 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
 
   const { getAssetPrice } = useAssetsPrice(userBalancesIds)
 
-  const reward = useUserRewards(pools.map((pool) => pool.stablepoolId))
-
-  const [removeAsset, setRemoveAsset] = useState(userBalances[0]?.meta.id)
-
   if (!userBalances.length) {
     return (
       <CurrentDepositEmptyState
@@ -34,30 +28,56 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
     )
   }
 
+  const userDisplayBalances = userBalances.map((userBalance) => {
+    const { meta, userShiftedBalance } = userBalance
+    const assetPrice = getAssetPrice(meta.id)
+
+    const balance = BN(userShiftedBalance)
+
+    return { ...userBalance, balanceDisplay: balance.times(assetPrice.price) }
+  })
+
+  const total = userDisplayBalances.reduce(
+    (acc, userBalance) => acc.plus(userBalance.balanceDisplay),
+    BN_0,
+  )
+
   return (
     <>
-      <SCurrentHollarDeposit>
-        {userBalances.map(({ userShiftedBalance, meta }, index) => {
-          const assetPrice = getAssetPrice(meta.id)
-
-          const balance = BN(userShiftedBalance)
-
-          return (
-            <CurrentDepositBalance
-              key={meta.id}
-              label={
-                index === 0 ? t("wallet.strategy.deposit.myDeposit") : undefined
-              }
-              balance={t("value.tokenWithSymbol", {
-                value: balance,
-                symbol: meta.symbol,
-              })}
-              value={t("value.usd", {
-                amount: balance.times(assetPrice.price),
-              })}
-            />
-          )
+      <CurrentDepositBalance
+        label={t("totalBalance")}
+        balance={t("value.usd", {
+          amount: total,
         })}
+      />
+      <Separator
+        color="white"
+        sx={{ height: 1, width: "100%", opacity: 0.06 }}
+      />
+      <SCurrentHollarDeposit>
+        {userDisplayBalances.map(
+          ({ userShiftedBalance, balanceDisplay, meta }, index) => {
+            return (
+              <CurrentDepositBalance
+                key={meta.id}
+                label={
+                  index === 0
+                    ? t("wallet.strategy.deposit.myDeposit", {
+                        count: userBalances.length,
+                      })
+                    : undefined
+                }
+                balance={t("value.tokenWithSymbol", {
+                  value: BN(userShiftedBalance),
+                  symbol: meta.symbol,
+                })}
+                value={t("value.usd", {
+                  amount: balanceDisplay,
+                })}
+              />
+            )
+          },
+        )}
         <Button
           size="compact"
           variant="outline"
@@ -73,31 +93,12 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
         </Button>
       </SCurrentHollarDeposit>
 
-      <Separator
-        color="white"
-        sx={{ height: 1, width: "100%", opacity: 0.06 }}
-      />
-
-      <div sx={{ flex: "row", align: "center", gap: 20 }}>
-        <CurrentDepositClaimReward reward={reward} />
-      </div>
-
       {isRemoveModalOpen && (
-        <Modal
-          open={isRemoveModalOpen}
+        <CurrentHollarDepositModal
+          userBalances={userBalances}
+          userBalancesIds={userBalancesIds}
           onClose={() => setIsRemoveModalOpen(false)}
-        >
-          <RemoveDepositModal
-            assetId={removeAsset}
-            maxBalance={
-              userBalances.find((pool) => pool.meta.id === removeAsset)
-                ?.userShiftedBalance ?? "0"
-            }
-            setRemoveAsset={setRemoveAsset}
-            removeAssets={userBalancesIds}
-            onClose={() => setIsRemoveModalOpen(false)}
-          />
-        </Modal>
+        />
       )}
     </>
   )

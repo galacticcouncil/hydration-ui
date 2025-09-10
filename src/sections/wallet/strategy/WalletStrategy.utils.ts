@@ -10,6 +10,7 @@ import {
 import { scaleHuman } from "utils/balance"
 import { useBorrowAssetsApy } from "api/borrow"
 import { isNotNil } from "utils/helpers"
+import BN from "bignumber.js"
 
 export const useGigadotAssetIds = () => {
   const { dataEnv } = useRpcProvider()
@@ -33,10 +34,10 @@ export const useHollarPools = () => {
 
   const data = hollarsApy
     .map((asset) => {
-      const { assetId, totalBorrowApy, tvl } = asset
+      const { assetId, totalBorrowApy, tvl, stablepoolData } = asset
       const aToken = getRelatedAToken(assetId)
 
-      if (!aToken) return undefined
+      if (!aToken || !stablepoolData) return undefined
 
       const meta = getAssetWithFallback(aToken.id)
       const stableswapMeta = getAssetWithFallback(assetId).meta
@@ -55,13 +56,18 @@ export const useHollarPools = () => {
           const accountBalance = accountAssetsMap?.get(id)
 
           if (accountBalance) {
-            reserveBalances.push({
-              id,
-              balance: scaleHuman(
-                accountBalance.balance.transferable,
-                accountBalance.asset.decimals,
-              ).toFixed(4),
-            })
+            const balance = scaleHuman(
+              accountBalance.balance.transferable,
+              accountBalance.asset.decimals,
+            ).toFixed(4)
+
+            if (BN(balance).gte(1)) {
+              reserveBalances.push({
+                id,
+                balance,
+                symbol: accountBalance.asset.symbol,
+              })
+            }
           }
         }
       }
@@ -75,6 +81,7 @@ export const useHollarPools = () => {
         userShiftedBalance,
         meta,
         stablepoolId: assetId,
+        stablepoolData,
         apy: Number(totalBorrowApy.toFixed(2)),
         tvl,
         reserveBalances,

@@ -1,13 +1,13 @@
 import { TReservesBalance } from "sections/pools/PoolsPage.utils"
-import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
+import { THollarPoolWithAccountBalance } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { HollarPool } from "./HollarPool"
 import { Reserves } from "sections/pools/stablepool/components/Reserves"
 
 type HollarPoolsProps = {
-  pools: THollarPool[]
+  pools: THollarPoolWithAccountBalance[]
   reserves: TReservesBalance
-  selectedPool: THollarPool
-  selectPool: (pool: THollarPool) => void
+  selectedPool: THollarPoolWithAccountBalance
+  selectPool: (pool: THollarPoolWithAccountBalance) => void
 }
 
 export const HollarPools = ({

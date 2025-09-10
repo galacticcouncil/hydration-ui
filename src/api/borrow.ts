@@ -43,7 +43,8 @@ import { useDefillamaLatestApyQueries } from "api/external/defillama"
 import { uniqBy, zipArrays } from "utils/rx"
 import { identity } from "utils/helpers"
 import {
-  StableSwapResererveBalanceWithPercentage,
+  TReservesBalance,
+  TStablePoolDetails,
   useStableSwapReservesMulti,
 } from "sections/pools/PoolsPage.utils"
 import { useStableArray } from "hooks/useStableArray"
@@ -521,6 +522,7 @@ export type BorrowAssetApyData = {
   totalSupplyApy: number
   totalBorrowApy: number
   farms: TFarmAprData[] | undefined
+  stablepoolData: TStablePoolDetails | undefined
 }
 
 const calculateIncentivesNetAPR = (incentives: any[]) => {
@@ -580,14 +582,9 @@ type CalculatedAssetApyTotals = Pick<
   | "incentivesNetAPR"
 >
 
-type StableSwapBalancesMap = Map<
-  string,
-  StableSwapResererveBalanceWithPercentage[]
->
-
 const calculateAssetApyTotals = (
   stableSwapAssetIds: string[],
-  stableSwapBalances: StableSwapResererveBalanceWithPercentage[],
+  stableSwapBalances: TReservesBalance,
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
   externalApysMap: Map<string, UseQueryResult<number>>,
@@ -663,10 +660,8 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
 
   const { data: stableSwapReserves, isLoading: isLoadingStableSwapReserves } =
     useStableSwapReservesMulti(assetIdsMemo)
-  const stableSwapBalancesMap = useMemo<StableSwapBalancesMap>(() => {
-    return new Map(
-      stableSwapReserves.map((item) => [item.poolId, item.data.balances]),
-    )
+  const stablepoolsMap = useMemo(() => {
+    return new Map(stableSwapReserves.map((item) => [item.poolId, item.data]))
   }, [stableSwapReserves])
 
   const farmsConfig = useMemo<Record<string, string>>(() => {
@@ -753,11 +748,11 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
       const farmsAPR = Number(farmsData?.totalApr ?? 0)
       const incentives = assetReserve?.aIncentivesData ?? []
 
-      const stableSwapBalances = stableSwapBalancesMap.get(assetId)
+      const stablepoolData = stablepoolsMap.get(assetId)
 
       const calculatedData = calculateAssetApyTotals(
         stableSwapAssetIds,
-        stableSwapBalances ?? [],
+        stablepoolData?.balances ?? [],
         underlyingReserves,
         assetReserve?.aIncentivesData ?? [],
         externalApysMap,
@@ -773,6 +768,7 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
         lpAPY,
         farmsAPR,
         incentives,
+        stablepoolData,
         ...calculatedData,
       }
     })
@@ -786,7 +782,7 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
     isLoading,
     omnipoolFarms,
     reserves,
-    stableSwapBalancesMap,
+    stablepoolsMap,
     stablepoolFees,
   ])
 

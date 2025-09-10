@@ -31,6 +31,8 @@ export const SAssetRow = styled.div<{ isSelected: boolean }>`
 export const SCircle = styled.div<{ isActive: boolean }>`
   position: relative;
 
+  flex-shrink: 0;
+
   width: 14px;
   height: 14px;
 

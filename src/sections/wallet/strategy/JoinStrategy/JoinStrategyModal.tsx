@@ -2,20 +2,19 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useAssets } from "providers/assets"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
-import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
 import { TransferAssetSelector } from "sections/pools/stablepool/transfer/TransferAssetSelector"
 import { useSelectedDefaultAssetId } from "sections/pools/stablepool/transfer/TransferModal.utils"
-import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
+import { THollarPoolWithAccountBalance } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { HollarPools } from "./HollarPools"
 import { JoinStrategyFormWrapper } from "./JoinStrategyForm"
 
 type JoinStrategyModalProps = {
   onClose: () => void
-  pools: THollarPool[]
+  pools: THollarPoolWithAccountBalance[]
 }
 
 export enum Page {
@@ -32,21 +31,27 @@ export const JoinStrategyModal = ({
   const { getAssetWithFallback } = useAssets()
   const [split, setSplit] = useState(false)
   const [selectedPool, selectPool] = useState(pools[0])
-
-  const {
-    data: { balances: reserveBalances, smallestPercentage },
-  } = useStableSwapReserves(selectedPool.stablepoolId)
+  const [resetForm, setResetForm] = useState(false)
 
   const stablepoolAsset = getAssetWithFallback(selectedPool.meta.id)
 
   const defaultAssetId = useSelectedDefaultAssetId({
     stablepoolAsset,
-    smallestPercentage,
+    smallestPercentage: selectedPool.stablepoolData.smallestPercentage,
   })
 
-  const [assetId, setAssetId] = useState<string | undefined>(defaultAssetId)
+  const [assetId, setAssetId] = useState(
+    defaultAssetId ?? selectedPool.stablepoolId,
+  )
 
   const { page, direction, paginateTo } = useModalPagination(Page.ADD_LIQUIDITY)
+
+  useEffect(() => {
+    if (defaultAssetId) {
+      setAssetId(defaultAssetId)
+      setResetForm((v) => !v)
+    }
+  }, [defaultAssetId, split])
 
   return (
     <Modal open onClose={onClose} disableCloseOutside>
@@ -63,7 +68,7 @@ export const JoinStrategyModal = ({
               <>
                 <HollarPools
                   pools={pools}
-                  reserves={reserveBalances}
+                  reserves={selectedPool.stablepoolData.balances}
                   selectedPool={selectedPool}
                   selectPool={selectPool}
                 />
@@ -73,17 +78,15 @@ export const JoinStrategyModal = ({
                   onChange={setSplit}
                 />
                 <JoinStrategyFormWrapper
-                  key={`${split}_${selectedPool.stablepoolId}`}
+                  key={`${resetForm}`}
                   split={split}
-                  reserves={reserveBalances}
+                  reserves={selectedPool.stablepoolData.balances}
                   poolId={selectedPool.stablepoolId}
                   farms={[]}
                   stablepoolAsset={stablepoolAsset}
                   isJoinFarms={false}
                   onClose={onClose}
-                  asset={getAssetWithFallback(
-                    assetId ?? selectedPool.stablepoolId,
-                  )}
+                  asset={getAssetWithFallback(assetId)}
                   setIsJoinFarms={() => null}
                   setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
                   onAssetOpen={() => paginateTo(Page.ASSETS)}

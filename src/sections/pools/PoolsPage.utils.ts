@@ -63,6 +63,7 @@ export type TXYKPool = NonNullable<
 
 export type TReserves = TStablepool["reserves"]
 export type TReservesBalance = TStablepool["balances"]
+type StablepoolPercetnage = { assetId: string; percentage: number }
 
 type TStablepoolData = {
   poolId: string
@@ -661,19 +662,6 @@ export const useStablepoolsTotals = () => {
   }
 }
 
-export type StableSwapReserveBalance = {
-  id: string
-  symbol: string
-  decimals: number
-  balance: string
-  balanceDisplay: string
-}
-
-export type StableSwapResererveBalanceWithPercentage =
-  StableSwapReserveBalance & {
-    percentage: number
-  }
-
 export const useStableSwapReservesMulti = (poolIds: string[]) => {
   const { data: stablePools = [], isLoading } = useStableSDKPools()
 
@@ -730,17 +718,15 @@ export const useStableSwapReservesMulti = (poolIds: string[]) => {
           decimals: reserve.decimals,
           balance: balance.toString(),
           balanceDisplay: balance.multipliedBy(spotPrice).toString(),
-        } satisfies StableSwapReserveBalance
+        }
       })
 
       const totalValue = assetBalances
         .reduce((t, asset) => t.plus(asset.balanceDisplay), BN_0)
         .toString()
 
-      let smallestPercentage:
-        | undefined
-        | { assetId: string; percentage: number }
-      let biggestPercentage: undefined | { assetId: string; percentage: number }
+      let smallestPercentage: undefined | StablepoolPercetnage
+      let biggestPercentage: undefined | StablepoolPercetnage
 
       const balances = assetBalances.map((assetBalance) => {
         const percentage = BN(assetBalance.balanceDisplay)
@@ -778,12 +764,14 @@ export const useStableSwapReservesMulti = (poolIds: string[]) => {
         return {
           ...assetBalance,
           percentage,
-        } satisfies StableSwapResererveBalanceWithPercentage
+        }
       })
+
+      const data = { balances, reserves, smallestPercentage, biggestPercentage }
 
       return {
         poolId,
-        data: { balances, reserves, smallestPercentage, biggestPercentage },
+        data,
       }
     })
   }, [poolsData, getAssetPrice])

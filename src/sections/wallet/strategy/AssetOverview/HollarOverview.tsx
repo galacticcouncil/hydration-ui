@@ -6,6 +6,9 @@ import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import BN from "bignumber.js"
 import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { BN_0 } from "utils/constants"
+import { Text } from "components/Typography/Text/Text"
+import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
+import { useAssets } from "providers/assets"
 
 export const HollarOverview = ({
   underlyingAssetId,
@@ -15,6 +18,7 @@ export const HollarOverview = ({
   isLoading,
 }: AssetOverviewProps & { pools: THollarPool[]; isLoading: boolean }) => {
   const { t } = useTranslation()
+  const { getAssetWithFallback } = useAssets()
 
   const apys = pools.map((pool) => pool.apy)
 
@@ -22,6 +26,26 @@ export const HollarOverview = ({
   const highest = Math.max(...apys)
 
   const tvlTotal = pools.reduce((acc, pool) => acc.plus(pool.tvl), BN_0)
+
+  const Tooltip = pools
+    .sort((a, b) => b.apy - a.apy)
+    .map((pool) => (
+      <div
+        key={pool.stablepoolId}
+        sx={{ flex: "row", gap: 8, align: "center", py: 1 }}
+      >
+        <MultipleAssetLogo
+          size={12}
+          iconId={getAssetWithFallback(pool.stablepoolId).iconId}
+        />
+        <Text fs={14} font="GeistMono">
+          {pool.meta.symbol}
+        </Text>
+        <Text fs={14} color="brightBlue100">
+          {t("value.APR", { apr: pool.apy })}
+        </Text>
+      </div>
+    ))
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
@@ -55,6 +79,7 @@ export const HollarOverview = ({
             to: BN(highest),
           })}
           isLoading={isLoading}
+          icon={<InfoTooltip text={Tooltip} />}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile

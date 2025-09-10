@@ -28,7 +28,7 @@ import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiqui
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
-import { scale } from "utils/balance"
+import { scale, scaleHuman } from "utils/balance"
 import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
@@ -42,6 +42,7 @@ type Props = {
   readonly removeAssets?: string[]
   readonly onClose: () => void
   readonly setRemoveAsset?: (id: string) => void
+  readonly description?: string
 }
 
 enum PAGES {
@@ -55,6 +56,7 @@ export const RemoveDepositModal: FC<Props> = ({
   assetId,
   maxBalance,
   removeAssets,
+  description,
   onClose,
   setRemoveAsset,
 }) => {
@@ -176,8 +178,18 @@ export const RemoveDepositModal: FC<Props> = ({
           ? createToastMessages("wallet.strategy.remove.proportionally.toast", {
               t,
               tOptions: {
-                amount: BigNumber(debouncedBalance),
-                symbol: asset.symbol,
+                assets: minAssetsOut
+                  .map((minAssetOut) => {
+                    const value = scaleHuman(
+                      minAssetOut.minValue,
+                      minAssetOut.meta.decimals,
+                    )
+                    const symbol = minAssetOut.meta.symbol
+
+                    return `${t("value.tokenWithSymbol", { value, symbol })}`
+                  })
+                  .join(", "),
+                pool: asset.name,
               },
               components: ["span.highlight"],
             })
@@ -235,6 +247,7 @@ export const RemoveDepositModal: FC<Props> = ({
           title: t("lending.withdraw.modal.title", {
             symbol: asset.symbol,
           }),
+          description,
           content: (
             <FormProvider {...form}>
               <form
@@ -261,7 +274,7 @@ export const RemoveDepositModal: FC<Props> = ({
 
                   {splitRemove ? (
                     <>
-                      <STradingPairContainer sx={{ mb: 12 }}>
+                      <STradingPairContainer>
                         <Text color="brightBlue300">
                           {t("liquidity.remove.modal.receive")}
                         </Text>

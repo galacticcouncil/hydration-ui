@@ -34,8 +34,8 @@ import { Alert } from "components/Alert"
 import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 import { Separator } from "components/Separator/Separator"
 import { Button } from "components/Button/Button"
-import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
+import { SupplyModalDetails } from "sections/pools/stablepool/transfer/AddMoneyMarketLiquidity"
 
 type APY = { apy: number }
 type JoinStrategyFormWrapperProps = AddStablepoolWrapperProps & APY
@@ -157,7 +157,6 @@ const JoinStrategyForm = (
     hfChange,
     split,
     onAssetOpen,
-    apy,
     poolId,
     reserves,
   } = props
@@ -251,17 +250,7 @@ const JoinStrategyForm = (
         })}
         withSeparator
       />
-      <SummaryRow
-        label={t("apy")}
-        content={
-          <Text fs={14} color="brightBlue200">
-            {t("value.percentage", {
-              value: BN(apy),
-            })}
-          </Text>
-        }
-        withSeparator
-      />
+      <SupplyModalDetails {...props} />
 
       {hfChange && (
         <>
@@ -275,6 +264,7 @@ const JoinStrategyForm = (
             }
           />
           <HealthFactorRiskWarning
+            sx={{ mb: 20 }}
             accepted={healthFactorRiskAccepted}
             onAcceptedChange={setHealthFactorRiskAccepted}
             isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
@@ -282,18 +272,14 @@ const JoinStrategyForm = (
         </>
       )}
 
-      <Spacer size={20} />
+      {Array.isArray(errors.amount) &&
+        errors.amount.map((e, i) => (
+          <Alert key={i} variant="warning">
+            {e.message}
+          </Alert>
+        ))}
 
-      <div sx={{ flex: "column", gap: 20 }}>
-        {Array.isArray(errors.amount) &&
-          errors.amount.map((e, i) => (
-            <Alert key={i} variant="warning">
-              {e.message}
-            </Alert>
-          ))}
-
-        {displayTradeAlert && <TradeAlert />}
-      </div>
+      {displayTradeAlert && <TradeAlert />}
 
       <Separator
         color="darkBlue401"

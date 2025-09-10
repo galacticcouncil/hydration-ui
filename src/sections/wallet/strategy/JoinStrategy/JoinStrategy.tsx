@@ -4,18 +4,28 @@ import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { useAssets } from "providers/assets"
 import { useMemo } from "react"
 import BN from "bignumber.js"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
-import React from "react"
 import { useAssetsPrice } from "state/displayPrice"
 import { BN_0 } from "utils/constants"
 import { JoinStrategyButton } from "./JoinStrategyButton"
+import ArrowIcon from "assets/icons/ArrowRightIconThin.svg?react"
+import { Icon } from "components/Icon/Icon"
 
 export const JoinStrategy = ({ pools }: { pools: THollarPool[] }) => {
+  const { t } = useTranslation()
   const isBalances = pools.some((pool) => !!pool.reserveBalances.length)
 
   return (
     <div sx={{ flex: "column", gap: 8, justify: "center" }}>
+      <Text fs={18} font="GeistMono">
+        {t("wallet.strategy.hollar.stategy.label")}
+      </Text>
+      <Text fs={14} color="basic300">
+        {t("wallet.strategy.hollar.stategy.desc")}
+      </Text>
+      <Separator color="white" sx={{ opacity: 0.06 }} />
+
       {isBalances ? (
         <StratefyTitleWithBalance pools={pools} />
       ) : (
@@ -33,15 +43,6 @@ const StrategyTitle = ({ pools }: { pools: THollarPool[] }) => {
 
   return (
     <>
-      <p>
-        <Trans t={t} i18nKey="wallet.strategy.hollar.balance.empty.label">
-          <Text as="span" fs={14} />
-          <Text as="span" color="brightBlue100" font="GeistMedium" fs={14} />
-        </Trans>
-      </p>
-
-      <Separator color="white" sx={{ opacity: 0.06 }} />
-
       {highestApyPool && (
         <div sx={{ flex: "row", gap: 8, align: "center", py: 1 }}>
           <MultipleAssetLogo
@@ -110,50 +111,34 @@ const StratefyTitleWithBalance = ({ pools }: { pools: THollarPool[] }) => {
 
   return (
     <>
-      <Text fs={14} lh="140%">
-        <Trans
-          i18nKey="wallet.strategy.hollar.balance.label"
-          components={{
-            tokens: (
-              <>
-                {visiblePools.map((pool, index) => {
-                  const meta = getAssetWithFallback(pool.highestBalance.id)
-
-                  return (
-                    <React.Fragment key={meta.symbol}>
-                      <Text
-                        as="span"
-                        fs={14}
-                        color="brightBlue100"
-                        font="GeistMedium"
-                      >
-                        {t("value.tokenWithSymbol", {
-                          value: pool.highestBalance.balance,
-                          symbol: meta.symbol,
-                        })}
-                      </Text>
-                      {index < visiblePools.length - 1 && " & "}
-                    </React.Fragment>
-                  )
-                })}
-              </>
-            ),
-          }}
-        />
-      </Text>
-
-      <Separator color="white" sx={{ opacity: 0.06 }} />
+      <Text fs={14}>{t("wallet.strategy.hollar.stategy.userAssets")}</Text>
 
       {visiblePools.map((pool) => {
+        const meta = getAssetWithFallback(pool.highestBalance.id)
+
         return (
           <div
             key={pool.stablepoolId}
             sx={{ flex: "row", gap: 8, align: "center", py: 1 }}
           >
-            <MultipleAssetLogo size={12} iconId={pool.meta.iconId} />
-            <Text fs={14} font="GeistMono">
-              {pool.meta.symbol}
+            <Text fs={14} color="brightBlue100">
+              {t("value.token", { value: BN(pool.highestBalance.balance) })}
             </Text>
+            <div sx={{ flex: "row", gap: 4, align: "center" }}>
+              <MultipleAssetLogo size={12} iconId={meta.iconId} />
+              <Text fs={14} font="GeistMono">
+                {meta.symbol}
+              </Text>
+            </div>
+
+            <Icon icon={<ArrowIcon />} sx={{ color: "basic500" }} />
+
+            <div sx={{ flex: "row", gap: 4, align: "center" }}>
+              <MultipleAssetLogo size={12} iconId={pool.meta.iconId} />
+              <Text fs={14} font="GeistMono">
+                {pool.meta.symbol}
+              </Text>
+            </div>
             <Text fs={14} color="brightBlue100">
               {t("value.APR", { apr: pool.apy })}
             </Text>

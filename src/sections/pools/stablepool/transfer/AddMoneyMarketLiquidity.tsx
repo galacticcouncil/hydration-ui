@@ -387,7 +387,7 @@ export const StablepoolForm = (
   )
 }
 
-const SupplyModalDetails = ({
+export const SupplyModalDetails = ({
   stablepoolAsset,
   poolId,
 }: AddStablepoolProps) => {

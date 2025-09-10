@@ -14,6 +14,8 @@ import { JoinStrategy } from "sections/wallet/strategy/JoinStrategy/JoinStrategy
 import { useHollarPools } from "sections/wallet/strategy/WalletStrategy.utils"
 import { useTranslation } from "react-i18next"
 import { HOLLAR_ID } from "utils/constants"
+import { TStablePoolDetails } from "sections/pools/PoolsPage.utils"
+import BN from "bignumber.js"
 
 export type THollarPool = {
   userShiftedBalance: string
@@ -21,10 +23,21 @@ export type THollarPool = {
   apy: number
   tvl: string
   stablepoolId: string
+  stablepoolData: TStablePoolDetails
   reserveBalances: {
     id: string
     balance: string
+    symbol: string
   }[]
+}
+
+export type THollarPoolWithAccountBalance = THollarPool & {
+  highestBalance?: {
+    displayBalance: BN
+    id: string
+    balance: string
+    symbol: string
+  }
 }
 
 export const HollarTile = () => {
@@ -40,7 +53,7 @@ export const HollarTile = () => {
           assetId={HOLLAR_ID}
           underlyingAssetId={HOLLAR_ID}
           riskLevel="low"
-          riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
+          riskTooltip={t("wallet.strategy.hollar.risk.tooltip")}
           pools={pools}
           isLoading={isLoading}
         />

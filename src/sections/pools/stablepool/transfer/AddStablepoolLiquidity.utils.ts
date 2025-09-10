@@ -107,6 +107,14 @@ export const getReservesZodSchema = (balances: TTransferableBalance[]) => {
         ? scaleHuman(maxBalance.balance, maxBalance.decimals)
         : "0"
 
+      if (!BigNumber(item.amount).gt(0)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: i18n.t("error.required"),
+          path: [index],
+        })
+      }
+
       if (BigNumber(item.amount).gt(maxbalanceShifted)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -447,13 +455,6 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
       AAVE_EXTRA_GAS,
     )
 
-    const toastValue = assetsToAdd
-      .map(
-        ({ assetId, amount }) =>
-          `${amount} ${getAssetWithFallback(assetId).symbol}`,
-      )
-      .join(", ")
-
     await createTransaction(
       {
         tx: stableswapTx,
@@ -465,7 +466,11 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
         onClose,
         onBack: () => {},
         steps: getStepper(0),
-        toast: addStablepoolToast(values.reserves, getAssetWithFallback),
+        toast: addStablepoolToast(
+          values.reserves,
+          getAssetWithFallback,
+          getAssetWithFallback(poolId).symbol,
+        ),
         disableAutoClose: true,
       },
     )
@@ -532,13 +537,11 @@ export const useSplitMoneyMarketStablepoolSubmitHandler = (
         onClose,
         onBack: () => {},
         steps: getStepper(1),
-        toast: createToastMessages("liquidity.add.modal.proportionally.toast", {
-          t,
-          tOptions: {
-            value: toastValue,
-          },
-          components: ["span", "span.highlight"],
-        }),
+        toast: addStablepoolToast(
+          values.reserves,
+          getAssetWithFallback,
+          stablepoolAsset.name,
+        ),
       },
     )
   }
@@ -669,7 +672,11 @@ export const useMoneyMarketStablepoolSubmit = (
         onError: onClose,
         onClose,
         onBack: () => {},
-        toast: addStablepoolToast(values.reserves, getAssetWithFallback),
+        toast: addStablepoolToast(
+          values.reserves,
+          getAssetWithFallback,
+          stablepoolAsset.name,
+        ),
         disableAutoClose: !isStablepoolOnly,
         steps: !isStablepoolOnly ? getStepper(0) : undefined,
       },
@@ -717,23 +724,29 @@ export const useAddStablepoolForm = (
   return { form, handleSubmit }
 }
 
-export const addStablepoolToast = (
+const addStablepoolToast = (
   reserves: TStablepoolFormValue[],
   getAssetMeta: (id: string) => TAsset,
+  where: string | undefined = "Stablepool",
 ) => {
   const assetsToAdd = reserves.filter(({ amount }) =>
     BigNumber(amount).isPositive(),
   )
 
   const toastValue = assetsToAdd
-    .map(({ assetId, amount }) => `${amount} ${getAssetMeta(assetId).symbol}`)
+    .map(({ assetId, amount }) =>
+      i18n.t("value.tokenWithSymbol", {
+        value: BigNumber(amount),
+        symbol: getAssetMeta(assetId).symbol,
+      }),
+    )
     .join(", ")
 
   return createToastMessages("liquidity.add.modal.toast", {
     t,
     tOptions: {
       value: toastValue,
-      where: "Stablepool",
+      where,
     },
     components: ["span", "span.highlight"],
   })

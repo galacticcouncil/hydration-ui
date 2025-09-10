@@ -1,13 +1,14 @@
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
-import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
+import { THollarPoolWithAccountBalance } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { SHollarPool } from "./HollarPools.styled"
 import { Text } from "components/Typography/Text/Text"
 import { Separator } from "components/Separator/Separator"
 import BN from "bignumber.js"
-import { Badge } from "components/Badge/Badge"
 import { SCircle } from "sections/assets/AssetsModalRow.styled"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const HollarPool = ({
   pool,
@@ -15,13 +16,14 @@ export const HollarPool = ({
   selectedPool,
   setSelected,
 }: {
-  pool: THollarPool
+  pool: THollarPoolWithAccountBalance
   index: number
-  selectedPool: THollarPool
-  setSelected: (pool: THollarPool) => void
+  selectedPool: THollarPoolWithAccountBalance
+  setSelected: (pool: THollarPoolWithAccountBalance) => void
 }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   const isActive = selectedPool.stablepoolId === pool.stablepoolId
 
@@ -33,14 +35,9 @@ export const HollarPool = ({
           iconId={getAssetWithFallback(pool.stablepoolId).iconId}
         />
 
-        <div sx={{ flex: "column" }}>
-          <Text fs={13} color="white" font="GeistMedium">
-            {pool.meta.symbol}
-          </Text>
-          <Text fs={11} color="alpha0">
-            {getAssetWithFallback(pool.stablepoolId).symbol}
-          </Text>
-        </div>
+        <Text fs={13} color="white" font="GeistMedium">
+          {pool.meta.symbol}
+        </Text>
 
         <Separator orientation="vertical" sx={{ height: 15 }} />
 
@@ -52,11 +49,14 @@ export const HollarPool = ({
         </Text>
       </div>
 
-      <div sx={{ flex: "row", gap: 36, align: "center" }}>
-        {index === 0 && (
-          <Badge variant="green" rounded={false}>
-            {t("recommended")}
-          </Badge>
+      <div sx={{ flex: "row", gap: [8, 36], align: "center" }}>
+        {isDesktop && pool.highestBalance && (
+          <Text fs={12} color="green500">
+            {t("wallet.strategy.hollar.join.apy", {
+              value: pool.highestBalance.balance,
+              symbol: pool.highestBalance.symbol,
+            })}
+          </Text>
         )}
 
         <SCircle isActive={isActive} />

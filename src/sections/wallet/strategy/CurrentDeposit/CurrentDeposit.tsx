@@ -133,7 +133,7 @@ const DepositBalance = ({
   return (
     <>
       <CurrentDepositBalance
-        label={t("wallet.strategy.deposit.myDeposit")}
+        label={t("wallet.strategy.deposit.myDeposit", { count: 1 })}
         balance={t("value.tokenWithSymbol", {
           value: BigNumber(balance),
           symbol,
@@ -191,7 +191,7 @@ const FarmsDepositBalance = ({
   return (
     <>
       <CurrentDepositBalance
-        label={t("wallet.strategy.deposit.myDeposit")}
+        label={t("wallet.strategy.deposit.myDeposit", { count: 1 })}
         balance={t("value.tokenWithSymbol", {
           value: totalValue,
           symbol,
