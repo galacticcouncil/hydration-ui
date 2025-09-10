@@ -83,10 +83,14 @@ export function AreaChart<TData extends TChartData>({
   const [activePointValue, setActivePointValue] = useState<number | null>(null)
 
   const onMouseMove: CategoricalChartFunc = (chartState) => {
-    if (!isNumber(chartState?.activeTooltipIndex)) {
+    const index = Number(chartState?.activeTooltipIndex)
+
+    if (Number.isNaN(index)) {
       return onCrosshairMove?.(null)
     }
-    const activeData = data[chartState.activeTooltipIndex]
+
+    const activeData = data[index]
+
     if (isString(primarySeriesKey) && isNumber(activeData[primarySeriesKey])) {
       setActivePointValue(activeData[primarySeriesKey])
       onCrosshairMove?.(activeData)
