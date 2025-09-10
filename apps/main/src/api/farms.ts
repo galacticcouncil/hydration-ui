@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
+import { OmnipoolWarehouseLMDepositYieldFarmEntry } from "@galacticcouncil/sdk-next/build/types/client/LiquidityMiningClient"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { prop } from "remeda"
 
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import { useOmnipoolIds } from "@/states/liquidity"
 
@@ -101,3 +102,22 @@ const getStoppedFarms = (
 
   return Array.from(resultMap.values())
 }
+
+export const depositRewardsQuery = (
+  { sdk, isApiLoaded }: TProviderContext,
+  poolId: string,
+  farm: OmnipoolWarehouseLMDepositYieldFarmEntry,
+  isXyk: boolean,
+  relayBlockChainNumber: number,
+) =>
+  queryOptions({
+    queryKey: ["farmRewards", poolId, farm.yield_farm_id, isXyk],
+    queryFn: () =>
+      sdk.client.mining.getDepositReward(
+        poolId,
+        farm,
+        isXyk,
+        relayBlockChainNumber,
+      ),
+    enabled: isApiLoaded && !!relayBlockChainNumber,
+  })
