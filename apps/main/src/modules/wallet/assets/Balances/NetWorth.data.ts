@@ -77,7 +77,7 @@ export const useNetWorthData = (period: PeriodType | null) => {
         },
         {
           netWorth: latestNetWorth,
-          time: new Date(Date.now() + 1),
+          time: new Date(Date.now() + 1000),
         },
       ]
     }
