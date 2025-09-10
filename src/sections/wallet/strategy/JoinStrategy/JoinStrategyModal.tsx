@@ -2,7 +2,7 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { Modal } from "components/Modal/Modal"
 import { useModalPagination } from "components/Modal/Modal.utils"
 import { useAssets } from "providers/assets"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
 import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
@@ -31,7 +31,6 @@ export const JoinStrategyModal = ({
   const { getAssetWithFallback } = useAssets()
   const [split, setSplit] = useState(false)
   const [selectedPool, selectPool] = useState(pools[0])
-  const [resetForm, setResetForm] = useState(false)
 
   const stablepoolAsset = getAssetWithFallback(selectedPool.meta.id)
 
@@ -45,13 +44,6 @@ export const JoinStrategyModal = ({
   )
 
   const { page, direction, paginateTo } = useModalPagination(Page.ADD_LIQUIDITY)
-
-  useEffect(() => {
-    if (defaultAssetId) {
-      setAssetId(defaultAssetId)
-      setResetForm((v) => !v)
-    }
-  }, [defaultAssetId, split])
 
   return (
     <Modal open onClose={onClose} disableCloseOutside>
@@ -70,7 +62,10 @@ export const JoinStrategyModal = ({
                   pools={pools}
                   reserves={selectedPool.stablepoolData.balances}
                   selectedPool={selectedPool}
-                  selectPool={selectPool}
+                  selectPool={(pool, defaultAssetId) => {
+                    selectPool(pool)
+                    setAssetId(defaultAssetId)
+                  }}
                 />
                 <SplitSwitcher
                   value={split}
@@ -78,7 +73,7 @@ export const JoinStrategyModal = ({
                   onChange={setSplit}
                 />
                 <JoinStrategyFormWrapper
-                  key={`${resetForm}`}
+                  key={`${split}_${selectedPool.stablepoolId}`}
                   split={split}
                   reserves={selectedPool.stablepoolData.balances}
                   poolId={selectedPool.stablepoolId}

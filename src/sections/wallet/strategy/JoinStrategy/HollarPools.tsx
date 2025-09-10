@@ -7,7 +7,10 @@ type HollarPoolsProps = {
   pools: THollarPoolWithAccountBalance[]
   reserves: TReservesBalance
   selectedPool: THollarPoolWithAccountBalance
-  selectPool: (pool: THollarPoolWithAccountBalance) => void
+  selectPool: (
+    pool: THollarPoolWithAccountBalance,
+    defaultAssetId: string,
+  ) => void
 }
 
 export const HollarPools = ({

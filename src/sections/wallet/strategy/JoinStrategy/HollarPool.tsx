@@ -9,6 +9,7 @@ import BN from "bignumber.js"
 import { SCircle } from "sections/assets/AssetsModalRow.styled"
 import { useMedia } from "react-use"
 import { theme } from "theme"
+import { useSelectedDefaultAssetId } from "sections/pools/stablepool/transfer/TransferModal.utils"
 
 export const HollarPool = ({
   pool,
@@ -19,16 +20,27 @@ export const HollarPool = ({
   pool: THollarPoolWithAccountBalance
   index: number
   selectedPool: THollarPoolWithAccountBalance
-  setSelected: (pool: THollarPoolWithAccountBalance) => void
+  setSelected: (
+    pool: THollarPoolWithAccountBalance,
+    defaultAssetId: string,
+  ) => void
 }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
+  const defaultAssetId = useSelectedDefaultAssetId({
+    stablepoolAsset: pool.meta,
+    smallestPercentage: pool.stablepoolData.smallestPercentage,
+  })
+
   const isActive = selectedPool.stablepoolId === pool.stablepoolId
 
   return (
-    <SHollarPool isActive={isActive} onClick={() => setSelected(pool)}>
+    <SHollarPool
+      isActive={isActive}
+      onClick={() => setSelected(pool, defaultAssetId ?? pool.stablepoolId)}
+    >
       <div sx={{ flex: "row", gap: 12, align: "center" }}>
         <MultipleAssetLogo
           size={20}
