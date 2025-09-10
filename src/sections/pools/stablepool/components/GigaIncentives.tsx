@@ -42,6 +42,10 @@ export const GigaIncentives = ({
     BN_0,
   )
 
+  const validIncentives = moneyMarketApy.incentives.filter(({ incentiveAPR }) =>
+    BN(incentiveAPR).gt(0),
+  )
+
   return (
     <>
       <Heading
@@ -58,7 +62,7 @@ export const GigaIncentives = ({
       >
         <MultipleIcons
           size={20}
-          icons={moneyMarketApy.incentives.map((incentive) => {
+          icons={validIncentives.map((incentive) => {
             const id = getAssetIdFromAddress(incentive.rewardTokenAddress)
             return {
               icon: <AssetLogo key={id} id={id} />,
@@ -73,7 +77,7 @@ export const GigaIncentives = ({
           color="basic100"
           sx={{ mr: "auto" }}
         >
-          {moneyMarketApy.incentives
+          {validIncentives
             .map(({ rewardTokenSymbol }) => rewardTokenSymbol)
             .join(", ")}
         </Text>
