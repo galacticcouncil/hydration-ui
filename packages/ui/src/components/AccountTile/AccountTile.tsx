@@ -3,6 +3,7 @@ import { FC } from "react"
 
 import { AccountAvatar } from "@/components/AccountAvatar"
 import { Flex } from "@/components/Flex"
+import { Logo } from "@/components/Logo"
 import { Text } from "@/components/Text"
 import { getToken, getTokenPx, px } from "@/utils"
 
@@ -15,6 +16,7 @@ type Props = {
   readonly active?: boolean
   readonly label?: string
   readonly className?: string
+  readonly walletLogoSrc?: string
   readonly onClick?: () => void
 }
 
@@ -25,6 +27,7 @@ export const AccountTile: FC<Props> = ({
   active,
   label,
   className,
+  walletLogoSrc,
   onClick,
 }) => {
   return (
@@ -37,20 +40,17 @@ export const AccountTile: FC<Props> = ({
       <SAccountTileContainer
         active={active}
         className={className}
-        onClick={onClick}
+        isInteractive={!!onClick}
       >
         <AccountAvatar address={address} />
         <Flex direction="column" gap={4}>
-          <Flex gap={4}>
-            {/* TODO blockchain icon */}
+          <Flex gap={4} align="center">
+            {walletLogoSrc && <Logo size="extra-small" src={walletLogoSrc} />}
             <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
               {name}
             </Text>
           </Flex>
           <Flex gap={2}>
-            <Text fw={500} fs="p5" lh={px(15)} color={getToken("text.high")}>
-              HDX:
-            </Text>
             <Text fs="p5" lh={px(15)} color={getToken("text.medium")}>
               {shortenAccountAddress(address)}
             </Text>

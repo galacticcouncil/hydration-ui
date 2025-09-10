@@ -31,10 +31,7 @@ export enum AssetType {
   Unknown = "Unknown",
 }
 
-export enum AssetEcosystem {
-  POLKADOT = "polkadot",
-  ETHEREUM = "ethereum",
-}
+import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 
 type TCommonAssetData = {
   id: string
@@ -51,7 +48,7 @@ type TCommonAssetData = {
 export type TToken = TCommonAssetData & {
   type: AssetType.TOKEN
   parachainId?: string
-  ecosystem: AssetEcosystem
+  ecosystem: ChainEcosystem
 }
 
 export type TErc20 = TCommonAssetData & {
@@ -109,21 +106,17 @@ const STABLESWAP_DATA_OVERRIDE_MAP: Record<
 }
 
 export const assetsQuery = (data: TProviderContext) => {
-  const { sdk, isApiLoaded, dataEnv } = data
+  const { sdk, isApiLoaded, dataEnv, metadata } = data
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
     queryFn: async () => {
-      const metadata = AssetMetadataFactory.getInstance()
-
       const { syncAssets, syncATokenPairs } = useAssetRegistryStore.getState()
 
       const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         sdk.api.router.getPools(),
         sdk.client.asset.getOnChainAssets(true),
-        metadata.fetchAssets(),
-        metadata.fetchChains(),
       ])
 
       const aTokenPairs: TATokenPairStored[] = pools
@@ -194,7 +187,7 @@ function assetToTokenType(
     const accountKey20 = getAccountKey20(asset)
     const parachainId = ethereumNetworkEntry?.value?.chain_id?.toString()
     const address = accountKey20?.key ? accountKey20.key.asHex() : ""
-    const ecosystem = AssetEcosystem.ETHEREUM
+    const ecosystem = ChainEcosystem.Ethereum
 
     return {
       ...commonAssetData,
@@ -206,7 +199,7 @@ function assetToTokenType(
     }
   } else {
     const parachainId = getParachainId(asset)?.toString()
-    const ecosystem = AssetEcosystem.POLKADOT
+    const ecosystem = ChainEcosystem.Polkadot
 
     return {
       ...commonAssetData,

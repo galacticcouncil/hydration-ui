@@ -15,9 +15,9 @@ import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { AssetLogo } from "@/components/AssetLogo"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { DynamicFee } from "@/components/DynamicFee"
-import { Logo } from "@/components/Logo"
 import { XYKPoolMeta } from "@/providers/assetsProvider"
 import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 
@@ -137,7 +137,7 @@ const RemoveLiquidityJSX = ({
                   align="center"
                   gap={getTokenPx("containers.paddings.quart")}
                 >
-                  <Logo id={logoId} size="large" />
+                  <AssetLogo id={logoId} size="large" />
                   <Text
                     fs="h5"
                     fw={500}

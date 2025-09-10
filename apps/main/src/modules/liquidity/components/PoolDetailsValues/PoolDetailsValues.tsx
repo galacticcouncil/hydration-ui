@@ -11,7 +11,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { PoolToken } from "@/api/pools"
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -137,7 +137,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
           <ValueStats
             customValue={
               <Flex gap={4} align="self-start">
-                <Logo id={assetAIconId} sx={{ mt: 4 }} />
+                <AssetLogo id={assetAIconId} sx={{ mt: 4 }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}
@@ -161,7 +161,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
           <ValueStats
             customValue={
               <Flex gap={4} align="self-start">
-                <Logo id={assetBIconId} sx={{ mt: 4 }} />
+                <AssetLogo id={assetBIconId} sx={{ mt: 4 }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}

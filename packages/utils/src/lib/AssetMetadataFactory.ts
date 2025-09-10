@@ -1,8 +1,4 @@
-export type TAssetResourceEcosystem =
-  | "polkadot"
-  | "kusama"
-  | "ethereum"
-  | "solana"
+import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 
 export type TAssetResouce = {
   baseUrl: string
@@ -65,17 +61,17 @@ export class AssetMetadataFactory {
   public getAssetLogoSrc(
     chainId: string | number,
     assetId: string | number,
-    ecosystem: TAssetResourceEcosystem = "polkadot",
+    ecosystem: ChainEcosystem = ChainEcosystem.Polkadot,
   ): string {
-    const key = [ecosystem, chainId, "assets", assetId].join("/")
+    const key = [ecosystem.toLowerCase(), chainId, "assets", assetId].join("/")
     return this.assets.find((path) => path.includes(key + "/icon")) ?? ""
   }
 
   public getChainLogoSrc(
     chainId: string | number,
-    ecosystem: TAssetResourceEcosystem = "polkadot",
+    ecosystem: ChainEcosystem = ChainEcosystem.Polkadot,
   ): string {
-    const key = [ecosystem, chainId].join("/")
+    const key = [ecosystem.toLowerCase(), chainId].join("/")
     return this.chains.find((path) => path.includes(key + "/icon")) ?? ""
   }
 }

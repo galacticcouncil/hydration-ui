@@ -3,7 +3,7 @@ import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 
 type Props = {
   readonly assetId: string
@@ -18,7 +18,7 @@ export const LiquidityFarms: FC<Props> = ({ assetId, rewards }) => {
 
   return (
     <Flex gap={4} align="center">
-      <Logo id={assetId} size="small" />
+      <AssetLogo id={assetId} size="small" />
       <Text fs={13} lh={px(18)} fw={500} color="#B3D7FA" whiteSpace="nowrap">
         {t("common:percent", { value: rewards })}{" "}
         {t("myLiquidity.position.rewards")}

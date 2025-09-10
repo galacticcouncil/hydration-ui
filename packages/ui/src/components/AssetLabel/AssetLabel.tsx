@@ -35,9 +35,9 @@ export const AssetLabel = ({
   }
 
   return (
-    <Flex sx={{ flexDirection: "column", gap: 2 }}>
+    <Flex direction="column" gap={2} minWidth={0}>
       {badge ? (
-        <Flex sx={{ gap: 4 }} alignItems="center">
+        <Flex gap={4} align="center">
           <Text
             color={getToken("text.high")}
             fs={isMedium ? "p5" : "p3"}
@@ -67,7 +67,7 @@ export const AssetLabel = ({
           fs={isMedium ? "p6" : "p5"}
           fw={400}
           lh={1}
-          truncate={100}
+          truncate
         >
           {name}
         </Text>

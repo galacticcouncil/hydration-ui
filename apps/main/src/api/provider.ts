@@ -1,8 +1,16 @@
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
-import { PoolService, PoolType, TradeRouter } from "@galacticcouncil/sdk"
+import {
+  createSdkContext as legacy_createSdkContext,
+  PoolService,
+  TradeRouter,
+} from "@galacticcouncil/sdk"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
-import { getProviderInstance, hasOwn } from "@galacticcouncil/utils"
+import {
+  AssetMetadataFactory,
+  getProviderInstance,
+  hasOwn,
+} from "@galacticcouncil/utils"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
@@ -33,9 +41,11 @@ export type TProviderData = {
   endpoint: string
   dataEnv: TDataEnv
   slotDurationMs: number
+  metadata: AssetMetadataFactory
   /**
    * @deprecated
    */
+  legacy_poolService: PoolService
   legacy_tradeRouter: TradeRouter
 }
 
@@ -74,10 +84,14 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
 
   const papi = papiClient.getTypedApi(hydration)
 
+  const metadata = AssetMetadataFactory.getInstance()
+
   const [sdk, slotDuration, papiCompatibilityToken] = await Promise.all([
     createSdkContext(papiClient),
     papi.constants.Aura.SlotDuration(),
     papi.compatibilityToken,
+    metadata.fetchAssets(),
+    metadata.fetchChains(),
   ])
 
   const poolService = sdk.ctx.pool.withOmnipool().withStableswap().withXyk()
@@ -98,10 +112,11 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   const provider = getProviderInstance(legacy_api)
   const endpoint = provider.endpoint
 
-  const legacy_poolService = new PoolService(legacy_api)
-  const legacy_tradeRouter = new TradeRouter(legacy_poolService, {
-    includeOnly: [PoolType.Omni, PoolType.Stable, PoolType.XYK, PoolType.LBP],
-  })
+  const legacy_sdk = legacy_createSdkContext(legacy_api)
+  const {
+    ctx: { pool: legacy_poolService },
+    api: { router: legacy_tradeRouter },
+  } = legacy_sdk
 
   return {
     papi,
@@ -115,6 +130,8 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
+    metadata,
+    legacy_poolService,
     legacy_tradeRouter,
   } satisfies TProviderData
 }

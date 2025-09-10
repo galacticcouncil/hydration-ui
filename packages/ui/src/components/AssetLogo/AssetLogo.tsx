@@ -1,30 +1,24 @@
 import { Children, cloneElement, isValidElement } from "react"
 
-import { PlaceholderAssetLogo, TriangleAlert } from "@/assets/icons"
-import { Skeleton, Tooltip } from "@/components"
+import { TriangleAlert } from "@/assets/icons"
+import { LogoProps, LogoSize, Skeleton, Tooltip } from "@/components"
 
 import {
   LOGO_DIAMETER,
   SAssetBadge,
+  SAssetChainLogo,
   SAssetLogo,
   SBadgeSlot,
-  SChainLogo,
   SDecorationContainer,
-  SPlaceholder,
 } from "./AssetLogo.styled"
 
-export type AssetLogoSize = "large" | "medium" | "small" | "extra-small"
-export type TBadge = "red" | "yellow"
+export type AssetLogoBadge = "red" | "yellow"
 export type AssetLogoDecoration = "none" | "atoken"
 
-export type AssetLogoProps = {
-  src?: string
+export type AssetLogoProps = LogoProps & {
   chainSrc?: string
-  alt?: string
-  size?: AssetLogoSize
-  badge?: TBadge
+  badge?: AssetLogoBadge
   badgeTooltip?: string
-  className?: string
   decoration?: AssetLogoDecoration
   isLoading?: boolean
 }
@@ -38,6 +32,7 @@ export const AssetLogo = ({
   badgeTooltip,
   isLoading,
   decoration = "none",
+  className,
 }: AssetLogoProps) => {
   if (isLoading) {
     const skeletonSize = LOGO_DIAMETER[size]
@@ -45,31 +40,31 @@ export const AssetLogo = ({
     return <Skeleton width={skeletonSize} height={skeletonSize} circle />
   }
 
-  if (!src)
-    return (
-      <SDecorationContainer count={1} size={size}>
-        <SPlaceholder component={PlaceholderAssetLogo} size={size} />
-      </SDecorationContainer>
-    )
-
   return (
-    <SDecorationContainer count={1} decoration={decoration} size={size}>
-      <SAssetLogo loading="lazy" src={src} alt={alt} size={size} />
-      {chainSrc && <SChainLogo size={size} loading="lazy" src={chainSrc} />}
+    <SDecorationContainer
+      count={1}
+      decoration={decoration}
+      size={size}
+      className={className}
+    >
+      <SAssetLogo src={src} alt={alt} size={size} />
+      {chainSrc && <SAssetChainLogo size={size} src={chainSrc} />}
       {badge && <Badge badge={badge} tooltip={badgeTooltip} />}
     </SDecorationContainer>
   )
+}
+
+type MultipleAssetLogoWrapperProps = {
+  size?: LogoSize
+  children: React.ReactNode
+  decoration?: AssetLogoDecoration
 }
 
 export const MultipleAssetLogoWrapper = ({
   size = "medium",
   children,
   decoration,
-}: {
-  size?: AssetLogoSize
-  children: React.ReactNode
-  decoration?: AssetLogoDecoration
-}) => {
+}: MultipleAssetLogoWrapperProps) => {
   return (
     <SDecorationContainer
       size={size}
@@ -95,7 +90,12 @@ export const MultipleAssetLogoWrapper = ({
   )
 }
 
-const Badge = ({ badge, tooltip }: { badge: TBadge; tooltip?: string }) => {
+type BadgeProps = {
+  badge: AssetLogoBadge
+  tooltip?: string
+}
+
+const Badge: React.FC<BadgeProps> = ({ badge, tooltip }) => {
   const BadgeComp = (
     <SAssetBadge component={TriangleAlert} size="100%" type={badge} />
   )

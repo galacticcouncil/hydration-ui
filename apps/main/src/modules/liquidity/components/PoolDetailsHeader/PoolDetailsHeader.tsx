@@ -3,7 +3,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { PoolDetailsHeaderAddLiquidity } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderAddLiquidity"
 import {
   isIsolatedPool,
@@ -30,7 +30,10 @@ export const PoolDetailsHeader = ({
     >
       <Flex>
         <Flex gap={8} align="center">
-          <Logo id={isOmnipool ? data.id : data.meta.iconId} size="large" />
+          <AssetLogo
+            id={isOmnipool ? data.id : data.meta.iconId}
+            size="large"
+          />
 
           <Flex direction="column">
             <Flex gap={4} align="center">
@@ -40,7 +43,7 @@ export const PoolDetailsHeader = ({
               <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
                 {t("details.header.apr", { value: 20 })}
               </Text>
-              <Logo id={USDT_ASSET_ID} size="small" />
+              <AssetLogo id={USDT_ASSET_ID} size="small" />
             </Flex>
             <Text fw={600} fs={11} color={getToken("text.medium")}>
               {data.meta.symbol}

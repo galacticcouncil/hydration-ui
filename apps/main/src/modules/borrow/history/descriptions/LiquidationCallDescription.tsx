@@ -2,7 +2,7 @@ import { Flex, Text } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -27,7 +27,7 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
         {t("borrow:history.table.liquidatedCollateral")}
       </Text>
       <Flex align="center" gap={8}>
-        {assetId && <Logo size="small" id={assetId} />}
+        {assetId && <AssetLogo size="small" id={assetId} />}
         <Text fs={14}>
           {t("currency", {
             value: scaleHuman(amount, asset.decimals),

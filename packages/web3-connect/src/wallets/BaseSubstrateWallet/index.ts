@@ -115,13 +115,14 @@ export class BaseSubstrateWallet implements Wallet {
 
   getAccounts = async (): Promise<WalletAccount[]> => {
     const accounts = this.getInjectedAccounts()
-    const accountsWithWallet = accounts.map((account) => {
-      return {
-        address: account.address,
-        name: account.name ?? "",
-        provider: this.provider,
-      } satisfies WalletAccount
-    })
+    const accountsWithWallet = accounts.map(
+      (account) =>
+        ({
+          address: safeConvertAddressSS58(account.address),
+          name: account.name ?? "",
+          provider: this.provider,
+        }) satisfies WalletAccount,
+    )
 
     return accountsWithWallet
   }

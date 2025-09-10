@@ -8,7 +8,8 @@ import {
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
 import { addr } from "@galacticcouncil/xcm-core"
-import { PublicKey } from "@solana/web3.js"
+
+const { Ss58Addr, EvmAddr, SolanaAddr } = addr
 
 import { WalletProviderType } from "@/config/providers"
 import {
@@ -63,21 +64,12 @@ export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
   return "auto"
 }
 
-function isSolanaAddress(address: string) {
-  try {
-    const pubkey = new PublicKey(address)
-    return PublicKey.isOnCurve(pubkey.toBuffer())
-  } catch (error) {
-    return false
-  }
-}
-
 export function getWalletModeFromAddress(address: string) {
-  if (addr.isH160(address)) {
+  if (EvmAddr.isValid(address)) {
     return WalletMode.EVM
-  } else if (addr.isSs58(address)) {
+  } else if (Ss58Addr.isValid(address)) {
     return WalletMode.Substrate
-  } else if (addr.isSolana(address) || isSolanaAddress(address)) {
+  } else if (SolanaAddr.isValid(address)) {
     return WalletMode.Solana
   }
 

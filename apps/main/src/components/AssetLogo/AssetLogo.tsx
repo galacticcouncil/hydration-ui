@@ -1,7 +1,7 @@
 import {
-  AssetLogo,
+  AssetLogo as AssetLogoPrimitive,
   AssetLogoDecoration,
-  AssetLogoSize,
+  AssetLogoProps as AssetLogoPrimitiveProps,
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
@@ -23,16 +23,14 @@ type LogoMetadata = {
   decoration: AssetLogoDecoration
 }
 
-type LogoProps = {
+type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   id: string | string[]
-  size?: AssetLogoSize
-  className?: string
   isLoading?: boolean
 }
 
 const ATOKEN_DECOR_BLACKLIST = [GDOT_ERC20_ID, GETH_ERC20_ID]
 
-export const Logo: React.FC<LogoProps> = ({
+export const AssetLogo: React.FC<AssetLogoProps> = ({
   id,
   size = "medium",
   className,
@@ -51,7 +49,7 @@ export const Logo: React.FC<LogoProps> = ({
   }, [getAssetWithFallback, id])
 
   if (isLoading) {
-    return <AssetLogo size={size} isLoading />
+    return <AssetLogoPrimitive size={size} isLoading />
   }
 
   if (logoMetadata.length > 1) {
@@ -64,7 +62,7 @@ export const Logo: React.FC<LogoProps> = ({
         decoration={isATokenPool ? "atoken" : "none"}
       >
         {logoMetadata.map((data) => (
-          <AssetLogo
+          <AssetLogoPrimitive
             key={data.id}
             alt={data.alt}
             src={data.assetSrc}
@@ -79,7 +77,7 @@ export const Logo: React.FC<LogoProps> = ({
   const singleIconMetadata = logoMetadata[0]
 
   return (
-    <AssetLogo
+    <AssetLogoPrimitive
       className={className}
       alt={singleIconMetadata?.alt}
       src={singleIconMetadata?.assetSrc}

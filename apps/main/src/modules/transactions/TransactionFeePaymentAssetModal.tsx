@@ -1,4 +1,4 @@
-import { ModalBody } from "@galacticcouncil/ui/components"
+import { InputProps, ModalBody } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
 
 import {
@@ -8,9 +8,14 @@ import {
 import { AssetSelectModalContent } from "@/components/AssetSelectModal"
 import { TransactionOptions } from "@/states/transactions"
 
-export const TransactionFeePaymentAssetModal: React.FC<TransactionOptions> = (
-  txOptions,
-) => {
+type Props = TransactionOptions & {
+  searchInputVariant?: InputProps["variant"]
+}
+
+export const TransactionFeePaymentAssetModal: React.FC<Props> = ({
+  searchInputVariant,
+  ...txOptions
+}) => {
   const { mutate } = useSetFeePaymentAsset(txOptions)
 
   const { accountFeePaymentAsset, acceptedFeePaymentAssets } =
@@ -23,9 +28,10 @@ export const TransactionFeePaymentAssetModal: React.FC<TransactionOptions> = (
   }, [acceptedFeePaymentAssets, accountFeePaymentAsset?.id])
 
   return (
-    <ModalBody sx={{ padding: 0 }}>
+    <ModalBody sx={{ padding: 0 }} scrollable={false}>
       <AssetSelectModalContent
         assets={filteredPaymentAssets}
+        searchInputVariant={searchInputVariant}
         onSelect={(asset) => {
           mutate(asset.id)
         }}

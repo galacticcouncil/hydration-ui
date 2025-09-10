@@ -11,7 +11,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
 type PaymentAssetProps = {
@@ -28,7 +28,7 @@ export const PaymentAsset: FC<PaymentAssetProps> = ({ onClick }) => {
     <MenuSelectionItem onClick={onClick}>
       {!isLoading && asset ? (
         <>
-          <MenuItemIcon component={() => <Logo id={asset.id} />} />
+          <MenuItemIcon component={() => <AssetLogo id={asset.id} />} />
           <MenuItemLabel>{t("paymentAsset")}</MenuItemLabel>
           <MenuItemDescription>{asset.symbol}</MenuItemDescription>
         </>

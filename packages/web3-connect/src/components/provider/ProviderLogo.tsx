@@ -1,3 +1,4 @@
+import { Image } from "@galacticcouncil/ui/components"
 import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 
 import { Wallet } from "@/types/wallet"
@@ -10,9 +11,8 @@ type Props = {
 
 export const ProviderLogo = ({ wallet, className, size = 32 }: Props) => {
   return (
-    <img
+    <Image
       className={className}
-      loading="lazy"
       src={wallet.logo}
       alt={wallet.title}
       sx={{ size }}

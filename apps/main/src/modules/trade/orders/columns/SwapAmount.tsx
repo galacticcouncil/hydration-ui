@@ -3,7 +3,7 @@ import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
@@ -25,7 +25,7 @@ export const SwapAmount = ({
 
   return (
     <Flex gap={12} align="center">
-      {showLogo && <Logo id={from.id} size="small" />}
+      {showLogo && <AssetLogo id={from.id} size="small" />}
       <Flex gap={getTokenPx("scales.paddings.s")} align="center">
         <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
           {t("number", { value: fromAmount })}
@@ -40,7 +40,7 @@ export const SwapAmount = ({
         color={getToken("icons.onContainer")}
       />
       <Flex gap={getTokenPx("scales.paddings.s")} align="center">
-        {showLogo && <Logo id={to.id} size="small" />}
+        {showLogo && <AssetLogo id={to.id} size="small" />}
         <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
           {t("number", { value: toAmount })}
         </Text>

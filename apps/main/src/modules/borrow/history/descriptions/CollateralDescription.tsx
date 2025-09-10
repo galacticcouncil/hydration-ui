@@ -3,7 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
@@ -38,7 +38,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
         </Trans>
       </Text>
       <Flex align="center" gap={4}>
-        {assetId && <Logo size="small" id={assetId} />} {asset.symbol}
+        {assetId && <AssetLogo size="small" id={assetId} />} {asset.symbol}
       </Flex>
     </Flex>
   )

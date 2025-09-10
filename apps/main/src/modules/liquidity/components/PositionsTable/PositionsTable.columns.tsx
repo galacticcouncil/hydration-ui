@@ -11,7 +11,7 @@ import {
   AssetLabelFull,
   AssetLabelXYK,
 } from "@/components/AssetLabelFull/AssetLabelFull"
-import { Logo } from "@/components/Logo/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
 import {
@@ -108,7 +108,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         size: 100,
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) && original.joinedFarms.length ? (
-            <Logo id={original.joinedFarms} />
+            <AssetLogo id={original.joinedFarms} />
           ) : null,
       }),
       omnipoolColumnHelper.display({
@@ -302,7 +302,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
           row: {
             original: { joinedFarms },
           },
-        }) => (joinedFarms.length ? <Logo id={joinedFarms} /> : null),
+        }) => (joinedFarms.length ? <AssetLogo id={joinedFarms} /> : null),
       }),
       isolatedColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.actions"),

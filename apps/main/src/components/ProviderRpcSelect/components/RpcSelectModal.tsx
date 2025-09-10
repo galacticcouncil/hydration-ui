@@ -9,6 +9,7 @@ import {
   ModalHeader,
   ModalProps,
   Separator,
+  Spinner,
   Text,
   Toggle,
 } from "@galacticcouncil/ui/components"
@@ -19,6 +20,7 @@ import { useActiveProviderProps } from "@/api/provider"
 import { RpcForm } from "@/components/ProviderRpcSelect/components/RpcForm"
 import { RpcList } from "@/components/ProviderRpcSelect/components/RpcList"
 import { RpcListItemActive } from "@/components/ProviderRpcSelect/components/RpcListItem"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type RpcSelectModalProps = ModalProps
@@ -27,6 +29,7 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
   const { t } = useTranslation()
   const { autoMode, setAutoMode } = useProviderRpcUrlStore()
   const activeProvider = useActiveProviderProps()
+  const { isLoaded } = useRpcProvider()
 
   return (
     <Modal disableInteractOutside {...props}>
@@ -61,18 +64,27 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
           </Flex>
         }
       />
-      {autoMode && activeProvider && (
+      {autoMode && (
         <ModalBody>
-          <Box
-            bg={getToken("surfaces.containers.dim.dimOnBg")}
-            borderRadius="lg"
-            p={4}
-          >
-            <RpcListItemActive
-              url={activeProvider.url}
-              name={activeProvider.name}
-            />
-          </Box>
+          {isLoaded && activeProvider ? (
+            <Box
+              bg={getToken("surfaces.containers.dim.dimOnBg")}
+              borderRadius="lg"
+              p={4}
+            >
+              <RpcListItemActive
+                url={activeProvider.url}
+                name={activeProvider.name}
+              />
+            </Box>
+          ) : (
+            <Flex align="center" justify="center" gap={10} p={10} height={64}>
+              <Spinner size={14} />
+              <Text fs="p5" color={getToken("text.medium")}>
+                {t("rpc.change.modal.autoMode.loading")}
+              </Text>
+            </Flex>
+          )}
         </ModalBody>
       )}
       {!autoMode && (

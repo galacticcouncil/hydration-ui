@@ -2,7 +2,7 @@ import { Flex, Text } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -23,7 +23,7 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap" }}
     >
-      {assetId && <Logo size="small" id={assetId} />}
+      {assetId && <AssetLogo size="small" id={assetId} />}
       <Text fs={14} css={{ whiteSpace: "nowrap" }}>
         {t("currency", {
           value: scaleHuman(amount, asset.decimals),

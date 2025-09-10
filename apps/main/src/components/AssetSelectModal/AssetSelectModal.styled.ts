@@ -6,6 +6,7 @@ export const SOption = styled.div<{ highlighted: boolean }>(
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 8px;
 
     padding: 0 var(--modal-content-padding);
     height: 100%;
