@@ -34,7 +34,7 @@ export const useHollarPools = () => {
 
   const data = hollarsApy
     .map((asset) => {
-      const { assetId, totalBorrowApy, tvl, stablepoolData } = asset
+      const { assetId, totalSupplyApy, tvl, stablepoolData } = asset
       const aToken = getRelatedAToken(assetId)
 
       if (!aToken || !stablepoolData) return undefined
@@ -82,7 +82,7 @@ export const useHollarPools = () => {
         meta,
         stablepoolId: assetId,
         stablepoolData,
-        apy: Number(totalBorrowApy.toFixed(2)),
+        apy: Number(totalSupplyApy.toFixed(2)),
         tvl,
         reserveBalances,
       }
