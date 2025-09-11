@@ -39,24 +39,27 @@ const StrategyTitle = ({ pools }: { pools: THollarPool[] }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const sortedPools = pools.sort((a, b) => b.apy - a.apy)
-  const highestApyPool = sortedPools[0]
+  const highestApyPool = sortedPools.slice(0, 2)
 
   return (
     <>
-      {highestApyPool && (
-        <div sx={{ flex: "row", gap: 8, align: "center", py: 1 }}>
+      {highestApyPool.map((pool) => (
+        <div
+          key={pool.stablepoolId}
+          sx={{ flex: "row", gap: 8, align: "center", py: 1 }}
+        >
           <MultipleAssetLogo
             size={12}
-            iconId={getAssetWithFallback(highestApyPool.stablepoolId).iconId}
+            iconId={getAssetWithFallback(pool.stablepoolId).iconId}
           />
           <Text fs={14} font="GeistMono">
-            {highestApyPool.meta.symbol}
+            {pool.meta.symbol}
           </Text>
           <Text fs={14} color="brightBlue100">
-            {t("value.APR", { apr: highestApyPool.apy })}
+            {t("value.APR", { apr: pool.apy })}
           </Text>
         </div>
-      )}
+      ))}
 
       <JoinStrategyButton pools={sortedPools} />
     </>
