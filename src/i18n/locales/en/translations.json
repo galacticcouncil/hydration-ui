@@ -43,6 +43,7 @@
   "totalBalance": "Total Balance",
   "selectAsset": "Select asset",
   "recommended": "Recommended",
+  "minimumReceived": "Minimum received",
   "milliseconds": "{{ value, bignumber }} ms",
   "duration.left": "{{duration}} left",
   "duration.ago": "{{duration}} ago",

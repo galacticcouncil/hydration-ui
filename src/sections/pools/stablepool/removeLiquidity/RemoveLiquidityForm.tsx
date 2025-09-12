@@ -206,15 +206,13 @@ export const RemoveStablepoolLiquidityForm = ({
         />
 
         <STradingPairContainer>
-          <Text color="brightBlue300">
-            {t("liquidity.remove.modal.receive")}
-          </Text>
+          <Text color="brightBlue300">{t("minimumReceived")}</Text>
           {splitRemove ? (
-            minAssetsOut.map(({ assetOutValue, meta }) => (
+            minAssetsOut.map(({ minValue, meta }) => (
               <RemoveLiquidityReward
                 key={meta.id}
                 meta={meta}
-                amount={assetOutValue}
+                amount={minValue}
                 withDollarPrice
               />
             ))
@@ -224,12 +222,12 @@ export const RemoveStablepoolLiquidityForm = ({
             >
               <AssetSelectButton assetId={assetId} onClick={onAssetOpen} />
 
-              {minAssetsOut.map(({ assetOutValue, meta }) => (
+              {minAssetsOut.map(({ minValue, meta }) => (
                 <div sx={{ flex: "column", align: "flex-end" }}>
                   <Text fs={[16, 18]} fw={[500, 700]}>
                     {t("value.tokenWithSymbol", {
-                      value: assetOutValue
-                        ? scaleHuman(assetOutValue, meta.decimals)
+                      value: minValue
+                        ? scaleHuman(minValue, meta.decimals)
                         : "-",
                       symbol: meta.symbol,
                     })}
