@@ -6,6 +6,7 @@ import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
 
 export const useClaimFarmMutation = (
   claimableFarms?: TClaimableFarmValue[],
@@ -18,6 +19,7 @@ export const useClaimFarmMutation = (
   const { createTransaction } = useStore()
   const refetchAccountAssets = useRefetchAccountAssets()
   const refetchClaimableValues = useRefetchClaimableFarmValues()
+  const { createBatch } = useCreateBatchTx()
 
   const mutation = useMutation(async () => {
     let omnipoolFarms: TClaimableFarmValue[] = []
@@ -68,20 +70,26 @@ export const useClaimFarmMutation = (
     const allTxs = [...omnipool, ...xyk]
 
     if (allTxs.length > 0) {
-      return await createTransaction(
-        {
-          tx: allTxs.length > 1 ? api.tx.utility.batchAll(allTxs) : allTxs[0],
+      const options = {
+        toast,
+        onBack,
+        onClose,
+        onSuccess: () => {
+          refetchClaimableValues()
+          refetchAccountAssets()
         },
-        {
-          toast,
-          onBack,
-          onClose,
-          onSuccess: () => {
-            refetchClaimableValues()
-            refetchAccountAssets()
+      }
+
+      if (allTxs.length > 1) {
+        return await createBatch(allTxs, {}, options)
+      } else {
+        return await createTransaction(
+          {
+            tx: allTxs[0],
           },
-        },
-      )
+          options,
+        )
+      }
     }
   })
 

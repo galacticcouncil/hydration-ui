@@ -168,3 +168,23 @@ export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
     spotPrice,
   ])
 }
+
+export const useBlockWeight = () => {
+  const { api, isLoaded } = useRpcProvider()
+
+  return useQuery(
+    QUERY_KEYS.blockWeight,
+    async () => {
+      const dataRaw = await api.consts.system.blockWeights
+      const data = dataRaw.perClass.normal.maxExtrinsic.unwrapOr(null)
+
+      if (!data) return undefined
+
+      return {
+        refTime: data.refTime.toString(),
+        proofSize: data.proofSize.toString(),
+      }
+    },
+    { enabled: isLoaded, cacheTime: Infinity, staleTime: Infinity },
+  )
+}
