@@ -2629,10 +2629,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-1.3.0.tgz#2a287447ae8a51784f31ba0339588a52125d468f"
   integrity sha512-a8WydUDaIkPpN9q2FhkGzCmPmBc+1NesaNEBewlIYx22GY7lkYqnoJx7hSL+gGUcO0LI/nUGWbFcB15hUIBa0Q==
 
-"@galacticcouncil/math-stableswap@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-2.2.0.tgz#686af73258af933fb402c53ebab70a52aff3f607"
-  integrity sha512-wuyj1eNs8VARdPDpwy3Tybx/8QPF0UjAL3pepa5w0xo2EVqlryp6L1YPMW24jTlL8W+k8oU06jPgR5rqRycrJg==
+"@galacticcouncil/math-stableswap@^2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-2.3.0.tgz#a5db3a35a83730e5cebc1ebbcad4e3f84f959cf8"
+  integrity sha512-RD2rhcP0PoS5Ki9FTbO9DQ9T6nkKtqbFRIal2nT+GGNujLgKoSVWK/GH/3ViAX9uEU71u5XSEDRMhRJp3gZNrg==
 
 "@galacticcouncil/math-staking@^1.2.0":
   version "1.2.0"
@@ -2644,16 +2644,16 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk@^9.15.0":
-  version "9.15.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.15.0.tgz#38591ec0419fb1a70599bbf50144417b901b7852"
-  integrity sha512-hhQw1v7vr0QmTBJRDPikpsrTP/tHdjhn6fky65RMGJ1oKzRj1E0rq8nXJONSb5YIFoGzB9yN8pnuASfK3WkxRw==
+"@galacticcouncil/sdk@^9.16.0":
+  version "9.16.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-9.16.0.tgz#c034ed44c72d22de466daeb8ab471d97c768944a"
+  integrity sha512-+gSHJMjBhBkp9dsLbipdKwtSJ4OkbR+BJoR2cc42IC+Vp9FsY3Ajkfb8xgG7I6jJZHcSPyeNhIl9BBI2MafmWw==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
     "@galacticcouncil/math-liquidity-mining" "^1.2.0"
     "@galacticcouncil/math-omnipool" "^1.3.0"
-    "@galacticcouncil/math-stableswap" "^2.2.0"
+    "@galacticcouncil/math-stableswap" "^2.3.0"
     "@galacticcouncil/math-xyk" "^1.2.0"
     "@noble/hashes" "^1.6.1"
     "@thi.ng/cache" "^2.1.35"
