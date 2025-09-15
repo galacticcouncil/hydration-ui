@@ -46,18 +46,23 @@ export const syncAssethubXcmConfig = (
   config.registerExternal([asset])
 }
 
-export const useCrossChainWallet = () => {
-  const { sdk } = useRpcProvider()
-
-  const { ctx } = sdk ?? {}
-
+export const useHydrationConfigService = () => {
   return useMemo(() => {
-    const configService = new HydrationConfigService({
+    return new HydrationConfigService({
       assets: assetsMap,
       chains: chainsMap,
       routes: routesMap,
     })
+  }, [])
+}
 
+export const useCrossChainWallet = () => {
+  const { sdk } = useRpcProvider()
+  const configService = useHydrationConfigService()
+
+  const { ctx } = sdk ?? {}
+
+  return useMemo(() => {
     const wallet = new Wallet({
       configService: configService,
       transferValidations: validations,
@@ -79,7 +84,7 @@ export const useCrossChainWallet = () => {
     )
 
     return wallet
-  }, [ctx?.pool])
+  }, [ctx?.pool, configService])
 }
 
 export const useCrossChainTransfer = (

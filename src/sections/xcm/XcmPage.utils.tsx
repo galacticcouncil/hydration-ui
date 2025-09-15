@@ -85,6 +85,9 @@ export function getDesiredWalletMode(chainKey: string) {
 
   if (!chain) return WalletMode.Default
 
+  const isSui = chain?.key === "sui"
+  if (isSui) return WalletMode.Sui
+
   const isSolana = chain?.key === "solana"
   if (isSolana) return WalletMode.Solana
 
@@ -108,6 +111,8 @@ export const getAddressBookMode = (chain?: AnyChain) => {
   if (!chain) return WalletMode.Default
 
   if (chain.isSolana()) return WalletMode.Solana
+
+  if (chain.isSui()) return WalletMode.Sui
 
   if (isH160AddressSpace(chain)) return WalletMode.EVM
 
