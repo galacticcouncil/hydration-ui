@@ -24,6 +24,7 @@ import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import TreasuryIcon from "assets/icons/Treasury.svg?react"
 import BarChartDecreasingIcon from "assets/icons/BarChartDecreasingIcon.svg?react"
 import { Search } from "@tanstack/react-location"
+import { getDeploymentType } from "utils/helpers"
 
 export const LINKS = {
   home: "/",
@@ -207,37 +208,39 @@ export const MENU_ITEMS = [
       },
     ],
   },
-  // {
-  //   key: "xcm",
-  //   href: LINKS.cross_chain,
-  //   Icon: TransferIcon,
-  //   enabled: import.meta.env.VITE_ENV === "production",
-  //   external: false,
-  //   mobVisible: false,
-  //   tabVisible: false,
-  //   mobOrder: 5,
-  //   asyncEnabled: false,
-  //   subItems: [
-  //     {
-  //       key: "xcm.xcm",
-  //       href: LINKS.cross_chain,
-  //       Icon: TransferIcon,
-  //       enabled: true,
-  //     },
-  //     {
-  //       key: "xcm.deposit",
-  //       href: LINKS.deposit,
-  //       Icon: DownloadIcon,
-  //       enabled: true,
-  //     },
-  //     {
-  //       key: "xcm.withdraw",
-  //       href: LINKS.withdraw,
-  //       Icon: UploadIcon,
-  //       enabled: true,
-  //     },
-  //   ],
-  // },
+  {
+    key: "xcm",
+    href: LINKS.cross_chain,
+    Icon: TransferIcon,
+    enabled:
+      import.meta.env.VITE_ENV === "production" &&
+      getDeploymentType() !== "hollarnet",
+    external: false,
+    mobVisible: false,
+    tabVisible: false,
+    mobOrder: 5,
+    asyncEnabled: false,
+    subItems: [
+      {
+        key: "xcm.xcm",
+        href: LINKS.cross_chain,
+        Icon: TransferIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.deposit",
+        href: LINKS.deposit,
+        Icon: DownloadIcon,
+        enabled: true,
+      },
+      {
+        key: "xcm.withdraw",
+        href: LINKS.withdraw,
+        Icon: UploadIcon,
+        enabled: true,
+      },
+    ],
+  },
   {
     key: "staking",
     href: LINKS.staking,
