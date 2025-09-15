@@ -14,8 +14,13 @@ import { WalletUpgradeModal } from "sections/web3-connect/upgrade/WalletUpgradeM
 import {
   isEvmCall,
   isSolanaCall,
+  isSuiCall,
 } from "sections/transaction/ReviewTransactionXCallForm.utils"
 import { useRpcProvider } from "providers/rpcProvider"
+import { Call } from "@galacticcouncil/xcm-sdk"
+
+const isSupportedExternalCall = (call?: Call): call is Call =>
+  isEvmCall(call) || isSolanaCall(call) || isSuiCall(call)
 
 export const ReviewTransaction = (props: Transaction) => {
   const { isLoaded } = useRpcProvider()
@@ -29,6 +34,7 @@ export const ReviewTransaction = (props: Transaction) => {
     sendEvmTx,
     sendPermitTx,
     sendSolanaTx,
+    sendSuiTx,
     isLoading,
     isSuccess,
     isError: isSendError,
@@ -152,8 +158,7 @@ export const ReviewTransaction = (props: Transaction) => {
               sendPermitTx(permit)
             }}
           />
-        ) : (isEvmCall(props.xcall) || isSolanaCall(props.xcall)) &&
-          props.xcallMeta ? (
+        ) : isSupportedExternalCall(props.xcall) && props.xcallMeta ? (
           <ReviewTransactionXCallForm
             xcall={props.xcall}
             xcallMeta={props.xcallMeta}
@@ -165,6 +170,10 @@ export const ReviewTransaction = (props: Transaction) => {
             onSolanaSigned={(data) => {
               props.onSubmitted?.()
               sendSolanaTx(data)
+            }}
+            onSuiSigned={(data) => {
+              props.onSubmitted?.()
+              sendSuiTx(data)
             }}
             onSignError={setSignError}
             isLoading={isLoading}

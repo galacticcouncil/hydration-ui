@@ -11,8 +11,6 @@ export enum WalletProviderType {
   BraveWalletSol = "bravewallet-sol",
   CoinbaseWallet = "coinbasewallet",
   RabbyWallet = "rabbywallet",
-  Nightly = "nightly",
-  NightlyEvm = "nightly-evm",
   Phantom = "phantom",
   Solflare = "solflare",
   Enkrypt = "enkrypt",
@@ -20,6 +18,9 @@ export enum WalletProviderType {
   FearlessWallet = "fearless-wallet",
   Polkagate = "polkagate",
   AlephZero = "aleph-zero",
+  Slush = "slush",
+  Suiet = "suiet",
+  PhantomSui = "phantom-sui",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
   ExternalWallet = "external",
@@ -37,7 +38,6 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletEvm,
-  // WalletProviderType.NightlyEvm,
   WalletProviderType.RabbyWallet,
   // WalletProviderType.TrustWallet,
   // WalletProviderType.CoinbaseWallet,
@@ -51,7 +51,6 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.SubwalletJS,
   WalletProviderType.Enkrypt,
   WalletProviderType.NovaWallet,
-  // WalletProviderType.Nightly,
   WalletProviderType.MantaWallet,
   WalletProviderType.FearlessWallet,
   WalletProviderType.Polkagate,
@@ -68,6 +67,12 @@ export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
   WalletProviderType.BraveWalletSol,
+]
+
+export const SUI_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.Suiet,
+  WalletProviderType.Slush,
+  WalletProviderType.PhantomSui,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

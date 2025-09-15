@@ -13,6 +13,8 @@ import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
 import { MetaTags } from "state/toasts"
 
+const { Ss58Addr } = addr
+
 const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
 export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
@@ -83,7 +85,7 @@ export class H160 {
       return H160.fromAccount(address)
     }
 
-    if (addr.isSs58(address)) {
+    if (Ss58Addr.isValid(address)) {
       return H160.fromSS58(address)
     }
 
