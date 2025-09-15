@@ -24,6 +24,20 @@ export const SPendingBridgeIcon = styled(PendingBridgeIcon)`
   height: 12px;
 `
 
+export const SImportantToastsIcon = styled.span`
+  display: inline-block;
+  background: ${theme.colors.red500};
+  color: ${theme.colors.white};
+  border-radius: 50%;
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 12px;
+  height: 12px;
+  font-size: 10px;
+  font-family: "GeistSemiBold";
+`
+
 export const SMaskContainer = styled.div<{ cropped: boolean }>`
   position: relative;
   top: 0;
