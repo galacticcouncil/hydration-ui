@@ -67,12 +67,12 @@ export const usePoolColumns = () => {
         header: t("liquidity:totalValueLocked"),
         cell: ({ row }) =>
           t("currency", {
-            value: Number(row.original.tvlDisplay),
+            value: Big(row.original.tvlDisplay || "0"),
           }),
         sortingFn: (a, b) =>
           numericallyStrDesc(
-            b.original.tvlDisplay ?? "0",
-            a.original.tvlDisplay ?? "0",
+            b.original.tvlDisplay || "0",
+            a.original.tvlDisplay || "0",
           ),
       }),
       columnHelper.accessor("totalFee", {
