@@ -12,6 +12,7 @@ import { theme } from "theme"
 import { ToastVariant } from "state/toasts"
 import ChainlinkIcon from "assets/icons/ChainlinkIcon.svg?react"
 import { Spinner } from "components/Spinner/Spinner"
+import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 
 export function ToastContent(props: {
   variant: Maybe<ToastVariant>
@@ -40,11 +41,20 @@ export function ToastContent(props: {
         ) : props.variant === "temporary" ? (
           <ChainlinkIcon color={theme.colors.white} />
         ) : (
-          <InfoIcon />
+          <SInfoIcon>
+            <InfoIcon />
+          </SInfoIcon>
         )}
       </SIcon>
       <div sx={{ flex: "column", gap: 4, justify: "center" }}>
-        <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
+        <div
+          sx={{
+            flex: "row",
+            justify: "space-between",
+            align: "flex-end",
+            gap: 8,
+          }}
+        >
           <STitle>
             {typeof props.title === "string" ? (
               <p dangerouslySetInnerHTML={{ __html: props.title }} />
@@ -52,8 +62,6 @@ export function ToastContent(props: {
               props.title
             )}
           </STitle>
-
-          {props.actions}
         </div>
         <div sx={{ flex: "row", justify: "space-between", align: "flex-end" }}>
           {props.dateCreated && (
@@ -69,13 +77,17 @@ export function ToastContent(props: {
         </div>
       </div>
 
-      {props.link && (
-        <SLink>
-          <a href={props.link} target="_blank" rel="noreferrer">
-            <LinkIcon />
-          </a>
-        </SLink>
-      )}
+      <div sx={{ flex: "row", align: "center", gap: 8 }}>
+        {props.actions}
+        {props.link && (
+          <SLink>
+            <a href={props.link} target="_blank" rel="noreferrer">
+              <LinkIcon />
+            </a>
+          </SLink>
+        )}
+      </div>
+
       {props.children}
     </SContainer>
   )

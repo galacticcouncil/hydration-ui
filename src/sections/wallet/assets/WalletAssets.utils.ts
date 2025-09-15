@@ -10,7 +10,7 @@ import { useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useUserBorrowSummary } from "api/borrow"
 
-type AssetCategory = "all" | "assets" | "liquidity" | "farming"
+export type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
 type FilterValues = {
   category?: AssetCategory
