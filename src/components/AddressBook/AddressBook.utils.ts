@@ -10,9 +10,10 @@ import { safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { diffBy } from "utils/rx"
-import { isSolanaAddress } from "utils/solana"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+
+const { Ss58Addr, EvmAddr, SolanaAddr, SuiAddr } = addr
 
 export const useProviderAccounts = (
   provider: string | undefined,
@@ -29,15 +30,18 @@ export const useProviderAccounts = (
 }
 
 export function validateAddress(address: string) {
-  if (addr.isH160(address)) {
-    return WalletMode.EVM
-  } else if (addr.isSs58(address)) {
-    return WalletMode.Substrate
-  } else if (addr.isSolana(address) || isSolanaAddress(address)) {
-    return WalletMode.Solana
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return WalletMode.EVM
+    case Ss58Addr.isValid(address):
+      return WalletMode.Substrate
+    case SolanaAddr.isValid(address):
+      return WalletMode.Solana
+    case SuiAddr.isValid(address):
+      return WalletMode.Sui
+    default:
+      return null
   }
-
-  return null
 }
 
 export type Address = {
@@ -140,28 +144,11 @@ export const useAddressStore = create<AddressStore>()(
 )
 
 export const getBlacklistedWallets = (mode: WalletMode) => {
-  if (mode === WalletMode.Solana) {
-    return Object.values(WalletMode).filter(
-      (value) => value !== WalletMode.Solana,
-    )
-  }
+  const allWalletModes = Object.values(WalletMode)
+  const allowed =
+    mode === WalletMode.SubstrateEVM
+      ? [WalletMode.EVM, WalletMode.Substrate, WalletMode.Default]
+      : mode
 
-  if (mode === WalletMode.EVM) {
-    return Object.values(WalletMode).filter((value) => value !== WalletMode.EVM)
-  }
-
-  if (mode === WalletMode.SubstrateEVM) {
-    return Object.values(WalletMode).filter(
-      (value) =>
-        value !== WalletMode.EVM &&
-        value !== WalletMode.Substrate &&
-        value !== WalletMode.Default,
-    )
-  }
-
-  if (mode === WalletMode.Substrate) {
-    return Object.values(WalletMode).filter(
-      (value) => value !== WalletMode.Substrate,
-    )
-  }
+  return allWalletModes.filter((value) => !allowed.includes(value))
 }
