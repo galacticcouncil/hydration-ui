@@ -11,6 +11,7 @@ import { scaleHuman } from "utils/balance"
 import { useBorrowAssetsApy } from "api/borrow"
 import { isNotNil } from "utils/helpers"
 import BN from "bignumber.js"
+import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
 
 export const useGigadotAssetIds = () => {
   const { dataEnv } = useRpcProvider()
@@ -77,15 +78,21 @@ export const useHollarPools = () => {
         meta.decimals,
       ).toString()
 
+      const userShiftedTransferableBalance = scaleHuman(
+        accountAssetsMap?.get(aToken.id)?.balance.transferable ?? "0",
+        meta.decimals,
+      ).toString()
+
       return {
         userShiftedBalance,
+        userShiftedTransferableBalance,
         meta,
         stablepoolId: assetId,
         stablepoolData,
         apy: Number(totalSupplyApy.toFixed(2)),
         tvl,
         reserveBalances,
-      }
+      } satisfies THollarPool
     })
     .filter(isNotNil)
 

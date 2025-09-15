@@ -27,7 +27,7 @@ export const JoinStrategy = ({ pools }: { pools: THollarPool[] }) => {
       <Separator color="white" sx={{ opacity: 0.06 }} />
 
       {isBalances ? (
-        <StratefyTitleWithBalance pools={pools} />
+        <StrategyTitleWithBalance pools={pools} />
       ) : (
         <StrategyTitle pools={pools} />
       )}
@@ -66,7 +66,7 @@ const StrategyTitle = ({ pools }: { pools: THollarPool[] }) => {
   )
 }
 
-const StratefyTitleWithBalance = ({ pools }: { pools: THollarPool[] }) => {
+const StrategyTitleWithBalance = ({ pools }: { pools: THollarPool[] }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
   const ids = pools.flatMap((pool) =>

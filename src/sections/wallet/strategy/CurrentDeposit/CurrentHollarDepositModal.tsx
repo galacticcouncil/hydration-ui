@@ -18,7 +18,7 @@ export const CurrentHollarDepositModal = ({
 
   const maxBalance =
     userBalances.find((pool) => pool.meta.id === removeAsset)
-      ?.userShiftedBalance ?? "0"
+      ?.userShiftedTransferableBalance ?? "0"
 
   return (
     <Modal onClose={onClose} open>

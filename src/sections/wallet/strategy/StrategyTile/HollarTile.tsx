@@ -19,6 +19,7 @@ import BN from "bignumber.js"
 
 export type THollarPool = {
   userShiftedBalance: string
+  userShiftedTransferableBalance: string
   meta: TErc20
   apy: number
   tvl: string
