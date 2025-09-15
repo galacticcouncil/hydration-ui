@@ -36,16 +36,19 @@ export type TxMetadata = {
   amountOut: string
 }
 
+export type EvmTxConfig = {
+  chain?: string
+  abi?: string
+  data: TransactionRequest
+}
+
 export interface TransactionInput {
   title?: string
   description?: string
   tx?: SubmittableExtrinsic | TxType
   txOptions?: SubstrateCall["txOptions"]
   txMeta?: TxMetadata
-  evmTx?: {
-    data: TransactionRequest
-    abi?: string
-  }
+  evmTx?: EvmTxConfig
   xcall?: Call
   xcallMeta?: XcmMetadata
   overrides?: {

@@ -345,6 +345,7 @@ export const QUERY_KEYS = {
     accounntAddress?: string,
   ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  suiAccountBalance: (address: string) => ["suiAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
     address,
@@ -382,6 +383,7 @@ export const QUERY_KEYS = {
     assetOutId: string,
     amountIn: string,
   ) => ["bestTradeSellTx", assetInId, assetOutId, amountIn],
+  wormholeTransfers: (address: string) => ["wormholeTransfers", address],
 } as const
 
 export const WS_QUERY_KEYS = {

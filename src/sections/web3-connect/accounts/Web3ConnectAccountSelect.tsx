@@ -7,6 +7,7 @@ import { safeConvertAddressSS58, shortenAccountAddress } from "utils/formatting"
 import { theme as themeParams } from "theme"
 import {
   SOLANA_PROVIDERS,
+  SUI_PROVIDERS,
   WalletProviderType,
 } from "sections/web3-connect/constants/providers"
 import BigNumber from "bignumber.js"
@@ -86,6 +87,9 @@ export const Web3ConnectAccountSelect = ({
   const { wallet } = getWalletProviderByType(provider)
   const isEvm = isEvmAddress(address)
   const isSol = !!provider && SOLANA_PROVIDERS.includes(provider)
+  const isSui = !!provider && SUI_PROVIDERS.includes(provider)
+
+  const isNonSubstrate = isEvm || isSol || isSui
 
   const addressOldFormat = safeConvertAddressSS58(
     address,
@@ -127,6 +131,11 @@ export const Web3ConnectAccountSelect = ({
                 {t("walletConnect.provider.mode.solana")}
               </Badge>
             )}
+            {isSui && (
+              <Badge size="small" variant="purple" rounded={false}>
+                {t("walletConnect.provider.mode.sui")}
+              </Badge>
+            )}
           </div>
           {!hideBalance && (
             <Text fs={14} color="graySoft">
@@ -161,7 +170,7 @@ export const Web3ConnectAccountSelect = ({
             {isDesktop ? address : shortenAccountAddress(address, 12)}
           </Text>
           <div sx={{ mt: -4 }}>
-            {isEvm ? (
+            {isNonSubstrate ? (
               <CopyButton
                 address={address}
                 sx={{

@@ -14,7 +14,7 @@ export const PoolAddLiquidityInformationCard = () => {
           {t("liquidity.add.modal.information.text")}
         </Text>
         <SLink
-          href={`${DOC_LINK}/products/trading/pools/learn_amm#impermanent-loss`}
+          href={`${DOC_LINK}/products/trading/liquidity/impermanent_loss/`}
           target="_blank"
         >
           {t("liquidity.add.modal.information.linkText")}

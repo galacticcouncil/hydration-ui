@@ -20,6 +20,7 @@ import { useShallow } from "hooks/useShallow"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { pick } from "utils/rx"
 import { GDOT_ERC20_ASSET_ID, GETH_ERC20_ASSET_ID } from "utils/constants"
+import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 
 export const UigcAssetPlaceholder = createComponent({
   tagName: "uigc-logo-placeholder",
@@ -285,11 +286,15 @@ export const ExternalAssetLogo = ({
     </UigcAssetId>
   )
 }
+type ChainLogoProps = { id?: number | string; ecosystem?: ChainEcosystem }
 
-export const ChainLogo = ({ id }: { id?: number }) => {
+export const ChainLogo: React.FC<ChainLogoProps> = ({
+  id,
+  ecosystem = ChainEcosystem.Polkadot,
+}) => {
   return (
     <UigcChainLogo
-      ecosystem={"polkadot"}
+      ecosystem={ecosystem.toLowerCase()}
       chain={id?.toString()}
       ref={(el) => el && el.setAttribute("fit", "")}
     >

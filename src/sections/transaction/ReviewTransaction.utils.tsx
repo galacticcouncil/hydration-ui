@@ -46,13 +46,15 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { useActiveRpcUrlList } from "api/provider"
 import { Contract } from "ethers"
 import BN from "bignumber.js"
-import { SolanaChain } from "@galacticcouncil/xcm-core"
+import { SolanaChain, SuiChain } from "@galacticcouncil/xcm-core"
 import { SignatureStatus } from "@solana/web3.js"
 import { getSolanaTxLink } from "utils/solana"
 import { TxEvent } from "polkadot-api"
 import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
 import { XcmMetadata } from "@galacticcouncil/apps"
+import { SuiSignedTransaction } from "sections/web3-connect/signer/SuiSigner"
+import { HYDRATION_CHAIN_KEY } from "utils/constants"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
 
@@ -362,64 +364,52 @@ export const useSendSolanaTransactionMutation = (
   const sendTx = useMutation(async (txHash) => {
     if (!chain) throw new Error("Invalid chain")
 
-    return await new Promise(async (resolve, reject) => {
-      const txWalletAddress = account?.address
-      try {
-        const link = getSolanaTxLink(txHash)
-        const xcm = xcallMeta ? "solana" : undefined
-        const metaTags = xcallMeta?.tags
+    const txWalletAddress = account?.address
+    try {
+      const link = getSolanaTxLink(txHash)
+      const xcm = xcallMeta ? "solana" : undefined
+      const metaTags = xcallMeta?.tags
 
-        const destChain = xcallMeta?.dstChain
-          ? chainsMap.get(xcallMeta.dstChain)
+      const destChain = xcallMeta?.dstChain
+        ? chainsMap.get(xcallMeta.dstChain)
+        : undefined
+
+      const bridge =
+        chain?.isSolana() || destChain?.isSolana()
+          ? getXcmTag(metaTags)
           : undefined
 
-        const bridge =
-          chain?.isSolana() || destChain?.isSolana()
-            ? getXcmTag(metaTags)
-            : undefined
+      loading({
+        id,
+        title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+        link,
+        txHash,
+        bridge,
+        hidden: true,
+        xcm,
+        isHydraSource: false,
+      })
 
-        loading({
-          id,
-          title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
-          link,
-          txHash,
-          bridge,
-          hidden: true,
-          xcm,
-          isHydraSource: false,
-        })
+      setIsBroadcasted(true)
 
-        setIsBroadcasted(true)
+      await waitForSolanaTx(chain.connection, txHash)
+      const result = toSubmittableResult(txHash)
 
-        await waitForSolanaTx(chain.connection, txHash)
-        const result = toSubmittableResult(txHash)
-
-        if (result.isCompleted) {
-          if (!bridge) {
-            success(
-              {
-                id,
-                title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
-                link,
-                txHash,
-              },
-              txWalletAddress,
-            )
-          }
-        }
-
-        if (result.isError) {
-          error(
+      if (result.isCompleted) {
+        if (!bridge) {
+          success(
             {
               id,
-              title: toast?.onError ?? <p>{t("toast.error")}</p>,
+              title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+              link,
+              txHash,
             },
             txWalletAddress,
           )
         }
+      }
 
-        return resolve(result)
-      } catch (err) {
+      if (result.isError) {
         error(
           {
             id,
@@ -427,10 +417,127 @@ export const useSendSolanaTransactionMutation = (
           },
           txWalletAddress,
         )
-
-        reject(new TransactionError(err?.toString() ?? "Unknown error", {}))
       }
-    })
+
+      return result
+    } catch (err) {
+      error(
+        {
+          id,
+          title: toast?.onError ?? <p>{t("toast.error")}</p>,
+        },
+        txWalletAddress,
+      )
+
+      throw new TransactionError(err?.toString() ?? "Unknown error", {})
+    }
+  }, options)
+
+  return {
+    ...sendTx,
+    isBroadcasted,
+  }
+}
+
+export const useSendSuiTransactionMutation = (
+  options: MutationObserverOptions<
+    ISubmittableResult,
+    unknown,
+    SuiSignedTransaction
+  > = {},
+  id: string,
+  toast?: ToastMessage,
+  xcallMeta?: XcmMetadata,
+) => {
+  const { t } = useTranslation()
+  const [isBroadcasted, setIsBroadcasted] = useState(false)
+  const { loading, success, error } = useToast()
+
+  const chain = xcallMeta
+    ? (chainsMap.get(xcallMeta.srcChain) as SolanaChain)
+    : null
+
+  const sendTx = useMutation(async ({ bytes, signature }) => {
+    if (!(chain instanceof SuiChain)) throw new Error("Invalid chain")
+
+    try {
+      setIsBroadcasted(true)
+
+      const destChain = xcallMeta?.dstChain
+        ? chainsMap.get(xcallMeta.dstChain)
+        : undefined
+
+      const xcm = xcallMeta ? "sui" : undefined
+      const metaTags = xcallMeta?.tags
+
+      const bridge =
+        chain?.isSui() || destChain?.isSui() ? getXcmTag(metaTags) : undefined
+
+      const { digest: txHash } = await chain.client.executeTransactionBlock({
+        transactionBlock: bytes,
+        signature,
+        options: {
+          showEffects: true,
+          showEvents: true,
+          showObjectChanges: true,
+          showBalanceChanges: true,
+        },
+      })
+
+      const link = `${chain.explorer}mainnet/tx/${txHash}`
+
+      loading({
+        id,
+        title: toast?.onLoading ?? <p>{t("toast.pending")}</p>,
+        link,
+        txHash,
+        bridge,
+        hidden: true,
+        xcm,
+        isHydraSource: false,
+      })
+
+      const tx = await chain.client.getTransactionBlock({
+        digest: txHash,
+        options: {
+          showEffects: true,
+          showEvents: true,
+          showObjectChanges: true,
+          showBalanceChanges: true,
+        },
+      })
+
+      const isSuccess = tx?.effects?.status?.status === "success"
+      const isError = tx?.effects?.status?.status === "failure"
+
+      if (isSuccess && !bridge) {
+        success({
+          id,
+          title: toast?.onSuccess ?? <p>{t("toast.success")}</p>,
+          link,
+          txHash,
+        })
+      }
+
+      if (isError) {
+        error({
+          id,
+          title: toast?.onError ?? <p>{t("toast.error")}</p>,
+          link,
+          txHash,
+        })
+      }
+
+      const result = toSubmittableResult(txHash)
+      return result
+    } catch (err) {
+      error({
+        id,
+        title: toast?.onError ?? <p>{t("toast.error")}</p>,
+      })
+
+      throw new TransactionError(err?.toString() ?? "Unknown error", {})
+    }
   }, options)
 
   return {
@@ -509,7 +616,7 @@ const getTransactionData = (
   txHash: string | undefined,
   xcallMeta?: XcmMetadata,
 ) => {
-  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? "hydration")
+  const srcChain = chainsMap.get(xcallMeta?.srcChain ?? HYDRATION_CHAIN_KEY)
   const metaTags = xcallMeta?.tags
 
   const xcmDstChain = xcallMeta?.dstChain
@@ -522,7 +629,7 @@ const getTransactionData = (
       : undefined
 
   const bridge =
-    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana()
+    xcmDstChain?.isEvmChain() || xcmDstChain?.isSolana() || xcmDstChain?.isSui()
       ? getXcmTag(metaTags)
       : undefined
 
@@ -1030,7 +1137,7 @@ const useStoreExternalAssetsOnSign = () => {
   )
 }
 
-type TxType = "default" | "evm" | "permit" | "solana"
+type TxType = "default" | "evm" | "permit" | "solana" | "sui"
 
 export const useSendTx = ({
   id,
@@ -1116,11 +1223,25 @@ export const useSendTx = ({
     xcallMeta,
   )
 
+  const sendSuiTx = useSendSuiTransactionMutation(
+    {
+      onMutate: () => {
+        setTxType("sui")
+      },
+      onSuccess: (data) => onSuccess?.(data),
+      onError: () => onError?.(),
+    },
+    id,
+    toast,
+    xcallMeta,
+  )
+
   const activeMutation = getActiveMutation(txType, {
     default: sendTx,
     evm: sendEvmTx,
     permit: sendPermitTx,
     solana: sendSolanaTx,
+    sui: sendSuiTx,
   })
 
   return {
@@ -1128,6 +1249,7 @@ export const useSendTx = ({
     sendEvmTx: sendEvmTx.mutateAsync,
     sendPermitTx: sendPermitTx.mutateAsync,
     sendSolanaTx: sendSolanaTx.mutateAsync,
+    sendSuiTx: sendSuiTx.mutateAsync,
     ...activeMutation,
   }
 }
@@ -1137,6 +1259,7 @@ type TTxMutation =
   | ReturnType<typeof useSendEvmTransactionMutation>
   | ReturnType<typeof useSendSolanaTransactionMutation>
   | ReturnType<typeof useSendDispatchPermit>
+  | ReturnType<typeof useSendSuiTransactionMutation>
 
 function getActiveMutation(
   txType: TxType,

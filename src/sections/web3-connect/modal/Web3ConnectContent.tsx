@@ -203,6 +203,12 @@ const getModalDescription = (
     })
   }
 
+  if (mode === WalletMode.Sui) {
+    return t("walletConnect.provider.description.suiChain", {
+      chain: chain.name,
+    })
+  }
+
   return t("walletConnect.provider.description.substrateChain", {
     chain: chain.name,
   })

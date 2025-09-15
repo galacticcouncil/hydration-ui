@@ -11,9 +11,12 @@ import {
 } from "./WalletStrategyBanner.styled"
 import GigadotTitle from "./assets/gigadot-title.svg?react"
 import cansImageSrc from "./assets/cans.webp"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const WalletStrategyBanner: FC = () => {
   const { t } = useTranslation()
+  const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <SWalletStrategyBanner>
@@ -23,17 +26,35 @@ export const WalletStrategyBanner: FC = () => {
           sx={{ color: "white" }}
           aria-label={t("wallet.strategy.banner.title")}
         />
-        <Text fw={400} fs={13} lh="1.3" color="white">
+        <Text
+          fw={400}
+          fs={13}
+          lh="1.3"
+          color="white"
+          sx={{ display: ["none", "block"] }}
+        >
           {t("wallet.strategy.banner.description")}
         </Text>
       </div>
-      <Button
-        size="small"
-        sx={{ width: ["100%", 120], ml: "auto" }}
-        as={(props) => <Link to={LINKS.strategies} {...props} />}
-      >
-        {t("wallet.strategy.banner.cta")}
-      </Button>
+      {!isDesktop ? (
+        <Button
+          size="micro"
+          variant="primary"
+          sx={{ py: 6, px: 18 }}
+          as={(props) => <Link to={LINKS.strategies} {...props} />}
+        >
+          {t("wallet.strategy.banner.cta")}
+        </Button>
+      ) : (
+        <Button
+          size="small"
+          variant="primary"
+          sx={{ width: 120, ml: "auto" }}
+          as={(props) => <Link to={LINKS.strategies} {...props} />}
+        >
+          {t("wallet.strategy.banner.cta")}
+        </Button>
+      )}
     </SWalletStrategyBanner>
   )
 }
