@@ -3,6 +3,7 @@ import ChartError from "@galacticcouncil/ui/assets/images/ChartError.webp"
 import {
   ChartSkeleton,
   ChartStatus,
+  Image,
   Spinner,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -43,13 +44,7 @@ export const ChartState: React.FC<ChartStateProps> = ({
       >
         <ChartStatus
           icon={
-            <img
-              src={ChartError}
-              loading="lazy"
-              width={75}
-              height={75}
-              alt="Chart error"
-            />
+            <Image src={ChartError} width={75} height={75} alt="Chart error" />
           }
           message={t("chart.error")}
         />
@@ -65,13 +60,7 @@ export const ChartState: React.FC<ChartStateProps> = ({
       >
         <ChartStatus
           icon={
-            <img
-              src={Casette}
-              loading="lazy"
-              width={75}
-              height={75}
-              alt="Chart empty"
-            />
+            <Image src={Casette} width={75} height={75} alt="Chart empty" />
           }
           message={t("chart.empty")}
         />

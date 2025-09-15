@@ -26,6 +26,7 @@ export const SettingsModal = () => {
             onBack={() => setPage(SettingsModalPage.Default)}
           />
           <TransactionFeePaymentAssetModal
+            searchInputVariant="standalone"
             onSubmitted={() => setPage(SettingsModalPage.Default)}
           />
         </>

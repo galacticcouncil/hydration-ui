@@ -1,17 +1,12 @@
-import { Close } from "@galacticcouncil/ui/assets/icons"
 import {
-  AccountAvatar,
+  AccountInput,
   Button,
-  ButtonIcon,
   Flex,
-  Grid,
-  Icon,
-  Input,
-  Text,
+  Label,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { ArrowDownToLine, BookOpen } from "lucide-react"
-import { FC } from "react"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { BookOpen } from "lucide-react"
+import { FC, useId } from "react"
 
 import { useAddressStore } from "@/components/address-book/AddressBook.store"
 import { SAddressBook } from "@/components/address-book/AddressBook.styled"
@@ -30,6 +25,7 @@ export const AddressBook: FC<AddressBookProps> = ({
   onAddressChange,
   onOpenMyContacts,
 }) => {
+  const id = useId()
   const { addresses } = useAddressStore()
   const provider = addresses.find((a) => a.address === address)?.provider
   const isTalisman = !!provider && TALISMAN_PROVIDERS.includes(provider)
@@ -37,9 +33,15 @@ export const AddressBook: FC<AddressBookProps> = ({
   return (
     <SAddressBook>
       <Flex justify="space-between" align="center">
-        <Text fw={500} fs="p5" lh={1.2} color={getToken("text.medium")}>
+        <Label
+          fw={500}
+          fs="p5"
+          lh={1.2}
+          color={getToken("text.medium")}
+          htmlFor={id}
+        >
           Destination address
-        </Text>
+        </Label>
         <Button
           variant="accent"
           outline
@@ -51,36 +53,14 @@ export const AddressBook: FC<AddressBookProps> = ({
           <BookOpen />
         </Button>
       </Flex>
-      <Grid columnTemplate="1fr auto" align="center" columnGap={10}>
-        <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
-          <AccountAvatar
-            address={address}
-            theme={isTalisman ? "talisman" : "auto"}
-          />
-          <Input
-            variant="embedded"
-            sx={{ p: 0, flex: 1 }}
-            value={address}
-            onChange={(e) => onAddressChange(e.target.value)}
-            placeholder="Paste address here..."
-            isError={isError}
-          />
-        </Flex>
-        {!address ? (
-          <ButtonIcon
-            onClick={async () => {
-              const text = await navigator.clipboard.readText()
-              onAddressChange(text)
-            }}
-          >
-            <Icon component={ArrowDownToLine} size={18} />
-          </ButtonIcon>
-        ) : (
-          <ButtonIcon onClick={() => onAddressChange("")}>
-            <Icon component={Close} size={18} />
-          </ButtonIcon>
-        )}
-      </Grid>
+      <AccountInput
+        id={id}
+        value={address}
+        onChange={onAddressChange}
+        avatarTheme={isTalisman ? "talisman" : "auto"}
+        placeholder="Paste address here..."
+        isError={isError}
+      />
     </SAddressBook>
   )
 }

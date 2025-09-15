@@ -3,6 +3,7 @@ import {
   Box,
   Flex,
   Input,
+  InputProps,
   Modal,
   ModalBody,
   ModalHeader,
@@ -27,6 +28,7 @@ export type AssetSelectProps = {
   selectedAssetId?: string
   onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
+  searchInputVariant?: InputProps["variant"]
 }
 
 export type AssetSelectModalProps = AssetSelectProps & {
@@ -39,6 +41,7 @@ export const AssetSelectModalContent = ({
   onSelect,
   emptyState,
   selectedAssetId,
+  searchInputVariant = "embedded",
 }: AssetSelectProps) => {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -105,25 +108,38 @@ export const AssetSelectModalContent = ({
     }
   }
 
+  const searchInput = (
+    <Input
+      placeholder={t("assetSelector.input.placeholder")}
+      customSize="medium"
+      iconStart={Search}
+      value={search}
+      onChange={(v) => setSearch(v.target.value)}
+      onKeyDown={handleInputKeyDown}
+      ref={inputRef}
+      variant={searchInputVariant}
+      sx={
+        searchInputVariant === "embedded"
+          ? { flexGrow: 1, px: 0, my: "var(--modal-content-inset)" }
+          : {}
+      }
+    />
+  )
+
   return (
     <>
-      <ModalHeader
-        title={t("assetSelector.title")}
-        customTitle={
-          <Input
-            placeholder={t("assetSelector.input.placeholder")}
-            variant="embedded"
-            customSize="medium"
-            iconStart={Search}
-            value={search}
-            onChange={(v) => setSearch(v.target.value)}
-            onKeyDown={handleInputKeyDown}
-            ref={inputRef}
-            sx={{ flexGrow: 1, px: 0, my: "var(--modal-content-inset)" }}
-          />
-        }
-      />
+      {searchInputVariant === "embedded" && (
+        <ModalHeader
+          title={t("assetSelector.title")}
+          customTitle={searchInput}
+        />
+      )}
       <ModalBody scrollable={false} noPadding>
+        {searchInputVariant === "standalone" && (
+          <Box p="var(--modal-content-padding)" pb={0}>
+            {searchInput}
+          </Box>
+        )}
         <Box
           ref={divRef}
           tabIndex={0}

@@ -4,7 +4,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { Trans, useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import {
   TReserve,
   useStablepoolReserves,
@@ -58,7 +58,7 @@ export const CurrencyReservesRow = ({
   return (
     <Flex justify="space-between">
       <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
-        <Logo id={reserve.asset_id.toString()} size="small" />
+        <AssetLogo id={reserve.asset_id.toString()} size="small" />
         <Text color={getToken("text.high")} fs="p3" fw={600}>
           {reserve.meta.symbol}
         </Text>
@@ -90,7 +90,7 @@ export const CurrencyReservesRowSkeleton = () => {
   return (
     <Flex justify="space-between">
       <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
-        <Logo id={"0"} size="small" isLoading />
+        <AssetLogo id={"0"} size="small" isLoading />
         <Skeleton width={50} height={14} />
       </Flex>
       <Skeleton width={50} height={13} />

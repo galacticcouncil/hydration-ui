@@ -8,7 +8,7 @@ export type ScreenType = "mobile" | "tablet" | "laptop" | "desktop"
 export const BREAKPOINTS_TYPES = ["xs", "sm", "md", "lg", "xl"]
 export const BREAKPOINTS_VALUES = ["480px", "768px", "1024px", "1280px"]
 
-const breakpointsMap = {
+export const breakpointsMap = {
   xs: "0px",
   sm: BREAKPOINTS_VALUES[0],
   md: BREAKPOINTS_VALUES[1],

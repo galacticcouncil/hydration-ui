@@ -7,7 +7,7 @@ import {
 import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { StablepoolBadge } from "@/modules/liquidity/components/StablepoolBadge"
 
 export const AssetLabelFull = ({
@@ -42,7 +42,7 @@ export const AssetLabelFull = ({
       {loading ? (
         <Skeleton circle width={24} height={24} />
       ) : (
-        <Logo id={asset.id} size={size} />
+        <AssetLogo id={asset.id} size={size} />
       )}
       <AssetLabel
         symbol={asset.symbol}
@@ -67,7 +67,7 @@ export const AssetLabelXYK = ({
 }) => {
   return (
     <AssetLabelFullContainer>
-      <Logo id={iconIds} />
+      <AssetLogo id={iconIds} />
       <AssetLabel symbol={symbol} name={name} size={size} />
     </AssetLabelFullContainer>
   )
@@ -84,7 +84,7 @@ export const AssetLabelStablepool = ({
 }) => {
   return (
     <AssetLabelFullContainer>
-      <Logo id={asset.id} size={size} />
+      <AssetLogo id={asset.id} size={size} />
       <AssetLabel
         symbol={asset.symbol}
         name={withName ? asset.name : undefined}
@@ -98,5 +98,9 @@ export const AssetLabelStablepool = ({
 const AssetLabelFullContainer: FC<{
   children: ReactNode
 }> = ({ children }) => {
-  return <Flex sx={{ gap: 8, alignItems: "center" }}>{children}</Flex>
+  return (
+    <Flex gap={8} align="center" minWidth={0}>
+      {children}
+    </Flex>
+  )
 }

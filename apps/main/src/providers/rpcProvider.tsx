@@ -1,4 +1,4 @@
-import { changeProvider } from "@galacticcouncil/utils"
+import { AssetMetadataFactory, changeProvider } from "@galacticcouncil/utils"
 import { hydration } from "@polkadot-api/descriptors"
 import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
@@ -40,6 +40,8 @@ const defaultData: TProviderContext = {
   evm: {} as TProviderData["evm"],
   featureFlags: {} as TProviderData["featureFlags"],
   poolService: {} as TProviderData["poolService"],
+  metadata: AssetMetadataFactory.getInstance(),
+  legacy_poolService: {} as TProviderData["legacy_poolService"],
   legacy_tradeRouter: {} as TProviderData["legacy_tradeRouter"],
 }
 

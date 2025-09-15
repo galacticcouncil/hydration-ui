@@ -4,9 +4,9 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { AssetLogo } from "@/components/AssetLogo"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetSelectModal } from "@/components/AssetSelectModal"
-import { Logo } from "@/components/Logo"
 import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
@@ -69,7 +69,7 @@ export const AssetSelect = ({
         {...props}
         selectedAssetIcon={
           selectedAsset ? (
-            <Logo id={selectedAsset.iconId ?? selectedAsset.id} />
+            <AssetLogo id={selectedAsset.iconId ?? selectedAsset.id} />
           ) : undefined
         }
         symbol={selectedAsset?.symbol}

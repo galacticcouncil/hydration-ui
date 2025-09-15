@@ -11,7 +11,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAccountFeePaymentAssets } from "@/api/payments"
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { TransactionFeePaymentAssetModal } from "@/modules/transactions/TransactionFeePaymentAssetModal"
 
 export const MyAssetsFeePaymentChange = () => {
@@ -28,7 +28,7 @@ export const MyAssetsFeePaymentChange = () => {
       </Text>
       {!isLoading && accountFeePaymentAsset && (
         <Flex align="center" gap={3}>
-          <Logo size="small" id={accountFeePaymentAsset.id} />
+          <AssetLogo size="small" id={accountFeePaymentAsset.id} />
           <Text fs="p5" fw={600}>
             {accountFeePaymentAsset.symbol}
           </Text>

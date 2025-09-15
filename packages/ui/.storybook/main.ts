@@ -39,7 +39,7 @@ const config: StorybookConfig = {
     }
     config.plugins = [
       react({
-        jsxImportSource: "@theme-ui/core",
+        jsxImportSource: "@galacticcouncil/ui/jsx",
         babel: {
           plugins: ["@emotion/babel-plugin"],
         },

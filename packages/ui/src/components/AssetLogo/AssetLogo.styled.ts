@@ -2,11 +2,13 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { linearScale } from "@galacticcouncil/utils"
 
+import { Logo, LogoSize } from "@/components/Logo"
 import { ThemeProps } from "@/theme"
 import { createVariants } from "@/utils"
 
 import { Icon } from "../Icon"
-import { AssetLogoDecoration, AssetLogoSize } from "./AssetLogo"
+import { Image } from "../Image"
+import { AssetLogoDecoration } from "./AssetLogo"
 
 export const LOGO_DIAMETER = {
   "extra-small": 12,
@@ -35,29 +37,6 @@ const DECOR_PADDING = {
   medium: 1.5,
   large: 2,
 } as const
-
-const sizes = createVariants<AssetLogoSize>(() => ({
-  "extra-small": css`
-    width: ${LOGO_DIAMETER["extra-small"]}px;
-    height: ${LOGO_DIAMETER["extra-small"]}px;
-    font-size: ${LOGO_DIAMETER["extra-small"]}px;
-  `,
-  small: css`
-    width: ${LOGO_DIAMETER.small}px;
-    height: ${LOGO_DIAMETER.small}px;
-    font-size: ${LOGO_DIAMETER.small}px;
-  `,
-  medium: css`
-    width: ${LOGO_DIAMETER.medium}px;
-    height: ${LOGO_DIAMETER.medium}px;
-    font-size: ${LOGO_DIAMETER.medium}px;
-  `,
-  large: css`
-    width: ${LOGO_DIAMETER.large}px;
-    height: ${LOGO_DIAMETER.large}px;
-    font-size: ${LOGO_DIAMETER.large}px;
-  `,
-}))
 
 const getATokenDecorationStyles = (
   theme: ThemeProps,
@@ -137,39 +116,32 @@ const decorations = (thickness: number, padding: number) =>
     `,
   }))
 
-export const SAssetLogo = styled.img<{
-  size: AssetLogoSize
-}>(({ size, theme }) => [
-  sizes(size),
-  css`
-    position: relative;
+export const SAssetLogo = styled(Logo)()
+
+export const SAssetChainLogo = styled(Image)<{ size: LogoSize }>(({
+  size,
+  theme,
+}) => {
+  const backdropColor = theme.surfaces.themeBasePalette.background
+  const borderSize = ["medium", "large"].includes(size) ? 2 : 1
+  return css`
+    --border-size: ${borderSize}px;
+    display: flex;
+
+    position: absolute;
+    right: -10%;
+    top: -10%;
+
+    z-index: 1;
+
+    width: 50%;
+    height: 50%;
+
     border-radius: ${theme.radii.full}px;
-  `,
-])
-
-export const SChainLogo = styled.img<{ size: AssetLogoSize }>(
-  ({ size, theme }) => {
-    const backdropColor = theme.surfaces.themeBasePalette.background
-    const borderSize = ["medium", "large"].includes(size) ? 2 : 1
-    return css`
-      --border-size: ${borderSize}px;
-      display: flex;
-
-      position: absolute;
-      right: -10%;
-      top: -10%;
-
-      z-index: 1;
-
-      width: 50%;
-      height: 50%;
-
-      border-radius: ${theme.radii.full}px;
-      border: var(--border-size) solid ${backdropColor};
-      background: ${backdropColor};
-    `
-  },
-)
+    border: var(--border-size) solid ${backdropColor};
+    background: ${backdropColor};
+  `
+})
 
 export const SAssetBadge = styled(Icon)<{
   type: "red" | "yellow"
@@ -185,10 +157,6 @@ export const SAssetBadge = styled(Icon)<{
     color: ${colorMap[type]};
   `
 })
-
-export const SPlaceholder = styled(Icon)<{
-  size: AssetLogoSize
-}>(({ size }) => sizes(size))
 
 export const SBadgeSlot = styled.div`
   display: flex;
@@ -206,7 +174,7 @@ export const SBadgeSlot = styled.div`
 `
 
 export const SDecorationContainer = styled.div<{
-  size: AssetLogoSize
+  size: LogoSize
   count: number
   decoration?: AssetLogoDecoration
 }>(({ decoration = "none", count, size }) => {

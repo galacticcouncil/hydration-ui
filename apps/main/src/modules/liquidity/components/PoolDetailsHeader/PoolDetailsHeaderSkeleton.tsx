@@ -9,7 +9,7 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 
 export const PoolDetailsHeaderSkeleton = () => {
   const { t } = useTranslation("liquidity")
@@ -23,7 +23,7 @@ export const PoolDetailsHeaderSkeleton = () => {
       }}
     >
       <Flex>
-        <Logo id="0" isLoading size="large" />
+        <AssetLogo id="0" isLoading size="large" />
 
         <Flex direction="column">
           <Flex gap={4} align="center">
@@ -33,7 +33,7 @@ export const PoolDetailsHeaderSkeleton = () => {
             <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
               {t("details.header.apr", { value: 20 })}
             </Text>
-            <Logo id="10" size="small" />
+            <AssetLogo id="10" size="small" />
           </Flex>
           <Text fw={600} fs={11} color={getToken("text.medium")}>
             <Skeleton width={40} height="100%" />

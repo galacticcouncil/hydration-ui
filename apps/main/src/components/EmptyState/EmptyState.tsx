@@ -1,5 +1,11 @@
 import Flamingo from "@galacticcouncil/ui/assets/images/Flamingo.webp"
-import { Button, ButtonProps, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  ButtonProps,
+  Flex,
+  Image,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, Fragment, ReactNode } from "react"
 
@@ -19,13 +25,7 @@ export const EmptyState: FC<Props> = ({ header, description, action }) => {
       pb={50}
       maxWidth={230}
     >
-      <img
-        src={Flamingo}
-        loading="lazy"
-        alt="Empty state"
-        width={96}
-        height={96}
-      />
+      <Image src={Flamingo} alt="Empty state" width={96} height={96} />
       <Text color={getToken("text.high")} fs={14} lh={1.2} fw={500}>
         {header}
       </Text>

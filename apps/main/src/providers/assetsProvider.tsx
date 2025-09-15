@@ -1,3 +1,4 @@
+import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 import {
   createContext,
   ReactNode,
@@ -7,7 +8,6 @@ import {
 } from "react"
 
 import {
-  AssetEcosystem,
   AssetType,
   TAssetData,
   TBond,
@@ -89,7 +89,7 @@ const fallbackAsset: TAsset = {
   isSufficient: false,
   isTradable: false,
   type: AssetType.TOKEN,
-  ecosystem: AssetEcosystem.POLKADOT,
+  ecosystem: ChainEcosystem.Polkadot,
 }
 
 export type TAsset = TAssetData

@@ -3,7 +3,7 @@ import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Logo } from "@/components/Logo"
+import { AssetLogo } from "@/components/AssetLogo"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -18,7 +18,7 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
 
   return (
     <Flex align="center" p={4}>
-      <Logo id={asset.id} />
+      <AssetLogo id={asset.id} />
       <Text
         fw={500}
         fs="p4"
