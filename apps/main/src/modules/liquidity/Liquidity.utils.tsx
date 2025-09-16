@@ -459,8 +459,8 @@ export const useIsolatedPools = () => {
         const assetPrice = getAssetPrice(spotPriceId)
         const price = assetPrice.isValid ? assetPrice.price : undefined
         const tvlDisplay = price
-          ? (toBig(price)?.times(tvl).toString() ?? "-")
-          : "-"
+          ? (toBig(price)?.times(tvl).toString() ?? "0")
+          : "0"
 
         const shareTokenId = xykPoolsIds?.get(pool.address)
         const meta = getMetaFromXYKPoolTokens(

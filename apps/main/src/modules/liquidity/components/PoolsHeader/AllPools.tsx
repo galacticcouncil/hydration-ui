@@ -12,8 +12,8 @@ export const AllPools = () => {
 
   const xykTotals = xykPools.reduce(
     (acc, asset) => ({
-      liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
-      volume: acc.volume.plus(asset.volumeDisplay ?? 0),
+      liquidity: acc.liquidity.plus(asset.tvlDisplay || "0"),
+      volume: acc.volume.plus(asset.volumeDisplay || "0"),
     }),
     {
       liquidity: Big(0),
@@ -23,11 +23,11 @@ export const AllPools = () => {
 
   const totals = omnipoolStablepoolAssets.reduce(
     (acc, asset) => ({
-      liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
+      liquidity: acc.liquidity.plus(asset.tvlDisplay || "0"),
       stablepool: asset.isStablePool
-        ? acc.stablepool.plus(asset.tvlDisplay ?? 0)
+        ? acc.stablepool.plus(asset.tvlDisplay || "0")
         : acc.stablepool,
-      volume: acc.volume.plus(asset.volumeDisplay ?? 0),
+      volume: acc.volume.plus(asset.volumeDisplay || "0"),
     }),
     {
       liquidity: Big(0),
@@ -41,10 +41,9 @@ export const AllPools = () => {
       <ValueStats
         label={t("liquidity:header.totalLiquidity")}
         value={t("common:currency", {
-          value: Big(totals.liquidity)
+          value: totals.liquidity
             .plus(xykTotals.liquidity)
-            .plus(totals.stablepool)
-            .toString(),
+            .plus(totals.stablepool),
         })}
         size="medium"
         isLoading={isLoading || isLoadingXYK}
@@ -54,7 +53,7 @@ export const AllPools = () => {
       <ValueStats
         label={t("liquidity:header.volume")}
         value={t("common:currency", {
-          value: Big(totals.volume).plus(xykTotals.volume).toString(),
+          value: Big(totals.volume).plus(xykTotals.volume),
         })}
         isLoading={isLoading}
         size="medium"
@@ -79,7 +78,9 @@ export const AllPools = () => {
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
-        value={t("common:currency", { value: xykTotals.liquidity })}
+        value={t("common:currency", {
+          value: xykTotals.liquidity,
+        })}
         size="medium"
         wrap
       />

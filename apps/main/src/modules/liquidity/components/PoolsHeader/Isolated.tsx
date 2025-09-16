@@ -10,8 +10,8 @@ export const Isolated = () => {
 
   const totals = xykPools.reduce(
     (acc, asset) => ({
-      liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
-      volume: acc.volume.plus(asset.volumeDisplay ?? 0),
+      liquidity: acc.liquidity.plus(asset.tvlDisplay || "0"),
+      volume: acc.volume.plus(asset.volumeDisplay || "0"),
     }),
     {
       liquidity: Big(0),
@@ -23,7 +23,9 @@ export const Isolated = () => {
     <>
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
-        value={t("common:currency", { value: totals.liquidity })}
+        value={t("common:currency", {
+          value: totals.liquidity,
+        })}
         isLoading={isLoadingXYK}
         size="medium"
         wrap
