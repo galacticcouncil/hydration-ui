@@ -2,7 +2,6 @@ import {
   Button,
   Flex,
   ModalBody,
-  ModalContainer,
   ModalContentDivider,
   ModalHeader,
   SummaryRow,
@@ -29,7 +28,10 @@ import {
 } from "./RemoveLiquidity.utils"
 import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
 
-type RemoveLiquidityProps = RemoveLiquidityType & { poolId: string }
+type RemoveLiquidityProps = RemoveLiquidityType & {
+  poolId: string
+  closable?: boolean
+}
 
 export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
   const isIsolatedPool = isSS58Address(props.poolId)
@@ -46,6 +48,7 @@ export const RemoveIsolatedLiquidity = ({
   poolId,
   shareTokenId,
   all,
+  closable,
 }: RemoveLiquidityProps) => {
   const isRemoveAll = !!all
   const removeLiquidity = useRemoveIsolatedLiquidity({
@@ -61,7 +64,12 @@ export const RemoveIsolatedLiquidity = ({
 
   return (
     <FormProvider {...form}>
-      <RemoveLiquidityJSX isIsolatedPool isRemoveAll={isRemoveAll} {...props} />
+      <RemoveLiquidityJSX
+        isIsolatedPool
+        isRemoveAll={isRemoveAll}
+        closable={closable}
+        {...props}
+      />
     </FormProvider>
   )
 }
@@ -70,6 +78,7 @@ export const RemoveOmnipoolLiquidity = ({
   positionId,
   poolId,
   all,
+  closable,
 }: RemoveLiquidityProps) => {
   const isRemoveAll = !!all
   const removeLiquidity = useRemoveLiquidity({
@@ -84,7 +93,11 @@ export const RemoveOmnipoolLiquidity = ({
 
   return (
     <FormProvider {...form}>
-      <RemoveLiquidityJSX isRemoveAll={isRemoveAll} {...props} />
+      <RemoveLiquidityJSX
+        isRemoveAll={isRemoveAll}
+        closable={closable}
+        {...props}
+      />
     </FormProvider>
   )
 }
@@ -99,6 +112,7 @@ const RemoveLiquidityJSX = ({
   logoId,
   isIsolatedPool,
   meta,
+  closable,
 }: {
   fee?: string
   totalValue: string
@@ -109,6 +123,7 @@ const RemoveLiquidityJSX = ({
   logoId: string | string[]
   isIsolatedPool?: boolean
   meta: TAssetData | XYKPoolMeta
+  closable?: boolean
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const {
@@ -122,99 +137,92 @@ const RemoveLiquidityJSX = ({
   }
 
   return (
-    <Flex justify="center" mt={getTokenPx("containers.paddings.primary")}>
-      <ModalContainer open>
-        <ModalHeader title={t("removeLiquidity")} closable={false} />
-        <ModalBody>
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.secondary")}
-            asChild
-          >
-            <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-              {isRemoveAll ? (
-                <Flex
-                  align="center"
-                  gap={getTokenPx("containers.paddings.quart")}
+    <>
+      <ModalHeader title={t("removeLiquidity")} closable={closable} />
+      <ModalBody>
+        <Flex
+          direction="column"
+          gap={getTokenPx("containers.paddings.secondary")}
+          asChild
+        >
+          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+            {isRemoveAll ? (
+              <Flex
+                align="center"
+                gap={getTokenPx("containers.paddings.quart")}
+              >
+                <AssetLogo id={logoId} size="large" />
+                <Text
+                  fs="h5"
+                  fw={500}
+                  color={getToken("text.high")}
+                  font="primary"
                 >
-                  <AssetLogo id={logoId} size="large" />
-                  <Text
-                    fs="h5"
-                    fw={500}
-                    color={getToken("text.high")}
-                    font="primary"
-                  >
-                    {t("common:currency", {
-                      value: totalValue,
-                      symbol: meta.symbol,
-                    })}
-                  </Text>
-                </Flex>
-              ) : (
-                <Flex direction="column" gap={12}>
-                  <Controller
-                    name="amount"
-                    control={control}
-                    render={({
-                      field: { value, onChange },
-                      fieldState: { error },
-                    }) => (
-                      <AssetSelect
-                        assets={[]}
-                        selectedAsset={meta}
-                        maxBalance={balance}
-                        value={value}
-                        onChange={onChange}
-                        error={error?.message}
-                        ignoreDollarValue={isIsolatedPool}
-                        sx={{ pt: 0 }}
-                      />
-                    )}
-                  />
-                </Flex>
-              )}
-
-              <ModalContentDivider />
-
-              <Text
-                color={getToken("text.tint.secondary")}
-                font="primary"
-                fw={700}
-              >
-                {t("liquidity.remove.modal.receive")}
-              </Text>
-
-              <RecieveAssets assets={receiveAssets} />
-
-              {fee && (
-                <SummaryRow
-                  label={t("liquidity.remove.modal.withdrawalFees")}
-                  sx={{ m: 0 }}
-                  content={
-                    <DynamicFee
-                      rangeLow={0.34}
-                      rangeHigh={0.66}
-                      value={Number(fee)}
-                      displayValue
+                  {t("common:currency", {
+                    value: totalValue,
+                    symbol: meta.symbol,
+                  })}
+                </Text>
+              </Flex>
+            ) : (
+              <Flex direction="column" gap={12}>
+                <Controller
+                  name="amount"
+                  control={control}
+                  render={({
+                    field: { value, onChange },
+                    fieldState: { error },
+                  }) => (
+                    <AssetSelect
+                      assets={[]}
+                      selectedAsset={meta}
+                      maxBalance={balance}
+                      value={value}
+                      onChange={onChange}
+                      error={error?.message}
+                      ignoreDollarValue={isIsolatedPool}
+                      sx={{ pt: 0 }}
                     />
-                  }
+                  )}
                 />
-              )}
+              </Flex>
+            )}
 
-              <ModalContentDivider />
+            <ModalContentDivider />
 
-              <Button
-                type="submit"
-                size="large"
-                width="100%"
-                disabled={!isValid}
-              >
-                {t("removeLiquidity")}
-              </Button>
-            </form>
-          </Flex>
-        </ModalBody>
-      </ModalContainer>
-    </Flex>
+            <Text
+              color={getToken("text.tint.secondary")}
+              font="primary"
+              fw={700}
+            >
+              {t("liquidity.remove.modal.receive")}
+            </Text>
+
+            <RecieveAssets assets={receiveAssets} />
+
+            {fee && (
+              <SummaryRow
+                label={t("liquidity.remove.modal.withdrawalFees")}
+                sx={{ m: 0 }}
+                content={
+                  <DynamicFee
+                    rangeLow={0.34}
+                    rangeHigh={0.66}
+                    value={Number(fee)}
+                    displayValue
+                  />
+                }
+              />
+            )}
+
+            <ModalContentDivider />
+
+            <Button type="submit" size="large" width="100%" disabled={!isValid}>
+              {t("removeLiquidity")}
+            </Button>
+          </form>
+        </Flex>
+      </ModalBody>
+    </>
   )
 }

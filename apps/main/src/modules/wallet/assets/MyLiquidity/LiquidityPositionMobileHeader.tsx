@@ -25,6 +25,7 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
   position,
 }) => {
   const { t } = useTranslation()
+
   return (
     <SLiquidityPositionMobileHeader>
       <AssetLabelFull asset={asset} withName={false} />

@@ -1,3 +1,5 @@
+import { ModalContainer } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import z from "zod/v4"
 
@@ -27,5 +29,12 @@ function RouteComponent() {
     from: "/liquidity/$id/remove",
   })
 
-  return <RemoveLiquidity poolId={poolId} {...search} />
+  return (
+    <ModalContainer
+      open
+      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+    >
+      <RemoveLiquidity poolId={poolId} closable={false} {...search} />
+    </ModalContainer>
+  )
 }

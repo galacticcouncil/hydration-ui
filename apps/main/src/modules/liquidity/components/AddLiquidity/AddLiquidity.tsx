@@ -1,9 +1,7 @@
 import {
   Alert,
   Button,
-  Flex,
   ModalBody,
-  ModalContainer,
   ModalContentDivider,
   ModalHeader,
   Skeleton,
@@ -12,6 +10,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
+import { FC } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -40,7 +39,12 @@ const addLiquidityLimit = 3
 
 const farms = []
 
-export const AddLiquidity = ({ assetId }: { assetId: string }) => {
+type Props = {
+  readonly closable?: boolean
+  readonly assetId: string
+}
+
+export const AddLiquidity: FC<Props> = ({ assetId, closable }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(assetId)
@@ -86,104 +90,99 @@ export const AddLiquidity = ({ assetId }: { assetId: string }) => {
   ).length
 
   return (
-    <Flex justify="center" mt={getTokenPx("containers.paddings.primary")}>
-      <ModalContainer open>
-        <ModalHeader title={t("addLiquidity")} closable={false} />
-        <ModalBody>
-          <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
-            <Controller
-              name="amount"
-              control={form.control}
-              render={({
-                field: { value, onChange },
-                fieldState: { error },
-              }) => (
-                <AssetSelect
-                  label={t("liquidity.add.modal.selectAsset")}
-                  assets={[]}
-                  selectedAsset={meta}
-                  maxBalance={balance}
-                  value={value}
-                  onChange={onChange}
-                  error={error?.message}
-                  sx={{ pt: 0 }}
-                />
-              )}
-            />
-
-            <ModalContentDivider />
-
-            <Summary
-              separator={<ModalContentDivider />}
-              rows={[
-                { label: t("liquidity.add.modal.tradeLimit"), content: "100" },
-                {
-                  label: t("liquidity.add.modal.rewardsFromFees.label"),
-                  content: <RewardsFromFees assetId={assetId} />,
-                },
-              ]}
-            />
-
-            <ModalContentDivider />
-
-            <PositionDetailsLabel />
-
-            <ModalContentDivider />
-
-            <Summary
-              separator={<ModalContentDivider />}
-              rows={[
-                {
-                  label: t("liquidity.add.modal.shareOfPool"),
-                  content: t("common:percent", {
-                    value: liquidityShares?.poolShare,
-                  }),
-                },
-                {
-                  label: t("common:price"),
-                  content: (
-                    <AddLiquidityPrice assetId={assetId} symbol={meta.symbol} />
-                  ),
-                },
-              ]}
-            />
-
-            <ModalContentDivider />
-
-            {customErrors?.cap ? (
-              <Alert
-                variant="warning"
-                description={customErrors.cap.message}
-                sx={{ my: getTokenPx("containers.paddings.primary") }}
+    <>
+      <ModalHeader title={t("addLiquidity")} closable={closable} />
+      <ModalBody>
+        <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+          <Controller
+            name="amount"
+            control={form.control}
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <AssetSelect
+                label={t("liquidity.add.modal.selectAsset")}
+                assets={[]}
+                selectedAsset={meta}
+                maxBalance={balance}
+                value={value}
+                onChange={onChange}
+                error={error?.message}
+                sx={{ pt: 0 }}
               />
-            ) : null}
-            {customErrors?.circuitBreaker ? (
-              <Alert
-                variant="warning"
-                description={customErrors.circuitBreaker.message}
-                sx={{ my: getTokenPx("containers.paddings.primary") }}
-              />
-            ) : null}
+            )}
+          />
 
-            <AddLiquidityAlert />
+          <ModalContentDivider />
 
-            <ModalContentDivider />
+          <Summary
+            separator={<ModalContentDivider />}
+            rows={[
+              { label: t("liquidity.add.modal.tradeLimit"), content: "100" },
+              {
+                label: t("liquidity.add.modal.rewardsFromFees.label"),
+                content: <RewardsFromFees assetId={assetId} />,
+              },
+            ]}
+          />
 
-            <Button
-              type="submit"
-              size="large"
-              width="100%"
-              mt={getTokenPx("containers.paddings.primary")}
-              disabled={isSubmitDisabled}
-            >
-              {isFarms
-                ? t("liquidity.add.modal.submitAndjoinFarms")
-                : t("liquidity.add.modal.submit")}
-            </Button>
-          </form>
-        </ModalBody>
-      </ModalContainer>
-    </Flex>
+          <ModalContentDivider />
+
+          <PositionDetailsLabel />
+
+          <ModalContentDivider />
+
+          <Summary
+            separator={<ModalContentDivider />}
+            rows={[
+              {
+                label: t("liquidity.add.modal.shareOfPool"),
+                content: t("common:percent", {
+                  value: liquidityShares?.poolShare,
+                }),
+              },
+              {
+                label: t("common:price"),
+                content: (
+                  <AddLiquidityPrice assetId={assetId} symbol={meta.symbol} />
+                ),
+              },
+            ]}
+          />
+
+          <ModalContentDivider />
+
+          {customErrors?.cap ? (
+            <Alert
+              variant="warning"
+              description={customErrors.cap.message}
+              sx={{ my: getTokenPx("containers.paddings.primary") }}
+            />
+          ) : null}
+          {customErrors?.circuitBreaker ? (
+            <Alert
+              variant="warning"
+              description={customErrors.circuitBreaker.message}
+              sx={{ my: getTokenPx("containers.paddings.primary") }}
+            />
+          ) : null}
+
+          <AddLiquidityAlert />
+
+          <ModalContentDivider />
+
+          <Button
+            type="submit"
+            size="large"
+            width="100%"
+            mt={getTokenPx("containers.paddings.primary")}
+            disabled={isSubmitDisabled}
+          >
+            {isFarms
+              ? t("liquidity.add.modal.submitAndjoinFarms")
+              : t("liquidity.add.modal.submit")}
+          </Button>
+        </form>
+      </ModalBody>
+    </>
   )
 }
 

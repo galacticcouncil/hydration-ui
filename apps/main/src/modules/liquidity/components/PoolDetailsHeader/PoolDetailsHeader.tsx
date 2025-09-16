@@ -1,10 +1,10 @@
 import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { Link } from "@tanstack/react-router"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { PoolDetailsHeaderAddLiquidity } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderAddLiquidity"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -60,7 +60,12 @@ export const PoolDetailsHeader = ({
           zIndex: 2,
         }}
       >
-        <PoolDetailsHeaderAddLiquidity />
+        <Button asChild>
+          <Link from="/liquidity/$id" to="add" resetScroll={false}>
+            <Icon size={14} component={Plus} />
+            {t("details.header.addJoinFarms")}
+          </Link>
+        </Button>
         <Button variant="secondary">
           <Icon size={14} component={Plus} />
           {t("details.header.swap")}

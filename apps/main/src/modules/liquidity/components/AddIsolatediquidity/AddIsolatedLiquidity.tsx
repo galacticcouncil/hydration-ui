@@ -5,7 +5,6 @@ import {
   ModalContentDivider,
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
-import { ModalContainer } from "@galacticcouncil/ui/components/Modal"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
@@ -46,22 +45,26 @@ type FormValues = {
 
 export const AddIsolatedLiquidity = ({
   poolAddress,
+  closable,
 }: {
   poolAddress: string
+  closable?: boolean
 }) => {
   const { data: pool, isLoading } = useXYKPool(poolAddress)
 
   return isLoading || !pool ? (
-    <AddIsolatedLiquiditySkeleton />
+    <AddIsolatedLiquiditySkeleton closable={closable} />
   ) : (
-    <AddIsolatedLiquidityForm pool={pool} />
+    <AddIsolatedLiquidityForm pool={pool} closable={closable} />
   )
 }
 
 export const AddIsolatedLiquidityForm = ({
   pool,
+  closable,
 }: {
   pool: IsolatedPoolTable
+  closable?: boolean
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const rpc = useRpcProvider()
@@ -130,11 +133,8 @@ export const AddIsolatedLiquidityForm = ({
   const sharesError = form.formState.errors.shares
 
   return (
-    <ModalContainer
-      open
-      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
-    >
-      <ModalHeader title={t("addLiquidity")} closable={false} />
+    <>
+      <ModalHeader title={t("addLiquidity")} closable={closable} />
       <ModalBody>
         <FormProvider {...form}>
           <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
@@ -262,6 +262,6 @@ export const AddIsolatedLiquidityForm = ({
           </form>
         </FormProvider>
       </ModalBody>
-    </ModalContainer>
+    </>
   )
 }

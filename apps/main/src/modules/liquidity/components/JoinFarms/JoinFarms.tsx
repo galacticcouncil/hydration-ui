@@ -3,7 +3,6 @@ import {
   Button,
   Flex,
   ModalBody,
-  ModalContainer,
   ModalContentDivider,
   ModalHeader,
   Text,
@@ -19,6 +18,7 @@ import { useAccountOmnipoolPositionsData } from "@/states/account"
 type JoinFarmsProps = {
   positionId: string
   poolId: string
+  closable?: boolean
 }
 
 const farms = [
@@ -26,7 +26,7 @@ const farms = [
   { id: 1, assetId: "0" },
 ]
 
-export const JoinFarms = ({ positionId, poolId }: JoinFarmsProps) => {
+export const JoinFarms = ({ positionId, poolId, closable }: JoinFarmsProps) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(poolId)
@@ -38,71 +38,62 @@ export const JoinFarms = ({ positionId, poolId }: JoinFarmsProps) => {
   )
 
   return (
-    <Flex justify="center" mt={getTokenPx("containers.paddings.primary")}>
-      <ModalContainer open sx={{ width: 520 }}>
-        <ModalHeader title={t("joinFarms")} closable={false} />
-        <ModalBody>
-          <AvailableFarms farms={farms} />
-          <form autoComplete="off" onSubmit={preventDefault}>
-            <ModalContentDivider
-              sx={{ mt: getTokenPx("containers.paddings.primary") }}
-            />
+    <>
+      <ModalHeader title={t("joinFarms")} closable={closable} />
+      <ModalBody width={520}>
+        <AvailableFarms farms={farms} />
+        <form autoComplete="off" onSubmit={preventDefault}>
+          <ModalContentDivider
+            sx={{ mt: getTokenPx("containers.paddings.primary") }}
+          />
 
-            {
-              <Flex
-                direction="column"
-                gap={getTokenPx("containers.paddings.quart")}
-                py={getTokenPx("containers.paddings.secondary")}
+          <Flex
+            direction="column"
+            gap={getTokenPx("containers.paddings.quart")}
+            py={getTokenPx("containers.paddings.secondary")}
+          >
+            <Text fs={14} fw={500} font="primary" color={getToken("text.high")}>
+              {t("liquidity.joinFarms.modal.currentPositionValue")}
+            </Text>
+            <Flex align="center" justify="space-between" gap={8}>
+              <Text
+                color={getToken("text.medium")}
+                fs="p5"
+                fw={400}
+                width={220}
               >
-                <Text
-                  fs={14}
-                  fw={500}
-                  font="primary"
-                  color={getToken("text.high")}
-                >
-                  {t("liquidity.joinFarms.modal.currentPositionValue")}
-                </Text>
-                <Flex align="center" justify="space-between" gap={8}>
-                  <Text
-                    color={getToken("text.medium")}
-                    fs="p5"
-                    fw={400}
-                    width={220}
-                  >
-                    {t("liquidity.joinFarms.modal.description")}
-                  </Text>
-                  {position?.data ? (
-                    <Amount
-                      value={t("common:currency", {
-                        value: position.data.currentTotalValueHuman,
-                        symbol: meta.symbol,
-                      })}
-                      displayValue={t("common:currency", {
-                        value: position.data.currentTotalDisplay,
-                      })}
-                      size="large"
-                    />
-                  ) : null}
-                </Flex>
-              </Flex>
-            }
+                {t("liquidity.joinFarms.modal.description")}
+              </Text>
+              {position?.data ? (
+                <Amount
+                  value={t("common:currency", {
+                    value: position.data.currentTotalValueHuman,
+                    symbol: meta.symbol,
+                  })}
+                  displayValue={t("common:currency", {
+                    value: position.data.currentTotalDisplay,
+                  })}
+                  size="large"
+                />
+              ) : null}
+            </Flex>
+          </Flex>
 
-            <ModalContentDivider />
+          <ModalContentDivider />
 
-            <Button
-              type="submit"
-              size="large"
-              width="100%"
-              mt={getTokenPx("containers.paddings.primary")}
-              disabled={false}
-            >
-              {t("liquidity.joinFarms.modal.submit", {
-                amount: farms.length,
-              })}
-            </Button>
-          </form>
-        </ModalBody>
-      </ModalContainer>
-    </Flex>
+          <Button
+            type="submit"
+            size="large"
+            width="100%"
+            mt={getTokenPx("containers.paddings.primary")}
+            disabled={false}
+          >
+            {t("liquidity.joinFarms.modal.submit", {
+              amount: farms.length,
+            })}
+          </Button>
+        </form>
+      </ModalBody>
+    </>
   )
 }
