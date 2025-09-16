@@ -11,7 +11,7 @@ import { useRemoveDepositForm } from "sections/wallet/strategy/RemoveDepositModa
 import { RemoveDepositSummary } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositSummary"
 import { RemoveDepositAmount } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAmount"
 import { RemoveDepositAsset } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositAsset"
-import { useHealthFactorChange } from "api/borrow"
+import { useHealthFactorChange, useUserBorrowSummary } from "api/borrow"
 import { useAssets } from "providers/assets"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { useBestTradeSell } from "api/trade"
@@ -29,12 +29,15 @@ import { useLiquidityLimit } from "state/liquidityLimit"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import { scale, scaleHuman } from "utils/balance"
-import { STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { useRpcProvider } from "providers/rpcProvider"
 import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
 import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
+import { getAddressFromAssetId } from "utils/evm"
+import BN from "bignumber.js"
+import { useWithdrawAndSellAll } from "sections/lending/components/transactions/Withdraw/utils"
 
 type Props = {
   readonly assetId: string
@@ -64,6 +67,7 @@ export const RemoveDepositModal: FC<Props> = ({
   const [splitRemove, setSplitRemove] = useState(true)
   const { addLiquidityLimit } = useLiquidityLimit()
   const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
+  const { data: user } = useUserBorrowSummary()
   const { t } = useTranslation()
   const { api } = useRpcProvider()
 
@@ -98,15 +102,46 @@ export const RemoveDepositModal: FC<Props> = ({
     underlyingAssetsFirst: true,
   })
 
-  const [assetReceived, balanceAmount] = form.watch(["assetReceived", "amount"])
+  const [assetReceived, assetAmount] = form.watch(["assetReceived", "amount"])
 
-  const [debouncedBalance] = useDebouncedValue(balanceAmount, 300)
+  const [debouncedAmount] = useDebouncedValue(assetAmount, 300)
 
-  const { minAmountOut, getSwapTx, amountOut } = useBestTradeSell(
+  const underlyingUserReserve = user?.userReservesData.find(
+    ({ underlyingAsset }) =>
+      underlyingAsset === getAddressFromAssetId(underlyingAssetId),
+  )
+
+  const balance = underlyingUserReserve
+    ? BN(underlyingUserReserve.scaledATokenBalance).shiftedBy(
+        -underlyingUserReserve.reserve.decimals,
+      )
+    : BN_0
+
+  const isWithdrawingMax = BN(assetAmount ?? "0").gte(balance)
+
+  console.log({ isWithdrawingMax, balance: balance.toString(), assetAmount })
+
+  const {
+    isLoading: isLoadingWithdrawAndSellAll,
+    mutateAsync: getWithdrawAndSellAllTx,
+  } = useWithdrawAndSellAll(
+    underlyingUserReserve?.underlyingAsset ?? "",
+    underlyingUserReserve?.reserve?.aTokenAddress ?? "",
+    assetReceived?.id ?? "",
+    debouncedAmount,
+  )
+
+  const {
+    minAmountOut,
+    getSwapTx,
+    amountOut,
+    isLoading: isLoadingSell,
+  } = useBestTradeSell(
     assetId,
     splitRemove ? underlyingAssetId : assetReceived?.id ?? "",
-    debouncedBalance,
+    debouncedAmount,
   )
+
   const { getAssetOutProportionally } = useStablepoolLiquidityOut({
     reserves: pool.reserves,
     poolId: underlyingAssetId,
@@ -121,7 +156,7 @@ export const RemoveDepositModal: FC<Props> = ({
       const meta = getAssetWithFallback(reserve.asset_id.toString())
       const assetOutValue = getAssetOutProportionally(
         reserve.amount,
-        scale(debouncedBalance, STABLEPOOL_TOKEN_DECIMALS).toString(),
+        scale(debouncedAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
       )
 
       const minValue = BigNumber(assetOutValue)
@@ -140,7 +175,7 @@ export const RemoveDepositModal: FC<Props> = ({
     pool.reserves,
     getAssetWithFallback,
     getAssetOutProportionally,
-    debouncedBalance,
+    debouncedAmount,
     addLiquidityLimit,
   ])
 
@@ -153,26 +188,32 @@ export const RemoveDepositModal: FC<Props> = ({
     .toString()
 
   const onSubmit = async () => {
-    const swapTx = await getSwapTx()
-
-    if (!swapTx) throw new Error("Missing swap tx")
-
-    const tx = splitRemove
-      ? api.tx.utility.batchAll([
+    const getTx = async () => {
+      const swapTx = await getSwapTx()
+      if (!swapTx) throw new Error("Missing swap tx")
+      if (splitRemove) {
+        return api.tx.utility.batchAll([
           swapTx,
           api.tx.stableswap.removeLiquidity(
             underlyingAssetId,
-            scale(debouncedBalance, STABLEPOOL_TOKEN_DECIMALS).toString(),
+            scale(debouncedAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
             minAssetsOut.map((minAssetOut) => ({
               assetId: minAssetOut.meta.id,
               amount: minAssetOut.minValue,
             })),
           ),
         ])
-      : swapTx
+      }
+
+      if (isWithdrawingMax) {
+        return getWithdrawAndSellAllTx()
+      }
+
+      return swapTx
+    }
 
     createTransaction(
-      { tx },
+      { tx: await getTx() },
       {
         toast: splitRemove
           ? createToastMessages("wallet.strategy.remove.proportionally.toast", {
@@ -208,7 +249,7 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const hfChange = useHealthFactorChange({
     assetId,
-    amount: balanceAmount,
+    amount: assetAmount,
     action: ProtocolAction.withdraw,
     swapAsset: assetReceived
       ? {
@@ -231,6 +272,10 @@ export const RemoveDepositModal: FC<Props> = ({
   )
 
   const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
+
+  const isLoading = isWithdrawingMax
+    ? isLoadingWithdrawAndSellAll
+    : isLoadingSell
 
   const isSubmitDisabled = displayRiskCheckbox
     ? !healthFactorRiskAccepted
@@ -335,7 +380,8 @@ export const RemoveDepositModal: FC<Props> = ({
                 <Button
                   variant="primary"
                   type="submit"
-                  disabled={isSubmitDisabled}
+                  isLoading={isLoading}
+                  disabled={isSubmitDisabled || isLoading}
                 >
                   {t("wallet.strategy.remove.confirm")}
                 </Button>

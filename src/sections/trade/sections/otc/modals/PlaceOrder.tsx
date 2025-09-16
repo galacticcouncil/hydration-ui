@@ -10,7 +10,7 @@ import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { getFixedPointAmount } from "utils/balance"
-import { BN_10 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_10 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useStore } from "state/store"
 import { OrderAssetSelect } from "./cmp/AssetSelect"
@@ -38,7 +38,7 @@ export const PlaceOrder = ({
   onSuccess,
 }: PlaceOrderProps) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { getAsset, isErc20 } = useAssets()
 
   const [aOut, setAOut] = useState(assetOut)
   const [aIn, setAIn] = useState(assetIn)
@@ -55,11 +55,11 @@ export const PlaceOrder = ({
 
   const { api } = useRpcProvider()
   const accountAssets = useAccountBalances()
-  const assetOutMeta = aOut ? getAssetWithFallback(aOut.toString()) : undefined
+  const assetOutMeta = aOut ? getAsset(aOut.toString()) : undefined
   const assetOutBalance = aOut
     ? accountAssets.data?.accountAssetsMap.get(aOut.toString())?.balance
     : undefined
-  const assetInMeta = aIn ? getAssetWithFallback(aIn.toString()) : undefined
+  const assetInMeta = aIn ? getAsset(aIn.toString()) : undefined
 
   useEffect(() => {
     form.trigger()
@@ -102,9 +102,8 @@ export const PlaceOrder = ({
   }
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    if (assetOutMeta?.decimals == null) throw new Error("Missing assetOut meta")
-
-    if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta")
+    if (!assetInMeta) throw new Error("Missing assetIn meta")
+    if (!assetOutMeta) throw new Error("Missing assetOut meta")
 
     const amountOut = getFixedPointAmount(
       values.amountOut,
@@ -116,15 +115,21 @@ export const PlaceOrder = ({
       assetInMeta.decimals,
     ).decimalPlaces(0, 1)
 
+    const containsErc20Asset = isErc20(assetInMeta) || isErc20(assetOutMeta)
+
+    const tx = api.tx.otc.placeOrder(
+      assetInMeta.id,
+      assetOutMeta.id,
+      amountIn.toFixed(),
+      amountOut.toFixed(),
+      values.partiallyFillable,
+    )
+
     await createTransaction(
       {
-        tx: api.tx.otc.placeOrder(
-          aIn!,
-          aOut!,
-          amountIn.toFixed(),
-          amountOut.toFixed(),
-          values.partiallyFillable,
-        ),
+        tx: containsErc20Asset
+          ? api.tx.dispatcher.dispatchWithExtraGas(tx, AAVE_EXTRA_GAS)
+          : tx,
       },
       {
         onSuccess,

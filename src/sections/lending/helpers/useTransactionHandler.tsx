@@ -20,6 +20,7 @@ import {
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 import { ToastMessage } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export const MOCK_SIGNED_HASH = "Signed correctly"
 
@@ -80,14 +81,16 @@ export const useTransactionHandler = ({
     addTransaction,
     currentMarketData,
     jsonRpcProvider,
-  ] = useRootStore((state) => [
-    state.signERC20Approval,
-    state.walletApprovalMethodPreference,
-    state.generateCreditDelegationSignatureRequest,
-    state.addTransaction,
-    state.currentMarketData,
-    state.jsonRpcProvider,
-  ])
+  ] = useRootStore(
+    useShallow((state) => [
+      state.signERC20Approval,
+      state.walletApprovalMethodPreference,
+      state.generateCreditDelegationSignatureRequest,
+      state.addTransaction,
+      state.currentMarketData,
+      state.jsonRpcProvider,
+    ]),
+  )
 
   const [approvalTxes, setApprovalTxes] = useState<
     EthereumTransactionTypeExtended[] | undefined

@@ -40,6 +40,7 @@ import {
   ExternalApyData,
   useExternalApyData,
 } from "sections/lending/hooks/app-data-provider/useExternalApyData"
+import { useShallow } from "hooks/useShallow"
 
 /**
  * removes the marketPrefix from a symbol
@@ -120,19 +121,21 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
     formattedReserves,
     userSummary,
     displayGho,
-  ] = useRootStore((state) => [
-    selectCurrentReserves(state),
-    selectCurrentBaseCurrencyData(state),
-    selectCurrentUserReserves(state),
-    selectCurrentUserEmodeCategoryId(state),
-    selectEmodes(state),
-    state.ghoReserveData,
-    state.ghoUserData,
-    state.ghoReserveDataFetched,
-    selectFormattedReserves(state, currentTimestamp, externalApyData),
-    selectUserSummaryAndIncentives(state, currentTimestamp, externalApyData),
-    state.displayGho,
-  ])
+  ] = useRootStore(
+    useShallow((state) => [
+      selectCurrentReserves(state),
+      selectCurrentBaseCurrencyData(state),
+      selectCurrentUserReserves(state),
+      selectCurrentUserEmodeCategoryId(state),
+      selectEmodes(state),
+      state.ghoReserveData,
+      state.ghoUserData,
+      state.ghoReserveDataFetched,
+      selectFormattedReserves(state, currentTimestamp, externalApyData),
+      selectUserSummaryAndIncentives(state, currentTimestamp, externalApyData),
+      state.displayGho,
+    ]),
+  )
 
   const patchReserve = usePatchReserve()
 

@@ -44,7 +44,7 @@ type TSupplyAsset = ComputedReserveData & {
   detailsAddress: string
 }
 
-const { accessor, display } = createColumnHelper<TSupplyAssetsRow>()
+const columnHelper = createColumnHelper<TSupplyAssetsRow>()
 
 export const useSupplyAssetsTableColumns = () => {
   const { t } = useTranslation()
@@ -55,7 +55,7 @@ export const useSupplyAssetsTableColumns = () => {
 
   return useMemo(
     () => [
-      accessor("symbol", {
+      columnHelper.accessor("symbol", {
         header: t("lending.asset"),
         cell: ({ row }) => (
           <AssetNameColumn
@@ -64,7 +64,7 @@ export const useSupplyAssetsTableColumns = () => {
           />
         ),
       }),
-      accessor("walletBalanceUSD", {
+      columnHelper.accessor("walletBalanceUSD", {
         header: t("lending.balance"),
         meta: {
           sx: {
@@ -101,7 +101,7 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      accessor("supplyAPY", {
+      columnHelper.accessor("supplyAPY", {
         header: t("lending.apy"),
         meta: {
           sx: {
@@ -125,7 +125,7 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      accessor("usageAsCollateralEnabledOnUser", {
+      columnHelper.accessor("usageAsCollateralEnabledOnUser", {
         header: t("lending.supply.table.canBeCollateral"),
         meta: {
           sx: {
@@ -149,7 +149,7 @@ export const useSupplyAssetsTableColumns = () => {
           )
         },
       }),
-      display({
+      columnHelper.display({
         id: "actions",
         meta: {
           sx: {
@@ -307,8 +307,8 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
       +a.walletBalanceUSD > +b.walletBalanceUSD ? -1 : 1,
     )
 
-    const filteredSupplyReserves = sortedSupplyReserves.filter(
-      (reserve) => reserve.availableToDepositUSD !== "0",
+    const filteredSupplyReserves = sortedSupplyReserves.filter((reserve) =>
+      valueToBigNumber(reserve.availableToDepositUSD).gt(0),
     )
 
     // Filter out reserves

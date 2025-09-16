@@ -49,6 +49,13 @@ const SupplyModal = lazy(async () => ({
     await import("sections/lending/components/transactions/Supply/SupplyModal")
   ).SupplyModal,
 }))
+const SupplyGigaModal = lazy(async () => ({
+  default: (
+    await import(
+      "sections/lending/components/transactions/Supply/SupplyGigaModal"
+    )
+  ).SupplyGigaModal,
+}))
 const WithdrawModal = lazy(async () => ({
   default: (
     await import(
@@ -73,6 +80,7 @@ export const LendingPageProviders = ({
                   {children}
                   <Suspense>
                     <SupplyModal />
+                    <SupplyGigaModal />
                     <WithdrawModal />
                     <BorrowModal />
                     <RepayModal />

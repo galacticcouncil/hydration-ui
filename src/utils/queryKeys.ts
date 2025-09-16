@@ -369,6 +369,11 @@ export const QUERY_KEYS = {
     pagination.pageSize,
     pagination.pageIndex,
   ],
+  moneyMarketMaxWithdraw: (
+    assetInId: string,
+    assetOutId: string,
+    amount: string,
+  ) => ["moneyMarketMaxWithdraw", assetInId, assetOutId, amount],
   swapAssetFees: (period: string) => ["swapAssetFees", period],
   bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [
     QUERY_KEY_PREFIX,

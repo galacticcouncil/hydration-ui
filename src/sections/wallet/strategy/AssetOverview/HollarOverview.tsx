@@ -73,7 +73,7 @@ export const HollarOverview = ({
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
-          label={`${t("apy")}:`}
+          label={`${t("apr")}:`}
           value={t("value.percentage.range", {
             from: BN(lowest),
             to: BN(highest),

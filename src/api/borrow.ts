@@ -7,10 +7,10 @@ import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
 } from "@aave/math-utils"
-import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query"
 import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import {
   ComputedReserveData,
   ExtendedFormattedUser,
@@ -48,6 +48,10 @@ import {
   useStableSwapReservesMulti,
 } from "sections/pools/PoolsPage.utils"
 import { useStableArray } from "hooks/useStableArray"
+import { Pool } from "@aave/contract-helpers"
+import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
+import { PopulatedTransaction, BigNumber as ethersBN } from "ethers"
+import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -790,4 +794,88 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
     data,
     isLoading,
   }
+}
+
+export const useBorrowPoolContract = () => {
+  const { evm } = useRpcProvider()
+  const addresses = useBorrowContractAddresses()
+
+  return useMemo(() => {
+    if (!addresses) return null
+
+    return new Pool(evm, {
+      POOL: addresses.POOL,
+    })
+  }, [addresses, evm])
+}
+
+export const useBorrowGasEstimation = () => {
+  const { evm } = useRpcProvider()
+
+  return useMutation({
+    mutationFn: async ({
+      tx,
+      action,
+    }: {
+      tx: PopulatedTransaction
+      action?: ProtocolAction
+    }) => {
+      const gasPrice = await evm.getGasPrice()
+      const gasOnePrc = gasPrice.div(100)
+      const gasPricePlus = gasPrice.add(gasOnePrc)
+
+      // const estimatedGas = await provider.estimateGas(tx)
+      // gas estimator is unreliable, so we use a recommended value for specific action
+      const estimatedGas = action
+        ? gasLimitRecommendations[action].recommended
+        : tx?.gasLimit || gasLimitRecommendations.default.recommended
+
+      return {
+        ...tx,
+        gasLimit: ethersBN.from(estimatedGas),
+        maxFeePerGas: gasPricePlus,
+        maxPriorityFeePerGas: gasPricePlus,
+      }
+    },
+  })
+}
+
+type WithdrawVariables = {
+  reserve: string
+  amount: string
+  aTokenAddress: string
+}
+
+export const useBorrowWithdraw = () => {
+  const { mutateAsync: estimateGasLimit } = useBorrowGasEstimation()
+  const poolContract = useBorrowPoolContract()
+  const { account: evmAccount } = useEvmAccount()
+
+  return useCallback(
+    async (vars: WithdrawVariables) => {
+      if (!poolContract || !evmAccount) return null
+
+      const config = await poolContract.withdraw({
+        ...vars,
+        user: evmAccount.address,
+      })
+
+      const params = await config
+        ?.find((tx) => tx.txType === "DLP_ACTION")
+        ?.tx()
+
+      const tx = params
+        ? await estimateGasLimit({
+            tx: {
+              ...params,
+              value: ethersBN.from("0"),
+            },
+            action: ProtocolAction.withdraw,
+          })
+        : null
+
+      return tx
+    },
+    [poolContract, evmAccount, estimateGasLimit],
+  )
 }
