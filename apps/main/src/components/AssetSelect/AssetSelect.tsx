@@ -24,6 +24,7 @@ export type AssetSelectProps = Omit<
 > & {
   assets: TAssetData[]
   selectedAsset: TSelectedAsset | undefined | null
+  maxBalanceFallback?: string
   setSelectedAsset?: (asset: TAssetData) => void
 }
 
@@ -31,6 +32,7 @@ export const AssetSelect = ({
   assets,
   selectedAsset,
   maxBalance: providedMaxBalance,
+  maxBalanceFallback,
   setSelectedAsset,
   ...props
 }: AssetSelectProps) => {
@@ -60,7 +62,7 @@ export const AssetSelect = ({
 
     return maxBalance && selectedAsset
       ? scaleHuman(maxBalance.free, selectedAsset.decimals)
-      : undefined
+      : maxBalanceFallback
   })()
 
   return (

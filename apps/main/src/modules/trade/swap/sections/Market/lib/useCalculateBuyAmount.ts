@@ -16,6 +16,10 @@ export const useCalculateBuyAmount = () => {
       buyAsset: TAssetData,
       sellAmount: string,
     ): Promise<string> => {
+      if (!sellAmount) {
+        return ""
+      }
+
       const { amountOut } = await queryClient.ensureQueryData(
         bestSellQuery(rpc, {
           assetIn: sellAsset.id,

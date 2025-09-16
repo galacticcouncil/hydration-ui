@@ -24,7 +24,7 @@ export const TabMenuItem: FC<Props> = ({
   variant = "muted",
   className,
 }) => {
-  const { to, title, icon: IconComponent, search } = item
+  const { to, title, icon: IconComponent, search, resetScroll } = item
 
   const path = useLocation({
     select: (state) => state.href,
@@ -56,7 +56,7 @@ export const TabMenuItem: FC<Props> = ({
       size={size}
       asChild
     >
-      <Link to={to} search={search}>
+      <Link to={to} search={search} resetScroll={resetScroll}>
         {IconComponent && <IconComponent />}
         {title}
       </Link>

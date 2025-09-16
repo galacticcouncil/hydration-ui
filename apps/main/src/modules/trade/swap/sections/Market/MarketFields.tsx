@@ -14,10 +14,20 @@ import {
 } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
-import { useAssets } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { SELL_ONLY_ASSETS } from "@/utils/consts"
 
 const RECALCULATE_DEBOUNCE_MS = 250
+
+type NewAssetOrAmount =
+  | {
+      readonly newAsset: TAsset
+      readonly newAmount?: never
+    }
+  | {
+      readonly newAsset?: never
+      readonly newAmount: string
+    }
 
 export const MarketFields: FC = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -38,18 +48,25 @@ export const MarketFields: FC = () => {
     (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
   )
 
-  const handleSellAmountChange = useDebouncedCallback(
-    async (sellAmount: string): Promise<void> => {
+  const handleSellChange = useDebouncedCallback(
+    async ({ newAsset, newAmount }: NewAssetOrAmount) => {
       const formValues = getValues()
-      const { sellAsset, buyAsset, type } = formValues
+      const { sellAsset, sellAmount, buyAsset, type } = formValues
 
-      if (!sellAsset || !buyAsset || !sellAmount) {
+      const usedSellAsset = newAsset || sellAsset
+      const usedSellAmount = newAmount || sellAmount
+
+      if (!usedSellAsset || !buyAsset) {
         return
       }
 
       reset({
         ...formValues,
-        buyAmount: await calculateBuyAmount(sellAsset, buyAsset, sellAmount),
+        buyAmount: await calculateBuyAmount(
+          usedSellAsset,
+          buyAsset,
+          usedSellAmount,
+        ),
         isSingleTrade: true,
         ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
       })
@@ -59,18 +76,25 @@ export const MarketFields: FC = () => {
     RECALCULATE_DEBOUNCE_MS,
   )
 
-  const handleBuyAmountChange = useDebouncedCallback(
-    async (buyAmount: string): Promise<void> => {
+  const handleBuyChange = useDebouncedCallback(
+    async ({ newAsset, newAmount }: NewAssetOrAmount) => {
       const formValues = getValues()
-      const { sellAsset, buyAsset, type } = formValues
+      const { sellAsset, buyAsset, buyAmount, type } = formValues
 
-      if (!sellAsset || !buyAsset || !buyAmount) {
+      const usedBuyAsset = newAsset || buyAsset
+      const usedBuyAmount = newAmount || buyAmount
+
+      if (!sellAsset || !usedBuyAsset) {
         return
       }
 
       reset({
         ...formValues,
-        sellAmount: await calculateSellAmount(sellAsset, buyAsset, buyAmount),
+        sellAmount: await calculateSellAmount(
+          sellAsset,
+          usedBuyAsset,
+          usedBuyAmount,
+        ),
         isSingleTrade: true,
         ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
       })
@@ -95,6 +119,7 @@ export const MarketFields: FC = () => {
             setValue("sellAsset", previousSellAsset)
             switchAssets.mutate()
           } else {
+            handleSellChange({ newAsset: sellAsset })
             setValue("isSingleTrade", true)
 
             navigate({
@@ -104,12 +129,13 @@ export const MarketFields: FC = () => {
                 assetIn: sellAsset.id,
                 assetOut: buyAsset?.id,
               },
+              resetScroll: false,
             })
           }
         }}
         onAmountChange={(sellAmount) => {
-          handleBuyAmountChange.cancel()
-          handleSellAmountChange(sellAmount)
+          handleBuyChange.cancel()
+          handleSellChange({ newAmount: sellAmount })
         }}
       />
       <MarketSwitcher />
@@ -119,6 +145,7 @@ export const MarketFields: FC = () => {
         label={t("buy")}
         assets={buyableAssets}
         hideMaxBalanceAction
+        maxBalanceFallback="0"
         onAssetChange={(buyAsset, previousBuyAsset) => {
           const { sellAsset } = getValues()
           const isSwitch = buyAsset.id === sellAsset?.id
@@ -127,17 +154,19 @@ export const MarketFields: FC = () => {
             setValue("buyAsset", previousBuyAsset)
             switchAssets.mutate()
           } else {
+            handleBuyChange({ newAsset: buyAsset })
             setValue("isSingleTrade", true)
 
             navigate({
               to: ".",
               search: { assetIn: sellAsset?.id, assetOut: buyAsset.id },
+              resetScroll: false,
             })
           }
         }}
         onAmountChange={(buyAmount) => {
-          handleSellAmountChange.cancel()
-          handleBuyAmountChange(buyAmount)
+          handleSellChange.cancel()
+          handleBuyChange({ newAmount: buyAmount })
         }}
       />
     </div>
