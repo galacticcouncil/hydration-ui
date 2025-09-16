@@ -29,6 +29,7 @@ import {
 } from "sections/lending/components/transactions/FlowCommons/TxModalDetails"
 import { Asset, AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { RepayActions } from "./RepayActions"
+import { useShallow } from "hooks/useShallow"
 
 interface RepayAsset extends Asset {
   balance: string
@@ -48,10 +49,12 @@ export const RepayModalContent = ({
   const { currentChainId, currentMarketData, currentMarket } =
     useProtocolDataContext()
 
-  const [minRemainingBaseTokenBalance, displayGho] = useRootStore((store) => [
-    store.poolComputed.minRemainingBaseTokenBalance,
-    store.displayGho,
-  ])
+  const [minRemainingBaseTokenBalance, displayGho] = useRootStore(
+    useShallow((store) => [
+      store.poolComputed.minRemainingBaseTokenBalance,
+      store.displayGho,
+    ]),
+  )
 
   // states
   const [tokenToRepayWith, setTokenToRepayWith] = useState<RepayAsset>({

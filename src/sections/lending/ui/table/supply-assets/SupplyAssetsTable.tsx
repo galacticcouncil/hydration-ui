@@ -25,9 +25,9 @@ import {
 } from "sections/lending/ui/table/supply-assets/SupplyAssetsTable.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { theme } from "theme"
-import { SupplyGigaRow } from "sections/lending/ui/table/supply-assets/SupplyGigaRow"
-import { Separator } from "components/Separator/Separator"
-import { Fragment } from "react"
+import { css } from "@emotion/react"
+import { SupplyGigaAssetTable } from "sections/lending/ui/table/supply-assets/SupplyGigaAssetTable"
+import BN from "bignumber.js"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation()
@@ -52,13 +52,15 @@ export const SupplyAssetsTable = () => {
 
   const hasAvailableDeposits =
     !!account &&
-    data.filter((reserve) => reserve.availableToDepositUSD !== "0")?.length >= 1
+    data.filter((reserve) => {
+      return BN(reserve.availableToDepositUSD).gt(0)
+    })?.length >= 1
 
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return (
     <TableContainer background={supplyAssetsTableBackground}>
-      <TableTitleContainer spacing={supplyAssetsTableSpacing} customContainer>
+      <TableTitleContainer spacing={supplyAssetsTableSpacing}>
         <TableTitle>{t("lending.supply.table.title")}</TableTitle>
         {hasAvailableDeposits && (
           <TableAction
@@ -74,16 +76,12 @@ export const SupplyAssetsTable = () => {
           </TableAction>
         )}
       </TableTitleContainer>
-      {gigaReserves.map((gigaReserve, index, arr) => (
-        <Fragment key={gigaReserve.id}>
-          <SupplyGigaRow isLoading={isLoading} reserve={gigaReserve} />
-          {arr.length > index + 1 && (
-            <Separator sx={{ display: ["none", "block"] }} />
-          )}
-        </Fragment>
-      ))}
+      <SupplyGigaAssetTable data={gigaReserves} />
       <DataTable
-        css={!isDesktop ? { "&": { borderTop: "none" } } : undefined}
+        fixedLayout
+        css={css`
+          --border-color: transparent;
+        `}
         table={table}
         spacing={supplyAssetsTableSpacing}
         size={supplyAssetsTableSize}
