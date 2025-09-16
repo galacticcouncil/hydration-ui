@@ -499,15 +499,18 @@ export const AddStablepoolLiquidity = ({
           }}
         />
 
-        <FeeRow poolId={poolId} />
-
-        <Separator
-          color="darkBlue401"
-          sx={{
-            my: 4,
-            width: "auto",
-          }}
-        />
+        {!relatedAToken && (
+          <>
+            <FeeRow poolId={poolId} />
+            <Separator
+              color="darkBlue401"
+              sx={{
+                my: 4,
+                width: "auto",
+              }}
+            />
+          </>
+        )}
         {farms.length > 0 ? (
           <JoinFarmsSection
             farms={farms}
@@ -518,7 +521,7 @@ export const AddStablepoolLiquidity = ({
           />
         ) : null}
         <Spacer size={20} />
-        <CurrencyReserves reserves={reserves} />
+        <CurrencyReserves reserves={reserves} expandable />
         <Spacer size={20} />
         <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
           {t("liquidity.add.modal.positionDetails")}
