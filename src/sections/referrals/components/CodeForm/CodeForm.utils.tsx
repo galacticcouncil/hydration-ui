@@ -6,6 +6,7 @@ import { TOAST_MESSAGES } from "state/toasts"
 import { getChainSpecificAddress } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { shortenAccountAddress } from "utils/formatting"
+import BN from "bignumber.js"
 
 export type CodeFormValues = {
   referralCode: string
@@ -22,16 +23,16 @@ export const defaultCodeFormValues: CodeFormValues = {
   referralCode: "",
 }
 
-export function getUserState(address?: string, isBalance?: boolean): UserState {
+export function getUserState(address: string, nativeBalance: BN): UserState {
   if (!address) {
     return UserState.DISCONECTED
   }
 
-  if (isBalance) {
+  if (nativeBalance.gt(0)) {
     return UserState.FUNDED
   }
 
-  if (isBalance === false) {
+  if (nativeBalance.eq(0)) {
     return UserState.NOT_FUNDED
   }
 

@@ -1065,7 +1065,7 @@
   "referrals.share.tweetText": "Stay Hydrated.",
   "referrals.description": "Onboard users to Hydration and earn rewards from their Omnipool trades",
   "referrals.input.placeholder.connect": "Connect your wallet to generate a referral link",
-  "referrals.input.placeholder.deposit": "Your wallet is empty. Deposit funds before generating a referral code.",
+  "referrals.input.placeholder.deposit": "Not enough HDX, swap or deposit funds.",
   "referrals.input.placeholder.referralCode": "Choose your referral code",
   "referrals.input.error.required": "Referral code is required",
   "referrals.input.error.maxLength": "Please enter a valid referral code (max {{ length }} chars)",
