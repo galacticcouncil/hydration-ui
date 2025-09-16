@@ -15,6 +15,7 @@ import {
 } from "sections/lending/ui-config/errorMapping"
 
 import { useModalContext } from "./useModal"
+import { useShallow } from "hooks/useShallow"
 
 export interface SignedParams {
   signature: SignatureLike
@@ -48,12 +49,14 @@ export const useApprovalTx = ({
     generateSignatureRequest,
     estimateGasLimit,
     addTransaction,
-  ] = useRootStore((store) => [
-    store.generateApproval,
-    store.generateSignatureRequest,
-    store.estimateGasLimit,
-    store.addTransaction,
-  ])
+  ] = useRootStore(
+    useShallow((store) => [
+      store.generateApproval,
+      store.generateSignatureRequest,
+      store.estimateGasLimit,
+      store.addTransaction,
+    ]),
+  )
 
   const { signTxData, sendTx } = useWeb3Context()
 

@@ -22,6 +22,7 @@ import {
   APPROVAL_GAS_LIMIT,
   checkRequiresApproval,
 } from "sections/lending/components/transactions/utils"
+import { useShallow } from "hooks/useShallow"
 
 export interface SupplyActionProps {
   amountToSupply: string
@@ -54,14 +55,16 @@ export const SupplyActions = React.memo(
       estimateGasLimit,
       addTransaction,
       currentMarketData,
-    ] = useRootStore((state) => [
-      state.tryPermit,
-      state.supply,
-      state.supplyWithPermit,
-      state.estimateGasLimit,
-      state.addTransaction,
-      state.currentMarketData,
-    ])
+    ] = useRootStore(
+      useShallow((state) => [
+        state.tryPermit,
+        state.supply,
+        state.supplyWithPermit,
+        state.estimateGasLimit,
+        state.addTransaction,
+        state.currentMarketData,
+      ]),
+    )
     const {
       approvalTxState,
       mainTxState,
