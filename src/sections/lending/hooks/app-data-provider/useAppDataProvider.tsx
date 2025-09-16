@@ -35,6 +35,7 @@ import {
 } from "sections/lending/store/poolSelectors"
 import { useCurrentTimestamp } from "sections/lending/hooks/useCurrentTimestamp"
 import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
+import { useShallow } from "hooks/useShallow"
 
 /**
  * removes the marketPrefix from a symbol
@@ -112,19 +113,21 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
     formattedPoolReserves,
     userSummary,
     displayGho,
-  ] = useRootStore((state) => [
-    selectCurrentReserves(state),
-    selectCurrentBaseCurrencyData(state),
-    selectCurrentUserReserves(state),
-    selectCurrentUserEmodeCategoryId(state),
-    selectEmodes(state),
-    state.ghoReserveData,
-    state.ghoUserData,
-    state.ghoReserveDataFetched,
-    selectFormattedReserves(state, currentTimestamp),
-    selectUserSummaryAndIncentives(state, currentTimestamp),
-    state.displayGho,
-  ])
+  ] = useRootStore(
+    useShallow((state) => [
+      selectCurrentReserves(state),
+      selectCurrentBaseCurrencyData(state),
+      selectCurrentUserReserves(state),
+      selectCurrentUserEmodeCategoryId(state),
+      selectEmodes(state),
+      state.ghoReserveData,
+      state.ghoUserData,
+      state.ghoReserveDataFetched,
+      selectFormattedReserves(state, currentTimestamp),
+      selectUserSummaryAndIncentives(state, currentTimestamp),
+      state.displayGho,
+    ]),
+  )
 
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {

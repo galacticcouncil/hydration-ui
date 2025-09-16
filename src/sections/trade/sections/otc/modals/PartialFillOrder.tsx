@@ -5,7 +5,7 @@ import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 import { getFixedPointAmount } from "utils/balance"
-import { BN_0, BN_1 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_0, BN_1 } from "utils/constants"
 import { FormValues } from "utils/helpers"
 import { useStore } from "state/store"
 import { OrderCapacity } from "sections/trade/sections/otc/capacity/OrderCapacity"
@@ -40,7 +40,7 @@ export const PartialFillOrder = ({
   onSuccess,
 }: FillOrderProps) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, isErc20 } = useAssets()
   const { api } = useRpcProvider()
   const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
@@ -100,7 +100,7 @@ export const PartialFillOrder = ({
   }
 
   const handleSubmit = async (values: FormValues<typeof form>) => {
-    if (assetInMeta.decimals == null) throw new Error("Missing assetIn meta")
+    if (!assetInMeta.id) throw new Error("Missing assetIn meta")
 
     const amountIn = getFixedPointAmount(
       values.amountIn,
@@ -112,12 +112,18 @@ export const PartialFillOrder = ({
       .multipliedBy(100)
       .toNumber()
 
+    const containsErc20Asset = isErc20(assetInMeta) || isErc20(assetOutMeta)
+
+    const tx =
+      filledPct > FULL_ORDER_PCT_LBOUND
+        ? api.tx.otc.fillOrder(orderId)
+        : api.tx.otc.partialFillOrder(orderId, amountIn.toFixed())
+
     await createTransaction(
       {
-        tx:
-          filledPct > FULL_ORDER_PCT_LBOUND
-            ? api.tx.otc.fillOrder(orderId)
-            : api.tx.otc.partialFillOrder(orderId, amountIn.toFixed()),
+        tx: containsErc20Asset
+          ? api.tx.dispatcher.dispatchWithExtraGas(tx, AAVE_EXTRA_GAS)
+          : tx,
       },
       {
         onSuccess,

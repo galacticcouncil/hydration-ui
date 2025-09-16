@@ -5,6 +5,7 @@ import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 
 export enum ModalType {
   Supply,
+  GigaSupply,
   Withdraw,
   Borrow,
   Repay,
@@ -49,6 +50,7 @@ export type TxStateType = {
 
 export interface ModalContextType<T extends ModalArgsType> {
   openSupply: (underlyingAsset: string) => void
+  openGigaSupply: (underlyingAsset: string) => void
   openWithdraw: (underlyingAsset: string) => void
   openBorrow: (underlyingAsset: string) => void
   openRepay: (
@@ -100,6 +102,10 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
       value={{
         openSupply: (underlyingAsset) => {
           setType(ModalType.Supply)
+          setArgs({ underlyingAsset })
+        },
+        openGigaSupply: (underlyingAsset) => {
+          setType(ModalType.GigaSupply)
           setArgs({ underlyingAsset })
         },
         openWithdraw: (underlyingAsset) => {
