@@ -44,7 +44,7 @@ export const CodeInput = forwardRef<HTMLInputElement, InputProps>(
               )
             }
           >
-            <DiceIcon sx={{ width: 10, height: 10, mr: -4 }} />
+            <DiceIcon sx={{ width: 10, height: 10 }} />
             {t("referrals.button.randomCode")}
           </Button>
         )}
