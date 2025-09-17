@@ -80,6 +80,7 @@ export const useSwitchAssets = () => {
           assetIn: newSellAsset?.id,
           assetOut: newBuyAsset?.id,
         },
+        resetScroll: false,
       })
     },
   })

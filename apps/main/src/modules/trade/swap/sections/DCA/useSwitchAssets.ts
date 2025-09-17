@@ -29,6 +29,7 @@ export const useSwitchAssets = () => {
           assetIn: values.buyAsset?.id,
           assetOut: values.sellAsset?.id,
         },
+        resetScroll: false,
       })
     },
   })

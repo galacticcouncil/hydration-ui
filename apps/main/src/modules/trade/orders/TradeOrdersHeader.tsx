@@ -65,6 +65,7 @@ export const TradeOrdersHeader = () => {
           to: pathname,
           title: t(`trade.orders.${tab}`),
           search: { tab, allPairs },
+          resetScroll: false,
         }))}
         renderItem={(item) => (
           <Box position="relative">
@@ -96,7 +97,11 @@ export const TradeOrdersHeader = () => {
           <Toggle
             checked={allPairs}
             onCheckedChange={(checked) => {
-              navigate({ to: ".", search: { tab, allPairs: checked } })
+              navigate({
+                to: ".",
+                search: { tab, allPairs: checked },
+                resetScroll: false,
+              })
             }}
           />
         </ToggleRoot>
