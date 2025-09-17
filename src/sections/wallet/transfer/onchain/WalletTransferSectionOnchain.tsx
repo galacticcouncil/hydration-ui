@@ -43,6 +43,7 @@ import { HealthFactorChange } from "sections/lending/components/HealthFactorChan
 import { ProtocolAction } from "@aave/contract-helpers"
 import { useAddressStore } from "components/AddressBook/AddressBook.utils"
 import { useShallow } from "hooks/useShallow"
+import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 
 export function WalletTransferSectionOnchain({
   asset,
@@ -66,6 +67,8 @@ export function WalletTransferSectionOnchain({
   const { createTransaction } = useStore()
   const accountAssets = useAccountBalances()
   const refetchAccountAssets = useRefetchAccountAssets()
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
 
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false)
 
@@ -135,12 +138,6 @@ export function WalletTransferSectionOnchain({
           normalizedDest,
           amount.toFixed(),
         ),
-        txMeta: {
-          assetIn: assetMeta.id,
-          amountIn: values.amount,
-          assetOut: "",
-          amountOut: "",
-        },
         overrides: insufficientFee
           ? {
               fee: currentFee,
@@ -187,11 +184,7 @@ export function WalletTransferSectionOnchain({
     action: ProtocolAction.withdraw,
   })
 
-  const isHealthFactorChanged =
-    amount.gt(0) &&
-    healthFactorChange &&
-    healthFactorChange.currentHealthFactor !==
-      healthFactorChange.futureHealthFactor
+  console.log({ healthFactorChange, debouncedAmount })
 
   const dest = form.watch("dest") || ""
 
@@ -204,8 +197,12 @@ export function WalletTransferSectionOnchain({
   )
 
   const shouldShowDisclaimer = !!dest && !isDestUserOwnedAddress
+  const shouldDisplayHfRiskCheckbox =
+    !!debouncedAmount && !!healthFactorChange?.isHealthFactorBelowThreshold
 
-  const submitDisabled = shouldShowDisclaimer && !disclaimerAccepted
+  const submitDisabled =
+    (shouldShowDisclaimer && !disclaimerAccepted) ||
+    (shouldDisplayHfRiskCheckbox && !healthFactorRiskAccepted)
 
   return (
     <form
@@ -279,6 +276,11 @@ export function WalletTransferSectionOnchain({
             />
           )}
         />
+        {asset !== native.id && (
+          <Alert variant="warning">
+            {t("wallet.assets.transfer.warning.nonNative")}
+          </Alert>
+        )}
         {shouldShowDisclaimer && (
           <Alert variant="info" hideIcon>
             <label sx={{ flex: "row", gap: 12, align: "start" }}>
@@ -320,23 +322,29 @@ export function WalletTransferSectionOnchain({
               )
             }
           />
-          {healthFactorChange && (
-            <SummaryRow
-              content={
-                <HealthFactorChange
-                  healthFactor={healthFactorChange.currentHealthFactor}
-                  futureHealthFactor={healthFactorChange.futureHealthFactor}
-                />
-              }
-              label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
-            />
+          {shouldDisplayHfRiskCheckbox && (
+            <>
+              <SummaryRow
+                content={
+                  <HealthFactorChange
+                    healthFactor={healthFactorChange.currentHealthFactor}
+                    futureHealthFactor={healthFactorChange.futureHealthFactor}
+                  />
+                }
+                label={t(
+                  "liquidity.reviewTransaction.modal.detail.healthfactor",
+                )}
+              />
+              <HealthFactorRiskWarning
+                accepted={healthFactorRiskAccepted}
+                onAcceptedChange={setHealthFactorRiskAccepted}
+                isBelowThreshold={
+                  healthFactorChange.isHealthFactorBelowThreshold
+                }
+              />
+            </>
           )}
         </div>
-        {asset !== "0" && (
-          <Alert variant="warning">
-            {t("wallet.assets.transfer.warning.nonNative")}
-          </Alert>
-        )}
         {insufficientFee && (
           <Alert variant="info">
             {t("wallet.assets.transfer.warning.insufficient", {
@@ -345,11 +353,6 @@ export function WalletTransferSectionOnchain({
               ),
               symbol: accountCurrencyMeta?.symbol,
             })}
-          </Alert>
-        )}
-        {isHealthFactorChanged && (
-          <Alert variant="error">
-            {t("liquidity.reviewTransaction.modal.healthfactor.alert")}
           </Alert>
         )}
       </div>

@@ -19,7 +19,6 @@ import {
   isTxType,
   toSubmittableExtrinsic,
   useEditFeePaymentAsset,
-  useHealthFactorChangeFromTx,
   useHealthFactorChangeFromTxMetadata,
   usePolkadotJSTxUrl,
   useTransactionValues,
@@ -125,10 +124,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     txWeight,
   } = transactionValues.data
 
-  const healthFactorFromMeta = useHealthFactorChangeFromTxMetadata(props.txMeta)
-  const healthFactorFromTx = useHealthFactorChangeFromTx(tx)
-
-  const healthFactorChange = healthFactorFromMeta || healthFactorFromTx
+  const healthFactorChange = useHealthFactorChangeFromTxMetadata(props.txMeta)
 
   const isHealthFactorChanged =
     !!healthFactorChange &&
