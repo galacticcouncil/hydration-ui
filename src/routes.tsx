@@ -88,6 +88,10 @@ const IsolatedPools = lazy(async () => ({
     .IsolatedPools,
 }))
 
+const FarmsPage = lazy(async () => ({
+  default: (await import("sections/pools/farms/FarmsPage")).FarmsPage,
+}))
+
 const XcmPage = lazy(async () => ({
   default: (await import("sections/xcm/XcmPage")).XcmPage,
 }))
@@ -365,6 +369,14 @@ export const routes: Route[] = [
             }
           >
             <IsolatedPools />
+          </Suspense>
+        ),
+      },
+      {
+        path: "farms",
+        element: (
+          <Suspense fallback={<TableSkeleton />}>
+            <FarmsPage />
           </Suspense>
         ),
       },

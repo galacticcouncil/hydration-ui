@@ -65,6 +65,7 @@ export type TFarmAprData = {
   poolId: string
   yieldFarmId: string
   globalFarmId: string
+  potAddress: string
   isActive: boolean
   apr: string
   rewardCurrency: string
@@ -202,6 +203,7 @@ const getFarmsData =
         poolId,
         yieldFarmId,
         globalFarmId,
+        potAddress,
         isActive,
         apr: farmDetails.apr.toFixed(2),
         rewardCurrency,
@@ -303,7 +305,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
     [activeFarms, omnipoolDeposits],
   )
 
-  const { data: stoppedFarmsData = [] } = useQuery(
+  const { data: stoppedFarmsData } = useQuery(
     QUERY_KEYS.stoppedOmnipoolFarms(account?.address),
     getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback),
     {
@@ -317,7 +319,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
     },
   )
 
-  const { data: activeFarmsData = [], isLoading } = useQuery(
+  const { data: activeFarmsData, isLoading } = useQuery(
     QUERY_KEYS.omnipoolFarms,
     activeFarms
       ? getFarmsData(api, balanceClient, activeFarms, getAssetWithFallback)
@@ -328,7 +330,13 @@ export const useOmnipoolFarms = (ids: string[]) => {
     },
   )
 
-  return { data: select([...activeFarmsData, ...stoppedFarmsData]), isLoading }
+  return {
+    data: useMemo(
+      () => select([...(activeFarmsData ?? []), ...(stoppedFarmsData ?? [])]),
+      [activeFarmsData, stoppedFarmsData],
+    ),
+    isLoading,
+  }
 }
 
 export const useXYKFarms = (ids: string[]) => {
@@ -356,7 +364,7 @@ export const useXYKFarms = (ids: string[]) => {
     [activeFarms, xykDeposits],
   )
 
-  const { data: stoppedFarmsData = [] } = useQuery(
+  const { data: stoppedFarmsData } = useQuery(
     QUERY_KEYS.stoppedXykFarms(account?.address),
     getFarmsData(api, balanceClient, stoppedFarms, getAssetWithFallback, true),
     {
@@ -370,7 +378,7 @@ export const useXYKFarms = (ids: string[]) => {
     },
   )
 
-  const { data: activeFarmsData = [], isLoading } = useQuery(
+  const { data: activeFarmsData, isLoading } = useQuery(
     QUERY_KEYS.xykFarms,
     activeFarms
       ? getFarmsData(
@@ -387,7 +395,13 @@ export const useXYKFarms = (ids: string[]) => {
     },
   )
 
-  return { data: select([...activeFarmsData, ...stoppedFarmsData]), isLoading }
+  return {
+    data: useMemo(
+      () => select([...(activeFarmsData ?? []), ...(stoppedFarmsData ?? [])]),
+      [activeFarmsData, stoppedFarmsData],
+    ),
+    isLoading,
+  }
 }
 
 export const useFarmCurrentPeriod = () => {
