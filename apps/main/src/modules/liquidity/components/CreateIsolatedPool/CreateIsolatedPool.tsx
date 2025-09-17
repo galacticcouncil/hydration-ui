@@ -1,14 +1,12 @@
 import {
   Button,
-  Flex,
   ModalBody,
-  ModalContainer,
   ModalContentDivider,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useState } from "react"
+import { FC, useState } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
@@ -29,7 +27,11 @@ export type CreateIsolatedPoolFormData = z.infer<
   ReturnType<typeof zodCreateIsolatedPool>
 >
 
-export const CreateIsolatedPool = () => {
+type Props = {
+  readonly closable?: boolean
+}
+
+export const CreateIsolatedPool: FC<Props> = ({ closable }) => {
   const { t } = useTranslation("liquidity")
   const { tradable } = useAssets()
   const { getFreeBalance } = useAccountBalances()
@@ -75,78 +77,70 @@ export const CreateIsolatedPool = () => {
   }
 
   return (
-    <Flex justify="center" mt={getTokenPx("containers.paddings.primary")}>
-      <ModalContainer open>
-        <ModalHeader
-          title={t("liquidity.createPool.modal.title")}
-          closable={false}
-        />
-        <ModalBody>
-          <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
-            <Controller
-              name="amountA"
-              control={form.control}
-              render={({
-                field: { value, onChange },
-                fieldState: { error },
-              }) => (
-                <AssetSelect
-                  label={t("liquidity.createPool.modal.assetA")}
-                  value={value}
-                  onChange={onChange}
-                  assets={tradable}
-                  selectedAsset={assetA}
-                  setSelectedAsset={(asset) => setAssetA(asset)}
-                  error={error?.message}
-                  disabled={!assetA}
-                  maxBalance={assetABalance}
-                />
-              )}
-            />
+    <>
+      <ModalHeader
+        title={t("liquidity.createPool.modal.title")}
+        closable={closable}
+      />
+      <ModalBody>
+        <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
+          <Controller
+            name="amountA"
+            control={form.control}
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <AssetSelect
+                label={t("liquidity.createPool.modal.assetA")}
+                value={value}
+                onChange={onChange}
+                assets={tradable}
+                selectedAsset={assetA}
+                setSelectedAsset={(asset) => setAssetA(asset)}
+                error={error?.message}
+                disabled={!assetA}
+                maxBalance={assetABalance}
+              />
+            )}
+          />
 
-            <AssetSwitcher
-              assetInId={assetA?.id ?? ""}
-              assetOutId={assetB?.id ?? ""}
-              priceIn={amountA}
-              priceOut={amountB}
-              onSwitchAssets={onSwitchAssets}
-            />
+          <AssetSwitcher
+            assetInId={assetA?.id ?? ""}
+            assetOutId={assetB?.id ?? ""}
+            priceIn={amountA}
+            priceOut={amountB}
+            onSwitchAssets={onSwitchAssets}
+          />
 
-            <Controller
-              name="amountB"
-              control={form.control}
-              render={({
-                field: { value, onChange },
-                fieldState: { error },
-              }) => (
-                <AssetSelect
-                  label={t("liquidity.createPool.modal.assetB")}
-                  value={value}
-                  onChange={onChange}
-                  assets={tradable}
-                  selectedAsset={assetB}
-                  setSelectedAsset={(asset) => setAssetB(asset)}
-                  error={error?.message}
-                  maxBalance={assetBBalance}
-                  disabled={!assetB}
-                />
-              )}
-            />
+          <Controller
+            name="amountB"
+            control={form.control}
+            render={({ field: { value, onChange }, fieldState: { error } }) => (
+              <AssetSelect
+                label={t("liquidity.createPool.modal.assetB")}
+                value={value}
+                onChange={onChange}
+                assets={tradable}
+                selectedAsset={assetB}
+                setSelectedAsset={(asset) => setAssetB(asset)}
+                error={error?.message}
+                maxBalance={assetBBalance}
+                disabled={!assetB}
+              />
+            )}
+          />
 
-            <ModalContentDivider />
+          <ModalContentDivider />
 
-            <Button
-              type="submit"
-              size="large"
-              width="100%"
-              mt={getTokenPx("containers.paddings.primary")}
-              disabled={!form.formState.isValid}
-            >
-              {t("liquidity.createPool.modal.title")}
-            </Button>
-          </form>
-        </ModalBody>
-      </ModalContainer>
-    </Flex>
+          <Button
+            type="submit"
+            size="large"
+            width="100%"
+            mt={getTokenPx("containers.paddings.primary")}
+            disabled={!form.formState.isValid}
+          >
+            {t("liquidity.createPool.modal.title")}
+          </Button>
+        </form>
+      </ModalBody>
+    </>
   )
 }

@@ -4,10 +4,15 @@ import {
   MenuItemIcon,
   MenuItemLabel,
   MenuSelectionItem,
+  Modal,
 } from "@galacticcouncil/ui/components"
-import { Link } from "@tanstack/react-router"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
+
+import { JoinFarms } from "@/modules/liquidity/components/JoinFarms"
+import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
+
+type LiquidityPositionAction = "none" | "join" | "remove"
 
 type Props = {
   readonly assetId: string
@@ -21,55 +26,66 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
   hasJoinFarm,
 }) => {
   const { t } = useTranslation("wallet")
+  const [action, setAction] = useState<LiquidityPositionAction>("none")
 
   return (
     <>
-      <DropdownMenuItem asChild>
-        <MenuSelectionItem variant="filterLink" asChild>
-          {/* TODO claim liquidity position rewards */}
-          <Link
-            to="/wallet/assets/liquidity/$id/join"
-            params={{ id: assetId }}
-            search={{ positionId }}
-          >
-            <MenuItemIcon component={Award} />
-            <MenuItemLabel>
-              {t("myLiquidity.expanded.actions.claimRewards")}
-            </MenuItemLabel>
-          </Link>
-        </MenuSelectionItem>
-      </DropdownMenuItem>
-      <DropdownMenuItem asChild>
-        <MenuSelectionItem variant="filterLink" asChild>
-          <Link
-            to="/wallet/assets/liquidity/$id/remove"
-            params={{ id: assetId }}
-            search={{ positionId }}
-          >
-            <MenuItemIcon component={CircleMinus} />
-            <MenuItemLabel>
-              {t("myLiquidity.expanded.actions.removeLiquidity")}
-            </MenuItemLabel>
-          </Link>
-        </MenuSelectionItem>
-      </DropdownMenuItem>
-      {hasJoinFarm && (
-        <DropdownMenuItem asChild>
-          <MenuSelectionItem variant="filterLink" asChild>
-            <Link
-              to="/liquidity/$id/join"
-              params={{ id: assetId }}
-              search={{ positionId }}
+      {action === "none" && (
+        <>
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem
+              variant="filterLink"
+              onClick={(e) => {
+                e.preventDefault()
+                setAction("join")
+              }}
             >
-              <MenuItemIcon component={Plus} />
+              {/* TODO claim liquidity position rewards */}
+              <MenuItemIcon component={Award} />
               <MenuItemLabel>
-                {/* TODO show real count and hide if 0 */}
-                {t("myLiquidity.expanded.actions.joinFarms", { count: 1 })}
+                {t("myLiquidity.expanded.actions.claimRewards")}
               </MenuItemLabel>
-            </Link>
-          </MenuSelectionItem>
-        </DropdownMenuItem>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem
+              variant="filterLink"
+              onClick={(e) => {
+                e.preventDefault()
+                setAction("remove")
+              }}
+            >
+              <MenuItemIcon component={CircleMinus} />
+              <MenuItemLabel>
+                {t("myLiquidity.expanded.actions.removeLiquidity")}
+              </MenuItemLabel>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+          {hasJoinFarm && (
+            <DropdownMenuItem asChild>
+              <MenuSelectionItem
+                variant="filterLink"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setAction("join")
+                }}
+              >
+                <MenuItemIcon component={Plus} />
+                <MenuItemLabel>
+                  {/* TODO show real count and hide if 0 */}
+                  {t("myLiquidity.expanded.actions.joinFarms", { count: 1 })}
+                </MenuItemLabel>
+              </MenuSelectionItem>
+            </DropdownMenuItem>
+          )}
+        </>
       )}
+      <Modal open={action === "join"} onOpenChange={() => setAction("none")}>
+        <JoinFarms positionId={positionId} poolId={assetId} />
+      </Modal>
+      <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
+        <RemoveLiquidity poolId={assetId} positionId={positionId} />
+      </Modal>
     </>
   )
 }

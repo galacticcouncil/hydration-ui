@@ -17,19 +17,11 @@ const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
   switch (path) {
     case "/liquidity":
       return t("liquidity:pools")
-    case "/wallet/assets/liquidity":
-      return t("navigation.wallet.title")
-
     case "/liquidity/$id/remove":
-    case "/wallet/assets/liquidity/$id/remove":
       return t("liquidity:removeLiquidity")
-
     case "/liquidity/$id/join":
-    case "/wallet/assets/liquidity/$id/join":
       return t("liquidity:joinFarms")
-
     case "/liquidity/create":
-    case "/wallet/assets/liquidity/create":
       return t("liquidity:createPool")
 
     default: {
@@ -53,14 +45,10 @@ export const LiquidityBreadcrumb: FC = () => {
 
   const crumbs = paths
     .filter((path) => path.includes("liquidity"))
-    .map((path) => {
-      const label = getBreadcrumbLabel(path)
-
-      return {
-        label,
-        path: path === "/wallet/assets/liquidity" ? "/wallet/assets" : path,
-      }
-    })
+    .map((path) => ({
+      label: getBreadcrumbLabel(path),
+      path,
+    }))
 
   return <Breadcrumb crumbs={crumbs} />
 }

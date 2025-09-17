@@ -22,7 +22,7 @@ export const WalletAssetsPage = () => {
   const [searchPhrase, setSearchPhrase] = useState("")
 
   const { category } = useSearch({
-    from: "/wallet/assets/",
+    from: "/wallet/assets",
   })
 
   useEffect(() => {

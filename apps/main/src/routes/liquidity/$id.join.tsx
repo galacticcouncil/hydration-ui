@@ -1,3 +1,5 @@
+import { ModalContainer } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
@@ -21,5 +23,12 @@ function RouteComponent() {
     from: "/liquidity/$id/join",
   })
 
-  return <JoinFarms positionId={positionId} poolId={id} />
+  return (
+    <ModalContainer
+      open
+      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+    >
+      <JoinFarms positionId={positionId} poolId={id} closable={false} />
+    </ModalContainer>
+  )
 }
