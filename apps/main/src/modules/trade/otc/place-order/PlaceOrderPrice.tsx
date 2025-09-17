@@ -1,5 +1,11 @@
 import { AssetIcon } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Input, MicroButton, Text } from "@galacticcouncil/ui/components"
+import {
+  ButtonIcon,
+  Flex,
+  Input,
+  MicroButton,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
@@ -14,9 +20,16 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 type Props = {
   readonly offerAsset: TAsset
   readonly buyAsset: TAsset
+  readonly onChange: (price: string) => void
+  readonly onSwitch: () => void
 }
 
-export const PlaceOrderPrice: FC<Props> = ({ offerAsset, buyAsset }) => {
+export const PlaceOrderPrice: FC<Props> = ({
+  offerAsset,
+  buyAsset,
+  onChange,
+  onSwitch,
+}) => {
   const { t } = useTranslation("trade")
   const { control } = useFormContext<PlaceOrderFormValues>()
 
@@ -45,7 +58,10 @@ export const PlaceOrderPrice: FC<Props> = ({ offerAsset, buyAsset }) => {
               })}
             </Text>
             <MicroButton
-              onClick={() => field.onChange(omniPoolPrice)}
+              onClick={() => {
+                field.onChange(omniPoolPrice)
+                onChange(omniPoolPrice)
+              }}
               disabled={isLoading || omniPoolPrice === "NaN"}
             >
               {t("otc.placeOrder.lastOmniPoolPrice")}
@@ -53,7 +69,9 @@ export const PlaceOrderPrice: FC<Props> = ({ offerAsset, buyAsset }) => {
           </Flex>
           <Flex justify="space-between" align="center">
             <Flex py={4} pl={4} gap={4} align="center">
-              <AssetIcon />
+              <ButtonIcon onClick={onSwitch}>
+                <AssetIcon />
+              </ButtonIcon>
               <Text fw={600} fs="p3" lh={px(14)} color={getToken("text.high")}>
                 {buyAsset.symbol}
               </Text>
@@ -61,7 +79,10 @@ export const PlaceOrderPrice: FC<Props> = ({ offerAsset, buyAsset }) => {
             <Input
               variant="embedded"
               value={field.value}
-              onChange={field.onChange}
+              onChange={(e) => {
+                field.onChange(e)
+                onChange(e.target.value)
+              }}
               placeholder="0"
               sx={{
                 fontWeight: 600,
