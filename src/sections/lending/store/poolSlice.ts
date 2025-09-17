@@ -88,6 +88,12 @@ type GenerateSignatureRequestOpts = {
   chainId?: number
 }
 
+export type ClaimStrategyRewardsArgs = {
+  assets: string[]
+  incentivesControllerAddress: string
+  rewardTokenAddress: string
+}
+
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
   data: Map<number, Map<string, PoolReserve>>
@@ -121,7 +127,7 @@ export interface PoolSlice {
     args: ClaimRewardsActionsProps,
   ) => Promise<EthereumTransactionTypeExtended[]>
   claimStrategyRewards: (
-    args: ClaimRewardsActionsProps,
+    args: ClaimStrategyRewardsArgs,
   ) => Promise<EthereumTransactionTypeExtended[]>
   // TODO: optimize types to use only neccessary properties
   swapCollateral: (
@@ -878,7 +884,11 @@ export const createPoolSlice: StateCreator<
         })
       }
     },
-    claimStrategyRewards: async ({ selectedReward }) => {
+    claimStrategyRewards: async ({
+      assets,
+      incentivesControllerAddress,
+      rewardTokenAddress,
+    }) => {
       const currentAccount = get().account
 
       const incentivesTxBuilderV2: IncentivesControllerV2Interface =
@@ -886,10 +896,10 @@ export const createPoolSlice: StateCreator<
 
       return incentivesTxBuilderV2.claimRewards({
         user: currentAccount,
-        assets: selectedReward.assets,
+        assets,
         to: currentAccount,
-        incentivesControllerAddress: selectedReward.incentiveControllerAddress,
-        reward: selectedReward.rewardTokenAddress,
+        incentivesControllerAddress,
+        reward: rewardTokenAddress,
       })
     },
     useOptimizedPath: () => {

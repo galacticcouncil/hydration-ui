@@ -48,7 +48,7 @@ import { useShallow } from "hooks/useShallow"
 import { scaleHuman } from "utils/balance"
 import BN from "bignumber.js"
 
-interface UserReserveIncentiveWithReserve
+export interface FormattedUserReserveIncentive
   extends Omit<UserReserveIncentive, "accruedRewards" | "unclaimedRewards"> {
   accruedRewards: string
   unclaimedRewards: string
@@ -109,6 +109,7 @@ export interface AppDataContextType {
   ghoLoadingData: boolean
   ghoEnabled: boolean
   externalApyData: ExternalApyData
+  userReserveIncentives: FormattedUserReserveIncentive[]
 }
 
 const AppDataContext = React.createContext<AppDataContextType>(
@@ -313,7 +314,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
       return []
     }
 
-    const incentivesWithReserveInfo: UserReserveIncentiveWithReserve[] = []
+    const incentivesWithReserveInfo: FormattedUserReserveIncentive[] = []
 
     userSummary.userReservesData.forEach((userReserve) => {
       const reserve = formattedPoolReserves.find(
@@ -483,7 +484,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
           acc[reserveKey].push(incentive)
           return acc
         },
-        {} as Record<string, UserReserveIncentiveWithReserve[]>,
+        {} as Record<string, FormattedUserReserveIncentive[]>,
       )
 
       const rewardSymbol = "GDOT"
@@ -581,6 +582,7 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
         ghoLoadingData: !ghoReserveDataFetched,
         ghoEnabled: formattedGhoReserveData.ghoBaseVariableBorrowRate > 0,
         externalApyData,
+        userReserveIncentives,
       }}
     >
       {children}
