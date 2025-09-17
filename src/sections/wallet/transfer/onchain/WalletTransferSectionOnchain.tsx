@@ -184,8 +184,6 @@ export function WalletTransferSectionOnchain({
     action: ProtocolAction.withdraw,
   })
 
-  console.log({ healthFactorChange, debouncedAmount })
-
   const dest = form.watch("dest") || ""
 
   const userOwnedAddresses = useAddressStore(
