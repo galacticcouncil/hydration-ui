@@ -11,6 +11,10 @@ import {
   USD_DECIMALS,
   UserReserveData,
 } from "@aave/math-utils"
+import {
+  calculateUserReserveIncentives,
+  UserReserveIncentive,
+} from "@aave/math-utils/dist/esm/formatters/incentive/calculate-user-reserve-incentives"
 import BigNumber from "bignumber.js"
 import { formatUnits } from "ethers/lib/utils"
 import React, { useContext } from "react"
@@ -41,6 +45,20 @@ import {
   useExternalApyData,
 } from "sections/lending/hooks/app-data-provider/useExternalApyData"
 import { useShallow } from "hooks/useShallow"
+import { scaleHuman } from "utils/balance"
+import BN from "bignumber.js"
+
+interface UserReserveIncentiveWithReserve
+  extends Omit<UserReserveIncentive, "accruedRewards" | "unclaimedRewards"> {
+  accruedRewards: string
+  unclaimedRewards: string
+  accruedRewardsHuman: string
+  unclaimedRewardsHuman: string
+  totalRewards: string
+  reserveUnderlyingAsset: string
+  reserveSymbol: string
+  reserveName: string
+}
 
 /**
  * removes the marketPrefix from a symbol
@@ -121,6 +139,8 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
     formattedReserves,
     userSummary,
     displayGho,
+    reserveIncentiveData,
+    userIncentiveData,
   ] = useRootStore(
     useShallow((state) => [
       selectCurrentReserves(state),
@@ -134,6 +154,8 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
       selectFormattedReserves(state, currentTimestamp, externalApyData),
       selectUserSummaryAndIncentives(state, currentTimestamp, externalApyData),
       state.displayGho,
+      state.reserveIncentiveData,
+      state.userIncentiveData,
     ]),
   )
 
@@ -285,6 +307,222 @@ export const AppDataProvider: React.FC<{ children?: React.ReactNode }> = ({
   const isUserHasDeposits = user.userReservesData.some(
     (userReserve) => userReserve.scaledATokenBalance !== "0",
   )
+
+  const userReserveIncentives = React.useMemo(() => {
+    if (!userSummary.userReservesData.length || !formattedPoolReserves.length) {
+      return []
+    }
+
+    const incentivesWithReserveInfo: UserReserveIncentiveWithReserve[] = []
+
+    userSummary.userReservesData.forEach((userReserve) => {
+      const reserve = formattedPoolReserves.find(
+        (r) => r.underlyingAsset === userReserve.reserve.underlyingAsset,
+      )
+
+      if (!reserve) return
+
+      const reserveIncentiveDataItem = reserveIncentiveData?.find(
+        (incentive) => incentive.underlyingAsset === reserve.underlyingAsset,
+      )
+      const userIncentiveDataItem = userIncentiveData?.find(
+        (incentive) => incentive.underlyingAsset === reserve.underlyingAsset,
+      )
+
+      if (!reserveIncentiveDataItem || !userIncentiveDataItem) return
+
+      const userReserveCalculationData = {
+        scaledATokenBalance: userReserve.scaledATokenBalance,
+        scaledVariableDebt: userReserve.scaledVariableDebt,
+        principalStableDebt: userReserve.principalStableDebt,
+        reserve: {
+          underlyingAsset: reserve.underlyingAsset,
+          totalLiquidity: reserve.totalLiquidity,
+          liquidityIndex: reserve.liquidityIndex,
+          totalScaledVariableDebt: reserve.totalScaledVariableDebt,
+          totalPrincipalStableDebt: reserve.totalPrincipalStableDebt,
+          decimals: reserve.decimals,
+        },
+      }
+
+      try {
+        const reserveIncentives = calculateUserReserveIncentives({
+          reserveIncentives: reserveIncentiveDataItem,
+          userIncentives: userIncentiveDataItem,
+          currentTimestamp,
+          userReserveData: userReserveCalculationData,
+        })
+
+        /*     console.table(
+          reserveIncentives.map((incentive) => ({
+            //...incentive,
+            symbol: reserve.symbol,
+            accruedRewardsHuman: scaleHuman(
+              incentive.accruedRewards,
+              incentive.rewardTokenDecimals,
+            ).toString(),
+          })),
+        ) */
+
+        reserveIncentives.forEach((incentive) => {
+          const totalRewards = incentive.accruedRewards.plus(
+            incentive.unclaimedRewards,
+          )
+          incentivesWithReserveInfo.push({
+            ...incentive,
+            accruedRewards: incentive.accruedRewards.toString(),
+            accruedRewardsHuman: scaleHuman(
+              incentive.accruedRewards,
+              incentive.rewardTokenDecimals,
+            ).toString(),
+            unclaimedRewards: incentive.unclaimedRewards.toString(),
+            unclaimedRewardsHuman: scaleHuman(
+              incentive.unclaimedRewards,
+              incentive.rewardTokenDecimals,
+            ).toString(),
+            totalRewards: totalRewards.toString(), // New field showing total rewards from this reserve
+            reserveUnderlyingAsset: reserve.underlyingAsset,
+            reserveSymbol: reserve.symbol,
+            reserveName: reserve.name,
+          })
+        })
+      } catch (error) {
+        console.warn("Error calculating user reserve incentives:", error)
+      }
+    })
+
+    return incentivesWithReserveInfo
+  }, [
+    userSummary.userReservesData,
+    formattedPoolReserves,
+    reserveIncentiveData,
+    userIncentiveData,
+    currentTimestamp,
+  ])
+
+  /* const allUserIncentives = React.useMemo(() => {
+    if (
+      !userSummary.userReservesData.length ||
+      !reserveIncentiveData ||
+      !userIncentiveData
+    ) {
+      return {}
+    }
+
+    // Prepare user reserves data for the calculation
+    const userReservesCalculationData = userSummary.userReservesData
+      .map((userReserve) => {
+        const reserve = formattedPoolReserves.find(
+          (r) => r.underlyingAsset === userReserve.reserve.underlyingAsset,
+        )
+
+        if (!reserve) return null
+
+        return {
+          scaledATokenBalance: userReserve.scaledATokenBalance,
+          scaledVariableDebt: userReserve.scaledVariableDebt,
+          principalStableDebt: userReserve.principalStableDebt,
+          reserve: {
+            underlyingAsset: reserve.underlyingAsset,
+            totalLiquidity: reserve.totalLiquidity,
+            liquidityIndex: reserve.liquidityIndex,
+            totalScaledVariableDebt: reserve.totalScaledVariableDebt,
+            totalPrincipalStableDebt: reserve.totalPrincipalStableDebt,
+            decimals: reserve.decimals,
+          },
+        }
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null) // Remove null entries with proper typing
+
+    try {
+      const all = calculateAllUserIncentives({
+        reserveIncentives: reserveIncentiveData,
+        userIncentives: userIncentiveData,
+        userReserves: userReservesCalculationData,
+        currentTimestamp,
+      })
+
+      // Convert BigNumber claimableRewards to string for easier debugging
+      const allWithStringRewards = Object.entries(all).reduce(
+        (acc, [key, value]) => {
+          acc[key] = {
+            ...value,
+            claimableRewards: value.claimableRewards.toString(),
+          }
+          return acc
+        },
+        {} as Record<
+          string,
+          Omit<UserIncentiveData, "claimableRewards"> & {
+            claimableRewards: string
+          }
+        >,
+      )
+
+      return allWithStringRewards
+    } catch (error) {
+      console.warn("Error calculating all user incentives:", error)
+      return {}
+    }
+  }, [
+    userSummary.userReservesData,
+    formattedPoolReserves,
+    reserveIncentiveData,
+    userIncentiveData,
+    currentTimestamp,
+  ]) */
+
+  React.useEffect(() => {
+    if (userReserveIncentives.length > 0) {
+      const incentivesByReserve = userReserveIncentives.reduce(
+        (acc, incentive) => {
+          const reserveKey = `${incentive.reserveSymbol} (${incentive.reserveUnderlyingAsset})`
+          if (!acc[reserveKey]) {
+            acc[reserveKey] = []
+          }
+          acc[reserveKey].push(incentive)
+          return acc
+        },
+        {} as Record<string, UserReserveIncentiveWithReserve[]>,
+      )
+
+      const rewardSymbol = "GDOT"
+
+      const entries = Object.entries(incentivesByReserve).map(([_, value]) => {
+        const gdot = value.find(
+          (incentive) => incentive.rewardTokenSymbol === rewardSymbol,
+        )
+        return {
+          reserve: gdot?.reserveSymbol,
+          accruedRewards: BN(gdot?.accruedRewardsHuman ?? "0")
+            .decimalPlaces(6)
+            .toNumber(),
+          unclaimedRewards: BN(gdot?.unclaimedRewardsHuman ?? "0")
+            .decimalPlaces(6)
+            .toNumber(),
+          rewardSymbol: rewardSymbol,
+        }
+      })
+
+      console.table(entries)
+      const totalAccruedRewards = entries.reduce(
+        (acc, entry) => BN(acc).plus(entry.accruedRewards).toNumber(),
+        0,
+      )
+      console.log("Total accrued rewards:", totalAccruedRewards, rewardSymbol)
+      console.log(
+        "Total accrued with unclaimed rewards:",
+        totalAccruedRewards + entries[0].unclaimedRewards,
+        rewardSymbol,
+      )
+    }
+  }, [userReserveIncentives])
+
+  /*  React.useEffect(() => {
+    if (Object.keys(allUserIncentives).length > 0) {
+      console.log("All User Incentives calculated:", allUserIncentives)
+    }
+  }, [allUserIncentives]) */
 
   const earnedAPY = proportions.positiveProportion
     .dividedBy(user.totalLiquidityUSD)
