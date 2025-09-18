@@ -71,7 +71,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
             font="GeistMono"
           >
             {t("wallet.strategy.deposit.joinStrategy", {
-              name: asset.name,
+              symbol: asset.symbol,
             })}
           </Text>
           <NewDepositAssetField
