@@ -236,7 +236,7 @@ const CurrentDepositRemoveButton = ({
             : setIsRemoveModalOpen(true)
         }
       >
-        {t("remove")}
+        {t("withdraw")}
       </Button>
       <Modal
         open={isRemoveModalOpen}

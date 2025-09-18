@@ -14,20 +14,24 @@ export const SCurrentDeposit = styled.div`
   }
 `
 
-export const SCurrentHollarDeposit = styled.div`
+export const SCurrentHollarDepositGrid = styled.div`
+  display: flex;
+  gap: 20px;
+
+  flex-wrap: wrap;
+
+  @media ${theme.viewport.gte.sm} {
+    display: grid;
+    grid-template-columns: 2fr 4fr 1fr;
+    gap: 12px;
+  }
+`
+
+export const SCurrentHollarDepositValues = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  row-gap: 20px;
+  column-gap: 12px;
   align-items: end;
-
-  & > div:last-child {
-    grid-column: 1 / -1;
-  }
-
-  @media ${theme.viewport.gte.md} {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: end;
-  }
+  width: 100%;
 `

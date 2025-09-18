@@ -161,19 +161,18 @@ export const MoneyMarketAPY = ({
   const hasFarms = farms.length > 0
   const defaultColor = withFarms && hasFarms ? "brightBlue200" : "white"
 
+  const icons = [
+    ...farms.map((farm) => ({
+      icon: <AssetLogo id={farm.rewardCurrency} />,
+    })),
+    ...validIncentives.map((incentive) => ({
+      icon: <AssetLogo id={incentive.id} />,
+    })),
+  ]
+
   return (
     <div sx={{ flex: "row", gap: 4, align: "center" }}>
-      <MultipleIcons
-        size={size ?? 14}
-        icons={[
-          ...farms.map((farm) => ({
-            icon: <AssetLogo id={farm.rewardCurrency} />,
-          })),
-          ...validIncentives.map((incentive) => ({
-            icon: <AssetLogo id={incentive.id} />,
-          })),
-        ]}
-      />
+      {icons.length > 0 && <MultipleIcons size={size ?? 14} icons={icons} />}
 
       <Text
         color={color ?? defaultColor}

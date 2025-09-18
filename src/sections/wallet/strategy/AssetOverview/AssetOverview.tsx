@@ -57,7 +57,7 @@ export const AssetOverview: FC<AssetOverviewProps> = ({
         <AssetOverviewTile
           label={`${t("apy")}:`}
           customValue={
-            <OverrideApy assetId={assetId} type="supply" withFarms>
+            <OverrideApy assetId={assetId} type="supply" withFarms size={16}>
               <AssetOverviewTileValue>
                 {totalSupplyApy === Infinity
                   ? "∞"

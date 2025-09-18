@@ -63,8 +63,16 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           onSubmit={!isGETH ? form.handleSubmit(submit) : undefined}
           sx={{ flex: "column", gap: 10 }}
         >
-          <Text fw={[126, 600]} fs={[14, 17.5]} lh="1.2" color="white">
-            {t("wallet.strategy.deposit.yourDeposit")}
+          <Text
+            fw={[126, 600]}
+            fs={[14, 17.5]}
+            lh="1.2"
+            color="white"
+            font="GeistMono"
+          >
+            {t("wallet.strategy.deposit.joinStrategy", {
+              name: asset.name,
+            })}
           </Text>
           <NewDepositAssetField
             selectedAssetBalance={selectedAssetBalance}

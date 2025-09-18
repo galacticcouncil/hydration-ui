@@ -6,13 +6,19 @@ import { THollarPool } from "sections/wallet/strategy/StrategyTile/HollarTile"
 import { useState } from "react"
 import { useAssetsPrice } from "state/displayPrice"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
-import { SCurrentHollarDeposit } from "./CurrentDeposit.styled"
+import {
+  SCurrentHollarDepositValues,
+  SCurrentHollarDepositGrid,
+} from "./CurrentDeposit.styled"
 import { Separator } from "components/Separator/Separator"
 import { CurrentHollarDepositModal } from "./CurrentHollarDepositModal"
 import { BN_0 } from "utils/constants"
+import { useMedia } from "react-use"
+import { theme } from "theme"
 
 export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
   const { t } = useTranslation()
+  const isMobile = useMedia(theme.viewport.lt.sm)
   const [isRemoveModalOpen, setIsRemoveModalOpen] = useState(false)
 
   const userBalances = pools.filter((pool) => BN(pool.userShiftedBalance).gt(0))
@@ -43,18 +49,29 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
   )
 
   return (
-    <>
-      <CurrentDepositBalance
-        label={t("totalBalance")}
-        balance={t("value.usd", {
-          amount: total,
-        })}
-      />
-      <Separator
-        color="white"
-        sx={{ height: 1, width: "100%", opacity: 0.06 }}
-      />
-      <SCurrentHollarDeposit>
+    <SCurrentHollarDepositGrid>
+      <div sx={{ display: ["column", "flex"], width: ["100%", "auto"] }}>
+        <CurrentDepositBalance
+          label={`${t("totalBalance")}:`}
+          balance={t("value.usd", {
+            amount: total,
+          })}
+        />
+        {isMobile ? (
+          <Separator
+            color="white"
+            sx={{ opacity: 0.06, width: "100%", mt: 20 }}
+          />
+        ) : (
+          <Separator
+            orientation="vertical"
+            color="white"
+            sx={{ opacity: 0.06, height: "100%", ml: "25%" }}
+          />
+        )}
+      </div>
+
+      <SCurrentHollarDepositValues>
         {userDisplayBalances.map(
           ({ userShiftedBalance, balanceDisplay, meta }, index) => {
             return (
@@ -78,20 +95,17 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
             )
           },
         )}
-        <Button
-          size="compact"
-          variant="outline"
-          disabled={!userBalances.length}
-          css={{
-            borderColor: "rgba(255,255,255,0.2)",
-            alignSelf: "center",
-            width: "fit-content",
-          }}
-          onClick={() => setIsRemoveModalOpen(true)}
-        >
-          {t("withdraw")}
-        </Button>
-      </SCurrentHollarDeposit>
+      </SCurrentHollarDepositValues>
+
+      <Button
+        size="compact"
+        variant="outline"
+        disabled={!userBalances.length}
+        onClick={() => setIsRemoveModalOpen(true)}
+        sx={{ ml: [0, "auto"], mt: 10 }}
+      >
+        {t("withdraw")}
+      </Button>
 
       {isRemoveModalOpen && (
         <CurrentHollarDepositModal
@@ -100,6 +114,6 @@ export const CurrentHollarDeposit = ({ pools }: { pools: THollarPool[] }) => {
           onClose={() => setIsRemoveModalOpen(false)}
         />
       )}
-    </>
+    </SCurrentHollarDepositGrid>
   )
 }

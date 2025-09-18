@@ -24,7 +24,7 @@ export const JoinStrategy = ({ pools }: { pools: THollarPool[] }) => {
       <Text fs={14} color="basic300">
         {t("wallet.strategy.hollar.stategy.desc")}
       </Text>
-      <Separator color="white" sx={{ opacity: 0.06 }} />
+      <Separator color="white" sx={{ opacity: 0.06, my: 16 }} />
 
       {isBalances ? (
         <StrategyTitleWithBalance pools={pools} />
