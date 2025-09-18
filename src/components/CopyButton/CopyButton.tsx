@@ -15,10 +15,7 @@ export type CopyButtonProps = {
   copiedIcon?: React.ComponentType
   iconSize?: number
   children?: (props: RenderProps) => React.ReactNode
-} & Omit<
-  React.ButtonHTMLAttributes<HTMLButtonElement>,
-  "onClick" | "disabled" | "type" | "children"
->
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "type" | "children">
 
 export const CopyButton: React.FC<CopyButtonProps> = ({
   text,
@@ -26,6 +23,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   defaultIcon: DefaultIconComponent = CopyIcon,
   copiedIcon: CopiedIconComponent = CheckIcon,
   iconSize = 14,
+  disabled,
   children,
   ...props
 }) => {
@@ -35,11 +33,12 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
     <ButtonTransparent
       type="button"
       {...props}
-      disabled={copied}
+      disabled={disabled || copied}
       data-copied={copied}
       onClick={(e) => {
         e.stopPropagation()
         copy(text)
+        props.onClick?.(e)
       }}
     >
       {children ? (
