@@ -63,13 +63,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           onSubmit={!isGETH ? form.handleSubmit(submit) : undefined}
           sx={{ flex: "column", gap: 10 }}
         >
-          <Text
-            fw={[126, 600]}
-            fs={[14, 17.5]}
-            lh="1.2"
-            color="white"
-            font="GeistMono"
-          >
+          <Text fw={500} fs={[14, 18]} lh="1.2" color="white" font="GeistMono">
             {t("wallet.strategy.deposit.joinStrategy", {
               symbol: asset.symbol,
             })}

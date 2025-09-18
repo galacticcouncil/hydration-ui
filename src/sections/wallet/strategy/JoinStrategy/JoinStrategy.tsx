@@ -18,7 +18,7 @@ export const JoinStrategy = ({ pools }: { pools: THollarPool[] }) => {
 
   return (
     <div sx={{ flex: "column", gap: 8, justify: "center" }}>
-      <Text fs={18} font="GeistMono">
+      <Text fw={500} fs={[14, 18]} lh="1.2" color="white" font="GeistMono">
         {t("wallet.strategy.hollar.stategy.label")}
       </Text>
       <Text fs={14} color="basic300">
