@@ -6,7 +6,10 @@ import { useAssets } from "providers/assets"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Reward } from "sections/lending/helpers/types"
-import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
+import {
+  SCurrentDeposit,
+  SCurrentDepositContainer,
+} from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
@@ -131,7 +134,7 @@ const DepositBalance = ({
   const depositValue = new BigNumber(spotPrice).times(balance || "0").toString()
 
   return (
-    <>
+    <SCurrentDepositContainer>
       <CurrentDepositBalance
         label={t("wallet.strategy.deposit.myDeposit", { count: 1 })}
         balance={t("value.tokenWithSymbol", {
@@ -146,7 +149,7 @@ const DepositBalance = ({
         depositBalance={balance}
         maxBalance={maxBalance}
       />
-    </>
+    </SCurrentDepositContainer>
   )
 }
 
@@ -189,7 +192,7 @@ const FarmsDepositBalance = ({
   )
 
   return (
-    <>
+    <SCurrentDepositContainer>
       <CurrentDepositBalance
         label={t("wallet.strategy.deposit.myDeposit", { count: 1 })}
         balance={t("value.tokenWithSymbol", {
@@ -204,7 +207,7 @@ const FarmsDepositBalance = ({
         maxBalance={totalValue.toString()}
         positions={positions}
       />
-    </>
+    </SCurrentDepositContainer>
   )
 }
 

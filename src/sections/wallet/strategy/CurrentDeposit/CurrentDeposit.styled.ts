@@ -1,6 +1,18 @@
 import styled from "@emotion/styled"
 import { theme } from "theme"
 
+export const SCurrentDepositContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+
+  @media ${theme.viewport.gte.md} {
+    gap: 40px;
+  }
+`
+
 export const SCurrentDeposit = styled.div`
   display: grid;
   align-items: center;
