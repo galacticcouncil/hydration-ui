@@ -29,7 +29,11 @@ import { useLiquidityLimit } from "state/liquidityLimit"
 import { STradingPairContainer } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.styled"
 import { RemoveLiquidityReward } from "sections/pools/modals/RemoveLiquidity/components/RemoveLiquidityReward"
 import { scale, scaleHuman } from "utils/balance"
-import { BN_0, STABLEPOOL_TOKEN_DECIMALS } from "utils/constants"
+import {
+  AAVE_EXTRA_GAS,
+  BN_0,
+  STABLEPOOL_TOKEN_DECIMALS,
+} from "utils/constants"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -119,8 +123,6 @@ export const RemoveDepositModal: FC<Props> = ({
 
   const isWithdrawingMax = BN(assetAmount ?? "0").gte(balance)
 
-  console.log({ isWithdrawingMax, balance: balance.toString(), assetAmount })
-
   const {
     isLoading: isLoadingWithdrawAndSellAll,
     mutateAsync: getWithdrawAndSellAllTx,
@@ -192,17 +194,20 @@ export const RemoveDepositModal: FC<Props> = ({
       const swapTx = await getSwapTx()
       if (!swapTx) throw new Error("Missing swap tx")
       if (splitRemove) {
-        return api.tx.utility.batchAll([
-          swapTx,
-          api.tx.stableswap.removeLiquidity(
-            underlyingAssetId,
-            scale(debouncedAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
-            minAssetsOut.map((minAssetOut) => ({
-              assetId: minAssetOut.meta.id,
-              amount: minAssetOut.minValue,
-            })),
-          ),
-        ])
+        return api.tx.dispatcher.dispatchWithExtraGas(
+          api.tx.utility.batchAll([
+            swapTx,
+            api.tx.stableswap.removeLiquidity(
+              underlyingAssetId,
+              scale(debouncedAmount, STABLEPOOL_TOKEN_DECIMALS).toString(),
+              minAssetsOut.map((minAssetOut) => ({
+                assetId: minAssetOut.meta.id,
+                amount: minAssetOut.minValue,
+              })),
+            ),
+          ]),
+          AAVE_EXTRA_GAS,
+        )
       }
 
       if (isWithdrawingMax) {
