@@ -1,4 +1,12 @@
-import { AnyChain, Asset, EvmChain, Parachain } from "@galacticcouncil/xcm-core"
+import {
+  AnyChain,
+  AnyEvmChain,
+  AnyParachain,
+  Asset,
+  ChainType,
+  EvmChain,
+  Parachain,
+} from "@galacticcouncil/xcm-core"
 
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
   if (chain instanceof Parachain) {
@@ -16,4 +24,18 @@ export function getChainId(chain: AnyChain) {
     default:
       return chain.id
   }
+}
+
+export function isAnyParachain(chain: AnyChain): chain is AnyParachain {
+  return (
+    chain.getType() === ChainType.Parachain ||
+    chain.getType() === ChainType.EvmParachain
+  )
+}
+
+export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
+  return (
+    chain.getType() === ChainType.EvmChain ||
+    chain.getType() === ChainType.EvmParachain
+  )
 }

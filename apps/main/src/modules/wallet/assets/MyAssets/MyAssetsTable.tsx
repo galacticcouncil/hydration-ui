@@ -9,10 +9,7 @@ import { FC, Ref } from "react"
 
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow"
-import {
-  MyAssetsTableColumn,
-  useMyAssetsColumns,
-} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { useMyAssetsColumns } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.data"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -51,14 +48,6 @@ export const MyAssetsTable: FC<Props> = ({
         data={tableAssets}
         columns={columns}
         expandable={!isMobile}
-        initialSorting={[
-          {
-            id: isMobile
-              ? MyAssetsTableColumn.Total
-              : MyAssetsTableColumn.Transferable,
-            desc: true,
-          },
-        ]}
         renderSubComponent={(asset) =>
           asset.id === native.id ? (
             <ExpandedNativeRow asset={asset} />

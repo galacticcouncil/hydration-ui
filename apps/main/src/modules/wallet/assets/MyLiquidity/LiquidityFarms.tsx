@@ -8,13 +8,15 @@ import { AssetLogo } from "@/components/AssetLogo"
 type Props = {
   readonly assetId: string
   readonly rewards: number
+  readonly farmsAvailable?: number
 }
 
-export const LiquidityFarms: FC<Props> = ({ assetId, rewards }) => {
+export const LiquidityFarms: FC<Props> = ({
+  assetId,
+  rewards,
+  farmsAvailable,
+}) => {
   const { t } = useTranslation(["wallet", "common"])
-
-  // TODO integrate
-  const farmsAvailable = 1
 
   return (
     <Flex gap={4} align="center">
@@ -23,7 +25,7 @@ export const LiquidityFarms: FC<Props> = ({ assetId, rewards }) => {
         {t("common:percent", { value: rewards })}{" "}
         {t("myLiquidity.position.rewards")}
       </Text>
-      {farmsAvailable >= 1 && (
+      {Number(farmsAvailable) >= 1 && (
         <Flex
           sx={{ borderRadius: 8 }}
           bg={getToken("textButtons.small.rest")}
