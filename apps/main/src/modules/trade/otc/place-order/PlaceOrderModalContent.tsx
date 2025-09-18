@@ -7,6 +7,7 @@ import {
   ModalHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -43,6 +44,78 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
   const isSubmitEnabled = form.formState.isValid
 
+  const handleOfferAmountChange = (newOfferAmount: string): void => {
+    const formValues = form.getValues()
+
+    const { buyAmount, price } = formValues
+
+    const priceBn = new Big(price || "0")
+    const offerAmountBn = new Big(newOfferAmount || "0")
+    const buyAmountBn = new Big(buyAmount || "0")
+
+    if (buyAmountBn.gt(0)) {
+      form.reset({
+        ...formValues,
+        price: buyAmountBn.div(offerAmountBn).toString(),
+      })
+      form.trigger()
+    } else if (priceBn.gt(0)) {
+      form.reset({
+        ...formValues,
+        buyAmount: offerAmountBn.mul(priceBn).toString(),
+      })
+      form.trigger()
+    }
+  }
+
+  const handleBuyAmountChange = (newBuyAmount: string): void => {
+    const formValues = form.getValues()
+
+    const { offerAmount, price } = formValues
+
+    const priceBn = new Big(price || "0")
+    const offerAmountBn = new Big(offerAmount || "0")
+    const buyAmountBn = new Big(newBuyAmount || "0")
+
+    if (offerAmountBn.gt(0)) {
+      form.reset({
+        ...formValues,
+        price: buyAmountBn.div(offerAmountBn).toString(),
+      })
+      form.trigger()
+    } else if (priceBn.gt(0)) {
+      form.reset({
+        ...formValues,
+        offerAmount: buyAmountBn.div(priceBn).toString(),
+      })
+      form.trigger()
+    }
+  }
+
+  const handlePriceChange = (newPrice: string): void => {
+    const formValues = form.getValues()
+
+    const { offerAmount, buyAmount } = formValues
+
+    const priceBn = new Big(newPrice || "0")
+    const offerAmountBn = new Big(offerAmount || "0")
+    const buyAmountBn = new Big(buyAmount || "0")
+
+    if (offerAmountBn.gt(0)) {
+      form.reset({
+        ...formValues,
+        buyAmount: offerAmountBn.mul(priceBn).toString(),
+      })
+      form.trigger()
+    } else if (buyAmountBn.gt(0)) {
+      form.reset({
+        ...formValues,
+        offerAmount: buyAmountBn.div(priceBn).toString(),
+      })
+      form.trigger()
+    }
+  }
+
   return (
     <>
       <ModalHeader
@@ -58,6 +131,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 amountFieldName="offerAmount"
                 label={t("common:offer")}
                 assets={ownedAssets}
+                onAmountChange={handleOfferAmountChange}
               />
               <ModalContentDivider />
               {offerAsset && buyAsset && (
@@ -65,6 +139,22 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                   <PlaceOrderPrice
                     offerAsset={offerAsset}
                     buyAsset={buyAsset}
+                    onChange={handlePriceChange}
+                    onSwitch={() => {
+                      const values = form.getValues()
+
+                      form.reset({
+                        ...values,
+                        buyAsset: values.offerAsset,
+                        buyAmount: values.offerAmount,
+                        offerAsset: values.buyAsset,
+                        offerAmount: values.buyAmount,
+                        price: Big(values.price || "0").gte(0)
+                          ? Big(1).div(values.price).toString()
+                          : values.price,
+                      })
+                      form.trigger()
+                    }}
                   />
                   <ModalContentDivider />
                 </>
@@ -72,9 +162,10 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
               <AssetSelectFormField<PlaceOrderFormValues>
                 assetFieldName="buyAsset"
                 amountFieldName="buyAmount"
-                label={t("common:buy")}
+                label={t("otc.placeOrder.buy")}
                 assets={tradable}
                 ignoreBalance
+                onAmountChange={handleBuyAmountChange}
               />
             </Box>
             <Separator />

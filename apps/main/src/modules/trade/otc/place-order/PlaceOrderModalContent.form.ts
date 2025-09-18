@@ -1,7 +1,5 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
-import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
@@ -72,67 +70,9 @@ export const usePlaceOrderForm = () => {
     isPartiallyFillable: true,
   }
 
-  const form = useForm<PlaceOrderFormValues>({
+  return useForm<PlaceOrderFormValues>({
     defaultValues,
     resolver: standardSchemaResolver(useSchema()),
     mode: "onChange",
   })
-
-  const { watch, setValue } = form
-
-  useEffect(() => {
-    const subscription = watch(
-      ({ offerAmount, buyAmount, price }, { type, name }) => {
-        if (type !== "change") {
-          return
-        }
-
-        if (
-          (name === "offerAmount" && !offerAmount) ||
-          (name === "buyAmount" && !buyAmount)
-        ) {
-          return
-        }
-
-        const priceBn = new Big(price || "0")
-        const offerAmountBn = new Big(offerAmount || "0")
-        const buyAmountBn = new Big(buyAmount || "0")
-
-        if (name === "price" && priceBn.gt(0)) {
-          if (offerAmountBn.gt(0)) {
-            const buyAmount = offerAmountBn.mul(priceBn)
-            setValue("buyAmount", buyAmount.toString(), {
-              shouldValidate: true,
-            })
-          } else if (buyAmountBn.gt(0)) {
-            const offerAmount = buyAmountBn.div(priceBn)
-            setValue("offerAmount", offerAmount.toString(), {
-              shouldValidate: true,
-            })
-          }
-        } else if (name === "offerAmount" || name === "buyAmount") {
-          if (offerAmountBn.gt(0) && buyAmountBn.gt(0)) {
-            const price = buyAmountBn.div(offerAmountBn)
-            setValue("price", price.toString(), { shouldValidate: true })
-          } else if (buyAmountBn.gt(0) && priceBn.gt(0)) {
-            const offerAmount = buyAmountBn.div(priceBn)
-            setValue("offerAmount", offerAmount.toString(), {
-              shouldValidate: true,
-            })
-          } else if (offerAmountBn.gt(0) && priceBn.gt(0)) {
-            const buyAmount = offerAmountBn.mul(priceBn)
-            setValue("buyAmount", buyAmount.toString(), {
-              shouldValidate: true,
-            })
-          }
-        }
-      },
-    )
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [watch, setValue])
-
-  return form
 }
