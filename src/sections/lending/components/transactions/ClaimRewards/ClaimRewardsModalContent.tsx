@@ -43,6 +43,8 @@ export const ClaimRewardsModalContent = () => {
 
   const underlyingAssetLower = args?.underlyingAsset?.toLocaleLowerCase()
 
+  console.log({ selectedReward })
+
   // get all rewards
   useEffect(() => {
     const userIncentives: Reward[] = []

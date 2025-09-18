@@ -731,6 +731,7 @@
   "wallet.strategy.deposit.minReceived": "Minimum received",
   "wallet.strategy.deposit.toast.onLoading": "Entering <0>{{ strategy }}</0> with <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0>...",
   "wallet.strategy.deposit.toast.onSuccess": "Entered <0>{{ strategy }}</0> with <0>{{amount, bignumber(type: 'token')}} {{symbol}}</0>.",
+  "wallet.strategy.claim.header.title": "Available rewards",
   "wallet.strategy.claim.title": "Claim asset",
   "wallet.strategy.claim.enable": "Enable Borrowing to claim your rewards",
   "wallet.strategy.remove.confirm": "Confirm withdrawal",

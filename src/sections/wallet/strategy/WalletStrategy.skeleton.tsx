@@ -1,6 +1,5 @@
 import { FC } from "react"
 import { SWalletStrategy } from "sections/wallet/strategy/WalletStrategy.styled"
-import { WalletStrategyHeader } from "sections/wallet/strategy/WalletStrategyHeader"
 import {
   StrategyTileVariant,
   StrategyTileSeparator,
@@ -9,6 +8,7 @@ import {
 import Skeleton from "react-loading-skeleton"
 import { AssetInputSkeleton } from "sections/trade/skeleton/SwapAppSkeleton"
 import { Separator } from "components/Separator/Separator"
+import { WalletStrategyTitle } from "sections/wallet/strategy/WalletStrategyTitle"
 
 export const WalletStrategyFormSkeleton = () => (
   <div sx={{ flex: "column", justify: "space-between", gap: 20 }}>
@@ -21,7 +21,7 @@ export const WalletStrategyFormSkeleton = () => (
 export const WalletStrategySkeleton: FC = () => {
   return (
     <SWalletStrategy>
-      <WalletStrategyHeader />
+      <WalletStrategyTitle />
       <WalletStrategyTileSkeleton variant={StrategyTileVariant.Hollar} />
       <WalletStrategyTileSkeleton variant={StrategyTileVariant.One} />
       <WalletStrategyTileSkeleton variant={StrategyTileVariant.Two} />

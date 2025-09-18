@@ -9,7 +9,6 @@ import { Reward } from "sections/lending/helpers/types"
 import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
-import { CurrentDepositClaimReward } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositClaimReward"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import {
   useAccount,
@@ -101,14 +100,15 @@ export const CurrentDeposit: FC<Props> = ({
           maxBalance={maxBalance.toString()}
         />
       )}
-      <CurrentDepositSeparator />
+
       {isAccountBindingRequired ? (
         <CurrentDepositBindAccount />
       ) : isGETH ? (
-        <CurrentDepositFarmsClaimReward assetId={aTokenId} />
-      ) : (
-        <CurrentDepositClaimReward reward={reward} />
-      )}
+        <>
+          <CurrentDepositSeparator />
+          <CurrentDepositFarmsClaimReward assetId={aTokenId} />
+        </>
+      ) : null}
     </SCurrentDeposit>
   )
 }
