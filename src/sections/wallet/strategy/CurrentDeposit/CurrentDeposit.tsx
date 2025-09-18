@@ -228,7 +228,6 @@ const CurrentDepositRemoveButton = ({
       <Button
         size="compact"
         variant="outline"
-        css={{ borderColor: "rgba(255,255,255,0.2)" }}
         disabled={new BigNumber(depositBalance).lte(0)}
         onClick={() =>
           positions
