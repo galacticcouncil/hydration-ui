@@ -1287,7 +1287,7 @@
   "lending.bind.banner.description": "Bind your account to continue.<br /> Supply your crypto into a lending pool, accumulate rewards and borrow against your positions.",
   "lending.bind.banner.button": "Enable Borrowing",
   "lending.hollar.banner.title": "Meet HOLLAR",
-  "lending.hollar.banner.description": "HOLLAR is a native decentralized, collateral-backed digital asset",
+  "lending.hollar.banner.description": "The decentralized digital dollar for trading, saving, and earning.",
   "lending.hollar.reserve.title": "About HOLLAR",
   "lending.hollar.reserve.description": "HOLLAR is a native decentralized, collateral-backed stablecoin that maintains its $1 peg while generating yield for holders. Built with advanced stability mechanisms, HOLLAR offers enhanced security through partial liquidations that protect more of your collateral than traditional lending protocols.",
   "lending.risk.liquidationValue": "Liquidation value",

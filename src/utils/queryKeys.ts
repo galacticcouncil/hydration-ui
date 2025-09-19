@@ -344,6 +344,15 @@ export const QUERY_KEYS = {
     incentivesContractAddress: string,
     accounntAddress?: string,
   ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
+  ghoReserveData: (uiGhoDataProviderAddress: string) => [
+    "ghoReserveData",
+    uiGhoDataProviderAddress,
+  ],
+  ghoUserData: (uiGhoDataProviderAddress: string, userAddress: string) => [
+    "ghoUserData",
+    uiGhoDataProviderAddress,
+    userAddress,
+  ],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   suiAccountBalance: (address: string) => ["suiAccountBalance", address],
   ethereumAccountBalance: (address: string) => [

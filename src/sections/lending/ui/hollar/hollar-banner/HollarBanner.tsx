@@ -1,4 +1,3 @@
-import { valueToBigNumber } from "@aave/math-utils"
 import { useNavigate } from "@tanstack/react-location"
 import BigNumber from "bignumber.js"
 import { Button } from "components/Button/Button"
@@ -6,9 +5,6 @@ import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Text } from "components/Typography/Text/Text"
 import { FC, useMemo } from "react"
-import { ROUTES } from "sections/lending/components/primitives/Link"
-import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
-import { useRootStore } from "sections/lending/store/root"
 import { getGhoReserve } from "sections/lending/utils/ghoUtilities"
 import {
   SContainer,
@@ -21,6 +17,9 @@ import { HollarBorrowApyRange } from "./HollarBorrowApyRange"
 import HollarCans from "./assets/hollar-cans.webp"
 import HollarText from "./assets/hollar-text.svg?react"
 import { useTranslation } from "react-i18next"
+import { useBorrowReserves, useGhoReserveData } from "api/borrow"
+import { LINKS } from "utils/navigation"
+import BN from "bignumber.js"
 
 type HollarBannerProps = {
   className?: string
@@ -29,43 +28,34 @@ type HollarBannerProps = {
 export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const currentMarket = useRootStore((store) => store.currentMarket)
 
-  const { reserves, ghoReserveData, ghoLoadingData, loading } =
-    useAppDataContext()
+  const { data: reserves, isLoading: isLoadingReserves } = useBorrowReserves()
+  const { data: ghoReserveData, isLoading: isLoadingGhoReserveData } =
+    useGhoReserveData()
 
-  const isLoading = loading || ghoLoadingData
+  const isLoading = isLoadingReserves || isLoadingGhoReserveData
 
-  const { reserve, totalBorrowed } = useMemo(() => {
-    const reserve = getGhoReserve(reserves)
+  const totalBorrowed = useMemo(() => {
+    const reserve = getGhoReserve(reserves?.formattedReserves ?? [])
 
-    let totalBorrowed = Number(reserve?.totalDebt)
-    if (Number(reserve?.borrowCap) > 0) {
-      totalBorrowed = BigNumber.min(
-        valueToBigNumber(reserve?.totalDebt || 0),
-        valueToBigNumber(reserve?.borrowCap || 0),
-      ).toNumber()
+    const totalDebt = BN(reserve?.totalDebt || 0)
+    const borrowCap = BN(reserve?.borrowCap || 0)
+
+    if (borrowCap.gt(0)) {
+      return BigNumber.min(totalDebt, borrowCap).toNumber()
     }
 
-    return {
-      reserve,
-      totalBorrowed,
-    }
+    return totalDebt
   }, [reserves])
 
-  const navToDetail = () =>
+  const navToStratagyPage = () =>
     navigate({
-      to: ROUTES.reserveOverview(reserve?.underlyingAsset || "", currentMarket),
+      to: LINKS.strategies,
     })
 
   return (
     <SContainer className={className}>
-      <SInnerContainer
-        to={ROUTES.reserveOverview(
-          reserve?.underlyingAsset || "",
-          currentMarket,
-        )}
-      >
+      <SInnerContainer to={LINKS.strategies}>
         <SContent>
           <div sx={{ pr: [120, 0] }}>
             <HollarText sx={{ color: ["white", "basic900"], mb: 4 }} />
@@ -93,28 +83,31 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
               labelColor="alpha0"
               isLoading={isLoading}
             >
-              <HollarBorrowApyRange
-                minVal={ghoReserveData.ghoBorrowAPYWithMaxDiscount}
-                maxVal={ghoReserveData.ghoVariableBorrowAPY}
-              />
+              {ghoReserveData && (
+                <HollarBorrowApyRange
+                  minVal={ghoReserveData.ghoBorrowAPYWithMaxDiscount}
+                  maxVal={ghoReserveData.ghoVariableBorrowAPY}
+                />
+              )}
             </DataValue>
             <Button
-              size="micro"
-              sx={{ py: 6, display: ["none", "block"] }}
+              variant="primary"
+              size="small"
+              sx={{ display: ["none", "block"] }}
               css={{ zIndex: 1, position: "relative" }}
-              onClick={navToDetail}
             >
-              {t("lending.details")}
+              {t("wallet.strategy.banner.cta")}
             </Button>
           </SValuesContainer>
           <Button
             size="small"
+            variant="primary"
             sx={{ display: ["block", "none"], mt: 20 }}
             fullWidth
             css={{ zIndex: 1, position: "relative" }}
-            onClick={navToDetail}
+            onClick={navToStratagyPage}
           >
-            {t("lending.details")}
+            {t("wallet.strategy.banner.cta")}
           </Button>
         </SContent>
       </SInnerContainer>

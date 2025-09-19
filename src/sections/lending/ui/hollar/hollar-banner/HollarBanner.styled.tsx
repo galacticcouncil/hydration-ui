@@ -75,9 +75,13 @@ export const SContent = styled.div`
   padding: 20px;
 
   display: flex;
+  gap: 8px;
+
   flex-direction: column;
 
   @media ${theme.viewport.gte.sm} {
+    gap: 20px;
+
     padding-left: 140px;
     padding-right: 34px;
 

@@ -1,9 +1,11 @@
 import {
+  GhoService,
   ProtocolAction,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@aave/contract-helpers"
 import {
+  formatGhoReserveData,
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
 } from "@aave/math-utils"
@@ -877,5 +879,81 @@ export const useBorrowWithdraw = () => {
       return tx
     },
     [poolContract, evmAccount, estimateGasLimit],
+  )
+}
+
+export const useGhoMarketConfig = () => {
+  const { evm } = useRpcProvider()
+  const addresses = useBorrowContractAddresses()
+
+  return useMemo(() => {
+    if (!addresses) return null
+
+    const isTestnet = isTestnetRpcUrl(evm.connection.url)
+    const config = isTestnet ? AaveV3HydrationTestnet : AaveV3HydrationMainnet
+
+    return {
+      ghoTokenAddress: config.GHO_TOKEN_ADDRESS,
+      uiGhoDataProviderAddress: config.GHO_UI_DATA_PROVIDER,
+    }
+  }, [addresses, evm])
+}
+
+export const useGhoService = () => {
+  const { evm } = useRpcProvider()
+  const ghoConfig = useGhoMarketConfig()
+
+  return useMemo(() => {
+    if (!ghoConfig) return null
+
+    return new GhoService({
+      provider: evm,
+      uiGhoDataProviderAddress: ghoConfig.uiGhoDataProviderAddress,
+    })
+  }, [ghoConfig, evm])
+}
+
+export const useGhoReserveData = () => {
+  const ghoService = useGhoService()
+  const ghoConfig = useGhoMarketConfig()
+
+  return useQuery(
+    QUERY_KEYS.ghoReserveData(ghoConfig?.uiGhoDataProviderAddress ?? ""),
+    async () => {
+      if (!ghoService) return null
+
+      const ghoReserveData = await ghoService.getGhoReserveData()
+
+      return formatGhoReserveData({ ghoReserveData })
+    },
+    {
+      retry: false,
+      enabled: !!ghoService && !!ghoConfig,
+    },
+  )
+}
+
+export const useGhoUserData = (givenAddress?: string) => {
+  const ghoService = useGhoService()
+  const ghoConfig = useGhoMarketConfig()
+  const { account } = useAccount()
+
+  const address = givenAddress || account?.address || ""
+  const evmAddress = H160.fromAny(address)
+
+  return useQuery(
+    QUERY_KEYS.ghoUserData(
+      ghoConfig?.uiGhoDataProviderAddress ?? "",
+      evmAddress,
+    ),
+    async () => {
+      if (!ghoService || !evmAddress) return null
+
+      return ghoService.getGhoUserData(evmAddress)
+    },
+    {
+      retry: false,
+      enabled: !!ghoService && !!evmAddress && !!ghoConfig,
+    },
   )
 }
