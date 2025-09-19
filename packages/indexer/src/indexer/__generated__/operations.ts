@@ -23,3 +23,13 @@ export type OtcOrderStatusQueryVariables = Types.Exact<{
 
 
 export type OtcOrderStatusQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null }> };
+
+export type AccumulatedRpsUpdatedEventsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type AccumulatedRpsUpdatedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null, name: string, block: { __typename?: 'Block', height: number } }> };
+
+export type StakingInitializedEventsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type StakingInitializedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', name: string, block: { __typename?: 'Block', height: number } }> };

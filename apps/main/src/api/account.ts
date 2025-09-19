@@ -49,6 +49,13 @@ export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
   return usePapiObservableQuery("System.Account", [address, "best"], options)
 }
 
+export const AccountUniquesQueryKey = (address: string | undefined) => [
+  QUERY_KEY_BLOCK_PREFIX,
+  "account",
+  "uniques",
+  address,
+]
+
 export const useAccountUniques = () => {
   const address = useAccount().account?.address
   const provider = useRpcProvider()
@@ -61,7 +68,7 @@ export const useAccountUniques = () => {
 
   return useQuery({
     enabled: !!address && !!nftIds,
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "account", "uniques", address],
+    queryKey: AccountUniquesQueryKey(address),
     queryFn: async () => {
       if (!address || !nftIds) return null
       const { omnipoolNftId, miningNftId, xykMiningNftId } = nftIds

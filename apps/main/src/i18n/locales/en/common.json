@@ -9,6 +9,7 @@
   "month_other": "{{ count }} months",
   "hour": "Hour",
   "day": "Day",
+  "days": "Days",
   "week": "Week",
   "month": "Month",
   "all": "All",
