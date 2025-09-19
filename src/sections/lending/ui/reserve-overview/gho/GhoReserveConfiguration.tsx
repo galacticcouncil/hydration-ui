@@ -52,7 +52,7 @@ export const GhoReserveConfiguration: React.FC<
         {t("lending.hollar.reserve.title")}
       </Text>
       <Text fs={14} color="basic400">
-        {t("wallet.strategy.hollar.emptyState")}
+        {t("lending.hollar.reserve.description")}
       </Text>
       <ReserveSectionDivider />
       <Text color="pink500" fs={14} sx={{ mb: 30 }}>

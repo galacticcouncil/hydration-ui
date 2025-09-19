@@ -1289,6 +1289,7 @@
   "lending.hollar.banner.title": "Meet HOLLAR",
   "lending.hollar.banner.description": "HOLLAR is a native decentralized, collateral-backed digital asset",
   "lending.hollar.reserve.title": "About HOLLAR",
+  "lending.hollar.reserve.description": "HOLLAR is a native decentralized, collateral-backed stablecoin that maintains its $1 peg while generating yield for holders. Built with advanced stability mechanisms, HOLLAR offers enhanced security through partial liquidations that protect more of your collateral than traditional lending protocols.",
   "lending.risk.liquidationValue": "Liquidation value",
   "lending.risk.liquidationThreshold": "Liquidation threshold",
   "lending.risk.liquidationPenalty": "Liquidation penalty",
