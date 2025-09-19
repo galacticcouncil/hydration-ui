@@ -18,14 +18,18 @@ export type SeparatorProps = Omit<
   BoxProps &
   SeparatorOwnProps
 
-export const Separator: React.FC<SeparatorProps> = ({ size = 1, ...props }) => {
+export const Separator: React.FC<SeparatorProps> = ({
+  size = 1,
+  bg,
+  ...props
+}) => {
   const orientation = useResponsiveValue(props.orientation)
   return (
     <RadixSeparator.Root {...props} orientation={orientation} asChild>
       <Box
         width={orientation === "vertical" ? size : "auto"}
         height={orientation === "vertical" ? "auto" : size}
-        bg={getToken("details.separators")}
+        bg={bg || getToken("details.separators")}
       />
     </RadixSeparator.Root>
   )

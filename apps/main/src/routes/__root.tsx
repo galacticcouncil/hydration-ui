@@ -2,6 +2,7 @@ import { QueryClient, useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
+import { enableMapSet } from "immer"
 import { lazy } from "react"
 
 import { useAccountUniques } from "@/api/account"
@@ -16,6 +17,8 @@ import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useDisplayAssetStablecoinUpdate } from "@/states/displayAsset"
+
+enableMapSet()
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
