@@ -41,7 +41,7 @@ export const SInnerContainer = styled(Link)`
     background: linear-gradient(
       90deg,
       #b3cf92 0%,
-      #6c9f2f 25%,
+      #c3e19f 25%,
       rgba(179, 207, 146, 0) 75%
     );
 
@@ -75,9 +75,13 @@ export const SContent = styled.div`
   padding: 20px;
 
   display: flex;
+  gap: 8px;
+
   flex-direction: column;
 
   @media ${theme.viewport.gte.sm} {
+    gap: 20px;
+
     padding-left: 140px;
     padding-right: 34px;
 
@@ -107,14 +111,12 @@ export const SValuesContainer = styled.div`
 export const SHollarImage = styled.img`
   position: absolute;
 
-  top: -15px;
-  right: 0;
+  top: -14px;
+  right: -8px;
 
   @media ${theme.viewport.gte.sm} {
-    bottom: -15px;
-    left: 8px;
+    left: 14px;
 
-    top: auto;
     right: auto;
   }
 `

@@ -4,7 +4,7 @@ import { theme } from "theme"
 import { css } from "@emotion/react"
 
 export const SContainer = styled.div<{
-  isClickable: boolean
+  isClickable?: boolean
 }>`
   display: flex;
   justify-content: space-between;
@@ -25,10 +25,6 @@ export const SContainer = styled.div<{
   transition: all ${theme.transitions.default};
 
   outline: none;
-
-  @media ${theme.viewport.gte.sm} {
-    padding: 16px 20px;
-  }
 
   ${({ isClickable }) =>
     isClickable &&

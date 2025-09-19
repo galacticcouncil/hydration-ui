@@ -12,6 +12,7 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
+  HOLLAR_ASSETS,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStablepoolFees, useStableSDKPools } from "api/stableswap"
@@ -27,7 +28,7 @@ import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { BorrowAssetApyData, useMoneyMarketAssetsAPY } from "api/borrow"
+import { BorrowAssetApyData, useBorrowAssetsApy } from "api/borrow"
 import {
   setOmnipoolTvlTotal,
   setOmnipoolVolumeTotal,
@@ -43,6 +44,7 @@ import {
 import { useShallow } from "hooks/useShallow"
 import { useAllOmnipoolDeposits } from "./farms/position/FarmingPosition.utils"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { useStableArray } from "hooks/useStableArray"
 
 export const isXYKPoolType = (pool: TAnyPool): pool is TXYKPool =>
   !!(pool as TXYKPool).shareTokenIssuance
@@ -58,6 +60,10 @@ export type TStablepool = TPool & TStablePoolDetails
 export type TXYKPool = NonNullable<
   ReturnType<typeof useXYKPools>["data"]
 >[number]
+
+export type TReserves = TStablepool["reserves"]
+export type TReservesBalance = TStablepool["balances"]
+type StablepoolPercetnage = { assetId: string; percentage: number }
 
 type TStablepoolData = {
   poolId: string
@@ -76,6 +82,7 @@ const isStablepoolData = (
 export type TAnyPool = TPool | TStablepool | TXYKPool
 
 const GASSETS = [GDOT_STABLESWAP_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
+const OVERRIDE_META = [...GASSETS, ...HOLLAR_ASSETS]
 
 const getTradeFee = (fee: string[]) => {
   if (fee?.length !== 2) return BN_NAN
@@ -264,7 +271,11 @@ export const usePools = () => {
           !!accountAsset?.isPoolPositions ||
           !!accountAAsset?.isPoolPositions
 
-        const metaOverride = isGDOT || isGETH ? relatedAToken : meta
+        const metaOverride =
+          relatedAToken &&
+          OVERRIDE_META.includes(relatedAToken.underlyingAssetId ?? "")
+            ? relatedAToken
+            : meta
 
         const name = metaOverride?.name || meta.name
         const symbol = metaOverride?.symbol || meta.symbol
@@ -418,7 +429,11 @@ export const useXYKPools = () => {
     let tvlTotal = BN_0
 
     if (!shareTokeSpotPrices.data || !totalIssuances)
-      return { data: undefined, volumeTotal, tvlTotal }
+      return {
+        data: undefined,
+        volumeTotal: volumeTotal.toFixed(0),
+        tvlTotal: tvlTotal.toFixed(0),
+      }
 
     const data = allShareTokens
       .map((shareToken) => {
@@ -446,9 +461,9 @@ export const useXYKPools = () => {
             ?.shiftedBy(-shareToken.decimals)
             ?.multipliedBy(shareTokenSpotPrice?.spotPrice ?? BN_NAN) ?? BN_NAN
 
-        const volume = volumes?.find(
-          (volume) => volume.poolAddress === poolAddress,
-        )?.volume
+        const volume =
+          volumes?.find((volume) => volume.poolAddress === poolAddress)
+            ?.volume ?? "0"
 
         const isFeeLoading = isLoadingAllFarms
         const { totalApr, farms = [] } =
@@ -510,7 +525,11 @@ export const useXYKPools = () => {
         return b.tvlDisplay.minus(a.tvlDisplay).toNumber()
       })
 
-    return { data, volumeTotal, tvlTotal }
+    return {
+      data,
+      volumeTotal: volumeTotal.toFixed(0),
+      tvlTotal: tvlTotal.toFixed(0),
+    }
   }, [
     shareTokeSpotPrices.data,
     totalIssuances,
@@ -525,15 +544,11 @@ export const useXYKPools = () => {
   ])
 
   useEffect(() => {
-    if (!tvlTotal.isZero()) {
-      setXykTvlTotal(tvlTotal.toFixed(0))
-    }
+    setXykTvlTotal(tvlTotal)
   }, [tvlTotal])
 
   useEffect(() => {
-    if (!volumeTotal.isZero()) {
-      setXykVolumeTotal(volumeTotal.toFixed(0))
-    }
+    setXykVolumeTotal(volumeTotal)
   }, [volumeTotal])
 
   return { data, isInitialLoading }
@@ -647,33 +662,52 @@ export const useStablepoolsTotals = () => {
   }
 }
 
-export const useStableSwapReserves = (poolId: string) => {
+export const useStableSwapReservesMulti = (poolIds: string[]) => {
   const { data: stablePools = [], isLoading } = useStableSDKPools()
 
-  const stablePoolBalance =
-    stablePools
-      .find((stablePool) => stablePool.id === poolId)
-      ?.tokens.filter(
-        (token) => token.type === "Token" || token.type === "Erc20",
-      ) ?? []
+  const poolIdsMemo = useStableArray(poolIds)
 
-  const reserves = stablePoolBalance.map((token) => {
-    const id = token.id
+  const poolsData = useMemo(() => {
+    return poolIdsMemo.map((poolId) => {
+      const stablePool = stablePools.find((pool) => pool.id === poolId)
+      const stablePoolBalance =
+        stablePool?.tokens.filter(
+          (token) => token.type === "Token" || token.type === "Erc20",
+        ) ?? []
 
-    return {
-      asset_id: Number(id),
-      decimals: token.decimals,
-      symbol: token.symbol,
-      amount: token.balance,
-    }
-  })
+      const reserves = stablePoolBalance.map((token) => {
+        const id = token.id
 
-  const assetIds = stablePoolBalance.map((token) => token.id)
-  const { getAssetPrice, isLoading: isPricesLoading } = useAssetsPrice(assetIds)
+        return {
+          asset_id: Number(id),
+          decimals: token.decimals,
+          symbol: token.symbol,
+          amount: token.balance,
+        }
+      })
 
-  const assetBalances = useMemo(
-    () =>
-      reserves.map((reserve) => {
+      return {
+        poolId,
+        reserves,
+        tokens: stablePoolBalance,
+      }
+    })
+  }, [stablePools, poolIdsMemo])
+
+  const allAssetIds = useMemo(() => {
+    const assetIdSet = new Set<string>()
+    poolsData.forEach(({ tokens }) => {
+      tokens.forEach((token) => assetIdSet.add(token.id))
+    })
+    return Array.from(assetIdSet)
+  }, [poolsData])
+
+  const { getAssetPrice, isLoading: isPricesLoading } =
+    useAssetsPrice(allAssetIds)
+
+  const poolResults = useMemo(() => {
+    return poolsData.map(({ poolId, reserves }) => {
+      const assetBalances = reserves.map((reserve) => {
         const id = reserve.asset_id.toString()
         const spotPrice = getAssetPrice(id).price
         const balance = BN(reserve.amount).shiftedBy(-reserve.decimals)
@@ -681,62 +715,78 @@ export const useStableSwapReserves = (poolId: string) => {
         return {
           id,
           symbol: reserve.symbol,
+          decimals: reserve.decimals,
           balance: balance.toString(),
           balanceDisplay: balance.multipliedBy(spotPrice).toString(),
         }
-      }),
-    [reserves, getAssetPrice],
-  )
+      })
 
-  const totalValue = assetBalances
-    .reduce((t, asset) => t.plus(asset.balanceDisplay), BN_0)
-    .toString()
+      const totalValue = assetBalances
+        .reduce((t, asset) => t.plus(asset.balanceDisplay), BN_0)
+        .toString()
 
-  let smallestPercentage: undefined | { assetId: string; percentage: number }
-  let biggestPercentage: undefined | { assetId: string; percentage: number }
+      let smallestPercentage: undefined | StablepoolPercetnage
+      let biggestPercentage: undefined | StablepoolPercetnage
 
-  const balances = assetBalances.map((assetBalance) => {
-    const percentage = BN(assetBalance.balanceDisplay)
-      .div(totalValue)
-      .times(100)
-      .dp(1)
-      .toNumber()
+      const balances = assetBalances.map((assetBalance) => {
+        const percentage = BN(assetBalance.balanceDisplay)
+          .div(totalValue)
+          .times(100)
+          .dp(1)
+          .toNumber()
 
-    if (!smallestPercentage || !biggestPercentage) {
-      smallestPercentage = {
-        assetId: assetBalance.id,
-        percentage,
+        if (!smallestPercentage || !biggestPercentage) {
+          smallestPercentage = {
+            assetId: assetBalance.id,
+            percentage,
+          }
+
+          biggestPercentage = {
+            assetId: assetBalance.id,
+            percentage,
+          }
+        }
+
+        if (smallestPercentage.percentage > percentage) {
+          smallestPercentage = {
+            assetId: assetBalance.id,
+            percentage,
+          }
+        }
+
+        if (biggestPercentage.percentage < percentage) {
+          biggestPercentage = {
+            assetId: assetBalance.id,
+            percentage,
+          }
+        }
+
+        return {
+          ...assetBalance,
+          percentage,
+        }
+      })
+
+      const data = { balances, reserves, smallestPercentage, biggestPercentage }
+
+      return {
+        poolId,
+        data,
       }
-
-      biggestPercentage = {
-        assetId: assetBalance.id,
-        percentage,
-      }
-    }
-
-    if (smallestPercentage.percentage > percentage) {
-      smallestPercentage = {
-        assetId: assetBalance.id,
-        percentage,
-      }
-    }
-
-    if (biggestPercentage.percentage < percentage) {
-      biggestPercentage = {
-        assetId: assetBalance.id,
-        percentage,
-      }
-    }
-
-    return {
-      ...assetBalance,
-      percentage,
-    }
-  })
+    })
+  }, [poolsData, getAssetPrice])
 
   return {
-    data: { balances, reserves, smallestPercentage, biggestPercentage },
+    data: poolResults,
     isLoading: isLoading || isPricesLoading,
+  }
+}
+
+export const useStableSwapReserves = (poolId: string) => {
+  const { data, isLoading } = useStableSwapReservesMulti([poolId])
+  return {
+    data: data?.[0].data,
+    isLoading,
   }
 }
 
@@ -784,6 +834,8 @@ export const useStablepoolsData = (disabled?: boolean) => {
   const { data: volumes, isLoading: isVolumeLoading } =
     useStablepoolVolumes(disabled)
 
+  const { getRelatedAToken } = useAssets()
+
   const { data: stablePools, isLoading: isPoolLoading } = useStableSDKPools()
   const { data: stablepoolFees } = useStablepoolFees()
 
@@ -808,8 +860,17 @@ export const useStablepoolsData = (disabled?: boolean) => {
     return { poolId: stablePool.id, tokens: filteredTokens }
   })
 
-  const moneyMarketAssetsApy = useMoneyMarketAssetsAPY(
-    stablePoolData?.map((stablepool) => stablepool.poolId) ?? [],
+  const moneyMarketAssetsIds = useMemo(
+    () =>
+      stablePoolData
+        ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+        .map((stablepool) => stablepool.poolId) ?? [],
+    [stablePoolData, getRelatedAToken],
+  )
+
+  const { data: moneyMarketAssetsApy } = useBorrowAssetsApy(
+    moneyMarketAssetsIds,
+    true,
   )
 
   const { isLoading, getAssetPrice } = useAssetsPrice([...tokensSet])

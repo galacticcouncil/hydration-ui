@@ -107,7 +107,7 @@ export const CurrentDepositFarmsClaimReward = ({
 
       <Button
         variant="primary"
-        size="small"
+        size="compact"
         disabled={BN(claimableTotal).lte(0)}
         onClick={() => claim()}
       >

@@ -17,11 +17,12 @@ import { useTranslation } from "react-i18next"
 export type ReserveOverviewHeaderValuesProps = {
   className?: string
   underlyingAsset: string
+  aToken?: boolean
 }
 
 export const ReserveOverviewHeaderValues: FC<
   ReserveOverviewHeaderValuesProps
-> = ({ underlyingAsset, className }) => {
+> = ({ underlyingAsset, className, aToken }) => {
   const { t } = useTranslation()
   const { reserves, loading } = useAppDataContext()
   const { currentMarket } = useProtocolDataContext()
@@ -45,7 +46,11 @@ export const ReserveOverviewHeaderValues: FC<
       className={className}
     >
       <div sx={{ flex: "row", gap: 12, align: "center" }}>
-        <TokenIcon address={poolReserve.underlyingAsset} size={38} />
+        <TokenIcon
+          address={poolReserve.underlyingAsset}
+          aToken={aToken}
+          size={30}
+        />
         <div>
           <Text fs={18} lh={24} font="GeistSemiBold">
             {poolReserve.symbol}

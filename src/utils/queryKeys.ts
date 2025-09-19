@@ -312,6 +312,7 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   bifrostVDotApy: ["bifrostVDotApy"],
+  defillamaApyHistory: (id: string) => ["defillamaApyHistory", id],
   lidoEthAPR: ["lidoEthAPR"],
   variableBorrowRates: (assetId: string, from: string, to: string) => [
     "variableBorrowRates",
@@ -334,10 +335,24 @@ export const QUERY_KEYS = {
     "borrowReserves",
     poolContractAddress,
   ],
+  borrowUserReserves: (poolContractAddress: string, address: string) => [
+    "borrowReserves",
+    poolContractAddress,
+    address,
+  ],
   borrowIncentives: (
     incentivesContractAddress: string,
     accounntAddress?: string,
   ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
+  ghoReserveData: (uiGhoDataProviderAddress: string) => [
+    "ghoReserveData",
+    uiGhoDataProviderAddress,
+  ],
+  ghoUserData: (uiGhoDataProviderAddress: string, userAddress: string) => [
+    "ghoUserData",
+    uiGhoDataProviderAddress,
+    userAddress,
+  ],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
   suiAccountBalance: (address: string) => ["suiAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
@@ -377,6 +392,11 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
+  bestTradeSellTx: (
+    assetInId: string,
+    assetOutId: string,
+    amountIn: string,
+  ) => ["bestTradeSellTx", assetInId, assetOutId, amountIn],
   wormholeTransfers: (address: string) => ["wormholeTransfers", address],
 } as const
 

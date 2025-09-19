@@ -97,7 +97,6 @@ export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
   chainKey = "hydration",
-  isTestnet = false,
   tags: MetaTags | undefined,
 ) {
   const chain = chainsMap.get(chainKey)
@@ -114,14 +113,9 @@ export function getEvmTxLink(
     return `https://etherscan.io/tx/${txHash}`
   }
 
-  if (chain.isEvmParachain()) {
-    let explorerUrl = ""
-    if (isTestnet && chainKey === "hydration") {
-      explorerUrl = "https://explorer.nice.hydration.cloud"
-    } else {
-      const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
-      explorerUrl = blockExplorers?.default.url ?? ""
-    }
+  if (isAnyEvmChain(chain)) {
+    const { blockExplorers } = chain.client.chain
+    const explorerUrl = blockExplorers?.default.url ?? ""
     return explorerUrl ? `${explorerUrl}/tx/${txHash}` : ""
   } else {
     return createSubscanLink("extrinsic", txHash, chainKey)

@@ -12,8 +12,8 @@ import {
   useWalletAssetsFilters,
 } from "sections/wallet/assets/WalletAssets.utils"
 import { AllAssets, Assets } from "./WalletSections"
-import { WalletStrategyBanner } from "sections/wallet/strategy/WalletStrategyBanner/WalletStrategyBanner"
 import { WalletWormholeRedeemTable } from "sections/wallet/assets/wormhole/WalletWormholeRedeemTable"
+import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
 
 const sections: Record<AssetCategory, React.ReactNode> = {
   all: <AllAssets />,
@@ -38,7 +38,7 @@ export const WalletAssets = () => {
   return (
     <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
-      <WalletStrategyBanner />
+      <HollarBanner />
       <WalletWormholeRedeemTable />
       <div sx={{ flex: "column", gap: [16, 20] }}>
         <WalletAssetsFilters />

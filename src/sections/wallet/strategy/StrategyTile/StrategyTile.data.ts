@@ -1,11 +1,20 @@
 import { getAddressFromAssetId } from "utils/evm"
-import { normalize } from "@aave/math-utils"
+import {
+  formatUserSummaryAndIncentives,
+  normalize,
+  UserIncentiveData,
+} from "@aave/math-utils"
 import { useAssets } from "providers/assets"
 import BN from "bignumber.js"
-import { useMemo } from "react"
 import { useAssetsPrice } from "state/displayPrice"
-import { Reward } from "sections/lending/helpers/types"
-import { useUserBorrowSummary } from "api/borrow"
+import {
+  useBorrowIncentives,
+  useBorrowReserves,
+  useBorrowUserIncentives,
+  useBorrowUserReserves,
+} from "api/borrow"
+import { GDOT_ERC20_ASSET_ID } from "utils/constants"
+import { useCurrentTimestamp } from "sections/lending/hooks/useCurrentTimestamp"
 
 export type StrategyRiskLevel = "low" | "medium" | "high"
 
@@ -14,54 +23,110 @@ export type AssetOverviewData = {
   readonly apr: number
 }
 
-export const useAssetReward = (assetId: string): Reward => {
-  const { data: user } = useUserBorrowSummary()
+export const useUserRewards = (assetIds: string[]) => {
   const { getAssetWithFallback } = useAssets()
-  const { getAssetPrice } = useAssetsPrice([assetId])
-  const spotPrice = getAssetPrice(assetId).price || "0"
-  const asset = getAssetWithFallback(assetId)
+  const { data: user } = useBorrowUserReserves()
+  const { data: reserves } = useBorrowReserves()
+  const { data: reserveIncentives } = useBorrowIncentives()
+  const { data: userIncentives } = useBorrowUserIncentives()
 
-  const assetErc20Address = getAddressFromAssetId(assetId)
-  const underlyingAssetIdLower = assetErc20Address.toLocaleLowerCase()
+  const { getAssetPrice } = useAssetsPrice([GDOT_ERC20_ASSET_ID])
+  const spotPrice = getAssetPrice(GDOT_ERC20_ASSET_ID).price || "0"
 
-  return useMemo(() => {
-    const defaultResult = {
-      assets: [],
-      incentiveControllerAddress: "",
-      symbol: asset.symbol,
-      balance: "0",
-      balanceUsd: "0",
-      rewardTokenAddress: assetErc20Address,
-    }
+  const currentTimestamp = useCurrentTimestamp(100)
+  const gdotIncentiveAddress = getAddressFromAssetId(GDOT_ERC20_ASSET_ID)
+  const gdotMeta = getAssetWithFallback(GDOT_ERC20_ASSET_ID)
 
-    if (!user) return defaultResult
+  const defaultResult = {
+    assets: [],
+    incentiveControllerAddress: "",
+    symbol: gdotMeta.symbol,
+    balance: "0",
+    balanceUsd: "0",
+    rewardTokenAddress: gdotIncentiveAddress,
+  }
 
-    const [rewardTokenAddress, incentive] =
-      Object.entries(user.calculatedUserIncentives).find(
-        ([rewardTokenAddress]) =>
-          rewardTokenAddress.toLocaleLowerCase() === underlyingAssetIdLower,
-      ) ?? []
+  if (!user || !reserves || !reserveIncentives || !userIncentives)
+    return defaultResult
 
-    if (!incentive || !rewardTokenAddress) {
-      return defaultResult
-    }
+  const { baseCurrencyData, formattedReserves } = reserves
+  const { userEmodeCategoryId, userReserves } = user
 
-    const rewardBalance = normalize(
-      incentive.claimableRewards,
-      incentive.rewardTokenDecimals,
-    )
-
-    const rewardBalanceUsd = new BN(spotPrice)
-      .times(rewardBalance || "0")
-      .toString()
+  const assets = assetIds.map((assetId) => {
+    const id = assetId.toLowerCase()
+    const address = getAddressFromAssetId(id)
 
     return {
-      assets: incentive.assets,
-      incentiveControllerAddress: incentive.incentiveControllerAddress,
-      symbol: incentive.rewardTokenSymbol,
-      balance: rewardBalance,
-      balanceUsd: rewardBalanceUsd.toString(),
-      rewardTokenAddress,
+      assetId: id,
+      reserve: formattedReserves.find(
+        (r) => r.underlyingAsset.toLowerCase() === address,
+      ),
+      reserveIncentive: reserveIncentives.find(
+        (i) => i.underlyingAsset.toLowerCase() === address,
+      ),
+      userIncentive: userIncentives.find(
+        (i) => i.underlyingAsset.toLowerCase() === address,
+      ),
+      userReserve: userReserves.find(
+        (r) => r.underlyingAsset.toLowerCase() === address,
+      ),
     }
-  }, [asset.symbol, assetErc20Address, spotPrice, underlyingAssetIdLower, user])
+  })
+
+  let totalIncentive: UserIncentiveData | undefined
+
+  for (const {
+    reserve,
+    reserveIncentive,
+    userIncentive,
+    userReserve,
+  } of assets) {
+    if (!reserve || !reserveIncentive || !userIncentive || !userReserve)
+      continue
+
+    const summary = formatUserSummaryAndIncentives({
+      currentTimestamp,
+      marketReferencePriceInUsd:
+        reserves.baseCurrencyData.marketReferenceCurrencyPriceInUsd,
+      marketReferenceCurrencyDecimals:
+        baseCurrencyData.marketReferenceCurrencyDecimals,
+      userEmodeCategoryId,
+      userReserves: [userReserve],
+      formattedReserves: [reserve],
+      reserveIncentives: [reserveIncentive],
+      userIncentives: [userIncentive],
+    })
+
+    const incentive = summary.calculatedUserIncentives[gdotIncentiveAddress]
+
+    if (incentive) {
+      totalIncentive = {
+        ...incentive,
+        assets: [...incentive.assets, ...(totalIncentive?.assets ?? [])],
+        claimableRewards: incentive.claimableRewards.plus(
+          totalIncentive?.claimableRewards ?? 0,
+        ),
+      }
+    }
+  }
+
+  if (!totalIncentive) return defaultResult
+
+  const rewardBalance = normalize(
+    totalIncentive.claimableRewards,
+    totalIncentive.rewardTokenDecimals,
+  )
+
+  const rewardBalanceUsd = new BN(spotPrice)
+    .times(rewardBalance || "0")
+    .toString()
+
+  return {
+    assets: totalIncentive.assets,
+    incentiveControllerAddress: totalIncentive.incentiveControllerAddress,
+    symbol: totalIncentive.rewardTokenSymbol,
+    balance: rewardBalance,
+    balanceUsd: rewardBalanceUsd.toString(),
+    rewardTokenAddress: gdotIncentiveAddress,
+  }
 }

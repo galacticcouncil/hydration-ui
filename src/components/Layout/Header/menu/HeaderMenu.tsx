@@ -168,7 +168,7 @@ const LiquidityMenuItem = ({
   const { isBalance } = useIsAccountBalance()
 
   const isAnyPositions = isPositions || isBalance
-  console.log({ isAnyPositions })
+
   return (
     <Link
       to={isAnyPositions ? LINKS.myLiquidity : item.href}

@@ -6,7 +6,6 @@ import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { DEPOSIT_CLASS_ID } from "utils/api"
 import { STradingPairContainer } from "./RemoveLiquidity.styled"
 import { FeeRange } from "./components/FeeRange/FeeRange"
 import { RemoveLiquidityReward } from "./components/RemoveLiquidityReward"
@@ -50,8 +49,9 @@ export const RemoveLiquidityForm = ({
     remainingValue,
     isFeeExceeded,
     mutation,
-    meta: { id, symbol, name, decimals },
+    meta,
   } = useRemoveLiquidity(position, value, onClose, onSuccess, onSubmit, onError)
+  const { decimals, symbol } = meta
 
   const tokensToGet =
     values && values?.tokensToGetShifted.gt(0)
@@ -109,21 +109,13 @@ export const RemoveLiquidityForm = ({
             {t("liquidity.remove.modal.receive")}
           </Text>
           <RemoveLiquidityReward
-            id={id}
-            name={name}
-            symbol={symbol}
-            amount={t("value.token", {
-              value: tokensToGet,
-            })}
+            meta={meta}
+            amount={values?.tokensToGet.toString() ?? ""}
           />
           {values && BN(values.lrnaToGet).gt(0) && (
             <RemoveLiquidityReward
-              id={DEPOSIT_CLASS_ID}
-              name={lrnaMeta.name}
-              symbol={lrnaMeta.symbol}
-              amount={t("value.token", {
-                value: values.lrnaToGet,
-              })}
+              meta={lrnaMeta}
+              amount={values.lrnaToGet.toString() ?? ""}
             />
           )}
         </STradingPairContainer>

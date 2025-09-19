@@ -63,6 +63,7 @@ const colors = {
   red500: "#FF4B4B",
   red700: "#FF0000",
   green100: "#03EF97",
+  green200: "#07FFA1",
   green400: "#01F397",
   green500: "#4BFFBB",
   green600: "#30FFB1",

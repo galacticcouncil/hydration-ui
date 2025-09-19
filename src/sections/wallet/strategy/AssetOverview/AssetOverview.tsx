@@ -1,4 +1,4 @@
-import { useBorrowAssetApy } from "api/borrow"
+import { useBorrowAssetsApy } from "api/borrow"
 import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
 import { Separator } from "components/Separator/Separator"
 import { FC } from "react"
@@ -11,21 +11,23 @@ import {
 import { StrategyRiskLevel } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 
-type Props = {
+export type AssetOverviewProps = {
   readonly assetId: string
   readonly underlyingAssetId: string
   readonly riskLevel: StrategyRiskLevel
   readonly riskTooltip: string
 }
 
-export const AssetOverview: FC<Props> = ({
+export const AssetOverview: FC<AssetOverviewProps> = ({
   assetId,
   underlyingAssetId,
   riskLevel,
   riskTooltip,
 }) => {
   const { t } = useTranslation()
-  const { totalSupplyApy, tvl } = useBorrowAssetApy(assetId)
+  const { data } = useBorrowAssetsApy([assetId])
+
+  const { totalSupplyApy, tvl } = data[0] || {}
 
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
@@ -55,7 +57,7 @@ export const AssetOverview: FC<Props> = ({
         <AssetOverviewTile
           label={`${t("apy")}:`}
           customValue={
-            <OverrideApy assetId={assetId} type="supply" withFarms>
+            <OverrideApy assetId={assetId} type="supply" withFarms size={16}>
               <AssetOverviewTileValue>
                 {totalSupplyApy === Infinity
                   ? "∞"
@@ -74,12 +76,10 @@ export const AssetOverview: FC<Props> = ({
   )
 }
 
-const AssetOverviewSeparator: FC = () => {
-  return (
-    <Separator
-      orientation="vertical"
-      color="white"
-      sx={{ height: "100%", opacity: 0.06 }}
-    />
-  )
-}
+export const AssetOverviewSeparator: FC = () => (
+  <Separator
+    orientation="vertical"
+    color="white"
+    sx={{ height: "100%", opacity: 0.06 }}
+  />
+)

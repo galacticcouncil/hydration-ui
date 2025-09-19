@@ -26,6 +26,7 @@ import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives
 import { getAssetIdFromAddress } from "utils/evm"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NoData } from "sections/lending/components/primitives/NoData"
+import { useAssets } from "providers/assets"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -64,7 +65,7 @@ export const useSupplyAssetsTableColumns = () => {
         ),
       }),
       columnHelper.accessor("walletBalanceUSD", {
-        header: t("lending.walletBalance"),
+        header: t("lending.balance"),
         meta: {
           sx: {
             textAlign: "right",
@@ -204,6 +205,7 @@ export const useSupplyAssetsTableColumns = () => {
 
 export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   const displayGho = useRootStore((store) => store.displayGho)
+  const { getAsset } = useAssets()
   const { currentMarket, currentMarketData } = useProtocolDataContext()
   const {
     user,
@@ -225,17 +227,19 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
         gigaReserves: ComputedReserveData[]
       }>(
         (acc, reserve: ComputedReserveData) => {
+          const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
+          const walletBalanceUSD =
+            walletBalances[reserve.underlyingAsset]?.amountUSD
+
+          let availableToDeposit = valueToBigNumber(walletBalance)
+
           if (MONEY_MARKET_GIGA_RESERVES.includes(reserve.underlyingAsset)) {
             acc.gigaReserves.push(reserve)
 
-            return acc
+            if (availableToDeposit.isNaN() || availableToDeposit.isZero())
+              return acc
           }
 
-          const walletBalance = walletBalances[reserve.underlyingAsset]?.amount
-
-          const walletBalanceUSD =
-            walletBalances[reserve.underlyingAsset]?.amountUSD
-          let availableToDeposit = valueToBigNumber(walletBalance)
           if (reserve.supplyCap !== "0") {
             availableToDeposit = availableToDeposit.isNaN()
               ? new BigNumber(0)
@@ -266,8 +270,19 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
               ? false
               : !hasDifferentCollateral
 
+          const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(
+            reserve.underlyingAsset,
+          )
+
+          // display share token name and symbol for giga assets in the supply table
+          const gigaAssetMeta = isGigaAsset
+            ? getAsset(getAssetIdFromAddress(reserve.underlyingAsset))
+            : undefined
+
           acc.tokensToSupply.push({
             ...reserve,
+            symbol: gigaAssetMeta?.symbol || reserve.symbol,
+            name: gigaAssetMeta?.name || reserve.name,
             reserve,
             walletBalance,
             walletBalanceUSD,
@@ -310,6 +325,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
   }, [
     currentMarket,
     displayGho,
+    getAsset,
     marketReferencePriceInUsd,
     reserves,
     showAll,

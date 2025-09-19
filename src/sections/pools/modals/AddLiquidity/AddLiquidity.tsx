@@ -75,7 +75,10 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
             noPadding: true,
             headerVariant: "GeistMono",
             content: (
-              <LimitModal onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)} />
+              <LimitModal
+                onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)}
+                type="liquidity"
+              />
             ),
           },
         ]}
