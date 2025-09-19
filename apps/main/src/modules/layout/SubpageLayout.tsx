@@ -6,7 +6,7 @@ import { SubpageMenu } from "@/modules/layout/components/SubpageMenu"
 
 type Props = {
   readonly actions?: ReactNode
-  subpageMenu?: ReactNode
+  readonly subpageMenu?: ReactNode
 }
 
 export const SubpageLayout: FC<Props> = ({ actions, subpageMenu }) => {

@@ -1,0 +1,16 @@
+{
+    "dashboard.title": "Staking dashboard",
+    
+    "howTo.title": "How to stake?",
+    "howTo.points": [
+        ["Don't have HDX?", "You can easily get HDX by swapping from a range of assets on our tade page."],
+        ["Stake", "Choose how many HDX you wish to stake - these can be unstaked at any time."],
+        ["Participate in referenda", "Participate in governance to speed up the rate at which you can claim rewards."],
+        ["Claim", "Rewards can be claimed at any time - however, be aware that this could forfeit your unavailable portion."]
+    ],
+    "howTo.supplyStaked.title": "{{ symbol }} Supply Staked",
+    "howTo.supplyStaked.ofSupply": "of {{ amount }} circulating supply",
+    "howTo.projectedAPR": "Projected APR",
+
+    "referenda.title": "Ongoing referenda"
+}
