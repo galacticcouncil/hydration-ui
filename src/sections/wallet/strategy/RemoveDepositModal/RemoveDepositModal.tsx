@@ -32,6 +32,7 @@ import { scale, scaleHuman } from "utils/balance"
 import {
   AAVE_EXTRA_GAS,
   BN_0,
+  HOLLAR_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
 import { SummaryRow } from "components/Summary/SummaryRow"
@@ -252,16 +253,28 @@ export const RemoveDepositModal: FC<Props> = ({
     )
   }
 
+  const firstNonHollarSplitAsset = splitRemove
+    ? minAssetsOut.find((minAssetOut) => minAssetOut.meta.id !== HOLLAR_ID)
+    : null
+
   const hfChange = useHealthFactorChange({
     assetId,
     amount: assetAmount,
     action: ProtocolAction.withdraw,
-    swapAsset: assetReceived
+    swapAsset: firstNonHollarSplitAsset
       ? {
-          assetId: assetReceived.id,
-          amount: amountOutFormatted,
+          assetId: firstNonHollarSplitAsset.meta.id,
+          amount: scaleHuman(
+            firstNonHollarSplitAsset.assetOutValue,
+            firstNonHollarSplitAsset.meta.decimals,
+          ).toString(),
         }
-      : undefined,
+      : assetReceived
+        ? {
+            assetId: assetReceived.id,
+            amount: amountOutFormatted,
+          }
+        : undefined,
   })
 
   const displayTradeAlert = useMemo(
