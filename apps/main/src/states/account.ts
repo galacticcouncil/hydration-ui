@@ -1,3 +1,4 @@
+import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
 import Big from "big.js"
 import { useCallback, useMemo } from "react"
 import { isDeepEqual, pick, prop } from "remeda"
@@ -12,11 +13,8 @@ import {
 
 import { OmnipoolPositionData, useOmnipoolPositionData } from "./liquidity"
 
-export type Balance = {
+export type Balance = SdkBalance & {
   assetId: string
-  free: bigint
-  reserved: bigint
-  total: bigint
 }
 
 type Positions = {
@@ -54,6 +52,7 @@ type BalanceStorageSlice = {
   isBalanceLoading: boolean
   setBalance: (balances: Balance[]) => void
   resetBalances: () => void
+  balancesLoaded: () => void
 }
 
 type PositionsStorageSlice = {
@@ -78,12 +77,13 @@ const createAccountsBalances: StateCreator<
       balances.forEach((balance) => (newBalances[balance.assetId] = balance))
 
       if (isDeepEqual(newBalances, state.balances)) {
-        return { balances: state.balances, isBalanceLoading: false }
+        return { balances: state.balances }
       }
 
-      return { balances: newBalances, isBalanceLoading: false }
+      return { balances: newBalances }
     }),
   resetBalances: () => set(store.getInitialState()),
+  balancesLoaded: () => set({ isBalanceLoading: false }),
 })
 
 const createAccountsUniques: StateCreator<
