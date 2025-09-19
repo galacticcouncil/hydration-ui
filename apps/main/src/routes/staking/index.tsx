@@ -3,11 +3,14 @@ import { AreaChart } from "@galacticcouncil/ui/components"
 import { MOCK_CURVE_DATA } from "@galacticcouncil/ui/components/Chart/utils"
 import { createFileRoute } from "@tanstack/react-router"
 
+import { StakingDashboard } from "@/modules/staking/StakingDashboard"
+
 export const Route = createFileRoute("/staking/")({
-  component: RouteComponent,
+  component: StakingDashboard,
 })
 
-function RouteComponent() {
+// TODO
+export function StakingChart() {
   return (
     <AreaChart
       aspectRatio="16 / 9"

@@ -1,7 +1,8 @@
+import { Box } from "@/components/Box"
 import { mq } from "@/styles/media"
 import { css, styled } from "@/utils"
 
-export const SSectionHeader = styled.div(
+export const SSectionHeader = styled(Box)(
   ({ theme }) => css`
     padding: ${theme.scales.paddings.xl}px ${theme.containers.paddings.quint}px
       ${theme.containers.paddings.secondary}px

@@ -13,11 +13,18 @@ type Props = {
   readonly number: number
   readonly title: string
   readonly description: string
+  readonly className?: string
 }
 
-export const Points = ({ size = "m", number, title, description }: Props) => {
+export const Points = ({
+  size = "m",
+  number,
+  title,
+  description,
+  className,
+}: Props) => {
   return (
-    <SPointsContainer size={size}>
+    <SPointsContainer size={size} className={className}>
       <SPointsNumberContainer size={size}>
         <SPointsNumber size={size}>{number}</SPointsNumber>
       </SPointsNumberContainer>
