@@ -358,9 +358,7 @@ export const useProcessToasts = (toasts: ToastData[]) => {
 
         const isHiddenToast = minutesDiff > 10
         const isXcm = !!toastData.xcm
-        const isEvm =
-          toastData.link?.includes("evm") ||
-          toastData.link?.includes("explorer.nice.hydration.cloud")
+        const isEvm = !!toastData?.isHydraEvm
 
         if (isXcm && toastData.link) {
           const parachain = extractKeyFromURL(toastData.link, !!isEvm)
