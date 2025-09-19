@@ -1,6 +1,7 @@
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
+import { millisecondsInMinute } from "date-fns/constants"
 
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
@@ -118,5 +119,21 @@ export const tokenBalanceQuery = (
       return parseTokenBalanceData(res, tokenId, address ?? "")
     },
     enabled: isApiLoaded && !!address && !!tokenId,
+  })
+}
+
+export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
+  return queryOptions({
+    queryKey: ["hdxIssuance"],
+    queryFn: async () => {
+      const [totalissuance, inactiveIssuance] = await Promise.all([
+        papi.query.Balances.TotalIssuance.getValue(),
+        papi.query.Balances.InactiveIssuance.getValue(),
+      ])
+
+      return totalissuance - inactiveIssuance
+    },
+    enabled: isApiLoaded,
+    staleTime: millisecondsInMinute,
   })
 }

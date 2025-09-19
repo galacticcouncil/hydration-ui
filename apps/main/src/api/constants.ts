@@ -12,13 +12,15 @@ export const uniquesIds = (context: TProviderContext) => {
     staleTime: Infinity,
     queryKey: ["uniquesIds"],
     queryFn: async () => {
-      const [omnipoolNftId, miningNftId, xykMiningNftId] = await Promise.all([
-        papi.constants.Omnipool.NFTCollectionId(),
-        papi.constants.OmnipoolLiquidityMining.NFTCollectionId(),
-        papi.constants.XYKLiquidityMining.NFTCollectionId(),
-      ])
+      const [omnipoolNftId, miningNftId, xykMiningNftId, stakingId] =
+        await Promise.all([
+          papi.constants.Omnipool.NFTCollectionId(),
+          papi.constants.OmnipoolLiquidityMining.NFTCollectionId(),
+          papi.constants.XYKLiquidityMining.NFTCollectionId(),
+          papi.constants.Staking.NFTCollectionId(),
+        ])
 
-      return { omnipoolNftId, miningNftId, xykMiningNftId }
+      return { omnipoolNftId, miningNftId, xykMiningNftId, stakingId }
     },
   })
 }
@@ -36,3 +38,18 @@ export const insufficientFeeQuery = ({ papi, isLoaded }: TProviderContext) => {
     staleTime: STALE_TIME,
   })
 }
+
+export const stakingConstsQuery = ({ papi, isLoaded }: TProviderContext) =>
+  queryOptions({
+    queryKey: ["stakingConsts"],
+    queryFn: async () => {
+      const [palletId] = await Promise.all([papi.constants.Staking.PalletId()])
+
+      return {
+        palletId,
+      }
+    },
+    enabled: isLoaded,
+    gcTime: GC_TIME,
+    staleTime: STALE_TIME,
+  })
