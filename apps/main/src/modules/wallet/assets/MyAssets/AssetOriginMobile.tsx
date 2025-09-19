@@ -4,7 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
-  readonly origin: AnyChain | null
+  readonly origin: AnyChain
 }
 
 export const AssetOriginMobile: FC<Props> = ({ origin }) => {
@@ -14,7 +14,7 @@ export const AssetOriginMobile: FC<Props> = ({ origin }) => {
     <Amount
       variant="horizontalLabel"
       label={t("myAssets.expandedAsset.assetOrigin")}
-      value={origin?.name || t("common:unknown")}
+      value={origin.name}
     />
   )
 }

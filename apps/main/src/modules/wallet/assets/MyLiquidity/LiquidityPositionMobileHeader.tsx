@@ -26,10 +26,17 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
 }) => {
   const { t } = useTranslation()
 
+  // TODO integrate
+  const farmsAvailable = 1
+
   return (
     <SLiquidityPositionMobileHeader>
       <AssetLabelFull asset={asset} withName={false} />
-      <LiquidityFarms assetId={asset.id} rewards={position.rewards} />
+      <LiquidityFarms
+        assetId={asset.id}
+        rewards={position.rewards}
+        farmsAvailable={farmsAvailable}
+      />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="tertiary" outline>

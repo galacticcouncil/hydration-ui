@@ -1,9 +1,14 @@
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import Big from "big.js"
 import { useMemo } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import {
+  myAssetsMobileSorter,
+  myAssetsSorter,
+} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
@@ -11,6 +16,7 @@ import { getAssetOrigin } from "@/utils/externalAssets"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useMyAssetsTableData = (showAllAssets: boolean) => {
+  const { isMobile } = useBreakpoints()
   const { native, all, isExternal, tradable } = useAssets()
   const { balances, isBalanceLoading } = useAccountData(
     useShallow(pick(["balances", "isBalanceLoading"])),
@@ -89,6 +95,7 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           ),
         }
       })
+      .sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)
   }, [
     native.id,
     balances,
@@ -97,6 +104,7 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
     prices,
     assetsWithBalance,
     isLoading,
+    isMobile,
   ])
 
   return {

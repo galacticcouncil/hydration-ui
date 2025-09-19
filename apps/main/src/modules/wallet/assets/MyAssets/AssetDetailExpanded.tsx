@@ -20,12 +20,16 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
 
   return (
     <Flex px={50} justify="space-around">
-      <Amount
-        label={t("myAssets.expandedAsset.assetOrigin")}
-        value={asset.origin?.name || t("common:unknown")}
-        sx={{ alignSelf: "center" }}
-      />
-      <Separator orientation="vertical" />
+      {asset.origin?.name && (
+        <>
+          <Amount
+            label={t("myAssets.expandedAsset.assetOrigin")}
+            value={asset.origin.name}
+            sx={{ alignSelf: "center" }}
+          />
+          <Separator orientation="vertical" />
+        </>
+      )}
       <Amount
         label={t("myAssets.expandedAsset.reserved")}
         value={t("common:currency", {

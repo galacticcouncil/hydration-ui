@@ -1,6 +1,7 @@
 import { Asset } from "@galacticcouncil/sdk-next"
+import { isAnyParachain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { AnyChain, Parachain } from "@galacticcouncil/xcm-core"
+import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xcm-core"
 import {
   HydradxRuntimeXcmAssetLocation,
   XcmV3Junction,
@@ -9,7 +10,7 @@ import {
 import { Buffer } from "buffer"
 import { FixedSizeBinary } from "polkadot-api"
 
-import { AssetType, TAssetData } from "@/api/assets"
+import { TAssetData } from "@/api/assets"
 
 export const ASSETHUB_ID_BLACKLIST = [
   "34",
@@ -43,22 +44,22 @@ export const ASSETHUB_ID_BLACKLIST = [
 export const assethub = chainsMap.get("assethub") as Parachain
 export const pendulum = chainsMap.get("pendulum") as Parachain
 
-const chainsById = new Map(
-  Array.from(chainsMap.values()).map((chain) => [
-    chain instanceof Parachain ? chain.parachainId : chain.id,
-    chain,
-  ]),
-)
+const chains = Array.from(chainsMap.values())
 
 export const getAssetOrigin = (asset: TAssetData): AnyChain | null => {
-  if (
-    (asset.type !== AssetType.TOKEN && asset.type !== AssetType.External) ||
-    !asset.parachainId
-  ) {
+  const assetParachain =
+    "parachainId" in asset ? Number(asset.parachainId) : null
+
+  if (!assetParachain) {
     return null
   }
 
-  return chainsById.get(Number(asset.parachainId)) ?? null
+  return (
+    chains.find(
+      (chain): chain is AnyParachain =>
+        isAnyParachain(chain) && chain.parachainId === assetParachain,
+    ) ?? null
+  )
 }
 
 export type TExternalAsset = {
