@@ -164,7 +164,7 @@ export const PROVIDER_LIST =
     ? [
         {
           name: "HOLLAR",
-          url: "wss://1.lark.hydration.cloud",
+          url: "wss://2.lark.hydration.cloud",
           ...defaultProvider,
           squidUrl:
             "https://galacticcouncil.squids.live/hydration-pools-hollar-testnet:hsm-hollar-sandbox-unified/api/graphql",
