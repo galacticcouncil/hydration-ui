@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { prop } from "remeda"
 
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountData } from "@/states/account"
+import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { Positions, useAccountData } from "@/states/account"
 import { useOmnipoolIds } from "@/states/liquidity"
 
 import { OmnipoolDepositFull } from "./account"
@@ -101,3 +101,45 @@ const getStoppedFarms = (
 
   return Array.from(resultMap.values())
 }
+
+export const allDepositsRewardsQuery = (
+  { sdk, isApiLoaded }: TProviderContext,
+  accountId: string,
+  positions: Positions,
+  relayBlockChainNumber: number,
+  isEnabled: boolean,
+) =>
+  queryOptions({
+    queryKey: ["farmRewards", accountId],
+    queryFn: () => {
+      const allDeposits = positions.xykMining
+        .map(
+          (deposit) =>
+            [
+              deposit.amm_pool_id.toString(),
+              true as boolean,
+              deposit.yield_farm_entries,
+            ] as const,
+        )
+        .concat(
+          positions.omnipoolMining.map(
+            (deposit) =>
+              [deposit.assetId, false, deposit.yield_farm_entries] as const,
+          ),
+        )
+
+      return Promise.all(
+        allDeposits.flatMap(([poolId, isXyk, yield_farm_entries]) =>
+          yield_farm_entries.map((farmEntry) =>
+            sdk.api.farm.getDepositReward(
+              poolId,
+              farmEntry,
+              isXyk,
+              relayBlockChainNumber,
+            ),
+          ),
+        ),
+      )
+    },
+    enabled: isEnabled && isApiLoaded && !!relayBlockChainNumber && !!accountId,
+  })
