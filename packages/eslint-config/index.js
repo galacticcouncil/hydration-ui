@@ -1,9 +1,12 @@
+const reactHooks = require("eslint-plugin-react-hooks")
+
 module.exports = {
   parser: "@typescript-eslint/parser",
   extends: [
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:react-hooks/recommended-legacy",
   ],
   plugins: [
     "@typescript-eslint",
