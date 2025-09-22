@@ -30,6 +30,7 @@ const defaultValues = {
   tokensToGet: BN_0,
   tokensToGetShifted: BN_0,
   lrnaToGet: BN_0,
+  lrnaToGetShifted: BN_0,
   lrnaPayWith: BN_0,
   tokensPayWith: BN_0,
   withdrawalFee: BN_0,
@@ -136,7 +137,8 @@ export const useRemoveLiquidity = (
         return {
           tokensToGet: valueWithFee.value,
           tokensToGetShifted: valueWithFee.valueShifted,
-          lrnaToGet: valueWithFee.lrnaShifted,
+          lrnaToGetShifted: valueWithFee.lrnaShifted,
+          lrnaToGet: valueWithFee.lrna,
           lrnaPayWith: valueWithoutFee.lrnaShifted.minus(
             valueWithFee.lrnaShifted,
           ),
@@ -161,6 +163,9 @@ export const useRemoveLiquidity = (
             tokensToGet: acc.tokensToGet.plus(values.tokensToGet),
             tokensToGetShifted: acc.tokensToGetShifted.plus(
               values.tokensToGetShifted,
+            ),
+            lrnaToGetShifted: acc.lrnaToGetShifted.plus(
+              values.lrnaToGetShifted,
             ),
             lrnaToGet: acc.lrnaToGet.plus(values.lrnaToGet),
             lrnaPayWith: acc.lrnaPayWith.plus(values.lrnaPayWith),
@@ -221,9 +226,9 @@ export const useRemoveLiquidity = (
       const tOptions = {
         amount: values.tokensToGetShifted,
         symbol: meta.symbol,
-        withLrna: values.lrnaToGet.isGreaterThan(0)
+        withLrna: values.lrnaToGetShifted.isGreaterThan(0)
           ? t("liquidity.remove.modal.toast.withLrna", {
-              lrna: values.lrnaToGet,
+              lrna: values.lrnaToGetShifted,
             })
           : "",
       }

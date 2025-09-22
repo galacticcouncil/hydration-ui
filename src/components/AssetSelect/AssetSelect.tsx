@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js"
 import { SErrorMessage } from "components/AddressInput/AddressInput.styled"
 import { AssetInput } from "components/AssetInput/AssetInput"
 import { Text } from "components/Typography/Text/Text"
-import React, { forwardRef, ReactNode, useMemo } from "react"
+import { forwardRef, ReactNode, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { theme } from "theme"
 import { scaleHuman } from "utils/balance"
@@ -11,7 +11,6 @@ import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { Maybe } from "utils/helpers"
 import { SContainer, SMaxButton } from "./AssetSelect.styled"
 import { AssetSelectButton } from "./AssetSelectButton"
-import { useMedia } from "react-use"
 import { BN_0 } from "utils/constants"
 import { useAssets } from "providers/assets"
 import { useAssetsPrice } from "state/displayPrice"
@@ -42,11 +41,7 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
     const { t } = useTranslation()
     const { isBond, getAssetWithFallback } = useAssets()
     const asset = getAssetWithFallback(props.id)
-    const { decimals, symbol } = asset
-
-    const isAssetFound = !!asset?.id
-
-    const isTablet = useMedia(theme.viewport.gte.sm)
+    const { decimals } = asset
 
     const spotPriceId =
       isBond(asset) && !asset.isTradable ? asset.underlyingAssetId : asset.id
@@ -161,7 +156,6 @@ export const AssetSelect = forwardRef<HTMLInputElement, AssetSelectProps>(
               onChange={props.onChange}
               displayValue={displayValue}
               placeholder="0.00"
-              unit={isTablet && isAssetFound ? symbol : ""}
               error={props.error}
               css={css`
                 & > label {

@@ -12,6 +12,7 @@ import BN from "bignumber.js"
 import { Button } from "components/Button/Button"
 import { Text } from "components/Typography/Text/Text"
 import { Spacer } from "components/Spacer/Spacer"
+import { useSwapLimit } from "./LimitModal.utils"
 
 const options = [
   { label: "1%", value: 1 },
@@ -19,15 +20,24 @@ const options = [
   { label: "3%", value: 3 },
 ]
 
-export const LimitModal = ({ onConfirm }: { onConfirm: () => void }) => {
+export const LimitModal = ({
+  onConfirm,
+  type,
+}: {
+  onConfirm: () => void
+  type: "liquidity" | "swap"
+}) => {
   const { t } = useTranslation()
-  const { addLiquidityLimit, udpate } = useLiquidityLimit()
+  const { addLiquidityLimit, udpate: updateLiquidity } = useLiquidityLimit()
+  const { swapLimit, update: updateSwap } = useSwapLimit()
 
   const form = useForm<{
     value: string
   }>({
     mode: "onChange",
-    defaultValues: { value: addLiquidityLimit },
+    defaultValues: {
+      value: type === "liquidity" ? addLiquidityLimit : swapLimit,
+    },
     resolver: zodResolver(
       z.object({
         value: required.refine((value) => BN(value).lte(100), {
@@ -42,7 +52,12 @@ export const LimitModal = ({ onConfirm }: { onConfirm: () => void }) => {
   return (
     <form
       onSubmit={form.handleSubmit(({ value }) => {
-        udpate(value)
+        if (type === "liquidity") {
+          updateLiquidity(value)
+        } else {
+          updateSwap(value)
+        }
+
         onConfirm()
       })}
       sx={{ flex: "column", justify: "space-between", height: 320, p: 24 }}

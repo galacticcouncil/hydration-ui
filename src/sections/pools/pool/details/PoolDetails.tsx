@@ -28,12 +28,11 @@ import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
 import { BN_1, BN_MILL, GETH_ERC20_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
-import { AvailableFarms } from "sections/pools/pool/availableFarms/AvailableFarms"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useAssetsPrice } from "state/displayPrice"
-import { GigaIncentives } from "sections/pools/stablepool/components/GigaIncentives"
 import { useStableswapPool } from "api/stableswap"
+import { AvailableIncentives } from "./AvailableIncentives"
 
 export const PoolDetails = () => {
   const { t } = useTranslation()
@@ -46,8 +45,7 @@ export const PoolDetails = () => {
   const meta = pool.meta
   const omnipoolFee = useOmnipoolFee()
 
-  const isTransferModalOpen =
-    isOpen && (pool.meta.isStableSwap || pool.meta.isErc20)
+  const isTransferModalOpen = isOpen && isStablepoolType(pool)
   const isGeth = !ixXYKPool && pool.isGETH
 
   const initialAssetId = (() => {
@@ -65,10 +63,13 @@ export const PoolDetails = () => {
   const modal = isOpen ? (
     isTransferModalOpen ? (
       <TransferModal
+        farms={pool.farms}
+        poolId={pool.poolId}
+        stablepoolAssetId={pool.relatedAToken?.id ?? pool.id}
         onClose={() => setOpen(false)}
-        farms={pool.farms ?? []}
         skipOptions={isGeth}
         initialAssetId={initialAssetId}
+        disabledOmnipool={!pool.canAddLiquidity}
       />
     ) : (
       <AddLiquidity isOpen onClose={() => setOpen(false)} />
@@ -259,7 +260,7 @@ export const PoolDetails = () => {
             </SValuesContainer>
           </div>
         </div>
-        {!ixXYKPool && isStablepoolType(pool) ? (
+        {isStablepoolType(pool) ? (
           <>
             <Separator
               color="white"
@@ -267,23 +268,11 @@ export const PoolDetails = () => {
               sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
             />
 
-            <CurrencyReserves reserves={pool.reserves} />
-
-            {pool.relatedAToken && !pool.isInOmnipool && (
-              <>
-                <Separator
-                  color="white"
-                  opacity={0.06}
-                  sx={{ mx: "-30px", width: "calc(100% + 60px)" }}
-                />
-
-                <GigaIncentives pool={pool} />
-              </>
-            )}
+            <CurrencyReserves pool={pool} />
           </>
         ) : null}
 
-        <AvailableFarms />
+        <AvailableIncentives pool={pool} />
       </SPoolDetailsContainer>
       {modal}
     </>

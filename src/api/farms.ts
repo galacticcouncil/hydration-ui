@@ -289,7 +289,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
   const balanceClient = client?.balance
 
-  const { omnipoolDeposits = [] } = data ?? {}
+  const { omnipoolDeposits } = data ?? {}
 
   const { data: activeFarms, isSuccess: isActiveFarms } = useQuery(
     QUERY_KEYS.omnipoolActiveFarms,
@@ -299,7 +299,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
   const stoppedFarms = useMemo(
     () =>
-      !!omnipoolDeposits.length
+      omnipoolDeposits?.length
         ? getStoppedFarms(omnipoolDeposits, activeFarms ?? [])
         : [],
     [activeFarms, omnipoolDeposits],
