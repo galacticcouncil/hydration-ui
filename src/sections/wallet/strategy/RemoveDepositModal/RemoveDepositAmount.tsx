@@ -8,14 +8,14 @@ import { RemoveDepositFormValues } from "sections/wallet/strategy/RemoveDepositM
 
 type Props = {
   readonly assetId: string
-  readonly balance: string
   readonly maxBalance: string
+  readonly onSelectorOpen?: () => void
 }
 
 export const RemoveDepositAmount: FC<Props> = ({
   assetId,
-  balance,
   maxBalance,
+  onSelectorOpen,
 }) => {
   const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
@@ -39,6 +39,7 @@ export const RemoveDepositAmount: FC<Props> = ({
           balance={maxBalanceBn}
           balanceMax={maxBalanceBn}
           balanceLabel={t("lending.withdraw.balance")}
+          onSelectAssetClick={onSelectorOpen}
         />
       )}
     />

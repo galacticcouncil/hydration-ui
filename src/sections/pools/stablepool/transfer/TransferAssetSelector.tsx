@@ -1,27 +1,24 @@
-import { TAsset, useAssets } from "providers/assets"
+import { TAsset, TErc20, useAssets } from "providers/assets"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
-import { TStablepool } from "sections/pools/PoolsPage.utils"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
+import { GETH_ERC20_ASSET_ID } from "utils/constants"
 
 type TransferAssetSelectorProps = {
-  pool: TStablepool
+  stablepoolAsset: TAsset
   firstAssetId?: string
   onSelect: (asset: NonNullable<TAsset>) => void
 }
 
-const TransferErc20AssetSelector: React.FC<TransferAssetSelectorProps> = ({
-  pool,
-  firstAssetId,
-  onSelect,
-}) => {
-  const { getErc20, native } = useAssets()
+const TransferErc20AssetSelector: React.FC<
+  TransferAssetSelectorProps & { stablepoolAsset: TErc20 }
+> = ({ stablepoolAsset, firstAssetId, onSelect }) => {
+  const { native, getErc20 } = useAssets()
 
-  const aTokenId = pool.relatedAToken?.id ?? ""
-
-  const depositAssetId = getErc20(aTokenId)?.underlyingAssetId ?? ""
+  const depositAssetId = getErc20(stablepoolAsset.id)?.underlyingAssetId ?? ""
 
   const selectableAssets = useNewDepositAssets(depositAssetId, {
-    blacklist: aTokenId ? [aTokenId] : [],
+    blacklist:
+      stablepoolAsset.id !== GETH_ERC20_ASSET_ID ? [stablepoolAsset.id] : [],
     firstAssetId,
     lowPriorityAssetIds: [native.id],
   })
@@ -38,10 +35,11 @@ const TransferErc20AssetSelector: React.FC<TransferAssetSelectorProps> = ({
 }
 
 const TransferStabepoolAssetSelector: React.FC<TransferAssetSelectorProps> = ({
-  pool,
+  stablepoolAsset,
   onSelect,
 }) => {
-  const assetIds = Object.keys(pool.meta.meta ?? {})
+  const assetIds = Object.keys(stablepoolAsset.meta ?? {})
+
   return (
     <AssetsModalContent
       hideInactiveAssets
@@ -55,9 +53,9 @@ const TransferStabepoolAssetSelector: React.FC<TransferAssetSelectorProps> = ({
 export const TransferAssetSelector: React.FC<TransferAssetSelectorProps> = (
   props,
 ) => {
-  const hasAToken = !!props.pool.relatedAToken
+  const { isErc20 } = useAssets()
 
-  if (hasAToken) {
+  if (isErc20(props.stablepoolAsset)) {
     return <TransferErc20AssetSelector {...props} />
   }
 

@@ -100,13 +100,13 @@ export async function getTransactionLinkFromHash(
   }
 }
 
-export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
+export const useEstimatedFees = (tx: SubmittableExtrinsic) => {
   const { getAsset, native } = useAssets()
   const { account } = useAccount()
 
-  const accountCurrency = useAccountCurrency(account?.address)
-  const accountCurrencyMeta = accountCurrency.data
-    ? getAsset(accountCurrency.data)
+  const { data: accountCurrency } = useAccountCurrency(account?.address)
+  const accountCurrencyMeta = accountCurrency
+    ? getAsset(accountCurrency)
     : undefined
 
   const nativeId = native.id
@@ -118,8 +118,7 @@ export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
     nativeDecimals - (accountCurrencyDecimals || nativeDecimals)
 
   const { data: spotPrice } = useSpotPrice(nativeId, accountCurrencyId)
-
-  const fees = useMultiplePaymentInfo(txs)
+  const { data: fee } = usePaymentInfo(tx)
 
   return useMemo(() => {
     const defaultFees = {
@@ -130,40 +129,33 @@ export const useEstimatedFees = (txs: SubmittableExtrinsic[]) => {
       accountCurrencyId,
     }
 
-    if (fees.some(({ data }) => !data) || !spotPrice) {
+    if (!fee || !spotPrice) {
       return defaultFees
     }
 
-    return fees.reduce((prev, curr) => {
-      const price = spotPrice.spotPrice
+    const price = spotPrice.spotPrice
 
-      const nativeFee = curr?.data?.partialFee?.toBigNumber() ?? BN_0
-      const nativeFeeTotal = nativeFee.plus(prev.nativeFee)
+    const nativeFee = fee.partialFee.toBigNumber()
 
-      const accountCurrencyFee = nativeFee
-        .multipliedBy(price)
-        .shiftedBy(-decimalsDiff)
-        .decimalPlaces(0, BigNumber.ROUND_CEIL)
+    const accountCurrencyFee = nativeFee
+      .multipliedBy(price)
+      .shiftedBy(-decimalsDiff)
+      .decimalPlaces(0, BigNumber.ROUND_CEIL)
 
-      const accountCurrencyFeeTotal = accountCurrencyFee.plus(
-        prev.accountCurrencyFee,
-      )
-
-      return {
-        ...prev,
-        nativeFee: nativeFeeTotal,
-        nativeFeeDisplay: nativeFeeTotal.shiftedBy(-nativeDecimals),
-        accountCurrencyFee: accountCurrencyFeeTotal,
-        accountCurrencyFeeDisplay: accountCurrencyFeeTotal.shiftedBy(
-          -accountCurrencyDecimals,
-        ),
-      }
-    }, defaultFees)
+    return {
+      nativeFee,
+      nativeFeeDisplay: nativeFee.shiftedBy(-nativeDecimals),
+      accountCurrencyFee,
+      accountCurrencyFeeDisplay: accountCurrencyFee.shiftedBy(
+        -accountCurrencyDecimals,
+      ),
+      accountCurrencyId,
+    }
   }, [
     accountCurrencyDecimals,
     accountCurrencyId,
     decimalsDiff,
-    fees,
+    fee,
     nativeDecimals,
     spotPrice,
   ])

@@ -1,4 +1,3 @@
-import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
 import { createColumnHelper } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
@@ -9,14 +8,13 @@ import { useMedia } from "react-use"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { getAssetCapData } from "sections/lending/hooks/useAssetCaps"
 import { useModalContext } from "sections/lending/hooks/useModal"
-import { useProtocolDataContext } from "sections/lending/hooks/useProtocolDataContext"
-import { fetchIconSymbolAndName } from "sections/lending/ui-config/reservePatches"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { IsolatedEnabledBadge } from "sections/lending/ui/isolation-mode/IsolationBadge"
 import { theme } from "theme"
 import { getAssetIdFromAddress } from "utils/evm"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 
 export type TSuppliedAssetsTable = typeof useSuppliedAssetsTableData
 export type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
@@ -40,6 +38,9 @@ export const useSuppliedAssetsTableColumns = () => {
           <AssetNameColumn
             detailsAddress={row.original.underlyingAsset}
             symbol={row.original.reserve.symbol}
+            aToken={MONEY_MARKET_GIGA_RESERVES.includes(
+              row.original.underlyingAsset,
+            )}
           />
         ),
       }),
@@ -175,7 +176,6 @@ export const useSuppliedAssetsTableColumns = () => {
 
 export const useSuppliedAssetsTableData = () => {
   const { user, loading } = useAppDataContext()
-  const { currentNetworkConfig } = useProtocolDataContext()
 
   const data = useMemo(() => {
     if (!user?.userReservesData) return []
@@ -184,17 +184,9 @@ export const useSuppliedAssetsTableData = () => {
       .map((userReserve) => ({
         ...userReserve,
         supplyAPY: userReserve.reserve.supplyAPY, // Note: added only for table sort
-        reserve: {
-          ...userReserve.reserve,
-          ...(userReserve.reserve.isWrappedBaseAsset
-            ? fetchIconSymbolAndName({
-                symbol: currentNetworkConfig.baseAssetSymbol,
-                underlyingAsset: API_ETH_MOCK_ADDRESS.toLowerCase(),
-              })
-            : {}),
-        },
+        reserve: userReserve.reserve,
       }))
-  }, [currentNetworkConfig.baseAssetSymbol, user?.userReservesData])
+  }, [user.userReservesData])
 
   return {
     data,

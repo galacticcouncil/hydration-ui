@@ -4,59 +4,38 @@ import { FarmDetailsCard } from "sections/pools/farms/components/detailsCard/Far
 import { useState } from "react"
 import { Modal } from "components/Modal/Modal"
 import { FarmDetailsModal } from "sections/pools/farms/modals/details/FarmDetailsModal"
-import { Text } from "components/Typography/Text/Text"
-import { Separator } from "components/Separator/Separator"
-import { usePoolData } from "sections/pools/pool/Pool"
 
-export const AvailableFarms = () => {
+export const AvailableFarms = ({ farms }: { farms: TFarmAprData[] }) => {
   const { t } = useTranslation()
   const [selectedFarm, setSelectedFarm] = useState<TFarmAprData | null>(null)
-  const {
-    pool: { allFarms },
-  } = usePoolData()
 
   const { getCurrentPeriod } = useFarmCurrentPeriod()
-
-  if (!allFarms.length) return null
 
   const currentBlock = selectedFarm
     ? getCurrentPeriod(selectedFarm.blocksPerPeriod)
     : undefined
 
-  const isMultipleFarms = allFarms.length > 1
+  const isMultipleFarms = farms.length > 1
 
   return (
     <>
-      <Separator
-        color="white"
-        opacity={0.06}
+      <div
         sx={{
-          mt: 4,
-          mx: "-30px",
-          width: "calc(100% + 60px)",
+          flex: ["column", isMultipleFarms ? "row" : "column"],
+          flexWrap: "wrap",
+          gap: 20,
         }}
-      />
-      <div sx={{ flex: "column", gap: 10 }}>
-        <Text fs={18} font="GeistMono" tTransform="uppercase">
-          {t("farms.modal.joinedFarms.available.label")}
-        </Text>
-        <div
-          sx={{
-            flex: ["column", isMultipleFarms ? "row" : "column"],
-            flexWrap: "wrap",
-            gap: 20,
-          }}
-        >
-          {allFarms.map((farm, i) => (
-            <FarmDetailsCard
-              compact
-              key={i}
-              farm={farm}
-              onSelect={() => setSelectedFarm(farm)}
-            />
-          ))}
-        </div>
+      >
+        {farms.map((farm, i) => (
+          <FarmDetailsCard
+            compact
+            key={i}
+            farm={farm}
+            onSelect={() => setSelectedFarm(farm)}
+          />
+        ))}
       </div>
+
       {selectedFarm && (
         <Modal
           open

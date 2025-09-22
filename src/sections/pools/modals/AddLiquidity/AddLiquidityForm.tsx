@@ -1,11 +1,10 @@
-import { Controller, FieldErrors, useForm } from "react-hook-form"
+import { Controller, FieldErrors, FormProvider, useForm } from "react-hook-form"
 import BN from "bignumber.js"
 import { AAVE_EXTRA_GAS, BN_100 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
-import { Summary } from "components/Summary/Summary"
 import { Trans, useTranslation } from "react-i18next"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { PoolAddLiquidityInformationCard } from "./AddLiquidityInfoCard"
@@ -27,16 +26,17 @@ import { Alert } from "components/Alert/Alert"
 import { useDebouncedValue } from "hooks/useDebouncedValue"
 import { createToastMessages } from "state/toasts"
 import { ISubmittableResult } from "@polkadot/types/types"
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { TAsset, useAssets } from "providers/assets"
-import { JoinFarmsSection } from "./components/JoinFarmsSection/JoinFarmsSection"
+import { AvailableFarmsForm } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useRefetchAccountAssets } from "api/deposits"
 import { useLiquidityLimit } from "state/liquidityLimit"
 import { useAssetsPrice } from "state/displayPrice"
-import { useHealthFactorChange, useMaxWithdrawAmount } from "api/borrow"
+import { useHealthFactorChange } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
+import { useSwapLimit } from "./components/LimitModal/LimitModal.utils"
 
 type Props = {
   assetId: string
@@ -59,7 +59,7 @@ export const AddLiquidityForm = ({
 }: Props) => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
-  const { native } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const { createTransaction } = useStore()
   const isFarms = farms.length > 0
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
@@ -69,27 +69,30 @@ export const AddLiquidityForm = ({
   const refetchAccountAssets = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
 
-  const zodSchema = useAddToOmnipoolZod(assetId, farms)
+  const assetMeta = getAssetWithFallback(assetId)
+  const zodSchema = useAddToOmnipoolZod(assetMeta, farms)
   const form = useForm<{
     amount: string
+    farms: boolean
   }>({
     mode: "onChange",
-    defaultValues: { amount: initialAmount },
+    defaultValues: { amount: initialAmount, farms: isFarms },
     resolver: zodSchema ? zodResolver(zodSchema) : undefined,
   })
 
-  const { handleSubmit, watch, reset, control, formState } = form
+  const {
+    handleSubmit,
+    watch,
+    reset,
+    trigger,
+    control,
+    formState: { errors },
+  } = form
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const {
-    totalShares,
-    omnipoolFee,
-    assetMeta,
-    assetBalance,
-    sharesToGet,
-    isGETH,
-  } = useAddLiquidity(assetId, debouncedAmount)
+  const { totalShares, omnipoolFee, assetBalance, sharesToGet, isGETH } =
+    useAddLiquidity(assetId, debouncedAmount)
 
   const hfChange = useHealthFactorChange({
     assetId,
@@ -97,18 +100,13 @@ export const AddLiquidityForm = ({
     action: ProtocolAction.withdraw,
   })
 
-  const maxBalanceToWithdraw = useMaxWithdrawAmount(assetId)
-
   const estimatedFees = useEstimatedFees(
     getAddToOmnipoolFee(api, isJoinFarms, farms),
   )
 
   const balance = assetBalance?.transferable ?? "0"
   const balanceMax = isGETH
-    ? BN.min(
-        BN(maxBalanceToWithdraw).shiftedBy(assetMeta.decimals),
-        balance,
-      ).toString()
+    ? balance
     : estimatedFees.accountCurrencyId === assetMeta.id
       ? BN(balance)
           .minus(estimatedFees.accountCurrencyFee)
@@ -173,139 +171,96 @@ export const AddLiquidityForm = ({
     )
   }
 
-  const customErrors = formState.errors.amount as unknown as
-    | {
-        cap?: { message: string }
-        circuitBreaker?: { message: string }
-        farm?: { message: string }
-      }
-    | undefined
-
   const onInvalidSubmit = (errors: FieldErrors<FormValues<typeof form>>) => {
-    if (
-      !isJoinFarms &&
-      (errors.amount as { farm?: { message: string } }).farm
-    ) {
+    const { farms, ...blockingErrors } = errors
+
+    if (!isJoinFarms && !Object.keys(blockingErrors).length) {
       onSubmit(form.getValues())
     }
   }
 
-  const isJoinFarmDisabled = !!customErrors?.farm
-  const isSubmitDisabled = isJoinFarms
-    ? !!Object.keys(formState.errors).length
-    : !!Object.keys(formState.errors.amount ?? {}).filter(
-        (key) => key !== "farm",
-      ).length
+  const isSubmitDisabled = !!errors.amount
 
   const isHFDisabled = isGETH
     ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
     : false
 
-  useEffect(() => {
-    if (!isFarms) return
-    if (isJoinFarmDisabled) {
-      setIsJoinFarms(false)
-    } else {
-      setIsJoinFarms(true)
-    }
-  }, [isFarms, isJoinFarmDisabled, setIsJoinFarms])
-
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
-      autoComplete="off"
-      sx={{
-        flex: "column",
-        justify: "space-between",
-        minHeight: "100%",
-      }}
-    >
-      <div sx={{ flex: "column" }}>
-        <Controller
-          name="amount"
-          control={control}
-          render={({
-            field: { name, value, onChange },
-            fieldState: { error },
-          }) => (
-            <WalletTransferAssetSelect
-              title={t("wallet.assets.transfer.asset.label_mob")}
-              name={name}
-              value={value}
-              onBlur={onChange}
-              onChange={onChange}
-              asset={assetId}
-              balance={BN(balanceMax)}
-              balanceMax={BN(balanceMax)}
-              error={error?.message}
-              onAssetOpen={onAssetOpen}
-            />
-          )}
-        />
-        <Spacer size={20} />
-        <SummaryRow
-          label={t("liquidity.add.modal.tradeLimit")}
-          content={
-            <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
-              <Text fs={14} color="white" tAlign="right">
-                {t("value.percentage", { value: addLiquidityLimit })}
-              </Text>
-              <ButtonTransparent onClick={() => setLiquidityLimit()}>
-                <Text color="brightBlue200" fs={14}>
-                  {t("edit")}
-                </Text>
-              </ButtonTransparent>
-            </div>
-          }
-        />
-        <Separator
-          color="darkBlue401"
-          sx={{
-            my: 4,
-            width: "auto",
-          }}
-        />
-        <SummaryRow
-          label={t("liquidity.add.modal.tradeFee")}
-          description={t("liquidity.add.modal.tradeFee.description")}
-          content={
-            assetId === native.id
-              ? "--"
-              : t("value.percentage.range", {
-                  from: omnipoolFee?.minFee.multipliedBy(100),
-                  to: omnipoolFee?.maxFee.multipliedBy(100),
-                })
-          }
-        />
-        <Separator
-          color="darkBlue401"
-          sx={{
-            my: 4,
-            width: "auto",
-          }}
-        />
-        {farms.length > 0 ? (
-          <JoinFarmsSection
+    <FormProvider {...form}>
+      <form
+        onSubmit={handleSubmit(onSubmit, onInvalidSubmit)}
+        autoComplete="off"
+      >
+        <div sx={{ flex: "column" }}>
+          <Controller
+            name="amount"
+            control={control}
+            render={({
+              field: { name, value, onChange },
+              fieldState: { error },
+            }) => (
+              <WalletTransferAssetSelect
+                title={t("wallet.assets.transfer.asset.label_mob")}
+                name={name}
+                value={value}
+                onChange={(v) => {
+                  onChange(v)
+                  trigger("farms")
+                }}
+                asset={assetId}
+                balance={BN(balanceMax)}
+                balanceMax={BN(balanceMax)}
+                error={error?.message}
+                onAssetOpen={onAssetOpen}
+              />
+            )}
+          />
+          <Spacer size={20} />
+
+          <LiquidityLimitField
+            setLiquidityLimit={setLiquidityLimit}
+            type="liquidity"
+          />
+
+          <SummaryRow
+            label={t("liquidity.add.modal.tradeFee")}
+            description={t("liquidity.add.modal.tradeFee.description")}
+            content={
+              assetId === native.id
+                ? "--"
+                : t("value.percentage.range", {
+                    from: omnipoolFee?.minFee.multipliedBy(100),
+                    to: omnipoolFee?.maxFee.multipliedBy(100),
+                  })
+            }
+          />
+          <Separator
+            color="darkBlue401"
+            sx={{
+              my: 4,
+              width: "auto",
+            }}
+          />
+
+          <AvailableFarmsForm
+            name="farms"
             farms={farms}
             isJoinFarms={isJoinFarms}
             setIsJoinFarms={setIsJoinFarms}
-            error={customErrors?.farm?.message}
-            isJoinFarmDisabled={isJoinFarmDisabled}
           />
-        ) : null}
-        <Spacer size={20} />
-        <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
-          {t("liquidity.add.modal.positionDetails")}
-        </Text>
 
-        <AddOmnipoolLiquiditySummary
-          asset={assetMeta}
-          sharesToGet={sharesToGet.toString()}
-          totalShares={totalShares.toString()}
-        />
+          <Spacer size={20} />
+          <Text color="pink500" fs={15} font="GeistMono" tTransform="uppercase">
+            {t("liquidity.add.modal.positionDetails")}
+          </Text>
 
-        {hfChange && (
-          <>
+          <AddOmnipoolLiquiditySummary
+            asset={assetMeta}
+            sharesToGet={sharesToGet.toString()}
+            totalShares={totalShares.toString()}
+          />
+
+          {hfChange && (
             <SummaryRow
               label={t("healthFactor")}
               content={
@@ -315,50 +270,51 @@ export const AddLiquidityForm = ({
                 />
               }
             />
+          )}
+          {hfChange?.isHealthFactorSignificantChange && (
             <HealthFactorRiskWarning
               accepted={healthFactorRiskAccepted}
               onAcceptedChange={setHealthFactorRiskAccepted}
               isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
               sx={{ mb: 16 }}
             />
-          </>
-        )}
+          )}
 
-        <Text color="warningOrange200" fs={14} fw={400} sx={{ my: 20 }}>
-          {t("liquidity.add.modal.warning")}
-        </Text>
-
-        {customErrors?.cap ? (
-          <Alert variant="warning" css={{ marginBottom: 8 }}>
-            {customErrors.cap.message}
-          </Alert>
-        ) : null}
-        {customErrors?.circuitBreaker ? (
-          <Alert variant="warning" css={{ marginBottom: 8 }}>
-            {customErrors.circuitBreaker.message}
-          </Alert>
-        ) : null}
-        <PoolAddLiquidityInformationCard />
-        <Spacer size={20} />
-      </div>
-      <Separator
-        color="darkBlue401"
-        sx={{
-          mx: "calc(-1 * var(--modal-content-padding))",
-          mb: 20,
-          width: "auto",
-        }}
-      />
-      <Button variant="primary" disabled={isSubmitDisabled || isHFDisabled}>
-        {isJoinFarms
-          ? t("liquidity.add.modal.button.joinFarms")
-          : t("liquidity.add.modal.confirmButton")}
-      </Button>
-    </form>
+          <Text color="warningOrange200" fs={14} fw={400} sx={{ my: 20 }}>
+            {t("liquidity.add.modal.warning")}
+          </Text>
+          {Array.isArray(errors.amount)
+            ? errors.amount.map((e, i) => (
+                <Alert key={i} variant="warning" css={{ marginBottom: 8 }}>
+                  {e.message}
+                </Alert>
+              ))
+            : null}
+          <PoolAddLiquidityInformationCard />
+          <Spacer size={20} />
+        </div>
+        <Separator
+          color="darkBlue401"
+          sx={{
+            mx: "calc(-1 * var(--modal-content-padding))",
+            mb: 20,
+          }}
+        />
+        <Button
+          variant="primary"
+          fullWidth
+          disabled={isSubmitDisabled || isHFDisabled}
+        >
+          {isJoinFarms
+            ? t("liquidity.add.modal.button.joinFarms")
+            : t("liquidity.add.modal.confirmButton")}
+        </Button>
+      </form>
+    </FormProvider>
   )
 }
 
-export const AddOmnipoolLiquiditySummary = ({
+const AddOmnipoolLiquiditySummary = ({
   asset,
   totalShares,
   sharesToGet,
@@ -369,44 +325,87 @@ export const AddOmnipoolLiquiditySummary = ({
 }) => {
   const { t } = useTranslation()
 
-  const { getAssetPrice } = useAssetsPrice([asset.id])
-
   const poolShare = BN(sharesToGet)
     .div(BN(totalShares).plus(sharesToGet))
     .times(100)
 
   return (
-    <Summary
-      rows={[
-        {
-          label: t("liquidity.remove.modal.price"),
-          content: (
-            <Text fs={14} color="white" tAlign="right">
-              <Trans
-                t={t}
-                i18nKey="liquidity.add.modal.row.spotPrice"
-                tOptions={{
-                  firstAmount: 1,
-                  firstCurrency: asset.symbol,
-                }}
-              >
-                <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
-              </Trans>
-            </Text>
-          ),
-        },
-        {
-          label: t("liquidity.add.modal.shareOfPool"),
-          content: poolShare?.gte(0.01)
+    <div>
+      <PriceField asset={asset} />
+      <SummaryRow
+        label={t("liquidity.add.modal.shareOfPool")}
+        content={
+          poolShare?.gte(0.01)
             ? t("value.percentage", {
                 value: poolShare,
               })
             : t("value.percentage", {
                 numberPrefix: "<",
                 value: BN(0.01),
-              }),
-        },
-      ]}
+              })
+        }
+      />
+    </div>
+  )
+}
+
+export const LiquidityLimitField = ({
+  setLiquidityLimit,
+  withSeparator = true,
+  type,
+}: {
+  setLiquidityLimit: () => void
+  withSeparator?: boolean
+  type: "liquidity" | "swap"
+}) => {
+  const { t } = useTranslation()
+  const { addLiquidityLimit } = useLiquidityLimit()
+  const { swapLimit } = useSwapLimit()
+
+  return (
+    <SummaryRow
+      label={t("liquidity.add.modal.tradeLimit")}
+      withSeparator={withSeparator}
+      content={
+        <div sx={{ flex: "row", align: "baseline", gap: 4 }}>
+          <Text fs={14} color="white" tAlign="right">
+            {t("value.percentage", {
+              value: type === "liquidity" ? addLiquidityLimit : swapLimit,
+            })}
+          </Text>
+          <ButtonTransparent onClick={setLiquidityLimit}>
+            <Text color="brightBlue200" fs={14}>
+              {t("edit")}
+            </Text>
+          </ButtonTransparent>
+        </div>
+      }
+    />
+  )
+}
+
+export const PriceField = ({ asset }: { asset: TAsset }) => {
+  const { t } = useTranslation()
+  const { getAssetPrice } = useAssetsPrice([asset.id])
+
+  return (
+    <SummaryRow
+      label={t("liquidity.remove.modal.price")}
+      withSeparator
+      content={
+        <Text fs={14} color="white" tAlign="right">
+          <Trans
+            t={t}
+            i18nKey="liquidity.add.modal.row.spotPrice"
+            tOptions={{
+              firstAmount: 1,
+              firstCurrency: asset.symbol,
+            }}
+          >
+            <DisplayValue value={BN(getAssetPrice(asset.id).price)} />
+          </Trans>
+        </Text>
+      }
     />
   )
 }
