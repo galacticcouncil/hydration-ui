@@ -1,7 +1,7 @@
 import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
-import { SSwitcherContainer } from "./SplitSwithcer.styled"
+import { SSwitcherContainer } from "./SplitSwitcher.styled"
 
 export const SplitSwitcher = ({
   value,

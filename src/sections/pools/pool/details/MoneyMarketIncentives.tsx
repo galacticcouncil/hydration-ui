@@ -34,9 +34,9 @@ export const MoneyMarketIncentives = ({ pool }: { pool: TStablepool }) => {
     <>
       {totalApr.gt(0) && (
         <AvailableIncentive
-          label={t("liquidity.pool.details.incetives.rewards.label")}
+          label={t("liquidity.pool.details.incentives.rewards.label")}
           description={t(
-            "liquidity.pool.details.incetives.rewards.description",
+            "liquidity.pool.details.incentives.rewards.description",
           )}
         >
           <div sx={{ flex: "row", gap: 6 }}>
@@ -58,7 +58,7 @@ export const MoneyMarketIncentives = ({ pool }: { pool: TStablepool }) => {
       )}
       <AvailableIncentive
         label={t("apy")}
-        description={t("liquidity.pool.details.incetives.apy.description")}
+        description={t("liquidity.pool.details.incentives.apy.description")}
       >
         <div sx={{ flex: "row", gap: 6 }}>
           <Text fs={16} color="brightBlue200">

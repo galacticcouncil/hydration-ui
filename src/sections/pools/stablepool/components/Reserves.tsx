@@ -20,10 +20,10 @@ import BN from "bignumber.js"
 
 export const Reserves = ({
   reserves,
-  lableSize = 15,
+  labelSize = 15,
 }: {
   reserves: TReservesBalance
-  lableSize?: number
+  labelSize?: number
 }) => {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
@@ -40,7 +40,7 @@ export const Reserves = ({
         sx={{ flex: "row", justify: "space-between", align: "center" }}
         css={{ cursor: "pointer" }}
       >
-        <Text tTransform="uppercase" font="GeistMono" fs={lableSize}>
+        <Text tTransform="uppercase" font="GeistMono" fs={labelSize}>
           {t("liquidity.stablepool.reserves")}
         </Text>
         <div sx={{ flex: "row", align: "center" }}>

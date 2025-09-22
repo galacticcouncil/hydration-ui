@@ -46,7 +46,7 @@ export const GigaIncentives = ({
         font="GeistMono"
         tTransform="uppercase"
       >
-        {t("liquidity.stablepool.incetives")}
+        {t("liquidity.stablepool.incentives")}
       </Heading>
       <SContainer
         sx={{ flex: "row", gap: 6, justify: "space-between", align: "center" }}
@@ -181,7 +181,7 @@ export const MoneyMarketAPY = ({
       >
         {t(
           withLabel
-            ? "liquidity.stablepool.incetives.value"
+            ? "liquidity.stablepool.incentives.value"
             : "value.percentage",
           { value: apy },
         )}

@@ -42,7 +42,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
     const borrowCap = BN(reserve?.borrowCap || 0)
 
     if (borrowCap.gt(0)) {
-      return BigNumber.min(totalDebt, borrowCap).toNumber()
+      return BigNumber.min(totalDebt, borrowCap)
     }
 
     return totalDebt

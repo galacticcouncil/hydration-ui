@@ -12,12 +12,10 @@ export type ExternalApyData = Map<
 >
 
 export const useExternalApyData = (): ExternalApyData => {
-  const { data: apy, isLoading: isLoadingApy } = useBorrowAssetsApy(
-    EXTERNAL_APY_ENABLED_ASSET_IDS,
-  )
+  const { data: apy } = useBorrowAssetsApy(EXTERNAL_APY_ENABLED_ASSET_IDS)
 
   return useMemo(() => {
-    if (isLoadingApy) return new Map()
+    if (!apy) return new Map()
     const entries = apy.map(
       ({ assetId, underlyingSupplyApy, underlyingBorrowApy, lpAPY }) => {
         const supplyApy = BN(underlyingSupplyApy).plus(lpAPY).div(100)
@@ -33,5 +31,5 @@ export const useExternalApyData = (): ExternalApyData => {
     )
 
     return new Map(entries)
-  }, [apy, isLoadingApy])
+  }, [apy])
 }

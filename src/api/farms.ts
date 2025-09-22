@@ -299,7 +299,7 @@ export const useOmnipoolFarms = (ids: string[]) => {
 
   const stoppedFarms = useMemo(
     () =>
-      !!Array.isArray(omnipoolDeposits) && omnipoolDeposits.length
+      omnipoolDeposits?.length
         ? getStoppedFarms(omnipoolDeposits, activeFarms ?? [])
         : [],
     [activeFarms, omnipoolDeposits],
