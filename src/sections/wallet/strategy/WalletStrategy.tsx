@@ -10,6 +10,7 @@ import { useGigadotAssetIds } from "sections/wallet/strategy/WalletStrategy.util
 import { GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID } from "utils/constants"
 import { useTranslation } from "react-i18next"
 import { StrategyTileVariant } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
+import { HollarTile } from "./StrategyTile/HollarTile"
 
 export const WalletStrategy: FC = () => {
   const { t } = useTranslation()
@@ -26,16 +27,17 @@ export const WalletStrategy: FC = () => {
     <WalletStrategyProviders>
       <SWalletStrategy>
         <WalletStrategyHeader />
+        <HollarTile />
         <StrategyTile
-          assetId={gdotAssetId}
-          underlyingAssetId={underlyingGdotAssetId}
+          stableswapId={gdotAssetId}
+          aTokenId={underlyingGdotAssetId}
           emptyState={t("wallet.strategy.gigadot.emptyState")}
           riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
           variant={StrategyTileVariant.One}
         />
         <StrategyTile
-          assetId={GETH_STABLESWAP_ASSET_ID}
-          underlyingAssetId={GETH_ERC20_ASSET_ID}
+          stableswapId={GETH_STABLESWAP_ASSET_ID}
+          aTokenId={GETH_ERC20_ASSET_ID}
           emptyState={t("wallet.strategy.geth.emptyState")}
           riskTooltip={t("wallet.strategy.geth.risk.tooltip")}
           variant={StrategyTileVariant.Two}

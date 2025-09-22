@@ -92,11 +92,13 @@ export const CodeForm = () => {
       })
   }
 
-  const isBalance = accountBalances?.isBalance
-
   const isBalanceLoading = isInitialLoading
 
-  const state = getUserState(account?.address, isBalance)
+  const nativeBalance = BN(
+    accountBalances?.accountAssetsMap.get(native.id)?.balance?.total ?? "0",
+  )
+
+  const state = getUserState(account?.address ?? "", nativeBalance)
   const isDisabled = state !== UserState.FUNDED
 
   useEffect(() => {

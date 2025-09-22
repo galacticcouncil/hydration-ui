@@ -15,12 +15,7 @@ import { useTranslation } from "react-i18next"
 import { useMedia } from "react-use"
 import { theme } from "theme"
 import { MultipleAssetLogo } from "components/AssetIcon/AssetIcon"
-import {
-  TPool,
-  TXYKPool,
-  isXYKPoolType,
-  useStableSwapReserves,
-} from "sections/pools/PoolsPage.utils"
+import { TPool, TXYKPool, isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { TFarmAprData } from "api/farms"
 import { APY } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMulti"
 import { Button, ButtonTransparent } from "components/Button/Button"
@@ -128,6 +123,7 @@ const AssetTableName = ({ pool }: { pool: TPool | TXYKPool }) => {
             lpFeeStablepool={!isXyK ? pool.lpFeeStablepool : undefined}
             totalFee={!isXyK ? totalFee : undefined}
             farms={farms}
+            moneyMarketApy={!isXyK ? pool.moneyMarketApy : undefined}
             withAprSuffix
           />
         )}
@@ -223,8 +219,6 @@ const StablePoolModalWrapper = ({
   pool: TPool
   onClose: () => void
 }) => {
-  const stablepoolDetails = useStableSwapReserves(pool.poolId)
-
   const initialAssetId = (() => {
     if (!pool.isGETH) {
       return undefined
@@ -236,20 +230,15 @@ const StablePoolModalWrapper = ({
   })()
 
   return (
-    <PoolContext.Provider
-      value={{
-        pool: { ...pool, ...stablepoolDetails.data },
-        isXYK: false,
-      }}
-    >
-      <TransferModal
-        onClose={onClose}
-        farms={pool.farms}
-        disabledOmnipool={!pool.isGETH}
-        skipOptions={pool.isGETH}
-        initialAssetId={initialAssetId}
-      />
-    </PoolContext.Provider>
+    <TransferModal
+      onClose={onClose}
+      disabledOmnipool={!pool.isGETH || !pool.canAddLiquidity}
+      skipOptions={pool.isGETH}
+      initialAssetId={initialAssetId}
+      farms={pool.farms}
+      poolId={pool.poolId}
+      stablepoolAssetId={pool.relatedAToken?.id ?? pool.id}
+    />
   )
 }
 

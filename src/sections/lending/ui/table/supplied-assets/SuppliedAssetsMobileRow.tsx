@@ -2,6 +2,7 @@ import { Row } from "@tanstack/react-table"
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
 import { useModalContext } from "sections/lending/hooks/useModal"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { TSuppliedAssetsRow } from "sections/lending/ui/table/supplied-assets/SuppliedAssetsTable.utils"
 
@@ -15,13 +16,17 @@ const RowFooter: React.FC<TSuppliedAssetsRow> = ({
   const disableWithdraw = !isActive || isPaused
   const disableSupply = !isActive || isFrozen || isPaused
 
-  const { openSupply, openWithdraw } = useModalContext()
+  const { openSupply, openGigaSupply, openWithdraw } = useModalContext()
 
   return (
     <div sx={{ flex: "row", gap: 16 }}>
       <Button
         disabled={disableSupply}
-        onClick={() => openSupply(underlyingAsset)}
+        onClick={() =>
+          MONEY_MARKET_GIGA_RESERVES.includes(underlyingAsset)
+            ? openGigaSupply(underlyingAsset)
+            : openSupply(underlyingAsset)
+        }
         fullWidth
         size="small"
       >

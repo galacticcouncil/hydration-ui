@@ -1,13 +1,19 @@
 import { FC } from "react"
-import { useTranslation } from "react-i18next"
-import { Text } from "components/Typography/Text/Text"
+import { ClaimButton } from "sections/wallet/strategy/ClaimButton/ClaimButton"
+import { WalletStrategyTitle } from "sections/wallet/strategy/WalletStrategyTitle"
 
 export const WalletStrategyHeader: FC = () => {
-  const { t } = useTranslation()
-
   return (
-    <Text font="GeistMono" fs={28} lh="1.2" color="white">
-      {t("wallet.strategy.title")}
-    </Text>
+    <div
+      sx={{
+        flex: ["column", "row"],
+        justify: "space-between",
+        align: ["start", "center"],
+        gap: [20, 12],
+      }}
+    >
+      <WalletStrategyTitle />
+      <ClaimButton />
+    </div>
   )
 }

@@ -43,7 +43,6 @@ import {
 import { isAnyParachain, Maybe } from "utils/helpers"
 import { createSubscanLink } from "utils/formatting"
 import { QUERY_KEYS } from "utils/queryKeys"
-import { useActiveRpcUrlList } from "api/provider"
 import { Contract } from "ethers"
 import BN from "bignumber.js"
 import { SolanaChain, SuiChain } from "@galacticcouncil/xcm-core"
@@ -251,7 +250,6 @@ export const useSendEvmTransactionMutation = (
   const [isBroadcasted, setIsBroadcasted] = useState(false)
 
   const { account: evmAccount } = useEvmAccount()
-  const { isTestnet } = useActiveRpcUrlList()
 
   const isMounted = useMountedState()
 
@@ -268,13 +266,7 @@ export const useSendEvmTransactionMutation = (
           : null
         const link =
           txHash && chain
-            ? getEvmTxLink(
-                txHash,
-                txData,
-                chain.key,
-                isTestnet,
-                getXcmTag(metaTags),
-              )
+            ? getEvmTxLink(txHash, txData, chain.key, getXcmTag(metaTags))
             : ""
 
         const isApproveTx = txData?.startsWith("0x095ea7b3")
@@ -284,6 +276,9 @@ export const useSendEvmTransactionMutation = (
           : undefined
 
         const xcm = xcallMeta ? "evm" : undefined
+
+        const isHydraSource = !xcallMeta || xcallMeta.srcChain === "hydration"
+        const isHydraEvm = isHydraSource
 
         const bridge =
           !isApproveTx && (chain?.isEvmChain() || destChain?.isEvmChain())
@@ -298,7 +293,8 @@ export const useSendEvmTransactionMutation = (
           bridge,
           hidden: true,
           xcm,
-          isHydraSource: xcallMeta ? xcallMeta.srcChain === "hydration" : true,
+          isHydraEvm,
+          isHydraSource,
         })
 
         setIsBroadcasted(true)

@@ -36,7 +36,7 @@ export const LendingReserveOverviewPage: React.FC<
 
   const { isBound, isLoading } = useEvmAccount()
 
-  const isActionsDisabled = MONEY_MARKET_GIGA_RESERVES.includes(underlyingAsset)
+  const isGigaAsset = MONEY_MARKET_GIGA_RESERVES.includes(underlyingAsset)
 
   const reserve = reserves.find(
     (reserve) => reserve.underlyingAsset === underlyingAsset,
@@ -54,8 +54,9 @@ export const LendingReserveOverviewPage: React.FC<
       <ReserveOverviewHeaderValues
         sx={{ mb: [10, 40] }}
         underlyingAsset={underlyingAsset}
+        aToken={isGigaAsset}
       />
-      {!isActionsDisabled && (
+      {!isGigaAsset && (
         <SFilterContainer>
           <Button
             active={mode === "overview"}
@@ -91,7 +92,7 @@ export const LendingReserveOverviewPage: React.FC<
           </SContainer>
         ) : (
           <>
-            {isBound && !isActionsDisabled && (
+            {isBound && !isGigaAsset && (
               <SContainer active={mode === "actions"}>
                 <ReserveActions reserve={reserve} />
               </SContainer>

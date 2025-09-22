@@ -21,6 +21,11 @@ export const variantStyles = {
     color: rgba(3, 8, 22, 1);
     background-color: rgba(223, 177, 243, 1);
   `,
+  green: css`
+    color: ${theme.colors.white};
+    background-color: rgba(7, 255, 161, 0.33);
+    border: 1px solid rgba(${theme.rgbColors.green400}, 0.56);
+  `,
 }
 
 export const sizeStyles = {

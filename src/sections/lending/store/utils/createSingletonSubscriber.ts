@@ -1,3 +1,4 @@
+import { useShallow } from "hooks/useShallow"
 import { useEffect } from "react"
 
 import { useRootStore } from "sections/lending/store/root"
@@ -30,10 +31,9 @@ export function createSingletonSubscriber<T extends () => Promise<void>>(
     }
   }
   return () => {
-    const [currentMarket, account] = useRootStore((state) => [
-      state.currentMarket,
-      state.account,
-    ])
+    const [currentMarket, account] = useRootStore(
+      useShallow((state) => [state.currentMarket, state.account]),
+    )
     useEffect(() => {
       subscribe()
       return unsubscribe

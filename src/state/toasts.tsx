@@ -30,6 +30,7 @@ type ToastParams = {
   persist?: boolean
   bridge?: MetaTags
   isHydraSource?: boolean
+  isHydraEvm?: boolean
   txHash?: string
   hideTime?: number
   hidden?: boolean

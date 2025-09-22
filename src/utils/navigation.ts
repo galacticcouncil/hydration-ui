@@ -24,6 +24,7 @@ import UploadIcon from "assets/icons/UploadIcon.svg?react"
 import TreasuryIcon from "assets/icons/Treasury.svg?react"
 import BarChartDecreasingIcon from "assets/icons/BarChartDecreasingIcon.svg?react"
 import { Search } from "@tanstack/react-location"
+import { getDeploymentType } from "utils/helpers"
 
 export const LINKS = {
   home: "/",
@@ -211,7 +212,9 @@ export const MENU_ITEMS = [
     key: "xcm",
     href: LINKS.cross_chain,
     Icon: TransferIcon,
-    enabled: import.meta.env.VITE_ENV === "production",
+    enabled:
+      import.meta.env.VITE_ENV === "production" &&
+      getDeploymentType() !== "hollarnet",
     external: false,
     mobVisible: false,
     tabVisible: false,

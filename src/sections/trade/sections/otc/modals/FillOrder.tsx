@@ -3,7 +3,7 @@ import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 import { FormEvent, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
-import { BN_1, BN_10 } from "utils/constants"
+import { AAVE_EXTRA_GAS, BN_1, BN_10 } from "utils/constants"
 import { useStore } from "state/store"
 import { OfferingPair } from "sections/trade/sections/otc/orders/OtcOrdersData.utils"
 import { OrderAssetGet, OrderAssetPay } from "./cmp/AssetSelect"
@@ -33,7 +33,7 @@ export const FillOrder = ({
   onSuccess,
 }: FillOrderProps) => {
   const { t } = useTranslation()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, isErc20 } = useAssets()
   const { api } = useRpcProvider()
   const fee = useOTCfee()
   const assetInMeta = getAssetWithFallback(accepting.asset)
@@ -50,7 +50,7 @@ export const FillOrder = ({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (assetInMeta?.decimals == null) throw new Error("Missing assetIn meta")
+    if (!assetInMeta.id) throw new Error("Missing assetIn meta")
 
     if (assetInBalance?.transferable == null)
       throw new Error("Missing assetIn balance")
@@ -67,9 +67,15 @@ export const FillOrder = ({
       return
     }
 
+    const containsErc20Asset = isErc20(assetInMeta) || isErc20(assetOutMeta)
+
+    const tx = api.tx.otc.fillOrder(orderId)
+
     await createTransaction(
       {
-        tx: api.tx.otc.fillOrder(orderId),
+        tx: containsErc20Asset
+          ? api.tx.dispatcher.dispatchWithExtraGas(tx, AAVE_EXTRA_GAS)
+          : tx,
       },
       {
         onSuccess,

@@ -3,20 +3,22 @@ import { Alert } from "components/Alert/Alert"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Switch } from "components/Switch/Switch"
 import { Text } from "components/Typography/Text/Text"
+import { useEffect } from "react"
+import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { FarmDetailsRow } from "sections/pools/farms/components/detailsCard/FarmDetailsRow"
 
 type JoinFarmsSectionProps = {
+  name: string
   isJoinFarms: boolean
-  isJoinFarmDisabled: boolean
   farms: TFarmAprData[]
   error?: string
   setIsJoinFarms: (v: boolean) => void
 }
 
 export const JoinFarmsSection = ({
+  name,
   isJoinFarms,
-  isJoinFarmDisabled,
   farms,
   error,
   setIsJoinFarms,
@@ -34,10 +36,10 @@ export const JoinFarmsSection = ({
               {isJoinFarms ? t("yes") : t("no")}
             </Text>
             <Switch
-              name="join-farms"
+              name={name}
               value={isJoinFarms}
               onCheckedChange={setIsJoinFarms}
-              disabled={isJoinFarmDisabled}
+              disabled={!!error}
             />
           </div>
         }
@@ -55,5 +57,49 @@ export const JoinFarmsSection = ({
         </Alert>
       )}
     </>
+  )
+}
+
+export const AvailableFarmsForm = ({
+  name,
+  farms,
+  isJoinFarms,
+  setIsJoinFarms,
+}: {
+  name: string
+  farms: TFarmAprData[]
+  isJoinFarms: boolean
+  setIsJoinFarms: (state: boolean) => void
+}) => {
+  const form = useFormContext()
+  const isFarms = farms.length
+  const { errors } = form.formState
+
+  const isFarmsErrors = errors[name]
+
+  useEffect(() => {
+    if (isFarmsErrors) {
+      setIsJoinFarms(false)
+    } else {
+      setIsJoinFarms(true)
+    }
+  }, [isFarmsErrors, setIsJoinFarms])
+
+  if (!isFarms) return null
+
+  return (
+    <Controller
+      name={name}
+      control={form.control}
+      render={({ field: { name }, fieldState: { error } }) => (
+        <JoinFarmsSection
+          name={name}
+          farms={farms}
+          isJoinFarms={isJoinFarms}
+          setIsJoinFarms={setIsJoinFarms}
+          error={error?.message}
+        />
+      )}
+    />
   )
 }
