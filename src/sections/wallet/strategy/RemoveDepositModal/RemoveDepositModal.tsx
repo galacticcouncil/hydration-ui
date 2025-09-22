@@ -291,13 +291,16 @@ export const RemoveDepositModal: FC<Props> = ({
     [asset.id, getErc20, underlyingAssetId, pool.balances, assetReceived],
   )
 
-  const displayRiskCheckbox = !!hfChange?.isHealthFactorBelowThreshold
+  const isHfRiskAcceptRequired = !!(
+    hfChange?.isHealthFactorSignificantChange &&
+    hfChange?.isHealthFactorBelowThreshold
+  )
 
   const isLoading = isWithdrawingMax
     ? isLoadingWithdrawAndSellAll
     : isLoadingSell
 
-  const isSubmitDisabled = displayRiskCheckbox
+  const isSubmitDisabled = isHfRiskAcceptRequired
     ? !healthFactorRiskAccepted
     : false
 
