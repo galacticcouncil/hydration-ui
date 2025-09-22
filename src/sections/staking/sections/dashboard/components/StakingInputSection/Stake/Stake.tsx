@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Summary } from "components/Summary/Summary"
 import { useDebounce } from "react-use"
 import { Text } from "components/Typography/Text/Text"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 
 export const Stake = ({
   loading,
@@ -40,7 +41,7 @@ export const Stake = ({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { native } = useAssets()
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const refetchAccountAssets = useRefetchAccountAssets()
@@ -100,7 +101,9 @@ export const Stake = ({
     [api.tx, positionId, votes],
   )
 
-  const estimatedFees = useEstimatedFees(getExtrinsic("1"))
+  const estimatedFees = useEstimatedFees(
+    isLoaded ? getExtrinsic("1") : ({} as SubmittableExtrinsic),
+  )
 
   const balanceMax =
     estimatedFees.accountCurrencyId === native.id
