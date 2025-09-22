@@ -44,6 +44,8 @@ import { getAddressFromAssetId } from "utils/evm"
 import BN from "bignumber.js"
 import { useWithdrawAndSellAll } from "sections/lending/components/transactions/Withdraw/utils"
 
+const MAX_WITHDRAW_TX_ENABLED = false
+
 type Props = {
   readonly assetId: string
   readonly maxBalance: string
@@ -211,7 +213,7 @@ export const RemoveDepositModal: FC<Props> = ({
         )
       }
 
-      if (isWithdrawingMax) {
+      if (MAX_WITHDRAW_TX_ENABLED && isWithdrawingMax) {
         return getWithdrawAndSellAllTx()
       }
 
