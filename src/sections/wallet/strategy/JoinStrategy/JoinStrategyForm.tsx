@@ -184,10 +184,15 @@ const JoinStrategyForm = (
     [asset.id, getErc20, poolId, reserves, stablepoolAsset.isErc20],
   )
 
+  const isHfRiskAcceptRequired = !!(
+    hfChange?.isHealthFactorSignificantChange &&
+    hfChange?.isHealthFactorBelowThreshold
+  )
+
   const isSubmitDisabled =
     !!errors.amount ||
     !!errors.reserves ||
-    (!!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted)
+    (isHfRiskAcceptRequired && !healthFactorRiskAccepted)
 
   return (
     <form onSubmit={handleSubmit} autoComplete="off">
