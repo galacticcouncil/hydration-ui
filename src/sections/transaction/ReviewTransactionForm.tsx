@@ -124,15 +124,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     txWeight,
   } = transactionValues.data
 
-  const healthFactorChange = useHealthFactorChangeFromTxMetadata(props.txMeta)
-
-  const isHealthFactorChanged =
-    !!healthFactorChange &&
-    healthFactorChange.currentHealthFactor !==
-      healthFactorChange.futureHealthFactor
-
-  const displayRiskCheckbox =
-    isHealthFactorChanged && !!healthFactorChange?.isHealthFactorBelowThreshold
+  const hfChange = useHealthFactorChangeFromTxMetadata(props.txMeta)
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -302,6 +294,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
 
+  const displayRiskCheckbox = !!hfChange?.isHealthFactorSignificantChange
+
   const isSubmitDisabled =
     isPermitTxPending ||
     !isWalletReady ||
@@ -340,17 +334,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   isCustomNonceEnabled ? setCustomNonce : undefined
                 }
                 referralCode={isLinking ? storedReferralCode : undefined}
-                currentHealthFactor={healthFactorChange?.currentHealthFactor}
-                futureHealthFactor={healthFactorChange?.futureHealthFactor}
+                currentHealthFactor={hfChange?.currentHealthFactor}
+                futureHealthFactor={hfChange?.futureHealthFactor}
               />
             </div>
-            {isHealthFactorChanged && (
+            {hfChange?.isHealthFactorSignificantChange && (
               <HealthFactorRiskWarning
                 accepted={healthFactorRiskAccepted}
                 onAcceptedChange={setHealthFactorRiskAccepted}
-                isBelowThreshold={
-                  healthFactorChange?.isHealthFactorBelowThreshold
-                }
+                isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
               />
             )}
             <div

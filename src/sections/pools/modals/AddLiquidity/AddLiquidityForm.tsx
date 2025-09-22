@@ -261,23 +261,23 @@ export const AddLiquidityForm = ({
           />
 
           {hfChange && (
-            <>
-              <SummaryRow
-                label={t("healthFactor")}
-                content={
-                  <HealthFactorChange
-                    healthFactor={hfChange.currentHealthFactor}
-                    futureHealthFactor={hfChange.futureHealthFactor}
-                  />
-                }
-              />
-              <HealthFactorRiskWarning
-                accepted={healthFactorRiskAccepted}
-                onAcceptedChange={setHealthFactorRiskAccepted}
-                isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
-                sx={{ mb: 16 }}
-              />
-            </>
+            <SummaryRow
+              label={t("healthFactor")}
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+            />
+          )}
+          {hfChange?.isHealthFactorSignificantChange && (
+            <HealthFactorRiskWarning
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+              sx={{ mb: 16 }}
+            />
           )}
 
           <Text color="warningOrange200" fs={14} fw={400} sx={{ my: 20 }}>

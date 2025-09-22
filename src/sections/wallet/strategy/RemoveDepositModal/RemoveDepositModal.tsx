@@ -378,23 +378,23 @@ export const RemoveDepositModal: FC<Props> = ({
                 </div>
 
                 {hfChange && (
-                  <>
-                    <SummaryRow
-                      label={t("healthFactor")}
-                      content={
-                        <HealthFactorChange
-                          healthFactor={hfChange.currentHealthFactor}
-                          futureHealthFactor={hfChange.futureHealthFactor}
-                        />
-                      }
-                    />
-                    <HealthFactorRiskWarning
-                      accepted={healthFactorRiskAccepted}
-                      onAcceptedChange={setHealthFactorRiskAccepted}
-                      isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
-                      sx={{ mb: 16 }}
-                    />
-                  </>
+                  <SummaryRow
+                    label={t("healthFactor")}
+                    content={
+                      <HealthFactorChange
+                        healthFactor={hfChange.currentHealthFactor}
+                        futureHealthFactor={hfChange.futureHealthFactor}
+                      />
+                    }
+                  />
+                )}
+                {hfChange?.isHealthFactorSignificantChange && (
+                  <HealthFactorRiskWarning
+                    accepted={healthFactorRiskAccepted}
+                    onAcceptedChange={setHealthFactorRiskAccepted}
+                    isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+                    sx={{ mb: 16 }}
+                  />
                 )}
                 <ModalHorizontalSeparator mb={16} />
                 <Button

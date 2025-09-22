@@ -349,11 +349,11 @@ export const StablepoolForm = (
       )}
 
       <div sx={{ flex: "column", gap: 20 }}>
-        {hfChange && (
+        {hfChange?.isHealthFactorSignificantChange && (
           <HealthFactorRiskWarning
             accepted={healthFactorRiskAccepted}
             onAcceptedChange={setHealthFactorRiskAccepted}
-            isBelowThreshold={hfChange?.isHealthFactorBelowThreshold ?? false}
+            isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
           />
         )}
 

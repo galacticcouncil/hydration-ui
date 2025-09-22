@@ -178,7 +178,7 @@ export function WalletTransferSectionOnchain({
     </Text>
   )
 
-  const healthFactorChange = useHealthFactorChange({
+  const hfChange = useHealthFactorChange({
     assetId: assetMeta.id,
     amount: debouncedAmount,
     action: ProtocolAction.withdraw,
@@ -196,7 +196,7 @@ export function WalletTransferSectionOnchain({
 
   const shouldShowDisclaimer = !!dest && !isDestUserOwnedAddress
   const shouldDisplayHfRiskCheckbox =
-    !!debouncedAmount && !!healthFactorChange?.isHealthFactorBelowThreshold
+    !!debouncedAmount && !!hfChange?.isHealthFactorSignificantChange
 
   const submitDisabled =
     (shouldShowDisclaimer && !disclaimerAccepted) ||
@@ -320,27 +320,23 @@ export function WalletTransferSectionOnchain({
               )
             }
           />
+          {hfChange && (
+            <SummaryRow
+              content={
+                <HealthFactorChange
+                  healthFactor={hfChange.currentHealthFactor}
+                  futureHealthFactor={hfChange.futureHealthFactor}
+                />
+              }
+              label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
+            />
+          )}
           {shouldDisplayHfRiskCheckbox && (
-            <>
-              <SummaryRow
-                content={
-                  <HealthFactorChange
-                    healthFactor={healthFactorChange.currentHealthFactor}
-                    futureHealthFactor={healthFactorChange.futureHealthFactor}
-                  />
-                }
-                label={t(
-                  "liquidity.reviewTransaction.modal.detail.healthfactor",
-                )}
-              />
-              <HealthFactorRiskWarning
-                accepted={healthFactorRiskAccepted}
-                onAcceptedChange={setHealthFactorRiskAccepted}
-                isBelowThreshold={
-                  healthFactorChange.isHealthFactorBelowThreshold
-                }
-              />
-            </>
+            <HealthFactorRiskWarning
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+            />
           )}
         </div>
         {insufficientFee && (

@@ -314,6 +314,7 @@ export type UseHealthFactorChangeResult = {
   currentHealthFactor: string
   futureHealthFactor: string
   isHealthFactorBelowThreshold: boolean
+  isHealthFactorSignificantChange: boolean
 } | null
 
 export type UseHealthFactorChangeParams = {
@@ -374,6 +375,27 @@ export const useHealthFactorChange = ({
   }, [action, amount, assetId, getErc20, swapAsset, user])
 }
 
+const getIsHealthFactorBelowThreshold = (
+  currentHealthFactor: string,
+  futureHealthFactor: string,
+) => {
+  return (
+    futureHealthFactor !== "-1" &&
+    currentHealthFactor !== "-1" &&
+    BN(futureHealthFactor).lt(currentHealthFactor) &&
+    BN(futureHealthFactor).lt(HEALTH_FACTOR_RISK_THRESHOLD)
+  )
+}
+
+const getIsHealthFactorSignificantChange = (
+  currentHealthFactor: string,
+  futureHealthFactor: string,
+) => {
+  return BN(futureHealthFactor)
+    .decimalPlaces(2)
+    .lt(BN(currentHealthFactor).decimalPlaces(2))
+}
+
 const getHealthFactorChange = (
   user: ExtendedFormattedUser,
   underlyingAssetId: string,
@@ -404,13 +426,15 @@ const getHealthFactorChange = (
 
   const futureHealthFactor = result.toString()
 
-  const isHealthFactorBelowThreshold =
-    currentHealthFactor !== "-1" &&
-    futureHealthFactor !== "-1" &&
-    Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD
-
   return {
-    isHealthFactorBelowThreshold,
+    isHealthFactorBelowThreshold: getIsHealthFactorBelowThreshold(
+      currentHealthFactor,
+      futureHealthFactor,
+    ),
+    isHealthFactorSignificantChange: getIsHealthFactorSignificantChange(
+      currentHealthFactor,
+      futureHealthFactor,
+    ),
     currentHealthFactor,
     futureHealthFactor,
   }
@@ -448,11 +472,18 @@ export const getHealthFactorChangeAfterSwap = (
     ? user.healthFactor
     : result.hfAfterSwap.toString()
 
+  const currentHealthFactor = user.healthFactor
+
   return {
-    isHealthFactorBelowThreshold:
-      futureHealthFactor !== "-1" &&
-      Number(futureHealthFactor) < HEALTH_FACTOR_RISK_THRESHOLD,
-    currentHealthFactor: user.healthFactor,
+    isHealthFactorBelowThreshold: getIsHealthFactorBelowThreshold(
+      currentHealthFactor,
+      futureHealthFactor,
+    ),
+    isHealthFactorSignificantChange: getIsHealthFactorSignificantChange(
+      currentHealthFactor,
+      futureHealthFactor,
+    ),
+    currentHealthFactor,
     futureHealthFactor,
   }
 }

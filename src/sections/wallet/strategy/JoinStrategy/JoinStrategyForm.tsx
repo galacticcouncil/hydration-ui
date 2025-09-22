@@ -253,23 +253,24 @@ const JoinStrategyForm = (
       <SupplyModalDetails {...props} />
 
       {hfChange && (
-        <>
-          <SummaryRow
-            label={t("healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={hfChange.currentHealthFactor}
-                futureHealthFactor={hfChange.futureHealthFactor}
-              />
-            }
-          />
-          <HealthFactorRiskWarning
-            sx={{ mb: 20 }}
-            accepted={healthFactorRiskAccepted}
-            onAcceptedChange={setHealthFactorRiskAccepted}
-            isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
-          />
-        </>
+        <SummaryRow
+          label={t("healthFactor")}
+          content={
+            <HealthFactorChange
+              healthFactor={hfChange.currentHealthFactor}
+              futureHealthFactor={hfChange.futureHealthFactor}
+            />
+          }
+        />
+      )}
+
+      {hfChange?.isHealthFactorSignificantChange && (
+        <HealthFactorRiskWarning
+          sx={{ mb: 20 }}
+          accepted={healthFactorRiskAccepted}
+          onAcceptedChange={setHealthFactorRiskAccepted}
+          isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
+        />
       )}
 
       {Array.isArray(errors.amount) &&
