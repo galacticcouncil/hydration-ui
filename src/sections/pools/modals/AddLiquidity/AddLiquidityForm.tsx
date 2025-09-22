@@ -181,8 +181,13 @@ export const AddLiquidityForm = ({
 
   const isSubmitDisabled = !!errors.amount
 
+  const isHfRiskAcceptRequired = !!(
+    hfChange?.isHealthFactorSignificantChange &&
+    hfChange?.isHealthFactorBelowThreshold
+  )
+
   const isHFDisabled = isGETH
-    ? !!hfChange?.isHealthFactorBelowThreshold && !healthFactorRiskAccepted
+    ? isHfRiskAcceptRequired && !healthFactorRiskAccepted
     : false
 
   return (
