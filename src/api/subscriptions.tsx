@@ -239,7 +239,7 @@ export function useBalanceSubscription() {
           let shouldSync = false
 
           for (const [assetId, balance] of balances) {
-            if (balance.total !== "0") {
+            if (balance.total !== "0" || snapABalances.get(assetId)) {
               const snapBalance = snapABalances.get(assetId)
 
               validBalances.set(assetId, balance)
