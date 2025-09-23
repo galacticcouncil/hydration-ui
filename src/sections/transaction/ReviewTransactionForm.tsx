@@ -294,7 +294,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
 
-  const displayRiskCheckbox = !!hfChange?.isHealthFactorSignificantChange
+  const isHfRiskAcceptRequired = !!(
+    hfChange?.isHealthFactorSignificantChange &&
+    hfChange?.isHealthFactorBelowThreshold
+  )
 
   const isSubmitDisabled =
     isPermitTxPending ||
@@ -302,7 +305,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     !account ||
     isLoading ||
     (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
-    (displayRiskCheckbox && !healthFactorRiskAccepted)
+    (isHfRiskAcceptRequired && !healthFactorRiskAccepted)
 
   return (
     <>
