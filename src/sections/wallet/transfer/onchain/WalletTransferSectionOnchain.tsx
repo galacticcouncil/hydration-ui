@@ -195,12 +195,16 @@ export function WalletTransferSectionOnchain({
   )
 
   const shouldShowDisclaimer = !!dest && !isDestUserOwnedAddress
-  const shouldDisplayHfRiskCheckbox =
-    !!debouncedAmount && !!hfChange?.isHealthFactorSignificantChange
+  const isHfRiskAcceptRequired =
+    !!debouncedAmount &&
+    !!(
+      hfChange?.isHealthFactorSignificantChange &&
+      hfChange?.isHealthFactorBelowThreshold
+    )
 
   const submitDisabled =
     (shouldShowDisclaimer && !disclaimerAccepted) ||
-    (shouldDisplayHfRiskCheckbox && !healthFactorRiskAccepted)
+    (isHfRiskAcceptRequired && !healthFactorRiskAccepted)
 
   return (
     <form
@@ -331,7 +335,7 @@ export function WalletTransferSectionOnchain({
               label={t("liquidity.reviewTransaction.modal.detail.healthfactor")}
             />
           )}
-          {shouldDisplayHfRiskCheckbox && (
+          {hfChange?.isHealthFactorSignificantChange && (
             <HealthFactorRiskWarning
               accepted={healthFactorRiskAccepted}
               onAcceptedChange={setHealthFactorRiskAccepted}
