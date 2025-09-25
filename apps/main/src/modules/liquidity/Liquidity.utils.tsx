@@ -17,8 +17,10 @@ import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
   OmniPoolToken,
   PoolBase,
+  PoolFee,
   PoolToken,
   stablePools,
+  StableSwapBase,
   useXykPools,
   useXykPoolsIds,
 } from "@/api/pools"
@@ -65,6 +67,7 @@ export type OmnipoolAssetTable = {
   aStableswapAsset: TErc20 | undefined
   farms: Farm[]
   allFarms: Farm[]
+  stablepoolData: TStablepoolData | undefined
 }
 
 export type IsolatedPoolTable = {
@@ -98,11 +101,20 @@ export type TReserve = {
 
 export type TStablepoolData = {
   id: number
+  pool: StableSwapBase
+  reserves: TReserve[]
+  totalDisplayAmount: string
   volume: string | undefined
   balance: string
   isStablepool: boolean
   lpFee: string | undefined
   aToken: TErc20 | undefined
+}
+
+export type TStablepoolDetails = {
+  pool: StableSwapBase
+  reserves: TReserve[]
+  totalDisplayAmount: string
 }
 
 const isStablepoolData = (
@@ -111,7 +123,7 @@ const isStablepoolData = (
 
 export const useStablepools = () => {
   const squidClient = useSquidClient()
-  const { data: pools, isLoading: isPoolsLoading } = useQuery(stablePools)
+  const { data: pools, isLoading: isPoolsLoading } = useStablepoolsReserves()
   const { data: volumes, isLoading: isVolumeLoading } = useQuery(
     stablepoolVolumeQuery(squidClient),
   )
@@ -131,72 +143,33 @@ export const useStablepools = () => {
     [yieldMetrics],
   )
 
-  const { stablePoolData, tokenIds } = useMemo(() => {
-    const tokenSet = new Set<string>()
-    const list =
-      pools?.map((stablePool) => {
-        const filteredTokens: PoolToken[] = []
-
-        stablePool.tokens.forEach((token) => {
-          if (token.type !== AssetType.STABLESWAP) {
-            tokenSet.add(String(token.id))
-            filteredTokens.push(token)
-          }
-        })
-
-        return { poolId: stablePool.id, tokens: filteredTokens }
-      }) ?? []
-
-    return { stablePoolData: list, tokenIds: [...tokenSet] }
-  }, [pools])
-
-  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(tokenIds)
-
   const data = useMemo(
     () =>
-      stablePoolData?.map((stablepool) => {
-        let totalBalance = Big(0)
-
-        const poolId = stablepool.poolId
-
-        stablepool.tokens.forEach((token) => {
-          const price = getAssetPrice(String(token.id))
-          if (price.isValid) {
-            const usd = Big(
-              scaleHuman(token.balance, token.decimals ?? 0),
-            ).times(price.price)
-            totalBalance = totalBalance.plus(usd)
-          }
-        })
+      pools?.map((stablepool) => {
+        const { id: poolId } = stablepool.pool
 
         const lpFee = feeByAsset.get(poolId.toString())
         const volume = volumeByAsset.get(poolId.toString())
-
         const aToken = getRelatedAToken(poolId.toString())
 
         const data: TStablepoolData = {
           id: poolId,
-          balance: totalBalance.toFixed(0),
+          balance: stablepool.totalDisplayAmount,
           isStablepool: true,
           lpFee,
           volume,
           aToken,
+          ...stablepool,
         }
 
         return data
       }),
-    [
-      stablePoolData,
-      getAssetPrice,
-      volumeByAsset,
-      feeByAsset,
-      getRelatedAToken,
-    ],
+    [pools, volumeByAsset, feeByAsset, getRelatedAToken],
   )
 
   return {
     data,
-    isLoading: isPriceLoading || isPoolsLoading,
+    isLoading: isPoolsLoading,
     isVolumeLoading,
     isYieldMetricsLoading,
   }
@@ -385,6 +358,7 @@ export const useOmnipoolStablepools = () => {
         isStablepoolInOmnipool,
         aStableswapBalance,
         aStableswapAsset,
+        stablepoolData: isStablepoolOnly ? pool : stablepoolInOmnipool,
       }
     })
 
@@ -612,66 +586,80 @@ export const useOmnipoolCapacity = (id: string) => {
   return { data, isLoading }
 }
 
-export const useStablepoolReserves = (stablepoolId?: string) => {
+export const useStablepoolReserves = (poolId: string) => {
+  const { data, isLoading } = useStablepoolsReserves([poolId])
+
+  return { data: data[0], isLoading }
+}
+
+export const useStablepoolsReserves = (poolIds?: string[]) => {
   const { getAssetWithFallback } = useAssets()
   const { data: pools = [], isLoading: isPoolsLoading } = useQuery(stablePools)
 
-  const stablepool = pools.find(
-    (stablePool) => stablePool.id.toString() === stablepoolId,
-  )
+  const stablepools_: StableSwapBase[] = []
+  const tokenSet = new Set<string>()
 
-  const stablepoolAssets = useMemo(
-    () =>
-      stablepool?.tokens.filter(
-        (token) =>
-          token.type === AssetType.TOKEN || token.type === AssetType.ERC20,
-      ) ?? [],
-    [stablepool],
-  )
+  const filterPoolTokens = (pool: StableSwapBase) => {
+    const tokens: PoolToken[] = []
 
-  const assetIds = stablepoolAssets.map((asset) => asset.id.toString())
+    pool.tokens.forEach((token) => {
+      if (token.id !== pool.id) {
+        tokenSet.add(String(token.id))
+        tokens.push(token)
+      }
+    })
 
-  const { getAssetPrice, isLoading: isAssetsLoading } = useAssetsPrice(assetIds)
-
-  const reserves = useMemo(
-    (): TReserve[] =>
-      stablepoolAssets.map((token) => {
-        const id = token.id.toString()
-        const meta = getAssetWithFallback(id)
-
-        const amountHuman = scaleHuman(token.balance, meta.decimals)
-        const assetPrice = getAssetPrice(id)
-
-        return {
-          asset_id: Number(id),
-          meta,
-          amount: token.balance.toString(),
-          amountHuman,
-          displayAmount: assetPrice.isValid
-            ? toBig(assetPrice.price)?.times(amountHuman).toString()
-            : undefined,
-        }
-      }),
-    [stablepoolAssets, getAssetWithFallback, getAssetPrice],
-  )
-
-  const totalDisplayAmount = reserves.reduce(
-    (t, asset) =>
-      Big(t)
-        .plus(asset.displayAmount ?? 0)
-        .toString(),
-    "0",
-  )
-
-  return {
-    pegs: [],
-    totalIssuance: stablepool?.totalIssuance,
-    reserves,
-    stablepoolAssets,
-    assetIds,
-    totalDisplayAmount,
-    isLoading: isPoolsLoading || isAssetsLoading,
+    stablepools_.push({ ...pool, tokens })
   }
+
+  if (poolIds) {
+    poolIds.forEach((poolId) => {
+      const pool = pools.find((pool) => pool.id.toString() === poolId)
+
+      if (pool) filterPoolTokens(pool)
+    })
+  } else {
+    pools.forEach(filterPoolTokens)
+  }
+
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
+    ...tokenSet,
+  ])
+
+  const data: TStablepoolDetails[] = stablepools_.map((pool) => {
+    const reserves: TReserve[] = []
+    let totalDisplayAmount = Big(0)
+
+    pool.tokens.forEach((token) => {
+      const id = token.id.toString()
+      const meta = getAssetWithFallback(id)
+
+      const amountHuman = scaleHuman(token.balance, meta.decimals)
+      const assetPrice = getAssetPrice(id)
+
+      const displayAmount = assetPrice.isValid
+        ? toBig(assetPrice.price)?.times(amountHuman).toString()
+        : undefined
+
+      totalDisplayAmount = totalDisplayAmount.plus(displayAmount ?? 0)
+
+      reserves.push({
+        asset_id: Number(id),
+        meta,
+        amount: token.balance.toString(),
+        amountHuman,
+        displayAmount,
+      })
+    })
+
+    return {
+      pool,
+      reserves,
+      totalDisplayAmount: totalDisplayAmount.toString(),
+    }
+  })
+
+  return { data, isLoading: isPoolsLoading || isPriceLoading }
 }
 
 export const useOmnipoolShare = (id: string) => {
@@ -700,4 +688,17 @@ export const useOmnipoolShare = (id: string) => {
 
 export const isValidStablepoolToken = (token: PoolToken) => {
   return token.type === AssetType.TOKEN || token.type === AssetType.ERC20
+}
+
+export const calculatePoolFee = (fee?: number[] | PoolFee) => {
+  if (fee?.length !== 2) return
+
+  const numerator = fee[0]
+  const denominator = fee[1]
+
+  if (!numerator || !denominator) return undefined
+
+  const tradeFee = Big(numerator).div(denominator)
+
+  return tradeFee.times(100).toString()
 }

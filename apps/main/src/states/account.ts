@@ -10,6 +10,7 @@ import {
   OmnipoolPosition,
   XykDeposit,
 } from "@/api/account"
+import { AssetId } from "@/providers/assetsProvider"
 
 import { OmnipoolPositionData, useOmnipoolPositionData } from "./liquidity"
 
@@ -152,7 +153,7 @@ export const useAccountBalances = () => {
   )
 
   const getBalance = useCallback(
-    (assetId: string) => balances[assetId],
+    (assetId: AssetId) => balances[assetId.toString()],
     [balances],
   )
 
@@ -169,9 +170,9 @@ export const useAccountBalances = () => {
   }
 }
 
-export const useAccountBalance = (assetId: string): Balance | undefined => {
+export const useAccountBalance = (assetId: AssetId): Balance | undefined => {
   const { balances } = useAccountBalances()
-  return balances[assetId]
+  return balances[assetId.toString()]
 }
 
 export const useAccountPositions = () => {
