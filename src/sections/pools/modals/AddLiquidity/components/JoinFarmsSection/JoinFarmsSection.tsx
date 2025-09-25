@@ -72,18 +72,20 @@ export const AvailableFarmsForm = ({
   setIsJoinFarms: (state: boolean) => void
 }) => {
   const form = useFormContext()
-  const isFarms = farms.length
+  const isFarms = farms.length > 0
   const { errors } = form.formState
 
   const isFarmsErrors = errors[name]
 
   useEffect(() => {
-    if (isFarmsErrors) {
-      setIsJoinFarms(false)
-    } else {
-      setIsJoinFarms(true)
+    if (isFarms) {
+      if (isFarmsErrors) {
+        setIsJoinFarms(false)
+      } else {
+        setIsJoinFarms(true)
+      }
     }
-  }, [isFarmsErrors, setIsJoinFarms])
+  }, [isFarms, isFarmsErrors, setIsJoinFarms])
 
   if (!isFarms) return null
 
