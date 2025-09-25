@@ -46,7 +46,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const allowedAssets = useNewDepositAssets(
     getErc20(assetId)?.underlyingAssetId ?? "",
     {
-      blacklist: [assetId],
+      blacklist: assetId === GETH_ERC20_ASSET_ID ? [] : [assetId],
       lowPriorityAssetIds: [native.id],
     },
   )
