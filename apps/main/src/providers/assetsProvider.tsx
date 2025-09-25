@@ -37,7 +37,7 @@ type TAssetsState = {
   hub: TAsset
 }
 
-type AssetId = string | number
+export type AssetId = string | number
 
 type TAssetsContext = TAssetsState & {
   getAsset: (id: AssetId) => TAsset | undefined

@@ -10,14 +10,14 @@ import {
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
 import { UseMutationResult } from "@tanstack/react-query"
-import { Controller, FormProvider, useFormContext } from "react-hook-form"
+import { FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData } from "@/api/assets"
+import { AssetType, TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
-import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { DynamicFee } from "@/components/DynamicFee"
-import { XYKPoolMeta } from "@/providers/assetsProvider"
+import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 
 import { RecieveAssets, TReceiveAsset } from "./RecieveAssets"
@@ -27,6 +27,7 @@ import {
   useRemoveLiquidity,
 } from "./RemoveLiquidity.utils"
 import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
+import { RemoveStablepoolLiquidity } from "./RemoveStablepoolLiquidity"
 
 type RemoveLiquidityProps = RemoveLiquidityType & {
   poolId: string
@@ -34,13 +35,16 @@ type RemoveLiquidityProps = RemoveLiquidityType & {
 }
 
 export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
+  const { getAssetWithFallback } = useAssets()
   const isIsolatedPool = isSS58Address(props.poolId)
 
   if (isIsolatedPool) {
     return <RemoveIsolatedLiquidity {...props} />
+  } else if (getAssetWithFallback(props.poolId).type === AssetType.STABLESWAP) {
+    return <RemoveStablepoolLiquidity {...props} />
+  } else {
+    return <RemoveOmnipoolLiquidity {...props} />
   }
-
-  return <RemoveOmnipoolLiquidity {...props} />
 }
 
 export const RemoveIsolatedLiquidity = ({
@@ -88,7 +92,7 @@ export const RemoveOmnipoolLiquidity = ({
   })
 
   if (!removeLiquidity) return <RemoveLiquiditySkeleton />
-  console.log("removeLiquidity", removeLiquidity)
+
   const { form, ...props } = removeLiquidity
 
   return (
@@ -127,7 +131,6 @@ const RemoveLiquidityJSX = ({
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const {
-    control,
     formState: { isValid },
     handleSubmit,
   } = useFormContext<TRemoveLiquidityFormValues>()
@@ -165,38 +168,18 @@ const RemoveLiquidityJSX = ({
                 </Text>
               </Flex>
             ) : (
-              <Flex direction="column" gap={12}>
-                <Controller
-                  name="amount"
-                  control={control}
-                  render={({
-                    field: { value, onChange },
-                    fieldState: { error },
-                  }) => (
-                    <AssetSelect
-                      assets={[]}
-                      selectedAsset={meta}
-                      maxBalance={balance}
-                      value={value}
-                      onChange={onChange}
-                      error={error?.message}
-                      ignoreDollarValue={isIsolatedPool}
-                      sx={{ pt: 0 }}
-                    />
-                  )}
-                />
-              </Flex>
+              <AssetSelectFormField<TRemoveLiquidityFormValues>
+                assetFieldName="asset"
+                amountFieldName="amount"
+                maxBalance={balance}
+                ignoreDollarValue={isIsolatedPool}
+                assets={[]}
+                disabledAssetSelector
+                sx={{ pt: 0 }}
+              />
             )}
 
             <ModalContentDivider />
-
-            <Text
-              color={getToken("text.tint.secondary")}
-              font="primary"
-              fw={700}
-            >
-              {t("liquidity.remove.modal.receive")}
-            </Text>
 
             <RecieveAssets assets={receiveAssets} />
 
