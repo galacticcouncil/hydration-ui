@@ -5,7 +5,7 @@ import {
   stablepoolYieldMetricsQuery,
   xykVolumeQuery,
 } from "@galacticcouncil/indexer/squid"
-import { OmniMath } from "@galacticcouncil/sdk"
+import { pool } from "@galacticcouncil/sdk-next"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
@@ -522,7 +522,7 @@ export const useOmnipoolCapacity = (id: string) => {
     const assetCap = asset.cap.toString()
     const totalHubReserve = hubToken.balance.toString()
 
-    const capDifference = OmniMath.calculateCapDifference(
+    const capDifference = pool.omni.OmniMath.calculateCapDifference(
       assetReserve,
       assetHubReserve,
       assetCap,
