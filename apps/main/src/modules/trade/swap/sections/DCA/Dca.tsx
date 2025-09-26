@@ -1,5 +1,5 @@
 import { useSearch } from "@tanstack/react-router"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
 import { DcaFooter } from "@/modules/trade/swap/sections/DCA/DcaFooter"
@@ -15,8 +15,15 @@ import { useDcaForm } from "./useDcaForm"
 export const Dca: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
   const form = useDcaForm({ assetIn, assetOut })
-  const { data: order, isLoading } = useDcaTradeOrder(form)
+  const { order, healthFactor, isLoading } = useDcaTradeOrder(form)
   const submitDcaOrder = useSubmitDcaOrder()
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
+  const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
+    ? healthFactorRiskAccepted
+    : true
 
   return (
     <FormProvider {...form}>
@@ -27,10 +34,18 @@ export const Dca: FC = () => {
       >
         <DcaForm order={order} />
         <SwapSectionSeparator />
-        <DcaSummary order={order} isLoading={isLoading} />
+        <DcaSummary
+          order={order}
+          healthFactor={healthFactor}
+          isLoading={isLoading}
+        />
         <SwapSectionSeparator />
-        <DcaWarnings />
-        <DcaFooter isEnabled={!!order} />
+        <DcaWarnings
+          healthFactor={healthFactor}
+          healthFactorRiskAccepted={healthFactorRiskAccepted}
+          setHealthFactorRiskAccepted={setHealthFactorRiskAccepted}
+        />
+        <DcaFooter isEnabled={!!order && isHealthFactorCheckSatisfied} />
       </form>
     </FormProvider>
   )

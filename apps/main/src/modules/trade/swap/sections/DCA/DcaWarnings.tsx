@@ -1,17 +1,35 @@
-import { Alert } from "@galacticcouncil/ui/components"
+import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
+import { Flex } from "@galacticcouncil/ui/components"
 import { FC } from "react"
-import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { AssetType } from "@/api/assets"
-import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { HealthFactorResult } from "@/api/aave"
 
-export const DcaWarnings: FC = () => {
-  const { t } = useTranslation("trade")
-  const { watch } = useFormContext<DcaFormValues>()
-  const sellAsset = watch("sellAsset")
+type Props = {
+  readonly healthFactor: HealthFactorResult | undefined
+  readonly healthFactorRiskAccepted: boolean
+  readonly setHealthFactorRiskAccepted: (accepted: boolean) => void
+}
 
-  if (sellAsset?.type === AssetType.ERC20) {
-    return <Alert variant="warning" description={t("market.warn.aToken")} />
+export const DcaWarnings: FC<Props> = ({
+  healthFactor,
+  healthFactorRiskAccepted,
+  setHealthFactorRiskAccepted,
+}) => {
+  const { t } = useTranslation("common")
+
+  if (!healthFactor?.isSignificantChange) {
+    return null
   }
+
+  return (
+    <Flex direction="column" mt={10}>
+      <HealthFactorRiskWarning
+        message={t("healthFactor.warning")}
+        accepted={healthFactorRiskAccepted}
+        isUserConsentRequired={healthFactor.isUserConsentRequired}
+        onAcceptedChange={setHealthFactorRiskAccepted}
+      />
+    </Flex>
+  )
 }
