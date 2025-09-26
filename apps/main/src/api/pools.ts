@@ -17,9 +17,10 @@ import {
 import { HUB_ID } from "@/utils/consts"
 
 export type OmniPoolToken = pool.omni.OmniPoolToken
-type StableSwap = pool.stable.StableSwap
+export type StableSwapBase = pool.stable.StableSwapBase
 export type PoolBase = pool.PoolBase
 export type PoolToken = pool.PoolToken
+export type PoolFee = pool.PoolFee
 
 const PoolType = pool.PoolType
 
@@ -32,14 +33,14 @@ export const allPools = (
     queryFn: async () => {
       const pools = await tradeRouter.getPools()
 
-      const stablePools_: StableSwap[] = []
+      const stablePools_: StableSwapBase[] = []
       const xykPools_: PoolBase[] = []
       const omnipoolTokens_: OmniPoolToken[] = []
       let hub: PoolToken | undefined
 
       for (const pool of pools) {
         if (pool.type === PoolType.Stable) {
-          stablePools_.push(pool as StableSwap)
+          stablePools_.push(pool as StableSwapBase)
         } else if (pool.type === PoolType.XYK) {
           xykPools_.push(pool)
         } else if (pool.type === PoolType.Omni) {
@@ -76,7 +77,7 @@ export const useAllPools = () => {
   })
 }
 
-export const stablePools = queryOptions<StableSwap[]>({
+export const stablePools = queryOptions<StableSwapBase[]>({
   queryKey: ["pools", "stable"],
   queryFn: () => {
     throw new Error("queryFn should not run")

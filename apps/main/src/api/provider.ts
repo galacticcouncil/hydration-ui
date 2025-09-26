@@ -1,10 +1,5 @@
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
-import {
-  createSdkContext as legacy_createSdkContext,
-  PoolService,
-  TradeRouter,
-} from "@galacticcouncil/sdk"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
@@ -42,11 +37,6 @@ export type TProviderData = {
   dataEnv: TDataEnv
   slotDurationMs: number
   metadata: AssetMetadataFactory
-  /**
-   * @deprecated
-   */
-  legacy_poolService: PoolService
-  legacy_tradeRouter: TradeRouter
 }
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
@@ -112,12 +102,6 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
   const provider = getProviderInstance(legacy_api)
   const endpoint = provider.endpoint
 
-  const legacy_sdk = legacy_createSdkContext(legacy_api)
-  const {
-    ctx: { pool: legacy_poolService },
-    api: { router: legacy_tradeRouter },
-  } = legacy_sdk
-
   return {
     papi,
     papiClient,
@@ -131,8 +115,6 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
-    legacy_poolService,
-    legacy_tradeRouter,
   } satisfies TProviderData
 }
 
