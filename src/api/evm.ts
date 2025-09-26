@@ -9,7 +9,8 @@ import { TransactionOptions, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTranslation } from "react-i18next"
-import { PopulatedTransaction } from "ethers"
+import { PopulatedTransaction } from "@ethersproject/contracts"
+import { TransactionRequest } from "@ethersproject/providers"
 import { SubmittableExtrinsic } from "@polkadot/api/types"
 import { useCallback } from "react"
 
@@ -120,11 +121,13 @@ export const useTransformEvmTxToExtrinsic = () => {
   const { api } = useRpcProvider()
 
   return useCallback(
-    (tx: PopulatedTransaction): SubmittableExtrinsic<"promise"> =>
+    (
+      tx: PopulatedTransaction | TransactionRequest,
+    ): SubmittableExtrinsic<"promise"> =>
       api.tx.evm.call(
         tx.from ?? "",
         tx.to ?? "",
-        tx.data ?? "",
+        tx.data?.toString() ?? "",
         "0",
         tx.gasLimit?.toString() ?? "0",
         tx.maxFeePerGas?.toString() ?? "0",

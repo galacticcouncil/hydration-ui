@@ -162,6 +162,7 @@ export const TransferModal = ({
             content: (
               <TransferAssetSelector
                 stablepoolAsset={stablepoolAsset}
+                ignoreStablepoolAsset={supply}
                 firstAssetId={defaultAssetId}
                 onSelect={(asset) => {
                   setAssetId(asset.id)

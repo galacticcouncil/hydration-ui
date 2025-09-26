@@ -112,7 +112,7 @@ export const useNewDepositAssets = (
 
 export const useNewDepositDefaultAssetId = (assetId?: string) => {
   const { account } = useAccount()
-  const { getRelatedAToken } = useAssets()
+  const { getRelatedAToken, getErc20, getAssetWithFallback } = useAssets()
   const { data: accountAssets, isInitialLoading } = useAccountBalances()
 
   const relatedAToken = assetId ? getRelatedAToken(assetId) : undefined
@@ -139,17 +139,51 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
 
     if (BigNumber(stableswapBalance).gt(0)) return assetId
 
-    const reserveAccountBalance = reserves.balances
-      .sort((a, b) => a.percentage - b.percentage)
-      .find((reserve) => {
-        const balance = accountAssets.accountAssetsMap.get(reserve.id)
+    let highestReserveBalance:
+      | { balance: BigNumber; assetId: string }
+      | undefined
 
-        return balance
-          ? BigNumber(balance.balance?.transferable ?? 0).gt(0)
-          : false
-      })
+    for (const reserve of reserves.balances) {
+      const balance = accountAssets.accountAssetsMap.get(reserve.id)?.balance
+        .transferable
 
-    if (reserveAccountBalance) return reserveAccountBalance.id
+      if (balance) {
+        const price = getAssetPrice(reserve.id).price
+        const displayBalance = !BigNumber(price).isNaN()
+          ? BigNumber(balance).shiftedBy(-reserve.decimals).times(price)
+          : BN_0
+
+        if (displayBalance.gt(highestReserveBalance?.balance ?? 0)) {
+          highestReserveBalance = {
+            balance: displayBalance,
+            assetId: reserve.id,
+          }
+        }
+      }
+
+      const underlyingAssetId = getErc20(reserve.id)?.underlyingAssetId
+      const underlyingBalance = underlyingAssetId
+        ? accountAssets.accountAssetsMap.get(underlyingAssetId)?.balance
+            .transferable
+        : undefined
+
+      if (underlyingBalance && underlyingAssetId) {
+        const price = getAssetPrice(underlyingAssetId).price
+        const meta = getAssetWithFallback(underlyingAssetId)
+        const displayBalance = !BigNumber(price).isNaN()
+          ? BigNumber(underlyingBalance).shiftedBy(-meta.decimals).times(price)
+          : BN_0
+
+        if (displayBalance.gt(highestReserveBalance?.balance ?? 0)) {
+          highestReserveBalance = {
+            balance: displayBalance,
+            assetId: underlyingAssetId,
+          }
+        }
+      }
+    }
+
+    if (highestReserveBalance) return highestReserveBalance.assetId
 
     const highestBalance = accountBalances
       .map((accountBalance) => {
@@ -195,6 +229,8 @@ export const useNewDepositDefaultAssetId = (assetId?: string) => {
     assetId,
     accountBalances,
     getAssetPrice,
+    getAssetWithFallback,
+    getErc20,
     relatedAToken,
   ])
 
