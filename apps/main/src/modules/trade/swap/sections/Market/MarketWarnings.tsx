@@ -27,43 +27,51 @@ export const MarketWarnings: FC<Props> = ({ isSingleTrade, twap }) => {
     },
   } = useTradeSettings()
 
-  return (
-    <Flex direction="column" gap={6} mt={10}>
-      {!isSingleTrade && twap && (
-        <>
-          {Math.abs(twap.tradeImpactPct) < 5 &&
-            Number(twapSlippage) < Math.abs(twap.tradeImpactPct) && (
-              <Alert
-                variant="warning"
-                description={t("market.warn.changeSlippage")}
-                action={
-                  <TextButton
-                    variant="underline"
-                    onClick={() => setIsSettingsOpen(true)}
-                  >
-                    {t("market.warn.changeSlippage.cta")}
-                  </TextButton>
-                }
-              />
-            )}
-          {Math.abs(twap.tradeImpactPct) > 5 && (
+  const warnings = [
+    !isSingleTrade && twap && (
+      <>
+        {Math.abs(twap.tradeImpactPct) < 5 &&
+          Number(twapSlippage) < Math.abs(twap.tradeImpactPct) && (
             <Alert
               variant="warning"
-              description={t("market.warn.useDca")}
+              description={t("market.warn.changeSlippage")}
               action={
-                <Link to="/trade/swap/dca">
-                  <TextButton variant="underline">
-                    {t("market.warn.useDca.cta")}
-                  </TextButton>
-                </Link>
+                <TextButton
+                  variant="underline"
+                  onClick={() => setIsSettingsOpen(true)}
+                >
+                  {t("market.warn.changeSlippage.cta")}
+                </TextButton>
               }
             />
           )}
-        </>
-      )}
-      {sellAsset?.type === AssetType.ERC20 && (
-        <Alert variant="warning" description={t("market.warn.aToken")} />
-      )}
+        {Math.abs(twap.tradeImpactPct) > 5 && (
+          <Alert
+            variant="warning"
+            description={t("market.warn.useDca")}
+            action={
+              <Link to="/trade/swap/dca">
+                <TextButton variant="underline">
+                  {t("market.warn.useDca.cta")}
+                </TextButton>
+              </Link>
+            }
+          />
+        )}
+      </>
+    ),
+    sellAsset?.type === AssetType.ERC20 && (
+      <Alert variant="warning" description={t("market.warn.aToken")} />
+    ),
+  ].filter(Boolean)
+
+  if (!warnings.length) {
+    return null
+  }
+
+  return (
+    <Flex direction="column" gap={6} mt={10}>
+      {warnings}
       <Modal
         open={isSettingsOpen}
         onOpenChange={() => setIsSettingsOpen(false)}

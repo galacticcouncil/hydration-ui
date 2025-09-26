@@ -1,5 +1,6 @@
 import {
   Flex,
+  Grid,
   NumberInput,
   SliderTabs,
   SliderTabsOption,
@@ -46,7 +47,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
           {label}
         </Text>
       )}
-      <Flex gap={8} align="center">
+      <Grid columnTemplate="auto 1fr" columnGap={8} align="center">
         <NumberInput
           sx={{
             maxWidth: 80,
@@ -63,7 +64,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
           selected={periodType}
           onSelect={(option) => onPeriodTypeChange(option.id)}
         />
-      </Flex>
+      </Grid>
     </Flex>
   )
 }
