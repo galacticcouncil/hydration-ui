@@ -77,10 +77,10 @@ export function SwapPage() {
       {
         tx: transaction,
         txMeta: meta && {
-          assetIn: meta?.assetIn.id,
-          assetOut: meta?.assetOut.id,
-          amountIn: meta?.amountIn,
-          amountOut: "",
+          assetIn: meta.assetIn.id,
+          assetOut: meta.assetOut.id,
+          amountIn: meta.amountIn,
+          amountOut: meta.amountOut,
         },
       },
       {
