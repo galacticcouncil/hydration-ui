@@ -106,6 +106,8 @@
   "chart.error": "Error displaying the chart, try loading it again.",
   "chart.empty": "Not enough data to display this chart.",
   "myPositions": "My positions",
+  "healthFactor.title": "Health Factor",
+  "healthFactor.warning": "This action would affect health factor on your Borrow position",
   "navigation.borrow.title": "Borrow",
   "navigation.borrowDashboard.title": "My Positions",
   "navigation.borrowDashboard.description": "Supplies and Borrows, Health Factor",
