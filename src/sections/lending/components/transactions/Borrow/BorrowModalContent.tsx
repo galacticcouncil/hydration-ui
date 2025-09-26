@@ -219,8 +219,6 @@ export const BorrowModalContent = ({
       : poolReserve.vIncentivesData
   return (
     <>
-      {borrowCap.determineWarningDisplay({ borrowCap })}
-
       {poolReserve.stableBorrowRateEnabled && (
         <BorrowModeSwitch
           interestRateMode={interestRateMode}
@@ -272,6 +270,11 @@ export const BorrowModalContent = ({
         />
       </TxModalDetails>
 
+      <div sx={{ flex: "column", gap: 20, mt: 20 }}>
+        {borrowCap.determineWarningDisplay({ borrowCap })}
+        <ParameterChangewarning />
+      </div>
+
       {txError && <GasEstimationError txError={txError} />}
 
       {displayRiskCheckbox && (
@@ -283,8 +286,6 @@ export const BorrowModalContent = ({
           }}
         />
       )}
-
-      <ParameterChangewarning sx={{ mt: 20 }} />
 
       <BorrowActions
         poolReserve={poolReserve}
