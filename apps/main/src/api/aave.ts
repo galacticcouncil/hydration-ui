@@ -18,10 +18,13 @@ export type HealthFactorResult = {
   readonly isUserConsentRequired: boolean
 }
 
-const formatHealthFactorResult = ([currentHF, futureHF]: [
-  number,
-  number,
-]): HealthFactorResult => {
+const formatHealthFactorResult = ({
+  currentHF,
+  futureHF,
+}: {
+  currentHF: number
+  futureHF: number
+}): HealthFactorResult => {
   const current = Big(currentHF)
   const future = Big(futureHF)
 
@@ -36,7 +39,7 @@ const formatHealthFactorResult = ([currentHF, futureHF]: [
     isBelowRiskThreshold,
     isSignificantChange,
     isUserConsentRequired: isSignificantChange && isBelowRiskThreshold,
-  } satisfies HealthFactorResult
+  }
 }
 
 export const healthFactorAfterWithdrawQuery = (
@@ -46,7 +49,7 @@ export const healthFactorAfterWithdrawQuery = (
   queryOptions({
     queryKey: ["healthFactor", "withdraw", address, assetId, amount],
     queryFn: async () => {
-      const result = await Promise.all([
+      const [currentHF, futureHF] = await Promise.all([
         sdk.api.aave.getHealthFactor(address),
         sdk.api.aave.getHealthFactorAfterWithdraw(
           address,
@@ -54,7 +57,7 @@ export const healthFactorAfterWithdrawQuery = (
           amount,
         ),
       ])
-      return formatHealthFactorResult(result)
+      return formatHealthFactorResult({ currentHF, futureHF })
     },
     enabled: isLoaded && !!address && !!assetId && Big(amount || "0").gt(0),
   })
@@ -66,7 +69,7 @@ export const healthFactorAfterSupplyQuery = (
   queryOptions({
     queryKey: ["healthFactor", "supply", address, assetId, amount],
     queryFn: async () => {
-      const result = await Promise.all([
+      const [currentHF, futureHF] = await Promise.all([
         sdk.api.aave.getHealthFactor(address),
         sdk.api.aave.getHealthFactorAfterSupply(
           address,
@@ -74,7 +77,7 @@ export const healthFactorAfterSupplyQuery = (
           amount,
         ),
       ])
-      return formatHealthFactorResult(result)
+      return formatHealthFactorResult({ currentHF, futureHF })
     },
     enabled: isLoaded && !!address && !!assetId && Big(amount || "0").gt(0),
   })

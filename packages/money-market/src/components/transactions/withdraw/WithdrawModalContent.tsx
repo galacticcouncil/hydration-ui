@@ -35,7 +35,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const [_amount, setAmount] = useState("")
   const [withdrawMax, setWithdrawMax] = useState("")
   const [
-    HealthFactorRiskCheckboxAccepted,
+    healthFactorRiskCheckboxAccepted,
     setHealthFactorRiskCheckboxAccepted,
   ] = useState(false)
   const amountRef = useRef<string>("")
@@ -165,7 +165,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
           <HealthFactorRiskWarning
             py={14}
             message="Withdrawing this amount will reduce your health factor and increase risk of liquidation."
-            accepted={HealthFactorRiskCheckboxAccepted}
+            accepted={healthFactorRiskCheckboxAccepted}
             onAcceptedChange={setHealthFactorRiskCheckboxAccepted}
             isUserConsentRequired
           />
@@ -180,7 +180,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
         blocked={
           blockingError !== undefined ||
           (displayHealthFactorRiskCheckbox &&
-            !HealthFactorRiskCheckboxAccepted) ||
+            !healthFactorRiskCheckboxAccepted) ||
           isMaxExceeded
         }
       />

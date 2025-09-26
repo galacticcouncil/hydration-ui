@@ -115,7 +115,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   )
   const [amount, setAmount] = useState("")
   const [
-    HealthFactorRiskCheckboxAccepted,
+    healthFactorRiskCheckboxAccepted,
     setHealthFactorRiskCheckboxAccepted,
   ] = useState(false)
 
@@ -289,7 +289,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
           {displayHealthFactorRiskCheckbox && (
             <HealthFactorRiskWarning
               message="Borrowing this amount will reduce your health factor and increase risk of liquidation."
-              accepted={HealthFactorRiskCheckboxAccepted}
+              accepted={healthFactorRiskCheckboxAccepted}
               onAcceptedChange={setHealthFactorRiskCheckboxAccepted}
               isUserConsentRequired
             />
@@ -305,7 +305,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayHealthFactorRiskCheckbox && !HealthFactorRiskCheckboxAccepted)
+          (displayHealthFactorRiskCheckbox && !healthFactorRiskCheckboxAccepted)
         }
       />
     </>
