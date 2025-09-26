@@ -12,7 +12,11 @@ export const SwapPage = () => {
   return (
     <Stack gap={20}>
       <PageHeader />
-      <Grid columnTemplate={["1fr", null, null, "3fr 2fr"]} gap={20}>
+      <Grid
+        columnTemplate={["1fr", null, null, "3fr 2fr"]}
+        gap={20}
+        align="start"
+      >
         <Box display={["none", null, null, "block"]}>
           <TradeChart height={500} />
         </Box>
