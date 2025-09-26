@@ -100,6 +100,7 @@ export const SModalPaper = styled(Paper)`
   display: flex;
   flex-direction: column;
 
+  max-width: 520px;
   padding-bottom: env(safe-area-inset-bottom);
 
   ${mq("max-xs")} {

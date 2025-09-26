@@ -8,8 +8,7 @@ import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
-  positive,
-  required,
+  positiveOptional,
   requiredObject,
   useValidateFormMaxBalance,
   validateFormExistentialDeposit,
@@ -26,9 +25,9 @@ const useSchema = () => {
   return z
     .object({
       offerAsset: requiredObject<TAsset>(),
-      offerAmount: required.pipe(positive),
+      offerAmount: positiveOptional,
       buyAsset: requiredObject<TAsset>(),
-      buyAmount: required.pipe(positive),
+      buyAmount: positiveOptional,
       price: z.string(),
       isPartiallyFillable: z.boolean(),
     })

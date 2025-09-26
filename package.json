@@ -58,7 +58,7 @@
     "react-use": "^17.6.0",
     "remeda": "^2.19.0",
     "use-debounce": "^10.0.4",
-    "zod": "^3.25.67",
+    "zod": "^4.1.11",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

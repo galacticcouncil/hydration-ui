@@ -13,7 +13,7 @@ export const MarketFooter: FC<Props> = ({ isSingleTrade, isEnabled }) => {
   const { t } = useTranslation("trade")
 
   return (
-    <Grid p={20}>
+    <Grid py={20}>
       <AuthorizedAction size="large">
         <Button type="submit" size="large" disabled={!isEnabled}>
           {isSingleTrade ? t("market.footer.swap") : t("market.twap.cta")}
