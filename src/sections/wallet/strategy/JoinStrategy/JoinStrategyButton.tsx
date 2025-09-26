@@ -20,7 +20,7 @@ export const JoinStrategyButton = ({
         sx={{ mt: 12 }}
         onClick={() => setOpen(true)}
       >
-        {t("wallet.strategy.hollar.balance.btn")}
+        {t("joinStrategy")}
       </Button>
 
       {open && (

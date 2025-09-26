@@ -76,9 +76,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           />
           {account && !isGETH ? (
             <Button type="submit" variant="primary" disabled={supplyCapReached}>
-              {t("wallet.strategy.deposit.cta", {
-                symbol: asset.symbol,
-              })}
+              {t("joinStrategy")}
             </Button>
           ) : null}
           {!account && <Web3ConnectModalButton />}
@@ -152,9 +150,7 @@ export const GETHDepositButton = ({
         disabled={disabled}
         onClick={() => setOpen(true)}
       >
-        {t("wallet.strategy.deposit.cta", {
-          symbol,
-        })}
+        {t("joinStrategy")}
       </Button>
       {open && (
         <TransferModal
