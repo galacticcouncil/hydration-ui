@@ -6,19 +6,24 @@ import { GETH_ERC20_ASSET_ID } from "utils/constants"
 type TransferAssetSelectorProps = {
   stablepoolAsset: TAsset
   firstAssetId?: string
+  ignoreStablepoolAsset?: boolean
   onSelect: (asset: NonNullable<TAsset>) => void
 }
 
 const TransferErc20AssetSelector: React.FC<
-  TransferAssetSelectorProps & { stablepoolAsset: TErc20 }
-> = ({ stablepoolAsset, firstAssetId, onSelect }) => {
+  TransferAssetSelectorProps & {
+    stablepoolAsset: TErc20
+  }
+> = ({ stablepoolAsset, firstAssetId, ignoreStablepoolAsset, onSelect }) => {
   const { native, getErc20 } = useAssets()
 
   const depositAssetId = getErc20(stablepoolAsset.id)?.underlyingAssetId ?? ""
 
   const selectableAssets = useNewDepositAssets(depositAssetId, {
     blacklist:
-      stablepoolAsset.id !== GETH_ERC20_ASSET_ID ? [stablepoolAsset.id] : [],
+      stablepoolAsset.id === GETH_ERC20_ASSET_ID && !ignoreStablepoolAsset
+        ? []
+        : [stablepoolAsset.id],
     firstAssetId,
     lowPriorityAssetIds: [native.id],
   })

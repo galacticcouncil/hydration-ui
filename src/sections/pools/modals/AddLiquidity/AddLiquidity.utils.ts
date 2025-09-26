@@ -19,15 +19,14 @@ import { z, ZodTypeAny } from "zod"
 import { maxBalance, positive, required } from "utils/validators"
 import { scale, scaleHuman } from "utils/balance"
 import { TFarmAprData, useOraclePrice } from "api/farms"
-import { BN_0, BN_100, BN_NAN } from "utils/constants"
+import { BN_0, BN_100, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
-import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
 import { useAccountBalances } from "api/deposits"
-import { isStablepoolType } from "sections/pools/PoolsPage.utils"
+import { useAssets } from "providers/assets"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -75,9 +74,10 @@ export const getSharesToGet = (
 
 export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const omnipoolAssets = useOmnipoolDataObserver()
-  const { pool } = usePoolData()
-  const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
+  const { getAssetWithFallback } = useAssets()
 
+  const meta = getAssetWithFallback(assetId)
+  const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
   const { data: omnipoolFee } = useOmnipoolFee()
 
   const { data: accountAssets } = useAccountBalances()
@@ -87,7 +87,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
-        scale(assetValue, pool.meta.decimals).toString(),
+        scale(assetValue, meta.decimals).toString(),
       )
 
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
@@ -97,17 +97,17 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     }
 
     return { poolShare: BN_0, sharesToGet: BN_0, totalShares: BN_0 }
-  }, [assetValue, ommipoolAsset, pool.meta.decimals])
+  }, [assetValue, ommipoolAsset, meta.decimals])
 
   return {
     totalShares,
     poolShare,
     sharesToGet,
     omnipoolFee,
-    assetMeta: pool.meta,
+    assetMeta: meta,
     assetBalance,
     ommipoolAsset,
-    isGETH: isStablepoolType(pool) && pool.isGETH,
+    isGETH: meta.id === GETH_ERC20_ASSET_ID,
   }
 }
 
