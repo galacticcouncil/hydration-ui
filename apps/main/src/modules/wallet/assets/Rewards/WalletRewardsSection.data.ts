@@ -11,14 +11,14 @@ export const useWalletRewardsSectionData = () => {
 
   const { claimableRewardsUsd, loading: incentivesLoading } =
     useClaimableRewards()
-  const { totalAmountUsd: totalAmount, loading: liquidityLoading } =
-    useLiquidityMiningRewards(true)
+  const { totalUSD: liquidityUSD, isLoading: liquidityLoading } =
+    useLiquidityMiningRewards()
 
   const { data: staking, isLoading: stakingLoading } = useStakingRewards()
   const { data: referral, isLoading: referralLoading } = useReferralRewards()
 
   const incentivesEmpty = claimableRewardsUsd <= 0
-  const farmingEmpty = totalAmount <= 0
+  const farmingEmpty = Big(liquidityUSD).lte(0)
   const stakingEmpty = Big(staking || "0").lte(0)
   const referralsEmpty = Big(referral?.totalRewards || "0").lte(0)
 
@@ -35,7 +35,7 @@ export const useWalletRewardsSectionData = () => {
       isEmpty: incentivesEmpty,
     },
     farming: {
-      value: totalAmount,
+      value: liquidityUSD,
       loading: liquidityLoading,
       isEmpty: farmingEmpty,
     },

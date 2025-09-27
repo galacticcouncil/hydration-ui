@@ -1,26 +1,106 @@
-import { sleep } from "@galacticcouncil/utils"
-import { useEffect, useState } from "react"
+import { FarmDepositReward } from "@galacticcouncil/sdk-next/build/types/farm"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
+import { useMemo } from "react"
 
+import { bestNumberQuery } from "@/api/chain"
+import { allDepositsRewardsQuery } from "@/api/farms"
 import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountPositions } from "@/states/account"
+import { useAssetsPrice } from "@/states/displayAsset"
+import { scaleHuman } from "@/utils/formatting"
 
-export const useLiquidityMiningRewards = (isEmpty = false) => {
-  const { native } = useAssets()
-  const [loading, setLoading] = useState(true)
+export const useLiquidityMiningRewards = () => {
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
+  const accountAddress = account?.address
 
-  useEffect(() => {
-    // eslint-disable-next-line prettier/prettier
-    (async () => {
-      await sleep(1200)
-      setLoading(false)
-    })()
-  }, [])
+  const { data: bestNumberData } = useQuery(bestNumberQuery(rpc))
+
+  const relayChainBlockNumber = bestNumberData?.relaychainBlockNumber
+
+  const { positions, isPositionsLoading } = useAccountPositions()
+
+  const { data, isPending, error } = useQuery(
+    allDepositsRewardsQuery(
+      rpc,
+      accountAddress ?? "",
+      positions,
+      relayChainBlockNumber ?? 0,
+      !isPositionsLoading,
+    ),
+  )
+
+  console.log(isPending, error, data)
+
+  return useSummarizeClaimableValues(data, isPending)
+}
+
+export const useSummarizeClaimableValues = (
+  claimableValues: (FarmDepositReward | undefined)[] | undefined,
+  isLoadingClaimableValues: boolean,
+) => {
+  const filteredValues = useMemo(
+    () => claimableValues?.filter((value) => !!value) ?? [],
+    [claimableValues],
+  )
+
+  const assetsId = Array.from(
+    new Set(
+      filteredValues?.map((claimableValue) =>
+        claimableValue.assetId.toString(),
+      ) ?? [],
+    ),
+  )
+
+  const { getAssetPrice, isLoading: isLoadingAssetPrices } =
+    useAssetsPrice(assetsId)
+  const { getAsset } = useAssets()
+
+  const isLoading = isLoadingAssetPrices || isLoadingClaimableValues
+
+  const [totalUSD, claimableAssetValues] = useMemo(() => {
+    if (isLoading) {
+      return [Big(0), new Map<string, bigint>()]
+    }
+
+    return filteredValues.reduce<
+      [totalUSD: Big, claimableAssetValues: Map<string, bigint>]
+    >(
+      (acc, farm) => {
+        const { assetId, reward } = farm
+        const assetIdStr = assetId.toString()
+
+        const spotPrice = getAssetPrice(assetIdStr)
+        const asset = getAsset(assetId)
+
+        const [totalUSD, claimableAssetValues] = acc
+
+        if (!claimableAssetValues.has(assetIdStr)) {
+          claimableAssetValues.set(assetIdStr, 0n)
+        }
+
+        const claimableValues = claimableAssetValues.get(assetIdStr) ?? 0n
+        claimableAssetValues.set(assetIdStr, claimableValues + reward)
+
+        if (!spotPrice.isValid || !asset) {
+          return acc
+        }
+
+        const rewardHuman = scaleHuman(reward, asset.decimals)
+        const rewardTotal = Big(rewardHuman).times(spotPrice.price).toString()
+
+        return [totalUSD.plus(rewardTotal), claimableAssetValues]
+      },
+      [Big(0), new Map()],
+    )
+  }, [filteredValues, getAssetPrice, getAsset, isLoading])
 
   return {
-    // TODO: add claimable amount
-    claimableAmount: isEmpty ? 0 : 130100,
-    // TODO: add total amount
-    totalAmountUsd: isEmpty ? 0 : 2855.24,
-    symbol: native.symbol,
-    loading,
+    totalUSD: totalUSD.toString(),
+    claimableAssetValues,
+    isLoading,
   }
 }

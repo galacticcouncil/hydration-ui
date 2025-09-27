@@ -17,7 +17,7 @@ export type Balance = SdkBalance & {
   assetId: string
 }
 
-type Positions = {
+export type Positions = {
   omnipool: OmnipoolPosition[]
   omnipoolMining: OmnipoolDepositFull[]
   xykMining: XykDeposit[]
@@ -150,7 +150,9 @@ export const useAccountBalance = (assetId: string): Balance | undefined => {
 }
 
 export const useAccountPositions = () => {
-  const positions = useAccountData(prop("positions"))
+  const { positions, isPositionsLoading } = useAccountData(
+    useShallow(pick(["positions", "isPositionsLoading"])),
+  )
   const { omnipool, omnipoolMining, xykMining } = positions
   const isPositions = omnipool.length > 0 || omnipoolMining.length > 0
 
@@ -172,7 +174,7 @@ export const useAccountPositions = () => {
     [omnipool, omnipoolMining, xykMining],
   )
 
-  return { positions, isPositions, getPositions }
+  return { positions, isPositions, isPositionsLoading, getPositions }
 }
 
 export const useAccountOmnipoolPositionsData = () => {
