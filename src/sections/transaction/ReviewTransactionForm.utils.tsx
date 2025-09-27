@@ -159,6 +159,38 @@ export const useTransactionValues = ({
   const { data: paymentFeeExtraHDX, isLoading: isExtraEvmFeeLoading } =
     useExtraEvmFeePaymentByWeight(txWeight ?? "0")
 
+  const isExternalXcmCall = !!xcallMeta && srcChain !== HYDRATION_CHAIN_KEY
+
+  if (isExternalXcmCall) {
+    const feeBalanceDiff =
+      parseFloat(xcallMeta.srcChainFeeBalance) -
+      parseFloat(xcallMeta.srcChainFee)
+
+    const isEnoughPaymentBalance =
+      // @TODO remove Bifrost override when fixed in xcm app
+      srcChain === "bifrost" ? true : feeBalanceDiff > 0
+
+    return {
+      isLoading: isNonceLoading || era.isLoading,
+      data: {
+        isEnoughPaymentBalance: isEnoughPaymentBalance,
+        displayFeePaymentValue: BN_NAN,
+        feePaymentMeta,
+        acceptedFeePaymentAssets: [],
+        era,
+        nonce: nonce.data,
+        isLinkedAccount,
+        storedReferralCode,
+        tx: boundedTx,
+        isNewReferralLink,
+        shouldUsePermit,
+        permitNonce: permitNonce.data,
+        pendingPermit,
+        txWeight,
+      },
+    }
+  }
+
   const paymentFeeBaseHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
         -native.decimals,
@@ -235,24 +267,13 @@ export const useTransactionValues = ({
     }
   }
 
-  let isEnoughPaymentBalance: boolean
-  if (srcChain === "bifrost") {
-    // @TODO remove when fixed in xcm app
-    isEnoughPaymentBalance = true
-  } else if (xcallMeta && srcChain !== HYDRATION_CHAIN_KEY) {
-    const feeBalanceDiff =
-      parseFloat(xcallMeta.srcChainFeeBalance) -
-      parseFloat(xcallMeta.srcChainFee)
-    isEnoughPaymentBalance = feeBalanceDiff > 0
-  } else {
-    isEnoughPaymentBalance = feeAssetBalance?.transferable
-      ? BigNumber(feeAssetBalance.transferable)
-          .shiftedBy(-feePaymentMeta.decimals)
-          .minus(displayFeePaymentValue ?? 0)
-          .minus(displayFeeExtra ?? 0)
-          .gt(0)
-      : false
-  }
+  const isEnoughPaymentBalance = feeAssetBalance?.transferable
+    ? BigNumber(feeAssetBalance.transferable)
+        .shiftedBy(-feePaymentMeta.decimals)
+        .minus(displayFeePaymentValue ?? 0)
+        .minus(displayFeeExtra ?? 0)
+        .gt(0)
+    : false
 
   let displayEvmFeePaymentValue
   if (isEvm && evmPaymentFee?.data) {
