@@ -5,6 +5,7 @@ import {
   AreaChart as AreaChartPrimitive,
   CartesianGrid,
   DotProps,
+  Label,
   ReferenceLine,
   Tooltip,
   XAxis,
@@ -141,6 +142,7 @@ export function AreaChart<TData extends TChartData>({
           {...xAxisProps}
           label={getAxisLabelProps(xAxisLabel, false, xAxisLabelProps)}
         />
+        <Label />
         <YAxis
           tickLine={false}
           axisLine={false}

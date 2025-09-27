@@ -1,0 +1,49 @@
+{
+    "dashboard.title": "Staking dashboard",
+    "dashboard.allocated": "Your allocated rewards:",
+    "dashboard.available": "Available rewards:",
+    "dashboard.ofAllocatred": "of allocated rewards",
+    "dashboard.ofClaimable": "% of Claimable Rewards",
+    "dashboard.chart.legend.current": "Current curve",
+    "dashboard.chart.legend.afterVoting": "Rewards after voting",
+    "dashboard.remainder": ["Don't claim rewards too early.", "Claiming resets your boost and forfeits", "{{ amount }} unclaimable {{ symbol }} rewards."],
+    "dashboard.supplyStaked.title": "{{ symbol }} Supply Staked",
+    "dashboard.supplyStaked.ofSupply": "<0>of {{ amount }}</0> circulating supply",
+    "dashboard.projectedAPR": "Projected APR",
+    "dashboard.balance": "Staked balance",
+    
+    "howTo.title": "How to stake?",
+    "howTo.points": [
+        ["Don't have HDX?", "You can easily get HDX by swapping from a range of assets on our tade page."],
+        ["Stake", "Choose how many HDX you wish to stake - these can be unstaked at any time."],
+        ["Participate in referenda", "Participate in governance to speed up the rate at which you can claim rewards."],
+        ["Claim", "Rewards can be claimed at any time - however, be aware that this could forfeit your unavailable portion."]
+    ],
+    
+    "stake.stake": "Stake",
+    "stake.stake.cta": "Stake",
+    "stake.unstake": "Unstake",
+    "stake.unstake.cta": "Unstake",
+    "stake.amount": "Amount to stake",
+    "stake.minimum": "Minimum stake increase",
+
+    "referenda.title": "Ongoing referenda",
+    "referenda.emptyState.header": "Nothing here",
+    "referenda.emptyState.description": "Currently there  are no ongoing referenda to vote in. ",
+    "referenda.openArchive": "Open archive",
+    "referenda.participate": "Participate in governance to speed up the rate at which you can claim your staking rewards.",
+
+    "referenda.item.aye": "Aye",
+    "referenda.item.nay": "Nay",
+    "referenda.item.threshold": "Threshold",
+    "referenda.item.root": "Root",
+    "referenda.item.preparing": "Preparing",
+    "referenda.item.voted": "Voted",
+    "referenda.item.cta": "Vote",
+
+    "claim.header": "Are you sure you want to claim rewards?",
+    "claim.description1": "Don't claim rewards too early.",
+    "claim.description2": "Claiming resets your boost and forfeits <0>{{ amount }}</0>",
+    "claim.description3": "<0>unclaimable {{ symbol }}</0> rewards.",
+    "claim.cta": "Sign Transaction"
+}
