@@ -51,7 +51,6 @@ import { getPolkadotSignerFromPjs } from "polkadot-api/pjs-signer"
 import { Observable, firstValueFrom, shareReplay } from "rxjs"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
-import { WalletConnect } from "sections/web3-connect/wallets/WalletConnect"
 import { TxType } from "@galacticcouncil/apps"
 import { useRpcProvider } from "providers/rpcProvider"
 
@@ -232,7 +231,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
           tip: tipAmount?.gte(0) ? tipAmount.toString() : undefined,
           signer: wallet.signer,
           nonce: customNonce ? parseInt(customNonce) : -1,
-          withSignedTransaction: wallet instanceof WalletConnect ? false : true,
+          withSignedTransaction: false,
         })
 
         return props.onSigned(signature)
