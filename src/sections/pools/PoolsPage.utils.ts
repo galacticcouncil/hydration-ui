@@ -28,7 +28,7 @@ import { getTradabilityFromBits } from "api/omnipool"
 import { useOmnipoolFarms, useXYKFarms } from "api/farms"
 import { useAssetsPrice } from "state/displayPrice"
 import { useTotalIssuances } from "api/totalIssuance"
-import { BorrowAssetApyData, useBorrowAssetsApy } from "api/borrow"
+//import { BorrowAssetApyData, useBorrowAssetsApy } from "api/borrow"
 import {
   setOmnipoolTvlTotal,
   setOmnipoolVolumeTotal,
@@ -72,7 +72,7 @@ type TStablepoolData = {
   balance: string
   isStablepoolData: boolean
   lpFee: string | undefined
-  moneyMarketApy: BorrowAssetApyData | undefined
+  moneyMarketApy: undefined
 }
 
 const isStablepoolData = (
@@ -165,9 +165,7 @@ export const usePools = () => {
 
         const isStablepoolOnly = isStablepoolData(asset)
         const isStableInOmnipool = stableInOmnipool.get(poolId)
-        const moneyMarketApy = isStablepoolOnly
-          ? asset.moneyMarketApy
-          : isStableInOmnipool?.moneyMarketApy
+        const moneyMarketApy = undefined
         const meta = getAssetWithFallback(poolId)
 
         const accountAsset = accountAssets?.accountAssetsMap.get(poolId)
@@ -230,7 +228,7 @@ export const usePools = () => {
           lpFeeStablepool = asset.lpFee
 
           if (moneyMarketApy) {
-            totalFee = BN(moneyMarketApy.totalSupplyApy)
+            totalFee = BN(0)
           } else {
             totalFee = BN(lpFeeStablepool ?? 0).plus(farmsApr ?? 0)
           }
@@ -245,9 +243,7 @@ export const usePools = () => {
             })?.projectedAprPerc ?? "0"
 
           if (moneyMarketApy) {
-            totalFee = BN(lpFeeOmnipool ?? 0).plus(
-              moneyMarketApy.totalSupplyApy,
-            )
+            totalFee = BN(lpFeeOmnipool ?? 0).plus(0)
           } else {
             totalFee = BN(lpFeeStablepool)
               .plus(lpFeeOmnipool ?? 0)
@@ -860,18 +856,18 @@ export const useStablepoolsData = (disabled?: boolean) => {
     return { poolId: stablePool.id, tokens: filteredTokens }
   })
 
-  const moneyMarketAssetsIds = useMemo(
-    () =>
-      stablePoolData
-        ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
-        .map((stablepool) => stablepool.poolId) ?? [],
-    [stablePoolData, getRelatedAToken],
-  )
+  // const moneyMarketAssetsIds = useMemo(
+  //   () =>
+  //     stablePoolData
+  //       ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+  //       .map((stablepool) => stablepool.poolId) ?? [],
+  //   [stablePoolData, getRelatedAToken],
+  // )
 
-  const { data: moneyMarketAssetsApy } = useBorrowAssetsApy(
-    moneyMarketAssetsIds,
-    true,
-  )
+  // const { data: moneyMarketAssetsApy } = useBorrowAssetsApy(
+  //   moneyMarketAssetsIds,
+  //   true,
+  // )
 
   const { isLoading, getAssetPrice } = useAssetsPrice([...tokensSet])
 
@@ -902,9 +898,9 @@ export const useStablepoolsData = (disabled?: boolean) => {
       (stablepoolFee) => stablepoolFee.poolId === poolId,
     )?.projectedApyPerc
 
-    const moneyMarketApy = moneyMarketAssetsApy.find(
-      (moneyMarketApy) => moneyMarketApy.assetId === stablepool.poolId,
-    )
+    // const moneyMarketApy = moneyMarketAssetsApy.find(
+    //   (moneyMarketApy) => moneyMarketApy.assetId === stablepool.poolId,
+    // )
 
     const data: TStablepoolData = {
       poolId,
@@ -913,7 +909,7 @@ export const useStablepoolsData = (disabled?: boolean) => {
       balance: totalBalance.toString(),
       isStablepoolData: true,
       lpFee,
-      moneyMarketApy,
+      moneyMarketApy: undefined,
     }
 
     return data
