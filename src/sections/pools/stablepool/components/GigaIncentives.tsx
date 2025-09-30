@@ -26,59 +26,6 @@ export const GigaIncentives = ({
   const { t } = useTranslation()
 
   if (!moneyMarketApy) return null
-
-  const totalApr = moneyMarketApy.incentives.reduce(
-    (acc, incentive) => acc.plus(incentive.incentiveAPR),
-    BN_0,
-  )
-
-  const validIncentives = moneyMarketApy.incentives.filter(({ incentiveAPR }) =>
-    BN(incentiveAPR).gt(0),
-  )
-
-  return (
-    <>
-      <Heading
-        as="h2"
-        color="white"
-        fs={15}
-        sx={{ mb: 5 }}
-        font="GeistMono"
-        tTransform="uppercase"
-      >
-        {t("liquidity.stablepool.incentives")}
-      </Heading>
-      <SContainer
-        sx={{ flex: "row", gap: 6, justify: "space-between", align: "center" }}
-      >
-        <MultipleIcons
-          size={20}
-          icons={validIncentives.map((incentive) => {
-            const id = getAssetIdFromAddress(incentive.rewardTokenAddress)
-            return {
-              icon: <AssetLogo key={id} id={id} />,
-            }
-          })}
-        />
-
-        <Text
-          fs={14}
-          fw={600}
-          font="GeistSemiBold"
-          color="basic100"
-          sx={{ mr: "auto" }}
-        >
-          {validIncentives
-            .map(({ rewardTokenSymbol }) => rewardTokenSymbol)
-            .join(", ")}
-        </Text>
-
-        <Text color="white" fs={14}>
-          <FormattedNumber percent value={totalApr.toString()} />
-        </Text>
-      </SContainer>
-    </>
-  )
 }
 
 export const IncentiveRow = ({
@@ -121,8 +68,7 @@ type APYProps = {
 }
 
 export const MoneyMarketAPYWrapper = (props: APYProps) => {
-  const { data } = useBorrowAssetsApy([props.assetId], props.withFarms)
-  return data[0] && <MoneyMarketAPY moneyMarketApy={data[0]} {...props} />
+  return null
 }
 
 export const MoneyMarketAPY = ({
