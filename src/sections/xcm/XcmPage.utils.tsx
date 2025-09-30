@@ -20,7 +20,7 @@ export const DEFAULT_DEST_CHAIN = HYDRATION_CHAIN_KEY
 
 export function getDefaultSrcChain(provider?: WalletProviderType) {
   if (!provider) return DEFAULT_NATIVE_CHAIN
-  if (EVM_PROVIDERS.includes(provider)) return DEFAULT_EVM_CHAIN
+  if (EVM_PROVIDERS.includes(provider)) return DEFAULT_NATIVE_CHAIN
   if (SOLANA_PROVIDERS.includes(provider)) return DEFAULT_SOL_CHAIN
   return DEFAULT_NATIVE_CHAIN
 }
