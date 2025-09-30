@@ -162,7 +162,7 @@ export function XcmPage() {
 
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist = import.meta.env.VITE_ENV === "production" ? "" : ""
+  const blacklist = "ethereum"
 
   useMount(() => {
     const srcChain = search?.data?.srcChain
