@@ -37,7 +37,7 @@ export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
           fs="p4"
           fw={400}
           color={getToken("buttons.primary.high.rest")}
-          sx={{ pt: 2 }}
+          sx={{ pt: 2, whiteSpace: "nowrap" }}
         >
           {t("market.form.routes.label", { count: filteredRoutes.length })}
         </Text>
