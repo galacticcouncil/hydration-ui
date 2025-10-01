@@ -1831,7 +1831,7 @@
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.4.0.tgz#fe61d6b1191b05cbbcdfcf4121028a1e13644673"
   integrity sha512-ENZBwGEhI1kVuto7t3Op1k3twp+FsEKbhHPOEImJOLITZDYUEIlWpQoXtcNnadj5OkeDjx8F2qcADGf48HUgzA==
- 
+
 "@galacticcouncil/math-hsm@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.1.0.tgz#51a13c336cf8949602925624b2ef21ed29903e89"
