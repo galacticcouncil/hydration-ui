@@ -127,20 +127,20 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
               justify="end"
             >
               {isOmnipool ? (
-                isFarms && original ? (
-                  <Button variant="primary">
-                    {/* <Link
-                  to="/liquidity/$id/join"
-                  params={{
-                    id: row.original.poolId,
-                  }}
-                  search={{
-                    positionId: row.original.positionId,
-                  }}
-                > */}
-                    <CupSoda />
-                    {t("liquidity:joinFarms")}
-                    {/* </Link> */}
+                !original.isJoinedAllFarms ? (
+                  <Button variant="primary" asChild>
+                    <Link
+                      to="/liquidity/$id/join"
+                      params={{
+                        id: original.poolId,
+                      }}
+                      search={{
+                        positionId: original.positionId,
+                      }}
+                    >
+                      <CupSoda />
+                      {t("liquidity:joinFarms")}
+                    </Link>
                   </Button>
                 ) : null
               ) : original.isStablepoolInOmnipool ? (
