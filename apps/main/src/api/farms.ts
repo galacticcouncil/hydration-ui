@@ -1,105 +1,52 @@
+import { farm } from "@galacticcouncil/sdk-next"
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
-import { prop } from "remeda"
 
-import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { Positions, useAccountData } from "@/states/account"
-import { useOmnipoolIds } from "@/states/liquidity"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { Positions } from "@/states/account"
 
-import { OmnipoolDepositFull } from "./account"
-
-type TFarmIds = {
-  poolId: string
-  globalFarmId: string
-  yieldFarmId: string
-  isActive: boolean
-}
+export type Farm = farm.Farm
+export type LoyaltyCurve = farm.LoyaltyCurve
 
 export const useOmnipoolFarms = () => {
-  const { ids = [] } = useOmnipoolIds()
-  const { papi, isLoaded } = useRpcProvider()
-  const positions = useAccountData(prop("positions"))
+  const { isLoaded, sdk } = useRpcProvider()
 
-  const { omnipoolMining } = positions
-
-  const { data: activeFarms } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarms"],
-    queryFn: getActiveFarms(papi, ids),
-    enabled: !!ids.length && isLoaded,
+    queryFn: () => sdk.api.farm.getAllOmnipoolFarms(),
+    enabled: isLoaded,
     staleTime: Infinity,
   })
 
-  const stoppedFarms = useMemo(
-    () => getStoppedFarms(omnipoolMining, activeFarms ?? []),
-    [activeFarms, omnipoolMining],
-  )
-  return { activeFarms, stoppedFarms }
+  return { data, isLoading }
 }
 
-const getActiveFarms =
-  (api: Papi, ids: string[], isXyk: boolean = false) =>
-  async () => {
-    const activeFarms = await Promise.all(
-      ids.map((id) =>
-        isXyk
-          ? api.query.XYKWarehouseLM.ActiveYieldFarm.getEntries(id)
-          : api.query.OmnipoolWarehouseLM.ActiveYieldFarm.getEntries(
-              Number(id),
-            ),
-      ),
-    )
+export const useIsolatedPoolsFarms = () => {
+  const { isLoaded, sdk } = useRpcProvider()
 
-    const activeFarmIds = activeFarms.flatMap((farm) =>
-      farm.map(({ keyArgs, value }) => {
-        const [poolIdRaw, globalFarmIdRaw] = keyArgs
-
-        const yieldFarmId = value.toString()
-        const poolId = poolIdRaw.toString()
-        const globalFarmId = globalFarmIdRaw.toString()
-
-        return {
-          poolId,
-          globalFarmId,
-          yieldFarmId,
-          isActive: true,
-        }
-      }),
-    )
-
-    return activeFarmIds
-  }
-
-const getStoppedFarms = (
-  deposits: OmnipoolDepositFull[],
-  activeFarms: TFarmIds[],
-) => {
-  const activeFarmSet = new Set(
-    activeFarms.map(
-      (farm) => `${farm.poolId}-${farm.yieldFarmId}-${farm.globalFarmId}`,
-    ),
-  )
-
-  const resultMap = new Map<string, TFarmIds>()
-
-  deposits.forEach((deposit) => {
-    deposit.yield_farm_entries.forEach((entry) => {
-      const yieldFarmIdStr = entry.yield_farm_id.toString()
-      const globalFarmIdStr = entry.global_farm_id.toString()
-      const key = `${deposit.assetId}-${yieldFarmIdStr}-${globalFarmIdStr}`
-
-      if (!activeFarmSet.has(key) && !resultMap.has(key)) {
-        const farmEntry = {
-          yieldFarmId: yieldFarmIdStr,
-          poolId: deposit.assetId,
-          globalFarmId: globalFarmIdStr,
-          isActive: false,
-        }
-        resultMap.set(key, farmEntry)
-      }
-    })
+  const { data, isLoading } = useQuery({
+    queryKey: ["isolatedPoolsFarms"],
+    queryFn: () => sdk.api.farm.getAllIsolatedFarms(),
+    enabled: isLoaded,
+    staleTime: Infinity,
   })
 
-  return Array.from(resultMap.values())
+  return { data, isLoading }
+}
+
+export const useOmnipoolActiveFarm = (poolId: string) => {
+  const { isLoaded, sdk } = useRpcProvider()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["omnipoolActiveFarm", poolId],
+    queryFn: async () => {
+      const data = await sdk.api.farm.getOmnipoolFarms(poolId)
+      return data.filter((farm) => !!farm)
+    },
+    enabled: isLoaded,
+    staleTime: Infinity,
+  })
+
+  return { data, isLoading }
 }
 
 export const allDepositsRewardsQuery = (

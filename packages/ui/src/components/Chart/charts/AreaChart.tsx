@@ -134,10 +134,12 @@ export function AreaChart<TData extends TChartData>({
           axisLine={false}
           tickMargin={8}
           shapeRendering="crispEdges"
-          domain={["dataMin", "dataMax"]}
           style={{ fontSize: 12, fill: theme.text.medium }}
           tickFormatter={labelFormatter}
           hide={xAxisHidden}
+          interval={0}
+          tickCount={10}
+          domain={[0, "auto"]}
           {...xAxisProps}
           label={getAxisLabelProps(xAxisLabel, false, xAxisLabelProps)}
         />
