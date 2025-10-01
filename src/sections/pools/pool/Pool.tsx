@@ -13,8 +13,6 @@ import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { SPoolContainer } from "./Pool.styled"
 import { createContext, useContext } from "react"
-import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
-import { RedepositAllFarmsButton } from "sections/pools/farms/position/redeposit/RedepositAllFarmsButton"
 
 export const PoolContext = createContext<{
   pool: TAnyPool
@@ -42,7 +40,6 @@ const Pool = ({ pool }: { pool: TPool }) => {
   return (
     <PoolContext.Provider value={{ pool, isXYK: false }}>
       <SPoolContainer>
-        <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
         <PoolDetails />
         <MyPositions />
       </SPoolContainer>
@@ -60,7 +57,6 @@ const Stablepool = ({ pool }: { pool: TPool }) => {
       value={{ pool: { ...pool, ...poolDetails.data }, isXYK: false }}
     >
       <SPoolContainer>
-        <GigaCampaignBanner action={<RedepositAllFarmsButton pool={pool} />} />
         <PoolDetails />
         <MyPositions />
       </SPoolContainer>

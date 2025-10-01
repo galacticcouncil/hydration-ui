@@ -14,7 +14,6 @@ import { PoolsTableSkeleton } from "sections/pools/table/PoolsTableSkeleton"
 import { PoolSkeleton } from "sections/pools/pool/PoolSkeleton"
 import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { Spacer } from "components/Spacer/Spacer"
-import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
 import { OmnipoolAndStablepoolHeader } from "sections/pools/header/OmnipoolAndStablepoolHeader"
 
 export const OmnipoolAndStablepool = () => {
@@ -83,7 +82,6 @@ const OmnipoolAndStablepoolData = ({ id }: { id: number | undefined }) => {
     <>
       <OmnipoolAndStablepoolHeader />
       <SearchFilter />
-      <GigaCampaignBanner />
       <Spacer size={[24, 40]} />
       {pools.isLoading ? (
         <PoolsTableSkeleton />
