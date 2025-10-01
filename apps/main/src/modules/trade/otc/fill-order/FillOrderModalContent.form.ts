@@ -9,8 +9,7 @@ import i18n from "@/i18n"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
-  positive,
-  required,
+  positiveOptional,
   validateFieldExistentialDeposit,
   validateFieldMaxBalance,
 } from "@/utils/validators"
@@ -22,16 +21,14 @@ const useSchema = (offer: OtcOfferTabular, assetInBalance: string) => {
   )
 
   return object({
-    sellAmount: required
-      .pipe(positive)
-      .check(
-        validateFieldMaxBalance(assetInBalance),
-        validateFieldExistentialDeposit(
-          offer.assetIn,
-          existentialDepositMultiplier,
-        ),
+    sellAmount: positiveOptional.check(
+      validateFieldMaxBalance(assetInBalance),
+      validateFieldExistentialDeposit(
+        offer.assetIn,
+        existentialDepositMultiplier,
       ),
-    buyAmount: required.pipe(positive).check(
+    ),
+    buyAmount: positiveOptional.check(
       refine(
         (value) => new Big(offer.assetAmountOut).gte(value),
         i18n.t("trade:otc.fillOrder.validation.orderTooBig"),

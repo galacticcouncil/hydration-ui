@@ -1,3 +1,4 @@
+import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import {
   Button,
   ModalBody,
@@ -5,11 +6,13 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
-import { AddressBookModal } from "@galacticcouncil/web3-connect"
+import { AddressBookModal, useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { FC, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { AddressBookFormField } from "@/form/AddressBookFormField"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
@@ -17,7 +20,8 @@ import {
   useTransferPositionForm,
 } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useSubmitTransferPosition } from "@/modules/wallet/assets/Transfer/TransferPositionModal.submit"
-import { useAssets } from "@/providers/assetsProvider"
+import { isErc20AToken, useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly assetId?: string
@@ -26,6 +30,7 @@ type Props = {
 
 export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation(["wallet", "common"])
+  const { account } = useAccount()
   const { tradable } = useAssets()
 
   const transferPosition = useSubmitTransferPosition({ onClose })
@@ -33,6 +38,23 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const shouldValidate = form.formState.isSubmitted
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
+
+  const [asset, amount] = form.watch(["asset", "amount"])
+
+  const { data: healthFactor } = useQuery(
+    healthFactorAfterWithdrawQuery(useRpcProvider(), {
+      address: account?.address ?? "",
+      assetId: asset && isErc20AToken(asset) ? asset.underlyingAssetId : "",
+      amount,
+    }),
+  )
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
+  const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
+    ? healthFactorRiskAccepted
+    : true
 
   if (isMyContactsOpen) {
     return (
@@ -81,6 +103,14 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             gridTemplateColumns: "1fr",
           }}
         >
+          {healthFactor && (
+            <HealthFactorRiskWarning
+              message={t("common:healthFactor.warning")}
+              accepted={healthFactorRiskAccepted}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+              isUserConsentRequired={healthFactor.isUserConsentRequired}
+            />
+          )}
           <Button
             size="large"
             variant="tertiary"
@@ -89,7 +119,11 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
           >
             {t("common:cancel")}
           </Button>
-          <Button size="large" type="submit">
+          <Button
+            size="large"
+            type="submit"
+            disabled={!isHealthFactorCheckSatisfied}
+          >
             {t("common:confirm")}
           </Button>
         </ModalFooter>

@@ -12,15 +12,14 @@ import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 import {
-  positive,
-  required,
+  positiveOptional,
   requiredObject,
   useValidateFormMaxBalance,
 } from "@/utils/validators"
 
 const schema = z.object({
   sellAsset: requiredObject<TAsset>(),
-  sellAmount: required.pipe(positive),
+  sellAmount: positiveOptional,
   buyAsset: requiredObject<TAsset>(),
   period: periodInputSchema,
 })

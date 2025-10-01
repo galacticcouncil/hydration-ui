@@ -133,7 +133,7 @@ export const AssetInput = ({
               placeholder="0"
               variant="embedded"
               disabled={disabled || loading || !onChange || disabledInput}
-              value={value ?? ""}
+              value={defaultAssetValueFormatter(value ?? "")}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.validity.valid) {
                   const formattedValue = e.target.value

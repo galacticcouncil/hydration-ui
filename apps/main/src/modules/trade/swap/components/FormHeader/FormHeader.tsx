@@ -40,9 +40,10 @@ export const FormHeader = () => {
       {hasSettings && (
         <>
           <SSettingsIcon
+            m={8}
             as="button"
             aria-label="Settings"
-            size={20}
+            size={18}
             component={Settings}
             onClick={() => setOpenSettings(true)}
           />

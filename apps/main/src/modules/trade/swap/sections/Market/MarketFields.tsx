@@ -19,16 +19,6 @@ import { SELL_ONLY_ASSETS } from "@/utils/consts"
 
 const RECALCULATE_DEBOUNCE_MS = 250
 
-type NewAssetOrAmount =
-  | {
-      readonly newAsset: TAsset
-      readonly newAmount?: never
-    }
-  | {
-      readonly newAsset?: never
-      readonly newAmount: string
-    }
-
 export const MarketFields: FC = () => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
@@ -48,22 +38,89 @@ export const MarketFields: FC = () => {
     (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
   )
 
+  const handleSellAssetChange = async (sellAsset: TAsset): Promise<void> => {
+    const formValues = getValues()
+
+    if (
+      formValues.type === TradeType.Sell &&
+      formValues.buyAsset &&
+      formValues.sellAmount
+    ) {
+      reset({
+        ...formValues,
+        buyAmount: await calculateBuyAmount(
+          sellAsset,
+          formValues.buyAsset,
+          formValues.sellAmount,
+        ),
+      })
+    } else if (
+      formValues.type === TradeType.Buy &&
+      formValues.buyAsset &&
+      formValues.sellAmount
+    ) {
+      reset({
+        ...formValues,
+        sellAmount: await calculateSellAmount(
+          sellAsset,
+          formValues.buyAsset,
+          formValues.buyAmount,
+        ),
+      })
+    }
+
+    trigger()
+  }
+
+  const handleBuyAssetChange = async (buyAsset: TAsset): Promise<void> => {
+    const formValues = getValues()
+
+    if (
+      formValues.type === TradeType.Sell &&
+      formValues.sellAsset &&
+      formValues.sellAmount
+    ) {
+      reset({
+        ...formValues,
+        buyAmount: await calculateBuyAmount(
+          formValues.sellAsset,
+          buyAsset,
+          formValues.sellAmount,
+        ),
+      })
+    } else if (
+      formValues.type === TradeType.Buy &&
+      formValues.sellAsset &&
+      formValues.sellAmount
+    ) {
+      reset({
+        ...formValues,
+        sellAmount: await calculateSellAmount(
+          formValues.sellAsset,
+          buyAsset,
+          formValues.buyAmount,
+        ),
+      })
+    }
+
+    trigger()
+  }
+
   const handleSellChange = useDebouncedCallback(
-    async ({ newAsset, newAmount }: NewAssetOrAmount) => {
+    async (newSellAmount: string) => {
       const formValues = getValues()
       const { sellAsset, sellAmount, buyAsset, type } = formValues
 
-      const usedSellAsset = newAsset || sellAsset
-      const usedSellAmount = newAmount || sellAmount
+      const usedSellAmount = newSellAmount || sellAmount
 
-      if (!usedSellAsset || !buyAsset) {
+      if (!sellAsset || !buyAsset) {
         return
       }
 
       reset({
         ...formValues,
         buyAmount: await calculateBuyAmount(
-          usedSellAsset,
+          sellAsset,
           buyAsset,
           usedSellAmount,
         ),
@@ -76,33 +133,25 @@ export const MarketFields: FC = () => {
     RECALCULATE_DEBOUNCE_MS,
   )
 
-  const handleBuyChange = useDebouncedCallback(
-    async ({ newAsset, newAmount }: NewAssetOrAmount) => {
-      const formValues = getValues()
-      const { sellAsset, buyAsset, buyAmount, type } = formValues
+  const handleBuyChange = useDebouncedCallback(async (newBuyAmount: string) => {
+    const formValues = getValues()
+    const { sellAsset, buyAsset, buyAmount, type } = formValues
 
-      const usedBuyAsset = newAsset || buyAsset
-      const usedBuyAmount = newAmount || buyAmount
+    const usedBuyAmount = newBuyAmount || buyAmount
 
-      if (!sellAsset || !usedBuyAsset) {
-        return
-      }
+    if (!sellAsset || !buyAsset) {
+      return
+    }
 
-      reset({
-        ...formValues,
-        sellAmount: await calculateSellAmount(
-          sellAsset,
-          usedBuyAsset,
-          usedBuyAmount,
-        ),
-        isSingleTrade: true,
-        ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
-      })
+    reset({
+      ...formValues,
+      sellAmount: await calculateSellAmount(sellAsset, buyAsset, usedBuyAmount),
+      isSingleTrade: true,
+      ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
+    })
 
-      trigger()
-    },
-    RECALCULATE_DEBOUNCE_MS,
-  )
+    trigger()
+  }, RECALCULATE_DEBOUNCE_MS)
 
   return (
     <div>
@@ -119,8 +168,7 @@ export const MarketFields: FC = () => {
             setValue("sellAsset", previousSellAsset)
             switchAssets.mutate()
           } else {
-            handleSellChange({ newAsset: sellAsset })
-            setValue("isSingleTrade", true)
+            handleSellAssetChange(sellAsset)
 
             navigate({
               to: ".",
@@ -135,7 +183,7 @@ export const MarketFields: FC = () => {
         }}
         onAmountChange={(sellAmount) => {
           handleBuyChange.cancel()
-          handleSellChange({ newAmount: sellAmount })
+          handleSellChange(sellAmount)
         }}
       />
       <MarketSwitcher />
@@ -154,8 +202,7 @@ export const MarketFields: FC = () => {
             setValue("buyAsset", previousBuyAsset)
             switchAssets.mutate()
           } else {
-            handleBuyChange({ newAsset: buyAsset })
-            setValue("isSingleTrade", true)
+            handleBuyAssetChange(buyAsset)
 
             navigate({
               to: ".",
@@ -166,7 +213,7 @@ export const MarketFields: FC = () => {
         }}
         onAmountChange={(buyAmount) => {
           handleSellChange.cancel()
-          handleBuyChange({ newAmount: buyAmount })
+          handleBuyChange(buyAmount)
         }}
       />
     </div>

@@ -111,6 +111,14 @@ export const FillOrderModalContent: FC<Props> = ({
                     onChange={(sellAmount) => {
                       field.onChange(sellAmount)
 
+                      if (!sellAmount) {
+                        form.setValue("buyAmount", "", {
+                          shouldValidate: true,
+                        })
+
+                        return
+                      }
+
                       const percentage = new Big(sellAmount || "0").div(
                         otcOffer.assetAmountIn,
                       )
