@@ -1,9 +1,17 @@
+import { sor } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
+
+export const TradeType = sor.TradeType
+
+const tradeTypes = Object.values(TradeType)
+export type TradeType = (typeof tradeTypes)[number]
+
+export const TradeOrderType = sor.TradeOrderType
 
 type BestSellArgs = {
   readonly assetIn: string
@@ -32,6 +40,7 @@ export const bestSellQuery = (
 export const bestSellTwapQuery = (
   { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountIn }: BestSellArgs,
+  enabled = true,
 ) =>
   queryOptions({
     queryKey: [
@@ -48,7 +57,12 @@ export const bestSellTwapQuery = (
         Number(assetOut),
         amountIn,
       ),
-    enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+    enabled:
+      enabled &&
+      isLoaded &&
+      !!assetIn &&
+      !!assetOut &&
+      Big(amountIn || "0").gt(0),
   })
 
 type BestBuyArgs = {
@@ -78,6 +92,7 @@ export const bestBuyQuery = (
 export const bestBuyTwapQuery = (
   { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountOut }: BestBuyArgs,
+  enabled = true,
 ) =>
   queryOptions({
     queryKey: [
@@ -94,7 +109,12 @@ export const bestBuyTwapQuery = (
         Number(assetOut),
         amountOut,
       ),
-    enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+    enabled:
+      enabled &&
+      isLoaded &&
+      !!assetIn &&
+      !!assetOut &&
+      Big(amountOut || "0").gt(0),
   })
 
 type DcaTradeOrderArgs = {

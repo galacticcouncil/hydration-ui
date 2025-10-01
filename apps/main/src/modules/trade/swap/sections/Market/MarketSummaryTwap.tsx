@@ -6,16 +6,14 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { TradeOrderType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import {
   TradeRoute,
   TradeRoutes,
 } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
-import {
-  MarketFormValues,
-  TradeOrderType,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"

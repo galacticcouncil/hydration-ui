@@ -1,19 +1,20 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQueries } from "@tanstack/react-query"
-import { FC } from "react"
-import { useFormContext } from "react-hook-form"
+import { useQueries, useQuery } from "@tanstack/react-query"
+import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { bestSellQuery, bestSellTwapQuery } from "@/api/trade"
+import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { isErc20AToken } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-export const MarketSellProvider: FC<TradeProviderProps> = ({ children }) => {
+export const useMarketSellData = (
+  form: UseFormReturn<MarketFormValues>,
+): TradeProviderProps => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
-  const form = useFormContext<MarketFormValues>()
 
   const [sellAsset, buyAsset, sellAmount] = form.watch([
     "sellAsset",
@@ -23,16 +24,10 @@ export const MarketSellProvider: FC<TradeProviderProps> = ({ children }) => {
 
   const [
     { data: swapData, isLoading: isSwapLoading },
-    { data: twapData, isLoading: isTwapLoading },
     { data: healthFactorData, isLoading: isHealthFactorLoading },
   ] = useQueries({
     queries: [
       bestSellQuery(rpc, {
-        assetIn: sellAsset?.id ?? "",
-        assetOut: buyAsset?.id ?? "",
-        amountIn: sellAmount,
-      }),
-      bestSellTwapQuery(rpc, {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountIn: sellAmount,
@@ -48,10 +43,22 @@ export const MarketSellProvider: FC<TradeProviderProps> = ({ children }) => {
     ],
   })
 
-  return children({
+  const { data: twapData, isLoading: isTwapLoading } = useQuery(
+    bestSellTwapQuery(
+      rpc,
+      {
+        assetIn: sellAsset?.id ?? "",
+        assetOut: buyAsset?.id ?? "",
+        amountIn: sellAmount,
+      },
+      isTwapEnabled(swapData),
+    ),
+  )
+
+  return {
     swap: swapData,
     twap: twapData,
     healthFactor: healthFactorData,
     isLoading: isSwapLoading || isTwapLoading || isHealthFactorLoading,
-  })
+  }
 }
