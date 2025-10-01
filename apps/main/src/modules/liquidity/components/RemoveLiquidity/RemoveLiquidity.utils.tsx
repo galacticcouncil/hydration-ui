@@ -6,17 +6,18 @@ import Big from "big.js"
 import { t } from "i18next"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { prop } from "remeda"
 import z, { ZodType } from "zod/v4"
 
 import { OmnipoolDepositFull } from "@/api/account"
 import { OmnipoolPosition } from "@/api/account"
-import { TAssetData } from "@/api/assets"
 import {
   useMinWithdrawalFee,
   useOmnipoolAssetsData,
   useOraclePrice,
 } from "@/api/omnipool"
 import { useXYKPoolsLiquidity } from "@/api/xyk"
+import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
@@ -30,8 +31,11 @@ import { TransactionToasts, useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
+import { TReceiveAsset } from "./RecieveAssets"
+
 export type TRemoveLiquidityFormValues = {
   amount: string
+  asset: TSelectedAsset
 }
 
 type RemoveLiquidityValues = {
@@ -42,10 +46,7 @@ type RemoveLiquidityValues = {
   tokensPayWith: string
   withdrawalFee: string
   minWithdrawalFee: string
-  receiveAssets: {
-    asset: TAssetData
-    value: string
-  }[]
+  receiveAssets: TReceiveAsset[]
 }
 
 const defaultValues: RemoveLiquidityValues = {
@@ -72,7 +73,7 @@ export const useRemoveLiquidity = ({
   const { hub, getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(poolId)
 
-  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const createTransaction = useTransactionsStore(prop("createTransaction"))
 
   const { data: oraclePriceData } = useOraclePrice(
     Number(meta.id),
@@ -98,6 +99,7 @@ export const useRemoveLiquidity = ({
     : undefined
 
   const form = useRemoveLiquidityForm({
+    asset: meta,
     initialAmount: totalPosition,
     rule:
       !isRemoveAll && totalPosition
@@ -202,7 +204,7 @@ export const useRemoveLiquidity = ({
           receiveAssets: [
             {
               asset: meta,
-              value: valueWithFee.currentValueHuman,
+              value: valueWithFee.currentValue,
             },
 
             ...(Big(valueWithFee.currentHubValueHuman).gt(0)
@@ -404,7 +406,7 @@ export const useRemoveIsolatedLiquidity = ({
   isRemoveAll: boolean
 }) => {
   const { papi } = useRpcProvider()
-  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const createTransaction = useTransactionsStore(prop("createTransaction"))
   const { data: pool } = useXYKPool(poolId)
 
   const { getAssetWithFallback } = useAssets()
@@ -546,13 +548,10 @@ export const useRemoveIsolatedLiquidity = ({
   const receiveAssets = pool.tokens.map((token) => {
     const tokenTotalBalance = token.balance
 
-    const value = scaleHuman(
-      Big(tokenTotalBalance.toString())
-        .times(removeSharesAmount)
-        .div(liquidity.toString())
-        .toString(),
-      token.decimals ?? 0,
-    )
+    const value = Big(tokenTotalBalance.toString())
+      .times(removeSharesAmount)
+      .div(liquidity.toString())
+      .toString()
 
     const asset = getAssetWithFallback(token.id)
 
@@ -574,17 +573,21 @@ export const useRemoveIsolatedLiquidity = ({
 }
 
 export const useRemoveLiquidityForm = ({
+  asset,
   initialAmount,
   rule,
 }: {
+  asset?: TSelectedAsset
   initialAmount?: string
   rule?: ZodType<string, string> | undefined
 }) => {
   return useForm<TRemoveLiquidityFormValues>({
     mode: "onChange",
-    defaultValues: { amount: initialAmount ?? "" },
+    defaultValues: { amount: initialAmount ?? "", asset },
     resolver: rule
-      ? standardSchemaResolver(z.object({ amount: rule }))
+      ? standardSchemaResolver(
+          z.object({ amount: rule, asset: z.custom<TSelectedAsset>() }),
+        )
       : undefined,
   })
 }

@@ -6,7 +6,8 @@ import * as z from "zod/v4"
 import { TAssetData } from "@/api/assets"
 import { useAssets } from "@/providers/assetsProvider"
 import {
-  positiveOptional,
+  positive,
+  required,
   requiredObject,
   useValidateFormMaxBalance,
   validateAssetSellOnly,
@@ -26,9 +27,9 @@ export enum TradeOrderType {
 
 const schema = z.object({
   sellAsset: requiredObject<TAssetData>(),
-  sellAmount: positiveOptional,
+  sellAmount: required.pipe(positive),
   buyAsset: requiredObject<TAssetData>().check(validateAssetSellOnly),
-  buyAmount: positiveOptional,
+  buyAmount: required.pipe(positive),
   type: z.custom<TradeType>(),
   isSingleTrade: z.boolean(),
 })

@@ -1,11 +1,9 @@
 import { useSearch } from "@tanstack/react-router"
-import { FC, useState } from "react"
+import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 
-import {
-  TradeType,
-  useMarketForm,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { TradeType } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { useMarketForm } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSubmitSwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitSwap"
 import { useSubmitTwap } from "@/modules/trade/swap/sections/Market/lib/useSubmitTwap"
 import { MarketBuyProvider } from "@/modules/trade/swap/sections/Market/MarketBuyProvider"
@@ -27,58 +25,33 @@ export const Market: FC = () => {
   const form = useMarketForm({ assetIn, assetOut })
   const [type, isSingleTrade] = form.watch(["type", "isSingleTrade"])
 
-  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
-    useState(false)
-
   const TradeProvider =
     type === TradeType.Sell ? MarketSellProvider : MarketBuyProvider
 
   return (
     <FormProvider {...form}>
       <TradeProvider>
-        {({ swap, twap, healthFactor, isLoading }) => {
-          const isTradeEnabled = isSingleTrade ? !!swap : !!twap
-          const isHealthFactorCheckSatisfied =
-            healthFactor?.isUserConsentRequired
-              ? healthFactorRiskAccepted
-              : true
-          return (
-            <form
-              onSubmit={form.handleSubmit((values) =>
-                isSingleTrade
-                  ? swap && submitSwap.mutate([values, swap])
-                  : twap && submitTwap.mutate([values, twap]),
-              )}
-            >
-              <MarketFields />
-              <MarketTradeOptions
-                swap={swap}
-                twap={twap}
-                isLoading={isLoading}
-              />
-              <SwapSectionSeparator />
-              <MarketSummary
-                swap={swap}
-                twap={twap}
-                healthFactor={healthFactor}
-                isLoading={isLoading}
-              />
-              <SwapSectionSeparator />
-              <MarketWarnings
-                isSingleTrade={isSingleTrade}
-                twap={twap}
-                healthFactor={healthFactor}
-                healthFactorRiskAccepted={healthFactorRiskAccepted}
-                setHealthFactorRiskAccepted={setHealthFactorRiskAccepted}
-              />
-              {swap && <MarketErrors swap={swap} />}
-              <MarketFooter
-                isSingleTrade={isSingleTrade}
-                isEnabled={isTradeEnabled && isHealthFactorCheckSatisfied}
-              />
-            </form>
-          )
-        }}
+        {({ swap, twap, isLoading }) => (
+          <form
+            onSubmit={form.handleSubmit((values) =>
+              isSingleTrade
+                ? swap && submitSwap.mutate([values, swap])
+                : twap && submitTwap.mutate([values, twap]),
+            )}
+          >
+            <MarketFields />
+            <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
+            <SwapSectionSeparator />
+            <MarketSummary swap={swap} twap={twap} isLoading={isLoading} />
+            <SwapSectionSeparator />
+            <MarketWarnings isSingleTrade={isSingleTrade} twap={twap} />
+            {swap && <MarketErrors swap={swap} />}
+            <MarketFooter
+              isSingleTrade={isSingleTrade}
+              isEnabled={isSingleTrade ? !!swap : !!twap}
+            />
+          </form>
+        )}
       </TradeProvider>
     </FormProvider>
   )

@@ -28,35 +28,19 @@ export const validWebsocketUrl = z
   .string()
   .refine((value) => WSS_REGEX.test(value), i18n.t("error.invalidWebsocketUrl"))
 
-const _validNumberBig = (optional?: boolean) =>
-  z.string().refine(
-    (value) => {
-      try {
-        new Big(value)
-        return true
-      } catch {
-        return false
-      }
-    },
-    {
-      error: i18n.t("error.validNumber"),
-      when: optional ? ({ value }) => value !== "" : undefined,
-    },
-  )
+export const validNumberBig = z.string().refine((value) => {
+  try {
+    new Big(value)
+    return true
+  } catch {
+    return false
+  }
+}, i18n.t("error.validNumber"))
 
-export const validNumberBig = _validNumberBig()
-
-const _positive = (optional?: boolean) =>
-  z
-    .string()
-    .pipe(_validNumberBig(optional))
-    .refine((value) => new Big(value || "0").gt(0), {
-      error: i18n.t("error.positive"),
-      when: optional ? ({ value }) => value !== "" : undefined,
-    })
-
-export const positive = _positive()
-export const positiveOptional = _positive(true)
+export const positive = z
+  .string()
+  .pipe(validNumberBig)
+  .refine((value) => new Big(value || "0").gt(0), i18n.t("error.positive"))
 
 export const maxBalanceError = i18n.t("error.maxBalance")
 
@@ -115,10 +99,7 @@ export const validateFieldExistentialDeposit = (
   multiplier: number | undefined,
 ) =>
   z.refine<string>(
-    (value) =>
-      value === ""
-        ? true
-        : validateExistentialDeposit(asset, value, multiplier),
+    (value) => validateExistentialDeposit(asset, value, multiplier),
     existentialDepositError,
   )
 
@@ -132,9 +113,7 @@ export const validateFormExistentialDeposit = <TFormValues extends FieldValues>(
     (form) => {
       const [multiplier, asset, amount] = selectData(form)
 
-      return amount === ""
-        ? true
-        : validateExistentialDeposit(asset, amount, multiplier)
+      return validateExistentialDeposit(asset, amount, multiplier)
     },
     {
       error: maxBalanceError,

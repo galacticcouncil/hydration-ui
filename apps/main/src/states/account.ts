@@ -10,6 +10,7 @@ import {
   OmnipoolPosition,
   XykDeposit,
 } from "@/api/account"
+import { AssetId } from "@/providers/assetsProvider"
 
 import { OmnipoolPositionData, useOmnipoolPositionData } from "./liquidity"
 
@@ -17,7 +18,7 @@ export type Balance = SdkBalance & {
   assetId: string
 }
 
-export type Positions = {
+type Positions = {
   omnipool: OmnipoolPosition[]
   omnipoolMining: OmnipoolDepositFull[]
   xykMining: XykDeposit[]
@@ -132,27 +133,25 @@ export const useAccountBalances = () => {
   )
 
   const getBalance = useCallback(
-    (assetId: string) => balances[assetId],
+    (assetId: AssetId) => balances[assetId.toString()],
     [balances],
   )
 
   const getFreeBalance = useCallback(
-    (assetId: string) => balances[assetId]?.free ?? 0n,
+    (assetId: AssetId) => balances[assetId.toString()]?.free ?? 0n,
     [balances],
   )
 
   return { balances, getBalance, getFreeBalance, isBalanceLoading }
 }
 
-export const useAccountBalance = (assetId: string): Balance | undefined => {
+export const useAccountBalance = (assetId: AssetId): Balance | undefined => {
   const { balances } = useAccountBalances()
-  return balances[assetId]
+  return balances[assetId.toString()]
 }
 
 export const useAccountPositions = () => {
-  const { positions, isPositionsLoading } = useAccountData(
-    useShallow(pick(["positions", "isPositionsLoading"])),
-  )
+  const positions = useAccountData(prop("positions"))
   const { omnipool, omnipoolMining, xykMining } = positions
   const isPositions = omnipool.length > 0 || omnipoolMining.length > 0
 
@@ -174,7 +173,7 @@ export const useAccountPositions = () => {
     [omnipool, omnipoolMining, xykMining],
   )
 
-  return { positions, isPositions, isPositionsLoading, getPositions }
+  return { positions, isPositions, getPositions }
 }
 
 export const useAccountOmnipoolPositionsData = () => {

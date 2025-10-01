@@ -1,11 +1,9 @@
 import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import { isEvmAccount } from "@galacticcouncil/sdk"
 import { arraySearch, isSS58Address } from "@galacticcouncil/utils"
-import { QueriesResults, useQueries } from "@tanstack/react-query"
-import { useCallback, useEffect, useMemo } from "react"
-import { useLocalStorage } from "react-use"
-import { pick, pipe, sortBy } from "remeda"
-import { useShallow } from "zustand/shallow"
+import { useQueries } from "@tanstack/react-query"
+import { useEffect, useMemo } from "react"
+import { pipe, sortBy } from "remeda"
 
 import { WalletProviderType } from "@/config/providers"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
@@ -73,88 +71,43 @@ export const getFilteredAccounts = (
 export const useAccountsWithBalance = (accounts: Account[]) => {
   const { account: currentAccount } = useAccount()
   const { squidSdk } = useWeb3ConnectContext()
-  const { setBalances } = useWeb3Connect(
-    useShallow(pick(["accounts", "setBalances"])),
-  )
+  const { setBalances } = useWeb3Connect()
 
-  const [accountBalancesStorage, setAccountBalancesStorage] = useLocalStorage<
-    ReadonlyMap<string, number>
-  >("account-balances", new Map(), {
-    raw: false,
-    serializer: (map) => JSON.stringify(Array.from(map.entries())),
-    deserializer: (entries) => {
-      try {
-        return new Map(JSON.parse(entries))
-      } catch {
-        return new Map()
-      }
-    },
+  const accountBalancesQueries = useQueries({
+    queries: accounts.map((account) =>
+      latestAccountBalanceQuery(squidSdk, account.publicKey),
+    ),
   })
 
-  const hasAllBalancesPreloaded =
-    !!accountBalancesStorage &&
-    accounts.every(
-      (account) => accountBalancesStorage.get(account.publicKey) !== undefined,
-    )
+  const areBalancesLoading = accountBalancesQueries.some(
+    (query) => query.isLoading,
+  )
 
-  const { accountBalances: balancesMap, isLoading: areBalancesLoading } =
-    useQueries({
-      queries: accounts.map((account) =>
-        latestAccountBalanceQuery(squidSdk, account.publicKey),
-      ),
-      combine: useCallback(
-        (
-          queries: QueriesResults<
-            Array<ReturnType<typeof latestAccountBalanceQuery>>
-          >,
-        ) => {
-          const isLoading = queries.some((query) => query.isLoading)
-          const accountBalances = isLoading
-            ? new Map<string, number>()
-            : new Map(
-                accounts.map((account, index) => {
-                  const data = queries[index]?.data
-                  const balance =
-                    Number(
-                      data?.accountTotalBalanceHistoricalData?.nodes.at(0)
-                        ?.totalTransferableNorm,
-                    ) || 0
+  const balancesMap = useMemo(
+    () =>
+      areBalancesLoading
+        ? new Map<string, number>()
+        : new Map(
+            accounts.map((account, index) => {
+              const data = accountBalancesQueries[index]?.data
+              const balance =
+                Number(
+                  data?.accountTotalBalanceHistoricalData?.nodes.at(0)
+                    ?.totalTransferableNorm,
+                ) || 0
 
-                  return [account.publicKey, balance]
-                }),
-              )
-
-          return {
-            isLoading,
-            accountBalances,
-          }
-        },
-        [accounts],
-      ),
-    })
+              return [account.publicKey, balance]
+            }),
+          ),
+    [accounts, accountBalancesQueries, areBalancesLoading],
+  )
 
   useEffect(() => {
-    if (!areBalancesLoading) {
-      setAccountBalancesStorage(balancesMap)
-    }
-  }, [areBalancesLoading, balancesMap, setAccountBalancesStorage])
-
-  useEffect(() => {
-    if (!areBalancesLoading) {
-      setBalances(balancesMap)
-    } else if (hasAllBalancesPreloaded) {
-      setBalances(accountBalancesStorage)
-    }
-  }, [
-    balancesMap,
-    accountBalancesStorage,
-    hasAllBalancesPreloaded,
-    areBalancesLoading,
-    setBalances,
-  ])
+    setBalances(balancesMap)
+  }, [balancesMap, setBalances])
 
   const accountsWithBalances = useMemo(() => {
-    const accountsWithActive = accounts.map((account) => {
+    const accountsWtihActive = accounts.map((account) => {
       const isActive =
         currentAccount?.address === account.address &&
         currentAccount?.provider === account.provider
@@ -166,15 +119,12 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
     })
 
     return sortBy(
-      accountsWithActive,
+      accountsWtihActive,
       [(item) => item.isActive, "desc"],
       [(item) => item.balance === undefined, "desc"],
       [(item) => item.balance ?? 0, "desc"],
     )
   }, [accounts, currentAccount?.address, currentAccount?.provider])
 
-  return {
-    accountsWithBalances,
-    areBalancesLoading: areBalancesLoading && !hasAllBalancesPreloaded,
-  }
+  return { accountsWithBalances, areBalancesLoading }
 }

@@ -24,7 +24,7 @@ import {
   HealthFactorChange,
   IncentivesButton,
 } from "@/components/primitives"
-import { HealthFactorRiskWarning } from "@/components/primitives/HealthFactorRiskWarning"
+import { RiskCheckbox } from "@/components/primitives/RiskCheckbox"
 import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrapper"
 import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWarning"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
@@ -114,10 +114,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     InterestRate.Variable,
   )
   const [amount, setAmount] = useState("")
-  const [
-    healthFactorRiskCheckboxAccepted,
-    setHealthFactorRiskCheckboxAccepted,
-  ] = useState(false)
+  const [riskCheckboxAccepted, setRiskCheckboxAccepted] = useState(false)
 
   const maxAmountToBorrow = getMaxAmountAvailableToBorrow(
     poolReserve,
@@ -213,7 +210,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const shouldRenderHealthFactor =
     healthFactor !== "-1" && futureHealthFactor !== "-1"
 
-  const displayHealthFactorRiskCheckbox =
+  const displayRiskCheckbox =
     !!amount &&
     !newHealthFactor.eq(-1) &&
     newHealthFactor.lt(HEALTH_FACTOR_RISK_THRESHOLD)
@@ -286,12 +283,11 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         <Stack gap={14} py={14}>
           <ParameterChangeWarning />
           {borrowCap.determineWarningDisplay({ borrowCap })}
-          {displayHealthFactorRiskCheckbox && (
-            <HealthFactorRiskWarning
+          {displayRiskCheckbox && (
+            <RiskCheckbox
               message="Borrowing this amount will reduce your health factor and increase risk of liquidation."
-              accepted={healthFactorRiskCheckboxAccepted}
-              onAcceptedChange={setHealthFactorRiskCheckboxAccepted}
-              isUserConsentRequired
+              riskAccepted={riskCheckboxAccepted}
+              onRiskChange={setRiskCheckboxAccepted}
             />
           )}
         </Stack>
@@ -305,7 +301,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayHealthFactorRiskCheckbox && !healthFactorRiskCheckboxAccepted)
+          (displayRiskCheckbox && !riskCheckboxAccepted)
         }
       />
     </>

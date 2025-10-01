@@ -1,7 +1,6 @@
 import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { useFormContext } from "react-hook-form"
 
-import { HealthFactorResult } from "@/api/aave"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
 import { MarketSummarySwap } from "@/modules/trade/swap/sections/Market/MarketSummarySwap"
@@ -10,16 +9,10 @@ import { MarketSummaryTwap } from "@/modules/trade/swap/sections/Market/MarketSu
 type Props = {
   readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
-  readonly healthFactor: HealthFactorResult | undefined
   readonly isLoading: boolean
 }
 
-export const MarketSummary = ({
-  swap,
-  twap,
-  healthFactor,
-  isLoading,
-}: Props) => {
+export const MarketSummary = ({ swap, twap, isLoading }: Props) => {
   const { watch } = useFormContext<MarketFormValues>()
   const isSingleTrade = watch("isSingleTrade")
 
@@ -32,7 +25,7 @@ export const MarketSummary = ({
   }
 
   if (isSingleTrade) {
-    return <MarketSummarySwap swap={swap} healthFactor={healthFactor} />
+    return <MarketSummarySwap swap={swap} />
   }
 
   return <MarketSummaryTwap swap={swap} twap={twap} />
