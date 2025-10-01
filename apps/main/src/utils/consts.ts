@@ -1,4 +1,3 @@
-import Big from "big.js"
 import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 
 export const HYDRATION_PARACHAIN_ID = 2034
@@ -17,8 +16,7 @@ export const GETH_ASSET_ID = "4200"
 export const GETH_ERC20_ID = "420"
 export const DOT_ASSET_ID = "5"
 
-export const PARACHAIN_BLOCK_TIME = 6_000
-export const RELAY_BLOCK_TIME = 6_000
+export const PARACHAIN_BLOCK_TIME = 12_000
 
 export const SELL_ONLY_ASSETS = [H2O_ASSET_ID, GDOT_ASSET_ID]
 
@@ -26,5 +24,3 @@ export const GC_TIME = millisecondsInDay
 export const STALE_TIME = millisecondsInHour
 
 export const POT_ADDRESS = "7L53bUTCCAvmCxhe15maHwJZbjQYH89LkXuyTnTi1J58xyFC"
-
-export const QUINTILL = new Big(10).pow(18)

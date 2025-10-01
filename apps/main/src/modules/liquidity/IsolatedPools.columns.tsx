@@ -19,13 +19,11 @@ export const useIsolatedPoolsColumns = () => {
     () => [
       isolatedColumnHelper.accessor("meta.name", {
         header: t("liquidity:liquidity.pool.poolAsset"),
-        cell: ({ row: { original } }) => (
-          <AssetLabelXYK
-            iconIds={original.meta.iconId}
-            symbol={original.meta.symbol}
-            farms={original.farms}
-          />
-        ),
+        cell: ({
+          row: {
+            original: { meta },
+          },
+        }) => <AssetLabelXYK iconIds={meta.iconId} symbol={meta.symbol} />,
       }),
       isolatedColumnHelper.accessor("volumeDisplay", {
         header: t("liquidity:24hVolume"),

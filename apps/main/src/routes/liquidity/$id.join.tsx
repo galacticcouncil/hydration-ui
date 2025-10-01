@@ -3,7 +3,7 @@ import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
-import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
+import { JoinFarms } from "@/modules/liquidity/components/JoinFarms"
 
 const JoinFarmsSchema = z.object({
   positionId: z.string(),
@@ -28,7 +28,7 @@ function RouteComponent() {
       open
       sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
     >
-      <JoinFarmsWrapper positionId={positionId} poolId={id} closable={false} />
+      <JoinFarms positionId={positionId} poolId={id} closable={false} />
     </ModalContainer>
   )
 }

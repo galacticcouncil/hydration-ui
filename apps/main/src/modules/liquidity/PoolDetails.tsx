@@ -38,7 +38,7 @@ export const PoolDetails: FC<Props> = ({ id }) => {
         <PoolDetailsValues data={data} />
       </Flex>
 
-      <AvailableFarmsSection data={data} />
+      <AvailableFarmsSection />
 
       <Outlet />
     </Flex>

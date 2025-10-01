@@ -1,6 +1,6 @@
 import { Button, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
@@ -11,9 +11,7 @@ import {
   AssetLabelFull,
   AssetLabelStablepool,
 } from "@/components/AssetLabelFull"
-import { AssetLogo } from "@/components/AssetLogo"
 import { AssetPrice } from "@/components/AssetPrice"
-import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import { isStableSwap } from "@/providers/assetsProvider"
 import { numericallyStrDesc } from "@/utils/sort"
 
@@ -84,41 +82,14 @@ export const usePoolColumns = () => {
             b.original.totalFee ?? "0",
             a.original.totalFee ?? "0",
           ),
-        cell: ({ row: { original } }) => {
-          if (original.isFeeLoading) {
-            return <Skeleton width={60} height="1em" />
-          }
-
-          if (original.isFarms && original?.farms) {
-            const farmRewardsIconIds = original.farms.map((farm) =>
-              farm.rewardCurrency.toString(),
-            )
-
-            return (
-              <Flex align="center" gap={4}>
-                <AssetLogo id={farmRewardsIconIds} size="extra-small" />
-                <Text color={getToken("text.tint.secondary")}>
-                  {t("percent", {
-                    value: Number(original.totalFee),
-                  })}
-                </Text>
-                <TooltipAPR
-                  farms={original.farms}
-                  omnipoolFee={original.lpFeeOmnipool}
-                  stablepoolFee={original.lpFeeStablepool}
-                />
-              </Flex>
-            )
-          }
-
-          return (
-            <Text>
-              {t("percent", {
-                value: Number(original.totalFee),
-              })}
-            </Text>
-          )
-        },
+        cell: ({ row }) =>
+          row.original.isFeeLoading ? (
+            <Skeleton width={60} height="1em" />
+          ) : (
+            t("percent", {
+              value: Number(row.original.totalFee),
+            })
+          ),
       }),
       columnHelper.accessor("id", {
         meta: { visibility: false },

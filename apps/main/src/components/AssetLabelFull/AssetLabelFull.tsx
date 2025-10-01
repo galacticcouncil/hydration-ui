@@ -7,11 +7,8 @@ import {
 import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
-import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
 import { StablepoolBadge } from "@/modules/liquidity/components/StablepoolBadge"
-
-import { AssetLabelFarms } from "./AssetLabelFarms"
 
 export const AssetLabelFull = ({
   asset,
@@ -62,26 +59,16 @@ export const AssetLabelXYK = ({
   symbol,
   name,
   size,
-  farms,
 }: {
   iconIds: string[]
   symbol: string
   name?: string
-  farms?: Farm[]
   size?: AssetLabelProps["size"]
 }) => {
-  const isFarms = farms && farms.length > 0
-
   return (
     <AssetLabelFullContainer>
       <AssetLogo id={iconIds} />
-      {isFarms ? (
-        <AssetLabelFarms farms={farms}>
-          <AssetLabel symbol={symbol} name={name} size={size} />
-        </AssetLabelFarms>
-      ) : (
-        <AssetLabel symbol={symbol} name={name} size={size} />
-      )}
+      <AssetLabel symbol={symbol} name={name} size={size} />
     </AssetLabelFullContainer>
   )
 }

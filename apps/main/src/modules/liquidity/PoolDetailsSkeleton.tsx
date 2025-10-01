@@ -1,5 +1,6 @@
 import { Flex, Paper } from "@galacticcouncil/ui/components"
 
+import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
 import { PoolDetailsHeaderSkeleton } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeaderSkeleton"
 import { PoolDetailsValuesSkeleton } from "@/modules/liquidity/components/PoolDetailsValues/PoolDetailsValuesSkeleton"
 
@@ -12,6 +13,8 @@ export const PoolDetailsSkeleton = () => {
         <Paper sx={{ flex: 1 }}></Paper>
         <PoolDetailsValuesSkeleton />
       </Flex>
+
+      <AvailableFarmsSection />
     </Flex>
   )
 }

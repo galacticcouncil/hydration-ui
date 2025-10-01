@@ -11,12 +11,9 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { preventDefault } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
-import { Farm, useOmnipoolActiveFarm } from "@/api/farms"
 import { AvailableFarms } from "@/modules/liquidity/components/AvailableFarms"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAccountOmnipoolPositionsData } from "@/states/account"
-
-import { JoinFarmsSkeleton } from "./JoinFarmsSkeleton"
 
 type JoinFarmsProps = {
   positionId: string
@@ -24,22 +21,12 @@ type JoinFarmsProps = {
   closable?: boolean
 }
 
-export const JoinFarmsWrapper = ({ poolId, ...props }: JoinFarmsProps) => {
-  const { data: farms, isLoading } = useOmnipoolActiveFarm(poolId)
+const farms = [
+  { id: 0, assetId: "5" },
+  { id: 1, assetId: "0" },
+]
 
-  const activeFarms = farms?.filter((farm) => farm.apr !== "0") ?? []
-
-  if (isLoading || !activeFarms.length) return <JoinFarmsSkeleton />
-
-  return <JoinFarms farms={activeFarms} poolId={poolId} {...props} />
-}
-
-export const JoinFarms = ({
-  positionId,
-  poolId,
-  closable,
-  farms,
-}: JoinFarmsProps & { farms: Farm[] }) => {
+export const JoinFarms = ({ positionId, poolId, closable }: JoinFarmsProps) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(poolId)
@@ -53,7 +40,7 @@ export const JoinFarms = ({
   return (
     <>
       <ModalHeader title={t("joinFarms")} closable={closable} />
-      <ModalBody>
+      <ModalBody width={520}>
         <AvailableFarms farms={farms} />
         <form autoComplete="off" onSubmit={preventDefault}>
           <ModalContentDivider

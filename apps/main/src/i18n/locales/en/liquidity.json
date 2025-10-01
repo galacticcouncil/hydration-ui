@@ -26,7 +26,7 @@
   "details.values.xyk.price": "{{ priceSymbol }} price = {{ value, currency }}",
   "details.header.swap": "Swap",
   "details.header.addJoinFarms": "Add & Join farms",
-  "details.header.apr": "UP TO {{ value, percent }} APR",
+  "details.header.apr": "UP TO {{ value, percent }}% APR",
   "pools": "Pools",
   "omnipool": "Omnipool",
   "isolatedPool": "Isolated pool",
@@ -117,10 +117,5 @@
   "liquidity.createPool.modal.validation.assetA": "Asset A is not defined",
   "liquidity.createPool.modal.validation.assetB": "Asset B is not defined",
   "liquidity.pool.poolAsset": "Pool asset",
-  "liquidity.pool.positions": "{{ value, number }} Positions",
-  "liquidity.tooltip.fee.apr.title": "Estimated APR, based on past month's fees, farm rewards and current TVL, without considering the effects of Impermanent Loss",
-  "liquidity.tooltip.fee.apr.omnipoolFee": "Omnipool fee",
-  "liquidity.tooltip.fee.apr.stablepoolFee": "Stablepool fee",
-  "liquidity.tooltip.fee.apr.farmRewardsApr": "Farm rewards apr",
-  "liquidity.tooltip.fee.apr.apr": "APR"
+  "liquidity.pool.positions": "{{ value, number }} Positions"
   }

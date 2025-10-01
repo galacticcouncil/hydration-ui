@@ -30,6 +30,10 @@ export const PoolDetailsHeaderSkeleton = () => {
             <Text font="primary" fw={700} fs={18} lh="130%">
               <Skeleton width={100} height="100%" />
             </Text>
+            <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
+              {t("details.header.apr", { value: 20 })}
+            </Text>
+            <AssetLogo id="10" size="small" />
           </Flex>
           <Text fw={600} fs={11} color={getToken("text.medium")}>
             <Skeleton width={40} height="100%" />
@@ -47,7 +51,7 @@ export const PoolDetailsHeaderSkeleton = () => {
       >
         <Button disabled>
           <Icon size={14} component={Plus} />
-          {t("addLiquidity")}
+          {t("details.header.addJoinFarms")}
         </Button>
         <Button variant="secondary" disabled>
           <Icon size={14} component={Plus} />

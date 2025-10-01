@@ -9,19 +9,15 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
-import { addSeconds } from "date-fns"
 import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
-import { Farm } from "@/api/farms"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { useFarmCurrentPeriod } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
 
 import { SContainer } from "./AvailableFarm.styled"
+import { Farm } from "./AvailableFarms"
 
 const VISIBLE_PROGRESS_BAR_WIDTH = 350
 
@@ -40,18 +36,9 @@ export const AvailableFarm = ({
   const { getAssetWithFallback } = useAssets()
   const [ref, { width }] = useMeasure<HTMLDivElement>()
 
-  const { getSecondsToLeft } = useFarmCurrentPeriod()
-
-  const secondsToLeft = getSecondsToLeft(farm.estimatedEndBlock)
-
   const displayProgressBar = width > VISIBLE_PROGRESS_BAR_WIDTH
-  const meta = getAssetWithFallback(farm.rewardCurrency)
+  const meta = getAssetWithFallback(farm.assetId)
   const isSelectable = !!onClick
-
-  const total = scaleHuman(farm.potMaxRewards, meta.decimals)
-  const distributedRewards = scaleHuman(farm.distributedRewards, meta.decimals)
-
-  const diff = Big(distributedRewards).div(total).mul(100).toFixed(2)
 
   return (
     <SContainer
@@ -66,7 +53,7 @@ export const AvailableFarm = ({
         <AssetLabelFull asset={meta} withName={false} />
         <Chip variant="green" size="small">
           {t("common:percent", {
-            value: farm.apr,
+            value: 100,
             prefix: "Up to ",
             suffix: " APR",
           })}
@@ -91,14 +78,14 @@ export const AvailableFarm = ({
         />
         <Text fs={14} fw={500} color={getToken("text.high")}>
           {t("liquidity.availableFarms.distributed", {
-            value: distributedRewards,
-            total,
+            value: 100000,
+            total: 10000000,
           })}
         </Text>
       </Flex>
       {displayProgressBar ? (
         <ProgressBar
-          value={Number(diff)}
+          value={40}
           hideLabel
           color={getToken("text.medium")}
           sx={{ flex: 1 }}
@@ -124,12 +111,10 @@ export const AvailableFarm = ({
         color={getToken("text.tint.secondary")}
         sx={{ justifySelf: "end", minWidth: 90 }}
       >
-        {secondsToLeft
-          ? t("common:date.default", {
-              value: addSeconds(new Date(), secondsToLeft.toNumber()),
-              format: "dd.MM.yyyy",
-            })
-          : "N/A"}
+        {t("common:date.default", {
+          value: new Date("2023-08-29"),
+          format: "dd.MM.yyyy",
+        })}
       </Text>
     </SContainer>
   )
