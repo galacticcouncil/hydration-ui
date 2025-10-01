@@ -13,7 +13,7 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { JoinFarms } from "@/modules/liquidity/components/JoinFarms"
+import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 
 type Props = {
@@ -37,7 +37,7 @@ export const LiquidityPositionActions: FC<Props> = ({
           </ModalTrigger>
         </Button>
         <ModalContent>
-          <JoinFarms positionId={positionId} poolId={assetId} />
+          <JoinFarmsWrapper positionId={positionId} poolId={assetId} />
         </ModalContent>
       </ModalRoot>
       <DropdownMenu modal={false}>
