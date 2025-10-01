@@ -4,7 +4,6 @@ import { ArrowLeft, X } from "lucide-react"
 import { createContext, FC, ReactNode, Ref, useContext, useMemo } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
 import { Flex, FlexProps } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
@@ -158,11 +157,9 @@ const ModalHeader: FC<ModalHeaderProps> = ({
         )}
 
         {closable && (
-          <ButtonIcon style={{ flexGrow: 0 }} asChild>
-            <SModalClose className="close">
-              <X sx={{ width: 20, height: 20 }} />
-            </SModalClose>
-          </ButtonIcon>
+          <SModalClose className="close">
+            <X sx={{ width: 20, height: 20 }} />
+          </SModalClose>
         )}
       </Flex>
 

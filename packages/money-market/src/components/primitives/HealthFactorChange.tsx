@@ -10,7 +10,6 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 
 import { HealthFactorNumber } from "@/components/primitives/HealthFactorNumber"
-import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
 
 export type HealthFactorChangeProps = FlexProps & {
   healthFactor: string
@@ -29,10 +28,6 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
   const visibleChange =
     Big(healthFactor).toFixed(2, Big.roundDown) !==
     Big(futureHealthFactor).toFixed(2, Big.roundDown)
-
-  const isBelowRiskThreshold = Big(healthFactor).lt(
-    HEALTH_FACTOR_RISK_THRESHOLD,
-  )
 
   return (
     <Flex direction="column" align="flex-end" {...props}>
@@ -57,11 +52,9 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
           </>
         )}
       </Flex>
-      {isBelowRiskThreshold && (
-        <Text fs={11} lh={1} color={getToken("text.low")} mt={-2}>
-          Liquidation at &lt;1.0
-        </Text>
-      )}
+      <Text fs={11} lh={1} color={getToken("text.low")} mt={-2}>
+        Liquidation at &lt;1.0
+      </Text>
     </Flex>
   )
 }

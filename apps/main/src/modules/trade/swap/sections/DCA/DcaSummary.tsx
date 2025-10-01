@@ -1,19 +1,11 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
-import {
-  Flex,
-  Summary,
-  SummaryRow,
-  Text,
-  Tooltip,
-} from "@galacticcouncil/ui/components"
+import { Flex, Summary, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { formatDistanceToNowStrict } from "date-fns"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
 import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
@@ -22,11 +14,10 @@ import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
   readonly order: TradeDcaOrder | undefined
-  readonly healthFactor: HealthFactorResult | undefined
   readonly isLoading: boolean
 }
 
-export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
+export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
   const { watch } = useFormContext<DcaFormValues>()
 
@@ -72,27 +63,19 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
         </Flex>
       </Flex>
       <SwapSectionSeparator sx={{ mt: 9 }} />
-      <Summary separator={<SwapSectionSeparator />}>
-        <SummaryRow
-          label={t("trade:dca.summary.scheduleEnd")}
-          content={t("date.datetime", { value: new Date(now + duration) })}
-        />
-        <SummaryRow
-          label={t("trade:dca.summary.slippage")}
-          content={t("percent", { value: slippage })}
-        />
-        {healthFactor && (
-          <SummaryRow
-            label={t("trade:market.summary.healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor.current}
-                futureHealthFactor={healthFactor.future}
-              />
-            }
-          />
-        )}
-      </Summary>
+      <Summary
+        separator={<SwapSectionSeparator />}
+        rows={[
+          {
+            label: t("trade:dca.summary.scheduleEnd"),
+            content: t("date.datetime", { value: new Date(now + duration) }),
+          },
+          {
+            label: t("trade:dca.summary.slippage"),
+            content: t("percent", { value: slippage }),
+          },
+        ]}
+      />
     </div>
   )
 }

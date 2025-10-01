@@ -1,11 +1,9 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Summary, SummaryRow } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
@@ -19,10 +17,9 @@ import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly swap: Trade
-  readonly healthFactor: HealthFactorResult | undefined
 }
 
-export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
+export const MarketSummarySwap: FC<Props> = ({ swap }) => {
   const { t } = useTranslation(["common", "trade"])
 
   const {
@@ -91,17 +88,6 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
               ),
               symbol: buyAsset.symbol,
             })}
-          />
-        )}
-        {healthFactor && (
-          <SummaryRow
-            label={t("trade:market.summary.healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor.current}
-                futureHealthFactor={healthFactor.future}
-              />
-            }
           />
         )}
       </Summary>
