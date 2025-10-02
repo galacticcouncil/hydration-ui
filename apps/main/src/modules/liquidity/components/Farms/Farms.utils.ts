@@ -12,32 +12,33 @@ import Worker from "./LoyaltyGraph.worker?worker"
 
 const worker = wrap<typeof WorkerType>(new Worker())
 
-export const useFarmCurrentPeriod = () => {
+export const useSecondsToLeft = (estimatedEndBlock: string) => {
+  const { data } = useQuery(bestNumberQuery(useRpcProvider()))
+  const relaychainBlockNumber = data?.relaychainBlockNumber
+
+  return relaychainBlockNumber
+    ? Big(estimatedEndBlock)
+        .minus(relaychainBlockNumber)
+        .times(RELAY_BLOCK_TIME)
+        .div(1000)
+    : undefined
+}
+
+export const useCurrentPeriod = (blocksPerPeriod: string) => {
   const { data } = useQuery(bestNumberQuery(useRpcProvider()))
 
   const relaychainBlockNumber = data?.relaychainBlockNumber
 
-  const getCurrentPeriod = (blocksPerPeriod: string) =>
-    relaychainBlockNumber
-      ? Big(relaychainBlockNumber).div(blocksPerPeriod)
-      : undefined
-
-  const getSecondsToLeft = (estimatedEndBlock: string) =>
-    relaychainBlockNumber
-      ? Big(estimatedEndBlock)
-          .minus(relaychainBlockNumber)
-          .times(RELAY_BLOCK_TIME)
-          .div(1000)
-      : undefined
-
-  return { getCurrentPeriod, getSecondsToLeft }
+  return relaychainBlockNumber
+    ? Big(relaychainBlockNumber).div(blocksPerPeriod)
+    : undefined
 }
 
 export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {
   const { loyaltyCurve, globalFarmId, plannedYieldingPeriods, apr } = farm
 
   return useQuery({
-    queryKey: [globalFarmId, periodsInFarm?.toString()],
+    queryKey: ["loyaltyRates", globalFarmId, periodsInFarm?.toString()],
     queryFn: loyaltyCurve
       ? async () => {
           const periods = Number(plannedYieldingPeriods)

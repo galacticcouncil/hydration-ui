@@ -17,7 +17,7 @@ import { useMeasure } from "react-use"
 
 import { Farm } from "@/api/farms"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { useFarmCurrentPeriod } from "@/modules/liquidity/components/Farms/Farms.utils"
+import { useSecondsToLeft } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -40,9 +40,7 @@ export const AvailableFarm = ({
   const { getAssetWithFallback } = useAssets()
   const [ref, { width }] = useMeasure<HTMLDivElement>()
 
-  const { getSecondsToLeft } = useFarmCurrentPeriod()
-
-  const secondsToLeft = getSecondsToLeft(farm.estimatedEndBlock)
+  const secondsToLeft = useSecondsToLeft(farm.estimatedEndBlock)
 
   const displayProgressBar = width > VISIBLE_PROGRESS_BAR_WIDTH
   const meta = getAssetWithFallback(farm.rewardCurrency)

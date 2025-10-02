@@ -1,12 +1,21 @@
-import { Button, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
+import {
+  AssetLabel,
+  Box,
+  Button,
+  Flex,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelXYK } from "@/components/AssetLabelFull"
+import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
+import { AssetLogo } from "@/components/AssetLogo"
+import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import { useUserIsolatedPositionsTotal } from "@/modules/liquidity/components/PositionsTable/PositionsTable.utils"
 
 import { IsolatedPoolTable } from "./Liquidity.utils"
@@ -21,11 +30,7 @@ export const useIsolatedPoolsColumns = () => {
       isolatedColumnHelper.accessor("meta.name", {
         header: t("liquidity:liquidity.pool.poolAsset"),
         cell: ({ row: { original } }) => (
-          <AssetLabelXYK
-            iconIds={original.meta.iconId}
-            symbol={original.meta.symbol}
-            farms={original.farms}
-          />
+          <AssetLabelWithFarmApr pool={original} />
         ),
       }),
       isolatedColumnHelper.accessor("volumeDisplay", {
@@ -106,5 +111,42 @@ const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
         </Text>
       )}
     </Flex>
+  )
+}
+
+export const AssetLabelWithFarmApr = ({
+  pool,
+}: {
+  pool: IsolatedPoolTable
+}) => {
+  const { t } = useTranslation("common")
+
+  return (
+    <AssetLabelFullContainer>
+      <AssetLogo id={pool.meta.iconId} />
+      {pool.isFarms ? (
+        <Box>
+          <AssetLabel symbol={pool.meta.symbol} />
+          <Flex align="center" gap={4}>
+            <AssetLogo
+              id={pool.farms.map((farm) => farm.rewardCurrency.toString())}
+              size="extra-small"
+            />
+            <Text color={getToken("text.tint.secondary")} fs="p6" lh={1}>
+              {t("percent", {
+                value: Number(
+                  pool.farms
+                    .reduce((acc, farm) => acc.plus(farm.apr), new Big(0))
+                    .toString(),
+                ),
+              })}
+            </Text>
+            <TooltipAPR farms={pool.farms} />
+          </Flex>
+        </Box>
+      ) : (
+        <AssetLabel symbol={pool.meta.symbol} />
+      )}
+    </AssetLabelFullContainer>
   )
 }

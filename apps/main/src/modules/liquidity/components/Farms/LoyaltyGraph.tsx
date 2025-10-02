@@ -31,9 +31,11 @@ export const LoyaltyGraph = ({ farm }: { farm: Farm }) => {
         data={data ?? []}
         xAxisProps={{
           type: "number",
-          interval: "preserveStart",
+          interval: 0,
           height: 50,
           padding: { left: 10, right: 10 },
+          tickCount: 10,
+          domain: [0, "auto"],
         }}
         yAxisProps={{
           padding: { bottom: 16 },
