@@ -462,7 +462,7 @@ export const useIsolatedPools = () => {
           ? (toBig(price)?.times(tvl).toString() ?? "0")
           : "0"
 
-        const shareTokenId = xykPoolsIds?.get(pool.address)
+        const shareTokenId = xykPoolsIds?.get(pool.address)?.toString()
         const meta = getMetaFromXYKPoolTokens(
           shareTokenId ?? pool.address,
           pool.tokens,
