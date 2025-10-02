@@ -14,6 +14,7 @@ import {
 import { AssetLogo } from "@/components/AssetLogo"
 import { AssetPrice } from "@/components/AssetPrice"
 import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
+import { useUserPositionsTotal } from "@/modules/liquidity/components/PositionsTable/PositionsTable.utils"
 import { isStableSwap } from "@/providers/assetsProvider"
 import { numericallyStrDesc } from "@/utils/sort"
 
@@ -151,55 +152,55 @@ export const usePoolColumns = () => {
       columnHelper.display({
         id: "actions",
         size: 170,
-        cell: ({ row }) => {
-          const { positionsAmount, isPositions } = row.original
-
-          return (
-            <>
-              <Flex
-                gap={getTokenPx("containers.paddings.quint")}
-                onClick={(e) => e.stopPropagation()}
-                sx={{ position: "relative" }}
-              >
-                <Button asChild variant="accent" outline>
-                  <Link
-                    to={
-                      row.original.isStablePool
-                        ? "/liquidity/$id/add"
-                        : "/liquidity/$id/add"
-                    }
-                    params={{ id: row.original.id }}
-                  >
-                    {t("liquidity:joinPool")}
-                  </Link>
-                </Button>
-                <Button variant="tertiary" outline asChild>
-                  <Link to="/liquidity/$id" params={{ id: row.original.id }}>
-                    {isPositions ? t("manage") : t("details")}
-                  </Link>
-                </Button>
-                {!!positionsAmount && (
-                  <Text
-                    color="text.secondary"
-                    fs={10}
-                    sx={{
-                      position: "absolute",
-                      bottom: -16,
-                      right: 16,
-                    }}
-                  >
-                    {t("liquidity:liquidity.pool.positions", {
-                      value: positionsAmount,
-                    })}
-                  </Text>
-                )}
-              </Flex>
-            </>
-          )
-        },
+        cell: ({ row }) => <Actions pool={row.original} />,
       }),
     ],
 
     [t, isMobile],
+  )
+}
+
+const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+  const { isPositions } = pool
+  const total = useUserPositionsTotal(pool)
+
+  return (
+    <>
+      <Flex
+        gap={getTokenPx("containers.paddings.quint")}
+        onClick={(e) => e.stopPropagation()}
+        sx={{ position: "relative" }}
+      >
+        <Button asChild variant="accent" outline>
+          <Link
+            to={pool.isStablePool ? "/liquidity/$id/add" : "/liquidity/$id/add"}
+            params={{ id: pool.id }}
+          >
+            {t("liquidity:joinPool")}
+          </Link>
+        </Button>
+        <Button variant="tertiary" outline asChild>
+          <Link to="/liquidity/$id" params={{ id: pool.id }}>
+            {isPositions ? t("manage") : t("details")}
+          </Link>
+        </Button>
+        {total !== "0" && (
+          <Text
+            color="text.secondary"
+            fs={10}
+            sx={{
+              position: "absolute",
+              bottom: -16,
+              right: 16,
+            }}
+          >
+            {t("liquidity:liquidity.pool.positions.total", {
+              value: total,
+            })}
+          </Text>
+        )}
+      </Flex>
+    </>
   )
 }

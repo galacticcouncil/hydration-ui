@@ -7,6 +7,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelXYK } from "@/components/AssetLabelFull"
+import { useUserIsolatedPositionsTotal } from "@/modules/liquidity/components/PositionsTable/PositionsTable.utils"
 
 import { IsolatedPoolTable } from "./Liquidity.utils"
 
@@ -60,44 +61,50 @@ export const useIsolatedPoolsColumns = () => {
         id: "actions",
         size: 170,
         cell: ({ row }) => {
-          const { positionsAmount, isPositions } = row.original
-
-          return (
-            <Flex
-              gap={getTokenPx("containers.paddings.quint")}
-              onClick={(e) => e.stopPropagation()}
-              sx={{ position: "relative" }}
-            >
-              <Button variant="accent" outline asChild>
-                <Link to="/liquidity/$id/add" params={{ id: row.original.id }}>
-                  {t("liquidity:joinPool")}
-                </Link>
-              </Button>
-              <Button variant="tertiary" outline asChild>
-                <Link to="/liquidity/$id" params={{ id: row.original.id }}>
-                  {isPositions ? t("manage") : t("details")}
-                </Link>
-              </Button>
-              {!!positionsAmount && (
-                <Text
-                  color="text.secondary"
-                  fs={10}
-                  sx={{
-                    position: "absolute",
-                    bottom: -16,
-                    right: 16,
-                  }}
-                >
-                  {t("liquidity:liquidity.pool.positions", {
-                    value: positionsAmount,
-                  })}
-                </Text>
-              )}
-            </Flex>
-          )
+          return <Actions pool={row.original} />
         },
       }),
     ],
     [t],
+  )
+}
+
+const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+  const { isPositions } = pool
+  const total = useUserIsolatedPositionsTotal(pool)
+
+  return (
+    <Flex
+      gap={getTokenPx("containers.paddings.quint")}
+      onClick={(e) => e.stopPropagation()}
+      sx={{ position: "relative" }}
+    >
+      <Button variant="accent" outline asChild>
+        <Link to="/liquidity/$id/add" params={{ id: pool.id }}>
+          {t("liquidity:joinPool")}
+        </Link>
+      </Button>
+      <Button variant="tertiary" outline asChild>
+        <Link to="/liquidity/$id" params={{ id: pool.id }}>
+          {isPositions ? t("manage") : t("details")}
+        </Link>
+      </Button>
+      {total !== "0" && (
+        <Text
+          color="text.secondary"
+          fs={10}
+          sx={{
+            position: "absolute",
+            bottom: -16,
+            right: 16,
+          }}
+        >
+          {t("liquidity:liquidity.pool.positions.total", {
+            value: total,
+          })}
+        </Text>
+      )}
+    </Flex>
   )
 }
