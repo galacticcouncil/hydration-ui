@@ -246,36 +246,29 @@ export const useUserPositionsTotal = (pool: OmnipoolAssetTable) => {
   const { price: aStableswapPrice, isValid: aStableswapIsValid } =
     useAssetPrice(stableswapBalance ? aStableswapAsset?.id : undefined)
 
-  const aStableswapDisplayBalance = useMemo(() => {
+  const aStableswapDisplayBalance = (() => {
     if (!aStableswapBalance || !aStableswapAsset || !aStableswapIsValid)
       return undefined
 
     return Big(scaleHuman(aStableswapBalance, aStableswapAsset.decimals))
       .times(aStableswapPrice)
       .toString()
-  }, [
-    aStableswapBalance,
-    aStableswapAsset,
-    aStableswapPrice,
-    aStableswapIsValid,
-  ])
+  })()
 
-  const stablepoolDisplayBalance = useMemo(() => {
+  const stablepoolDisplayBalance = (() => {
     if (!stableswapBalance) return undefined
 
     const freeBalance = scaleHuman(stableswapBalance, meta.decimals)
 
     return price ? Big(price).times(freeBalance).toString() : undefined
-  }, [stableswapBalance, price, meta])
+  })()
 
-  const poisitonsDislpayTotal = useMemo(() => {
-    return positions.reduce(
-      (acc, position) => acc.plus(position.data?.currentTotalDisplay ?? 0),
-      Big(0),
-    )
-  }, [positions])
+  const positionsDisplayTotal = positions.reduce(
+    (acc, position) => acc.plus(position.data?.currentTotalDisplay ?? 0),
+    Big(0),
+  )
 
-  return poisitonsDislpayTotal
+  return positionsDisplayTotal
     .plus(aStableswapDisplayBalance ?? 0)
     .plus(stablepoolDisplayBalance ?? 0)
     .toString()
