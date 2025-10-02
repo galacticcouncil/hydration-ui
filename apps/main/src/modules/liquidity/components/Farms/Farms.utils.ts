@@ -10,7 +10,14 @@ import { QUINTILL, RELAY_BLOCK_TIME } from "@/utils/consts"
 import type { worker as WorkerType } from "./LoyaltyGraph.worker"
 import Worker from "./LoyaltyGraph.worker?worker"
 
-const worker = wrap<typeof WorkerType>(new Worker())
+let workerInstance: ReturnType<typeof wrap<typeof WorkerType>> | null = null
+
+const getWorker = () => {
+  if (!workerInstance) {
+    workerInstance = wrap<typeof WorkerType>(new Worker())
+  }
+  return workerInstance
+}
 
 export const useSecondsToLeft = (estimatedEndBlock: string) => {
   const { data } = useQuery(bestNumberQuery(useRpcProvider()))
@@ -50,7 +57,7 @@ export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {
 
           const axisScale = periods / 100
 
-          const result = await worker.getLoyaltyFactor(
+          const result = await getWorker().getLoyaltyFactor(
             periods,
             initialRewardPercentage,
             loyaltyCurve.scale_coef,
