@@ -1,6 +1,13 @@
-import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Icon,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
+import Big from "big.js"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -10,7 +17,6 @@ import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
-import { USDT_ASSET_ID } from "@/utils/consts"
 
 export const PoolDetailsHeader = ({
   data,
@@ -40,10 +46,32 @@ export const PoolDetailsHeader = ({
               <Text font="primary" fw={700} fs={18} lh="130%">
                 {data.meta.name}
               </Text>
-              <Text fw={400} fs="p5" color={getToken("text.tint.secondary")}>
-                {t("details.header.apr", { value: 20 })}
-              </Text>
-              <AssetLogo id={USDT_ASSET_ID} size="small" />
+              {data.isFarms && (
+                <>
+                  <Text
+                    fw={400}
+                    fs="p5"
+                    color={getToken("text.tint.secondary")}
+                  >
+                    {data.isFeeLoading ? (
+                      <Skeleton width={60} height="1em" />
+                    ) : (
+                      t("details.header.apr", {
+                        value: data.farms.reduce(
+                          (acc, farm) => acc.plus(farm.apr),
+                          Big(0),
+                        ),
+                      })
+                    )}
+                  </Text>
+                  <AssetLogo
+                    id={data.farms.map((farm) =>
+                      farm.rewardCurrency.toString(),
+                    )}
+                    size="small"
+                  />
+                </>
+              )}
             </Flex>
             <Text fw={600} fs={11} color={getToken("text.medium")}>
               {data.meta.symbol}
@@ -63,7 +91,9 @@ export const PoolDetailsHeader = ({
         <Button asChild>
           <Link from="/liquidity/$id" to="add" resetScroll={false}>
             <Icon size={14} component={Plus} />
-            {t("details.header.addJoinFarms")}
+            {data.isFarms
+              ? t("details.header.addJoinFarms")
+              : t("addLiquidity")}
           </Link>
         </Button>
         <Button variant="secondary">

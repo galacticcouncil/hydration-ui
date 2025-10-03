@@ -1,6 +1,6 @@
 import { Button, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
@@ -11,7 +11,10 @@ import {
   AssetLabelFull,
   AssetLabelStablepool,
 } from "@/components/AssetLabelFull"
+import { AssetLogo } from "@/components/AssetLogo"
 import { AssetPrice } from "@/components/AssetPrice"
+import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
+import { useUserPositionsTotal } from "@/modules/liquidity/components/PositionsTable/PositionsTable.utils"
 import { isStableSwap } from "@/providers/assetsProvider"
 import { numericallyStrDesc } from "@/utils/sort"
 
@@ -82,14 +85,41 @@ export const usePoolColumns = () => {
             b.original.totalFee ?? "0",
             a.original.totalFee ?? "0",
           ),
-        cell: ({ row }) =>
-          row.original.isFeeLoading ? (
-            <Skeleton width={60} height="1em" />
-          ) : (
-            t("percent", {
-              value: Number(row.original.totalFee),
-            })
-          ),
+        cell: ({ row: { original } }) => {
+          if (original.isFeeLoading) {
+            return <Skeleton width={60} height="1em" />
+          }
+
+          if (original.isFarms && original?.farms) {
+            const farmRewardsIconIds = original.farms.map((farm) =>
+              farm.rewardCurrency.toString(),
+            )
+
+            return (
+              <Flex align="center" gap={4}>
+                <AssetLogo id={farmRewardsIconIds} size="extra-small" />
+                <Text color={getToken("text.tint.secondary")}>
+                  {t("percent", {
+                    value: Number(original.totalFee),
+                  })}
+                </Text>
+                <TooltipAPR
+                  farms={original.farms}
+                  omnipoolFee={original.lpFeeOmnipool}
+                  stablepoolFee={original.lpFeeStablepool}
+                />
+              </Flex>
+            )
+          }
+
+          return (
+            <Text>
+              {t("percent", {
+                value: Number(original.totalFee),
+              })}
+            </Text>
+          )
+        },
       }),
       columnHelper.accessor("id", {
         meta: { visibility: false },
@@ -122,55 +152,55 @@ export const usePoolColumns = () => {
       columnHelper.display({
         id: "actions",
         size: 170,
-        cell: ({ row }) => {
-          const { positionsAmount, isPositions } = row.original
-
-          return (
-            <>
-              <Flex
-                gap={getTokenPx("containers.paddings.quint")}
-                onClick={(e) => e.stopPropagation()}
-                sx={{ position: "relative" }}
-              >
-                <Button asChild variant="accent" outline>
-                  <Link
-                    to={
-                      row.original.isStablePool
-                        ? "/liquidity/$id/add"
-                        : "/liquidity/$id/add"
-                    }
-                    params={{ id: row.original.id }}
-                  >
-                    {t("liquidity:joinPool")}
-                  </Link>
-                </Button>
-                <Button variant="tertiary" outline asChild>
-                  <Link to="/liquidity/$id" params={{ id: row.original.id }}>
-                    {isPositions ? t("manage") : t("details")}
-                  </Link>
-                </Button>
-                {!!positionsAmount && (
-                  <Text
-                    color="text.secondary"
-                    fs={10}
-                    sx={{
-                      position: "absolute",
-                      bottom: -16,
-                      right: 16,
-                    }}
-                  >
-                    {t("liquidity:liquidity.pool.positions", {
-                      value: positionsAmount,
-                    })}
-                  </Text>
-                )}
-              </Flex>
-            </>
-          )
-        },
+        cell: ({ row }) => <Actions pool={row.original} />,
       }),
     ],
 
     [t, isMobile],
+  )
+}
+
+const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+  const { isPositions } = pool
+  const total = useUserPositionsTotal(pool)
+
+  return (
+    <>
+      <Flex
+        gap={getTokenPx("containers.paddings.quint")}
+        onClick={(e) => e.stopPropagation()}
+        sx={{ position: "relative" }}
+      >
+        <Button asChild variant="accent" outline>
+          <Link
+            to={pool.isStablePool ? "/liquidity/$id/add" : "/liquidity/$id/add"}
+            params={{ id: pool.id }}
+          >
+            {t("liquidity:joinPool")}
+          </Link>
+        </Button>
+        <Button variant="tertiary" outline asChild>
+          <Link to="/liquidity/$id" params={{ id: pool.id }}>
+            {isPositions ? t("manage") : t("details")}
+          </Link>
+        </Button>
+        {total !== "0" && (
+          <Text
+            color="text.secondary"
+            fs={10}
+            sx={{
+              position: "absolute",
+              bottom: -16,
+              right: 16,
+            }}
+          >
+            {t("liquidity:liquidity.pool.positions.total", {
+              value: total,
+            })}
+          </Text>
+        )}
+      </Flex>
+    </>
   )
 }

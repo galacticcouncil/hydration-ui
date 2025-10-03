@@ -1,12 +1,22 @@
-import { Button, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
+import {
+  AssetLabel,
+  Box,
+  Button,
+  Flex,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelXYK } from "@/components/AssetLabelFull"
+import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
+import { AssetLogo } from "@/components/AssetLogo"
+import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
+import { useUserIsolatedPositionsTotal } from "@/modules/liquidity/components/PositionsTable/PositionsTable.utils"
 
 import { IsolatedPoolTable } from "./Liquidity.utils"
 
@@ -19,11 +29,9 @@ export const useIsolatedPoolsColumns = () => {
     () => [
       isolatedColumnHelper.accessor("meta.name", {
         header: t("liquidity:liquidity.pool.poolAsset"),
-        cell: ({
-          row: {
-            original: { meta },
-          },
-        }) => <AssetLabelXYK iconIds={meta.iconId} symbol={meta.symbol} />,
+        cell: ({ row: { original } }) => (
+          <AssetLabelWithFarmApr pool={original} />
+        ),
       }),
       isolatedColumnHelper.accessor("volumeDisplay", {
         header: t("liquidity:24hVolume"),
@@ -58,44 +66,87 @@ export const useIsolatedPoolsColumns = () => {
         id: "actions",
         size: 170,
         cell: ({ row }) => {
-          const { positionsAmount, isPositions } = row.original
-
-          return (
-            <Flex
-              gap={getTokenPx("containers.paddings.quint")}
-              onClick={(e) => e.stopPropagation()}
-              sx={{ position: "relative" }}
-            >
-              <Button variant="accent" outline asChild>
-                <Link to="/liquidity/$id/add" params={{ id: row.original.id }}>
-                  {t("liquidity:joinPool")}
-                </Link>
-              </Button>
-              <Button variant="tertiary" outline asChild>
-                <Link to="/liquidity/$id" params={{ id: row.original.id }}>
-                  {isPositions ? t("manage") : t("details")}
-                </Link>
-              </Button>
-              {!!positionsAmount && (
-                <Text
-                  color="text.secondary"
-                  fs={10}
-                  sx={{
-                    position: "absolute",
-                    bottom: -16,
-                    right: 16,
-                  }}
-                >
-                  {t("liquidity:liquidity.pool.positions", {
-                    value: positionsAmount,
-                  })}
-                </Text>
-              )}
-            </Flex>
-          )
+          return <Actions pool={row.original} />
         },
       }),
     ],
     [t],
+  )
+}
+
+const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+  const { isPositions } = pool
+  const total = useUserIsolatedPositionsTotal(pool)
+
+  return (
+    <Flex
+      gap={getTokenPx("containers.paddings.quint")}
+      onClick={(e) => e.stopPropagation()}
+      sx={{ position: "relative" }}
+    >
+      <Button variant="accent" outline asChild>
+        <Link to="/liquidity/$id/add" params={{ id: pool.id }}>
+          {t("liquidity:joinPool")}
+        </Link>
+      </Button>
+      <Button variant="tertiary" outline asChild>
+        <Link to="/liquidity/$id" params={{ id: pool.id }}>
+          {isPositions ? t("manage") : t("details")}
+        </Link>
+      </Button>
+      {total !== "0" && (
+        <Text
+          color="text.secondary"
+          fs={10}
+          sx={{
+            position: "absolute",
+            bottom: -16,
+            right: 16,
+          }}
+        >
+          {t("liquidity:liquidity.pool.positions.total", {
+            value: total,
+          })}
+        </Text>
+      )}
+    </Flex>
+  )
+}
+
+export const AssetLabelWithFarmApr = ({
+  pool,
+}: {
+  pool: IsolatedPoolTable
+}) => {
+  const { t } = useTranslation("common")
+
+  return (
+    <AssetLabelFullContainer>
+      <AssetLogo id={pool.meta.iconId} />
+      {pool.isFarms ? (
+        <Box>
+          <AssetLabel symbol={pool.meta.symbol} />
+          <Flex align="center" gap={4}>
+            <AssetLogo
+              id={pool.farms.map((farm) => farm.rewardCurrency.toString())}
+              size="extra-small"
+            />
+            <Text color={getToken("text.tint.secondary")} fs="p6" lh={1}>
+              {t("percent", {
+                value: Number(
+                  pool.farms
+                    .reduce((acc, farm) => acc.plus(farm.apr), new Big(0))
+                    .toString(),
+                ),
+              })}
+            </Text>
+            <TooltipAPR farms={pool.farms} />
+          </Flex>
+        </Box>
+      ) : (
+        <AssetLabel symbol={pool.meta.symbol} />
+      )}
+    </AssetLabelFullContainer>
   )
 }
