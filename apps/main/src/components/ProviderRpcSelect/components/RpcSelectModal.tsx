@@ -4,7 +4,7 @@ import {
   Flex,
   Modal,
   ModalBody,
-  ModalClose,
+  ModalCloseTrigger,
   ModalFooter,
   ModalHeader,
   ModalProps,
@@ -93,11 +93,11 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
         </ModalBody>
       )}
       <ModalFooter>
-        <ModalClose asChild>
+        <ModalCloseTrigger asChild>
           <Button size="large" width="100%">
             {t("close")}
           </Button>
-        </ModalClose>
+        </ModalCloseTrigger>
       </ModalFooter>
     </Modal>
   )
