@@ -41,8 +41,8 @@ const CONVICTIONS: { [key: string]: number } = {
   locked6x: 6,
 }
 
-const lengthOfStaking = BN(50400) // min. amount of block for how long we want to calculate APR from = one week
-const blocksPerYear = BN(2628000) // blocks per year with 12s block period
+const lengthOfStaking = BN(100800) // min. amount of block for how long we want to calculate APR from = one week
+const blocksPerYear = BN(5256000) // blocks per year with 6s block period
 
 /* constants that might be changed */
 const a = "20000000000000000"
@@ -248,12 +248,8 @@ export const useStakeARP = () => {
 
     const hasPosition = positionId
 
-    const { sixBlockSince } = stakingConsts.data
     const currentBlockNumber =
       bestNumber.data.parachainBlockNumber.toBigNumber()
-    const isSixSecBlocks = sixBlockSince
-      ? currentBlockNumber.minus(sixBlockSince).gt(blocksPerYear.times(2))
-      : false
 
     const pendingRewards = BN(potBalance.data.transferable).minus(
       potReservedBalance,
@@ -267,7 +263,7 @@ export const useStakeARP = () => {
     } = accumulatedRpsUpdated.events.reduce(
       (acc, event) => {
         const isBeforeStaking = currentBlockNumber
-          .minus(sixBlockSince ? lengthOfStaking.times(2) : lengthOfStaking)
+          .minus(lengthOfStaking)
           .gt(event.block.height)
         acc[
           isBeforeStaking
@@ -320,7 +316,7 @@ export const useStakeARP = () => {
 
       const apr = rpsAvg
         .div(BN_QUINTILL)
-        .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
+        .multipliedBy(blocksPerYear)
         .multipliedBy(100)
 
       return { apr }
@@ -380,7 +376,7 @@ export const useStakeARP = () => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
+          .multipliedBy(blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
@@ -391,7 +387,7 @@ export const useStakeARP = () => {
 
         const apr = rpsAvg
           .div(BN_QUINTILL)
-          .multipliedBy(isSixSecBlocks ? blocksPerYear.times(2) : blocksPerYear)
+          .multipliedBy(blocksPerYear)
           .multipliedBy(100)
 
         return { apr }
