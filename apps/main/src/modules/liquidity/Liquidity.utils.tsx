@@ -12,6 +12,7 @@ import { useEffect, useMemo } from "react"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20 } from "@/api/assets"
+import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
   OmniPoolToken,
@@ -62,6 +63,8 @@ export type OmnipoolAssetTable = {
   isStablepoolInOmnipool: boolean
   aStableswapBalance: bigint | undefined
   aStableswapAsset: TErc20 | undefined
+  farms: Farm[]
+  allFarms: Farm[]
 }
 
 export type IsolatedPoolTable = {
@@ -71,6 +74,7 @@ export type IsolatedPoolTable = {
   meta: XYKPoolMeta
   isPositions: boolean
   volumeDisplay: string | undefined
+  isFeeLoading: boolean
   balance: bigint | undefined
   positionsAmount: number
   price: string | undefined
@@ -79,6 +83,9 @@ export type IsolatedPoolTable = {
   minTradingLimit: bigint
   isVolumeLoading: boolean
   isFarms: boolean
+  totalApr: string
+  farms: Farm[]
+  allFarms: Farm[]
 }
 
 export type TReserve = {
@@ -205,6 +212,9 @@ export const useOmnipoolStablepools = () => {
   const { data: omnipoolAssets, isLoading: isOmnipoolAssetsLoading } =
     useOmnipoolAssetsData()
 
+  const { data: omnipoolFarms, isLoading: isOmnipoolFarmsLoading } =
+    useOmnipoolFarms()
+
   const { getFreeBalance } = useAccountBalances()
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
   const { data: stablepools, isLoading: isStablepoolsLoading } =
@@ -284,6 +294,15 @@ export const useOmnipoolStablepools = () => {
         ? getFreeBalance(aStableswapAsset.id.toString())
         : undefined
 
+      const allFarms = omnipoolFarms?.[poolId] ?? []
+      const farms =
+        omnipoolFarms?.[poolId]?.filter((farm) => farm.apr !== "0") ?? []
+
+      const isFarms = farms?.length > 0
+      const totalApr = farms
+        .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
+        .toString()
+
       let volume: string | undefined
       let lpFeeOmnipool: string | undefined
       let lpFeeStablepool: string | undefined
@@ -309,6 +328,7 @@ export const useOmnipoolStablepools = () => {
           lpFeeStablepool || lpFeeOmnipool
             ? Big(lpFeeStablepool ?? 0)
                 .plus(lpFeeOmnipool ?? 0)
+                .plus(totalApr)
                 .toString()
             : undefined
       }
@@ -348,7 +368,7 @@ export const useOmnipoolStablepools = () => {
         lpFeeOmnipool,
         lpFeeStablepool,
         totalFee,
-        isFeeLoading: isYieldMetricsLoading,
+        isFeeLoading: isYieldMetricsLoading || isOmnipoolFarmsLoading,
         isNative,
         isPositions,
         positionsAmount,
@@ -358,7 +378,9 @@ export const useOmnipoolStablepools = () => {
         volumeDisplay: volume,
         positions,
         isVolumeLoading,
-        isFarms: false,
+        isFarms,
+        farms,
+        allFarms,
         isStablepoolOnly,
         isStablepoolInOmnipool,
         aStableswapBalance,
@@ -380,6 +402,8 @@ export const useOmnipoolStablepools = () => {
     isYieldMetricsLoading,
     feeByAsset,
     stablepools,
+    omnipoolFarms,
+    isOmnipoolFarmsLoading,
   ])
 
   useEffect(() => {
@@ -397,6 +421,7 @@ export const useIsolatedPools = () => {
   const { data: xykVolumes, isLoading: isVolumeLoading } = useQuery(
     xykVolumeQuery(squidClient, pools?.map((pool) => pool.address) ?? []),
   )
+  const { data: isolatedPoolsFarms } = useIsolatedPoolsFarms()
   const { getFreeBalance } = useAccountBalances()
 
   const { pricesIds, poolsData } = useMemo(() => {
@@ -462,6 +487,16 @@ export const useIsolatedPools = () => {
           ? (toBig(price)?.times(tvl).toString() ?? "0")
           : "0"
 
+        const allFarms = isolatedPoolsFarms?.[pool.address] ?? []
+        const farms =
+          isolatedPoolsFarms?.[pool.address]?.filter(
+            (farm) => farm.apr !== "0",
+          ) ?? []
+        const isFarms = farms.length > 0
+        const totalApr = farms
+          .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
+          .toString()
+
         const shareTokenId = xykPoolsIds?.get(pool.address)?.toString()
         const meta = getMetaFromXYKPoolTokens(
           shareTokenId ?? pool.address,
@@ -499,7 +534,11 @@ export const useIsolatedPools = () => {
           positions: xykMiningPositions,
           minTradingLimit: pool.minTradingLimit,
           isVolumeLoading,
-          isFarms: false,
+          isFarms,
+          totalApr,
+          isFeeLoading: false,
+          farms,
+          allFarms,
         })
 
         return acc
@@ -516,6 +555,7 @@ export const useIsolatedPools = () => {
     isLoading,
     xykVolumes,
     isVolumeLoading,
+    isolatedPoolsFarms,
   ])
 
   useEffect(() => {

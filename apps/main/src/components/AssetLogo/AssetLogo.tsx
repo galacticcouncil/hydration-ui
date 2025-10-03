@@ -61,9 +61,9 @@ export const AssetLogo: React.FC<AssetLogoProps> = ({
         size={size}
         decoration={isATokenPool ? "atoken" : "none"}
       >
-        {logoMetadata.map((data) => (
+        {logoMetadata.map((data, index) => (
           <AssetLogoPrimitive
-            key={data.id}
+            key={`${data.id}-${index}`}
             alt={data.alt}
             src={data.assetSrc}
             chainSrc={data.chainSrc}

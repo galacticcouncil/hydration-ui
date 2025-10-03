@@ -9,7 +9,7 @@ import {
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { JoinFarms } from "@/modules/liquidity/components/JoinFarms"
+import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
 
 type LiquidityPositionAction = "none" | "join" | "remove"
@@ -81,7 +81,7 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
         </>
       )}
       <Modal open={action === "join"} onOpenChange={() => setAction("none")}>
-        <JoinFarms positionId={positionId} poolId={assetId} />
+        <JoinFarmsWrapper positionId={positionId} poolId={assetId} />
       </Modal>
       <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
         <RemoveLiquidity poolId={assetId} positionId={positionId} />

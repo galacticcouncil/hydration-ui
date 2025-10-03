@@ -39,6 +39,7 @@ export type BalanceTableData = {
 export type OmnipoolPositionTableData = {
   poolId: string
   joinedFarms: string[]
+  isJoinedAllFarms: boolean
   meta: TAssetData
 } & AccountOmnipoolPosition
 
@@ -124,6 +125,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     price,
     aStableswapAsset,
     aStableswapBalance,
+    allFarms,
+    farms,
   } = pool
 
   const { price: aStableswapPrice, isValid: aStableswapIsValid } =
@@ -167,11 +170,22 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     const positionData = positions
       .sort((a, b) => numericallyStrDesc(a.positionId, b.positionId))
       .map((position): OmnipoolPositionTableData => {
-        const joinedFarms = isOmnipoolDepositPosition(position)
-          ? position.yield_farm_entries.map((entry) =>
-              entry.global_farm_id.toString(),
+        const joinedFarms: string[] = []
+        const farmsToJoin = new Set(farms.map((farm) => farm.globalFarmId))
+
+        if (isOmnipoolDepositPosition(position)) {
+          position.yield_farm_entries.forEach((entry) => {
+            const farm = allFarms.find(
+              (farm) => farm.globalFarmId === entry.global_farm_id,
             )
-          : []
+
+            farmsToJoin.delete(entry.global_farm_id)
+
+            if (farm) {
+              joinedFarms.push(farm.rewardCurrency.toString())
+            }
+          })
+        }
 
         if (joinedFarms.length > 0) {
           totalInFarms = totalInFarms.plus(
@@ -183,9 +197,12 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
           position.data?.currentTotalDisplay ?? 0,
         )
 
+        const isJoinedAllFarms = farmsToJoin.size === 0
+
         return {
           poolId: id,
           joinedFarms,
+          isJoinedAllFarms,
           meta,
           ...position,
         }
@@ -203,7 +220,74 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
       totalBalanceDisplay: totalBalanceDisplay.toString(),
       aStableswapDisplayBalance,
     }
-  }, [id, meta, positions, stablepoolPosition, aStableswapDisplayBalance])
+  }, [
+    stablepoolPosition,
+    positions,
+    aStableswapDisplayBalance,
+    id,
+    meta,
+    allFarms,
+    farms,
+  ])
 
   return data
+}
+
+export const useUserPositionsTotal = (pool: OmnipoolAssetTable) => {
+  const {
+    positions,
+    stableswapBalance,
+    aStableswapBalance,
+    aStableswapAsset,
+    meta,
+    price,
+  } = pool
+
+  const { price: aStableswapPrice, isValid: aStableswapIsValid } =
+    useAssetPrice(stableswapBalance ? aStableswapAsset?.id : undefined)
+
+  const aStableswapDisplayBalance = (() => {
+    if (!aStableswapBalance || !aStableswapAsset || !aStableswapIsValid)
+      return undefined
+
+    return Big(scaleHuman(aStableswapBalance, aStableswapAsset.decimals))
+      .times(aStableswapPrice)
+      .toString()
+  })()
+
+  const stablepoolDisplayBalance = (() => {
+    if (!stableswapBalance) return undefined
+
+    const freeBalance = scaleHuman(stableswapBalance, meta.decimals)
+
+    return price ? Big(price).times(freeBalance).toString() : undefined
+  })()
+
+  const positionsDisplayTotal = positions.reduce(
+    (acc, position) => acc.plus(position.data?.currentTotalDisplay ?? 0),
+    Big(0),
+  )
+
+  return positionsDisplayTotal
+    .plus(aStableswapDisplayBalance ?? 0)
+    .plus(stablepoolDisplayBalance ?? 0)
+    .toString()
+}
+
+export const useUserIsolatedPositionsTotal = (pool: IsolatedPoolTable) => {
+  const { positions, id, meta } = pool
+
+  const { data: liquidity } = useXYKPoolsLiquidity(id)
+
+  const price = Big(pool.tvlDisplay)
+    .div(liquidity ? scaleHuman(liquidity, pool.meta.decimals) : 1)
+    .toString()
+
+  return positions
+    .reduce(
+      (acc, position) =>
+        acc.plus(Big(price).times(scaleHuman(position.shares, meta.decimals))),
+      Big(0),
+    )
+    .toString()
 }

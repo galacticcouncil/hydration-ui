@@ -95,7 +95,7 @@ export const AssetLabelStablepool = ({
   )
 }
 
-const AssetLabelFullContainer: FC<{
+export const AssetLabelFullContainer: FC<{
   children: ReactNode
 }> = ({ children }) => {
   return (
