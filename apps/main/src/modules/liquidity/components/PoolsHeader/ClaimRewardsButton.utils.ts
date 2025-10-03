@@ -23,7 +23,7 @@ export const useLiquidityMiningRewards = () => {
 
   const { positions, isPositionsLoading } = useAccountPositions()
 
-  const { data, isPending, error } = useQuery(
+  const { data, isPending } = useQuery(
     allDepositsRewardsQuery(
       rpc,
       accountAddress ?? "",
@@ -32,8 +32,6 @@ export const useLiquidityMiningRewards = () => {
       !isPositionsLoading,
     ),
   )
-
-  console.log(isPending, error, data)
 
   return useSummarizeClaimableValues(data, isPending)
 }
