@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import * as z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { TradeType } from "@/api/trade"
 import { useAssets } from "@/providers/assetsProvider"
 import {
   positiveOptional,
@@ -11,18 +12,6 @@ import {
   useValidateFormMaxBalance,
   validateAssetSellOnly,
 } from "@/utils/validators"
-
-// TODO broken export from sdk-next
-export enum TradeType {
-  Sell = "Sell",
-  Buy = "Buy",
-}
-
-export enum TradeOrderType {
-  Dca = "Dca",
-  TwapSell = "TwapSell",
-  TwapBuy = "TwapBuy",
-}
 
 const schema = z.object({
   sellAsset: requiredObject<TAssetData>(),

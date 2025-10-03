@@ -15,9 +15,9 @@ import {
 
 type AssetSwitcherProps = {
   readonly assetInId: string
-  readonly priceIn: string | undefined | null
+  readonly priceIn?: string | undefined | null
   readonly assetOutId: string
-  readonly priceOut: string | undefined | null
+  readonly priceOut?: string | undefined | null
   readonly disabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean

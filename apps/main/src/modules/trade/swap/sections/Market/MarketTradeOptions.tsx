@@ -8,13 +8,10 @@ import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { blockTimeQuery } from "@/api/chain"
+import { TradeOrderType, TradeType } from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
-import {
-  MarketFormValues,
-  TradeOrderType,
-  TradeType,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"

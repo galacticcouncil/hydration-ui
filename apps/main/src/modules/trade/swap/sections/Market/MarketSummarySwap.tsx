@@ -6,13 +6,11 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
+import { TradeType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
-import {
-  MarketFormValues,
-  TradeType,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"

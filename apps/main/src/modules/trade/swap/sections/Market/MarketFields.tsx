@@ -4,14 +4,12 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebouncedCallback } from "use-debounce"
 
+import { TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useOwnedAssets } from "@/hooks/data/useOwnedAssets"
 import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
 import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
-import {
-  MarketFormValues,
-  TradeType,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { TAsset, useAssets } from "@/providers/assetsProvider"

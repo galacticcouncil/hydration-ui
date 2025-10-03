@@ -21,7 +21,7 @@ type StableSwap = pool.stable.StableSwap
 export type PoolBase = pool.PoolBase
 export type PoolToken = pool.PoolToken
 
-const PoolType = pool.PoolType
+export const PoolType = pool.PoolType
 
 export const allPools = (
   tradeRouter: SdkCtx["api"]["router"],
