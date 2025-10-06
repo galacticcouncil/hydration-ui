@@ -232,8 +232,8 @@ const StablePoolModalWrapper = ({
   return (
     <TransferModal
       onClose={onClose}
-      disabledOmnipool={!pool.isGETH || !pool.canAddLiquidity}
-      skipOptions={pool.isGETH}
+      disabledOmnipool={!pool.canAddLiquidity}
+      skipOptions
       initialAssetId={initialAssetId}
       farms={pool.farms}
       poolId={pool.poolId}

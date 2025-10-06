@@ -191,6 +191,7 @@ export const StablepoolForm = (
     setIsJoinFarms,
     onAssetOpen,
     supply,
+    isStablepoolOnly,
   } = props
 
   const {
@@ -301,12 +302,14 @@ export const StablepoolForm = (
 
           <StablepoolFeeSummaryRow poolId={poolId} />
 
-          <AvailableFarmsForm
-            name="farms"
-            farms={farms}
-            isJoinFarms={isJoinFarms}
-            setIsJoinFarms={setIsJoinFarms}
-          />
+          {!isStablepoolOnly && (
+            <AvailableFarmsForm
+              name="farms"
+              farms={farms}
+              isJoinFarms={isJoinFarms}
+              setIsJoinFarms={setIsJoinFarms}
+            />
+          )}
 
           <Text
             color="pink500"
