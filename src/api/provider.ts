@@ -3,7 +3,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useShallow } from "hooks/useShallow"
 import { pick } from "utils/rx"
 import { ApiPromise, WsProvider } from "@polkadot/api"
@@ -16,7 +16,7 @@ import {
   useAssetRegistry,
   useSettingsStore,
 } from "state/store"
-import { undefinedNoop } from "utils/helpers"
+import { getDeploymentType, undefinedNoop } from "utils/helpers"
 import {
   ChainCursor,
   Ecosystem,
@@ -26,6 +26,7 @@ import { getExternalId } from "utils/externalAssets"
 import { PingResponse, pingRpc } from "utils/rpc"
 import { PolkadotEvmRpcProvider } from "utils/provider"
 import { createClient } from "graphql-ws"
+import { useWindowFocus } from "hooks/useWindowFocus"
 
 export type TDataEnv = "testnet" | "mainnet"
 export type ProviderProps = {
@@ -158,11 +159,22 @@ export const PROVIDERS: ProviderProps[] = [
   },
 ]
 
-export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
-  typeof provider.env === "string"
-    ? provider.env === import.meta.env.VITE_ENV
-    : provider.env.includes(import.meta.env.VITE_ENV),
-)
+export const PROVIDER_LIST =
+  getDeploymentType() === "hollarnet"
+    ? [
+        {
+          name: "HOLLAR",
+          url: "wss://2.lark.hydration.cloud",
+          ...defaultProvider,
+          squidUrl:
+            "https://galacticcouncil.squids.live/hydration-pools-hollar-testnet:hsm-hollar-sandbox-unified/api/graphql",
+        },
+      ]
+    : PROVIDERS.filter((provider) =>
+        typeof provider.env === "string"
+          ? provider.env === import.meta.env.VITE_ENV
+          : provider.env.includes(import.meta.env.VITE_ENV),
+      )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
@@ -414,7 +426,7 @@ export const useProviderData = (
     })
   }, [queryClient, shouldRefetchOnRpcChange])
 
-  return useQuery(
+  const query = useQuery(
     QUERY_KEYS.provider,
     async () => {
       const currentRpcUrlState = useProviderRpcUrlStore.getState()
@@ -504,6 +516,24 @@ export const useProviderData = (
       retry: false,
     },
   )
+
+  useWindowFocus({
+    onFocus: useCallback(async () => {
+      if (!shouldRefetchOnRpcChange) return
+      const provider = query.data?.api
+        ? getProviderInstance(query.data?.api)
+        : null
+
+      if (provider && !provider.isConnected) {
+        setEnabled(false)
+        queryClient.removeQueries(QUERY_KEYS.provider)
+        await reconnectProvider(provider)
+        setEnabled(true)
+      }
+    }, [query.data?.api, queryClient, shouldRefetchOnRpcChange]),
+  })
+
+  return query
 }
 
 export const useRefetchProviderData = () => {
@@ -512,6 +542,15 @@ export const useRefetchProviderData = () => {
 
   return () => {
     queryClient.invalidateQueries(QUERY_KEYS.provider)
+    queryClient.invalidateQueries(QUERY_KEYS.assets(dataEnv))
+  }
+}
+
+export const useRefetchAssets = () => {
+  const queryClient = useQueryClient()
+  const { dataEnv } = useActiveRpcUrlList()
+
+  return () => {
     queryClient.invalidateQueries(QUERY_KEYS.assets(dataEnv))
   }
 }
@@ -542,21 +581,12 @@ export const useActiveProvider = (): ProviderProps => {
     return rpcUrl
   }, [api, isLoaded])
 
-  return (
-    PROVIDERS.find((provider) => provider.url === activeRpcUrl) || {
-      name: "",
-      url: import.meta.env.VITE_PROVIDER_URL,
-      indexerUrl: import.meta.env.VITE_INDEXER_URL,
-      squidUrl: import.meta.env.VITE_SQUID_URL,
-      env: import.meta.env.VITE_ENV,
-      dataEnv: getDefaultDataEnv(),
-    }
-  )
+  return getProviderData(activeRpcUrl)
 }
 
 function getProviderData(url: string): ProviderProps {
   return (
-    PROVIDERS.find((provider) => provider.url === url) || {
+    PROVIDER_LIST.find((provider) => provider.url === url) || {
       name: "",
       url: import.meta.env.VITE_PROVIDER_URL,
       indexerUrl: import.meta.env.VITE_INDEXER_URL,

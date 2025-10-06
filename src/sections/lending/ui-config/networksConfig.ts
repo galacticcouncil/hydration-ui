@@ -87,7 +87,7 @@ export const networkConfigs: Record<string, BaseNetworkConfig> = {
     baseAssetSymbol: "",
     wrappedBaseAssetSymbol: "",
     baseAssetDecimals: 18,
-    explorerLink: "https://explorer.nice.hydration.cloud",
+    explorerLink: hydration.blockExplorers?.default?.url ?? "",
     isTestnet: true,
     networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },

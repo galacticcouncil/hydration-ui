@@ -13,15 +13,12 @@ import {
   IncentivesControllerV2,
   IncentivesControllerV2Interface,
   InterestRate,
-  LendingPool,
   LendingPoolBundle,
-  LendingPoolBundleInterface,
   MAX_UINT_AMOUNT,
   PermitSignature,
   Pool,
   PoolBaseCurrencyHumanized,
   PoolBundle,
-  PoolBundleInterface,
   ProtocolAction,
   ReserveDataHumanized,
   ReservesIncentiveDataHumanized,
@@ -56,21 +53,14 @@ import {
   WithdrawAndSwitchActionProps,
 } from "sections/lending/helpers/types"
 import { Approval } from "sections/lending/helpers/useTransactionHandler"
-import { MarketDataType } from "sections/lending/ui-config/marketsConfig"
 import {
   minBaseTokenRemainingByNetwork,
   optimizedPath,
 } from "sections/lending/utils/utils"
 import { StateCreator } from "zustand"
 
-import {
-  selectCurrentChainIdV3MarketData,
-  selectFormattedReserves,
-} from "./poolSelectors"
+import { selectFormattedReserves } from "./poolSelectors"
 import { RootStore } from "./root"
-import BN from "bignumber.js"
-import { QueryClient } from "@tanstack/react-query"
-import { EXTERNAL_APY_QUERIES } from "sections/lending/ui-config/misc"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 
 // TODO: what is the better name for this type?
@@ -101,11 +91,7 @@ type GenerateSignatureRequestOpts = {
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
   data: Map<number, Map<string, PoolReserve>>
-  externalApyData: Map<string, string>
-  refreshPoolData: (options: {
-    marketData?: MarketDataType
-    queryClient?: QueryClient
-  }) => Promise<void>
+  refreshPoolData: () => Promise<void>
   refreshPoolV3Data: () => Promise<void>
   // methods
   useOptimizedPath: () => boolean | undefined
@@ -183,7 +169,8 @@ export interface PoolSlice {
   generateApproveDelegation: (
     args: Omit<ApproveDelegationType, "user">,
   ) => PopulatedTransaction
-  getCorrectPoolBundle: () => PoolBundleInterface | LendingPoolBundleInterface
+  getCorrectPoolBundle: () => PoolBundle
+  getCorrectPool: () => Pool
   estimateGasLimit: (
     tx: PopulatedTransaction,
     action?: ProtocolAction,
@@ -196,10 +183,12 @@ export const createPoolSlice: StateCreator<
   [],
   PoolSlice
 > = (set, get) => {
-  function getCorrectPool() {
-    const currentMarketData = get().currentMarketData
-    const provider = get().jsonRpcProvider()
-    if (currentMarketData.v3) {
+  return {
+    data: new Map(),
+    externalApyData: new Map(),
+    getCorrectPool() {
+      const currentMarketData = get().currentMarketData
+      const provider = get().jsonRpcProvider()
       return new Pool(provider, {
         POOL: currentMarketData.addresses.LENDING_POOL,
         REPAY_WITH_COLLATERAL_ADAPTER:
@@ -209,41 +198,21 @@ export const createPoolSlice: StateCreator<
         WETH_GATEWAY: currentMarketData.addresses.WETH_GATEWAY,
         L2_ENCODER: currentMarketData.addresses.L2_ENCODER,
       })
-    } else {
-      return new LendingPool(provider, {
-        LENDING_POOL: currentMarketData.addresses.LENDING_POOL,
-        REPAY_WITH_COLLATERAL_ADAPTER:
-          currentMarketData.addresses.REPAY_WITH_COLLATERAL_ADAPTER,
-        SWAP_COLLATERAL_ADAPTER:
-          currentMarketData.addresses.SWAP_COLLATERAL_ADAPTER,
-        WETH_GATEWAY: currentMarketData.addresses.WETH_GATEWAY,
-      })
-    }
-  }
-  return {
-    data: new Map(),
-    externalApyData: new Map(),
+    },
     getCorrectPoolBundle() {
       const currentMarketData = get().currentMarketData
       const provider = get().jsonRpcProvider()
-      if (currentMarketData.v3) {
-        return new PoolBundle(provider, {
-          POOL: currentMarketData.addresses.LENDING_POOL,
-          WETH_GATEWAY: currentMarketData.addresses.WETH_GATEWAY,
-          L2_ENCODER: currentMarketData.addresses.L2_ENCODER,
-        })
-      } else {
-        return new LendingPoolBundle(provider, {
-          LENDING_POOL: currentMarketData.addresses.LENDING_POOL,
-          WETH_GATEWAY: currentMarketData.addresses.WETH_GATEWAY,
-        })
-      }
+      return new PoolBundle(provider, {
+        POOL: currentMarketData.addresses.LENDING_POOL,
+        WETH_GATEWAY: currentMarketData.addresses.WETH_GATEWAY,
+        L2_ENCODER: currentMarketData.addresses.L2_ENCODER,
+      })
     },
-    refreshPoolData: async ({ marketData, queryClient }) => {
+    refreshPoolData: async () => {
       const account = get().account
       const currentChainId = get().currentChainId
 
-      const currentMarketData = marketData || get().currentMarketData
+      const currentMarketData = get().currentMarketData
       const poolDataProviderContract = new UiPoolDataProvider({
         uiPoolDataProviderAddress:
           currentMarketData.addresses.UI_POOL_DATA_PROVIDER,
@@ -366,34 +335,13 @@ export const createPoolSlice: StateCreator<
           )
         }
 
-        if (!queryClient) {
-          Promise.all(promises)
-          return
-        }
-
-        Object.entries(EXTERNAL_APY_QUERIES).forEach(([assetId, query]) => {
-          promises.push(
-            queryClient.fetchQuery(query).then((apy) => {
-              set(
-                produce((draft) => {
-                  draft.externalApyData.set(
-                    assetId,
-                    BN(apy).div(100).toString(),
-                  )
-                }),
-              )
-            }),
-          )
-        })
-
         await Promise.all(promises)
       } catch (e) {
         console.log("error fetching pool data", e)
       }
     },
     refreshPoolV3Data: async () => {
-      const v3MarketData = selectCurrentChainIdV3MarketData(get())
-      get().refreshPoolData({ marketData: v3MarketData })
+      get().refreshPoolData()
     },
     generateApproval: (args: ApproveType, ops = {}) => {
       const provider = get().jsonRpcProvider(ops.chainId)
@@ -406,24 +354,15 @@ export const createPoolSlice: StateCreator<
     supply: (args: Omit<LPSupplyParamsType, "user">) => {
       const poolBundle = get().getCorrectPoolBundle()
       const currentAccount = get().account
-      if (poolBundle instanceof PoolBundle) {
-        return poolBundle.supplyTxBuilder.generateTxData({
-          user: currentAccount,
-          reserve: args.reserve,
-          amount: args.amount,
-          useOptimizedPath: get().useOptimizedPath(),
-        })
-      } else {
-        const lendingPool = poolBundle as LendingPoolBundle
-        return lendingPool.depositTxBuilder.generateTxData({
-          user: currentAccount,
-          reserve: args.reserve,
-          amount: args.amount,
-        })
-      }
+      return poolBundle.supplyTxBuilder.generateTxData({
+        user: currentAccount,
+        reserve: args.reserve,
+        amount: args.amount,
+        useOptimizedPath: get().useOptimizedPath(),
+      })
     },
     supplyWithPermit: (args: Omit<LPSupplyWithPermitType, "user">) => {
-      const poolBundle = get().getCorrectPoolBundle() as PoolBundle
+      const poolBundle = get().getCorrectPoolBundle()
       const user = get().account
       const signature = utils.joinSignature(args.signature)
       return poolBundle.supplyTxBuilder.generateSignedTxData({
@@ -438,19 +377,11 @@ export const createPoolSlice: StateCreator<
     borrow: (args: Omit<LPBorrowParamsType, "user">) => {
       const poolBundle = get().getCorrectPoolBundle()
       const currentAccount = get().account
-      if (poolBundle instanceof PoolBundle) {
-        return poolBundle.borrowTxBuilder.generateTxData({
-          ...args,
-          user: currentAccount,
-          useOptimizedPath: get().useOptimizedPath(),
-        })
-      } else {
-        const lendingPool = poolBundle as LendingPoolBundle
-        return lendingPool.borrowTxBuilder.generateTxData({
-          ...args,
-          user: currentAccount,
-        })
-      }
+      return poolBundle.borrowTxBuilder.generateTxData({
+        ...args,
+        user: currentAccount,
+        useOptimizedPath: get().useOptimizedPath(),
+      })
     },
     getCreditDelegationApprovedAmount: async (
       args: Omit<ApproveDelegationType, "user" | "amount">,
@@ -495,7 +426,7 @@ export const createPoolSlice: StateCreator<
       }
     },
     withdraw: (args) => {
-      const pool = getCorrectPool()
+      const pool = get().getCorrectPool()
       const user = get().account
       return pool.withdraw({
         ...args,
@@ -504,7 +435,7 @@ export const createPoolSlice: StateCreator<
       })
     },
     setUsageAsCollateral: async (args) => {
-      const pool = getCorrectPool()
+      const pool = get().getCorrectPool()
       const user = get().account
       return pool.setUsageAsCollateral({
         ...args,
@@ -513,7 +444,7 @@ export const createPoolSlice: StateCreator<
       })
     },
     swapBorrowRateMode: async (args) => {
-      const pool = getCorrectPool()
+      const pool = get().getCorrectPool()
       const user = get().account
       return pool.swapBorrowRateMode({
         ...args,
@@ -536,7 +467,7 @@ export const createPoolSlice: StateCreator<
       signedAmount,
     }) => {
       const user = get().account
-      const pool = getCorrectPool()
+      const pool = get().getCorrectPool()
 
       let permitSignature: PermitSignature | undefined
 
@@ -727,7 +658,7 @@ export const createPoolSlice: StateCreator<
       signature,
       encodedTxData,
     }) => {
-      const poolBundle = get().getCorrectPoolBundle() as PoolBundle
+      const poolBundle = get().getCorrectPoolBundle()
       const currentAccount = get().account
       const stringSignature = utils.joinSignature(signature)
       return poolBundle.repayTxBuilder.generateSignedTxData({
@@ -748,7 +679,7 @@ export const createPoolSlice: StateCreator<
       deadline,
       signature,
     }) => {
-      const poolBundle = get().getCorrectPoolBundle() as PoolBundle
+      const poolBundle = get().getCorrectPoolBundle()
       const stringSignature = utils.joinSignature(signature)
       return poolBundle.repayTxBuilder.encodeRepayWithPermitParams({
         reserve,
@@ -764,7 +695,7 @@ export const createPoolSlice: StateCreator<
       debtType,
       repayWithATokens,
     }) => {
-      const poolBundle = get().getCorrectPoolBundle() as PoolBundle
+      const poolBundle = get().getCorrectPoolBundle()
       if (repayWithATokens) {
         return poolBundle.repayWithATokensTxBuilder.encodeRepayWithATokensParams(
           {
@@ -794,7 +725,7 @@ export const createPoolSlice: StateCreator<
       deadline,
       signedAmount,
     }) => {
-      const pool = getCorrectPool()
+      const pool = get().getCorrectPool()
       const user = get().account
 
       let permitSignature: PermitSignature | undefined
@@ -875,7 +806,7 @@ export const createPoolSlice: StateCreator<
       })
     },
     setUserEMode: async (categoryId) => {
-      const pool = getCorrectPool() as Pool
+      const pool = get().getCorrectPool()
       const user = get().account
       return pool.setUserEMode({
         user,
@@ -883,7 +814,7 @@ export const createPoolSlice: StateCreator<
       })
     },
     signERC20Approval: async (args) => {
-      const pool = getCorrectPool() as Pool
+      const pool = get().getCorrectPool()
       const user = get().account
       return pool.signERC20Approval({
         ...args,
@@ -893,7 +824,7 @@ export const createPoolSlice: StateCreator<
     claimRewards: async ({ selectedReward }) => {
       // TODO: think about moving timestamp from hook to EventEmitter
       const timestamp = dayjs().unix()
-      const reserves = selectFormattedReserves(get(), timestamp)
+      const reserves = selectFormattedReserves(get(), timestamp, new Map())
       const currentAccount = get().account
 
       const allReserves: string[] = []

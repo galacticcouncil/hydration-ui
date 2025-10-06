@@ -312,8 +312,7 @@ export const QUERY_KEYS = {
   ) => ["xcmTransfer", asset, srcAddr, srcChain, dstAddr, dstChain],
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
-  bifrostVDotApy: ["bifrostVDotApy"],
-  lidoEthAPR: ["lidoEthAPR"],
+  defillamaApyHistory: (id: string) => ["defillamaApyHistory", id],
   variableBorrowRates: (assetId: string, from: string, to: string) => [
     "variableBorrowRates",
     assetId,
@@ -335,11 +334,26 @@ export const QUERY_KEYS = {
     "borrowReserves",
     poolContractAddress,
   ],
+  borrowUserReserves: (poolContractAddress: string, address: string) => [
+    "borrowReserves",
+    poolContractAddress,
+    address,
+  ],
   borrowIncentives: (
     incentivesContractAddress: string,
     accounntAddress?: string,
   ) => ["borrowIncentives", incentivesContractAddress, accounntAddress],
+  ghoReserveData: (uiGhoDataProviderAddress: string) => [
+    "ghoReserveData",
+    uiGhoDataProviderAddress,
+  ],
+  ghoUserData: (uiGhoDataProviderAddress: string, userAddress: string) => [
+    "ghoUserData",
+    uiGhoDataProviderAddress,
+    userAddress,
+  ],
   solanaAccountBalance: (address: string) => ["solanaAccountBalance", address],
+  suiAccountBalance: (address: string) => ["suiAccountBalance", address],
   ethereumAccountBalance: (address: string) => [
     "ethereumAccountBalance",
     address,
@@ -363,6 +377,11 @@ export const QUERY_KEYS = {
     pagination.pageSize,
     pagination.pageIndex,
   ],
+  moneyMarketMaxWithdraw: (
+    assetInId: string,
+    assetOutId: string,
+    amount: string,
+  ) => ["moneyMarketMaxWithdraw", assetInId, assetOutId, amount],
   swapAssetFees: (period: string) => ["swapAssetFees", period],
   bestTradeSell: (assetInId: string, assetOutId: string, amountIn: string) => [
     QUERY_KEY_PREFIX,
@@ -372,6 +391,12 @@ export const QUERY_KEYS = {
     assetOutId,
     amountIn,
   ],
+  bestTradeSellTx: (
+    assetInId: string,
+    assetOutId: string,
+    amountIn: string,
+  ) => ["bestTradeSellTx", assetInId, assetOutId, amountIn],
+  wormholeTransfers: (address: string) => ["wormholeTransfers", address],
 } as const
 
 export const WS_QUERY_KEYS = {

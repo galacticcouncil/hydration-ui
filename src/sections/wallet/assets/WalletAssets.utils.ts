@@ -5,12 +5,12 @@ import { useFarmDepositsTotal } from "sections/pools/farms/position/FarmingPosit
 import { useOmnipoolPositionsData } from "sections/wallet/assets/hydraPositions/data/WalletAssetsHydraPositionsData.utils"
 import { BN_0, BN_NAN } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
-import { useAssetsData } from "./table/data/WalletAssetsTableData.utils"
+import { useAccountAssets } from "./table/data/WalletAssetsTableData.utils"
 import { useAccountBalances } from "api/deposits"
 import BigNumber from "bignumber.js"
 import { useUserBorrowSummary } from "api/borrow"
 
-type AssetCategory = "all" | "assets" | "liquidity" | "farming"
+export type AssetCategory = "all" | "assets" | "liquidity" | "farming"
 
 type FilterValues = {
   category?: AssetCategory
@@ -48,7 +48,7 @@ export const useWalletAssetsTotals = ({
   address?: string
 } = {}) => {
   const borrows = useUserBorrowSummary(address)
-  const assets = useAssetsData({ isAllAssets: false, address })
+  const assets = useAccountAssets(address)
   const lpPositions = useOmnipoolPositionsData({ address })
   const farmsTotal = useFarmDepositsTotal(address)
   const { data: balances, isLoading: isAccountAssetsLoading } =

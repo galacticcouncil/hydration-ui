@@ -6,27 +6,26 @@ import {
   WalletAssetsHeader,
   WalletAssetsHeaderSkeleton,
 } from "./header/WalletAssetsHeader"
-import { WalletAssetsTableSkeleton } from "./table/skeleton/WalletAssetsTableSkeleton"
-import { WalletAssetsHydraPositionsSkeleton } from "./hydraPositions/skeleton/WalletAssetsHydraPositionsSkeleton"
-import { WalletFarmingPositionsSkeleton } from "./farmingPositions/skeleton/WalletFarmingPositionsSkeleton"
-import { useRpcProvider } from "providers/rpcProvider"
-import { Skeleton as BondsTableSkeleton } from "sections/trade/sections/bonds/table/skeleton/Skeleton"
-import { useTranslation } from "react-i18next"
 import { WalletAssetsFilters } from "sections/wallet/assets/filter/WalletAssetsFilters"
-import { useWalletAssetsFilters } from "sections/wallet/assets/WalletAssets.utils"
+import {
+  AssetCategory,
+  useWalletAssetsFilters,
+} from "sections/wallet/assets/WalletAssets.utils"
 import { AllAssets, Assets } from "./WalletSections"
-import { WalletStrategyBanner } from "sections/wallet/strategy/WalletStrategyBanner/WalletStrategyBanner"
+import { WalletWormholeRedeemTable } from "sections/wallet/assets/wormhole/WalletWormholeRedeemTable"
+import { HollarBanner } from "sections/lending/ui/hollar/hollar-banner/HollarBanner"
+
+const sections: Record<AssetCategory, React.ReactNode> = {
+  all: <AllAssets />,
+  assets: <Assets />,
+  liquidity: <WalletAssetsPositionsWrapper />,
+  farming: <WalletFarmingPositionsWrapper />,
+}
 
 export const WalletAssets = () => {
-  const { t } = useTranslation()
   const { account } = useAccount()
-  const { isLoaded } = useRpcProvider()
 
   const { category } = useWalletAssetsFilters()
-
-  const isAssetsVisible = category === "assets"
-  const isLiquidityVisible = category === "liquidity"
-  const isFarmingVisible = category === "farming"
 
   if (!account)
     return (
@@ -36,49 +35,14 @@ export const WalletAssets = () => {
       </div>
     )
 
-  let section
-
-  if (isAssetsVisible) {
-    section = isLoaded ? (
-      <Assets />
-    ) : (
-      <div sx={{ flex: "column", gap: [24, 40] }}>
-        <WalletAssetsTableSkeleton />
-        <BondsTableSkeleton title={t("bonds.table.title")} />
-      </div>
-    )
-  } else if (isLiquidityVisible) {
-    section = isLoaded ? (
-      <WalletAssetsPositionsWrapper />
-    ) : (
-      <WalletAssetsHydraPositionsSkeleton />
-    )
-  } else if (isFarmingVisible) {
-    section = isLoaded ? (
-      <WalletFarmingPositionsWrapper />
-    ) : (
-      <WalletFarmingPositionsSkeleton />
-    )
-  } else {
-    section = isLoaded ? (
-      <AllAssets />
-    ) : (
-      <div sx={{ flex: "column", gap: [24, 40] }}>
-        <WalletAssetsTableSkeleton />
-        <BondsTableSkeleton title={t("bonds.table.title")} />
-        <WalletAssetsHydraPositionsSkeleton />
-        <WalletFarmingPositionsSkeleton />
-      </div>
-    )
-  }
-
   return (
     <div sx={{ flex: "column", gap: [24, 40] }}>
       <WalletAssetsHeader />
-      <WalletStrategyBanner />
+      <HollarBanner />
+      <WalletWormholeRedeemTable />
       <div sx={{ flex: "column", gap: [16, 20] }}>
         <WalletAssetsFilters />
-        {section}
+        {sections[category]}
       </div>
     </div>
   )

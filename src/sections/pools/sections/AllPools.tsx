@@ -15,8 +15,6 @@ import { EmptySearchState } from "components/EmptySearchState/EmptySearchState"
 import { TableLabel } from "sections/pools/components/TableLabel"
 import { CreateXYKPoolModalButton } from "sections/pools/modals/CreateXYKPool/CreateXYKPoolModalButton"
 
-import { GigaCampaignBanner } from "sections/pools/components/GigaCampaignBanner"
-
 import { AllPoolsHeader } from "sections/pools/header/AllPoolsHeader"
 
 export const AllPools = () => {
@@ -107,8 +105,6 @@ const AllPoolsData = ({ id }: { id: number | undefined }) => {
       <AllPoolsHeader />
 
       <SearchFilter />
-
-      <GigaCampaignBanner />
 
       {!pools.isLoading &&
         !xykPools.isInitialLoading &&

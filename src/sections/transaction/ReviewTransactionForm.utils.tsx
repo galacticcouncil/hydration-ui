@@ -159,6 +159,38 @@ export const useTransactionValues = ({
   const { data: paymentFeeExtraHDX, isLoading: isExtraEvmFeeLoading } =
     useExtraEvmFeePaymentByWeight(txWeight ?? "0")
 
+  const isExternalXcmCall = !!xcallMeta && srcChain !== HYDRATION_CHAIN_KEY
+
+  if (isExternalXcmCall) {
+    const feeBalanceDiff = BigNumber(xcallMeta.srcChainFeeBalance).minus(
+      xcallMeta.srcChainFee,
+    )
+
+    const isEnoughPaymentBalance =
+      // @TODO remove Bifrost override when fixed in xcm app
+      srcChain === "bifrost" ? true : feeBalanceDiff.gt(0)
+
+    return {
+      isLoading: isNonceLoading || era.isLoading,
+      data: {
+        isEnoughPaymentBalance: isEnoughPaymentBalance,
+        displayFeePaymentValue: BN_NAN,
+        feePaymentMeta,
+        acceptedFeePaymentAssets: [],
+        era,
+        nonce: nonce.data,
+        isLinkedAccount,
+        storedReferralCode,
+        tx: boundedTx,
+        isNewReferralLink,
+        shouldUsePermit,
+        permitNonce: permitNonce.data,
+        pendingPermit,
+        txWeight,
+      },
+    }
+  }
+
   const paymentFeeBaseHDX = paymentInfo
     ? BigNumber(fee ?? paymentInfo.partialFee.toHex()).shiftedBy(
         -native.decimals,
@@ -235,24 +267,13 @@ export const useTransactionValues = ({
     }
   }
 
-  let isEnoughPaymentBalance: boolean
-  if (srcChain === "bifrost") {
-    // @TODO remove when fixed in xcm app
-    isEnoughPaymentBalance = true
-  } else if (xcallMeta && srcChain !== HYDRATION_CHAIN_KEY) {
-    const feeBalanceDiff =
-      parseFloat(xcallMeta.srcChainFeeBalance) -
-      parseFloat(xcallMeta.srcChainFee)
-    isEnoughPaymentBalance = feeBalanceDiff > 0
-  } else {
-    isEnoughPaymentBalance = feeAssetBalance?.transferable
-      ? BigNumber(feeAssetBalance.transferable)
-          .shiftedBy(-feePaymentMeta.decimals)
-          .minus(displayFeePaymentValue ?? 0)
-          .minus(displayFeeExtra ?? 0)
-          .gt(0)
-      : false
-  }
+  const isEnoughPaymentBalance = feeAssetBalance?.transferable
+    ? BigNumber(feeAssetBalance.transferable)
+        .shiftedBy(-feePaymentMeta.decimals)
+        .minus(displayFeePaymentValue ?? 0)
+        .minus(displayFeeExtra ?? 0)
+        .gt(0)
+    : false
 
   let displayEvmFeePaymentValue
   if (isEvm && evmPaymentFee?.data) {
@@ -328,43 +349,6 @@ export const useHealthFactorChangeFromTxMetadata = (
   })
 }
 
-export const useHealthFactorChangeFromTx = (
-  tx: SubmittableExtrinsic<"promise">,
-) => {
-  const { getAsset } = useAssets()
-  const assetFromTx = getAssetFromTx(tx)
-  const assetIn = assetFromTx?.assetInId
-    ? getAsset(assetFromTx.assetInId)
-    : null
-
-  const assetInId = assetIn ? assetIn.id : ""
-  const amountIn =
-    assetIn && assetFromTx?.amountIn
-      ? BN(assetFromTx.amountIn).shiftedBy(-assetIn.decimals).toString()
-      : ""
-
-  const assetOut = assetFromTx?.assetOutId
-    ? getAsset(assetFromTx.assetOutId)
-    : null
-
-  const assetOutId = assetOut ? assetOut.id : ""
-
-  const amountOut =
-    assetOut && assetFromTx?.amountOut
-      ? BN(assetFromTx.amountOut).shiftedBy(-assetOut.decimals).toString()
-      : ""
-
-  return useHealthFactorChange({
-    assetId: assetInId,
-    amount: amountIn,
-    action: ProtocolAction.withdraw,
-    swapAsset:
-      assetOutId && amountOut
-        ? { assetId: assetOutId, amount: amountOut }
-        : undefined,
-  })
-}
-
 export const createPolkadotJSTxUrl = (
   rpcUrl: string,
   tx: SubmittableExtrinsic<"promise">,
@@ -387,69 +371,6 @@ export const usePolkadotJSTxUrl = (tx: SubmittableExtrinsic<"promise">) => {
   return useMemo(() => {
     return createPolkadotJSTxUrl(rpcUrl, tx)
   }, [rpcUrl, tx])
-}
-
-const normalizeHumanizedString = (str: string) => str.replace(/,/g, "")
-
-export function getAssetFromTx(tx: SubmittableExtrinsic<"promise">) {
-  if (!tx) return null
-
-  let assetInId = null
-  let amountIn = null
-  let assetOutId = null
-  let amountOut = null
-  try {
-    const json: any = tx.method.toHuman()
-    const isSwapCall =
-      (json.method === "sell" || json.method === "buy") &&
-      (json.section === "router" || json.section === "omnipool")
-
-    const isTransferCall =
-      json.method === "transfer" && json.section === "currencies"
-
-    const isDcaCall = json.method === "schedule" && json.section === "dca"
-
-    if (isSwapCall) {
-      const amountInArg =
-        json.args?.amount ||
-        json.args?.amount_in ||
-        json.args?.max_amount_in ||
-        "0"
-
-      const amountOutArg =
-        json.args?.amount_out || json.args?.min_amount_out || "0"
-
-      assetInId = normalizeHumanizedString(json.args.asset_in)
-      amountIn = normalizeHumanizedString(amountInArg)
-      assetOutId = normalizeHumanizedString(json.args.asset_out)
-      amountOut = normalizeHumanizedString(amountOutArg)
-    }
-
-    if (isTransferCall) {
-      assetInId = normalizeHumanizedString(json.args.currency_id)
-      amountIn = normalizeHumanizedString(json.args.amount)
-    }
-    if (isDcaCall) {
-      assetInId = normalizeHumanizedString(
-        json.args.schedule.order.Sell.assetIn,
-      )
-      amountIn = normalizeHumanizedString(json.args.schedule.totalAmount)
-    }
-  } catch {
-    return {
-      assetInId,
-      amountIn,
-      assetOutId,
-      amountOut,
-    }
-  }
-
-  return {
-    assetInId,
-    amountIn,
-    assetOutId,
-    amountOut,
-  }
 }
 
 export const useExtraEvmFeePaymentByWeight = (weight: string) => {

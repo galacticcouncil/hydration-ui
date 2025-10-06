@@ -15,19 +15,18 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
-import { z } from "zod"
+import { z, ZodTypeAny } from "zod"
 import { maxBalance, positive, required } from "utils/validators"
 import { scale, scaleHuman } from "utils/balance"
 import { TFarmAprData, useOraclePrice } from "api/farms"
-import { BN_0, BN_NAN } from "utils/constants"
+import { BN_0, BN_100, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
 import { useEstimatedFees } from "api/transaction"
-import { usePoolData } from "sections/pools/pool/Pool"
 import { TAsset } from "providers/assets"
 import { useAccountBalances } from "api/deposits"
-import { isStablepoolType } from "sections/pools/PoolsPage.utils"
+import { useAssets } from "providers/assets"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -42,12 +41,11 @@ export const getAddToOmnipoolFee = (
         ]),
         "0",
         "1",
-        //@ts-ignore
-        undefined,
+        "1",
       )
     : api.tx.omnipool.addLiquidity("0", "1")
 
-  return [tx]
+  return tx
 }
 
 export const getSharesToGet = (
@@ -76,9 +74,10 @@ export const getSharesToGet = (
 
 export const useAddLiquidity = (assetId: string, assetValue?: string) => {
   const omnipoolAssets = useOmnipoolDataObserver()
-  const { pool } = usePoolData()
-  const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
+  const { getAssetWithFallback } = useAssets()
 
+  const meta = getAssetWithFallback(assetId)
+  const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
   const { data: omnipoolFee } = useOmnipoolFee()
 
   const { data: accountAssets } = useAccountBalances()
@@ -88,7 +87,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
-        scale(assetValue, pool.meta.decimals).toString(),
+        scale(assetValue, meta.decimals).toString(),
       )
 
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
@@ -98,29 +97,27 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     }
 
     return { poolShare: BN_0, sharesToGet: BN_0, totalShares: BN_0 }
-  }, [assetValue, ommipoolAsset, pool.meta.decimals])
+  }, [assetValue, ommipoolAsset, meta.decimals])
 
   return {
     totalShares,
     poolShare,
     sharesToGet,
     omnipoolFee,
-    assetMeta: pool.meta,
+    assetMeta: meta,
     assetBalance,
     ommipoolAsset,
-    isGETH: isStablepoolType(pool) && pool.isGETH,
+    isGETH: meta.id === GETH_ERC20_ASSET_ID,
   }
 }
 
 export const useAddToOmnipoolZod = (
-  assetId: string,
+  asset: TAsset,
   farms: TFarmAprData[],
-  isStablepool?: boolean,
+  stablepoolRules?: ZodTypeAny,
 ) => {
   const { t } = useTranslation()
-  const { pool } = usePoolData()
-
-  const { decimals, symbol } = pool.meta
+  const { id: assetId, symbol, decimals } = asset
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 
@@ -177,7 +174,7 @@ export const useAddToOmnipoolZod = (
   const rules = required
     .pipe(positive)
     .pipe(
-      isStablepool
+      !!stablepoolRules
         ? z.string()
         : maxBalance(assetBalance?.transferable ?? "0", decimals),
     )
@@ -209,7 +206,7 @@ export const useAddToOmnipoolZod = (
       },
       {
         message: t("liquidity.add.modal.warningLimit.cap"),
-        path: ["cap"],
+        path: [0],
       },
     )
     .refine(
@@ -223,42 +220,52 @@ export const useAddToOmnipoolZod = (
           amount: circuitBreakerLimit,
           symbol,
         }),
-        path: ["circuitBreaker"],
+        path: [1],
       },
     )
 
-  if (!isFarms) return z.object({ amount: rules })
+  if (!isFarms)
+    return z.object({
+      amount: rules,
+      ...(stablepoolRules
+        ? { reserves: stablepoolRules, stablepoolShares: z.string() }
+        : {}),
+    })
 
   if (!oraclePrice) return undefined
 
-  return z.object({
-    amount: rules.refine(
-      (value) => {
-        if (!value || !BigNumber(value).isPositive()) return true
+  return z
+    .object({
+      amount: rules,
+      farms: z.boolean(),
+      ...(stablepoolRules
+        ? { reserves: stablepoolRules, stablepoolShares: z.string() }
+        : {}),
+    })
+    .superRefine((data, ctx) => {
+      const { amount } = data
 
-        const scaledValue = scale(value, decimals)
-        // position.amount * n/d (from oracle) > globalFarm.minDeposit
-        const valueInIncentivizedAsset = scaledValue
-          .times(oraclePrice?.price?.n ?? 1)
-          .div(oraclePrice?.price?.d ?? 1)
+      const scaledAmount = scale(amount, decimals)
 
-        return valueInIncentivizedAsset.gte(minDeposit.value)
-      },
-      (value) => {
+      const valueInIncentivizedAsset = scaledAmount
+        .times(oraclePrice?.price?.n ?? 1)
+        .div(oraclePrice?.price?.d ?? 1)
+
+      if (valueInIncentivizedAsset.lt(minDeposit.value)) {
         const maxValue = minDeposit.value
           .times(oraclePrice?.price?.d ?? 1)
           .div(oraclePrice?.price?.n ?? 1)
 
-        return {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
           message: t("farms.modal.join.minDeposit", {
             value: scaleHuman(maxValue, decimals).times(1.02),
             symbol: symbol,
           }),
-          path: ["farm"],
-        }
-      },
-    ),
-  })
+          path: ["farms"],
+        })
+      }
+    })
 }
 
 export const useXYKZodSchema = (
@@ -276,9 +283,9 @@ export const useXYKZodSchema = (
   const assetAId = assetAMeta.id
   const assetBId = assetBMeta.id
 
-  const estimatedFees = useEstimatedFees([
+  const estimatedFees = useEstimatedFees(
     api.tx.xyk.addLiquidity(assetAId, assetBId, "1", "1"),
-  ])
+  )
 
   const feeWithBuffer = estimatedFees.accountCurrencyFee
     .times(1.03) // 3%
@@ -352,7 +359,6 @@ export const useXYKZodSchema = (
               value: scaleHuman(requiredMinShares, meta.decimals),
               symbol: meta.symbol,
             }),
-            path: ["farm"],
           }
         },
       ),
@@ -441,4 +447,10 @@ export const useXYKPoolJoinFarmMinShares = (
         .shiftedBy(assetAReserve.decimals)
     )
   }, [minDeposit, oracle, assetAReserve?.decimals])
+}
+
+export const calculateLimitShares = (sharesToGet: string, limit: string) => {
+  return BigNumber(sharesToGet)
+    .times(BN_100.minus(limit).div(BN_100))
+    .toFixed(0)
 }

@@ -30,10 +30,11 @@ type ToastParams = {
   persist?: boolean
   bridge?: MetaTags
   isHydraSource?: boolean
+  isHydraEvm?: boolean
   txHash?: string
   hideTime?: number
   hidden?: boolean
-  xcm?: "evm" | "substrate" | "solana"
+  xcm?: "evm" | "substrate" | "solana" | "sui"
 }
 
 export type ToastData = ToastParams & {
@@ -266,6 +267,7 @@ export const createToastMessages = (
     memo[type] = (
       <Trans
         t={t}
+        key={type}
         tOptions={tOptions}
         {...rest}
         i18nKey={`${i18nKeyPrefix}.${msType}` as TransProps["i18nKey"]}

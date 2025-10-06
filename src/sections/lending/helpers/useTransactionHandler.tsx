@@ -20,6 +20,7 @@ import {
 import { queryKeysFactory } from "sections/lending/ui-config/queries"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 import { ToastMessage } from "state/store"
+import { useShallow } from "hooks/useShallow"
 
 export const MOCK_SIGNED_HASH = "Signed correctly"
 
@@ -67,7 +68,7 @@ export const useTransactionHandler = ({
     setTxError,
     close,
   } = useModalContext()
-  const { signTxData, sendTx, getTxError } = useWeb3Context()
+  const { signTxData, sendTx } = useWeb3Context()
   const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
     useBackgroundDataProvider()
   const [signatures, setSignatures] = useState<SignatureLike[]>([])
@@ -77,19 +78,19 @@ export const useTransactionHandler = ({
     signPoolERC20Approval,
     walletApprovalMethodPreference,
     generateCreditDelegationSignatureRequest,
-    generatePermitPayloadForMigrationSupplyAsset,
     addTransaction,
     currentMarketData,
     jsonRpcProvider,
-  ] = useRootStore((state) => [
-    state.signERC20Approval,
-    state.walletApprovalMethodPreference,
-    state.generateCreditDelegationSignatureRequest,
-    state.generatePermitPayloadForMigrationSupplyAsset,
-    state.addTransaction,
-    state.currentMarketData,
-    state.jsonRpcProvider,
-  ])
+  ] = useRootStore(
+    useShallow((state) => [
+      state.signERC20Approval,
+      state.walletApprovalMethodPreference,
+      state.generateCreditDelegationSignatureRequest,
+      state.addTransaction,
+      state.currentMarketData,
+      state.jsonRpcProvider,
+    ]),
+  )
 
   const [approvalTxes, setApprovalTxes] = useState<
     EthereumTransactionTypeExtended[] | undefined
@@ -145,24 +146,11 @@ export const useTransactionHandler = ({
         refetchGhoData && refetchGhoData()
         refetchIncentiveData && refetchIncentiveData()
       } catch (e) {
-        // TODO: what to do with this error?
-        try {
-          // TODO: what to do with this error?
-          const error = await getTxError(txnResult.hash)
-          mounted.current &&
-            errorCallback &&
-            errorCallback(new Error(error), txnResult.hash)
-          return
-        } catch (e) {
-          mounted.current && errorCallback && errorCallback(e, txnResult.hash)
-          return
-        } finally {
-          addTransaction(txnResult.hash, {
-            txState: "failed",
-            action: protocolAction || ProtocolAction.default,
-            ...eventTxInfo,
-          })
-        }
+        addTransaction(txnResult.hash, {
+          txState: "failed",
+          action: protocolAction || ProtocolAction.default,
+          ...eventTxInfo,
+        })
       } finally {
         close()
       }
@@ -187,13 +175,6 @@ export const useTransactionHandler = ({
                 signPoolERC20Approval({
                   reserve: approval.underlyingAsset,
                   amount: approval.amount,
-                  deadline,
-                }),
-              )
-            } else if (approval.permitType === "SUPPLY_MIGRATOR_V3") {
-              unsignedPromisePayloads.push(
-                generatePermitPayloadForMigrationSupplyAsset({
-                  ...approval,
                   deadline,
                 }),
               )

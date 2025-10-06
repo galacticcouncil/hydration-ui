@@ -431,3 +431,61 @@ export const useUnlockTokens = ({
     )
   })
 }
+
+export const useAccountAssets = (address?: string) => {
+  const { account } = useAccount()
+  const followedAddress = address ?? account?.address
+
+  const { data: accountAssets, isLoading: isBalancesLoading } =
+    useAccountBalances(followedAddress)
+
+  const { balances } = accountAssets ?? {}
+
+  const { tokensWithBalance, validTokensIdsWithBalance } = useMemo(() => {
+    if (balances?.length) {
+      const tokensWithBalance: AccountBalance[] = []
+      const validTokensIdsWithBalance: string[] = []
+
+      for (const accountBalance of balances) {
+        const { asset } = accountBalance
+
+        if (asset && asset.symbol && asset.isTradable && !asset.isBond) {
+          tokensWithBalance.push(accountBalance)
+          validTokensIdsWithBalance.push(asset.id)
+        }
+      }
+
+      return { tokensWithBalance, validTokensIdsWithBalance }
+    }
+
+    return { tokensWithBalance: [], validTokensIdsWithBalance: [] }
+  }, [balances])
+
+  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(
+    validTokensIdsWithBalance,
+  )
+
+  const data = useMemo(() => {
+    if (isBalancesLoading || isPriceLoading) return []
+
+    return tokensWithBalance.map((accountBalance) => {
+      const { balance, asset } = accountBalance
+
+      const { decimals, id } = asset
+      const spotPrice = getAssetPrice(id).price
+
+      const total = BigNumber(balance.total).shiftedBy(-decimals)
+      const totalDisplay =
+        spotPrice && BigNumber(spotPrice).isFinite()
+          ? total.times(spotPrice).toString()
+          : undefined
+
+      return {
+        id,
+        totalDisplay,
+      }
+    })
+  }, [getAssetPrice, isBalancesLoading, isPriceLoading, tokensWithBalance])
+
+  return { data, isLoading: isBalancesLoading || isPriceLoading }
+}

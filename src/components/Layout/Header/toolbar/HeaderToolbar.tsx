@@ -7,6 +7,9 @@ import { Web3ConnectModalButton } from "sections/web3-connect/modal/Web3ConnectM
 import { useMatchRoute } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { DepositButton } from "sections/deposit/DepositButton"
+import { getDeploymentType } from "utils/helpers"
+
+const isHollarnet = getDeploymentType() === "hollarnet"
 
 export const HeaderToolbar = () => {
   const isSmallMedia = useMedia(theme.viewport.lt.sm)
@@ -20,7 +23,7 @@ export const HeaderToolbar = () => {
         {!isSmallMedia && <Documentation />}
         <Bell />
         {!isSmallMedia && !isSubmitTransactionPath && <Settings />}
-        {!isSmallMedia && <DepositButton />}
+        {!isSmallMedia && !isHollarnet && <DepositButton />}
       </div>
       <Web3ConnectModalButton size="small" css={{ maxHeight: 40 }} />
     </div>

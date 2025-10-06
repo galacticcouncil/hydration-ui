@@ -19,7 +19,6 @@ import {
   isTxType,
   toSubmittableExtrinsic,
   useEditFeePaymentAsset,
-  useHealthFactorChangeFromTx,
   useHealthFactorChangeFromTxMetadata,
   usePolkadotJSTxUrl,
   useTransactionValues,
@@ -125,18 +124,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     txWeight,
   } = transactionValues.data
 
-  const healthFactorFromMeta = useHealthFactorChangeFromTxMetadata(props.txMeta)
-  const healthFactorFromTx = useHealthFactorChangeFromTx(tx)
-
-  const healthFactorChange = healthFactorFromMeta || healthFactorFromTx
-
-  const isHealthFactorChanged =
-    !!healthFactorChange &&
-    healthFactorChange.currentHealthFactor !==
-      healthFactorChange.futureHealthFactor
-
-  const displayRiskCheckbox =
-    isHealthFactorChanged && !!healthFactorChange?.isHealthFactorBelowThreshold
+  const hfChange = useHealthFactorChangeFromTxMetadata(props.txMeta)
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -306,13 +294,18 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
 
   const isCustomNonceEnabled = isEvm ? shouldUsePermit : true
 
+  const isHfRiskAcceptRequired = !!(
+    hfChange?.isHealthFactorSignificantChange &&
+    hfChange?.isHealthFactorBelowThreshold
+  )
+
   const isSubmitDisabled =
     isPermitTxPending ||
     !isWalletReady ||
     !account ||
     isLoading ||
     (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
-    (displayRiskCheckbox && !healthFactorRiskAccepted)
+    (isHfRiskAcceptRequired && !healthFactorRiskAccepted)
 
   return (
     <>
@@ -344,17 +337,15 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   isCustomNonceEnabled ? setCustomNonce : undefined
                 }
                 referralCode={isLinking ? storedReferralCode : undefined}
-                currentHealthFactor={healthFactorChange?.currentHealthFactor}
-                futureHealthFactor={healthFactorChange?.futureHealthFactor}
+                currentHealthFactor={hfChange?.currentHealthFactor}
+                futureHealthFactor={hfChange?.futureHealthFactor}
               />
             </div>
-            {isHealthFactorChanged && (
+            {hfChange?.isHealthFactorSignificantChange && (
               <HealthFactorRiskWarning
                 accepted={healthFactorRiskAccepted}
                 onAcceptedChange={setHealthFactorRiskAccepted}
-                isBelowThreshold={
-                  healthFactorChange?.isHealthFactorBelowThreshold
-                }
+                isBelowThreshold={hfChange.isHealthFactorBelowThreshold}
               />
             )}
             <div

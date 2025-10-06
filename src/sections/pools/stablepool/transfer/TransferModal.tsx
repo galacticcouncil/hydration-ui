@@ -3,16 +3,15 @@ import { ModalContents } from "components/Modal/contents/ModalContents"
 import { TransferOptions } from "./TransferOptions"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { AddStablepoolLiquidity } from "./AddStablepoolLiquidity"
+import { AddStablepoolLiquidityWrapper } from "./AddStablepoolLiquidity"
 import { useModalPagination } from "components/Modal/Modal.utils"
-import { TStablepool } from "sections/pools/PoolsPage.utils"
-import { TFarmAprData } from "api/farms"
-import { useRefetchAccountAssets } from "api/deposits"
+import { useStableSwapReserves } from "sections/pools/PoolsPage.utils"
 import { useAssets } from "providers/assets"
-import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal"
 import { useSelectedDefaultAssetId } from "sections/pools/stablepool/transfer/TransferModal.utils"
 import { TransferAssetSelector } from "sections/pools/stablepool/transfer/TransferAssetSelector"
+import { SplitSwitcher } from "sections/pools/stablepool/components/SplitSwitcher"
+import { TFarmAprData } from "api/farms"
 
 export enum Page {
   OPTIONS,
@@ -22,53 +21,57 @@ export enum Page {
 }
 
 type Props = {
+  stablepoolAssetId: string
+  poolId: string
   onClose: () => void
   farms: TFarmAprData[]
   disabledOmnipool?: boolean
   initialAmount?: string
   initialAssetId?: string
   skipOptions?: boolean
+  supply?: boolean
 }
 
 export const TransferModal = ({
+  stablepoolAssetId,
+  poolId,
   onClose,
   disabledOmnipool,
   farms,
   initialAmount,
   initialAssetId,
   skipOptions,
+  supply,
 }: Props) => {
+  const { t } = useTranslation()
   const { getAssetWithFallback } = useAssets()
-  const { pool } = usePoolData()
-  const refetch = useRefetchAccountAssets()
-
-  const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
-
-  const stablepool = pool as TStablepool
 
   const {
-    id: poolId,
-    canAddLiquidity,
-    isGETH,
-    symbol,
-    relatedAToken,
-  } = stablepool
+    data: { balances: reserves, smallestPercentage },
+  } = useStableSwapReserves(poolId)
 
-  const defaultAssetId = useSelectedDefaultAssetId(stablepool)
+  const stablepoolAsset = getAssetWithFallback(stablepoolAssetId)
 
-  const { t } = useTranslation()
+  const [isJoinFarms, setIsJoinFarms] = useState(farms.length > 0)
+  const [split, setSplit] = useState(false)
+
+  const defaultAssetId = useSelectedDefaultAssetId({
+    stablepoolAsset,
+    smallestPercentage,
+  })
 
   const [assetId, setAssetId] = useState<string | undefined>(
     initialAssetId ?? defaultAssetId,
   )
 
-  const isOnlyStablepool = disabledOmnipool || !canAddLiquidity
+  const isOnlyStablepool = disabledOmnipool
 
   const { page, direction, paginateTo } = useModalPagination(
     isOnlyStablepool || skipOptions ? Page.ADD_LIQUIDITY : Page.OPTIONS,
   )
 
-  const [stablepoolSelected, setStablepoolSelected] = useState(isOnlyStablepool)
+  const [stablepoolSelected, setStablepoolSelected] =
+    useState(!!isOnlyStablepool)
 
   const goBack = () => {
     if (page === Page.LIMIT_LIQUIDITY) {
@@ -88,14 +91,17 @@ export const TransferModal = ({
 
   const title = stablepoolSelected
     ? t(
-        `liquidity.stablepool.transfer.stablepool${!!relatedAToken ? ".custom" : ""}`,
-        { symbol },
+        !!supply
+          ? "lending.supply.liquidity.modal.title"
+          : "liquidity.stablepool.transfer.stablepool",
+        {
+          symbol: stablepoolAsset.symbol,
+        },
       )
-    : isGETH
-      ? t("liquidity.add.modal.title.geth")
-      : t(
-          `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
-        )
+    : t(
+        `liquidity.stablepool.transfer.addLiquidity${isJoinFarms ? ".joinFarms" : ""}`,
+        { symbol: stablepoolAsset.symbol },
+      )
 
   return (
     <Modal open onClose={onClose} disableCloseOutside>
@@ -111,7 +117,7 @@ export const TransferModal = ({
             content: (
               <TransferOptions
                 farms={farms}
-                disableOmnipool={!canAddLiquidity}
+                disableOmnipool={isOnlyStablepool}
                 onConfirm={(option) => {
                   setStablepoolSelected(option === "STABLEPOOL")
                   paginateTo(Page.ADD_LIQUIDITY)
@@ -123,19 +129,30 @@ export const TransferModal = ({
             title,
             headerVariant: "gradient",
             content: (
-              <AddStablepoolLiquidity
-                isStablepoolOnly={stablepoolSelected}
-                onClose={onClose}
-                onSubmitted={onClose}
-                onSuccess={refetch}
-                onAssetOpen={() => paginateTo(Page.ASSETS)}
-                asset={getAssetWithFallback(assetId ?? poolId)}
-                isJoinFarms={isJoinFarms && !stablepoolSelected}
-                setIsJoinFarms={setIsJoinFarms}
-                initialAmount={initialAmount}
-                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
-                relatedAToken={relatedAToken}
-              />
+              <>
+                <SplitSwitcher
+                  value={split}
+                  title={t("liquidity.add.modal.split")}
+                  onChange={setSplit}
+                />
+                <AddStablepoolLiquidityWrapper
+                  key={`${split}`}
+                  split={split}
+                  reserves={reserves}
+                  poolId={poolId}
+                  farms={farms}
+                  initialAmount={initialAmount}
+                  stablepoolAsset={stablepoolAsset}
+                  isStablepoolOnly={stablepoolSelected}
+                  isJoinFarms={isJoinFarms && !stablepoolSelected}
+                  onClose={onClose}
+                  asset={getAssetWithFallback(assetId ?? poolId)}
+                  setIsJoinFarms={setIsJoinFarms}
+                  setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                  onAssetOpen={() => paginateTo(Page.ASSETS)}
+                  supply={supply}
+                />
+              </>
             ),
           },
           {
@@ -144,7 +161,8 @@ export const TransferModal = ({
             noPadding: true,
             content: (
               <TransferAssetSelector
-                pool={stablepool}
+                stablepoolAsset={stablepoolAsset}
+                ignoreStablepoolAsset={supply}
                 firstAssetId={defaultAssetId}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
@@ -158,7 +176,10 @@ export const TransferModal = ({
             noPadding: true,
             headerVariant: "GeistMono",
             content: (
-              <LimitModal onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)} />
+              <LimitModal
+                onConfirm={() => paginateTo(Page.ADD_LIQUIDITY)}
+                type={split || !stablepoolAsset.isErc20 ? "liquidity" : "swap"}
+              />
             ),
           },
         ]}

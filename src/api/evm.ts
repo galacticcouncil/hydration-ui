@@ -9,6 +9,10 @@ import { TransactionOptions, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useTranslation } from "react-i18next"
+import { PopulatedTransaction } from "@ethersproject/contracts"
+import { TransactionRequest } from "@ethersproject/providers"
+import { SubmittableExtrinsic } from "@polkadot/api/types"
+import { useCallback } from "react"
 
 const getIsEvmAccountBound = (api: ApiPromise, address: string) => {
   return async () => {
@@ -111,4 +115,26 @@ export const useEvmAccountBind = (options: TransactionOptions = {}) => {
       },
     )
   })
+}
+
+export const useTransformEvmTxToExtrinsic = () => {
+  const { api } = useRpcProvider()
+
+  return useCallback(
+    (
+      tx: PopulatedTransaction | TransactionRequest,
+    ): SubmittableExtrinsic<"promise"> =>
+      api.tx.evm.call(
+        tx.from ?? "",
+        tx.to ?? "",
+        tx.data?.toString() ?? "",
+        "0",
+        tx.gasLimit?.toString() ?? "0",
+        tx.maxFeePerGas?.toString() ?? "0",
+        tx.maxPriorityFeePerGas?.toString() ?? "0",
+        null,
+        [],
+      ),
+    [api],
+  )
 }

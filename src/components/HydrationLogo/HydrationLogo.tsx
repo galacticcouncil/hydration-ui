@@ -11,29 +11,12 @@ import { useSettingsStore } from "state/store"
 import { theme } from "theme"
 import ApeIcon from "assets/icons/ApeIcon.svg?react"
 import { useTranslation } from "react-i18next"
-
-const getBadgeLabel = () => {
-  const hostname = window.location.hostname
-
-  if (hostname === "localhost") {
-    return "localhost"
-  } else if (hostname.includes("testnet-app")) {
-    return "testnet"
-  } else if (hostname.includes("paseo-app")) {
-    return "paseo"
-  } else if (hostname.includes("edge-app")) {
-    return "edge"
-  } else if (hostname.includes("deploy-preview")) {
-    return hostname.match(/--([^-\s]+)-/)?.[1]
-  } else {
-    return undefined
-  }
-}
+import { getDeploymentType } from "utils/helpers"
 
 const HydrationLogoMobile: React.FC<{ degenMode: boolean }> = ({
   degenMode,
 }) => {
-  const badgeLabel = getBadgeLabel()
+  const badgeLabel = getDeploymentType()
 
   return (
     <>
@@ -72,7 +55,7 @@ const HyderationLogoDesktop: React.FC<{ degenMode: boolean }> = ({
 }) => {
   const { t } = useTranslation()
 
-  const badgeLabel = getBadgeLabel()
+  const badgeLabel = getDeploymentType()
 
   return (
     <>

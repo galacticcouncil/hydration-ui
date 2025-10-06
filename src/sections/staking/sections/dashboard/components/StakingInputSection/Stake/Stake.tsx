@@ -27,6 +27,7 @@ import { useDebounce } from "react-use"
 import { Text } from "components/Typography/Text/Text"
 import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
 import { ISubmittableResult } from "@polkadot/types/types"
+import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 
 export const Stake = ({
   loading,
@@ -42,7 +43,7 @@ export const Stake = ({
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const { native } = useAssets()
-  const { api } = useRpcProvider()
+  const { api, isLoaded } = useRpcProvider()
   const { createTransaction } = useStore()
   const { account } = useAccount()
   const refetchAccountAssets = useRefetchAccountAssets()
@@ -106,13 +107,11 @@ export const Stake = ({
   const estimatedTxFee = getTx("1")
 
   const estimatedFees = useEstimatedFees(
-    !loading
-      ? [
-          Array.isArray(estimatedTxFee)
-            ? api.tx.utility.batchAll(estimatedTxFee)
-            : estimatedTxFee,
-        ]
-      : [],
+    !loading && isLoaded
+      ? Array.isArray(estimatedTxFee)
+        ? api.tx.utility.batchAll(estimatedTxFee)
+        : estimatedTxFee
+      : ({} as SubmittableExtrinsic),
   )
 
   const balanceMax =

@@ -25,6 +25,7 @@ export const useMarketAssetsTableColumns = () => {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { currentMarket } = useProtocolDataContext()
+  const displayGho = useRootStore((state) => state.displayGho)
 
   return useMemo(
     () => [
@@ -51,6 +52,9 @@ export const useMarketAssetsTableColumns = () => {
           const { totalLiquidityUSD, totalLiquidity } = row.original
           const value = Number(totalLiquidity)
           const valueUsd = Number(totalLiquidityUSD)
+          if (displayGho({ symbol: row.original.symbol, currentMarket })) {
+            return <NoData />
+          }
           return (
             <span>
               {t("value.compact", { value })}
@@ -75,6 +79,10 @@ export const useMarketAssetsTableColumns = () => {
         },
         cell: ({ row }) => {
           const { supplyAPY, aIncentivesData, symbol } = row.original
+
+          if (displayGho({ symbol: row.original.symbol, currentMarket })) {
+            return <NoData />
+          }
 
           return (
             <OverrideApy
@@ -192,27 +200,24 @@ export const useMarketAssetsTableColumns = () => {
         },
       }),
     ],
-    [currentMarket, navigate, t],
+    [currentMarket, displayGho, navigate, t],
   )
 }
 
 export const useMarketAssetsTableData = ({
   search,
 }: { search?: string } = {}) => {
-  const displayGho = useRootStore((state) => state.displayGho)
   const { reserves, loading } = useAppDataContext()
-  const { currentMarket } = useProtocolDataContext()
 
   const data = useMemo(() => {
     const data = reserves.filter((r) => {
-      const isGho = displayGho({ symbol: r.symbol, currentMarket })
-      return !isGho && r.isActive && !r.isFrozen && !r.isPaused
+      return r.isActive && !r.isFrozen && !r.isPaused
     })
 
     return search
       ? arraySearch(data, search, ["name", "symbol", "underlyingAsset"])
       : data
-  }, [currentMarket, displayGho, reserves, search])
+  }, [reserves, search])
 
   return {
     data,

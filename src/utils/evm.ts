@@ -13,6 +13,8 @@ import { createSubscanLink } from "utils/formatting"
 import { isMetaMask, isMetaMaskLike } from "utils/metamask"
 import { MetaTags } from "state/toasts"
 
+const { Ss58Addr } = addr
+
 const nativeEvmChain = chainsMap.get("hydration") as EvmParachain
 
 export const NATIVE_EVM_ASSET_SYMBOL = nativeEvmChain.client.chainCurrency
@@ -83,7 +85,7 @@ export class H160 {
       return H160.fromAccount(address)
     }
 
-    if (addr.isSs58(address)) {
+    if (Ss58Addr.isValid(address)) {
       return H160.fromSS58(address)
     }
 
@@ -95,7 +97,6 @@ export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
   chainKey = "hydration",
-  isTestnet = false,
   tags: MetaTags | undefined,
 ) {
   const chain = chainsMap.get(chainKey)
@@ -112,14 +113,9 @@ export function getEvmTxLink(
     return `https://etherscan.io/tx/${txHash}`
   }
 
-  if (chain.isEvmParachain()) {
-    let explorerUrl = ""
-    if (isTestnet && chainKey === "hydration") {
-      explorerUrl = "https://explorer.nice.hydration.cloud"
-    } else {
-      const { blockExplorers } = (chain as EvmParachain)?.client?.chain ?? {}
-      explorerUrl = blockExplorers?.default.url ?? ""
-    }
+  if (isAnyEvmChain(chain)) {
+    const { blockExplorers } = chain.client.chain
+    const explorerUrl = blockExplorers?.default.url ?? ""
     return explorerUrl ? `${explorerUrl}/tx/${txHash}` : ""
   } else {
     return createSubscanLink("extrinsic", txHash, chainKey)

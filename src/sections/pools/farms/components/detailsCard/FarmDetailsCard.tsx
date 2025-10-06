@@ -8,7 +8,6 @@ import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import Distribution from "assets/icons/Distribution.svg?react"
 import CalendarIcon from "assets/icons/CalendarIcon.svg?react"
 import WarningIcon from "assets/icons/WarningIconRed.svg?react"
-import Hydrated from "assets/icons/Hydrated.svg?react"
 import { Icon } from "components/Icon/Icon"
 import { TFarmAprData, useFarmCurrentPeriod } from "api/farms"
 import { BN_0 } from "utils/constants"
@@ -19,12 +18,9 @@ import {
   isXYKDeposit,
   TDepositData,
 } from "sections/pools/farms/position/FarmingPosition.utils"
-import { InfoTooltip } from "components/InfoTooltip/InfoTooltip"
-import { SInfoIcon } from "components/InfoTooltip/InfoTooltip.styled"
 import { useAssets } from "providers/assets"
 import { TDeposit } from "api/deposits"
 import { LinearProgress } from "components/Progress"
-import { theme } from "theme"
 import BN from "bignumber.js"
 import { Badge } from "components/Badge/Badge"
 
@@ -75,9 +71,6 @@ export const FarmDetailsCard = ({
     return BN_0
   }, [depositNft, farm, getCurrentPeriod])
 
-  const fullness = BN(farm.fullness)
-  const isFull = fullness.gte(100)
-
   return (
     <SContainer isClickable={isClickable} onClick={() => onSelect?.()}>
       <div
@@ -108,7 +101,7 @@ export const FarmDetailsCard = ({
           <div sx={{ flex: "row", align: "center", gap: 6 }}>
             <Icon size={24} icon={<AssetLogo id={asset.id} />} />
             <Text fs={16} font="GeistMedium">
-              {asset.symbol}
+              {t("farms.details.card.symbol.label", { symbol: asset.symbol })}
             </Text>
           </div>
           <Text
@@ -148,33 +141,6 @@ export const FarmDetailsCard = ({
               color="brightBlue500"
               withoutLabel
               percent={Number(farm.diffRewards)}
-            />
-          )}
-        </SRow>
-        <SRow compact={compact}>
-          <Icon sx={{ color: "brightBlue200" }} icon={<Hydrated />} />
-          <div sx={{ flex: "row", gap: 2, align: "center" }}>
-            <Text fs={14} color="basic100">
-              {t("farms.details.card.capacity", {
-                capacity: fullness,
-              })}
-            </Text>
-            {isFull && (
-              <InfoTooltip text={t("farms.details.card.capacity.desc")}>
-                <SInfoIcon />
-              </InfoTooltip>
-            )}
-          </div>
-          {!compact && (
-            <LinearProgress
-              size="small"
-              withoutLabel
-              percent={fullness.toNumber()}
-              colorCustom={
-                true
-                  ? theme.gradients.pinkDarkPink
-                  : theme.gradients.lightGreenOrange
-              }
             />
           )}
         </SRow>

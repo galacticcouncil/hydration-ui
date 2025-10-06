@@ -18,9 +18,8 @@ import { noop } from "utils/helpers"
 import { GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useSubmitNewDepositForm } from "sections/wallet/strategy/NewDepositForm/NewDepositForm.submit"
 import { Alert } from "components/Alert/Alert"
-import { usePools, useStableSwapReserves } from "sections/pools/PoolsPage.utils"
-import { PoolContext } from "sections/pools/pool/Pool"
 import { TransferModal } from "sections/pools/stablepool/transfer/TransferModal"
+import { useOmnipoolFarm } from "api/farms"
 
 type Props = {
   readonly assetId: string
@@ -47,7 +46,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
   const allowedAssets = useNewDepositAssets(
     getErc20(assetId)?.underlyingAssetId ?? "",
     {
-      blacklist: [assetId],
+      blacklist: assetId === GETH_ERC20_ASSET_ID ? [] : [assetId],
       lowPriorityAssetIds: [native.id],
     },
   )
@@ -64,8 +63,10 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           onSubmit={!isGETH ? form.handleSubmit(submit) : undefined}
           sx={{ flex: "column", gap: 10 }}
         >
-          <Text fw={[126, 600]} fs={[14, 17.5]} lh="1.2" color="white">
-            {t("wallet.strategy.deposit.yourDeposit")}
+          <Text fw={500} fs={[14, 18]} lh="1.2" color="white" font="GeistMono">
+            {t("wallet.strategy.deposit.joinStrategy", {
+              symbol: asset.symbol,
+            })}
           </Text>
           <NewDepositAssetField
             selectedAssetBalance={selectedAssetBalance}
@@ -75,9 +76,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
           />
           {account && !isGETH ? (
             <Button type="submit" variant="primary" disabled={supplyCapReached}>
-              {t("wallet.strategy.deposit.cta", {
-                symbol: asset.symbol,
-              })}
+              {t("joinStrategy")}
             </Button>
           ) : null}
           {!account && <Web3ConnectModalButton />}
@@ -86,6 +85,7 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
         {isGETH && account && (
           <GETHDepositButton
             assetId={assetId}
+            poolId={getErc20(assetId)?.underlyingAssetId ?? assetId}
             symbol={asset.symbol}
             disabled={supplyCapReached}
             initialAssetId={selectedAsset?.id}
@@ -124,12 +124,14 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
 
 export const GETHDepositButton = ({
   assetId,
+  poolId,
   symbol,
   disabled,
   initialAmount,
   initialAssetId,
 }: {
   assetId: string
+  poolId: string
   symbol: string
   disabled: boolean
   initialAssetId?: string
@@ -138,39 +140,28 @@ export const GETHDepositButton = ({
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
-  const { data } = usePools()
-
-  const pool = data?.find((pool) => pool.id === assetId)
-
-  const stablepoolDetails = useStableSwapReserves(pool?.poolId ?? "")
+  const { data: omnipoolFarm } = useOmnipoolFarm(GETH_ERC20_ASSET_ID)
 
   return (
     <>
       <Button
         type="button"
         variant="primary"
-        disabled={disabled || !pool}
+        disabled={disabled}
         onClick={() => setOpen(true)}
       >
-        {t("wallet.strategy.deposit.cta", {
-          symbol,
-        })}
+        {t("joinStrategy")}
       </Button>
-      {pool && open && (
-        <PoolContext.Provider
-          value={{
-            pool: { ...pool, ...stablepoolDetails.data },
-            isXYK: false,
-          }}
-        >
-          <TransferModal
-            onClose={() => setOpen(false)}
-            farms={pool.farms}
-            initialAmount={initialAmount}
-            initialAssetId={initialAssetId}
-            skipOptions
-          />
-        </PoolContext.Provider>
+      {open && (
+        <TransferModal
+          poolId={poolId}
+          stablepoolAssetId={assetId}
+          onClose={() => setOpen(false)}
+          initialAmount={initialAmount}
+          initialAssetId={initialAssetId}
+          farms={omnipoolFarm?.farms ?? []}
+          skipOptions
+        />
       )}
     </>
   )

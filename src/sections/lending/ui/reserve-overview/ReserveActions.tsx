@@ -12,6 +12,7 @@ import { DataValue } from "components/DataValue"
 import { DisplayValue } from "components/DisplayValue/DisplayValue"
 import { Spacer } from "components/Spacer/Spacer"
 import { Text } from "components/Typography/Text/Text"
+import { useShallow } from "hooks/useShallow"
 import { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import {
@@ -84,10 +85,12 @@ export const ReserveActions = ({ reserve }: ReserveActionsProps) => {
   const { walletBalances, loading: loadingWalletBalance } =
     useWalletBalances(currentMarketData)
 
-  const [minRemainingBaseTokenBalance, displayGho] = useRootStore((store) => [
-    store.poolComputed.minRemainingBaseTokenBalance,
-    store.displayGho,
-  ])
+  const [minRemainingBaseTokenBalance, displayGho] = useRootStore(
+    useShallow((store) => [
+      store.poolComputed.minRemainingBaseTokenBalance,
+      store.displayGho,
+    ]),
+  )
   let balance = walletBalances[reserve.underlyingAsset]
 
   let maxAmountToBorrow = "0"

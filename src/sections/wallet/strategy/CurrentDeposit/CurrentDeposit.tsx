@@ -6,10 +6,12 @@ import { useAssets } from "providers/assets"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Reward } from "sections/lending/helpers/types"
-import { SCurrentDeposit } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
+import {
+  SCurrentDeposit,
+  SCurrentDepositContainer,
+} from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
 import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
-import { CurrentDepositClaimReward } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositClaimReward"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
 import {
   useAccount,
@@ -17,7 +19,7 @@ import {
 } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
-import { useAssetReward } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
+import { useUserRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { TDeposit, useAccountBalances, useAccountPositions } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward"
@@ -37,22 +39,27 @@ export type CurrentDepositData = {
 }
 
 type Props = {
-  readonly assetId: string
+  readonly stableswapId: string
+  readonly aTokenId: string
   readonly emptyState: string
 }
 
-export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
+export const CurrentDeposit: FC<Props> = ({
+  aTokenId,
+  stableswapId,
+  emptyState,
+}) => {
   const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
 
   const { getAssetWithFallback } = useAssets()
-  const asset = getAssetWithFallback(assetId)
+  const asset = getAssetWithFallback(aTokenId)
 
   const { data: accountAssets, isLoading: isAccountAssetsLoading } =
     useAccountBalances()
   const { data: accountPositions } = useAccountPositions()
 
-  const accountAsset = accountAssets?.accountAssetsMap.get(assetId)
-  const positions = accountPositions?.accountAssetsMap.get(assetId)
+  const accountAsset = accountAssets?.accountAssetsMap.get(aTokenId)
+  const positions = accountPositions?.accountAssetsMap.get(aTokenId)
 
   const depositBalance = new BigNumber(
     accountAsset?.balance?.total || "0",
@@ -64,12 +71,13 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
 
   const miningPositions = positions?.omnipoolDeposits ?? []
   const isMiningPositions = !!miningPositions.length
-  const reward = useAssetReward(assetId)
+
+  const reward = useUserRewards([stableswapId])
 
   const hasBalance =
     depositBalance.gt(0) || BigNumber(reward.balance).gt(0) || isMiningPositions
 
-  const isGETH = assetId && assetId === GETH_ERC20_ASSET_ID
+  const isGETH = aTokenId && aTokenId === GETH_ERC20_ASSET_ID
 
   if (isAccountAssetsLoading)
     return (
@@ -87,26 +95,27 @@ export const CurrentDeposit: FC<Props> = ({ assetId, emptyState }) => {
     <SCurrentDeposit>
       {isGETH ? (
         <FarmsDepositBalance
-          assetId={assetId}
+          assetId={aTokenId}
           symbol={asset.symbol}
           miningPositions={miningPositions}
         />
       ) : (
         <DepositBalance
-          assetId={assetId}
+          assetId={aTokenId}
           symbol={asset.symbol}
           balance={depositBalance.toString()}
           maxBalance={maxBalance.toString()}
         />
       )}
-      <CurrentDepositSeparator />
+
       {isAccountBindingRequired ? (
         <CurrentDepositBindAccount />
       ) : isGETH ? (
-        <CurrentDepositFarmsClaimReward assetId={assetId} />
-      ) : (
-        <CurrentDepositClaimReward reward={reward} />
-      )}
+        <>
+          <CurrentDepositSeparator />
+          <CurrentDepositFarmsClaimReward assetId={aTokenId} />
+        </>
+      ) : null}
     </SCurrentDeposit>
   )
 }
@@ -129,9 +138,9 @@ const DepositBalance = ({
   const depositValue = new BigNumber(spotPrice).times(balance || "0").toString()
 
   return (
-    <>
+    <SCurrentDepositContainer>
       <CurrentDepositBalance
-        label={t("wallet.strategy.deposit.myDeposit")}
+        label={t("wallet.strategy.deposit.myDeposit", { count: 1 })}
         balance={t("value.tokenWithSymbol", {
           value: BigNumber(balance),
           symbol,
@@ -144,7 +153,7 @@ const DepositBalance = ({
         depositBalance={balance}
         maxBalance={maxBalance}
       />
-    </>
+    </SCurrentDepositContainer>
   )
 }
 
@@ -187,9 +196,9 @@ const FarmsDepositBalance = ({
   )
 
   return (
-    <>
+    <SCurrentDepositContainer>
       <CurrentDepositBalance
-        label={t("wallet.strategy.deposit.myDeposit")}
+        label={t("wallet.strategy.deposit.myDeposit", { count: 1 })}
         balance={t("value.tokenWithSymbol", {
           value: totalValue,
           symbol,
@@ -202,7 +211,7 @@ const FarmsDepositBalance = ({
         maxBalance={totalValue.toString()}
         positions={positions}
       />
-    </>
+    </SCurrentDepositContainer>
   )
 }
 
@@ -224,9 +233,8 @@ const CurrentDepositRemoveButton = ({
   return (
     <>
       <Button
-        size="small"
+        size="compact"
         variant="outline"
-        css={{ borderColor: "rgba(255,255,255,0.2)" }}
         disabled={new BigNumber(depositBalance).lte(0)}
         onClick={() =>
           positions
@@ -234,7 +242,7 @@ const CurrentDepositRemoveButton = ({
             : setIsRemoveModalOpen(true)
         }
       >
-        {t("remove")}
+        {t("withdraw")}
       </Button>
       <Modal
         open={isRemoveModalOpen}
@@ -242,7 +250,6 @@ const CurrentDepositRemoveButton = ({
       >
         <RemoveDepositModal
           assetId={assetId}
-          balance={depositBalance}
           maxBalance={maxBalance}
           onClose={() => setIsRemoveModalOpen(false)}
         />
