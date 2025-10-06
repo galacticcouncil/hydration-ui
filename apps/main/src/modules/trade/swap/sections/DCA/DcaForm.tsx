@@ -12,6 +12,7 @@ import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { SELL_ONLY_ASSETS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
@@ -25,6 +26,10 @@ export const DcaForm: FC<Props> = ({ order }) => {
   const { tradable } = useAssets()
   const ownedAssets = useOwnedAssets()
   const switchAssets = useSwitchAssets()
+
+  const buyableAssets = tradable.filter(
+    (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
+  )
 
   const handlesellAssetChange = (
     sellAsset: TAsset,
@@ -63,7 +68,7 @@ export const DcaForm: FC<Props> = ({ order }) => {
         label={t("trade:dca.assetIn.title")}
         onAssetChange={handlesellAssetChange}
       />
-      <DcaAssetSwitcher order={order} />
+      <DcaAssetSwitcher />
       <Controller
         control={control}
         name="buyAsset"
@@ -74,7 +79,7 @@ export const DcaForm: FC<Props> = ({ order }) => {
               field.onChange(buyAsset)
               handleBuyAssetChange(buyAsset, field.value)
             }}
-            assets={tradable}
+            assets={buyableAssets}
             label={t("trade:dca.assetOu.title")}
             ignoreBalance
             value={

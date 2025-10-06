@@ -2,12 +2,10 @@ import { useMutation } from "@tanstack/react-query"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useFormContext } from "react-hook-form"
 
+import { TradeType } from "@/api/trade"
 import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
 import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
-import {
-  MarketFormValues,
-  TradeType,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 
 export const useSwitchAssets = () => {
   const navigate = useNavigate()
