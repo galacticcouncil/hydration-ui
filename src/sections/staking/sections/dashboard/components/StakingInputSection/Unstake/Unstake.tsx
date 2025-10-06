@@ -83,14 +83,14 @@ export const Unstake = ({
     let transaction: ISubmittableResult | undefined
 
     if (oldVotes.length || newVotes.length) {
-      const tsx = [
+      const txs = [
         ...oldVotes.map((id) => api.tx.democracy.removeVote(id)),
         ...newVotes.map(({ classId, id }) =>
           api.tx.convictionVoting.removeVote(classId ? classId : null, id),
         ),
         api.tx.staking.unstake(positionId),
       ]
-      transaction = await createBatch(tsx, {}, { toast })
+      transaction = await createBatch(txs, {}, { toast })
     } else {
       transaction = await createTransaction(
         {
