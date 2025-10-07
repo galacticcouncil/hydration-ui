@@ -162,7 +162,10 @@ export function XcmPage() {
 
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist = import.meta.env.VITE_ENV === "production" ? "" : ""
+  const blacklist =
+    import.meta.env.VITE_ENV === "production"
+      ? "kusama,basilisk,assethub_kusama"
+      : ""
 
   useMount(() => {
     const srcChain = search?.data?.srcChain
