@@ -155,9 +155,7 @@ export const useXykPoolsIds = () => {
     queryFn: async () => {
       const pools = await papi.query.XYK.ShareToken.getEntries()
 
-      return new Map(
-        pools.map((pool) => [pool.keyArgs[0], pool.value.toString()]),
-      )
+      return new Map(pools.map((pool) => [pool.keyArgs[0], pool.value]))
     },
     staleTime: Infinity,
     enabled: isApiLoaded,

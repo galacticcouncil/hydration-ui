@@ -12,6 +12,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { Balance, useAccountData } from "@/states/account"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
+import { useXykPoolsIds } from "./pools"
+
 const ERC20_THRESHOLD = 0.01
 
 export function useAccountBalanceSubscription() {
@@ -20,6 +22,7 @@ export function useAccountBalanceSubscription() {
   const accountAddress = account?.address
   const queryClient = useQueryClient()
   const { all, erc20, getErc20AToken, native } = useAssets()
+  const { data: xykPoolsIds } = useXykPoolsIds()
 
   const { setBalance, resetBalances, balancesLoaded } = useAccountData(
     useShallow(pick(["setBalance", "resetBalances", "balancesLoaded"])),
@@ -35,18 +38,19 @@ export function useAccountBalanceSubscription() {
     resetBalances()
   }, [accountAddress, resetBalances])
 
-  const followedAssetIds = useMemo(
-    () =>
-      new Set([
-        ...Array.from(all.values())
-          .filter(
-            (token) =>
-              token.type !== AssetType.ERC20 && token.id !== NATIVE_ASSET_ID,
-          )
-          .map((token) => Number(token.id)),
-      ]),
-    [all],
-  )
+  const followedAssetIds = useMemo(() => {
+    if (!xykPoolsIds) return new Set()
+
+    return new Set([
+      ...Array.from(all.values())
+        .filter(
+          (token) =>
+            token.type !== AssetType.ERC20 && token.id !== NATIVE_ASSET_ID,
+        )
+        .map((token) => Number(token.id)),
+      ...Array.from(xykPoolsIds?.values() ?? []),
+    ])
+  }, [all, xykPoolsIds])
 
   const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
 
@@ -71,9 +75,7 @@ export function useAccountBalanceSubscription() {
             },
           ])
 
-          if (!isSystemBalanceLoaded) {
-            setIsSystemBalanceLoaded(true)
-          }
+          setIsSystemBalanceLoaded(true)
         },
       })
 
@@ -94,9 +96,7 @@ export function useAccountBalanceSubscription() {
 
           setBalance(Array.from(validBalances.values()))
 
-          if (!isTokensBalanceLoaded) {
-            setIsTokensBalanceLoaded(true)
-          }
+          setIsTokensBalanceLoaded(true)
         },
       })
 
@@ -170,9 +170,7 @@ export function useAccountBalanceSubscription() {
             setBalance(Array.from(adjustedBalances.values()))
           }
 
-          if (!isErcBalanceLoaded) {
-            setIsErcBalanceLoaded(true)
-          }
+          setIsErcBalanceLoaded(true)
         },
       })
 
@@ -196,9 +194,6 @@ export function useAccountBalanceSubscription() {
     api,
     native.id,
     getErc20AToken,
-    isSystemBalanceLoaded,
-    isTokensBalanceLoaded,
-    isErcBalanceLoaded,
     setBalance,
   ])
 
