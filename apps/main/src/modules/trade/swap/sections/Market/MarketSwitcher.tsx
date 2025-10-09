@@ -13,12 +13,7 @@ export const MarketSwitcher: FC = () => {
   const rpc = useRpcProvider()
   const { watch } = useFormContext<MarketFormValues>()
 
-  const [sellAsset, sellAmount, buyAsset, buyAmount] = watch([
-    "sellAsset",
-    "sellAmount",
-    "buyAsset",
-    "buyAmount",
-  ])
+  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
     spotPrice(rpc, buyAsset?.id ?? "", sellAsset?.id ?? ""),
@@ -30,8 +25,6 @@ export const MarketSwitcher: FC = () => {
     <AssetSwitcher
       assetInId={sellAsset?.id ?? ""}
       assetOutId={buyAsset?.id ?? ""}
-      priceIn={sellAmount}
-      priceOut={buyAmount}
       fallbackPrice={spotPriceData?.spotPrice ?? undefined}
       disabled={
         switchAssets.isPending ||

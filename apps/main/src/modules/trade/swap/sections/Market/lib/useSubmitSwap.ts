@@ -4,10 +4,8 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
-import {
-  MarketFormValues,
-  TradeType,
-} from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { TradeType } from "@/api/trade"
+import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"

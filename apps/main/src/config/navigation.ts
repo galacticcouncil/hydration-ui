@@ -9,7 +9,7 @@ export const LINKS = {
   liquidity: "/liquidity",
   myLiquidity: "/liquidity",
   pools: "/liquidity",
-  swap: "/trade/swap/market",
+  swap: "/trade/swap",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
