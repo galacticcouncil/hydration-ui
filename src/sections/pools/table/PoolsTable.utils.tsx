@@ -162,7 +162,13 @@ const AddLiquidityButton: React.FC<{
   return (
     <>
       {farms.length > 0 ? (
-        <Button variant="primary" size="small" css={styles} onClick={onClick}>
+        <Button
+          variant="primary"
+          size="small"
+          css={styles}
+          onClick={onClick}
+          disabled={!pool.canAddLiquidity && !pool.isStablePool}
+        >
           {t("liquidity.asset.actions.joinFarms")}
         </Button>
       ) : (
