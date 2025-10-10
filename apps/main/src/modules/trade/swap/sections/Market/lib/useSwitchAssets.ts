@@ -36,6 +36,7 @@ export const useSwitchAssets = () => {
                   newSellAsset,
                   newBuyAsset,
                   sellAmount,
+                  true,
                 )),
               sellAmount,
             ]
@@ -47,6 +48,7 @@ export const useSwitchAssets = () => {
                   newSellAsset,
                   newBuyAsset,
                   buyAmount,
+                  true,
                 )),
             ]
 

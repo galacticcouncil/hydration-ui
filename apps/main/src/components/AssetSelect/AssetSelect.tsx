@@ -61,7 +61,7 @@ export const AssetSelect = ({
         : undefined
 
     return maxBalance && selectedAsset
-      ? scaleHuman(maxBalance.free, selectedAsset.decimals)
+      ? scaleHuman(maxBalance.transferable, selectedAsset.decimals)
       : maxBalanceFallback
   })()
 

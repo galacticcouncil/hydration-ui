@@ -71,7 +71,11 @@ export const Market: FC = () => {
         {swap && <MarketErrors swap={swap} />}
         <MarketFooter
           isSingleTrade={isSingleTrade}
-          isEnabled={isTradeEnabled && isHealthFactorCheckSatisfied}
+          isEnabled={
+            isTradeEnabled &&
+            isHealthFactorCheckSatisfied &&
+            form.formState.isValid
+          }
         />
       </form>
     </FormProvider>

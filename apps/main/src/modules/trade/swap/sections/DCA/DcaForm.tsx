@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { PeriodFormField } from "@/form/PeriodFormField"
-import { useOwnedAssets } from "@/hooks/data/useOwnedAssets"
 import { DcaAssetSwitcher } from "@/modules/trade/swap/sections/DCA/DcaAssetSwitcher"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
@@ -24,7 +23,6 @@ export const DcaForm: FC<Props> = ({ order }) => {
   const { control, getValues, setValue } = useFormContext<DcaFormValues>()
 
   const { tradable } = useAssets()
-  const ownedAssets = useOwnedAssets()
   const switchAssets = useSwitchAssets()
 
   const buyableAssets = tradable.filter(
@@ -64,8 +62,9 @@ export const DcaForm: FC<Props> = ({ order }) => {
       <AssetSelectFormField<DcaFormValues>
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
-        assets={ownedAssets}
+        assets={tradable}
         label={t("trade:dca.assetIn.title")}
+        maxBalanceFallback="0"
         onAssetChange={handlesellAssetChange}
       />
       <DcaAssetSwitcher />

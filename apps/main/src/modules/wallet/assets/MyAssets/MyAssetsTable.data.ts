@@ -69,7 +69,7 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
         )
 
         const transferable = scaleHuman(
-          balances[asset.id]?.free ?? 0n,
+          balances[asset.id]?.transferable ?? 0n,
           asset.decimals,
         )
 

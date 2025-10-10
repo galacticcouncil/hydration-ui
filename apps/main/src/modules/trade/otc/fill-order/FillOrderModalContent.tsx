@@ -38,7 +38,7 @@ export const FillOrderModalContent: FC<Props> = ({
 
   const inBalance = useAccountBalance(otcOffer.assetIn.id)
   const assetInBalance = scaleHuman(
-    inBalance?.total ?? 0n,
+    inBalance?.transferable ?? 0n,
     otcOffer.assetIn?.decimals ?? 12,
   )
 

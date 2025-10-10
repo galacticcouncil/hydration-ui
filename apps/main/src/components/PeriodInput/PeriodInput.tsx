@@ -7,6 +7,11 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import {
+  millisecondsInDay,
+  millisecondsInHour,
+  millisecondsInWeek,
+} from "date-fns/constants"
 import { FC } from "react"
 import { z } from "zod/v4"
 
@@ -69,9 +74,25 @@ export const PeriodInput: FC<PeriodInputProps> = ({
   )
 }
 
-export const periodInputSchema = z.object({
-  value: validNumber.gte(0).nullable(),
-  type: z.enum(periodTypes),
-})
+export const periodInputSchema = z
+  .object({
+    value: validNumber.gt(0).nullable(),
+    type: z.enum(periodTypes),
+  })
+  .refine(
+    ({ type, value }) => {
+      const millis = periodMillis[type] * (value ?? 0)
+
+      return !isNaN(new Date(Date.now() + millis).valueOf())
+    },
+    { error: i18n.t("error.period"), path: ["value"] },
+  )
 
 export type Period = z.infer<typeof periodInputSchema>
+
+const periodMillis: Record<PeriodType, number> = {
+  hour: millisecondsInHour,
+  day: millisecondsInDay,
+  month: millisecondsInDay * 30.5,
+  week: millisecondsInWeek,
+}

@@ -6,7 +6,6 @@ import { useDebouncedCallback } from "use-debounce"
 
 import { TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { useOwnedAssets } from "@/hooks/data/useOwnedAssets"
 import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
 import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
@@ -20,7 +19,6 @@ const RECALCULATE_DEBOUNCE_MS = 250
 export const MarketFields: FC = () => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
-  const ownedAssets = useOwnedAssets()
 
   const navigate = useNavigate()
   const search = useSearch({ from: "/trade/_history" })
@@ -50,6 +48,7 @@ export const MarketFields: FC = () => {
           sellAsset,
           formValues.buyAsset,
           formValues.sellAmount,
+          formValues.isSingleTrade,
         ),
       })
     } else if (
@@ -63,6 +62,7 @@ export const MarketFields: FC = () => {
           sellAsset,
           formValues.buyAsset,
           formValues.buyAmount,
+          formValues.isSingleTrade,
         ),
       })
     }
@@ -84,6 +84,7 @@ export const MarketFields: FC = () => {
           formValues.sellAsset,
           buyAsset,
           formValues.sellAmount,
+          formValues.isSingleTrade,
         ),
       })
     } else if (
@@ -97,6 +98,7 @@ export const MarketFields: FC = () => {
           formValues.sellAsset,
           buyAsset,
           formValues.buyAmount,
+          formValues.isSingleTrade,
         ),
       })
     }
@@ -121,6 +123,7 @@ export const MarketFields: FC = () => {
           sellAsset,
           buyAsset,
           usedSellAmount,
+          true,
         ),
         isSingleTrade: true,
         ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
@@ -143,7 +146,12 @@ export const MarketFields: FC = () => {
 
     reset({
       ...formValues,
-      sellAmount: await calculateSellAmount(sellAsset, buyAsset, usedBuyAmount),
+      sellAmount: await calculateSellAmount(
+        sellAsset,
+        buyAsset,
+        usedBuyAmount,
+        true,
+      ),
       isSingleTrade: true,
       ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
     })
@@ -157,7 +165,8 @@ export const MarketFields: FC = () => {
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
         label={t("sell")}
-        assets={ownedAssets}
+        assets={tradable}
+        maxBalanceFallback="0"
         onAssetChange={(sellAsset, previousSellAsset) => {
           const { buyAsset } = getValues()
           const isSwitch = sellAsset.id === buyAsset?.id
