@@ -11,6 +11,8 @@ import { blockTimeQuery } from "@/api/chain"
 import { TradeOrderType, TradeType } from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
+import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
+import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
@@ -25,13 +27,17 @@ type Props = {
 export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
   const { t } = useTranslation("trade")
 
-  const { watch, control } = useFormContext<MarketFormValues>()
+  const { control, watch, getValues, reset } =
+    useFormContext<MarketFormValues>()
   const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
 
   const blockTime = useQuery({
     ...blockTimeQuery(useRpcProvider()),
     enabled: !!swap && !!twap && !isLoading,
   })
+
+  const calculateBuyAmount = useCalculateBuyAmount()
+  const calculateSellAmount = useCalculateSellAmount()
 
   if (isLoading) {
     return (
@@ -45,14 +51,45 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
     return null
   }
 
-  const [asset, amount, twapAmount] =
-    swap.type === TradeType.Buy
-      ? [sellAsset, swap.amountIn, twap.amountIn]
-      : [buyAsset, swap.amountOut, twap.amountOut]
+  const isBuy = swap.type === TradeType.Buy
+
+  const [asset, amount, twapAmount] = isBuy
+    ? [sellAsset, swap.amountIn, twap.amountIn]
+    : [buyAsset, swap.amountOut, twap.amountOut]
 
   const price = scaleHuman(amount, asset.decimals)
   const twapPrice = scaleHuman(twapAmount, asset.decimals)
   const diff = Big(twapPrice).minus(price).toString()
+
+  const recalculateAmount = async (isSingleTrade: boolean): Promise<void> => {
+    const formValues = getValues()
+
+    if (!formValues.sellAsset || !formValues.buyAsset) {
+      return
+    }
+
+    if (isBuy) {
+      reset({
+        ...formValues,
+        sellAmount: await calculateSellAmount(
+          formValues.sellAsset,
+          formValues.buyAsset,
+          formValues.buyAmount,
+          isSingleTrade,
+        ),
+      })
+    } else if (formValues.buyAsset) {
+      reset({
+        ...formValues,
+        buyAmount: await calculateBuyAmount(
+          formValues.sellAsset,
+          formValues.buyAsset,
+          formValues.sellAmount,
+          isSingleTrade,
+        ),
+      })
+    }
+  }
 
   return (
     <Controller
@@ -64,7 +101,10 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
             asset={asset}
             value={price}
             active={field.value}
-            onClick={() => field.onChange(true)}
+            onClick={(): void => {
+              field.onChange(true)
+              recalculateAmount(true)
+            }}
             label={t("market.form.type.single")}
             time={t("market.form.type.single.instant")}
           />
@@ -74,7 +114,10 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
             diff={diff}
             isBuy={twap.type === TradeOrderType.TwapBuy}
             active={!field.value}
-            onClick={() => field.onChange(false)}
+            onClick={(): void => {
+              field.onChange(false)
+              recalculateAmount(false)
+            }}
             label={t("market.form.type.split")}
             time={t("market.form.type.split.timeframe", {
               timeframe: formatDistanceToNow(

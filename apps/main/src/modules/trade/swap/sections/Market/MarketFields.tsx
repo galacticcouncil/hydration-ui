@@ -48,6 +48,7 @@ export const MarketFields: FC = () => {
           sellAsset,
           formValues.buyAsset,
           formValues.sellAmount,
+          formValues.isSingleTrade,
         ),
       })
     } else if (
@@ -61,6 +62,7 @@ export const MarketFields: FC = () => {
           sellAsset,
           formValues.buyAsset,
           formValues.buyAmount,
+          formValues.isSingleTrade,
         ),
       })
     }
@@ -82,6 +84,7 @@ export const MarketFields: FC = () => {
           formValues.sellAsset,
           buyAsset,
           formValues.sellAmount,
+          formValues.isSingleTrade,
         ),
       })
     } else if (
@@ -95,6 +98,7 @@ export const MarketFields: FC = () => {
           formValues.sellAsset,
           buyAsset,
           formValues.buyAmount,
+          formValues.isSingleTrade,
         ),
       })
     }
@@ -119,6 +123,7 @@ export const MarketFields: FC = () => {
           sellAsset,
           buyAsset,
           usedSellAmount,
+          true,
         ),
         isSingleTrade: true,
         ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
@@ -141,7 +146,12 @@ export const MarketFields: FC = () => {
 
     reset({
       ...formValues,
-      sellAmount: await calculateSellAmount(sellAsset, buyAsset, usedBuyAmount),
+      sellAmount: await calculateSellAmount(
+        sellAsset,
+        buyAsset,
+        usedBuyAmount,
+        true,
+      ),
       isSingleTrade: true,
       ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
     })
