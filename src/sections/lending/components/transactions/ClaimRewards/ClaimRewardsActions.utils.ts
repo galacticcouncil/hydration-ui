@@ -86,6 +86,7 @@ export const useClaimMoneyMarketRewards = () => {
       )
       return createTransaction(
         {
+          tx: transformTx(tx),
           evmTx: {
             data: tx,
             abi,
