@@ -173,7 +173,12 @@ export const tradeOrderDurationQuery = (
   isEnabled: boolean,
 ) =>
   queryOptions({
-    queryKey: ["trade", "twapExecutionTime", tradeCount],
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "twapExecutionTime",
+      tradeCount,
+    ],
     queryFn: () => sdk.api.scheduler.getTwapExecutionTime(tradeCount),
     enabled: isEnabled && isApiLoaded && !!tradeCount,
   })

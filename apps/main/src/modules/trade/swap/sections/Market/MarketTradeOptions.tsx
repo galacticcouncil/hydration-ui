@@ -73,22 +73,22 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
     if (isBuy) {
       reset({
         ...formValues,
-        sellAmount: await calculateSellAmount(
-          formValues.sellAsset,
-          formValues.buyAsset,
-          formValues.buyAmount,
+        sellAmount: await calculateSellAmount({
+          sellAsset: formValues.sellAsset,
+          buyAsset: formValues.buyAsset,
+          buyAmount: formValues.buyAmount,
           isSingleTrade,
-        ),
+        }),
       })
     } else if (formValues.buyAsset) {
       reset({
         ...formValues,
-        buyAmount: await calculateBuyAmount(
-          formValues.sellAsset,
-          formValues.buyAsset,
-          formValues.sellAmount,
+        buyAmount: await calculateBuyAmount({
+          sellAsset: formValues.sellAsset,
+          buyAsset: formValues.buyAsset,
+          sellAmount: formValues.sellAmount,
           isSingleTrade,
-        ),
+        }),
       })
     }
   }

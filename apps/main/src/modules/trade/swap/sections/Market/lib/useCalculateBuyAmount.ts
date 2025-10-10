@@ -7,17 +7,24 @@ import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEn
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
+type Args = {
+  readonly sellAsset: TAssetData
+  readonly buyAsset: TAssetData
+  readonly sellAmount: string
+  readonly isSingleTrade: boolean
+}
+
 export const useCalculateBuyAmount = () => {
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
   return useCallback(
-    async (
-      sellAsset: TAssetData,
-      buyAsset: TAssetData,
-      sellAmount: string,
-      isSingleTrade: boolean,
-    ): Promise<string> => {
+    async ({
+      sellAsset,
+      buyAsset,
+      sellAmount,
+      isSingleTrade,
+    }: Args): Promise<string> => {
       if (!sellAmount) {
         return ""
       }
@@ -39,8 +46,8 @@ export const useCalculateBuyAmount = () => {
           bestSellTwapQuery(
             rpc,
             {
-              assetIn: sellAsset?.id ?? "",
-              assetOut: buyAsset?.id ?? "",
+              assetIn: sellAsset.id,
+              assetOut: buyAsset.id,
               amountIn: sellAmount,
             },
             isTwapEnabled(swap),

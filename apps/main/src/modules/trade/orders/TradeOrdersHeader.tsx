@@ -8,6 +8,7 @@ import {
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useSearch } from "@tanstack/react-router"
@@ -38,9 +39,10 @@ export const TradeOrdersHeader = () => {
 
   const squidClient = useSquidClient()
   const { account } = useAccount()
-  const address = account?.address ?? ""
+  const accountAddress = account?.address ?? ""
+  const address = safeConvertSS58toPublicKey(accountAddress)
 
-  const { data } = useQuery(
+  const { data: openOrdersCountData } = useQuery(
     userOpenOrdersCountQuery(
       squidClient,
       address,
@@ -48,7 +50,7 @@ export const TradeOrdersHeader = () => {
     ),
   )
 
-  const openOrdersCount = data?.dcaSchedules?.totalCount ?? 0
+  const openOrdersCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
 
   const navigate = useNavigate()
 

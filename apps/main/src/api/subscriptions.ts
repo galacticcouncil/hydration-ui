@@ -36,6 +36,9 @@ export function useAccountBalanceSubscription() {
 
   useEffect(() => {
     resetBalances()
+    setIsSystemBalanceLoaded(false)
+    setIsTokensBalanceLoaded(false)
+    setIsErcBalanceLoaded(false)
   }, [accountAddress, resetBalances])
 
   const followedAssetIds = useMemo(() => {

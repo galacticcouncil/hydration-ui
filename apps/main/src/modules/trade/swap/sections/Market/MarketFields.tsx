@@ -44,12 +44,12 @@ export const MarketFields: FC = () => {
     ) {
       reset({
         ...formValues,
-        buyAmount: await calculateBuyAmount(
+        buyAmount: await calculateBuyAmount({
           sellAsset,
-          formValues.buyAsset,
-          formValues.sellAmount,
-          formValues.isSingleTrade,
-        ),
+          buyAsset: formValues.buyAsset,
+          sellAmount: formValues.sellAmount,
+          isSingleTrade: formValues.isSingleTrade,
+        }),
       })
     } else if (
       formValues.type === TradeType.Buy &&
@@ -58,12 +58,12 @@ export const MarketFields: FC = () => {
     ) {
       reset({
         ...formValues,
-        sellAmount: await calculateSellAmount(
+        sellAmount: await calculateSellAmount({
           sellAsset,
-          formValues.buyAsset,
-          formValues.buyAmount,
-          formValues.isSingleTrade,
-        ),
+          buyAsset: formValues.buyAsset,
+          buyAmount: formValues.buyAmount,
+          isSingleTrade: formValues.isSingleTrade,
+        }),
       })
     }
 
@@ -80,12 +80,12 @@ export const MarketFields: FC = () => {
     ) {
       reset({
         ...formValues,
-        buyAmount: await calculateBuyAmount(
-          formValues.sellAsset,
+        buyAmount: await calculateBuyAmount({
+          sellAsset: formValues.sellAsset,
           buyAsset,
-          formValues.sellAmount,
-          formValues.isSingleTrade,
-        ),
+          sellAmount: formValues.sellAmount,
+          isSingleTrade: formValues.isSingleTrade,
+        }),
       })
     } else if (
       formValues.type === TradeType.Buy &&
@@ -94,12 +94,12 @@ export const MarketFields: FC = () => {
     ) {
       reset({
         ...formValues,
-        sellAmount: await calculateSellAmount(
-          formValues.sellAsset,
+        sellAmount: await calculateSellAmount({
+          sellAsset: formValues.sellAsset,
           buyAsset,
-          formValues.buyAmount,
-          formValues.isSingleTrade,
-        ),
+          buyAmount: formValues.buyAmount,
+          isSingleTrade: formValues.isSingleTrade,
+        }),
       })
     }
 
@@ -119,12 +119,12 @@ export const MarketFields: FC = () => {
 
       reset({
         ...formValues,
-        buyAmount: await calculateBuyAmount(
+        buyAmount: await calculateBuyAmount({
           sellAsset,
           buyAsset,
-          usedSellAmount,
-          true,
-        ),
+          sellAmount: usedSellAmount,
+          isSingleTrade: true,
+        }),
         isSingleTrade: true,
         ...(type === TradeType.Buy ? { type: TradeType.Sell } : {}),
       })
@@ -146,12 +146,12 @@ export const MarketFields: FC = () => {
 
     reset({
       ...formValues,
-      sellAmount: await calculateSellAmount(
+      sellAmount: await calculateSellAmount({
         sellAsset,
         buyAsset,
-        usedBuyAmount,
-        true,
-      ),
+        buyAmount: usedBuyAmount,
+        isSingleTrade: true,
+      }),
       isSingleTrade: true,
       ...(type === TradeType.Sell ? { type: TradeType.Buy } : {}),
     })
