@@ -10,7 +10,13 @@ import { Input } from "@/components/Input"
 import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
-import { Modal, ModalBody, ModalClose, ModalFooter, ModalHeader } from "./Modal"
+import {
+  Modal,
+  ModalBody,
+  ModalCloseTrigger,
+  ModalFooter,
+  ModalHeader,
+} from "./Modal"
 
 type Story = StoryObj<typeof Modal>
 
@@ -53,11 +59,11 @@ const WithHeaderAndFooterTemplate = (args: Story["args"]) => {
           tempora obcaecati placeat iure?
         </ModalBody>
         <ModalFooter justify="space-between">
-          <ModalClose asChild>
+          <ModalCloseTrigger asChild>
             <Button size="large" variant="secondary">
               Cancel
             </Button>
-          </ModalClose>
+          </ModalCloseTrigger>
           <Button size="large" variant="primary">
             Sign transaction
           </Button>

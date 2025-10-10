@@ -1,6 +1,6 @@
 import {
   Button,
-  ModalClose,
+  ModalCloseTrigger,
   ModalContent,
   ModalFooter,
   ModalHeader,
@@ -34,11 +34,11 @@ export const RpcRemoveModal: React.FC<RpcRemoveModalProps> = ({
           </Text>
         </ModalHeader>
         <ModalFooter justify="space-between">
-          <ModalClose>
+          <ModalCloseTrigger>
             <Button size="large" variant="secondary">
               {t("cancel")}
             </Button>
-          </ModalClose>
+          </ModalCloseTrigger>
           <Button size="large" onClick={onRemove}>
             {t("rpc.change.modal.removeRpc.confirm")}
           </Button>
