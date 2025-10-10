@@ -43,10 +43,10 @@ export function YieldDcaPage() {
       {
         tx: api.tx(transaction.hex),
         txMeta: meta && {
-          assetIn: meta?.assetIn.id,
-          assetOut: meta?.assetOut.id,
-          amountIn: meta?.amountIn,
-          amountOut: "",
+          assetIn: meta.assetIn.id,
+          assetOut: meta.assetOut.id,
+          amountIn: meta.amountIn,
+          amountOut: meta.amountOut,
         },
       },
       {
