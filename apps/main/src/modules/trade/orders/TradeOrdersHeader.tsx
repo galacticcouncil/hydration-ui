@@ -18,6 +18,7 @@ import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { OpenOrdersBadge } from "@/modules/trade/orders/OpenOrders/OpenOrdersBadge"
+import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
 export const tradeOrderTabs = [
   "myActivity",
@@ -64,7 +65,12 @@ export const TradeOrdersHeader = () => {
         items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(`trade.orders.${tab}`),
-          search: { tab, allPairs },
+          search: {
+            tab,
+            allPairs,
+            assetIn,
+            assetOut,
+          } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}
         renderItem={(item) => (
