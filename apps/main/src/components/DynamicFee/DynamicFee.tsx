@@ -13,7 +13,6 @@ type DynamicFeeProps = {
   readonly rangeLow: number
   readonly rangeHigh: number
   readonly tooltip?: string
-  readonly displayValue?: boolean
 }
 
 export const DynamicFee = ({
@@ -21,7 +20,6 @@ export const DynamicFee = ({
   rangeLow,
   rangeHigh,
   tooltip,
-  displayValue,
 }: DynamicFeeProps) => {
   const { t } = useTranslation()
 
@@ -38,11 +36,9 @@ export const DynamicFee = ({
 
   return (
     <Flex gap={8} align="center">
-      {displayValue && (
-        <Text fs="p6" fw={500} color={getToken("text.high")}>
-          {t("percent", { value })}
-        </Text>
-      )}
+      <Text fs="p6" fw={500} color={getToken("text.high")}>
+        {t("percent", { value })}
+      </Text>
       <Flex p="1px 2px" gap={1} height="min-content">
         {dynamicFeeRangeTypes.map((rangeType) => {
           const isActive = rangeType === currentKey
