@@ -67,6 +67,8 @@ import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
 import { persist } from "zustand/middleware"
 import { getWallets as getStandardizedWallets } from "@mysten/wallet-standard"
+import { BaseDotsamaWallet } from "@talismn/connect-wallets"
+import { Unsubcall } from "@polkadot/extension-inject/types"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -291,6 +293,8 @@ export const useWeb3ConnectEagerEnable = () => {
       state.disconnect()
     }
 
+    const unsubs: Unsubcall[] = []
+
     async function eagerEnable(wallet: WalletProvider["wallet"]) {
       if (wallet instanceof ExternalWallet) {
         if (currentAccount?.provider === WalletProviderType.ExternalWallet) {
@@ -321,9 +325,18 @@ export const useWeb3ConnectEagerEnable = () => {
         }
       }
 
-      if (isEnabled) return
+      if (!isEnabled) {
+        await wallet?.enable(POLKADOT_APP_NAME)
+      }
 
-      await wallet?.enable(POLKADOT_APP_NAME)
+      if (wallet instanceof BaseDotsamaWallet) {
+        const unsub = await subscribeSubstrateWalletAccountChange(wallet)
+        unsubs.push(unsub)
+      }
+
+      return () => {
+        unsubs.forEach((unsub) => unsub())
+      }
     }
   }, [])
 
@@ -372,6 +385,9 @@ export const useEnableWallet = (
 
   const { add: addToAddressBook } = useAddressStore()
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
+
+  const unsubsRef = useRef<Unsubcall[]>([])
+
   const { mutate: enable, ...mutation } = useMutation<
     WalletAccount[] | undefined,
     unknown,
@@ -384,6 +400,11 @@ export const useEnableWallet = (
       }
 
       await wallet?.enable(POLKADOT_APP_NAME)
+
+      if (wallet instanceof BaseDotsamaWallet) {
+        const unsub = await subscribeSubstrateWalletAccountChange(wallet)
+        unsubsRef.current.push(unsub)
+      }
 
       if (wallet instanceof MetaMask) {
         await requestNetworkSwitch(wallet.extension, {
@@ -418,6 +439,13 @@ export const useEnableWallet = (
       },
     },
   )
+
+  useEffect(() => {
+    const unsubs = unsubsRef.current
+    return () => {
+      unsubs.forEach((unsub) => unsub())
+    }
+  }, [])
 
   return {
     enable,
@@ -666,4 +694,33 @@ export const isHydrationIncompatibleAccount = (
     isEvmAccount(account.address)
 
   return isIncompatibleProvider || isIncompatibleH160Account
+}
+
+const subscribeSubstrateWalletAccountChange = async (
+  wallet: BaseDotsamaWallet,
+) => {
+  const state = useWeb3ConnectStore.getState()
+  return wallet.subscribeAccounts((accounts) => {
+    if (!accounts || accounts.length === 0) {
+      return state.setAccount(null)
+    }
+
+    const isCurrentAccountConnected = accounts.some(
+      (a) =>
+        safeConvertAddressSS58(a.address) ===
+        safeConvertAddressSS58(state.account?.address),
+    )
+
+    if (isCurrentAccountConnected) return
+
+    const [{ address, name }] = accounts
+    // set next connected account if current account is no longer connected
+    state.setAccount({
+      address,
+      displayAddress: safeConvertAddressSS58(address) || address,
+      provider: normalizeProviderType(wallet),
+      name: name ?? "",
+      isExternalWalletConnected: false,
+    })
+  })
 }
