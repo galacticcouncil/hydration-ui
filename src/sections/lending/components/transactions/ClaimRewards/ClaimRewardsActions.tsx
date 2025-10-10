@@ -2,7 +2,7 @@ import { Reward } from "sections/lending/helpers/types"
 
 import { Button } from "components/Button/Button"
 import { useTranslation } from "react-i18next"
-import { useClaimRewards } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions.utils"
+import { useClaimMoneyMarketRewards } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions.utils"
 
 export type ClaimRewardsActionsProps = {
   isWrongNetwork?: boolean
@@ -19,7 +19,7 @@ export const ClaimRewardsActions = ({
 }: ClaimRewardsActionsProps) => {
   const { t } = useTranslation()
 
-  const { mutate, isLoading } = useClaimRewards()
+  const { mutate, isLoading } = useClaimMoneyMarketRewards()
 
   return (
     <Button

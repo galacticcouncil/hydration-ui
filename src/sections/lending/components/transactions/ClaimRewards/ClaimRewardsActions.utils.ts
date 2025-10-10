@@ -7,6 +7,7 @@ import { useTransformEvmTxToExtrinsic } from "api/evm"
 import { BigNumber as ethersBN } from "ethers"
 import { useRpcProvider } from "providers/rpcProvider"
 import { TFunction, useTranslation } from "react-i18next"
+import { ClaimRewardsActionsProps } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions"
 import { Reward } from "sections/lending/helpers/types"
 import { useRootStore } from "sections/lending/store/root"
 import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
@@ -18,14 +19,7 @@ import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { QUERY_KEYS } from "utils/queryKeys"
 
-export type ClaimRewardsActionsProps = {
-  isWrongNetwork?: boolean
-  blocked: boolean
-  claimableUsd: string
-  selectedReward: Reward
-}
-
-export const useClaimRewards = () => {
+export const useClaimMoneyMarketRewards = () => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
   const queryClient = useQueryClient()

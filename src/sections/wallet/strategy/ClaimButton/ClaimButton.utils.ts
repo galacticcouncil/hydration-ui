@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useClaimRewards } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions.utils"
+import { useClaimMoneyMarketRewards } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions.utils"
 import { useAppDataContext } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useUserRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
 import { GDOT_STABLESWAP_ASSET_ID } from "utils/constants"
@@ -11,7 +11,7 @@ export const useClaimGdotReward = () => {
     ? user.calculatedUserIncentives?.[reward.rewardTokenAddress]
     : undefined
 
-  const { mutate: claimRewards } = useClaimRewards()
+  const { mutate: claimRewards } = useClaimMoneyMarketRewards()
 
   const action = useCallback(() => {
     claimRewards({
