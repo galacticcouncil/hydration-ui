@@ -137,7 +137,7 @@ export const validateFormExistentialDeposit = <TFormValues extends FieldValues>(
         : validateExistentialDeposit(asset, amount, multiplier)
     },
     {
-      error: maxBalanceError,
+      error: existentialDepositError,
       path: [path],
     },
   )
