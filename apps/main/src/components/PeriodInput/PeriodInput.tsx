@@ -70,7 +70,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
 }
 
 export const periodInputSchema = z.object({
-  value: validNumber.gte(0).nullable(),
+  value: validNumber.gt(0).nullable(),
   type: z.enum(periodTypes),
 })
 
