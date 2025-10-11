@@ -20,10 +20,14 @@ import { TDeposit, useAccountBalances, useAccountPositions } from "api/deposits"
 import { CurrentDepositEmptyState } from "./CurrentDepositEmptyState"
 import { CurrentDepositFarmsClaimReward } from "./CurrentDepositFarmsClaimReward"
 import Skeleton from "react-loading-skeleton"
-import { useAllOmnipoolDeposits } from "sections/pools/farms/position/FarmingPosition.utils"
-import { TRemoveFarmingPosition } from "sections/wallet/strategy/RemoveDepositModal/RemoveDeposit.utils"
+import {
+  TOmniDepositData,
+  useAllOmnipoolDeposits,
+} from "sections/pools/farms/position/FarmingPosition.utils"
 import { useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
+
+export type TRemoveFarmingPosition = TOmniDepositData & TDeposit
 
 export type CurrentDepositData = {
   readonly depositBalance: string

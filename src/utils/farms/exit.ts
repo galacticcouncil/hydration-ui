@@ -3,6 +3,7 @@ import { ToastMessage, useStore } from "state/store"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAssets } from "providers/assets"
 import { TDeposit, useRefetchAccountAssets } from "api/deposits"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
 
 export const useFarmExitAllMutation = (
   depositNfts: TDeposit[],
@@ -14,6 +15,7 @@ export const useFarmExitAllMutation = (
   const { createTransaction } = useStore()
   const { getAssetWithFallback, isShareToken } = useAssets()
   const refetch = useRefetchAccountAssets()
+  const { createBatch } = useCreateBatchTx()
 
   const meta = getAssetWithFallback(poolId)
   const isXYK = isShareToken(meta)
@@ -39,10 +41,7 @@ export const useFarmExitAllMutation = (
           .flat(2) ?? []
 
       if (txs.length > 1) {
-        return await createTransaction(
-          { tx: api.tx.utility.batchAll(txs) },
-          { toast, onClose, onBack: () => {} },
-        )
+        return await createBatch(txs, {}, { toast, onClose, onBack: () => {} })
       } else {
         return await createTransaction(
           { tx: txs[0] },

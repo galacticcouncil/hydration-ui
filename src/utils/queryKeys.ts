@@ -86,6 +86,7 @@ export const QUERY_KEYS = {
     hash,
     account,
   ],
+  blockWeight: ["blockWeight"],
   nextNonce: (account: Maybe<AccountId32 | string>) => [
     QUERY_KEY_PREFIX,
     "nonce",

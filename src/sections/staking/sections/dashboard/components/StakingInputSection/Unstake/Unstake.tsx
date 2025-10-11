@@ -17,6 +17,8 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { usePendingVotesIds, useProcessedVotesIds } from "api/staking"
 import { useAssets } from "providers/assets"
 import { useRefetchAccountAssets } from "api/deposits"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
+import { ISubmittableResult } from "@polkadot/types/types"
 
 export const Unstake = ({
   loading,
@@ -33,6 +35,7 @@ export const Unstake = ({
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
   const refetchAccountAssets = useRefetchAccountAssets()
+  const { createBatch } = useCreateBatchTx()
 
   const { account } = useAccount()
   const form = useForm<{ amount: string }>({
@@ -77,30 +80,31 @@ export const Unstake = ({
       ...(processedVoteIds ? processedVoteIds.newProcessedVotesIds : []),
     ]
 
-    const transaction = await createTransaction(
-      {
-        tx:
-          oldVotes.length || newVotes.length
-            ? api.tx.utility.batchAll([
-                ...oldVotes.map((id) => api.tx.democracy.removeVote(id)),
-                ...newVotes.map(({ classId, id }) =>
-                  api.tx.convictionVoting.removeVote(
-                    classId ? classId : null,
-                    id,
-                  ),
-                ),
-                api.tx.staking.unstake(positionId),
-              ])
-            : api.tx.staking.unstake(positionId),
-      },
-      { toast },
-    )
+    let transaction: ISubmittableResult | undefined
+
+    if (oldVotes.length || newVotes.length) {
+      const txs = [
+        ...oldVotes.map((id) => api.tx.democracy.removeVote(id)),
+        ...newVotes.map(({ classId, id }) =>
+          api.tx.convictionVoting.removeVote(classId ? classId : null, id),
+        ),
+        api.tx.staking.unstake(positionId),
+      ]
+      transaction = await createBatch(txs, {}, { toast })
+    } else {
+      transaction = await createTransaction(
+        {
+          tx: api.tx.staking.unstake(positionId),
+        },
+        { toast },
+      )
+    }
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     await queryClient.invalidateQueries(QUERY_KEYS.hdxSupply)
     refetchAccountAssets()
 
-    if (!transaction.isError) {
+    if (transaction && !transaction.isError) {
       form.reset({ amount: "0" })
     }
   }
