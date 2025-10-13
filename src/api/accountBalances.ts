@@ -75,7 +75,7 @@ export const useAccountBalance = (address?: string) => {
   return useQuery(
     QUERY_KEYS.accountBalances(address),
     async () => {
-      if (!address) return
+      if (!address || !balanceV2) return
 
       const followedAssets: Array<TShareToken | TAsset> = [...shareTokens]
       const followedErc20Tokens = []
