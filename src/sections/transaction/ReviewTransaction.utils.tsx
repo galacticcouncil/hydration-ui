@@ -1343,6 +1343,7 @@ async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
 export const useCreateBatchTx = () => {
   const { api } = useRpcProvider()
   const { createTransaction } = useStore()
+  const { t } = useTranslation()
   const { account } = useAccount()
   const { data: blockWeight } = useBlockWeight()
 
@@ -1376,17 +1377,23 @@ export const useCreateBatchTx = () => {
       const calls1 = txs.slice(0, splitIndex)
       const calls2 = txs.slice(splitIndex)
 
+      const warning = t("liquidity.reviewTransaction.stepper.warning")
+
       await createTransaction(
-        { ...transaction, tx: api.tx.utility.batchAll(calls1) },
+        {
+          ...transaction,
+          tx: api.tx.utility.batchAll(calls1),
+          description: warning,
+        },
         {
           ...options,
           steps: [
             {
-              label: "First Tx",
+              label: t("liquidity.reviewTransaction.stepper.first"),
               state: "active",
             },
             {
-              label: "Second Tx",
+              label: t("liquidity.reviewTransaction.stepper.second"),
               state: "todo",
             },
           ],
@@ -1395,23 +1402,27 @@ export const useCreateBatchTx = () => {
       )
 
       await createTransaction(
-        { ...transaction, tx: api.tx.utility.batchAll(calls2) },
+        {
+          ...transaction,
+          tx: api.tx.utility.batchAll(calls2),
+          description: warning,
+        },
         {
           ...options,
           steps: [
             {
-              label: "First Tx",
+              label: t("liquidity.reviewTransaction.stepper.first"),
               state: "done",
             },
             {
-              label: "Second Tx",
+              label: t("liquidity.reviewTransaction.stepper.second"),
               state: "active",
             },
           ],
         },
       )
     },
-    [account?.address, api, blockWeight, createTransaction],
+    [account?.address, api, blockWeight, createTransaction, t],
   )
 
   return { createBatch }
