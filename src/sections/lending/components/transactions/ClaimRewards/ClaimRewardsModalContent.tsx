@@ -145,7 +145,7 @@ export const ClaimRewardsModalContent = () => {
     )
 
   return (
-    <>
+    <div sx={{ flex: "column", gap: 20 }}>
       {blockingError !== undefined && (
         <Text color="red400">{handleBlocked()}</Text>
       )}
@@ -217,6 +217,6 @@ export const ClaimRewardsModalContent = () => {
         selectedReward={selectedReward ?? ({} as Reward)}
         blocked={blockingError !== undefined}
       />
-    </>
+    </div>
   )
 }

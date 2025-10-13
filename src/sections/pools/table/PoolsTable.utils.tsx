@@ -162,7 +162,13 @@ const AddLiquidityButton: React.FC<{
   return (
     <>
       {farms.length > 0 ? (
-        <Button variant="primary" size="small" css={styles} onClick={onClick}>
+        <Button
+          variant="primary"
+          size="small"
+          css={styles}
+          onClick={onClick}
+          disabled={!pool.canAddLiquidity && !pool.isStablePool}
+        >
           {t("liquidity.asset.actions.joinFarms")}
         </Button>
       ) : (
@@ -232,8 +238,8 @@ const StablePoolModalWrapper = ({
   return (
     <TransferModal
       onClose={onClose}
-      disabledOmnipool={!pool.isGETH || !pool.canAddLiquidity}
-      skipOptions={pool.isGETH}
+      disabledOmnipool={!pool.canAddLiquidity}
+      skipOptions
       initialAssetId={initialAssetId}
       farms={pool.farms}
       poolId={pool.poolId}

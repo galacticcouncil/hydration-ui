@@ -11,12 +11,8 @@ import {
   SCurrentDepositContainer,
 } from "sections/wallet/strategy/CurrentDeposit/CurrentDeposit.styled"
 import { CurrentDepositBalance } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBalance"
-import { CurrentDepositBindAccount } from "sections/wallet/strategy/CurrentDeposit/CurrentDepositBindAccount"
 import { RemoveDepositModal } from "sections/wallet/strategy/RemoveDepositModal/RemoveDepositModal"
-import {
-  useAccount,
-  useEvmAccount,
-} from "sections/web3-connect/Web3Connect.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useAssetsPrice } from "state/displayPrice"
 import { BN_0, GETH_ERC20_ASSET_ID } from "utils/constants"
 import { useUserRewards } from "sections/wallet/strategy/StrategyTile/StrategyTile.data"
@@ -49,8 +45,6 @@ export const CurrentDeposit: FC<Props> = ({
   stableswapId,
   emptyState,
 }) => {
-  const { isBound, isLoading: isLoadingEvmAccount } = useEvmAccount()
-
   const { getAssetWithFallback } = useAssets()
   const asset = getAssetWithFallback(aTokenId)
 
@@ -89,8 +83,6 @@ export const CurrentDeposit: FC<Props> = ({
 
   if (!hasBalance) return <CurrentDepositEmptyState emptyState={emptyState} />
 
-  const isAccountBindingRequired = !isLoadingEvmAccount && !isBound
-
   return (
     <SCurrentDeposit>
       {isGETH ? (
@@ -108,9 +100,7 @@ export const CurrentDeposit: FC<Props> = ({
         />
       )}
 
-      {isAccountBindingRequired ? (
-        <CurrentDepositBindAccount />
-      ) : isGETH ? (
+      {isGETH ? (
         <>
           <CurrentDepositSeparator />
           <CurrentDepositFarmsClaimReward assetId={aTokenId} />

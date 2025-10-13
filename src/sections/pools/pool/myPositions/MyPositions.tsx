@@ -43,7 +43,7 @@ export const MyPositions = () => {
       {pool.isStablePool && (
         <StablepoolPosition amount={BN(stablepoolAmount)} />
       )}
-      {!!pool.relatedAToken && <ATokenPosition />}
+      {!!pool.relatedAToken && pool.isStablePool && <ATokenPosition />}
       <FarmingPositionWrapper />
       <LiquidityPositionWrapper />
     </>
