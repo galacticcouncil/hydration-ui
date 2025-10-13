@@ -104,7 +104,8 @@ export const Stake = ({
     [api.tx, positionId, votes],
   )
 
-  const estimatedTxFee = getTx("1")
+  const estimatedTxFee =
+    !loading && isLoaded ? getTx("1") : ({} as SubmittableExtrinsic)
 
   const estimatedFees = useEstimatedFees(
     !loading && isLoaded
