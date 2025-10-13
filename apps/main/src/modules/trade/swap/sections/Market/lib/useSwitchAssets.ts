@@ -32,22 +32,24 @@ export const useSwitchAssets = () => {
           ? [
               TradeType.Buy,
               sellAmount &&
-                (await calculateSellAmount(
-                  newSellAsset,
-                  newBuyAsset,
-                  sellAmount,
-                )),
+                (await calculateSellAmount({
+                  sellAsset: newSellAsset,
+                  buyAsset: newBuyAsset,
+                  buyAmount: sellAmount,
+                  isSingleTrade: true,
+                })),
               sellAmount,
             ]
           : [
               TradeType.Sell,
               buyAmount,
               buyAmount &&
-                (await calculateBuyAmount(
-                  newSellAsset,
-                  newBuyAsset,
-                  buyAmount,
-                )),
+                (await calculateBuyAmount({
+                  sellAsset: newSellAsset,
+                  buyAsset: newBuyAsset,
+                  sellAmount: buyAmount,
+                  isSingleTrade: true,
+                })),
             ]
 
       const newFormValues: MarketFormValues = {

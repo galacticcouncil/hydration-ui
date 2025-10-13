@@ -28,7 +28,7 @@ type Props = {
 
 export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
-  const { watch } = useFormContext<DcaFormValues>()
+  const { formState, watch } = useFormContext<DcaFormValues>()
 
   const [sellAmount, sellAsset, buyAsset, period] = watch([
     "sellAmount",
@@ -45,7 +45,14 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
     return <DcaSummarySkeleton />
   }
 
-  if (!sellAsset || !buyAsset || !period || !sellAmount || !order) {
+  if (
+    !sellAsset ||
+    !buyAsset ||
+    !period ||
+    !sellAmount ||
+    !order ||
+    !formState.isValid
+  ) {
     return null
   }
 

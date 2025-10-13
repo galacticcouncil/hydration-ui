@@ -166,3 +166,19 @@ export const minimumOrderBudgetQuery = (
     staleTime: STALE_TIME,
   })
 }
+
+export const tradeOrderDurationQuery = (
+  { sdk, isApiLoaded }: TProviderContext,
+  tradeCount: number,
+  isEnabled: boolean,
+) =>
+  queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "twapExecutionTime",
+      tradeCount,
+    ],
+    queryFn: () => sdk.api.scheduler.getTwapExecutionTime(tradeCount),
+    enabled: isEnabled && isApiLoaded && !!tradeCount,
+  })

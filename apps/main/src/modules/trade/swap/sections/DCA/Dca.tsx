@@ -45,7 +45,11 @@ export const Dca: FC = () => {
           healthFactorRiskAccepted={healthFactorRiskAccepted}
           setHealthFactorRiskAccepted={setHealthFactorRiskAccepted}
         />
-        <DcaFooter isEnabled={!!order && isHealthFactorCheckSatisfied} />
+        <DcaFooter
+          isEnabled={
+            !!order && isHealthFactorCheckSatisfied && form.formState.isValid
+          }
+        />
       </form>
     </FormProvider>
   )

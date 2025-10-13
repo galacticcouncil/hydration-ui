@@ -209,7 +209,6 @@ const RemoveLiquidityJSX = ({
                     rangeLow={0.34}
                     rangeHigh={0.66}
                     value={Number(fee)}
-                    displayValue
                   />
                 }
               />

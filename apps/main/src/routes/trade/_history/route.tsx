@@ -30,6 +30,8 @@ const searchSchema = z
     return search
   })
 
+export type TradeHistorySearchParams = z.infer<typeof searchSchema>
+
 export const Route = createFileRoute("/trade/_history")({
   validateSearch: searchSchema,
 })

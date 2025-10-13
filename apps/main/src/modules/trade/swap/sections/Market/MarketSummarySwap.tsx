@@ -59,7 +59,6 @@ export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
           label={t("trade:market.summary.estTradeFees")}
           content={
             <DynamicFee
-              displayValue
               value={tradeFeePct}
               rangeLow={mediumLow}
               rangeHigh={mediumHigh}

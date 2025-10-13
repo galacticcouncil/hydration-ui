@@ -47,6 +47,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
   const tradeFeePct = Big(twap.tradeFee.toString())
     .div(tradeAmount.toString())
     .mul(100)
+    .toNumber()
 
   const [
     ,
@@ -91,10 +92,10 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap }) => {
           label={t("trade:market.summary.estTradeFees")}
           content={
             <DynamicFee
-              value={tradeFeePct.toNumber()}
+              value={tradeFeePct}
               rangeLow={mediumLow}
               rangeHigh={mediumHigh}
-              tooltip={`TODO ${t("percent", { value: tradeFeePct })}`}
+              tooltip="TODO"
             />
           }
         />

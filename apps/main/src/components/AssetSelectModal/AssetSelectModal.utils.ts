@@ -19,7 +19,8 @@ export const useAssetSelectModalAssets = (
   selectedAssetId?: string,
 ) => {
   const { account } = useAccount()
-  const { balances, getFreeBalance, isBalanceLoading } = useAccountBalances()
+  const { balances, getTransferableBalance, isBalanceLoading } =
+    useAccountBalances()
 
   const filteredAssets = useMemo<ReadonlyArray<TAssetWithBalance>>(
     () =>
@@ -50,7 +51,7 @@ export const useAssetSelectModalAssets = (
   }
 
   const assetsWithBalances = filteredAssets.map((asset) => {
-    const balance = scaleHuman(getFreeBalance(asset.id), asset.decimals)
+    const balance = scaleHuman(getTransferableBalance(asset.id), asset.decimals)
 
     const { price, isValid } = getAssetPrice(asset.id)
     const balanceDisplay = isValid ? Big(price).times(balance).toString() : "0"

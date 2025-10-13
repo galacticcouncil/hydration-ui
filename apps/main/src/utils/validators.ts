@@ -85,7 +85,7 @@ export const useValidateFormMaxBalance = () => {
           return true
         }
 
-        const balance = getBalance(asset.id)?.free.toString() || "0"
+        const balance = getBalance(asset.id)?.transferable.toString() || "0"
         const balanceHuman = scaleHuman(balance, asset.decimals)
 
         return validateMaxBalance(balanceHuman, amount)
@@ -137,7 +137,7 @@ export const validateFormExistentialDeposit = <TFormValues extends FieldValues>(
         : validateExistentialDeposit(asset, amount, multiplier)
     },
     {
-      error: maxBalanceError,
+      error: existentialDepositError,
       path: [path],
     },
   )
