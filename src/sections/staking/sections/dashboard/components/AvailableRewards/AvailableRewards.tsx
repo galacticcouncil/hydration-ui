@@ -29,6 +29,7 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { useAssetsPrice } from "state/displayPrice"
 import { useIncreaseStake } from "sections/staking/sections/dashboard/components/StakingInputSection/Stake/Stake.utils"
 import { useShallow } from "hooks/useShallow"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
 
 export const AvailableRewards = () => {
   const { api } = useRpcProvider()
@@ -46,10 +47,13 @@ export const AvailableRewards = () => {
 
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { createBatch } = useCreateBatchTx()
 
   const isLoading = isRewardLoading || isPriceLoading
 
   const onClaimRewards = async () => {
+    if (!reward?.positionId) throw new Error("PositionId is missing")
+
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
       const msType = type === "onError" ? "onLoading" : type
       memo[type] = (
@@ -69,29 +73,30 @@ export const AvailableRewards = () => {
 
     const processedVoteIds = await processedVotes.mutateAsync()
 
-    await createTransaction(
-      {
-        tx:
-          processedVoteIds &&
-          (processedVoteIds.newProcessedVotesIds.length ||
-            processedVoteIds?.oldProcessedVotesIds.length)
-            ? api.tx.utility.batchAll([
-                ...processedVoteIds.oldProcessedVotesIds.map((id) =>
-                  api.tx.democracy.removeVote(id),
-                ),
-                ...processedVoteIds.newProcessedVotesIds.map(
-                  ({ classId, id }) =>
-                    api.tx.convictionVoting.removeVote(
-                      classId ? classId : null,
-                      id,
-                    ),
-                ),
-                api.tx.staking.claim(reward?.positionId!),
-              ])
-            : api.tx.staking.claim(reward?.positionId!),
-      },
-      { toast },
-    )
+    if (
+      processedVoteIds &&
+      (processedVoteIds.newProcessedVotesIds.length ||
+        processedVoteIds.oldProcessedVotesIds.length)
+    ) {
+      const txs = [
+        ...processedVoteIds.oldProcessedVotesIds.map((id) =>
+          api.tx.democracy.removeVote(id),
+        ),
+        ...processedVoteIds.newProcessedVotesIds.map(({ classId, id }) =>
+          api.tx.convictionVoting.removeVote(classId ? classId : null, id),
+        ),
+        api.tx.staking.claim(reward.positionId),
+      ]
+
+      await createBatch(txs, {}, { toast })
+    } else {
+      await createTransaction(
+        {
+          tx: api.tx.staking.claim(reward.positionId),
+        },
+        { toast },
+      )
+    }
 
     await queryClient.invalidateQueries(QUERY_KEYS.stake(account?.address))
     refetch()

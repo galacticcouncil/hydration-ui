@@ -25,6 +25,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { Summary } from "components/Summary/Summary"
 import { useDebounce } from "react-use"
 import { Text } from "components/Typography/Text/Text"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
+import { ISubmittableResult } from "@polkadot/types/types"
 import { SubmittableExtrinsic } from "@polkadot/api/promise/types"
 
 export const Stake = ({
@@ -46,6 +48,7 @@ export const Stake = ({
   const { account } = useAccount()
   const refetchAccountAssets = useRefetchAccountAssets()
   const { update, diffDays } = useIncreaseStake()
+  const { createBatch } = useCreateBatchTx()
 
   const validation = useStakeValidation({
     availableBalance: balance,
@@ -72,7 +75,7 @@ export const Stake = ({
 
   const { data: votes } = useProcessedVotesIdsQuery()
 
-  const getExtrinsic = useCallback(
+  const getTx = useCallback(
     (amountHuman: string) => {
       const amount = scale(amountHuman, 12).toString()
 
@@ -86,7 +89,7 @@ export const Stake = ({
         votes &&
         (votes.newProcessedVotesIds.length || votes.oldProcessedVotesIds.length)
       ) {
-        return api.tx.utility.batchAll([
+        return [
           ...votes.oldProcessedVotesIds.map((id) =>
             api.tx.democracy.removeVote(id),
           ),
@@ -94,15 +97,22 @@ export const Stake = ({
             api.tx.convictionVoting.removeVote(classId || null, id),
           ),
           api.tx.staking.increaseStake(positionId, amount),
-        ])
+        ]
       }
       return api.tx.staking.increaseStake(positionId, amount)
     },
     [api.tx, positionId, votes],
   )
 
+  const estimatedTxFee =
+    !loading && isLoaded ? getTx("1") : ({} as SubmittableExtrinsic)
+
   const estimatedFees = useEstimatedFees(
-    isLoaded ? getExtrinsic("1") : ({} as SubmittableExtrinsic),
+    !loading && isLoaded
+      ? Array.isArray(estimatedTxFee)
+        ? api.tx.utility.batchAll(estimatedTxFee)
+        : estimatedTxFee
+      : ({} as SubmittableExtrinsic),
   )
 
   const balanceMax =
@@ -124,14 +134,21 @@ export const Stake = ({
       },
     )
 
-    const transaction = await createTransaction(
-      {
-        tx: getExtrinsic(values.amount),
-      },
-      { toast },
-    )
+    const tx = getTx(values.amount)
+    let transaction: ISubmittableResult | undefined
 
-    if (!transaction.isError) {
+    if (Array.isArray(tx)) {
+      transaction = await createBatch(tx, {}, { toast })
+    } else {
+      transaction = await createTransaction(
+        {
+          tx,
+        },
+        { toast },
+      )
+    }
+
+    if (transaction && !transaction.isError) {
       form.reset()
     }
 
