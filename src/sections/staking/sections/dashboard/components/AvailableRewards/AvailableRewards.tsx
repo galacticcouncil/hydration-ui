@@ -52,6 +52,8 @@ export const AvailableRewards = () => {
   const isLoading = isRewardLoading || isPriceLoading
 
   const onClaimRewards = async () => {
+    if (!reward?.positionId) throw new Error("PositionId is missing")
+
     const toast = TOAST_MESSAGES.reduce((memo, type) => {
       const msType = type === "onError" ? "onLoading" : type
       memo[type] = (
@@ -74,7 +76,7 @@ export const AvailableRewards = () => {
     if (
       processedVoteIds &&
       (processedVoteIds.newProcessedVotesIds.length ||
-        processedVoteIds?.oldProcessedVotesIds.length)
+        processedVoteIds.oldProcessedVotesIds.length)
     ) {
       const txs = [
         ...processedVoteIds.oldProcessedVotesIds.map((id) =>
@@ -83,14 +85,14 @@ export const AvailableRewards = () => {
         ...processedVoteIds.newProcessedVotesIds.map(({ classId, id }) =>
           api.tx.convictionVoting.removeVote(classId ? classId : null, id),
         ),
-        api.tx.staking.claim(reward?.positionId!),
+        api.tx.staking.claim(reward.positionId),
       ]
 
       await createBatch(txs, {}, { toast })
     } else {
       await createTransaction(
         {
-          tx: api.tx.staking.claim(reward?.positionId!),
+          tx: api.tx.staking.claim(reward.positionId),
         },
         { toast },
       )

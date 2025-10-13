@@ -198,7 +198,7 @@ export const useRemoveLiquidity = (
         return memo
       }, {} as ToastMessage)
 
-      const transactioOptions = {
+      const transactionOptions = {
         toast,
         onBack: () => null,
         onClose,
@@ -215,9 +215,9 @@ export const useRemoveLiquidity = (
       )
 
       if (txs.length > 1) {
-        return await createBatch(txs, {}, transactioOptions)
+        return await createBatch(txs, {}, transactionOptions)
       } else {
-        return await createTransaction({ tx: txs[0] }, transactioOptions)
+        return await createTransaction({ tx: txs[0] }, transactionOptions)
       }
     } else {
       if (!values) return null
