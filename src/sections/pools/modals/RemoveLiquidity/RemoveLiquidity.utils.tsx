@@ -17,6 +17,7 @@ import { Trans, useTranslation } from "react-i18next"
 import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
 
 export type RemoveLiquidityProps = {
   onClose: () => void
@@ -50,6 +51,7 @@ export const useRemoveLiquidity = (
   const { api } = useRpcProvider()
   const { hub } = useAssets()
   const { pool } = usePoolData()
+  const { createBatch } = useCreateBatchTx()
 
   const isPositionMultiple = Array.isArray(position)
 
@@ -196,7 +198,7 @@ export const useRemoveLiquidity = (
         return memo
       }, {} as ToastMessage)
 
-      const transactioOptions = {
+      const transactionOptions = {
         toast,
         onBack: () => null,
         onClose,
@@ -213,12 +215,9 @@ export const useRemoveLiquidity = (
       )
 
       if (txs.length > 1) {
-        return await createTransaction(
-          { tx: api.tx.utility.batch(txs) },
-          transactioOptions,
-        )
+        return await createBatch(txs, {}, transactionOptions)
       } else {
-        return await createTransaction({ tx: txs[0] }, transactioOptions)
+        return await createTransaction({ tx: txs[0] }, transactionOptions)
       }
     } else {
       if (!values) return null
