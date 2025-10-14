@@ -9,14 +9,17 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { TFunction, useTranslation } from "react-i18next"
 import { ClaimRewardsActionsProps } from "sections/lending/components/transactions/ClaimRewards/ClaimRewardsActions"
 import { Reward } from "sections/lending/helpers/types"
+import { useModalContext } from "sections/lending/hooks/useModal"
 import { useRootStore } from "sections/lending/store/root"
 import { getFunctionDefsFromAbi } from "sections/lending/utils/utils"
 import {
   useAccount,
   useEvmAccount,
+  useWallet,
 } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
+import { isEvmWalletExtension } from "utils/evm"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 export const useClaimMoneyMarketRewards = () => {
@@ -26,6 +29,8 @@ export const useClaimMoneyMarketRewards = () => {
   const { createTransaction } = useStore()
   const { isBound } = useEvmAccount()
   const { account } = useAccount()
+  const { close } = useModalContext()
+  const { wallet } = useWallet()
 
   const transformTx = useTransformEvmTxToExtrinsic()
   const { mutateAsync: estimateGasLimit } = useBorrowGasEstimation()
@@ -69,6 +74,8 @@ export const useClaimMoneyMarketRewards = () => {
           },
           {
             toast: getClaimRewardsToasts(t, selectedReward, claimableUsd),
+            onSubmitted: close,
+            rejectOnClose: true,
             onSuccess: () => {
               if (account) {
                 queryClient.refetchQueries(
@@ -86,13 +93,17 @@ export const useClaimMoneyMarketRewards = () => {
       )
       return createTransaction(
         {
-          tx: transformTx(tx),
+          ...(!isEvmWalletExtension(wallet?.extension) && {
+            tx: transformTx(tx),
+          }),
           evmTx: {
             data: tx,
             abi,
           },
         },
         {
+          onSubmitted: close,
+          rejectOnClose: true,
           toast: getClaimRewardsToasts(t, selectedReward, claimableUsd),
         },
       )
