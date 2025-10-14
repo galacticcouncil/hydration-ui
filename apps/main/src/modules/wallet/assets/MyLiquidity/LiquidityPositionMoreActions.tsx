@@ -81,10 +81,10 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
         </>
       )}
       <Modal open={action === "join"} onOpenChange={() => setAction("none")}>
-        <JoinFarmsWrapper positionId={positionId} poolId={assetId} />
+        <JoinFarmsWrapper positionId={positionId} poolId={assetId} closable />
       </Modal>
       <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
-        <RemoveLiquidity poolId={assetId} positionId={positionId} />
+        <RemoveLiquidity poolId={assetId} positionId={positionId} closable />
       </Modal>
     </>
   )

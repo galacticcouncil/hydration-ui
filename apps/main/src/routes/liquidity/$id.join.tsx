@@ -5,13 +5,13 @@ import { z } from "zod/v4"
 
 import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 
-const JoinFarmsSchema = z.object({
-  positionId: z.string(),
+const joinFarmsSchema = z.object({
+  positionId: z.string().optional(),
 })
 
 export const Route = createFileRoute("/liquidity/$id/join")({
   component: RouteComponent,
-  validateSearch: JoinFarmsSchema,
+  validateSearch: joinFarmsSchema,
 })
 
 function RouteComponent() {

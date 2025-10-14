@@ -6,9 +6,10 @@ import { Binary, Enum } from "polkadot-api"
 import { useMemo } from "react"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scale } from "@/utils/formatting"
 
 import { hubToken, omnipoolTokens } from "./pools"
+
+type OraclePricePoolType = "omnipool" | "hydraxyk"
 
 export const useOmnipoolAssetsData = () => {
   const { data: omnipoolTokensData, isLoading: isOmnipoolTokensLoading } =
@@ -107,13 +108,14 @@ export const useAssetFeeParameters = () => {
 export const useOraclePrice = (
   assetA: number | undefined,
   assetB: number | undefined,
+  type: OraclePricePoolType = "omnipool",
 ) => {
   const { papi, isLoaded } = useRpcProvider()
 
   return useQuery({
     staleTime: millisecondsInHour,
     enabled: isLoaded && !!assetA && !!assetB,
-    queryKey: ["oracles", assetA, assetB],
+    queryKey: ["oracles", type, assetA, assetB],
     queryFn:
       !!assetA && !!assetB
         ? async () => {
@@ -122,20 +124,16 @@ export const useOraclePrice = (
               number,
             ]
 
-            if (assetA === assetB)
-              return {
-                id: { assetA, assetB },
-                oraclePrice: scale(1, "q"),
-              }
-
             const res = await papi.query.EmaOracle.Oracles.getValue(
-              Binary.fromText("omnipool"),
+              Binary.fromText(type),
               orderedAssets,
               Enum("TenMinutes"),
             )
 
-            if (res) {
-              const { n, d } = res[0].price
+            const [data] = res ?? []
+
+            if (data) {
+              const { n, d } = data.price
 
               let oraclePrice
               if (assetA < assetB) {
@@ -147,10 +145,11 @@ export const useOraclePrice = (
               return {
                 id: { assetA, assetB },
                 oraclePrice,
+                ...data,
               }
             }
 
-            return undefined
+            return null
           }
         : undefined,
   })

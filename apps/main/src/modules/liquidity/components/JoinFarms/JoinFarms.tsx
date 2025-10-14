@@ -8,54 +8,150 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { preventDefault } from "@galacticcouncil/utils"
+import { isSS58Address } from "@galacticcouncil/utils"
+import { useRouter } from "@tanstack/react-router"
+import { useEffect } from "react"
+import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { Farm, useOmnipoolActiveFarm } from "@/api/farms"
+import { TAssetData } from "@/api/assets"
+import { Farm } from "@/api/farms"
+import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AvailableFarms } from "@/modules/liquidity/components/AvailableFarms"
-import { useAssets } from "@/providers/assetsProvider"
-import { useAccountOmnipoolPositionsData } from "@/states/account"
+import {
+  IsolatedPoolTable,
+  OmnipoolAssetTable,
+} from "@/modules/liquidity/Liquidity.utils"
+import { XYKPoolMeta } from "@/providers/assetsProvider"
+import { AccountOmnipoolPosition } from "@/states/account"
+import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
+import {
+  TJoinFarmsForm,
+  useJoinFarmsForm,
+  useJoinIsolatedPoolFarms,
+  useJoinOmnipoolFarms,
+} from "./JoinFarms.utils"
 import { JoinFarmsSkeleton } from "./JoinFarmsSkeleton"
 
 type JoinFarmsProps = {
-  positionId: string
+  positionId?: string
+  depositId?: string
   poolId: string
   closable?: boolean
 }
 
-export const JoinFarmsWrapper = ({ poolId, ...props }: JoinFarmsProps) => {
-  const { data: farms, isLoading } = useOmnipoolActiveFarm(poolId)
+export const JoinFarmsWrapper = (props: JoinFarmsProps) =>
+  isSS58Address(props.poolId) ? (
+    <IsolatedPoolJoinFarmsWrapper {...props} />
+  ) : (
+    <OmnipoolJoinFarmsWrapper {...props} />
+  )
 
-  const activeFarms = farms?.filter((farm) => farm.apr !== "0") ?? []
+const OmnipoolJoinFarmsWrapper = (props: JoinFarmsProps) => {
+  const { data: omnipoolAsset, isLoading: isOmnipoolAssetLoading } =
+    useOmnipoolAsset(props.poolId)
 
-  if (isLoading || !activeFarms.length) return <JoinFarmsSkeleton />
+  const position = omnipoolAsset?.positions.find(
+    (position) => position.positionId === props.positionId,
+  )
 
-  return <JoinFarms farms={activeFarms} poolId={poolId} {...props} />
+  if (!omnipoolAsset || isOmnipoolAssetLoading || !position) {
+    return <JoinFarmsSkeleton />
+  }
+
+  return (
+    <OmnipoolJoinFarms
+      position={position}
+      omnipoolAsset={omnipoolAsset}
+      {...props}
+    />
+  )
 }
 
-export const JoinFarms = ({
-  positionId,
-  poolId,
-  closable,
-  farms,
-}: JoinFarmsProps & { farms: Farm[] }) => {
-  const { t } = useTranslation(["liquidity", "common"])
-  const { getAssetWithFallback } = useAssets()
-  const meta = getAssetWithFallback(poolId)
+const IsolatedPoolJoinFarmsWrapper = (props: JoinFarmsProps) => {
+  const { data: xykData, isLoading: isXYKLoading } = useXYKPool(props.poolId)
 
-  const { getAssetPositions } = useAccountOmnipoolPositionsData()
-  const { omnipool } = getAssetPositions(poolId)
-  const position = omnipool.find(
-    (position) => position.positionId === positionId,
-  )
+  if (!xykData || isXYKLoading) {
+    return <JoinFarmsSkeleton />
+  }
+
+  return <IsolatedPoolJoinFarms xykData={xykData} {...props} />
+}
+
+const OmnipoolJoinFarms = (
+  props: JoinFarmsProps & {
+    position: AccountOmnipoolPosition
+    omnipoolAsset: OmnipoolAssetTable
+  },
+) => {
+  const { position, omnipoolAsset } = props
+
+  const data = useJoinOmnipoolFarms({
+    position,
+    omnipoolAsset,
+  })
+
+  if (!data) return <JoinFarmsSkeleton />
+
+  return <JoinFarmsForm {...props} {...data} />
+}
+
+const IsolatedPoolJoinFarms = (
+  props: JoinFarmsProps & { xykData: IsolatedPoolTable },
+) => {
+  const { xykData, positionId } = props
+  const data = useJoinIsolatedPoolFarms({
+    xykData,
+    positionId,
+  })
+
+  if (!data) return <JoinFarmsSkeleton />
+
+  return <JoinFarmsForm {...props} {...data} />
+}
+
+const JoinFarmsForm = ({
+  onSubmit,
+  closable,
+  availableFarms,
+  meta,
+  formValues,
+  isEditable,
+}: JoinFarmsProps & {
+  availableFarms: Farm[]
+  onSubmit: (amount: string) => void
+  meta: TAssetData | XYKPoolMeta
+  formValues: TJoinFarmsForm
+  isEditable?: boolean
+}) => {
+  const { t } = useTranslation(["liquidity", "common"])
+  const { history } = useRouter()
+
+  const {
+    control,
+    formState: { isValid },
+    handleSubmit,
+    trigger,
+  } = useJoinFarmsForm(formValues)
+
+  useEffect(() => {
+    trigger("amount")
+  }, [trigger])
 
   return (
     <>
-      <ModalHeader title={t("joinFarms")} closable={closable} />
+      <ModalHeader
+        title={t("joinFarms")}
+        closable={closable}
+        onBack={!closable ? () => history.back() : undefined}
+      />
       <ModalBody>
-        <AvailableFarms farms={farms} />
-        <form autoComplete="off" onSubmit={preventDefault}>
+        <AvailableFarms farms={availableFarms} />
+        <form
+          autoComplete="off"
+          onSubmit={handleSubmit((data) => onSubmit(data.amount))}
+        >
           <ModalContentDivider
             sx={{ mt: getTokenPx("containers.paddings.primary") }}
           />
@@ -65,31 +161,72 @@ export const JoinFarms = ({
             gap={getTokenPx("containers.paddings.quart")}
             py={getTokenPx("containers.paddings.secondary")}
           >
-            <Text fs={14} fw={500} font="primary" color={getToken("text.high")}>
-              {t("liquidity.joinFarms.modal.currentPositionValue")}
-            </Text>
-            <Flex align="center" justify="space-between" gap={8}>
+            {!isEditable && (
               <Text
-                color={getToken("text.medium")}
-                fs="p5"
-                fw={400}
-                width={220}
+                fs={14}
+                fw={500}
+                font="primary"
+                color={getToken("text.high")}
               >
-                {t("liquidity.joinFarms.modal.description")}
+                {t("liquidity.joinFarms.modal.currentPositionValue")}
               </Text>
-              {position?.data ? (
-                <Amount
-                  value={t("common:currency", {
-                    value: position.data.currentTotalValueHuman,
-                    symbol: meta.symbol,
-                  })}
-                  displayValue={t("common:currency", {
-                    value: position.data.currentTotalDisplay,
-                  })}
-                  size="large"
-                />
-              ) : null}
-            </Flex>
+            )}
+
+            <Controller
+              name="amount"
+              control={control}
+              render={({
+                field: { value, onChange },
+                fieldState: { error },
+              }) =>
+                isEditable ? (
+                  <AssetSelect
+                    assets={[]}
+                    selectedAsset={meta}
+                    maxBalance={formValues.amount}
+                    value={value}
+                    onChange={onChange}
+                    error={error?.message}
+                    ignoreDollarValue
+                    sx={{ pt: 0 }}
+                  />
+                ) : (
+                  <Flex direction="column">
+                    <Flex align="center" justify="space-between" gap={8}>
+                      <Text
+                        color={getToken("text.medium")}
+                        fs="p5"
+                        fw={400}
+                        width={220}
+                      >
+                        {t("liquidity.joinFarms.modal.description")}
+                      </Text>
+                      <Amount
+                        value={t("common:currency", {
+                          value: value,
+                          symbol: meta.symbol,
+                        })}
+                        // displayValue={t("common:currency", {
+                        //   value: position.data.currentTotalDisplay,
+                        // })}
+                        size="large"
+                      />
+                    </Flex>
+                    {error && (
+                      <Text
+                        fs={12}
+                        font="secondary"
+                        fw={400}
+                        color={getToken("accents.danger.secondary")}
+                        sx={{ marginLeft: "auto", lineHeight: 1 }}
+                      >
+                        {error.message}
+                      </Text>
+                    )}
+                  </Flex>
+                )
+              }
+            />
           </Flex>
 
           <ModalContentDivider />
@@ -99,10 +236,10 @@ export const JoinFarms = ({
             size="large"
             width="100%"
             mt={getTokenPx("containers.paddings.primary")}
-            disabled={false}
+            disabled={!isValid}
           >
-            {t("liquidity.joinFarms.modal.submit", {
-              amount: farms.length,
+            {t("liquidity.joinFarms.modal.submit.btn", {
+              count: availableFarms.length,
             })}
           </Button>
         </form>
