@@ -60,8 +60,6 @@ const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
       return t("liquidity:pools")
     case "/liquidity/$id/add":
       return t("liquidity:addLiquidity")
-    case "/liquidity/$id/addStablepool":
-      return t("liquidity:addLiquidity")
     case "/liquidity/$id/remove":
       return t("liquidity:removeLiquidity")
     case "/liquidity/$id/join":
