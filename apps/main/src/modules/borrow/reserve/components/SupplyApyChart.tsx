@@ -24,7 +24,6 @@ export const SupplyApyChart: FC<Props> = ({ assetId }) => {
 
   const {
     data = [],
-    isSuccess,
     isLoading,
     isError,
   } = useQuery(supplyRateChartDataQuery(assetId, from, to))
@@ -37,7 +36,6 @@ export const SupplyApyChart: FC<Props> = ({ assetId }) => {
       color={themeProps.accents.info.onPrimary}
       timeRange={timeRange}
       data={data}
-      isSuccess={isSuccess}
       isLoading={isLoading}
       isError={isError}
       onTimeRangeChange={setTimeRange}

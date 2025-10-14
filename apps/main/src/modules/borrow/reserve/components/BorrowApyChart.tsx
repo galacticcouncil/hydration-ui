@@ -24,7 +24,6 @@ export const BorrowApyChart: FC<Props> = ({ assetId }) => {
 
   const {
     data = [],
-    isSuccess,
     isLoading,
     isError,
   } = useQuery(variableBorrowRateChartDataQuery(assetId, from, to))
@@ -35,7 +34,6 @@ export const BorrowApyChart: FC<Props> = ({ assetId }) => {
       color={VARIABLE_BORROW_RATE_COLOR}
       timeRange={timeRange}
       data={data}
-      isSuccess={isSuccess}
       isLoading={isLoading}
       isError={isError}
       onTimeRangeChange={setTimeRange}

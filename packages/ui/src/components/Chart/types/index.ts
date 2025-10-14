@@ -27,7 +27,10 @@ export type ChartConfig<TData extends TChartData> = {
   series: {
     key: ExtractDataKeyOfType<TData, number>
     label?: string
-    color?: string | [string, string]
+    color?:
+      | string
+      | [string, string]
+      | [string, string, stopOpacity?: number, opacity?: number]
   }[]
 }
 
@@ -41,6 +44,8 @@ export type ChartSharedProps<TData extends TChartData> = {
   data: Array<TData>
   horizontalGridHidden?: boolean
   verticalGridHidden?: boolean
+  gridHorizontalValues?: number[] | string[]
+  gridVerticalValues?: number[] | string[]
   xAxisHidden?: boolean
   xAxisProps?: XAxisProps
   xAxisLabel?: BaseAxisProps["label"]
