@@ -19,7 +19,7 @@ export const useWalletRewardsSectionData = () => {
 
   const incentivesEmpty = claimableRewardsUsd <= 0
   const farmingEmpty = Big(liquidityUSD).lte(0)
-  const stakingEmpty = Big(staking || "0").lte(0)
+  const stakingEmpty = Big("0").lte(0)
   const referralsEmpty = Big(referral?.totalRewards || "0").lte(0)
 
   const isEmpty =

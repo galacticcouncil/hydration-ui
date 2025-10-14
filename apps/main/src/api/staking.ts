@@ -9,7 +9,8 @@ export const stakingRewardsQuery = (
 ) => {
   return queryOptions({
     queryKey: ["staking", "rewards", address, blockNumber],
-    queryFn: () => sdk.api.staking.getRewards(address, blockNumber.toString()),
+    queryFn: () =>
+      sdk.api.staking.getRewards(address, [], blockNumber.toString()),
     enabled: isApiLoaded && !!address && !!blockNumber,
   })
 }
