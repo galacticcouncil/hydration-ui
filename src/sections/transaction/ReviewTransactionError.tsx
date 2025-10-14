@@ -11,10 +11,11 @@ import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useActiveProvider } from "api/provider"
 import { useBestNumber } from "api/chain"
+import { TransactionError } from "sections/transaction/ReviewTransaction.utils"
 import {
-  TransactionError,
-  TTxErrorData,
-} from "sections/transaction/ReviewTransaction.utils"
+  getErrorTemplate,
+  parseErrorMessage,
+} from "sections/transaction/ReviewTransactionError.utils"
 
 type ReviewTransactionErrorProps = {
   onClose: () => void
@@ -109,24 +110,4 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
       </div>
     </div>
   )
-}
-
-function parseErrorMessage(error: unknown) {
-  let message = ""
-  try {
-    message =
-      error instanceof TransactionError || error instanceof Error
-        ? error.message || error.toString()
-        : typeof error === "object"
-          ? JSON.stringify(error)
-          : `${error}`
-  } catch (err) {}
-
-  return message
-}
-
-function getErrorTemplate(data: TTxErrorData = {}) {
-  return Object.entries(data)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join("\n")
 }

@@ -293,7 +293,7 @@ export const useWeb3ConnectEagerEnable = () => {
       state.disconnect()
     }
 
-    const unsubs: Unsubcall[] = []
+    const unsubs = new Map<WalletProviderType, Unsubcall>()
 
     async function eagerEnable(wallet: WalletProvider["wallet"]) {
       if (wallet instanceof ExternalWallet) {
@@ -329,13 +329,17 @@ export const useWeb3ConnectEagerEnable = () => {
         await wallet?.enable(POLKADOT_APP_NAME)
       }
 
-      if (wallet instanceof BaseDotsamaWallet) {
+      const providerType = normalizeProviderType(wallet)
+      const isSubscribed = unsubs.has(providerType)
+
+      if (wallet instanceof BaseDotsamaWallet && !isSubscribed) {
         const unsub = await subscribeSubstrateWalletAccountChange(wallet)
-        unsubs.push(unsub)
+        unsubs.set(providerType, unsub)
       }
 
       return () => {
         unsubs.forEach((unsub) => unsub())
+        unsubs.clear()
       }
     }
   }, [])
@@ -386,7 +390,7 @@ export const useEnableWallet = (
   const { add: addToAddressBook } = useAddressStore()
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
 
-  const unsubsRef = useRef<Unsubcall[]>([])
+  const unsubsRef = useRef<Map<WalletProviderType, Unsubcall>>(new Map())
 
   const { mutate: enable, ...mutation } = useMutation<
     WalletAccount[] | undefined,
@@ -395,15 +399,20 @@ export const useEnableWallet = (
     unknown
   >(
     async (namespace) => {
+      if (!wallet) return []
+      const providerType = normalizeProviderType(wallet)
+
       if (wallet instanceof WalletConnect && namespace) {
         wallet.setNamespace(namespace)
       }
 
-      await wallet?.enable(POLKADOT_APP_NAME)
+      await wallet.enable(POLKADOT_APP_NAME)
 
-      if (wallet instanceof BaseDotsamaWallet) {
+      const isSubscribed = unsubsRef.current.has(providerType)
+
+      if (wallet instanceof BaseDotsamaWallet && !isSubscribed) {
         const unsub = await subscribeSubstrateWalletAccountChange(wallet)
-        unsubsRef.current.push(unsub)
+        unsubsRef.current.set(providerType, unsub)
       }
 
       if (wallet instanceof MetaMask) {
@@ -412,7 +421,7 @@ export const useEnableWallet = (
         })
       }
 
-      return wallet?.getAccounts()
+      return wallet.getAccounts()
     },
     {
       retry: false,
@@ -444,6 +453,7 @@ export const useEnableWallet = (
     const unsubs = unsubsRef.current
     return () => {
       unsubs.forEach((unsub) => unsub())
+      unsubs.clear()
     }
   }, [])
 
