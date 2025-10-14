@@ -83,7 +83,7 @@ export const SModalContent = styled(Content)`
     position: relative;
     inset: auto;
 
-    max-width: 600px;
+    max-width: 520px;
     height: auto;
 
     &[data-state="open"] {
