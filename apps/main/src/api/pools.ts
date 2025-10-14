@@ -40,7 +40,10 @@ export const allPools = (
       for (const pool of pools) {
         if (pool.type === PoolType.Stable) {
           stablePools_.push(pool as StableSwap)
-        } else if (pool.type === PoolType.XYK) {
+        } else if (
+          pool.type === PoolType.XYK &&
+          pool.tokens.every((token) => !!token.decimals)
+        ) {
           xykPools_.push(pool)
         } else if (pool.type === PoolType.Omni) {
           const tokens = pool.tokens as OmniPoolToken[]

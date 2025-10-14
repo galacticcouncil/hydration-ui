@@ -102,9 +102,12 @@
   "liquidity.remove.modal.toast.success": "Withdrawn {{ value, number }} {{symbol}} {{ hub }} from Omnipool.",
   "liquidity.remove.modal.toast.hub": "and {{ value, number }} H2O",
   "liquidity.remove.modal.balance": "Balance: {{ value, number }}",
-  "liquidity.joinFarms.modal.submit": "Join {{amount, number}} Farms",
+  "liquidity.joinFarms.modal.submit.btn_one": "Join {{count, number}} Farm",
+  "liquidity.joinFarms.modal.submit.btn_other": "Join {{count, number}} Farms",
   "liquidity.joinFarms.modal.currentPositionValue": "Current position value",
   "liquidity.joinFarms.modal.description": "Hydra supports joining farms with 100% of pool shares from liquidity positions.",
+  "liquidity.joinFarms.modal.join.toast.submitted": "Joining farm with {{ value, number }} {{symbol}}.",
+  "liquidity.joinFarms.modal.join.toast.success": "Joined farm with {{ value, number }} {{symbol}}.",
   "liquidity.createPool.modal.title": "Create Isolated Pool",
   "liquidity.createPool.modal.assetA": "Asset A",
   "liquidity.createPool.modal.assetB": "Asset B",
@@ -118,5 +121,7 @@
   "liquidity.tooltip.fee.apr.omnipoolFee": "Omnipool fee",
   "liquidity.tooltip.fee.apr.stablepoolFee": "Stablepool fee",
   "liquidity.tooltip.fee.apr.farmRewardsApr": "Farm rewards apr",
-  "liquidity.tooltip.fee.apr.apr": "APR"
+  "liquidity.tooltip.fee.apr.apr": "APR",
+  "liquidity.joinFarms.modal.validation.minShares": "Minimal value of liquidity position for entering farms is {{ value, number }} {{symbol}}"
+  
   }

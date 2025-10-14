@@ -321,9 +321,12 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
             {isFarms && !positionId && (
               <Button variant="primary" asChild>
                 <Link
-                  to="/liquidity/$id/add"
+                  to="/liquidity/$id/join"
                   params={{
                     id: poolId,
+                  }}
+                  search={{
+                    positionId,
                   }}
                 >
                   <Plus />

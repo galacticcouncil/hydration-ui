@@ -37,7 +37,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
             <ModalTrigger>{t("myLiquidity.actions.addLiquidity")}</ModalTrigger>
           </TableRowAction>
           <ModalContent>
-            <AddLiquidityModalContent id={assetId} />
+            <AddLiquidityModalContent id={assetId} closable />
           </ModalContent>
         </ModalRoot>
         <TableRowAction asChild>
@@ -70,7 +70,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
         </DropdownMenu>
       </Flex>
       <Modal open={isRemoveAllModalOpen} onOpenChange={setIsRemoveAllModalOpen}>
-        <RemoveLiquidity poolId={assetId} all />
+        <RemoveLiquidity poolId={assetId} all closable />
       </Modal>
     </>
   )

@@ -80,6 +80,7 @@ export const OmnipoolAndStablepoolTable = ({
               resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
+              search: { expanded: false },
             })
           }}
         />
@@ -137,6 +138,7 @@ export const IsolatedPoolsTable = ({
               resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
+              search: { expanded: false },
             })
           }
         />

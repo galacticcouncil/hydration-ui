@@ -4,8 +4,13 @@ import {
   useLocation,
   useParams,
 } from "@tanstack/react-router"
+import z from "zod/v4"
 
 import { PoolDetails } from "@/modules/liquidity/PoolDetails"
+
+const searchSchema = z.object({
+  expanded: z.boolean().optional(),
+})
 
 const Component = () => {
   const { id } = useParams({ from: "/liquidity/$id" })
@@ -18,4 +23,5 @@ const Component = () => {
 
 export const Route = createFileRoute("/liquidity/$id")({
   component: Component,
+  validateSearch: searchSchema,
 })
