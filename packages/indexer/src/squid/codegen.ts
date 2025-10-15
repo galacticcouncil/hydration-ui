@@ -4,6 +4,16 @@ export default {
   schema:
     "https://galacticcouncil.squids.live/hydration-pools:whale-prod/api/graphql",
   overwrite: true,
+  config: {
+    preResolveTypes: true,
+    onlyOperationTypes: true,
+    defaultScalarType: "unknown",
+    scalars: {
+      BigFloat: "string",
+      Datetime: "string",
+      JSON: "any",
+    },
+  },
   generates: {
     "schema.squid.graphql": {
       plugins: ["schema-ast"],

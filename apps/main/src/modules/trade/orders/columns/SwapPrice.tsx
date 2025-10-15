@@ -9,7 +9,7 @@ import { TAsset } from "@/providers/assetsProvider"
 type Props = {
   readonly from: TAsset
   readonly to: TAsset
-  readonly price: string
+  readonly price: string | null
 }
 
 export const SwapPrice: FC<Props> = ({ from, to, price }) => {

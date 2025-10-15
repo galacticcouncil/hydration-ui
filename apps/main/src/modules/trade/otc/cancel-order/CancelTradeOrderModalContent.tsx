@@ -3,8 +3,8 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 type Props = {
-  readonly sold: string
-  readonly total: string
+  readonly sold: string | null
+  readonly total: string | null
   readonly symbol: string
   readonly onBack: () => void
   readonly onSubmit: () => void
