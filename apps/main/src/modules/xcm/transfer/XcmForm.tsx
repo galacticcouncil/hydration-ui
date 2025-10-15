@@ -29,6 +29,7 @@ import { useChainSwitch } from "@/modules/xcm/transfer/hooks/useChainSwitch"
 import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmTransfer"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 
 export const XcmForm = () => {
@@ -45,7 +46,7 @@ export const XcmForm = () => {
     isLoading: isDataLoading,
   } = useXcmProvider()
 
-  const { setValue, watch, formState, handleSubmit } =
+  const { setValue, watch, formState, handleSubmit, reset } =
     useFormContext<XcmFormValues>()
 
   const [srcChain, srcAsset, destChain, destAsset, destAddress] = watch([
@@ -56,16 +57,28 @@ export const XcmForm = () => {
     "destAddress",
   ])
 
-  const address = account?.address ?? ""
+  const srcAddress = account?.rawAddress ?? ""
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
-  const { data: srcBalances } = useCrossChainBalance(address, srcChainKey)
-  const { data: destBalances } = useCrossChainBalance(address, destChainKey)
+  const { data: srcBalances } = useCrossChainBalance(srcAddress, srcChainKey)
+  const { data: destBalances } = useCrossChainBalance(destAddress, destChainKey)
 
   const submit = useSubmitXcmTransfer()
 
   const isLoading = isDataLoading || submit.isPending
+
+  function onConnect() {
+    if (!srcChain) return toggle()
+    toggle(getWalletModeByChain(srcChain), {
+      title: t("connect.modal.title", {
+        chain: srcChain.name,
+      }),
+      description: t("connect.modal.description", {
+        chain: srcChain.name,
+      }),
+    })
+  }
 
   return (
     <form
@@ -93,16 +106,19 @@ export const XcmForm = () => {
                       walletProvider={wallet?.provider}
                       address={account?.displayAddress}
                       emptyFallback={t("form.connectWallet")}
-                      onClick={() => toggle()}
+                      onClick={onConnect}
                     />
                   </Flex>
                 </Flex>
                 <ChainAssetFormField
                   fieldName="srcAsset"
                   type="source"
+                  address={account?.rawAddress}
                   chainAssetPairs={sourceChainAssetPairs}
                   selectedChain={srcChain}
-                  setSelectedChain={(chain) => setValue("srcChain", chain)}
+                  setSelectedChain={(chain) =>
+                    reset({ srcChain: chain, srcAsset: null, destAsset: null })
+                  }
                   onAssetChange={() => {
                     setValue("srcAmount", "")
                     setValue("destAmount", "")
@@ -143,10 +159,13 @@ export const XcmForm = () => {
                 <ChainAssetFormField
                   fieldName="destAsset"
                   type="destination"
+                  address={destAddress}
                   disabled={!srcAsset}
                   chainAssetPairs={destChainAssetPairs}
                   selectedChain={destChain}
-                  setSelectedChain={(chain) => setValue("destChain", chain)}
+                  setSelectedChain={(chain) =>
+                    reset({ destChain: chain, destAsset: null, srcAsset: null })
+                  }
                 />
               </Flex>
               <AmountFormField
