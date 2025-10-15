@@ -30,5 +30,7 @@
   "summary.sourceFee": "Source chain fee",
   "tx.description": "Transfer {{ amount, number }} {{ symbol }} to {{ destChain }}",
   "tx.toast.submitted": "Sending {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}...",
-  "tx.toast.success": "Sent {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}."
+  "tx.toast.success": "Sent {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}.",
+  "connect.modal.title": "Connect to {{ chain }}",
+  "connect.modal.description": "Use available crypto wallets to connect to {{ chain }}."
 }

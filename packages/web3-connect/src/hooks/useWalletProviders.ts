@@ -1,13 +1,12 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useMemo } from "react"
 
-import { AccountFilterOption } from "@/components/account/AccountFilter"
 import {
   DESKTOP_ONLY_PROVIDERS,
   MOBILE_ONLY_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
-import { PROVIDERS_BY_WALLET_MODE } from "@/hooks/useWeb3Connect"
+import { PROVIDERS_BY_WALLET_MODE, WalletMode } from "@/hooks/useWeb3Connect"
 import { Wallet } from "@/types/wallet"
 import { getWallets } from "@/wallets"
 
@@ -17,7 +16,7 @@ type UseWalletProvidersResult = {
 }
 
 export const useWalletProviders = (
-  filter: AccountFilterOption,
+  mode: WalletMode,
 ): UseWalletProvidersResult => {
   const { isDesktop } = useBreakpoints()
 
@@ -30,7 +29,7 @@ export const useWalletProviders = (
           ? !MOBILE_ONLY_PROVIDERS.includes(provider)
           : !DESKTOP_ONLY_PROVIDERS.includes(provider)
 
-        const providers = PROVIDERS_BY_WALLET_MODE[filter]
+        const providers = PROVIDERS_BY_WALLET_MODE[mode]
         const byProvider = providers.includes(provider)
 
         return byScreen && byProvider
@@ -48,5 +47,5 @@ export const useWalletProviders = (
       installed: groups?.installed || [],
       other: groups?.other || [],
     }
-  }, [isDesktop, filter])
+  }, [isDesktop, mode])
 }

@@ -1,3 +1,5 @@
+import { isEvmAddress } from "@galacticcouncil/sdk"
+import { safeConvertH160toSS58 } from "@galacticcouncil/utils"
 import {
   assetsMap,
   chainsMap,
@@ -92,12 +94,19 @@ export const useCrossChainBalanceSubscription = (
       | undefined
 
     async function subscribeBalance() {
-      if (!address || !chainKey || !wallet) return
+      const chain = chainsMap.get(chainKey)
+      if (!address || !chainKey || !wallet || !chain) return
 
       setIsLoading(true)
+
+      const formattedAddress =
+        chain.isEvmParachain() && isEvmAddress(address)
+          ? safeConvertH160toSS58(address)
+          : address
+
       subscription = await wallet.subscribeBalance(
-        address,
-        chainKey,
+        formattedAddress,
+        chain,
         (balances) => {
           onSuccess?.(balances)
           queryClient.setQueryData<Map<string, AssetAmount>>(

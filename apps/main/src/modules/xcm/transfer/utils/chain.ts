@@ -1,7 +1,17 @@
-import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "@galacticcouncil/utils"
+import {
+  EvmAddr,
+  isAnyEvmChain,
+  isParachain,
+  SolanaAddr,
+  Ss58Addr,
+  SuiAddr,
+} from "@galacticcouncil/utils"
+import { WalletMode } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xcm-core"
 import { filter, pipe, prop, sortBy } from "remeda"
+
+import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 const KUSAMA_CHAINS_WHITELIST = ["kusama", "assethub_kusama"]
 
@@ -20,7 +30,7 @@ export const XCM_CHAINS = pipe(
   sortBy(prop("name")),
 )
 
-export const getValidDestinationChains = (
+/* export const getValidDestinationChains = (
   srcChain: AnyChain,
   srcAsset: Asset,
 ): AnyChain[] => {
@@ -35,9 +45,9 @@ export const getValidDestinationChains = (
       (chainAssetData) => chainAssetData.asset.key === srcAsset.key,
     )
   })
-}
+} */
 
-export const getValidDestinationAssets = (
+/* export const getValidDestinationAssets = (
   srcAsset: Asset,
   destChain: AnyChain,
 ): Asset[] => {
@@ -48,7 +58,7 @@ export const getValidDestinationAssets = (
     .filter((chainAssetData) => chainAssetData.asset.key === srcAsset.key)
     .map((chainAssetData) => chainAssetData.asset)
 }
-
+ */
 export type XcmFormDefaults = {
   srcChain: AnyChain | null
   srcAsset: Asset | null
@@ -93,4 +103,28 @@ export const getXcmFormDefaults = (address: string): XcmFormDefaults => {
     destChain,
     destAsset,
   }
+}
+
+export const getWalletModeByChain = (chain: AnyChain) => {
+  if (chain.key === HYDRATION_CHAIN_KEY) {
+    return WalletMode.SubstrateEVM
+  }
+
+  if (isParachain(chain)) {
+    return chain.usesH160Acc ? WalletMode.SubstrateH160 : WalletMode.Substrate
+  }
+
+  if (isAnyEvmChain(chain)) {
+    return WalletMode.EVM
+  }
+
+  if (chain.isSolana()) {
+    return WalletMode.Solana
+  }
+
+  if (chain.isSui()) {
+    return WalletMode.Sui
+  }
+
+  return WalletMode.Default
 }

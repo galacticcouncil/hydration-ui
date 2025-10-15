@@ -27,16 +27,18 @@ import { ProviderLoader } from "@/components/provider/ProviderLoader"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
-import { toAccount } from "@/utils"
+import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
 export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
   const { onAccountSelect, isControlled } = useWeb3ConnectContext()
-  const { accounts, toggle, getConnectedProviders } = useWeb3Connect(
-    useShallow(pick(["accounts", "toggle", "getConnectedProviders"])),
+  const { accounts, toggle, getConnectedProviders, mode } = useWeb3Connect(
+    useShallow(pick(["accounts", "toggle", "getConnectedProviders", "mode"])),
   )
 
-  const [filter, setFilter] = useState<AccountFilterOption>(WalletMode.Default)
+  const [filter, setFilter] = useState<AccountFilterOption>(
+    getDefaultAccountFilterByMode(mode),
+  )
   const [searchVal, setSearchVal] = useState("")
   const [search, setSearch] = useState("")
   useDebounce(

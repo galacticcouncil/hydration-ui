@@ -12,6 +12,7 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 type ChainAssetFormFieldProps = {
   fieldName: FieldPathByValue<XcmFormValues, Asset | null>
   type: "source" | "destination"
+  address?: string
   disabled?: boolean
   chainAssetPairs: ChainAssetPair[]
   selectedChain: AnyChain | null
@@ -22,6 +23,7 @@ type ChainAssetFormFieldProps = {
 export const ChainAssetFormField: React.FC<ChainAssetFormFieldProps> = ({
   fieldName,
   type,
+  address = "",
   disabled = false,
   chainAssetPairs,
   selectedChain,
@@ -54,6 +56,7 @@ export const ChainAssetFormField: React.FC<ChainAssetFormFieldProps> = ({
   return (
     <ChainAssetSelectModal
       type={type}
+      address={address}
       disabled={disabled}
       chainAssetPairs={chainAssetPairs}
       selectedAsset={selectedAssetAndChain}

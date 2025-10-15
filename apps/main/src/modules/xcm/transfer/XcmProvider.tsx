@@ -1,22 +1,22 @@
 import { isValidAddressOnChain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { ConfigBuilder, EvmParachain } from "@galacticcouncil/xcm-core"
 import { Transfer } from "@galacticcouncil/xcm-sdk"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { FormProvider } from "react-hook-form"
+import { isNonNullish, unique } from "remeda"
 
-import { useCrossChainBalanceSubscription } from "@/api/xcm"
+import {
+  useCrossChainBalanceSubscription,
+  useHydrationConfigService,
+} from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
-import {
-  getValidDestinationAssets,
-  getValidDestinationChains,
-  XCM_CHAINS,
-} from "@/modules/xcm/transfer/utils/chain"
+import { XCM_CHAINS } from "@/modules/xcm/transfer/utils/chain"
 
 const getDestinationAmount = (amount: string, transfer: Transfer): string => {
   const { destinationFee } = transfer.source
@@ -33,13 +33,17 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { account } = useAccount()
   const form = useXcmForm()
 
-  const [srcChain, srcAsset, destChain, destAsset, srcAmount] = form.watch([
-    "srcChain",
-    "srcAsset",
-    "destChain",
-    "destAsset",
-    "srcAmount",
-  ])
+  const configService = useHydrationConfigService()
+
+  const [srcChain, srcAsset, destChain, destAsset, srcAmount, destAddress] =
+    form.watch([
+      "srcChain",
+      "srcAsset",
+      "destChain",
+      "destAsset",
+      "srcAmount",
+      "destAddress",
+    ])
 
   const sourceChainAssetPairs = useMemo((): ChainAssetPair[] => {
     return XCM_CHAINS.map((chain) => {
@@ -54,54 +58,73 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   }, [])
 
   const destChainAssetPairs = useMemo((): ChainAssetPair[] => {
-    if (!srcAsset || !srcChain) {
+    const { routes } = configService
+    const srcChainRoutes = routes.get(srcChain?.key ?? "")
+
+    if (!srcAsset || !srcChain || !srcChainRoutes) {
       return []
     }
 
-    const validChains = getValidDestinationChains(srcChain, srcAsset)
+    const isValidPair = srcChain.assetsData
+      .values()
+      .map((a) => a.asset)
+      .some((a) => a.key === srcAsset?.key)
 
-    return validChains.map((chain) => {
-      const assets = getValidDestinationAssets(srcAsset, chain)
-      return { chain, assets }
+    const srcChainAssetRoutes = srcChainRoutes.getRoutes()
+
+    console.log({
+      srcChainAssetRoutes,
+
+      isValidPair,
+      srcAsset: srcAsset?.key,
+      srcChain: srcChain?.key,
     })
-  }, [srcAsset, srcChain])
+
+    const destWhitelist = XCM_CHAINS.map((c) => c.key)
+    const destChains = srcChainAssetRoutes
+      .filter((a) => destWhitelist.includes(a.destination.chain.key))
+      .map((a) => a.destination.chain)
+    //const destChainsUnique = new Set(destChains)
+
+    return unique(destChains)
+      .map((chain) => {
+        try {
+          const { routes } = ConfigBuilder(configService)
+            .assets()
+            .asset(srcAsset)
+            .source(srcChain)
+            .destination(chain)
+          return { chain, assets: routes.map((r) => r.destination.asset) }
+        } catch (error) {
+          console.error(error)
+          return null
+        }
+      })
+      .filter(isNonNullish)
+  }, [configService, srcAsset, srcChain])
 
   // Set first valid destination chain and asset when source selection changes
   useEffect(() => {
-    if (srcAsset && srcChain) {
-      // Check if current destination chain is still valid for the source asset
-      const validDestChains = getValidDestinationChains(srcChain, srcAsset)
-      const isDestChainValid = validDestChains.some(
-        (chain) => chain.key === destChain?.key,
-      )
+    const validDestChains = destChainAssetPairs.flatMap((c) => c.chain)
+    const validDestAssets = destChainAssetPairs.flatMap((c) => c.assets)
 
-      // Check if current destination asset is still valid for the destination chain
-      const validDestAssets = destChain
-        ? getValidDestinationAssets(srcAsset, destChain)
-        : []
-      const isDestAssetValid = validDestAssets.some(
-        (asset) => asset.key === destAsset?.key,
-      )
+    const isDestChainValid = validDestChains.some(
+      (chain) => chain.key === destChain?.key,
+    )
 
-      // If either chain or asset is invalid, set the first valid chain and its first asset
-      if (!isDestChainValid || !isDestAssetValid) {
-        if (validDestChains.length > 0) {
-          const firstValidChain = validDestChains[0]
-          if (firstValidChain) {
-            const firstValidAssets = getValidDestinationAssets(
-              srcAsset,
-              firstValidChain,
-            )
+    const isDestAssetValid = validDestAssets.some(
+      (asset) => asset.key === destAsset?.key,
+    )
 
-            if (firstValidAssets.length > 0 && firstValidAssets[0]) {
-              form.setValue("destChain", firstValidChain)
-              form.setValue("destAsset", firstValidAssets[0])
-            }
-          }
-        }
-      }
-    }
-  }, [srcAsset, srcChain, destChain, destAsset, form])
+    // If the destination chain and asset are valid, do nothing
+    if (isDestChainValid && isDestAssetValid) return
+
+    const [firstValidChain] = validDestChains
+    const [firstValidAsset] = validDestAssets
+
+    form.setValue("destChain", firstValidChain ?? null)
+    form.setValue("destAsset", firstValidAsset ?? null)
+  }, [destAsset?.key, destChain?.key, destChainAssetPairs, form])
 
   // Reset destination address and account when destination chain changes to incompatible chain
   useEffect(() => {
@@ -121,12 +144,12 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     }
   }, [destChain, form])
 
-  const address = account?.address ?? ""
+  const srcAddress = account?.rawAddress ?? ""
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
-  useCrossChainBalanceSubscription(address, srcChainKey)
-  useCrossChainBalanceSubscription(address, destChainKey)
+  useCrossChainBalanceSubscription(srcAddress, srcChainKey)
+  useCrossChainBalanceSubscription(destAddress, destChainKey)
 
   const { data: transfer, isLoading: isLoadingTransfer } = useXcmTransfer(form)
 

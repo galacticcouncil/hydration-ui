@@ -17,7 +17,6 @@ import {
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset } from "@galacticcouncil/xcm-core"
 import { useTranslation } from "react-i18next"
 
@@ -43,26 +42,29 @@ const MAX_VISIBLE_CHAIN_ITEMS = 10
 const ASSET_ITEM_HEIGHT = 50
 const MAX_VISIBLE_ASSET_ITEMS = 8
 
-export const ChainAssetSelectModal = ({
-  type,
-  disabled = false,
-  chainAssetPairs,
-  selectedAsset,
-  onSelectionChange,
-  selectedChain,
-  setSelectedChain,
-}: {
+export type ChainAssetSelectModalProps = {
   type: "source" | "destination"
+  address?: string
   disabled?: boolean
   chainAssetPairs: ChainAssetPair[]
   selectedAsset?: SelectedAssetAndChain | null
   onSelectionChange?: (selection: SelectedAssetAndChain | null) => void
   selectedChain: AnyChain | null
   setSelectedChain: (chain: AnyChain | null) => void
+}
+
+export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = ({
+  type,
+  address = "",
+  disabled = false,
+  chainAssetPairs,
+  selectedAsset,
+  onSelectionChange,
+  selectedChain,
+  setSelectedChain,
 }) => {
   const { registryChain } = useXcmProvider()
   const { t } = useTranslation(["common", "xcm"])
-  const { account } = useAccount()
   const { getAsset } = useAssets()
   const { chainSearch, setChainSearch, assetSearch, setAssetSearch } =
     useXcmStore()
@@ -91,12 +93,12 @@ export const ChainAssetSelectModal = ({
   )
 
   const { isLoading: isBalancesLoading } = useCrossChainBalanceSubscription(
-    account?.address ?? "",
+    address,
     selectedChain?.key ?? "",
   )
 
   const { data: balances } = useCrossChainBalance(
-    account?.address ?? "",
+    address,
     selectedChain?.key ?? "",
   )
 
@@ -115,7 +117,7 @@ export const ChainAssetSelectModal = ({
           title={t("xcm:chainAssetSelect.modal.title")}
         />
         <ModalBody scrollable={false} noPadding>
-          <Grid columnTemplate="4fr 8fr">
+          <Grid columnTemplate="180px 1fr">
             <Box>
               <Box p={10}>
                 <Input
