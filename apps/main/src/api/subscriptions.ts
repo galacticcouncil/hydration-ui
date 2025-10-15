@@ -92,9 +92,7 @@ export function useAccountBalanceSubscription() {
               continue
             }
 
-            if (balance.total !== 0n) {
-              validBalances.set(id, { ...balance, assetId: id.toString() })
-            }
+            validBalances.set(id, { ...balance, assetId: id.toString() })
           }
 
           setBalance(Array.from(validBalances.values()))
@@ -113,30 +111,28 @@ export function useAccountBalanceSubscription() {
           let shouldSync = false
 
           for (const { id: assetId, balance } of balances) {
-            if (balance.total !== 0n) {
-              const snapBalance = snapABalances.get(assetId)
+            const snapBalance = snapABalances.get(assetId)
 
-              validBalances.set(assetId, {
-                ...balance,
-                assetId: assetId.toString(),
-              })
+            validBalances.set(assetId, {
+              ...balance,
+              assetId: assetId.toString(),
+            })
 
-              snapABalances.set(assetId, {
-                ...balance,
-                assetId: assetId.toString(),
-              })
+            snapABalances.set(assetId, {
+              ...balance,
+              assetId: assetId.toString(),
+            })
 
-              const snapTransferable = snapBalance?.transferable ?? 0n
-              const { transferable } = balance
+            const snapTransferable = snapBalance?.transferable ?? 0n
+            const { transferable } = balance
 
-              if (
-                snapTransferable !== transferable &&
-                percentageDifference(snapTransferable, transferable).gt(
-                  ERC20_THRESHOLD,
-                )
-              ) {
-                shouldSync = true
-              }
+            if (
+              snapTransferable !== transferable &&
+              percentageDifference(snapTransferable, transferable).gt(
+                ERC20_THRESHOLD,
+              )
+            ) {
+              shouldSync = true
             }
           }
 
