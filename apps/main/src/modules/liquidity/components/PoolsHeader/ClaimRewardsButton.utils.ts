@@ -169,9 +169,6 @@ export const useClaimFarmRewardsMutation = ({
         success: t("liquidity.claimRewards.toast.success", {
           value: displayValue,
         }),
-        error: t("liquidity.claimRewards.toast.submitted", {
-          value: displayValue,
-        }),
       }
 
       const options = {
