@@ -422,7 +422,7 @@ export const useIsolatedPools = () => {
     xykVolumeQuery(squidClient, pools?.map((pool) => pool.address) ?? []),
   )
   const { data: isolatedPoolsFarms } = useIsolatedPoolsFarms()
-  const { getFreeBalance } = useAccountBalances()
+  const { getFreeBalance, isBalanceLoading } = useAccountBalances()
 
   const { pricesIds, poolsData } = useMemo(() => {
     const priceIds = new Set<string>()
@@ -474,7 +474,8 @@ export const useIsolatedPools = () => {
   }, [pools])
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(pricesIds)
-  const isLoading = isPriceLoading || isPoolsLoading || isXykPoolsIdsLoading
+  const isLoading =
+    isPriceLoading || isPoolsLoading || isXykPoolsIdsLoading || isBalanceLoading
 
   const data = useMemo(() => {
     if (isLoading) return []

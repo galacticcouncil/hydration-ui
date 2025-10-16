@@ -19,6 +19,7 @@ import { scaleHuman } from "@/utils/formatting"
 export const ClaimRewardsButton = () => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
+  //TODO: not execute when is not hovered
   const { totalUSD, claimableAssetValues } = useLiquidityMiningRewards()
 
   return (

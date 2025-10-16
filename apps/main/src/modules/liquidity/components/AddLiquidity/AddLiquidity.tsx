@@ -10,6 +10,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
+import { useRouter } from "@tanstack/react-router"
 import { FC } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -44,11 +45,11 @@ type Props = {
   readonly assetId: string
 }
 
-export const AddLiquidity: FC<Props> = ({ assetId, closable }) => {
+export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(assetId)
-
+  const { history } = useRouter()
   const { getFreeBalance } = useAccountBalances()
   const zodSchema = useAddToOmnipoolZod(assetId)
   const { mutate: submitAddLiquidity } = useSubmitAddLiquidity()
@@ -91,7 +92,11 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable }) => {
 
   return (
     <>
-      <ModalHeader title={t("addLiquidity")} closable={closable} />
+      <ModalHeader
+        title={t("addLiquidity")}
+        closable={closable}
+        onBack={!closable ? () => history.back() : undefined}
+      />
       <ModalBody>
         <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
           <Controller

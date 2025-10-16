@@ -36,6 +36,7 @@ export const PoolTypeTabs = () => {
           navigate({
             to: LINKS.liquidity,
             search: {
+              myLiquidity: search?.myLiquidity,
               type: value as "all" | "omnipoolStablepool" | "isolated",
             },
           })
@@ -51,17 +52,23 @@ export const PoolTypeTabs = () => {
       items={[
         {
           to: LINKS.liquidity,
-          search: { type: "all" },
+          search: { type: "all", myLiquidity: search?.myLiquidity },
           title: t("tab.allPools"),
         },
         {
           to: LINKS.liquidity,
-          search: { type: "omnipoolStablepool" },
+          search: {
+            type: "omnipoolStablepool",
+            myLiquidity: search?.myLiquidity,
+          },
           title: t("tab.omnipoolStablepool"),
         },
         {
           to: LINKS.liquidity,
-          search: { type: "isolated" },
+          search: {
+            type: "isolated",
+            myLiquidity: search?.myLiquidity,
+          },
           title: t("tab.isolatedPools"),
         },
       ]}
