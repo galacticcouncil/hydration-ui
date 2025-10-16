@@ -16,6 +16,8 @@ export const OpenOrdersBadge: FC<Props> = ({ children, className }) => {
       color={getToken("colors.azureBlue.900")}
       borderRadius={getTokenPx("containers.cornerRadius.containersPrimary")}
       px={4}
+      size={16}
+      align="center"
       borderWidth={1}
       borderStyle="solid"
       borderColor="#212837"
