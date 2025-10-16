@@ -412,9 +412,11 @@ export const useRemoveIsolatedLiquidity = ({
 
   const { data: liquidity } = useXYKPoolsLiquidity(poolId)
 
-  const { getFreeBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
 
-  const balance = shareTokenId ? getFreeBalance(shareTokenId).toString() : "0"
+  const balance = shareTokenId
+    ? getTransferableBalance(shareTokenId).toString()
+    : "0"
   const balanceShifted = scaleHuman(balance, pool?.meta.decimals ?? 0)
 
   const positions = pool?.positions ?? []
