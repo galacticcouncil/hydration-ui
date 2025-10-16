@@ -1,54 +1,78 @@
 import { useMatches } from "@tanstack/react-router"
 import { t } from "i18next"
 import { FC } from "react"
-import { isNumber } from "remeda"
+import { useTranslation } from "react-i18next"
 
+import { AssetType } from "@/api/assets"
 import { Breadcrumb } from "@/components/Breadcrumb"
+import { useAssets } from "@/providers/assetsProvider"
 import { FileRouteTypes } from "@/routeTree.gen"
 
-export const liquidityActions = [
-  { key: "add", label: t("liquidity:addLiquidity") },
-  { key: "addStablepool", label: t("liquidity:addLiquidity") },
-  { key: "remove", label: t("liquidity:removeLiquidity") },
-  { key: "join", label: t("liquidity:joinFarms") },
-]
+const useLiquidityCrumbs = () => {
+  const { t } = useTranslation(["common", "liquidity"])
+  const { getAsset } = useAssets()
+
+  const paths = useMatches({
+    select: (matches) =>
+      matches.map((match) => ({
+        fullPath: match.fullPath,
+        params: match.params,
+      })),
+  })
+
+  const crumbs = paths
+    .filter(({ fullPath }) => fullPath.includes("liquidity"))
+    .map(({ fullPath, params }) => {
+      if (fullPath === "/liquidity/$id") {
+        let label = "N/A"
+
+        if (params && "id" in params) {
+          const { id } = params
+          const asset = getAsset(id)
+
+          if (asset) {
+            label =
+              asset.type === AssetType.STABLESWAP
+                ? t("stablepool")
+                : t("liquidity:omnipool")
+          } else {
+            label = t("liquidity:isolatedPool")
+          }
+        }
+        return {
+          label,
+          path: fullPath,
+        }
+      } else {
+        return {
+          label: getBreadcrumbLabel(fullPath),
+          path: fullPath,
+        }
+      }
+    })
+
+  return crumbs
+}
 
 const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
   switch (path) {
     case "/liquidity":
       return t("liquidity:pools")
+    case "/liquidity/$id/add":
+      return t("liquidity:addLiquidity")
     case "/liquidity/$id/remove":
       return t("liquidity:removeLiquidity")
     case "/liquidity/$id/join":
       return t("liquidity:joinFarms")
     case "/liquidity/create":
       return t("liquidity:createPool")
-
-    default: {
-      const lastItem = path.split("/").pop()
-      const isLastItemId = isNumber(Number(lastItem))
-
-      if (isLastItemId) return t("liquidity:omnipool")
-
-      const action = liquidityActions.find((action) => action.key === lastItem)
-      if (action) return action.label
-
-      return t("liquidity:isolatedPool")
-    }
+    default:
+      return "N/A"
   }
 }
 
 export const LiquidityBreadcrumb: FC = () => {
-  const paths = useMatches({
-    select: (matches) => matches.map((match) => match.fullPath),
-  })
-
-  const crumbs = paths
-    .filter((path) => path.includes("liquidity"))
-    .map((path) => ({
-      label: getBreadcrumbLabel(path),
-      path,
-    }))
+  const crumbs = useLiquidityCrumbs()
 
   return <Breadcrumb crumbs={crumbs} />
 }

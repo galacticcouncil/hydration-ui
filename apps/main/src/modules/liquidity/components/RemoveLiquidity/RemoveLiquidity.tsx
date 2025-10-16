@@ -10,6 +10,7 @@ import {
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
 import { UseMutationResult } from "@tanstack/react-query"
+import { useRouter } from "@tanstack/react-router"
 import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -88,7 +89,7 @@ export const RemoveOmnipoolLiquidity = ({
   })
 
   if (!removeLiquidity) return <RemoveLiquiditySkeleton />
-  console.log("removeLiquidity", removeLiquidity)
+
   const { form, ...props } = removeLiquidity
 
   return (
@@ -112,7 +113,7 @@ const RemoveLiquidityJSX = ({
   logoId,
   isIsolatedPool,
   meta,
-  closable,
+  closable = false,
 }: {
   fee?: string
   totalValue: string
@@ -131,14 +132,18 @@ const RemoveLiquidityJSX = ({
     formState: { isValid },
     handleSubmit,
   } = useFormContext<TRemoveLiquidityFormValues>()
-
+  const { history } = useRouter()
   const onSubmit = () => {
     mutation.mutate()
   }
 
   return (
     <>
-      <ModalHeader title={t("removeLiquidity")} closable={closable} />
+      <ModalHeader
+        title={t("removeLiquidity")}
+        closable={closable}
+        onBack={!closable ? () => history.back() : undefined}
+      />
       <ModalBody>
         <Flex
           direction="column"

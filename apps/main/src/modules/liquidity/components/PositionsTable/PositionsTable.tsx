@@ -10,9 +10,9 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { Circle } from "lucide-react"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -91,7 +91,7 @@ const OmnipoolStablepoolPositions = ({
     aStableswapDisplayBalance,
   } = useOmnipoolPositions(pool)
 
-  const isVisibleOmnipool = !pool.isStablePool || pool.isStablepoolInOmnipool
+  const isVisibleOmnipool = positions.length > 0
   const isVisibleABalance = Big(pool.aStableswapBalance?.toString() ?? 0).gt(0)
 
   const tables: React.ReactNode[] = []
@@ -140,22 +140,35 @@ const PositionsTableBody = ({
   totalBalanceDisplay: string
   positions: DepositPosition[]
 }) => {
+  const expanded =
+    useSearch({
+      from: "/liquidity/$id",
+      select: (search) => search.expanded,
+    }) ?? false
+
+  const navigate = useNavigate({ from: "/liquidity/$id" })
   const { isTablet, isMobile } = useBreakpoints()
-  const [showMore, setShowMore] = useState(false)
+
+  const onClick = () => {
+    navigate({
+      search: (prev) => ({ ...prev, expanded: !prev.expanded }),
+      replace: true,
+    })
+  }
 
   return (
     <>
       {(isTablet || isMobile) && !!totalInFarms && (
         <ClaimCard sx={{ mb: 12 }} positions={positions} />
       )}
-      <CollapsibleRoot>
+      <CollapsibleRoot open={expanded}>
         <TableContainer
           as={Paper}
           sx={{ mb: getTokenPx("containers.paddings.primary") }}
         >
           <PositionsHeader
-            onClick={() => setShowMore((v) => !v)}
-            showMore={showMore}
+            onClick={onClick}
+            showMore={expanded}
             totalInFarms={totalInFarms}
             totalBalanceDisplay={totalBalanceDisplay}
             positions={positions}

@@ -8,6 +8,7 @@ import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
+import { useRouter } from "@tanstack/react-router"
 import { FormProvider, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -61,7 +62,7 @@ export const AddIsolatedLiquidity = ({
 
 export const AddIsolatedLiquidityForm = ({
   pool,
-  closable,
+  closable = false,
 }: {
   pool: IsolatedPoolTable
   closable?: boolean
@@ -70,7 +71,7 @@ export const AddIsolatedLiquidityForm = ({
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { getFreeBalance } = useAccountBalances()
-
+  const { history } = useRouter()
   const assetA = getAssetWithFallback(pool.tokens[0].id.toString())
   const assetB = getAssetWithFallback(pool.tokens[1].id.toString())
   const reserveA = pool.tokens[0].balance.toString()
@@ -134,7 +135,11 @@ export const AddIsolatedLiquidityForm = ({
 
   return (
     <>
-      <ModalHeader title={t("addLiquidity")} closable={closable} />
+      <ModalHeader
+        title={t("addLiquidity")}
+        closable={closable}
+        onBack={!closable ? () => history.back() : undefined}
+      />
       <ModalBody>
         <FormProvider {...form}>
           <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>

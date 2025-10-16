@@ -28,8 +28,15 @@ export type DepositPosition =
   | OmnipoolDepositFull
   | OmnipoolDepositFullWithData
 
+export const isDepositPosition = (
+  position:
+    | DepositPosition
+    | OmnipoolPositionWithData
+    | AccountOmnipoolPosition,
+): position is DepositPosition => "yield_farm_entries" in position
+
 export const isXykDepositPosition = (
-  position: XykDeposit | OmnipoolDepositFull,
+  position: DepositPosition,
 ): position is XykDeposit => "amm_pool_id" in position
 
 export const isOmnipoolDepositPosition = (

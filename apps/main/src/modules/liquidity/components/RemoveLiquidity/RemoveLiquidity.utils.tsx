@@ -78,6 +78,7 @@ export const useRemoveLiquidity = ({
     Number(meta.id),
     Number(hub.id),
   )
+
   const oraclePrice = oraclePriceData?.oraclePrice
 
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
@@ -481,7 +482,7 @@ export const useRemoveIsolatedLiquidity = ({
               papi.tx.XYK.remove_liquidity({
                 asset_a: Number(assetA.id),
                 asset_b: Number(assetB.id),
-                liquidity_amount: BigInt(position.shares.toString()),
+                share_amount: BigInt(position.shares.toString()),
               }),
             )
 
@@ -518,7 +519,7 @@ export const useRemoveIsolatedLiquidity = ({
         const removeLiquidityTx = papi.tx.XYK.remove_liquidity({
           asset_a: Number(assetA.id),
           asset_b: Number(assetB.id),
-          liquidity_amount: BigInt(position.shares.toString()),
+          share_amount: BigInt(position.shares.toString()),
         })
 
         tx = papi.tx.Utility.batch_all({
@@ -528,7 +529,7 @@ export const useRemoveIsolatedLiquidity = ({
         tx = papi.tx.XYK.remove_liquidity({
           asset_a: assetA.id,
           asset_b: assetB.id,
-          liquidity_amount: BigInt(Big(removeSharesAmount).toFixed(0)),
+          share_amount: BigInt(Big(removeSharesAmount).toFixed(0)),
         })
       }
 

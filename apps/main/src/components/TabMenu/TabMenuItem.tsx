@@ -56,7 +56,11 @@ export const TabMenuItem: FC<Props> = ({
       size={size}
       asChild
     >
-      <Link to={to} search={search} resetScroll={resetScroll}>
+      <Link
+        to={to}
+        search={{ ...currentSearch, ...search }}
+        resetScroll={resetScroll}
+      >
         {IconComponent && <IconComponent />}
         {title}
       </Link>
