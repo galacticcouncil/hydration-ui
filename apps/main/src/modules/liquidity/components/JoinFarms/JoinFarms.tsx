@@ -118,12 +118,14 @@ const JoinFarmsForm = ({
   meta,
   formValues,
   isEditable,
+  displayValue,
 }: JoinFarmsProps & {
   availableFarms: Farm[]
   onSubmit: (amount: string) => void
   meta: TAssetData | XYKPoolMeta
   formValues: TJoinFarmsForm
   isEditable?: boolean
+  displayValue?: string
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { history } = useRouter()
@@ -206,9 +208,13 @@ const JoinFarmsForm = ({
                           value: value,
                           symbol: meta.symbol,
                         })}
-                        // displayValue={t("common:currency", {
-                        //   value: position.data.currentTotalDisplay,
-                        // })}
+                        displayValue={
+                          displayValue
+                            ? t("common:currency", {
+                                value: displayValue,
+                              })
+                            : undefined
+                        }
                         size="large"
                       />
                     </Flex>

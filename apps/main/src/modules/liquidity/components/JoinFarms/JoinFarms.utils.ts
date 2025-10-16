@@ -12,6 +12,7 @@ import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
 import { PoolToken, useXykPools } from "@/api/pools"
+import { useXYKPoolsLiquidity } from "@/api/xyk"
 import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
@@ -101,6 +102,7 @@ export const useJoinOmnipoolFarms = ({
 
   return {
     formValues: { amount: position.data.currentTotalValueHuman, rule: schema },
+    displayValue: position.data.currentTotalDisplay,
     onSubmit,
     availableFarms,
     meta,
@@ -189,7 +191,19 @@ export const useJoinIsolatedPoolFarms = ({
   positionId?: string
   options?: TransactionOptions
 }) => {
-  const { meta, farms, id: poolId, positions, balance = 0n } = xykData
+  const {
+    meta,
+    farms,
+    id: poolId,
+    positions,
+    balance = 0n,
+    tvlDisplay,
+  } = xykData
+  const { data: liquidity } = useXYKPoolsLiquidity(poolId)
+
+  const price = Big(tvlDisplay)
+    .div(liquidity ? scaleHuman(liquidity, meta.decimals) : 1)
+    .toString()
 
   const isDeposit = !!positionId
 
@@ -226,6 +240,9 @@ export const useJoinIsolatedPoolFarms = ({
       availableFarms,
       meta,
       onSubmit,
+      displayValue: price
+        ? Big(position.shares.toString()).times(price).toString()
+        : undefined,
     }
   }
 
@@ -306,10 +323,6 @@ const useJoinOmnipoolFarmsMutation = ({
             symbol: meta.symbol,
           }),
           success: t("liquidity.joinFarms.modal.join.toast.success", {
-            value: amountHuman,
-            symbol: meta.symbol,
-          }),
-          error: t("liquidity.joinFarms.modal.join.toast.submitted", {
             value: amountHuman,
             symbol: meta.symbol,
           }),
@@ -400,10 +413,6 @@ const useJoinIsolatedPoolFarmsMutation = ({
             symbol: meta.symbol,
           }),
           success: t("liquidity.joinFarms.modal.join.toast.success", {
-            value: scaleHuman(amount, meta.decimals),
-            symbol: meta.symbol,
-          }),
-          error: t("liquidity.joinFarms.modal.join.toast.submitted", {
             value: scaleHuman(amount, meta.decimals),
             symbol: meta.symbol,
           }),
