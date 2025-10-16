@@ -57,7 +57,7 @@ export const usePriceSubscriber = () => {
   })
 }
 
-export const spotPrice = (
+export const spotPriceQuery = (
   context: TProviderContext,
   assetIn: string,
   assetOut: string,

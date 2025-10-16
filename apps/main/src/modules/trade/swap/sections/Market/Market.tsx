@@ -1,4 +1,5 @@
 import { useSearch } from "@tanstack/react-router"
+import Big from "big.js"
 import { FC, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
@@ -15,9 +16,12 @@ import { MarketSummary } from "@/modules/trade/swap/sections/Market/MarketSummar
 import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketTradeOptions"
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
+import { useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 export const Market: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
+  const { getAsset } = useAssets()
 
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
@@ -28,9 +32,10 @@ export const Market: FC = () => {
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
+  const isSell = type === TradeType.Sell
+
   // We need to preserve component state and focus on changing market type
-  const useMarketData =
-    type === TradeType.Sell ? useMarketSellData : useMarketBuyData
+  const useMarketData = isSell ? useMarketSellData : useMarketBuyData
 
   const { swap, twap, healthFactor, isLoading } = useMarketData(form)
 
@@ -42,6 +47,33 @@ export const Market: FC = () => {
     ? healthFactorRiskAccepted
     : true
 
+  const assetInPriceMeta = getAsset(assetIn)
+  const assetOutPriceMeta = getAsset(assetOut)
+
+  const spotPrice = (() => {
+    const swapSpotPrice = swap?.spotPrice
+
+    if (!swapSpotPrice) {
+      return null
+    }
+
+    if (isSell) {
+      if (!assetOutPriceMeta) {
+        return null
+      }
+
+      return Big(1)
+        .div(scaleHuman(swapSpotPrice, assetOutPriceMeta.decimals))
+        .toString()
+    }
+
+    if (!assetInPriceMeta) {
+      return null
+    }
+
+    return scaleHuman(swapSpotPrice, assetInPriceMeta.decimals)
+  })()
+
   return (
     <FormProvider {...form}>
       <form
@@ -51,7 +83,7 @@ export const Market: FC = () => {
             : twap && submitTwap.mutate([values, twap]),
         )}
       >
-        <MarketFields />
+        <MarketFields price={spotPrice} />
         <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
         <SwapSectionSeparator />
         <MarketSummary
