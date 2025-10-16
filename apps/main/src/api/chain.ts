@@ -33,6 +33,12 @@ export const bestNumberQuery = (context: TProviderContext) => {
   })
 }
 
+export const useRelayChainBlockNumber = () => {
+  const { data } = useQuery(bestNumberQuery(useRpcProvider()))
+
+  return data?.relaychainBlockNumber
+}
+
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
   const { papi, isApiLoaded } = useRpcProvider()

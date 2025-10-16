@@ -23,9 +23,22 @@ export type Positions = {
   xykMining: XykDeposit[]
 }
 
+export type DepositPosition =
+  | XykDeposit
+  | OmnipoolDepositFull
+  | OmnipoolDepositFullWithData
+
+export const isXykDepositPosition = (
+  position: XykDeposit | OmnipoolDepositFull,
+): position is XykDeposit => "amm_pool_id" in position
+
 export const isOmnipoolDepositPosition = (
   position: OmnipoolPosition | OmnipoolDepositFull,
 ): position is OmnipoolDepositFull => "yield_farm_entries" in position
+
+export const isOmnipoolDepositFullPosition = (
+  position: AccountOmnipoolPosition,
+): position is OmnipoolDepositFullWithData => "yield_farm_entries" in position
 
 export type OmnipoolPositionWithData = OmnipoolPosition & {
   data: OmnipoolPositionData

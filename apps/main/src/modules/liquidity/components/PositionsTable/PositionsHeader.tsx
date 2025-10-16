@@ -11,6 +11,8 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { DepositPosition } from "@/states/account"
+
 import { ClaimCard } from "./ClaimCard"
 
 type PositionsHeaderProps = {
@@ -18,6 +20,7 @@ type PositionsHeaderProps = {
   showMore: boolean
   totalInFarms: string
   totalBalanceDisplay: string
+  positions: DepositPosition[]
 }
 
 export const PositionsHeader = ({
@@ -25,6 +28,7 @@ export const PositionsHeader = ({
   showMore,
   totalInFarms,
   totalBalanceDisplay,
+  positions,
 }: PositionsHeaderProps) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { isTablet, isMobile } = useBreakpoints()
@@ -97,7 +101,7 @@ export const PositionsHeader = ({
           size="medium"
         />
 
-        {!isTablet && !isMobile && <ClaimCard />}
+        {!isTablet && !isMobile && <ClaimCard positions={positions} />}
       </Flex>
     </Flex>
   )

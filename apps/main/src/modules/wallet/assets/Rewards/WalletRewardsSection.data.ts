@@ -11,8 +11,9 @@ export const useWalletRewardsSectionData = () => {
 
   const { claimableRewardsUsd, loading: incentivesLoading } =
     useClaimableRewards()
-  const { totalUSD: liquidityUSD, isLoading: liquidityLoading } =
-    useLiquidityMiningRewards()
+  const {
+    claimableValues: { totalUSD: liquidityUSD, isLoading: liquidityLoading },
+  } = useLiquidityMiningRewards()
 
   const { data: staking, isLoading: stakingLoading } = useStakingRewards()
   const { data: referral, isLoading: referralLoading } = useReferralRewards()

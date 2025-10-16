@@ -118,5 +118,7 @@
   "liquidity.tooltip.fee.apr.omnipoolFee": "Omnipool fee",
   "liquidity.tooltip.fee.apr.stablepoolFee": "Stablepool fee",
   "liquidity.tooltip.fee.apr.farmRewardsApr": "Farm rewards apr",
-  "liquidity.tooltip.fee.apr.apr": "APR"
+  "liquidity.tooltip.fee.apr.apr": "APR",
+  "liquidity.claimRewards.toast.submitted": "Claiming farm rewards for {{ value }}",
+  "liquidity.claimRewards.toast.success": "Farm rewards claimed for {{ value }}"
   }

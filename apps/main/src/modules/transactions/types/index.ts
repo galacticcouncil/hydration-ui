@@ -1,11 +1,11 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { Transaction as AnyPapiTx } from "@galacticcouncil/sdk-next/build/types/tx"
+import { tx } from "@galacticcouncil/sdk-next"
 import { Call } from "@galacticcouncil/xcm-sdk"
 import { InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
 import { Subscription } from "rxjs"
 import { TransactionReceipt } from "viem"
 
-export type { AnyPapiTx }
+export type AnyPapiTx = tx.Transaction
 export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
 export enum TxActionType {
