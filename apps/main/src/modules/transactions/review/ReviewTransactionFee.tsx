@@ -1,25 +1,26 @@
 import {
   ButtonTransparent,
   Flex,
-  Modal,
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TransactionFeePaymentAssetModal } from "@/modules/transactions/TransactionFeePaymentAssetModal"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const ReviewTransactionFee = () => {
   const { t } = useTranslation(["common"])
-  const [isFeePaymentModalOpen, setIsFeePaymentModalOpen] = useState(false)
   const { getAsset } = useAssets()
 
-  const { feeEstimate, feeAssetId, isLoadingFeeEstimate, fee } =
-    useTransaction()
+  const {
+    feeEstimate,
+    feeAssetId,
+    isLoadingFeeEstimate,
+    fee,
+    setFeePaymentModalOpen,
+  } = useTransaction()
 
   const feeAsset = getAsset(feeAssetId)
 
@@ -54,21 +55,11 @@ export const ReviewTransactionFee = () => {
           value: feeEstimate,
         })}
         {!isChangingFeeAsset && (
-          <>
-            <ButtonTransparent onClick={() => setIsFeePaymentModalOpen(true)}>
-              <Text as="span" color={getToken("accents.info.onPrimary")}>
-                {t("edit")}
-              </Text>
-            </ButtonTransparent>
-            <Modal
-              open={isFeePaymentModalOpen}
-              onOpenChange={setIsFeePaymentModalOpen}
-            >
-              <TransactionFeePaymentAssetModal
-                onSubmitted={() => setIsFeePaymentModalOpen(false)}
-              />
-            </Modal>
-          </>
+          <ButtonTransparent onClick={() => setFeePaymentModalOpen(true)}>
+            <Text as="span" color={getToken("accents.info.onPrimary")}>
+              {t("edit")}
+            </Text>
+          </ButtonTransparent>
         )}
       </Flex>
     </Text>

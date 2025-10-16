@@ -26,7 +26,7 @@ export const useEstimateFee = (transaction: Transaction) => {
     enabled: !feePaymentAssetIdOverride,
   })
 
-  const { isBalanceLoading, getFreeBalance } = useAccountBalances()
+  const { isBalanceLoading, getTransferableBalance } = useAccountBalances()
 
   const address = account?.address ?? ""
 
@@ -42,7 +42,12 @@ export const useEstimateFee = (transaction: Transaction) => {
       !isLoadingFeePaymentAssetId &&
       !isBalanceLoading &&
       isSS58Address(address),
-    queryKey: ["estimateFee", address, safeStringify(tx?.decodedCall)],
+    queryKey: [
+      "estimateFee",
+      feeAssetId,
+      address,
+      safeStringify(tx?.decodedCall),
+    ],
     queryFn: async () => {
       if (!tx) throw new Error("Invalid transaction")
       if (!feeAsset) throw new Error(`Asset ${feeAssetId} is not valid`)
@@ -60,7 +65,7 @@ export const useEstimateFee = (transaction: Transaction) => {
       const feeEstimateNative = scaleHuman(fees, native.decimals)
 
       const feeAssetBalance = scaleHuman(
-        getFreeBalance(feeAsset.id),
+        getTransferableBalance(feeAsset.id),
         feeAsset.decimals,
       )
 
