@@ -78,7 +78,6 @@ export const useOrdersData = (
             schedule.assetOut?.assetRegistryId ?? "",
           )
 
-          // const toAmount = scaleHuman(schedule.amountOut || "0", to.decimals)
           const toAmountExecuted = scaleHuman(
             schedule.totalExecutedAmountOut,
             to.decimals,
