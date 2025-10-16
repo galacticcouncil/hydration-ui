@@ -15,6 +15,7 @@ export enum TxActionType {
   SET_STATUS = "SET_STATUS",
   RESET = "RESET",
   SET_TIP = "SET_TIP",
+  SET_FEE_PAYMENT_MODAL_OPEN = "SET_FEE_PAYMENT_MODAL_OPEN",
 }
 
 export type TxStatus = "idle" | "submitted" | "success" | "error"
@@ -61,6 +62,7 @@ export type TxState = {
   tip: string
   tipAssetId: string
   mortalityPeriod: TxMortalityPeriod
+  isFeePaymentModalOpen: boolean
 }
 
 export type TxStateAction =
@@ -69,4 +71,5 @@ export type TxStateAction =
   | { type: TxActionType.SET_ERROR; payload: string }
   | { type: TxActionType.SET_STATUS; payload: TxStatus }
   | { type: TxActionType.SET_TIP; payload: string }
+  | { type: TxActionType.SET_FEE_PAYMENT_MODAL_OPEN; payload: boolean }
   | { type: TxActionType.RESET }

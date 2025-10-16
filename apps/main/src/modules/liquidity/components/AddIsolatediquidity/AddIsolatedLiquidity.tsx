@@ -70,15 +70,21 @@ export const AddIsolatedLiquidityForm = ({
   const { t } = useTranslation(["liquidity", "common"])
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { getFreeBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
   const { history } = useRouter()
   const assetA = getAssetWithFallback(pool.tokens[0].id.toString())
   const assetB = getAssetWithFallback(pool.tokens[1].id.toString())
   const reserveA = pool.tokens[0].balance.toString()
   const reserveB = pool.tokens[1].balance.toString()
 
-  const assetABalance = scaleHuman(getFreeBalance(assetA.id), assetA.decimals)
-  const assetBBalance = scaleHuman(getFreeBalance(assetB.id), assetB.decimals)
+  const assetABalance = scaleHuman(
+    getTransferableBalance(assetA.id),
+    assetA.decimals,
+  )
+  const assetBBalance = scaleHuman(
+    getTransferableBalance(assetB.id),
+    assetB.decimals,
+  )
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
     spotPrice(rpc, assetA.id, assetB.id),

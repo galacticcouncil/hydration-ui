@@ -50,7 +50,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(assetId)
   const { history } = useRouter()
-  const { getFreeBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
   const zodSchema = useAddToOmnipoolZod(assetId)
   const { mutate: submitAddLiquidity } = useSubmitAddLiquidity()
 
@@ -63,7 +63,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
   const isFarms = farms.length > 0
 
   const liquidityShares = useLiquidityShares(form.watch("amount"), assetId)
-  const balance = scaleHuman(getFreeBalance(assetId), meta.decimals)
+  const balance = scaleHuman(getTransferableBalance(assetId), meta.decimals)
 
   const onSubmit = async (values: TFormValues) => {
     if (!liquidityShares || !values.amount)

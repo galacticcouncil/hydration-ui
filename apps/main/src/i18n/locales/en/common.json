@@ -197,6 +197,7 @@
   "transaction.description": "Review transaction details",
   "transaction.sign": "Sign Transaction",
   "transaction.sign.openInPjs": "Open in Polkadot.js.org",
+  "transaction.sign.changeFeePaymentAsset": "Change fee payment asset",
   "transaction.title": "Please review your transaction.",
   "transaction.status.success.title": "Transaction successful",
   "transaction.status.success.description": "Your transaction has been submitted successfully.",

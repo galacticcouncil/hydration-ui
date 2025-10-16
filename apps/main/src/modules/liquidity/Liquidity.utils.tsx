@@ -215,7 +215,7 @@ export const useOmnipoolStablepools = () => {
   const { data: omnipoolFarms, isLoading: isOmnipoolFarmsLoading } =
     useOmnipoolFarms()
 
-  const { getFreeBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
   const { data: stablepools, isLoading: isStablepoolsLoading } =
     useStablepools()
@@ -291,7 +291,7 @@ export const useOmnipoolStablepools = () => {
         ? pool.aToken
         : stablepoolInOmnipool?.aToken
       const aStableswapBalance = aStableswapAsset
-        ? getFreeBalance(aStableswapAsset.id.toString())
+        ? getTransferableBalance(aStableswapAsset.id.toString())
         : undefined
 
       const allFarms = omnipoolFarms?.[poolId] ?? []
@@ -341,7 +341,7 @@ export const useOmnipoolStablepools = () => {
 
       const positionsAmount = positions.length
       const stableswapBalance = isStablePool
-        ? getFreeBalance(stablepoolInOmnipool?.id.toString() ?? poolId)
+        ? getTransferableBalance(stablepoolInOmnipool?.id.toString() ?? poolId)
         : 0n
 
       const isPositions =
@@ -395,7 +395,7 @@ export const useOmnipoolStablepools = () => {
     nativeId,
     isLoading,
     getAssetPositions,
-    getFreeBalance,
+    getTransferableBalance,
     omnipoolAssets,
     volumeByAsset,
     isVolumeLoading,
@@ -422,7 +422,7 @@ export const useIsolatedPools = () => {
     xykVolumeQuery(squidClient, pools?.map((pool) => pool.address) ?? []),
   )
   const { data: isolatedPoolsFarms } = useIsolatedPoolsFarms()
-  const { getFreeBalance, isBalanceLoading } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
 
   const { pricesIds, poolsData } = useMemo(() => {
     const priceIds = new Set<string>()
@@ -474,8 +474,7 @@ export const useIsolatedPools = () => {
   }, [pools])
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(pricesIds)
-  const isLoading =
-    isPriceLoading || isPoolsLoading || isXykPoolsIdsLoading || isBalanceLoading
+  const isLoading = isPriceLoading || isPoolsLoading || isXykPoolsIdsLoading
 
   const data = useMemo(() => {
     if (isLoading) return []
@@ -515,7 +514,9 @@ export const useIsolatedPools = () => {
           (volume) => volume.poolId === pool.address,
         )?.poolVolume
 
-        const balance = shareTokenId ? getFreeBalance(shareTokenId) : undefined
+        const balance = shareTokenId
+          ? getTransferableBalance(shareTokenId)
+          : undefined
 
         const positionsAmount = Big(xykMiningPositions.length)
           .plus(balance ? 1 : 0)
@@ -551,7 +552,7 @@ export const useIsolatedPools = () => {
     getAssetPrice,
     getMetaFromXYKPoolTokens,
     getPositions,
-    getFreeBalance,
+    getTransferableBalance,
     xykPoolsIds,
     isLoading,
     xykVolumes,
