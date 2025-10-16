@@ -36,13 +36,14 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
   const form = usePlaceOrderForm()
   const submit = useSubmitPlaceOrder({ onSubmit: onClose })
-  const [offerAsset, offerAmount, buyAsset] = form.watch([
+  const [offerAsset, offerAmount, buyAsset, buyAmount] = form.watch([
     "offerAsset",
     "offerAmount",
     "buyAsset",
+    "buyAmount",
   ])
 
-  const isSubmitEnabled = form.formState.isValid
+  const isSubmitEnabled = !!offerAmount && !!buyAmount && form.formState.isValid
 
   const handleOfferAmountChange = (newOfferAmount: string): void => {
     const formValues = form.getValues()
@@ -53,19 +54,24 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
     const offerAmountBn = new Big(newOfferAmount || "0")
     const buyAmountBn = new Big(buyAmount || "0")
 
-    if (buyAmountBn.gt(0)) {
+    if (!newOfferAmount) {
+      form.reset({
+        ...formValues,
+        buyAmount: "",
+      })
+    } else if (buyAmountBn.gt(0)) {
       form.reset({
         ...formValues,
         price: buyAmountBn.div(offerAmountBn).toString(),
       })
-      form.trigger()
     } else if (priceBn.gt(0)) {
       form.reset({
         ...formValues,
         buyAmount: offerAmountBn.mul(priceBn).toString(),
       })
-      form.trigger()
     }
+
+    form.trigger()
   }
 
   const handleBuyAmountChange = (newBuyAmount: string): void => {
@@ -77,7 +83,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
     const offerAmountBn = new Big(offerAmount || "0")
     const buyAmountBn = new Big(newBuyAmount || "0")
 
-    if (offerAmountBn.gt(0)) {
+    if (!newBuyAmount) {
+      form.reset({
+        ...formValues,
+        offerAmount: "",
+      })
+    } else if (offerAmountBn.gt(0)) {
       form.reset({
         ...formValues,
         price: buyAmountBn.div(offerAmountBn).toString(),
@@ -149,7 +160,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                         buyAmount: values.offerAmount,
                         offerAsset: values.buyAsset,
                         offerAmount: values.buyAmount,
-                        price: Big(values.price || "0").gte(0)
+                        price: Big(values.price || "0").gt(0)
                           ? Big(1).div(values.price).toString()
                           : values.price,
                       })
