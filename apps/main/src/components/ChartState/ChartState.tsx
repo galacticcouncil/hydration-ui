@@ -10,9 +10,8 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 export type ChartStateProps = {
-  isLoading: boolean
-  isError: boolean
-  isSuccess: boolean
+  isLoading?: boolean
+  isError?: boolean
   isEmpty: boolean
   children: React.ReactNode
   className?: string
@@ -21,7 +20,6 @@ export type ChartStateProps = {
 export const ChartState: React.FC<ChartStateProps> = ({
   isLoading,
   isError,
-  isSuccess,
   isEmpty,
   className,
   children,
@@ -52,7 +50,7 @@ export const ChartState: React.FC<ChartStateProps> = ({
     )
   }
 
-  if (isSuccess && isEmpty) {
+  if (!isError && isEmpty) {
     return (
       <ChartSkeleton
         className={className}

@@ -97,7 +97,6 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
       </Flex>
       <ChartState
         sx={{ height }}
-        isSuccess={isSuccess}
         isError={isError}
         isLoading={isLoading}
         isEmpty={isEmpty}

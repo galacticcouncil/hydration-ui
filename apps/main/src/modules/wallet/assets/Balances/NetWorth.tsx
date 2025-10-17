@@ -69,12 +69,7 @@ export const NetWorth: FC = () => {
         height="100%"
         width="100%"
       >
-        <ChartState
-          isSuccess={isSuccess}
-          isError={isError}
-          isLoading={isLoading}
-          isEmpty={isEmpty}
-        >
+        <ChartState isError={isError} isLoading={isLoading} isEmpty={isEmpty}>
           <AreaChart
             data={balances}
             xAxisHidden
