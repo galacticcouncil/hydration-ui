@@ -34,15 +34,15 @@ type Props = {
 export const CreateIsolatedPool: FC<Props> = ({ closable }) => {
   const { t } = useTranslation("liquidity")
   const { tradable } = useAssets()
-  const { getFreeBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
   const [assetA, setAssetA] = useState<TAssetData | undefined>(undefined)
   const [assetB, setAssetB] = useState<TAssetData | undefined>(undefined)
 
   const assetABalance = assetA
-    ? scaleHuman(getFreeBalance(assetA.id), assetA.decimals)
+    ? scaleHuman(getTransferableBalance(assetA.id), assetA.decimals)
     : "0"
   const assetBBalance = assetB
-    ? scaleHuman(getFreeBalance(assetB.id), assetB.decimals)
+    ? scaleHuman(getTransferableBalance(assetB.id), assetB.decimals)
     : "0"
 
   const form = useForm<CreateIsolatedPoolFormData>({

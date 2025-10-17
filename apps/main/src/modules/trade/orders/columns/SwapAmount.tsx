@@ -9,7 +9,7 @@ import { TAsset } from "@/providers/assetsProvider"
 type Props = {
   readonly fromAmount: string
   readonly from: TAsset
-  readonly toAmount: string
+  readonly toAmount?: string
   readonly to: TAsset
   readonly showLogo?: boolean
 }
@@ -41,9 +41,11 @@ export const SwapAmount = ({
       />
       <Flex gap={getTokenPx("scales.paddings.s")} align="center">
         {showLogo && <AssetLogo id={to.id} size="small" />}
-        <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
-          {t("number", { value: toAmount })}
-        </Text>
+        {toAmount && (
+          <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
+            {t("number", { value: toAmount })}
+          </Text>
+        )}
         <Text fw={500} fs={11} lh={1.4} color={getToken("text.medium")}>
           {to.symbol}
         </Text>

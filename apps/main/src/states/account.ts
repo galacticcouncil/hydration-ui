@@ -156,11 +156,6 @@ export const useAccountBalances = () => {
     [balances],
   )
 
-  const getFreeBalance = useCallback(
-    (assetId: string) => balances[assetId]?.free ?? 0n,
-    [balances],
-  )
-
   const getTransferableBalance = useCallback(
     (assetId: string) => balances[assetId]?.transferable ?? 0n,
     [balances],
@@ -169,7 +164,6 @@ export const useAccountBalances = () => {
   return {
     balances,
     getBalance,
-    getFreeBalance,
     getTransferableBalance,
     isBalanceLoading,
   }

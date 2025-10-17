@@ -12,6 +12,7 @@ import {
   doClose,
   doReset,
   doSetError,
+  doSetFeePaymentModalOpen,
   doSetStatus,
   doSetTip,
   doSign,
@@ -44,6 +45,7 @@ export type TransactionContext = Transaction &
 
     setTip: (tip: string) => void
     setStatus: (status: TxStatus) => void
+    setFeePaymentModalOpen: (open: boolean) => void
     signAndSubmit: () => void
     reset: () => void
   }
@@ -96,6 +98,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const setTip = useCallback(
     (tip: string) => {
       dispatch(doSetTip(tip))
+    },
+    [dispatch],
+  )
+
+  const setFeePaymentModalOpen = useCallback(
+    (open: boolean) => {
+      dispatch(doSetFeePaymentModalOpen(open))
     },
     [dispatch],
   )
@@ -166,6 +175,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         isLoading,
 
         setTip,
+        setFeePaymentModalOpen,
         onClose,
         setStatus,
         signAndSubmit,

@@ -34,9 +34,8 @@ export const useOpenOrdersColumns = () => {
       cell: ({ row }) => {
         return (
           <SwapAmount
-            fromAmount={row.original.fromAmountExecuted}
+            fromAmount={row.original.fromAmountBudget}
             from={row.original.from}
-            toAmount={row.original.toAmountExecuted}
             to={row.original.to}
           />
         )

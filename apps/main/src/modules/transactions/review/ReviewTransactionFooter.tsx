@@ -1,38 +1,16 @@
-import {
-  Alert,
-  Button,
-  ExternalLink,
-  Flex,
-  Spinner,
-  Stack,
-} from "@galacticcouncil/ui/components"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { Alert, Button, Flex, Stack } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
 import { useTransactionAlerts } from "@/modules/transactions/hooks/useTransactionAlerts"
+import { ReviewTransactionSubmitButton } from "@/modules/transactions/review/ReviewTransactionSubmitButton"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
 export const ReviewTransactionFooter = () => {
   const { t } = useTranslation()
-  const { account } = useAccount()
 
-  const {
-    tx,
-    onClose,
-    isIdle,
-    isSigning,
-    signAndSubmit,
-    isLoadingFeeEstimate,
-  } = useTransaction()
+  const { onClose, isIdle } = useTransaction()
 
-  const alerts = useTransactionAlerts()
-
-  const pjsUrl = usePolkadotJSExtrinsicUrl(tx)
-
-  const isIncompatible = !!account?.isIncompatible
-  const isLoading = isSigning || isLoadingFeeEstimate
-  const isDisabled = isIncompatible || alerts.length > 0 || isLoading
+  const { alerts } = useTransactionAlerts()
 
   if (isIdle) {
     return (
@@ -49,18 +27,7 @@ export const ReviewTransactionFooter = () => {
             {t("close")}
           </Button>
 
-          {isIncompatible && pjsUrl ? (
-            <Button size="large" asChild>
-              <ExternalLink href={pjsUrl}>
-                {t("transaction.sign.openInPjs")}
-              </ExternalLink>
-            </Button>
-          ) : (
-            <Button size="large" onClick={signAndSubmit} disabled={isDisabled}>
-              {isLoading && <Spinner />}
-              {t("transaction.sign")}
-            </Button>
-          )}
+          <ReviewTransactionSubmitButton />
         </Flex>
       </Stack>
     )

@@ -40,7 +40,7 @@ const ModalTrigger = DialogPrimitive.Trigger
 
 const ModalPortal = DialogPrimitive.Portal
 
-const ModalClose = DialogPrimitive.Close
+const ModalCloseTrigger = DialogPrimitive.Close
 
 type ModalOverlayProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Overlay
@@ -107,6 +107,21 @@ type ModalHeaderProps = Omit<FlexProps, "title"> & {
   closable?: boolean
 }
 
+type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
+
+const ModalClose: FC<ModalCloseProps> = (props) => {
+  return (
+    <ButtonIcon style={{ flexGrow: 0 }} asChild>
+      <SModalClose
+        className={`close${props.className ? ` ${props.className}` : ""}`}
+        {...props}
+      >
+        <X sx={{ width: 20, height: 20 }} />
+      </SModalClose>
+    </ButtonIcon>
+  )
+}
+
 const ModalHeader: FC<ModalHeaderProps> = ({
   title,
   description,
@@ -159,13 +174,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
           </ModalTitle>
         )}
 
-        {closable && (
-          <ButtonIcon style={{ flexGrow: 0 }} asChild>
-            <SModalClose className="close">
-              <X sx={{ width: 20, height: 20 }} />
-            </SModalClose>
-          </ButtonIcon>
-        )}
+        {closable && <ModalClose />}
       </Flex>
 
       {description && (
@@ -279,6 +288,7 @@ export {
   Modal,
   ModalBody,
   ModalClose,
+  ModalCloseTrigger,
   ModalContainer,
   ModalContent,
   ModalContentDivider,

@@ -1,0 +1,21 @@
+query AccumulatedRpsUpdatedEvents {
+  events(
+    where: { name_eq: "Staking.AccumulatedRpsUpdated" }
+    orderBy: [block_height_ASC]
+  ) {
+    args
+    block {
+      height
+    }
+    name
+  }
+}
+
+query StakingInitializedEvents {
+  events(where: { name_eq: "Staking.StakingInitialized" }) {
+    block {
+      height
+    }
+    name
+  }
+}

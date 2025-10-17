@@ -5,11 +5,15 @@ import { isObjectType } from "remeda"
 
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
-type TransactionAlert = AlertProps & {
-  key: string
+export enum TransactionAlertFlag {
+  InsufficientFeeBalance = "insufficientFeeBalance",
 }
 
-export const useTransactionAlerts = (): TransactionAlert[] => {
+type TransactionAlert = AlertProps & {
+  key: TransactionAlertFlag
+}
+
+export const useTransactionAlerts = () => {
   const { t } = useTranslation()
 
   const { feeEstimate, feeAssetBalance } = useTransaction()
@@ -17,11 +21,15 @@ export const useTransactionAlerts = (): TransactionAlert[] => {
   const isFeeBalanceInsufficient =
     feeAssetBalance && feeEstimate && Big(feeAssetBalance).lt(feeEstimate)
 
-  return [
+  const alerts: TransactionAlert[] = [
     isFeeBalanceInsufficient && {
-      key: "insufficientFeeBalance",
+      key: TransactionAlertFlag.InsufficientFeeBalance,
       variant: "error" as const,
       description: t("transaction.alert.insufficientFeeBalance"),
     },
   ].filter(isObjectType)
+
+  const flags = alerts.map((alert) => alert.key)
+
+  return { alerts, flags, hasAlerts: alerts.length > 0 }
 }

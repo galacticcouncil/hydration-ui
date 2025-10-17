@@ -12,10 +12,20 @@ import { FC, Fragment, ReactNode } from "react"
 type Props = {
   readonly header: string
   readonly description: string
+  readonly image?: string
+  readonly icon?: ReactNode
   readonly action?: ReactNode
+  readonly className?: string
 }
 
-export const EmptyState: FC<Props> = ({ header, description, action }) => {
+export const EmptyState: FC<Props> = ({
+  header,
+  description,
+  image = Flamingo,
+  icon,
+  action,
+  className,
+}) => {
   return (
     <Flex
       direction="column"
@@ -24,8 +34,9 @@ export const EmptyState: FC<Props> = ({ header, description, action }) => {
       m="auto"
       pb={50}
       maxWidth={230}
+      className={className}
     >
-      <Image src={Flamingo} alt="Empty state" width={96} height={96} />
+      {icon || <Image src={image} alt="Empty state" width={96} height={96} />}
       <Text color={getToken("text.high")} fs={14} lh={1.2} fw={500}>
         {header}
       </Text>

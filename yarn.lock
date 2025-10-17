@@ -1872,10 +1872,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-2.3.0.tgz#a5db3a35a83730e5cebc1ebbcad4e3f84f959cf8"
   integrity sha512-RD2rhcP0PoS5Ki9FTbO9DQ9T6nkKtqbFRIal2nT+GGNujLgKoSVWK/GH/3ViAX9uEU71u5XSEDRMhRJp3gZNrg==
 
-"@galacticcouncil/math-staking@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-1.0.0.tgz#7bb1d28e65a9b09f6a3a84dbc1e988fb89c07746"
-  integrity sha512-g8NS7v3fwJyOqnNJtP6qRjgI/Iav5gH6tozgvhBPt8Cs4Jftdzi/kR5rV5Dv+MHnIrtTpDB3Gx9ZEgEoG9FLmg==
+"@galacticcouncil/math-staking@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-1.2.0.tgz#02625a57c25b4bd8e504d958c085a01530351c0f"
+  integrity sha512-Q5YknGXJggVjOOXhT16VGuGfF5RNRfcl5ZhGZbqzwcHov8A3/f+f6sp31/xi77uwQq5KfHlS9KPDsezvpGy7DQ==
 
 "@galacticcouncil/math-xyk@^1.0.0":
   version "1.0.0"
@@ -1887,10 +1887,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk-next@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.10.0.tgz#efdc820e61b4621c91499088eec209654c265219"
-  integrity sha512-2Wq9gKXGkgNzyCnpfsn8mB0aWRHwnWnJ0h758fWCT5RWM5Tdu8tunapex/vxTTa/wFlb/yzMspELUkx4Lu8Lpw==
+"@galacticcouncil/sdk-next@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.10.1.tgz#2ed0afe6179a3e7ded3848ab4c0c6179e55a20b7"
+  integrity sha512-cmLSrclw1cWXoCsPu7Lpiq3XvrAdj5sGyw05NJ6r5+rRF+DSCPSS8ZZWdtzN+ntRa3ulKUD+TFWTOinmHP9gcA==
   dependencies:
     "@galacticcouncil/descriptors" "^1.4.0"
     "@galacticcouncil/math-hsm" "^1.1.0"
@@ -1921,17 +1921,36 @@
     bignumber.js "^9.1.0"
     lodash.clonedeep "^4.5.0"
 
-"@galacticcouncil/xcm-cfg@^10.5.0":
-  version "10.10.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.10.0.tgz#c3b3e93907976d78bad186b25135e9da241c41e8"
-  integrity sha512-cZ/ihDIZ4zTYS088jO719TnbvuLViSc2ReeYJ1pNsZXV0d8pJD4YRIu/oUFSYO9aFGL2KamKNa2wpC7WYxIGCg==
+"@galacticcouncil/xcm-cfg@^10.13.1":
+  version "10.13.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.13.1.tgz#4160ee26aee4c02e405f3f3ff7f0775fac4fc800"
+  integrity sha512-40WpfLTe65UNzzpEVpcAEqxSUG8QWtMcbnee4kGcHXpUTlqVscbPVjaDWdyCkY4U45zDlNktdPJaO1LeydLgbA==
   dependencies:
-    "@galacticcouncil/xcm-core" "^8.4.0"
+    "@galacticcouncil/xcm-core" "^8.6.0"
 
 "@galacticcouncil/xcm-core@^8.4.0":
   version "8.4.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.4.0.tgz#610ca2e7e5963e801411a068ec10f307c91af82c"
   integrity sha512-gX+iih5JRJyI1AwvsISBzxY1g3D+TRpzXYGh1S4XSDyRVole7bTQxow11jt1hYDm7ROojwaN4ieeveQTqYpVmw==
+  dependencies:
+    "@noble/hashes" "^1.6.1"
+    "@wormhole-foundation/sdk-base" "^3.2.0"
+    "@wormhole-foundation/sdk-connect" "^3.2.0"
+    "@wormhole-foundation/sdk-definitions" "^3.2.0"
+    "@wormhole-foundation/sdk-solana" "^3.2.0"
+    "@wormhole-foundation/sdk-solana-tokenbridge" "^3.2.0"
+    "@wormhole-foundation/sdk-sui" "^3.2.0"
+    "@wormhole-foundation/sdk-sui-tokenbridge" "^3.2.0"
+    big.js "^6.2.1"
+    bigint-buffer "^1.1.5"
+    bs58 "^6.0.0"
+    buffer "^6.0.3"
+    lru-cache "^11.0.0"
+
+"@galacticcouncil/xcm-core@^8.6.0":
+  version "8.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.6.0.tgz#d4c620b4167a0ea4776e02a55203bc085d5d685b"
+  integrity sha512-w8SsbLMyllWdTFiLwBOxCYgj/d9hzy5fSyETJpWL6CshB4uvYm3yLu2rDfhlVpxo2ZnmkyEdYX9nxg6XAqzb+Q==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "^3.2.0"

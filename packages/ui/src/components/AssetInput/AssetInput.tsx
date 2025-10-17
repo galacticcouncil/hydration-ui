@@ -70,7 +70,11 @@ export const AssetInput = ({
             color={getToken("text.medium")}
             fs="p5"
             fw={500}
-            sx={{ width: "fit-content", lineHeight: "120%" }}
+            sx={{
+              width: "fit-content",
+              lineHeight: "120%",
+              whiteSpace: "nowrap",
+            }}
           >
             {label}
           </Text>
@@ -82,7 +86,11 @@ export const AssetInput = ({
               color={getToken("text.low")}
               fs="p5"
               fw={500}
-              sx={{ width: "fit-content", lineHeight: "120%" }}
+              sx={{
+                width: "fit-content",
+                lineHeight: "120%",
+                whiteSpace: "nowrap",
+              }}
             >
               <span>Balance: </span>
               {loading ? (

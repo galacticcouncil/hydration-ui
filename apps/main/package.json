@@ -13,6 +13,7 @@
   },
   "scripts": {
     "dev": "vite --clearScreen false",
+    "dev:production": "vite -m production --clearScreen false",
     "build": "vite build && tsc",
     "preview": "vite preview",
     "lint": "yarn lint:eslint && yarn lint:ts",
