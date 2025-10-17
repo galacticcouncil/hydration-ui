@@ -21,8 +21,8 @@ import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
+  isDepositPosition,
   isOmnipoolDepositPosition,
-  isXykDepositPosition,
 } from "@/states/account"
 import {
   TransactionOptions,
@@ -57,7 +57,7 @@ const getAvailableFarms = (
   farms: Farm[],
   position: AccountOmnipoolPosition | XykDeposit,
 ) =>
-  isXykDepositPosition(position) || isOmnipoolDepositPosition(position)
+  isDepositPosition(position)
     ? farms.filter(
         (farm) =>
           !position.yield_farm_entries?.find(

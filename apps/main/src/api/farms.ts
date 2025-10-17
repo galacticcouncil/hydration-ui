@@ -1,11 +1,24 @@
-import { farm } from "@galacticcouncil/sdk-next"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { farm, SdkCtx } from "@galacticcouncil/sdk-next"
+import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
 
-import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
-import { Positions } from "@/states/account"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { isXykDepositPosition } from "@/states/account"
+
+import { OmnipoolDepositFull, XykDeposit } from "./account"
 
 export type Farm = farm.Farm
+export type FarmDepositReward = farm.FarmDepositReward
+export type FarmEntry = OmnipoolDepositFull["yield_farm_entries"][number]
 export type LoyaltyCurve = farm.LoyaltyCurve
+
+export type FarmRewards = {
+  assetId: string
+  depositId: string
+  yieldFarmId: number
+  rewards: FarmDepositReward
+  isActiveFarm: boolean
+  isXyk: boolean
+}
 
 export const useOmnipoolFarms = () => {
   const { isLoaded, sdk } = useRpcProvider()
@@ -49,44 +62,71 @@ export const useOmnipoolActiveFarm = (poolId: string) => {
   return { data, isLoading }
 }
 
-export const allDepositsRewardsQuery = (
-  { sdk, isApiLoaded }: TProviderContext,
-  accountId: string,
-  positions: Positions,
-  relayBlockChainNumber: number,
-  isEnabled: boolean,
-) =>
-  queryOptions({
-    queryKey: ["farmRewards", accountId],
-    queryFn: () => {
-      const allDeposits = positions.xykMining
-        .map(
-          (deposit) =>
-            [
-              deposit.amm_pool_id.toString(),
-              true as boolean,
-              deposit.yield_farm_entries,
-            ] as const,
-        )
-        .concat(
-          positions.omnipoolMining.map(
-            (deposit) =>
-              [deposit.assetId, false, deposit.yield_farm_entries] as const,
-          ),
-        )
+const farmRewardsQuery = (
+  sdk: SdkCtx,
+  entry: FarmEntry,
+  position: XykDeposit | OmnipoolDepositFull,
+  relayBlockChainNumber: number | undefined = 0,
+) => {
+  const isXyk = isXykDepositPosition(position)
+  const depositId = isXyk ? position.id : position.miningId
 
-      return Promise.all(
-        allDeposits.flatMap(([poolId, isXyk, yield_farm_entries]) =>
-          yield_farm_entries.map((farmEntry) =>
-            sdk.api.farm.getDepositReward(
-              poolId,
-              farmEntry,
-              isXyk,
-              relayBlockChainNumber,
-            ),
-          ),
-        ),
+  return queryOptions({
+    queryKey: [
+      isXyk ? "xykFarmRewards" : "omnipoolFarmRewards",
+      depositId,
+      entry.yield_farm_id,
+    ],
+    queryFn: async () => {
+      const assetId = isXyk ? position.amm_pool_id : position.assetId
+
+      const depositReward = await sdk.api.farm.getDepositReward(
+        assetId,
+        entry,
+        isXyk,
+        relayBlockChainNumber,
       )
+      if (!depositReward) return undefined
+
+      return {
+        assetId,
+        depositId,
+        yieldFarmId: entry.yield_farm_id,
+        rewards: depositReward,
+        isActiveFarm: true,
+        isXyk,
+      }
     },
-    enabled: isEnabled && isApiLoaded && !!relayBlockChainNumber && !!accountId,
   })
+}
+
+export const useFarmRewards = (
+  positions: Array<XykDeposit | OmnipoolDepositFull>,
+  relayBlockChainNumber: number | undefined = 0,
+) => {
+  const { sdk } = useRpcProvider()
+  const isPositions = positions.length > 0
+
+  const allEntries = positions.flatMap((position) =>
+    position.yield_farm_entries.map((entry) => ({ entry, position })),
+  )
+
+  const queries = useQueries({
+    queries: allEntries.map(({ entry, position }) => ({
+      ...farmRewardsQuery(sdk, entry, position, relayBlockChainNumber),
+      enabled: !!sdk.api.router && isPositions && !!relayBlockChainNumber,
+      refetchInterval: 60000,
+    })),
+  })
+
+  const isLoading = queries.some((query) => query.isLoading)
+  const isPending = queries.some((query) => query.isPending)
+
+  const data: FarmRewards[] | undefined = isLoading
+    ? undefined
+    : queries.map((query) => query.data).filter((data) => !!data)
+
+  const refetch = () => queries.forEach((query) => query.refetch())
+
+  return { data, isLoading, isPending, refetch }
+}

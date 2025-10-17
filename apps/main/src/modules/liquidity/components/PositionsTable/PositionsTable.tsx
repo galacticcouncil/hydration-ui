@@ -20,6 +20,10 @@ import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
+import {
+  DepositPosition,
+  isOmnipoolDepositFullPosition,
+} from "@/states/account"
 
 import { ATokenBalanceTable } from "./ATokenBalanceTable"
 import { ClaimCard } from "./ClaimCard"
@@ -54,6 +58,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
     <PositionsTableBody
       totalInFarms={totalInFarms}
       totalBalanceDisplay={totalBalanceDisplay}
+      positions={pool.positions}
     >
       <STableHeader>
         <Icon component={Circle} size={12} />
@@ -117,6 +122,7 @@ const OmnipoolStablepoolPositions = ({
     <PositionsTableBody
       totalInFarms={totalInFarms}
       totalBalanceDisplay={totalBalanceDisplay}
+      positions={pool.positions.filter(isOmnipoolDepositFullPosition)}
     >
       {tables}
     </PositionsTableBody>
@@ -127,10 +133,12 @@ const PositionsTableBody = ({
   totalInFarms,
   totalBalanceDisplay,
   children,
+  positions,
 }: {
   children?: React.ReactNode
   totalInFarms: string
   totalBalanceDisplay: string
+  positions: DepositPosition[]
 }) => {
   const expanded =
     useSearch({
@@ -150,7 +158,9 @@ const PositionsTableBody = ({
 
   return (
     <>
-      {(isTablet || isMobile) && <ClaimCard sx={{ mb: 12 }} />}
+      {(isTablet || isMobile) && !!totalInFarms && (
+        <ClaimCard sx={{ mb: 12 }} positions={positions} />
+      )}
       <CollapsibleRoot open={expanded}>
         <TableContainer
           as={Paper}
@@ -161,6 +171,7 @@ const PositionsTableBody = ({
             showMore={expanded}
             totalInFarms={totalInFarms}
             totalBalanceDisplay={totalBalanceDisplay}
+            positions={positions}
           />
           <CollapsibleContent css={{ overflowX: "auto" }}>
             {children}
