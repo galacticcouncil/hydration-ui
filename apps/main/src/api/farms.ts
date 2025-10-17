@@ -1,5 +1,5 @@
-import { farm } from "@galacticcouncil/sdk-next"
-import { useQueries, useQuery } from "@tanstack/react-query"
+import { farm, SdkCtx } from "@galacticcouncil/sdk-next"
+import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { isXykDepositPosition } from "@/states/account"
@@ -62,6 +62,44 @@ export const useOmnipoolActiveFarm = (poolId: string) => {
   return { data, isLoading }
 }
 
+const farmRewardsQuery = (
+  sdk: SdkCtx,
+  entry: FarmEntry,
+  position: XykDeposit | OmnipoolDepositFull,
+  relayBlockChainNumber: number | undefined = 0,
+) => {
+  const isXyk = isXykDepositPosition(position)
+  const depositId = isXyk ? position.id : position.miningId
+
+  return queryOptions({
+    queryKey: [
+      isXyk ? "xykFarmRewards" : "omnipoolFarmRewards",
+      depositId,
+      entry.yield_farm_id,
+    ],
+    queryFn: async () => {
+      const assetId = isXyk ? position.amm_pool_id : position.assetId
+
+      const depositReward = await sdk.api.farm.getDepositReward(
+        assetId,
+        entry,
+        isXyk,
+        relayBlockChainNumber,
+      )
+      if (!depositReward) return undefined
+
+      return {
+        assetId,
+        depositId,
+        yieldFarmId: entry.yield_farm_id,
+        rewards: depositReward,
+        isActiveFarm: true,
+        isXyk,
+      }
+    },
+  })
+}
+
 export const useFarmRewards = (
   positions: Array<XykDeposit | OmnipoolDepositFull>,
   relayBlockChainNumber: number | undefined = 0,
@@ -74,42 +112,11 @@ export const useFarmRewards = (
   )
 
   const queries = useQueries({
-    queries: allEntries.map(({ entry, position }) => {
-      const isXyk = isXykDepositPosition(position)
-      const depositId = isXyk ? position.id : position.miningId
-
-      const queryKey = [
-        isXyk ? "xykFarmRewards" : "omnipoolFarmRewards",
-        depositId,
-        entry.yield_farm_id,
-      ]
-
-      return {
-        queryKey,
-        queryFn: async () => {
-          const assetId = isXyk ? position.amm_pool_id : position.assetId
-
-          const depositReward = await sdk.api.farm.getDepositReward(
-            assetId,
-            entry,
-            isXyk,
-            relayBlockChainNumber,
-          )
-          if (!depositReward) return undefined
-
-          return {
-            assetId,
-            depositId,
-            yieldFarmId: entry.yield_farm_id,
-            rewards: depositReward,
-            isActiveFarm: true,
-            isXyk,
-          }
-        },
-        enabled: !!sdk.api.router && isPositions && !!relayBlockChainNumber,
-        refetchInterval: 60000,
-      }
-    }),
+    queries: allEntries.map(({ entry, position }) => ({
+      ...farmRewardsQuery(sdk, entry, position, relayBlockChainNumber),
+      enabled: !!sdk.api.router && isPositions && !!relayBlockChainNumber,
+      refetchInterval: 60000,
+    })),
   })
 
   const isLoading = queries.some((query) => query.isLoading)
