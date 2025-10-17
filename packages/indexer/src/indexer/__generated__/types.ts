@@ -12,55 +12,9 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  BigInt: { input: any; output: any; }
-  DateTime: { input: any; output: any; }
+  BigInt: { input: unknown; output: unknown; }
+  DateTime: { input: string; output: string; }
   JSON: { input: any; output: any; }
-};
-
-export type Block = {
-  __typename?: 'Block';
-  calls: Array<Call>;
-  events: Array<Event>;
-  extrinsics: Array<Extrinsic>;
-  extrinsicsRoot: Scalars['String']['output'];
-  hash: Scalars['String']['output'];
-  height: Scalars['Int']['output'];
-  id: Scalars['String']['output'];
-  parentHash: Scalars['String']['output'];
-  spec: Metadata;
-  stateRoot: Scalars['String']['output'];
-  timestamp: Scalars['DateTime']['output'];
-  validator?: Maybe<Scalars['String']['output']>;
-};
-
-
-export type BlockCallsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<CallOrderByInput>>;
-  where?: InputMaybe<CallWhereInput>;
-};
-
-
-export type BlockEventsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<EventOrderByInput>>;
-  where?: InputMaybe<EventWhereInput>;
-};
-
-
-export type BlockExtrinsicsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<ExtrinsicOrderByInput>>;
-  where?: InputMaybe<ExtrinsicWhereInput>;
-};
-
-export type BlockEdge = {
-  __typename?: 'BlockEdge';
-  cursor: Scalars['String']['output'];
-  node: Block;
 };
 
 export enum BlockOrderByInput {
@@ -230,33 +184,6 @@ export type BlockWhereInput = {
   validator_startsWith?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type BlocksConnection = {
-  __typename?: 'BlocksConnection';
-  edges: Array<BlockEdge>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int']['output'];
-};
-
-export type Call = {
-  __typename?: 'Call';
-  args?: Maybe<Scalars['JSON']['output']>;
-  block: Block;
-  error?: Maybe<Scalars['JSON']['output']>;
-  extrinsic: Extrinsic;
-  id: Scalars['String']['output'];
-  name: Scalars['String']['output'];
-  origin?: Maybe<Scalars['JSON']['output']>;
-  parent?: Maybe<Call>;
-  pos: Scalars['Int']['output'];
-  success: Scalars['Boolean']['output'];
-};
-
-export type CallEdge = {
-  __typename?: 'CallEdge';
-  cursor: Scalars['String']['output'];
-  node: Call;
-};
-
 export enum CallOrderByInput {
   BlockExtrinsicsRootAsc = 'block_extrinsicsRoot_ASC',
   BlockExtrinsicsRootDesc = 'block_extrinsicsRoot_DESC',
@@ -378,32 +305,6 @@ export type CallWhereInput = {
   success_eq?: InputMaybe<Scalars['Boolean']['input']>;
   success_isNull?: InputMaybe<Scalars['Boolean']['input']>;
   success_not_eq?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-export type CallsConnection = {
-  __typename?: 'CallsConnection';
-  edges: Array<CallEdge>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int']['output'];
-};
-
-export type Event = {
-  __typename?: 'Event';
-  args?: Maybe<Scalars['JSON']['output']>;
-  block: Block;
-  call?: Maybe<Call>;
-  extrinsic?: Maybe<Extrinsic>;
-  id: Scalars['String']['output'];
-  indexInBlock: Scalars['Int']['output'];
-  name: Scalars['String']['output'];
-  phase: Scalars['String']['output'];
-  pos: Scalars['Int']['output'];
-};
-
-export type EventEdge = {
-  __typename?: 'EventEdge';
-  cursor: Scalars['String']['output'];
-  node: Event;
 };
 
 export enum EventOrderByInput {
@@ -542,44 +443,6 @@ export type EventWhereInput = {
   pos_lte?: InputMaybe<Scalars['Int']['input']>;
   pos_not_eq?: InputMaybe<Scalars['Int']['input']>;
   pos_not_in?: InputMaybe<Array<Scalars['Int']['input']>>;
-};
-
-export type EventsConnection = {
-  __typename?: 'EventsConnection';
-  edges: Array<EventEdge>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int']['output'];
-};
-
-export type Extrinsic = {
-  __typename?: 'Extrinsic';
-  block: Block;
-  call: Call;
-  calls: Array<Call>;
-  error?: Maybe<Scalars['JSON']['output']>;
-  fee?: Maybe<Scalars['BigInt']['output']>;
-  hash: Scalars['String']['output'];
-  id: Scalars['String']['output'];
-  indexInBlock: Scalars['Int']['output'];
-  pos: Scalars['Int']['output'];
-  signature?: Maybe<Scalars['JSON']['output']>;
-  success: Scalars['Boolean']['output'];
-  tip?: Maybe<Scalars['BigInt']['output']>;
-  version: Scalars['Int']['output'];
-};
-
-
-export type ExtrinsicCallsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<CallOrderByInput>>;
-  where?: InputMaybe<CallWhereInput>;
-};
-
-export type ExtrinsicEdge = {
-  __typename?: 'ExtrinsicEdge';
-  cursor: Scalars['String']['output'];
-  node: Extrinsic;
 };
 
 export enum ExtrinsicOrderByInput {
@@ -729,36 +592,6 @@ export type ExtrinsicWhereInput = {
   version_not_in?: InputMaybe<Array<Scalars['Int']['input']>>;
 };
 
-export type ExtrinsicsConnection = {
-  __typename?: 'ExtrinsicsConnection';
-  edges: Array<ExtrinsicEdge>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int']['output'];
-};
-
-export type Metadata = {
-  __typename?: 'Metadata';
-  blockHash: Scalars['String']['output'];
-  blockHeight: Scalars['Int']['output'];
-  hex: Scalars['String']['output'];
-  id: Scalars['String']['output'];
-  specName: Scalars['String']['output'];
-  specVersion?: Maybe<Scalars['Int']['output']>;
-};
-
-export type MetadataConnection = {
-  __typename?: 'MetadataConnection';
-  edges: Array<MetadataEdge>;
-  pageInfo: PageInfo;
-  totalCount: Scalars['Int']['output'];
-};
-
-export type MetadataEdge = {
-  __typename?: 'MetadataEdge';
-  cursor: Scalars['String']['output'];
-  node: Metadata;
-};
-
 export enum MetadataOrderByInput {
   BlockHashAsc = 'blockHash_ASC',
   BlockHashDesc = 'blockHash_DESC',
@@ -863,173 +696,6 @@ export type MetadataWhereInput = {
   specVersion_lte?: InputMaybe<Scalars['Int']['input']>;
   specVersion_not_eq?: InputMaybe<Scalars['Int']['input']>;
   specVersion_not_in?: InputMaybe<Array<Scalars['Int']['input']>>;
-};
-
-export type PageInfo = {
-  __typename?: 'PageInfo';
-  endCursor: Scalars['String']['output'];
-  hasNextPage: Scalars['Boolean']['output'];
-  hasPreviousPage: Scalars['Boolean']['output'];
-  startCursor: Scalars['String']['output'];
-};
-
-export type Query = {
-  __typename?: 'Query';
-  blockById?: Maybe<Block>;
-  /** @deprecated Use blockById */
-  blockByUniqueInput?: Maybe<Block>;
-  blocks: Array<Block>;
-  blocksConnection: BlocksConnection;
-  callById?: Maybe<Call>;
-  /** @deprecated Use callById */
-  callByUniqueInput?: Maybe<Call>;
-  calls: Array<Call>;
-  callsConnection: CallsConnection;
-  eventById?: Maybe<Event>;
-  /** @deprecated Use eventById */
-  eventByUniqueInput?: Maybe<Event>;
-  events: Array<Event>;
-  eventsConnection: EventsConnection;
-  extrinsicById?: Maybe<Extrinsic>;
-  /** @deprecated Use extrinsicById */
-  extrinsicByUniqueInput?: Maybe<Extrinsic>;
-  extrinsics: Array<Extrinsic>;
-  extrinsicsConnection: ExtrinsicsConnection;
-  metadata: Array<Metadata>;
-  metadataById?: Maybe<Metadata>;
-  /** @deprecated Use metadataById */
-  metadataByUniqueInput?: Maybe<Metadata>;
-  metadataConnection: MetadataConnection;
-};
-
-
-export type QueryBlockByIdArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryBlockByUniqueInputArgs = {
-  where: WhereIdInput;
-};
-
-
-export type QueryBlocksArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<BlockOrderByInput>>;
-  where?: InputMaybe<BlockWhereInput>;
-};
-
-
-export type QueryBlocksConnectionArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy: Array<BlockOrderByInput>;
-  where?: InputMaybe<BlockWhereInput>;
-};
-
-
-export type QueryCallByIdArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryCallByUniqueInputArgs = {
-  where: WhereIdInput;
-};
-
-
-export type QueryCallsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<CallOrderByInput>>;
-  where?: InputMaybe<CallWhereInput>;
-};
-
-
-export type QueryCallsConnectionArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy: Array<CallOrderByInput>;
-  where?: InputMaybe<CallWhereInput>;
-};
-
-
-export type QueryEventByIdArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryEventByUniqueInputArgs = {
-  where: WhereIdInput;
-};
-
-
-export type QueryEventsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<EventOrderByInput>>;
-  where?: InputMaybe<EventWhereInput>;
-};
-
-
-export type QueryEventsConnectionArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy: Array<EventOrderByInput>;
-  where?: InputMaybe<EventWhereInput>;
-};
-
-
-export type QueryExtrinsicByIdArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryExtrinsicByUniqueInputArgs = {
-  where: WhereIdInput;
-};
-
-
-export type QueryExtrinsicsArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<ExtrinsicOrderByInput>>;
-  where?: InputMaybe<ExtrinsicWhereInput>;
-};
-
-
-export type QueryExtrinsicsConnectionArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy: Array<ExtrinsicOrderByInput>;
-  where?: InputMaybe<ExtrinsicWhereInput>;
-};
-
-
-export type QueryMetadataArgs = {
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Array<MetadataOrderByInput>>;
-  where?: InputMaybe<MetadataWhereInput>;
-};
-
-
-export type QueryMetadataByIdArgs = {
-  id: Scalars['String']['input'];
-};
-
-
-export type QueryMetadataByUniqueInputArgs = {
-  where: WhereIdInput;
-};
-
-
-export type QueryMetadataConnectionArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy: Array<MetadataOrderByInput>;
-  where?: InputMaybe<MetadataWhereInput>;
 };
 
 export type WhereIdInput = {

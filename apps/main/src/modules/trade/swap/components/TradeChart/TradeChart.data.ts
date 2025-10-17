@@ -11,7 +11,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
-import { spotPrice } from "@/api/spotPrice"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { PeriodType } from "@/components/PeriodInput/PeriodInput"
 import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -60,7 +60,7 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
   )
 
   const { data: spotPriceData, isLoading: isSpotPriceLoading } = useQuery(
-    spotPrice(rpc, sortedAssets[1], sortedAssets[0]),
+    spotPriceQuery(rpc, sortedAssets[1], sortedAssets[0]),
   )
 
   const prices = useMemo(() => {

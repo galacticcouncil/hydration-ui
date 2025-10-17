@@ -7,9 +7,9 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
-  readonly fromAmount: string
+  readonly fromAmount: string | null
   readonly from: TAsset
-  readonly toAmount?: string
+  readonly toAmount?: string | null
   readonly to: TAsset
   readonly showLogo?: boolean
 }

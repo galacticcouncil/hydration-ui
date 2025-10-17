@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 
-import { spotPrice } from "@/api/spotPrice"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
@@ -16,7 +16,7 @@ export const DcaAssetSwitcher: FC = () => {
   const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
-    spotPrice(rpc, buyAsset?.id ?? "", sellAsset?.id ?? ""),
+    spotPriceQuery(rpc, buyAsset?.id ?? "", sellAsset?.id ?? ""),
   )
 
   const switchAssets = useSwitchAssets()

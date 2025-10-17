@@ -21,13 +21,13 @@ export type OrderData = {
   readonly kind: OrderKind
   readonly scheduleId: number
   readonly from: TAsset
-  readonly fromAmountBudget: string
-  readonly fromAmountExecuted: string
-  readonly fromAmountRemaining: string
-  readonly singleTradeSize: string
+  readonly fromAmountBudget: string | null
+  readonly fromAmountExecuted: string | null
+  readonly fromAmountRemaining: string | null
+  readonly singleTradeSize: string | null
   readonly to: TAsset
-  readonly toAmountExecuted: string
-  readonly price: string
+  readonly toAmountExecuted: string | null
+  readonly price: string | null
   readonly status: DcaScheduleStatus | null
   readonly blocksPeriod: number | null
 }
@@ -58,33 +58,38 @@ export const useOrdersData = (
           const from = getAssetWithFallback(
             schedule.assetIn?.assetRegistryId ?? "",
           )
-          const fromAmountBudget = scaleHuman(
-            schedule.budgetAmountIn,
-            from.decimals,
-          )
-          const fromAmountExecuted = scaleHuman(
-            schedule.totalExecutedAmountIn,
-            from.decimals,
-          )
-          const fromAmountRemaining = Big(fromAmountBudget)
-            .minus(fromAmountExecuted)
-            .toString()
-          const singleTradeSize = scaleHuman(
-            schedule.singleTradeSize,
-            from.decimals,
-          )
+
+          const fromAmountBudget = schedule.budgetAmountIn
+            ? scaleHuman(schedule.budgetAmountIn, from.decimals)
+            : null
+
+          const fromAmountExecuted = schedule.totalExecutedAmountIn
+            ? scaleHuman(schedule.totalExecutedAmountIn, from.decimals)
+            : null
+
+          const fromAmountRemaining =
+            fromAmountExecuted && fromAmountBudget
+              ? Big(fromAmountBudget).minus(fromAmountExecuted).toString()
+              : null
+
+          const singleTradeSize = schedule.singleTradeSize
+            ? scaleHuman(schedule.singleTradeSize, from.decimals)
+            : null
 
           const to = getAssetWithFallback(
             schedule.assetOut?.assetRegistryId ?? "",
           )
 
-          const toAmountExecuted = scaleHuman(
-            schedule.totalExecutedAmountOut,
-            to.decimals,
-          )
-          const price = Big(toAmountExecuted).gt(0)
-            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
-            : "0"
+          const toAmountExecuted = schedule.totalExecutedAmountOut
+            ? scaleHuman(schedule.totalExecutedAmountOut, to.decimals)
+            : null
+
+          const price =
+            toAmountExecuted &&
+            fromAmountExecuted &&
+            Big(toAmountExecuted).gt(0)
+              ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
+              : null
 
           return {
             kind: OrderKind.Dca,

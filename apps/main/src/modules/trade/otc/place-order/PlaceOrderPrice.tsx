@@ -12,7 +12,7 @@ import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { spotPrice } from "@/api/spotPrice"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { PlaceOrderFormValues } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -35,7 +35,7 @@ export const PlaceOrderPrice: FC<Props> = ({
 
   const rpc = useRpcProvider()
   const { data, isLoading } = useQuery(
-    spotPrice(rpc, offerAsset.id, buyAsset.id),
+    spotPriceQuery(rpc, offerAsset.id, buyAsset.id),
   )
 
   const omniPoolPrice = data?.spotPrice ?? "0"

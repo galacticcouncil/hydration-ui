@@ -84,7 +84,7 @@ export const useBorrowHistoryColumns = () => {
               event.supply && (
                 <AssetAmountDescription
                   assetId={event.supply.asset?.assetRegistryId}
-                  amount={event.supply.amount}
+                  amount={event.supply.amount || "0"}
                 />
               )
             )
@@ -93,7 +93,7 @@ export const useBorrowHistoryColumns = () => {
               event.borrow && (
                 <AssetAmountDescription
                   assetId={event.borrow.asset?.assetRegistryId}
-                  amount={event.borrow.amount}
+                  amount={event.borrow.amount || "0"}
                 />
               )
             )
@@ -102,7 +102,7 @@ export const useBorrowHistoryColumns = () => {
               event.repay && (
                 <AssetAmountDescription
                   assetId={event.repay.asset?.assetRegistryId}
-                  amount={event.repay.amount}
+                  amount={event.repay.amount || "0"}
                 />
               )
             )
@@ -111,7 +111,7 @@ export const useBorrowHistoryColumns = () => {
               event.withdraw && (
                 <AssetAmountDescription
                   assetId={event.withdraw.asset?.assetRegistryId}
-                  amount={event.withdraw.amount}
+                  amount={event.withdraw.amount || "0"}
                 />
               )
             )
@@ -142,7 +142,7 @@ export const useBorrowHistoryColumns = () => {
               event.liquidationCall && (
                 <LiquidationCallDescription
                   assetId={event.liquidationCall.asset?.assetRegistryId}
-                  amount={event.liquidationCall.amount}
+                  amount={event.liquidationCall.amount || "0"}
                 />
               )
             )
