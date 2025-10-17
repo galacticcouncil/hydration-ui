@@ -60,5 +60,7 @@ export type AxisLabelCssProps = {
   dy?: number
   dx?: number
   fontSize?: number
+  lineHeight?: number
+  fontWeight?: number
   fill?: string
 }

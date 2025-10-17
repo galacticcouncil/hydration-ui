@@ -1,7 +1,6 @@
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
-import { ReactNode } from "@tanstack/react-router"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 
 import { STabBarMenuAction } from "@/modules/layout/components/MobileTabBar/MobileTabBar.styled"
 
