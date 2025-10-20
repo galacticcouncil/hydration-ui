@@ -4,6 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { useClaimAllWalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.claim"
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 import { WalletRewardsSectionEmpty } from "@/modules/wallet/assets/Rewards/WalletRewardsSectionEmpty"
@@ -13,6 +14,8 @@ export const WalletRewardsSection: FC = () => {
 
   const { incentives, farming, staking, referral, isEmpty, isLoading } =
     useWalletRewardsSectionData()
+
+  const claimAll = useClaimAllWalletRewards()
 
   const [incentivesDisplay] = useDisplayAssetPrice(
     USDT_ASSET_ID,
@@ -85,8 +88,11 @@ export const WalletRewardsSection: FC = () => {
           </WalletRewardsSectionEmpty>
         )}
       </Flex>
-      {/* TODO wallet rewards claim */}
-      <Button width="max-content" disabled={isEmpty}>
+      <Button
+        width="max-content"
+        disabled={isEmpty}
+        onClick={() => claimAll.mutate()}
+      >
         {isEmpty && !isLoading ? t("rewards.claim.empty") : t("rewards.claim")}
       </Button>
     </SWalletRewardsSection>

@@ -48,9 +48,7 @@ const RewardsHoverCard = () => {
 
   const { mutate: claimRewards } = useClaimFarmRewardsMutation({
     claimableDeposits: rewards ?? [],
-    onSuccess: () => {
-      refetch()
-    },
+    onSuccess: () => refetch(),
   })
 
   const rewardsString = Array.from(
