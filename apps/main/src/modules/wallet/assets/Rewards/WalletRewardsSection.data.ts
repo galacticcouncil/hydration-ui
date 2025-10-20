@@ -41,7 +41,7 @@ export const useWalletRewardsSectionData = () => {
       isEmpty: farmingEmpty,
     },
     staking: {
-      value: staking || "0",
+      value: staking?.maxRewards || "0",
       symbol: native.symbol,
       loading: stakingLoading,
       isEmpty: stakingEmpty,

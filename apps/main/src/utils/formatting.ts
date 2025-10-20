@@ -55,7 +55,7 @@ export const scaleHuman = (
   const _decimals =
     decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
 
-  if (_decimals === 0) {
+  if (_decimals === 0 || !_decimals) {
     return amountBig.toString()
   }
 
