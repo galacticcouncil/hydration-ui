@@ -45,9 +45,8 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
           p={getTokenPx("containers.paddings.primary")}
         >
           <SwapAmount
-            fromAmount={details.fromAmountExecuted}
+            fromAmount={details.fromAmountBudget}
             from={details.from}
-            toAmount={details.toAmountExecuted}
             to={details.to}
             showLogo
           />
