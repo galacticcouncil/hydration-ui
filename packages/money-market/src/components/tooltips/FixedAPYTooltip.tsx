@@ -6,12 +6,7 @@ import { GHO_SYMBOL } from "@/utils/ghoUtilities"
 export const FixedAPYTooltip = () => {
   return (
     <Tooltip
-      text={
-        <>
-          This rate may be changed over time depending on the need for the
-          {GHO_SYMBOL} supply to contract/expand.
-        </>
-      }
+      text={`This rate may be changed over time depending on the need for the ${GHO_SYMBOL} supply to contract/expand.`}
     >
       <CircleInfo />
     </Tooltip>

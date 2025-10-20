@@ -1,3 +1,4 @@
+import { DOT_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
@@ -11,7 +12,7 @@ import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
-import { DOT_ASSET_ID, NATIVE_ASSET_ID } from "@/utils/consts"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
   // Native asset is always accepted

@@ -1,4 +1,7 @@
+import { ReserveDataHumanized } from "@aave/contract-helpers"
 import { EvmCall } from "@galacticcouncil/xcm-sdk"
+
+export type { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 
 export enum CapType {
   "supplyCap" = "supplyCap",
@@ -33,3 +36,15 @@ export type FormatterFn = (
   value: number | bigint | string | null | undefined,
   opts?: Record<string, number | string>,
 ) => string
+
+export type ReserveFormatterFn = <T extends ReserveDataHumanized>(
+  reserve: T,
+) => T
+
+export type ExternalApyData = Map<
+  string,
+  {
+    borrowApy: string
+    supplyApy: string
+  }
+>

@@ -37,6 +37,7 @@ const defaulStyles = createStyles(
     place-content: center;
 
     text-decoration: none;
+    font-family: ${theme.fontFamilies1.secondary};
     font-weight: 500;
     white-space: nowrap;
 
@@ -314,6 +315,7 @@ export const SMicroButton = styled.button<{ variant?: MicroButtonVariant }>(
 
       padding: 0 8px;
 
+      font-family: ${theme.fontFamilies1.secondary};
       font-size: 10px;
       font-weight: 500;
       line-height: 140%;

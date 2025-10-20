@@ -8,16 +8,10 @@ import {
   WEI_DECIMALS,
 } from "@aave/math-utils"
 import { bigShift, getAddressFromAssetId } from "@galacticcouncil/utils"
-import Big from "big.js"
 import { produce } from "immer"
 
 import { EmodeCategory } from "@/helpers/types"
-import {
-  DOT_ASSET_ID,
-  GDOT_STABLESWAP_ASSET_ID,
-  VDOT_ASSET_ID,
-} from "@/ui-config/misc"
-import { fetchIconSymbolAndName } from "@/ui-config/reservePatches"
+import { ExternalApyData, ReserveFormatterFn } from "@/types"
 import { GHO_SYMBOL } from "@/utils/ghoUtilities"
 import { CustomMarket, marketsData } from "@/utils/marketsAndNetworksConfig"
 
@@ -156,6 +150,7 @@ export const formatReserveIncentives = (
 export const selectFormattedReserves = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
   const reserves = selectCurrentReserves(state)
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
@@ -175,43 +170,23 @@ export const selectFormattedReserves = (
   })
     .map((r) => ({
       ...r,
-      ...fetchIconSymbolAndName(r),
+      iconSymbol: r.symbol,
       isEmodeEnabled: r.eModeCategoryId !== 0,
       isWrappedBaseAsset: false,
     }))
     .sort(reserveSortFn)
 
+  if (externalApyData.size === 0) return formattedPoolReserves
+
   return produce(formattedPoolReserves, (draft) => {
     const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
 
-    const vDotReserve = reserveMap.get(getAddressFromAssetId(VDOT_ASSET_ID))
-
-    if (vDotReserve) {
-      const vDotSupplyApy = Big(vDotReserve.supplyAPY).plus(state.vDotApy)
-
-      const vDotBorrowApy = Big(vDotReserve.variableBorrowAPY).plus(
-        state.vDotApy,
-      )
-
-      vDotReserve.supplyAPY = vDotSupplyApy.toString()
-      vDotReserve.variableBorrowAPY = vDotBorrowApy.toString()
-
-      const dotReserve = reserveMap.get(getAddressFromAssetId(DOT_ASSET_ID))
-      const gDotReserve = reserveMap.get(
-        getAddressFromAssetId(GDOT_STABLESWAP_ASSET_ID),
-      )
-
-      if (gDotReserve && dotReserve) {
-        const dotApyHalf = Big(dotReserve.supplyAPY).div(2)
-        const vdotApyHalf = vDotSupplyApy.div(2)
-
-        // @TODO: Add GDOT LP Fee when available
-        const gdotLpFee = "0"
-
-        gDotReserve.supplyAPY = vdotApyHalf
-          .plus(dotApyHalf)
-          .plus(gdotLpFee)
-          .toString()
+    // override the APY values from external source if available
+    for (const [assetId, data] of externalApyData.entries()) {
+      const reserve = reserveMap.get(getAddressFromAssetId(assetId))
+      if (reserve) {
+        reserve.supplyAPY = data.supplyApy
+        reserve.variableBorrowAPY = data.borrowApy
       }
     }
   })
@@ -220,10 +195,15 @@ export const selectFormattedReserves = (
 export const selectUserSummaryAndIncentives = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
   const baseCurrencyData = selectCurrentBaseCurrencyData(state)
   const userReserves = selectCurrentUserReserves(state)
-  const formattedPoolReserves = selectFormattedReserves(state, currentTimestamp)
+  const formattedPoolReserves = selectFormattedReserves(
+    state,
+    currentTimestamp,
+    externalApyData,
+  )
   const userEmodeCategoryId = selectCurrentUserEmodeCategoryId(state)
   const reserveIncentiveData = state.reserveIncentiveData
   const userIncentiveData = state.userIncentiveData
@@ -245,8 +225,13 @@ export const selectUserSummaryAndIncentives = (
 export const selectUserNonEmtpySummaryAndIncentive = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
-  const user = selectUserSummaryAndIncentives(state, currentTimestamp)
+  const user = selectUserSummaryAndIncentives(
+    state,
+    currentTimestamp,
+    externalApyData,
+  )
   const userReservesData = user.userReservesData.filter(
     (userReserve) => userReserve.underlyingBalance !== "0",
   )
@@ -259,8 +244,13 @@ export const selectUserNonEmtpySummaryAndIncentive = (
 export const selectNonEmptyUserBorrowPositions = (
   state: RootStore,
   currentTimestamp: number,
+  externalApyData: ExternalApyData,
 ) => {
-  const user = selectUserSummaryAndIncentives(state, currentTimestamp)
+  const user = selectUserSummaryAndIncentives(
+    state,
+    currentTimestamp,
+    externalApyData,
+  )
   const borrowedPositions = user.userReservesData.filter(
     (reserve) =>
       reserve.variableBorrows !== "0" || reserve.stableBorrows !== "0",
@@ -282,10 +272,10 @@ export const formatEmodes = (reserves: ReserveDataHumanized[]) => {
           liquidationThreshold: r.eModeLiquidationThreshold,
           ltv: r.eModeLtv,
           priceSource: r.eModePriceSource,
-          assets: [fetchIconSymbolAndName(r).symbol],
+          assets: [r.symbol],
         }
       } else {
-        acc[r.eModeCategoryId].assets.push(fetchIconSymbolAndName(r).symbol)
+        acc[r.eModeCategoryId].assets.push(r.symbol)
       }
       return acc
     },
@@ -295,9 +285,12 @@ export const formatEmodes = (reserves: ReserveDataHumanized[]) => {
   return eModes
 }
 
-export const selectEmodes = (state: RootStore) => {
+export const selectEmodes = (
+  state: RootStore,
+  formatReserve?: ReserveFormatterFn,
+) => {
   const reserves = selectCurrentReserves(state)
-  return formatEmodes(reserves)
+  return formatEmodes(formatReserve ? reserves.map(formatReserve) : reserves)
 }
 
 export const selectEmodesV3 = (state: RootStore) => {

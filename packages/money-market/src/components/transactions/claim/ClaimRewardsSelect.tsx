@@ -10,10 +10,9 @@ import {
   MenuSelectionItem,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useMemo, useState } from "react"
 
-import { TokenIcon } from "@/components/primitives/TokenIcon"
+import { ReserveLogo } from "@/components/primitives/ReserveLogo"
 import { Reward } from "@/helpers/types"
 
 export type ClaimRewardsSelectProps = {
@@ -69,9 +68,7 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
       ...rewards.map((reward) => ({
         key: reward.symbol,
         label: reward.symbol,
-        icon: (
-          <TokenIcon id={getAssetIdFromAddress(reward.rewardTokenAddress)} />
-        ),
+        icon: <ReserveLogo address={reward.rewardTokenAddress} />,
       })),
     ]
   }, [rewards])

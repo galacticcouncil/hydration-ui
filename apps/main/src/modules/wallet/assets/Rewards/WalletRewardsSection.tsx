@@ -1,4 +1,5 @@
 import { Button, Flex, ValueStats } from "@galacticcouncil/ui/components"
+import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -6,7 +7,6 @@ import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { SWalletRewardsSection } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.styled"
 import { WalletRewardsSectionEmpty } from "@/modules/wallet/assets/Rewards/WalletRewardsSectionEmpty"
-import { USDT_ASSET_ID } from "@/utils/consts"
 
 export const WalletRewardsSection: FC = () => {
   const { t } = useTranslation(["wallet", "common"])

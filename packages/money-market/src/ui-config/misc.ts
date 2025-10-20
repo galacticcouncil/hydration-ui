@@ -1,5 +1,3 @@
-import { getAddressFromAssetId } from "@galacticcouncil/utils"
-
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
 export const GETH_STABLESWAP_ASSET_ID = "4200"
@@ -10,8 +8,3 @@ export const DOT_ASSET_ID = "5"
 
 export const HEALTH_FACTOR_RISK_THRESHOLD = 1.5
 export const HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1
-
-export const MONEY_MARKET_SUPPLY_BLACKLIST = [
-  GDOT_STABLESWAP_ASSET_ID,
-  GETH_STABLESWAP_ASSET_ID,
-].map(getAddressFromAssetId)

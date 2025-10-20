@@ -21,6 +21,7 @@ import { BorrowedAssetsTable } from "@/modules/borrow/dashboard/components/borro
 import { DashboardHeader } from "@/modules/borrow/dashboard/components/DashboardHeader"
 import { SuppliedAssetsTable } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsTable"
 import { SupplyAssetsTable } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable"
+import { HollarBanner } from "@/modules/borrow/hollar/HollarBanner"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const BorrowDashboardPage = () => {
@@ -45,6 +46,7 @@ export const BorrowDashboardPage = () => {
     <Stack gap={30}>
       <DashboardHeader />
       <AccountBindingBanner />
+      <HollarBanner />
       <Box>
         {shouldRenderFilter && (
           <Grid columns={2} gap={10} mb={10}>

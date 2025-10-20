@@ -1,8 +1,8 @@
 import { ValueStats, ValueStatsValue } from "@galacticcouncil/ui/components"
+import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { FC } from "react"
 
 import { AssetPrice } from "@/components/AssetPrice"
-import { USDT_ASSET_ID } from "@/utils/consts"
 
 type Props = {
   readonly label: string

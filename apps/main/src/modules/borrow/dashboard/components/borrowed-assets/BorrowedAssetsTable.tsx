@@ -11,6 +11,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
+import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { BorrowedAssetsHeader } from "@/modules/borrow/dashboard/components/borrowed-assets/BorrowedAssetsHeader"
 import { useBorrowedAssetsTableColumns } from "@/modules/borrow/dashboard/components/borrowed-assets/BorrowedAssetsTable.columns"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
@@ -33,7 +34,7 @@ export const BorrowedAssetsTable = () => {
   }
 
   return (
-    <Paper>
+    <TablePaper isTransparent>
       <BorrowedAssetsHeader />
       <Separator />
       {isMobile ? (
@@ -59,6 +60,6 @@ export const BorrowedAssetsTable = () => {
           />
         </TableContainer>
       )}
-    </Paper>
+    </TablePaper>
   )
 }

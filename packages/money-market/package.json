@@ -15,7 +15,6 @@
   "dependencies": {
     "@aave/contract-helpers": "1.23.1",
     "@aave/math-utils": "1.23.1",
-    "@bgd-labs/aave-address-book": "2.18.1",
     "@galacticcouncil/ui": "*",
     "@galacticcouncil/utils": "*",
     "@galacticcouncil/web3-connect": "*",

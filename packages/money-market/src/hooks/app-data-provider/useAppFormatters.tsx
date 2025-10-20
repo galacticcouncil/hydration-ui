@@ -1,11 +1,9 @@
 import React, { useContext } from "react"
 
-export type FormatterFn = (
-  value: number | bigint | string | null | undefined,
-  opts?: Record<string, number | string>,
-) => string
+import { FormatterFn, ReserveFormatterFn } from "@/types"
 
-export interface AppFormattersProvidersContextType {
+export type AppFormattersProvidersContextType = {
+  formatReserve?: ReserveFormatterFn
   formatNumber: FormatterFn
   formatCurrency: FormatterFn
   formatPercent: FormatterFn
@@ -16,15 +14,21 @@ const AppFormattersProvidersContext =
     {} as AppFormattersProvidersContextType,
   )
 
-export const AppFormattersProvider: React.FC<{
-  formatNumber: FormatterFn
-  formatCurrency: FormatterFn
-  formatPercent: FormatterFn
-  children?: React.ReactNode
-}> = ({ formatNumber, formatCurrency, formatPercent, children }) => {
+export const AppFormattersProvider: React.FC<
+  AppFormattersProvidersContextType & {
+    children?: React.ReactNode
+  }
+> = ({
+  formatReserve,
+  formatNumber,
+  formatCurrency,
+  formatPercent,
+  children,
+}) => {
   return (
     <AppFormattersProvidersContext.Provider
       value={{
+        formatReserve,
         formatNumber,
         formatCurrency,
         formatPercent,

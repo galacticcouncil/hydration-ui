@@ -54,7 +54,13 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
   return (
     <AssetCapsProvider asset={reserve}>
       <Stack gap={30}>
-        <AssetHeader asset={asset} />
+        <AssetHeader
+          asset={{
+            ...asset,
+            name: reserve.name,
+            symbol: reserve.symbol,
+          }}
+        />
         <ReserveHeader reserve={reserve} />
         <AccountBindingBanner />
         <Box>

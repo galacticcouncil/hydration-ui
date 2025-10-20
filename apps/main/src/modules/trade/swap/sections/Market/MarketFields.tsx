@@ -1,3 +1,4 @@
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
@@ -12,7 +13,6 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { SELL_ONLY_ASSETS } from "@/utils/consts"
 
 const RECALCULATE_DEBOUNCE_MS = 250
 

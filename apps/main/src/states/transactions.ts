@@ -1,9 +1,8 @@
-import { uuid } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { tags } from "@galacticcouncil/xcm-cfg"
 import { create } from "zustand"
 
 import { AnyTransaction } from "@/modules/transactions/types"
-import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>

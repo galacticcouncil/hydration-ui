@@ -1,12 +1,9 @@
+import { SELL_ONLY_ASSETS, USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
 import { tradeOrderTabs } from "@/modules/trade/orders/TradeOrdersHeader"
-import {
-  NATIVE_ASSET_ID,
-  SELL_ONLY_ASSETS,
-  USDT_ASSET_ID,
-} from "@/utils/consts"
+import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 const searchSchema = z
   .object({

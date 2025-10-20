@@ -1,3 +1,4 @@
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
@@ -7,7 +8,6 @@ import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { SELL_ONLY_ASSETS } from "@/utils/consts"
 
 type Props = {
   readonly price: string | null
