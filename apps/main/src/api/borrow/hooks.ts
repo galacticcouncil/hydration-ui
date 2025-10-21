@@ -24,9 +24,8 @@ type UnderlyingAssetApy = {
 export type ApyType = "supply" | "borrow"
 export type BorrowAssetApyData = {
   assetId: string
-  tvl: string
   vDotApy?: number
-  lpAPY: number
+  lpAPY?: number
   incentivesNetAPR: number
   incentives: ReserveIncentiveResponse[]
   underlyingAssetsApyData: UnderlyingAssetApy[]
@@ -74,7 +73,9 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
           underlyingAsset === getAddressFromAssetId(assetId),
       )
 
-      const incentives = assetReserve?.aIncentivesData ?? []
+      const incentives = (assetReserve?.aIncentivesData ?? []).filter(
+        ({ incentiveAPR }) => Big(incentiveAPR).gt(0),
+      )
 
       const stableSwapAssetIds =
         asset && isStableSwap(asset) && asset.underlyingAssetId
@@ -101,9 +102,8 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
 
       return {
         assetId,
-        tvl: assetReserve?.totalLiquidityUSD || "0",
         incentives,
-        lpAPY: 0, // @TODO lpAPY
+        lpAPY: undefined, // @TODO lpAPY
         ...calculatedData,
       } satisfies BorrowAssetApyData
     })

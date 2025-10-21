@@ -5,18 +5,23 @@ import {
   WSTETH_ASSET_ID,
 } from "@galacticcouncil/utils"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
+import z from "zod/v4"
 
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
-type DefillamaApyHistoryEntry = {
-  timestamp: string
-  tvlUsd: number | null
-  apy: number | null
-  apyBase: number | null
-  apyReward: number | null
-  il7d: number | null
-  apyBase7d: number | null
-}
+const defillamaApyHistoryEntrySchema = z.object({
+  timestamp: z.string(),
+  tvlUsd: z.number().nullable(),
+  apy: z.number().nullable(),
+  apyBase: z.number().nullable(),
+  apyReward: z.number().nullable(),
+  il7d: z.number().nullable(),
+  apyBase7d: z.number().nullable(),
+})
+
+const defillamaApiResponseSchema = z.object({
+  data: z.array(defillamaApyHistoryEntrySchema),
+})
 
 export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
   [VDOT_ASSET_ID]: "ff05ab26-971e-4e68-b1c6-c61a4c12c364",
@@ -30,9 +35,14 @@ const DEFILLAMA_APY_ENDPOINT =
 
 const fetchDefillamaLatestApy = async (id: string): Promise<number> => {
   const res = await fetch(`${DEFILLAMA_APY_ENDPOINT}/${id}`)
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch DeFiLlama APY: ${res.statusText}`)
+  }
+
   const json = await res.json()
-  const data = (json?.data ?? []) as DefillamaApyHistoryEntry[]
-  const latest = data[data.length - 1]?.apy || 0
+  const parsed = defillamaApiResponseSchema.parse(json)
+  const latest = parsed.data[parsed.data.length - 1]?.apy ?? 0
   return latest
 }
 

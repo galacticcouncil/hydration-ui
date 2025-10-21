@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import { ApyType, BorrowAssetApyData } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
 import { DetailedApy } from "@/components/DetailedApy/DetailedApy"
+import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItems"
 
 export type ApyBreakdownProps = FlexProps & {
   type: ApyType
@@ -40,60 +41,27 @@ export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
     .plus(omnipoolFee ?? 0)
     .toNumber()
 
-  const validIncentives = incentives
-    .filter(({ incentiveAPR }) => Big(incentiveAPR).gt(0))
-    .map((incentive) => ({
-      ...incentive,
-      id: getAssetIdFromAddress(incentive.rewardTokenAddress),
-    }))
-
-  const validIncentivesIds = validIncentives.map((incentive) => incentive.id)
+  const apyBreakdownItems = useApyBreakdownItems({
+    type,
+    omnipoolFee,
+    lpAPY,
+    underlyingAssetsApyData,
+    incentives,
+  })
 
   return (
     <DetailedApy
       description={t("apy.rewards.description")}
-      items={[
-        ...(omnipoolFee
-          ? [
-              {
-                label: t("apr.lpFeeOmnipool"),
-                value: t("percent", { value: omnipoolFee }),
-              },
-            ]
-          : []),
-        ...(Big(apy).gt(0) && Big(lpAPY).gt(0)
-          ? [
-              {
-                label: omnipoolFee ? t("apr.lpFeeStablepool") : t("apr.lpFee"),
-                value: t("percent", { value: lpAPY }),
-              },
-            ]
-          : []),
-        ...underlyingAssetsApyData.map(
-          ({ id, isStaked, borrowApy, supplyApy }) => ({
-            assetId: id,
-            label: isStaked
-              ? t("stakeApy")
-              : isSupply
-                ? t("supplyApy")
-                : t("borrowApy"),
-            value: t("percent", {
-              value: isSupply ? supplyApy : borrowApy,
-            }),
-          }),
-        ),
-        ...validIncentives.map(({ incentiveAPR, id }) => ({
-          assetId: id,
-          label: t("incentivesApr"),
-          value: t("percent", {
-            value: Big(incentiveAPR).times(100),
-          }),
-        })),
-      ]}
+      items={apyBreakdownItems}
       {...props}
     >
-      {validIncentivesIds.length > 0 && (
-        <AssetLogo size="extra-small" id={validIncentivesIds} />
+      {incentives.length > 0 && (
+        <AssetLogo
+          size="extra-small"
+          id={incentives.map(({ rewardTokenAddress }) =>
+            getAssetIdFromAddress(rewardTokenAddress),
+          )}
+        />
       )}
       <Text color={getToken("text.high")}>
         {t("percent", {

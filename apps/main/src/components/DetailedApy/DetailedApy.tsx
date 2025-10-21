@@ -4,7 +4,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useAssets } from "@/providers/assetsProvider"
 
-type ApyRowProps = {
+export type ApyRowProps = {
   assetId?: string
   value: string | number
   label: string

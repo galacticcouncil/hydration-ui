@@ -32,8 +32,10 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
   const totalBorrowed = useMemo(() => {
     const reserve = getGhoReserve(reserves)
 
-    const totalDebt = Big(reserve?.totalDebt || 0)
-    const borrowCap = Big(reserve?.borrowCap || 0)
+    if (!reserve) return
+
+    const totalDebt = Big(reserve.totalDebt)
+    const borrowCap = Big(reserve.borrowCap)
 
     if (borrowCap.gt(0)) {
       return bigMin(totalDebt, borrowCap)

@@ -10,7 +10,7 @@ import { useMemo } from "react"
 
 import { useBorrowAssetsApy } from "@/api/borrow"
 
-export const ASSET_IDS = [
+const EXTERNAL_APY_ASSET_IDS = [
   USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
   ...HOLLAR_ASSETS,
@@ -18,14 +18,18 @@ export const ASSET_IDS = [
 ]
 
 export const useExternalApyData = (): ExternalApyData => {
-  const { data: apy } = useBorrowAssetsApy(ASSET_IDS)
+  const { data: apy } = useBorrowAssetsApy(EXTERNAL_APY_ASSET_IDS)
 
   return useMemo(() => {
     if (!apy) return new Map()
     const entries = apy.map(
       ({ assetId, underlyingSupplyApy, underlyingBorrowApy, lpAPY }) => {
-        const supplyApy = Big(underlyingSupplyApy).plus(lpAPY).div(100)
-        const borrowApy = Big(underlyingBorrowApy).plus(lpAPY).div(100)
+        const supplyApy = Big(underlyingSupplyApy)
+          .plus(lpAPY ?? 0)
+          .div(100)
+        const borrowApy = Big(underlyingBorrowApy)
+          .plus(lpAPY ?? 0)
+          .div(100)
         return [
           assetId,
           {
