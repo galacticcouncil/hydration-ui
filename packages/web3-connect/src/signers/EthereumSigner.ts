@@ -1,6 +1,6 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { AnyChain, EvmChain, EvmParachain } from "@galacticcouncil/xcm-core"
 import { Big } from "big.js"
 import {
   Address,
@@ -67,10 +67,6 @@ export class EthereumSigner {
     this.walletClient = createWalletClient({
       transport: custom(provider),
     })
-  }
-
-  private isEvmChain(chain?: AnyChain): chain is EvmParachain | EvmChain {
-    return chain instanceof EvmParachain || chain instanceof EvmChain
   }
 
   async signAndSubmitDispatch(
@@ -161,8 +157,9 @@ export class EthereumSigner {
       const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
       const chain = chainsMap.get(chainKey)
 
-      if (!this.isEvmChain(chain))
-        throw new Error(`Chain ${chainKey} is not an EVM chain`)
+      const isEvmChain = !!chain && isAnyEvmChain(chain)
+
+      if (!isEvmChain) throw new Error(`Chain ${chainKey} is not an EVM chain`)
 
       const { client } = chain
 
