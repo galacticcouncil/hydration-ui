@@ -7,6 +7,8 @@ import { TFunction } from "i18next"
 import { PropsWithChildren, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
+import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -35,6 +37,8 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
       formatCurrency={createFormatterFn(t, "currency")}
       formatNumber={createFormatterFn(t, "number")}
       formatPercent={createFormatterFn(t, "percent")}
+      formatReserve={useFormatReserve()}
+      externalApyData={useExternalApyData()}
     >
       {children}
     </MoneyMarketProvider>

@@ -25,6 +25,7 @@
     "@emotion/babel-plugin": "^11.12.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@ethersproject/providers": "^5.8.0",
     "@galacticcouncil/money-market": "*",
     "@galacticcouncil/ui": "*",
     "@galacticcouncil/utils": "*",

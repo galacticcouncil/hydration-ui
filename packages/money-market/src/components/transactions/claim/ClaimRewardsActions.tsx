@@ -46,13 +46,11 @@ export const ClaimRewardsActions = ({
       mainTxState={mainTxState}
       handleAction={action}
       actionText={
-        selectedReward.symbol === "all" ? (
-          <span>Claim all</span>
-        ) : (
-          <span>Claim {selectedReward.symbol}</span>
-        )
+        selectedReward.symbol === "all"
+          ? "Claim all"
+          : `Claim ${selectedReward.symbol}`
       }
-      actionInProgressText={<span>Claiming</span>}
+      actionInProgressText="Claiming"
     />
   )
 }

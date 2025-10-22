@@ -7,11 +7,10 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Big } from "big.js"
 import { useState } from "react"
 
-import { TokenIcon } from "@/components/primitives/TokenIcon"
+import { ReserveLogo } from "@/components/primitives/ReserveLogo"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 
 import { SContainer } from "./IncentivesButton.styled"
@@ -87,9 +86,9 @@ export const IncentivesButton = ({
         <div sx={{ mr: 4 }}>{incentivesButtonValue()}</div>
         <Flex>
           {incentives.map((incentive) => (
-            <TokenIcon
+            <ReserveLogo
               key={incentive.rewardTokenSymbol}
-              id={getAssetIdFromAddress(incentive.rewardTokenAddress)}
+              address={incentive.rewardTokenAddress}
               size="extra-small"
               sx={{ ml: -3 }}
             />
@@ -149,8 +148,8 @@ export const IncentivesTooltipContent: React.FC<
             justify="space-between"
           >
             <Flex align="center" gap={6}>
-              <TokenIcon
-                id={getAssetIdFromAddress(incentive.rewardTokenAddress)}
+              <ReserveLogo
+                address={incentive.rewardTokenAddress}
                 size="small"
               />
               <Text>{incentive.rewardTokenSymbol}</Text>

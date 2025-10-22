@@ -11,8 +11,8 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { useAssets } from "@/providers/assetsProvider"
+import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
+import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
 type TBorrowAssetsTable = typeof useBorrowAssetsData
@@ -22,7 +22,6 @@ const columnHelper = createColumnHelper<TBorrowAssetsRow>()
 
 export const useBorrowAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
-  const { getAsset } = useAssets()
 
   const { openBorrow } = useModalContext()
 
@@ -30,22 +29,14 @@ export const useBorrowAssetsTableColumns = () => {
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
-      header: t("asset"),
+      header: isMobile ? "" : t("asset"),
       cell: ({ row }) => {
-        const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
-        const asset = getAsset(assetId)
-
-        return asset && <AssetLabelFull asset={asset} withName={false} />
-      },
-    })
-
-    const assetColumnMobile = columnHelper.accessor("symbol", {
-      header: "",
-      cell: ({ row }) => {
-        const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
-        const asset = getAsset(assetId)
-
-        return asset && <AssetLabelFull size="large" asset={asset} />
+        return (
+          <ReserveLabel
+            reserve={row.original.reserve}
+            size={isMobile ? "large" : "medium"}
+          />
+        )
       },
     })
 
@@ -80,19 +71,17 @@ export const useBorrowAssetsTableColumns = () => {
       }),
       meta: {
         sx: {
-          textAlign: "center",
+          textAlign: "right",
         },
       },
       cell: ({ row }) => {
-        const { variableBorrowRate } = row.original
-
-        const percent = Number(variableBorrowRate) * 100
-
-        const value = t("percent", {
-          value: percent,
-        })
-
-        return <Amount value={value} />
+        return (
+          <ApyColumn
+            type="borrow"
+            assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+            reserve={row.original.reserve}
+          />
+        )
       },
     })
 
@@ -154,8 +143,11 @@ export const useBorrowAssetsTableColumns = () => {
       },
     })
 
-    return isMobile
-      ? [assetColumnMobile, balanceColumn, apyColumn, actionsColumnMobile]
-      : [assetColumn, balanceColumn, apyColumn, actionsColumn]
-  }, [isMobile, getAsset, openBorrow, t])
+    return [
+      assetColumn,
+      balanceColumn,
+      apyColumn,
+      isMobile ? actionsColumnMobile : actionsColumn,
+    ]
+  }, [isMobile, openBorrow, t])
 }

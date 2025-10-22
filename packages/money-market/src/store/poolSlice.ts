@@ -1,5 +1,4 @@
 import {
-  AaveTokenV3Service,
   ApproveDelegationType,
   BaseDebtToken,
   DebtSwitchAdapterService,
@@ -42,7 +41,6 @@ import {
   LPSupplyParamsType,
   LPSupplyWithPermitType,
 } from "@aave/contract-helpers/dist/esm/v3-pool-contract/lendingPoolTypes"
-import { AaveSafetyModule, AaveV3Ethereum } from "@bgd-labs/aave-address-book"
 import BN from "bignumber.js"
 import {
   BigNumber,
@@ -97,10 +95,6 @@ type ClaimRewardsActionsProps = {
   selectedReward: Reward
 }
 
-type GenerateSignatureRequestOpts = {
-  chainId?: number
-}
-
 // TODO: add chain/provider/account mapping
 export interface PoolSlice {
   vDotApy: string
@@ -152,15 +146,6 @@ export interface PoolSlice {
   poolComputed: {
     minRemainingBaseTokenBalance: string
   }
-  generateSignatureRequest: (
-    args: {
-      token: string
-      amount: string
-      deadline: string
-      spender: string
-    },
-    opts?: GenerateSignatureRequestOpts,
-  ) => Promise<string>
   supply: (args: Omit<LPSupplyParamsType, "user">) => PopulatedTransaction
   supplyWithPermit: (
     args: Omit<LPSupplyWithPermitType, "user">,
@@ -838,7 +823,7 @@ export const createPoolSlice: StateCreator<
     claimRewards: async ({ selectedReward }) => {
       // TODO: think about moving timestamp from hook to EventEmitter
       const timestamp = toUnixTimestamp(Date.now())
-      const reserves = selectFormattedReserves(get(), timestamp)
+      const reserves = selectFormattedReserves(get(), timestamp, new Map())
       const currentAccount = get().account
 
       const allReserves: string[] = []
@@ -900,67 +885,6 @@ export const createPoolSlice: StateCreator<
         const min = minBaseTokenRemainingByNetwork[chainId]
         return min || "0.001"
       },
-    },
-    generateSignatureRequest: async ({ token, amount, deadline, spender }) => {
-      const v3Tokens = [
-        AaveV3Ethereum.ASSETS.AAVE.UNDERLYING.toLowerCase(),
-        AaveV3Ethereum.ASSETS.AAVE.A_TOKEN.toLowerCase(),
-        AaveSafetyModule.STK_AAVE.toLowerCase(),
-      ]
-
-      const provider = get().jsonRpcProvider()
-
-      let name = ""
-      let version = "1"
-      if (v3Tokens.includes(token.toLowerCase())) {
-        const aaveV3TokenService = new AaveTokenV3Service(token, provider)
-        const domain = await aaveV3TokenService.getEip712Domain()
-        name = domain.name
-        version = domain.version
-      } else {
-        const tokenERC20Service = new ERC20Service(provider)
-        name = (await tokenERC20Service.getTokenData(token)).name
-      }
-
-      const { chainId } = await provider.getNetwork()
-      const tokenERC2612Service = new ERC20_2612Service(provider)
-      const nonce = await tokenERC2612Service.getNonce({
-        token,
-        owner: get().account,
-      })
-
-      const typeData = {
-        types: {
-          EIP712Domain: [
-            { name: "name", type: "string" },
-            { name: "version", type: "string" },
-            { name: "chainId", type: "uint256" },
-            { name: "verifyingContract", type: "address" },
-          ],
-          Permit: [
-            { name: "owner", type: "address" },
-            { name: "spender", type: "address" },
-            { name: "value", type: "uint256" },
-            { name: "nonce", type: "uint256" },
-            { name: "deadline", type: "uint256" },
-          ],
-        },
-        primaryType: "Permit",
-        domain: {
-          name,
-          version,
-          chainId,
-          verifyingContract: token,
-        },
-        message: {
-          owner: get().account,
-          spender: spender,
-          value: amount,
-          nonce,
-          deadline,
-        },
-      }
-      return JSON.stringify(typeData)
     },
     estimateGasLimit: async (
       tx: PopulatedTransaction,

@@ -1,27 +1,37 @@
-import { IncentivesButton } from "@galacticcouncil/money-market/components"
 import {
   getAssetCapData,
   useModalContext,
 } from "@galacticcouncil/money-market/hooks"
-import { DashboardReserve } from "@galacticcouncil/money-market/utils"
-import { Check, ChevronRight, Minus } from "@galacticcouncil/ui/assets/icons"
+import {
+  DashboardReserve,
+  GHO_ASSET_ID,
+  isGho,
+} from "@galacticcouncil/money-market/utils"
+import { Check, ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import {
+  getAssetIdFromAddress,
+  MONEY_MARKET_STRATEGY_ASSETS,
+} from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
+import { NoData } from "@/modules/borrow/components/NoData"
+import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
 const columnHelper = createColumnHelper<DashboardReserve>()
 
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
+type AssetType = "base" | "strategy"
 
-export const useSupplyAssetsTableColumns = () => {
+export const useSupplyAssetsTableColumns = (type: AssetType) => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset } = useAssets()
 
@@ -29,24 +39,36 @@ export const useSupplyAssetsTableColumns = () => {
 
   const { isMobile } = useBreakpoints()
 
+  const isBaseAssetType = type === "base"
+
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
-      header: t("asset"),
+      header: isMobile ? "" : t("asset"),
+      size: isBaseAssetType ? undefined : 210,
       cell: ({ row }) => {
-        const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
-        const asset = getAsset(assetId)
+        if (isBaseAssetType) {
+          const assetId = isGho(row.original)
+            ? GHO_ASSET_ID
+            : getAssetIdFromAddress(row.original.underlyingAsset)
+          const asset = getAsset(assetId)
 
-        return asset && <AssetLabelFull asset={asset} withName={false} />
-      },
-    })
+          return (
+            asset && (
+              <AssetLabelFull
+                size={isMobile ? "large" : "medium"}
+                asset={asset}
+                withName={false}
+              />
+            )
+          )
+        }
 
-    const assetColumnMobile = columnHelper.accessor("symbol", {
-      header: "",
-      cell: ({ row }) => {
-        const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
-        const asset = getAsset(assetId)
-
-        return asset && <AssetLabelFull size="large" asset={asset} />
+        return (
+          <ReserveLabel
+            size={isMobile ? "large" : "medium"}
+            reserve={row.original.reserve}
+          />
+        )
       },
     })
 
@@ -57,8 +79,12 @@ export const useSupplyAssetsTableColumns = () => {
         compare: numericallyStr,
       }),
       meta: {
-        sx: { textAlign: "right" },
+        sx: {
+          textAlign: "right",
+        },
+        visibility: isBaseAssetType ? undefined : [],
       },
+
       cell: ({ row }) => {
         const { walletBalance, walletBalanceUSD } = row.original
 
@@ -81,29 +107,22 @@ export const useSupplyAssetsTableColumns = () => {
       }),
       meta: {
         sx: {
-          textAlign: "center",
+          textAlign: "right",
         },
       },
       cell: ({ row }) => {
-        const { supplyAPY, aIncentivesData, symbol } = row.original
-
-        const percent = Number(supplyAPY) * 100
-
-        const value = t("percent", {
-          value: percent,
-        })
-
         return (
-          <>
-            <Amount value={value} />
-            <IncentivesButton incentives={aIncentivesData} symbol={symbol} />
-          </>
+          <ApyColumn
+            type="supply"
+            assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+            reserve={row.original.reserve}
+          />
         )
       },
     })
 
     const collateralColunn = columnHelper.display({
-      header: t("borrow:canBeCollateral"),
+      header: t("borrow:collateral"),
       meta: {
         sx: {
           textAlign: "center",
@@ -113,15 +132,7 @@ export const useSupplyAssetsTableColumns = () => {
         const { isIsolated, usageAsCollateralEnabledOnUser } = row.original
         const { debtCeiling } = getAssetCapData(row.original.reserve)
         if (debtCeiling.isMaxed) return
-        if (!usageAsCollateralEnabledOnUser)
-          return (
-            <Icon
-              display="inline-flex"
-              color={getToken("text.low")}
-              component={Minus}
-              size={16}
-            />
-          )
+        if (!usageAsCollateralEnabledOnUser) return <NoData size={16} />
         if (usageAsCollateralEnabledOnUser && !isIsolated) {
           return (
             <Icon
@@ -143,23 +154,8 @@ export const useSupplyAssetsTableColumns = () => {
         },
       },
       cell: ({ row }) => {
-        const {
-          isActive,
-          isPaused,
-          walletBalance,
-          isFreezed,
-          underlyingAsset,
-        } = row.original
-
-        const { supplyCap } = getAssetCapData(row.original.reserve)
-        const isMaxCapReached = supplyCap.isMaxed
-
-        const isDisabled =
-          !isActive ||
-          isPaused ||
-          isFreezed ||
-          Number(walletBalance ?? 0) <= 0 ||
-          isMaxCapReached
+        const { underlyingAsset } = row.original
+        const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
           <Flex justify="flex-end" align="center" gap={4}>
@@ -188,23 +184,8 @@ export const useSupplyAssetsTableColumns = () => {
     const actionsColumnMobile = columnHelper.display({
       id: "actions",
       cell: ({ row }) => {
-        const {
-          isActive,
-          isPaused,
-          walletBalance,
-          isFreezed,
-          underlyingAsset,
-        } = row.original
-
-        const { supplyCap } = getAssetCapData(row.original.reserve)
-        const isMaxCapReached = supplyCap.isMaxed
-
-        const isDisabled =
-          !isActive ||
-          isPaused ||
-          isFreezed ||
-          Number(walletBalance ?? 0) <= 0 ||
-          isMaxCapReached
+        const { underlyingAsset } = row.original
+        const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
           <Button
@@ -223,14 +204,32 @@ export const useSupplyAssetsTableColumns = () => {
       },
     })
 
-    return isMobile
-      ? [
-          assetColumnMobile,
-          balanceColumn,
-          apyColumn,
-          collateralColunn,
-          actionsColumnMobile,
-        ]
-      : [assetColumn, balanceColumn, apyColumn, collateralColunn, actionsColumn]
-  }, [isMobile, getAsset, openSupply, t])
+    return [
+      assetColumn,
+      balanceColumn,
+      apyColumn,
+      collateralColunn,
+      isMobile ? actionsColumnMobile : actionsColumn,
+    ].filter(Boolean)
+  }, [isMobile, getAsset, openSupply, t, isBaseAssetType])
+}
+
+const getIsSupplyDisabled = (reserve: DashboardReserve) => {
+  const { isActive, isPaused, walletBalance, isFreezed } = reserve
+
+  const { supplyCap } = getAssetCapData(reserve)
+  const isMaxCapReached = supplyCap.isMaxed
+
+  const isWalletBalanceRequired = !MONEY_MARKET_STRATEGY_ASSETS.includes(
+    getAssetIdFromAddress(reserve.underlyingAsset),
+  )
+
+  const hasNoBalance = isWalletBalanceRequired
+    ? Number(walletBalance ?? 0) <= 0
+    : false
+
+  const isDisabled =
+    !isActive || isPaused || isFreezed || isMaxCapReached || hasNoBalance
+
+  return isDisabled
 }

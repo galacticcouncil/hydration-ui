@@ -1,4 +1,5 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary } from "polkadot-api"
 
@@ -10,7 +11,7 @@ import {
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { Papi } from "@/providers/rpcProvider"
-import { HYDRATION_CHAIN_KEY, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
+import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
   papi: Papi,

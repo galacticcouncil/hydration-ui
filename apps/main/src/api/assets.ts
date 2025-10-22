@@ -1,5 +1,8 @@
 import { Asset, Bond, pool } from "@galacticcouncil/sdk-next"
-import { AssetMetadataFactory } from "@galacticcouncil/utils"
+import {
+  AssetMetadataFactory,
+  HYDRATION_PARACHAIN_ID,
+} from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import { isNonNullish } from "remeda"
 
@@ -8,13 +11,6 @@ import {
   TATokenPairStored,
   useAssetRegistryStore,
 } from "@/states/assetRegistry"
-import {
-  GDOT_ASSET_ID,
-  GDOT_ERC20_ID,
-  GETH_ASSET_ID,
-  GETH_ERC20_ID,
-  HYDRATION_PARACHAIN_ID,
-} from "@/utils/consts"
 import {
   getAccountKey20,
   getEthereumNetworkEntry,
@@ -89,22 +85,6 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
-const STABLESWAP_DATA_OVERRIDE_MAP: Record<
-  string,
-  Partial<TCommonAssetData> & { iconId?: string }
-> = {
-  [GDOT_ASSET_ID]: {
-    name: "GIGADOT",
-    symbol: "GDOT",
-    iconId: GDOT_ERC20_ID,
-  },
-  [GETH_ASSET_ID]: {
-    name: "GIGAETH",
-    symbol: "GETH",
-    iconId: GETH_ERC20_ID,
-  },
-}
-
 export const assetsQuery = (data: TProviderContext) => {
   const { sdk, isApiLoaded, dataEnv, metadata } = data
 
@@ -150,11 +130,11 @@ export const assetsQuery = (data: TProviderContext) => {
         if (asset.type === AssetType.TOKEN) {
           return assetToTokenType(asset, commonAssetData, metadata)
         } else if (asset.type === AssetType.ERC20) {
-          return assetToErc20Type(asset, commonAssetData, aTokenMap)
+          return assetToErc20Type(asset, commonAssetData, aTokenMap, metadata)
         } else if (asset.type === AssetType.BOND) {
           return assetToBondType(asset, commonAssetData)
         } else if (asset.type === AssetType.STABLESWAP) {
-          return assetToStableSwapType(asset, commonAssetData, metadata)
+          return assetToStableSwapType(asset, commonAssetData)
         } else if (asset.type === AssetType.External) {
           return assetToExternalType(asset, commonAssetData)
         } else {
@@ -218,11 +198,13 @@ function assetToErc20Type(
   asset: Asset,
   commonAssetData: TCommonAssetData,
   aTokenMap: Map<string, string>,
+  metadata: AssetMetadataFactory,
 ): TErc20 | TErc20AToken {
   const underlyingAssetId = aTokenMap.get(asset.id.toString())
   return {
     ...commonAssetData,
     type: AssetType.ERC20,
+    iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, asset.id),
     ...(underlyingAssetId && { underlyingAssetId }),
   }
 }
@@ -245,21 +227,13 @@ function assetToBondType(
 function assetToStableSwapType(
   asset: Asset,
   commonAssetData: TCommonAssetData,
-  metadata: AssetMetadataFactory,
 ): TStableswap {
   const underlyingAssetId = asset?.meta ? Object.keys(asset.meta) : undefined
-
-  const { iconId, ...overrideProps } =
-    STABLESWAP_DATA_OVERRIDE_MAP[asset.id] ?? {}
 
   return {
     ...commonAssetData,
     type: AssetType.STABLESWAP,
     underlyingAssetId,
-    ...overrideProps,
-    ...(iconId && {
-      iconSrc: metadata.getAssetLogoSrc(HYDRATION_PARACHAIN_ID, iconId),
-    }),
   }
 }
 

@@ -1,6 +1,7 @@
 import { PERMISSION } from "@aave/contract-helpers"
 
 import { BasicModal } from "@/components/primitives/BasicModal"
+import { GhoBorrowModalContent } from "@/components/transactions/borrow/GhoBorrowModalContent"
 import { TxModalWrapper } from "@/components/transactions/TxModalWrapper"
 import { ModalContextType, ModalType, useModalContext } from "@/hooks/useModal"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
@@ -25,7 +26,7 @@ export const BorrowModal = () => {
       >
         {(params) =>
           displayGho({ symbol: params.symbol, currentMarket }) ? (
-            <>TODO GHO BORROW</>
+            <GhoBorrowModalContent {...params} />
           ) : (
             <BorrowModalContent {...params} />
           )

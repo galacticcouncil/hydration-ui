@@ -262,25 +262,32 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           <SummaryRow
             label="Available assets"
             content={
-              <Flex gap={4} justify="flex-end" align="center">
+              <Flex gap={6} justify="flex-end" align="center" maxWidth="50%">
                 {eModes[user.userEmodeCategoryId] && (
                   <Flex align="center" justify="flex-end">
                     {user.userEmodeCategoryId !== 0 ? (
-                      <Text fw={500}>
+                      <Text fw={500} align="right">
                         {eModes[user.userEmodeCategoryId].assets.join(", ")}
                       </Text>
                     ) : (
-                      <Text fw={500}>All Assets</Text>
+                      <Text align="right" fw={500} whiteSpace="nowrap">
+                        All Assets
+                      </Text>
                     )}
                   </Flex>
                 )}
                 {selectedEmode && (
                   <>
-                    <Icon size={14} component={ArrowRight} />
+                    <Icon
+                      size={14}
+                      component={ArrowRight}
+                      sx={{ flexShrink: 0 }}
+                    />
                     <Flex align="center" justify="flex-end">
                       {selectedEmode?.id !== 0 ? (
                         <Text
                           fw={500}
+                          align="right"
                           color={getToken("accents.success.emphasis")}
                         >
                           {selectedEmode.assets.join(", ")}
@@ -288,6 +295,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                       ) : (
                         <Text
                           fw={500}
+                          align="right"
                           color={getToken("accents.success.emphasis")}
                         >
                           All Assets

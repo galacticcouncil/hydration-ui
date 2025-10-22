@@ -7,6 +7,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useNavigate } from "@tanstack/react-router"
 
+import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { useBorrowAssetsTableColumns } from "@/modules/borrow/dashboard/components/borrow-assets/BorrowAssetsTable.columns"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 
@@ -26,7 +27,7 @@ export const BorrowAssetsTable = () => {
       />
     </Paper>
   ) : (
-    <TableContainer as={Paper}>
+    <TableContainer as={TablePaper}>
       <DataTable
         skeletonRowCount={4}
         isLoading={isLoading}

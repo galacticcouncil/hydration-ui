@@ -4,13 +4,13 @@ import {
   isDcaScheduleExecutionStatus,
 } from "@galacticcouncil/indexer/squid"
 import { subscan } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
 import { useAssets } from "@/providers/assetsProvider"
-import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export type PastExecutionData = {

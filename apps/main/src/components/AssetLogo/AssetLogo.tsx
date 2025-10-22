@@ -4,6 +4,7 @@ import {
   AssetLogoProps as AssetLogoPrimitiveProps,
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
+import { GDOT_ERC20_ID, GETH_ERC20_ID } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
 import {
@@ -13,7 +14,6 @@ import {
   TAsset,
   useAssets,
 } from "@/providers/assetsProvider"
-import { GDOT_ERC20_ID, GETH_ERC20_ID } from "@/utils/consts"
 
 type LogoMetadata = {
   id: string
@@ -96,7 +96,9 @@ function getLogoMetadata(
   if (!asset) return []
 
   if (asset.iconSrc) {
-    return [buildMetadata(asset, isErc20AToken(asset))]
+    const isAToken =
+      isErc20AToken(asset) && !ATOKEN_DECOR_BLACKLIST.includes(asset.id)
+    return [buildMetadata(asset, isAToken)]
   }
 
   if (isErc20AToken(asset) || isBond(asset) || isStableSwap(asset)) {

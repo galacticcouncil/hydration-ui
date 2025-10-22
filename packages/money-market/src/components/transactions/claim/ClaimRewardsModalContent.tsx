@@ -16,10 +16,9 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useEffect, useState } from "react"
 
-import { TokenIcon } from "@/components/primitives"
+import { ReserveLogo } from "@/components/primitives/ReserveLogo"
 import { Reward } from "@/helpers/types"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
@@ -184,9 +183,7 @@ export const ClaimRewardsModalContent = () => {
                     <TableRow key={`claim-${rewardTokenAddress}`}>
                       <TableCell>
                         <Flex align="center" gap={6}>
-                          <TokenIcon
-                            id={getAssetIdFromAddress(rewardTokenAddress)}
-                          />
+                          <ReserveLogo address={rewardTokenAddress} />
                           <Text fs={14} fw={600}>
                             {symbol}
                           </Text>

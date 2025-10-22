@@ -7,11 +7,13 @@ import {
   USD_DECIMALS,
   UserReserveData,
 } from "@aave/math-utils"
+import { bigShift } from "@galacticcouncil/utils"
 import { Big } from "big.js"
-import { formatUnits } from "ethers/lib/utils"
 import React, { useContext } from "react"
+import { useShallow } from "zustand/shallow"
 
 import { EmodeCategory } from "@/helpers/types"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { ComputedReserveData, ExtendedFormattedUser } from "@/hooks/commonTypes"
 import { useCurrentTimestamp } from "@/hooks/useCurrentTimestamp"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
@@ -27,9 +29,12 @@ import {
   selectUserSummaryAndIncentives,
 } from "@/store/poolSelectors"
 import { useRootStore } from "@/store/root"
+import { ExternalApyData } from "@/types"
 import {
+  formatGhoReserve,
   GHO_SUPPORTED_MARKETS,
   GHO_SYMBOL,
+  isGho,
   weightedAverageAPY,
 } from "@/utils/ghoUtilities"
 
@@ -58,6 +63,7 @@ export interface AppDataContextType {
   ghoUserData: FormattedGhoUserData
   ghoLoadingData: boolean
   ghoEnabled: boolean
+  externalApyData: ExternalApyData
 }
 
 export const AppDataContext = React.createContext<AppDataContextType>(
@@ -69,11 +75,13 @@ export const AppDataContext = React.createContext<AppDataContextType>(
  * It fetches reserves /incentives & walletbalances & keeps them updated.
  */
 export const AppDataProvider: React.FC<{
-  children?: React.ReactNode
-}> = ({ children }) => {
+  children: React.ReactNode
+  externalApyData: ExternalApyData
+}> = ({ children, externalApyData }) => {
   const currentTimestamp = useCurrentTimestamp(60)
   const { currentAccount } = useWeb3Context()
   const { currentMarket } = useProtocolDataContext()
+  const { formatReserve } = useAppFormatters()
 
   const [
     reserves,
@@ -84,22 +92,24 @@ export const AppDataProvider: React.FC<{
     ghoReserveData,
     ghoUserData,
     ghoReserveDataFetched,
-    formattedPoolReserves,
+    formattedReserves,
     userSummary,
     displayGho,
-  ] = useRootStore((state) => [
-    selectCurrentReserves(state),
-    selectCurrentBaseCurrencyData(state),
-    selectCurrentUserReserves(state),
-    selectCurrentUserEmodeCategoryId(state),
-    selectEmodes(state),
-    state.ghoReserveData,
-    state.ghoUserData,
-    state.ghoReserveDataFetched,
-    selectFormattedReserves(state, currentTimestamp),
-    selectUserSummaryAndIncentives(state, currentTimestamp),
-    state.displayGho,
-  ])
+  ] = useRootStore(
+    useShallow((state) => [
+      selectCurrentReserves(state),
+      selectCurrentBaseCurrencyData(state),
+      selectCurrentUserReserves(state),
+      selectCurrentUserEmodeCategoryId(state),
+      selectEmodes(state, formatReserve),
+      state.ghoReserveData,
+      state.ghoUserData,
+      state.ghoReserveDataFetched,
+      selectFormattedReserves(state, currentTimestamp, externalApyData),
+      selectUserSummaryAndIncentives(state, currentTimestamp, externalApyData),
+      state.displayGho,
+    ]),
+  )
 
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {
@@ -111,6 +121,12 @@ export const AppDataProvider: React.FC<{
     ghoUserData,
     currentTimestamp,
   })
+
+  const formattedPoolReserves = formattedReserves.map((reserve) =>
+    isGho(reserve)
+      ? formatGhoReserve(reserve, formattedGhoReserveData)
+      : formatReserve(reserve),
+  )
 
   let ghoBorrowCap = "0"
   let aaveFacilitatorRemainingCapacity = Math.max(
@@ -127,18 +143,24 @@ export const AppDataProvider: React.FC<{
       aaveFacilitatorRemainingCapacity = Number(ghoBorrowCap)
     }
 
-    if (formattedGhoUserData.userDiscountedGhoInterest > 0) {
+    const marketReferenceCurrencyPriceInUsd = Big(
+      baseCurrencyData?.marketReferenceCurrencyPriceInUsd || "0",
+    )
+
+    if (
+      formattedGhoUserData.userDiscountedGhoInterest > 0 &&
+      marketReferenceCurrencyPriceInUsd.gt(0)
+    ) {
       const userSummaryWithDiscount = formatUserSummaryWithDiscount({
         userGhoDiscountedInterest:
           formattedGhoUserData.userDiscountedGhoInterest,
         user,
-        marketReferenceCurrencyPriceUSD: Number(
-          formatUnits(
-            baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-            USD_DECIMALS,
-          ),
-        ),
+        marketReferenceCurrencyPriceUSD: bigShift(
+          baseCurrencyData?.marketReferenceCurrencyPriceInUsd || "0",
+          -USD_DECIMALS,
+        ).toNumber(),
       })
+
       user = {
         ...user,
         ...userSummaryWithDiscount,
@@ -268,9 +290,14 @@ export const AppDataProvider: React.FC<{
             user.totalBorrowsMarketReferenceCurrency,
           userEmodeCategoryId,
           isInEmode: userEmodeCategoryId !== 0,
-          userReservesData: user.userReservesData.sort((a, b) =>
-            reserveSortFn(a.reserve, b.reserve),
-          ),
+          userReservesData: user.userReservesData
+            .map((userReserve) => ({
+              ...userReserve,
+              reserve: formatReserve
+                ? formatReserve(userReserve.reserve)
+                : userReserve.reserve,
+            }))
+            .sort((a, b) => reserveSortFn(a.reserve, b.reserve)),
           earnedAPY,
           debtAPY,
           netAPY,
@@ -291,6 +318,7 @@ export const AppDataProvider: React.FC<{
         ghoUserData: formattedGhoUserData,
         ghoLoadingData: !ghoReserveDataFetched,
         ghoEnabled: formattedGhoReserveData.ghoBaseVariableBorrowRate > 0,
+        externalApyData,
       }}
     >
       {children}

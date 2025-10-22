@@ -4,6 +4,7 @@ import {
   Grid,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
@@ -20,7 +21,6 @@ import {
   NetWorthData,
   useNetWorthData,
 } from "@/modules/wallet/assets/Balances/NetWorth.data"
-import { USDT_ASSET_ID } from "@/utils/consts"
 
 const intervalOptions = (["all", ...periodTypes] as const).map<
   ChartTimeRangeOptionType<PeriodType | "all">

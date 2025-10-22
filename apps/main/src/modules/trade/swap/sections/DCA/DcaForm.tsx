@@ -1,4 +1,5 @@
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -11,7 +12,6 @@ import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { SELL_ONLY_ASSETS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
