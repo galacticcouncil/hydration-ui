@@ -68,6 +68,8 @@
   "reserve.yourInfo": "Your info",
   "reserve.supplyApyChart.header": "SUPPLY APR",
   "reserve.borrowApyChart.header": "BORROW APR, VARIABLE",
+  "reserve.hollar.title": "About HOLLAR",
+  "reserve.hollar.description": "HOLLAR is a native decentralized, collateral-backed stablecoin that maintains its $1 peg while generating yield for holders. Built with advanced stability mechanisms, HOLLAR offers enhanced security through partial liquidations that protect more of your collateral than traditional lending protocols.",
   "risk.description": "Your health factor and loan to value determine the assurance of your collateral. To avoid liquidations you can supply more collateral or repay borrow positions.",
   "risk.details": "Risk details",
   "risk.hf.description": "Safety of your deposited collateral against the borrowed assets and its underlying value.",

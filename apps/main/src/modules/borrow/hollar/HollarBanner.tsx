@@ -5,6 +5,7 @@ import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
 import { Box, Button, Text, ValueStats } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { bigMin } from "@galacticcouncil/utils"
+import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -29,9 +30,9 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
 
   const isLoading = loading || ghoLoadingData
 
-  const totalBorrowed = useMemo(() => {
-    const reserve = getGhoReserve(reserves)
+  const reserve = getGhoReserve(reserves)
 
+  const totalBorrowed = useMemo(() => {
     if (!reserve) return
 
     const totalDebt = Big(reserve.totalDebt)
@@ -42,7 +43,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
     }
 
     return totalDebt
-  }, [reserves])
+  }, [reserve])
 
   return (
     <SContainer className={className}>
@@ -89,22 +90,37 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
                 />
               }
             />
-            <Box>
-              <Button variant="primary" size="small">
-                {t("hollar.banner.cta")}
-              </Button>
-            </Box>
+            {reserve && (
+              <Box>
+                <Button variant="primary" size="small" asChild>
+                  <Link
+                    to="/borrow/markets/$address"
+                    params={{ address: reserve.underlyingAsset }}
+                  >
+                    {t("hollar.banner.cta")}
+                  </Link>
+                </Button>
+              </Box>
+            )}
           </SValuesContainer>
-          <Button
-            variant="primary"
-            sx={{
-              display: ["inline-flex", null, "none"],
-              mt: 10,
-              width: "fit-content",
-            }}
-          >
-            {t("hollar.banner.cta")}
-          </Button>
+          {reserve && (
+            <Button
+              asChild
+              variant="primary"
+              sx={{
+                display: ["inline-flex", null, "none"],
+                mt: 10,
+                width: "fit-content",
+              }}
+            >
+              <Link
+                to="/borrow/markets/$address"
+                params={{ address: reserve.underlyingAsset }}
+              >
+                {t("hollar.banner.cta")}
+              </Link>
+            </Button>
+          )}
         </SContent>
       </SInnerContainer>
       <SHollarImage src={HollarCans} width={110} height={110} />

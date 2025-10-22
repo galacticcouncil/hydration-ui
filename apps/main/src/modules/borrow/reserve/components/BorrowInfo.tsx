@@ -3,7 +3,13 @@ import {
   ComputedReserveData,
 } from "@galacticcouncil/money-market/hooks"
 import { MarketDataType } from "@galacticcouncil/money-market/utils"
-import { Flex, Stack, Text, ValueStats } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  Stack,
+  Text,
+  ValueStats,
+} from "@galacticcouncil/ui/components"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
@@ -120,11 +126,11 @@ export const BorrowInfo = ({
         </Stack>
       </Flex>
 
-      <Flex direction="column" gap={14}>
+      <Flex direction="column" gap={20}>
         <BorrowApyChart assetId={assetId} />
 
         {currentMarketData.addresses.COLLECTOR && (
-          <>
+          <Box>
             <Text fs={14} mb={10} fw={500} transform="uppercase">
               {t("borrow:collector.info")}
             </Text>
@@ -139,7 +145,7 @@ export const BorrowInfo = ({
                 })}
               />
             </Stack>
-          </>
+          </Box>
         )}
       </Flex>
     </>

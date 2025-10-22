@@ -31,8 +31,10 @@ import {
 import { useRootStore } from "@/store/root"
 import { ExternalApyData } from "@/types"
 import {
+  formatGhoReserve,
   GHO_SUPPORTED_MARKETS,
   GHO_SYMBOL,
+  isGho,
   weightedAverageAPY,
 } from "@/utils/ghoUtilities"
 
@@ -109,10 +111,6 @@ export const AppDataProvider: React.FC<{
     ]),
   )
 
-  const formattedPoolReserves = formatReserve
-    ? formattedReserves.map(formatReserve)
-    : formattedReserves
-
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {
       ghoReserveData,
@@ -123,6 +121,12 @@ export const AppDataProvider: React.FC<{
     ghoUserData,
     currentTimestamp,
   })
+
+  const formattedPoolReserves = formattedReserves.map((reserve) =>
+    isGho(reserve)
+      ? formatGhoReserve(reserve, formattedGhoReserveData)
+      : formatReserve(reserve),
+  )
 
   let ghoBorrowCap = "0"
   let aaveFacilitatorRemainingCapacity = Math.max(
