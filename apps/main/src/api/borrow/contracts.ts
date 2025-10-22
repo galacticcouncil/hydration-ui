@@ -1,6 +1,7 @@
 import { Web3Provider } from "@ethersproject/providers"
 import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
 import {
+  GhoService,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
@@ -31,6 +32,17 @@ export const useBorrowIncentivesContract = () => {
         AaveV3HydrationMainnet.UI_INCENTIVE_DATA_PROVIDER,
       provider: new Web3Provider(evm.transport),
       chainId: parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
+    })
+  }, [evm, isLoaded])
+}
+
+export const useGhoServiceContract = () => {
+  const { isLoaded, evm } = useRpcProvider()
+  return useMemo(() => {
+    if (!isLoaded) return null
+    return new GhoService({
+      provider: new Web3Provider(evm.transport),
+      uiGhoDataProviderAddress: AaveV3HydrationMainnet.GHO_UI_DATA_PROVIDER,
     })
   }, [evm, isLoaded])
 }

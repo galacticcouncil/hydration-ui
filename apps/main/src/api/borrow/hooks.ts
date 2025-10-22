@@ -1,5 +1,6 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
+import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
   getAssetIdFromAddress,
@@ -10,7 +11,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { zip } from "remeda"
 
-import { useBorrowReserves } from "@/api/borrow/queries"
+import { useBorrowReserves, useUserBorrowSummary } from "@/api/borrow/queries"
 import { useDefillamaLatestApyQueries } from "@/api/external/defillama"
 import { isStableSwap, useAssets } from "@/providers/assetsProvider"
 
@@ -243,5 +244,17 @@ const calculateAssetApyTotals = (
     ...apySums,
     underlyingAssetsApyData,
     incentivesNetAPR,
+  }
+}
+
+export const useBorrowClaimableRewards = () => {
+  const { data: userBorrowSummary, isLoading } = useUserBorrowSummary()
+  const rewards = userBorrowSummary
+    ? getUserClaimableRewards(userBorrowSummary)
+    : undefined
+
+  return {
+    data: rewards,
+    isLoading,
   }
 }

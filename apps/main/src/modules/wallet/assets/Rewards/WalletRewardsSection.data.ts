@@ -1,6 +1,6 @@
-import { useClaimableRewards } from "@galacticcouncil/money-market/hooks"
 import Big from "big.js"
 
+import { useBorrowClaimableRewards } from "@/api/borrow"
 import { useReferralRewards } from "@/hooks/data/useReferralRewards"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
 import { useLiquidityMiningRewards } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
@@ -9,8 +9,11 @@ import { useAssets } from "@/providers/assetsProvider"
 export const useWalletRewardsSectionData = () => {
   const { native } = useAssets()
 
-  const { claimableRewardsUsd, loading: incentivesLoading } =
-    useClaimableRewards()
+  const { data: incentives, isLoading: incentivesLoading } =
+    useBorrowClaimableRewards()
+
+  const claimableRewardsUsd = incentives?.claimableRewardsUsd || 0
+
   const {
     claimableValues: { totalUSD: liquidityUSD, isLoading: liquidityLoading },
   } = useLiquidityMiningRewards()

@@ -9,6 +9,7 @@ import {
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 
 const PAPI_OBSERVER_MAP = {
+  "Timestamp.Now": (papi: Papi) => papi.query.Timestamp.Now,
   "System.Account": (papi: Papi) => papi.query.System.Account,
   "System.Number": (papi: Papi) => papi.query.System.Number,
   "MultiTransactionPayment.AccountCurrencyMap": (papi: Papi) =>

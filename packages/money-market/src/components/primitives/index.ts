@@ -1,7 +1,6 @@
 export * from "./AssetInput"
 export * from "./BasicModal"
 export * from "./CollateralState"
-export * from "./GhoBorrowApyRange"
 export * from "./HealthFactorChange"
 export * from "./HealthFactorNumber"
 export * from "./HealthFactorRiskWarning"

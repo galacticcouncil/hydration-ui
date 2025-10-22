@@ -41,7 +41,6 @@ import {
   LPSupplyParamsType,
   LPSupplyWithPermitType,
 } from "@aave/contract-helpers/dist/esm/v3-pool-contract/lendingPoolTypes"
-import BN from "bignumber.js"
 import {
   BigNumber,
   PopulatedTransaction,
@@ -65,7 +64,6 @@ import { gasLimitRecommendations } from "@/ui-config/gasLimit"
 import { MarketDataType } from "@/ui-config/marketsConfig"
 import { toUnixTimestamp } from "@/utils/date"
 import { minBaseTokenRemainingByNetwork, optimizedPath } from "@/utils/utils"
-import { fetchBifrostVDotApy } from "@/utils/vdot"
 
 import {
   selectCurrentChainIdV3MarketData,
@@ -345,14 +343,6 @@ export const createPoolSlice: StateCreator<
               ),
           )
         }
-
-        promises.push(
-          fetchBifrostVDotApy().then((vDotApy) => {
-            set({
-              vDotApy: BN(vDotApy.apy).div(100).toString(),
-            })
-          }),
-        )
 
         await Promise.all(promises)
       } catch (e) {
