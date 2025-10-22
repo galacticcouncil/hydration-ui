@@ -114,7 +114,7 @@ export const SupplyInfo = ({
         </Stack>
       </Flex>
 
-      <Stack gap={14}>
+      <Stack gap={20}>
         {(reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
           <SupplyApyChart assetId={assetId} />
         )}

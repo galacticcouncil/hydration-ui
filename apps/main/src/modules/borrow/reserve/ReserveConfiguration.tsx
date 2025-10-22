@@ -3,28 +3,19 @@ import {
   useAssetCaps,
   useProtocolDataContext,
 } from "@galacticcouncil/money-market/hooks"
-import { Box, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Text } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { BorrowInfo } from "@/modules/borrow/reserve/components/BorrowInfo"
 import { EModeInfo } from "@/modules/borrow/reserve/components/EModeInfo"
 import { InterestRateModelChart } from "@/modules/borrow/reserve/components/InterestRateModelChart"
+import { ReserveSectionDivider } from "@/modules/borrow/reserve/components/ReserveSectionDivider"
 import { SupplyInfo } from "@/modules/borrow/reserve/components/SupplyInfo"
 
 type ReserveConfigurationProps = {
   reserve: ComputedReserveData
 }
-
-export const ReserveSectionDivider = () => (
-  <Box
-    bg={getToken("surfaces.themeBasePalette.background")}
-    height={4}
-    mx={-20}
-    my={[20, 40]}
-  />
-)
 
 export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
   reserve,

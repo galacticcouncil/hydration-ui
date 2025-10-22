@@ -55,14 +55,14 @@ export const ApyChart: FC<Props> = ({
         />
       </Flex>
       <ChartState
-        sx={{ aspectRatio: "2.5 / 1" }}
+        sx={{ height: [100, 250] }}
         isError={isError}
         isLoading={isLoading}
         isEmpty={!data.length}
       >
         <AreaChart
           curveType="linear"
-          aspectRatio="2.5 / 1"
+          height={[100, 250]}
           withoutReferenceLine
           verticalGridHidden
           horizontalGridHidden={false}

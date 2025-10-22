@@ -1,3 +1,6 @@
+import { FormattedGhoReserveData } from "@aave/math-utils"
+import Big from "big.js"
+
 import { ComputedReserveData } from "@/hooks/commonTypes"
 
 export const GHO_SYMBOL = "HOLLAR"
@@ -100,4 +103,17 @@ export const findAndFilterGhoReserve = <T extends ReserveWithSymbol>(
       filtered: [],
     },
   )
+}
+
+export const formatGhoReserve = (
+  reserve: ComputedReserveData,
+  ghoReserveData: FormattedGhoReserveData,
+) => {
+  const borrowCap = Big(ghoReserveData.aaveFacilitatorBucketMaxCapacity)
+
+  return {
+    ...reserve,
+    borrowCap: borrowCap.toString(),
+    borrowCapUSD: borrowCap.times(reserve.priceInUSD).toString(),
+  }
 }

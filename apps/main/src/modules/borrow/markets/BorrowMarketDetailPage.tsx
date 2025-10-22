@@ -2,6 +2,7 @@ import {
   AssetCapsProvider,
   useMarketAssetsData,
 } from "@galacticcouncil/money-market/hooks"
+import { isGho } from "@galacticcouncil/money-market/utils"
 import {
   Box,
   Button,
@@ -11,40 +12,46 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import { getAssetIdFromAddress, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { Navigate } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetHeader } from "@/components/AssetHeader"
 import { LINKS } from "@/config/navigation"
 import { AccountBindingBanner } from "@/modules/borrow/account/AccountBindingBanner"
+import { HollarReserveHeader } from "@/modules/borrow/reserve/components/HollarReserveHeader"
 import { ReserveActions } from "@/modules/borrow/reserve/components/ReserveActions"
 import { ReserveHeader } from "@/modules/borrow/reserve/components/ReserveHeader"
+import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
+import { HollarReserveConfiguration } from "@/modules/borrow/reserve/HollarReserveConfiguration"
 import { ReserveConfiguration } from "@/modules/borrow/reserve/ReserveConfiguration"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type BorrowMarketDetailPageProps = {
-  assetId: string
+  address: string
 }
 
 export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
-  assetId,
+  address,
 }) => {
   const { t } = useTranslation(["borrow"])
   const [mode, setMode] = useState<"overview" | "actions">("overview")
-  const { data: reserves = [] } = useMarketAssetsData()
+  const { data: reserves, isLoading } = useMarketAssetsData()
   const { gte } = useBreakpoints()
 
   const reserve = reserves.find(
-    (reserve) => getAssetIdFromAddress(reserve.underlyingAsset) === assetId,
+    (reserve) => reserve.underlyingAsset === address,
   )
+
+  const isGhoReserve = !!reserve && isGho(reserve)
 
   const { getAsset } = useAssets()
 
-  const asset = getAsset(assetId)
+  const asset = isGhoReserve
+    ? getAsset(HOLLAR_ASSET_ID)
+    : getAsset(getAssetIdFromAddress(address))
 
-  if (!asset) return <Navigate to={LINKS.borrowMarkets} />
+  if (!isLoading && !asset) return <Navigate to={LINKS.borrowMarkets} />
   if (!reserve) return null
 
   const filterVisible = !gte("lg")
@@ -54,14 +61,12 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
   return (
     <AssetCapsProvider asset={reserve}>
       <Stack gap={30}>
-        <AssetHeader
-          asset={{
-            ...asset,
-            name: reserve.name,
-            symbol: reserve.symbol,
-          }}
-        />
-        <ReserveHeader reserve={reserve} />
+        <ReserveLabel reserve={reserve} withName size="large" />
+        {isGhoReserve ? (
+          <HollarReserveHeader reserve={reserve} />
+        ) : (
+          <ReserveHeader reserve={reserve} />
+        )}
         <AccountBindingBanner />
         <Box>
           <Text fs="h7" fw={600} font="primary" sx={{ mb: 10 }}>
@@ -89,7 +94,11 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
             alignItems="start"
           >
             <Paper p={20} hidden={!overviewVisible}>
-              <ReserveConfiguration reserve={reserve} />
+              {isGhoReserve ? (
+                <HollarReserveConfiguration reserve={reserve} />
+              ) : (
+                <ReserveConfiguration reserve={reserve} />
+              )}
             </Paper>
             <Paper p={20} hidden={!actionsVisible}>
               <ReserveActions reserve={reserve} />

@@ -11,7 +11,10 @@ import { Check, ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import {
+  getAssetIdFromAddress,
+  MONEY_MARKET_STRATEGY_ASSETS,
+} from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -151,23 +154,8 @@ export const useSupplyAssetsTableColumns = (type: AssetType) => {
         },
       },
       cell: ({ row }) => {
-        const {
-          isActive,
-          isPaused,
-          walletBalance,
-          isFreezed,
-          underlyingAsset,
-        } = row.original
-
-        const { supplyCap } = getAssetCapData(row.original.reserve)
-        const isMaxCapReached = supplyCap.isMaxed
-
-        const isDisabled =
-          !isActive ||
-          isPaused ||
-          isFreezed ||
-          Number(walletBalance ?? 0) <= 0 ||
-          isMaxCapReached
+        const { underlyingAsset } = row.original
+        const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
           <Flex justify="flex-end" align="center" gap={4}>
@@ -196,23 +184,8 @@ export const useSupplyAssetsTableColumns = (type: AssetType) => {
     const actionsColumnMobile = columnHelper.display({
       id: "actions",
       cell: ({ row }) => {
-        const {
-          isActive,
-          isPaused,
-          walletBalance,
-          isFreezed,
-          underlyingAsset,
-        } = row.original
-
-        const { supplyCap } = getAssetCapData(row.original.reserve)
-        const isMaxCapReached = supplyCap.isMaxed
-
-        const isDisabled =
-          !isActive ||
-          isPaused ||
-          isFreezed ||
-          Number(walletBalance ?? 0) <= 0 ||
-          isMaxCapReached
+        const { underlyingAsset } = row.original
+        const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
           <Button
@@ -239,4 +212,24 @@ export const useSupplyAssetsTableColumns = (type: AssetType) => {
       isMobile ? actionsColumnMobile : actionsColumn,
     ].filter(Boolean)
   }, [isMobile, getAsset, openSupply, t, isBaseAssetType])
+}
+
+const getIsSupplyDisabled = (reserve: DashboardReserve) => {
+  const { isActive, isPaused, walletBalance, isFreezed } = reserve
+
+  const { supplyCap } = getAssetCapData(reserve)
+  const isMaxCapReached = supplyCap.isMaxed
+
+  const isWalletBalanceRequired = !MONEY_MARKET_STRATEGY_ASSETS.includes(
+    getAssetIdFromAddress(reserve.underlyingAsset),
+  )
+
+  const hasNoBalance = isWalletBalanceRequired
+    ? Number(walletBalance ?? 0) <= 0
+    : false
+
+  const isDisabled =
+    !isActive || isPaused || isFreezed || isMaxCapReached || hasNoBalance
+
+  return isDisabled
 }

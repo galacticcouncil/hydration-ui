@@ -15,6 +15,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 export type ReserveLabelProps = {
   reserve: ComputedReserveData
   size?: AssetLogoProps["size"]
+  withName?: boolean
 }
 
 const RESERVE_LOGO_OVERRIDE_MAP: Record<string, string> = {
@@ -25,6 +26,7 @@ const RESERVE_LOGO_OVERRIDE_MAP: Record<string, string> = {
 export const ReserveLabel: React.FC<ReserveLabelProps> = ({
   reserve,
   size,
+  withName = false,
 }) => {
   const assetId = isGho(reserve)
     ? GHO_ASSET_ID
@@ -35,7 +37,11 @@ export const ReserveLabel: React.FC<ReserveLabelProps> = ({
         id={RESERVE_LOGO_OVERRIDE_MAP[assetId] ?? assetId}
         size={size}
       />
-      <AssetLabel symbol={reserve.symbol} />
+      <AssetLabel
+        size={size === "large" ? "large" : "medium"}
+        name={withName ? reserve.name : undefined}
+        symbol={reserve.symbol}
+      />
     </AssetLabelFullContainer>
   )
 }

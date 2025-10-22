@@ -3,7 +3,7 @@ import React, { useContext } from "react"
 import { FormatterFn, ReserveFormatterFn } from "@/types"
 
 export type AppFormattersProvidersContextType = {
-  formatReserve?: ReserveFormatterFn
+  formatReserve: ReserveFormatterFn
   formatNumber: FormatterFn
   formatCurrency: FormatterFn
   formatPercent: FormatterFn
