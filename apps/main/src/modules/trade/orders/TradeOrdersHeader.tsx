@@ -106,7 +106,7 @@ export const TradeOrdersHeader = () => {
             onCheckedChange={(checked) => {
               navigate({
                 to: ".",
-                search: { tab, allPairs: checked },
+                search: { tab, allPairs: checked, assetIn, assetOut },
                 resetScroll: false,
               })
             }}
