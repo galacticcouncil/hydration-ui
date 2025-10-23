@@ -30,8 +30,12 @@ export const usePastExecutionsData = (scheduleId: number) => {
 
   const { getAssetWithFallback } = useAssets()
 
-  const assetIn = getAssetWithFallback(data?.dcaSchedule?.assetInId ?? "")
-  const assetOut = getAssetWithFallback(data?.dcaSchedule?.assetOutId ?? "")
+  const assetIn = getAssetWithFallback(
+    data?.dcaSchedule?.assetIn?.assetRegistryId ?? "",
+  )
+  const assetOut = getAssetWithFallback(
+    data?.dcaSchedule?.assetOut?.assetRegistryId ?? "",
+  )
 
   const executions = useMemo(() => {
     return (
