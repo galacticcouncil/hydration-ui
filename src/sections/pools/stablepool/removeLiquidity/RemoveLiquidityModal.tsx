@@ -48,7 +48,7 @@ export const RemoveLiquidityModal = ({
   const stableSwapMeta = getAssetWithFallback(pool.poolId)
   const assets = Object.keys(stableSwapMeta.meta ?? {})
   const refetch = useRefetchAccountAssets()
-  const { data } = useStableswapPool(pool.id)
+  const { data } = useStableswapPool(pool.poolId)
 
   const isRemovingOmnipoolPosition = !!position
 
