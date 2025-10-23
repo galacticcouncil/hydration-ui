@@ -67,6 +67,8 @@ import { create } from "zustand"
 import { safeConvertSolanaAddressToSS58 } from "utils/solana"
 import { persist } from "zustand/middleware"
 import { getWallets as getStandardizedWallets } from "@mysten/wallet-standard"
+import { BaseDotsamaWallet } from "@talismn/connect-wallets"
+import { Unsubcall } from "@polkadot/extension-inject/types"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -291,6 +293,8 @@ export const useWeb3ConnectEagerEnable = () => {
       state.disconnect()
     }
 
+    const unsubs = new Map<WalletProviderType, Unsubcall>()
+
     async function eagerEnable(wallet: WalletProvider["wallet"]) {
       if (wallet instanceof ExternalWallet) {
         if (currentAccount?.provider === WalletProviderType.ExternalWallet) {
@@ -321,9 +325,22 @@ export const useWeb3ConnectEagerEnable = () => {
         }
       }
 
-      if (isEnabled) return
+      if (!isEnabled) {
+        await wallet?.enable(POLKADOT_APP_NAME)
+      }
 
-      await wallet?.enable(POLKADOT_APP_NAME)
+      const providerType = normalizeProviderType(wallet)
+      const isSubscribed = unsubs.has(providerType)
+
+      if (wallet instanceof BaseDotsamaWallet && !isSubscribed) {
+        const unsub = await subscribeSubstrateWalletAccountChange(wallet)
+        unsubs.set(providerType, unsub)
+      }
+
+      return () => {
+        unsubs.forEach((unsub) => unsub())
+        unsubs.clear()
+      }
     }
   }, [])
 
@@ -372,6 +389,9 @@ export const useEnableWallet = (
 
   const { add: addToAddressBook } = useAddressStore()
   const meta = useWeb3ConnectStore(useShallow((state) => state.meta))
+
+  const unsubsRef = useRef<Map<WalletProviderType, Unsubcall>>(new Map())
+
   const { mutate: enable, ...mutation } = useMutation<
     WalletAccount[] | undefined,
     unknown,
@@ -379,11 +399,21 @@ export const useEnableWallet = (
     unknown
   >(
     async (namespace) => {
+      if (!wallet) return []
+      const providerType = normalizeProviderType(wallet)
+
       if (wallet instanceof WalletConnect && namespace) {
         wallet.setNamespace(namespace)
       }
 
-      await wallet?.enable(POLKADOT_APP_NAME)
+      await wallet.enable(POLKADOT_APP_NAME)
+
+      const isSubscribed = unsubsRef.current.has(providerType)
+
+      if (wallet instanceof BaseDotsamaWallet && !isSubscribed) {
+        const unsub = await subscribeSubstrateWalletAccountChange(wallet)
+        unsubsRef.current.set(providerType, unsub)
+      }
 
       if (wallet instanceof MetaMask) {
         await requestNetworkSwitch(wallet.extension, {
@@ -391,7 +421,7 @@ export const useEnableWallet = (
         })
       }
 
-      return wallet?.getAccounts()
+      return wallet.getAccounts()
     },
     {
       retry: false,
@@ -418,6 +448,14 @@ export const useEnableWallet = (
       },
     },
   )
+
+  useEffect(() => {
+    const unsubs = unsubsRef.current
+    return () => {
+      unsubs.forEach((unsub) => unsub())
+      unsubs.clear()
+    }
+  }, [])
 
   return {
     enable,
@@ -666,4 +704,33 @@ export const isHydrationIncompatibleAccount = (
     isEvmAccount(account.address)
 
   return isIncompatibleProvider || isIncompatibleH160Account
+}
+
+const subscribeSubstrateWalletAccountChange = async (
+  wallet: BaseDotsamaWallet,
+) => {
+  const state = useWeb3ConnectStore.getState()
+  return wallet.subscribeAccounts((accounts) => {
+    if (!accounts || accounts.length === 0) {
+      return state.setAccount(null)
+    }
+
+    const isCurrentAccountConnected = accounts.some(
+      (a) =>
+        safeConvertAddressSS58(a.address) ===
+        safeConvertAddressSS58(state.account?.address),
+    )
+
+    if (isCurrentAccountConnected) return
+
+    const [{ address, name }] = accounts
+    // set next connected account if current account is no longer connected
+    state.setAccount({
+      address,
+      displayAddress: safeConvertAddressSS58(address) || address,
+      provider: normalizeProviderType(wallet),
+      name: name ?? "",
+      isExternalWalletConnected: false,
+    })
+  })
 }
