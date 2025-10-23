@@ -42,7 +42,12 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
   } = useTradeSettings()
 
   if (isLoading) {
-    return <DcaSummarySkeleton />
+    return (
+      <>
+        <SwapSectionSeparator />
+        <DcaSummarySkeleton />
+      </>
+    )
   }
 
   if (
@@ -60,46 +65,49 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
   const duration = getPeriodDuration(period)
 
   return (
-    <div>
-      <Flex direction="column" gap={8} py={8}>
-        <Text fw={500} fs={14} lh={px(22)} color={getToken("text.medium")}>
-          {t("summary")}
-        </Text>
-        <Flex gap={5}>
-          <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
-            {t("trade:dca.summary.description", {
-              sellAmount: t("number", { value: sellAmount }),
-              sellSymbol: sellAsset.symbol,
-              buySymbol: buyAsset.symbol,
-              timeframe: formatDistanceToNowStrict(now + order.frequency),
-              period: t(period.type, { count: period.value ?? 0 }),
-            })}
+    <>
+      <SwapSectionSeparator />
+      <div>
+        <Flex direction="column" gap={8} py={8}>
+          <Text fw={500} fs={14} lh={px(22)} color={getToken("text.medium")}>
+            {t("summary")}
           </Text>
-          <Tooltip text="TODO" />
+          <Flex gap={5}>
+            <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
+              {t("trade:dca.summary.description", {
+                sellAmount: t("number", { value: sellAmount }),
+                sellSymbol: sellAsset.symbol,
+                buySymbol: buyAsset.symbol,
+                timeframe: formatDistanceToNowStrict(now + order.frequency),
+                period: t(period.type, { count: period.value ?? 0 }),
+              })}
+            </Text>
+            <Tooltip text="TODO" />
+          </Flex>
         </Flex>
-      </Flex>
-      <SwapSectionSeparator sx={{ mt: 9 }} />
-      <Summary separator={<SwapSectionSeparator />}>
-        <SummaryRow
-          label={t("trade:dca.summary.scheduleEnd")}
-          content={t("date.datetime", { value: new Date(now + duration) })}
-        />
-        <SummaryRow
-          label={t("trade:dca.summary.slippage")}
-          content={t("percent", { value: slippage })}
-        />
-        {healthFactor && (
+        <SwapSectionSeparator sx={{ mt: 9 }} />
+        <Summary separator={<SwapSectionSeparator />}>
           <SummaryRow
-            label={t("trade:market.summary.healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor.current}
-                futureHealthFactor={healthFactor.future}
-              />
-            }
+            label={t("trade:dca.summary.scheduleEnd")}
+            content={t("date.datetime", { value: new Date(now + duration) })}
           />
-        )}
-      </Summary>
-    </div>
+          <SummaryRow
+            label={t("trade:dca.summary.slippage")}
+            content={t("percent", { value: slippage })}
+          />
+          {healthFactor && (
+            <SummaryRow
+              label={t("trade:market.summary.healthFactor")}
+              content={
+                <HealthFactorChange
+                  healthFactor={healthFactor.current}
+                  futureHealthFactor={healthFactor.future}
+                />
+              }
+            />
+          )}
+        </Summary>
+      </div>
+    </>
   )
 }

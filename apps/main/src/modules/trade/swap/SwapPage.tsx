@@ -1,4 +1,5 @@
-import { Box, Grid, Separator, Stack } from "@galacticcouncil/ui/components"
+import { Flex, Grid, Separator, Stack } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { Outlet } from "@tanstack/react-router"
 
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
@@ -9,6 +10,8 @@ import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChar
 import { SContainer } from "./SwapPage.styled"
 
 export const SwapPage = () => {
+  const { isDesktop } = useBreakpoints()
+
   return (
     <Stack gap={20}>
       <PageHeader />
@@ -17,15 +20,15 @@ export const SwapPage = () => {
         gap={20}
         align="start"
       >
-        <Box display={["none", null, null, "block"]}>
-          <TradeChart height={500} />
-        </Box>
+        <Flex direction="column" gap={20}>
+          {isDesktop && <TradeChart height={500} />}
+          <TradeOrders />
+        </Flex>
         <SContainer>
           <FormHeader />
           <Separator mx={-20} />
           <Outlet />
         </SContainer>
-        <TradeOrders />
       </Grid>
     </Stack>
   )

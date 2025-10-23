@@ -1,91 +1,46 @@
-import { ChevronRight, Routes } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import { Swap } from "@galacticcouncil/sdk-next/build/types/sor"
+import { Routes } from "@galacticcouncil/ui/assets/icons"
+import { Flex, Icon, MicroButton, Modal } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { GDOT_ASSET_ID } from "@galacticcouncil/utils"
-import { Fragment } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useAssets } from "@/providers/assetsProvider"
-
-export type TradeRoute = {
-  readonly assetIn: number
-  readonly assetOut: number
-  readonly poolAddress: string
-}
+import { TradeType } from "@/api/trade"
+import { TradeRoutesModalContent } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutesModalContent"
 
 type TradeRoutesProps = {
-  readonly routes: ReadonlyArray<TradeRoute>
+  readonly swapType: TradeType
+  readonly routes: ReadonlyArray<Swap>
 }
 
-export const TradeRoutes = ({ routes }: TradeRoutesProps) => {
-  const { t } = useTranslation("trade")
-  const { getAssetWithFallback } = useAssets()
+export const TradeRoutes = ({ swapType, routes }: TradeRoutesProps) => {
+  const { t } = useTranslation(["trade", "common"])
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const filteredRoutes = // Hide 2-Pool-GDOT
     routes.filter((route) => route.assetOut !== Number(GDOT_ASSET_ID))
 
-  const firstRoute = filteredRoutes[0]
-
-  if (!firstRoute) {
-    return null
-  }
-
   return (
-    <Flex direction="column" sx={{ pb: 4, pt: 8 }}>
-      <Flex justify="space-between" align="center">
-        <Text
-          fs="p4"
-          fw={400}
-          color={getToken("buttons.primary.high.rest")}
-          sx={{ pt: 2, whiteSpace: "nowrap" }}
-        >
-          {t("market.form.routes.label", { count: filteredRoutes.length })}
-        </Text>
-
-        <Flex gap={4} align="center">
-          <Flex gap={4} align="center">
-            <Text
-              fs="p5"
-              fw={500}
-              color={getToken("text.high")}
-              whiteSpace="nowrap"
-            >
-              {getAssetWithFallback(String(firstRoute.assetIn)).symbol}
-            </Text>
-            {filteredRoutes.map((route) => {
-              return (
-                <Fragment key={route.poolAddress}>
-                  <Icon
-                    size={18}
-                    component={ChevronRight}
-                    color={getToken("icons.onContainer")}
-                  />
-                  <Text
-                    fs="p5"
-                    fw={500}
-                    color={getToken("text.high")}
-                    whiteSpace="nowrap"
-                  >
-                    {getAssetWithFallback(String(route.assetOut)).symbol}
-                  </Text>
-                </Fragment>
-              )
-            })}
-          </Flex>
-
+    <>
+      <Flex align="center" gap={4}>
+        <Flex gap={1} align="center">
+          {t("market.summary.routes.count", { count: filteredRoutes.length })}
           <Icon
-            size="70%"
+            height={24}
+            width={14}
             component={Routes}
             color={getToken("buttons.primary.high.rest")}
           />
         </Flex>
+        <MicroButton onClick={() => setIsModalOpen(true)}>
+          {t("common:preview")}
+        </MicroButton>
       </Flex>
-      <Text fs="p6" lh={1} fw={400} color={getToken("text.low")} align="end">
-        {t("market.form.routes.desc", {
-          symbol: getAssetWithFallback(String(filteredRoutes[0]?.assetIn))
-            .symbol,
-        })}
-      </Text>
-    </Flex>
+      <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <TradeRoutesModalContent swapType={swapType} routes={filteredRoutes} />
+      </Modal>
+    </>
   )
 }

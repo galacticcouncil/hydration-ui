@@ -1,4 +1,4 @@
-import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
+import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
@@ -9,17 +9,17 @@ import {
 } from "@/components/DynamicFee/DynamicFee.styled"
 
 type DynamicFeeProps = {
+  readonly amount?: string
   readonly value: number
   readonly rangeLow: number
   readonly rangeHigh: number
-  readonly tooltip?: string
 }
 
 export const DynamicFee = ({
+  amount,
   value,
   rangeLow,
   rangeHigh,
-  tooltip,
 }: DynamicFeeProps) => {
   const { t } = useTranslation()
 
@@ -36,9 +36,18 @@ export const DynamicFee = ({
 
   return (
     <Flex gap={8} align="center">
-      <Text fs="p6" fw={500} color={getToken("text.high")}>
-        {t("percent", { value })}
-      </Text>
+      {amount ? (
+        <Text fs="p6" fw={500} lh={1.4}>
+          <span sx={{ color: getToken("text.high") }}>{amount}</span>{" "}
+          <span sx={{ color: getToken("colors.skyBlue.500") }}>
+            ({t("percent", { value })})
+          </span>
+        </Text>
+      ) : (
+        <Text fs="p6" fw={500} color={getToken("text.high")}>
+          {t("percent", { value })}
+        </Text>
+      )}
       <Flex p="1px 2px" gap={1} height="min-content">
         {dynamicFeeRangeTypes.map((rangeType) => {
           const isActive = rangeType === currentKey
@@ -50,7 +59,6 @@ export const DynamicFee = ({
           )
         })}
       </Flex>
-      {tooltip && <Tooltip text={tooltip} />}
     </Flex>
   )
 }

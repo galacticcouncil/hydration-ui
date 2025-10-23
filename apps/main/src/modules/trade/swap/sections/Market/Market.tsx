@@ -1,3 +1,5 @@
+import { Box } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, useState } from "react"
@@ -11,8 +13,8 @@ import { useMarketBuyData } from "@/modules/trade/swap/sections/Market/Market.Bu
 import { useMarketSellData } from "@/modules/trade/swap/sections/Market/Market.SellData"
 import { MarketErrors } from "@/modules/trade/swap/sections/Market/MarketErrors"
 import { MarketFields } from "@/modules/trade/swap/sections/Market/MarketFields"
-import { MarketFooter } from "@/modules/trade/swap/sections/Market/MarketFooter"
-import { MarketSummary } from "@/modules/trade/swap/sections/Market/MarketSummary"
+import { MarketSubmit } from "@/modules/trade/swap/sections/Market/MarketSubmit"
+import { MarketSummary } from "@/modules/trade/swap/sections/Market/Summary/MarketSummary"
 import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketTradeOptions"
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
@@ -37,7 +39,8 @@ export const Market: FC = () => {
   // We need to preserve component state and focus on changing market type
   const useMarketData = isSell ? useMarketSellData : useMarketBuyData
 
-  const { swap, twap, healthFactor, isLoading } = useMarketData(form)
+  const { swap, swapTx, twap, twapTx, healthFactor, isLoading } =
+    useMarketData(form)
 
   const isTradeEnabled = isSingleTrade
     ? !!swap && !swap.swaps.flatMap((swap) => swap.errors).length
@@ -74,40 +77,49 @@ export const Market: FC = () => {
     return scaleHuman(swapSpotPrice, assetInPriceMeta.decimals)
   })()
 
+  const isExpanded = isLoading || (!!swap && (isSingleTrade || !!twap))
+
   return (
     <FormProvider {...form}>
       <form
+        sx={{ pb: isExpanded ? getTokenPx("containers.paddings.primary") : 0 }}
         onSubmit={form.handleSubmit((values) =>
           isSingleTrade
-            ? swap && submitSwap.mutate([values, swap])
-            : twap && submitTwap.mutate([values, twap]),
+            ? swap && swapTx && submitSwap.mutate([values, swap, swapTx])
+            : twap && twapTx && submitTwap.mutate([values, twap, twapTx]),
         )}
       >
         <MarketFields price={spotPrice} />
-        <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
+        {isExpanded && (
+          <Box pt={8} pb={getTokenPx("scales.paddings.m")}>
+            <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
+            <MarketWarnings
+              isSingleTrade={isSingleTrade}
+              twap={twap}
+              healthFactor={healthFactor}
+              healthFactorRiskAccepted={healthFactorRiskAccepted}
+              setHealthFactorRiskAccepted={setHealthFactorRiskAccepted}
+            />
+            {swap && <MarketErrors swap={swap} />}
+          </Box>
+        )}
         <SwapSectionSeparator />
-        <MarketSummary
-          swap={swap}
-          twap={twap}
-          healthFactor={healthFactor}
-          isLoading={isLoading}
-        />
-        <SwapSectionSeparator />
-        <MarketWarnings
-          isSingleTrade={isSingleTrade}
-          twap={twap}
-          healthFactor={healthFactor}
-          healthFactorRiskAccepted={healthFactorRiskAccepted}
-          setHealthFactorRiskAccepted={setHealthFactorRiskAccepted}
-        />
-        {swap && <MarketErrors swap={swap} />}
-        <MarketFooter
+        <MarketSubmit
           isSingleTrade={isSingleTrade}
           isEnabled={
             isTradeEnabled &&
             isHealthFactorCheckSatisfied &&
             form.formState.isValid
           }
+        />
+        <MarketSummary
+          swapType={type}
+          swap={swap}
+          swapTx={swapTx}
+          twap={twap}
+          twapTx={twapTx}
+          healthFactor={healthFactor}
+          isLoading={isLoading}
         />
       </form>
     </FormProvider>

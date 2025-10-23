@@ -1,46 +1,27 @@
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
 import { TradeType } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTradeSettings } from "@/states/tradeSettings"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useSubmitSwap = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { sdk } = useRpcProvider()
-  const {
-    swap: {
-      single: { swapSlippage },
-    },
-  } = useTradeSettings()
-
-  const { account } = useAccount()
-  const address = account?.address ?? ""
 
   const { createTransaction } = useTransactionsStore()
 
   return useMutation({
-    mutationFn: async ([values, swap]: [
+    mutationFn: async ([values, swap, tx]: [
       MarketFormValues,
       Trade,
+      AnyTransaction,
     ]): Promise<void> => {
       const { sellAsset, buyAsset } = values
       const { amountIn, amountOut, type } = swap
-
-      if (!address) {
-        return
-      }
-      const tx = await sdk.tx
-        .trade(swap)
-        .withSlippage(swapSlippage)
-        .withBeneficiary(address)
-        .build()
 
       const sellDecimals = sellAsset?.decimals ?? 0
       const sellSymbol = sellAsset?.symbol ?? ""
@@ -71,7 +52,7 @@ export const useSubmitSwap = () => {
             }
 
       await createTransaction({
-        tx: tx.get(),
+        tx,
         toasts: {
           submitted: t(
             `trade:market.swap.${toLowerCase(type)}.loading`,

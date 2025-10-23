@@ -1,11 +1,18 @@
-import { Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  Skeleton,
+  Text,
+  TextProps,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ReactNode } from "react"
 
-export type RowModel = {
+export type SummaryRowProps = {
   label: string
-  content: ReactNode | string
+  content: ReactNode
   description?: string
+  tooltip?: ReactNode
   className?: string
   loading?: boolean
 }
@@ -14,15 +21,24 @@ export const SummaryRow = ({
   label,
   content,
   description,
+  tooltip,
   className,
   loading,
-}: RowModel) => {
+}: SummaryRowProps) => {
+  const labelElement = (
+    <Text fs="p5" color={getToken("text.medium")}>
+      {label}
+    </Text>
+  )
+
   return (
     <Flex align="center" justify="space-between" my={8} className={className}>
       <Flex direction="column" justify="space-between" gap={4}>
-        <Text fs="p5" color={getToken("text.medium")}>
-          {label}
-        </Text>
+        {tooltip ? (
+          <Tooltip text={tooltip}>{labelElement}</Tooltip>
+        ) : (
+          labelElement
+        )}
 
         {description && (
           <Text fs="p6" fw={400} color={getToken("text.low")}>
@@ -42,8 +58,6 @@ export const SummaryRow = ({
   )
 }
 
-export const SummaryRowValue = ({ children }: { children: ReactNode }) => (
-  <Text fs="p5" fw={500} color={getToken("text.high")}>
-    {children}
-  </Text>
+export const SummaryRowValue = (props: TextProps) => (
+  <Text fs="p5" fw={500} color={getToken("text.high")} {...props} />
 )

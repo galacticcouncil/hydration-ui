@@ -8,7 +8,6 @@ import { DcaSummary } from "@/modules/trade/swap/sections/DCA/DcaSummary"
 import { DcaWarnings } from "@/modules/trade/swap/sections/DCA/DcaWarnings"
 import { useDcaTradeOrder } from "@/modules/trade/swap/sections/DCA/useDcaTradeOrder"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
-import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 import { useDcaForm } from "./useDcaForm"
 
@@ -33,13 +32,11 @@ export const Dca: FC = () => {
         )}
       >
         <DcaForm order={order} />
-        <SwapSectionSeparator />
         <DcaSummary
           order={order}
           healthFactor={healthFactor}
           isLoading={isLoading}
         />
-        <SwapSectionSeparator />
         <DcaWarnings
           healthFactor={healthFactor}
           healthFactorRiskAccepted={healthFactorRiskAccepted}

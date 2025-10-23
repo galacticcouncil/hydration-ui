@@ -9,6 +9,7 @@ type StackDirection = "row" | "column"
 
 export type StackProps = Omit<FlexProps, "direction"> & {
   separated?: boolean
+  withLeadingSeparator?: boolean
   withTrailingSeparator?: boolean
   separator?: React.ReactElement<Partial<SeparatorProps>>
   direction?: ResponsiveStyleValue<StackDirection>
@@ -17,6 +18,7 @@ export type StackProps = Omit<FlexProps, "direction"> & {
 
 export const Stack: React.FC<StackProps> = ({
   separated = false,
+  withLeadingSeparator = false,
   withTrailingSeparator = false,
   separator,
   direction = "column",
@@ -37,6 +39,7 @@ export const Stack: React.FC<StackProps> = ({
               orientation={directionToSeparatorOrientation(direction)}
             />
           ),
+          withLeadingSeparator,
           withTrailingSeparator,
         )
       : children}
@@ -58,11 +61,17 @@ function directionToSeparatorOrientation(
 function joinChildren(
   children: React.ReactNode,
   separator: React.ReactElement<unknown>,
-  withTrailingSeparator = false,
+  withLeadingSeparator: boolean,
+  withTrailingSeparator: boolean,
 ): React.ReactNode[] {
   const childrenArray = React.Children.toArray(children).filter(Boolean)
 
   return childrenArray.reduce<React.ReactNode[]>((output, child, index) => {
+    const isFirst = index === 0
+    if (isFirst && withLeadingSeparator) {
+      output.push(React.cloneElement(separator, { key: `separator-${-1}` }))
+    }
+
     output.push(child)
 
     const isLast = index === childrenArray.length - 1
