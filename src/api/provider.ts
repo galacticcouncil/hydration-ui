@@ -75,6 +75,16 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
+    name: "LATAM",
+    url: "wss://hydration.rpc.stkd.io",
+    ...defaultProvider,
+  },
+  {
+    name: "3",
+    url: "wss://3.rpc.hydration.cloud",
+    ...defaultProvider,
+  },
+  {
     name: "cay",
     url: "wss://rpc.cay.hydration.cloud",
     ...defaultProvider,
@@ -90,11 +100,6 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
-    name: "parm2",
-    url: "wss://rpc2.parm.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
     name: "roach",
     url: "wss://rpc.roach.hydration.cloud",
     ...defaultProvider,
@@ -102,11 +107,6 @@ export const PROVIDERS: ProviderProps[] = [
   {
     name: "zipp",
     url: "wss://rpc.zipp.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
-    name: "zipp2",
-    url: "wss://rpc2.zipp.hydration.cloud",
     ...defaultProvider,
   },
   {
@@ -120,23 +120,8 @@ export const PROVIDERS: ProviderProps[] = [
     ...defaultProvider,
   },
   {
-    name: "coke2",
-    url: "wss://rpc2.coke.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
     name: "lait",
     url: "wss://rpc.lait.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
-    name: "limo",
-    url: "wss://rpc.limo.hydration.cloud",
-    ...defaultProvider,
-  },
-  {
-    name: "5",
-    url: "wss://rpc.5.hydration.cloud",
     ...defaultProvider,
   },
   {
