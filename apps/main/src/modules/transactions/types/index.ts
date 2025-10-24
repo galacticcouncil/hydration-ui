@@ -31,6 +31,7 @@ export type TxStatusCallbacks = {
 export type TxOptions = TxStatusCallbacks & {
   nonce?: number
   tip?: bigint
+  weight?: bigint
   mortalityPeriod: TxMortalityPeriod
   chainKey: string
   feeAssetId: string

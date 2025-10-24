@@ -70,8 +70,9 @@ export class ExternalWallet implements Wallet {
     return Promise.resolve(this.account ? [this.account] : [])
   }
 
-  subscribeAccounts = async () => {}
-  subscribeChain = async () => {}
+  subscribeAccounts = () => {
+    return () => {}
+  }
 
   disconnect = () => {
     this._enabled = false

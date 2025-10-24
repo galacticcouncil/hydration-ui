@@ -1,3 +1,4 @@
+import { safeConvertH160toSS58 } from "@galacticcouncil/utils"
 import {
   isEthereumSigner,
   isPolkadotSigner,
@@ -45,14 +46,20 @@ export const useSignAndSubmit = (
       const signer = wallet?.signer
 
       if (isValidEvmCallForPermit(tx, txOptions) && isEthereumSigner(signer)) {
-        const permit = await signer.getPermit(tx.data)
+        const permit = await signer.getPermit(tx.data, txOptions)
         const permitTx = transformPermitToPapiTx(papi, permit)
         return submitUnsignedPolkadotTx(permitTx, papiClient, txOptions)
       }
 
       if (isValidPapiTxForPermit(tx, txOptions) && isEthereumSigner(signer)) {
+        const { weight } = await tx.getPaymentInfo(
+          safeConvertH160toSS58(signer.address),
+        )
         const data = await tx.getEncodedData()
-        const permit = await signer.getPermit(data.asHex())
+        const permit = await signer.getPermit(data.asHex(), {
+          ...txOptions,
+          weight: weight.ref_time,
+        })
         const permitTx = transformPermitToPapiTx(papi, permit)
         return submitUnsignedPolkadotTx(permitTx, papiClient, txOptions)
       }
@@ -62,7 +69,13 @@ export const useSignAndSubmit = (
       }
 
       if (isPapiTransaction(tx) && isEthereumSigner(signer)) {
-        return signAndSubmitEvmDispatchTx(tx, signer, txOptions)
+        const { weight } = await tx.getPaymentInfo(
+          safeConvertH160toSS58(signer.address),
+        )
+        return signAndSubmitEvmDispatchTx(tx, signer, {
+          ...txOptions,
+          weight: weight.ref_time,
+        })
       }
 
       if (isEvmCall(tx) && isEthereumSigner(signer)) {

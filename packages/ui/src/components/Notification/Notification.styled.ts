@@ -50,6 +50,9 @@ const getColor = (cssKey: "color" | "background") =>
     submitted: css`
       ${cssKey}:${theme.text.tint.secondary};
     `,
+    pending: css`
+      ${cssKey}:${theme.text.tint.secondary};
+    `,
     unknown: css`
       ${cssKey}: ${theme.icons.onContainer};
     `,

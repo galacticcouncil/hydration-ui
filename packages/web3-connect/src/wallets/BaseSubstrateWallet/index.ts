@@ -127,7 +127,7 @@ export class BaseSubstrateWallet implements Wallet {
     return accountsWithWallet
   }
 
-  subscribeAccounts = async (callback: SubscriptionFn) => {
+  subscribeAccounts = (callback: SubscriptionFn) => {
     if (!this._extension) {
       throw new NotInstalledError(
         `Refresh the browser if ${this.title} is already installed.`,
