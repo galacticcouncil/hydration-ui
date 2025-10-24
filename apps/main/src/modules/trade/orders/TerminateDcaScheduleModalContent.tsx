@@ -16,7 +16,6 @@ export const TerminateDcaScheduleModalContent: FC<Props> = ({
   sold,
   total,
   symbol,
-
   onClose,
 }) => {
   const terminateDcaSchedule = useTerminateDcaSchedule()

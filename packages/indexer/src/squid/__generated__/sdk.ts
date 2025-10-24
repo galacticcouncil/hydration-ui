@@ -283,8 +283,12 @@ export const UserOpenOrdersCountDocument = `
 export const DcaScheduleExecutionsDocument = `
     query DcaScheduleExecutions($scheduleId: String!) {
   dcaSchedule(id: $scheduleId) {
-    assetInId
-    assetOutId
+    assetIn {
+      assetRegistryId
+    }
+    assetOut {
+      assetRegistryId
+    }
     dcaScheduleExecutionsByScheduleId(
       filter: {status: {in: ["Executed", "Failed"]}}
       orderBy: ID_DESC
