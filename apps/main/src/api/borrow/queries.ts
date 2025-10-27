@@ -28,6 +28,9 @@ import {
 } from "@/api/borrow/contracts"
 import { useBlockTimestamp } from "@/api/chain"
 
+const lendingPoolAddressProvider =
+  AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
+
 export const borrowIncentivesQuery = (
   lendingPoolAddressProvider: string,
   incentivesContract: UiIncentiveDataProvider | null,
@@ -50,9 +53,6 @@ export const borrowIncentivesQuery = (
 
 export const useBorrowIncentives = () => {
   const incentivesContract = useBorrowIncentivesContract()
-
-  const lendingPoolAddressProvider =
-    AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
   return useQuery(
     borrowIncentivesQuery(lendingPoolAddressProvider, incentivesContract),
@@ -114,9 +114,6 @@ export const useBorrowReserves = () => {
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()
 
-  const lendingPoolAddressProvider =
-    AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
-
   return useQuery(
     borrowReservesQuery(
       queryClient,
@@ -160,9 +157,6 @@ export const useUserBorrowReserves = (givenAddress?: string) => {
   const address = givenAddress || account?.address || ""
   const evmAddress = H160.fromAny(address)
 
-  const lendingPoolAddressProvider =
-    AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
-
   return useQuery(
     userBorrowReservesQuery(
       evmAddress,
@@ -204,9 +198,6 @@ export const useBorrowUserIncentives = (givenAddress?: string) => {
   const address = givenAddress || account?.address || ""
 
   const evmAddress = H160.fromAny(address)
-
-  const lendingPoolAddressProvider =
-    AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
   return useQuery(
     borrowUserIncentivesQuery(
@@ -390,9 +381,6 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 
   const address = givenAddress || account?.address || ""
   const evmAddress = H160.fromAny(address)
-
-  const lendingPoolAddressProvider =
-    AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
   return useQuery(
     userBorrowSummaryQuery(

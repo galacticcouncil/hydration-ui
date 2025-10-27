@@ -1,9 +1,9 @@
 import {
-  useClaimableRewards,
   useFormattedHealthFactor,
   useModalContext,
   useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
+import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
 import {
   Button,
   Flex,
@@ -28,7 +28,7 @@ export const DashboardHeader = () => {
 
   const [riskModalOpen, setRiskModalOpen] = useState(false)
 
-  const { claimableRewardsUsd } = useClaimableRewards()
+  const { claimableRewardsUsd } = getUserClaimableRewards(user)
 
   const {
     healthFactor,

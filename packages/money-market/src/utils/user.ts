@@ -2,7 +2,6 @@ import {
   FormattedGhoReserveData,
   FormattedGhoUserData,
   FormatUserSummaryAndIncentivesResponse,
-  UserIncentiveData,
 } from "@aave/math-utils"
 import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
@@ -26,35 +25,35 @@ type UserClaimableRewards = {
 export const getUserClaimableRewards = (
   user: ExtendedFormattedUser,
 ): UserClaimableRewards => {
-  const rewards = Object.keys(user.calculatedUserIncentives).reduce(
-    (acc, rewardTokenAddress) => {
-      const incentive: UserIncentiveData =
-        user.calculatedUserIncentives[rewardTokenAddress]
-
+  const rewards = Object.entries(user.calculatedUserIncentives).reduce(
+    (acc, [, incentive]) => {
       const rewardBalance = bigShift(
         incentive.claimableRewards.toString(),
         -incentive.rewardTokenDecimals,
       )
 
-      const tokenPrice = Big(incentive.rewardPriceFeed)
-      const rewardBalanceUsd = rewardBalance.times(tokenPrice)
+      const rewardBalanceUsd = rewardBalance.times(incentive.rewardPriceFeed)
 
       if (rewardBalanceUsd.gt(0)) {
         if (acc.assets.indexOf(incentive.rewardTokenSymbol) === -1) {
           acc.assets.push(incentive.rewardTokenSymbol)
         }
 
-        acc.claimableRewardsUsd = rewardBalanceUsd
-          .plus(acc.claimableRewardsUsd)
-          .toNumber()
+        acc.claimableRewardsUsd = rewardBalanceUsd.plus(acc.claimableRewardsUsd)
       }
 
       return acc
     },
-    { claimableRewardsUsd: 0, assets: [] } as UserClaimableRewards,
+    { claimableRewardsUsd: Big(0), assets: [] } as {
+      claimableRewardsUsd: Big
+      assets: string[]
+    },
   )
 
-  return rewards
+  return {
+    assets: rewards.assets,
+    claimableRewardsUsd: rewards.claimableRewardsUsd.toNumber(),
+  }
 }
 
 /**
