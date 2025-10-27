@@ -331,8 +331,11 @@ export const useWeb3ConnectEagerEnable = () => {
 
       const providerType = normalizeProviderType(wallet)
       const isSubscribed = unsubs.has(providerType)
+      const isSelected =
+        !!currentAccount && providerType === currentAccount.provider
+      const shouldSubscribe = isSelected && !isSubscribed
 
-      if (wallet instanceof BaseDotsamaWallet && !isSubscribed) {
+      if (wallet instanceof BaseDotsamaWallet && shouldSubscribe) {
         const unsub = await subscribeSubstrateWalletAccountChange(wallet)
         unsubs.set(providerType, unsub)
       }
