@@ -1,38 +1,17 @@
-import { Flex, Grid, Paper, Skeleton } from "@galacticcouncil/ui/components"
 import { createFileRoute } from "@tanstack/react-router"
-import { FC } from "react"
-import * as z from "zod/v4"
+import { z } from "zod/v4"
 
-import { WalletTransactionsPage } from "@/modules/wallet/transactions/WalletTransactionsPage"
+import { Page404 } from "@/components/Page404"
 import { transactionTypesMock } from "@/modules/wallet/transactions/WalletTransactionsTable.data"
 
 const typeSchema = z.object({
   type: z.array(z.enum(transactionTypesMock)).optional(),
 })
 
-const WalletTransactionsSkeleton: FC = () => {
-  return (
-    <Flex direction="column" gap={15} pt={10}>
-      <Grid columnTemplate="3fr 5fr 3fr" height={25}>
-        <Skeleton sx={{ height: "100%" }} />
-        <div />
-        <Skeleton sx={{ height: "100%" }} />
-      </Grid>
-      <Flex p={20} direction="column" gap={20} as={Paper}>
-        {Array.from(new Array(8).keys()).map((_, index) => (
-          <Grid key={index} columnTemplate="repeat(6, 1fr)" gap={10}>
-            {Array.from(new Array(6).keys()).map((_, index) => (
-              <Skeleton key={index} sx={{ height: 25 }} />
-            ))}
-          </Grid>
-        ))}
-      </Flex>
-    </Flex>
-  )
-}
-
+// TODO transactions page
 export const Route = createFileRoute("/wallet/transactions")({
-  component: WalletTransactionsPage,
-  pendingComponent: WalletTransactionsSkeleton,
+  // component: WalletTransactionsPage,
+  component: Page404,
+  // pendingComponent: WalletTransactionsSkeleton,
   validateSearch: typeSchema,
 })
