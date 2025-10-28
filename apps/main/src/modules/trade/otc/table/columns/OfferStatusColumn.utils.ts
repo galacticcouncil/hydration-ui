@@ -14,8 +14,13 @@ export const useInitialOtcOfferAmount = (
     otcOrderStatusQuery(indexerClient, offerIdNumber, isPartiallyFillable),
   )
 
-  const amountInInitial = data?.events[0]?.args?.amountIn || "0"
-  const amountOutInitial = data?.events[0]?.args?.amountOut || "0"
+  const eventArgs = data?.events[0]?.args
+  const amounts = eventArgs
+    ? {
+        amountInInitial: eventArgs.amountIn || "0",
+        amountOutInitial: eventArgs.amountOut || "0",
+      }
+    : undefined
 
-  return { amountInInitial, amountOutInitial, isLoading }
+  return { data: amounts, isLoading }
 }

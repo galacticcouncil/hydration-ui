@@ -70,12 +70,14 @@ const DrawerDescription: FC<
 const DrawerHeader = ({
   title,
   description,
+  customDescription,
   customHeader,
   customTitle,
   ...props
 }: FlexProps & {
-  title: string
+  title?: string
   description?: string
+  customDescription?: ReactNode
   customHeader?: ReactNode
   customTitle?: ReactNode
 }) => (
@@ -93,7 +95,16 @@ const DrawerHeader = ({
       )}
     </Flex>
 
-    {description && <DrawerDescription>{description}</DrawerDescription>}
+    {customDescription ? (
+      <>
+        <VisuallyHidden.Root>
+          <DrawerDescription>{description}</DrawerDescription>
+        </VisuallyHidden.Root>
+        {customDescription}
+      </>
+    ) : (
+      description && <DrawerDescription>{description}</DrawerDescription>
+    )}
     {customHeader}
   </SDrawerHeader>
 )

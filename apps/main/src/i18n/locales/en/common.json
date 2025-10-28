@@ -37,6 +37,8 @@
   "unknown": "Unknown",
   "sell": "Sell",
   "buy": "Buy",
+  "pay": "Pay",
+  "get": "Get",
   "limitOrder": "Limit Order",
   "show": "Show",
   "hide": "Hide",

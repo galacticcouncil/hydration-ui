@@ -48,7 +48,5 @@ export const getOtcOfferFilter = (
       return () => true
     case "my":
       return (offer) => offer.owner === userAddress
-    case "partially-fillable":
-      return (offer) => offer.isPartiallyFillable
   }
 }

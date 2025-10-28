@@ -25,6 +25,7 @@ export type AssetInputProps = {
   error?: string
   disabled?: boolean
   modalDisabled?: boolean
+  amountDisabled?: boolean
   loading?: boolean
   selectedAssetIcon?: ReactNode
   onChange?: (value: string) => void
@@ -48,6 +49,7 @@ export const AssetInput = ({
   error,
   disabled,
   modalDisabled,
+  amountDisabled,
   loading,
   onAsssetBtnClick,
   formatValue = defaultAssetValueFormatter,
@@ -138,7 +140,7 @@ export const AssetInput = ({
               isError={!!error}
               placeholder="0"
               variant="embedded"
-              disabled={disabled || loading || !onChange}
+              disabled={disabled || amountDisabled || loading || !onChange}
               value={defaultAssetValueFormatter(value ?? "")}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.validity.valid) {

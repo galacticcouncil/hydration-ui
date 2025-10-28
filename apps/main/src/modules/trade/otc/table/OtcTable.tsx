@@ -28,7 +28,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
 
   const { data, isLoading } = useOtcOffersQuery()
-  const columns = useOtcTableColums(offersType)
+  const columns = useOtcTableColums()
 
   const userAddress = useHydraAccountAddress()
 

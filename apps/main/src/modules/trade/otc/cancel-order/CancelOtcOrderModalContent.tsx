@@ -20,19 +20,21 @@ export const CancelOtcOrderModalContent: FC<Props> = ({
 }) => {
   const cancelOrder = useSubmitCancelOtcOrder(otcOffer, onClose)
 
-  const { amountOutInitial } = useInitialOtcOfferAmount(
+  const { data } = useInitialOtcOfferAmount(
     otcOffer.id,
     otcOffer.isPartiallyFillable,
   )
 
-  const amountOutInitialBig = new Big(
-    scaleHuman(amountOutInitial, otcOffer.assetOut.decimals),
-  )
+  const amountOutInitialBig = data?.amountOutInitial
+    ? new Big(scaleHuman(data.amountOutInitial, otcOffer.assetOut.decimals))
+    : null
 
   return (
     <CancelTradeOrderModalContent
-      sold={amountOutInitialBig.minus(otcOffer.assetAmountOut).toString()}
-      total={amountOutInitialBig.toString()}
+      sold={
+        amountOutInitialBig?.minus(otcOffer.assetAmountOut).toString() ?? null
+      }
+      total={amountOutInitialBig?.toString() ?? null}
       symbol={otcOffer.assetOut.symbol}
       onBack={onBack}
       onSubmit={() => cancelOrder.mutate()}

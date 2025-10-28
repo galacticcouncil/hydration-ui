@@ -65,3 +65,5 @@ export const getRdnsFromUrl = (url: string): string => {
     return ""
   }
 }
+
+export const noop = () => {}
