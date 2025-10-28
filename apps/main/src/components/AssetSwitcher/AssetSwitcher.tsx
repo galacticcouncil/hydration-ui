@@ -19,6 +19,7 @@ type AssetSwitcherProps = {
   readonly assetOutId: string
   readonly priceOut?: string | undefined | null
   readonly disabled?: boolean
+  readonly switcherDisabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean
   readonly onSwitchAssets?: () => void
@@ -30,6 +31,7 @@ export const AssetSwitcher = ({
   priceIn,
   priceOut,
   disabled,
+  switcherDisabled,
   fallbackPrice,
   isFallbackPriceLoading,
   onSwitchAssets,
@@ -61,7 +63,8 @@ export const AssetSwitcher = ({
   }
 
   const isPriceReady = canCalculatePrice || !isFallbackPriceLoading
-  const isSwitcherDisabled = disabled || !assetInId || !assetOutId
+  const isSwitcherDisabled =
+    switcherDisabled || disabled || !assetInId || !assetOutId
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
   return (

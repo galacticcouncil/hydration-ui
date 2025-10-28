@@ -1,11 +1,15 @@
 import { useLocation } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { FC, useMemo } from "react"
 
 import { TabItem, TabMenu } from "@/components/TabMenu/TabMenu"
 import { NAVIGATION } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 
-export const SubpageMenu = () => {
+type Props = {
+  readonly ignoreCurrentSearch?: boolean
+}
+
+export const SubpageMenu: FC<Props> = ({ ignoreCurrentSearch }) => {
   const translations = useMenuTranslations()
   const pathname = useLocation({
     select: (state) => state.pathname,
@@ -26,5 +30,12 @@ export const SubpageMenu = () => {
 
   if (subnav.length < 2) return null
 
-  return <TabMenu items={subnav} size="large" variant="transparent" />
+  return (
+    <TabMenu
+      items={subnav}
+      size="large"
+      variant="transparent"
+      ignoreCurrentSearch={ignoreCurrentSearch}
+    />
+  )
 }

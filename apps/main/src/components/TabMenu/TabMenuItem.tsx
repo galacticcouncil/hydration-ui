@@ -15,6 +15,7 @@ export type Props = {
   readonly variant?: ButtonVariant
   readonly activeVariant?: ButtonVariant
   readonly className?: string
+  readonly ignoreCurrentSearch?: boolean
 }
 
 export const TabMenuItem: FC<Props> = ({
@@ -23,6 +24,7 @@ export const TabMenuItem: FC<Props> = ({
   activeVariant = "secondary",
   variant = "muted",
   className,
+  ignoreCurrentSearch,
 }) => {
   const { to, title, icon: IconComponent, search, resetScroll } = item
 
@@ -58,7 +60,7 @@ export const TabMenuItem: FC<Props> = ({
     >
       <Link
         to={to}
-        search={{ ...currentSearch, ...search }}
+        search={{ ...(ignoreCurrentSearch ? {} : currentSearch), ...search }}
         resetScroll={resetScroll}
       >
         {IconComponent && <IconComponent />}

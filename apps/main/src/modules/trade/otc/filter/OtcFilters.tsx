@@ -1,5 +1,5 @@
 import { UserRound } from "@galacticcouncil/ui/assets/icons"
-import { Box, Flex, Separator } from "@galacticcouncil/ui/components"
+import { Flex, Separator } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -21,15 +21,7 @@ export const OtcFilters: FC = () => {
           <Separator orientation="vertical" sx={{ height: 38 }} />
         </>
       )}
-
-      <Flex gap={8}>
-        <OrderFilter offers="all">{t("otc.filters.offers.all")}</OrderFilter>
-        <Box display={["none", "block"]}>
-          <OrderFilter offers="partially-fillable">
-            {t("otc.filters.offers.partiallyFillable")}
-          </OrderFilter>
-        </Box>
-      </Flex>
+      <OrderFilter offers="all">{t("otc.filters.offers.all")}</OrderFilter>
     </Flex>
   )
 }

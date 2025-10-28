@@ -18,6 +18,7 @@ type Props = FlexProps &
   Pick<TabMenuItemProps, "size" | "variant" | "activeVariant"> & {
     readonly items: ReadonlyArray<TabItem>
     readonly className?: string
+    readonly ignoreCurrentSearch?: boolean
     readonly renderItem?: (item: TabItem) => React.ReactNode
   }
 
@@ -28,6 +29,7 @@ export const TabMenu: FC<Props> = ({
   size,
   variant,
   activeVariant,
+  ignoreCurrentSearch,
   ...props
 }) => {
   return (
@@ -43,6 +45,7 @@ export const TabMenu: FC<Props> = ({
               size={size}
               variant={variant}
               activeVariant={activeVariant}
+              ignoreCurrentSearch={ignoreCurrentSearch}
             />
           ),
         )}

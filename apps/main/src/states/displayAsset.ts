@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useCallback, useMemo } from "react"
-import { isNonNullish } from "remeda"
+import { isNonNullish, prop } from "remeda"
 import { create } from "zustand"
 import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
@@ -44,11 +44,13 @@ export type AssetPrice = { price: string; isLoading: boolean; isValid: boolean }
 
 type Store = {
   assets: TStoredAssetPrice
+  referenceAssetId: string
   setAssets: (asset: { id: string; price: string | null }[]) => void
+  setReferenceAssetId: (id: string) => void
 }
 
 export const useDisplaySpotPriceStore = create<Store>(
-  combine({ assets: {} as TStoredAssetPrice }, (set) => ({
+  combine({ assets: {} as TStoredAssetPrice, referenceAssetId: "" }, (set) => ({
     setAssets: (assets) => {
       set((state) => {
         const newValues = { ...state.assets }
@@ -58,6 +60,7 @@ export const useDisplaySpotPriceStore = create<Store>(
         return { assets: newValues }
       })
     },
+    setReferenceAssetId: (id) => set({ referenceAssetId: id }),
   })),
 )
 
@@ -73,6 +76,8 @@ export const useAssetsPrice = (assetIds: string[]) => {
       ),
     ),
   )
+
+  const referenceAssetId = useDisplaySpotPriceStore(prop("referenceAssetId"))
 
   // subscribe to price changes by asset id
   useSubscribedPriceKeys(assetIds)
@@ -103,7 +108,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
     [prices],
   )
 
-  return { prices, isLoading, getAssetPrice }
+  return { prices, isLoading, referenceAssetId, getAssetPrice }
 }
 
 export const useAssetPrice = (assetId?: string): AssetPrice => {
