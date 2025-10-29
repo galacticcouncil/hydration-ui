@@ -4,29 +4,25 @@ import {
   USD_DECIMALS,
   valueToBigNumber,
 } from "@aave/math-utils"
-import {
-  Flex,
-  Separator,
-  Stack,
-  SummaryRow,
-} from "@galacticcouncil/ui/components"
+import { Separator, Stack, SummaryRow } from "@galacticcouncil/ui/components"
 import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useState } from "react"
+import { isArray } from "remeda"
 
 import {
   AssetInput,
-  GhoBorrowApyRange,
   HealthFactorChange,
   HealthFactorRiskWarning,
 } from "@/components/primitives"
-import { FixedAPYTooltip } from "@/components/tooltips/FixedAPYTooltip"
 import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrapper"
 import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWarning"
 import { useAssetCaps } from "@/hooks"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { CapType } from "@/types"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
+import { getGhoBorrowApyRange } from "@/utils"
 import { getMaxGhoMintAmount } from "@/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "@/utils/utils"
 
@@ -45,7 +41,10 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
 }) => {
   const { user, marketReferencePriceInUsd, ghoReserveData } =
     useAppDataContext()
+  const { formatPercent } = useAppFormatters()
   const { borrowCap } = useAssetCaps()
+
+  const ghoBorrowApyRange = getGhoBorrowApyRange(ghoReserveData)
 
   const [amount, setAmount] = useState("")
   const [
@@ -168,13 +167,9 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         <SummaryRow
           label="APY, borrow rate"
           content={
-            <Flex align="center" gap={4}>
-              <GhoBorrowApyRange
-                minVal={ghoReserveData.ghoBorrowAPYWithMaxDiscount}
-                maxVal={ghoReserveData.ghoVariableBorrowAPY}
-              />
-              <FixedAPYTooltip />
-            </Flex>
+            isArray(ghoBorrowApyRange)
+              ? `${formatPercent(ghoBorrowApyRange[0])} - ${formatPercent(ghoBorrowApyRange[1])}`
+              : formatPercent(ghoBorrowApyRange)
           }
         />
         <Stack gap={14} py={14}>

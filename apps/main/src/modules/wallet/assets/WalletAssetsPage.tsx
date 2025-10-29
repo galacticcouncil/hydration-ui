@@ -6,7 +6,7 @@ import { useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { BorrowContextProvider } from "@/modules/borrow/BorrowContextProvider"
+import { HollarBanner } from "@/modules/borrow/hollar/HollarBanner"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
@@ -40,40 +40,39 @@ export const WalletAssetsPage = () => {
   return (
     <>
       <OmnipoolSubscriber />
-      <BorrowContextProvider>
-        <Flex direction="column" gap={[0, 20]}>
-          <Grid
-            columnGap={[10, 20]}
-            sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}
-          >
-            <WalletBalances />
-            <WalletRewards />
-          </Grid>
-          {!isMobile && (
-            <Flex pt={12} align="flex-end" justify="space-between">
-              <WalletAssetsSubpageMenu />
-              <Input
-                placeholder={t("search.placeholder.assets")}
-                iconStart={Search}
-                onChange={(e) => setSearchPhrase(e.target.value)}
-              />
-            </Flex>
-          )}
-          <Flex direction="column" gap={12}>
-            {(isMobile || category === "all" || category === "assets") && (
-              <MyAssets searchPhrase={searchPhrase} sx={{ pt: 8 }} />
-            )}
-            {(((isMobile || category === "all") && liquidityData.length > 0) ||
-              category === "liquidity") && (
-              <MyLiquidity
-                data={liquidityData}
-                isLoading={liquidityLoading}
-                searchPhrase={searchPhrase}
-              />
-            )}
+      <Flex direction="column" gap={[0, 20]}>
+        <Grid
+          columnGap={[10, 20]}
+          sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}
+        >
+          <WalletBalances />
+          <WalletRewards />
+        </Grid>
+        <HollarBanner />
+        {!isMobile && (
+          <Flex pt={12} align="flex-end" justify="space-between">
+            <WalletAssetsSubpageMenu />
+            <Input
+              placeholder={t("search.placeholder.assets")}
+              iconStart={Search}
+              onChange={(e) => setSearchPhrase(e.target.value)}
+            />
           </Flex>
+        )}
+        <Flex direction="column" gap={12}>
+          {(isMobile || category === "all" || category === "assets") && (
+            <MyAssets searchPhrase={searchPhrase} sx={{ pt: 8 }} />
+          )}
+          {(((isMobile || category === "all") && liquidityData.length > 0) ||
+            category === "liquidity") && (
+            <MyLiquidity
+              data={liquidityData}
+              isLoading={liquidityLoading}
+              searchPhrase={searchPhrase}
+            />
+          )}
         </Flex>
-      </BorrowContextProvider>
+      </Flex>
     </>
   )
 }

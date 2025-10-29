@@ -117,3 +117,16 @@ export const formatGhoReserve = (
     borrowCapUSD: borrowCap.times(reserve.priceInUSD).toString(),
   }
 }
+
+export const getGhoBorrowApyRange = (
+  ghoReserveData: FormattedGhoReserveData,
+): number | [number, number] => {
+  const minVal = ghoReserveData.ghoBorrowAPYWithMaxDiscount
+  const maxVal = ghoReserveData.ghoVariableBorrowAPY
+
+  const normalizedLowValue = Number((minVal * 100).toFixed(2))
+  const normalizedHighValue = Number((maxVal * 100).toFixed(2))
+  const isSameDisplayValue = normalizedLowValue === normalizedHighValue
+
+  return isSameDisplayValue ? minVal * 100 : [minVal * 100, maxVal * 100]
+}

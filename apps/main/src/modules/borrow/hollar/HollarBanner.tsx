@@ -1,5 +1,3 @@
-import { GhoBorrowApyRange } from "@galacticcouncil/money-market/components"
-import { useMoneyMarketData } from "@galacticcouncil/money-market/hooks"
 import { getGhoReserve } from "@galacticcouncil/money-market/utils"
 import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
 import { Box, Button, Text, ValueStats } from "@galacticcouncil/ui/components"
@@ -9,6 +7,10 @@ import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { isArray } from "remeda"
+
+import { useBorrowReserves, useGhoReserveData } from "@/api/borrow"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 import {
   SContainer,
@@ -25,12 +27,17 @@ type HollarBannerProps = {
 export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
   const { t } = useTranslation()
 
-  const { ghoReserveData, reserves, loading, ghoLoadingData } =
-    useMoneyMarketData()
+  const { isLoaded } = useRpcProvider()
+  const { data: reserves, isLoading: isLoadingReserves } = useBorrowReserves()
+  const { data: gho, isLoading: isLoadingGhoReserveData } = useGhoReserveData()
 
-  const isLoading = loading || ghoLoadingData
+  const { ghoBorrowApyRange } = gho ?? {}
 
-  const reserve = getGhoReserve(reserves)
+  const isLoading = !isLoaded || isLoadingReserves || isLoadingGhoReserveData
+
+  const reserve = reserves?.formattedReserves
+    ? getGhoReserve(reserves.formattedReserves)
+    : null
 
   const totalBorrowed = useMemo(() => {
     if (!reserve) return
@@ -66,7 +73,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
               {t("hollar.banner.description")}
             </Text>
           </Box>
-          <SValuesContainer sx={{ display: ["none", null, "grid"] }}>
+          <SValuesContainer>
             <ValueStats
               size="small"
               label={t("totalBorrowed")}
@@ -81,15 +88,24 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
             <ValueStats
               size="small"
               label={t("apyBorrowRate")}
-              isLoading={isLoading}
               wrap
+              isLoading={isLoading}
               customValue={
-                <GhoBorrowApyRange
-                  minVal={ghoReserveData.ghoBorrowAPYWithMaxDiscount}
-                  maxVal={ghoReserveData.ghoVariableBorrowAPY}
-                />
+                ghoBorrowApyRange && (
+                  <Text fw={600}>
+                    {isArray(ghoBorrowApyRange)
+                      ? t(`percent.range`, {
+                          valueA: ghoBorrowApyRange[0],
+                          valueB: ghoBorrowApyRange[1],
+                        })
+                      : t(`percent`, {
+                          value: ghoBorrowApyRange,
+                        })}
+                  </Text>
+                )
               }
             />
+
             {reserve && (
               <Box>
                 <Button variant="primary" size="small" asChild>
