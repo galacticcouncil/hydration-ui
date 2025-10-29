@@ -106,7 +106,10 @@ export const getAssetTransferTx = (
   amount: string,
 ) => {
   if (asset.id === NATIVE_ASSET_ID) {
-    return api.tx.currencies.transfer(dest, asset.id, amount)
+    return api.tx.dispatcher.dispatchWithExtraGas(
+      api.tx.currencies.transfer(dest, asset.id, amount),
+      AAVE_EXTRA_GAS,
+    )
   }
   if (asset.isErc20) {
     return api.tx.dispatcher.dispatchWithExtraGas(
@@ -115,5 +118,8 @@ export const getAssetTransferTx = (
     )
   }
 
-  return api.tx.tokens.transfer(dest, asset.id, amount)
+  return api.tx.dispatcher.dispatchWithExtraGas(
+    api.tx.tokens.transfer(dest, asset.id, amount),
+    AAVE_EXTRA_GAS,
+  )
 }
