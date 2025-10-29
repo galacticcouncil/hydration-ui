@@ -5,7 +5,6 @@ import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
-import { enableMapSet } from "immer"
 import { Toaster } from "sonner"
 
 import { Page404 } from "@/components/Page404"
@@ -14,8 +13,6 @@ import { AssetsProvider } from "@/providers/assetsProvider"
 import { RpcProvider } from "@/providers/rpcProvider"
 
 import { routeTree } from "./routeTree.gen"
-
-enableMapSet()
 
 const queryClient = new QueryClient()
 
