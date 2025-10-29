@@ -149,12 +149,11 @@ const ModalHeader: FC<ModalHeaderProps> = ({
     <SModalHeader {...props}>
       <Flex>
         {onBack && (
-          <ButtonIcon style={{ flexGrow: 0 }} asChild>
+          <ButtonIcon style={{ flexGrow: 0 }} asChild onClick={onBack}>
             <Icon
               component={ArrowLeft}
               size={18}
               css={{ cursor: "pointer", maxWidth: "fit-content" }}
-              onClick={onBack}
             />
           </ButtonIcon>
         )}

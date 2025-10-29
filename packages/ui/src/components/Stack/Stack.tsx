@@ -35,6 +35,7 @@ export const Stack: React.FC<StackProps> = ({
           ) : (
             <Separator
               orientation={directionToSeparatorOrientation(direction)}
+              sx={{ flexShrink: 0 }}
             />
           ),
           withTrailingSeparator,

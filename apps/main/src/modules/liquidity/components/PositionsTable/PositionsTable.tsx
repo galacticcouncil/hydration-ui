@@ -1,7 +1,9 @@
 import {
+  Button,
   CollapsibleContent,
   CollapsibleRoot,
   DataTable,
+  Flex,
   Icon,
   Paper,
   Separator,
@@ -9,10 +11,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { Circle } from "lucide-react"
+import { Circle, Minus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -60,11 +62,32 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
       totalBalanceDisplay={totalBalanceDisplay}
       positions={pool.positions}
     >
-      <STableHeader>
-        <Icon component={Circle} size={12} />
-        <Text fw={500} font="primary">
-          {t("liquidity.positions.label.isolated")}
-        </Text>
+      <STableHeader sx={{ justifyContent: "space-between" }}>
+        <Flex
+          align="center"
+          gap={getTokenPx("scales.paddings.s")}
+          color={getToken("buttons.primary.high.hover")}
+        >
+          <Icon component={Circle} size={12} />
+          <Text fw={500} font="primary">
+            {t("liquidity.positions.label.isolated")}
+          </Text>
+        </Flex>
+
+        <Button variant="tertiary" outline asChild>
+          <Link
+            to="/liquidity/$id/remove"
+            params={{
+              id: pool.id,
+            }}
+            search={{
+              selectable: true,
+            }}
+          >
+            <Minus />
+            {t("liquidity.positions.removeAll")}
+          </Link>
+        </Button>
       </STableHeader>
       <DataTable
         data={positions}

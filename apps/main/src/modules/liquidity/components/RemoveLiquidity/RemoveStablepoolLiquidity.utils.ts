@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import * as z from "zod/v4"
 
-import { TAssetData } from "@/api/assets"
+import { TAssetData, TStableswap } from "@/api/assets"
 import { StableSwapBase } from "@/api/pools"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
 import { TRemoveLiquidityFormValues } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquidity.utils"
@@ -15,6 +15,7 @@ import { calculatePoolFee, TReserve } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
@@ -26,38 +27,42 @@ export type TRemoveStablepoolLiquidityFormValues =
     receiveAmount: string
   }
 
-export const LIQUIDITY_LIMIT = 3
-
 export const useStablepoolRemoveLiquidity = ({
   pool,
   reserves,
   initialReceiveAsset,
+  initialBalance,
 }: {
   pool: StableSwapBase
   reserves: TReserve[]
   initialReceiveAsset: TAssetData
+  initialBalance?: string
 }) => {
   const { t } = useTranslation("liquidity")
   const { getAssetWithFallback } = useAssets()
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const {
+    liquidity: { slippage },
+  } = useTradeSettings()
 
-  const { getFreeBalance } = useAccountBalances()
-  const meta = getAssetWithFallback(pool.id)
+  const { getTransferableBalance } = useAccountBalances()
+  const meta = getAssetWithFallback(pool.id) as TStableswap
   const fee = calculatePoolFee(pool.fee)
 
   const balanceShifted = scaleHuman(
-    getFreeBalance(pool.id).toString(),
+    initialBalance ?? getTransferableBalance(pool.id.toString()).toString(),
     meta.decimals,
   )
 
   const form = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset,
     balance: balanceShifted,
-    asset: meta,
+    asset: { ...meta, iconId: meta.underlyingAssetId },
   })
 
-  const removeAmount = Big(scale(form.watch("amount") || "0", meta.decimals))
+  const removeAmountShifted = form.watch("amount") || "0"
+  const removeAmount = Big(scale(removeAmountShifted, meta.decimals))
   const receiveAsset = form.watch("receiveAsset")
   const split = form.watch("split")
 
@@ -73,7 +78,7 @@ export const useStablepoolRemoveLiquidity = ({
             .toFixed(0)
 
           const value = Big(maxValue)
-            .minus(Big(LIQUIDITY_LIMIT).times(maxValue).div(100))
+            .minus(Big(slippage).times(maxValue).div(100))
             .toFixed(0)
 
           return { value, asset: reserve.meta }
@@ -96,7 +101,7 @@ export const useStablepoolRemoveLiquidity = ({
         )
 
         const value = Big(maxValue)
-          .minus(Big(LIQUIDITY_LIMIT).times(maxValue).div(100))
+          .minus(Big(slippage).times(maxValue).div(100))
           .toFixed(0)
 
         form.setValue("receiveAmount", scaleHuman(value, receiveAsset.decimals))
@@ -160,10 +165,10 @@ export const useStablepoolRemoveLiquidity = ({
     form,
     balance: balanceShifted,
     fee,
-    split,
     receiveAssets,
     mutation,
     onSubmit,
+    removeAmountShifted,
   }
 }
 

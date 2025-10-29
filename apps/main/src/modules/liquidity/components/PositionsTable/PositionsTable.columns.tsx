@@ -3,7 +3,6 @@ import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
-import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -12,7 +11,7 @@ import {
   AssetLabelXYK,
 } from "@/components/AssetLabelFull/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
-import { useAssets } from "@/providers/assetsProvider"
+import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 import {
   BalanceTableData,
@@ -33,8 +32,8 @@ const isOmnipoolPosition = (
 }
 
 export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
-  const { hub } = useAssets()
   const { t } = useTranslation(["common", "liquidity"])
+  const format = useFormatOmnipoolPositionData()
 
   return useMemo(
     () => [
@@ -90,7 +89,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) && original.data?.currentValueHuman ? (
             <Amount
-              value={`${t("currency", { value: original.data.currentValueHuman, symbol: original.data.meta?.symbol })} ${original.data.currentHubValueHuman && Big(original.data.currentHubValueHuman).gt(0) ? t("currency", { value: original.data.currentHubValueHuman, symbol: hub.symbol, prefix: " + " }) : ""}`}
+              value={format(original.data)}
               displayValue={t("currency", {
                 value: original.data.currentTotalDisplay,
               })}
@@ -164,6 +163,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   }}
                   search={{
                     positionId: isOmnipool ? original.positionId : "",
+                    stableswapId: original.stableswapId,
                   }}
                 >
                   <Trash />
@@ -175,7 +175,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         },
       }),
     ],
-    [t, hub.symbol, isFarms],
+    [t, format, isFarms],
   )
 }
 
@@ -341,7 +341,6 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
                   id: poolId,
                 }}
                 search={{
-                  all: positionId ? true : false,
                   positionId,
                   shareTokenId: !positionId ? shareTokenId : undefined,
                 }}

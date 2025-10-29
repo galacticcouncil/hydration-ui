@@ -12,11 +12,20 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 
-export const RemoveLiquiditySkeleton = () => {
+export const RemoveLiquiditySkeleton = ({
+  onBack,
+}: {
+  onBack?: () => void
+}) => {
   const { t } = useTranslation("liquidity")
+
   return (
     <>
-      <ModalHeader title={t("removeLiquidity")} closable={false} />
+      <ModalHeader
+        title={t("removeLiquidity")}
+        closable={false}
+        onBack={onBack}
+      />
       <ModalBody>
         <Flex
           align="center"

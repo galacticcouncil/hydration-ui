@@ -44,3 +44,43 @@ export const SFeeSection = styled.div<{
         background: ${theme.controls.dim.accent};
       `,
 ])
+
+export const SFullFeeRangeItem = styled.div<{
+  isActive: boolean
+  type: DynamicFeeRangeType
+}>(({ theme, isActive, type }) => [
+  css`
+    height: 15px;
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    & > div {
+      width: 100%;
+      height: 1px;
+
+      border-radius: ${theme.radii.full}px;
+
+      margin-left: 8px;
+      margin-right: 8px;
+    }
+  `,
+  isActive
+    ? colors(type)
+    : css`
+        background: ${theme.controls.dim.base};
+      `,
+])
+
+export const SLine = styled.div(
+  ({ theme }) => css`
+    width: calc(100% - 16px);
+    height: 1px;
+    background: ${theme.controls.dim.accent};
+    position: absolute;
+    margin: auto;
+    inset: 0;
+  `,
+)

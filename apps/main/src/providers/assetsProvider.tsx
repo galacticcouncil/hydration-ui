@@ -107,6 +107,10 @@ export type XYKPoolMeta = {
   decimals: number
 }
 
+export const isXYKPoolMeta = (
+  meta: XYKPoolMeta | TAssetData,
+): meta is XYKPoolMeta => (meta as XYKPoolMeta).iconId !== undefined
+
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   const { assets, aTokenReverseMap } = useAssetRegistry()
 

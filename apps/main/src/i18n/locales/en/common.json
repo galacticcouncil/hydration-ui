@@ -228,5 +228,7 @@
   "payment.toast.onSuccess": "Set {{ symbol }} as fee payment asset",
   "notifications": "Notifications",
   "notifications.empty.title": "No recent activities",
-  "notifications.empty.description": "It's quite a peaceful day"
+  "notifications.empty.description": "It's quite a peaceful day",
+  "currentApr": "Current APR",
+  "tradeLimit": "Trade limit"
 }

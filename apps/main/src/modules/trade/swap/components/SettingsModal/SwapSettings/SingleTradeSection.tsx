@@ -1,4 +1,3 @@
-import { FormError } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -17,18 +16,13 @@ export const SingleTradeSection: FC = () => {
         control={control}
         name="single.swapSlippage"
         render={({ field: { value, onChange }, fieldState: { error } }) => (
-          <div>
-            <TradeSlippage
-              slippage={value}
-              onSlippageChange={onChange}
-              helpTooltip={t("swap.settings.modal.single.slippage.help")}
-              description={t("swap.settings.modal.single.slippage.description")}
-              isError={!!error}
-            />
-            {error && (
-              <FormError sx={{ textAlign: "end" }}>{error.message}</FormError>
-            )}
-          </div>
+          <TradeSlippage
+            slippage={value}
+            onSlippageChange={onChange}
+            helpTooltip={t("swap.settings.modal.single.slippage.help")}
+            description={t("swap.settings.modal.single.slippage.description")}
+            error={error?.message}
+          />
         )}
       />
     </SettingsSection>

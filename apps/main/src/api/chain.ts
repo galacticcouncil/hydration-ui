@@ -33,8 +33,11 @@ export const bestNumberQuery = (context: TProviderContext) => {
   })
 }
 
-export const useRelayChainBlockNumber = () => {
-  const { data } = useQuery(bestNumberQuery(useRpcProvider()))
+export const useRelayChainBlockNumber = (disableRefetch?: boolean) => {
+  const { data } = useQuery({
+    ...bestNumberQuery(useRpcProvider()),
+    notifyOnChangeProps: disableRefetch ? [] : undefined,
+  })
 
   return data?.relaychainBlockNumber
 }

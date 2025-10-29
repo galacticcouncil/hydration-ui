@@ -3,17 +3,20 @@ import {
   ModalBody,
   ModalContentDivider,
   ModalHeader,
-  Summary,
+  SummaryRow,
   Text,
   Toggle,
 } from "@galacticcouncil/ui/components"
 import { Flex } from "@galacticcouncil/ui/components/Flex"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
+import { AssetLogo } from "@/components/AssetLogo"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { LiquidityTradeLimitRow } from "@/modules/liquidity/components/LiquidityTradeLimitRow/LiquidityTradeLimitRow"
 import { RecieveAssets } from "@/modules/liquidity/components/RemoveLiquidity/RecieveAssets"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
 import {
@@ -21,15 +24,18 @@ import {
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAccountBalances } from "@/states/account"
+import { useAssetPrice } from "@/states/displayAsset"
 
+import { RemoveLiquidityProps } from "./RemoveLiquidity"
 import {
-  LIQUIDITY_LIMIT,
   TRemoveStablepoolLiquidityFormValues,
   useStablepoolRemoveLiquidity,
 } from "./RemoveStablepoolLiquidity.utils"
 
-export const RemoveStablepoolLiquidity = ({ poolId }: { poolId: string }) => {
-  const { data: stablepolData } = useStablepoolReserves(poolId)
+export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
+  const { data: stablepolData } = useStablepoolReserves(
+    props.stableswapId ?? props.poolId,
+  )
   const { isBalanceLoading } = useAccountBalances()
 
   const initialReceiveAsset = stablepolData?.reserves[0]?.meta
@@ -41,34 +47,55 @@ export const RemoveStablepoolLiquidity = ({ poolId }: { poolId: string }) => {
     <RemoveStablepoolLiquidityJSX
       pool={stablepolData}
       initialReceiveAsset={initialReceiveAsset}
+      {...props}
     />
   )
 }
 
 const RemoveStablepoolLiquidityJSX = ({
   pool,
+  onBack,
+  closable,
   initialReceiveAsset,
-}: {
+}: RemoveLiquidityProps & {
   pool: TStablepoolDetails
   initialReceiveAsset: TAssetData
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { pool: poolData, reserves } = pool
-  const { form, balance, receiveAssets, fee, split, onSubmit } =
+
+  const { form, balance, receiveAssets, fee, removeAmountShifted, onSubmit } =
     useStablepoolRemoveLiquidity({
-      pool: poolData,
-      reserves,
+      ...pool,
       initialReceiveAsset,
     })
+
+  const editable = false
 
   const {
     formState: { isValid },
     handleSubmit,
+    watch,
   } = form
+
+  const [asset, split] = watch(["asset", "split"])
+
+  const { isValid: isValidPrice, price } = useAssetPrice(
+    fee ? poolData.id.toString() : undefined,
+  )
+
+  const feeDisplay =
+    fee && isValidPrice
+      ? Big(removeAmountShifted).times(fee).div(100).times(price).toString()
+      : undefined
 
   return (
     <FormProvider {...form}>
-      <ModalHeader title={t("removeLiquidity")} closable={false} />
+      <ModalHeader
+        title={t("removeLiquidity")}
+        closable={closable}
+        onBack={onBack}
+      />
       <ModalBody>
         <Flex
           direction="column"
@@ -76,14 +103,34 @@ const RemoveStablepoolLiquidityJSX = ({
           asChild
         >
           <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-            <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-              assetFieldName="asset"
-              amountFieldName="amount"
-              maxBalance={balance}
-              assets={[]}
-              sx={{ py: 0 }}
-              disabledAssetSelector
-            />
+            {editable ? (
+              <Flex
+                align="center"
+                gap={getTokenPx("containers.paddings.quart")}
+              >
+                <AssetLogo id={asset.iconId ?? asset.id} size="large" />
+                <Text
+                  fs="h5"
+                  fw={500}
+                  color={getToken("text.high")}
+                  font="primary"
+                >
+                  {t("common:currency", {
+                    value: balance,
+                    symbol: asset.symbol,
+                  })}
+                </Text>
+              </Flex>
+            ) : (
+              <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
+                assetFieldName="asset"
+                amountFieldName="amount"
+                maxBalance={balance}
+                assets={[]}
+                sx={{ py: 0 }}
+                disabledAssetSelector
+              />
+            )}
 
             <ModalContentDivider />
 
@@ -128,19 +175,19 @@ const RemoveStablepoolLiquidityJSX = ({
 
             <ModalContentDivider />
 
-            <Summary
-              separator={<ModalContentDivider />}
-              rows={[
-                {
-                  label: t("liquidity.add.modal.tradeLimit"),
-                  content: t("common:percent", { value: LIQUIDITY_LIMIT }),
-                },
-                {
-                  label: t("liquidity.remove.modal.withdrawalFees"),
-                  content: t("common:percent", { value: fee }),
-                },
-              ]}
-            />
+            <div>
+              <LiquidityTradeLimitRow />
+
+              {!split && (
+                <>
+                  <ModalContentDivider />
+                  <SummaryRow
+                    label={t("liquidity.remove.modal.withdrawalFees")}
+                    content={`${t("common:currency", { value: feeDisplay })} (${t("common:percent", { value: fee })})`}
+                  />
+                </>
+              )}
+            </div>
 
             <ModalContentDivider />
 

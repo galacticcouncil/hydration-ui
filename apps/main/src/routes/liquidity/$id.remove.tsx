@@ -1,6 +1,11 @@
 import { ModalContainer } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
+import {
+  createFileRoute,
+  useParams,
+  useRouter,
+  useSearch,
+} from "@tanstack/react-router"
 import z from "zod/v4"
 
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
@@ -9,7 +14,8 @@ import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLi
 const RemoveLiquiditySchema = z.object({
   positionId: z.string().optional(),
   shareTokenId: z.string().optional(),
-  all: z.boolean().optional(),
+  stableswapId: z.string().optional(),
+  selectable: z.boolean().optional(),
 })
 
 export type RemoveLiquidityType = z.infer<typeof RemoveLiquiditySchema>
@@ -17,7 +23,14 @@ export type RemoveLiquidityType = z.infer<typeof RemoveLiquiditySchema>
 export const Route = createFileRoute("/liquidity/$id/remove")({
   component: RouteComponent,
   validateSearch: RemoveLiquiditySchema,
-  pendingComponent: RemoveLiquiditySkeleton,
+  pendingComponent: () => (
+    <ModalContainer
+      open
+      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+    >
+      <RemoveLiquiditySkeleton />
+    </ModalContainer>
+  ),
 })
 
 function RouteComponent() {
@@ -29,12 +42,19 @@ function RouteComponent() {
     from: "/liquidity/$id/remove",
   })
 
+  const { history } = useRouter()
+
   return (
     <ModalContainer
       open
       sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
     >
-      <RemoveLiquidity poolId={poolId} closable={false} {...search} />
+      <RemoveLiquidity
+        poolId={poolId}
+        closable={false}
+        onBack={() => history.back()}
+        {...search}
+      />
     </ModalContainer>
   )
 }
