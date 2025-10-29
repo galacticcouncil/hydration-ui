@@ -9,18 +9,27 @@ import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tra
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { isErc20AToken } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useMarketBuyData = (
   form: UseFormReturn<MarketFormValues>,
 ): TradeProviderProps => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
+  const address = account?.address ?? ""
 
   const [sellAsset, buyAsset, buyAmount] = form.watch([
     "sellAsset",
     "buyAsset",
     "buyAmount",
   ])
+
+  const {
+    swap: {
+      single: { swapSlippage },
+      split: { twapSlippage, twapMaxRetries },
+    },
+  } = useTradeSettings()
 
   const [
     { data: swapData, isLoading: isSwapLoading },
@@ -31,9 +40,11 @@ export const useMarketBuyData = (
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountOut: buyAmount,
+        slippage: swapSlippage,
+        address,
       }),
       healthFactorAfterSupplyQuery(rpc, {
-        address: account?.address ?? "",
+        address,
         assetId:
           buyAsset && isErc20AToken(buyAsset) ? buyAsset.underlyingAssetId : "",
         amount: buyAmount,
@@ -48,14 +59,19 @@ export const useMarketBuyData = (
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountOut: buyAmount,
+        slippage: twapSlippage,
+        maxRetries: twapMaxRetries,
+        address: address,
       },
-      isTwapEnabled(swapData),
+      isTwapEnabled(swapData?.swap),
     ),
   )
 
   return {
-    swap: swapData,
-    twap: twapData,
+    swap: swapData?.swap,
+    swapTx: swapData?.tx ?? null,
+    twap: twapData?.twap,
+    twapTx: twapData?.tx ?? null,
     healthFactor: healthFactorData,
     isLoading: isSwapLoading || isTwapLoading || isHealthFactorLoading,
   }

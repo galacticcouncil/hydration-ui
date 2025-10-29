@@ -1,11 +1,11 @@
 import { Stack, StackProps } from "@galacticcouncil/ui/components"
 import { ReactNode } from "react"
 
-import { RowModel, SummaryRow } from "./SummaryRow"
+import { SummaryRow, SummaryRowProps } from "./SummaryRow"
 
 type ContentProps =
   | {
-      readonly rows: ReadonlyArray<RowModel>
+      readonly rows: ReadonlyArray<SummaryRowProps>
       readonly children?: never
     }
   | {

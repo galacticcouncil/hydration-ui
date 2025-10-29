@@ -5,19 +5,20 @@ import Big from "big.js"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
-import { Transaction } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
-export const useEstimateFee = (transaction: Transaction) => {
+export const useEstimateFee = (
+  anyTx: AnyTransaction | null,
+  feePaymentAssetIdOverride?: string,
+) => {
   const { papi, sdk, isLoaded } = useRpcProvider()
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
-
-  const feePaymentAssetIdOverride = transaction?.fee?.feePaymentAssetId
 
   const {
     data: accountFeePaymentAssetId,
@@ -34,7 +35,7 @@ export const useEstimateFee = (transaction: Transaction) => {
     feePaymentAssetIdOverride || accountFeePaymentAssetId?.toString()
   const feeAsset = getAsset(feeAssetId ?? "")
 
-  const tx = transformAnyToPapiTx(papi, transaction.tx)
+  const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
   return useQuery({
     enabled:

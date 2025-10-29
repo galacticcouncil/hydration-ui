@@ -4,6 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
+import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
   readonly healthFactor: HealthFactorResult | undefined
@@ -23,13 +24,16 @@ export const DcaWarnings: FC<Props> = ({
   }
 
   return (
-    <Flex direction="column" mt={10}>
-      <HealthFactorRiskWarning
-        message={t("healthFactor.warning")}
-        accepted={healthFactorRiskAccepted}
-        isUserConsentRequired={healthFactor.isUserConsentRequired}
-        onAcceptedChange={setHealthFactorRiskAccepted}
-      />
-    </Flex>
+    <>
+      <SwapSectionSeparator />
+      <Flex direction="column" mt={10}>
+        <HealthFactorRiskWarning
+          message={t("healthFactor.warning")}
+          accepted={healthFactorRiskAccepted}
+          isUserConsentRequired={healthFactor.isUserConsentRequired}
+          onAcceptedChange={setHealthFactorRiskAccepted}
+        />
+      </Flex>
+    </>
   )
 }

@@ -9,7 +9,7 @@ type Props = {
   readonly isEnabled: boolean
 }
 
-export const MarketFooter: FC<Props> = ({ isSingleTrade, isEnabled }) => {
+export const MarketSubmit: FC<Props> = ({ isSingleTrade, isEnabled }) => {
   const { t } = useTranslation("trade")
 
   return (

@@ -2,7 +2,7 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Paper, Separator } from "@galacticcouncil/ui/components"
 
-export const SContainer = styled(Paper)(
+export const SSwapFormContainer = styled(Paper)(
   ({ theme }) => css`
     --swap-section-padding-inline: ${theme.containers.paddings.primary}px;
     --swap-section-inset-inline: calc(var(--swap-section-padding-inline) * -1);
