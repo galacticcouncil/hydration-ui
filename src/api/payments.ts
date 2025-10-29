@@ -52,7 +52,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
         if (currency && getAsset(currency.id)?.isErc20) {
           return {
             ...currency,
-            accepted: currency.id === HOLLAR_ID, // exception for hollar
+            accepted: true, //currency.id === HOLLAR_ID, // exception for hollar
           }
         }
 
