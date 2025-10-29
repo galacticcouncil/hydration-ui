@@ -7,11 +7,13 @@ import {
   USD_DECIMALS,
   UserReserveData,
 } from "@aave/math-utils"
+import { bigShift } from "@galacticcouncil/utils"
 import { Big } from "big.js"
-import { formatUnits } from "ethers/lib/utils"
 import React, { useContext } from "react"
+import { useShallow } from "zustand/shallow"
 
 import { EmodeCategory } from "@/helpers/types"
+import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { ComputedReserveData, ExtendedFormattedUser } from "@/hooks/commonTypes"
 import { useCurrentTimestamp } from "@/hooks/useCurrentTimestamp"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
@@ -27,10 +29,13 @@ import {
   selectUserSummaryAndIncentives,
 } from "@/store/poolSelectors"
 import { useRootStore } from "@/store/root"
+import { ExternalApyData } from "@/types"
+import { getUserApyValues } from "@/utils"
 import {
+  formatGhoReserve,
   GHO_SUPPORTED_MARKETS,
   GHO_SYMBOL,
-  weightedAverageAPY,
+  isGho,
 } from "@/utils/ghoUtilities"
 
 /**
@@ -58,6 +63,7 @@ export interface AppDataContextType {
   ghoUserData: FormattedGhoUserData
   ghoLoadingData: boolean
   ghoEnabled: boolean
+  externalApyData: ExternalApyData
 }
 
 export const AppDataContext = React.createContext<AppDataContextType>(
@@ -69,11 +75,13 @@ export const AppDataContext = React.createContext<AppDataContextType>(
  * It fetches reserves /incentives & walletbalances & keeps them updated.
  */
 export const AppDataProvider: React.FC<{
-  children?: React.ReactNode
-}> = ({ children }) => {
+  children: React.ReactNode
+  externalApyData: ExternalApyData
+}> = ({ children, externalApyData }) => {
   const currentTimestamp = useCurrentTimestamp(60)
   const { currentAccount } = useWeb3Context()
   const { currentMarket } = useProtocolDataContext()
+  const { formatReserve } = useAppFormatters()
 
   const [
     reserves,
@@ -84,22 +92,22 @@ export const AppDataProvider: React.FC<{
     ghoReserveData,
     ghoUserData,
     ghoReserveDataFetched,
-    formattedPoolReserves,
+    formattedReserves,
     userSummary,
-    displayGho,
-  ] = useRootStore((state) => [
-    selectCurrentReserves(state),
-    selectCurrentBaseCurrencyData(state),
-    selectCurrentUserReserves(state),
-    selectCurrentUserEmodeCategoryId(state),
-    selectEmodes(state),
-    state.ghoReserveData,
-    state.ghoUserData,
-    state.ghoReserveDataFetched,
-    selectFormattedReserves(state, currentTimestamp),
-    selectUserSummaryAndIncentives(state, currentTimestamp),
-    state.displayGho,
-  ])
+  ] = useRootStore(
+    useShallow((state) => [
+      selectCurrentReserves(state),
+      selectCurrentBaseCurrencyData(state),
+      selectCurrentUserReserves(state),
+      selectCurrentUserEmodeCategoryId(state),
+      selectEmodes(state, formatReserve),
+      state.ghoReserveData,
+      state.ghoUserData,
+      state.ghoReserveDataFetched,
+      selectFormattedReserves(state, currentTimestamp, externalApyData),
+      selectUserSummaryAndIncentives(state, currentTimestamp, externalApyData),
+    ]),
+  )
 
   const formattedGhoReserveData: FormattedGhoReserveData = formatGhoReserveData(
     {
@@ -111,6 +119,12 @@ export const AppDataProvider: React.FC<{
     ghoUserData,
     currentTimestamp,
   })
+
+  const formattedPoolReserves = formattedReserves.map((reserve) =>
+    isGho(reserve)
+      ? formatGhoReserve(reserve, formattedGhoReserveData)
+      : formatReserve(reserve),
+  )
 
   let ghoBorrowCap = "0"
   let aaveFacilitatorRemainingCapacity = Math.max(
@@ -127,18 +141,24 @@ export const AppDataProvider: React.FC<{
       aaveFacilitatorRemainingCapacity = Number(ghoBorrowCap)
     }
 
-    if (formattedGhoUserData.userDiscountedGhoInterest > 0) {
+    const marketReferenceCurrencyPriceInUsd = Big(
+      baseCurrencyData?.marketReferenceCurrencyPriceInUsd || "0",
+    )
+
+    if (
+      formattedGhoUserData.userDiscountedGhoInterest > 0 &&
+      marketReferenceCurrencyPriceInUsd.gt(0)
+    ) {
       const userSummaryWithDiscount = formatUserSummaryWithDiscount({
         userGhoDiscountedInterest:
           formattedGhoUserData.userDiscountedGhoInterest,
         user,
-        marketReferenceCurrencyPriceUSD: Number(
-          formatUnits(
-            baseCurrencyData.marketReferenceCurrencyPriceInUsd,
-            USD_DECIMALS,
-          ),
-        ),
+        marketReferenceCurrencyPriceUSD: bigShift(
+          baseCurrencyData?.marketReferenceCurrencyPriceInUsd || "0",
+          -USD_DECIMALS,
+        ).toNumber(),
       })
+
       user = {
         ...user,
         ...userSummaryWithDiscount,
@@ -146,112 +166,16 @@ export const AppDataProvider: React.FC<{
     }
   }
 
-  const proportions = user.userReservesData.reduce(
-    (acc, value) => {
-      const reserve = formattedPoolReserves.find(
-        (r) => r.underlyingAsset === value.reserve.underlyingAsset,
-      )
-
-      if (reserve) {
-        if (value.underlyingBalanceUSD !== "0") {
-          acc.positiveProportion = acc.positiveProportion.plus(
-            Big(reserve.supplyAPY).mul(value.underlyingBalanceUSD),
-          )
-          if (reserve.aIncentivesData) {
-            reserve.aIncentivesData.forEach((incentive) => {
-              acc.positiveProportion = acc.positiveProportion.plus(
-                Big(incentive.incentiveAPR).mul(value.underlyingBalanceUSD),
-              )
-            })
-          }
-        }
-        if (value.variableBorrowsUSD !== "0") {
-          // TODO: Export to unified helper function
-          if (
-            displayGho({ symbol: reserve.symbol, currentMarket: currentMarket })
-          ) {
-            const borrowRateAfterDiscount = weightedAverageAPY(
-              formattedGhoReserveData.ghoVariableBorrowAPY,
-              formattedGhoUserData.userGhoBorrowBalance,
-              formattedGhoUserData.userGhoAvailableToBorrowAtDiscount,
-              formattedGhoReserveData.ghoBorrowAPYWithMaxDiscount,
-            )
-            acc.negativeProportion = acc.negativeProportion.plus(
-              Big(borrowRateAfterDiscount).mul(
-                formattedGhoUserData.userGhoBorrowBalance,
-              ),
-            )
-            if (reserve.vIncentivesData) {
-              reserve.vIncentivesData.forEach((incentive) => {
-                acc.positiveProportion = acc.positiveProportion.plus(
-                  Big(incentive.incentiveAPR).mul(
-                    formattedGhoUserData.userGhoBorrowBalance,
-                  ),
-                )
-              })
-            }
-          } else {
-            acc.negativeProportion = acc.negativeProportion.plus(
-              Big(reserve.variableBorrowAPY).mul(value.variableBorrowsUSD),
-            )
-            if (reserve.vIncentivesData) {
-              reserve.vIncentivesData.forEach((incentive) => {
-                acc.positiveProportion = acc.positiveProportion.plus(
-                  Big(incentive.incentiveAPR).mul(value.variableBorrowsUSD),
-                )
-              })
-            }
-          }
-        }
-        if (value.stableBorrowsUSD !== "0") {
-          acc.negativeProportion = acc.negativeProportion.plus(
-            Big(value.stableBorrowAPY).mul(value.stableBorrowsUSD),
-          )
-          if (reserve.sIncentivesData) {
-            reserve.sIncentivesData.forEach((incentive) => {
-              acc.positiveProportion = acc.positiveProportion.plus(
-                Big(incentive.incentiveAPR).mul(value.stableBorrowsUSD),
-              )
-            })
-          }
-        }
-      } else {
-        throw new Error("no possible to calculate net apy")
-      }
-
-      return acc
-    },
-    {
-      positiveProportion: Big(0),
-      negativeProportion: Big(0),
-    },
-  )
-
   const isUserHasDeposits = user.userReservesData.some(
     (userReserve) => userReserve.scaledATokenBalance !== "0",
   )
 
-  const earnedAPY = Big(user.totalLiquidityUSD).gt(0)
-    ? proportions.positiveProportion.div(user.totalLiquidityUSD).toNumber()
-    : 0
-  const debtAPY = Big(user.totalBorrowsUSD).gt(0)
-    ? proportions.negativeProportion.div(user.totalBorrowsUSD).toNumber()
-    : 0
-
-  const netAPY =
-    (earnedAPY || 0) *
-      (Number(user.totalLiquidityUSD) /
-        Number(user.netWorthUSD !== "0" ? user.netWorthUSD : "1")) -
-    (debtAPY || 0) *
-      (Number(user.totalBorrowsUSD) /
-        Number(user.netWorthUSD !== "0" ? user.netWorthUSD : "1"))
-
-  const loanToValue =
-    user?.totalCollateralMarketReferenceCurrency === "0"
-      ? "0"
-      : Big(user?.totalBorrowsMarketReferenceCurrency || "0")
-          .div(user?.totalCollateralMarketReferenceCurrency || "1")
-          .toString()
+  const userApyValues = getUserApyValues(
+    user,
+    formattedPoolReserves,
+    formattedGhoUserData,
+    formattedGhoReserveData,
+  )
 
   return (
     <AppDataContext.Provider
@@ -262,18 +186,20 @@ export const AppDataProvider: React.FC<{
         eModes,
         user: {
           ...user,
-          loanToValue,
+          ...userApyValues,
           totalBorrowsUSD: user.totalBorrowsUSD,
           totalBorrowsMarketReferenceCurrency:
             user.totalBorrowsMarketReferenceCurrency,
           userEmodeCategoryId,
           isInEmode: userEmodeCategoryId !== 0,
-          userReservesData: user.userReservesData.sort((a, b) =>
-            reserveSortFn(a.reserve, b.reserve),
-          ),
-          earnedAPY,
-          debtAPY,
-          netAPY,
+          userReservesData: user.userReservesData
+            .map((userReserve) => ({
+              ...userReserve,
+              reserve: formatReserve
+                ? formatReserve(userReserve.reserve)
+                : userReserve.reserve,
+            }))
+            .sort((a, b) => reserveSortFn(a.reserve, b.reserve)),
         },
         userReserves,
         isUserHasDeposits,
@@ -291,6 +217,7 @@ export const AppDataProvider: React.FC<{
         ghoUserData: formattedGhoUserData,
         ghoLoadingData: !ghoReserveDataFetched,
         ghoEnabled: formattedGhoReserveData.ghoBaseVariableBorrowRate > 0,
+        externalApyData,
       }}
     >
       {children}

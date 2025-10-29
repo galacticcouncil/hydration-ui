@@ -13,7 +13,7 @@ import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
   readonly from: TAsset
-  readonly fromAmount: string
+  readonly fromAmount: string | null
   readonly status: DcaScheduleStatus | "filled" | null | undefined
 }
 

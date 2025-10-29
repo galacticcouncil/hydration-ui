@@ -1,9 +1,10 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { isEthereumSigner, useWallet } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { CallType } from "@galacticcouncil/xcm-core"
 
 import { Transaction } from "@/states/transactions"
-import { HYDRATION_CHAIN_KEY, NATIVE_EVM_ASSET_ID } from "@/utils/consts"
+import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const useTransactionEcosystem = (transaction: Transaction): CallType => {
   const wallet = useWallet()

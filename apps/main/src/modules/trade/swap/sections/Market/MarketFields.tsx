@@ -1,3 +1,4 @@
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
@@ -12,11 +13,14 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 import { useSwitchAssets } from "@/modules/trade/swap/sections/Market/lib/useSwitchAssets"
 import { MarketSwitcher } from "@/modules/trade/swap/sections/Market/MarketSwitcher"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { SELL_ONLY_ASSETS } from "@/utils/consts"
 
 const RECALCULATE_DEBOUNCE_MS = 250
 
-export const MarketFields: FC = () => {
+type Props = {
+  readonly price: string | null
+}
+
+export const MarketFields: FC<Props> = ({ price }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
@@ -193,7 +197,7 @@ export const MarketFields: FC = () => {
           handleSellChange(sellAmount)
         }}
       />
-      <MarketSwitcher />
+      <MarketSwitcher price={price} />
       <AssetSelectFormField<MarketFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"

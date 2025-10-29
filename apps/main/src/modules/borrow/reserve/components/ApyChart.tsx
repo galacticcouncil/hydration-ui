@@ -18,7 +18,6 @@ type Props = {
   readonly timeRange: ApyChartTimeRangeOption
   readonly data: Array<ReserveApyRate>
   readonly isLoading: boolean
-  readonly isSuccess: boolean
   readonly isError: boolean
   readonly onTimeRangeChange: (timeRange: ApyChartTimeRangeOption) => void
 }
@@ -29,7 +28,6 @@ export const ApyChart: FC<Props> = ({
   timeRange,
   data,
   isLoading,
-  isSuccess,
   isError,
   onTimeRangeChange,
 }) => {
@@ -57,15 +55,14 @@ export const ApyChart: FC<Props> = ({
         />
       </Flex>
       <ChartState
-        sx={{ aspectRatio: "2.5 / 1" }}
-        isSuccess={isSuccess}
+        sx={{ height: [100, 250] }}
         isError={isError}
         isLoading={isLoading}
         isEmpty={!data.length}
       >
         <AreaChart
           curveType="linear"
-          aspectRatio="2.5 / 1"
+          height={[100, 250]}
           withoutReferenceLine
           verticalGridHidden
           horizontalGridHidden={false}

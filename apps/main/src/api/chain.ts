@@ -3,6 +3,7 @@ import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useObservable } from "@/hooks/useObservable"
+import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const bestNumberQuery = (context: TProviderContext) => {
@@ -81,3 +82,6 @@ export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
 
   return timestamp + periodMs
 }
+
+export const useBlockTimestamp = () =>
+  usePapiObservableQuery("Timestamp.Now", ["best"])

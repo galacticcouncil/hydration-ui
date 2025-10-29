@@ -11,7 +11,7 @@ import { ModalContextProvider } from "@/hooks/useModal"
 import { PermissionProvider } from "@/hooks/usePermissions"
 import { Web3ContextProvider } from "@/libs/web3-data-provider/Web3Provider"
 import { useRootStore } from "@/store/root"
-import { MoneyMarketEnv, MoneyMarketTxFn } from "@/types"
+import { ExternalApyData, MoneyMarketEnv, MoneyMarketTxFn } from "@/types"
 import { SharedDependenciesProvider } from "@/ui-config/SharedDependenciesProvider"
 import { CustomMarket } from "@/utils"
 
@@ -56,6 +56,7 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   provider: ExternalProvider
   env: MoneyMarketEnv
   onCreateTransaction: MoneyMarketTxFn
+  externalApyData: ExternalApyData
 }
 
 export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
@@ -63,6 +64,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   env,
   onCreateTransaction,
   provider: externalProvider,
+  externalApyData,
   ...formatters
 }) => {
   const provider = useRootStore((state) => state.provider)
@@ -91,7 +93,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
         <Web3ContextProvider onCreateTransaction={onCreateTransaction}>
           <PermissionProvider>
             <ModalContextProvider>
-              <AppDataProvider>
+              <AppDataProvider externalApyData={externalApyData}>
                 <SharedDependenciesProvider>
                   {children}
                   <Suspense>

@@ -8,11 +8,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useState } from "react"
 
-import { TokenIcon } from "@/components/primitives"
+import { ReserveLogo } from "@/components/primitives/ReserveLogo"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { CapType } from "@/types"
 
@@ -59,7 +58,6 @@ export const AssetInput = <T extends Asset = Asset>({
 }: AssetInputProps<T>) => {
   const { formatCurrency } = useAppFormatters()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
-
   const asset =
     assets.length === 1
       ? assets[0]
@@ -78,9 +76,7 @@ export const AssetInput = <T extends Asset = Asset>({
         maxBalance={Big(maxValue || 0)
           .round(6, Big.roundDown)
           .toString()}
-        selectedAssetIcon={
-          <TokenIcon id={getAssetIdFromAddress(asset.address)} />
-        }
+        selectedAssetIcon={<ReserveLogo address={asset.address} />}
         onAsssetBtnClick={
           hasMultipleAssets ? () => setIsAssetSelectOpen(true) : undefined
         }
@@ -108,7 +104,7 @@ export const AssetInput = <T extends Asset = Asset>({
                 }}
               >
                 <Flex align="center" gap={8}>
-                  <TokenIcon id={getAssetIdFromAddress(asset.address)} />
+                  <ReserveLogo address={asset.address} />
                   <Text color={getToken("text.high")} fs="p5" fw={600} lh={1}>
                     {asset.symbol}
                   </Text>

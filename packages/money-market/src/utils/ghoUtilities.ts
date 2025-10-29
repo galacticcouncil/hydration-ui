@@ -1,3 +1,6 @@
+import { FormattedGhoReserveData } from "@aave/math-utils"
+import Big from "big.js"
+
 import { ComputedReserveData } from "@/hooks/commonTypes"
 
 export const GHO_SYMBOL = "HOLLAR"
@@ -9,10 +12,14 @@ export const GHO_ASSET_ID = "222"
  * @returns {bool} - If the GHO token is available for minting
  */
 
-export const GHO_SUPPORTED_MARKETS = ["hydration_testnet_v3"]
+export const GHO_SUPPORTED_MARKETS = ["hydration_v3", "hydration_testnet_v3"]
+
+export const isGho = (reserve: ComputedReserveData) => {
+  return reserve.symbol === GHO_SYMBOL
+}
 
 export const getGhoReserve = (reserves: ComputedReserveData[]) => {
-  return reserves.find((reserve) => reserve.symbol === GHO_SYMBOL)
+  return reserves.find(isGho)
 }
 
 /**
@@ -96,4 +103,30 @@ export const findAndFilterGhoReserve = <T extends ReserveWithSymbol>(
       filtered: [],
     },
   )
+}
+
+export const formatGhoReserve = (
+  reserve: ComputedReserveData,
+  ghoReserveData: FormattedGhoReserveData,
+) => {
+  const borrowCap = Big(ghoReserveData.aaveFacilitatorBucketMaxCapacity)
+
+  return {
+    ...reserve,
+    borrowCap: borrowCap.toString(),
+    borrowCapUSD: borrowCap.times(reserve.priceInUSD).toString(),
+  }
+}
+
+export const getGhoBorrowApyRange = (
+  ghoReserveData: FormattedGhoReserveData,
+): number | [number, number] => {
+  const minVal = ghoReserveData.ghoBorrowAPYWithMaxDiscount
+  const maxVal = ghoReserveData.ghoVariableBorrowAPY
+
+  const normalizedLowValue = Number((minVal * 100).toFixed(2))
+  const normalizedHighValue = Number((maxVal * 100).toFixed(2))
+  const isSameDisplayValue = normalizedLowValue === normalizedHighValue
+
+  return isSameDisplayValue ? minVal * 100 : [minVal * 100, maxVal * 100]
 }

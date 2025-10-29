@@ -39,7 +39,7 @@ type TAssetsState = {
 
 export type AssetId = string | number
 
-type TAssetsContext = TAssetsState & {
+export type TAssetsContext = TAssetsState & {
   getAsset: (id: AssetId) => TAsset | undefined
   getAssets: (ids: AssetId[]) => (TAsset | undefined)[]
   getBond: (id: AssetId) => TBond | undefined

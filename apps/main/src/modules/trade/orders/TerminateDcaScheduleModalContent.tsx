@@ -5,8 +5,8 @@ import { CancelTradeOrderModalContent } from "@/modules/trade/otc/cancel-order/C
 
 type Props = {
   readonly scheduleId: number
-  readonly sold: string
-  readonly total: string
+  readonly sold: string | null
+  readonly total: string | null
   readonly symbol: string
   readonly onClose: () => void
 }
@@ -16,7 +16,6 @@ export const TerminateDcaScheduleModalContent: FC<Props> = ({
   sold,
   total,
   symbol,
-
   onClose,
 }) => {
   const terminateDcaSchedule = useTerminateDcaSchedule()

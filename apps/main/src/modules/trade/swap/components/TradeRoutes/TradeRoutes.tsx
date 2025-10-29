@@ -1,11 +1,11 @@
 import { ChevronRight, Routes } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { GDOT_ASSET_ID } from "@galacticcouncil/utils"
 import { Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useAssets } from "@/providers/assetsProvider"
-import { GDOT_ASSET_ID } from "@/utils/consts"
 
 export type TradeRoute = {
   readonly assetIn: number

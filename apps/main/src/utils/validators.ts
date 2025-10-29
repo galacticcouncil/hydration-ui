@@ -1,3 +1,4 @@
+import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
@@ -5,7 +6,6 @@ import * as z from "zod/v4"
 import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
-import { SELL_ONLY_ASSETS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 const requiredError = i18n.t("error.required")

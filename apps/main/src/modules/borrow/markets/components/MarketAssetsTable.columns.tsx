@@ -1,4 +1,5 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
+import { isGho } from "@galacticcouncil/money-market/utils"
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Icon } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -7,25 +8,22 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { useAssets } from "@/providers/assetsProvider"
+import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
+import { NoData } from "@/modules/borrow/components/NoData"
+import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
 const { accessor, display } = createColumnHelper<ComputedReserveData>()
 
 export const useMarketAssetsTableColumns = () => {
   const { t } = useTranslation(["common", "borrow"])
-  const { getAsset } = useAssets()
 
   return useMemo(
     () => [
       accessor("symbol", {
         header: t("asset"),
         cell: ({ row }) => {
-          const assetId = getAssetIdFromAddress(row.original.underlyingAsset)
-          const asset = getAsset(assetId)
-
-          return asset && <AssetLabelFull asset={asset} withName={false} />
+          return <ReserveLabel reserve={row.original} />
         },
       }),
       accessor("totalLiquidityUSD", {
@@ -34,31 +32,40 @@ export const useMarketAssetsTableColumns = () => {
           select: (row) => row.original.totalLiquidityUSD,
           compare: numericallyStr,
         }),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
         cell: ({ row }) => {
           const { totalLiquidityUSD, totalLiquidity } = row.original
+          if (isGho(row.original)) return <NoData />
 
           return (
             <Amount
-              value={t("number", {
+              value={t("number.compact", {
                 value: totalLiquidity,
               })}
-              displayValue={t("currency", { value: totalLiquidityUSD })}
+              displayValue={t("currency.compact", { value: totalLiquidityUSD })}
             />
           )
         },
       }),
       accessor("supplyAPY", {
         header: t("apy"),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
         cell: ({ row }) => {
-          const { supplyAPY } = row.original
-
-          const percent = Number(supplyAPY) * 100
-
-          const value = t("percent", {
-            value: percent,
-          })
-
-          return <Amount value={value} />
+          return (
+            <ApyColumn
+              type="supply"
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              reserve={row.original}
+            />
+          )
         },
       }),
       accessor("totalDebtUSD", {
@@ -67,35 +74,43 @@ export const useMarketAssetsTableColumns = () => {
           select: (row) => row.original.totalDebtUSD,
           compare: numericallyStr,
         }),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
         cell: ({ row }) => {
           const { totalDebtUSD, totalDebt, borrowingEnabled } = row.original
 
           if (!borrowingEnabled || totalDebt === "0") {
-            return <>&mdash;</>
+            return <NoData />
           }
 
           return (
             <Amount
-              value={t("number", {
+              value={t("number.compact", {
                 value: totalDebt,
               })}
-              displayValue={t("currency", { value: totalDebtUSD })}
+              displayValue={t("currency.compact", { value: totalDebtUSD })}
             />
           )
         },
       }),
       accessor("variableBorrowAPY", {
         header: t("borrow:market.table.borrowApyVariable"),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
         cell: ({ row }) => {
-          const { variableBorrowAPY } = row.original
-
-          const percent = Number(variableBorrowAPY) * 100
-
-          const value = t("percent", {
-            value: percent,
-          })
-
-          return <Amount value={value} />
+          return (
+            <ApyColumn
+              type="borrow"
+              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              reserve={row.original}
+            />
+          )
         },
       }),
       display({
@@ -115,6 +130,6 @@ export const useMarketAssetsTableColumns = () => {
         ),
       }),
     ],
-    [getAsset, t],
+    [t],
   )
 }

@@ -1,4 +1,3 @@
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { createFileRoute, useParams } from "@tanstack/react-router"
 
 import { BorrowMarketDetailPage } from "@/modules/borrow/markets/BorrowMarketDetailPage"
@@ -8,9 +7,7 @@ const RouteComponent = () => {
     from: "/borrow/markets/$address",
   })
 
-  const assetId = getAssetIdFromAddress(params.address)
-
-  return <BorrowMarketDetailPage assetId={assetId} />
+  return <BorrowMarketDetailPage address={params.address} />
 }
 
 export const Route = createFileRoute("/borrow/markets/$address")({

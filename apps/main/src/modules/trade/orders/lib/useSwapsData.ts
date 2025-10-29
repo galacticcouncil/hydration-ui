@@ -9,6 +9,7 @@ import {
   userSwapsQuery,
 } from "@galacticcouncil/indexer/squid"
 import { safeConvertAddressSS58, subscan } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -16,7 +17,6 @@ import { useMemo } from "react"
 import { useSquidClient } from "@/api/provider"
 import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
 
 export type MarketSwapStatus = {

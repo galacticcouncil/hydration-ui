@@ -24,7 +24,6 @@ export type ComputedUserReserveData = ComputedUserReserve<ComputedReserveData>
 
 export type ExtendedFormattedUser =
   FormatUserSummaryAndIncentivesResponse<ComputedReserveData> & {
-    loanToValue: string
     earnedAPY: number
     debtAPY: number
     netAPY: number

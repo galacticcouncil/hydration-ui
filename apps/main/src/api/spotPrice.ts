@@ -6,7 +6,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import Big from "big.js"
 import { isNullish, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -58,7 +57,7 @@ export const usePriceSubscriber = () => {
   })
 }
 
-export const spotPrice = (
+export const spotPriceQuery = (
   context: TProviderContext,
   assetIn: string,
   assetOut: string,
@@ -95,9 +94,7 @@ export const getSpotPrice =
       )
 
       if (res) {
-        spotPrice = Big(
-          scaleHuman(res.amount.toString(), res.decimals),
-        ).toFixed(12)
+        spotPrice = scaleHuman(res.amount.toString(), res.decimals)
       }
     } catch (e) {
       return { tokenIn, tokenOut, spotPrice }

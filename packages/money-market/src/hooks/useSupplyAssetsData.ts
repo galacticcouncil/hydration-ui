@@ -8,7 +8,6 @@ import { useWalletBalances } from "@/hooks/app-data-provider/useWalletBalances"
 import { ComputedReserveData } from "@/hooks/commonTypes"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
-import { MONEY_MARKET_SUPPLY_BLACKLIST } from "@/ui-config/misc"
 import { DashboardReserve } from "@/utils/dashboard"
 
 export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
@@ -26,7 +25,6 @@ export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
     const tokensToSupply = reserves
       .filter(
         (reserve: ComputedReserveData) =>
-          !MONEY_MARKET_SUPPLY_BLACKLIST.includes(reserve.underlyingAsset) &&
           !displayGho({ currentMarket, symbol: reserve.symbol }) &&
           !(reserve.isFrozen || reserve.isPaused),
       )

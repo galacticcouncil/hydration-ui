@@ -3,6 +3,7 @@ import {
   useFormattedLtv,
   useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
+import { getUserLoanToValue } from "@galacticcouncil/money-market/utils"
 import { Stack, Text } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
@@ -22,8 +23,10 @@ export const HealthFactorRisk = () => {
   const currentLoanToValue = user.currentLoanToValue || "0"
   const currentLiquidationThreshold = user.currentLiquidationThreshold || "0"
 
+  const loanToValue = getUserLoanToValue(user)
+
   const formattedLtvValues = useFormattedLtv(
-    user.loanToValue,
+    loanToValue,
     currentLoanToValue,
     currentLiquidationThreshold,
   )
@@ -50,7 +53,7 @@ export const HealthFactorRisk = () => {
         hint={t("borrow:risk.ltv.hint")}
         scale={
           <HealthFactorLtvScale
-            loanToValue={user.loanToValue}
+            loanToValue={loanToValue}
             currentLoanToValue={currentLoanToValue}
             currentLiquidationThreshold={currentLiquidationThreshold}
             {...formattedLtvValues}

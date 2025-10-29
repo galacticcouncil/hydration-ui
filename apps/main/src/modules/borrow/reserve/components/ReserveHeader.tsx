@@ -9,6 +9,8 @@ export type ReserveHeaderProps = {
 export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
   const { t } = useTranslation(["common", "borrow"])
 
+  const utilRate = Number(reserve.borrowUsageRatio ?? 0) * 100
+
   return (
     <Stack direction={["column", "row"]} separated gap={[10, null, 40, 60]}>
       <ValueStats
@@ -27,14 +29,16 @@ export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
         size="large"
         wrap={[false, false, true]}
       />
-      <ValueStats
-        label={t("borrow:reserve.utilRate")}
-        value={t("percent", {
-          value: Number(reserve.borrowUsageRatio ?? 0) * 100,
-        })}
-        size="large"
-        wrap={[false, false, true]}
-      />
+      {utilRate > 0 && (
+        <ValueStats
+          label={t("borrow:reserve.utilRate")}
+          value={t("percent", {
+            value: utilRate,
+          })}
+          size="large"
+          wrap={[false, false, true]}
+        />
+      )}
       <ValueStats
         label={t("borrow:reserve.oraclePrice")}
         value={t("currency", {

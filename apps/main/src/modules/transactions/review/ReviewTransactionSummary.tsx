@@ -4,6 +4,7 @@ import {
   Stack,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { ReviewTransactionFee } from "@/modules/transactions/review/ReviewTransactionFee"
@@ -11,7 +12,6 @@ import { ReviewTransactionMortality } from "@/modules/transactions/review/Review
 import { ReviewTransactionTip } from "@/modules/transactions/review/ReviewTransactionTip/ReviewTransactionTip"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { TransactionType } from "@/states/transactions"
-import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 const RowSeparator = () => <Separator mx="var(--modal-content-inset)" />
 

@@ -60,7 +60,6 @@ export const TradeOrdersHeader = () => {
       columnTemplate="1fr auto"
       columnGap={8}
       px={20}
-      py={getTokenPx("scales.paddings.l")}
     >
       <TabMenu
         gap={8}
@@ -76,7 +75,7 @@ export const TradeOrdersHeader = () => {
           resetScroll: false,
         }))}
         renderItem={(item) => (
-          <Box position="relative">
+          <Box position="relative" my={getTokenPx("scales.paddings.l")}>
             <TabMenuItem
               size="small"
               item={item}
@@ -107,7 +106,7 @@ export const TradeOrdersHeader = () => {
             onCheckedChange={(checked) => {
               navigate({
                 to: ".",
-                search: { tab, allPairs: checked },
+                search: { tab, allPairs: checked, assetIn, assetOut },
                 resetScroll: false,
               })
             }}

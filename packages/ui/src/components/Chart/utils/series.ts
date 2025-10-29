@@ -20,7 +20,7 @@ export const pickPrimarySeries = <T extends TChartData>(
 }
 
 export const getColorSet = (
-  color?: string | [string, string],
+  color?: ChartConfig<TChartData>["series"][number]["color"],
   defaultColor: string = "#000",
 ) => {
   if (isArray(color)) {

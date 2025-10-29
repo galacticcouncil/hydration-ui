@@ -1,5 +1,5 @@
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import { useId, useState } from "react"
+import { ReactNode, useId, useState } from "react"
 import {
   Area,
   AreaChart as AreaChartPrimitive,
@@ -45,6 +45,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
   yAxisLabelProps?: AxisLabelCssProps
   withoutReferenceLine?: boolean
   withoutTooltip?: boolean
+  legend?: ReactNode
 }
 
 export type AreaChartProps<TData extends TChartData> =
@@ -57,6 +58,8 @@ export function AreaChart<TData extends TChartData>({
   aspectRatio,
   horizontalGridHidden = true,
   verticalGridHidden = false,
+  gridHorizontalValues,
+  gridVerticalValues,
   xAxisHidden = false,
   yAxisHidden = false,
   xAxisProps = {},
@@ -73,6 +76,7 @@ export function AreaChart<TData extends TChartData>({
   yAxisLabelProps,
   withoutReferenceLine,
   withoutTooltip,
+  legend,
 }: AreaChartProps<TData>) {
   const { series, xAxisKey } = getConfigWithDefaults(config)
   const { themeProps: theme } = useTheme()
@@ -125,6 +129,8 @@ export function AreaChart<TData extends TChartData>({
           horizontal={!horizontalGridHidden}
           vertical={!verticalGridHidden}
           shapeRendering="crispEdges"
+          horizontalValues={gridHorizontalValues}
+          verticalValues={gridVerticalValues}
           stroke={theme.text.low}
           opacity={0.15}
           strokeWidth={1}
@@ -184,6 +190,10 @@ export function AreaChart<TData extends TChartData>({
         )}
         {series.map(({ key, color }) => {
           const colors = getColorSet(color, theme.details.chart)
+          const stopOpacity1 = color?.[2] ?? 1
+          const stopOpacity2 =
+            color?.[3] ?? (colors.primary === colors.secondary ? 0 : 1)
+
           const gradientId = `${chartId}-${key}-gradient`
 
           return (
@@ -193,12 +203,12 @@ export function AreaChart<TData extends TChartData>({
                   <stop
                     offset="5%"
                     stopColor={colors.primary}
-                    stopOpacity={1}
+                    stopOpacity={stopOpacity1}
                   />
                   <stop
                     offset="95%"
                     stopColor={colors.secondary}
-                    stopOpacity={colors.primary === colors.secondary ? 0 : 1}
+                    stopOpacity={stopOpacity2}
                   />
                 </linearGradient>
               </defs>
@@ -222,6 +232,7 @@ export function AreaChart<TData extends TChartData>({
         {referenceLines.map((props) => (
           <ReferenceLine key={props.x} shapeRendering="crispEdges" {...props} />
         ))}
+        {legend}
       </AreaChartPrimitive>
     </ChartContainer>
   )

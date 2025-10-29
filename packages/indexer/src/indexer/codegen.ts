@@ -3,6 +3,15 @@ import { CodegenConfig } from "@graphql-codegen/cli"
 export default {
   schema: "https://archive.nice.hydration.cloud/graphql",
   overwrite: true,
+  config: {
+    preResolveTypes: true,
+    onlyOperationTypes: true,
+    defaultScalarType: "unknown",
+    scalars: {
+      DateTime: "string",
+      JSON: "any",
+    },
+  },
   generates: {
     "schema.indexer.graphql": {
       plugins: ["schema-ast"],

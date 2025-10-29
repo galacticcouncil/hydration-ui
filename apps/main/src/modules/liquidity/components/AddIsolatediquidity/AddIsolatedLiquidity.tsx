@@ -13,7 +13,7 @@ import { FormProvider, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { spotPrice } from "@/api/spotPrice"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { AddLiquidityAlert } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityAlert"
@@ -87,7 +87,7 @@ export const AddIsolatedLiquidityForm = ({
   )
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
-    spotPrice(rpc, assetA.id, assetB.id),
+    spotPriceQuery(rpc, assetA.id, assetB.id),
   )
 
   const zodSchema = useAddIsolatedLiquidityZod(
