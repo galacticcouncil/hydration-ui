@@ -3,7 +3,9 @@ import { useAccountAssets } from "sections/wallet/assets/table/data/WalletAssets
 import { HUSDC_ASSET_ID, USDC_ASSET_ID } from "utils/constants"
 
 // remove before merging
-const DEBUG_WINNING_ASSET_IDS = ["5", "10"]
+const DEBUG_WINNING_ASSET_IDS = [
+  "1000085", // WUD
+]
 
 export const WINNING_ASSET_IDS = [...DEBUG_WINNING_ASSET_IDS, "1001110"]
 
