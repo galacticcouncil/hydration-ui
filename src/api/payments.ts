@@ -15,7 +15,7 @@ import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { useAccountBalances } from "./deposits"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { AAVE_EXTRA_GAS, HOLLAR_ID } from "utils/constants"
+import { AAVE_EXTRA_GAS } from "utils/constants"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =

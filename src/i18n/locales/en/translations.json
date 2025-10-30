@@ -1590,5 +1590,9 @@
   "wormhole.tx.claim.title": "Claim {{ symbol }}",
   "wormhole.tx.claim.description": "Claim your {{ amount, bignumber(type: 'token') }} {{ symbol }} on {{ chain }}",
   "wormhole.tx.claim.toast.onLoading": "Claiming <0>{{ amount, bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>...",
-  "wormhole.tx.claim.toast.onSuccess": "Claimed <0>{{ amount , bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>."
+  "wormhole.tx.claim.toast.onSuccess": "Claimed <0>{{ amount , bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>.",
+  "blast.campaign.title": "Earn up to {{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }} APY on USDC",
+  "blast.campaign.description": "Earn on Hydration up to <0>{{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }}</0> APY with Your USDC in liquidity pools, swap for blue chip assets, stake Hydration HDX or buy Bitcoin.<br /><br /> Jump in and start earning!",
+  "blast.campaign.cta.bitcoin": "Get Bitcoin",
+  "blast.campaign.cta.usdc": "Earn on USDC"
 }
