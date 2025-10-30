@@ -2,20 +2,30 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 type BlastCampaignStore = {
-  seenWinningAssetIds: string[]
-  markAsSeen: (assetIds: string[]) => void
+  seenWinningAssetIds: Record<string, string[]>
+  markAsSeen: (address: string, assetIds: string[]) => void
+  getSeenAssetIds: (address: string) => string[]
 }
 
 export const useBlastCampaignStore = create<BlastCampaignStore>()(
   persist(
-    (set) => ({
-      seenWinningAssetIds: [],
-      markAsSeen: (assetIds: string[]) =>
-        set((state) => ({
-          seenWinningAssetIds: [
-            ...new Set([...state.seenWinningAssetIds, ...assetIds]),
-          ],
-        })),
+    (set, get) => ({
+      seenWinningAssetIds: {},
+      markAsSeen: (address: string, assetIds: string[]) =>
+        set((state) => {
+          if (!address) return state
+          const currentSeenIds = state.seenWinningAssetIds[address] || []
+          return {
+            seenWinningAssetIds: {
+              ...state.seenWinningAssetIds,
+              [address]: [...new Set([...currentSeenIds, ...assetIds])],
+            },
+          }
+        }),
+      getSeenAssetIds: (address: string) => {
+        const state = get()
+        return state.seenWinningAssetIds[address] || []
+      },
     }),
     {
       name: "blast-campaign",

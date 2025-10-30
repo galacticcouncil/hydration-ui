@@ -6,10 +6,12 @@ import { useMatchRoute, useNavigate } from "@tanstack/react-location"
 import { LINKS } from "utils/navigation"
 import { HUSDC_ASSET_ID, TBTC_ASSET_ID, USDC_ASSET_ID } from "utils/constants"
 import { ModalType } from "sections/lending/hooks/useModal"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 export type BlastCampaignManagerProps = {}
 
 export const BlastCampaignManager: React.FC<BlastCampaignManagerProps> = () => {
+  const { account } = useAccount()
   const {
     hasWinningAsset,
     hasRewardAsset,
@@ -18,40 +20,45 @@ export const BlastCampaignManager: React.FC<BlastCampaignManagerProps> = () => {
     isLoading,
   } = useBlastCampaign()
 
+  const address = account?.address ?? ""
+
   const navigate = useNavigate()
   const matchRoute = useMatchRoute()
 
   const [modalOpen, setModalOpen] = useState(false)
 
-  const { seenWinningAssetIds, markAsSeen } = useBlastCampaignStore()
+  const { getSeenAssetIds, markAsSeen } = useBlastCampaignStore()
 
-  // Check if there are any new (unseen) winning asset IDs
+  const seenWinningAssetIds = account?.address
+    ? getSeenAssetIds(account.address)
+    : []
+
   const hasNewWinningAssets = winningAssetIds.some(
     (id) => !seenWinningAssetIds.includes(id),
   )
 
   useEffect(() => {
-    if (isLoading) return
+    if (!address || isLoading) return
 
     if (hasWinningAsset && hasRewardAsset && hasNewWinningAssets) {
       setModalOpen(true)
     }
-  }, [hasWinningAsset, hasRewardAsset, hasNewWinningAssets, isLoading])
+  }, [hasWinningAsset, hasRewardAsset, hasNewWinningAssets, isLoading, address])
 
   const handleClose = () => {
-    markAsSeen(winningAssetIds)
+    markAsSeen(address, winningAssetIds)
     setModalOpen(false)
   }
 
   const handleGetBitcoin = () => {
-    markAsSeen(winningAssetIds)
+    markAsSeen(address, winningAssetIds)
     setModalOpen(false)
 
     if (matchRoute({ to: LINKS.swap })) {
       const url = new URL(window.location.href)
       url.searchParams.set("assetIn", USDC_ASSET_ID)
       url.searchParams.set("assetOut", TBTC_ASSET_ID)
-      // hard reload with the new search params, because SwapApp doesnt react to search params changes
+      // reload with the new search params, because SwapApp doesnt react to search params changes
       window.location.assign(url)
     } else {
       navigate({
@@ -62,7 +69,7 @@ export const BlastCampaignManager: React.FC<BlastCampaignManagerProps> = () => {
   }
 
   const handleEarnOnUSDC = () => {
-    markAsSeen(winningAssetIds)
+    markAsSeen(address, winningAssetIds)
     setModalOpen(false)
     navigate({
       to: LINKS.borrowDashboard,
