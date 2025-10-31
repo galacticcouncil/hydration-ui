@@ -126,7 +126,8 @@ export const useFarmRewards = (
     ? undefined
     : queries.map((query) => query.data).filter((data) => !!data)
 
-  const refetch = () => queries.forEach((query) => query.refetch())
+  const refetch = async () =>
+    await Promise.all(queries.map((query) => query.refetch()))
 
   return { data, isLoading, isPending, refetch }
 }

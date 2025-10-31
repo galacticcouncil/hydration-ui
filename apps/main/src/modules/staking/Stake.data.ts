@@ -6,6 +6,11 @@ import { TAccountVote } from "@/api/democracy"
 import { pendingVotesQuery, processedVotesQuery } from "@/api/staking"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
+export type NewVoteId = {
+  readonly id: number
+  readonly classId: number | undefined
+}
+
 export const useProcessedVotes = (
   votes: ReadonlyArray<TAccountVote>,
   votesSuccess: boolean,
@@ -26,14 +31,16 @@ export const useProcessedVotes = (
       }
     }
 
-    const newProcessedVotesIds = data.newProcessedVotes.map(({ keyArgs }) => {
-      const [, id] = keyArgs
-      const accountVote = votes.find((vote) => vote.id === id)
+    const newProcessedVotesIds = data.newProcessedVotes.map<NewVoteId>(
+      ({ keyArgs }) => {
+        const [, id] = keyArgs
+        const accountVote = votes.find((vote) => vote.id === id)
 
-      return { id, classId: accountVote?.classId }
-    })
+        return { id, classId: accountVote?.classId }
+      },
+    )
 
-    const oldProcessedVotesIds = data.oldProcessedVotes.map(
+    const oldProcessedVotesIds = data.oldProcessedVotes.map<number>(
       ({ keyArgs }) => keyArgs[1],
     )
 
@@ -68,13 +75,13 @@ export const usePendingVotes = (
       }
     }
 
-    const newPendingVotesIds = data.newPendingVotes.map(([id]) => {
+    const newPendingVotesIds = data.newPendingVotes.map<NewVoteId>(([id]) => {
       const accountVote = votes.find((vote) => vote.id === id)
 
       return { id, classId: accountVote?.classId }
     })
 
-    const oldPendingVotesIds = data.oldPendingVotes.map(
+    const oldPendingVotesIds = data.oldPendingVotes.map<number>(
       ([position]) => position,
     )
 

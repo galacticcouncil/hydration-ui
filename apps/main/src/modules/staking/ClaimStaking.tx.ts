@@ -6,9 +6,9 @@ import { AccountUniquesQueryKey } from "@/api/account"
 import { TAccountVote } from "@/api/democracy"
 import { useInvalidateStakeData } from "@/api/staking"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
-import { useProcessedVotes } from "@/modules/staking/Stake.data"
+import { NewVoteId, useProcessedVotes } from "@/modules/staking/Stake.data"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
 export const useClaimStaking = (
@@ -41,29 +41,12 @@ export const useClaimStaking = (
 
   return useMutation({
     mutationFn: async () => {
-      const tx = (() => {
-        const claimTx = papi.tx.Staking.claim({ position_id: positionId })
-
-        if (!newProcessedVotesIds.length && !oldProcessedVotesIds.length) {
-          return claimTx
-        }
-
-        return papi.tx.Utility.batch_all({
-          calls: [
-            ...oldProcessedVotesIds.map(
-              (id) => papi.tx.Democracy.remove_vote({ index: id }).decodedCall,
-            ),
-            ...newProcessedVotesIds.map(
-              ({ classId, id }) =>
-                papi.tx.ConvictionVoting.remove_vote({
-                  class: classId,
-                  index: id,
-                }).decodedCall,
-            ),
-            claimTx.decodedCall,
-          ],
-        })
-      })()
+      const tx = getClaimStakingTx(
+        papi,
+        positionId,
+        newProcessedVotesIds,
+        oldProcessedVotesIds,
+      )
 
       await createTransaction({
         tx,
@@ -84,5 +67,34 @@ export const useClaimStaking = (
         }),
       ])
     },
+  })
+}
+
+export const getClaimStakingTx = (
+  papi: Papi,
+  positionId: bigint,
+  newProcessedVotesIds: ReadonlyArray<NewVoteId>,
+  oldProcessedVotesIds: ReadonlyArray<number>,
+) => {
+  const claimTx = papi.tx.Staking.claim({ position_id: positionId })
+
+  if (!newProcessedVotesIds.length && !oldProcessedVotesIds.length) {
+    return claimTx
+  }
+
+  return papi.tx.Utility.batch_all({
+    calls: [
+      ...oldProcessedVotesIds.map(
+        (id) => papi.tx.Democracy.remove_vote({ index: id }).decodedCall,
+      ),
+      ...newProcessedVotesIds.map(
+        ({ classId, id }) =>
+          papi.tx.ConvictionVoting.remove_vote({
+            class: classId,
+            index: id,
+          }).decodedCall,
+      ),
+      claimTx.decodedCall,
+    ],
   })
 }
