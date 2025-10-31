@@ -10,7 +10,7 @@ export const useSubmitCancelOtcOrder = (
   otcOffer: OtcOfferTabular,
   onSubmit: () => void,
 ) => {
-  const { t } = useTranslation("trade")
+  const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
   const client = useQueryClient()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -21,21 +21,23 @@ export const useSubmitCancelOtcOrder = (
         order_id: Number(otcOffer.id),
       })
 
+      const formattedAmount = t("common:currency", {
+        value: otcOffer.assetAmountOut,
+        symbol: otcOffer.assetOut.symbol,
+      })
+
       onSubmit()
       await createTransaction({
         tx,
         toasts: {
           submitted: t("otc.cancelOrder.loading", {
-            symbol: otcOffer.assetOut.symbol,
-            amount: otcOffer.assetAmountOut,
+            amount: formattedAmount,
           }),
           success: t("otc.cancelOrder.success", {
-            symbol: otcOffer.assetOut.symbol,
-            amount: otcOffer.assetAmountOut,
+            amount: formattedAmount,
           }),
           error: t("otc.cancelOrder.error", {
-            symbol: otcOffer.assetOut.symbol,
-            amount: otcOffer.assetAmountOut,
+            amount: formattedAmount,
           }),
         },
       })

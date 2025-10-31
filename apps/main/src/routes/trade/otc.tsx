@@ -3,7 +3,7 @@ import * as z from "zod/v4"
 
 import { TradeOtcPage } from "@/modules/trade/otc/TradeOtcPage"
 
-const offerSchema = z.enum(["my", "all", "partially-fillable"]).default("all")
+const offerSchema = z.enum(["my", "all"]).catch("all")
 const searchSchema = z.object({
   offers: offerSchema,
 })

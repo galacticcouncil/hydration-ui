@@ -28,7 +28,15 @@ const useSchema = () => {
       offerAmount: positiveOptional,
       buyAsset: requiredObject<TAsset>(),
       buyAmount: positiveOptional,
-      price: z.string(),
+      // null means not set by user
+      price: z.string().nullable(),
+      priceGain: z.string(),
+      priceGainConfirmation: z
+        .object({
+          confirmed: z.boolean(),
+        })
+        .nullable(),
+      isPriceSwitched: z.boolean(),
       isPartiallyFillable: z.boolean(),
     })
     .check(
@@ -65,7 +73,10 @@ export const usePlaceOrderForm = () => {
     offerAmount: "",
     buyAsset: null,
     buyAmount: "",
-    price: "",
+    price: null,
+    priceGain: "0",
+    priceGainConfirmation: null,
+    isPriceSwitched: false,
     isPartiallyFillable: true,
   }
 
