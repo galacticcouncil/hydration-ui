@@ -7,14 +7,6 @@ import { EIP6963AnnounceProviderEvent } from "@/types/evm"
 import { SubscriptionFn, Wallet, WalletAccount } from "@/types/wallet"
 import { NotInstalledError } from "@/utils/errors"
 
-type ChainSubscriptionFn = (payload: number | null) => void | Promise<void>
-
-type MetamaskInit = {
-  provider?: EIP1193Provider
-  onAccountsChanged?: SubscriptionFn
-  onChainChanged?: ChainSubscriptionFn
-}
-
 export class BaseEIP1193Wallet implements Wallet {
   provider = "" as WalletProviderType
   accessor = ""
@@ -27,20 +19,10 @@ export class BaseEIP1193Wallet implements Wallet {
   _signer: EthereumSigner | undefined
   _enabled: boolean = false
 
-  onAccountsChanged: SubscriptionFn | undefined
-  onChainChanged: ChainSubscriptionFn | undefined
-
-  constructor(
-    { onAccountsChanged, onChainChanged }: MetamaskInit = {
-      onAccountsChanged: () => {},
-      onChainChanged: () => {},
-    },
-  ) {
+  constructor() {
     window.addEventListener("eip6963:announceProvider", (e: unknown) =>
       this.handleAnnounceProvider(e as EIP6963AnnounceProviderEvent),
     )
-    this.onAccountsChanged = onAccountsChanged
-    this.onChainChanged = onChainChanged
   }
 
   get extension() {
@@ -96,9 +78,6 @@ export class BaseEIP1193Wallet implements Wallet {
       this._signer = address
         ? new EthereumSigner(address, extension)
         : undefined
-
-      this.subscribeAccounts(this.onAccountsChanged)
-      this.subscribeChain(this.onChainChanged)
     } catch (err: unknown) {
       //@ts-expect-error unknown error type
       if (err.code === -32002) {
@@ -137,7 +116,7 @@ export class BaseEIP1193Wallet implements Wallet {
     }
   }
 
-  subscribeAccounts = async (callback?: SubscriptionFn) => {
+  subscribeAccounts = (callback: SubscriptionFn) => {
     if (!this._extension) {
       throw new NotInstalledError(
         `Refresh the browser if ${this.title} is already installed.`,
@@ -145,28 +124,21 @@ export class BaseEIP1193Wallet implements Wallet {
       )
     }
 
-    this._extension.on("accountsChanged", (payload) => {
+    const handler = (payload: unknown) => {
       const addresses = Array.isArray(payload)
         ? payload.map((item: string) => item)
         : []
 
       const accounts = addresses.slice(0, 1).map(this.toWalletAccount)
       callback?.(accounts)
-    })
-  }
-
-  subscribeChain = async (callback?: ChainSubscriptionFn) => {
-    if (!this._extension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
     }
 
-    this._extension.on("chainChanged", async (payload) => {
-      const chainId = typeof payload === "string" ? parseInt(payload) : null
-      callback?.(chainId)
-    })
+    this._extension.on("accountsChanged", handler)
+
+    return () => {
+      if (!this._extension) return
+      this._extension.removeListener("accountsChanged", handler)
+    }
   }
 
   disconnect = () => {

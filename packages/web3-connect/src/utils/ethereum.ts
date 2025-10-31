@@ -9,6 +9,14 @@ type RequestNetworkSwitchOptions = {
   chain?: string
 }
 
+export async function requestAccounts(provider: EIP1193Provider) {
+  if (!isEip1193Provider(provider)) return
+  await provider.request({
+    method: "wallet_requestPermissions",
+    params: [{ eth_accounts: {} }],
+  })
+}
+
 export async function requestNetworkSwitch(
   provider: EIP1193Provider,
   options: RequestNetworkSwitchOptions = {},

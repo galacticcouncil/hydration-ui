@@ -1,8 +1,7 @@
-import { CopyButton } from "@galacticcouncil/ui/components"
+import { Button, CopyButton } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SAccountOption = styled.div<{
-  withButton?: boolean
   disabled?: boolean
 }>`
   position: relative;
@@ -39,22 +38,6 @@ export const SAccountOption = styled.div<{
         background-color: ${theme.details.borders};
       }
     `}
-
-  ${({ withButton }) =>
-    withButton &&
-    css`
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    `}
-`
-
-export const SChangeAccountButton = styled.button`
-  border: ${({ theme }) => theme.details.borders};
-  border-top-color: transparent;
-
-  border-radius: ${({ theme }) => theme.radii.lg}px;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
 `
 
 export const SCopyButton = styled(CopyButton)(
@@ -68,5 +51,23 @@ export const SCopyButton = styled(CopyButton)(
     &:hover:not(:disabled) {
       color: ${theme.text.high};
     }
+  `,
+)
+
+export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>(
+  ({ theme, isActive }) => css`
+    width: 100%;
+    text-transform: uppercase;
+    border: 1px solid ${theme.details.borders};
+    border-top: none;
+    border-radius: ${theme.radii.lg}px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+
+    ${isActive &&
+    css`
+      background-color: ${theme.buttons.secondary.outline.fill};
+      border-color: ${theme.buttons.secondary.outline.outline};
+    `}
   `,
 )
