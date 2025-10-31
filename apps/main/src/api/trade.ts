@@ -259,11 +259,3 @@ export const tradeOrderDurationQuery = (
     queryFn: () => sdk.api.scheduler.getTwapExecutionTime(tradeCount),
     enabled: isEnabled && isApiLoaded && !!tradeCount,
   })
-
-export const singleTradeTx = async (
-  tx: TxBuilderFactory,
-  trade: Trade,
-  slippage: number,
-  address: string,
-) =>
-  await tx.trade(trade).withSlippage(slippage).withBeneficiary(address).build()

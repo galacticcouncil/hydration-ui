@@ -8,7 +8,7 @@ import { useDebounce } from "use-debounce"
 
 import { AAVE_GAS_LIMIT, healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { StableSwapBase } from "@/api/pools"
-import { bestSellQuery, singleTradeTx, Trade } from "@/api/trade"
+import { bestSellQuery, Trade } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
 import { TReserve } from "@/modules/liquidity/Liquidity.utils"
@@ -73,8 +73,11 @@ export const useRemoveMoneyMarketLiquidity = ({
       assetIn: erc20Id,
       assetOut: split ? stableswapId : receiveAsset.id,
       amountIn: debouncedAmount,
+      slippage: swapSlippage,
+      address: account?.address ?? "",
     }),
   )
+
   //@TODO: implement withdraw all function
 
   const { data: healthFactor } = useQuery(
@@ -85,9 +88,10 @@ export const useRemoveMoneyMarketLiquidity = ({
     }),
   )
 
-  const amountOut = trade?.amountOut.toString() ?? "0"
+  const amountOut = trade?.swap?.amountOut.toString() ?? "0"
   const amountOutShifted = scaleHuman(amountOut, meta.decimals)
-  const minimumTradeAmount = useMinimumTradeAmount(trade)?.toString() ?? "0"
+  const minimumTradeAmount =
+    useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
   const minimumTradeAmountShifted = scaleHuman(
     minimumTradeAmount,
     meta.decimals,
@@ -121,28 +125,20 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
-      if (!trade) throw new Error("Trade not found")
+      if (!trade?.tx) throw new Error("Trade tx not found")
       if (!receiveAssetsProportionally)
         throw new Error("Receive assets not found")
       if (!account) throw new Error("Account not found")
 
-      const {
-        papi,
-        sdk: { tx: SdkTx },
-      } = rpc
+      const { papi } = rpc
 
-      const builtTx = await singleTradeTx(
-        SdkTx,
-        trade,
-        swapSlippage,
-        account.address,
-      )
+      const swapTx = trade?.tx
 
       let tx: AnyTransaction | undefined
 
       if (split) {
         const txs = [
-          builtTx.get(),
+          swapTx,
           papi.tx.Stableswap.remove_liquidity({
             pool_id: Number(pool.id),
             share_amount: BigInt(removeAmount.toFixed(0)),
@@ -159,7 +155,7 @@ export const useRemoveMoneyMarketLiquidity = ({
           extra_gas: AAVE_GAS_LIMIT,
         })
       } else {
-        tx = builtTx.get()
+        tx = swapTx
       }
 
       if (!tx) throw new Error("Transaction not found")
