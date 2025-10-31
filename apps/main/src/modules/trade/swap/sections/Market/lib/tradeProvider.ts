@@ -1,6 +1,5 @@
-import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
-
 import { HealthFactorResult } from "@/api/aave"
+import { Trade, TradeOrder } from "@/api/trade"
 import { AnyTransaction } from "@/modules/transactions/types"
 
 export type TradeProviderProps = {

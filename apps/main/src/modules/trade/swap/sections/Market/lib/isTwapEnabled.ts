@@ -1,6 +1,5 @@
-import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
-
 import { PoolType } from "@/api/pools"
+import { Trade } from "@/api/trade"
 
 export const isTwapEnabled = (swapData: Trade | undefined): boolean =>
   swapData?.swaps.every(

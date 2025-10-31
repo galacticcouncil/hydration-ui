@@ -24,6 +24,7 @@ export type AssetInputProps = {
   hideMaxBalanceAction?: boolean
   error?: string
   disabled?: boolean
+  disabledInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
   selectedAssetIcon?: ReactNode
@@ -47,6 +48,7 @@ export const AssetInput = ({
   onChange,
   error,
   disabled,
+  disabledInput,
   modalDisabled,
   loading,
   onAsssetBtnClick,
@@ -138,7 +140,7 @@ export const AssetInput = ({
               isError={!!error}
               placeholder="0"
               variant="embedded"
-              disabled={disabled || loading || !onChange}
+              disabled={disabled || loading || !onChange || disabledInput}
               value={defaultAssetValueFormatter(value ?? "")}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 if (e.target.validity.valid) {

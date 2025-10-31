@@ -37,7 +37,7 @@ type TAssetsState = {
   hub: TAsset
 }
 
-type AssetId = string | number
+export type AssetId = string | number
 
 export type TAssetsContext = TAssetsState & {
   getAsset: (id: AssetId) => TAsset | undefined
@@ -106,6 +106,10 @@ export type XYKPoolMeta = {
   iconId: string[]
   decimals: number
 }
+
+export const isXYKPoolMeta = (
+  meta: XYKPoolMeta | TAssetData,
+): meta is XYKPoolMeta => (meta as XYKPoolMeta).iconId !== undefined
 
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
   const { assets, aTokenReverseMap } = useAssetRegistry()

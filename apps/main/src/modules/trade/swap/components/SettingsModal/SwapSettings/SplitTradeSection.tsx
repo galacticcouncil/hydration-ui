@@ -18,17 +18,12 @@ export const SplitTradeSection: FC = () => {
         control={control}
         name="split.twapSlippage"
         render={({ field: { value, onChange }, fieldState: { error } }) => (
-          <>
-            <TradeSlippage
-              slippage={value}
-              onSlippageChange={(twapSlippage) => onChange(twapSlippage)}
-              helpTooltip={t("swap.settings.modal.split.slippage.help")}
-              isError={!!error}
-            />
-            {error && (
-              <FormError sx={{ textAlign: "end" }}>{error.message}</FormError>
-            )}
-          </>
+          <TradeSlippage
+            slippage={value}
+            onSlippageChange={(twapSlippage) => onChange(twapSlippage)}
+            helpTooltip={t("swap.settings.modal.split.slippage.help")}
+            error={error?.message}
+          />
         )}
       />
       <Controller

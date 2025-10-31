@@ -46,7 +46,7 @@ export const OmnipoolPositions = ({
               id: pool.id,
             }}
             search={{
-              all: true,
+              selectable: true,
             }}
           >
             <Minus />

@@ -1,4 +1,9 @@
-import { Flex, NumberInput, Text } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  FormError,
+  NumberInput,
+  Text,
+} from "@galacticcouncil/ui/components"
 import {
   SliderTabs,
   SliderTabsOption,
@@ -14,7 +19,7 @@ type Props = {
   readonly onSlippageChange: (slippage: number | null) => void
   readonly helpTooltip?: string
   readonly description?: string
-  readonly isError?: boolean
+  readonly error?: string
 }
 
 export const TradeSlippage: FC<Props> = ({
@@ -22,9 +27,10 @@ export const TradeSlippage: FC<Props> = ({
   onSlippageChange,
   helpTooltip,
   description,
-  isError,
+  error,
 }) => {
   const { t } = useTranslation()
+  const isError = !!error
 
   return (
     <Flex direction="column" gap={getTokenPx("buttons.paddings.quart")}>
@@ -55,6 +61,7 @@ export const TradeSlippage: FC<Props> = ({
           />
         </Flex>
       </Flex>
+      {error && <FormError sx={{ textAlign: "end" }}>{error}</FormError>}
       {description && (
         <Text fs={12} lh={1.3} color={getToken("text.medium")}>
           {description}

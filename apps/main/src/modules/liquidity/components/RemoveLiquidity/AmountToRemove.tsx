@@ -1,40 +1,49 @@
-import { Flex, Separator, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import {
+  Amount,
+  AssetLabel,
+  Flex,
+  Separator,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import React from "react"
 import { useTranslation } from "react-i18next"
 
 import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { AssetPrice } from "@/components/AssetPrice"
-import { scaleHuman } from "@/utils/formatting"
+import { AssetLogo } from "@/components/AssetLogo"
+import { isXYKPoolMeta, XYKPoolMeta } from "@/providers/assetsProvider"
 
 import {
   useFormatRewards,
   useTotalRewardsToReceive,
 } from "./RemoveLiquidity.utils"
 
-export type TReceiveAsset = {
-  asset: TAssetData
+type AssetToRemove = {
+  asset: TAssetData | XYKPoolMeta
   value: string
+  displayValue: string
 }
 
-export const RecieveAssets = ({
+export const AmountToRemove = ({
   assets,
   positions,
 }: {
-  assets: TReceiveAsset[]
+  assets: AssetToRemove[]
   positions?: Array<XykDeposit | OmnipoolDepositFull>
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { value: rewards } = useTotalRewardsToReceive(positions ?? [])
+
   const formattedRewards = useFormatRewards(rewards)
 
   return (
     <>
       <Text color={getToken("text.tint.secondary")} font="primary" fw={700}>
-        {t("minimumReceive")}
+        {t("liquidity:liquidity.remove.modal.amountToRemove")}
       </Text>
+
       <Flex
         direction="column"
         gap={12}
@@ -44,12 +53,27 @@ export const RecieveAssets = ({
           backgroundColor: getToken("surfaces.containers.dim.dimOnHigh"),
         }}
       >
-        {assets.map((asset, index) => (
-          <React.Fragment key={asset.asset.id}>
-            <RecieveAsset asset={asset} />
+        {assets.map(({ asset, value, displayValue }, index) => (
+          <React.Fragment key={asset.id}>
+            <Flex align="center" justify="space-between">
+              <Flex align="center" gap={4}>
+                <AssetLogo
+                  id={isXYKPoolMeta(asset) ? asset.iconId : asset.id}
+                />
+                <AssetLabel symbol={asset.symbol} />
+              </Flex>
+              <Amount
+                variant="horizontalLabel"
+                value={t("number", {
+                  value: value,
+                })}
+                displayValue={t("currency", { value: displayValue })}
+              />
+            </Flex>
             {index < assets.length - 1 && <Separator />}
           </React.Fragment>
         ))}
+
         {!!positions?.length && (
           <>
             <Separator />
@@ -65,28 +89,5 @@ export const RecieveAssets = ({
         )}
       </Flex>
     </>
-  )
-}
-
-const RecieveAsset = ({ asset }: { asset: TReceiveAsset }) => {
-  const { t } = useTranslation("common")
-
-  return (
-    <Flex gap={12} justify="space-between" align="center">
-      <AssetLabelFull asset={asset.asset} withName={false} />
-
-      <Flex direction="column" align="flex-end">
-        <Text fw={600} color={getToken("text.high")} fs="p2" lh={1}>
-          {t("number", {
-            value: scaleHuman(asset.value, asset.asset.decimals),
-          })}
-        </Text>
-        <AssetPrice
-          assetId={asset.asset.id}
-          value={Number(scaleHuman(asset.value, asset.asset.decimals))}
-          wrapper={<Text color={getToken("text.low")} fs="p5" />}
-        />
-      </Flex>
-    </Flex>
   )
 }

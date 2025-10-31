@@ -70,7 +70,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
         </DropdownMenu>
       </Flex>
       <Modal open={isRemoveAllModalOpen} onOpenChange={setIsRemoveAllModalOpen}>
-        <RemoveLiquidity poolId={assetId} all closable />
+        <RemoveLiquidity poolId={assetId} selectable closable />
       </Modal>
     </>
   )

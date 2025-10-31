@@ -14,9 +14,7 @@ export type LoyaltyCurve = farm.LoyaltyCurve
 export type FarmRewards = {
   assetId: string
   depositId: string
-  yieldFarmId: number
   rewards: FarmDepositReward
-  isActiveFarm: boolean
   isXyk: boolean
 }
 
@@ -91,9 +89,7 @@ const farmRewardsQuery = (
       return {
         assetId,
         depositId,
-        yieldFarmId: entry.yield_farm_id,
         rewards: depositReward,
-        isActiveFarm: true,
         isXyk,
       }
     },

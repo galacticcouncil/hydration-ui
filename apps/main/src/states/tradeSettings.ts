@@ -33,11 +33,16 @@ export const dcaOrderSchema = z.object({
   maxRetries: maxRetriesSchema,
 })
 
+export const liquidityLimitSchema = z.object({
+  slippage: slippageSchema,
+})
+
 export type DcaOrderSettings = z.infer<typeof dcaOrderSchema>
 
 export const tradeSettingsSchema = z.object({
   swap: swapSettingsSchema,
   dca: dcaOrderSchema,
+  liquidity: liquidityLimitSchema,
 })
 
 export type TradeSettings = z.infer<typeof tradeSettingsSchema>
@@ -53,6 +58,9 @@ const defaultState: TradeSettings = {
       twapSlippage: 3,
       twapMaxRetries: 5,
     },
+  },
+  liquidity: {
+    slippage: 3,
   },
   dca: {
     slippage: 1,
