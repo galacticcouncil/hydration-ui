@@ -1,4 +1,4 @@
-import { PixelArrowRight } from "@galacticcouncil/ui/assets/icons"
+import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import { Box, BoxProps, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, LinkProps } from "@tanstack/react-router"
@@ -29,9 +29,7 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
 }) => (
   <SDetailedLink asChild {...props}>
     <Link to={to} search={search}>
-      {IconComponent && (
-        <Icon size={20} component={IconComponent} color="skyBlue.500" />
-      )}
+      {IconComponent && <Icon size={20} component={IconComponent} />}
       <Box>
         <Text fw={600} fs={13}>
           {title}
@@ -42,12 +40,7 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
           </Text>
         )}
       </Box>
-      <Icon
-        size={20}
-        component={PixelArrowRight}
-        sx={{ opacity: 0.2 }}
-        ml="auto"
-      />
+      <Icon size={20} component={ArrowRight} ml="auto" />
     </Link>
   </SDetailedLink>
 )
