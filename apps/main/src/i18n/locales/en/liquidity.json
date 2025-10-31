@@ -111,6 +111,8 @@
   "liquidity.remove.stablepool.modal.proportionally": "Remove proportionally",
   "liquidity.remove.stablepool.modal.toast.submitted": "Withdrawing {{ value, number }} {{symbol}} from Stablepool...",
   "liquidity.remove.stablepool.modal.toast.success": "Withdrawn {{ value, number }} {{symbol}} from Stablepool.",
+  "liquidity.remove.moneyMarket.modal.toast.submitted": "Withdrawing {{ value, number }} {{symbol}} from {{where}}...",
+  "liquidity.remove.moneyMarket.modal.toast.success": "Withdrawn {{ value, number }} {{symbol}} from {{where}}.",
   "liquidity.joinFarms.modal.submit": "Join {{amount, number}} Farms",
   "liquidity.joinFarms.modal.currentPositionValue": "Current position value",
   "liquidity.joinFarms.modal.description": "Hydra supports joining farms with 100% of pool shares from liquidity positions.",

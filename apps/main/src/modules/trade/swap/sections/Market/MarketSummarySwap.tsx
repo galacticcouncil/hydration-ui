@@ -1,12 +1,11 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
-import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Summary, SummaryRow } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
-import { TradeType } from "@/api/trade"
+import { Trade, TradeType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"

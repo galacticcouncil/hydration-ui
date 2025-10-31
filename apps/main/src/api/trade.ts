@@ -1,4 +1,4 @@
-import { sor } from "@galacticcouncil/sdk-next"
+import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
@@ -10,6 +10,9 @@ export const TradeType = sor.TradeType
 
 const tradeTypes = Object.values(TradeType)
 export type TradeType = (typeof tradeTypes)[number]
+export type Trade = sor.Trade
+export type TradeOrder = sor.TradeOrder
+export type TxBuilderFactory = SdkCtx["tx"]
 
 export const TradeOrderType = sor.TradeOrderType
 
@@ -182,3 +185,11 @@ export const tradeOrderDurationQuery = (
     queryFn: () => sdk.api.scheduler.getTwapExecutionTime(tradeCount),
     enabled: isEnabled && isApiLoaded && !!tradeCount,
   })
+
+export const singleTradeTx = async (
+  tx: TxBuilderFactory,
+  trade: Trade,
+  slippage: number,
+  address: string,
+) =>
+  await tx.trade(trade).withSlippage(slippage).withBeneficiary(address).build()

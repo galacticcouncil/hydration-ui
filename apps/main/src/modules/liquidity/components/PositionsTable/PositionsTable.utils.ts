@@ -34,7 +34,7 @@ export type BalanceTableData = {
   value: string
   valueDisplay: string | undefined
   meta: TAssetData
-  stableswapId?: string
+  stableswapId: string
 }
 
 export type OmnipoolPositionTableData = {
@@ -132,11 +132,11 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     stablepoolData,
   } = pool
 
-  const { price: aStableswapPrice, isValid: aStableswapIsValid } =
+  const { price: aStableswapPrice, isValid: aStableswapPriceIsValid } =
     useAssetPrice(aStableswapAsset?.id)
 
   const aStableswapDisplayBalance = useMemo(() => {
-    if (!aStableswapBalance || !aStableswapAsset || !aStableswapIsValid)
+    if (!aStableswapBalance || !aStableswapAsset || !aStableswapPriceIsValid)
       return undefined
 
     return Big(scaleHuman(aStableswapBalance, aStableswapAsset.decimals))
@@ -146,13 +146,13 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     aStableswapBalance,
     aStableswapAsset,
     aStableswapPrice,
-    aStableswapIsValid,
+    aStableswapPriceIsValid,
   ])
 
   const stableswapId = stablepoolData?.id.toString()
 
   const stablepoolPosition: BalanceTableData | undefined = useMemo(() => {
-    if (!stableswapBalance) return undefined
+    if (!stableswapBalance || !stableswapId) return undefined
 
     const freeBalance = scaleHuman(stableswapBalance, meta.decimals)
 

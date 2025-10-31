@@ -25,6 +25,7 @@ export type TRemoveStablepoolLiquidityFormValues =
     split: boolean
     receiveAsset: TAssetData
     receiveAmount: string
+    receiveAssets: TAssetData[]
   }
 
 export const useStablepoolRemoveLiquidity = ({
@@ -59,6 +60,7 @@ export const useStablepoolRemoveLiquidity = ({
     receiveAsset: initialReceiveAsset,
     balance: balanceShifted,
     asset: { ...meta, iconId: meta.underlyingAssetId },
+    receiveAssets: reserves.map((reserve) => reserve.meta),
   })
 
   const removeAmountShifted = form.watch("amount") || "0"
@@ -176,10 +178,12 @@ export const useRemoveStablepoolLiquidityForm = ({
   asset,
   balance,
   receiveAsset,
+  receiveAssets,
 }: {
   asset?: TSelectedAsset
   receiveAsset: TAssetData
   balance: string
+  receiveAssets: TAssetData[]
 }) => {
   return useForm<TRemoveStablepoolLiquidityFormValues>({
     mode: "onChange",
@@ -188,6 +192,7 @@ export const useRemoveStablepoolLiquidityForm = ({
       asset,
       split: true,
       receiveAsset,
+      receiveAssets,
       receiveAmount: "",
     },
     resolver: standardSchemaResolver(
@@ -196,6 +201,7 @@ export const useRemoveStablepoolLiquidityForm = ({
         asset: z.custom<TSelectedAsset>(),
         split: z.boolean(),
         receiveAsset: z.custom<TAssetData>(),
+        receiveAssets: z.array(z.custom<TAssetData>()),
         receiveAmount: z.string(),
       }),
     ),

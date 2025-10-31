@@ -16,9 +16,12 @@ import { useTranslation } from "react-i18next"
 import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { LiquidityTradeLimitRow } from "@/modules/liquidity/components/LiquidityTradeLimitRow/LiquidityTradeLimitRow"
 import { RecieveAssets } from "@/modules/liquidity/components/RemoveLiquidity/RecieveAssets"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
+import {
+  TradeLimitRow,
+  TradeLimitType,
+} from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import {
   TStablepoolDetails,
   useStablepoolReserves,
@@ -57,7 +60,9 @@ const RemoveStablepoolLiquidityJSX = ({
   onBack,
   closable,
   initialReceiveAsset,
+  editable,
 }: RemoveLiquidityProps & {
+  editable?: boolean
   pool: TStablepoolDetails
   initialReceiveAsset: TAssetData
 }) => {
@@ -69,8 +74,6 @@ const RemoveStablepoolLiquidityJSX = ({
       ...pool,
       initialReceiveAsset,
     })
-
-  const editable = false
 
   const {
     formState: { isValid },
@@ -176,7 +179,7 @@ const RemoveStablepoolLiquidityJSX = ({
             <ModalContentDivider />
 
             <div>
-              <LiquidityTradeLimitRow />
+              <TradeLimitRow type={TradeLimitType.Liquidity} />
 
               {!split && (
                 <>

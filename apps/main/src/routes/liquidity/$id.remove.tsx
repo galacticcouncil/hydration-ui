@@ -16,6 +16,7 @@ const RemoveLiquiditySchema = z.object({
   shareTokenId: z.string().optional(),
   stableswapId: z.string().optional(),
   selectable: z.boolean().optional(),
+  erc20Id: z.string().optional(),
 })
 
 export type RemoveLiquidityType = z.infer<typeof RemoveLiquiditySchema>

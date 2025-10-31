@@ -18,7 +18,10 @@ import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
 import { ExpandableDynamicFee, FeeBreakdown } from "@/components/DynamicFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { LiquidityTradeLimitRow } from "@/modules/liquidity/components/LiquidityTradeLimitRow/LiquidityTradeLimitRow"
+import {
+  TradeLimitRow,
+  TradeLimitType,
+} from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { isXYKPoolMeta, XYKPoolMeta } from "@/providers/assetsProvider"
 import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -29,6 +32,7 @@ import {
   RemoveSelectableXYKPositions,
 } from "./RemoveIsolatedPoolLiquidity"
 import { TRemoveLiquidityFormValues } from "./RemoveLiquidity.utils"
+import { RemoveMoneyMarketLiquidity } from "./RemoveMoneyMarketLiquidity"
 import {
   RemoveOmnipoolLiquidity,
   RemoveSelectablePositions,
@@ -54,6 +58,14 @@ export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
     return <RemoveIsolatedPoolsLiquidity {...props} />
   } else if (props.positionId) {
     return <RemoveOmnipoolLiquidity {...props} />
+  } else if (props.erc20Id && props.stableswapId) {
+    return (
+      <RemoveMoneyMarketLiquidity
+        {...props}
+        erc20Id={props.erc20Id}
+        stableswapId={props.stableswapId}
+      />
+    )
   } else if (props.stableswapId) {
     return <RemoveStablepoolLiquidity {...props} />
   }
@@ -156,7 +168,7 @@ export const RemoveLiquidityForm = ({
 
             {!isIsolatedPool && (
               <div>
-                <LiquidityTradeLimitRow />
+                <TradeLimitRow type={TradeLimitType.Liquidity} />
 
                 <ModalContentDivider />
 

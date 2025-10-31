@@ -220,7 +220,7 @@ export const useBalanceTableColumns = () => {
         },
         cell: ({
           row: {
-            original: { isStablepoolInOmnipool },
+            original: { isStablepoolInOmnipool, poolId, stableswapId },
           },
         }) => (
           <Flex gap={12} align="center">
@@ -241,17 +241,21 @@ export const useBalanceTableColumns = () => {
               variant="tertiary"
               outline
               sx={{ flex: [1, "auto"] }}
-              //asChild
+              asChild
             >
-              {/* <Link
+              <Link
                 to="/liquidity/$id/remove"
                 params={{
                   id: poolId,
                 }}
-              > */}
-              <Trash />
-              {t("remove")}
-              {/* </Link> */}
+                search={{
+                  erc20Id: poolId,
+                  stableswapId: stableswapId,
+                }}
+              >
+                <Trash />
+                {t("remove")}
+              </Link>
             </Button>
           </Flex>
         ),

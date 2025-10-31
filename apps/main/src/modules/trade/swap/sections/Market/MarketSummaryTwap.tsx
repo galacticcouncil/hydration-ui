@@ -1,12 +1,11 @@
 import { math } from "@galacticcouncil/sdk-next"
-import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Summary, SummaryRow } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TradeOrderType } from "@/api/trade"
+import { Trade, TradeOrder, TradeOrderType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { DynamicFee } from "@/components/DynamicFee"
 import {

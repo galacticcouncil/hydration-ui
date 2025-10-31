@@ -1,4 +1,3 @@
-import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Box, Flex } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -7,7 +6,13 @@ import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { tradeOrderDurationQuery, TradeOrderType, TradeType } from "@/api/trade"
+import {
+  Trade,
+  TradeOrder,
+  tradeOrderDurationQuery,
+  TradeOrderType,
+  TradeType,
+} from "@/api/trade"
 import { TradeOption } from "@/modules/trade/swap/components/TradeOption/TradeOption"
 import { TradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOption/TradeOptionSkeleton"
 import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"

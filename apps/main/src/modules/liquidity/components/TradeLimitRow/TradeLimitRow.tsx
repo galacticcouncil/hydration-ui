@@ -18,20 +18,42 @@ import { useSaveFormOnChange } from "@/hooks/useSaveFormOnChange"
 import { TradeSlippage } from "@/modules/trade/swap/components/SettingsModal/TradeSlippage"
 import { liquidityLimitSchema, useTradeSettings } from "@/states/tradeSettings"
 
-export const LiquidityTradeLimitRow = () => {
-  const { t } = useTranslation(["common", "liquidity"])
+export enum TradeLimitType {
+  Liquidity = "liquidity",
+  Trade = "trade",
+}
+
+type TradeLimitRowProps = {
+  type: TradeLimitType
+}
+
+export const TradeLimitRow = ({ type }: TradeLimitRowProps) => {
+  const { t } = useTranslation(["common", "liquidity", "trade"])
   const [isEditing, setIsEditing] = useState(false)
-  const { update, liquidity, ...tradeSettings } = useTradeSettings()
+  const { update, ...tradeSettings } = useTradeSettings()
+
+  const isLiquidity = type === TradeLimitType.Liquidity
+
+  const value = isLiquidity
+    ? tradeSettings.liquidity.slippage
+    : tradeSettings.swap.single.swapSlippage
 
   const form = useForm({
-    defaultValues: liquidity,
     mode: "onChange",
+    defaultValues: { slippage: value },
     resolver: standardSchemaResolver(liquidityLimitSchema),
   })
 
-  useSaveFormOnChange(form, ({ slippage }) =>
-    update({ ...tradeSettings, liquidity: { slippage } }),
-  )
+  useSaveFormOnChange(form, ({ slippage }) => {
+    if (isLiquidity) {
+      update({ ...tradeSettings, liquidity: { slippage } })
+    } else {
+      update({
+        ...tradeSettings,
+        swap: { ...tradeSettings.swap, single: { swapSlippage: slippage } },
+      })
+    }
+  })
 
   return (
     <>
@@ -40,7 +62,7 @@ export const LiquidityTradeLimitRow = () => {
         content={
           <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
             <Text fs="p5" fw={500} color={getToken("text.high")}>
-              {t("percent", { value: liquidity.slippage })}
+              {t("percent", { value })}
             </Text>
             <MicroButton variant="emphasis" onClick={() => setIsEditing(true)}>
               {t("edit")}
@@ -66,7 +88,18 @@ export const LiquidityTradeLimitRow = () => {
                 <TradeSlippage
                   slippage={value}
                   onSlippageChange={onChange}
-                  description={t("liquidity:liquidity.tradeLimit.description")}
+                  helpTooltip={
+                    isLiquidity
+                      ? undefined
+                      : t("trade:swap.settings.modal.single.slippage.help")
+                  }
+                  description={
+                    isLiquidity
+                      ? t("liquidity:liquidity.tradeLimit.description")
+                      : t(
+                          "trade:swap.settings.modal.single.slippage.description",
+                        )
+                  }
                   error={error?.message}
                 />
               )}

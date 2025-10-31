@@ -1,7 +1,7 @@
-import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { useFormContext } from "react-hook-form"
 
 import { HealthFactorResult } from "@/api/aave"
+import { Trade, TradeOrder } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/MarketSummarySkeleton"
 import { MarketSummarySwap } from "@/modules/trade/swap/sections/Market/MarketSummarySwap"

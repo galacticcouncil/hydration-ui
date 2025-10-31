@@ -336,7 +336,7 @@ export const SMicroButton = styled.button<{ variant?: MicroButtonVariant }>(
   ],
 )
 
-export const SButtonIcon = styled.button(
+export const SButtonIcon = styled(Box)(
   ({ theme }) => css`
     position: relative;
 
