@@ -19,19 +19,21 @@ import { scaleHuman } from "@/utils/formatting"
 type AmountFormFieldProps = {
   fieldName: XcmFormFieldName
   balance?: AssetAmount
+  balanceMax?: AssetAmount
   disabled?: boolean
   className?: string
-  showMaxButton?: boolean
   isLoading?: boolean
+  withMaxButton?: boolean
 }
 
 export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   fieldName,
   balance,
+  balanceMax,
   disabled = false,
   className,
-  showMaxButton = true,
   isLoading = false,
+  withMaxButton = false,
 }) => {
   const { t } = useTranslation(["common", "xcm"])
   const { control } = useFormContext<XcmFormValues>()
@@ -39,10 +41,6 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
     control,
     name: fieldName,
   })
-
-  const handleMaxClick = () => {
-    field.onChange(balance ? balance.toDecimal().toString() : "0")
-  }
 
   return (
     <Flex className={className} flex={1} gap={10} direction="column">
@@ -56,10 +54,12 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
                 : "0",
             })}
           </Text>
-          {showMaxButton && (
+          {withMaxButton && (
             <MicroButton
-              onClick={handleMaxClick}
-              disabled={disabled || !balance || balance.toBig().lte(0)}
+              onClick={() => {
+                field.onChange(balanceMax?.toDecimal().toString() ?? "")
+              }}
+              disabled={disabled || !balanceMax || balanceMax.toBig().lte(0)}
             >
               {t("max")}
             </MicroButton>

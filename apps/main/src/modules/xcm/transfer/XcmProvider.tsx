@@ -4,7 +4,7 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { ConfigBuilder, EvmParachain } from "@galacticcouncil/xcm-core"
 import { Transfer } from "@galacticcouncil/xcm-sdk"
 import Big from "big.js"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { isNonNullish, unique } from "remeda"
 
@@ -31,7 +31,9 @@ type XcmProviderProps = {
 
 export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { account } = useAccount()
-  const form = useXcmForm()
+  const [transfer, setTransfer] = useState<Transfer | null>(null)
+
+  const form = useXcmForm(transfer)
 
   const configService = useHydrationConfigService()
 
@@ -45,7 +47,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       "destAddress",
     ])
 
-  const sourceChainAssetPairs = useMemo((): ChainAssetPair[] => {
+  const sourceChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     return XCM_CHAINS.map((chain) => {
       const chainAssets = chain.assetsData
       const assets = chainAssets
@@ -57,7 +59,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     })
   }, [])
 
-  const destChainAssetPairs = useMemo((): ChainAssetPair[] => {
+  const destChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     const { routes } = configService
     const srcChainRoutes = routes.get(srcChain?.key ?? "")
 
@@ -65,26 +67,12 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       return []
     }
 
-    const isValidPair = srcChain.assetsData
-      .values()
-      .map((a) => a.asset)
-      .some((a) => a.key === srcAsset?.key)
-
     const srcChainAssetRoutes = srcChainRoutes.getRoutes()
-
-    console.log({
-      srcChainAssetRoutes,
-
-      isValidPair,
-      srcAsset: srcAsset?.key,
-      srcChain: srcChain?.key,
-    })
 
     const destWhitelist = XCM_CHAINS.map((c) => c.key)
     const destChains = srcChainAssetRoutes
       .filter((a) => destWhitelist.includes(a.destination.chain.key))
       .map((a) => a.destination.chain)
-    //const destChainsUnique = new Set(destChains)
 
     return unique(destChains)
       .map((chain) => {
@@ -148,18 +136,25 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
-  useCrossChainBalanceSubscription(srcAddress, srcChainKey)
-  useCrossChainBalanceSubscription(destAddress, destChainKey)
-
-  const { data: transfer, isLoading: isLoadingTransfer } = useXcmTransfer(form)
+  const { data: xcmTransfer, isLoading: isLoadingTransfer } =
+    useXcmTransfer(form)
 
   useEffect(() => {
-    if (transfer && srcAmount) {
-      form.setValue("destAmount", getDestinationAmount(srcAmount, transfer))
+    if (xcmTransfer) {
+      setTransfer(xcmTransfer)
+      if (srcAmount) {
+        form.setValue(
+          "destAmount",
+          getDestinationAmount(srcAmount, xcmTransfer),
+        )
+      }
     }
-  }, [form, srcAmount, transfer])
+  }, [form, srcAmount, xcmTransfer])
 
   const isLoading = isLoadingTransfer
+
+  useCrossChainBalanceSubscription(srcAddress, srcChainKey)
+  useCrossChainBalanceSubscription(destAddress, destChainKey)
 
   return (
     <XcmContext.Provider
@@ -167,7 +162,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isLoading,
         sourceChainAssetPairs,
         destChainAssetPairs,
-        transfer: transfer ?? null,
+        transfer,
         registryChain: chainsMap.get("hydration") as EvmParachain,
       }}
     >

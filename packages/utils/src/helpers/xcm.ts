@@ -4,7 +4,6 @@ import {
   AnyParachain,
   Asset,
   ChainType,
-  EvmChain,
   Parachain,
 } from "@galacticcouncil/xcm-core"
 
@@ -19,10 +18,10 @@ export function getChainAssetId(chain: AnyChain, asset: Asset) {
 
 export function getChainId(chain: AnyChain) {
   switch (true) {
-    case chain instanceof EvmChain:
-      return chain.evmChain.id
-    case chain instanceof Parachain:
+    case isAnyParachain(chain):
       return chain.parachainId
+    case isAnyEvmChain(chain):
+      return chain.evmChain.id
     default:
       return chain.id
   }

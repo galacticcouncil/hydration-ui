@@ -128,6 +128,8 @@ export const XcmForm = () => {
               <AmountFormField
                 fieldName="srcAmount"
                 balance={srcBalances?.get(srcAsset?.key ?? "")}
+                balanceMax={transfer?.source.max}
+                withMaxButton
                 disabled={!srcAsset}
               />
             </Flex>
@@ -172,7 +174,6 @@ export const XcmForm = () => {
                 fieldName="destAmount"
                 balance={destBalances?.get(destAsset?.key ?? "")}
                 disabled
-                showMaxButton={false}
                 isLoading={formState.isValid && isDataLoading}
               />
             </Flex>
@@ -182,7 +183,7 @@ export const XcmForm = () => {
           <Stack p={20}>
             <AuthorizedAction size="large">
               <LoadingButton
-                disabled={isLoading}
+                disabled={isLoading || !formState.isValid}
                 isLoading={isLoading}
                 type="submit"
                 size="large"

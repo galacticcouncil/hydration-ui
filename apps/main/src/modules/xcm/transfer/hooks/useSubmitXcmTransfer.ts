@@ -1,7 +1,7 @@
-import { isAnyParachain } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, isAnyParachain } from "@galacticcouncil/utils"
 import { Transfer } from "@galacticcouncil/xcm-sdk"
 import { ApiPromise } from "@polkadot/api"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Binary, createClient, PolkadotClient, UnsafeApi } from "polkadot-api"
 import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { useTranslation } from "react-i18next"
@@ -12,7 +12,6 @@ import { isSubstrateCall } from "@/modules/transactions/utils/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionType, useTransactionsStore } from "@/states/transactions"
-import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
 
 // TODO: remove after migrating to xcm-sdk-next
 const transformPjsToPapiTx = async (
@@ -43,13 +42,13 @@ export const useSubmitXcmTransfer = () => {
   const { t } = useTranslation("xcm")
   const { papi, legacy_api } = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
       const { srcAmount, srcChain, destChain } = values
 
       if (!destChain) throw new Error("Destination chain is required")
-      if (!srcChain || !isAnyParachain(srcChain))
-        throw new Error("Source chain is required")
+      if (!srcChain) throw new Error("Source chain is required")
 
       const isHydration = srcChain.key === HYDRATION_CHAIN_KEY
 
@@ -70,32 +69,43 @@ export const useSubmitXcmTransfer = () => {
         if (isHydration) {
           return transformPjsToPapiTx(legacy_api, papi, call)
         }
-        const srcApi = await srcChain.api
-        const srcPapiclient = await getWs(srcChain.ws)
-        const srcPapi = srcPapiclient.getUnsafeApi()
-        return transformPjsToPapiTx(srcApi, srcPapi, call)
+        if (isAnyParachain(srcChain)) {
+          const srcApi = await srcChain.api
+          const srcPapiclient = await getWs(srcChain.ws)
+          const srcPapi = srcPapiclient.getUnsafeApi()
+          return transformPjsToPapiTx(srcApi, srcPapi, call)
+        }
+
+        return call
       }
 
-      return createTransaction({
-        title: t("form.title"),
-        description: t("tx.description", i18nData),
-        tx: await getTx(),
-        toasts: {
-          submitted: t("tx.toast.submitted", i18nData),
-          success: t("tx.toast.success", i18nData),
+      return createTransaction(
+        {
+          title: t("form.title"),
+          description: t("tx.description", i18nData),
+          tx: await getTx(),
+          toasts: {
+            submitted: t("tx.toast.submitted", i18nData),
+            success: t("tx.toast.success", i18nData),
+          },
+          fee: {
+            feeAmount: source.fee.toDecimal(source.fee.decimals),
+            feeSymbol: source.fee.symbol,
+          },
+          meta: {
+            type: TransactionType.Xcm,
+            srcChainKey: srcChain.key,
+            dstChainKey: destChain.key,
+            dstChainFee: destination.fee.toDecimal(destination.fee.decimals),
+            dstChainFeeSymbol: destination.fee.symbol,
+          },
         },
-        fee: {
-          feeAmount: source.fee.toDecimal(source.fee.decimals),
-          feeSymbol: source.fee.symbol,
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["xcm", "transfer"] })
+          },
         },
-        meta: {
-          type: TransactionType.Xcm,
-          srcChainKey: srcChain.key,
-          dstChainKey: destChain.key,
-          dstChainFee: destination.fee.toDecimal(destination.fee.decimals),
-          dstChainFeeSymbol: destination.fee.symbol,
-        },
-      })
+      )
     },
   })
 }

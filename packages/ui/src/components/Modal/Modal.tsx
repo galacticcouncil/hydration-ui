@@ -122,6 +122,8 @@ const ModalClose: FC<ModalCloseProps> = (props) => {
   )
 }
 
+const ModalCloseButton = DialogPrimitive.Close
+
 const ModalHeader: FC<ModalHeaderProps> = ({
   title,
   description,
@@ -288,6 +290,7 @@ export {
   Modal,
   ModalBody,
   ModalClose,
+  ModalCloseButton,
   ModalCloseTrigger,
   ModalContainer,
   ModalContent,
