@@ -20,11 +20,13 @@ type BestSellArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
+  readonly slippage: number
+  readonly address: string
 }
 
 export const bestSellQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn }: BestSellArgs,
+  { assetIn, assetOut, amountIn, slippage, address }: BestSellArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -35,14 +37,38 @@ export const bestSellQuery = (
       assetOut,
       amountIn,
     ],
-    queryFn: () =>
-      sdk.api.router.getBestSell(Number(assetIn), Number(assetOut), amountIn),
+    queryFn: async () => {
+      const swap = await sdk.api.router.getBestSell(
+        Number(assetIn),
+        Number(assetOut),
+        amountIn,
+      )
+
+      const tx = await sdk.tx
+        .trade(swap)
+        .withSlippage(slippage)
+        .withBeneficiary(address)
+        .build()
+        .then((tx) => tx.get())
+
+      return {
+        swap,
+        tx,
+      }
+    },
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
 
 export const bestSellTwapQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn }: BestSellArgs,
+  {
+    assetIn,
+    assetOut,
+    amountIn,
+    slippage,
+    maxRetries,
+    address,
+  }: BestSellArgs & { readonly maxRetries: number },
   enabled = true,
 ) =>
   queryOptions({
@@ -54,12 +80,23 @@ export const bestSellTwapQuery = (
       assetOut,
       amountIn,
     ],
-    queryFn: () =>
-      sdk.api.scheduler.getTwapSellOrder(
+    queryFn: async () => {
+      const twap = await sdk.api.scheduler.getTwapSellOrder(
         Number(assetIn),
         Number(assetOut),
         amountIn,
-      ),
+      )
+
+      const tx = await sdk.tx
+        .order(twap)
+        .withSlippage(slippage)
+        .withMaxRetries(maxRetries)
+        .withBeneficiary(address)
+        .build()
+        .then((tx) => tx.get())
+
+      return { twap, tx }
+    },
     enabled:
       enabled &&
       isLoaded &&
@@ -72,11 +109,13 @@ type BestBuyArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountOut: string
+  readonly slippage: number
+  readonly address: string
 }
 
 export const bestBuyQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut }: BestBuyArgs,
+  { assetIn, assetOut, amountOut, slippage, address }: BestBuyArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -87,14 +126,38 @@ export const bestBuyQuery = (
       assetOut,
       amountOut,
     ],
-    queryFn: () =>
-      sdk.api.router.getBestBuy(Number(assetIn), Number(assetOut), amountOut),
+    queryFn: async () => {
+      const swap = await sdk.api.router.getBestBuy(
+        Number(assetIn),
+        Number(assetOut),
+        amountOut,
+      )
+
+      const tx = await sdk.tx
+        .trade(swap)
+        .withSlippage(slippage)
+        .withBeneficiary(address)
+        .build()
+        .then((tx) => tx.get())
+
+      return {
+        swap,
+        tx,
+      }
+    },
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
 
 export const bestBuyTwapQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut }: BestBuyArgs,
+  {
+    assetIn,
+    assetOut,
+    amountOut,
+    slippage,
+    maxRetries,
+    address,
+  }: BestBuyArgs & { readonly maxRetries: number },
   enabled = true,
 ) =>
   queryOptions({
@@ -106,12 +169,23 @@ export const bestBuyTwapQuery = (
       assetOut,
       amountOut,
     ],
-    queryFn: () =>
-      sdk.api.scheduler.getTwapBuyOrder(
+    queryFn: async () => {
+      const twap = await sdk.api.scheduler.getTwapBuyOrder(
         Number(assetIn),
         Number(assetOut),
         amountOut,
-      ),
+      )
+
+      const tx = await sdk.tx
+        .order(twap)
+        .withSlippage(slippage)
+        .withMaxRetries(maxRetries)
+        .withBeneficiary(address)
+        .build()
+        .then((tx) => tx.get())
+
+      return { twap, tx }
+    },
     enabled:
       enabled &&
       isLoaded &&

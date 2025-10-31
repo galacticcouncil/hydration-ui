@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { useAssetPrice, useDisplayAssetStore } from "@/states/displayAsset"
+import { useAssetsPrice, useDisplayAssetStore } from "@/states/displayAsset"
 
 type AssetPriceProps = {
   assetId: string
@@ -33,21 +33,46 @@ export const useDisplayAssetPrice = (
   value: string | number,
   compact?: boolean,
 ) => {
+  return useDisplayAssetsPrice([[assetId, value]], compact)
+}
+
+export const useDisplayAssetsPrice = (
+  assets: ReadonlyArray<readonly [id: string, value: string | number]>,
+  compact?: boolean,
+) => {
   const { t } = useTranslation()
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
   )
 
-  const { price, isLoading, isValid } = useAssetPrice(assetId)
+  const { prices, isLoading } = useAssetsPrice(assets.map((asset) => asset[0]))
   const isDollar = isRealUSD || isStableCoin
+
+  const [price, isValid] = assets.reduce(
+    (acc, [assetId, value]) => {
+      if (!acc[1]) {
+        return acc
+      }
+
+      const price = prices[assetId]
+
+      return price?.isValid
+        ? ([
+            acc[0].plus(Big(value || "0").times(price.price || "0")),
+            true,
+          ] as const)
+        : acc
+    },
+    [Big(0), true] as const,
+  )
 
   return [
     isValid
       ? t(compact ? "currency.compact" : "currency", {
-          value: new Big(value || "0").times(price || "0").toString(),
+          value: price.toString(),
           ...(!isDollar && { currency: symbol }),
         })
-      : price,
+      : price.toString(),
     { isLoading },
   ] as const
 }

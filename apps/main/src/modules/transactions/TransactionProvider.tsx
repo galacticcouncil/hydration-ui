@@ -73,8 +73,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const { data: accountInfo, isLoading: isLoadingNonce } = useAccountInfo()
   const nonce = accountInfo?.nonce
 
-  const { data: fee, isLoading: isLoadingFeeEstimate } =
-    useEstimateFee(transaction)
+  const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
+    transaction.tx,
+    transaction?.fee?.feePaymentAssetId,
+  )
 
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate

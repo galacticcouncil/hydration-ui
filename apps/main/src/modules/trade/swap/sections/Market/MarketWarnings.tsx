@@ -53,7 +53,7 @@ export const MarketWarnings: FC<Props> = ({
   }
 
   return (
-    <Flex direction="column" gap={6} mt={10}>
+    <Flex direction="column" gap={6} mt={8}>
       {shouldRenderSlippageWarning && (
         <Alert
           variant="warning"

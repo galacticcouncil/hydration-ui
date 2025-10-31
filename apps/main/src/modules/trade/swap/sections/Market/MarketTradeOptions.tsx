@@ -1,4 +1,4 @@
-import { Box, Flex } from "@galacticcouncil/ui/components"
+import { Flex } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
@@ -48,9 +48,10 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
 
   if (isLoading) {
     return (
-      <Box pt={8} pb={12}>
+      <Flex direction="column" gap={8}>
         <TradeOptionSkeleton />
-      </Box>
+        <TradeOptionSkeleton />
+      </Flex>
     )
   }
 
@@ -103,7 +104,7 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
       control={control}
       name="isSingleTrade"
       render={({ field }) => (
-        <Flex sx={{ flexDirection: "column", gap: 8, pt: 8, pb: 12 }}>
+        <Flex sx={{ flexDirection: "column", gap: 8 }}>
           <TradeOption
             asset={asset}
             value={price}

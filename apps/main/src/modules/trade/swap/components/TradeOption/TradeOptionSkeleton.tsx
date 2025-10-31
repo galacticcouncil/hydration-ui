@@ -6,7 +6,7 @@ import { STradeOptionSkeleton } from "@/modules/trade/swap/components/TradeOptio
 export const TradeOptionSkeleton: FC = () => {
   return (
     <STradeOptionSkeleton>
-      <Skeleton height={"4rem"} />
+      <Skeleton height={32} />
     </STradeOptionSkeleton>
   )
 }

@@ -1,32 +1,24 @@
-import { Box, Grid, Separator, Stack } from "@galacticcouncil/ui/components"
-import { Outlet } from "@tanstack/react-router"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { lazy } from "react"
 
-import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
-import { FormHeader } from "@/modules/trade/swap/components/FormHeader/FormHeader"
-import { PageHeader } from "@/modules/trade/swap/components/PageHeader/PageHeader"
-import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+const SwapPageDesktop = lazy(async () => ({
+  default: await import("@/modules/trade/swap/SwapPageDesktop").then(
+    (m) => m.SwapPageDesktop,
+  ),
+}))
 
-import { SContainer } from "./SwapPage.styled"
+const SwapPageMobile = lazy(async () => ({
+  default: await import("@/modules/trade/swap/SwapPageMobile").then(
+    (m) => m.SwapPageMobile,
+  ),
+}))
 
 export const SwapPage = () => {
-  return (
-    <Stack gap={20}>
-      <PageHeader />
-      <Grid
-        columnTemplate={["1fr", null, null, "3fr 2fr"]}
-        gap={20}
-        align="start"
-      >
-        <Box display={["none", null, null, "block"]}>
-          <TradeChart height={500} />
-        </Box>
-        <SContainer>
-          <FormHeader />
-          <Separator mx={-20} />
-          <Outlet />
-        </SContainer>
-        <TradeOrders />
-      </Grid>
-    </Stack>
-  )
+  const { isDesktop } = useBreakpoints()
+
+  if (isDesktop) {
+    return <SwapPageDesktop />
+  }
+
+  return <SwapPageMobile />
 }
