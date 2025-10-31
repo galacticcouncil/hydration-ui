@@ -4,8 +4,12 @@ import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
 
-export const useWeb3ConnectInit = () => {
-  useWeb3EagerEnable()
+export const useWeb3ConnectInit = ({
+  eagerEnable,
+}: {
+  eagerEnable: boolean
+}) => {
+  useWeb3EagerEnable(eagerEnable)
 
   const [page, setPage] = useState<Web3ConnectModalPage>(
     Web3ConnectModalPage.ProviderSelect,

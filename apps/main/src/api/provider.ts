@@ -12,6 +12,7 @@ import {
   hasOwn,
 } from "@galacticcouncil/utils"
 import { SubstrateApis } from "@galacticcouncil/xcm-core"
+import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { PolkadotClient } from "polkadot-api"
@@ -45,7 +46,14 @@ export type TProviderData = {
   /**
    * @deprecated
    */
+  legacy_api: ApiPromise
+  /**
+   * @deprecated
+   */
   legacy_poolService: PoolService
+  /**
+   * @deprecated
+   */
   legacy_tradeRouter: TradeRouter
 }
 
@@ -131,6 +139,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
+    legacy_api,
     legacy_poolService,
     legacy_tradeRouter,
   } satisfies TProviderData

@@ -24,22 +24,21 @@ import {
   useAccountsWithBalance,
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
+import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
-import { toAccount } from "@/utils"
-import { getWallet } from "@/wallets"
-import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
+import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
 export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
-  const { accounts, setAccount, toggle, getConnectedProviders } =
-    useWeb3Connect(
-      useShallow(
-        pick(["accounts", "setAccount", "toggle", "getConnectedProviders"]),
-      ),
-    )
+  const { onAccountSelect, isControlled } = useWeb3ConnectContext()
+  const { accounts, toggle, getConnectedProviders, mode } = useWeb3Connect(
+    useShallow(pick(["accounts", "toggle", "getConnectedProviders", "mode"])),
+  )
 
-  const [filter, setFilter] = useState<AccountFilterOption>(WalletMode.Default)
+  const [filter, setFilter] = useState<AccountFilterOption>(
+    getDefaultAccountFilterByMode(mode),
+  )
   const [searchVal, setSearchVal] = useState("")
   const [search, setSearch] = useState("")
   useDebounce(
@@ -68,17 +67,14 @@ export const AccountSelectContent = () => {
 
   const hasNoResults = accountList.length === 0
 
-  const onAccountSelect = useCallback(
+  const handleAccountSelect = useCallback(
     (account: Account) => {
-      setAccount(account)
-      toggle()
-
-      const wallet = getWallet(account.provider)
-      if (wallet instanceof BaseSubstrateWallet) {
-        wallet.setSigner(account.address)
+      onAccountSelect(account)
+      if (!isControlled) {
+        toggle()
       }
     },
-    [setAccount, toggle],
+    [isControlled, onAccountSelect, toggle],
   )
 
   const groups = Object.groupBy(accountList, (acc) => {
@@ -140,7 +136,7 @@ export const AccountSelectContent = () => {
                   key={`${account.address}-${account.provider}`}
                   {...account}
                   isBalanceLoading={areBalancesLoading}
-                  onSelect={onAccountSelect}
+                  onSelect={handleAccountSelect}
                 />
               ))}
             </>
