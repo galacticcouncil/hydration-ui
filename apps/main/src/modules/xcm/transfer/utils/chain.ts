@@ -1,5 +1,6 @@
 import {
   EvmAddr,
+  HYDRATION_CHAIN_KEY,
   isAnyEvmChain,
   isParachain,
   SolanaAddr,
@@ -11,9 +12,11 @@ import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xcm-core"
 import { filter, pipe, prop, sortBy } from "remeda"
 
-import { HYDRATION_CHAIN_KEY } from "@/utils/consts"
-
 const KUSAMA_CHAINS_WHITELIST = ["kusama", "assethub_kusama"]
+
+const ethereum = chainsMap.get("ethereum")!
+// @ts-expect-error override rpc for testing
+ethereum.rpcs = ["https://ethereum-rpc.publicnode.com"]
 
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],

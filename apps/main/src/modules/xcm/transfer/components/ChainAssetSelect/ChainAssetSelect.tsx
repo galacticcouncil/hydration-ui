@@ -7,7 +7,7 @@ import {
   Grid,
   Input,
   ModalBody,
-  ModalClose,
+  ModalCloseButton,
   ModalContent,
   ModalHeader,
   ModalRoot,
@@ -191,7 +191,7 @@ export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = ({
                   const isLoading = isBalancesLoading && !balances
 
                   return (
-                    <ModalClose asChild>
+                    <ModalCloseButton asChild>
                       <Flex
                         justify="space-between"
                         align="center"
@@ -233,7 +233,7 @@ export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = ({
                           )}
                         </Text>
                       </Flex>
-                    </ModalClose>
+                    </ModalCloseButton>
                   )
                 }}
               />

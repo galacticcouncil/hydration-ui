@@ -152,15 +152,8 @@ export const xcmTransferQuery = (
       destAddress,
       destChain,
     ],
-    queryFn: () => {
-      return wallet.transfer(
-        asset,
-        srcAddress,
-        srcChain,
-        destAddress,
-        destChain,
-      )
-    },
+    queryFn: () =>
+      wallet.transfer(asset, srcAddress, srcChain, destAddress, destChain),
     enabled:
       !!srcAddress && !!asset && !!srcChain && !!destAddress && !!destChain,
     ...options,
