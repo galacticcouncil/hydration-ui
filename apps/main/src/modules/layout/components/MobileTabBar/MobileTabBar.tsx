@@ -1,4 +1,4 @@
-import { Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
+import { IconPlaceholder } from "@galacticcouncil/ui/assets/icons"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,7 +56,7 @@ export const MobileTabBar: FC = () => {
           <DropdownMenu key={key}>
             <DropdownMenuTrigger asChild>
               <STabBarItem as={Link} {...{ to }} tabIndex={index + 1}>
-                <STabBarIcon component={icon ?? Rectangle7101} />
+                <STabBarIcon component={icon ?? IconPlaceholder} />
                 <STabBarLabel>{translations[key]?.title}</STabBarLabel>
               </STabBarItem>
             </DropdownMenuTrigger>
@@ -75,7 +75,7 @@ export const MobileTabBar: FC = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <STabBarItem sx={{ cursor: "pointer" }} tabIndex={itemsShown + 1}>
-              <STabBarIcon component={Rectangle7101} />
+              <STabBarIcon component={IconPlaceholder} />
               <STabBarLabel>{t("more")}</STabBarLabel>
             </STabBarItem>
           </DropdownMenuTrigger>

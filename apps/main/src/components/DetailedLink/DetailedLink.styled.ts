@@ -11,12 +11,19 @@ export const SDetailedLink = styled(Box)(
     width: 320px;
 
     padding: 16px;
-    border-radius: ${theme.radii.xl}px;
+    border-radius: ${theme.radii.lg}px;
 
     text-decoration: none;
 
+    svg {
+      color: ${theme.icons.soft};
+    }
+
     &:hover {
       background: ${theme.surfaces.containers.high.hover};
+      svg {
+        color: ${theme.controls.solid.activeHover};
+      }
     }
   `,
 )
