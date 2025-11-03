@@ -1,4 +1,4 @@
-import { CircleInfo, Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
+import { CircleInfo, IconPlaceholder } from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItem,
   MenuItemAction,
@@ -20,7 +20,7 @@ export const DegenMode: FC = () => {
   return (
     <MenuItem>
       <MenuItemIcon
-        component={Rectangle7101}
+        component={IconPlaceholder}
         sx={{ color: getToken("buttons.secondary.emphasis.onRest") }}
       />
       <MenuItemLabel>
