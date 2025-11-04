@@ -162,8 +162,7 @@ export function XcmPage() {
 
   const ss58Prefix = genesisHashToChain(account?.genesisHash).prefix
 
-  const blacklist =
-    import.meta.env.VITE_ENV === "production" ? "polkadot" : "polkadot"
+  const blacklist = import.meta.env.VITE_ENV === "production" ? "" : ""
 
   useMount(() => {
     const srcChain = search?.data?.srcChain
