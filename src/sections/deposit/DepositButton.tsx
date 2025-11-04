@@ -27,6 +27,7 @@ export const DepositButton: React.FC<ButtonProps> = (props) => {
       size="compact"
       onClick={() => navigate({ to: LINKS.deposit })}
       css={{ position: "relative" }}
+      disabled
       {...props}
     >
       <Icon size={14} sx={{ ml: -4 }} icon={<DownloadIcon />} />
