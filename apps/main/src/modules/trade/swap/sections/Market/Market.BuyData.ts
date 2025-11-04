@@ -2,12 +2,11 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQueries, useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
 
-import { healthFactorAfterSupplyQuery } from "@/api/aave"
+import { healthFactorQuery } from "@/api/aave"
 import { bestBuyQuery, bestBuyTwapQuery } from "@/api/trade"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
-import { isErc20AToken } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 
@@ -18,8 +17,9 @@ export const useMarketBuyData = (
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const [sellAsset, buyAsset, buyAmount] = form.watch([
+  const [sellAsset, sellAmount, buyAsset, buyAmount] = form.watch([
     "sellAsset",
+    "sellAmount",
     "buyAsset",
     "buyAmount",
   ])
@@ -43,11 +43,12 @@ export const useMarketBuyData = (
         slippage: swapSlippage,
         address,
       }),
-      healthFactorAfterSupplyQuery(rpc, {
+      healthFactorQuery(rpc, {
+        fromAsset: sellAsset,
+        fromAmount: sellAmount,
+        toAsset: buyAsset,
+        toAmount: buyAmount,
         address,
-        assetId:
-          buyAsset && isErc20AToken(buyAsset) ? buyAsset.underlyingAssetId : "",
-        amount: buyAmount,
       }),
     ],
   })
@@ -61,7 +62,7 @@ export const useMarketBuyData = (
         amountOut: buyAmount,
         slippage: twapSlippage,
         maxRetries: twapMaxRetries,
-        address: address,
+        address,
       },
       isTwapEnabled(swapData?.swap),
     ),
