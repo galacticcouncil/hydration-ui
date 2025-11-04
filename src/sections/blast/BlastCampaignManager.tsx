@@ -1,5 +1,5 @@
 import { useBlastCampaign } from "sections/blast/BlastCampaignManager.utils"
-import { BlastCampaignModal } from "./BlastCampaignModal"
+import { BlastCampaignModalContent } from "./BlastCampaignModalContent"
 import { useBlastCampaignStore } from "sections/blast/store/useBlastCampaignStore"
 import { useEffect, useState } from "react"
 import { useMatchRoute, useNavigate } from "@tanstack/react-location"
@@ -7,6 +7,7 @@ import { LINKS } from "utils/navigation"
 import { HUSDC_ASSET_ID, TBTC_ASSET_ID, USDC_ASSET_ID } from "utils/constants"
 import { ModalType } from "sections/lending/hooks/useModal"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { Modal } from "components/Modal/Modal"
 
 export type BlastCampaignManagerProps = {}
 
@@ -81,12 +82,12 @@ export const BlastCampaignManager: React.FC<BlastCampaignManagerProps> = () => {
   }
 
   return (
-    <BlastCampaignModal
-      open={modalOpen}
-      rewardApy={rewardApy}
-      onClose={handleClose}
-      onGetBitcoin={handleGetBitcoin}
-      onEarnOnUSDC={handleEarnOnUSDC}
-    />
+    <Modal open={modalOpen} onClose={handleClose} headerVariant="simple">
+      <BlastCampaignModalContent
+        rewardApy={rewardApy}
+        onGetBitcoin={handleGetBitcoin}
+        onEarnOnUSDC={handleEarnOnUSDC}
+      />
+    </Modal>
   )
 }

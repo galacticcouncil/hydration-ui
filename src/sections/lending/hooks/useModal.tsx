@@ -1,6 +1,6 @@
 import { ChainId, InterestRate, Stake } from "@aave/contract-helpers"
 import { useNavigate, useSearch } from "@tanstack/react-location"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useState } from "react"
 import { EmodeModalType } from "sections/lending/components/transactions/Emode/EmodeModalContent"
 import { TxErrorType } from "sections/lending/ui-config/errorMapping"
 import { getAddressFromAssetId } from "utils/evm"
@@ -100,16 +100,9 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
   const [txError, setTxError] = useState<TxErrorType>()
 
   const navigate = useNavigate()
-  const { modalType, assetId } = useSearch<{
+  const search = useSearch<{
     readonly Search: { modalType?: ModalType; assetId?: string | number }
   }>()
-
-  useEffect(() => {
-    if (modalType !== undefined && assetId !== undefined) {
-      setType(modalType)
-      setArgs({ underlyingAsset: getAddressFromAssetId(assetId.toString()) })
-    }
-  }, [modalType, navigate, assetId])
 
   return (
     <ModalContext.Provider
@@ -164,8 +157,12 @@ export const ModalContextProvider: React.FC<{ children?: React.ReactNode }> = ({
             },
           })
         },
-        type,
-        args,
+        type: search?.modalType || type,
+        args: search?.assetId
+          ? {
+              underlyingAsset: getAddressFromAssetId(search.assetId.toString()),
+            }
+          : args,
         approvalTxState,
         mainTxState,
         setApprovalTxState,

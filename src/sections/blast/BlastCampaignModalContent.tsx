@@ -1,30 +1,23 @@
 import { Button } from "components/Button/Button"
-import { Modal } from "components/Modal/Modal"
 import { Text } from "components/Typography/Text/Text"
 
 import blastCampaignImage from "assets/images/blast-campaign.webp"
 import { Trans, useTranslation } from "react-i18next"
 import { CtaSeparator } from "sections/blast/components/CtaSeparator"
 
-type BlastCampaignModalProps = {
+type BlastCampaignModalContentProps = {
   rewardApy: string
-  open: boolean
-  onClose: () => void
   onGetBitcoin: () => void
   onEarnOnUSDC: () => void
 }
 
-export const BlastCampaignModal: React.FC<BlastCampaignModalProps> = ({
-  open,
-  rewardApy,
-  onClose,
-  onGetBitcoin,
-  onEarnOnUSDC,
-}) => {
+export const BlastCampaignModalContent: React.FC<
+  BlastCampaignModalContentProps
+> = ({ rewardApy, onGetBitcoin, onEarnOnUSDC }) => {
   const { t } = useTranslation()
 
   return (
-    <Modal open={open} onClose={onClose} headerVariant="simple">
+    <div>
       <div sx={{ textAlign: "center" }}>
         <img
           loading="lazy"
@@ -64,6 +57,6 @@ export const BlastCampaignModal: React.FC<BlastCampaignModalProps> = ({
           {t("blast.campaign.cta.usdc")}
         </Button>
       </div>
-    </Modal>
+    </div>
   )
 }
