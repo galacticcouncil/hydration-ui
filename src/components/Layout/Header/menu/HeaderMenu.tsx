@@ -204,12 +204,16 @@ const MenuItem = ({
       to={item.href}
       search={resetSearchParams(search)}
       css={isHidden ? { pointerEvents: "none" } : {}}
-      disabled={true}
+      disabled={item.disabled}
     >
       {({ isActive }) => {
         return (
           <>
-            <SItem isActive={isActive} isHidden={isHidden}>
+            <SItem
+              isActive={isActive}
+              isHidden={isHidden}
+              disabled={item.disabled}
+            >
               {t(`header.${item.key}`)}
               {/* Extra icon needed to prevent layout shift when item with submenu is hidden due to showing more menu button */}
               {hasSubmenuDropdown && <IconChevron sx={{ flexShrink: 0 }} />}

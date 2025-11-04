@@ -22,6 +22,7 @@ export const SList = styled.nav`
 export const SItem = styled.span<{
   isActive?: boolean
   isHidden?: boolean
+  disabled?: boolean
 }>`
   display: flex;
   align-items: center;
@@ -50,6 +51,8 @@ export const SItem = styled.span<{
     background: rgba(${theme.rgbColors.alpha0}, 0.06);
     cursor: pointer;
   }
+
+  ${({ disabled }) => disabled && "opacity: 0.5"};
 
   ${({ isActive }) =>
     isActive &&
