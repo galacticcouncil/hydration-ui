@@ -69,6 +69,11 @@ export const SNavBarItemHidden = styled(Link)`
 
   padding: 22px 14px;
   border-radius: 4px;
+
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
 `
 
 export const STabButton = styled(SNavBarItem)<{ active: boolean }>`

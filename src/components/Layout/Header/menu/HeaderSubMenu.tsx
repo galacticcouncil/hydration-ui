@@ -42,7 +42,7 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
 
   const match = useMatchRoute()
 
-  const { href, key, subItems } = item
+  const { href, key, subItems, disabled } = item
 
   const isActive = subItems.some(({ href }) => match({ to: href }))
 
@@ -55,8 +55,13 @@ export const HeaderSubMenu: React.FC<HeaderSubMenuProps> = ({
           all: "unset",
           height: "100%",
           ...(isHidden ? { pointerEvents: "none" } : { cursor: "pointer" }),
+          ...(disabled
+            ? { pointerEvents: "none", cursor: "not-allowed", opacity: 0.5 }
+            : {}),
         }}
         onClick={(e) => {
+          if (disabled) return
+
           e.preventDefault()
           e.stopPropagation()
           onOpenChange()
@@ -104,6 +109,7 @@ type HeaderSubMenuContentsProps = {
     subtitle?: string
     href: string
     Icon: React.FC
+    disabled?: boolean
   }[]
   onItemClick?: () => void
 }
@@ -124,12 +130,13 @@ export const HeaderSubMenuContents: React.FC<HeaderSubMenuContentsProps> = ({
         collisionPadding={16}
       >
         <SSubMenu>
-          {items.map(({ key, title, subtitle, href, Icon }) => (
+          {items.map(({ key, title, subtitle, href, Icon, disabled }) => (
             <Link
               key={key}
               to={href}
               search={resetSearchParams(search)}
               onClick={onItemClick}
+              disabled={disabled}
             >
               <SSubMenuItem>
                 <Icon

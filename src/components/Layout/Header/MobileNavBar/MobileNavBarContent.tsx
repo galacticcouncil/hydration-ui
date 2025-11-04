@@ -34,6 +34,7 @@ export const MobileNavBarContent = () => {
       to={hiddenTab.href}
       search={resetSearchParams(search)}
       key={index}
+      disabled={hiddenTab.disabled}
     >
       <Icon size={20} icon={<hiddenTab.Icon />} />
       {t(`header.${hiddenTab.key}`)}
@@ -81,6 +82,7 @@ export const MobileNavBarContent = () => {
               key={index}
               search={resetSearchParams(search)}
               css={{ height: "100%" }}
+              disabled={item.disabled}
             >
               {({ isActive }) => (
                 <MobileNavBarItem item={item} isActive={isActive} />

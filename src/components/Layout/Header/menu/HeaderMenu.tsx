@@ -204,6 +204,7 @@ const MenuItem = ({
       to={item.href}
       search={resetSearchParams(search)}
       css={isHidden ? { pointerEvents: "none" } : {}}
+      disabled={true}
     >
       {({ isActive }) => {
         return (
