@@ -12,6 +12,7 @@ import { useEffect, useMemo } from "react"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20 } from "@/api/assets"
+import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
@@ -65,6 +66,7 @@ export type OmnipoolAssetTable = {
   aStableswapAsset: TErc20 | undefined
   farms: Farm[]
   allFarms: Farm[]
+  borrowApyData: BorrowAssetApyData | undefined
 }
 
 export type IsolatedPoolTable = {
@@ -103,6 +105,7 @@ export type TStablepoolData = {
   isStablepool: boolean
   lpFee: string | undefined
   aToken: TErc20 | undefined
+  borrowApyData: BorrowAssetApyData | undefined
 }
 
 const isStablepoolData = (
@@ -131,11 +134,19 @@ export const useStablepools = () => {
     [yieldMetrics],
   )
 
-  const { stablePoolData, tokenIds } = useMemo(() => {
+  const { stablePoolData, tokenIds, aTokens } = useMemo(() => {
     const tokenSet = new Set<string>()
+    const aTokens = new Map<string, TErc20>()
+
     const list =
       pools?.map((stablePool) => {
         const filteredTokens: PoolToken[] = []
+        const poolId = stablePool.id.toString()
+        const aToken = getRelatedAToken(poolId)
+
+        if (aToken) {
+          aTokens.set(poolId, aToken)
+        }
 
         stablePool.tokens.forEach((token) => {
           if (token.type !== AssetType.STABLESWAP) {
@@ -147,10 +158,23 @@ export const useStablepools = () => {
         return { poolId: stablePool.id, tokens: filteredTokens }
       }) ?? []
 
-    return { stablePoolData: list, tokenIds: [...tokenSet] }
-  }, [pools])
+    return { stablePoolData: list, tokenIds: [...tokenSet], aTokens }
+  }, [pools, getRelatedAToken])
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(tokenIds)
+
+  const { data: borrowAssetsApy } = useBorrowAssetsApy(
+    stablePoolData
+      ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+      .map((pool) => pool.poolId.toString()),
+  )
+
+  const aTokensApyByPool = useMemo(() => {
+    return borrowAssetsApy?.reduce((acc, aToken) => {
+      acc.set(aToken.assetId, aToken)
+      return acc
+    }, new Map<string, BorrowAssetApyData>())
+  }, [borrowAssetsApy])
 
   const data = useMemo(
     () =>
@@ -172,7 +196,8 @@ export const useStablepools = () => {
         const lpFee = feeByAsset.get(poolId.toString())
         const volume = volumeByAsset.get(poolId.toString())
 
-        const aToken = getRelatedAToken(poolId.toString())
+        const aToken = aTokens.get(poolId.toString())
+        const borrowApyData = aTokensApyByPool?.get(poolId.toString())
 
         const data: TStablepoolData = {
           id: poolId,
@@ -181,6 +206,7 @@ export const useStablepools = () => {
           lpFee,
           volume,
           aToken,
+          borrowApyData,
         }
 
         return data
@@ -190,7 +216,8 @@ export const useStablepools = () => {
       getAssetPrice,
       volumeByAsset,
       feeByAsset,
-      getRelatedAToken,
+      aTokens,
+      aTokensApyByPool,
     ],
   )
 
@@ -293,6 +320,9 @@ export const useOmnipoolStablepools = () => {
       const aStableswapBalance = aStableswapAsset
         ? getTransferableBalance(aStableswapAsset.id.toString())
         : undefined
+      const borrowApyData = isStablepoolOnly
+        ? pool.borrowApyData
+        : stablepoolInOmnipool?.borrowApyData
 
       const allFarms = omnipoolFarms?.[poolId] ?? []
       const farms =
@@ -306,7 +336,7 @@ export const useOmnipoolStablepools = () => {
       let volume: string | undefined
       let lpFeeOmnipool: string | undefined
       let lpFeeStablepool: string | undefined
-      let totalFee: string | undefined
+      let totalFee = borrowApyData?.totalSupplyApy?.toString()
 
       if (isStablepoolOnly) {
         volume = pool.volume
@@ -331,6 +361,12 @@ export const useOmnipoolStablepools = () => {
                 .plus(totalApr)
                 .toString()
             : undefined
+      }
+
+      if (borrowApyData?.totalSupplyApy) {
+        totalFee = Big(borrowApyData.totalSupplyApy)
+          .plus(totalFee ?? 0)
+          .toString()
       }
 
       const price = assetPrice.isValid
@@ -385,6 +421,7 @@ export const useOmnipoolStablepools = () => {
         isStablepoolInOmnipool,
         aStableswapBalance,
         aStableswapAsset,
+        borrowApyData,
       }
     })
 

@@ -3,7 +3,7 @@ import { GhoReserveData, GhoUserData, normalize } from "@aave/math-utils"
 import { StateCreator } from "zustand"
 
 import { GHO_SUPPORTED_MARKETS, GHO_SYMBOL } from "@/utils/ghoUtilities"
-import { getProvider } from "@/utils/marketsAndNetworksConfig"
+import { getProvider } from "@/utils/provider"
 
 import { RootStore } from "./root"
 

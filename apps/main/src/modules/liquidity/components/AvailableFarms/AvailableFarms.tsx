@@ -1,4 +1,4 @@
-import { Flex, Modal } from "@galacticcouncil/ui/components"
+import { Modal } from "@galacticcouncil/ui/components"
 import { useState } from "react"
 
 import { Farm } from "@/api/farms"
@@ -8,23 +8,20 @@ import { AvailableFarmModalBody } from "./AvailableFarmModalBody"
 
 type AvailableFarmsProps = {
   farms: Farm[]
-  className?: string
 }
 
-export const AvailableFarms = ({ farms, className }: AvailableFarmsProps) => {
+export const AvailableFarms = ({ farms }: AvailableFarmsProps) => {
   const [selectedFarm, setSelectedFarm] = useState<Farm | null>(null)
 
   return (
     <>
-      <Flex direction="column" gap={20} className={className}>
-        {farms.map((farm) => (
-          <AvailableFarm
-            key={farm.yieldFarmId}
-            farm={farm}
-            onClick={setSelectedFarm}
-          />
-        ))}
-      </Flex>
+      {farms.map((farm) => (
+        <AvailableFarm
+          key={farm.yieldFarmId}
+          farm={farm}
+          onClick={setSelectedFarm}
+        />
+      ))}
 
       <Modal open={!!selectedFarm} onOpenChange={() => setSelectedFarm(null)}>
         <AvailableFarmModalBody farm={selectedFarm} />
