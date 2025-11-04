@@ -6,10 +6,10 @@ import { useTranslation } from "react-i18next"
 
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { FarmRewards, useFarmRewards } from "@/api/farms"
-import { useXykPools } from "@/api/pools"
+import { PoolBase, useXykPools } from "@/api/pools"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountPositions } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { useTransactionsStore } from "@/states/transactions"
@@ -114,51 +114,7 @@ export const useClaimFarmRewardsMutation = ({
     mutationFn: async ({ displayValue }: { displayValue: string }) => {
       if (!pools) throw new Error("Pools not found")
 
-      const omnipoolTxs: Array<AnyPapiTx> = []
-      const xykTxs: Array<AnyPapiTx> = []
-
-      claimableDeposits.forEach((farm) => {
-        if (farm.isXyk) {
-          if (farm.isActiveFarm) {
-            const tx = papi.tx.XYKLiquidityMining.claim_rewards({
-              deposit_id: BigInt(farm.depositId),
-              yield_farm_id: farm.yieldFarmId,
-            })
-
-            xykTxs.push(tx)
-          } else {
-            const [assetA, assetB] =
-              pools?.find((pool) => pool.address === farm.assetId)?.tokens ?? []
-
-            if (assetA && assetB) {
-              const tx = papi.tx.XYKLiquidityMining.withdraw_shares({
-                deposit_id: BigInt(farm.depositId),
-                yield_farm_id: farm.yieldFarmId,
-                asset_pair: {
-                  asset_in: assetA.id,
-                  asset_out: assetB.id,
-                },
-              })
-
-              xykTxs.push(tx)
-            }
-          }
-        } else {
-          const tx = farm.isActiveFarm
-            ? papi.tx.OmnipoolLiquidityMining.claim_rewards({
-                deposit_id: BigInt(farm.depositId),
-                yield_farm_id: farm.yieldFarmId,
-              })
-            : papi.tx.OmnipoolLiquidityMining.withdraw_shares({
-                deposit_id: BigInt(farm.depositId),
-                yield_farm_id: farm.yieldFarmId,
-              })
-
-          omnipoolTxs.push(tx)
-        }
-      })
-
-      const allTxs = [...omnipoolTxs, ...xykTxs]
+      const allTxs = getClaimFarmRewardsTx(papi, pools, claimableDeposits)
 
       if (allTxs.length === 0) return
 
@@ -200,4 +156,60 @@ export const useClaimFarmRewardsMutation = ({
       }
     },
   })
+}
+
+export const getClaimFarmRewardsTx = (
+  papi: Papi,
+  pools: ReadonlyArray<PoolBase>,
+  claimableDeposits: ReadonlyArray<FarmRewards>,
+) => {
+  if (!pools.length) {
+    return []
+  }
+
+  const omnipoolTxs: Array<AnyPapiTx> = []
+  const xykTxs: Array<AnyPapiTx> = []
+
+  claimableDeposits.forEach((farm) => {
+    if (farm.isXyk) {
+      if (farm.isActiveFarm) {
+        const tx = papi.tx.XYKLiquidityMining.claim_rewards({
+          deposit_id: BigInt(farm.depositId),
+          yield_farm_id: farm.yieldFarmId,
+        })
+
+        xykTxs.push(tx)
+      } else {
+        const [assetA, assetB] =
+          pools?.find((pool) => pool.address === farm.assetId)?.tokens ?? []
+
+        if (assetA && assetB) {
+          const tx = papi.tx.XYKLiquidityMining.withdraw_shares({
+            deposit_id: BigInt(farm.depositId),
+            yield_farm_id: farm.yieldFarmId,
+            asset_pair: {
+              asset_in: assetA.id,
+              asset_out: assetB.id,
+            },
+          })
+
+          xykTxs.push(tx)
+        }
+      }
+    } else {
+      const tx = farm.isActiveFarm
+        ? papi.tx.OmnipoolLiquidityMining.claim_rewards({
+            deposit_id: BigInt(farm.depositId),
+            yield_farm_id: farm.yieldFarmId,
+          })
+        : papi.tx.OmnipoolLiquidityMining.withdraw_shares({
+            deposit_id: BigInt(farm.depositId),
+            yield_farm_id: farm.yieldFarmId,
+          })
+
+      omnipoolTxs.push(tx)
+    }
+  })
+
+  return [...omnipoolTxs, ...xykTxs]
 }

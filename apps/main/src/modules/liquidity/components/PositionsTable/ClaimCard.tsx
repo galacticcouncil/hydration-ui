@@ -51,9 +51,7 @@ export const ClaimCard = ({
 
   const { mutate: claimRewards } = useClaimFarmRewardsMutation({
     claimableDeposits: rewards ?? [],
-    onSuccess: () => {
-      refetch()
-    },
+    onSuccess: () => refetch(),
   })
 
   if (!rewards?.length) return null
