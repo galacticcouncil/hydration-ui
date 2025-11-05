@@ -26,7 +26,7 @@ import { isXYKPoolMeta, XYKPoolMeta } from "@/providers/assetsProvider"
 import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 import { useAssetPrice } from "@/states/displayAsset"
 
-import { RecieveAssets, TReceiveAsset } from "./RecieveAssets"
+import { ReceiveAssets, TReceiveAsset } from "./ReceiveAssets"
 import {
   RemoveIsolatedPoolsLiquidity,
   RemoveSelectableXYKPositions,
@@ -164,7 +164,7 @@ export const RemoveLiquidityForm = ({
 
             <ModalContentDivider />
 
-            <RecieveAssets assets={receiveAssets} positions={deposits} />
+            <ReceiveAssets assets={receiveAssets} positions={deposits} />
 
             {!isIsolatedPool && (
               <div>

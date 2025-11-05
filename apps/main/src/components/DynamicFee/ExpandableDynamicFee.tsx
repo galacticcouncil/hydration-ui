@@ -56,7 +56,7 @@ export const ExpandableDynamicFee = ({
   const { t } = useTranslation(["common", "liquidity"])
   const [expanded, setExpanded] = useState(false)
 
-  const currentKey = ((): DynamicFeeRangeType | undefined => {
+  const currentKey = ((): DynamicFeeRangeType => {
     switch (true) {
       case value > rangeHigh:
         return "high"

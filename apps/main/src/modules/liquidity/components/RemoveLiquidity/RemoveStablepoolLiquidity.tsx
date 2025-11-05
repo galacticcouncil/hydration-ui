@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next"
 import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { RecieveAssets } from "@/modules/liquidity/components/RemoveLiquidity/RecieveAssets"
+import { ReceiveAssets } from "@/modules/liquidity/components/RemoveLiquidity/ReceiveAssets"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
 import {
   TradeLimitRow,
@@ -36,19 +36,19 @@ import {
 } from "./RemoveStablepoolLiquidity.utils"
 
 export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
-  const { data: stablepolData } = useStablepoolReserves(
+  const { data: stablepoolData } = useStablepoolReserves(
     props.stableswapId ?? props.poolId,
   )
   const { isBalanceLoading } = useAccountBalances()
 
-  const initialReceiveAsset = stablepolData?.reserves[0]?.meta
+  const initialReceiveAsset = stablepoolData?.reserves[0]?.meta
 
-  if (!stablepolData || isBalanceLoading || !initialReceiveAsset)
+  if (!stablepoolData || isBalanceLoading || !initialReceiveAsset)
     return <RemoveLiquiditySkeleton />
 
   return (
     <RemoveStablepoolLiquidityJSX
-      pool={stablepolData}
+      pool={stablepoolData}
       initialReceiveAsset={initialReceiveAsset}
       {...props}
     />
@@ -69,11 +69,17 @@ const RemoveStablepoolLiquidityJSX = ({
   const { t } = useTranslation(["liquidity", "common"])
   const { pool: poolData, reserves } = pool
 
-  const { form, balance, receiveAssets, fee, removeAmountShifted, onSubmit } =
-    useStablepoolRemoveLiquidity({
-      ...pool,
-      initialReceiveAsset,
-    })
+  const {
+    form,
+    balance,
+    receiveAssetsProportionally,
+    fee,
+    removeAmountShifted,
+    onSubmit,
+  } = useStablepoolRemoveLiquidity({
+    ...pool,
+    initialReceiveAsset,
+  })
 
   const {
     formState: { isValid },
@@ -172,7 +178,7 @@ const RemoveStablepoolLiquidityJSX = ({
                 direction="column"
                 gap={getTokenPx("containers.paddings.quint")}
               >
-                <RecieveAssets assets={receiveAssets ?? []} />
+                <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
               </Flex>
             )}
 

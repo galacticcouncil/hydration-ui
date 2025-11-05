@@ -31,7 +31,7 @@ import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
-import { TReceiveAsset } from "./RecieveAssets"
+import { TReceiveAsset } from "./ReceiveAssets"
 
 export type TRemoveLiquidityFormValues = {
   amount: string

@@ -2,6 +2,7 @@ import { calculate_liquidity_out_one_asset } from "@galacticcouncil/math-stables
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
+import { useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
@@ -64,90 +65,100 @@ export const useStablepoolRemoveLiquidity = ({
   })
 
   const removeAmountShifted = form.watch("amount") || "0"
-  const removeAmount = Big(scale(removeAmountShifted, meta.decimals))
+  const removeAmount = Big(scale(removeAmountShifted, meta.decimals)).toFixed(0)
   const receiveAsset = form.watch("receiveAsset")
   const split = form.watch("split")
+  const totalIssuance = pool.totalIssuance.toString()
 
-  const receiveAssets = (() => {
-    const totalIssuance = pool.totalIssuance.toString()
+  const receiveAssetsProportionally = useMemo(() => {
+    return reserves.map((reserve) => {
+      const maxValue = Big(removeAmount)
+        .div(totalIssuance)
+        .times(reserve.amount)
+        .toFixed(0)
 
-    if (removeAmount.gt(0) && fee) {
-      if (split) {
-        return reserves.map((reserve) => {
-          const maxValue = removeAmount
-            .div(totalIssuance)
-            .times(reserve.amount)
-            .toFixed(0)
+      const value = Big(maxValue)
+        .minus(Big(slippage).times(maxValue).div(100))
+        .toFixed(0)
 
-          const value = Big(maxValue)
-            .minus(Big(slippage).times(maxValue).div(100))
-            .toFixed(0)
+      return { value, asset: reserve.meta }
+    })
+  }, [totalIssuance, removeAmount, reserves, slippage])
 
-          return { value, asset: reserve.meta }
-        })
-      } else {
-        const maxValue = calculate_liquidity_out_one_asset(
-          JSON.stringify(
-            reserves.map((reserve) => ({
-              amount: reserve.amount,
-              decimals: reserve.meta.decimals,
-              asset_id: reserve.asset_id,
-            })),
-          ),
-          removeAmount.toFixed(0),
-          Number(receiveAsset.id),
-          pool.amplification.toString(),
-          totalIssuance,
-          scaleHuman(fee, 2),
-          JSON.stringify(pool.pegs),
-        )
+  const liquidityOutOneAsset = useMemo(() => {
+    if (!fee) return undefined
 
-        const value = Big(maxValue)
-          .minus(Big(slippage).times(maxValue).div(100))
-          .toFixed(0)
+    const maxValue = calculate_liquidity_out_one_asset(
+      JSON.stringify(
+        reserves.map((reserve) => ({
+          amount: reserve.amount,
+          decimals: reserve.meta.decimals,
+          asset_id: reserve.asset_id,
+        })),
+      ),
+      removeAmount,
+      Number(receiveAsset.id),
+      pool.amplification.toString(),
+      totalIssuance,
+      scaleHuman(fee, 2),
+      JSON.stringify(pool.pegs),
+    )
 
-        form.setValue("receiveAmount", scaleHuman(value, receiveAsset.decimals))
+    const value = Big(maxValue)
+      .minus(Big(slippage).times(maxValue).div(100))
+      .toFixed(0)
 
-        return [{ value, asset: receiveAsset }]
-      }
+    return value
+  }, [
+    fee,
+    pool.amplification,
+    pool.pegs,
+    receiveAsset.id,
+    removeAmount,
+    reserves,
+    slippage,
+    totalIssuance,
+  ])
+
+  useEffect(() => {
+    if (!split && liquidityOutOneAsset) {
+      form.setValue(
+        "receiveAmount",
+        scaleHuman(liquidityOutOneAsset, receiveAsset.decimals),
+      )
     }
-  })()
+  }, [form, split, liquidityOutOneAsset, receiveAsset.decimals])
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
-      if (!receiveAssets) throw new Error("Receive assets not found")
-
-      const receiveAsset = receiveAssets[0]
-
-      if (!receiveAsset) throw new Error("Receive assets not found")
+      if (!receiveAssetsProportionally)
+        throw new Error("Receive assets not found")
 
       const tx = split
         ? papi.tx.Stableswap.remove_liquidity({
             pool_id: Number(pool.id),
-            share_amount: BigInt(removeAmount.toFixed(0)),
-            min_amounts_out: receiveAssets.map((asset) => ({
+            share_amount: BigInt(removeAmount),
+            min_amounts_out: receiveAssetsProportionally.map((asset) => ({
               amount: BigInt(asset.value),
               asset_id: Number(asset.asset.id),
             })),
           })
         : papi.tx.Stableswap.remove_liquidity_one_asset({
             pool_id: Number(pool.id),
-            share_amount: BigInt(removeAmount.toFixed(0)),
-            asset_id: Number(receiveAsset.asset.id),
-            min_amount_out: BigInt(receiveAsset.value),
+            share_amount: BigInt(removeAmount),
+            asset_id: Number(receiveAsset.id),
+            min_amount_out: BigInt(
+              scale(form.watch("receiveAmount"), receiveAsset.decimals),
+            ),
           })
 
       const toasts = {
         submitted: t("liquidity.remove.stablepool.modal.toast.submitted", {
-          value: removeAmount.toFixed(0),
+          value: removeAmount,
           symbol: t("shares"),
         }),
         success: t("liquidity.remove.stablepool.modal.toast.success", {
-          value: removeAmount.toFixed(0),
-          symbol: t("shares"),
-        }),
-        error: t("liquidity.remove.stablepool.modal.toast.submitted", {
-          value: removeAmount.toFixed(0),
+          value: removeAmount,
           symbol: t("shares"),
         }),
       }
@@ -167,7 +178,7 @@ export const useStablepoolRemoveLiquidity = ({
     form,
     balance: balanceShifted,
     fee,
-    receiveAssets,
+    receiveAssetsProportionally,
     mutation,
     onSubmit,
     removeAmountShifted,

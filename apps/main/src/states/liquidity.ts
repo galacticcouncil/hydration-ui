@@ -101,10 +101,26 @@ export type OmnipoolPositionData = {
 
 export const useFormatOmnipoolPositionData = () => {
   const { t } = useTranslation("common")
-  const { hub } = useAssets()
+  const {
+    hub: { symbol: hubSymbol },
+  } = useAssets()
 
-  return (data: OmnipoolPositionData) =>
-    `${t("currency", { value: data.currentValueHuman, symbol: data.meta.symbol })} ${data.currentHubValueHuman && Big(data.currentHubValueHuman).gt(0) ? t("currency", { value: data.currentHubValueHuman, symbol: hub.symbol, prefix: " + " }) : ""}`
+  return (data: OmnipoolPositionData) => {
+    const {
+      currentValueHuman,
+      currentHubValueHuman,
+      meta: { symbol },
+    } = data
+
+    const value = t("currency", { value: currentValueHuman, symbol })
+    const hubValue = currentHubValueHuman
+
+    if (Big(hubValue).gt(0)) {
+      return `${value} + ${t("currency", { value: hubValue, symbol: hubSymbol })}`
+    }
+
+    return value
+  }
 }
 
 export const useOmnipoolPositionData = (

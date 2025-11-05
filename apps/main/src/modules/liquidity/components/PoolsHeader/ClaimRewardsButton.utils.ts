@@ -170,7 +170,7 @@ export const getClaimFarmRewardsTx = (
   const omnipoolTxs: Array<AnyPapiTx> = []
   const xykTxs: Array<AnyPapiTx> = []
 
-  claimableDeposits.forEach((farm) => {
+  for (const farm of claimableDeposits) {
     if (farm.isXyk) {
       if (farm.rewards.isActiveFarm) {
         const tx = papi.tx.XYKLiquidityMining.claim_rewards({
@@ -209,7 +209,7 @@ export const getClaimFarmRewardsTx = (
 
       omnipoolTxs.push(tx)
     }
-  })
+  }
 
   return [...omnipoolTxs, ...xykTxs]
 }

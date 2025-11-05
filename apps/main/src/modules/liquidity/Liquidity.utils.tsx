@@ -9,6 +9,7 @@ import { OmniMath } from "@galacticcouncil/sdk"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
+import { isNumber } from "remeda"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20 } from "@/api/assets"
@@ -696,7 +697,7 @@ export const calculatePoolFee = (fee?: number[] | PoolFee) => {
   const numerator = fee[0]
   const denominator = fee[1]
 
-  if (!numerator || !denominator) return undefined
+  if (!isNumber(numerator) || !isNumber(denominator)) return undefined
 
   const tradeFee = Big(numerator).div(denominator)
 

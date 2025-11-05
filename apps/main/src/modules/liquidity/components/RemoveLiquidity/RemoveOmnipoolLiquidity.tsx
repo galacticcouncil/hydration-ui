@@ -45,7 +45,7 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
   } = useRemoveSelectablePositions(props)
 
   const onSelectPosition = (position: AccountOmnipoolPosition) => {
-    setSelectedPositionIds((prev) => new Set(prev.add(position.positionId)))
+    setSelectedPositionIds((prev) => new Set([...prev, position.positionId]))
   }
 
   const onUnselectPosition = (position: AccountOmnipoolPosition) => {
@@ -132,7 +132,6 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
           <ModalContentDivider />
 
           <Button
-            type="submit"
             size="large"
             width="100%"
             onClick={() => setConfirmedSelection(true)}

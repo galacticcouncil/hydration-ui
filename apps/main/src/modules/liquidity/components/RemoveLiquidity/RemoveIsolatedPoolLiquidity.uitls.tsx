@@ -57,19 +57,18 @@ export const useRemoveSelectableXYKPositions = ({
     .div(liquidity ? scaleHuman(liquidity, meta.decimals) : 1)
     .toString()
 
-  const positionsData =
-    positions.map((position) => {
-      const isSelected = selectedPositionIds.has(position.id)
-      const sharesShifted = scaleHuman(position.shares, meta.decimals)
-      const sharesDisplay = Big(sharesShifted).times(price).toString()
+  const positionsData = positions.map((position) => {
+    const isSelected = selectedPositionIds.has(position.id)
+    const sharesShifted = scaleHuman(position.shares, meta.decimals)
+    const sharesDisplay = Big(sharesShifted).times(price).toString()
 
-      return {
-        ...position,
-        sharesShifted,
-        sharesDisplay,
-        isSelected,
-      }
-    }) ?? []
+    return {
+      ...position,
+      sharesShifted,
+      sharesDisplay,
+      isSelected,
+    }
+  })
 
   const selectedPositions = positionsData.filter((pos) => pos.isSelected)
 

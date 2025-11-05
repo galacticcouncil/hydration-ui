@@ -32,7 +32,7 @@ import {
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 
-import { RecieveAssets } from "./RecieveAssets"
+import { ReceiveAssets } from "./ReceiveAssets"
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
 import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
 import { useRemoveMoneyMarketLiquidity } from "./RemoveMoneyMarketLiquidity.utils"
@@ -150,7 +150,7 @@ export const RemoveMoneyMarketLiquidityForm = (
                 direction="column"
                 gap={getTokenPx("containers.paddings.quint")}
               >
-                <RecieveAssets assets={receiveAssetsProportionally ?? []} />
+                <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
               </Flex>
             )}
 

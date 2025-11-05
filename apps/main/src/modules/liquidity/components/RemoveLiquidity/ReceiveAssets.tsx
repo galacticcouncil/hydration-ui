@@ -19,7 +19,7 @@ export type TReceiveAsset = {
   value: string
 }
 
-export const RecieveAssets = ({
+export const ReceiveAssets = ({
   assets,
   positions,
 }: {

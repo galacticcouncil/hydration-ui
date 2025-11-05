@@ -48,7 +48,7 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
   } = selectablePositions
 
   const onSelectPosition = (position: XykDeposit) => {
-    setSelectedPositionIds((prev) => new Set(prev.add(position.id)))
+    setSelectedPositionIds((prev) => new Set([...prev, position.id]))
   }
 
   const onUnselectPosition = (position: XykDeposit) => {
