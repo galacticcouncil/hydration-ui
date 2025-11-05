@@ -6,6 +6,7 @@ import { useAccountInfo } from "@/api/account"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
 import { useTransactionEcosystem } from "@/modules/transactions/hooks/useTransactionEcosystem"
+import { useTransactionPaymentInfo } from "@/modules/transactions/hooks/useTransactionPaymentInfo"
 import { useTransactionTip } from "@/modules/transactions/hooks/useTransactionTip"
 import { useTransactionToasts } from "@/modules/transactions/hooks/useTransactionToasts"
 import {
@@ -78,6 +79,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     transaction?.fee?.feePaymentAssetId,
   )
 
+  const { data: paymentInfo, isLoading: isLoadingPaymentInfo } =
+    useTransactionPaymentInfo(transaction.tx)
+
   const feeEstimateNative = fee?.feeEstimateNative
   const feeEstimate = fee?.feeEstimate
   const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
@@ -125,6 +129,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       chainKey: transaction.meta.srcChainKey,
       feeAssetId,
       tip,
+      weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
@@ -150,7 +155,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
     })
   }
 
-  const isLoading = isLoadingNonce || isLoadingFeeEstimate
+  const isLoading =
+    isLoadingNonce || isLoadingFeeEstimate || isLoadingPaymentInfo
 
   return (
     <TransactionContext.Provider

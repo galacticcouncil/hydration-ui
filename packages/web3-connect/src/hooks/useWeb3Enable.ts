@@ -1,5 +1,6 @@
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -10,21 +11,46 @@ import {
 import { WalletProviderType } from "@/config/providers"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { BaseWalletError } from "@/utils/errors"
-import { toStoredAccount } from "@/utils/wallet"
+import { subscribeWalletAccounts, toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 
 export const useWeb3Enable = () => {
-  const { setStatus, setError, disconnect, setAccounts } = useWeb3Connect(
-    useShallow(pick(["setStatus", "setError", "disconnect", "setAccounts"])),
-  )
+  const { setStatus, setError, disconnect, setAccounts, setAccount } =
+    useWeb3Connect(
+      useShallow(
+        pick([
+          "setStatus",
+          "setError",
+          "disconnect",
+          "setAccounts",
+          "setAccount",
+        ]),
+      ),
+    )
 
   const { add: addToAddressBook } = useAddressStore()
+
+  const unsubsRef = useRef<Map<WalletProviderType, () => void>>(new Map())
 
   const { mutateAsync: enable, ...mutation } = useMutation({
     mutationFn: async (type: WalletProviderType) => {
       const wallet = getWallet(type)
       if (!wallet) return []
       await wallet.enable()
+
+      const isSubscribed = unsubsRef.current.has(type)
+      if (!isSubscribed) {
+        const unsub = subscribeWalletAccounts(wallet, {
+          onDisconnect: () => disconnect(type),
+          onAccountsChange: (accounts) => {
+            setAccounts(accounts.map(toStoredAccount))
+          },
+          onMainAccountChange: (mainAccount) => {
+            setAccount(toStoredAccount(mainAccount))
+          },
+        })
+        unsubsRef.current.set(type, unsub)
+      }
       return wallet.getAccounts()
     },
     retry: false,
@@ -58,6 +84,14 @@ export const useWeb3Enable = () => {
       }
     },
   })
+
+  useEffect(() => {
+    const unsubs = unsubsRef.current
+    return () => {
+      unsubs.forEach((unsub) => unsub())
+      unsubs.clear()
+    }
+  }, [])
 
   return {
     enable,

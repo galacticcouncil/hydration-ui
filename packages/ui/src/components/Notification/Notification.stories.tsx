@@ -1,4 +1,5 @@
 import { Meta, StoryObj } from "@storybook/react"
+import { useState } from "react"
 
 import { Notification } from "./Notification"
 
@@ -10,14 +11,19 @@ export default {
 
 const Template = (
   args: React.ComponentPropsWithoutRef<typeof Notification>,
-) => (
-  <Notification
-    {...args}
-    onClose={() => {}}
-    content="Transaction has been submitted"
-    dateString="2 minutes ago"
-  />
-)
+) => {
+  // remount on iteration change to reset progress animation
+  const [i, setIteration] = useState(0)
+  return (
+    <Notification
+      key={i}
+      {...args}
+      onClose={() => setIteration((i) => i + 1)}
+      content="Transaction has been submitted"
+      dateString="2 minutes ago"
+    />
+  )
+}
 
 export const Success: Story = {
   render: Template,

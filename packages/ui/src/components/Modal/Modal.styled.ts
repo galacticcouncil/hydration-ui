@@ -1,7 +1,8 @@
 import styled from "@emotion/styled"
-import { Close, Content, Overlay } from "@radix-ui/react-dialog"
+import { Content, Overlay } from "@radix-ui/react-dialog"
 
 import { Box } from "@/components/Box"
+import { ButtonIcon } from "@/components/Button"
 import { Flex } from "@/components/Flex"
 import { Paper } from "@/components/Paper"
 import { Separator } from "@/components/Separator"
@@ -28,9 +29,9 @@ export const SModalOverlay = styled(Overlay)`
   }
 `
 
-export const SModalClose = styled(Close)`
+export const SModalClose = styled(ButtonIcon)`
   padding: 4px;
-  height: min-content;
+  flex-grow: 0;
 
   cursor: pointer;
 `
@@ -120,7 +121,7 @@ export const SModalHeader = styled(Flex)`
     align-items: center;
     gap: 8px;
 
-    & > :not(.close) {
+    & > :not(button) {
       flex-grow: 1;
     }
   }

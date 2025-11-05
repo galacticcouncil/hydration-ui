@@ -22,6 +22,7 @@ import { getAccountAvatarTheme } from "@/utils"
 import { getWallet } from "@/wallets"
 
 export type AccountOptionProps = Account & {
+  className?: string
   isActive?: boolean
   isProxy?: boolean
   isBalanceLoading?: boolean
@@ -31,6 +32,7 @@ export type AccountOptionProps = Account & {
 }
 
 export const AccountOption: React.FC<AccountOptionProps> = ({
+  className,
   isActive,
   isProxy = false,
   balance,
@@ -46,6 +48,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
 
   return (
     <SAccountOption
+      className={className}
       data-active={isActive}
       data-proxy={isProxy}
       {...(onSelect

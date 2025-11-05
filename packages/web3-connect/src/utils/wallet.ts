@@ -9,16 +9,17 @@ import {
 } from "@galacticcouncil/utils"
 import { addr } from "@galacticcouncil/xcm-core"
 
-const { Ss58Addr, EvmAddr, SolanaAddr } = addr
-
 import { WalletProviderType } from "@/config/providers"
 import {
   Account,
   COMPATIBLE_WALLET_PROVIDERS,
   StoredAccount,
+  useWeb3Connect,
   WalletMode,
 } from "@/hooks/useWeb3Connect"
-import { WalletAccount } from "@/types/wallet"
+import { Wallet, WalletAccount } from "@/types/wallet"
+
+const { Ss58Addr, EvmAddr, SolanaAddr } = addr
 
 export const toStoredAccount = ({
   address,
@@ -74,4 +75,41 @@ export function getWalletModeFromAddress(address: string) {
   }
 
   return null
+}
+
+export type AccountsSubscribeOptions = {
+  onDisconnect: () => void | Promise<void>
+  onAccountsChange: (accounts: WalletAccount[]) => void | Promise<void>
+  onMainAccountChange: (mainAccount: WalletAccount) => void | Promise<void>
+}
+
+export function subscribeWalletAccounts(
+  wallet: Wallet,
+  {
+    onDisconnect,
+    onAccountsChange,
+    onMainAccountChange,
+  }: AccountsSubscribeOptions,
+) {
+  const unsubscribe = wallet.subscribeAccounts((accounts) => {
+    if (!accounts || accounts.length === 0) {
+      return onDisconnect()
+    }
+
+    onAccountsChange(accounts)
+
+    const { account: currentAccount } = useWeb3Connect.getState()
+    if (!currentAccount || currentAccount.provider !== wallet.provider) return
+
+    const isCurrentAccountConnected = accounts.some(
+      (a) => toStoredAccount(a).publicKey === currentAccount.publicKey,
+    )
+
+    if (isCurrentAccountConnected) return
+
+    const [mainAccount] = accounts
+    return onMainAccountChange(mainAccount)
+  })
+
+  return unsubscribe
 }

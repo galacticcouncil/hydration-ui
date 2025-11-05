@@ -1,12 +1,11 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X } from "lucide-react"
 import { FC, Ref } from "react"
 
 import { FlexProps } from "@/components/Flex"
+import { ModalClose } from "@/components/Modal"
 
 import {
   SSheetBody,
-  SSheetClose,
   SSheetContent,
   SSheetHeader,
   SSheetOverlay,
@@ -21,7 +20,7 @@ const SheetTrigger = DialogPrimitive.Trigger
 
 const SheetPortal = DialogPrimitive.Portal
 
-const SheetClose = DialogPrimitive.Close
+const SheetClose = ModalClose
 
 const SheetOverlay: FC<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
@@ -61,9 +60,7 @@ type SheetHeaderProps = Omit<FlexProps, "title"> & {
 const SheetHeader: FC<SheetHeaderProps> = ({ title, ...props }) => (
   <SSheetHeader {...props}>
     <SheetTitle>{title || <>&nbsp;</>}</SheetTitle>
-    <SSheetClose>
-      <X sx={{ width: 20, height: 20 }} />
-    </SSheetClose>
+    <ModalClose />
   </SSheetHeader>
 )
 
