@@ -151,6 +151,6 @@ export const useOraclePrice = (
 
             return null
           }
-        : undefined,
+        : () => null,
   })
 }

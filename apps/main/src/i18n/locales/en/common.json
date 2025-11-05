@@ -98,6 +98,7 @@
   "incentivesApr": "Incentives APR",
   "totalValue": "Total value",
   "apr": "APR",
+  "minimalReceived": "Minimal received",
   "apr.lpFee": "LP Fee APR",
   "apr.lpFeeOmnipool": "Omnipool LP Fee APR",
   "apr.lpFeeStablepool": "Stablepool LP Fee APR",
