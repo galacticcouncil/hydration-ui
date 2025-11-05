@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import { create } from "zustand"
 import { useShallow } from "zustand/shallow"
@@ -96,6 +97,30 @@ export type OmnipoolPositionData = {
   initialDisplay: string
 
   meta: TAssetData
+}
+
+export const useFormatOmnipoolPositionData = () => {
+  const { t } = useTranslation("common")
+  const {
+    hub: { symbol: hubSymbol },
+  } = useAssets()
+
+  return (data: OmnipoolPositionData) => {
+    const {
+      currentValueHuman,
+      currentHubValueHuman,
+      meta: { symbol },
+    } = data
+
+    const value = t("currency", { value: currentValueHuman, symbol })
+    const hubValue = currentHubValueHuman
+
+    if (Big(hubValue).gt(0)) {
+      return `${value} + ${t("currency", { value: hubValue, symbol: hubSymbol })}`
+    }
+
+    return value
+  }
 }
 
 export const useOmnipoolPositionData = (

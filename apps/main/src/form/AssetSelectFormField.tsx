@@ -5,9 +5,11 @@ import {
   useFormContext,
 } from "react-hook-form"
 
+import { TAssetData } from "@/api/assets"
 import {
   AssetSelect,
   AssetSelectProps,
+  TSelectedAsset,
 } from "@/components/AssetSelect/AssetSelect"
 import { TAsset } from "@/providers/assetsProvider"
 
@@ -15,7 +17,7 @@ type Props<TFormValues extends FieldValues> = Omit<
   AssetSelectProps,
   "selectedAsset" | "setSelectedAsset" | "value" | "onChange" | "error"
 > & {
-  readonly assetFieldName: FieldPathByValue<TFormValues, TAsset | null>
+  readonly assetFieldName: FieldPathByValue<TFormValues, TSelectedAsset | null>
   readonly amountFieldName: FieldPathByValue<TFormValues, string>
   readonly onAssetChange?: (asset: TAsset, previousAsset: TAsset | null) => void
   readonly onAmountChange?: (amount: string) => void
@@ -31,6 +33,7 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
   ...assetSelectProps
 }: Props<TFormValues>) => {
   const { control } = useFormContext<TFormValues>()
+
   const { field: assetField, fieldState: assetFieldState } = useController({
     control,
     name: assetFieldName,
@@ -41,18 +44,16 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
     name: amountFieldName,
   })
 
+  const setSelectedAsset = (asset: TAssetData) => {
+    assetField.onChange(asset)
+    onAssetChange?.(asset, assetField.value)
+  }
+
   return (
     <AssetSelect
       {...assetSelectProps}
       selectedAsset={assetField.value}
-      setSelectedAsset={
-        !disabledAssetSelector
-          ? (asset) => {
-              assetField.onChange(asset)
-              onAssetChange?.(asset, assetField.value)
-            }
-          : undefined
-      }
+      setSelectedAsset={!disabledAssetSelector ? setSelectedAsset : undefined}
       value={amountField.value}
       onChange={(value) => {
         amountField.onChange(value)

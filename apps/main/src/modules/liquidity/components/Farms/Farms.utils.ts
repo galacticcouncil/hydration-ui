@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { wrap } from "comlink"
+import { useCallback } from "react"
 
-import { bestNumberQuery } from "@/api/chain"
+import { bestNumberQuery, useRelayChainBlockNumber } from "@/api/chain"
 import { Farm } from "@/api/farms"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { QUINTILL, RELAY_BLOCK_TIME } from "@/utils/consts"
@@ -31,14 +32,17 @@ export const useSecondsToLeft = (estimatedEndBlock: string) => {
     : undefined
 }
 
-export const useCurrentPeriod = (blocksPerPeriod: string) => {
-  const { data } = useQuery(bestNumberQuery(useRpcProvider()))
+export const useCurrentFarmPeriod = () => {
+  const relayChainBlockNumber = useRelayChainBlockNumber()
 
-  const relaychainBlockNumber = data?.relaychainBlockNumber
-
-  return relaychainBlockNumber
-    ? Big(relaychainBlockNumber).div(blocksPerPeriod)
-    : undefined
+  return useCallback(
+    (blocksPerPeriod: number) => {
+      return relayChainBlockNumber
+        ? Big(relayChainBlockNumber).div(blocksPerPeriod).toNumber()
+        : undefined
+    },
+    [relayChainBlockNumber],
+  )
 }
 
 export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {

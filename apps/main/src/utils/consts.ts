@@ -15,3 +15,5 @@ export const STALE_TIME = millisecondsInHour
 export const POT_ADDRESS = "7L53bUTCCAvmCxhe15maHwJZbjQYH89LkXuyTnTi1J58xyFC"
 
 export const QUINTILL = new Big(10).pow(18)
+
+export const AAVE_EXTRA_GAS = 1_000_000n

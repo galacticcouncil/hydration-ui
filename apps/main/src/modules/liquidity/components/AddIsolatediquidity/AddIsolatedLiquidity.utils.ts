@@ -7,24 +7,14 @@ import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
 import { useXYKConsts, useXYKPoolsLiquidity } from "@/api/xyk"
-import { IsolatedPoolTable } from "@/modules/liquidity/Liquidity.utils"
+import {
+  calculatePoolFee,
+  IsolatedPoolTable,
+} from "@/modules/liquidity/Liquidity.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
-
-const getTradeFee = (fee?: number[]) => {
-  if (fee?.length !== 2) return
-
-  const numerator = fee[0]
-  const denominator = fee[1]
-
-  if (!numerator || !denominator) return undefined
-
-  const tradeFee = Big(numerator).div(denominator)
-
-  return tradeFee.times(100).toString()
-}
 
 export const useAddIsolatedLiquidityData = (
   pool: IsolatedPoolTable,
@@ -56,7 +46,7 @@ export const useAddIsolatedLiquidityData = (
           .toString()
       : undefined
 
-  const fee = getTradeFee(consts?.fee)
+  const fee = calculatePoolFee(consts?.fee)
 
   const mutation = useMutation({
     mutationFn: async ({
