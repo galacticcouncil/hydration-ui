@@ -1,7 +1,7 @@
 import { Meta, StoryFn } from "@storybook/react"
 import { SettingsIcon } from "lucide-react"
 
-import { Rectangle7101 } from "@/assets/icons"
+import { IconPlaceholder } from "@/assets/icons"
 import {
   MenuItem,
   MenuItemDescription,
@@ -31,14 +31,14 @@ export const DropdownMenuStory: StoryFn = () => {
       <DropdownMenuContent fullWidth>
         <DropdownMenuItem asChild>
           <MenuSelectionItem>
-            <MenuItemIcon component={Rectangle7101} />
+            <MenuItemIcon component={IconPlaceholder} />
             <MenuItemLabel>Item 1</MenuItemLabel>
             <MenuSelectionItemArrow />
           </MenuSelectionItem>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <MenuItem>
-            <MenuItemIcon component={Rectangle7101} />
+            <MenuItemIcon component={IconPlaceholder} />
             <MenuItemLabel>Item 2</MenuItemLabel>
             <MenuItemDescription>Description</MenuItemDescription>
           </MenuItem>

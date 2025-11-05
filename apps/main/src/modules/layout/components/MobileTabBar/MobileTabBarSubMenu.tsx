@@ -1,4 +1,4 @@
-import { Rectangle7101 } from "@galacticcouncil/ui/assets/icons"
+import { IconPlaceholder } from "@galacticcouncil/ui/assets/icons"
 import {
   MenuItemDescription,
   MenuItemIcon,
@@ -25,7 +25,7 @@ export const MobileTabBarSubmenuItem = ({ item, ...props }: Props) => {
 
   return (
     <MenuSelectionItem as={Link} {...{ to }} {...props}>
-      <MenuItemIcon component={icon ?? Rectangle7101} />
+      <MenuItemIcon component={icon ?? IconPlaceholder} />
       <MenuItemLabel>{title}</MenuItemLabel>
       {description && <MenuItemDescription>{description}</MenuItemDescription>}
       <MenuSelectionItemArrow />
