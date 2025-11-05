@@ -1,8 +1,7 @@
 import { Button } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
-import { prop } from "remeda"
 
-import { useAccountData } from "@/states/account"
+import { useAccountPositions } from "@/states/account"
 
 import { SBadge } from "./MyLiquidityTab.styled"
 
@@ -13,7 +12,7 @@ type MyLiquidityTabArgs = {
 }
 
 export const MyLiquidityTab = ({ to, title, active }: MyLiquidityTabArgs) => {
-  const positionsAmount = useAccountData(prop("positionsAmount"))
+  const { positionsAmount } = useAccountPositions()
 
   // TODO: decide whether to hide or not
   //if (!positionsAmount) return null

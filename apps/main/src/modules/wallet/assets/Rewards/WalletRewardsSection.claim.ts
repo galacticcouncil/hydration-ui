@@ -1,7 +1,6 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 
-import { AccountUniquesQueryKey } from "@/api/account"
 import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { useXykPools } from "@/api/pools"
@@ -23,7 +22,6 @@ export const useClaimAllWalletRewards = () => {
   const rpc = useRpcProvider()
   const { papi } = rpc
 
-  const queryClient = useQueryClient()
   const { createTransaction } = useTransactionsStore()
 
   const { data: pools = [] } = useXykPools()
@@ -97,9 +95,6 @@ export const useClaimAllWalletRewards = () => {
             await Promise.all([
               ...(farmRewardsTx.length ? [refetchMiningRewards] : []),
               invalidateStakeData.mutateAsync(),
-              queryClient.invalidateQueries({
-                queryKey: AccountUniquesQueryKey(address),
-              }),
             ])
           },
         },

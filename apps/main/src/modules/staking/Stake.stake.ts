@@ -1,8 +1,6 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { AccountUniquesQueryKey } from "@/api/account"
 import { TAccountVote } from "@/api/democracy"
 import { HDXSupplyQueryKey, useInvalidateStakeData } from "@/api/staking"
 import { useProcessedVotes } from "@/modules/staking/Stake.data"
@@ -19,9 +17,6 @@ export const useStake = (
 ) => {
   const { t } = useTranslation(["common", "staking"])
   const queryClient = useQueryClient()
-
-  const { account } = useAccount()
-  const address = account?.address
 
   const rpc = useRpcProvider()
   const { papi } = rpc
@@ -99,9 +94,6 @@ export const useStake = (
       await Promise.all([
         invalidateStakeData.mutateAsync(),
         queryClient.invalidateQueries({ queryKey: HDXSupplyQueryKey }),
-        queryClient.invalidateQueries({
-          queryKey: AccountUniquesQueryKey(address),
-        }),
       ])
     },
   })
