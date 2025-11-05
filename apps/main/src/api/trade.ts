@@ -44,6 +44,9 @@ export const bestSellQuery = (
         amountIn,
       )
 
+      // debug for experienced users
+      console.log(swap.toHuman())
+
       const tx = await sdk.tx
         .trade(swap)
         .withSlippage(slippage)
@@ -132,6 +135,9 @@ export const bestBuyQuery = (
         Number(assetOut),
         amountOut,
       )
+
+      // debug for experienced users
+      console.log(swap.toHuman())
 
       const tx = await sdk.tx
         .trade(swap)

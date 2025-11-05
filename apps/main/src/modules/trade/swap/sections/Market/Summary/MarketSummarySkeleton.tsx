@@ -27,10 +27,6 @@ export const MarketSummarySkeleton: FC<Props> = ({ type }) => {
         content={<Skeleton sx={{ width: 150 }} />}
       />
       <MarketSummaryRow
-        label={t("market.summary.totalFees")}
-        content={<Skeleton sx={{ width: 150 }} />}
-      />
-      <MarketSummaryRow
         label={t("market.summary.priceImpact")}
         content={<Skeleton sx={{ width: 150 }} />}
       />
