@@ -109,7 +109,7 @@ export const useJoinOmnipoolFarms = ({
   }
 }
 
-const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
+export const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
   const { data: pools } = useXykPools()
 
   const minDeposit = getMinimalDeposit(farms)

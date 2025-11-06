@@ -1,48 +1,32 @@
 import { calculate_liquidity_in } from "@galacticcouncil/math-xyk"
-import { Alert, Button, Summary } from "@galacticcouncil/ui/components"
+import { Alert, Button, Summary, Text } from "@galacticcouncil/ui/components"
 import {
   ModalBody,
   ModalContentDivider,
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useQuery } from "@tanstack/react-query"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useRouter } from "@tanstack/react-router"
-import { FormProvider, useForm } from "react-hook-form"
+import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData } from "@/api/assets"
-import { spotPriceQuery } from "@/api/spotPrice"
+import { Farm } from "@/api/farms"
+import { PoolBase, useXykPools } from "@/api/pools"
+import { TXYKConsts, useXYKConsts } from "@/api/xyk"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { AddLiquidityAlert } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityAlert"
-import { PositionDetailsLabel } from "@/modules/liquidity/components/AddLiquidity/PositionDetailsLabel"
-import { IsolatedPoolTable } from "@/modules/liquidity/Liquidity.utils"
-import { useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
-import { useXYKPool } from "@/states/liquidity"
+import { RewardsAPR } from "@/modules/liquidity/components/AddLiquidity/RewardsAPR"
+import { XYKPoolMeta } from "@/providers/assetsProvider"
 import { scale } from "@/utils/formatting"
 import { scaleHuman } from "@/utils/formatting"
 
 import {
-  useAddIsolatedLiquidityData,
-  useAddIsolatedLiquidityZod,
+  getTradeFee,
+  orders,
+  TAddIsolatedLiquidityFormValues,
+  useAddIsolatedLiquidity,
 } from "./AddIsolatedLiquidity.utils"
 import { AddIsolatedLiquiditySkeleton } from "./AddIsolatedLiquiditySkeleton"
-
-const orders = ["assetA", "assetB"] as const
-type Order = (typeof orders)[number]
-
-type FormValues = {
-  lastUpdated: Order
-  shares: string
-  amountA: string
-  amountB: string
-  assetA: TAssetData
-  assetB: TAssetData
-}
 
 export const AddIsolatedLiquidity = ({
   poolAddress,
@@ -51,67 +35,50 @@ export const AddIsolatedLiquidity = ({
   poolAddress: string
   closable?: boolean
 }) => {
-  const { data: pool, isLoading } = useXYKPool(poolAddress)
+  const { data: pools, isLoading } = useXykPools()
+  const { data: consts } = useXYKConsts()
 
-  return isLoading || !pool ? (
+  const pool = pools?.find((pool) => pool.address === poolAddress)
+
+  return isLoading || !pool || !consts ? (
     <AddIsolatedLiquiditySkeleton closable={closable} />
   ) : (
-    <AddIsolatedLiquidityForm pool={pool} closable={closable} />
+    <AddIsolatedLiquidityForm pool={pool} consts={consts} closable={closable} />
   )
 }
 
 export const AddIsolatedLiquidityForm = ({
   pool,
+  consts,
   closable = false,
 }: {
-  pool: IsolatedPoolTable
+  pool: PoolBase
+  consts: TXYKConsts
   closable?: boolean
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const rpc = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
-  const { getTransferableBalance } = useAccountBalances()
   const { history } = useRouter()
-  const assetA = getAssetWithFallback(pool.tokens[0].id.toString())
-  const assetB = getAssetWithFallback(pool.tokens[1].id.toString())
-  const reserveA = pool.tokens[0].balance.toString()
-  const reserveB = pool.tokens[1].balance.toString()
 
-  const assetABalance = scaleHuman(
-    getTransferableBalance(assetA.id),
-    assetA.decimals,
-  )
-  const assetBBalance = scaleHuman(
-    getTransferableBalance(assetB.id),
-    assetB.decimals,
-  )
-
-  const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
-    spotPriceQuery(rpc, assetA.id, assetB.id),
-  )
-
-  const zodSchema = useAddIsolatedLiquidityZod(
+  const {
+    form,
+    reserveA,
+    reserveB,
+    ratio,
+    meta,
+    mutation,
+    isLoading,
     assetABalance,
     assetBBalance,
-    pool.minTradingLimit,
-  )
-
-  const form = useForm<FormValues>({
-    mode: "onChange",
-    defaultValues: {
-      lastUpdated: "assetA",
-      shares: "0",
-      amountA: "",
-      amountB: "",
-      assetA,
-      assetB,
-    },
-    resolver: zodSchema ? standardSchemaResolver(zodSchema) : undefined,
-  })
-  const shares = form.watch("shares")
-
-  const { getShares, ratio, fee, mutation, isLoading } =
-    useAddIsolatedLiquidityData(pool, shares)
+    assetAMeta,
+    assetBMeta,
+    shares,
+    getShares,
+    price,
+    isPriceLoading,
+    activeFarms,
+    joinFarmErrorMessage,
+    isJoinFarms,
+  } = useAddIsolatedLiquidity(pool, consts)
 
   const onSubmit = async () => {
     const values = form.getValues()
@@ -149,7 +116,7 @@ export const AddIsolatedLiquidityForm = ({
       <ModalBody>
         <FormProvider {...form}>
           <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
-            <AssetSelectFormField<FormValues>
+            <AssetSelectFormField<TAddIsolatedLiquidityFormValues>
               label={t("liquidity.createPool.modal.assetA")}
               assetFieldName="assetA"
               amountFieldName="amountA"
@@ -163,9 +130,9 @@ export const AddIsolatedLiquidityForm = ({
                   calculate_liquidity_in(
                     reserveA,
                     reserveB,
-                    scale(value, assetA.decimals),
+                    scale(value, assetAMeta.decimals),
                   ),
-                  assetB.decimals,
+                  assetBMeta.decimals,
                 )
 
                 form.setValue("amountB", amountB, {
@@ -181,15 +148,13 @@ export const AddIsolatedLiquidityForm = ({
             />
 
             <AssetSwitcher
-              assetInId={assetA.id}
-              assetOutId={assetB.id}
-              priceIn=""
-              priceOut=""
-              fallbackPrice={spotPriceData?.spotPrice?.toString()}
-              isFallbackPriceLoading={isSpotPricePending}
+              assetInId={assetAMeta.id}
+              assetOutId={assetBMeta.id}
+              fallbackPrice={price}
+              isFallbackPriceLoading={isPriceLoading}
             />
 
-            <AssetSelectFormField<FormValues>
+            <AssetSelectFormField<TAddIsolatedLiquidityFormValues>
               label={t("liquidity.createPool.modal.assetB")}
               assetFieldName="assetB"
               amountFieldName="amountB"
@@ -203,9 +168,9 @@ export const AddIsolatedLiquidityForm = ({
                   calculate_liquidity_in(
                     reserveB,
                     reserveA,
-                    scale(value, assetB.decimals),
+                    scale(value, assetBMeta.decimals),
                   ),
-                  assetA.decimals,
+                  assetAMeta.decimals,
                 )
 
                 form.setValue("shares", getShares(amountA), {
@@ -222,34 +187,14 @@ export const AddIsolatedLiquidityForm = ({
 
             <ModalContentDivider />
 
-            <PositionDetailsLabel />
-
-            <Summary
-              separator={<ModalContentDivider />}
-              rows={[
-                {
-                  label: t("liquidity.add.modal.shareOfPool"),
-                  content: t("common:percent", { value: ratio }),
-                  loading: isLoading,
-                },
-                {
-                  label: t("liquidity.add.modal.receivedAmountOfPoolShares"),
-                  content: t("common:number", {
-                    value: scaleHuman(shares ?? 0, pool.meta.decimals),
-                  }),
-                  loading: isLoading,
-                },
-                {
-                  label: t("liquidity.add.modal.rewardsFromFees.label"),
-                  content: t("common:percent", { value: fee }),
-                  loading: isLoading,
-                },
-              ]}
+            <AddLiquiditySummary
+              meta={meta}
+              poolShare={ratio ?? "0"}
+              sharesToGet={shares ?? "0"}
+              farms={activeFarms}
+              consts={consts}
+              isLoading={isLoading}
             />
-
-            <ModalContentDivider />
-
-            <AddLiquidityAlert />
 
             {sharesError && (
               <Alert
@@ -258,6 +203,14 @@ export const AddIsolatedLiquidityForm = ({
                 sx={{ mb: getTokenPx("containers.paddings.secondary") }}
               />
             )}
+
+            {joinFarmErrorMessage ? (
+              <Alert
+                variant="warning"
+                description={joinFarmErrorMessage}
+                sx={{ my: getTokenPx("containers.paddings.primary") }}
+              />
+            ) : null}
 
             <ModalContentDivider />
 
@@ -268,11 +221,65 @@ export const AddIsolatedLiquidityForm = ({
               mt={getTokenPx("containers.paddings.primary")}
               disabled={!form.formState.isValid}
             >
-              {t("liquidity.add.modal.submit")}
+              {isJoinFarms
+                ? t("liquidity.add.modal.submitAndjoinFarms")
+                : t("liquidity.add.modal.submit")}
             </Button>
           </form>
         </FormProvider>
       </ModalBody>
     </>
+  )
+}
+
+const AddLiquiditySummary = ({
+  meta,
+  poolShare,
+  sharesToGet,
+  farms,
+  consts,
+  isLoading,
+}: {
+  meta: XYKPoolMeta
+  poolShare: string
+  sharesToGet: string
+  farms: Farm[]
+  consts: TXYKConsts
+  isLoading: boolean
+}) => {
+  const { t } = useTranslation(["liquidity", "common"])
+
+  const tradeFee = getTradeFee(consts.fee)
+
+  return (
+    <Summary
+      separator={<ModalContentDivider />}
+      rows={[
+        {
+          label: t("common:minimalReceived"),
+          content: t("liquidity.add.modal.sharesToGet", {
+            value: scaleHuman(sharesToGet, meta.decimals),
+            percentage: poolShare,
+          }),
+          loading: isLoading,
+        },
+        {
+          label: t("liquidity.add.modal.rewardsAPR"),
+          content: <RewardsAPR farms={farms} />,
+          loading: isLoading,
+        },
+        {
+          label: t("common:apy"),
+          content: (
+            <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
+              {t("common:percent", {
+                value: tradeFee,
+              })}
+            </Text>
+          ),
+          loading: isLoading,
+        },
+      ]}
+    />
   )
 }
