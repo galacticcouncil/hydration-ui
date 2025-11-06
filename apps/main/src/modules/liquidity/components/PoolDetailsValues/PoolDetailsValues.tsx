@@ -96,7 +96,9 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
         wrap
       />
 
-      {data.isStablePool && <CurrencyReserves id={data.id} />}
+      {data.stablepoolData && (
+        <CurrencyReserves stablepoolData={data.stablepoolData} />
+      )}
     </>
   )
 }

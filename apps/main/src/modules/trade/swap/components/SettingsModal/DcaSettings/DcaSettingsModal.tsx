@@ -40,19 +40,12 @@ export const DcaSettingsModal: FC = () => {
                 field: { value, onChange },
                 fieldState: { error },
               }) => (
-                <>
-                  <TradeSlippage
-                    slippage={value}
-                    onSlippageChange={onChange}
-                    helpTooltip={t("dca.settings.modal.slippage.help")}
-                    isError={!!error}
-                  />
-                  {error && (
-                    <FormError sx={{ textAlign: "end" }}>
-                      {error.message}
-                    </FormError>
-                  )}
-                </>
+                <TradeSlippage
+                  slippage={value}
+                  onSlippageChange={onChange}
+                  helpTooltip={t("dca.settings.modal.slippage.help")}
+                  error={error?.message}
+                />
               )}
             />
             <Controller

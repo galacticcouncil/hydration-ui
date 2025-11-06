@@ -32,19 +32,6 @@ export type TAddIsolatedLiquidityFormValues = {
   assetB: TAssetData
 }
 
-export const getTradeFee = (fee?: number[]) => {
-  if (fee?.length !== 2) return
-
-  const numerator = fee[0]
-  const denominator = fee[1]
-
-  if (!numerator || !denominator) return undefined
-
-  const tradeFee = Big(numerator).div(denominator)
-
-  return tradeFee.times(100).toString()
-}
-
 export const useAddIsolatedLiquidityZod = (
   balanceA: string,
   balanceB: string,

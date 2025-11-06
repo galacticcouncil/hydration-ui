@@ -5,14 +5,16 @@ import Big from "big.js"
 import { Trans, useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import {
-  TReserve,
-  useStablepoolReserves,
-} from "@/modules/liquidity/Liquidity.utils"
+import { TReserve, TStablepoolData } from "@/modules/liquidity/Liquidity.utils"
 
-export const CurrencyReserves = ({ id }: { id: string }) => {
+export const CurrencyReserves = ({
+  stablepoolData,
+}: {
+  stablepoolData: TStablepoolData
+}) => {
   const { t } = useTranslation(["common", "liquidity"])
-  const { reserves, totalDisplayAmount } = useStablepoolReserves(id)
+
+  const { reserves, totalDisplayAmount } = stablepoolData
 
   return (
     <Flex direction="column" gap={10}>

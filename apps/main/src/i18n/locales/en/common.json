@@ -179,6 +179,7 @@
   "avg": "Avg",
   "save": "Save",
   "date": "Date",
+  "minimumReceive": "Minimum receive",
   "date.relative.now": "Now",
   "date.relative.past": "{{ value }} ago",
   "date.relative.future": "In {{ value }}",
@@ -244,5 +245,8 @@
   "notifications.empty.description": "It's quite a peaceful day",
   "hollar.banner.title": "Meet HOLLAR",
   "hollar.banner.description": "The decentralized digital dollar for trading, saving, and earning.",
-  "hollar.banner.cta": "Jump in"
+  "hollar.banner.cta": "Jump in",
+  "currentApr": "Current APR",
+  "tradeLimit": "Trade limit",
+  "healthFactor": "Health factor"
 }

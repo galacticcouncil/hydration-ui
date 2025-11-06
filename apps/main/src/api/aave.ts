@@ -1,4 +1,5 @@
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "@galacticcouncil/money-market/ui-config"
+import { aave } from "@galacticcouncil/sdk-next"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
@@ -17,6 +18,8 @@ export type HealthFactorResult = {
   readonly isSignificantChange: boolean
   readonly isUserConsentRequired: boolean
 }
+
+export const AAVE_GAS_LIMIT = aave.AAVE_GAS_LIMIT
 
 const formatHealthFactorResult = ({
   currentHF,

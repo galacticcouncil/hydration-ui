@@ -47,5 +47,5 @@ export const MicroButton: FC<MicroButtonProps> = (props) => (
 )
 
 export const ButtonIcon: FC<ButtonProps> = (props) => {
-  return <SButtonIcon type="button" {...props} />
+  return <SButtonIcon as="button" type="button" {...props} />
 }

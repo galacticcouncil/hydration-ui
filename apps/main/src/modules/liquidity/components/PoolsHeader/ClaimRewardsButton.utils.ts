@@ -170,12 +170,12 @@ export const getClaimFarmRewardsTx = (
   const omnipoolTxs: Array<AnyPapiTx> = []
   const xykTxs: Array<AnyPapiTx> = []
 
-  claimableDeposits.forEach((farm) => {
+  for (const farm of claimableDeposits) {
     if (farm.isXyk) {
-      if (farm.isActiveFarm) {
+      if (farm.rewards.isActiveFarm) {
         const tx = papi.tx.XYKLiquidityMining.claim_rewards({
           deposit_id: BigInt(farm.depositId),
-          yield_farm_id: farm.yieldFarmId,
+          yield_farm_id: farm.rewards.yieldFarmId,
         })
 
         xykTxs.push(tx)
@@ -186,7 +186,7 @@ export const getClaimFarmRewardsTx = (
         if (assetA && assetB) {
           const tx = papi.tx.XYKLiquidityMining.withdraw_shares({
             deposit_id: BigInt(farm.depositId),
-            yield_farm_id: farm.yieldFarmId,
+            yield_farm_id: farm.rewards.yieldFarmId,
             asset_pair: {
               asset_in: assetA.id,
               asset_out: assetB.id,
@@ -197,19 +197,19 @@ export const getClaimFarmRewardsTx = (
         }
       }
     } else {
-      const tx = farm.isActiveFarm
+      const tx = farm.rewards.isActiveFarm
         ? papi.tx.OmnipoolLiquidityMining.claim_rewards({
             deposit_id: BigInt(farm.depositId),
-            yield_farm_id: farm.yieldFarmId,
+            yield_farm_id: farm.rewards.yieldFarmId,
           })
         : papi.tx.OmnipoolLiquidityMining.withdraw_shares({
             deposit_id: BigInt(farm.depositId),
-            yield_farm_id: farm.yieldFarmId,
+            yield_farm_id: farm.rewards.yieldFarmId,
           })
 
       omnipoolTxs.push(tx)
     }
-  })
+  }
 
   return [...omnipoolTxs, ...xykTxs]
 }

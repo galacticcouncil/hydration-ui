@@ -16,12 +16,12 @@ import { TXYKConsts, useXYKConsts } from "@/api/xyk"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { RewardsAPR } from "@/modules/liquidity/components/AddLiquidity/RewardsAPR"
+import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
 import { XYKPoolMeta } from "@/providers/assetsProvider"
 import { scale } from "@/utils/formatting"
 import { scaleHuman } from "@/utils/formatting"
 
 import {
-  getTradeFee,
   orders,
   TAddIsolatedLiquidityFormValues,
   useAddIsolatedLiquidity,
@@ -249,7 +249,7 @@ const AddLiquiditySummary = ({
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
 
-  const tradeFee = getTradeFee(consts.fee)
+  const tradeFee = calculatePoolFee(consts.fee)
 
   return (
     <Summary
