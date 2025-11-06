@@ -18,19 +18,20 @@ import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { useAssetFeeParameters } from "@/api/omnipool"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import {
+  TradeLimit,
+  TradeLimitType,
+} from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import {
   getCustomErrors,
-  getLimitShares,
   TAddLiquidityFormValues,
   useAddLiquidity,
 } from "./AddLiqudity.utils"
 import { RewardsAPR } from "./RewardsAPR"
-
-const addLiquidityLimit = 3
 
 type Props = {
   readonly closable?: boolean
@@ -57,15 +58,11 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
       throw new Error("Invalid input data")
 
     const amount = scale(values.amount, meta.decimals).toString()
-    const shares = getLimitShares(
-      liquidityShares.sharesToGet,
-      addLiquidityLimit,
-    )
 
     mutation.mutate({
       assetId,
       amount,
-      shares,
+      shares: liquidityShares.minSharesToGet,
       symbol: meta.symbol,
       decimals: meta.decimals,
     })
@@ -108,7 +105,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
           <AddLiquiditySummary
             meta={meta}
             poolShare={liquidityShares?.poolShare ?? "0"}
-            sharesToGet={liquidityShares?.sharesToGet ?? "0"}
+            minSharesToGet={liquidityShares?.minSharesToGet ?? "0"}
             farms={activeFarms}
           />
 
@@ -156,12 +153,12 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
 const AddLiquiditySummary = ({
   meta,
   poolShare,
-  sharesToGet,
+  minSharesToGet,
   farms,
 }: {
   meta: TAssetData
   poolShare: string
-  sharesToGet: string
+  minSharesToGet: string
   farms: Farm[]
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
@@ -177,9 +174,13 @@ const AddLiquiditySummary = ({
         {
           label: t("common:minimalReceived"),
           content: t("liquidity.add.modal.sharesToGet", {
-            value: scaleHuman(sharesToGet, meta.decimals),
+            value: scaleHuman(minSharesToGet, meta.decimals),
             percentage: poolShare,
           }),
+        },
+        {
+          label: t("common:tradeLimit"),
+          content: <TradeLimit type={TradeLimitType.Liquidity} />,
         },
         {
           label: t("liquidity.add.modal.rewardsAPR"),

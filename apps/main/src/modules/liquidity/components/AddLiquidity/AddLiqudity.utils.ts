@@ -21,15 +21,12 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useOmnipoolAsset } from "@/states/liquidity"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 export type TAddLiquidityFormValues = { amount: string }
-
-export const getLimitShares = (shares: string, limit: number) => {
-  return Big(shares).times(Big(100).minus(limit).div(100)).toFixed(0)
-}
 
 export const getCustomErrors = (errors?: FieldError) =>
   errors
@@ -40,8 +37,11 @@ export const getCustomErrors = (errors?: FieldError) =>
       })
     : undefined
 
-export const useLiquidityShares = (value: string, assetId: string) => {
+const useLiquidityShares = (value: string, assetId: string) => {
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
+  const {
+    liquidity: { slippage },
+  } = useTradeSettings()
   const omnipoolAssetData = omnipoolAssetsData?.get(Number(assetId))
 
   if (!omnipoolAssetData || !value) return undefined
@@ -60,10 +60,15 @@ export const useLiquidityShares = (value: string, assetId: string) => {
     scale(value, decimals ?? 0),
   )
 
-  const totalShares = Big(shares.toString()).plus(sharesToGet).toString()
-  const poolShare = Big(sharesToGet).div(totalShares).times(100).toString()
+  const minSharesToGet = Big(sharesToGet)
+    .times(100 - slippage)
+    .div(100)
+    .toFixed(0)
 
-  return { totalShares, poolShare, sharesToGet }
+  const totalShares = Big(shares.toString()).plus(minSharesToGet).toString()
+  const poolShare = Big(minSharesToGet).div(totalShares).times(100).toString()
+
+  return { totalShares, poolShare, sharesToGet, minSharesToGet }
 }
 
 export const useAddToOmnipoolZod = (
