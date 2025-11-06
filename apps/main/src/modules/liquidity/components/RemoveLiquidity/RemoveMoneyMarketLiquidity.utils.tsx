@@ -83,8 +83,8 @@ export const useRemoveMoneyMarketLiquidity = ({
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(useRpcProvider(), {
       address: account?.address ?? "",
-      assetId: meta && isErc20AToken(meta) ? meta.underlyingAssetId : "",
-      amount: debouncedAmount,
+      fromAssetId: meta && isErc20AToken(meta) ? meta.underlyingAssetId : "",
+      fromAmount: debouncedAmount,
     }),
   )
 
