@@ -33,11 +33,11 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
       }),
       healthFactorAfterWithdrawQuery(rpc, {
         address: account?.address ?? "",
-        assetId:
+        fromAssetId:
           sellAsset && isErc20AToken(sellAsset)
             ? sellAsset.underlyingAssetId
             : "",
-        amount: sellAmount,
+        fromAmount: sellAmount,
       }),
     ],
   })
