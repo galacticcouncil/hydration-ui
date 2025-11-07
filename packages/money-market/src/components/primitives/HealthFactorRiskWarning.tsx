@@ -27,17 +27,21 @@ export const HealthFactorRiskWarning: React.FC<
       <Alert
         variant={isUserConsentRequired ? "error" : "warning"}
         description={message}
+        action={
+          isUserConsentRequired && (
+            <Flex align="center" as="label" gap={10}>
+              <Toggle
+                size="large"
+                checked={accepted}
+                onCheckedChange={onAcceptedChange}
+              />
+              <Text fs="p4" lh={1.3} fw={600}>
+                I acknowledge the risks involved.
+              </Text>
+            </Flex>
+          )
+        }
       />
-      {isUserConsentRequired && (
-        <Flex align="center" as="label" gap={10}>
-          <Toggle
-            size="large"
-            checked={accepted}
-            onCheckedChange={onAcceptedChange}
-          />
-          <Text fw={500}>I acknowledge the risks involved.</Text>
-        </Flex>
-      )}
     </Flex>
   )
 }

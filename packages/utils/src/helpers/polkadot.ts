@@ -1,3 +1,4 @@
+import { H160, isEvmAddress } from "@galacticcouncil/sdk"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { Binary } from "polkadot-api"
@@ -22,4 +23,10 @@ export const safeConvertSS58toPublicKey = (address: string) => {
   } catch {
     return ""
   }
+}
+
+export const normalizeSS58Address = (address: string) => {
+  return isEvmAddress(address)
+    ? H160.toAccount(address)
+    : safeConvertAddressSS58(address)
 }

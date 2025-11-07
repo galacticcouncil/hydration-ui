@@ -27,7 +27,7 @@ export const SummaryRow = ({
 }: SummaryRowProps) => {
   const labelElement = (
     <Text fs="p5" color={getToken("text.medium")}>
-      {label}
+      {label}:
     </Text>
   )
 

@@ -85,6 +85,7 @@
   "transfer.modal.address.placeholder": "Paste address here...",
   "transfer.modal.asset.label": "Asset to transfer",
   "transfer.modal.warning.nonNative": "Sending any asset other than HDX to a centralized exchange will lead to a loss of funds. Instead, you should first send the asset to its source chain using cross-chain transfers.",
+  "transfer.modal.acceptance.cex": "I confirm that the destination of this transfer is not an unsupported exchange.",
   "transfer.modal.onLoading": "Sending {{ amount }} {{symbol}} to {{address}}",
   "transfer.modal.onSuccess": "Sent {{ amount }} {{symbol}} to {{address}}",
   "transfer.modal.onError": "Failed to send {{ amount }} {{symbol}} to {{address}}",

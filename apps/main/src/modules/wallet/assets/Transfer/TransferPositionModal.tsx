@@ -1,13 +1,25 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   Alert,
   Button,
+  Flex,
   ModalBody,
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Summary,
+  SummaryRow,
+  Text,
+  Toggle,
 } from "@galacticcouncil/ui/components"
+import {
+  normalizeSS58Address,
+  safeConvertSS58toPublicKey,
+  stringEquals,
+} from "@galacticcouncil/utils"
 import { AddressBookModal, useAccount } from "@galacticcouncil/web3-connect"
+import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useState } from "react"
 import { FormProvider } from "react-hook-form"
@@ -40,7 +52,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
 
   const [isMyContactsOpen, setIsMyContactsOpen] = useState(false)
 
-  const [asset, amount] = form.watch(["asset", "amount"])
+  const [asset, amount, address] = form.watch(["asset", "amount", "address"])
 
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(useRpcProvider(), {
@@ -50,11 +62,29 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
     }),
   )
 
+  const [cexDisclaimerAccepted, setCexDisclaimerAccepted] = useState(false)
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
+  const { addresses: userOwnedAddresses } = useAddressStore()
+
+  const isUserOwnedAddress = userOwnedAddresses.some(({ publicKey }) =>
+    stringEquals(
+      publicKey,
+      safeConvertSS58toPublicKey(normalizeSS58Address(address)),
+    ),
+  )
+
+  const isNonNativeAsset = asset && asset.id !== native.id
+  const shouldShowCexDisclaimer =
+    isNonNativeAsset && form.formState.isValid && !isUserOwnedAddress
+
   const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
     ? healthFactorRiskAccepted
+    : true
+
+  const isCexDisclaimerSatisfied = shouldShowCexDisclaimer
+    ? cexDisclaimerAccepted
     : true
 
   if (isMyContactsOpen) {
@@ -95,17 +125,24 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             amountFieldName="amount"
             assets={tradable}
           />
-          {asset && asset.id !== native.id && (
-            <Alert
-              sx={{ mb: 20 }}
-              variant="warning"
-              description={t("transfer.modal.warning.nonNative")}
-            />
+
+          {healthFactor?.isSignificantChange && (
+            <Summary separator={<ModalContentDivider />} withLeadingSeparator>
+              <SummaryRow
+                label={t("common:healthFactor")}
+                content={
+                  <HealthFactorChange
+                    healthFactor={healthFactor.current}
+                    futureHealthFactor={healthFactor.future}
+                  />
+                }
+              />
+            </Summary>
           )}
           <ModalContentDivider />
         </ModalBody>
         <ModalFooter
-          display={["flex", "grid"]}
+          display="grid"
           sx={{
             justifyContent: "space-between",
             flexDirection: "row",
@@ -120,6 +157,26 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
               isUserConsentRequired={healthFactor.isUserConsentRequired}
             />
           )}
+          {isNonNativeAsset && (
+            <Alert
+              variant="warning"
+              description={t("transfer.modal.warning.nonNative")}
+              action={
+                shouldShowCexDisclaimer && (
+                  <Flex as="label" gap={10} align="center">
+                    <Toggle
+                      size="large"
+                      checked={cexDisclaimerAccepted}
+                      onCheckedChange={setCexDisclaimerAccepted}
+                    />
+                    <Text fs="p4" lh={1.3} fw={600}>
+                      {t("transfer.modal.acceptance.cex")}
+                    </Text>
+                  </Flex>
+                )
+              }
+            />
+          )}
           <Button
             size="large"
             variant="tertiary"
@@ -131,7 +188,9 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
           <Button
             size="large"
             type="submit"
-            disabled={!isHealthFactorCheckSatisfied}
+            disabled={
+              !isHealthFactorCheckSatisfied || !isCexDisclaimerSatisfied
+            }
           >
             {t("common:confirm")}
           </Button>

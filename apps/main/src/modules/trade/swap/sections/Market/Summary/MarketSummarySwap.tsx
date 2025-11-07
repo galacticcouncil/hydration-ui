@@ -162,7 +162,7 @@ export const MarketSummarySwap: FC<Props> = ({
           />
           {healthFactor?.isSignificantChange && (
             <MarketSummaryRow
-              label={t("trade:market.summary.healthFactor")}
+              label={t("healthFactor")}
               content={
                 <HealthFactorChange
                   healthFactor={healthFactor.current}
