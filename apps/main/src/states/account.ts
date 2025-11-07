@@ -1,6 +1,7 @@
 import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
+import { produce } from "immer"
 import { useCallback, useMemo } from "react"
-import { isDeepEqual, pick } from "remeda"
+import { pick } from "remeda"
 import { create, StateCreator } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 
@@ -96,17 +97,17 @@ const createAccountsBalances: StateCreator<
   balances: {},
   isBalanceLoading: true,
   setBalance: (balances) =>
-    set((state) => {
-      const newBalances = { ...state.balances }
-
-      balances.forEach((balance) => (newBalances[balance.assetId] = balance))
-
-      if (isDeepEqual(newBalances, state.balances)) {
-        return { balances: state.balances }
-      }
-
-      return { balances: newBalances }
-    }),
+    set((state) =>
+      produce(state, (draft) => {
+        balances.forEach((balance) => {
+          if (balance.total > 0n) {
+            draft.balances[balance.assetId] = balance
+          } else {
+            delete draft.balances[balance.assetId]
+          }
+        })
+      }),
+    ),
   resetBalances: () => set(store.getInitialState()),
   balancesLoaded: () => set({ isBalanceLoading: false }),
 })
