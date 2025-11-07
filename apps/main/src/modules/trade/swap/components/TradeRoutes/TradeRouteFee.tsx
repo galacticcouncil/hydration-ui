@@ -3,30 +3,27 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { useDisplayAssetsPrice } from "@/components/AssetPrice"
+import { TradeRouteFee as TradeRouteFeeModel } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes.utils"
 
 type Props = {
-  readonly assetId: string
-  readonly tradeFee: string
-  readonly tradeFeePct: number
+  readonly feePct: string
+  readonly fees: ReadonlyArray<TradeRouteFeeModel>
 }
 
-export const TradeRouteFee: FC<Props> = ({
-  assetId,
-  tradeFeePct,
-  tradeFee,
-}) => {
+export const TradeRouteFee: FC<Props> = ({ feePct, fees }) => {
   const { t } = useTranslation(["common"])
-
-  const [tradeFeeDisplay] = useDisplayAssetPrice(assetId, tradeFee)
+  const [tradeFeeDisplay] = useDisplayAssetsPrice(
+    fees.map((fee) => [fee.asset.id, fee.value] as const),
+  )
 
   return (
     <Flex direction="column" gap={2} align="flex-end">
       <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
-        {t("percent", { value: tradeFeePct })}
+        {tradeFeeDisplay}
       </Text>
       <Text fw={500} fs="p6" lh={1.2} color={getToken("text.low")}>
-        {tradeFeeDisplay}
+        {t("percent", { value: feePct })}
       </Text>
     </Flex>
   )

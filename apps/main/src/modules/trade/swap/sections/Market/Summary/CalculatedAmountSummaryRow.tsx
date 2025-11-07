@@ -14,18 +14,20 @@ import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
   readonly label: string
+  readonly tooltip: string
   readonly amount: ReactNode
-  readonly isCollapsed: boolean
-  readonly onIsCollapsedChange: (isCollapsed: boolean) => void
+  readonly isExpanded: boolean
+  readonly onIsExpandedChange: (isExpanded: boolean) => void
 }
 
 export const CalculatedAmountSummaryRow: FC<Props> = ({
   label,
+  tooltip,
   amount,
-  isCollapsed,
-  onIsCollapsedChange,
+  isExpanded,
+  onIsExpandedChange,
 }) => {
-  const { t } = useTranslation(["trade"])
+  const { t } = useTranslation(["common", "trade"])
 
   const {
     swap: {
@@ -39,10 +41,14 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
       label={label}
       content={
         <Flex
+          as="button"
           sx={{ cursor: "pointer" }}
           align="center"
           gap={10}
-          onClick={() => onIsCollapsedChange(!isCollapsed)}
+          onClick={(e) => {
+            e.preventDefault()
+            onIsExpandedChange(!isExpanded)
+          }}
         >
           {typeof amount === "string" ? (
             <SummaryRowValue fw={600} fs="p4" lh={1.2}>
@@ -52,7 +58,7 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
             amount
           )}
           <Icon
-            component={isCollapsed ? ChevronDown : ChevronUp}
+            component={isExpanded ? ChevronUp : ChevronDown}
             size={20}
             color={getToken("icons.onContainer")}
           />
@@ -60,18 +66,20 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
       }
       tooltip={
         <Flex direction="column" gap={8}>
-          <Box>{t("trade:market.summary.maxSent.tooltip")}</Box>
+          <Box>{tooltip}</Box>
           <Box>
-            <Box>
-              {t("trade:market.summary.calculatedAmount.tooltip.single", {
-                amount: swapSlippage,
-              })}
-            </Box>
-            <Box>
-              {t("trade:market.summary.calculatedAmount.tooltip.split", {
-                amount: twapSlippage,
-              })}
-            </Box>
+            <Flex justify="space-between">
+              <Box>
+                {t("trade:market.summary.calculatedAmount.tooltip.single")}
+              </Box>
+              <Box>{t("percent", { value: swapSlippage })}</Box>
+            </Flex>
+            <Flex justify="space-between">
+              <Box>
+                {t("trade:market.summary.calculatedAmount.tooltip.split")}
+              </Box>
+              <Box>{t("percent", { value: twapSlippage })}</Box>
+            </Flex>
           </Box>
         </Flex>
       }

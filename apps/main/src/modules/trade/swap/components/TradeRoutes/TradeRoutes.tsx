@@ -2,31 +2,37 @@ import { Swap } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Routes } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, MicroButton, Modal } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { GDOT_ASSET_ID } from "@galacticcouncil/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TradeType } from "@/api/trade"
+import { mapRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes.utils"
 import { TradeRoutesModalContent } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutesModalContent"
+import { useAssets } from "@/providers/assetsProvider"
 
 type TradeRoutesProps = {
   readonly swapType: TradeType
+  readonly totalFeesDisplay: string
   readonly routes: ReadonlyArray<Swap>
 }
 
-export const TradeRoutes = ({ swapType, routes }: TradeRoutesProps) => {
+export const TradeRoutes = ({
+  swapType,
+  totalFeesDisplay,
+  routes,
+}: TradeRoutesProps) => {
   const { t } = useTranslation(["trade", "common"])
+  const { getAssetWithFallback } = useAssets()
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const filteredRoutes = // Hide 2-Pool-GDOT
-    routes.filter((route) => route.assetOut !== Number(GDOT_ASSET_ID))
+  const mappedRoutes = mapRoutes(swapType, routes, getAssetWithFallback)
 
   return (
     <>
       <Flex align="center" gap={4}>
         <Flex gap={1} align="center">
-          {t("market.summary.routes.count", { count: filteredRoutes.length })}
+          {t("market.summary.routes.count", { count: mappedRoutes.length })}
           <Icon
             height={24}
             width={14}
@@ -39,7 +45,10 @@ export const TradeRoutes = ({ swapType, routes }: TradeRoutesProps) => {
         </MicroButton>
       </Flex>
       <Modal open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <TradeRoutesModalContent swapType={swapType} routes={filteredRoutes} />
+        <TradeRoutesModalContent
+          totalFeesDisplay={totalFeesDisplay}
+          routes={mappedRoutes}
+        />
       </Modal>
     </>
   )
