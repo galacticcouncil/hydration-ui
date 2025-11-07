@@ -6,7 +6,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress } from "@galacticcouncil/utils"
+import { formatCurrency, shortenAccountAddress } from "@galacticcouncil/utils"
 import { useState } from "react"
 
 import { AccountDeleteButton } from "@/components/account/AccountDeleteButton"
@@ -87,7 +87,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
               <Skeleton sx={{ width: 75, ml: "auto" }} />
             ) : (
               balance !== undefined && (
-                <Text fs="p3">${balance.toFixed(2)}</Text>
+                <Text fs="p3">{formatCurrency(balance)}</Text>
               )
             )}
             {onEdit && <AccountEditButton onClick={() => setIsEditing(true)} />}
