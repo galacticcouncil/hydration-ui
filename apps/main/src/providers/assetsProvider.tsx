@@ -19,7 +19,12 @@ import {
 } from "@/api/assets"
 import { PoolToken } from "@/api/pools"
 import { TAssetStored, useAssetRegistry } from "@/states/assetRegistry"
-import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
+import {
+  HUB_ID,
+  NATIVE_ASSET_DECIMALS,
+  NATIVE_ASSET_ID,
+  NATIVE_ASSET_SYBOL,
+} from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
 
 const bannedAssets = ["1000042"]
@@ -33,7 +38,13 @@ type TAssetsState = {
   externalInvalid: TExternal[]
   erc20: TErc20[]
   tradable: TAsset[]
-  native: TAsset
+  native:
+    | TAsset
+    | {
+        id: string
+        symbol: string
+        decimals: number
+      }
   hub: TAsset
 }
 
@@ -185,9 +196,14 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         external: [],
         externalInvalid: [],
         erc20: [],
-        native: {} as TAsset,
-        hub: {} as TAsset,
-      },
+        native: {
+          id: NATIVE_ASSET_ID,
+          symbol: NATIVE_ASSET_SYBOL,
+          decimals: NATIVE_ASSET_DECIMALS,
+        },
+        // TODO we are still accessing some properties from this that might not be loaded at that time
+        hub: { id: HUB_ID } as TAsset,
+      } satisfies TAssetsState,
     )
   }, [assets])
 
