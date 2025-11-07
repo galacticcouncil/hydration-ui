@@ -33,10 +33,10 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
   if (isLoading) return <Skeleton />
 
   const apyData = apyMap.get(props.assetId)
-  if (!apyData) return <NoData />
 
-  const hasMultipleUnderlying = apyData.underlyingAssetsApyData.length > 1
-  const hasIncentives = apyData.incentives.length > 0
+  const hasMultipleUnderlying =
+    !!apyData && apyData.underlyingAssetsApyData.length > 1
+  const hasIncentives = !!apyData && apyData.incentives.length > 0
 
   const shouldRenderDetailedApy = hasMultipleUnderlying || hasIncentives
 
@@ -47,8 +47,8 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
       value={t("percent", {
         value:
           props.type === "supply"
-            ? apyData.underlyingSupplyApy
-            : apyData.underlyingBorrowApy,
+            ? Number(reserve.supplyAPY) * 100
+            : Number(reserve.variableBorrowAPY) * 100,
       })}
     />
   )
