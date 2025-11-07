@@ -160,7 +160,7 @@ export const MarketSummarySwap: FC<Props> = ({
             }
             tooltip={t("trade:market.summary.transactionCosts.tooltip")}
           />
-          {healthFactor && (
+          {healthFactor?.isSignificantChange && (
             <MarketSummaryRow
               label={t("trade:market.summary.healthFactor")}
               content={

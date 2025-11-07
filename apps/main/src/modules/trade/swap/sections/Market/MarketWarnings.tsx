@@ -42,7 +42,7 @@ export const MarketWarnings: FC<Props> = ({
 
   const shouldRenderDcaWarning = hasTwap && Math.abs(twap.tradeImpactPct) > 5
 
-  const shouldRenderHealthFactorWarning = !!healthFactor?.isSignificantChange
+  const shouldRenderHealthFactorWarning = !!healthFactor?.isUserConsentRequired
 
   if (
     !shouldRenderSlippageWarning &&

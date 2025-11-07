@@ -95,7 +95,7 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
             label={t("trade:dca.summary.slippage")}
             content={t("percent", { value: slippage })}
           />
-          {healthFactor && (
+          {healthFactor?.isSignificantChange && (
             <SummaryRow
               label={t("trade:market.summary.healthFactor")}
               content={

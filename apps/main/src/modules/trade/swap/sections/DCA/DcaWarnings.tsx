@@ -19,7 +19,7 @@ export const DcaWarnings: FC<Props> = ({
 }) => {
   const { t } = useTranslation("common")
 
-  if (!healthFactor?.isSignificantChange) {
+  if (!healthFactor?.isUserConsentRequired) {
     return null
   }
 
