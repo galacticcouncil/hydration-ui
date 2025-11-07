@@ -301,7 +301,7 @@ export const MENU_ITEMS = [
     href: LINKS.memepad,
     Icon: RocketIcon,
     subItems: undefined,
-    enabled: true,
+    enabled: false,
     external: false,
     mobVisible: false,
     tabVisible: true,
