@@ -19,12 +19,12 @@ export type FarmRewards = {
 }
 
 export const useOmnipoolFarms = () => {
-  const { isLoaded, sdk } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarms"],
     queryFn: () => sdk.api.farm.getAllOmnipoolFarms(),
-    enabled: isLoaded,
+    enabled: isApiLoaded,
     staleTime: Infinity,
   })
 
@@ -32,12 +32,12 @@ export const useOmnipoolFarms = () => {
 }
 
 export const useIsolatedPoolsFarms = () => {
-  const { isLoaded, sdk } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["isolatedPoolsFarms"],
     queryFn: () => sdk.api.farm.getAllIsolatedFarms(),
-    enabled: isLoaded,
+    enabled: isApiLoaded,
     staleTime: Infinity,
   })
 
@@ -45,7 +45,7 @@ export const useIsolatedPoolsFarms = () => {
 }
 
 export const useOmnipoolActiveFarm = (poolId: string) => {
-  const { isLoaded, sdk } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarm", poolId],
@@ -53,7 +53,7 @@ export const useOmnipoolActiveFarm = (poolId: string) => {
       const data = await sdk.api.farm.getOmnipoolFarms(poolId)
       return data.filter((farm) => !!farm)
     },
-    enabled: isLoaded,
+    enabled: isApiLoaded,
     staleTime: Infinity,
   })
 
@@ -84,7 +84,7 @@ const farmRewardsQuery = (
         isXyk,
         relayBlockChainNumber,
       )
-      if (!depositReward) return undefined
+      if (!depositReward) return null
 
       return {
         assetId,
@@ -100,7 +100,7 @@ export const useFarmRewards = (
   positions: Array<XykDeposit | OmnipoolDepositFull>,
   relayBlockChainNumber: number | undefined = 0,
 ) => {
-  const { sdk } = useRpcProvider()
+  const { sdk, isApiLoaded } = useRpcProvider()
   const isPositions = positions.length > 0
 
   const allEntries = positions.flatMap((position) =>
@@ -110,7 +110,11 @@ export const useFarmRewards = (
   const queries = useQueries({
     queries: allEntries.map(({ entry, position }) => ({
       ...farmRewardsQuery(sdk, entry, position, relayBlockChainNumber),
-      enabled: !!sdk.api.router && isPositions && !!relayBlockChainNumber,
+      enabled:
+        isApiLoaded &&
+        !!sdk.api.router &&
+        isPositions &&
+        !!relayBlockChainNumber,
       refetchInterval: 60000,
     })),
   })

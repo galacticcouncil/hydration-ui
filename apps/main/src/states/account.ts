@@ -1,13 +1,15 @@
 import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
-import Big from "big.js"
 import { useCallback, useMemo } from "react"
-import { isDeepEqual, pick, prop } from "remeda"
+import { isDeepEqual, pick } from "remeda"
 import { create, StateCreator } from "zustand"
 import { useShallow } from "zustand/react/shallow"
 
 import {
   OmnipoolDepositFull,
   OmnipoolPosition,
+  useAccountOmnipoolMiningPositions,
+  useAccountOmnipoolPositions,
+  useAccountXykMiningPositions,
   XykDeposit,
 } from "@/api/account"
 import { AssetId } from "@/providers/assetsProvider"
@@ -77,10 +79,12 @@ type BalanceStorageSlice = {
 }
 
 type PositionsStorageSlice = {
-  positions: Positions
-  positionsAmount: number | undefined
-  isPositionsLoading: boolean
-  setPositions: (positions: Positions) => void
+  omnipool: OmnipoolPosition[]
+  omnipoolMining: OmnipoolDepositFull[]
+  xykMining: XykDeposit[]
+  setOmnipoolPositions: (positions: OmnipoolPosition[]) => void
+  setOmnipoolMiningPositions: (positions: OmnipoolDepositFull[]) => void
+  setXykMiningPositions: (positions: XykDeposit[]) => void
 }
 
 const createAccountsBalances: StateCreator<
@@ -113,31 +117,12 @@ const createAccountsUniques: StateCreator<
   [],
   PositionsStorageSlice
 > = (set) => ({
-  positions: { omnipool: [], omnipoolMining: [], xykMining: [] },
-  isPositionsLoading: true,
-  positionsAmount: undefined,
-  hasPositions: false,
-  setPositions: (positions) =>
-    set(() => {
-      const omnipoolAmount = positions.omnipool.length
-      const omnipoolMiningAmount = positions.omnipoolMining.length
-      const xykMiningAmount = positions.xykMining.length
-
-      const positionsAmount = Big(omnipoolAmount)
-        .plus(omnipoolMiningAmount)
-        .plus(xykMiningAmount)
-        .toNumber()
-
-      const hasPositions =
-        omnipoolAmount > 0 || omnipoolMiningAmount > 0 || xykMiningAmount > 0
-
-      return {
-        positions,
-        isPositionsLoading: false,
-        hasPositions,
-        positionsAmount,
-      }
-    }),
+  omnipool: [],
+  omnipoolMining: [],
+  xykMining: [],
+  setOmnipoolPositions: (positions) => set({ omnipool: positions }),
+  setOmnipoolMiningPositions: (positions) => set({ omnipoolMining: positions }),
+  setXykMiningPositions: (positions) => set({ xykMining: positions }),
 })
 
 export const useAccountData = create<
@@ -176,11 +161,33 @@ export const useAccountBalance = (assetId: AssetId): Balance | undefined => {
 }
 
 export const useAccountPositions = () => {
-  const { positions, isPositionsLoading } = useAccountData(
-    useShallow(pick(["positions", "isPositionsLoading"])),
+  const { omnipool, omnipoolMining, xykMining } = useAccountData(
+    useShallow(pick(["omnipool", "omnipoolMining", "xykMining"])),
   )
-  const { omnipool, omnipoolMining, xykMining } = positions
-  const isPositions = omnipool.length > 0 || omnipoolMining.length > 0
+
+  const { isLoading: isOmnipoolPositionsLoading } =
+    useAccountOmnipoolPositions()
+  const { isLoading: isOmnipoolMiningPositionsLoading } =
+    useAccountOmnipoolMiningPositions()
+  const { isLoading: isXykMiningPositionsLoading } =
+    useAccountXykMiningPositions()
+
+  const isPositions =
+    omnipool.length > 0 || omnipoolMining.length > 0 || xykMining.length > 0
+
+  const isPositionsLoading =
+    isOmnipoolPositionsLoading ||
+    isOmnipoolMiningPositionsLoading ||
+    isXykMiningPositionsLoading
+
+  const positions = {
+    omnipool,
+    omnipoolMining,
+    xykMining,
+  }
+
+  const positionsAmount =
+    omnipool.length + omnipoolMining.length + xykMining.length
 
   const getPositions = useCallback(
     (id: string) => {
@@ -200,15 +207,21 @@ export const useAccountPositions = () => {
     [omnipool, omnipoolMining, xykMining],
   )
 
-  return { positions, isPositions, isPositionsLoading, getPositions }
+  return {
+    positions,
+    positionsAmount,
+    isPositions,
+    isPositionsLoading,
+    getPositions,
+  }
 }
 
 export const useAccountOmnipoolPositionsData = () => {
-  const positions = useAccountData(prop("positions"))
   const {
     omnipool: omnipoolPositions,
     omnipoolMining: omnipoolMiningPositions,
-  } = positions
+  } = useAccountData(useShallow(pick(["omnipool", "omnipoolMining"])))
+
   const isPositions =
     omnipoolPositions.length > 0 || omnipoolMiningPositions.length > 0
 
