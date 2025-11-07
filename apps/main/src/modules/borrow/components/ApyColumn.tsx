@@ -3,12 +3,12 @@ import { isGho } from "@galacticcouncil/money-market/utils"
 import { Amount, Skeleton } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   ApyBreakdown,
   ApyBreakdownProps,
 } from "@/modules/borrow/components/ApyBreakdown"
 import { NoData } from "@/modules/borrow/components/NoData"
+import { useApyContext } from "@/modules/borrow/context/ApyContext"
 
 type ApyColumnProps = Omit<ApyBreakdownProps, "apyData"> & {
   reserve: ComputedReserveData
@@ -16,7 +16,8 @@ type ApyColumnProps = Omit<ApyBreakdownProps, "apyData"> & {
 
 export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
   const { t } = useTranslation()
-  const { data, isLoading } = useBorrowAssetsApy([props.assetId])
+
+  const { apyMap, isLoading } = useApyContext()
 
   if (isGho(reserve))
     return props.type === "supply" ? (
@@ -31,7 +32,7 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
 
   if (isLoading) return <Skeleton />
 
-  const [apyData] = data
+  const apyData = apyMap.get(props.assetId)
   if (!apyData) return <NoData />
 
   const hasMultipleUnderlying = apyData.underlyingAssetsApyData.length > 1
