@@ -2,9 +2,10 @@ import {
   AccountInput,
   Button,
   Flex,
+  Icon,
   Label,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
 import { BookOpen } from "lucide-react"
 import { FC, useId } from "react"
 
@@ -35,8 +36,8 @@ export const AddressBook: FC<AddressBookProps> = ({
       <Flex justify="space-between" align="center">
         <Label
           fw={500}
-          fs="p5"
-          lh={1.2}
+          fs={12}
+          lh={px(15)}
           color={getToken("text.medium")}
           htmlFor={id}
         >
@@ -46,11 +47,15 @@ export const AddressBook: FC<AddressBookProps> = ({
           variant="accent"
           outline
           size="small"
-          sx={{ textTransform: "uppercase" }}
+          sx={{
+            py: 2,
+            px: getTokenPx("scales.paddings.base"),
+            textTransform: "uppercase",
+          }}
           onClick={onOpenMyContacts}
         >
+          <Icon size={10} component={BookOpen} />
           My contacts
-          <BookOpen />
         </Button>
       </Flex>
       <AccountInput

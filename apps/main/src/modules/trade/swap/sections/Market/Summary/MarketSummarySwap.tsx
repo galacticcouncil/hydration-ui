@@ -1,24 +1,27 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import {
+  Box,
   CollapsibleContent,
   CollapsibleRoot,
   Summary,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
-import { FC, useState } from "react"
+import { produce } from "immer"
+import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { TradeType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
-import { useDisplayAssetsPrice } from "@/components/AssetPrice"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { DynamicFee } from "@/components/DynamicFee"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/CalculatedAmountSummaryRow"
 import { MarketSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryRow"
-import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/MaxSentSummaryRow"
+import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { AnyTransaction } from "@/modules/transactions/types"
@@ -40,13 +43,22 @@ export const MarketSummarySwap: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
-  const [isCollapsed, setIsCollapsed] = useState(false)
+
+  const { update: updateTradeSettings, ...tradeSettings } = useTradeSettings()
 
   const {
+    general: { isSummaryExpanded },
     swap: {
       single: { swapSlippage },
     },
-  } = useTradeSettings()
+  } = tradeSettings
+
+  const changeSummaryExpanded = (isSummaryExpanded: boolean) =>
+    updateTradeSettings(
+      produce(tradeSettings, (draft) => {
+        draft.general.isSummaryExpanded = isSummaryExpanded
+      }),
+    )
 
   const form = useFormContext<MarketFormValues>()
 
@@ -62,10 +74,19 @@ export const MarketSummarySwap: FC<Props> = ({
     ? scaleHuman(swap.tradeFee, tradeFeeAsset.decimals)
     : "0"
 
-  const [totalFeesDisplay] = useDisplayAssetsPrice([
-    [buyAsset?.id ?? "", tradeFee],
-    [transactionFee?.feeAssetId ?? "", transactionCosts],
-  ])
+  const [tradeFeeDisplay] = useDisplayAssetPrice(
+    tradeFeeAsset?.id ?? "",
+    tradeFee,
+  )
+
+  const transactionFeeAsset = getAssetWithFallback(
+    transactionFee?.feeAssetId ?? "",
+  )
+
+  const [transactionCostsDisplay] = useDisplayAssetPrice(
+    transactionFee?.feeAssetId ?? "",
+    transactionCosts,
+  )
 
   if (!sellAsset || !buyAsset || !tradeFeeAsset) {
     return null
@@ -81,102 +102,98 @@ export const MarketSummarySwap: FC<Props> = ({
     mediumHigh = Number.MAX_SAFE_INTEGER,
   ] = getTradeFeeIntervals(min, max)
 
-  const transactionFeeAsset = getAssetWithFallback(
-    transactionFee?.feeAssetId ?? "",
-  )
-
   return (
-    <CollapsibleRoot open={!isCollapsed} onOpenChange={setIsCollapsed}>
-      {isBuy ? (
-        <CalculatedAmountSummaryRow
-          label={t("trade:market.summary.maxSent")}
-          amount={t("currency", {
-            value: scaleHuman(
-              swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
-              sellAsset.decimals,
-            ),
-            symbol: sellAsset.symbol,
-          })}
-          isCollapsed={isCollapsed}
-          onIsCollapsedChange={setIsCollapsed}
-        />
-      ) : (
-        <CalculatedAmountSummaryRow
-          label={t("trade:market.summary.minReceived")}
-          amount={t("currency", {
-            value: scaleHuman(
-              swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage),
-              buyAsset.decimals,
-            ),
-            symbol: buyAsset.symbol,
-          })}
-          isCollapsed={isCollapsed}
-          onIsCollapsedChange={setIsCollapsed}
-        />
-      )}
-      <CollapsibleContent sx={{ overflow: "visible" }} asChild>
-        <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
+    <Box>
+      {healthFactor?.isSignificantChange && (
+        <>
           <MarketSummaryRow
-            label={t("trade:market.summary.totalFees")}
+            label={t("trade:market.summary.healthFactor")}
             content={
-              <SummaryRowValue fw={500} fs="p4" lh={1.2}>
-                {totalFeesDisplay}
-              </SummaryRowValue>
-            }
-          />
-          <MarketSummaryRow
-            label={t("trade:market.summary.priceImpact")}
-            content={
-              <SummaryRowValue fw={500} fs="p4" lh={1.2}>
-                {t("percent", { value: swap.priceImpactPct })}
-              </SummaryRowValue>
-            }
-            tooltip={t("trade:market.summary.priceImpact.tooltip")}
-          />
-          <MarketSummaryRow
-            label={t("trade:market.summary.estTradeFees")}
-            content={
-              <DynamicFee
-                amount={t("currency", {
-                  value: tradeFee,
-                  symbol: tradeFeeAsset.symbol,
-                })}
-                value={tradeFeePct}
-                rangeLow={mediumLow}
-                rangeHigh={mediumHigh}
+              <HealthFactorChange
+                healthFactor={healthFactor.current}
+                futureHealthFactor={healthFactor.future}
               />
             }
-            tooltip={t("trade:market.summary.estTradeFees.tooltip")}
           />
-          <MarketSummaryRow
-            label={t("trade:market.summary.transactionCosts")}
-            content={
-              <SummaryRowValue fw={500} fs="p4" lh={1.2}>
-                {t("currency", {
-                  value: transactionCosts,
-                  symbol: transactionFeeAsset.symbol,
-                })}
-              </SummaryRowValue>
-            }
-            tooltip={t("trade:market.summary.transactionCosts.tooltip")}
+          <SwapSectionSeparator />
+        </>
+      )}
+      <CollapsibleRoot
+        open={isSummaryExpanded}
+        onOpenChange={changeSummaryExpanded}
+      >
+        {isBuy ? (
+          <CalculatedAmountSummaryRow
+            label={t("trade:market.summary.maxSent")}
+            tooltip={t("trade:market.summary.maxSent.tooltip")}
+            amount={t("currency", {
+              value: scaleHuman(
+                swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
+                sellAsset.decimals,
+              ),
+              symbol: sellAsset.symbol,
+            })}
+            isExpanded={isSummaryExpanded}
+            onIsExpandedChange={changeSummaryExpanded}
           />
-          {healthFactor && (
+        ) : (
+          <CalculatedAmountSummaryRow
+            label={t("trade:market.summary.minReceived")}
+            tooltip={t("trade:market.summary.minReceived.tooltip")}
+            amount={t("currency", {
+              value: scaleHuman(
+                swap.amountOut -
+                  calculateSlippage(swap.amountOut, swapSlippage),
+                buyAsset.decimals,
+              ),
+              symbol: buyAsset.symbol,
+            })}
+            isExpanded={isSummaryExpanded}
+            onIsExpandedChange={changeSummaryExpanded}
+          />
+        )}
+        <CollapsibleContent sx={{ overflow: "visible" }} asChild>
+          <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
+            <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
             <MarketSummaryRow
-              label={t("trade:market.summary.healthFactor")}
+              label={t("trade:market.summary.estTradeFees")}
               content={
-                <HealthFactorChange
-                  healthFactor={healthFactor.current}
-                  futureHealthFactor={healthFactor.future}
+                <DynamicFee
+                  amount={tradeFeeDisplay}
+                  value={tradeFeePct}
+                  rangeLow={mediumLow}
+                  rangeHigh={mediumHigh}
+                />
+              }
+              tooltip={t("trade:market.summary.estTradeFees.tooltip")}
+            />
+            <MarketSummaryRow
+              label={t("trade:market.summary.transactionCosts")}
+              content={
+                <SummaryRowValue fw={500} fs="p4" lh={1.2}>
+                  {transactionCostsDisplay} (
+                  {t("currency", {
+                    value: transactionCosts,
+                    symbol: transactionFeeAsset.symbol,
+                  })}
+                  )
+                </SummaryRowValue>
+              }
+              tooltip={t("trade:market.summary.transactionCosts.tooltip")}
+            />
+            <MarketSummaryRow
+              label={t("trade:market.summary.routes.label")}
+              content={
+                <TradeRoutes
+                  swapType={swap.type}
+                  totalFeesDisplay={tradeFeeDisplay}
+                  routes={swap.swaps}
                 />
               }
             />
-          )}
-          <MarketSummaryRow
-            label={t("trade:market.summary.routes.label")}
-            content={<TradeRoutes swapType={swap.type} routes={swap.swaps} />}
-          />
-        </Summary>
-      </CollapsibleContent>
-    </CollapsibleRoot>
+          </Summary>
+        </CollapsibleContent>
+      </CollapsibleRoot>
+    </Box>
   )
 }

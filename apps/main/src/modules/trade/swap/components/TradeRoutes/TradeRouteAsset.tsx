@@ -22,10 +22,22 @@ export const TradeRouteAsset: FC<Props> = ({
     <Flex align="center" gap={4}>
       <AssetLogo id={assetId} size="medium" />
       <Flex direction="column">
-        <Text fw={500} fs="p3" lh={1.2} color={getToken("text.high")}>
+        <Text
+          fw={500}
+          fs="p3"
+          lh={1.2}
+          color={getToken("text.high")}
+          whiteSpace="nowrap"
+        >
           {assetSymbol}
         </Text>
-        <Text fw={500} fs="p6" lh={1.2} color={getToken("text.low")}>
+        <Text
+          fw={500}
+          fs="p6"
+          lh={1.2}
+          color={getToken("text.low")}
+          whiteSpace="nowrap"
+        >
           {t("number", { value: amount })}
         </Text>
       </Flex>

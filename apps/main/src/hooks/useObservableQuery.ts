@@ -12,17 +12,20 @@ export type UseBaseObservableQueryOptions = {
   enabled?: boolean
 }
 
-export type UseObservableQueryOptions<T> = UseBaseObservableQueryOptions &
+export type UseObservableQueryOptions<
+  T,
+  TData = T,
+> = UseBaseObservableQueryOptions &
   Omit<
-    UseQueryOptions<T, Error, T>,
+    UseQueryOptions<T, Error, TData>,
     "queryFn" | "staleTime" | "refetchOnWindowFocus" | "enabled"
   > & {
     observable?: Observable<T>
     onUpdate?: (data: T) => void
   }
 
-export const useObservableQuery = <T>(
-  options: UseObservableQueryOptions<T>,
+export const useObservableQuery = <T, TData = T>(
+  options: UseObservableQueryOptions<T, TData>,
 ) => {
   const queryClient = useQueryClient()
 
