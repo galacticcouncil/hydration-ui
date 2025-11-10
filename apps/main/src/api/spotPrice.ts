@@ -6,7 +6,8 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { isNullish, prop } from "remeda"
+import { useEffect } from "react"
+import { isNullish, pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -19,8 +20,14 @@ import { scaleHuman } from "@/utils/formatting"
 export const usePriceSubscriber = () => {
   const { isApiLoaded, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
-  const setAssets = useDisplaySpotPriceStore(prop("setAssets"))
+  const { setAssets, setReferenceAssetId } = useDisplaySpotPriceStore(
+    useShallow(pick(["setAssets", "setReferenceAssetId"])),
+  )
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
+
+  useEffect(() => {
+    setReferenceAssetId(stableCoinId ?? "")
+  }, [stableCoinId, setReferenceAssetId])
 
   return useQuery({
     queryKey: ["displayPrices", stableCoinId],
@@ -107,9 +114,13 @@ export const useSubscribedPriceKeys = (assetIds: string[]) => {
     useShallow((state) => state.stableCoinId),
   )
 
-  const setAssets = useDisplaySpotPriceStore(
-    useShallow((state) => state.setAssets),
+  const { setAssets, setReferenceAssetId } = useDisplaySpotPriceStore(
+    useShallow(pick(["setAssets", "setReferenceAssetId"])),
   )
+
+  useEffect(() => {
+    setReferenceAssetId(stableCoinId ?? "")
+  }, [stableCoinId, setReferenceAssetId])
 
   const { isLoaded, sdk } = useRpcProvider()
 

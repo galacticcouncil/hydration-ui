@@ -14,6 +14,7 @@ export const OtcValue: FC<Props> = ({ label, price, isLoading }) => {
   return (
     <ValueStats
       label={label}
+      wrap={[false, true]}
       isLoading={isLoading}
       customValue={
         <AssetPrice

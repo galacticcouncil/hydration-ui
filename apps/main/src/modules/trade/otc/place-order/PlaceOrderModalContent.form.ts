@@ -8,11 +8,15 @@ import i18n from "@/i18n"
 import { TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
+  positive,
   positiveOptional,
+  required,
   requiredObject,
   useValidateFormMaxBalance,
   validateFormExistentialDeposit,
 } from "@/utils/validators"
+
+export const marketPriceOptions = [-3, -1, 0, 3, 5, 10] as const
 
 const useSchema = () => {
   const rpc = useRpcProvider()
@@ -28,7 +32,24 @@ const useSchema = () => {
       offerAmount: positiveOptional,
       buyAsset: requiredObject<TAsset>(),
       buyAmount: positiveOptional,
-      price: z.string(),
+      priceSettings: z.discriminatedUnion("type", [
+        z.object({
+          type: z.literal("relative"),
+          percentage: z.literal(marketPriceOptions),
+        }),
+        z.object({
+          type: z.literal("fixed"),
+          value: required.pipe(positive),
+          inputValue: z.string(),
+          wasPriceSwitched: z.boolean(),
+        }),
+      ]),
+      priceConfirmation: z
+        .object({
+          confirmed: z.boolean(),
+        })
+        .nullable(),
+      isPriceSwitched: z.boolean(),
       isPartiallyFillable: z.boolean(),
     })
     .check(
@@ -58,6 +79,7 @@ const useSchema = () => {
 }
 
 export type PlaceOrderFormValues = z.infer<ReturnType<typeof useSchema>>
+export type PriceSettings = PlaceOrderFormValues["priceSettings"]
 
 export const usePlaceOrderForm = () => {
   const defaultValues: PlaceOrderFormValues = {
@@ -65,7 +87,12 @@ export const usePlaceOrderForm = () => {
     offerAmount: "",
     buyAsset: null,
     buyAmount: "",
-    price: "",
+    priceSettings: {
+      type: "relative",
+      percentage: 0,
+    },
+    priceConfirmation: null,
+    isPriceSwitched: false,
     isPartiallyFillable: true,
   }
 
