@@ -1848,6 +1848,13 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.1.tgz#a7ee12f92bec7ddd2553d0f185693fb22f29f28c"
   integrity sha512-psIJv4hY/CEz3jXzd/mrRGtCtwmMQtCzi5OwDlJ8wbYtdxScCkIlHfZXRxDjUvgWTgG7xu9TbjeyifsJE6yHqw==
 
+"@galacticcouncil/common@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.1.0.tgz#bb3dc1d6504a75137ffcf6febe45ace3c5731115"
+  integrity sha512-iUw59i8ja7qUyNlIIkaBsdP+0ySnMIU+lNWkhpatfRlQQ4c4Cdqkv+grdR88lYeM/zHjXWNcP4zfh1jYl4/6RQ==
+  dependencies:
+    big.js "^6.2.1"
+
 "@galacticcouncil/descriptors@^1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.5.0.tgz#e5676bc7ea90b0c3b321e849172c7c5cab31e775"
@@ -1913,11 +1920,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk-next@^0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.13.0.tgz#c93d07c4f771c926cffc6e6f1dfc0eb0a9870c44"
-  integrity sha512-JJchfi7binixof0YJSykWR49XrMXWsM3nqHMBy4NOjx8X4xBJY8Vb6XWnF6IY0nSRHtLVAIl+6+pnUuuI1UK4g==
+"@galacticcouncil/sdk-next@^0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.14.0.tgz#175a3e6c4d0570424e66e47e171c17d5d052d4b8"
+  integrity sha512-/hrdfitbUacua9Mql8lrRrTbn6wxk7HJAQNb3dkHodNaKarW4SkX5I8TwoGzz3DyNGkLvuatwv10HQQ2hXcQhA==
   dependencies:
+    "@galacticcouncil/common" "^0.1.0"
     "@galacticcouncil/descriptors" "^1.5.0"
     "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
