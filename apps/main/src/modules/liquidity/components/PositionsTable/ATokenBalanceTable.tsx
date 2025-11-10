@@ -20,10 +20,22 @@ export const ATokenBalanceTable = ({
 }) => {
   const { t } = useTranslation(["liquidity"])
   const balanceColumns = useBalanceTableColumns()
-  const { aStableswapBalance, aStableswapAsset, isStablepoolInOmnipool } = pool
+  const {
+    aStableswapBalance,
+    aStableswapAsset,
+    isStablepoolInOmnipool,
+    stablepoolData,
+  } = pool
+
+  const stableswapId = stablepoolData?.id.toString()
 
   const tableData: BalanceTableData[] = useMemo(() => {
-    if (!aStableswapBalance || !aStableswapAsset || !aStableswapDisplayBalance)
+    if (
+      !aStableswapBalance ||
+      !aStableswapAsset ||
+      !aStableswapDisplayBalance ||
+      !stableswapId
+    )
       return []
 
     const freeBalance = scaleHuman(
@@ -39,6 +51,7 @@ export const ATokenBalanceTable = ({
         isStablepoolInOmnipool,
         value: freeBalance,
         valueDisplay: aStableswapDisplayBalance,
+        stableswapId,
       },
     ]
   }, [
@@ -47,6 +60,7 @@ export const ATokenBalanceTable = ({
     t,
     isStablepoolInOmnipool,
     aStableswapDisplayBalance,
+    stableswapId,
   ])
 
   if (!tableData.length) return null

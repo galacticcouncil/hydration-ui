@@ -5,6 +5,10 @@ import { persist } from "zustand/middleware"
 
 import { validNumber } from "@/utils/validators"
 
+const generalSettingsSchema = z.object({
+  isSummaryExpanded: z.boolean(),
+})
+
 const slippageSchema = validNumber.min(0).max(100)
 const maxRetriesSchema = validNumber.min(0).max(10)
 
@@ -33,11 +37,17 @@ export const dcaOrderSchema = z.object({
   maxRetries: maxRetriesSchema,
 })
 
+export const liquidityLimitSchema = z.object({
+  slippage: slippageSchema,
+})
+
 export type DcaOrderSettings = z.infer<typeof dcaOrderSchema>
 
 export const tradeSettingsSchema = z.object({
+  general: generalSettingsSchema,
   swap: swapSettingsSchema,
   dca: dcaOrderSchema,
+  liquidity: liquidityLimitSchema,
 })
 
 export type TradeSettings = z.infer<typeof tradeSettingsSchema>
@@ -45,6 +55,7 @@ export type TradeSettings = z.infer<typeof tradeSettingsSchema>
 const version = 1
 
 const defaultState: TradeSettings = {
+  general: { isSummaryExpanded: false },
   swap: {
     single: {
       swapSlippage: 1,
@@ -53,6 +64,9 @@ const defaultState: TradeSettings = {
       twapSlippage: 3,
       twapMaxRetries: 5,
     },
+  },
+  liquidity: {
+    slippage: 3,
   },
   dca: {
     slippage: 1,

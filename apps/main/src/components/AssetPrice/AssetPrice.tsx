@@ -66,13 +66,12 @@ export const useDisplayAssetsPrice = (
     [Big(0), true] as const,
   )
 
-  return [
-    isValid
-      ? t(compact ? "currency.compact" : "currency", {
-          value: price.toString(),
-          ...(!isDollar && { currency: symbol }),
-        })
-      : price.toString(),
-    { isLoading },
-  ] as const
+  const formattedPrice = isValid
+    ? t(compact ? "currency.compact" : "currency", {
+        value: price.toString(),
+        ...(!isDollar ? { currency: symbol } : {}),
+      })
+    : price.toString()
+
+  return [formattedPrice, { price: price.toString(), isLoading }] as const
 }

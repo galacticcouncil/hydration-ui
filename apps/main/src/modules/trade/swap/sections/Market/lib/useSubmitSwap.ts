@@ -1,9 +1,8 @@
-import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 import { toLowerCase } from "remeda"
 
-import { TradeType } from "@/api/trade"
+import { Trade, TradeType } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { useTransactionsStore } from "@/states/transactions"

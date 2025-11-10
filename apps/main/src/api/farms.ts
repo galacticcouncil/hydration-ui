@@ -14,19 +14,17 @@ export type LoyaltyCurve = farm.LoyaltyCurve
 export type FarmRewards = {
   assetId: string
   depositId: string
-  yieldFarmId: number
   rewards: FarmDepositReward
-  isActiveFarm: boolean
   isXyk: boolean
 }
 
 export const useOmnipoolFarms = () => {
-  const { isLoaded, sdk } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarms"],
     queryFn: () => sdk.api.farm.getAllOmnipoolFarms(),
-    enabled: isLoaded,
+    enabled: isApiLoaded,
     staleTime: Infinity,
   })
 
@@ -34,12 +32,12 @@ export const useOmnipoolFarms = () => {
 }
 
 export const useIsolatedPoolsFarms = () => {
-  const { isLoaded, sdk } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["isolatedPoolsFarms"],
     queryFn: () => sdk.api.farm.getAllIsolatedFarms(),
-    enabled: isLoaded,
+    enabled: isApiLoaded,
     staleTime: Infinity,
   })
 
@@ -47,7 +45,7 @@ export const useIsolatedPoolsFarms = () => {
 }
 
 export const useOmnipoolActiveFarm = (poolId: string) => {
-  const { isLoaded, sdk } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
 
   const { data, isLoading } = useQuery({
     queryKey: ["omnipoolActiveFarm", poolId],
@@ -55,7 +53,7 @@ export const useOmnipoolActiveFarm = (poolId: string) => {
       const data = await sdk.api.farm.getOmnipoolFarms(poolId)
       return data.filter((farm) => !!farm)
     },
-    enabled: isLoaded,
+    enabled: isApiLoaded,
     staleTime: Infinity,
   })
 
@@ -86,14 +84,12 @@ const farmRewardsQuery = (
         isXyk,
         relayBlockChainNumber,
       )
-      if (!depositReward) return undefined
+      if (!depositReward) return null
 
       return {
         assetId,
         depositId,
-        yieldFarmId: entry.yield_farm_id,
         rewards: depositReward,
-        isActiveFarm: true,
         isXyk,
       }
     },
@@ -104,7 +100,7 @@ export const useFarmRewards = (
   positions: Array<XykDeposit | OmnipoolDepositFull>,
   relayBlockChainNumber: number | undefined = 0,
 ) => {
-  const { sdk } = useRpcProvider()
+  const { sdk, isApiLoaded } = useRpcProvider()
   const isPositions = positions.length > 0
 
   const allEntries = positions.flatMap((position) =>
@@ -114,7 +110,11 @@ export const useFarmRewards = (
   const queries = useQueries({
     queries: allEntries.map(({ entry, position }) => ({
       ...farmRewardsQuery(sdk, entry, position, relayBlockChainNumber),
-      enabled: !!sdk.api.router && isPositions && !!relayBlockChainNumber,
+      enabled:
+        isApiLoaded &&
+        !!sdk.api.router &&
+        isPositions &&
+        !!relayBlockChainNumber,
       refetchInterval: 60000,
     })),
   })
@@ -126,7 +126,8 @@ export const useFarmRewards = (
     ? undefined
     : queries.map((query) => query.data).filter((data) => !!data)
 
-  const refetch = () => queries.forEach((query) => query.refetch())
+  const refetch = async () =>
+    await Promise.all(queries.map((query) => query.refetch()))
 
   return { data, isLoading, isPending, refetch }
 }

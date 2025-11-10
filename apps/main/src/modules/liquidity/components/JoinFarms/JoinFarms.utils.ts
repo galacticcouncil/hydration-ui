@@ -1,3 +1,4 @@
+import { calculate_loyalty_multiplier } from "@galacticcouncil/math-liquidity-mining"
 import { calculate_liquidity_out_asset_a } from "@galacticcouncil/math-xyk"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
@@ -9,7 +10,7 @@ import { z, ZodType } from "zod/v4"
 
 import { XykDeposit } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { Farm } from "@/api/farms"
+import { Farm, LoyaltyCurve } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
 import { PoolToken, useXykPools } from "@/api/pools"
 import { useXYKPoolsLiquidity } from "@/api/xyk"
@@ -29,6 +30,7 @@ import {
   TransactionToasts,
   useTransactionsStore,
 } from "@/states/transactions"
+import { QUINTILL } from "@/utils/consts"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { required, validateFieldMaxBalance } from "@/utils/validators"
 
@@ -485,3 +487,17 @@ const useXYKJoinFarmsZodSchema = ({
     }),
   })
 }
+
+export const getCurrentLoyaltyFactor = (
+  loyaltyCurve: NonNullable<LoyaltyCurve>,
+  currentPeriod: number,
+) =>
+  Big(
+    calculate_loyalty_multiplier(
+      currentPeriod.toFixed(),
+      loyaltyCurve.initial_reward_percentage.toString(),
+      loyaltyCurve.scale_coef.toString(),
+    ),
+  )
+    .div(QUINTILL)
+    .toString()

@@ -1,9 +1,9 @@
-import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Alert } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { Trade } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 
 type Props = {

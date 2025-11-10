@@ -11,7 +11,7 @@ import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
-type TSelectedAsset = {
+export type TSelectedAsset = {
   id: string
   decimals: number
   symbol: string
@@ -49,7 +49,7 @@ export const AssetSelect = ({
     ? new Big(assetPrice).times(props.value || "0").toString()
     : "NaN"
 
-  const { getBalance } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
   const maxBalance = ((): string | undefined => {
     if (providedMaxBalance) {
       return providedMaxBalance
@@ -57,11 +57,11 @@ export const AssetSelect = ({
 
     const maxBalance =
       !props.ignoreBalance && selectedAsset
-        ? getBalance(selectedAsset.id)
+        ? getTransferableBalance(selectedAsset.id)
         : undefined
 
     return maxBalance && selectedAsset
-      ? scaleHuman(maxBalance.transferable, selectedAsset.decimals)
+      ? scaleHuman(maxBalance, selectedAsset.decimals)
       : maxBalanceFallback
   })()
 

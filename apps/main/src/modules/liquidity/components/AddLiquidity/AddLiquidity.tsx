@@ -121,7 +121,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
           <Summary
             separator={<ModalContentDivider />}
             rows={[
-              { label: t("liquidity.add.modal.tradeLimit"), content: "100" },
+              { label: t("common:tradeLimit"), content: "100" },
               {
                 label: t("liquidity.add.modal.rewardsFromFees.label"),
                 content: <RewardsFromFees assetId={assetId} />,

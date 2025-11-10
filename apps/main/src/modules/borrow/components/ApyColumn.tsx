@@ -3,12 +3,12 @@ import { isGho } from "@galacticcouncil/money-market/utils"
 import { Amount, Skeleton } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { useBorrowAssetsApy } from "@/api/borrow"
 import {
   ApyBreakdown,
   ApyBreakdownProps,
 } from "@/modules/borrow/components/ApyBreakdown"
 import { NoData } from "@/modules/borrow/components/NoData"
+import { useApyContext } from "@/modules/borrow/context/ApyContext"
 
 type ApyColumnProps = Omit<ApyBreakdownProps, "apyData"> & {
   reserve: ComputedReserveData
@@ -16,7 +16,8 @@ type ApyColumnProps = Omit<ApyBreakdownProps, "apyData"> & {
 
 export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
   const { t } = useTranslation()
-  const { data, isLoading } = useBorrowAssetsApy([props.assetId])
+
+  const { apyMap, isLoading } = useApyContext()
 
   if (isGho(reserve))
     return props.type === "supply" ? (
@@ -31,11 +32,11 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
 
   if (isLoading) return <Skeleton />
 
-  const [apyData] = data
-  if (!apyData) return <NoData />
+  const apyData = apyMap.get(props.assetId)
 
-  const hasMultipleUnderlying = apyData.underlyingAssetsApyData.length > 1
-  const hasIncentives = apyData.incentives.length > 0
+  const hasMultipleUnderlying =
+    !!apyData && apyData.underlyingAssetsApyData.length > 1
+  const hasIncentives = !!apyData && apyData.incentives.length > 0
 
   const shouldRenderDetailedApy = hasMultipleUnderlying || hasIncentives
 
@@ -46,8 +47,8 @@ export const ApyColumn: React.FC<ApyColumnProps> = ({ reserve, ...props }) => {
       value={t("percent", {
         value:
           props.type === "supply"
-            ? apyData.underlyingSupplyApy
-            : apyData.underlyingBorrowApy,
+            ? Number(reserve.supplyAPY) * 100
+            : Number(reserve.variableBorrowAPY) * 100,
       })}
     />
   )
