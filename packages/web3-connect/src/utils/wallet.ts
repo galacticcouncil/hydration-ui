@@ -78,7 +78,7 @@ export function getWalletModeFromAddress(address: string) {
 }
 
 export type AccountsSubscribeOptions = {
-  onDisconnect: () => void | Promise<void>
+  onDisconnect: () => void
   onAccountsChange: (accounts: WalletAccount[]) => void | Promise<void>
   onMainAccountChange: (mainAccount: WalletAccount) => void | Promise<void>
 }

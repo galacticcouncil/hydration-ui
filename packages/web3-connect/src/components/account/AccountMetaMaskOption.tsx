@@ -8,9 +8,7 @@ import { SChangeAccountButton } from "@/components/account/AccountOption.styled"
 import { isEip1193Provider, requestAccounts } from "@/utils"
 import { getWallet, MetaMask } from "@/wallets"
 
-export const AccountMetaMaskOption: React.FC<AccountOptionProps> = ({
-  ...props
-}) => {
+export const AccountMetaMaskOption: React.FC<AccountOptionProps> = (props) => {
   const wallet = getWallet(props.provider)
 
   // Only MetaMask seems to support switching accounts

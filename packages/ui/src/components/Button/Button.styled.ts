@@ -306,7 +306,7 @@ export const SButtonTransparent = styled.button`
   }
 `
 
-export const SMicroButton = styled.button<{ variant?: MicroButtonVariant }>(
+export const SMicroButton = styled(Box)<{ variant?: MicroButtonVariant }>(
   ({ theme, variant = "low" }) => [
     css`
       all: unset;

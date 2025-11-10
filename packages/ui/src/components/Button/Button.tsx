@@ -57,6 +57,7 @@ export const LoadingButton: FC<
   return (
     <SButton
       as="button"
+      type="button"
       variant={isLoading && loadingVariant ? loadingVariant : variant}
       {...props}
     >

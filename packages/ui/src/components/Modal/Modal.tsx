@@ -112,11 +112,11 @@ type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
 
 const ModalClose: FC<ModalCloseProps> = (props) => {
   return (
-    <DialogPrimitive.Close {...props} asChild>
-      <SModalClose>
+    <SModalClose asChild>
+      <DialogPrimitive.Close {...props}>
         <Icon component={X} size={20} />
-      </SModalClose>
-    </DialogPrimitive.Close>
+      </DialogPrimitive.Close>
+    </SModalClose>
   )
 }
 

@@ -117,7 +117,8 @@ export class BaseEIP1193Wallet implements Wallet {
   }
 
   subscribeAccounts = (callback: SubscriptionFn) => {
-    if (!this._extension) {
+    const extension = this._extension
+    if (!extension) {
       throw new NotInstalledError(
         `Refresh the browser if ${this.title} is already installed.`,
         this,
@@ -133,11 +134,10 @@ export class BaseEIP1193Wallet implements Wallet {
       callback?.(accounts)
     }
 
-    this._extension.on("accountsChanged", handler)
+    extension.on("accountsChanged", handler)
 
     return () => {
-      if (!this._extension) return
-      this._extension.removeListener("accountsChanged", handler)
+      extension.removeListener("accountsChanged", handler)
     }
   }
 

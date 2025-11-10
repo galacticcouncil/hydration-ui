@@ -95,9 +95,6 @@ const ErrorCopyButton = () => {
   const { data: chain } = useChainSpecData()
   const { data: bestNumber } = useBestNumber()
 
-  const blockNumber = bestNumber?.parachainBlockNumber?.toString() ?? ""
-  const specVersion = chain?.lastRuntimeUpgrade?.spec_version?.toString() ?? ""
-
   const pjsUrl = usePolkadotJSExtrinsicUrl(tx)
   const evmTxData = isEvmCall(tx) ? tx.data : undefined
 
@@ -110,8 +107,9 @@ const ErrorCopyButton = () => {
             address: account?.address ?? "",
             wallet: account?.provider ?? "",
             feePaymentAsset: `${getAssetWithFallback(feeAssetId).symbol} (${feeAssetId})`,
-            specVersion,
-            blockNumber,
+            specVersion:
+              chain?.lastRuntimeUpgrade?.spec_version?.toString() ?? "",
+            blockNumber: bestNumber?.parachainBlockNumber?.toString() ?? "",
             path: window.location.pathname,
             transaction: pjsUrl || evmTxData,
           }),

@@ -32,6 +32,15 @@ import { toAccount } from "@/utils"
 import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
+const getAccountOptionComponent = (account: Account) => {
+  switch (account.provider) {
+    case WalletProviderType.MetaMask:
+      return AccountMetaMaskOption
+    default:
+      return AccountOption
+  }
+}
+
 export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
   const { accounts, setAccount, toggle, getConnectedProviders } =
@@ -137,23 +146,17 @@ export const AccountSelectContent = () => {
           ) : (
             <>
               {hasNoResults && <Text>No accounts found</Text>}
-              {accountsWithBalances.map((account) =>
-                account.provider === WalletProviderType.MetaMask ? (
-                  <AccountMetaMaskOption
-                    key={`${account.address}-${account.provider}`}
+              {accountsWithBalances.map((account) => {
+                const Component = getAccountOptionComponent(account)
+                return (
+                  <Component
+                    key={`${account.publicKey}-${account.provider}`}
                     {...account}
                     isBalanceLoading={areBalancesLoading}
                     onSelect={onAccountSelect}
                   />
-                ) : (
-                  <AccountOption
-                    key={`${account.address}-${account.provider}`}
-                    {...account}
-                    isBalanceLoading={areBalancesLoading}
-                    onSelect={onAccountSelect}
-                  />
-                ),
-              )}
+                )
+              })}
             </>
           )}
         </Grid>
