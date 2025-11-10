@@ -182,10 +182,14 @@ const AddLiquiditySummary = ({
           label: t("common:tradeLimit"),
           content: <TradeLimit type={TradeLimitType.Liquidity} />,
         },
-        {
-          label: t("liquidity.add.modal.rewardsAPR"),
-          content: <RewardsAPR farms={farms} />,
-        },
+        ...(farms.length > 0
+          ? [
+              {
+                label: t("liquidity.add.modal.rewardsAPR"),
+                content: <RewardsAPR farms={farms} />,
+              },
+            ]
+          : []),
         {
           label: t("common:apy"),
           content: isLoading ? (

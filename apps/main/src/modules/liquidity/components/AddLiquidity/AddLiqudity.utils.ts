@@ -130,7 +130,7 @@ export const useAddToOmnipoolZod = (
         )
 
         const isWithinLimit = verify_asset_cap(
-          assetReserve.toString(),
+          hubReserves.toString(),
           cap.toString(),
           hubIn,
           hubBalance.toString(),

@@ -174,7 +174,11 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
       >
         <Button asChild variant="accent" outline>
           <Link
-            to={pool.isStablePool ? "/liquidity/$id/add" : "/liquidity/$id/add"}
+            to={
+              pool.isStablePool
+                ? "/liquidity/$id/addStablepool"
+                : "/liquidity/$id/add"
+            }
             params={{ id: pool.id }}
           >
             {t("liquidity:joinPool")}

@@ -25,9 +25,10 @@ export enum TradeLimitType {
 
 type TradeLimitRowProps = {
   type: TradeLimitType
+  disabled?: boolean
 }
 
-export const TradeLimit = ({ type }: TradeLimitRowProps) => {
+export const TradeLimit = ({ type, disabled }: TradeLimitRowProps) => {
   const { t } = useTranslation(["common", "liquidity", "trade"])
   const [isEditing, setIsEditing] = useState(false)
   const { update, ...tradeSettings } = useTradeSettings()
@@ -61,7 +62,11 @@ export const TradeLimit = ({ type }: TradeLimitRowProps) => {
         <Text fs="p5" fw={500} color={getToken("text.high")}>
           {t("percent", { value })}
         </Text>
-        <MicroButton variant="emphasis" onClick={() => setIsEditing(true)}>
+        <MicroButton
+          variant="emphasis"
+          onClick={() => setIsEditing(true)}
+          disabled={disabled}
+        >
           {t("edit")}
         </MicroButton>
       </Flex>

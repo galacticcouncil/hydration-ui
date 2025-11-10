@@ -45,7 +45,9 @@ export const AssetSelectFormField = <TFormValues extends FieldValues>({
   })
 
   const setSelectedAsset = (asset: TAssetData) => {
-    assetField.onChange(asset)
+    if (!disabledAssetSelector) {
+      assetField.onChange(asset)
+    }
     onAssetChange?.(asset, assetField.value)
   }
 
