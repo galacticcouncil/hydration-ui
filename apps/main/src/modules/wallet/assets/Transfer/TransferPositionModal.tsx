@@ -1,5 +1,6 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
 import {
+  Alert,
   Button,
   ModalBody,
   ModalContentDivider,
@@ -31,7 +32,7 @@ type Props = {
 export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { account } = useAccount()
-  const { tradable } = useAssets()
+  const { tradable, native } = useAssets()
 
   const transferPosition = useSubmitTransferPosition({ onClose })
   const form = useTransferPositionForm({ assetId })
@@ -80,7 +81,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
           transferPosition.mutate(values),
         )}
       >
-        <ModalHeader title={t("transfer.modal.title")} />
+        <ModalHeader align="center" title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
           <ModalContentDivider />
           <AddressBookFormField<TransferPositionFormValues>
@@ -89,10 +90,18 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
           />
           <ModalContentDivider />
           <AssetSelectFormField<TransferPositionFormValues>
+            label={t("transfer.modal.asset.label")}
             assetFieldName="asset"
             amountFieldName="amount"
             assets={tradable}
           />
+          {asset && asset.id !== native.id && (
+            <Alert
+              sx={{ mb: 20 }}
+              variant="warning"
+              description={t("transfer.modal.warning.nonNative")}
+            />
+          )}
           <ModalContentDivider />
         </ModalBody>
         <ModalFooter
