@@ -268,7 +268,7 @@ export const AddStablepoolLiquidityForm = ({
             erc20Id && !split ? TradeLimitType.Trade : TradeLimitType.Liquidity
           }
           healthFactor={healthFactor}
-          isErc20={!!erc20Id}
+          erc20Id={erc20Id}
         />
 
         {customErrors?.cap ? (
@@ -318,7 +318,7 @@ const AddStablepoolLiquiditySummary = ({
   poolMeta,
   limitType = TradeLimitType.Liquidity,
   healthFactor,
-  isErc20,
+  erc20Id,
 }: {
   farms: Farm[]
   minReceiveAmount: string
@@ -326,15 +326,16 @@ const AddStablepoolLiquiditySummary = ({
   poolMeta: TAssetData
   limitType?: TradeLimitType
   healthFactor?: HealthFactorResult
-  isErc20: boolean
+  erc20Id?: string
 }) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation(["liquidity", "common"])
   const { data: stableswap } = useStableswap(poolMeta.id)
   const { data: spotPriceData, isLoading: isPriceLoading } = useQuery(
-    spotPriceQuery(rpc, poolMeta.id, selectedAssetId ?? ""),
+    spotPriceQuery(rpc, erc20Id ?? poolMeta.id, selectedAssetId ?? ""),
   )
+  const erc20Meta = erc20Id ? getAssetWithFallback(erc20Id) : undefined
 
   //@TODO: probably accumulate omnipool and stabpool fees if omnipool is selected
   return (
@@ -378,7 +379,7 @@ const AddStablepoolLiquiditySummary = ({
                   <Skeleton width={50} height="100%" />
                 ) : (
                   t("liquidity.remove.stablepool.modal.price", {
-                    poolSymbol: poolMeta.symbol,
+                    poolSymbol: erc20Meta?.symbol ?? poolMeta.symbol,
                     value: spotPriceData?.spotPrice,
                     symbol: getAssetWithFallback(selectedAssetId).symbol,
                   })
@@ -387,7 +388,7 @@ const AddStablepoolLiquiditySummary = ({
             ]
           : []),
 
-        ...(isErc20
+        ...(erc20Id
           ? [
               {
                 label: t("common:healthFactor"),
