@@ -23,7 +23,12 @@ import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
-import { maxBalanceError, validateMaxBalance } from "@/utils/validators"
+import {
+  maxBalanceError,
+  positive,
+  required,
+  validateMaxBalance,
+} from "@/utils/validators"
 
 export type TReserveFormValue = {
   asset: TAssetData
@@ -122,6 +127,7 @@ export const useStablepoolAddLiquidity = ({
   const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
   const stablepoolSharesHuman =
     scaleHuman(minStablepoolShares, meta.decimals) || "0"
+  const minReceiveAmount = stablepoolSharesHuman
   const isCheckJoinFarms =
     isFarms && Big(stablepoolSharesHuman).gt(0) && option === "omnipool"
 
@@ -201,18 +207,19 @@ export const useStablepoolAddLiquidity = ({
   return {
     form,
     accountReserveBalances,
-    stablepoolAssets: stablepoolAssets.map(({ asset }) => asset),
-    stablepoolSharesHuman,
+    assetsToSelect: stablepoolAssets.map(({ asset }) => asset),
+    minReceiveAmount,
     meta,
     mutation,
     activeFarms,
     isFarms,
     joinFarmErrorMessage,
     isJoinFarms,
+    healthFactor: undefined,
   }
 }
 
-const getStablepoolShares = (
+export const getStablepoolShares = (
   formValues: TReserveFormValue[],
   stablepoolAssets: Array<{ asset: TAssetData; balance: bigint }>,
   pool: StableSwapBase,
@@ -278,7 +285,7 @@ const useStablepoolAddLiquidityFormResolver = (
 
     const schema = z.object({
       reserves: reservesSchema,
-      sharesAmount: omnipoolZodSchema ?? z.string(),
+      sharesAmount: omnipoolZodSchema ?? required.pipe(positive),
       option: z.enum(["omnipool", "stablepool"]),
       split: z.boolean(),
       selectedAssetId: z.string(),
@@ -292,15 +299,17 @@ const useStablepoolAddLiquidityFormResolver = (
   }
 }
 
-const useStablepoolAddLiquidityForm = ({
+export const useStablepoolAddLiquidityForm = ({
   reserves,
   poolId,
   selectedAssetId,
   accountReserveBalances,
+  option = "omnipool",
 }: {
   poolId: string
   selectedAssetId: string
   reserves: Array<TReserveFormValue>
+  option?: "omnipool" | "stablepool"
   accountReserveBalances: Map<string, string>
 }) => {
   const resolver = useStablepoolAddLiquidityFormResolver(
@@ -312,7 +321,7 @@ const useStablepoolAddLiquidityForm = ({
     mode: "all",
     defaultValues: {
       reserves,
-      option: "omnipool",
+      option,
       sharesAmount: "",
       split: true,
       selectedAssetId,

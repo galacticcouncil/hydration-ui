@@ -131,10 +131,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
       },
-      onSuccess: () => {
+      onSuccess: (event) => {
         dispatch(doSetStatus("success"))
-        transaction.onSuccess?.()
-        toasts.onSuccess?.()
+        transaction.onSuccess?.(event)
+        toasts.onSuccess?.(event)
       },
       onError: (message) => {
         dispatch(doSetError(message))

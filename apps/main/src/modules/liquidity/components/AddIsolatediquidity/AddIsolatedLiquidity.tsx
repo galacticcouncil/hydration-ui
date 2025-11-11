@@ -6,7 +6,6 @@ import {
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { useRouter } from "@tanstack/react-router"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -18,6 +17,7 @@ import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { RewardsAPR } from "@/modules/liquidity/components/AddLiquidity/RewardsAPR"
 import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
 import { XYKPoolMeta } from "@/providers/assetsProvider"
+import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { scale } from "@/utils/formatting"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -28,36 +28,29 @@ import {
 } from "./AddIsolatedLiquidity.utils"
 import { AddIsolatedLiquiditySkeleton } from "./AddIsolatedLiquiditySkeleton"
 
-export const AddIsolatedLiquidity = ({
-  poolAddress,
-  closable,
-}: {
-  poolAddress: string
-  closable?: boolean
-}) => {
+export const AddIsolatedLiquidity = (props: AddLiquidityProps) => {
   const { data: pools, isLoading } = useXykPools()
   const { data: consts } = useXYKConsts()
 
-  const pool = pools?.find((pool) => pool.address === poolAddress)
+  const pool = pools?.find((pool) => pool.address === props.id)
 
   return isLoading || !pool || !consts ? (
-    <AddIsolatedLiquiditySkeleton closable={closable} />
+    <AddIsolatedLiquiditySkeleton {...props} />
   ) : (
-    <AddIsolatedLiquidityForm pool={pool} consts={consts} closable={closable} />
+    <AddIsolatedLiquidityForm pool={pool} consts={consts} {...props} />
   )
 }
 
 export const AddIsolatedLiquidityForm = ({
   pool,
   consts,
+  onBack,
   closable = false,
-}: {
+}: AddLiquidityProps & {
   pool: PoolBase
   consts: TXYKConsts
-  closable?: boolean
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { history } = useRouter()
 
   const {
     form,
@@ -111,7 +104,7 @@ export const AddIsolatedLiquidityForm = ({
       <ModalHeader
         title={t("addLiquidity")}
         closable={closable}
-        onBack={!closable ? () => history.back() : undefined}
+        onBack={onBack}
       />
       <ModalBody>
         <FormProvider {...form}>

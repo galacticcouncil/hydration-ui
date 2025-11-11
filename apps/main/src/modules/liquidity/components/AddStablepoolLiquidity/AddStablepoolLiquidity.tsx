@@ -1,3 +1,4 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components/primitives"
 import {
   Alert,
   Button,
@@ -15,9 +16,11 @@ import {
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { Controller, useFieldArray } from "react-hook-form"
+import { Controller, useFieldArray, useFormContext } from "react-hook-form"
+import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { stablePools, StableSwapBase } from "@/api/pools"
@@ -26,6 +29,7 @@ import { useStableswap } from "@/api/stablewap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { RewardsAPR } from "@/modules/liquidity/components/AddLiquidity/RewardsAPR"
+import { useAddMoneyMarketLiquidity } from "@/modules/liquidity/components/AddMoneyMarketLiquidity/AddMoneyMarketLiquidity.utils"
 import { StablepoolReserves } from "@/modules/liquidity/components/StablepoolReserves/StablepoolReserves"
 import {
   TradeLimit,
@@ -33,54 +37,102 @@ import {
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
 import {
   addStablepoolOptions,
+  TAddStablepoolLiquidityFormValues,
   useStablepoolAddLiquidity,
 } from "./AddStablepoolLiquidity.utils"
 import { AddStablepoolLiquiditySkeleton } from "./AddStablepoolLiquiditySkeleton"
 
-export type AddStablepoolLiquidityProps = {
-  closable: boolean
-  onBack: () => void
-  id: string
+export type AddStablepoolLiquidityProps = AddLiquidityProps & {
+  stableswapId: string
 }
 
-export const AddStablepoolLiquidity = (props: AddStablepoolLiquidityProps) => {
-  const { id } = props
+export const AddStablepoolLiquidityWrapper = (
+  props: AddStablepoolLiquidityProps,
+) => {
+  const { stableswapId } = props
   const { data: pools = [], isLoading: isPoolsLoading } = useQuery(stablePools)
   const { isBalanceLoading } = useAccountBalances()
-  const pool = pools.find((pool) => pool.id === Number(id))
+  const pool = pools.find((pool) => pool.id === Number(stableswapId))
 
   if (isPoolsLoading || !pool || isBalanceLoading)
     return <AddStablepoolLiquiditySkeleton {...props} />
 
-  return <AddStablepoolLiquidityForm pool={pool} {...props} />
+  if (props.erc20Id) {
+    return (
+      <AddMoneyMarketLiquidity {...props} erc20Id={props.erc20Id} pool={pool} />
+    )
+  }
+
+  return <AddStablepoolLiquidity {...props} pool={pool} />
 }
 
-export const AddStablepoolLiquidityForm = ({
-  pool,
-  closable,
-  onBack,
-}: AddStablepoolLiquidityProps & {
-  pool: StableSwapBase
-}) => {
-  const { t } = useTranslation(["liquidity", "common"])
-  const {
-    form,
-    accountReserveBalances,
-    stablepoolAssets,
-    stablepoolSharesHuman,
-    meta,
-    activeFarms,
-    mutation,
-    joinFarmErrorMessage,
-    isJoinFarms,
-  } = useStablepoolAddLiquidity({
+const AddMoneyMarketLiquidity = (
+  props: AddStablepoolLiquidityProps & {
+    erc20Id: string
+    pool: StableSwapBase
+  },
+) => {
+  const { erc20Id, pool } = props
+  const { form, ...addLiquidityData } = useAddMoneyMarketLiquidity({
+    pool,
+    erc20Id,
+    onSubmitted: () => props.onBack?.(),
+  })
+
+  return (
+    <FormProvider {...form}>
+      <AddStablepoolLiquidityForm {...props} {...addLiquidityData} />
+    </FormProvider>
+  )
+}
+
+const AddStablepoolLiquidity = (
+  props: AddStablepoolLiquidityProps & {
+    pool: StableSwapBase
+  },
+) => {
+  const { pool } = props
+  const { form, ...addLiquidityData } = useStablepoolAddLiquidity({
     pool,
   })
+
+  return (
+    <FormProvider {...form}>
+      <AddStablepoolLiquidityForm {...props} {...addLiquidityData} />
+    </FormProvider>
+  )
+}
+
+type AddStablepoolLiquidityFormProps = AddStablepoolLiquidityProps &
+  Omit<
+    | ReturnType<typeof useStablepoolAddLiquidity>
+    | ReturnType<typeof useAddMoneyMarketLiquidity>,
+    "form"
+  >
+
+export const AddStablepoolLiquidityForm = ({
+  erc20Id,
+  stableswapId,
+  closable,
+  onBack,
+  accountReserveBalances,
+  assetsToSelect,
+  minReceiveAmount,
+  meta,
+  activeFarms,
+  mutation,
+  joinFarmErrorMessage,
+  isJoinFarms,
+  healthFactor,
+}: AddStablepoolLiquidityFormProps) => {
+  const { t } = useTranslation(["liquidity", "common"])
+  const form = useFormContext<TAddStablepoolLiquidityFormValues>()
 
   const { control, watch, formState } = form
   const [split, selectedAssetId, option] = watch([
@@ -117,26 +169,28 @@ export const AddStablepoolLiquidityForm = ({
           borderColor: getToken("details.separators"),
         }}
         customHeader={
-          <Flex
-            align="center"
-            mt={getTokenPx("containers.paddings.primary")}
-            gap={getTokenPx("containers.paddings.tertiary")}
-          >
-            <Controller
-              control={form.control}
-              name="option"
-              render={({ field: { value, onChange, disabled } }) => (
-                <SliderTabs
-                  options={addStablepoolOptions}
-                  selected={value}
-                  onSelect={(option) => onChange(option.id)}
-                  disabled={disabled}
-                  sx={{ flex: 1 }}
-                />
-              )}
-            />
-            <AddStablepoolLiquidityTooltip />
-          </Flex>
+          !erc20Id && (
+            <Flex
+              align="center"
+              mt={getTokenPx("containers.paddings.primary")}
+              gap={getTokenPx("containers.paddings.tertiary")}
+            >
+              <Controller
+                control={form.control}
+                name="option"
+                render={({ field: { value, onChange, disabled } }) => (
+                  <SliderTabs
+                    options={addStablepoolOptions}
+                    selected={value}
+                    onSelect={(option) => onChange(option.id)}
+                    disabled={disabled}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+              <AddStablepoolLiquidityTooltip />
+            </Flex>
+          )
         }
       />
 
@@ -176,7 +230,7 @@ export const AddStablepoolLiquidityForm = ({
                   return (
                     <AssetSelect
                       label={t("liquidity.add.modal.selectAsset")}
-                      assets={stablepoolAssets}
+                      assets={assetsToSelect}
                       maxBalance={balance}
                       selectedAsset={value.asset}
                       error={error?.message}
@@ -200,16 +254,21 @@ export const AddStablepoolLiquidityForm = ({
         })}
 
         <StablepoolReserves
-          poolId={pool.id.toString()}
+          poolId={stableswapId}
           separator={<ModalContentDivider />}
         />
         <ModalContentDivider />
 
         <AddStablepoolLiquiditySummary
           farms={option === "omnipool" ? activeFarms : []}
-          stablepoolSharesHuman={stablepoolSharesHuman}
+          minReceiveAmount={minReceiveAmount}
           selectedAssetId={!split ? selectedAssetId : undefined}
           poolMeta={meta}
+          limitType={
+            erc20Id && !split ? TradeLimitType.Trade : TradeLimitType.Liquidity
+          }
+          healthFactor={healthFactor}
+          isErc20={!!erc20Id}
         />
 
         {customErrors?.cap ? (
@@ -254,14 +313,20 @@ export const AddStablepoolLiquidityForm = ({
 
 const AddStablepoolLiquiditySummary = ({
   farms,
-  stablepoolSharesHuman,
+  minReceiveAmount,
   selectedAssetId,
   poolMeta,
+  limitType = TradeLimitType.Liquidity,
+  healthFactor,
+  isErc20,
 }: {
   farms: Farm[]
-  stablepoolSharesHuman: string
+  minReceiveAmount: string
   selectedAssetId?: string
   poolMeta: TAssetData
+  limitType?: TradeLimitType
+  healthFactor?: HealthFactorResult
+  isErc20: boolean
 }) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
@@ -279,12 +344,12 @@ const AddStablepoolLiquiditySummary = ({
         {
           label: t("common:minimalReceived"),
           content: t("common:number", {
-            value: stablepoolSharesHuman,
+            value: minReceiveAmount,
           }),
         },
         {
           label: t("common:tradeLimit"),
-          content: <TradeLimit type={TradeLimitType.Liquidity} />,
+          content: <TradeLimit key={limitType} type={limitType} />,
         },
         ...(farms.length > 0
           ? [
@@ -318,6 +383,21 @@ const AddStablepoolLiquiditySummary = ({
                     symbol: getAssetWithFallback(selectedAssetId).symbol,
                   })
                 ),
+              },
+            ]
+          : []),
+
+        ...(isErc20
+          ? [
+              {
+                label: t("common:healthFactor"),
+                content: healthFactor ? (
+                  <HealthFactorChange
+                    healthFactor={healthFactor.current}
+                    futureHealthFactor={healthFactor.future}
+                    fontSize="p5"
+                  />
+                ) : null,
               },
             ]
           : []),

@@ -25,7 +25,7 @@ export const PoolDetailsHeader = ({
 }) => {
   const { t } = useTranslation("liquidity")
   const isOmnipool = !isIsolatedPool(data)
-  const isStablepool = isOmnipool && !!data.stablepoolData
+  const stablepoolData = isOmnipool ? data.stablepoolData : undefined
 
   return (
     <Flex
@@ -91,14 +91,18 @@ export const PoolDetailsHeader = ({
       >
         <Button asChild>
           <Link
-            to={
-              isStablepool
-                ? "/liquidity/$id/addStablepool"
-                : "/liquidity/$id/add"
-            }
+            to={"/liquidity/$id/add"}
             params={{
               id: data.id,
             }}
+            search={
+              stablepoolData
+                ? {
+                    stableswapId: stablepoolData.id.toString(),
+                    erc20Id: stablepoolData.aToken?.id.toString(),
+                  }
+                : undefined
+            }
             resetScroll={false}
           >
             <Icon size={14} component={Plus} />

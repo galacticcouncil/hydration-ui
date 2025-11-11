@@ -9,7 +9,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { useRouter } from "@tanstack/react-router"
 import { FC } from "react"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -23,6 +22,7 @@ import {
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useAssets } from "@/providers/assetsProvider"
+import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
@@ -33,14 +33,12 @@ import {
 } from "./AddLiqudity.utils"
 import { RewardsAPR } from "./RewardsAPR"
 
-type Props = {
-  readonly closable?: boolean
-  readonly assetId: string
-}
-
-export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
+export const AddLiquidity: FC<AddLiquidityProps> = ({
+  id,
+  onBack,
+  closable = false,
+}) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { history } = useRouter()
 
   const {
     form,
@@ -51,7 +49,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
     joinFarmErrorMessage,
     mutation,
     isJoinFarms,
-  } = useAddLiquidity(assetId)
+  } = useAddLiquidity(id)
 
   const onSubmit = async (values: TAddLiquidityFormValues) => {
     if (!liquidityShares || !values.amount)
@@ -60,7 +58,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
     const amount = scale(values.amount, meta.decimals).toString()
 
     mutation.mutate({
-      assetId,
+      assetId: id,
       amount,
       shares: liquidityShares.minSharesToGet,
       symbol: meta.symbol,
@@ -79,7 +77,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
       <ModalHeader
         title={t("addLiquidity")}
         closable={closable}
-        onBack={!closable ? () => history.back() : undefined}
+        onBack={onBack}
       />
       <ModalBody>
         <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">

@@ -47,7 +47,7 @@ type EthereumSignerOptions = {
   onSubmitted: (txHash: string) => void
   onSuccess: (receipt: TransactionReceipt) => void
   onError: (error: string) => void
-  onFinalized: () => void
+  onFinalized: (receipt: TransactionReceipt) => void
 }
 
 export class EthereumSigner {
@@ -199,7 +199,7 @@ export class EthereumSigner {
       })
 
       options.onSuccess(receipt)
-      options.onFinalized()
+      options.onFinalized(receipt)
 
       return receipt
     } catch (err) {

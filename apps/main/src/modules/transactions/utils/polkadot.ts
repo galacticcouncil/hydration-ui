@@ -7,7 +7,9 @@ import { catchError, Observable, of, shareReplay } from "rxjs"
 
 import {
   AnyPapiTx,
+  TxBestBlocksStateResult,
   TxEventOrError,
+  TxFinalizedResult,
   TxOptions,
   TxSignAndSubmitFn,
   UnsignedTxSubmitFn,
@@ -82,12 +84,12 @@ const observeTransactionEvents = <T extends TxEventOrError>(
     }
 
     if (event.type === "txBestBlocksState" && event.found) {
-      if (event.ok) options?.onSuccess()
+      if (event.ok) options?.onSuccess(event as TxBestBlocksStateResult)
       if (!event.ok) options?.onError(formatTxError(event.dispatchError))
     }
 
     if (event.type === "finalized") {
-      options?.onFinalized()
+      options?.onFinalized(event as TxFinalizedResult)
       sub.unsubscribe()
     }
   })

@@ -23,9 +23,9 @@ export type TxMortalityPeriod = 32 | 64 | 128 | 256 | 512 | 1024
 
 export type TxStatusCallbacks = {
   onSubmitted: (txHash: string) => void
-  onSuccess: () => void
+  onSuccess: (event: TxBestBlocksStateResult | TransactionReceipt) => void
   onError: (error: string) => void
-  onFinalized: () => void
+  onFinalized: (event: TxFinalizedResult | TransactionReceipt) => void
 }
 
 export type TxOptions = TxStatusCallbacks & {
@@ -39,6 +39,16 @@ export type TxOptions = TxStatusCallbacks & {
 export type TxEventOrError =
   | TxEvent
   | { type: "error"; error: Error | InvalidTxError }
+
+export type TxBestBlocksStateResult = Extract<
+  TxEvent,
+  { type: "txBestBlocksState"; found: true; ok: true }
+>
+
+export type TxFinalizedResult = Extract<
+  TxEvent,
+  { type: "finalized"; found: true; ok: true }
+>
 
 export type TxResult = Subscription | TransactionReceipt | void
 
