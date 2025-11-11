@@ -17,6 +17,7 @@ import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
 } from "@/modules/trade/otc/table/OtcTable.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
@@ -27,8 +28,9 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("trade")
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
 
+  const { getAsset } = useAssets()
   const { data, isLoading } = useOtcOffersQuery()
-  const columns = useOtcTableColums(offersType)
+  const columns = useOtcTableColums()
 
   const userAddress = useHydraAccountAddress()
 
@@ -50,14 +52,24 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
     [filteredOffers],
   )
 
-  const { isLoading: isPriceLoading, prices } = useAssetsPrice(assetIds)
+  const {
+    isLoading: isPriceLoading,
+    referenceAssetId,
+    prices,
+  } = useAssetsPrice(assetIds)
+
+  const referenceAsset = getAsset(referenceAssetId)
 
   const isTableLoading = isLoading || isPriceLoading
 
   const offersWithPrices = useMemo(
     () =>
-      isTableLoading ? [] : filteredOffers.map(mapOtcOffersToTableData(prices)),
-    [filteredOffers, prices, isTableLoading],
+      isTableLoading
+        ? []
+        : filteredOffers.map(
+            mapOtcOffersToTableData(prices, referenceAsset?.decimals ?? null),
+          ),
+    [filteredOffers, prices, referenceAsset?.decimals, isTableLoading],
   )
 
   return (

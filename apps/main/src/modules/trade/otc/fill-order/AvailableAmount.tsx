@@ -1,5 +1,5 @@
 import { Flex, ProgressBar, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -30,19 +30,26 @@ export const AvailableAmount: FC<Props> = ({
     <Flex
       direction="column"
       gap={8}
-      py={20}
-      px={20}
+      p={getTokenPx("containers.paddings.primary")}
       bg={getToken("details.separatorsOnDim")}
     >
-      <Flex
-        justify="space-between"
-        align="center"
-        color={getToken("buttons.primary.medium.rest")}
-      >
-        <Text fw={400} fs="p3" lh={px(19.6)}>
-          {t("availableAmount")}:
-        </Text>
-        <Text fw={600} fs={16} lh={1}>
+      <Flex justify="space-between" align="center">
+        {isPartiallyFillable && (
+          <Text
+            fw={400}
+            fs={14}
+            sx={{ lineHeight: getTokenPx("lineHeight.m") }}
+            color={getToken("text.medium")}
+          >
+            {t("availableAmount")}:
+          </Text>
+        )}
+        <Text
+          fw={600}
+          fs={18}
+          lh={px(21)}
+          color={getToken("buttons.primary.medium.rest")}
+        >
           {t("currency", { value: assetInAmount, symbol: assetIn?.symbol })}
         </Text>
       </Flex>
@@ -50,7 +57,7 @@ export const AvailableAmount: FC<Props> = ({
         <ProgressBar
           size="medium"
           value={filledPct}
-          format={(percentage) => `${Math.floor(percentage).toString()}%`}
+          format={(percentage) => t("percent", { value: percentage })}
         />
       )}
     </Flex>

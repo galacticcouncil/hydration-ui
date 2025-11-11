@@ -59,6 +59,9 @@ export const nullFirst =
 export const naturally: Compare<string> = (a, b) => a.localeCompare(b)
 export const naturallyDesc = descending(naturally)
 
+export const logically: Compare<boolean> = (a, b) =>
+  numerically(Number(a), Number(b))
+
 export const sortAssets = <T extends TAssetData>(
   assets: Array<T>,
   balanceKey: Extract<KeyOfType<T, string>, string>,

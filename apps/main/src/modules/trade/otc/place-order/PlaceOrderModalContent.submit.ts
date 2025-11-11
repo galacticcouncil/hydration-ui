@@ -12,7 +12,7 @@ type Args = {
 }
 
 export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
-  const { t } = useTranslation("trade")
+  const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
   const client = useQueryClient()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -29,6 +29,11 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
         return
       }
 
+      const formattedAmount = t("common:currency", {
+        value: offerAmount,
+        symbol: offerAsset.symbol,
+      })
+
       onSubmit()
       await createTransaction({
         tx: papi.tx.OTC.place_order({
@@ -40,16 +45,13 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
         }),
         toasts: {
           submitted: t("otc.placeOrder.loading", {
-            symbol: offerAsset.symbol,
-            amount: offerAmount,
+            amount: formattedAmount,
           }),
           success: t("otc.placeOrder.success", {
-            symbol: offerAsset.symbol,
-            amount: offerAmount,
+            amount: formattedAmount,
           }),
-          error: t("otc.placeOrder.success", {
-            symbol: offerAsset.symbol,
-            amount: offerAmount,
+          error: t("otc.placeOrder.error", {
+            amount: formattedAmount,
           }),
         },
       })

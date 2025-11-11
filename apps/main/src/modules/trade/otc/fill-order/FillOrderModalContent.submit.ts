@@ -17,7 +17,7 @@ type Args = {
 }
 
 export const useSubmitFillOrder = ({ otcOffer, onSubmit }: Args) => {
-  const { t } = useTranslation("trade")
+  const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
   const client = useQueryClient()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -41,21 +41,23 @@ export const useSubmitFillOrder = ({ otcOffer, onSubmit }: Args) => {
               order_id: Number(otcOffer.id),
             })
 
+      const formattedAmount = t("common:currency", {
+        value: form.buyAmount,
+        symbol: otcOffer.assetOut.symbol,
+      })
+
       onSubmit()
       await createTransaction({
         tx,
         toasts: {
           submitted: t("otc.fillOrder.loading", {
-            symbol: otcOffer.assetOut.symbol,
-            amount: form.buyAmount,
+            amount: formattedAmount,
           }),
           success: t("otc.fillOrder.success", {
-            symbol: otcOffer.assetOut.symbol,
-            amount: form.buyAmount,
+            amount: formattedAmount,
           }),
           error: t("otc.fillOrder.error", {
-            symbol: otcOffer.assetOut.symbol,
-            amount: form.buyAmount,
+            amount: formattedAmount,
           }),
         },
       })

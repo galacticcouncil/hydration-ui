@@ -1,26 +1,33 @@
-import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
+import {
+  CircleCheckBig,
+  CircleOff,
+  Minus,
+  Plus,
+} from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
+  Flex,
+  Icon,
   Modal,
-  ModalContent,
-  ModalRoot,
-  ModalTrigger,
   TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { getToken } from "@galacticcouncil/ui/utils"
+import {
+  useAccount,
+  useHydraAccountAddress,
+} from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetAmount } from "@/components/AssetAmount/AssetAmount"
+import { CancelOtcOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelOtcOrderModalContent"
 import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferMarketPriceColumn"
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
-import { OfferStatusColumn } from "@/modules/trade/otc/table/columns/OfferStatusColumn"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import { OtcOffersType } from "@/routes/trade/otc"
-import { nullFirst, numerically, sortBy } from "@/utils/sort"
+import { logically, nullFirst, numerically, sortBy } from "@/utils/sort"
 
 export enum OtcColumn {
   MarketPrice = "MarketPrice",
@@ -36,11 +43,11 @@ export type OtcOfferTabular = OtcOffer & {
 
 const columnHelper = createColumnHelper<OtcOfferTabular>()
 
-export const useOtcTableColums = (offersType: OtcOffersType) => {
+export const useOtcTableColums = () => {
   const { t } = useTranslation(["trade", "common"])
   const { isMobile } = useBreakpoints()
 
-  const isUsersOffer = offersType === "my"
+  const userAddress = useHydraAccountAddress()
 
   return useMemo(() => {
     const offer = columnHelper.accessor("assetOut.name", {
@@ -66,6 +73,9 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
     const price = columnHelper.display({
       id: OtcColumn.Price,
       header: t("common:price"),
+      meta: {
+        sx: { textAlign: "center" },
+      },
       cell: ({ row }) => {
         return (
           <OfferPriceColumn
@@ -81,6 +91,9 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
       {
         id: OtcColumn.MarketPrice,
         header: t("common:marketPrice"),
+        meta: {
+          sx: { textAlign: "center" },
+        },
         sortingFn: sortBy({
           select: (row) => row.original.marketPricePercentage,
           compare: nullFirst(numerically),
@@ -119,7 +132,7 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
             <Modal open={isFillOpen} onOpenChange={setIsFillOpen}>
               <FillOrderModalContent
                 otcOffer={row.original}
-                isUsersOffer={isUsersOffer}
+                isUsersOffer={row.original.owner === userAddress}
                 onClose={() => setIsFillOpen(false)}
               />
             </Modal>
@@ -128,57 +141,95 @@ export const useOtcTableColums = (offersType: OtcOffersType) => {
       },
     })
 
-    const status = columnHelper.display({
+    const partiallyFillable = columnHelper.accessor("isPartiallyFillable", {
       id: OtcColumn.Status,
-      header: "Order status",
+      header: t("otc.partiallyFillable"),
+      meta: {
+        sx: { textAlign: "center" },
+      },
+      sortingFn: sortBy({
+        select: (row) => row.original.isPartiallyFillable,
+        compare: logically,
+      }),
       cell: ({ row }) => {
-        const { id, assetIn, assetAmountIn, isPartiallyFillable } = row.original
-
         return (
-          <OfferStatusColumn
-            offerId={id}
-            assetInAmount={assetAmountIn}
-            assetInDecimals={assetIn.decimals}
-            isPartiallyFillable={isPartiallyFillable}
-          />
+          <Flex justify="center">
+            <Icon
+              size={18}
+              component={
+                row.original.isPartiallyFillable ? CircleCheckBig : CircleOff
+              }
+              color={
+                row.original.isPartiallyFillable
+                  ? getToken("icons.onContainer")
+                  : getToken("icons.onSurface")
+              }
+            />
+          </Flex>
         )
       },
     })
 
     const actions = columnHelper.display({
       id: OtcColumn.Actions,
+      meta: {
+        sx: { textAlign: "right" },
+      },
       cell: function Cell({ row }) {
         const { isConnected } = useAccount()
-        const [isFillOpen, setIsFillOpen] = useState(false)
+        const [modal, setModal] = useState<"none" | "fill" | "cancel">("none")
+
+        const isUsersOffer = row.original.owner === userAddress
 
         return (
-          <ModalRoot open={isFillOpen} onOpenChange={setIsFillOpen}>
-            <ModalTrigger asChild>
+          <>
+            <Flex justify="right">
               <Button
                 variant={isUsersOffer ? "danger" : "accent"}
                 outline
                 disabled={!isConnected}
+                onClick={() => setModal(isUsersOffer ? "cancel" : "fill")}
               >
                 {isUsersOffer ? <Minus /> : <Plus />}
                 {isUsersOffer
                   ? t("trade.cancelOrder.cta")
                   : t("otc.fillOrder.cta")}
               </Button>
-            </ModalTrigger>
-            <ModalContent>
+            </Flex>
+            <Modal
+              open={modal === "fill"}
+              onOpenChange={() => setModal("none")}
+            >
               <FillOrderModalContent
                 otcOffer={row.original}
                 isUsersOffer={isUsersOffer}
-                onClose={() => setIsFillOpen(false)}
+                onClose={() => setModal("none")}
               />
-            </ModalContent>
-          </ModalRoot>
+            </Modal>
+            <Modal
+              open={modal === "cancel"}
+              onOpenChange={() => setModal("none")}
+            >
+              <CancelOtcOrderModalContent
+                otcOffer={row.original}
+                onBack={() => setModal("none")}
+                onClose={() => setModal("none")}
+              />
+            </Modal>
+          </>
         )
       },
     })
 
     return isMobile
       ? [offer, price, profitMobile]
-      : [offer, accepting, price, marketPricePercentage, status, actions]
-  }, [isMobile, t, isUsersOffer])
+      : [
+          offer,
+          accepting,
+          price,
+          marketPricePercentage,
+          partiallyFillable,
+          actions,
+        ]
+  }, [isMobile, t, userAddress])
 }

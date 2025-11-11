@@ -41,8 +41,6 @@ const defaultData: TProviderContext = {
   featureFlags: {} as TProviderData["featureFlags"],
   poolService: {} as TProviderData["poolService"],
   metadata: AssetMetadataFactory.getInstance(),
-  legacy_poolService: {} as TProviderData["legacy_poolService"],
-  legacy_tradeRouter: {} as TProviderData["legacy_tradeRouter"],
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)

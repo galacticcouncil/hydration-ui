@@ -188,6 +188,8 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
           <Spinner size={14} />
         ) : (
           <RpcStatus
+            url={url}
+            name={name}
             timestamp={timestamp}
             blockNumber={blockNumber}
             ping={ping}

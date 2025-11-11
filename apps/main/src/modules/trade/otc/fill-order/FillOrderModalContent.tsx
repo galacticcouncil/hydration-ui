@@ -62,18 +62,7 @@ export const FillOrderModalContent: FC<Props> = ({
 
   return (
     <>
-      <ModalHeader
-        title={t(
-          otcOffer.isPartiallyFillable
-            ? "otc.fillOrder.partial.title"
-            : "otc.fillOrder.nonPartial.title",
-        )}
-        description={
-          !otcOffer.isPartiallyFillable
-            ? t("otc.fillOrder.nonPartial.description")
-            : ""
-        }
-      />
+      <ModalHeader title={t("otc.fillOrder.title")} />
       <FormProvider {...form}>
         <form
           onSubmit={
@@ -105,7 +94,7 @@ export const FillOrderModalContent: FC<Props> = ({
                 name="sellAmount"
                 render={({ field, fieldState }) => (
                   <AssetSelect
-                    label={t("common:sell")}
+                    label={t("common:pay")}
                     maxBalance={assetInBalance}
                     value={field.value}
                     onChange={(sellAmount) => {
@@ -134,6 +123,7 @@ export const FillOrderModalContent: FC<Props> = ({
                     selectedAsset={otcOffer.assetIn}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
                     modalDisabled
+                    hideMaxBalanceAction={!otcOffer.isPartiallyFillable}
                     error={fieldState.error?.message}
                   />
                 )}
@@ -144,7 +134,7 @@ export const FillOrderModalContent: FC<Props> = ({
                 name="buyAmount"
                 render={({ field, fieldState }) => (
                   <AssetSelect
-                    label={t("common:buy")}
+                    label={t("common:get")}
                     maxBalance={otcOffer.assetAmountOut}
                     value={field.value}
                     onChange={(buyAmount) => {
@@ -165,6 +155,8 @@ export const FillOrderModalContent: FC<Props> = ({
                     selectedAsset={otcOffer.assetOut}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
                     modalDisabled
+                    hideMaxBalanceAction
+                    ignoreBalance
                     error={fieldState.error?.message}
                   />
                 )}
@@ -181,6 +173,7 @@ export const FillOrderModalContent: FC<Props> = ({
                 />
               )}
             />
+            <Separator />
           </ModalBody>
           <ModalFooter>
             <Button
