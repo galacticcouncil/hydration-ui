@@ -96,7 +96,13 @@ export const DashboardStats: FC<Props> = ({
               })}
             </Text>
             <Flex direction="column" gap={getTokenPx("scales.paddings.xs")}>
-              <Text fw={500} fs={28} lh={px(30)} color={getToken("text.high")}>
+              <Text
+                font="primary"
+                fw={500}
+                fs={28}
+                lh={px(30)}
+                color={getToken("text.high")}
+              >
                 {t("percent", { value: supplyStaked })}
               </Text>
               <Text
@@ -141,7 +147,13 @@ export const DashboardStats: FC<Props> = ({
             {APRLoading ? (
               <Skeleton height={18} />
             ) : (
-              <Text fw={500} fs="h7" lh={1} color={getToken("text.high")}>
+              <Text
+                font="primary"
+                fw={500}
+                fs="h7"
+                lh={1}
+                color={getToken("text.high")}
+              >
                 {t("percent", { value: stakingAPR })}
               </Text>
             )}
@@ -161,6 +173,7 @@ export const DashboardStats: FC<Props> = ({
                     <Skeleton height={18} />
                   ) : (
                     <Text
+                      font="primary"
                       fw={500}
                       fs={17.5}
                       lh={1}

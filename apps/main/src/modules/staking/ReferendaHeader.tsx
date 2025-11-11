@@ -34,7 +34,7 @@ export const ReferendaHeader: FC<Props> = ({
   return (
     <Flex direction="column" gap={16}>
       <Flex justify="space-between" align="center">
-        <Flex py={4} align="center" gap={4}>
+        <Flex py={4} align="center" gap={4} wrap>
           {track && (
             <Chip
               sx={{ textTransform: "uppercase" }}
@@ -47,7 +47,10 @@ export const ReferendaHeader: FC<Props> = ({
           <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
             {state}
           </Chip>
+        </Flex>
+        <Flex align="center" gap={4}>
           <Text
+            font="primary"
             fs={14}
             lh={1.3}
             color={
@@ -56,13 +59,13 @@ export const ReferendaHeader: FC<Props> = ({
           >
             #{number}
           </Text>
+          {voted && (
+            <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
+              <Icon size={12} component={Check} />
+              {t("staking:referenda.item.voted")}
+            </Chip>
+          )}
         </Flex>
-        {voted && (
-          <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
-            <Icon size={12} component={Check} />
-            {t("staking:referenda.item.voted")}
-          </Chip>
-        )}
       </Flex>
       <ReferendaSeparator voted={voted} />
       {isTitledLoading ? (
