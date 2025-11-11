@@ -19,7 +19,7 @@ import {
 } from "@tanstack/react-query"
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { useLegacyProvider } from "@/modules/xcm/legacy/LegacyProvider"
 
 export const hydrationConfigServiceQuery = queryOptions({
   queryKey: ["xcm", "configService"],
@@ -39,7 +39,7 @@ export const useHydrationConfigService = () => {
 }
 
 export const useCrossChainWallet = () => {
-  const { legacy_poolService } = useRpcProvider()
+  const { legacy_poolService } = useLegacyProvider()
 
   const configService = useHydrationConfigService()
   return useMemo(() => {
@@ -52,11 +52,13 @@ export const useCrossChainWallet = () => {
     const assethub = configService.getChain("assethub")
     const assethubCex = configService.getChain("assethub_cex")
 
-    wallet.registerDex(
-      new dex.HydrationDex(hydration, legacy_poolService),
-      new dex.AssethubDex(assethub),
-      new dex.AssethubDex(assethubCex),
-    )
+    if (legacy_poolService) {
+      wallet.registerDex(
+        new dex.HydrationDex(hydration, legacy_poolService),
+        new dex.AssethubDex(assethub),
+        new dex.AssethubDex(assethubCex),
+      )
+    }
 
     return wallet
   }, [configService, legacy_poolService])

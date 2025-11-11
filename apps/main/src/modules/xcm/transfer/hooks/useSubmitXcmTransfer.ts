@@ -9,6 +9,7 @@ import { isString } from "remeda"
 
 import { AnyPapiTx, AnyTransaction } from "@/modules/transactions/types"
 import { isSubstrateCall } from "@/modules/transactions/utils/xcm"
+import { useLegacyProvider } from "@/modules/xcm/legacy/LegacyProvider"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { TransactionType, useTransactionsStore } from "@/states/transactions"
@@ -40,13 +41,15 @@ const getWs = async (wsUrl: string | string[]): Promise<PolkadotClient> => {
 
 export const useSubmitXcmTransfer = () => {
   const { t } = useTranslation("xcm")
-  const { papi, legacy_api } = useRpcProvider()
+  const { papi } = useRpcProvider()
+  const { legacy_api, isLoaded } = useLegacyProvider()
   const { createTransaction } = useTransactionsStore()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
       const { srcAmount, srcChain, destChain } = values
 
+      if (!isLoaded) throw new Error("Legacy API is not loaded")
       if (!destChain) throw new Error("Destination chain is required")
       if (!srcChain) throw new Error("Source chain is required")
 
