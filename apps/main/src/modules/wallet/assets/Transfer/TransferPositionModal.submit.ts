@@ -1,5 +1,5 @@
 import {
-  safeConvertAddressSS58,
+  normalizeSS58Address,
   shortenAccountAddress,
 } from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
@@ -34,7 +34,7 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       }
 
       const amountScaled = scale(amount, asset.decimals)
-      const normalizedDest = safeConvertAddressSS58(address) ?? address
+      const normalizedDest = normalizeSS58Address(address)
 
       return createTransaction({
         tx:

@@ -31,7 +31,8 @@ export function isEvmParachainAccount(address?: string) {
 export const safeConvertAddressH160 = (value: Address | string): string => {
   try {
     const address = value.startsWith("0x") ? value : `0x${value}`
-    return checksumAddress(address as Address)
+    const checksum = checksumAddress(address as Address)
+    return isH160Address(checksum) ? checksum : ""
   } catch {
     return ""
   }

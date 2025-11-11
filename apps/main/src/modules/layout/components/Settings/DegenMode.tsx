@@ -10,9 +10,9 @@ import {
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { noop } from "@polkadot/util"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
+import { doNothing } from "remeda"
 
 export const DegenMode: FC = () => {
   const { t } = useTranslation()
@@ -30,7 +30,7 @@ export const DegenMode: FC = () => {
       <MenuItemAction>
         <ToggleRoot>
           <ToggleLabel>{t("off")}</ToggleLabel>
-          <Toggle checked={false} onCheckedChange={noop} />
+          <Toggle checked={false} onCheckedChange={doNothing} />
         </ToggleRoot>
       </MenuItemAction>
     </MenuItem>

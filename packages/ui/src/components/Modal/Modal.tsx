@@ -100,6 +100,7 @@ const ModalDescription: FC<ModalDescriptionProps> = ({
 type ModalHeaderProps = Omit<FlexProps, "title"> & {
   title: string
   description?: string
+  customDescription?: ReactNode
   align?: "default" | "center"
   customHeader?: ReactNode
   customTitle?: ReactNode
@@ -125,6 +126,7 @@ const ModalClose: FC<ModalCloseProps> = (props) => {
 const ModalHeader: FC<ModalHeaderProps> = ({
   title,
   description,
+  customDescription,
   align = "default",
   customHeader,
   customTitle,
@@ -139,6 +141,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
       <DrawerHeader
         title={title}
         description={description}
+        customDescription={customDescription}
         customHeader={customHeader}
         customTitle={customTitle}
       />
@@ -172,12 +175,23 @@ const ModalHeader: FC<ModalHeaderProps> = ({
         {closable && <ModalClose />}
       </Flex>
 
-      {description && (
-        <ModalDescription
-          sx={{ textAlign: align === "center" ? "center" : "left" }}
-        >
-          {description}
-        </ModalDescription>
+      {customDescription ? (
+        <>
+          {description && (
+            <VisuallyHidden.Root>
+              <ModalDescription>{description}</ModalDescription>
+            </VisuallyHidden.Root>
+          )}
+          {customDescription}
+        </>
+      ) : (
+        description && (
+          <ModalDescription
+            sx={{ textAlign: align === "center" ? "center" : "left" }}
+          >
+            {description}
+          </ModalDescription>
+        )
       )}
       {customHeader}
     </SModalHeader>
