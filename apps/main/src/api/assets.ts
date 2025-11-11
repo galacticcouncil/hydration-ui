@@ -1,9 +1,9 @@
-import { Asset, Bond, pool } from "@galacticcouncil/sdk-next"
+import { Asset, Bond, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
-import { queryOptions } from "@tanstack/react-query"
+import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { isNonNullish } from "remeda"
 
 import { TProviderContext } from "@/providers/rpcProvider"
@@ -85,7 +85,24 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
-export const assetsQuery = (data: TProviderContext) => {
+export const assetsDataQuery = (sdk: SdkCtx) => {
+  return queryOptions({
+    queryKey: ["assetsData"],
+    queryFn: async () => {
+      const [tradeAssets, pools, assets] = await Promise.all([
+        sdk.api.router.getTradeableAssets(),
+        sdk.api.router.getPools(),
+        sdk.client.asset.getOnChainAssets(true),
+      ])
+      return { tradeAssets, pools, assets }
+    },
+  })
+}
+
+export const assetsQuery = (
+  data: TProviderContext,
+  queryClient: QueryClient,
+) => {
   const { sdk, isApiLoaded, dataEnv, metadata } = data
 
   return queryOptions({
@@ -93,11 +110,9 @@ export const assetsQuery = (data: TProviderContext) => {
     queryFn: async () => {
       const { syncAssets, syncATokenPairs } = useAssetRegistryStore.getState()
 
-      const [tradeAssets, pools, assets] = await Promise.all([
-        sdk.api.router.getTradeableAssets(),
-        sdk.api.router.getPools(),
-        sdk.client.asset.getOnChainAssets(true),
-      ])
+      const { tradeAssets, pools, assets } = await queryClient.ensureQueryData(
+        assetsDataQuery(sdk),
+      )
 
       const aTokenPairs: TATokenPairStored[] = pools
         .filter((p) => p.type === pool.PoolType.Aave)

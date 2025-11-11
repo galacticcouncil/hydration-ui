@@ -1,4 +1,4 @@
-import { QueryClient, useQuery } from "@tanstack/react-query"
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
@@ -36,6 +36,7 @@ const Web3ConnectModal = lazy(async () => ({
 }))
 
 const Subscriptions = () => {
+  const queryClient = useQueryClient()
   const rpcProvider = useRpcProvider()
   useProviderMetadata()
   useOmnipoolIds()
@@ -44,7 +45,7 @@ const Subscriptions = () => {
   useAccountUniquesSubscription()
   usePriceSubscriber()
   useAllPools()
-  useQuery(assetsQuery(rpcProvider))
+  useQuery(assetsQuery(rpcProvider, queryClient))
   useDisplayAssetStablecoinUpdate()
 
   return null

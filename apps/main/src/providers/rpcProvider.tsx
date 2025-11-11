@@ -97,19 +97,21 @@ export const useInvalidateRpcProvider = () => {
   return { isInvalidating }
 }
 
+export const getRpcProviderUrls = () => {
+  const { rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore.getState()
+  return autoMode ? rpcUrlList : [rpcUrl]
+}
+
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { assets } = useAssetRegistry()
-  const { rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
   const { isInvalidating } = useInvalidateRpcProvider()
-
-  const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
 
   // @TODO enable when Papi supports cached metadata
   // const { metadata } = useApiMetadataStore()
 
   const { data } = useQuery({
     enabled: !isInvalidating,
-    ...providerQuery(rpcProviderUrls),
+    ...providerQuery(getRpcProviderUrls()),
   })
 
   const value = useMemo(() => {
