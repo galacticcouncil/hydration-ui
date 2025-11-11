@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 
 import { bestNumberQuery } from "@/api/chain"
+import { useActiveProviderProps } from "@/api/provider"
 import { RpcSelectModal } from "@/components/ProviderRpcSelect/components/RpcSelectModal"
 import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
 import { SContainer } from "@/components/ProviderRpcSelect/ProviderRpcSelect.styled"
@@ -13,6 +14,7 @@ export const ProviderRpcSelect = () => {
   const provider = useRpcProvider()
 
   const { data } = useQuery(bestNumberQuery(provider))
+  const providerProps = useActiveProviderProps()
 
   return (
     <SContainer>
@@ -24,6 +26,8 @@ export const ProviderRpcSelect = () => {
       >
         {data ? (
           <RpcStatus
+            url={providerProps?.url ?? ""}
+            name={providerProps?.name ?? ""}
             blockNumber={data.parachainBlockNumber}
             timestamp={data.timestamp}
           />
