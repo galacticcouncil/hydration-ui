@@ -61,10 +61,8 @@ export const AvailableFarm = ({
           </Text>
 
           <Chip variant="green" size="small">
-            {t("common:percent", {
+            {t("liquidity.availableFarms.apr", {
               value: farm.apr,
-              prefix: "Up to ",
-              suffix: " APR",
             })}
           </Chip>
         </Flex>

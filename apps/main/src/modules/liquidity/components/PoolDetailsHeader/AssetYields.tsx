@@ -19,9 +19,8 @@ export const AssetYields = ({
   if (!isOmnipool)
     return (
       <Chip variant="green" size="small">
-        {t("percent", {
+        {t("percent.apr", {
           value: data.totalApr,
-          suffix: " APR",
         })}
       </Chip>
     )
@@ -44,9 +43,8 @@ export const AssetYields = ({
   if (incentivesApr.gt(0) && !apy.gt(0)) {
     return (
       <Chip variant="green" size="small">
-        {t("percent", {
+        {t("percent.apr", {
           value: incentivesApr,
-          suffix: " APR",
         })}
       </Chip>
     )
@@ -55,9 +53,8 @@ export const AssetYields = ({
   if (apy.gt(0) && !incentivesApr.gt(0)) {
     return (
       <Chip variant="green" size="small">
-        {t("percent", {
+        {t("percent.apy", {
           value: apy,
-          suffix: " APY",
         })}
       </Chip>
     )
@@ -72,9 +69,8 @@ export const AssetYields = ({
           size="small"
           sx={{ borderRadius: `${borderRadius}px 0 0 ${borderRadius}px` }}
         >
-          {t("percent", {
+          {t("percent.apr", {
             value: incentivesApr,
-            suffix: " APR",
           })}
         </Chip>
 
@@ -83,9 +79,8 @@ export const AssetYields = ({
           size="small"
           sx={{ borderRadius: `0 ${borderRadius}px ${borderRadius}px 0` }}
         >
-          {t("percent", {
+          {t("percent.apy", {
             value: apy,
-            suffix: " APY",
           })}
         </Chip>
       </Flex>

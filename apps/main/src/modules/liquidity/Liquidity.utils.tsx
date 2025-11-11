@@ -150,25 +150,24 @@ export const useStablepools = () => {
   const { stablePoolData, aTokens } = useMemo(() => {
     const aTokens = new Map<string, TErc20>()
 
-    const list =
-      pools?.map((stablePool) => {
-        const { id, tokens } = stablePool.pool
-        const filteredTokens: PoolToken[] = []
-        const poolId = id.toString()
-        const aToken = getRelatedAToken(poolId)
+    if (!pools) {
+      return { stablePoolData: [], aTokens }
+    }
 
-        if (aToken) {
-          aTokens.set(poolId, aToken)
-        }
+    const list = pools.map((stablePool) => {
+      const { id, tokens } = stablePool.pool
+      const poolId = id.toString()
+      const aToken = getRelatedAToken(poolId)
 
-        tokens.forEach((token) => {
-          if (token.type !== AssetType.STABLESWAP) {
-            filteredTokens.push(token)
-          }
-        })
+      if (aToken) {
+        aTokens.set(poolId, aToken)
+      }
 
-        return { poolId: id, tokens: filteredTokens }
-      }) ?? []
+      return {
+        poolId: id,
+        tokens: tokens.filter((token) => token.type !== AssetType.STABLESWAP),
+      }
+    })
 
     return { stablePoolData: list, aTokens }
   }, [pools, getRelatedAToken])
@@ -180,10 +179,7 @@ export const useStablepools = () => {
   )
 
   const aTokensApyByPool = useMemo(() => {
-    return borrowAssetsApy?.reduce((acc, aToken) => {
-      acc.set(aToken.assetId, aToken)
-      return acc
-    }, new Map<string, BorrowAssetApyData>())
+    return new Map(borrowAssetsApy.map((aToken) => [aToken.assetId, aToken]))
   }, [borrowAssetsApy])
 
   const data = useMemo(

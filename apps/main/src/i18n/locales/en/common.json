@@ -193,6 +193,8 @@
   "date.daytime": "{{ value, date(format: 'MMM dd yyyy, HH:mm') }}",
   "number": "{{ value, number }}",
   "percent": "{{prefix, default('')}}{{ value, percent }}{{suffix, default('')}}",
+  "percent.apy": "{{ value, percent }} APY",
+  "percent.apr": "{{ value, percent }} APR",
   "percent.range": "{{ from, percent }} - {{ to, percent }}",
   "currency": "{{prefix, default('')}}{{ value, currency }}{{suffix, default('')}}",
   "number.compact": "{{ value, number(notation: 'compact'; maximumFractionDigits: 2) }}",

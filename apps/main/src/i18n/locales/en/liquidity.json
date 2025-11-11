@@ -42,6 +42,7 @@
   "liquidity.supplyYieldOpportunity.apy.description": "Supply APY yield adds value to your supplied amount.",
   "liquidity.availableFarms.join": "Join Farms",
   "liquidity.availableFarms.distributed": "{{ value, number(notation: 'compact') }} from {{ total, number(notation: 'compact') }} Distributed",
+  "liquidity.availableFarms.apr": "Up to {{ value, percent }} APR",
   "liquidity.availableFarms.expectedEnd": "Expected end",
   "liquidity.availableFarms.modal.title": "{{symbol}} Farm Details",
   "liquidity.availableFarms.modal.graph.title": "Loyalty rewards",
