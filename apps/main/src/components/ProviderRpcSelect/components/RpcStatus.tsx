@@ -10,7 +10,10 @@ import {
 } from "@/components/ProviderRpcSelect/components/RpcStatus.styled"
 import { useElapsedTimeStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
 
-export type RpcStatusProps = Partial<PingResponse>
+export type RpcStatusProps = Partial<PingResponse> & {
+  url: string
+  name: string
+}
 
 export const RpcStatusSuccess = () => {
   return (
@@ -51,6 +54,8 @@ const statusColorMap = {
 } as const
 
 export const RpcStatus: React.FC<RpcStatusProps> = ({
+  url,
+  name,
   timestamp,
   blockNumber,
   ping = Infinity,
@@ -63,7 +68,20 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 
   return (
     <Box>
-      <Tooltip text={statusText} side="left" asChild>
+      <Tooltip
+        text={
+          <>
+            {(name || url) && (
+              <Text fs={14} lh={1.4} fw={600}>
+                {name || url}
+              </Text>
+            )}
+            <Text>{statusText}</Text>
+          </>
+        }
+        side="left"
+        asChild
+      >
         <Flex align="center" gap={4} color={getToken(statusColor)}>
           {blockNumber && (
             <Text fs={12}>
