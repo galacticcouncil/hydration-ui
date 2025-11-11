@@ -1,6 +1,6 @@
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect } from "react"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -13,6 +13,8 @@ import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { BaseWalletError } from "@/utils/errors"
 import { subscribeWalletAccounts, toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
+
+const subscriptions = new Map<WalletProviderType, () => void>()
 
 export const useWeb3Enable = () => {
   const { setStatus, setError, disconnect, setAccounts, setAccount } =
@@ -30,7 +32,17 @@ export const useWeb3Enable = () => {
 
   const { add: addToAddressBook } = useAddressStore()
 
-  const unsubsRef = useRef<Map<WalletProviderType, () => void>>(new Map())
+  const unsubAndDisconnect = useCallback(
+    (type: WalletProviderType) => {
+      const unsub = subscriptions.get(type)
+      if (unsub) {
+        subscriptions.delete(type)
+        unsub()
+      }
+      disconnect(type)
+    },
+    [disconnect],
+  )
 
   const { mutateAsync: enable, ...mutation } = useMutation({
     mutationFn: async (type: WalletProviderType) => {
@@ -38,10 +50,10 @@ export const useWeb3Enable = () => {
       if (!wallet) return []
       await wallet.enable()
 
-      const isSubscribed = unsubsRef.current.has(type)
+      const isSubscribed = subscriptions.has(type)
       if (!isSubscribed) {
         const unsub = subscribeWalletAccounts(wallet, {
-          onDisconnect: () => disconnect(type),
+          onDisconnect: () => unsubAndDisconnect(type),
           onAccountsChange: (accounts) => {
             setAccounts(accounts.map(toStoredAccount))
           },
@@ -49,7 +61,7 @@ export const useWeb3Enable = () => {
             setAccount(toStoredAccount(mainAccount))
           },
         })
-        unsubsRef.current.set(type, unsub)
+        subscriptions.set(type, unsub)
       }
       return wallet.getAccounts()
     },
@@ -86,10 +98,9 @@ export const useWeb3Enable = () => {
   })
 
   useEffect(() => {
-    const unsubs = unsubsRef.current
     return () => {
-      unsubs.forEach((unsub) => unsub())
-      unsubs.clear()
+      subscriptions.forEach((unsub) => unsub())
+      subscriptions.clear()
     }
   }, [])
 
