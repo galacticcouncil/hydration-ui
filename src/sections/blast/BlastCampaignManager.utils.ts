@@ -2,12 +2,18 @@ import { useBorrowAssetsApy } from "api/borrow"
 import { useAccountAssets } from "sections/wallet/assets/table/data/WalletAssetsTableData.utils"
 import { HUSDC_ASSET_ID, USDC_ASSET_ID } from "utils/constants"
 
-// remove before merging
-const DEBUG_WINNING_ASSET_IDS = [
-  "1000085", // WUD
+export const WINNING_ASSET_IDS = [
+  "1001187", // Blast
+  "1001191", // Falc
+  "1001188", // Furia
+  "1001110", // G2
+  "1001194", // Mongz
+  "1001189", // Pain
+  "1001190", // Passion
+  "1001192", // Spirit
+  "1001195", // Tyloo
+  "1001193", // Vit
 ]
-
-export const WINNING_ASSET_IDS = [...DEBUG_WINNING_ASSET_IDS, "1001110"]
 
 export const useBlastCampaign = () => {
   const { data, isLoading: isLoadingAccountAssets } = useAccountAssets()
