@@ -17,7 +17,7 @@ import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
 } from "@/modules/trade/otc/table/OtcTable.utils"
-import { useAssets } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
@@ -78,6 +78,10 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
         paginated
         pageSize={10}
         globalFilter={searchPhrase}
+        globalFilterFn={(row) =>
+          matchAsset(row.original.assetIn, searchPhrase) ||
+          matchAsset(row.original.assetOut, searchPhrase)
+        }
         data={offersWithPrices}
         columns={columns}
         isLoading={isTableLoading}
@@ -87,3 +91,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
     </TableContainer>
   )
 }
+
+const matchAsset = (asset: TAsset, searchPhrase: string): boolean =>
+  asset.symbol.toLowerCase().includes(searchPhrase.toLowerCase()) ||
+  asset.name.toLowerCase().includes(searchPhrase.toLowerCase())

@@ -6,6 +6,7 @@ import {
   ModalHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
@@ -19,8 +20,8 @@ import { useSubmitFillOrder } from "@/modules/trade/otc/fill-order/FillOrderModa
 import { TokensConversion } from "@/modules/trade/otc/fill-order/TokensConversion"
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
-import { useAccountBalance } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
+import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly otcOffer: OtcOfferTabular
@@ -33,20 +34,24 @@ export const FillOrderModalContent: FC<Props> = ({
   isUsersOffer,
   onClose,
 }) => {
+  const rpc = useRpcProvider()
   const { t } = useTranslation(["trade", "common"])
   const [isSubmitCancelOpen, setIsSubmitCancelOpen] = useState(false)
 
-  const inBalance = useAccountBalance(otcOffer.assetIn.id)
-  const assetInBalance = scaleHuman(
-    inBalance?.transferable ?? 0n,
-    otcOffer.assetIn?.decimals ?? 12,
-  )
+  const { data: feePrice = "0" } = useQuery(otcTradeFeeQuery(rpc))
 
-  const form = useFillOrderForm(otcOffer, assetInBalance, isUsersOffer)
+  const form = useFillOrderForm(otcOffer, isUsersOffer, feePrice)
   const submit = useSubmitFillOrder({
     otcOffer,
     onSubmit: onClose,
   })
+
+  const buyAmount = form.watch("buyAmount")
+
+  const fee =
+    !buyAmount || !feePrice
+      ? undefined
+      : Big(buyAmount).div(Big(1).minus(feePrice)).minus(buyAmount).toString()
 
   const isSubmitEnabled = isUsersOffer || form.formState.isValid
 
@@ -95,7 +100,6 @@ export const FillOrderModalContent: FC<Props> = ({
                 render={({ field, fieldState }) => (
                   <AssetSelect
                     label={t("common:pay")}
-                    maxBalance={assetInBalance}
                     value={field.value}
                     onChange={(sellAmount) => {
                       field.onChange(sellAmount)
@@ -108,6 +112,24 @@ export const FillOrderModalContent: FC<Props> = ({
                         return
                       }
 
+                      const getBuyAmountAFterFee = (amount: string): string => {
+                        const fee = Big(feePrice || "0").times(amount)
+
+                        return Big(amount).minus(fee).toString()
+                      }
+
+                      if (sellAmount === otcOffer.assetAmountIn) {
+                        form.setValue(
+                          "buyAmount",
+                          getBuyAmountAFterFee(otcOffer.assetAmountOut),
+                          {
+                            shouldValidate: true,
+                          },
+                        )
+
+                        return
+                      }
+
                       const percentage = new Big(sellAmount || "0").div(
                         otcOffer.assetAmountIn,
                       )
@@ -115,14 +137,20 @@ export const FillOrderModalContent: FC<Props> = ({
                         .times(otcOffer.assetAmountOut)
                         .toString()
 
-                      form.setValue("buyAmount", newBuyAmount, {
-                        shouldValidate: true,
-                      })
+                      form.setValue(
+                        "buyAmount",
+                        getBuyAmountAFterFee(newBuyAmount),
+                        {
+                          shouldValidate: true,
+                        },
+                      )
                     }}
                     assets={[]}
                     selectedAsset={otcOffer.assetIn}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
                     modalDisabled
+                    maxButtonBalance={otcOffer.assetAmountIn}
+                    maxBalanceFallback="0"
                     hideMaxBalanceAction={!otcOffer.isPartiallyFillable}
                     error={fieldState.error?.message}
                   />
@@ -135,12 +163,31 @@ export const FillOrderModalContent: FC<Props> = ({
                 render={({ field, fieldState }) => (
                   <AssetSelect
                     label={t("common:get")}
-                    maxBalance={otcOffer.assetAmountOut}
                     value={field.value}
                     onChange={(buyAmount) => {
                       field.onChange(buyAmount)
 
-                      const percentage = new Big(buyAmount || "0").div(
+                      if (!buyAmount) {
+                        form.setValue("sellAmount", "", {
+                          shouldValidate: true,
+                        })
+
+                        return
+                      }
+
+                      const buyAmountBeforeFee = Big(buyAmount)
+                        .div(Big(1).minus(feePrice || "0"))
+                        .toString()
+
+                      if (buyAmountBeforeFee === otcOffer.assetAmountOut) {
+                        form.setValue("sellAmount", otcOffer.assetAmountIn, {
+                          shouldValidate: true,
+                        })
+
+                        return
+                      }
+
+                      const percentage = new Big(buyAmountBeforeFee || "0").div(
                         otcOffer.assetAmountOut,
                       )
                       const newSellAmount = percentage
@@ -155,24 +202,15 @@ export const FillOrderModalContent: FC<Props> = ({
                     selectedAsset={otcOffer.assetOut}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
                     modalDisabled
+                    maxBalanceFallback="0"
                     hideMaxBalanceAction
-                    ignoreBalance
                     error={fieldState.error?.message}
                   />
                 )}
               />
             </Box>
             <Separator />
-            <Controller
-              name="buyAmount"
-              control={form.control}
-              render={({ field }) => (
-                <TradeFee
-                  assetOut={otcOffer.assetOut}
-                  assetAmountOut={field.value || "0"}
-                />
-              )}
-            />
+            <TradeFee fee={fee} feeSymbol={otcOffer.assetOut.symbol} />
             <Separator />
           </ModalBody>
           <ModalFooter>

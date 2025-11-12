@@ -275,6 +275,8 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 ? Big(1).div(price).toString()
                 : price,
           })
+            // just using decimals part
+            .replaceAll(" ", "")
         : ""
 
   const isSubmitEnabled =

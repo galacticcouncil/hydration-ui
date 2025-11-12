@@ -31,7 +31,7 @@ export const useOtcOffersQuery = () => {
   const { isLoading, ...queryResult } = useQuery({
     queryKey: otcOffersQueryKey,
     queryFn: async (): Promise<ReadonlyArray<OtcOffer>> => {
-      const offers = await papi.query.OTC.Orders.getEntries()
+      const offers = await papi.query.OTC.Orders.getEntries({ at: "best" })
 
       return offers
         .map<OtcOffer | null>(({ keyArgs, value: offer }) => {

@@ -20,6 +20,7 @@ export type AssetInputProps = {
   displayValue?: string
   displayValueLoading?: boolean
   maxBalance?: string
+  maxButtonBalance?: string
   ignoreBalance?: boolean
   ignoreDisplayValue?: boolean
   hideMaxBalanceAction?: boolean
@@ -42,6 +43,7 @@ export const AssetInput = ({
   displayValueLoading,
   label,
   maxBalance,
+  maxButtonBalance,
   ignoreBalance,
   ignoreDisplayValue,
   hideMaxBalanceAction,
@@ -54,8 +56,10 @@ export const AssetInput = ({
   onAsssetBtnClick,
   className,
 }: AssetInputProps) => {
+  const usedMaxBalance = maxButtonBalance || maxBalance
+
   const onMaxButtonClick = () => {
-    if (maxBalance) onChange?.(maxBalance)
+    if (usedMaxBalance) onChange?.(usedMaxBalance)
   }
 
   return (
@@ -107,7 +111,7 @@ export const AssetInput = ({
                 aria-label="Max balance button"
                 onClick={onMaxButtonClick}
                 disabled={
-                  Big(maxBalance || "0").lte(0) ||
+                  Big(usedMaxBalance || "0").lte(0) ||
                   loading ||
                   !onChange ||
                   !!disabled
