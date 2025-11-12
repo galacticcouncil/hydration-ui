@@ -2,7 +2,7 @@ import { Flex, Paper } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
-import { AvailableFarmsSection } from "@/modules/liquidity/components/AvailableFarms/AvailableFarmsSection"
+import { YieldOpportunitiesSection } from "@/modules/liquidity/components/AvailableFarms/YieldOpportunitiesSection"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
 import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"
 import { PositionsTable } from "@/modules/liquidity/components/PositionsTable"
@@ -38,7 +38,7 @@ export const PoolDetails: FC<Props> = ({ id }) => {
         <PoolDetailsValues data={data} />
       </Flex>
 
-      <AvailableFarmsSection data={data} />
+      <YieldOpportunitiesSection data={data} />
 
       <Outlet />
     </Flex>

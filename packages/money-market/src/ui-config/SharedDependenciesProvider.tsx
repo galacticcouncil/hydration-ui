@@ -5,7 +5,7 @@ import { ApprovedAmountService } from "@/services/ApprovedAmountService"
 import { UiIncentivesService } from "@/services/UIIncentivesService"
 import { UiPoolService } from "@/services/UIPoolService"
 import { WalletBalanceService } from "@/services/WalletBalanceService"
-import { getProvider } from "@/utils/marketsAndNetworksConfig"
+import { getProvider } from "@/utils/provider"
 
 interface SharedDependenciesContextProps {
   poolTokensBalanceService: WalletBalanceService
