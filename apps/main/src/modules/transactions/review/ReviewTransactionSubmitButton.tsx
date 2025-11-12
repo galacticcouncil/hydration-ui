@@ -1,4 +1,8 @@
-import { Button, ExternalLink, Spinner } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  ExternalLink,
+  LoadingButton,
+} from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useTranslation } from "react-i18next"
 
@@ -53,9 +57,13 @@ export const ReviewTransactionSubmitButton = () => {
   const isDisabled = isIncompatible || hasAlerts || isLoading
 
   return (
-    <Button size="large" onClick={signAndSubmit} disabled={isDisabled}>
-      {isLoading && <Spinner />}
+    <LoadingButton
+      size="large"
+      onClick={signAndSubmit}
+      disabled={isDisabled}
+      isLoading={isLoading}
+    >
       {t("transaction.sign")}
-    </Button>
+    </LoadingButton>
   )
 }

@@ -96,9 +96,6 @@ export const useTransferPaymentInfo = (
     ...paymentInfoQuery(
       useRpcProvider(),
       useAccount().account?.address,
-      to,
-      amount,
-      assetId,
       assetId === native.id
         ? papi.tx.Currencies.transfer({
             currency_id: Number(native.id),

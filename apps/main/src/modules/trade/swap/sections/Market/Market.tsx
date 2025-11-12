@@ -106,6 +106,7 @@ export const Market: FC = () => {
         <SwapSectionSeparator />
         <MarketSubmit
           isSingleTrade={isSingleTrade}
+          isLoading={isLoading || submitSwap.isPending || submitTwap.isPending}
           isEnabled={
             isTradeEnabled &&
             isHealthFactorCheckSatisfied &&
