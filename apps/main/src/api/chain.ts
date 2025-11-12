@@ -43,6 +43,10 @@ export const useRelayChainBlockNumber = (disableRefetch?: boolean) => {
   return data?.relaychainBlockNumber
 }
 
+export const useBestNumber = () => {
+  return useQuery(bestNumberQuery(useRpcProvider()))
+}
+
 export const useInvalidateOnBlock = () => {
   const queryClient = useQueryClient()
   const { papi, isApiLoaded } = useRpcProvider()
@@ -85,3 +89,28 @@ export const useEstimateFutureBlockTimestamp = (blocksFromNow: number) => {
 
 export const useBlockTimestamp = () =>
   usePapiObservableQuery("Timestamp.Now", ["best"])
+
+export const chainSpecDataQuery = (context: TProviderContext) => {
+  const { papi, papiClient, isApiLoaded } = context
+
+  return queryOptions({
+    enabled: isApiLoaded,
+    queryKey: ["chainSpecData"],
+    queryFn: async () => {
+      const [chainSpecData, lastRuntimeUpgrade] = await Promise.all([
+        papiClient.getChainSpecData(),
+        papi.query.System.LastRuntimeUpgrade.getValue(),
+      ])
+
+      return {
+        chainSpecData,
+        lastRuntimeUpgrade,
+      }
+    },
+    staleTime: Infinity,
+  })
+}
+
+export const useChainSpecData = () => {
+  return useQuery(chainSpecDataQuery(useRpcProvider()))
+}

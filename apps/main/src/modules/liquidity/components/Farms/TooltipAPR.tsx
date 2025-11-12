@@ -2,21 +2,28 @@ import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
+import { ApyRow } from "@/components/DetailedApy/DetailedApy"
+import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItems"
 import { useAssets } from "@/providers/assetsProvider"
 
 export const TooltipAPR = ({
   omnipoolFee,
   stablepoolFee,
   farms,
+  borrowApyData,
 }: {
   omnipoolFee?: string
   stablepoolFee?: string
-  farms?: Farm[]
+  farms: Farm[]
+  borrowApyData?: BorrowAssetApyData
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { getAssetWithFallback } = useAssets()
+
+  if (!farms.length && !borrowApyData) return null
 
   return (
     <Tooltip
@@ -38,43 +45,75 @@ export const TooltipAPR = ({
             />
           )}
 
-          <Row
-            label={t("liquidity:liquidity.tooltip.fee.apr.farmRewardsApr")}
-            value={
-              <Text
-                transform="uppercase"
-                fs={10}
-                color={getToken("text.medium")}
-              >
-                {t("liquidity:liquidity.tooltip.fee.apr.apr")}
-              </Text>
-            }
-          />
+          {borrowApyData && (
+            <BorrowApyBreakdown borrowApyData={borrowApyData} />
+          )}
 
-          {farms &&
-            farms.map((farm, index) => (
+          {!!farms?.length && (
+            <>
               <Row
-                key={`${farm.rewardCurrency}-${index}`}
-                label={
-                  <Flex align="center" gap={4}>
-                    <AssetLogo
-                      id={farm.rewardCurrency.toString()}
-                      size="small"
-                    />
-                    <Text>
-                      {
-                        getAssetWithFallback(farm.rewardCurrency.toString())
-                          .symbol
-                      }
-                    </Text>
-                  </Flex>
+                label={t("liquidity:liquidity.tooltip.fee.apr.farmRewardsApr")}
+                value={
+                  <Text
+                    transform="uppercase"
+                    fs={10}
+                    color={getToken("text.medium")}
+                  >
+                    {t("liquidity:liquidity.tooltip.fee.apr.apr")}
+                  </Text>
                 }
-                value={t("percent", { value: farm.apr })}
               />
-            ))}
+              {farms.map((farm, index) => (
+                <Row
+                  key={`${farm.rewardCurrency}-${index}`}
+                  label={
+                    <Flex align="center" gap={4}>
+                      <AssetLogo
+                        id={farm.rewardCurrency.toString()}
+                        size="small"
+                      />
+                      <Text>
+                        {
+                          getAssetWithFallback(farm.rewardCurrency.toString())
+                            .symbol
+                        }
+                      </Text>
+                    </Flex>
+                  }
+                  value={t("percent", { value: farm.apr })}
+                />
+              ))}
+            </>
+          )}
         </Flex>
       }
     />
+  )
+}
+
+const BorrowApyBreakdown = ({
+  borrowApyData,
+  omnipoolFee,
+}: {
+  borrowApyData: BorrowAssetApyData
+  omnipoolFee?: string
+}) => {
+  const { lpAPY, underlyingAssetsApyData, incentives } = borrowApyData
+
+  const apyBreakdownItems = useApyBreakdownItems({
+    type: "supply",
+    omnipoolFee,
+    lpAPY,
+    underlyingAssetsApyData,
+    incentives,
+  })
+
+  return (
+    <Flex direction="column" gap={4}>
+      {apyBreakdownItems.map((props, index) => (
+        <ApyRow key={`${props.label}-${index}`} {...props} />
+      ))}
+    </Flex>
   )
 }
 

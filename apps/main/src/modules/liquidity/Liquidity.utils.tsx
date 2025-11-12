@@ -13,6 +13,7 @@ import { isNumber } from "remeda"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20 } from "@/api/assets"
+import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
 import {
@@ -69,6 +70,7 @@ export type OmnipoolAssetTable = {
   farms: Farm[]
   allFarms: Farm[]
   stablepoolData: TStablepoolData | undefined
+  borrowApyData: BorrowAssetApyData | undefined
 }
 
 export type IsolatedPoolTable = {
@@ -110,6 +112,7 @@ export type TStablepoolData = {
   isStablepool: boolean
   lpFee: string | undefined
   aToken: TErc20 | undefined
+  borrowApyData: BorrowAssetApyData | undefined
 }
 
 export type TStablepoolDetails = {
@@ -144,6 +147,41 @@ export const useStablepools = () => {
     [yieldMetrics],
   )
 
+  const { stablePoolData, aTokens } = useMemo(() => {
+    const aTokens = new Map<string, TErc20>()
+
+    if (!pools) {
+      return { stablePoolData: [], aTokens }
+    }
+
+    const list = pools.map((stablePool) => {
+      const { id, tokens } = stablePool.pool
+      const poolId = id.toString()
+      const aToken = getRelatedAToken(poolId)
+
+      if (aToken) {
+        aTokens.set(poolId, aToken)
+      }
+
+      return {
+        poolId: id,
+        tokens: tokens.filter((token) => token.type !== AssetType.STABLESWAP),
+      }
+    })
+
+    return { stablePoolData: list, aTokens }
+  }, [pools, getRelatedAToken])
+
+  const { data: borrowAssetsApy } = useBorrowAssetsApy(
+    stablePoolData
+      ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+      .map((pool) => pool.poolId.toString()),
+  )
+
+  const aTokensApyByPool = useMemo(() => {
+    return new Map(borrowAssetsApy.map((aToken) => [aToken.assetId, aToken]))
+  }, [borrowAssetsApy])
+
   const data = useMemo(
     () =>
       pools?.map((stablepool) => {
@@ -151,7 +189,9 @@ export const useStablepools = () => {
 
         const lpFee = feeByAsset.get(poolId.toString())
         const volume = volumeByAsset.get(poolId.toString())
-        const aToken = getRelatedAToken(poolId.toString())
+
+        const aToken = aTokens.get(poolId.toString())
+        const borrowApyData = aTokensApyByPool?.get(poolId.toString())
 
         const data: TStablepoolData = {
           id: poolId,
@@ -160,12 +200,13 @@ export const useStablepools = () => {
           lpFee,
           volume,
           aToken,
+          borrowApyData,
           ...stablepool,
         }
 
         return data
       }),
-    [pools, volumeByAsset, feeByAsset, getRelatedAToken],
+    [volumeByAsset, feeByAsset, aTokens, aTokensApyByPool, pools],
   )
 
   return {
@@ -267,6 +308,9 @@ export const useOmnipoolStablepools = () => {
       const aStableswapBalance = aStableswapAsset
         ? getTransferableBalance(aStableswapAsset.id.toString())
         : undefined
+      const borrowApyData = isStablepoolOnly
+        ? pool.borrowApyData
+        : stablepoolInOmnipool?.borrowApyData
 
       const allFarms = omnipoolFarms?.[poolId] ?? []
       const farms =
@@ -280,7 +324,7 @@ export const useOmnipoolStablepools = () => {
       let volume: string | undefined
       let lpFeeOmnipool: string | undefined
       let lpFeeStablepool: string | undefined
-      let totalFee: string | undefined
+      let totalFee = borrowApyData?.totalSupplyApy?.toString()
 
       if (isStablepoolOnly) {
         volume = pool.volume
@@ -305,6 +349,12 @@ export const useOmnipoolStablepools = () => {
                 .plus(totalApr)
                 .toString()
             : undefined
+      }
+
+      if (borrowApyData?.totalSupplyApy) {
+        totalFee = Big(borrowApyData.totalSupplyApy)
+          .plus(totalFee ?? 0)
+          .toString()
       }
 
       const price = assetPrice.isValid
@@ -359,6 +409,7 @@ export const useOmnipoolStablepools = () => {
         isStablepoolInOmnipool,
         aStableswapBalance,
         aStableswapAsset,
+        borrowApyData,
         stablepoolData: isStablepoolOnly ? pool : stablepoolInOmnipool,
       }
     })

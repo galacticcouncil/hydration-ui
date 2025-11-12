@@ -1,27 +1,28 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+import { QUERY_KEY_BLOCK_PREFIX, safeStringify } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
-import { AnyPapiTx } from "@/modules/transactions/types"
+import { AnyTransaction } from "@/modules/transactions/types"
+import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const paymentInfoQuery = (
-  { isApiLoaded }: TProviderContext,
+  { papi, isApiLoaded }: TProviderContext,
   from: string | undefined,
-  to: string,
-  amount: string,
-  assetId: string,
-  tx: AnyPapiTx,
+  anyTx: AnyTransaction,
 ) => {
+  const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
   return queryOptions({
     queryKey: [
       QUERY_KEY_BLOCK_PREFIX,
       "paymentInfo",
       from,
-      to,
-      amount,
-      assetId,
+      safeStringify(tx?.decodedCall),
     ],
-    queryFn: () => tx.getPaymentInfo(from ?? ""),
-    enabled: isApiLoaded && !!from,
+    queryFn: () => {
+      if (!tx) return null
+      return tx.getPaymentInfo(from ?? "")
+    },
+    enabled: isApiLoaded && !!from && isPapiTransaction(tx),
   })
 }

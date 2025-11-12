@@ -7,7 +7,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
-import Big from "big.js"
 import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
@@ -17,6 +16,8 @@ import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
+
+import { AssetYields } from "./AssetYields"
 
 export const PoolDetailsHeader = ({
   data,
@@ -47,31 +48,10 @@ export const PoolDetailsHeader = ({
               <Text font="primary" fw={700} fs={18} lh="130%">
                 {data.meta.name}
               </Text>
-              {data.isFarms && (
-                <>
-                  <Text
-                    fw={400}
-                    fs="p5"
-                    color={getToken("text.tint.secondary")}
-                  >
-                    {data.isFeeLoading ? (
-                      <Skeleton width={60} height="1em" />
-                    ) : (
-                      t("details.header.apr", {
-                        value: data.farms.reduce(
-                          (acc, farm) => acc.plus(farm.apr),
-                          Big(0),
-                        ),
-                      })
-                    )}
-                  </Text>
-                  <AssetLogo
-                    id={data.farms.map((farm) =>
-                      farm.rewardCurrency.toString(),
-                    )}
-                    size="small"
-                  />
-                </>
+              {data.isFeeLoading ? (
+                <Skeleton width={60} height="1em" />
+              ) : (
+                <AssetYields data={data} />
               )}
             </Flex>
             <Text fw={600} fs={11} color={getToken("text.medium")}>

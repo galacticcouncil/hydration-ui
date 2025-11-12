@@ -3,12 +3,13 @@ import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory, hasOwn } from "@galacticcouncil/utils"
 import { hydration } from "@polkadot-api/descriptors"
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
+import { chainSpecDataQuery } from "@/api/chain"
 import {
   createProvider,
   ProviderProps,
@@ -139,19 +140,18 @@ export const useActiveProviderProps = (): ProviderProps | null => {
 }
 
 export const useProviderMetadata = () => {
-  const { papi, papiClient, isApiLoaded } = useRpcProvider()
+  const queryClient = useQueryClient()
+  const provider = useRpcProvider()
   const { metadata: storedMetadata, setMetadata } = useApiMetadataStore()
 
   return useQuery({
-    enabled: isApiLoaded,
+    enabled: provider.isApiLoaded,
     queryKey: ["providerMetadata"],
     queryFn: async () => {
-      const [specData, lastRuntimeUpgrade] = await Promise.all([
-        papiClient.getChainSpecData(),
-        papi.query.System.LastRuntimeUpgrade.getValue(),
-      ])
+      const { chainSpecData, lastRuntimeUpgrade } =
+        await queryClient.ensureQueryData(chainSpecDataQuery(provider))
 
-      const genesisHash = specData.genesisHash
+      const genesisHash = chainSpecData.genesisHash
       const runtimeVersion = lastRuntimeUpgrade?.spec_version
 
       const metadataKey = `${genesisHash}-${runtimeVersion}`
@@ -161,7 +161,7 @@ export const useProviderMetadata = () => {
         return storedMetadata
       }
 
-      const metadataBinary = await papi.apis.Metadata.metadata()
+      const metadataBinary = await provider.papi.apis.Metadata.metadata()
       const metadataHex = metadataBinary.asHex()
       const metadata: ApiMetadata = {
         [metadataKey]: metadataHex,

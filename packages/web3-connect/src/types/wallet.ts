@@ -8,6 +8,7 @@ export type DummySigner = object
 
 export type AnySigner = PolkadotSigner | EthereumSigner | DummySigner
 
+type UnsubscribeFn = () => void
 export type SubscriptionFn = (
   accounts: WalletAccount[] | undefined,
 ) => void | Promise<void>
@@ -37,7 +38,7 @@ interface WalletConnector {
   enable: () => unknown
   disconnect: () => void
   getAccounts: () => Promise<WalletAccount[]>
-  subscribeAccounts: (callback: SubscriptionFn) => unknown
+  subscribeAccounts: (callback: SubscriptionFn) => UnsubscribeFn
 }
 
 interface WalletErrors {

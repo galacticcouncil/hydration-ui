@@ -3,6 +3,7 @@ import { X } from "lucide-react"
 import { FC, Ref } from "react"
 
 import { FlexProps } from "@/components/Flex"
+import { Icon } from "@/components/Icon"
 
 import {
   SSheetBody,
@@ -21,7 +22,19 @@ const SheetTrigger = DialogPrimitive.Trigger
 
 const SheetPortal = DialogPrimitive.Portal
 
-const SheetClose = DialogPrimitive.Close
+const SheetCloseTrigger = DialogPrimitive.Close
+
+const SheetClose: FC<
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Close>
+> = (props) => {
+  return (
+    <SSheetClose asChild>
+      <DialogPrimitive.Close {...props}>
+        <Icon component={X} size={20} />
+      </DialogPrimitive.Close>
+    </SSheetClose>
+  )
+}
 
 const SheetOverlay: FC<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay> & {
@@ -61,9 +74,7 @@ type SheetHeaderProps = Omit<FlexProps, "title"> & {
 const SheetHeader: FC<SheetHeaderProps> = ({ title, ...props }) => (
   <SSheetHeader {...props}>
     <SheetTitle>{title || <>&nbsp;</>}</SheetTitle>
-    <SSheetClose>
-      <X sx={{ width: 20, height: 20 }} />
-    </SSheetClose>
+    <SheetClose />
   </SSheetHeader>
 )
 
@@ -98,6 +109,7 @@ export {
   Sheet,
   SheetBody,
   SheetClose,
+  SheetCloseTrigger,
   SheetContent,
   SheetHeader,
   SheetOverlay,

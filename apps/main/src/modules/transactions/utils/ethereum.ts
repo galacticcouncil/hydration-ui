@@ -7,7 +7,11 @@ import { AnyPapiTx, TxSignAndSubmitFn } from "@/modules/transactions/types"
 export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
   AnyPapiTx,
   EthereumSigner
-> = async (tx, signer, { onError, onSubmitted, onSuccess, onFinalized }) => {
+> = async (
+  tx,
+  signer,
+  { onError, onSubmitted, onSuccess, onFinalized, weight },
+) => {
   const data = (await tx.getEncodedData()).asHex()
   return signer.signAndSubmitDispatch(
     {
@@ -15,6 +19,7 @@ export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
     },
     {
       chainKey: HYDRATION_CHAIN_KEY,
+      weight,
       onError,
       onSuccess,
       onSubmitted,

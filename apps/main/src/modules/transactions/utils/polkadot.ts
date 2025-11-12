@@ -2,7 +2,7 @@ import { logger } from "@galacticcouncil/utils"
 import { Binary, compactNumber } from "@polkadot-api/substrate-bindings"
 import { InvalidTxError, PolkadotSigner } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
-import { isFunction, isObjectType } from "remeda"
+import { isBigInt, isFunction, isNumber, isObjectType, isString } from "remeda"
 import { catchError, Observable, of, shareReplay } from "rxjs"
 
 import {
@@ -99,7 +99,7 @@ const observeTransactionEvents = <T extends TxEventOrError>(
 
 export const formatTxError = (err: InvalidTxError["error"]): string => {
   if (!err) return ""
-  if (typeof err === "string") return err
+  if (isString(err) || isNumber(err) || isBigInt(err)) return err.toString()
   if (err.type === "Module") return formatTxError(err.value)
   if (typeof err.type === "string")
     return [err.type, formatTxError(err.value)].filter(Boolean).join(".")

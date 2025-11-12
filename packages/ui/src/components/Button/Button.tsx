@@ -1,6 +1,7 @@
 import React, { FC } from "react"
 
 import { BoxProps } from "@/components/Box"
+import { Spinner } from "@/components/Spinner"
 
 import {
   MicroButtonVariant,
@@ -48,4 +49,20 @@ export const MicroButton: FC<MicroButtonProps> = (props) => (
 
 export const ButtonIcon: FC<ButtonProps> = (props) => {
   return <SButtonIcon as="button" type="button" {...props} />
+}
+
+export const LoadingButton: FC<
+  ButtonProps & { isLoading: boolean; loadingVariant?: ButtonProps["variant"] }
+> = ({ variant, loadingVariant = "tertiary", isLoading, ...props }) => {
+  return (
+    <SButton
+      as="button"
+      type="button"
+      variant={isLoading && loadingVariant ? loadingVariant : variant}
+      {...props}
+    >
+      {isLoading && <Spinner sx={{ mr: 4 }} />}
+      {props.children}
+    </SButton>
+  )
 }

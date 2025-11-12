@@ -1,5 +1,5 @@
 import { produce } from "immer"
-import { omit } from "remeda"
+import { omit, prop, uniqueBy } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -129,7 +129,10 @@ export const useWeb3Connect = create<WalletProviderStore>()(
       setAccounts: (accounts) =>
         set((state) => ({
           ...state,
-          accounts: [...state.accounts, ...accounts],
+          accounts: uniqueBy(
+            [...state.accounts, ...accounts],
+            prop("publicKey"),
+          ),
         })),
       setAccount: (account) => set((state) => ({ ...state, account })),
       setBalances: (balances) => {

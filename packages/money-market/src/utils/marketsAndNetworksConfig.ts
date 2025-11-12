@@ -1,7 +1,5 @@
 import { ChainIdToNetwork } from "@aave/contract-helpers"
-import { Provider } from "@ethersproject/providers"
 
-import { useRootStore } from "@/store/root"
 import {
   CustomMarket,
   MarketDataType,
@@ -97,12 +95,6 @@ export const isFeatureEnabled = {
   withdrawAndSwitch: (data: MarketDataType) =>
     data.enabledFeatures?.withdrawAndSwitch,
   switch: (data: MarketDataType) => data.enabledFeatures?.switch,
-}
-
-export const getProvider = (_chainId: ChainId): Provider => {
-  const { provider } = useRootStore.getState()
-  if (!provider) throw new Error("Provider not set")
-  return provider
 }
 
 export { CustomMarket }

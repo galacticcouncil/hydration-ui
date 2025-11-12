@@ -1,23 +1,18 @@
 import { css } from "@emotion/react"
-import { Grid } from "@galacticcouncil/ui/components"
-import { mq } from "@galacticcouncil/ui/theme"
+import { Flex } from "@galacticcouncil/ui/components"
 import { styled } from "@galacticcouncil/ui/utils"
 
 const shouldForwardProp = (prop: string) => prop !== "isSelectable"
 
-export const SContainer = styled(Grid, { shouldForwardProp })<{
+export const SYieldOpportunityContainer = styled(Flex, { shouldForwardProp })<{
   isSelectable?: boolean
 }>(
   ({ theme, isSelectable }) => css`
-    min-width: 350px;
-    padding: ${isSelectable ? theme.containers.paddings.primary : 0}px;
+    padding: ${theme.containers.paddings.primary}px;
 
-    column-gap: 10px;
-    row-gap: 10px;
-    align-items: center;
-    grid-template-columns: minmax(200px, auto) minmax(90px, 1fr);
-
-    flex: 1;
+    justify-content: space-between;
+    gap: 10px;
+    flex-grow: 1;
 
     ${isSelectable &&
     css`
@@ -26,15 +21,6 @@ export const SContainer = styled(Grid, { shouldForwardProp })<{
       &:hover {
         background: ${theme.surfaces.containers.high.hover};
       }
-    `}
-
-    & > [role="separator"] {
-      margin: 0 -${theme.containers.paddings.primary}px;
-      grid-column: 1 / span 2;
-    }
-
-    ${mq("lg")} {
-      column-gap: 30px;
-    }
+    `};
   `,
 )

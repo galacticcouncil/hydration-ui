@@ -1,6 +1,7 @@
 import { Button, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
@@ -90,34 +91,46 @@ export const usePoolColumns = () => {
             return <Skeleton width={60} height="1em" />
           }
 
-          if (original.isFarms && original?.farms) {
-            const farmRewardsIconIds = original.farms.map((farm) =>
-              farm.rewardCurrency.toString(),
-            )
-
+          if (!original.borrowApyData && !original.isFarms) {
             return (
-              <Flex align="center" gap={4}>
-                <AssetLogo id={farmRewardsIconIds} size="extra-small" />
-                <Text color={getToken("text.tint.secondary")}>
-                  {t("percent", {
-                    value: Number(original.totalFee),
-                  })}
-                </Text>
-                <TooltipAPR
-                  farms={original.farms}
-                  omnipoolFee={original.lpFeeOmnipool}
-                  stablepoolFee={original.lpFeeStablepool}
-                />
-              </Flex>
+              <Text>
+                {t("percent", {
+                  value: Number(original.totalFee),
+                })}
+              </Text>
             )
           }
 
+          const incentivesIcons: string[] = []
+
+          original.farms.forEach((farm) => {
+            incentivesIcons.push(farm.rewardCurrency.toString())
+          })
+
+          original.borrowApyData?.incentives.forEach((incentive) => {
+            incentivesIcons.push(
+              getAssetIdFromAddress(incentive.rewardTokenAddress),
+            )
+          })
+
           return (
-            <Text>
-              {t("percent", {
-                value: Number(original.totalFee),
-              })}
-            </Text>
+            <Flex align="center" gap={4}>
+              {!!incentivesIcons.length && (
+                <AssetLogo id={incentivesIcons} size="extra-small" />
+              )}
+              <Text color={getToken("text.tint.secondary")}>
+                {t("percent", {
+                  value: Number(original.totalFee),
+                })}
+              </Text>
+
+              <TooltipAPR
+                farms={original.farms}
+                omnipoolFee={original.lpFeeOmnipool}
+                stablepoolFee={original.lpFeeStablepool}
+                borrowApyData={original.borrowApyData}
+              />
+            </Flex>
           )
         },
       }),

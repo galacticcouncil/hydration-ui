@@ -4,26 +4,23 @@ import {
   Flex,
   Icon,
   Paper,
-  ProgressBar,
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { addSeconds } from "date-fns"
 import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
 
 import { Farm } from "@/api/farms"
-import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { AssetLogo } from "@/components/AssetLogo"
 import { useSecondsToLeft } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
 
-import { SContainer } from "./AvailableFarm.styled"
+import { SYieldOpportunityContainer } from "./AvailableFarm.styled"
 
-const VISIBLE_PROGRESS_BAR_WIDTH = 350
+const LONG_VARIANT_WIDTH = 550
 
 type AvailableFarmProps = {
   farm: Farm
@@ -42,68 +39,44 @@ export const AvailableFarm = ({
 
   const secondsToLeft = useSecondsToLeft(farm.estimatedEndBlock)
 
-  const displayProgressBar = width > VISIBLE_PROGRESS_BAR_WIDTH
+  const isLongVariant = width > LONG_VARIANT_WIDTH
   const meta = getAssetWithFallback(farm.rewardCurrency)
   const isSelectable = !!onClick
 
-  const total = scaleHuman(farm.potMaxRewards, meta.decimals)
-  const distributedRewards = scaleHuman(farm.distributedRewards, meta.decimals)
-
-  const diff = Big(distributedRewards).div(total).mul(100).toFixed(2)
-
   return (
-    <SContainer
+    <SYieldOpportunityContainer
       ref={ref}
       role="button"
       as={isSelectable ? Paper : undefined}
       onClick={() => onClick?.(farm)}
       isSelectable={isSelectable}
+      direction={isLongVariant ? "row" : "column"}
       className={className}
     >
-      <Flex align="center" gap={10}>
-        <AssetLabelFull asset={meta} withName={false} />
-        <Chip variant="green" size="small">
-          {t("common:percent", {
-            value: farm.apr,
-            prefix: "Up to ",
-            suffix: " APR",
-          })}
-        </Chip>
+      <Flex justify="space-between" align="center">
+        <Flex align="center" gap={10}>
+          <AssetLogo id={meta.id} />
+          <Text color={getToken("text.high")} fs="p2" fw={600}>
+            {meta.symbol}
+          </Text>
+
+          <Chip variant="green" size="small">
+            {t("liquidity.availableFarms.apr", {
+              value: farm.apr,
+            })}
+          </Chip>
+        </Flex>
+
+        {isSelectable && !isLongVariant ? (
+          <Icon
+            size={16}
+            component={ChevronRight}
+            sx={{ justifySelf: "flex-end" }}
+          />
+        ) : null}
       </Flex>
 
-      {isSelectable ? (
-        <Icon
-          size={16}
-          component={ChevronRight}
-          sx={{ justifySelf: "flex-end" }}
-        />
-      ) : null}
-
-      <Separator />
-
-      <Flex align="center" gap={8}>
-        <Icon
-          component={Distribution}
-          color={getToken("text.medium")}
-          size={20}
-        />
-        <Text fs={14} fw={500} color={getToken("text.high")}>
-          {t("liquidity.availableFarms.distributed", {
-            value: distributedRewards,
-            total,
-          })}
-        </Text>
-      </Flex>
-      {displayProgressBar ? (
-        <ProgressBar
-          value={Number(diff)}
-          hideLabel
-          color={getToken("text.medium")}
-          sx={{ flex: 1 }}
-        />
-      ) : null}
-
-      <Separator />
+      {!isLongVariant && <Separator />}
 
       <Flex align="center" gap={8}>
         <Icon
@@ -114,21 +87,27 @@ export const AvailableFarm = ({
         <Text fs={14} fw={500} color={getToken("text.high")}>
           {t("liquidity.availableFarms.expectedEnd")}
         </Text>
+        <Text
+          fs="p3"
+          fw={500}
+          color={getToken("text.tint.secondary")}
+          sx={{ justifySelf: "end", minWidth: 90 }}
+        >
+          {secondsToLeft
+            ? t("common:date.default", {
+                value: addSeconds(new Date(), secondsToLeft.toNumber()),
+                format: "dd.MM.yyyy",
+              })
+            : "N/A"}
+        </Text>
+        {isSelectable && isLongVariant ? (
+          <Icon
+            size={16}
+            component={ChevronRight}
+            sx={{ justifySelf: "flex-end" }}
+          />
+        ) : null}
       </Flex>
-
-      <Text
-        fs="p3"
-        fw={500}
-        color={getToken("text.tint.secondary")}
-        sx={{ justifySelf: "end", minWidth: 90 }}
-      >
-        {secondsToLeft
-          ? t("common:date.default", {
-              value: addSeconds(new Date(), secondsToLeft.toNumber()),
-              format: "dd.MM.yyyy",
-            })
-          : "N/A"}
-      </Text>
-    </SContainer>
+    </SYieldOpportunityContainer>
   )
 }

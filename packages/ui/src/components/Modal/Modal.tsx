@@ -112,14 +112,11 @@ type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
 
 const ModalClose: FC<ModalCloseProps> = (props) => {
   return (
-    <ButtonIcon style={{ flexGrow: 0 }} asChild>
-      <SModalClose
-        className={`close${props.className ? ` ${props.className}` : ""}`}
-        {...props}
-      >
-        <X sx={{ width: 20, height: 20 }} />
-      </SModalClose>
-    </ButtonIcon>
+    <SModalClose asChild>
+      <DialogPrimitive.Close {...props}>
+        <Icon component={X} size={20} />
+      </DialogPrimitive.Close>
+    </SModalClose>
   )
 }
 
