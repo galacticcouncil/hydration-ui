@@ -32,6 +32,7 @@ export const HowToStake: FC = () => {
         {points.map(([title, description], index) => (
           <Points
             key={index}
+            size="l"
             sx={{ px: getTokenPx("containers.paddings.primary") }}
             number={index + 1}
             title={title}

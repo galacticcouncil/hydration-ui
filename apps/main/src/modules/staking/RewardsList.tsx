@@ -77,7 +77,13 @@ export const RewardsList: FC<Props> = ({
               {isLoading ? (
                 <Skeleton height={24} />
               ) : (
-                <Text fw={700} fs={24} lh={1} color={getToken("text.high")}>
+                <Text
+                  font="primary"
+                  fw={700}
+                  fs={24}
+                  lh={1}
+                  color={getToken("text.high")}
+                >
                   {t("currency", {
                     value: claimableRewards,
                     symbol: native.symbol,
@@ -93,7 +99,13 @@ export const RewardsList: FC<Props> = ({
               )}
             </Flex>
             <Flex direction="column" gap={2}>
-              <Text fw={700} fs={24} lh={1} color={getToken("text.high")}>
+              <Text
+                font="primary"
+                fw={700}
+                fs={24}
+                lh={1}
+                color={getToken("text.high")}
+              >
                 {t("percent", { value: allocatedRewardsPercentage })}
               </Text>
               {isLoading ? (

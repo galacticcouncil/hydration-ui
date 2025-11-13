@@ -74,6 +74,7 @@ export const stakingPositionsQuery = (
       const uniques = await papi.query.Uniques.Account.getEntries(
         address,
         stakingCollectionId,
+        { at: "best" },
       )
 
       const stakePositionId = uniques[0]?.keyArgs[2]
@@ -82,8 +83,10 @@ export const stakingPositionsQuery = (
         return null
       }
 
-      const positions =
-        await papi.query.Staking.Positions.getValue(stakePositionId)
+      const positions = await papi.query.Staking.Positions.getValue(
+        stakePositionId,
+        { at: "best" },
+      )
 
       return {
         stakePositionId,
