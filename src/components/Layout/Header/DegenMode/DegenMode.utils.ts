@@ -1,4 +1,4 @@
-import { useProviderRpcUrlStore, useRefetchAssets } from "api/provider"
+import { useProviderRpcUrlStore, useRefetchProviderData } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useEffect, useMemo, useRef } from "react"
 import {
@@ -19,7 +19,7 @@ export const useDegenModeSubscription = () => {
     ),
   )
   const { getDataEnv } = useProviderRpcUrlStore()
-  const refetchAssets = useRefetchAssets()
+  const refetchProvider = useRefetchProviderData()
   const { isLoaded } = useRpcProvider()
 
   const hasInitializedDegenMode = useRef(false)
@@ -74,9 +74,9 @@ export const useDegenModeSubscription = () => {
         dataEnv: getDataEnv(),
       })
       hasInitializedDegenMode.current = true
-      refetchAssets()
+      refetchProvider()
     }
-  }, [degenMode, data, getDataEnv, isSuccess, refetchAssets])
+  }, [degenMode, data, getDataEnv, isSuccess, refetchProvider])
 
   // Subscribe to degenMode change to update ExternalAssetCursor
   useEffect(() => {
@@ -88,9 +88,9 @@ export const useDegenModeSubscription = () => {
             degenMode,
             dataEnv: getDataEnv(),
           })
-          refetchAssets()
+          refetchProvider()
         }
       }
     })
-  }, [data, getDataEnv, refetchAssets])
+  }, [data, getDataEnv, refetchProvider])
 }
