@@ -155,7 +155,7 @@ export const RemoveLiquidityForm = ({
                 assetFieldName="asset"
                 amountFieldName="amount"
                 maxBalance={totalPositionShifted}
-                ignoreDollarValue={isIsolatedPool}
+                ignoreDisplayValue={isIsolatedPool}
                 assets={[]}
                 disabledAssetSelector
                 sx={{ pt: 0 }}
