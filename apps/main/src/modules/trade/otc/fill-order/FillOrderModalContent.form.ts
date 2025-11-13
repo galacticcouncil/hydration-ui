@@ -1,3 +1,4 @@
+import { formatAssetAmount } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -59,9 +60,12 @@ export const useFillOrderForm = (
         }
       : {
           sellAmount: otcOffer.assetAmountIn,
-          buyAmount: Big(otcOffer.assetAmountOut)
-            .minus(Big(otcOffer.assetAmountOut).times(feePrice))
-            .toString(),
+          buyAmount: formatAssetAmount(
+            Big(otcOffer.assetAmountOut)
+              .minus(Big(otcOffer.assetAmountOut).times(feePrice))
+              .toString(),
+            otcOffer.assetOut.decimals,
+          ),
         }
 
   const schema = useSchema(otcOffer)

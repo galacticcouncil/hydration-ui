@@ -6,6 +6,7 @@ import {
   ModalHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
+import { formatAssetAmount } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC, useState } from "react"
@@ -48,10 +49,17 @@ export const FillOrderModalContent: FC<Props> = ({
 
   const buyAmount = form.watch("buyAmount")
 
+  const feeAsset = otcOffer.assetOut
   const fee =
     !buyAmount || !feePrice
       ? undefined
-      : Big(buyAmount).div(Big(1).minus(feePrice)).minus(buyAmount).toString()
+      : formatAssetAmount(
+          Big(buyAmount)
+            .div(Big(1).minus(feePrice))
+            .minus(buyAmount)
+            .toString(),
+          feeAsset.decimals,
+        )
 
   const isSubmitEnabled = isUsersOffer || form.formState.isValid
 
@@ -112,8 +120,13 @@ export const FillOrderModalContent: FC<Props> = ({
                         return
                       }
 
-                      const getBuyAmountAFterFee = (amount: string): string => {
-                        const fee = Big(feePrice || "0").times(amount)
+                      const getBuyAmountAfterFee = (amount: string): string => {
+                        const fee = formatAssetAmount(
+                          Big(feePrice || "0")
+                            .times(amount)
+                            .toString(),
+                          otcOffer.assetOut.decimals,
+                        )
 
                         return Big(amount).minus(fee).toString()
                       }
@@ -121,7 +134,7 @@ export const FillOrderModalContent: FC<Props> = ({
                       if (sellAmount === otcOffer.assetAmountIn) {
                         form.setValue(
                           "buyAmount",
-                          getBuyAmountAFterFee(otcOffer.assetAmountOut),
+                          getBuyAmountAfterFee(otcOffer.assetAmountOut),
                           {
                             shouldValidate: true,
                           },
@@ -133,13 +146,15 @@ export const FillOrderModalContent: FC<Props> = ({
                       const percentage = new Big(sellAmount || "0").div(
                         otcOffer.assetAmountIn,
                       )
-                      const newBuyAmount = percentage
-                        .times(otcOffer.assetAmountOut)
-                        .toString()
+
+                      const newBuyAmount = formatAssetAmount(
+                        percentage.times(otcOffer.assetAmountOut).toString(),
+                        otcOffer.assetOut.decimals,
+                      )
 
                       form.setValue(
                         "buyAmount",
-                        getBuyAmountAFterFee(newBuyAmount),
+                        getBuyAmountAfterFee(newBuyAmount),
                         {
                           shouldValidate: true,
                         },
@@ -175,9 +190,12 @@ export const FillOrderModalContent: FC<Props> = ({
                         return
                       }
 
-                      const buyAmountBeforeFee = Big(buyAmount)
-                        .div(Big(1).minus(feePrice || "0"))
-                        .toString()
+                      const buyAmountBeforeFee = formatAssetAmount(
+                        Big(buyAmount)
+                          .div(Big(1).minus(feePrice || "0"))
+                          .toString(),
+                        otcOffer.assetOut.decimals,
+                      )
 
                       if (buyAmountBeforeFee === otcOffer.assetAmountOut) {
                         form.setValue("sellAmount", otcOffer.assetAmountIn, {
@@ -190,9 +208,10 @@ export const FillOrderModalContent: FC<Props> = ({
                       const percentage = new Big(buyAmountBeforeFee || "0").div(
                         otcOffer.assetAmountOut,
                       )
-                      const newSellAmount = percentage
-                        .times(otcOffer.assetAmountIn)
-                        .toString()
+                      const newSellAmount = formatAssetAmount(
+                        percentage.times(otcOffer.assetAmountIn).toString(),
+                        otcOffer.assetIn.decimals,
+                      )
 
                       form.setValue("sellAmount", newSellAmount, {
                         shouldValidate: true,
@@ -210,7 +229,7 @@ export const FillOrderModalContent: FC<Props> = ({
               />
             </Box>
             <Separator />
-            <TradeFee fee={fee} feeSymbol={otcOffer.assetOut.symbol} />
+            <TradeFee fee={fee} feeSymbol={feeAsset.symbol} />
             <Separator />
           </ModalBody>
           <ModalFooter>
