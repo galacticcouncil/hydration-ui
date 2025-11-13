@@ -64,7 +64,9 @@ export const useExternalApi = (chainKey: string) => {
         throw new Error(`Chain ${chainKey} is not a parachain`)
 
       const apiPool = SubstrateApis.getInstance()
-      const api = await apiPool.api(chain.ws)
+      const api = await apiPool.api(
+        chainKey === "polkadot" ? "wss://polkadot-rpc.n.dwellir.com" : chain.ws,
+      )
 
       return api
     },
