@@ -39,7 +39,7 @@ import { POLKADOT_APP_NAME } from "utils/api"
 import ChevronRight from "assets/icons/ChevronRight.svg?react"
 import { isMobileDevice } from "utils/helpers"
 
-const useWalletProviders = (mode: WalletMode, chain?: string) => {
+export const useWalletProviders = (mode: WalletMode, chain?: string) => {
   const isDesktop = useMedia(theme.viewport.gte.sm)
 
   return useMemo(() => {

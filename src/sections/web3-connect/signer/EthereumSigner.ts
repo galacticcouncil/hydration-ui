@@ -257,6 +257,8 @@ export class EthereumSigner {
 
     const chainCfg = chainsMap.get(from) as EvmChain
 
+    console.log({ from, chainCfg })
+
     await this.requestNetworkSwitch(from)
 
     const chainId = chainCfg.evmChain.id
