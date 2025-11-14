@@ -21,7 +21,7 @@ export const AddressBookFormField = <TFormValues extends FieldValues>({
       {...props}
       address={field.value}
       onAddressChange={field.onChange}
-      isError={!!fieldState.error?.message}
+      error={fieldState.error?.message}
     />
   )
 }

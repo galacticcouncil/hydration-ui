@@ -19,6 +19,7 @@ export const AddressBookSearch: FC<Props> = ({
     <Flex align="center" gap={10} position="relative">
       <Input
         sx={{ flex: 1 }}
+        customSize="large"
         iconStart={Search}
         placeholder="Search or paste address to add"
         value={searchPhrase}
@@ -26,7 +27,7 @@ export const AddressBookSearch: FC<Props> = ({
       />
       {canAdd && (
         <Button
-          position="absolute"
+          sx={{ position: "absolute" }}
           right={20}
           top="50%"
           transform="translateY(-50%)"
