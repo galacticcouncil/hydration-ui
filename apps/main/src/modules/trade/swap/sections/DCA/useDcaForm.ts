@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { minimumOrderBudgetQuery } from "@/api/trade"
-import { periodInputSchema } from "@/components/PeriodInput/PeriodInput"
+import { periodInputSchema } from "@/components/PeriodInput/PeriodInput.utils"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -15,13 +15,15 @@ import {
   positiveOptional,
   requiredObject,
   useValidateFormMaxBalance,
+  validNumber,
 } from "@/utils/validators"
 
 const schema = z.object({
   sellAsset: requiredObject<TAsset>(),
   sellAmount: positiveOptional,
   buyAsset: requiredObject<TAsset>(),
-  period: periodInputSchema,
+  frequency: periodInputSchema,
+  orders: validNumber.min(3),
 })
 
 export type DcaFormValues = z.infer<typeof schema>
@@ -87,10 +89,11 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAsset: getAsset(assetIn) ?? null,
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
-    period: {
+    frequency: {
       type: "day",
       value: 1,
     },
+    orders: 3,
   }
 
   return useForm<DcaFormValues>({

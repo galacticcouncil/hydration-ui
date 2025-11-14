@@ -1,16 +1,27 @@
-import { FC, Ref } from "react"
+import { FC, ReactNode, Ref } from "react"
 
-import { getToken } from "@/utils"
+import { getToken, px } from "@/utils"
 
 import { Text } from "../Text"
 import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
 
+type TrailingElementProps =
+  | {
+      unit?: string
+      iconEnd?: React.ComponentType
+      trailingElement?: never
+    }
+  | {
+      unit?: never
+      iconEnd?: never
+      trailingElement?: ReactNode
+    }
+
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
-  CustomInputProps & {
+  CustomInputProps &
+  TrailingElementProps & {
     isError?: boolean
     iconStart?: React.ComponentType
-    iconEnd?: React.ComponentType
-    unit?: string
     className?: string
     ref?: Ref<HTMLInputElement>
   }
@@ -19,6 +30,7 @@ export const Input: FC<InputProps> = ({
   iconStart: IconStart,
   iconEnd: IconEnd,
   unit,
+  trailingElement,
   variant,
   customSize,
   className,
@@ -34,14 +46,15 @@ export const Input: FC<InputProps> = ({
     <SInput ref={ref} {...props} />
     {unit && (
       <Text
-        fs="p5"
-        fw={600}
-        color={getToken("text.medium")}
-        whiteSpace="nowrap"
+        fw={500}
+        fs={11}
+        lh={px(15)}
+        color={getToken("buttons.secondary.low.onRest")}
       >
         {unit}
       </Text>
     )}
     {IconEnd && <IconEnd />}
+    {trailingElement}
   </SInputContainer>
 )
