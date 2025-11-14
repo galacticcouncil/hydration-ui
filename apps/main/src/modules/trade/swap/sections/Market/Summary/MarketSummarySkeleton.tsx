@@ -3,7 +3,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TradeType } from "@/api/trade"
-import { MarketSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryRow"
+import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
@@ -20,25 +20,25 @@ export const MarketSummarySkeleton: FC<Props> = ({ type }) => {
       separator={<SwapSectionSeparator />}
       withLeadingSeparator
     >
-      <MarketSummaryRow
+      <SwapSummaryRow
         label={
           isSell ? t("market.summary.minReceived") : t("market.summary.maxSent")
         }
         content={<Skeleton sx={{ width: 150 }} />}
       />
-      <MarketSummaryRow
+      <SwapSummaryRow
         label={t("market.summary.priceImpact")}
         content={<Skeleton sx={{ width: 150 }} />}
       />
-      <MarketSummaryRow
+      <SwapSummaryRow
         label={t("market.summary.estTradeFees")}
         content={<Skeleton sx={{ width: 150 }} />}
       />
-      <MarketSummaryRow
+      <SwapSummaryRow
         label={t("market.summary.transactionCosts")}
         content={<Skeleton sx={{ width: 150 }} />}
       />
-      <MarketSummaryRow
+      <SwapSummaryRow
         label={t("market.summary.routes.label")}
         content={<Skeleton sx={{ width: 150, height: 24 }} />}
       />

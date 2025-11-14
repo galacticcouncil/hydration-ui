@@ -19,6 +19,7 @@ type SelectPropsCustom<TKey extends string> = Omit<
   label?: string
   placeholder?: string
   items: ReadonlyArray<SelectItem<TKey>>
+  className?: string
   onValueChange: (value: TKey) => void
 }
 
@@ -26,11 +27,12 @@ export const Select = <TKey extends string = string>({
   label,
   placeholder,
   items,
+  className,
   ...props
 }: SelectPropsCustom<TKey>) => {
   return (
     <Root {...props}>
-      <SelectTrigger>
+      <SelectTrigger className={className}>
         {label && <SelectLabel>{label}</SelectLabel>}
         <Value placeholder={placeholder} />
         <SelectCaret />
