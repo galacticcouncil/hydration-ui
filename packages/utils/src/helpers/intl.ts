@@ -126,3 +126,28 @@ export const formatCurrency = (
 
   return parts.map(formatNumberParts).join("")
 }
+
+const FORMAT_ASSET_AMOUNT_REGEXP =
+  /^(?<integer>[^.,]*)(?<separator>[.,])(?<decimals>.*)$/
+
+export const formatAssetAmount = (
+  amount: string,
+  maxDecimals: number,
+): string => {
+  if (!amount || !maxDecimals) {
+    return amount
+  }
+
+  const match = amount.match(FORMAT_ASSET_AMOUNT_REGEXP)
+
+  if (!match || !match.groups) {
+    return amount
+  }
+
+  const { integer, separator, decimals } = match.groups
+
+  const validDecimals = decimals.slice(0, maxDecimals)
+  const trimmedDecimals = validDecimals.replace(/0+$/, "")
+
+  return trimmedDecimals ? `${integer}${separator}${trimmedDecimals}` : integer
+}

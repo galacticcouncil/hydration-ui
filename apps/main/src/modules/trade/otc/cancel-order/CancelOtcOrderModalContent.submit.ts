@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
-import { otcOffersQueryKey } from "@/modules/trade/otc/table/OtcTable.query"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -12,7 +11,7 @@ export const useSubmitCancelOtcOrder = (
 ) => {
   const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
-  const client = useQueryClient()
+
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
   return useMutation({
@@ -42,6 +41,5 @@ export const useSubmitCancelOtcOrder = (
         },
       })
     },
-    onSuccess: () => client.invalidateQueries({ queryKey: otcOffersQueryKey }),
   })
 }

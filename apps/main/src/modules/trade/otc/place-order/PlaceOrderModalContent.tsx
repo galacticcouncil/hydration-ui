@@ -7,6 +7,7 @@ import {
   ModalHeader,
   Separator,
 } from "@galacticcouncil/ui/components"
+import { formatAssetAmount, formatNumber } from "@galacticcouncil/utils"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { FC, useCallback, useEffect, useRef } from "react"
@@ -94,11 +95,16 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
     const priceBig = new Big(price)
 
-    if (!priceBig.gt(0)) {
+    if (!priceBig.gt(0) || !buyAsset) {
       return
     }
 
-    form.setValue("buyAmount", Big(newOfferAmount).mul(priceBig).toString(), {
+    const newBuyAmount = formatAssetAmount(
+      Big(newOfferAmount).mul(priceBig).toString(),
+      buyAsset.decimals,
+    )
+
+    form.setValue("buyAmount", newBuyAmount, {
       shouldValidate: true,
     })
   }
@@ -114,11 +120,16 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
     const priceBig = new Big(price)
 
-    if (!priceBig.gt(0)) {
+    if (!priceBig.gt(0) || !offerAsset) {
       return
     }
 
-    form.setValue("offerAmount", Big(newBuyAmount).div(priceBig).toString(), {
+    const newOfferAmount = formatAssetAmount(
+      Big(newBuyAmount).div(priceBig).toString(),
+      offerAsset.decimals,
+    )
+
+    form.setValue("offerAmount", newOfferAmount, {
       shouldValidate: true,
     })
   }
@@ -150,7 +161,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         offerAmountBig.gt(0) &&
         priceBig.gt(0)
       ) {
-        setValue("buyAmount", offerAmountBig.mul(price).toString(), {
+        const newBuyAmount = formatAssetAmount(
+          offerAmountBig.mul(price).toString(),
+          buyAsset.decimals,
+        )
+
+        setValue("buyAmount", newBuyAmount, {
           shouldValidate: true,
         })
       } else if (
@@ -158,7 +174,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         buyAmountBig.gt(0) &&
         priceBig.gt(0)
       ) {
-        setValue("offerAmount", buyAmountBig.div(price).toString(), {
+        const newOfferAmount = formatAssetAmount(
+          buyAmountBig.div(price).toString(),
+          offerAsset.decimals,
+        )
+
+        setValue("offerAmount", newOfferAmount, {
           shouldValidate: true,
         })
       }
@@ -269,12 +290,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
     priceSettings.wasPriceSwitched === isPriceSwitched
       ? priceSettings.inputValue
       : isPriceValid
-        ? t("common:number", {
-            value:
-              isPriceSwitched && !Big(price).eq(0)
-                ? Big(1).div(price).toString()
-                : price,
-          })
+        ? // the value is formatted for display only if it was calculated otherwise show what user typed
+          formatNumber(
+            isPriceSwitched && !Big(price).eq(0)
+              ? Big(1).div(price).toString()
+              : price,
+          )
         : ""
 
   const isSubmitEnabled =

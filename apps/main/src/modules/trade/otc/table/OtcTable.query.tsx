@@ -1,8 +1,7 @@
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
 
+import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 export type OtcOffer = {
@@ -25,16 +24,13 @@ export const otcOffersQueryKey = [
 ]
 
 export const useOtcOffersQuery = () => {
-  const { papi, isLoaded: isRpcReady } = useRpcProvider()
   const { getAsset, isExternal } = useAssets()
 
-  const { isLoading, ...queryResult } = useQuery({
-    queryKey: otcOffersQueryKey,
-    queryFn: async (): Promise<ReadonlyArray<OtcOffer>> => {
-      const offers = await papi.query.OTC.Orders.getEntries()
-
-      return offers
-        .map<OtcOffer | null>(({ keyArgs, value: offer }) => {
+  return usePapiObservableQuery("OTC.Orders", [{ at: "best" }], {
+    watchType: "entries",
+    select({ entries }) {
+      return entries
+        .map<OtcOffer | null>(({ args, value: offer }) => {
           const assetIn = getAsset(offer.asset_in.toString())
           const assetOut = getAsset(offer.asset_out.toString())
 
@@ -55,7 +51,7 @@ export const useOtcOffersQuery = () => {
           const assetAmountOut = scaleHuman(amountOut, assetOut.decimals)
 
           return {
-            id: keyArgs[0].toString(),
+            id: args[0].toString(),
             owner: offer.owner.toString(),
             assetIn: assetIn,
             assetOut: assetOut,
@@ -68,11 +64,5 @@ export const useOtcOffersQuery = () => {
         })
         .filter((offer) => !!offer)
     },
-    enabled: isRpcReady,
   })
-
-  return {
-    ...queryResult,
-    isLoading: isLoading || !isRpcReady,
-  } as const
 }
