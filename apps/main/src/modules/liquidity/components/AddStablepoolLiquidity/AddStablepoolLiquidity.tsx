@@ -23,7 +23,6 @@ import { useTranslation } from "react-i18next"
 import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
-import { stablePools, StableSwapBase } from "@/api/pools"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { useStableswap } from "@/api/stablewap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
@@ -35,6 +34,10 @@ import {
   TradeLimit,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
+import {
+  TStablepoolDetails,
+  useStablepoolReserves,
+} from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
@@ -56,32 +59,38 @@ export const AddStablepoolLiquidityWrapper = (
   props: AddStablepoolLiquidityProps,
 ) => {
   const { stableswapId } = props
-  const { data: pools = [], isLoading: isPoolsLoading } = useQuery(stablePools)
+  const { data: stablepoolDetails } = useStablepoolReserves(stableswapId)
   const { isBalanceLoading } = useAccountBalances()
-  const pool = pools.find((pool) => pool.id === Number(stableswapId))
 
-  if (isPoolsLoading || !pool || isBalanceLoading)
+  if (isBalanceLoading || !stablepoolDetails)
     return <AddStablepoolLiquiditySkeleton {...props} />
 
   if (props.erc20Id) {
     return (
-      <AddMoneyMarketLiquidity {...props} erc20Id={props.erc20Id} pool={pool} />
+      <AddMoneyMarketLiquidity
+        {...props}
+        erc20Id={props.erc20Id}
+        stablepoolDetails={stablepoolDetails}
+      />
     )
   }
 
-  return <AddStablepoolLiquidity {...props} pool={pool} />
+  return (
+    <AddStablepoolLiquidity {...props} stablepoolDetails={stablepoolDetails} />
+  )
 }
 
 const AddMoneyMarketLiquidity = (
   props: AddStablepoolLiquidityProps & {
     erc20Id: string
-    pool: StableSwapBase
+    stablepoolDetails: TStablepoolDetails
   },
 ) => {
-  const { erc20Id, pool } = props
+  const { erc20Id, stablepoolDetails, stableswapId } = props
   const { form, ...addLiquidityData } = useAddMoneyMarketLiquidity({
-    pool,
+    stablepoolDetails,
     erc20Id,
+    stableswapId,
     onSubmitted: () => props.onBack?.(),
   })
 
@@ -94,12 +103,13 @@ const AddMoneyMarketLiquidity = (
 
 const AddStablepoolLiquidity = (
   props: AddStablepoolLiquidityProps & {
-    pool: StableSwapBase
+    stablepoolDetails: TStablepoolDetails
   },
 ) => {
-  const { pool } = props
+  const { stablepoolDetails, stableswapId } = props
   const { form, ...addLiquidityData } = useStablepoolAddLiquidity({
-    pool,
+    stablepoolDetails,
+    stableswapId,
   })
 
   return (
@@ -121,7 +131,7 @@ export const AddStablepoolLiquidityForm = ({
   stableswapId,
   closable,
   onBack,
-  accountReserveBalances,
+  accountBalances,
   assetsToSelect,
   minReceiveAmount,
   meta,
@@ -130,30 +140,79 @@ export const AddStablepoolLiquidityForm = ({
   joinFarmErrorMessage,
   isJoinFarms,
   healthFactor,
+  reserveIds,
+  ...props
 }: AddStablepoolLiquidityFormProps) => {
+  const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation(["liquidity", "common"])
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
 
   const { control, watch, formState } = form
-  const [split, selectedAssetId, option] = watch([
+  const [split, option, selectedAssetId] = watch([
     "split",
-    "selectedAssetId",
     "option",
+    "selectedAssetId",
   ])
 
-  const { fields } = useFieldArray({
+  const { fields: activeFields } = useFieldArray({
     control,
-    name: "reserves",
+    name: "activeFields",
   })
 
   const onSubmit = () => mutation.mutate()
 
   const customErrors = getCustomErrors(formState.errors.sharesAmount)
-  const fieldsToRender = split
-    ? fields
-    : fields.filter((field) => field.asset.id === selectedAssetId)
 
   const isSubmitDisabled = !formState.isValid
+
+  if (!split && !selectedAssetId)
+    return (
+      <AddStablepoolLiquiditySkeleton
+        closable={closable}
+        onBack={onBack}
+        stableswapId={stableswapId}
+        {...props}
+      />
+    )
+
+  const onSelectAsset = (asset: TAssetData) => {
+    const field = form
+      .getValues("fields")
+      .find((field) => field.assetId === asset.id)
+    const newValue = field ?? { amount: "", assetId: asset.id }
+
+    form.setValue("selectedAssetId", asset.id)
+    form.setValue("activeFields", [newValue])
+
+    form.trigger("activeFields")
+  }
+
+  const onToggleClick = (checked: boolean) => {
+    const fields = form.getValues("fields")
+    form.setValue("split", checked)
+
+    if (checked) {
+      form.setValue(
+        "activeFields",
+        reserveIds.map(
+          (reserveId) =>
+            fields.find((field) => field.assetId === reserveId) ?? {
+              amount: "",
+              assetId: reserveId,
+            },
+        ),
+      )
+    } else if (selectedAssetId) {
+      const prevField = fields.find(
+        (field) => field.assetId === selectedAssetId,
+      )
+      form.setValue("activeFields", [
+        prevField ?? { amount: "", assetId: selectedAssetId },
+      ])
+    }
+
+    form.trigger("activeFields")
+  }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
@@ -198,7 +257,7 @@ export const AddStablepoolLiquidityForm = ({
         <Controller
           control={form.control}
           name="split"
-          render={({ field: { value, onChange } }) => (
+          render={({ field }) => (
             <Flex
               align="center"
               justify="space-between"
@@ -207,46 +266,54 @@ export const AddStablepoolLiquidityForm = ({
               <Text>
                 {t("liquidity.remove.stablepool.modal.proportionally")}
               </Text>
-              <Toggle size="large" checked={value} onCheckedChange={onChange} />
+              <Toggle
+                size="large"
+                checked={field.value}
+                onCheckedChange={onToggleClick}
+              />
             </Flex>
           )}
         />
 
         <ModalContentDivider />
 
-        {fieldsToRender.map((field) => {
-          const balance = accountReserveBalances.get(field.asset.id)
-          const originalIndex = fields.findIndex((f) => f.id === field.id)
+        {activeFields.map((field, index) => {
+          const balance = accountBalances.get(field.assetId)
 
           return (
             <Fragment key={field.id}>
               <Controller
-                name={`reserves.${originalIndex}`}
+                name={`activeFields.${index}`}
                 control={control}
                 render={({
                   field: { value, onChange },
                   fieldState: { error },
-                }) => {
-                  return (
-                    <AssetSelect
-                      label={t("liquidity.add.modal.selectAsset")}
-                      assets={assetsToSelect}
-                      maxBalance={balance}
-                      selectedAsset={value.asset}
-                      error={error?.message}
-                      value={value.amount}
-                      onChange={(amount) => {
-                        onChange({ ...value, amount })
-                      }}
-                      setSelectedAsset={
-                        !split
-                          ? (asset) =>
-                              form.setValue("selectedAssetId", asset.id)
-                          : undefined
-                      }
-                    />
-                  )
-                }}
+                }) => (
+                  <AssetSelect
+                    label={t("liquidity.add.modal.selectAsset")}
+                    assets={[]}
+                    sortedAssets={assetsToSelect}
+                    maxBalance={balance}
+                    selectedAsset={getAssetWithFallback(value.assetId)}
+                    error={error?.message}
+                    value={value.amount}
+                    onChange={(amount) => {
+                      const updatedValue = { ...value, amount }
+                      const allFields = form.getValues("fields")
+                      const fieldIndex = allFields.findIndex(
+                        (f) => f.assetId === field.assetId,
+                      )
+
+                      onChange(updatedValue)
+
+                      const indexToUpdate =
+                        fieldIndex === -1 ? allFields.length : fieldIndex
+
+                      form.setValue(`fields.${indexToUpdate}`, updatedValue)
+                    }}
+                    setSelectedAsset={!split ? onSelectAsset : undefined}
+                  />
+                )}
               />
               <ModalContentDivider />
             </Fragment>

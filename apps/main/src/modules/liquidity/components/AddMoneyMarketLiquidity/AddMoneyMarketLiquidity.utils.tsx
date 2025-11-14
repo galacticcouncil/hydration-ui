@@ -1,21 +1,21 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
 
 import { healthFactorQuery } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useOmnipoolFarms } from "@/api/farms"
-import { StableSwapBase } from "@/api/pools"
 import { bestSellQuery } from "@/api/trade"
 import {
   getStablepoolShares,
+  useAssetsToAddToMoneyMarket,
   useStablepoolAddLiquidityForm,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
-import { isValidStablepoolToken } from "@/modules/liquidity/Liquidity.utils"
+import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -40,11 +40,13 @@ export type TAddStablepoolLiquidityFormValues = {
 }
 
 export const useAddMoneyMarketLiquidity = ({
-  pool,
+  stablepoolDetails: { pool, reserves },
   erc20Id,
+  stableswapId,
   onSubmitted,
 }: {
-  pool: StableSwapBase
+  stablepoolDetails: TStablepoolDetails
+  stableswapId: string
   erc20Id: string
   onSubmitted: () => void
 }) => {
@@ -53,7 +55,7 @@ export const useAddMoneyMarketLiquidity = ({
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const { getTransferableBalance } = useAccountBalances()
+  const { getTransferableBalance, balances } = useAccountBalances()
   const { data: omnipoolFarms } = useOmnipoolFarms()
   const {
     liquidity: { slippage },
@@ -62,50 +64,67 @@ export const useAddMoneyMarketLiquidity = ({
     },
   } = useTradeSettings()
 
+  const assetsToSelect = useAssetsToAddToMoneyMarket({
+    stableswapId,
+    reserves,
+    options: {
+      blacklist: [erc20Id],
+    },
+  })
+  const initialAssetIdToAdd = assetsToSelect[0]?.id
+
   const { papi, sdk } = rpc
-  const poolId = pool.id.toString()
+  const poolId = stableswapId
   const activeFarms =
     omnipoolFarms?.[poolId]?.filter((farm) => farm.apr !== "0") ?? []
-  const isFarms = activeFarms.length > 0
 
-  const stablepoolAssets = pool.tokens
-    .filter(isValidStablepoolToken)
-    .map((asset) => ({
-      asset: getAssetWithFallback(asset.id),
-      balance: asset.balance,
-    }))
+  const { stablepoolAssets, reserveIds } = useMemo(() => {
+    const stablepoolAssets: { asset: TAssetData; balance: string }[] = []
+    const reserveIds: string[] = []
+
+    for (const reserve of reserves) {
+      stablepoolAssets.push({
+        asset: reserve.meta,
+        balance: reserve.amount,
+      })
+      reserveIds.push(reserve.asset_id.toString())
+    }
+
+    return { stablepoolAssets, reserveIds }
+  }, [reserves])
+
   const meta = getAssetWithFallback(pool.id)
 
-  const accountReserveBalances = new Map(
-    stablepoolAssets.map(({ asset }) => [
-      asset.id,
-      scaleHuman(getTransferableBalance(asset.id), asset.decimals),
+  const accountBalances = new Map(
+    Object.values(balances).map((balance) => [
+      balance.assetId,
+      scaleHuman(
+        balance.transferable,
+        getAssetWithFallback(balance.assetId).decimals,
+      ),
     ]),
   )
 
   const form = useStablepoolAddLiquidityForm({
     poolId,
-    selectedAssetId: stablepoolAssets[0]!.asset.id,
-    reserves: stablepoolAssets.map(({ asset }) => ({
-      asset,
-      amount: "",
-    })),
-    accountReserveBalances,
+    selectedAssetId: initialAssetIdToAdd ?? "",
+    accountBalances,
     option: "stablepool",
+    activeFieldIds: reserveIds,
   })
 
-  const [reserves, split, selectedAssetId] = form.watch([
-    "reserves",
+  const [split, selectedAssetId, activeFields] = form.watch([
     "split",
     "selectedAssetId",
+    "activeFields",
   ])
 
-  const assetsToProvide = split
-    ? reserves.filter(({ amount }) => Big(amount || "0").gt(0))
-    : reserves.filter(
-        ({ amount, asset }) =>
-          Big(amount || "0").gt(0) && asset.id === selectedAssetId,
-      )
+  const assetsToProvide = activeFields
+    .filter(({ amount }) => Big(amount || "0").gt(0))
+    .map(({ assetId, amount }) => ({
+      asset: getAssetWithFallback(assetId),
+      amount,
+    }))
 
   const stablepoolShares = getStablepoolShares(
     assetsToProvide,
@@ -150,29 +169,22 @@ export const useAddMoneyMarketLiquidity = ({
     : minimumTradeAmount
   const minReceiveAmount = scaleHuman(tradeAmountOut, meta.decimals)
 
-  //console.log({ minReceiveAmount, minStablepoolShares, tradeAmountIn })
-  //   const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
-  //   const isCheckJoinFarms =
-  //     isFarms && Big(stablepoolSharesHuman).gt(0) && option === "omnipool"
-
-  //   const joinFarmErrorMessage =
-  //     isCheckJoinFarms && Big(stablepoolSharesHuman).lte(minJoinAmount)
-  //       ? t("liquidity.joinFarms.modal.validation.minShares", {
-  //           value: minJoinAmount,
-  //           symbol: meta.symbol,
-  //         })
-  //       : undefined
-
-  //   const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
-
   const joinFarmErrorMessage = undefined
   const isJoinFarms = false
 
   useEffect(() => {
-    form.setValue("sharesAmount", stablepoolSharesHuman, {
+    if (!selectedAssetId && initialAssetIdToAdd) {
+      form.setValue("selectedAssetId", initialAssetIdToAdd, {
+        shouldValidate: true,
+      })
+    }
+  }, [form, initialAssetIdToAdd, selectedAssetId])
+
+  useEffect(() => {
+    form.setValue("sharesAmount", minReceiveAmount, {
       shouldValidate: true,
     })
-  }, [form, stablepoolSharesHuman])
+  }, [form, minReceiveAmount])
 
   //@TODO: decide how to display health factor when providing liquidity to shares and then trade to erc20
   const { data: healthFactor } = useQuery(
@@ -287,17 +299,16 @@ export const useAddMoneyMarketLiquidity = ({
 
   return {
     form,
-    accountReserveBalances,
-    //@TODO: add assets to select for non split mode
-    assetsToSelect: split ? [] : [],
+    accountBalances,
+    assetsToSelect: split ? [] : assetsToSelect,
     stablepoolSharesHuman,
     meta,
     mutation,
     activeFarms,
-    isFarms,
     joinFarmErrorMessage,
     isJoinFarms,
     minReceiveAmount,
-    healthFactor,
+    healthFactor: Big(debouncedAmountIn).gt(0) ? healthFactor : undefined,
+    reserveIds,
   }
 }

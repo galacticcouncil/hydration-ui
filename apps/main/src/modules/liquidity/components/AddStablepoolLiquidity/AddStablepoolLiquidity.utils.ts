@@ -3,26 +3,30 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { t } from "i18next"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { ResolverOptions, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod"
 
-import { TAssetData } from "@/api/assets"
+import { AssetType, TAssetData } from "@/api/assets"
 import { useOmnipoolFarms } from "@/api/farms"
 import { StableSwapBase } from "@/api/pools"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { useAddToOmnipoolZod } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
 import {
   calculatePoolFee,
-  isValidStablepoolToken,
+  TReserve,
+  TStablepoolDetails,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
+import { useAssetsPrice } from "@/states/displayAsset"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
+import { sortAssets } from "@/utils/sort"
 import {
   maxBalanceError,
   positive,
@@ -35,12 +39,18 @@ export type TReserveFormValue = {
   amount: string
 }
 
+type TField = {
+  amount: string
+  assetId: string
+}
+
 export type TAddStablepoolLiquidityFormValues = {
-  reserves: Array<TReserveFormValue>
   sharesAmount: string
   option: "omnipool" | "stablepool"
   split: boolean
   selectedAssetId: string
+  fields: Array<TField>
+  activeFields: Array<TField>
 }
 
 export const addStablepoolOptions = [
@@ -57,9 +67,11 @@ export const addStablepoolOptions = [
 ]
 
 export const useStablepoolAddLiquidity = ({
-  pool,
+  stablepoolDetails: { pool, reserves },
+  stableswapId,
 }: {
-  pool: StableSwapBase
+  stablepoolDetails: TStablepoolDetails
+  stableswapId: string
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
@@ -71,48 +83,56 @@ export const useStablepoolAddLiquidity = ({
     liquidity: { slippage },
   } = useTradeSettings()
 
-  const poolId = pool.id.toString()
   const activeFarms =
-    omnipoolFarms?.[poolId]?.filter((farm) => farm.apr !== "0") ?? []
-  const isFarms = activeFarms.length > 0
+    omnipoolFarms?.[stableswapId]?.filter((farm) => farm.apr !== "0") ?? []
+  const meta = getAssetWithFallback(stableswapId)
 
-  const stablepoolAssets = pool.tokens
-    .filter(isValidStablepoolToken)
-    .map((asset) => ({
-      asset: getAssetWithFallback(asset.id),
-      balance: asset.balance,
-    }))
-  const meta = getAssetWithFallback(pool.id)
+  const { stablepoolAssets, reserveIds, accountBalances } = useMemo(() => {
+    const stablepoolAssets: { asset: TAssetData; balance: string }[] = []
+    const reserveIds: string[] = []
+    const accountBalances: Map<string, string> = new Map()
+    for (const reserve of reserves) {
+      stablepoolAssets.push({
+        asset: reserve.meta,
+        balance: reserve.amount,
+      })
+      reserveIds.push(reserve.asset_id.toString())
+      accountBalances.set(
+        reserve.asset_id.toString(),
+        scaleHuman(
+          getTransferableBalance(reserve.asset_id.toString()),
+          reserve.meta.decimals,
+        ),
+      )
+    }
 
-  const accountReserveBalances = new Map(
-    stablepoolAssets.map(({ asset }) => [
-      asset.id,
-      scaleHuman(getTransferableBalance(asset.id), asset.decimals),
-    ]),
-  )
+    return { stablepoolAssets, reserveIds, accountBalances }
+  }, [reserves, getTransferableBalance])
+
+  const assetsToSelect = useAssetsToAddToStablepool({
+    reserves,
+  })
+  const initialAssetIdToAdd = assetsToSelect[0]?.id
 
   const form = useStablepoolAddLiquidityForm({
-    poolId,
-    selectedAssetId: stablepoolAssets[0]!.asset.id,
-    reserves: stablepoolAssets.map(({ asset }) => ({
-      asset,
-      amount: "",
-    })),
-    accountReserveBalances,
+    poolId: stableswapId,
+    accountBalances,
+    activeFieldIds: reserveIds,
+    selectedAssetId: initialAssetIdToAdd ?? "",
   })
-  const [reserves, split, option, selectedAssetId] = form.watch([
-    "reserves",
-    "split",
+  const [option, activeFields, selectedAssetId] = form.watch([
     "option",
+    "activeFields",
     "selectedAssetId",
   ])
 
-  const assetsToProvide = split
-    ? reserves.filter(({ amount }) => Big(amount || "0").gt(0))
-    : reserves.filter(
-        ({ amount, asset }) =>
-          Big(amount || "0").gt(0) && asset.id === selectedAssetId,
-      )
+  const assetsToProvide = activeFields
+    .filter(({ amount }) => Big(amount || "0").gt(0))
+    .map(({ assetId, amount }) => ({
+      asset: getAssetWithFallback(assetId),
+      amount,
+    }))
+
   const stablepoolShares = getStablepoolShares(
     assetsToProvide,
     stablepoolAssets,
@@ -129,7 +149,9 @@ export const useStablepoolAddLiquidity = ({
     scaleHuman(minStablepoolShares, meta.decimals) || "0"
   const minReceiveAmount = stablepoolSharesHuman
   const isCheckJoinFarms =
-    isFarms && Big(stablepoolSharesHuman).gt(0) && option === "omnipool"
+    activeFarms.length > 0 &&
+    Big(stablepoolSharesHuman).gt(0) &&
+    option === "omnipool"
 
   const joinFarmErrorMessage =
     isCheckJoinFarms && Big(stablepoolSharesHuman).lte(minJoinAmount)
@@ -140,6 +162,14 @@ export const useStablepoolAddLiquidity = ({
       : undefined
 
   const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
+
+  useEffect(() => {
+    if (!selectedAssetId && initialAssetIdToAdd) {
+      form.setValue("selectedAssetId", initialAssetIdToAdd, {
+        shouldValidate: true,
+      })
+    }
+  }, [form, initialAssetIdToAdd, selectedAssetId])
 
   useEffect(() => {
     form.setValue("sharesAmount", stablepoolSharesHuman, {
@@ -206,22 +236,22 @@ export const useStablepoolAddLiquidity = ({
 
   return {
     form,
-    accountReserveBalances,
-    assetsToSelect: stablepoolAssets.map(({ asset }) => asset),
+    accountBalances,
+    assetsToSelect,
     minReceiveAmount,
     meta,
     mutation,
     activeFarms,
-    isFarms,
     joinFarmErrorMessage,
     isJoinFarms,
     healthFactor: undefined,
+    reserveIds,
   }
 }
 
 export const getStablepoolShares = (
   formValues: TReserveFormValue[],
-  stablepoolAssets: Array<{ asset: TAssetData; balance: bigint }>,
+  stablepoolAssets: Array<{ asset: TAssetData; balance: string }>,
   pool: StableSwapBase,
 ) => {
   const { amplification, totalIssuance, pegs, fee } = pool
@@ -238,7 +268,7 @@ export const getStablepoolShares = (
 
   const reservesFormatted = stablepoolAssets.map(({ asset, balance }) => ({
     asset_id: Number(asset.id),
-    amount: balance.toString(),
+    amount: balance,
     decimals: asset.decimals,
   }))
 
@@ -265,17 +295,17 @@ const useStablepoolAddLiquidityFormResolver = (
     context: unknown,
     options: ResolverOptions<TAddStablepoolLiquidityFormValues>,
   ) => {
-    const reservesSchema = z.array(
+    const fieldsSchema = z.array(
       z
         .object({
-          asset: z.custom<TAssetData>(),
           amount: z.string(),
+          assetId: z.string(),
         })
         .refine(
-          (reserve) => {
-            const maxBalance = accountReserveBalances.get(reserve.asset.id)
+          (field) => {
+            const maxBalance = accountReserveBalances.get(field.assetId)
             if (!maxBalance) return true
-            return validateMaxBalance(maxBalance, reserve.amount || "0")
+            return validateMaxBalance(maxBalance, field.amount || "0")
           },
           {
             message: maxBalanceError,
@@ -284,11 +314,17 @@ const useStablepoolAddLiquidityFormResolver = (
     )
 
     const schema = z.object({
-      reserves: reservesSchema,
       sharesAmount: omnipoolZodSchema ?? required.pipe(positive),
       option: z.enum(["omnipool", "stablepool"]),
       split: z.boolean(),
       selectedAssetId: z.string(),
+      activeFields: fieldsSchema,
+      fields: z.array(
+        z.object({
+          amount: z.string(),
+          assetId: z.string(),
+        }),
+      ),
     })
 
     return standardSchemaResolver<
@@ -300,32 +336,171 @@ const useStablepoolAddLiquidityFormResolver = (
 }
 
 export const useStablepoolAddLiquidityForm = ({
-  reserves,
   poolId,
-  selectedAssetId,
-  accountReserveBalances,
+  accountBalances,
   option = "omnipool",
+  activeFieldIds,
+  selectedAssetId,
 }: {
   poolId: string
-  selectedAssetId: string
-  reserves: Array<TReserveFormValue>
   option?: "omnipool" | "stablepool"
-  accountReserveBalances: Map<string, string>
+  accountBalances: Map<string, string>
+  activeFieldIds: string[]
+  selectedAssetId: string
 }) => {
   const resolver = useStablepoolAddLiquidityFormResolver(
     poolId,
-    accountReserveBalances,
+    accountBalances,
   )
+
+  const fields = activeFieldIds.map((id) => ({
+    amount: "",
+    assetId: id,
+  }))
 
   return useForm<TAddStablepoolLiquidityFormValues>({
     mode: "all",
     defaultValues: {
-      reserves,
       option,
       sharesAmount: "",
       split: true,
+      fields,
+      activeFields: fields,
       selectedAssetId,
     },
     resolver,
   })
+}
+
+type UseNewDepositAssetsOptions = {
+  blacklist?: string[]
+}
+
+export const useAssetsToAddToMoneyMarket = ({
+  stableswapId,
+  reserves,
+  options,
+}: {
+  stableswapId: string
+  reserves: TReserve[]
+  options?: UseNewDepositAssetsOptions
+}) => {
+  const { blacklist = [] } = options ?? {}
+  const { balances } = useAccountBalances()
+  const { getAssetWithFallback, isStableSwap, getErc20AToken, native } =
+    useAssets()
+
+  const stableswapMeta = getAssetWithFallback(stableswapId)
+
+  const highPriorityAssetIds = useMemo(() => {
+    const assetIds: string[] = [stableswapId]
+
+    for (const reserve of reserves) {
+      const reserveAsset = getAssetWithFallback(reserve.asset_id.toString())
+      assetIds.push(reserveAsset.id)
+
+      if (reserveAsset.type === AssetType.ERC20) {
+        const underlyingAssetId = getErc20AToken(
+          reserveAsset.id,
+        )?.underlyingAssetId
+
+        if (underlyingAssetId) {
+          assetIds.push(underlyingAssetId)
+        }
+      }
+    }
+
+    return assetIds
+  }, [getAssetWithFallback, getErc20AToken, reserves, stableswapId])
+
+  const { validAssets, priceIds } = useMemo(() => {
+    const validAssets = []
+    const priceIds = []
+
+    for (const balance of Object.values(balances)) {
+      if (blacklist.includes(balance.assetId)) continue
+
+      const meta = getAssetWithFallback(balance.assetId)
+      if (!meta.isTradable) continue
+
+      priceIds.push(balance.assetId)
+      validAssets.push({
+        ...meta,
+        balance: scaleHuman(balance.transferable, meta.decimals),
+      })
+    }
+
+    return { validAssets, priceIds }
+  }, [balances, getAssetWithFallback, blacklist])
+
+  const { getAssetPrice } = useAssetsPrice(priceIds)
+
+  const validAssetsWithBalance = validAssets.map((asset) => {
+    const { price, isValid } = getAssetPrice(asset.id)
+
+    const balanceDisplay = isValid
+      ? Big(price).times(asset.balance).toString()
+      : "0"
+    return { ...asset, balanceDisplay }
+  })
+
+  if (!isStableSwap(stableswapMeta)) {
+    console.error("stableswapId is not a stableswap asset type")
+
+    return []
+  }
+
+  const sortedAssets: TAssetWithBalance[] = sortAssets(
+    validAssetsWithBalance,
+    "balanceDisplay",
+    {
+      lowPriorityAssetIds: [native.id],
+      highPriorityAssetIds,
+    },
+  )
+
+  return sortedAssets
+}
+
+export const useAssetsToAddToStablepool = ({
+  reserves,
+}: {
+  reserves: TReserve[]
+}): TAssetWithBalance[] => {
+  const { native } = useAssets()
+  const { getTransferableBalance } = useAccountBalances()
+
+  const { minReserve, assetsWithBalance } = useMemo(() => {
+    let minReserve: TReserve | undefined = undefined
+    const assetsWithBalance: (TAssetData & {
+      balance: string
+      balanceDisplay: string
+    })[] = []
+
+    for (const reserve of reserves) {
+      if (!minReserve) minReserve = reserve
+      if (Big(reserve.displayAmount).lt(Big(minReserve.displayAmount))) {
+        minReserve = reserve
+      }
+
+      const price = Big(reserve.displayAmount).div(reserve.amountHuman)
+
+      const balance = scaleHuman(
+        getTransferableBalance(reserve.asset_id.toString()),
+        reserve.meta.decimals,
+      )
+      const balanceDisplay = Big(price).times(balance).toString()
+
+      assetsWithBalance.push({ ...reserve.meta, balance, balanceDisplay })
+    }
+
+    return { minReserve, assetsWithBalance }
+  }, [getTransferableBalance, reserves])
+
+  const sortedAssets = sortAssets(assetsWithBalance, "balanceDisplay", {
+    lowPriorityAssetIds: [native.id],
+    highPriorityAssetIds: minReserve ? [minReserve.meta.id] : [],
+  })
+
+  return sortedAssets
 }
