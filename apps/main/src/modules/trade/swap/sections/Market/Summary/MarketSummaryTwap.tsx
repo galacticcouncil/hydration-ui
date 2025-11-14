@@ -17,10 +17,10 @@ import { TradeOrderType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { DynamicFee } from "@/components/DynamicFee"
+import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/CalculatedAmountSummaryRow"
-import { MarketSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryRow"
 import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
@@ -175,10 +175,10 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
           onIsExpandedChange={changeSummaryExpanded}
         />
       )}
-      <CollapsibleContent sx={{ overflow: "visible" }} asChild>
+      <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
           <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
-          <MarketSummaryRow
+          <SwapSummaryRow
             label={t("trade:market.summary.estTradeFees")}
             content={
               <DynamicFee
@@ -190,7 +190,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
             }
             tooltip={t("trade:market.summary.estTradeFees.tooltip")}
           />
-          <MarketSummaryRow
+          <SwapSummaryRow
             label={t("trade:market.summary.transactionCosts")}
             content={
               <SummaryRowValue fw={500} fs="p4" lh={1.2}>
@@ -204,7 +204,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
             }
             tooltip={t("trade:market.summary.transactionCosts.tooltip")}
           />
-          <MarketSummaryRow
+          <SwapSummaryRow
             label={t("trade:market.summary.routes.label")}
             content={
               <TradeRoutes

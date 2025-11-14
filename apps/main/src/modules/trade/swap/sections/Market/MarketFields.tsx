@@ -217,7 +217,11 @@ export const MarketFields: FC<Props> = ({ price }) => {
 
             navigate({
               to: ".",
-              search: { assetIn: sellAsset?.id, assetOut: buyAsset.id },
+              search: {
+                ...search,
+                assetIn: sellAsset?.id,
+                assetOut: buyAsset.id,
+              },
               resetScroll: false,
             })
           }
