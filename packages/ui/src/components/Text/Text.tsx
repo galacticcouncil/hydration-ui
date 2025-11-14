@@ -5,7 +5,7 @@ import { Box, BoxProps } from "@/components"
 import { ThemeFont, ThemeProps } from "@/theme"
 import { getToken } from "@/utils"
 
-type TextSize = keyof ThemeProps["typography"]["text"]["size"]
+export type TextSize = keyof ThemeProps["typography"]["text"]["size"]
 
 export type TextProps = BoxProps & {
   fw?: ResponsiveStyleValue<400 | 500 | 600 | 700>

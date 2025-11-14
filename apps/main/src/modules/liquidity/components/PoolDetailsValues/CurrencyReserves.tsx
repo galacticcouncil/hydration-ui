@@ -46,10 +46,12 @@ export const CurrencyReservesRow = ({
   reserve,
   totalDisplayAmount,
   loading,
+  separator,
 }: {
   reserve: TReserve
   totalDisplayAmount: string
   loading?: boolean
+  separator?: React.ReactNode
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
@@ -58,33 +60,36 @@ export const CurrencyReservesRow = ({
   }
 
   return (
-    <Flex justify="space-between">
-      <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
-        <AssetLogo id={reserve.asset_id.toString()} size="small" />
-        <Text color={getToken("text.high")} fs="p3" fw={600}>
-          {reserve.meta.symbol}
-        </Text>
-      </Flex>
+    <>
+      <Flex justify="space-between">
+        <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+          <AssetLogo id={reserve.asset_id.toString()} size="small" />
+          <Text color={getToken("text.high")} fs="p3" fw={600}>
+            {reserve.meta.symbol}
+          </Text>
+        </Flex>
 
-      <Flex align="center" gap={6}>
-        <Trans
-          t={t}
-          i18nKey="liquidity:liquidity.stablepool.currencyReserves.amount"
-          values={{
-            value: reserve.amountHuman,
-            percentage: reserve.displayAmount
-              ? Big(reserve.displayAmount)
-                  .div(totalDisplayAmount)
-                  .times(100)
-                  .toFixed(1)
-              : 0,
-          }}
-        >
-          <Text color={getToken("text.high")} fw={500} fs={13} />
-          <Text color={getToken("text.low")} fw={500} fs={13} />
-        </Trans>
+        <Flex align="center" gap={6}>
+          <Trans
+            t={t}
+            i18nKey="liquidity:liquidity.stablepool.currencyReserves.amount"
+            values={{
+              value: reserve.amountHuman,
+              percentage: reserve.displayAmount
+                ? Big(reserve.displayAmount)
+                    .div(totalDisplayAmount)
+                    .times(100)
+                    .toFixed(1)
+                : 0,
+            }}
+          >
+            <Text color={getToken("text.high")} fw={500} fs={12} />
+            <Text color={getToken("text.low")} fw={500} fs={12} />
+          </Trans>
+        </Flex>
       </Flex>
-    </Flex>
+      {separator}
+    </>
   )
 }
 

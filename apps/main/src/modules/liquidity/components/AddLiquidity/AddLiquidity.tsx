@@ -6,79 +6,61 @@ import {
   ModalHeader,
   Skeleton,
   Summary,
-  SummaryRowValue,
+  Text,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useRouter } from "@tanstack/react-router"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { TAssetData } from "@/api/assets"
+import { Farm } from "@/api/farms"
 import { useAssetFeeParameters } from "@/api/omnipool"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import {
+  TradeLimit,
+  TradeLimitType,
+} from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
+import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 import {
   getCustomErrors,
-  getLimitShares,
-  useAddToOmnipoolZod,
-  useLiquidityShares,
-  useSubmitAddLiquidity,
+  TAddLiquidityFormValues,
+  useAddLiquidity,
 } from "./AddLiqudity.utils"
-import { AddLiquidityAlert } from "./AddLiquidityAlert"
-import { PositionDetailsLabel } from "./PositionDetailsLabel"
+import { RewardsAPR } from "./RewardsAPR"
 
-type TFormValues = { amount: string }
-
-const defaultValues: TFormValues = { amount: "" }
-
-const addLiquidityLimit = 3
-
-const farms = []
-
-type Props = {
-  readonly closable?: boolean
-  readonly assetId: string
-}
-
-export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
+export const AddLiquidity: FC<AddLiquidityProps> = ({
+  id,
+  onBack,
+  closable = false,
+}) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { getAssetWithFallback } = useAssets()
-  const meta = getAssetWithFallback(assetId)
-  const { history } = useRouter()
-  const { getTransferableBalance } = useAccountBalances()
-  const zodSchema = useAddToOmnipoolZod(assetId)
-  const { mutate: submitAddLiquidity } = useSubmitAddLiquidity()
 
-  const form = useForm<TFormValues>({
-    mode: "onChange",
-    defaultValues,
-    resolver: zodSchema ? standardSchemaResolver(zodSchema) : undefined,
-  })
+  const {
+    form,
+    liquidityShares,
+    balance,
+    meta,
+    activeFarms,
+    joinFarmErrorMessage,
+    mutation,
+    isJoinFarms,
+  } = useAddLiquidity(id)
 
-  const isFarms = farms.length > 0
-
-  const liquidityShares = useLiquidityShares(form.watch("amount"), assetId)
-  const balance = scaleHuman(getTransferableBalance(assetId), meta.decimals)
-
-  const onSubmit = async (values: TFormValues) => {
+  const onSubmit = async (values: TAddLiquidityFormValues) => {
     if (!liquidityShares || !values.amount)
       throw new Error("Invalid input data")
 
     const amount = scale(values.amount, meta.decimals).toString()
-    const shares = getLimitShares(
-      liquidityShares.sharesToGet,
-      addLiquidityLimit,
-    )
 
-    submitAddLiquidity({
-      assetId,
+    mutation.mutate({
+      assetId: id,
       amount,
-      shares,
+      shares: liquidityShares.minSharesToGet,
       symbol: meta.symbol,
       decimals: meta.decimals,
     })
@@ -95,7 +77,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
       <ModalHeader
         title={t("addLiquidity")}
         closable={closable}
-        onBack={!closable ? () => history.back() : undefined}
+        onBack={onBack}
       />
       <ModalBody>
         <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
@@ -118,42 +100,12 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
 
           <ModalContentDivider />
 
-          <Summary
-            separator={<ModalContentDivider />}
-            rows={[
-              { label: t("common:tradeLimit"), content: "100" },
-              {
-                label: t("liquidity.add.modal.rewardsFromFees.label"),
-                content: <RewardsFromFees assetId={assetId} />,
-              },
-            ]}
+          <AddLiquiditySummary
+            meta={meta}
+            poolShare={liquidityShares?.poolShare ?? "0"}
+            minSharesToGet={liquidityShares?.minSharesToGet ?? "0"}
+            farms={activeFarms}
           />
-
-          <ModalContentDivider />
-
-          <PositionDetailsLabel />
-
-          <ModalContentDivider />
-
-          <Summary
-            separator={<ModalContentDivider />}
-            rows={[
-              {
-                label: t("liquidity.add.modal.shareOfPool"),
-                content: t("common:percent", {
-                  value: liquidityShares?.poolShare,
-                }),
-              },
-              {
-                label: t("common:price"),
-                content: (
-                  <AddLiquidityPrice assetId={assetId} symbol={meta.symbol} />
-                ),
-              },
-            ]}
-          />
-
-          <ModalContentDivider />
 
           {customErrors?.cap ? (
             <Alert
@@ -169,8 +121,13 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
               sx={{ my: getTokenPx("containers.paddings.primary") }}
             />
           ) : null}
-
-          <AddLiquidityAlert />
+          {joinFarmErrorMessage ? (
+            <Alert
+              variant="warning"
+              description={joinFarmErrorMessage}
+              sx={{ my: getTokenPx("containers.paddings.primary") }}
+            />
+          ) : null}
 
           <ModalContentDivider />
 
@@ -181,7 +138,7 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
             mt={getTokenPx("containers.paddings.primary")}
             disabled={isSubmitDisabled}
           >
-            {isFarms
+            {isJoinFarms
               ? t("liquidity.add.modal.submitAndjoinFarms")
               : t("liquidity.add.modal.submit")}
           </Button>
@@ -191,47 +148,73 @@ export const AddLiquidity: FC<Props> = ({ assetId, closable = false }) => {
   )
 }
 
-const RewardsFromFees = ({ assetId }: { assetId: string }) => {
-  const { t } = useTranslation("liquidity")
+const AddLiquiditySummary = ({
+  meta,
+  poolShare,
+  minSharesToGet,
+  farms,
+}: {
+  meta: TAssetData
+  poolShare: string
+  minSharesToGet: string
+  farms: Farm[]
+}) => {
+  const { t } = useTranslation(["liquidity", "common"])
   const { native } = useAssets()
 
   const { data: feeParameters, isLoading } = useAssetFeeParameters()
+  const { price, isLoading: isPriceLoading } = useAssetPrice(meta.id)
 
   return (
-    <SummaryRowValue>
-      {isLoading ? (
-        <Skeleton width={100} height="100%" />
-      ) : assetId === native.id || !feeParameters ? (
-        "--"
-      ) : (
-        t("liquidity.add.modal.rewardsFromFees.value", {
-          from: feeParameters.minFee * 100,
-          to: feeParameters.maxFee * 100,
-        })
-      )}
-    </SummaryRowValue>
-  )
-}
-
-export const AddLiquidityPrice = ({
-  assetId,
-  symbol,
-  loading,
-}: {
-  assetId: string
-  symbol: string
-  loading?: boolean
-}) => {
-  const { t } = useTranslation("liquidity")
-  const { price, isLoading } = useAssetPrice(assetId)
-
-  return (
-    <SummaryRowValue>
-      {isLoading || loading ? (
-        <Skeleton width={50} height="100%" />
-      ) : (
-        t("liquidity.add.modal.price", { value: price, assetSymbol: symbol })
-      )}
-    </SummaryRowValue>
+    <Summary
+      separator={<ModalContentDivider />}
+      rows={[
+        {
+          label: t("common:minimalReceived"),
+          content: t("liquidity.add.modal.sharesToGet", {
+            value: scaleHuman(minSharesToGet, meta.decimals),
+            percentage: poolShare,
+          }),
+        },
+        {
+          label: t("common:tradeLimit"),
+          content: <TradeLimit type={TradeLimitType.Liquidity} />,
+        },
+        ...(farms.length > 0
+          ? [
+              {
+                label: t("liquidity.add.modal.rewardsAPR"),
+                content: <RewardsAPR farms={farms} />,
+              },
+            ]
+          : []),
+        {
+          label: t("common:apy"),
+          content: isLoading ? (
+            <Skeleton width={100} height="100%" />
+          ) : meta.id === native.id || !feeParameters ? (
+            "--"
+          ) : (
+            <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
+              {t("liquidity.add.modal.rewardsFromFees.value", {
+                from: feeParameters.minFee * 100,
+                to: feeParameters.maxFee * 100,
+              })}
+            </Text>
+          ),
+        },
+        {
+          label: t("common:price"),
+          content: isPriceLoading ? (
+            <Skeleton width={50} height="100%" />
+          ) : (
+            t("liquidity.add.modal.price", {
+              value: price,
+              assetSymbol: meta.symbol,
+            })
+          ),
+        },
+      ]}
+    />
   )
 }
