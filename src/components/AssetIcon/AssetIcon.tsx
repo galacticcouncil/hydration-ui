@@ -255,13 +255,15 @@ export const AssetLogo = ({
 
 export const ExternalAssetLogo = ({
   id,
-  parachainId,
+  chainId,
   originHidden,
+  ecosystem = ChainEcosystem.Polkadot,
   children,
 }: {
   id: string
-  parachainId: number
+  chainId: string
   originHidden?: boolean
+  ecosystem?: ChainEcosystem
   children?: React.ReactNode
 }) => {
   return (
@@ -270,17 +272,16 @@ export const ExternalAssetLogo = ({
       ref={(el) => {
         if (el) {
           el.setAttribute("fit", "")
-          if (parachainId && !originHidden)
-            el.setAttribute("chainOrigin", parachainId.toString())
+          if (chainId && !originHidden) el.setAttribute("chainOrigin", chainId)
           el.shadowRoot
             ?.querySelector("uigc-logo-asset")
             ?.setAttribute("style", "width:100%;height:100%;")
         }
       }}
-      ecosystem="polkadot"
+      ecosystem={ecosystem.toLowerCase()}
       asset={id}
-      chain={parachainId.toString()}
-      chainOrigin={!originHidden ? parachainId.toString() : undefined}
+      chain={chainId}
+      chainOrigin={!originHidden ? chainId : undefined}
     >
       {children}
     </UigcAssetId>

@@ -97,7 +97,7 @@ export function getEvmTxLink(
   txHash: string,
   txData: string | undefined,
   chainKey = "hydration",
-  tags: MetaTags | undefined,
+  tags?: MetaTags,
 ) {
   const chain = chainsMap.get(chainKey)
 

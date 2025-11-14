@@ -1,8 +1,9 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { AnyChain, Parachain } from "@galacticcouncil/xcm-core"
+import { AnyChain, Parachain, SolanaChain } from "@galacticcouncil/xcm-core"
 import {
   Call,
   EvmCall,
+  SolanaCall,
   SubstrateCall,
   Wallet,
   WhTransfer,
@@ -13,9 +14,20 @@ import { useAccountFeePaymentAssets } from "api/payments"
 import { useCrossChainWallet } from "api/xcm"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useTranslation } from "react-i18next"
+import { useWormholeToastCallbacks } from "sections/wallet/assets/wormhole/WalletWormholeRedeemTable.toasts"
+import { EthereumSigner } from "sections/web3-connect/signer/EthereumSigner"
+import { SolanaSigner } from "sections/web3-connect/signer/SolanaSigner"
+import { WalletAccount } from "sections/web3-connect/types"
 import { TransactionInput, useStore } from "state/store"
 import { createToastMessages } from "state/toasts"
 import { HYDRATION_CHAIN_KEY } from "utils/constants"
+import { getEvmTxLink } from "utils/evm"
+import {
+  getSolanaJitoBundleLink,
+  getSolanaTxLink,
+  waitForSolanaBundle,
+  waitForSolanaTx,
+} from "utils/solana"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -104,7 +116,7 @@ export const getWormholeRedeemTx = async ({
   api: ApiPromise
   wallet: Wallet
   address: string
-  call: Call
+  call: Call | Call[]
   toChain: AnyChain
   feePaymentAssetId?: string
 }) => {
@@ -129,7 +141,88 @@ export const getWormholeRedeemTx = async ({
   }
 }
 
-export const useWormholeRedeem = (address: string) => {
+export const useWormholeWithdrawRedeem = (
+  options: {
+    onSubmitted?: () => void
+  } = {},
+) => {
+  const { setPendingId } = useWormholeRedeemStore()
+
+  const toast = useWormholeToastCallbacks()
+
+  return useMutation({
+    mutationFn: async ([transfer, account]: [WhTransfer, WalletAccount]) => {
+      const { operation, toChain, redeem } = transfer
+
+      if (!account) throw new Error("Account is not connected")
+      if (!redeem) throw new Error("Transfer is not redeemable")
+
+      const call = await redeem(account.address)
+
+      if (
+        account.signer instanceof SolanaSigner &&
+        toChain instanceof SolanaChain
+      ) {
+        const isBatch = Array.isArray(call)
+        if (isBatch) {
+          const { bundleId, lilJit } = await account.signer.signAndSendBatch(
+            call as SolanaCall[],
+            toChain as SolanaChain,
+            () => toast.onError(transfer),
+          )
+          options.onSubmitted?.()
+          setPendingId(operation.id)
+          toast.onLoading(transfer, getSolanaJitoBundleLink(bundleId))
+          try {
+            await waitForSolanaBundle(lilJit, bundleId)
+            toast.onSuccess(transfer, getSolanaJitoBundleLink(bundleId))
+          } catch (error) {
+            toast.onError(transfer, getSolanaJitoBundleLink(bundleId))
+          }
+        } else {
+          const { data, signers } = call as SolanaCall
+
+          const { signature } = await account.signer.signAndSend(data, signers)
+          options.onSubmitted?.()
+          setPendingId(operation.id)
+          toast.onLoading(transfer, getSolanaTxLink(signature))
+          try {
+            await waitForSolanaTx(toChain.connection, signature)
+            toast.onSuccess(transfer, getSolanaTxLink(signature))
+          } catch (error) {
+            toast.onError(transfer, getSolanaTxLink(signature))
+          }
+        }
+      }
+
+      if (account.signer instanceof EthereumSigner) {
+        const { data, from, to } = call as EvmCall
+
+        const tx = await account.signer.sendTransaction(
+          { data, from, to },
+          {
+            chain: toChain.key,
+          },
+        )
+
+        const link = getEvmTxLink(tx.hash, tx.data, toChain.key)
+        toast.onLoading(transfer, tx.hash, link)
+
+        const receipt = await tx.wait()
+
+        if (receipt.status === 0) {
+          toast.onError(transfer, link)
+        } else {
+          toast.onSuccess(transfer, link)
+        }
+
+        setPendingId(operation.id)
+      }
+    },
+  })
+}
+
+export const useWormholeDepositRedeem = (address: string) => {
   const { api } = useRpcProvider()
   const { t } = useTranslation()
   const { createTransaction } = useStore()

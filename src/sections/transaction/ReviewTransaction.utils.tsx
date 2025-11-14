@@ -52,8 +52,7 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { Contract } from "ethers"
 import BN from "bignumber.js"
 import { SolanaChain, SuiChain } from "@galacticcouncil/xcm-core"
-import { SignatureStatus } from "@solana/web3.js"
-import { getSolanaTxLink } from "utils/solana"
+import { getSolanaTxLink, waitForSolanaTx } from "utils/solana"
 import { TxEvent } from "polkadot-api"
 import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
@@ -1269,43 +1268,6 @@ function getActiveMutation(
   mutations: Record<TxType, TTxMutation>,
 ) {
   return mutations[txType]
-}
-
-async function waitForSolanaTx(
-  connection: SolanaChain["connection"],
-  hash: string,
-): Promise<SignatureStatus> {
-  return new Promise((resolve, reject) => {
-    let timeout: NodeJS.Timeout | null = null
-
-    const cleanup = () => {
-      if (timeout) {
-        clearTimeout(timeout)
-        timeout = null
-      }
-    }
-
-    const checkStatus = async () => {
-      try {
-        const result = await connection.getSignatureStatus(hash, {
-          searchTransactionHistory: true,
-        })
-        const status = result.value
-        if (!status || status?.confirmationStatus !== "confirmed") {
-          cleanup()
-          timeout = setTimeout(checkStatus, 5000)
-        } else {
-          cleanup()
-          resolve(status)
-        }
-      } catch (error) {
-        cleanup()
-        reject(error)
-      }
-    }
-
-    checkStatus()
-  })
 }
 
 async function waitForEvmBlock(provider: Web3Provider): Promise<void> {
