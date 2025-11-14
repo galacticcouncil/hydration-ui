@@ -8,6 +8,8 @@ export const SSwapFormContainer = styled(Paper)(
     --swap-section-inset-inline: calc(var(--swap-section-padding-inline) * -1);
 
     padding: 0 var(--swap-section-padding-inline);
+
+    overflow-x: hidden;
   `,
 )
 

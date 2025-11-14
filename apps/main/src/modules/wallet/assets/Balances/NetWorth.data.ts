@@ -8,8 +8,8 @@ import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
-import { PeriodType } from "@/components/PeriodInput/PeriodInput"
 import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
+import { NetWorthPeriodType } from "@/modules/wallet/assets/Balances/NetWorth"
 import { chronologically, sortBy } from "@/utils/sort"
 
 export type NetWorthData = {
@@ -17,7 +17,7 @@ export type NetWorthData = {
   readonly time: Date
 }
 
-export const useNetWorthData = (period: PeriodType | null) => {
+export const useNetWorthData = (period: NetWorthPeriodType | null) => {
   const squidClient = useSquidClient()
   const { account } = useAccount()
 
@@ -124,7 +124,7 @@ export const useNetWorthData = (period: PeriodType | null) => {
   }
 }
 
-const bucketSizes: Record<PeriodType, TimeSeriesBucketTimeRange> = {
+const bucketSizes: Record<NetWorthPeriodType, TimeSeriesBucketTimeRange> = {
   hour: TimeSeriesBucketTimeRange["15S"],
   day: TimeSeriesBucketTimeRange["5M"],
   week: TimeSeriesBucketTimeRange["1H"],

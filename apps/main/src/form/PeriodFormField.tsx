@@ -8,8 +8,8 @@ import {
 import {
   PeriodInput,
   PeriodInputProps,
-  PeriodType,
 } from "@/components/PeriodInput/PeriodInput"
+import { PeriodType } from "@/components/PeriodInput/PeriodInput.utils"
 
 type Props<TFormValues extends FieldValues> = Omit<
   PeriodInputProps,
