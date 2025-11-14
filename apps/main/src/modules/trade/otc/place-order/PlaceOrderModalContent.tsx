@@ -299,7 +299,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 label={t("common:offer")}
                 assets={ownedAssets}
                 ignoreBalance={!areAssetsSelected}
-                ignoreDollarValue={!areAssetsSelected}
+                ignoreDisplayValue={!areAssetsSelected}
                 disabledInput={!areAssetsSelected}
                 onAmountChange={handleOfferAmountChange}
                 onAssetChange={handleOfferAssetChange}
@@ -324,7 +324,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 label={t("otc.placeOrder.buy")}
                 assets={tradable}
                 ignoreBalance
-                ignoreDollarValue={!areAssetsSelected}
+                ignoreDisplayValue={!areAssetsSelected}
                 disabledInput={!areAssetsSelected}
                 onAmountChange={handleBuyAmountChange}
                 onAssetChange={handleBuyAssetChange}
