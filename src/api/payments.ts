@@ -15,7 +15,7 @@ import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { useAccountBalances } from "./deposits"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { HOLLAR_ID } from "utils/constants"
+import { AAVE_EXTRA_GAS, HOLLAR_ID } from "utils/constants"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -52,7 +52,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
         if (currency && getAsset(currency.id)?.isErc20) {
           return {
             ...currency,
-            accepted: currency.id === HOLLAR_ID, // exception for hollar
+            accepted: true, //currency.id === HOLLAR_ID, // exception for hollar
           }
         }
 
@@ -88,7 +88,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
 export const useSetAsFeePayment = () => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
-  const { native, getAsset } = useAssets()
+  const { native, getAssetWithFallback } = useAssets()
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
@@ -97,14 +97,14 @@ export const useSetAsFeePayment = () => {
     async (tokenId?: string) => {
       if (!tokenId) return
 
-      const meta = getAsset(tokenId)
+      const meta = getAssetWithFallback(tokenId)
 
       const toast = createToastMessages(
         "wallet.assets.table.actions.payment.toast",
         {
           t,
           tOptions: {
-            asset: meta?.symbol,
+            asset: meta.symbol,
           },
           components: ["span", "span.highlight"],
         },
@@ -116,7 +116,12 @@ export const useSetAsFeePayment = () => {
 
       return await createTransaction(
         {
-          tx: api.tx.multiTransactionPayment.setCurrency(tokenId),
+          tx: meta.isErc20
+            ? api.tx.dispatcher.dispatchWithExtraGas(
+                api.tx.multiTransactionPayment.setCurrency(tokenId),
+                AAVE_EXTRA_GAS,
+              )
+            : api.tx.multiTransactionPayment.setCurrency(tokenId),
           overrides: {
             fee: new BigNumber(paymentInfoData.partialFee.toHex()),
             currencyId: tokenId,
