@@ -241,11 +241,13 @@ export const useStablepoolAddLiquidity = ({
     minReceiveAmount,
     meta,
     mutation,
-    activeFarms,
+    activeFarms: option === "omnipool" ? activeFarms : [],
     joinFarmErrorMessage,
     isJoinFarms,
     healthFactor: undefined,
     reserveIds,
+    displayOption: true,
+    isGETHProviding: false,
   }
 }
 

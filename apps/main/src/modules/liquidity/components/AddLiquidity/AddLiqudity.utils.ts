@@ -37,7 +37,7 @@ export const getCustomErrors = (errors?: FieldError) =>
       })
     : undefined
 
-const useLiquidityShares = (value: string, assetId: string) => {
+export const useLiquidityOmnipoolShares = (value: string, assetId: string) => {
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
   const {
     liquidity: { slippage },
@@ -214,7 +214,7 @@ export const useAddLiquidity = (assetId: string) => {
 
   const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
 
-  const liquidityShares = useLiquidityShares(amount.toString(), assetId)
+  const liquidityShares = useLiquidityOmnipoolShares(amount.toString(), assetId)
   const balance = scaleHuman(getTransferableBalance(assetId), meta.decimals)
 
   const mutation = useMutation({
@@ -248,6 +248,11 @@ export const useAddLiquidity = (assetId: string) => {
           })
 
       const shiftedAmount = scaleHuman(amount, decimals)
+      const tOptions = {
+        value: shiftedAmount,
+        symbol: symbol,
+        where: "Omnipool",
+      }
 
       await createTransaction({
         tx,
@@ -256,21 +261,13 @@ export const useAddLiquidity = (assetId: string) => {
             isJoinFarms
               ? "liquidity.add.joinFarms.modal.toast.submitted"
               : "liquidity.add.modal.toast.submitted",
-            {
-              value: shiftedAmount,
-              symbol: symbol,
-              where: "Omnipool",
-            },
+            tOptions,
           ),
           success: t(
             isJoinFarms
               ? "liquidity.add.joinFarms.modal.toast.success"
               : "liquidity.add.modal.toast.success",
-            {
-              value: shiftedAmount,
-              symbol: symbol,
-              where: "Omnipool",
-            },
+            tOptions,
           ),
         },
       })

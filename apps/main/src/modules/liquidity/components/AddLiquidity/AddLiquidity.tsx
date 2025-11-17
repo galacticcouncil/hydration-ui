@@ -1,3 +1,4 @@
+import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import {
   Alert,
   Button,
@@ -13,6 +14,7 @@ import { FC } from "react"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { useAssetFeeParameters } from "@/api/omnipool"
@@ -103,7 +105,10 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
           <AddLiquiditySummary
             meta={meta}
             poolShare={liquidityShares?.poolShare ?? "0"}
-            minSharesToGet={liquidityShares?.minSharesToGet ?? "0"}
+            minReceiveAmount={scaleHuman(
+              liquidityShares?.minSharesToGet ?? "0",
+              meta.decimals,
+            )}
             farms={activeFarms}
           />
 
@@ -148,16 +153,18 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
   )
 }
 
-const AddLiquiditySummary = ({
+export const AddLiquiditySummary = ({
   meta,
   poolShare,
-  minSharesToGet,
+  minReceiveAmount,
   farms,
+  healthFactor,
 }: {
   meta: TAssetData
-  poolShare: string
-  minSharesToGet: string
+  poolShare?: string
+  minReceiveAmount: string
   farms: Farm[]
+  healthFactor?: HealthFactorResult
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { native } = useAssets()
@@ -171,10 +178,14 @@ const AddLiquiditySummary = ({
       rows={[
         {
           label: t("common:minimalReceived"),
-          content: t("liquidity.add.modal.sharesToGet", {
-            value: scaleHuman(minSharesToGet, meta.decimals),
-            percentage: poolShare,
-          }),
+          content: poolShare
+            ? t("liquidity.add.modal.sharesToGet", {
+                value: minReceiveAmount,
+                percentage: poolShare,
+              })
+            : t("common:number", {
+                value: minReceiveAmount,
+              }),
         },
         {
           label: t("common:tradeLimit"),
@@ -214,6 +225,20 @@ const AddLiquiditySummary = ({
             })
           ),
         },
+        ...(healthFactor
+          ? [
+              {
+                label: t("common:healthFactor"),
+                content: healthFactor ? (
+                  <HealthFactorChange
+                    healthFactor={healthFactor.current}
+                    futureHealthFactor={healthFactor.future}
+                    fontSize="p5"
+                  />
+                ) : null,
+              },
+            ]
+          : []),
       ]}
     />
   )
