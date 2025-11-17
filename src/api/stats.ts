@@ -119,7 +119,7 @@ const getAccountIdentity = (api: ApiPromise, address: string) => async () => {
 }
 
 export const useTreasuryBalances = () => {
-  const { data: api } = useExternalApi("polkadot")
+  const { data: api } = useExternalApi("assethub")
 
   return useQuery(
     QUERY_KEYS.treasuryBalances,
