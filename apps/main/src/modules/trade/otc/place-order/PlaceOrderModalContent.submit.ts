@@ -1,8 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { PlaceOrderFormValues } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
-import { otcOffersQueryKey } from "@/modules/trade/otc/table/OtcTable.query"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
@@ -14,7 +13,7 @@ type Args = {
 export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
   const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
-  const client = useQueryClient()
+
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
   return useMutation({
@@ -56,6 +55,5 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
         },
       })
     },
-    onSuccess: () => client.invalidateQueries({ queryKey: otcOffersQueryKey }),
   })
 }
