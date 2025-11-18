@@ -99,7 +99,7 @@ export type TReserve = {
   meta: TAssetData
   amount: string
   amountHuman: string
-  displayAmount: string | undefined
+  displayAmount: string
 }
 
 export type TStablepoolData = {
@@ -678,22 +678,24 @@ export const useStablepoolsReserves = (poolIds?: string[]) => {
     ...tokenSet,
   ])
 
+  if (isPriceLoading) return { data: [], isLoading: true }
+
   const data: TStablepoolDetails[] = stablepools_.map((pool) => {
     const reserves: TReserve[] = []
     let totalDisplayAmount = Big(0)
 
-    pool.tokens.forEach((token) => {
+    for (const token of pool.tokens) {
       const id = token.id.toString()
       const meta = getAssetWithFallback(id)
 
       const amountHuman = scaleHuman(token.balance, meta.decimals)
-      const assetPrice = getAssetPrice(id)
 
-      const displayAmount = assetPrice.isValid
-        ? toBig(assetPrice.price)?.times(amountHuman).toString()
-        : undefined
+      const { price, isValid } = getAssetPrice(id)
 
-      totalDisplayAmount = totalDisplayAmount.plus(displayAmount ?? 0)
+      if (!isValid) continue
+
+      const displayAmount = Big(amountHuman).times(price).toString()
+      totalDisplayAmount = totalDisplayAmount.plus(displayAmount)
 
       reserves.push({
         asset_id: Number(id),
@@ -702,7 +704,7 @@ export const useStablepoolsReserves = (poolIds?: string[]) => {
         amountHuman,
         displayAmount,
       })
-    })
+    }
 
     return {
       pool,

@@ -55,7 +55,6 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const form = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset!,
-    receiveAssets: reserves.map((reserve) => reserve.meta),
     balance: balanceShifted,
     asset: { ...meta, iconId: meta.id },
   })

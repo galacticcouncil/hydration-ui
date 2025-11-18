@@ -1,12 +1,12 @@
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import Big from "big.js"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z, { ZodType } from "zod/v4"
 
 import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
-import { TAssetData } from "@/api/assets"
+import { AssetType, TAssetData } from "@/api/assets"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import {
   FarmDepositReward,
@@ -14,13 +14,18 @@ import {
   useOmnipoolActiveFarm,
 } from "@/api/farms"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { TReserve } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   isDepositPosition,
+  useAccountBalances,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
+import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
+import { sortAssets } from "@/utils/sort"
 
 export type TRemoveLiquidityFormValues = {
   amount: string
@@ -201,4 +206,151 @@ export const useFormatRewards = (rewards: RewardToReceive[]) => {
         )
         .join(" + ")
     : "0"
+}
+
+export const useAssetsToRemoveFromMoneyMarket = ({
+  stableswapId,
+  reserves,
+  options,
+}: {
+  stableswapId: string
+  reserves: TReserve[]
+  options?: { blacklist?: string[] }
+}) => {
+  const { blacklist = [] } = options ?? {}
+  const { balances } = useAccountBalances()
+  const {
+    getAssetWithFallback,
+    isStableSwap,
+    getErc20AToken,
+    native,
+    tradable,
+  } = useAssets()
+
+  const stableswapMeta = getAssetWithFallback(stableswapId)
+
+  const highPriorityAssetIds = useMemo(() => {
+    const assetIds: string[] = [stableswapId]
+
+    for (const reserve of reserves) {
+      const reserveAsset = getAssetWithFallback(reserve.asset_id.toString())
+      assetIds.push(reserveAsset.id)
+
+      if (reserveAsset.type === AssetType.ERC20) {
+        const underlyingAssetId = getErc20AToken(
+          reserveAsset.id,
+        )?.underlyingAssetId
+
+        if (underlyingAssetId) {
+          assetIds.push(underlyingAssetId)
+        }
+      }
+    }
+
+    return assetIds
+  }, [getAssetWithFallback, getErc20AToken, reserves, stableswapId])
+
+  const { validAssets, priceIds } = useMemo(() => {
+    const validAssets = new Map<string, TAssetWithBalance>()
+    const priceIds = []
+
+    for (const balance of Object.values(balances)) {
+      if (blacklist.includes(balance.assetId)) continue
+
+      const meta = getAssetWithFallback(balance.assetId)
+      if (!meta.isTradable) continue
+
+      priceIds.push(balance.assetId)
+      validAssets.set(balance.assetId, {
+        ...meta,
+        balance: scaleHuman(balance.transferable, meta.decimals),
+      })
+    }
+
+    return { validAssets, priceIds }
+  }, [balances, getAssetWithFallback, blacklist])
+
+  const { getAssetPrice, isLoading } = useAssetsPrice(priceIds)
+
+  const sortedAssets = useMemo((): TAssetWithBalance[] => {
+    if (!isStableSwap(stableswapMeta)) {
+      console.error("stableswapId is not a stableswap asset type")
+
+      return []
+    }
+    if (isLoading) return []
+
+    const validAssetsWithBalance = tradable.map((asset) => {
+      const balance = validAssets.get(asset.id)?.balance
+
+      if (balance) {
+        const { price, isValid } = getAssetPrice(asset.id)
+
+        const balanceDisplay = isValid
+          ? Big(price).times(balance).toString()
+          : "0"
+
+        return { ...asset, balance, balanceDisplay }
+      } else {
+        return { ...asset, balanceDisplay: "0" }
+      }
+    })
+
+    return sortAssets(validAssetsWithBalance, "balanceDisplay", {
+      lowPriorityAssetIds: [native.id],
+      highPriorityAssetIds,
+    })
+  }, [
+    getAssetPrice,
+    isLoading,
+    isStableSwap,
+    native.id,
+    stableswapMeta,
+    tradable,
+    validAssets,
+    highPriorityAssetIds,
+  ])
+
+  return sortedAssets
+}
+
+export const useAssetsToRemoveFromStablepool = ({
+  reserves,
+}: {
+  reserves: TReserve[]
+}): TAssetWithBalance[] => {
+  const { native } = useAssets()
+  const { getTransferableBalance } = useAccountBalances()
+
+  const sortedAssets = useMemo(() => {
+    let maxReserve: TReserve | undefined = undefined
+    const assetsWithBalance: (TAssetData & {
+      balance: string
+      balanceDisplay: string
+    })[] = []
+
+    for (const reserve of reserves) {
+      if (!maxReserve) maxReserve = reserve
+      if (Big(reserve.displayAmount).gt(Big(maxReserve.displayAmount))) {
+        maxReserve = reserve
+      }
+
+      const price = Big(reserve.displayAmount).div(reserve.amountHuman)
+
+      const balance = scaleHuman(
+        getTransferableBalance(reserve.asset_id.toString()),
+        reserve.meta.decimals,
+      )
+      const balanceDisplay = Big(price).times(balance).toString()
+
+      assetsWithBalance.push({ ...reserve.meta, balance, balanceDisplay })
+    }
+
+    return sortAssets(assetsWithBalance, "balanceDisplay", {
+      lowPriorityAssetIds: [native.id],
+      highPriorityAssetIds: maxReserve ? [maxReserve.meta.id] : [],
+    })
+  }, [getTransferableBalance, reserves, native.id])
+
+  return sortedAssets
 }

@@ -2,13 +2,14 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { useMemo } from "react"
 
+import { TAssetData } from "@/api/assets"
 import { TAsset } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 import { sortAssets } from "@/utils/sort"
 
-type TAssetWithBalance = TAsset & {
+export type TAssetWithBalance = TAsset & {
   readonly balance?: string
   readonly balanceDisplay?: string
 }
@@ -22,16 +23,9 @@ export const useAssetSelectModalAssets = (
   const { balances, getTransferableBalance, isBalanceLoading } =
     useAccountBalances()
 
-  const filteredAssets = useMemo<ReadonlyArray<TAssetWithBalance>>(
-    () =>
-      search.length
-        ? assets.filter(
-            (asset) =>
-              asset.name.toLowerCase().includes(search.toLowerCase()) ||
-              asset.symbol.toLowerCase().includes(search.toLowerCase()),
-          )
-        : assets,
-    [assets, search],
+  const filteredAssets: TAssetWithBalance[] = useFilteredSearchAssets(
+    assets,
+    search,
   )
 
   const assetsBalanceIds = useMemo(() => {
@@ -43,7 +37,7 @@ export const useAssetSelectModalAssets = (
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(assetsBalanceIds)
 
-  if (!account) {
+  if (!account || !assets.length) {
     return {
       sortedAssets: filteredAssets,
       isLoading: false,
@@ -63,11 +57,24 @@ export const useAssetSelectModalAssets = (
     }
   })
 
-  const sortedAssets = sortAssets(
-    assetsWithBalances,
-    "balanceDisplay",
-    selectedAssetId,
-  )
+  const sortedAssets = sortAssets(assetsWithBalances, "balanceDisplay", {
+    firstAssetId: selectedAssetId,
+  })
 
   return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }
+}
+
+export const useFilteredSearchAssets = <T extends TAssetData>(
+  assets: Array<T>,
+  search: string,
+) => {
+  return useMemo(() => {
+    return search.length
+      ? assets.filter(
+          (asset) =>
+            asset.name.toLowerCase().includes(search.toLowerCase()) ||
+            asset.symbol.toLowerCase().includes(search.toLowerCase()),
+        )
+      : assets
+  }, [assets, search])
 }

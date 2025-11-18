@@ -20,6 +20,7 @@ import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TradeLimitRow,
@@ -34,6 +35,7 @@ import { useAccountBalances } from "@/states/account"
 
 import { ReceiveAssets } from "./ReceiveAssets"
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
+import { useAssetsToRemoveFromMoneyMarket } from "./RemoveLiquidity.utils"
 import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
 import { useRemoveMoneyMarketLiquidity } from "./RemoveMoneyMarketLiquidity.utils"
 import { TRemoveStablepoolLiquidityFormValues } from "./RemoveStablepoolLiquidity.utils"
@@ -42,8 +44,15 @@ export const RemoveMoneyMarketLiquidity = (
   props: RemoveLiquidityProps & { erc20Id: string; stableswapId: string },
 ) => {
   const { data: stablepolData } = useStablepoolReserves(props.stableswapId)
-  const initialReceiveAsset = stablepolData?.reserves[0]?.meta
   const { isBalanceLoading } = useAccountBalances()
+
+  const receiveAssets = useAssetsToRemoveFromMoneyMarket({
+    stableswapId: props.stableswapId,
+    reserves: stablepolData?.reserves ?? [],
+    options: { blacklist: [props.erc20Id, props.stableswapId] },
+  })
+
+  const initialReceiveAsset = receiveAssets[0]
 
   if (!stablepolData || !initialReceiveAsset || isBalanceLoading)
     return <RemoveLiquiditySkeleton />
@@ -52,6 +61,7 @@ export const RemoveMoneyMarketLiquidity = (
     <RemoveMoneyMarketLiquidityForm
       {...props}
       initialReceiveAsset={initialReceiveAsset}
+      receiveAssets={receiveAssets}
       pool={stablepolData}
     />
   )
@@ -61,14 +71,14 @@ export const RemoveMoneyMarketLiquidityForm = (
   props: RemoveLiquidityProps & {
     erc20Id: string
     stableswapId: string
-    initialReceiveAsset: TAssetData
+    initialReceiveAsset: TAssetWithBalance
+    receiveAssets: TAssetWithBalance[]
     pool: TStablepoolDetails
   },
 ) => {
   const { t } = useTranslation(["liquidity", "common"])
   const {
     form,
-    reserves,
     balance,
     receiveAssetsProportionally,
     meta,
@@ -76,7 +86,7 @@ export const RemoveMoneyMarketLiquidityForm = (
     mutation,
     healthFactor,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
-  const { closable, onBack } = props
+  const { closable, onBack, receiveAssets } = props
 
   const {
     formState: { isValid },
@@ -140,7 +150,8 @@ export const RemoveMoneyMarketLiquidityForm = (
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
                 maxBalance={balance}
-                assets={reserves.map((reserves) => reserves.meta)}
+                assets={[]}
+                sortedAssets={receiveAssets}
                 ignoreBalance
                 disabledInput
                 sx={{ p: 0 }}
