@@ -1,6 +1,7 @@
 import { useSuppliedAssetsData } from "@galacticcouncil/money-market/hooks"
 import {
   DataTable,
+  Modal,
   Paper,
   Separator,
   TableContainer,
@@ -9,16 +10,24 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useNavigate } from "@tanstack/react-router"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { SuppliedAssetsHeader } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsHeader"
 import { useSuppliedAssetsTableColumns } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsTable.columns"
+import {
+  RemoveMoneyMarketLiquidity,
+  TRemoveMoneyMarketLiquidityProps,
+} from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity"
 
 export const SuppliedAssetsTable = () => {
   const { t } = useTranslation(["borrow"])
-  const columns = useSuppliedAssetsTableColumns()
+  const [modalProps, setModalProps] = useState<
+    TRemoveMoneyMarketLiquidityProps | undefined
+  >()
+  const columns = useSuppliedAssetsTableColumns({ omRemove: setModalProps })
   const { data, isLoading } = useSuppliedAssetsData()
   const navigate = useNavigate()
   const { isMobile } = useBreakpoints()
@@ -34,32 +43,40 @@ export const SuppliedAssetsTable = () => {
   }
 
   return (
-    <TablePaper isTransparent>
-      <SuppliedAssetsHeader />
-      <Separator />
-      {isMobile ? (
-        <StackedTable
-          skeletonRowCount={4}
-          isLoading={isLoading}
-          data={data}
-          columns={columns}
-        />
-      ) : (
-        <TableContainer>
-          <DataTable
+    <>
+      <TablePaper isTransparent>
+        <SuppliedAssetsHeader />
+        <Separator />
+        {isMobile ? (
+          <StackedTable
             skeletonRowCount={4}
             isLoading={isLoading}
-            onRowClick={(row) =>
-              navigate({
-                to: `/borrow/markets/${row.underlyingAsset}`,
-              })
-            }
-            fixedLayout
             data={data}
             columns={columns}
           />
-        </TableContainer>
-      )}
-    </TablePaper>
+        ) : (
+          <TableContainer>
+            <DataTable
+              skeletonRowCount={4}
+              isLoading={isLoading}
+              onRowClick={(row) =>
+                navigate({
+                  to: `/borrow/markets/${row.underlyingAsset}`,
+                })
+              }
+              fixedLayout
+              data={data}
+              columns={columns}
+            />
+          </TableContainer>
+        )}
+      </TablePaper>
+
+      <Modal open={!!modalProps} onOpenChange={() => setModalProps(undefined)}>
+        {!!modalProps && (
+          <RemoveMoneyMarketLiquidity {...modalProps} closable />
+        )}
+      </Modal>
+    </>
   )
 }

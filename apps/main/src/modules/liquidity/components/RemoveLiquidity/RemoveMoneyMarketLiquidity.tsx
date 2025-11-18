@@ -40,8 +40,13 @@ import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
 import { useRemoveMoneyMarketLiquidity } from "./RemoveMoneyMarketLiquidity.utils"
 import { TRemoveStablepoolLiquidityFormValues } from "./RemoveStablepoolLiquidity.utils"
 
+export type TRemoveMoneyMarketLiquidityProps = RemoveLiquidityProps & {
+  erc20Id: string
+  stableswapId: string
+}
+
 export const RemoveMoneyMarketLiquidity = (
-  props: RemoveLiquidityProps & { erc20Id: string; stableswapId: string },
+  props: TRemoveMoneyMarketLiquidityProps,
 ) => {
   const { data: stablepolData } = useStablepoolReserves(props.stableswapId)
   const { isBalanceLoading } = useAccountBalances()
@@ -68,9 +73,7 @@ export const RemoveMoneyMarketLiquidity = (
 }
 
 export const RemoveMoneyMarketLiquidityForm = (
-  props: RemoveLiquidityProps & {
-    erc20Id: string
-    stableswapId: string
+  props: TRemoveMoneyMarketLiquidityProps & {
     initialReceiveAsset: TAssetWithBalance
     receiveAssets: TAssetWithBalance[]
     pool: TStablepoolDetails

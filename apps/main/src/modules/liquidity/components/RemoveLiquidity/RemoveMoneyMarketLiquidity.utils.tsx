@@ -88,12 +88,12 @@ export const useRemoveMoneyMarketLiquidity = ({
   )
 
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"
-  const amountOutShifted = scaleHuman(amountOut, meta.decimals)
+  const amountOutShifted = scaleHuman(amountOut, receiveAsset.decimals)
   const minimumTradeAmount =
     useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
   const minimumTradeAmountShifted = scaleHuman(
     minimumTradeAmount,
-    meta.decimals,
+    receiveAsset.decimals,
   )
 
   const receiveAssetsProportionally = (() => {
