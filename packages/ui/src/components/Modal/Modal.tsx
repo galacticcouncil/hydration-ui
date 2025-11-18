@@ -56,13 +56,20 @@ type ModalContentProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
 > & {
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
+  topContent?: ReactNode
 }
 
-const ModalContent: FC<ModalContentProps> = ({ children, ref, ...props }) => (
+const ModalContent: FC<ModalContentProps> = ({
+  children,
+  ref,
+  topContent,
+  ...props
+}) => (
   <ModalPortal>
     <ModalOverlay />
     <SModalWrapper onClick={(e) => e.stopPropagation()}>
       <SModalContent ref={ref} {...props}>
+        {topContent}
         <SModalPaper>{children}</SModalPaper>
       </SModalContent>
     </SModalWrapper>
@@ -229,12 +236,14 @@ const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   variant?: ModalVariant
   disableInteractOutside?: boolean
+  topContent?: ReactNode
 }
 
 const Modal = ({
   children,
   variant = "auto",
   disableInteractOutside = false,
+  topContent,
   ...props
 }: ModalProps) => {
   const { gte } = useBreakpoints()
@@ -263,6 +272,7 @@ const Modal = ({
       <ModalRoot {...props}>
         <ModalContent
           onClick={(e) => e.stopPropagation()}
+          topContent={topContent}
           onInteractOutside={
             disableInteractOutside ? (e) => e.preventDefault() : undefined
           }

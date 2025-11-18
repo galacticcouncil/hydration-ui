@@ -10,6 +10,7 @@ export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
 export enum TxActionType {
   CLOSE = "CLOSE",
+  SUBMIT = "SUBMIT",
   SIGN = "SIGN",
   SET_ERROR = "SET_ERROR",
   SET_STATUS = "SET_STATUS",
@@ -78,6 +79,7 @@ export type TxState = {
 
 export type TxStateAction =
   | { type: TxActionType.CLOSE }
+  | { type: TxActionType.SUBMIT }
   | { type: TxActionType.SIGN }
   | { type: TxActionType.SET_ERROR; payload: string }
   | { type: TxActionType.SET_STATUS; payload: TxStatus }

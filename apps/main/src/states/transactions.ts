@@ -20,10 +20,11 @@ export interface TransactionInput {
   tx: AnyTransaction
   title?: string
   description?: string
-  steps?: unknown[]
+  steps?: string[]
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  disableAutoClose?: boolean
 }
 
 export type TransactionProps = Omit<TransactionInput, "meta"> & {
@@ -60,9 +61,10 @@ export type TransactionXcmMeta = TransactionMetaCommons & {
 }
 
 export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta
+export type TSuccessResult = TxBestBlocksStateResult | TransactionReceipt
 
 export interface TransactionActions {
-  onSuccess?: (event: TxBestBlocksStateResult | TransactionReceipt) => void
+  onSuccess?: (event: TSuccessResult) => void
   onSubmitted?: (txHash: string) => void
   onError?: (message: string) => void
   onClose?: () => void
@@ -78,7 +80,7 @@ export interface Transaction extends TransactionProps, TransactionActions {
 }
 
 export const isSubstrateTxResult = (
-  result: TxBestBlocksStateResult | TransactionReceipt,
+  result: TSuccessResult,
 ): result is TxBestBlocksStateResult => {
   return "type" in result && result.type === "txBestBlocksState"
 }
@@ -88,45 +90,43 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TxBestBlocksStateResult | TransactionReceipt>
+  ) => Promise<TSuccessResult>
   cancelTransaction: (id: string) => void
 }
 
 export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TxBestBlocksStateResult | TransactionReceipt>(
-      (resolve, reject) => {
-        set((state) => {
-          return {
-            transactions: [
-              {
-                id: uuid(),
-                ...transaction,
-                meta: transaction?.meta ?? {
-                  type: TransactionType.Onchain,
-                  srcChainKey: HYDRATION_CHAIN_KEY,
-                },
-                onSubmitted: options?.onSubmitted,
-                onSuccess: (event) => {
-                  options?.onSuccess?.(event)
-                  resolve(event)
-                },
-                onError: (message) => {
-                  options?.onError?.(message)
-                  reject(message)
-                },
-                onClose: () => {
-                  options?.onClose?.()
-                  reject("Transaction closed")
-                },
+    return new Promise<TSuccessResult>((resolve, reject) => {
+      set((state) => {
+        return {
+          transactions: [
+            {
+              id: uuid(),
+              ...transaction,
+              meta: transaction?.meta ?? {
+                type: TransactionType.Onchain,
+                srcChainKey: HYDRATION_CHAIN_KEY,
               },
-              ...(state.transactions ?? []),
-            ],
-          }
-        })
-      },
-    )
+              onSubmitted: options?.onSubmitted,
+              onSuccess: (event) => {
+                options?.onSuccess?.(event)
+                resolve(event)
+              },
+              onError: (message) => {
+                options?.onError?.(message)
+                reject(message)
+              },
+              onClose: () => {
+                options?.onClose?.()
+                reject("Transaction closed")
+              },
+            },
+            ...(state.transactions ?? []),
+          ],
+        }
+      })
+    })
   },
   cancelTransaction: (id) => {
     set((store) => ({

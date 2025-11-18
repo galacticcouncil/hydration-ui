@@ -2,7 +2,7 @@ import { GETH_ERC20_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
@@ -28,6 +28,9 @@ import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   isSubstrateTxResult,
+  TransactionInput,
+  TransactionOptions,
+  TSuccessResult,
   useTransactionsStore,
 } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
@@ -246,6 +249,43 @@ export const useAddGETHToOmnipool = ({
   }
 }
 
+type TExtrinsic = {
+  id: number
+  title: string
+  transaction: (results: Record<string, TSuccessResult>) => Promise<{
+    transaction: TransactionInput
+    options?: TransactionOptions
+  }>
+}
+
+export function useStepRunner() {
+  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+
+  const run = useCallback(
+    async (extrinsics: TExtrinsic[]) => {
+      const results: Record<string, TSuccessResult> = {}
+
+      for (let i = 0; i < extrinsics.length; i++) {
+        const step = extrinsics[i]
+
+        if (!step) continue
+
+        const transactionParams = await step.transaction(results)
+        const result = await createTransaction(
+          { ...transactionParams.transaction, steps: [step.title] },
+          transactionParams.options,
+        )
+        results[step.id] = result
+      }
+    },
+    [createTransaction],
+  )
+
+  return {
+    run,
+  }
+}
+
 export const useAddMoneyMarketLiquidity = ({
   formData,
   props,
@@ -266,6 +306,7 @@ export const useAddMoneyMarketLiquidity = ({
     },
   } = useTradeSettings()
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
+  const { run } = useStepRunner()
 
   const { papi, sdk } = rpc
   const { erc20Id, assetsToProvide, stablepoolAssets } = formData
@@ -355,51 +396,73 @@ export const useAddMoneyMarketLiquidity = ({
           min_shares: BigInt(minStablepoolShares),
         })
 
-        const addingSharesResult = await createTransaction({
-          tx: firstTx,
-        })
+        run([
+          {
+            id: 0,
+            title: "Adding shares",
+            transaction: async () => ({
+              transaction: {
+                tx: firstTx,
+                disableAutoClose: true,
+              },
+            }),
+          },
+          {
+            id: 1,
+            title: "Swapping shares",
+            transaction: async (results) => {
+              const addingSharesResult = results[0]
 
-        let addedShares = 0n
+              let addedShares = 0n
 
-        if (isSubstrateTxResult(addingSharesResult)) {
-          addedShares =
-            papi.event.Stableswap.LiquidityAdded.filter(
-              addingSharesResult.events,
-            ).find((event) => event.who === account?.address)?.shares ?? 0n
-        } else {
-          const { client } = sdk
-          const { balance } = client
+              if (
+                addingSharesResult &&
+                isSubstrateTxResult(addingSharesResult)
+              ) {
+                addedShares =
+                  papi.event.Stableswap.LiquidityAdded.filter(
+                    addingSharesResult.events,
+                  ).find((event) => event.who === account?.address)?.shares ??
+                  0n
+              } else {
+                const { client } = sdk
+                const { balance } = client
 
-          const shares = await balance.getBalance(
-            account?.address ?? "",
-            pool.id,
-          )
+                const shares = await balance.getBalance(
+                  account?.address ?? "",
+                  pool.id,
+                )
 
-          addedShares = shares.transferable - initialShares
-        }
+                addedShares = shares.transferable - initialShares
+              }
 
-        const addedSharesShifted = scaleHuman(
-          addedShares.toString(),
-          meta.decimals,
-        ).toString()
+              const addedSharesShifted = scaleHuman(
+                addedShares.toString(),
+                meta.decimals,
+              ).toString()
 
-        //second swap stableswap shares for the current pool
-        const swap = await sdk.api.router.getBestSell(
-          Number(stableswapId),
-          Number(erc20Id),
-          addedSharesShifted,
-        )
+              //second swap stableswap shares for the current pool
+              const swap = await sdk.api.router.getBestSell(
+                Number(stableswapId),
+                Number(erc20Id),
+                addedSharesShifted,
+              )
 
-        const swapTx = await sdk.tx
-          .trade(swap)
-          .withSlippage(slippage)
-          .withBeneficiary(account.address)
-          .build()
-          .then((tx) => tx.get())
+              const swapTx = await sdk.tx
+                .trade(swap)
+                .withSlippage(slippage)
+                .withBeneficiary(account.address)
+                .build()
+                .then((tx) => tx.get())
 
-        await createTransaction({
-          tx: swapTx,
-        })
+              return {
+                transaction: {
+                  tx: swapTx,
+                },
+              }
+            },
+          },
+        ])
       } else {
         if (!trade) throw new Error("Trade not found")
 
