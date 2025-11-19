@@ -6,13 +6,14 @@ import {
   xykVolumeQuery,
 } from "@galacticcouncil/indexer/squid"
 import { OmniMath } from "@galacticcouncil/sdk"
+import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { isNumber } from "remeda"
 
 import { XykDeposit } from "@/api/account"
-import { AssetType, TAssetData, TErc20 } from "@/api/assets"
+import { AssetType, TAssetData, TErc20, TErc20AToken } from "@/api/assets"
 import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
@@ -111,7 +112,7 @@ export type TStablepoolData = {
   balance: string
   isStablepool: boolean
   lpFee: string | undefined
-  aToken: TErc20 | undefined
+  aToken: TErc20AToken | undefined
   borrowApyData: BorrowAssetApyData | undefined
 }
 
@@ -120,6 +121,8 @@ export type TStablepoolDetails = {
   reserves: TReserve[]
   totalDisplayAmount: string
 }
+
+const OVERRIDE_META = [...GIGA_ASSETS, ...HOLLAR_ASSETS]
 
 const isStablepoolData = (
   pool: TStablepoolData | OmniPoolToken,
@@ -134,7 +137,7 @@ export const useStablepools = () => {
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
     stablepoolYieldMetricsQuery(squidClient),
   )
-  const { getRelatedAToken } = useAssets()
+  const { getRelatedAToken, isErc20AToken } = useAssets()
 
   const volumeByAsset = useMemo(
     () => new Map((volumes ?? []).map((v) => [v.poolId, v.poolVolNorm])),
@@ -148,7 +151,7 @@ export const useStablepools = () => {
   )
 
   const { stablePoolData, aTokens } = useMemo(() => {
-    const aTokens = new Map<string, TErc20>()
+    const aTokens = new Map<string, TErc20AToken>()
 
     if (!pools) {
       return { stablePoolData: [], aTokens }
@@ -159,7 +162,7 @@ export const useStablepools = () => {
       const poolId = id.toString()
       const aToken = getRelatedAToken(poolId)
 
-      if (aToken) {
+      if (aToken && isErc20AToken(aToken)) {
         aTokens.set(poolId, aToken)
       }
 
@@ -170,7 +173,7 @@ export const useStablepools = () => {
     })
 
     return { stablePoolData: list, aTokens }
-  }, [pools, getRelatedAToken])
+  }, [pools, getRelatedAToken, isErc20AToken])
 
   const { data: borrowAssetsApy } = useBorrowAssetsApy(
     stablePoolData
@@ -386,7 +389,10 @@ export const useOmnipoolStablepools = () => {
 
       return {
         id: poolId,
-        meta,
+        meta:
+          aStableswapAsset && OVERRIDE_META.includes(poolId)
+            ? aStableswapAsset
+            : meta,
         price,
         tvlDisplay,
         lpFeeOmnipool,
