@@ -4,7 +4,6 @@ import {
   AxisLabelCssProps,
   Box,
   Flex,
-  Grid,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
@@ -55,7 +54,7 @@ export const RewardsCurve: FC = () => {
   const labelProps: AxisLabelCssProps = {
     fill: themeProps.text.high,
     fontSize: 10,
-    lineHeight: 14,
+    lineHeight: 1.4,
     fontWeight: 600,
   }
 
@@ -87,60 +86,67 @@ export const RewardsCurve: FC = () => {
           padding: { bottom: 6 },
         }}
         yAxisLabel={t("staking:dashboard.ofClaimable")}
-        yAxisLabelProps={{ ...labelProps, dy: 80 }}
+        yAxisLabelProps={{
+          ...labelProps,
+          dy: 80,
+        }}
         xAxisLabel={t("days")}
-        xAxisLabelProps={{ ...labelProps, dy: -20 }}
+        xAxisLabelProps={{
+          ...labelProps,
+          dy: -20,
+        }}
         horizontalGridHidden={false}
         verticalGridHidden={false}
         gridHorizontalValues={[(1 / 4) * 100, (2 / 4) * 100, (3 / 4) * 100]}
-        strokeWidth={4}
+        strokeWidth={1.5}
+        strokeDasharray="4 1.5"
         legend={
           <Legend
             verticalAlign="bottom"
             align="left"
             layout="horizontal"
-            content={() => (
-              <Flex
-                pt={10}
-                px={50}
-                position="relative"
-                align="flex-start"
-                gap={2}
-              >
-                <Flex align="center" gap={4} pt={14}>
+            content={(props) => (
+              <Flex justify="space-between" style={props.style}>
+                <Flex align="center" gap={4}>
                   <Ellipse sx={{ bg: "#53A4F3" }} />
-                  <Text fs={14} lh={1.4} color={getToken("text.high")}>
+                  <Text
+                    fs="p6"
+                    lh={1.4}
+                    color={getToken("text.high")}
+                    whiteSpace="nowrap"
+                  >
                     {t("staking:dashboard.chart.legend.current")}
                   </Text>
                 </Flex>
                 {isGraphSecondaryPoint && (
-                  <Flex align="center" gap={4} pt={13}>
-                    <Ellipse
-                      sx={{ bg: getToken("accents.success.emphasis") }}
-                    />
-                    <Text
-                      fs={11}
-                      lh={1.4}
-                      color={getToken("colors.successGreen.400")}
-                    >
-                      {t("staking:dashboard.chart.legend.afterVoting")}
-                    </Text>
-                    <Grid position="absolute" right={8}>
-                      <Tooltip
-                        text={(
-                          t("staking:dashboard.chart.legend.afterVoting.help", {
-                            returnObjects: true,
-                          }) as Array<string>
-                        ).map((line, index) => (
-                          <div key={index}>{line}</div>
-                        ))}
+                  <>
+                    <Flex align="center" gap={4}>
+                      <Ellipse
+                        sx={{ bg: getToken("accents.success.emphasis") }}
                       />
-                    </Grid>
-                  </Flex>
+                      <Text
+                        fs="p6"
+                        lh={1.4}
+                        color={getToken("colors.successGreen.400")}
+                        whiteSpace="nowrap"
+                      >
+                        {t("staking:dashboard.chart.legend.afterVoting")}
+                      </Text>
+                    </Flex>
+                    <Tooltip
+                      text={(
+                        t("staking:dashboard.chart.legend.afterVoting.help", {
+                          returnObjects: true,
+                        }) as Array<string>
+                      ).map((line, index) => (
+                        <div key={index}>{line}</div>
+                      ))}
+                    />
+                  </>
                 )}
               </Flex>
             )}
-            style={{ marginLeft: 40 }}
+            style={{ marginTop: 10, marginLeft: 50 }}
           />
         }
         customDot={({ key, payload, cx = 0, cy = 0 }) => (
@@ -148,7 +154,7 @@ export const RewardsCurve: FC = () => {
             {payload.current && (
               <CrosshairDot
                 key={key}
-                x={cx - 12}
+                x={cx - 7}
                 y={cy - 7}
                 color={themeProps.icons.primary}
               />
@@ -156,8 +162,8 @@ export const RewardsCurve: FC = () => {
             {payload.currentSecondary && (
               <CrosshairDot
                 key={key}
-                x={cx - 12}
-                y={cy - 6}
+                x={cx - 7}
+                y={cy - 7}
                 color={themeProps.accents.success.emphasis}
               />
             )}
