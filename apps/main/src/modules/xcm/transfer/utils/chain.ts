@@ -16,10 +16,6 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
 const KUSAMA_CHAINS_WHITELIST = ["kusama", "assethub_kusama"]
 
-const ethereum = chainsMap.get("ethereum")!
-// @ts-expect-error override rpc for testing
-ethereum.rpcs = ["https://eth.drpc.org"]
-
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],
   filter((c) => !c.isTestChain),
