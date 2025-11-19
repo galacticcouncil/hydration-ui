@@ -79,7 +79,7 @@ export const RewardsList: FC<Props> = ({
               ) : (
                 <Text
                   font="primary"
-                  fw={700}
+                  fw={500}
                   fs={24}
                   lh={1}
                   color={getToken("text.high")}
@@ -101,7 +101,7 @@ export const RewardsList: FC<Props> = ({
             <Flex direction="column" gap={2}>
               <Text
                 font="primary"
-                fw={700}
+                fw={500}
                 fs={24}
                 lh={1}
                 color={getToken("text.high")}

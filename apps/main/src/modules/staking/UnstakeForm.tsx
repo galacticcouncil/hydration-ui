@@ -15,6 +15,7 @@ type Props = {
   readonly votes: ReadonlyArray<TAccountVote>
   readonly votesSuccess: boolean
   readonly isLoading: boolean
+  readonly onUnstake: () => void
 }
 
 export const UnstakeForm: FC<Props> = ({
@@ -23,6 +24,7 @@ export const UnstakeForm: FC<Props> = ({
   votes,
   votesSuccess,
   isLoading,
+  onUnstake,
 }) => {
   const { t } = useTranslation(["common", "staking"])
   const { account } = useAccount()
@@ -31,7 +33,10 @@ export const UnstakeForm: FC<Props> = ({
 
   const unstakeMutation = useUnstake(positionId, votes, votesSuccess)
 
-  const submitForm = () => unstakeMutation.mutate(staked)
+  const submitForm = () =>
+    unstakeMutation.mutate(staked, {
+      onSuccess: onUnstake,
+    })
 
   return (
     <>

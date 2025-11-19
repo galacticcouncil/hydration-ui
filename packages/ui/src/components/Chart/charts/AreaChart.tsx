@@ -35,6 +35,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
   curveType?: CurveType
   gradient?: "area" | "line" | "all" | "none"
   strokeWidth?: number
+  strokeDasharray?: string
   customDot?: (
     props: DotProps & {
       payload: TData
@@ -70,6 +71,7 @@ export function AreaChart<TData extends TChartData>({
   curveType = "natural",
   gradient = "area",
   strokeWidth = 2,
+  strokeDasharray,
   customDot,
   referenceLines = [],
   xAxisLabelProps,
@@ -216,6 +218,7 @@ export function AreaChart<TData extends TChartData>({
                 dataKey={key}
                 type={curveType}
                 strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
                 fill={isAreaGradientFill ? `url(#${gradientId})` : "none"}
                 fillOpacity={0.4}
                 stroke={

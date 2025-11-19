@@ -67,6 +67,7 @@ export const Stake: FC<Props> = ({
           votes={votes}
           votesSuccess={votesSuccess}
           isLoading={isLoading}
+          onUnstake={() => setType("stake")}
         />
       )}
     </Paper>
