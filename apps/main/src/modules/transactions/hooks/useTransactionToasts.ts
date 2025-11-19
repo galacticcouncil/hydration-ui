@@ -1,24 +1,45 @@
-import { subscan } from "@galacticcouncil/utils"
+import { subscan, wormholescan } from "@galacticcouncil/utils"
 import { CallType } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
 import { useToasts } from "@/states/toasts"
-import { Transaction } from "@/states/transactions"
+import { Transaction, TransactionType, XcmTag } from "@/states/transactions"
 
 export const useTransactionToasts = (
   transaction: Transaction,
   ecosystem: CallType,
 ) => {
   const { t } = useTranslation()
-  const { pending, edit } = useToasts()
+  const { pending, edit, add } = useToasts()
 
   const { id, toasts, meta } = transaction
 
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
+        const isWormhole =
+          meta.type === TransactionType.Xcm &&
+          meta.tags.includes(XcmTag.Wormhole)
+
+        if (isWormhole) {
+          return add(
+            {
+              id,
+              title:
+                toasts?.submitted ?? t("transaction.status.submitted.title"),
+              link: wormholescan.tx(txHash),
+              meta: {
+                ...meta,
+                txHash,
+                ecosystem,
+              },
+            },
+            "submitted",
+          )
+        }
+
         pending({
           id,
           title: toasts?.submitted ?? t("transaction.status.submitted.title"),
@@ -50,6 +71,7 @@ export const useTransactionToasts = (
       },
     }
   }, [
+    add,
     ecosystem,
     edit,
     id,

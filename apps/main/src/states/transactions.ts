@@ -52,7 +52,7 @@ export type TransactionXcmMeta = TransactionMetaCommons & {
   dstChainKey: string
   dstChainFee?: string
   dstChainFeeSymbol?: string
-  tags?: XcmTags
+  tags: XcmTags
 }
 
 export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta

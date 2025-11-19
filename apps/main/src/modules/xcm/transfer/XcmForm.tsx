@@ -13,10 +13,12 @@ import {
   useWallet,
   useWeb3ConnectModal,
 } from "@galacticcouncil/web3-connect"
+import { ConfigBuilder } from "@galacticcouncil/xcm-core"
+import { useMemo, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useCrossChainBalance } from "@/api/xcm"
+import { useCrossChainBalance, useHydrationConfigService } from "@/api/xcm"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { ChainSwitch } from "@/modules/xcm/transfer/components/ChainSwitch"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
@@ -31,6 +33,12 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
+import { XcmTag } from "@/states/transactions"
+
+enum RouteIndex {
+  Wormhole = 0,
+  Snowbridge = 1,
+}
 
 export const XcmForm = () => {
   const { t } = useTranslation("xcm")
@@ -38,6 +46,8 @@ export const XcmForm = () => {
   const wallet = useWallet()
   const { toggle } = useWeb3ConnectModal()
   const handleChainSwitch = useChainSwitch()
+
+  const configService = useHydrationConfigService()
 
   const {
     transfer,
@@ -79,6 +89,40 @@ export const XcmForm = () => {
       }),
     })
   }
+
+  const { routes, config } = useMemo(() => {
+    try {
+      const configs =
+        srcAsset && srcChain && destChain
+          ? ConfigBuilder(configService)
+              .assets()
+              .asset(srcAsset)
+              .source(srcChain)
+              .destination(destChain)
+          : null
+
+      const routes = configs?.routes ?? []
+      const config = destAsset ? configs?.build(destAsset) : null
+      return { routes, config }
+    } catch (error) {
+      console.error(error)
+      return {
+        routes: [],
+        config: null,
+      }
+    }
+  }, [configService, srcAsset, srcChain, destChain, destAsset])
+
+  const isWormhole = !!config?.origin?.route?.tags?.includes(XcmTag.Wormhole)
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState<number>(
+    isWormhole ? RouteIndex.Wormhole : RouteIndex.Snowbridge,
+  )
+
+  const sortedRoutes = routes.sort((a, b) => {
+    if (a.tags?.includes(XcmTag.Wormhole)) return -1
+    if (b.tags?.includes(XcmTag.Wormhole)) return 1
+    return 0
+  })
 
   return (
     <form
@@ -188,8 +232,13 @@ export const XcmForm = () => {
               />
             </Flex>
           </Stack>
+
+          <XcmSummary
+            routes={sortedRoutes}
+            selectedRouteIndex={selectedRouteIndex}
+            setSelectedRouteIndex={setSelectedRouteIndex}
+          />
           <Separator />
-          <XcmSummary />
           <Stack p={20}>
             <AuthorizedAction size="large">
               <LoadingButton

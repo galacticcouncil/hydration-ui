@@ -1,4 +1,5 @@
 import { HYDRATION_CHAIN_KEY, isAnyParachain } from "@galacticcouncil/utils"
+import { ConfigBuilder } from "@galacticcouncil/xcm-core"
 import { Transfer } from "@galacticcouncil/xcm-sdk"
 import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -7,12 +8,17 @@ import { withPolkadotSdkCompat } from "polkadot-api/polkadot-sdk-compat"
 import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
 
+import { useHydrationConfigService } from "@/api/xcm"
 import { AnyPapiTx, AnyTransaction } from "@/modules/transactions/types"
 import { isSubstrateCall } from "@/modules/transactions/utils/xcm"
 import { useLegacyProvider } from "@/modules/xcm/legacy/LegacyProvider"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { TransactionType, useTransactionsStore } from "@/states/transactions"
+import {
+  TransactionType,
+  useTransactionsStore,
+  XcmTags,
+} from "@/states/transactions"
 
 // TODO: remove after migrating to xcm-sdk-next
 const transformPjsToPapiTx = async (
@@ -45,20 +51,22 @@ export const useSubmitXcmTransfer = () => {
   const { legacy_api } = useLegacyProvider()
   const { createTransaction } = useTransactionsStore()
   const queryClient = useQueryClient()
+  const configService = useHydrationConfigService()
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
-      const { srcAmount, srcChain, destChain } = values
+      const { srcAmount, srcChain, destChain, srcAsset, destAsset } = values
 
       if (!destChain) throw new Error("Destination chain is required")
       if (!srcChain) throw new Error("Source chain is required")
-
+      if (!srcAsset) throw new Error("Source asset is required")
+      if (!destAsset) throw new Error("Destination asset is required")
       const isHydration = srcChain.key === HYDRATION_CHAIN_KEY
 
       const { destination, source } = transfer
 
       const call = await transfer.buildCall(srcAmount)
 
-      const i18nData = {
+      const i18nVars = {
         amount: srcAmount,
         symbol: source.balance.originSymbol,
         srcChain: srcChain.name,
@@ -81,14 +89,24 @@ export const useSubmitXcmTransfer = () => {
         return call
       }
 
+      const { build } = ConfigBuilder(configService)
+        .assets()
+        .asset(srcAsset)
+        .source(srcChain)
+        .destination(destChain)
+
+      const { origin } = build(destAsset)
+
+      console.log({ call, origin })
+
       return createTransaction(
         {
           title: t("form.title"),
-          description: t("tx.description", i18nData),
+          description: t("tx.description", i18nVars),
           tx: await getTx(),
           toasts: {
-            submitted: t("tx.toast.submitted", i18nData),
-            success: t("tx.toast.success", i18nData),
+            submitted: t("tx.toast.submitted", i18nVars),
+            success: t("tx.toast.success", i18nVars),
           },
           fee: {
             feeAmount: source.fee.toDecimal(source.fee.decimals),
@@ -100,6 +118,7 @@ export const useSubmitXcmTransfer = () => {
             dstChainKey: destChain.key,
             dstChainFee: destination.fee.toDecimal(destination.fee.decimals),
             dstChainFeeSymbol: destination.fee.symbol,
+            tags: (origin.route.tags as XcmTags) || [],
           },
         },
         {
