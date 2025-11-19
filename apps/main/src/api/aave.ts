@@ -55,9 +55,9 @@ const formatHealthFactorResult = ({
   const future = Big(futureHF)
 
   const isBelowRiskThreshold = future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
-  const isSignificantChange = future
+  const isSignificantChange = !future
     .round(2, Big.roundDown)
-    .lt(current.round(2, Big.roundDown))
+    .eq(current.round(2, Big.roundDown))
 
   return {
     current: current.toString(),
