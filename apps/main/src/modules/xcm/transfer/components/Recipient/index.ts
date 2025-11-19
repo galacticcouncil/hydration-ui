@@ -1,5 +1,4 @@
 export * from "./RecipientAddressBook"
-export * from "./RecipientConnectButton"
 export * from "./RecipientConnectModal"
 export * from "./RecipientConnectTile"
 export * from "./RecipientCustomAddressForm"

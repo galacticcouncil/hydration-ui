@@ -11,28 +11,18 @@ import { createContext, useContext } from "react"
 
 import { useProviderRpcUrlStore } from "@/states/provider"
 
-type LegacyProviderContextProps =
-  | {
-      legacy_api: ApiPromise
-      legacy_sdk: SdkCtx
-      legacy_poolService: PoolService
-      legacy_tradeRouter: TradeRouter
-      isLoaded: true
-    }
-  | {
-      legacy_api: null
-      legacy_sdk: null
-      legacy_poolService: null
-      legacy_tradeRouter: null
-      isLoaded: false
-    }
+type LegacyProviderContextProps = {
+  legacy_api: ApiPromise
+  legacy_sdk: SdkCtx
+  legacy_poolService: PoolService
+  legacy_tradeRouter: TradeRouter
+}
 
 const defaultContext: LegacyProviderContextProps = {
-  legacy_api: null,
-  legacy_sdk: null,
-  legacy_poolService: null,
-  legacy_tradeRouter: null,
-  isLoaded: false,
+  legacy_api: {} as ApiPromise,
+  legacy_sdk: {} as SdkCtx,
+  legacy_poolService: {} as PoolService,
+  legacy_tradeRouter: {} as TradeRouter,
 }
 
 const LegacyProviderContext =
@@ -64,19 +54,16 @@ export const LegacyProvider = ({ children }: { children: React.ReactNode }) => {
     },
   })
 
+  if (!isSuccess) return null
+
   return (
     <LegacyProviderContext.Provider
-      value={
-        isSuccess
-          ? {
-              legacy_api: data.legacy_api,
-              legacy_sdk: data.legacy_sdk,
-              legacy_poolService: data.legacy_poolService,
-              legacy_tradeRouter: data.legacy_tradeRouter,
-              isLoaded: true,
-            }
-          : defaultContext
-      }
+      value={{
+        legacy_api: data.legacy_api,
+        legacy_sdk: data.legacy_sdk,
+        legacy_poolService: data.legacy_poolService,
+        legacy_tradeRouter: data.legacy_tradeRouter,
+      }}
     >
       {children}
     </LegacyProviderContext.Provider>

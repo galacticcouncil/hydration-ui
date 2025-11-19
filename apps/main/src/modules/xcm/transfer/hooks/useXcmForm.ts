@@ -10,7 +10,7 @@ export const useXcmForm = (transfer: Transfer | null) => {
   const { account } = useAccount()
 
   const address = account?.rawAddress ?? ""
-  const defaults = getXcmFormDefaults(address)
+  const defaults = getXcmFormDefaults(account)
 
   return useForm({
     resolver: standardSchemaResolver(useXcmFormSchema(transfer)),

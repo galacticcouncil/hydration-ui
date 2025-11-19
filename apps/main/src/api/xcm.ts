@@ -52,13 +52,11 @@ export const useCrossChainWallet = () => {
     const assethub = configService.getChain("assethub")
     const assethubCex = configService.getChain("assethub_cex")
 
-    if (legacy_poolService) {
-      wallet.registerDex(
-        new dex.HydrationDex(hydration, legacy_poolService),
-        new dex.AssethubDex(assethub),
-        new dex.AssethubDex(assethubCex),
-      )
-    }
+    wallet.registerDex(
+      new dex.HydrationDex(hydration, legacy_poolService),
+      new dex.AssethubDex(assethub),
+      new dex.AssethubDex(assethubCex),
+    )
 
     return wallet
   }, [configService, legacy_poolService])

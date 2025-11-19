@@ -7,16 +7,14 @@ import {
   Ss58Addr,
   SuiAddr,
 } from "@galacticcouncil/utils"
-import { WalletMode } from "@galacticcouncil/web3-connect"
+import { Account, WalletMode } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xcm-core"
 import { filter, pipe, prop, sortBy } from "remeda"
 
-const KUSAMA_CHAINS_WHITELIST = ["kusama", "assethub_kusama"]
+import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
-const ethereum = chainsMap.get("ethereum")!
-// @ts-expect-error override rpc for testing
-ethereum.rpcs = ["https://ethereum-rpc.publicnode.com"]
+const KUSAMA_CHAINS_WHITELIST = ["kusama", "assethub_kusama"]
 
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],
@@ -62,42 +60,41 @@ export const XCM_CHAINS = pipe(
     .map((chainAssetData) => chainAssetData.asset)
 }
  */
-export type XcmFormDefaults = {
-  srcChain: AnyChain | null
-  srcAsset: Asset | null
-  destChain: AnyChain | null
-  destAsset: Asset | null
-}
 
-export const getXcmFormDefaults = (address: string): XcmFormDefaults => {
-  // Determine address type and select appropriate source chain
-  let srcChain: AnyChain | null = null
+export const getXcmFormDefaults = (
+  account: Account | null,
+): Pick<
+  XcmFormValues,
+  | "srcChain"
+  | "srcAsset"
+  | "destChain"
+  | "destAsset"
+  | "destAddress"
+  | "destAccount"
+> => {
+  const address = account?.rawAddress ?? ""
 
-  if (Ss58Addr.isValid(address)) {
-    // SS58 address -> assethub
-    srcChain = chainsMap.get("assethub") || null
-  } else if (EvmAddr.isValid(address)) {
-    // H160 address -> ethereum
-    srcChain = chainsMap.get("ethereum") || null
-  } else if (SolanaAddr.isValid(address)) {
-    // Solana address -> solana
-    srcChain = chainsMap.get("solana") || null
-  } else if (SuiAddr.isValid(address)) {
-    // Sui address -> sui
-    srcChain = chainsMap.get("sui") || null
-  }
+  const srcChain: AnyChain | null = (() => {
+    switch (true) {
+      case Ss58Addr.isValid(address):
+        return chainsMap.get("assethub") || null
+      case EvmAddr.isValid(address):
+        return chainsMap.get("ethereum") || null
+      case SolanaAddr.isValid(address):
+        return chainsMap.get("solana") || null
+      case SuiAddr.isValid(address):
+        return chainsMap.get("sui") || null
+      default:
+        return null
+    }
+  })()
 
-  // Get first asset for source chain
-  let srcAsset: Asset | null = null
-  if (srcChain?.assetsData) {
-    const firstAssetData = Array.from(srcChain.assetsData.values())[0]
-    srcAsset = firstAssetData?.asset || null
-  }
+  const srcAsset: Asset | null = srcChain?.assetsData
+    ? Array.from(srcChain.assetsData.values())[0]?.asset || null
+    : null
 
-  // Destination chain is always hydration
   const destChain = chainsMap.get("hydration") || null
 
-  // Destination asset is the same as source asset
   const destAsset = srcAsset
 
   return {
@@ -105,6 +102,8 @@ export const getXcmFormDefaults = (address: string): XcmFormDefaults => {
     srcAsset,
     destChain,
     destAsset,
+    destAddress: address,
+    destAccount: account,
   }
 }
 

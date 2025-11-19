@@ -13,8 +13,8 @@ import { useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { ConnectChainTile } from "@/modules/xcm/transfer/components/ConnectButton/ConnectChainTile"
 import {
-  RecipientConnectButton,
   RecipientConnectModal,
   RecipientConnectTile,
   RecipientCustomAddressForm,
@@ -70,8 +70,10 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
                     onConnect={() => setIsConnectModalOpen(true)}
                   />
                 ) : (
-                  <RecipientConnectButton
-                    destChain={destChain || undefined}
+                  <ConnectChainTile
+                    p={20}
+                    sx={{ bg: getToken("controls.dim.base") }}
+                    chain={destChain || undefined}
                     onConnect={() => setIsConnectModalOpen(true)}
                   />
                 )}

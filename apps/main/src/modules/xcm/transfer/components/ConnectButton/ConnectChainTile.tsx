@@ -1,22 +1,29 @@
-import { Button, Flex, Paper, Text } from "@galacticcouncil/ui/components"
+import {
+  Button,
+  Flex,
+  Paper,
+  PaperProps,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AnyChain } from "@galacticcouncil/xcm-core"
 import { useTranslation } from "react-i18next"
 
 import { ChainLogo } from "@/components/ChainLogo"
 
-type RecipientConnectButtonProps = {
-  destChain?: AnyChain
+type ConnectChainTileProps = PaperProps & {
+  chain?: AnyChain
   onConnect: () => void
 }
 
-export const RecipientConnectButton: React.FC<RecipientConnectButtonProps> = ({
-  destChain,
+export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
+  chain,
   onConnect,
+  ...props
 }) => {
   const { t } = useTranslation("xcm")
   return (
-    <Paper p={20} variant="plain" sx={{ bg: getToken("controls.dim.base") }}>
+    <Paper variant="plain" {...props}>
       <Flex
         justify="space-between"
         align="center"
@@ -24,23 +31,23 @@ export const RecipientConnectButton: React.FC<RecipientConnectButtonProps> = ({
         gap={10}
         color={getToken("text.medium")}
       >
-        {destChain ? (
+        {chain ? (
           <>
             <Flex gap={10} align="center">
-              <ChainLogo chain={destChain} size="large" />
+              <ChainLogo chain={chain} size="large" />
               <Text fs="p3" fw={500}>
-                {t("recipient.connect.chainNotConnected", {
-                  chainName: destChain.name,
+                {t("chainNotConnected", {
+                  chainName: chain.name,
                 })}
               </Text>
             </Flex>
             <Button onClick={onConnect} size="small">
-              {t("recipient.connect.connect")}
+              {t("connect")}
             </Button>
           </>
         ) : (
           <Text fs="p3" fw={500}>
-            {t("recipient.connect.notConnected")}
+            {t("notConnected")}
           </Text>
         )}
       </Flex>

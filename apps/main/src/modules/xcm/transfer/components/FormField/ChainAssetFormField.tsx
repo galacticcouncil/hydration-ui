@@ -1,57 +1,81 @@
 import { AnyChain, Asset } from "@galacticcouncil/xcm-core"
+import { useCallback, useMemo } from "react"
 import {
   FieldPathByValue,
   useController,
   useFormContext,
 } from "react-hook-form"
 
-import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
-import { ChainAssetSelectModal } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
+import {
+  ChainAssetPair,
+  ChainAssetSelection,
+  ChainAssetSelectModal,
+  ChainAssetSelectModalSelectionChange,
+} from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
 type ChainAssetFormFieldProps = {
   fieldName: FieldPathByValue<XcmFormValues, Asset | null>
+  chainFieldName: FieldPathByValue<XcmFormValues, AnyChain | null>
   type: "source" | "destination"
   address?: string
   disabled?: boolean
   chainAssetPairs: ChainAssetPair[]
-  selectedChain: AnyChain | null
-  setSelectedChain: (chain: AnyChain | null) => void
+  onSelectionConfirm?: (change: ChainAssetSelectModalSelectionChange) => void
   onAssetChange?: () => void
 }
 
 export const ChainAssetFormField: React.FC<ChainAssetFormFieldProps> = ({
   fieldName,
+  chainFieldName,
   type,
   address = "",
   disabled = false,
   chainAssetPairs,
-  selectedChain,
-  setSelectedChain,
+  onSelectionConfirm,
   onAssetChange,
 }) => {
-  const { control } = useFormContext<XcmFormValues>()
+  const { control, watch, setValue } = useFormContext<XcmFormValues>()
   const { field } = useController({
     control,
     name: fieldName,
   })
+  const selectedChain = watch(chainFieldName)
 
-  const handleSelection = (
-    selection: { asset: Asset; chain: AnyChain } | null,
-  ) => {
-    const newAsset = selection?.asset || null
-    const currentAsset = field.value
-    field.onChange(newAsset)
-
-    if (newAsset?.key !== currentAsset?.key) {
-      onAssetChange?.()
+  const currentSelection = useMemo(() => {
+    if (selectedChain && field.value) {
+      return { chain: selectedChain, asset: field.value }
     }
-  }
+    return null
+  }, [field.value, selectedChain])
 
-  const selectedAssetAndChain =
-    field.value && selectedChain
-      ? { asset: field.value, chain: selectedChain }
-      : null
+  const handleAssetSelect = useCallback(
+    ({ chain, asset }: ChainAssetSelection) => {
+      const previousSelection = currentSelection
+      const newSelection = { chain, asset }
+      const previousAssetKey = field.value?.key
+
+      setValue(chainFieldName, chain, { shouldDirty: true })
+      field.onChange(asset)
+
+      if (asset.key !== previousAssetKey) {
+        onAssetChange?.()
+      }
+
+      onSelectionConfirm?.({
+        previousSelection,
+        newSelection,
+      })
+    },
+    [
+      chainFieldName,
+      currentSelection,
+      field,
+      onAssetChange,
+      onSelectionConfirm,
+      setValue,
+    ],
+  )
 
   return (
     <ChainAssetSelectModal
@@ -59,10 +83,9 @@ export const ChainAssetFormField: React.FC<ChainAssetFormFieldProps> = ({
       address={address}
       disabled={disabled}
       chainAssetPairs={chainAssetPairs}
-      selectedAsset={selectedAssetAndChain}
-      onSelectionChange={handleSelection}
-      selectedChain={selectedChain}
-      setSelectedChain={setSelectedChain}
+      currentSelection={currentSelection}
+      selectedChain={selectedChain ?? null}
+      onAssetSelect={handleAssetSelect}
     />
   )
 }

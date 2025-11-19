@@ -46,7 +46,7 @@ export const XcmForm = () => {
     isLoading: isDataLoading,
   } = useXcmProvider()
 
-  const { setValue, watch, formState, handleSubmit, reset } =
+  const { setValue, watch, formState, handleSubmit } =
     useFormContext<XcmFormValues>()
 
   const [srcChain, srcAsset, destChain, destAsset, destAddress] = watch([
@@ -112,13 +112,17 @@ export const XcmForm = () => {
                 </Flex>
                 <ChainAssetFormField
                   fieldName="srcAsset"
+                  chainFieldName="srcChain"
                   type="source"
                   address={account?.rawAddress}
                   chainAssetPairs={sourceChainAssetPairs}
-                  selectedChain={srcChain}
-                  setSelectedChain={(chain) =>
-                    reset({ srcChain: chain, srcAsset: null, destAsset: null })
-                  }
+                  onSelectionConfirm={({ previousSelection, newSelection }) => {
+                    if (
+                      previousSelection?.chain?.key !== newSelection.chain.key
+                    ) {
+                      setValue("destAsset", null, { shouldDirty: true })
+                    }
+                  }}
                   onAssetChange={() => {
                     setValue("srcAmount", "")
                     setValue("destAmount", "")
@@ -160,14 +164,20 @@ export const XcmForm = () => {
                 </Flex>
                 <ChainAssetFormField
                   fieldName="destAsset"
+                  chainFieldName="destChain"
                   type="destination"
                   address={destAddress}
                   disabled={!srcAsset}
                   chainAssetPairs={destChainAssetPairs}
-                  selectedChain={destChain}
-                  setSelectedChain={(chain) =>
-                    reset({ destChain: chain, destAsset: null, srcAsset: null })
-                  }
+                  onSelectionConfirm={({ previousSelection, newSelection }) => {
+                    if (
+                      previousSelection?.chain?.key !== newSelection.chain.key
+                    ) {
+                      setValue("srcAsset", null, { shouldDirty: true })
+                      setValue("srcAmount", "")
+                      setValue("destAmount", "")
+                    }
+                  }}
                 />
               </Flex>
               <AmountFormField

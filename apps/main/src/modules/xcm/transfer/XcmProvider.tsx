@@ -16,6 +16,7 @@ import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSele
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
+import { getXcmFormDefaults } from "@/modules/xcm/transfer/utils/chain"
 import { XCM_CHAINS } from "@/modules/xcm/transfer/utils/chain"
 
 const getDestinationAmount = (amount: string, transfer: Transfer): string => {
@@ -71,22 +72,21 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     const destWhitelist = XCM_CHAINS.map((c) => c.key)
     const destChains = srcChainAssetRoutes
-      .filter((a) => destWhitelist.includes(a.destination.chain.key))
+      .filter(
+        (a) =>
+          a.source.asset === srcAsset &&
+          destWhitelist.includes(a.destination.chain.key),
+      )
       .map((a) => a.destination.chain)
 
     return unique(destChains)
       .map((chain) => {
-        try {
-          const { routes } = ConfigBuilder(configService)
-            .assets()
-            .asset(srcAsset)
-            .source(srcChain)
-            .destination(chain)
-          return { chain, assets: routes.map((r) => r.destination.asset) }
-        } catch (error) {
-          console.error(error)
-          return null
-        }
+        const { routes } = ConfigBuilder(configService)
+          .assets()
+          .asset(srcAsset)
+          .source(srcChain)
+          .destination(chain)
+        return { chain, assets: routes.map((r) => r.destination.asset) }
       })
       .filter(isNonNullish)
   }, [configService, srcAsset, srcChain])
@@ -150,6 +150,10 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       }
     }
   }, [form, srcAmount, xcmTransfer])
+
+  useEffect(() => {
+    form.reset(getXcmFormDefaults(account))
+  }, [account, form])
 
   const isLoading = isLoadingTransfer
 

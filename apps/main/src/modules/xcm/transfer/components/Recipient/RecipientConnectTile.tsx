@@ -38,7 +38,7 @@ export const RecipientConnectTile: React.FC<RecipientConnectTileProps> = ({
           transform: "translateY(-50%)",
         }}
       >
-        {t("recipient.connect.change")}
+        {t("change")}
       </Button>
     </Box>
   )
