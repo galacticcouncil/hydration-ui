@@ -23,6 +23,8 @@ import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { TradeFee } from "@/modules/trade/otc/TradeFee"
 import { otcTradeFeeQuery } from "@/modules/trade/otc/TradeFee.query"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalance } from "@/states/account"
+import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly otcOffer: OtcOfferTabular
@@ -39,9 +41,15 @@ export const FillOrderModalContent: FC<Props> = ({
   const { t } = useTranslation(["trade", "common"])
   const [isSubmitCancelOpen, setIsSubmitCancelOpen] = useState(false)
 
-  const { data: feePrice = "0" } = useQuery(otcTradeFeeQuery(rpc))
+  const inBalance = useAccountBalance(otcOffer.assetIn.id)
+  const assetInBalance = inBalance
+    ? scaleHuman(inBalance.transferable, otcOffer.assetIn.decimals)
+    : "0"
+  const assetInMax = Big.min(otcOffer.assetAmountIn, assetInBalance).toString()
 
-  const form = useFillOrderForm(otcOffer, isUsersOffer, feePrice)
+  const { data: feePct = "0" } = useQuery(otcTradeFeeQuery(rpc))
+
+  const form = useFillOrderForm(otcOffer, isUsersOffer, feePct)
   const submit = useSubmitFillOrder({
     otcOffer,
     onSubmit: onClose,
@@ -51,13 +59,10 @@ export const FillOrderModalContent: FC<Props> = ({
 
   const feeAsset = otcOffer.assetOut
   const fee =
-    !buyAmount || !feePrice
+    !buyAmount || !feePct
       ? undefined
       : formatAssetAmount(
-          Big(buyAmount)
-            .div(Big(1).minus(feePrice))
-            .minus(buyAmount)
-            .toString(),
+          Big(buyAmount).div(Big(1).minus(feePct)).minus(buyAmount).toString(),
           feeAsset.decimals,
         )
 
@@ -122,7 +127,7 @@ export const FillOrderModalContent: FC<Props> = ({
 
                       const getBuyAmountAfterFee = (amount: string): string => {
                         const fee = formatAssetAmount(
-                          Big(feePrice || "0")
+                          Big(feePct || "0")
                             .times(amount)
                             .toString(),
                           otcOffer.assetOut.decimals,
@@ -164,7 +169,7 @@ export const FillOrderModalContent: FC<Props> = ({
                     selectedAsset={otcOffer.assetIn}
                     disabled={isUsersOffer || !otcOffer.isPartiallyFillable}
                     modalDisabled
-                    maxButtonBalance={otcOffer.assetAmountIn}
+                    maxButtonBalance={assetInMax}
                     maxBalanceFallback="0"
                     hideMaxBalanceAction={!otcOffer.isPartiallyFillable}
                     error={fieldState.error?.message}
@@ -192,7 +197,7 @@ export const FillOrderModalContent: FC<Props> = ({
 
                       const buyAmountBeforeFee = formatAssetAmount(
                         Big(buyAmount)
-                          .div(Big(1).minus(feePrice || "0"))
+                          .div(Big(1).minus(feePct || "0"))
                           .toString(),
                         otcOffer.assetOut.decimals,
                       )
@@ -229,7 +234,7 @@ export const FillOrderModalContent: FC<Props> = ({
               />
             </Box>
             <Separator />
-            <TradeFee fee={fee} feeSymbol={feeAsset.symbol} />
+            <TradeFee fee={fee} feePct={feePct} feeSymbol={feeAsset.symbol} />
             <Separator />
           </ModalBody>
           <ModalFooter>

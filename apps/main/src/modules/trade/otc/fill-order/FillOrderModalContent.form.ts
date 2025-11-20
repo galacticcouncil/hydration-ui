@@ -25,16 +25,16 @@ const useSchema = (offer: OtcOfferTabular) => {
 
   return object({
     sellAmount: positiveOptional.check(
+      refine(
+        (value) => new Big(offer.assetAmountIn).gte(value || "0"),
+        i18n.t("trade:otc.fillOrder.validation.orderTooBig"),
+      ),
       validateFieldExistentialDeposit(
         offer.assetIn,
         existentialDepositMultiplier,
       ),
     ),
     buyAmount: positiveOptional.check(
-      refine(
-        (value) => new Big(offer.assetAmountOut).gte(value || "0"),
-        i18n.t("trade:otc.fillOrder.validation.orderTooBig"),
-      ),
       validateFieldExistentialDeposit(
         offer.assetOut,
         existentialDepositMultiplier,
