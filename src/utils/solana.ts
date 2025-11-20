@@ -131,7 +131,6 @@ export async function waitForSolanaBundle(
         const result = await lilJit.getInflightBundleStatuses([bundleId])
         const { status } =
           result.value.find((b) => b.bundle_id === bundleId) || {}
-        console.log({ status })
         if (!status || status !== "Landed") {
           cleanup()
           timeout = setTimeout(checkStatus, 5000)

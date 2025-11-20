@@ -96,7 +96,7 @@ export const RedeemWithdrawButton: React.FC<RedeemActionButtonProps> = ({
     mutate([transfer, account], {
       onError: (error) => {
         setIsSubmitting(false)
-        setError(error instanceof Error ? error.message : "Unknown error")
+        setError(error instanceof Error ? error.message : t("error.unknown"))
       },
     })
   }
