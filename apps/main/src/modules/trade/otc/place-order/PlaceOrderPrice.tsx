@@ -96,11 +96,10 @@ export const PlaceOrderPrice: FC<Props> = ({
               const isOmnipoolPrice = isDefault && !hasCustomOption
               const isCustom = isDefault && hasCustomOption
 
-              const usedOption = isPriceSwitchedField.value
-                ? Big(option).times(-1).toString()
-                : option
-
-              const shownOption = isCustom ? priceGain : usedOption
+              const usedOption = isCustom ? priceGain : option
+              const shownOption = isPriceSwitchedField.value
+                ? Big(usedOption).times(-1).toString()
+                : usedOption
 
               return (
                 <MicroButton
