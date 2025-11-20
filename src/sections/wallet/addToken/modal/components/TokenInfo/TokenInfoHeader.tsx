@@ -50,7 +50,7 @@ export const TokenInfoHeader: React.FC<TokenHeaderProps> = ({
           icon={
             <ExternalAssetLogo
               id={asset.id}
-              parachainId={asset.origin}
+              chainId={asset.origin.toString()}
               originHidden
             >
               {isHighSeverity ? (
