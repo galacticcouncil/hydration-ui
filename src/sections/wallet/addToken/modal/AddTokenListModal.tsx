@@ -139,7 +139,7 @@ export const AddTokenListModal: React.FC<Props> = ({
                         icon={
                           <ExternalAssetLogo
                             id={asset.id}
-                            parachainId={asset.origin}
+                            chainId={asset.origin.toString()}
                             originHidden
                           />
                         }

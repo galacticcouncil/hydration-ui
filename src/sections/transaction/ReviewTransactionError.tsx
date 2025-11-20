@@ -19,7 +19,7 @@ import {
 
 type ReviewTransactionErrorProps = {
   onClose: () => void
-  onReview: () => void
+  onReview?: () => void
   error?: unknown
 }
 
@@ -85,13 +85,15 @@ export const ReviewTransactionError: FC<ReviewTransactionErrorProps> = ({
           </Button>
         </SButtons>
         <div sx={{ flex: "row", gap: 20, mt: 10 }}>
-          <ButtonTransparent
-            type="button"
-            sx={{ color: "brightBlue400", fontSize: 14 }}
-            onClick={onReview}
-          >
-            {t("liquidity.reviewTransaction.modal.error.review")}
-          </ButtonTransparent>
+          {!!onReview && (
+            <ButtonTransparent
+              type="button"
+              sx={{ color: "brightBlue400", fontSize: 14 }}
+              onClick={onReview}
+            >
+              {t("liquidity.reviewTransaction.modal.error.review")}
+            </ButtonTransparent>
+          )}
           {!!error && (
             <ButtonTransparent
               type="button"
