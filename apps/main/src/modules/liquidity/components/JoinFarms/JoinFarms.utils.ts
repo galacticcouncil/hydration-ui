@@ -38,7 +38,7 @@ const LIQUIDITY_OUT_SHARES = "10000"
 
 type JoinFarmsFormValues = { amount: string }
 
-const getMinimalDeposit = (farms: Farm[]) =>
+export const getMinimalDeposit = (farms: Farm[]) =>
   farms.length > 0
     ? farms.reduce(
         (acc, farm) => {
@@ -111,7 +111,7 @@ export const useJoinOmnipoolFarms = ({
   }
 }
 
-const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
+export const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
   const { data: pools } = useXykPools()
 
   const minDeposit = getMinimalDeposit(farms)
@@ -162,7 +162,7 @@ const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
   }, [minDeposit, oracle, assetAReserve?.decimals])
 }
 
-const useMinOmnipoolFarmJoin = (farms: Farm[], meta?: TAssetData) => {
+export const useMinOmnipoolFarmJoin = (farms: Farm[], meta?: TAssetData) => {
   const minDeposit = getMinimalDeposit(farms)
 
   const { data: oracles } = useOraclePrice(

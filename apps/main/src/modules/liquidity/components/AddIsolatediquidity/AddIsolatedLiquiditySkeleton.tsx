@@ -11,15 +11,13 @@ import { useTranslation } from "react-i18next"
 
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
-import { AddLiquidityAlert } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityAlert"
-import { PositionDetailsLabel } from "@/modules/liquidity/components/AddLiquidity/PositionDetailsLabel"
 
 type Props = {
   readonly closable?: boolean
 }
 
 export const AddIsolatedLiquiditySkeleton: FC<Props> = ({ closable }) => {
-  const { t } = useTranslation("liquidity")
+  const { t } = useTranslation(["liquidity", "common"])
 
   return (
     <>
@@ -52,32 +50,26 @@ export const AddIsolatedLiquiditySkeleton: FC<Props> = ({ closable }) => {
 
         <ModalContentDivider />
 
-        <PositionDetailsLabel />
-
         <Summary
           separator={<ModalContentDivider />}
           rows={[
             {
-              label: t("liquidity.add.modal.shareOfPool"),
+              label: t("common:minimalReceived"),
               content: "",
               loading: true,
             },
             {
-              label: t("liquidity.add.modal.receivedAmountOfPoolShares"),
+              label: t("liquidity.add.modal.rewardsAPR"),
               content: "",
               loading: true,
             },
             {
-              label: t("liquidity.add.modal.rewardsFromFees.label"),
+              label: t("common:apy"),
               content: "",
               loading: true,
             },
           ]}
         />
-
-        <ModalContentDivider />
-
-        <AddLiquidityAlert />
 
         <ModalContentDivider />
 

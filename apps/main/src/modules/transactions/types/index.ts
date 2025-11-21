@@ -10,6 +10,7 @@ export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
 
 export enum TxActionType {
   CLOSE = "CLOSE",
+  SUBMIT = "SUBMIT",
   SIGN = "SIGN",
   SET_ERROR = "SET_ERROR",
   SET_STATUS = "SET_STATUS",
@@ -23,9 +24,9 @@ export type TxMortalityPeriod = 32 | 64 | 128 | 256 | 512 | 1024
 
 export type TxStatusCallbacks = {
   onSubmitted: (txHash: string) => void
-  onSuccess: () => void
+  onSuccess: (event: TxBestBlocksStateResult | TransactionReceipt) => void
   onError: (error: string) => void
-  onFinalized: () => void
+  onFinalized: (event: TxFinalizedResult | TransactionReceipt) => void
 }
 
 export type TxOptions = TxStatusCallbacks & {
@@ -40,6 +41,16 @@ export type TxOptions = TxStatusCallbacks & {
 export type TxEventOrError =
   | TxEvent
   | { type: "error"; error: Error | InvalidTxError }
+
+export type TxBestBlocksStateResult = Extract<
+  TxEvent,
+  { type: "txBestBlocksState"; found: true; ok: true }
+>
+
+export type TxFinalizedResult = Extract<
+  TxEvent,
+  { type: "finalized"; found: true; ok: true }
+>
 
 export type TxResult = Subscription | TransactionReceipt | void
 
@@ -68,6 +79,7 @@ export type TxState = {
 
 export type TxStateAction =
   | { type: TxActionType.CLOSE }
+  | { type: TxActionType.SUBMIT }
   | { type: TxActionType.SIGN }
   | { type: TxActionType.SET_ERROR; payload: string }
   | { type: TxActionType.SET_STATUS; payload: TxStatus }

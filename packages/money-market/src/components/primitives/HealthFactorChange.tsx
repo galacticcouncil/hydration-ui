@@ -5,7 +5,9 @@ import {
   Icon,
   Skeleton,
   Text,
+  TextSize,
 } from "@galacticcouncil/ui/components"
+import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 
@@ -16,12 +18,14 @@ export type HealthFactorChangeProps = FlexProps & {
   healthFactor: string
   futureHealthFactor: string
   loading?: boolean
+  fontSize?: TextSize | ResponsiveStyleValue<number>
 }
 
 export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
   healthFactor,
   futureHealthFactor,
   loading = false,
+  fontSize,
   ...props
 }) => {
   if (healthFactor === "-1" && futureHealthFactor === "-1") return null
@@ -41,11 +45,12 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
           <Skeleton height="1em" width={80} />
         ) : (
           <>
-            <HealthFactorNumber value={healthFactor} />
+            <HealthFactorNumber value={healthFactor} fontSize={fontSize} />
             {visibleChange && (
               <>
                 <Icon size={14} component={ArrowRight} />
                 <HealthFactorNumber
+                  fontSize={fontSize}
                   value={
                     isNaN(Number(futureHealthFactor))
                       ? healthFactor

@@ -1,4 +1,5 @@
 import { useProcessTransactionToasts } from "@/modules/transactions/hooks/useProcessTransactionToasts"
+import { ReviewMultipleTransactions } from "@/modules/transactions/review/ReviewMultipleTransactions"
 import { ReviewTransaction } from "@/modules/transactions/review/ReviewTransaction"
 import { TransactionProvider } from "@/modules/transactions/TransactionProvider"
 import { useToasts } from "@/states/toasts"
@@ -10,9 +11,24 @@ export const TransactionManager = () => {
 
   useProcessTransactionToasts(toasts)
 
-  return transactions.map((transaction) => (
-    <TransactionProvider key={transaction.id} {...transaction}>
-      <ReviewTransaction />
-    </TransactionProvider>
-  ))
+  const transactionsWithStepper = transactions.filter(
+    (transaction) => transaction.steps,
+  )
+  const transactionsBasic = transactions.filter(
+    (transaction) => !transaction.steps,
+  )
+
+  return (
+    <>
+      {transactionsBasic.map((transaction) => (
+        <TransactionProvider key={transaction.id} {...transaction}>
+          <ReviewTransaction />
+        </TransactionProvider>
+      ))}
+
+      {!!transactionsWithStepper.length && (
+        <ReviewMultipleTransactions transactions={transactionsWithStepper} />
+      )}
+    </>
+  )
 }

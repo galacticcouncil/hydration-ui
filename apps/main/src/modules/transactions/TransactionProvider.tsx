@@ -17,6 +17,7 @@ import {
   doSetStatus,
   doSetTip,
   doSign,
+  doSubmit,
   INITIAL_STATUS,
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
@@ -132,14 +133,16 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
       onSubmitted: (txHash) => {
-        dispatch(doSetStatus("submitted"))
+        dispatch(
+          transaction.disableAutoClose ? doSubmit() : doSetStatus("submitted"),
+        )
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
       },
-      onSuccess: () => {
+      onSuccess: (event) => {
         dispatch(doSetStatus("success"))
-        transaction.onSuccess?.()
-        toasts.onSuccess?.()
+        transaction.onSuccess?.(event)
+        toasts.onSuccess?.(event)
       },
       onError: (message) => {
         dispatch(doSetError(message))
