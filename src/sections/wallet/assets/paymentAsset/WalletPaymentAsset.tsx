@@ -40,7 +40,7 @@ export const WalletPaymentAsset = () => {
   }
   const isFeePaymentAssetEditable =
     acceptedFeePaymentAssetsIds.length >
-    (isSuccess && !accountCurrencyId ? 1 : 0)
+    (isSuccess && !accountCurrencyId ? 0 : 1)
   const button = (
     <Button
       sx={{ py: 6, px: 8 }}
