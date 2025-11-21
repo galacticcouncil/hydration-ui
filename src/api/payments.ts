@@ -3,7 +3,6 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
-import { NATIVE_ASSET_ID } from "utils/api"
 import { useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -52,7 +51,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
         if (currency && getAsset(currency.id)?.isErc20) {
           return {
             ...currency,
-            accepted: true, //currency.id === HOLLAR_ID, // exception for hollar
+            accepted: true,
           }
         }
 
@@ -147,8 +146,6 @@ export const getAccountCurrency =
     if (!result.isEmpty) {
       return result.toString()
     }
-
-    return NATIVE_ASSET_ID
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
