@@ -128,21 +128,23 @@ const ErrorCopyButton = () => {
 
 export const ReviewTransactionStatus = () => {
   const { t } = useTranslation()
-  const { isIdle, isSuccess, isError, status, reset, error } = useTransaction()
+  const { isIdle, isSubmitted, isSuccess, isError, status, reset, error } =
+    useTransaction()
 
-  if (status === "idle") {
+  if (isIdle) {
     return null
   }
 
   return (
     <Flex direction="column" justify="center" align="center" gap={10} p={20}>
       <StatusIcon status={status} />
-      {isIdle && (
+      {isSubmitted && (
         <StatusText
           title={t("transaction.status.submitted.title")}
           description={t("transaction.status.submitted.description")}
         />
       )}
+
       {isSuccess && (
         <StatusText
           title={t("transaction.status.success.title")}

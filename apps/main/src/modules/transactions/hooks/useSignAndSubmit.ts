@@ -25,10 +25,10 @@ import {
 } from "@/modules/transactions/utils/tx"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { Transaction } from "@/states/transactions"
+import { SingleTransaction } from "@/states/transactions"
 
 export const useSignAndSubmit = (
-  transaction: Transaction,
+  transaction: SingleTransaction,
   options: MutationOptions<TxResult, Error, TxOptions>,
 ) => {
   const { papi, papiClient } = useRpcProvider()

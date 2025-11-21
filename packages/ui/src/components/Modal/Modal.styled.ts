@@ -56,9 +56,11 @@ export const SModalWrapper = styled(Overlay)`
   }
 `
 
-export const SModalContent = styled(Content)`
+export const SModalContent = styled(Content)<{ hasTopContent?: boolean }>`
   --modal-content-padding: 20px;
   --modal-content-inset: calc(var(--modal-content-padding) * -1);
+  --modal-top-content-height: ${({ hasTopContent }) =>
+    hasTopContent ? "50px" : "0px"};
 
   position: fixed;
   inset: 0;
@@ -105,9 +107,10 @@ export const SModalPaper = styled(Paper)`
   padding-bottom: env(safe-area-inset-bottom);
 
   ${mq("max-xs")} {
-    height: 100%;
+    height: calc(100% - var(--modal-top-content-height));
     border: 0;
     border-radius: 0;
+    overflow-y: auto;
   }
 `
 
@@ -169,4 +172,13 @@ export const SModalDescription = styled(Text)`
 
 export const SModalContentDivider = styled(Separator)`
   margin-inline: var(--modal-content-inset);
+`
+
+export const SModalTopContent = styled(Box)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding-inline: var(--modal-content-padding);
+  height: var(--modal-top-content-height);
 `
