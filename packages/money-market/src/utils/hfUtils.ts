@@ -3,7 +3,6 @@ import {
   ComputedUserReserve,
   UserReserveData,
 } from "@aave/math-utils"
-import { bigMax, bigMin } from "@galacticcouncil/utils"
 import Big, { BigSource } from "big.js"
 
 import {
@@ -138,7 +137,7 @@ export const calculateHFAfterRepay = ({
   }
 
   const fromAmountInMarketReferenceCurrency = Big(
-    bigMin(amountToReceiveAfterSwap, debt),
+    Big.min(amountToReceiveAfterSwap, debt),
   )
     .mul(toAssetData.priceInUSD)
     .toString()
@@ -146,7 +145,7 @@ export const calculateHFAfterRepay = ({
     fromAmountInMarketReferenceCurrency,
   )
 
-  debtLeftInMarketReference = bigMax(debtLeftInMarketReference, Big("0"))
+  debtLeftInMarketReference = Big.max(debtLeftInMarketReference, Big("0"))
 
   const hfAfterRepayBeforeWithdraw = calculateHealthFactorFromBalancesBigUnits({
     collateralBalanceMarketReferenceCurrency: user.totalCollateralUSD,
