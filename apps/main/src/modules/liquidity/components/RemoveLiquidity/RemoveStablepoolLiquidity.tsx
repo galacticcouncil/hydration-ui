@@ -13,8 +13,8 @@ import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { ReceiveAssets } from "@/modules/liquidity/components/RemoveLiquidity/ReceiveAssets"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
@@ -30,6 +30,7 @@ import { useAccountBalances } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
+import { useAssetsToRemoveFromStablepool } from "./RemoveLiquidity.utils"
 import {
   TRemoveStablepoolLiquidityFormValues,
   useStablepoolRemoveLiquidity,
@@ -41,7 +42,10 @@ export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
   )
   const { isBalanceLoading } = useAccountBalances()
 
-  const initialReceiveAsset = stablepoolData?.reserves[0]?.meta
+  const receiveAssets = useAssetsToRemoveFromStablepool({
+    reserves: stablepoolData?.reserves ?? [],
+  })
+  const initialReceiveAsset = receiveAssets[0]
 
   if (!stablepoolData || isBalanceLoading || !initialReceiveAsset)
     return <RemoveLiquiditySkeleton />
@@ -50,6 +54,7 @@ export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
     <RemoveStablepoolLiquidityJSX
       pool={stablepoolData}
       initialReceiveAsset={initialReceiveAsset}
+      receiveAssets={receiveAssets}
       {...props}
     />
   )
@@ -61,13 +66,15 @@ const RemoveStablepoolLiquidityJSX = ({
   closable,
   initialReceiveAsset,
   editable,
+  receiveAssets,
 }: RemoveLiquidityProps & {
   editable?: boolean
   pool: TStablepoolDetails
-  initialReceiveAsset: TAssetData
+  initialReceiveAsset: TAssetWithBalance
+  receiveAssets: TAssetWithBalance[]
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { pool: poolData, reserves } = pool
+  const { pool: poolData } = pool
 
   const {
     form,
@@ -168,7 +175,8 @@ const RemoveStablepoolLiquidityJSX = ({
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
                 maxBalance={balance}
-                assets={reserves.map((reserves) => reserves.meta)}
+                assets={[]}
+                sortedAssets={receiveAssets}
                 ignoreBalance
                 disabledInput
                 sx={{ p: 0 }}
