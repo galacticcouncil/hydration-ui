@@ -55,7 +55,7 @@ export const FillOrderModalContent: FC<Props> = ({
     onSubmit: onClose,
   })
 
-  const buyAmount = form.watch("buyAmount")
+  const [sellAmount, buyAmount] = form.watch(["sellAmount", "buyAmount"])
 
   const feeAsset = otcOffer.assetOut
   const fee =
@@ -78,6 +78,8 @@ export const FillOrderModalContent: FC<Props> = ({
     )
   }
 
+  const ratio = new Big(otcOffer.assetAmountIn).div(otcOffer.assetAmountOut)
+
   return (
     <>
       <ModalHeader title={t("otc.fillOrder.title")} />
@@ -93,17 +95,11 @@ export const FillOrderModalContent: FC<Props> = ({
           }
         >
           <ModalBody sx={{ p: 0 }}>
-            <Controller
-              control={form.control}
-              name="sellAmount"
-              render={({ field }) => (
-                <AvailableAmount
-                  assetIn={otcOffer.assetIn}
-                  assetInAmount={otcOffer.assetAmountIn}
-                  isPartiallyFillable={otcOffer.isPartiallyFillable}
-                  userSellAmount={field.value}
-                />
-              )}
+            <AvailableAmount
+              assetIn={otcOffer.assetIn}
+              assetInAmount={otcOffer.assetAmountIn}
+              isPartiallyFillable={otcOffer.isPartiallyFillable}
+              userSellAmount={sellAmount}
             />
             <Separator />
             <Box px={20}>
@@ -125,45 +121,21 @@ export const FillOrderModalContent: FC<Props> = ({
                         return
                       }
 
-                      const getBuyAmountAfterFee = (amount: string): string => {
-                        const fee = formatAssetAmount(
-                          Big(feePct || "0")
-                            .times(amount)
-                            .toString(),
-                          otcOffer.assetOut.decimals,
-                        )
-
-                        return Big(amount).minus(fee).toString()
-                      }
-
-                      if (sellAmount === otcOffer.assetAmountIn) {
-                        form.setValue(
-                          "buyAmount",
-                          getBuyAmountAfterFee(otcOffer.assetAmountOut),
-                          {
-                            shouldValidate: true,
-                          },
-                        )
-
-                        return
-                      }
-
-                      const percentage = new Big(sellAmount || "0").div(
-                        otcOffer.assetAmountIn,
+                      const sellAmountAfterFee = formatAssetAmount(
+                        Big(sellAmount)
+                          .times(Big(1).minus(feePct || "0"))
+                          .toString(),
+                        otcOffer.assetIn.decimals,
                       )
 
                       const newBuyAmount = formatAssetAmount(
-                        percentage.times(otcOffer.assetAmountOut).toString(),
+                        Big(sellAmountAfterFee).div(ratio).toString(),
                         otcOffer.assetOut.decimals,
                       )
 
-                      form.setValue(
-                        "buyAmount",
-                        getBuyAmountAfterFee(newBuyAmount),
-                        {
-                          shouldValidate: true,
-                        },
-                      )
+                      form.setValue("buyAmount", newBuyAmount, {
+                        shouldValidate: true,
+                      })
                     }}
                     assets={[]}
                     selectedAsset={otcOffer.assetIn}
@@ -197,7 +169,7 @@ export const FillOrderModalContent: FC<Props> = ({
 
                       const buyAmountBeforeFee = formatAssetAmount(
                         Big(buyAmount)
-                          .div(Big(1).minus(feePct || "0"))
+                          .times(Big(1).plus(feePct || "0"))
                           .toString(),
                         otcOffer.assetOut.decimals,
                       )
@@ -210,11 +182,8 @@ export const FillOrderModalContent: FC<Props> = ({
                         return
                       }
 
-                      const percentage = new Big(buyAmountBeforeFee || "0").div(
-                        otcOffer.assetAmountOut,
-                      )
                       const newSellAmount = formatAssetAmount(
-                        percentage.times(otcOffer.assetAmountIn).toString(),
+                        Big(buyAmountBeforeFee).times(ratio).toString(),
                         otcOffer.assetIn.decimals,
                       )
 
