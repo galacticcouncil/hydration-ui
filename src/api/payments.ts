@@ -3,7 +3,6 @@ import { ApiPromise } from "@polkadot/api"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { QUERY_KEYS } from "utils/queryKeys"
 import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
-import { NATIVE_ASSET_ID } from "utils/api"
 import { useStore } from "state/store"
 import { AccountId32 } from "@open-web3/orml-types/interfaces"
 import { useRpcProvider } from "providers/rpcProvider"
@@ -143,7 +142,7 @@ export const getAccountCurrency =
       return result.toString()
     }
 
-    return NATIVE_ASSET_ID
+    return null
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {
