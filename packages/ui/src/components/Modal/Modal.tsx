@@ -23,6 +23,7 @@ import {
   SModalOverlay,
   SModalPaper,
   SModalTitle,
+  SModalTopContent,
   SModalWrapper,
 } from "./Modal.styled"
 
@@ -68,8 +69,8 @@ const ModalContent: FC<ModalContentProps> = ({
   <ModalPortal>
     <ModalOverlay />
     <SModalWrapper onClick={(e) => e.stopPropagation()}>
-      <SModalContent ref={ref} {...props}>
-        {topContent}
+      <SModalContent ref={ref} {...props} hasTopContent={!!topContent}>
+        {topContent && <SModalTopContent>{topContent}</SModalTopContent>}
         <SModalPaper>{children}</SModalPaper>
       </SModalContent>
     </SModalWrapper>
