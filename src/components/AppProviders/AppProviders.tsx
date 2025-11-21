@@ -10,6 +10,7 @@ import { createComponent } from "@lit-labs/react"
 import { ProviderResolver } from "sections/provider/ProviderResolver"
 import { MigrationProvider } from "sections/migration/MigrationProvider"
 import { AssetsProvider } from "providers/assets"
+import { BlastCampaignManager } from "sections/blast/BlastCampaignManager"
 
 const AppsContextProvider = createComponent({
   tagName: "gc-context-provider",
@@ -70,5 +71,6 @@ const Services = () => (
     <ReferralsConnect />
     <QuerySubscriptions />
     <DepositManager />
+    <BlastCampaignManager />
   </React.Suspense>
 )

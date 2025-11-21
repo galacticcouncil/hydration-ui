@@ -127,6 +127,7 @@
   "error.required": "This field is required.",
   "error.maxBalance": "Insufficient balance on your account.",
   "error.whitespace": "Spaces are not allowed.",
+  "error.unknown": "Unknown error",
   "modal.closeButton.name": "Close modal button",
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
@@ -1589,5 +1590,9 @@
   "wormhole.tx.claim.title": "Claim {{ symbol }}",
   "wormhole.tx.claim.description": "Claim your {{ amount, bignumber(type: 'token') }} {{ symbol }} on {{ chain }}",
   "wormhole.tx.claim.toast.onLoading": "Claiming <0>{{ amount, bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>...",
-  "wormhole.tx.claim.toast.onSuccess": "Claimed <0>{{ amount , bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>."
+  "wormhole.tx.claim.toast.onSuccess": "Claimed <0>{{ amount , bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>.",
+  "blast.campaign.title": "Earn up to {{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }} APY on USDC",
+  "blast.campaign.description": "Put your Nova Shots rewards to work — earn up to <0>{{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }}</0> APY on your USDC or buy Bitcoin.",
+  "blast.campaign.cta.bitcoin": "Get Bitcoin",
+  "blast.campaign.cta.usdc": "Earn on USDC"
 }
