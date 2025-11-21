@@ -28,7 +28,9 @@ export const BlastCampaignManager = () => {
     readonly Search: { campaign?: string }
   }>()
 
-  useForceEnableNovaWallet(search.campaign === CAMPAIGN_PARAM_NAME)
+  const isCampaignParamPresent = search.campaign === CAMPAIGN_PARAM_NAME
+
+  useForceEnableNovaWallet(isCampaignParamPresent)
 
   const address = account?.address ?? ""
 
@@ -47,23 +49,29 @@ export const BlastCampaignManager = () => {
     (id) => !seenWinningAssetIds.includes(id),
   )
 
+  const hasRewardAndWinningAssets =
+    hasWinningAsset && hasRewardAsset && hasNewWinningAssets
+
   useEffect(() => {
     if (!address || isLoading) return
 
-    if (hasWinningAsset && hasRewardAsset && hasNewWinningAssets) {
+    if (isCampaignParamPresent || hasRewardAndWinningAssets) {
       setModalOpen(true)
     }
-  }, [hasWinningAsset, hasRewardAsset, hasNewWinningAssets, isLoading, address])
+  }, [address, hasRewardAndWinningAssets, isCampaignParamPresent, isLoading])
 
   const handleClose = () => {
     markAsSeen(address, winningAssetIds)
     setModalOpen(false)
+    navigate({
+      search: {
+        campaign: undefined,
+      },
+    })
   }
 
   const handleGetBitcoin = () => {
-    markAsSeen(address, winningAssetIds)
-    setModalOpen(false)
-
+    handleClose()
     if (matchRoute({ to: LINKS.swap })) {
       const url = new URL(window.location.href)
       url.searchParams.set("assetIn", USDC_ASSET_ID)
@@ -79,8 +87,7 @@ export const BlastCampaignManager = () => {
   }
 
   const handleEarnOnUSDC = () => {
-    markAsSeen(address, winningAssetIds)
-    setModalOpen(false)
+    handleClose()
     navigate({
       to: LINKS.borrowDashboard,
       search: {
