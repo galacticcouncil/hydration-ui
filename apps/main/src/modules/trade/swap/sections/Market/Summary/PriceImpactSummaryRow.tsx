@@ -3,7 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MarketSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryRow"
+import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 
 type Props = {
   readonly priceImpact: number
@@ -13,7 +13,7 @@ export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact }) => {
   const { t } = useTranslation(["common", "trade"])
 
   return (
-    <MarketSummaryRow
+    <SwapSummaryRow
       label={t("trade:market.summary.priceImpact")}
       content={
         <SummaryRowValue

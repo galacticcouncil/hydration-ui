@@ -9,7 +9,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MarketSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/MarketSummaryRow"
+import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
@@ -37,7 +37,7 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
   } = useTradeSettings()
 
   return (
-    <MarketSummaryRow
+    <SwapSummaryRow
       label={label}
       content={
         <Flex

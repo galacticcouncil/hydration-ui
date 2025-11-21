@@ -66,7 +66,7 @@ export const AssetInput = ({
     <Flex
       direction="column"
       gap={12}
-      sx={{ position: "relative", py: 20 }}
+      sx={{ position: "relative", py: 20, overflow: "hidden" }}
       className={className}
     >
       <Flex align="center" gap={4} justify="space-between">

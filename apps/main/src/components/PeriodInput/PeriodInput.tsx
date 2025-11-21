@@ -1,98 +1,83 @@
+import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
-  Grid,
+  Icon,
   NumberInput,
-  SliderTabs,
-  SliderTabsOption,
+  Select,
+  SelectItem,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  millisecondsInDay,
-  millisecondsInHour,
-  millisecondsInWeek,
-} from "date-fns/constants"
+import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
-import { z } from "zod/v4"
 
+import {
+  PeriodType,
+  periodTypes,
+} from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
-import { validNumber } from "@/utils/validators"
-
-export const periodTypes = ["hour", "day", "week", "month"] as const
-export type PeriodType = (typeof periodTypes)[number]
-
-const periodOptions = periodTypes.map(
-  (type): SliderTabsOption<PeriodType> => ({
-    id: type,
-    label: i18n.t(type),
-  }),
-)
 
 export type PeriodInputProps = {
-  readonly label?: string
   readonly periodValue?: number | null
   readonly periodType?: PeriodType
   readonly isError?: boolean
+  readonly allowedPeriodTypes?: ReadonlySet<PeriodType>
   readonly onPeriodTypeChange: (periodType: PeriodType) => void
   readonly onPeriodValueChange: (periodValue: number | null) => void
 }
 
 export const PeriodInput: FC<PeriodInputProps> = ({
-  label,
   periodValue,
   periodType,
   isError,
+  allowedPeriodTypes,
   onPeriodTypeChange,
   onPeriodValueChange,
 }) => {
+  const periodOptions = (
+    allowedPeriodTypes
+      ? periodTypes.filter((periodType) => allowedPeriodTypes.has(periodType))
+      : periodTypes
+  ).map(
+    (type): SelectItem<PeriodType> => ({
+      key: type,
+      label: i18n.t(`period.${type}`, { count: periodValue ?? 0 }),
+    }),
+  )
+
   return (
-    <Flex direction="column" gap={8} py={12}>
-      {label && (
-        <Text fw={500} fs="p5" lh={1.2} color={getToken("text.low")}>
-          {label}
-        </Text>
-      )}
-      <Grid columnTemplate="auto 1fr" columnGap={8} align="center">
-        <NumberInput
-          sx={{
-            maxWidth: 80,
-          }}
-          value={periodValue}
-          allowNegative={false}
-          isError={isError}
-          onValueChange={({ floatValue }) =>
-            onPeriodValueChange(floatValue ?? null)
-          }
+    <NumberInput
+      value={periodValue}
+      decimalScale={0}
+      allowNegative={false}
+      isError={isError}
+      onValueChange={({ floatValue }) =>
+        onPeriodValueChange(floatValue ?? null)
+      }
+      trailingElement={
+        <Select
+          items={periodOptions}
+          value={periodType}
+          renderTrigger={() => (
+            <Flex gap={2} align="center">
+              <Text
+                fw={500}
+                fs={11}
+                lh={px(15)}
+                transform="uppercase"
+                color={getToken("buttons.secondary.low.onRest")}
+              >
+                {periodType}
+              </Text>
+              <Icon
+                component={ChevronDown}
+                size={18}
+                color={getToken("icons.onContainer")}
+              />
+            </Flex>
+          )}
+          onValueChange={onPeriodTypeChange}
         />
-        <SliderTabs
-          options={periodOptions}
-          selected={periodType}
-          onSelect={(option) => onPeriodTypeChange(option.id)}
-        />
-      </Grid>
-    </Flex>
+      }
+    />
   )
-}
-
-export const periodInputSchema = z
-  .object({
-    value: validNumber.gt(0).nullable(),
-    type: z.enum(periodTypes),
-  })
-  .refine(
-    ({ type, value }) => {
-      const millis = periodMillis[type] * (value ?? 0)
-
-      return !isNaN(new Date(Date.now() + millis).valueOf())
-    },
-    { error: i18n.t("error.period"), path: ["value"] },
-  )
-
-export type Period = z.infer<typeof periodInputSchema>
-
-const periodMillis: Record<PeriodType, number> = {
-  hour: millisecondsInHour,
-  day: millisecondsInDay,
-  month: millisecondsInDay * 30.5,
-  week: millisecondsInWeek,
 }

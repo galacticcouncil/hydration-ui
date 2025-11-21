@@ -17,16 +17,22 @@ import {
   ChartTimeRange,
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
-import { PeriodType, periodTypes } from "@/components/PeriodInput/PeriodInput"
+import { periodTypes } from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import { useAssets } from "@/providers/assetsProvider"
 
-const intervalOptions = (["all", ...periodTypes] as const).map<
-  ChartTimeRangeOptionType<PeriodType | "all">
+const chartPeriodTypes = periodTypes.filter(
+  (periodType) => periodType !== "minute",
+)
+
+export type TradeChartPeriodType = (typeof chartPeriodTypes)[number]
+
+const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
+  ChartTimeRangeOptionType<TradeChartPeriodType | "all">
 >((option) => ({
   key: option,
-  label: i18n.t(`period.${option}`),
+  label: i18n.t(`chart.period.${option}`),
 }))
 
 type TradeChartProps = {
@@ -38,7 +44,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
-  const [interval, setInterval] = useState<PeriodType | "all">("all")
+  const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
