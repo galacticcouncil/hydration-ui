@@ -1,6 +1,5 @@
 import { WhTransfer } from "@galacticcouncil/xcm-sdk"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useEthereumTokens } from "api/external/ethereum"
 import { differenceInHours } from "date-fns"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,12 +8,12 @@ import { TransferAmountColumn } from "sections/wallet/assets/wormhole/components
 import { TransferChainPairColumn } from "sections/wallet/assets/wormhole/components/TransferChainPairColumn"
 import { TransferStatusColumn } from "sections/wallet/assets/wormhole/components/TransferStatusColumn"
 import { theme } from "theme"
+import { HYDRATION_CHAIN_KEY } from "utils/constants"
 
 const columnHelper = createColumnHelper<WhTransfer>()
 
 export const useWormholeTransfersColumns = () => {
   const { t } = useTranslation()
-  const tokens = useEthereumTokens()
   const isMobile = useMedia(theme.viewport.lt.md)
 
   return useMemo(() => {
@@ -22,18 +21,18 @@ export const useWormholeTransfersColumns = () => {
       id: "amount",
       header: t("amount"),
       cell: ({ row }) => {
-        const { amount, asset, assetSymbol } = row.original
+        const { amount, asset, assetSymbol, fromChain, toChain } = row.original
 
-        const assetData = tokens.get(asset.toLowerCase())
+        const isDeposit = toChain.key === HYDRATION_CHAIN_KEY
 
-        if (!assetData) {
-          return t("value.tokenWithSymbol", {
-            value: amount,
-            symbol: assetSymbol,
-          })
-        }
-
-        return <TransferAmountColumn asset={assetData} amount={amount} />
+        return (
+          <TransferAmountColumn
+            asset={asset}
+            assetSymbol={assetSymbol}
+            chain={isDeposit ? fromChain : toChain}
+            amount={amount}
+          />
+        )
       },
     })
 
@@ -93,5 +92,5 @@ export const useWormholeTransfersColumns = () => {
     })
 
     return isMobile ? [fromTo, amount, status] : [fromTo, amount, time, status]
-  }, [isMobile, t, tokens])
+  }, [isMobile, t])
 }

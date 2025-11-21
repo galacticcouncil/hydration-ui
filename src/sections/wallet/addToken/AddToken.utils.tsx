@@ -12,11 +12,104 @@ import { TDataEnv, useProviderRpcUrlStore } from "api/provider"
 import { isNotNil } from "utils/helpers"
 import { u32 } from "@polkadot/types"
 import { useCallback } from "react"
-import { omit } from "utils/rx"
+import { omit, uniqBy } from "utils/rx"
 import { getInputData, TExternalAssetWithLocation } from "utils/externalAssets"
 import { useShallow } from "hooks/useShallow"
 import { ISubmittableResult } from "@polkadot/types/types"
 import { TExternal, useAssets } from "providers/assets"
+
+export const BLAST_ASSETS = [
+  {
+    id: "50000380",
+    internalId: "1001188",
+    decimals: 12,
+    name: "FURIA",
+    symbol: "FURIA",
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000387",
+    internalId: "1001194",
+    name: "The MongolZ",
+    symbol: "MONGZ",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000384",
+    internalId: "1001191",
+    name: "Team Falcons",
+    symbol: "FALC",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000305",
+    internalId: "1001110",
+    name: "G2 Esports",
+    symbol: "G2",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000385",
+    internalId: "1001192",
+    name: "Team Spirit",
+    symbol: "SPIRIT",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000386",
+    internalId: "1001193",
+    name: "Team Vitality",
+    symbol: "VIT",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000379",
+    internalId: "1001187",
+    name: "BLAST",
+    symbol: "BLAST",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000388",
+    internalId: "1001195",
+    name: "TYLOO",
+    symbol: "TYLOO",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000382",
+    internalId: "1001189",
+    name: "paiN Gaming",
+    symbol: "PAIN",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+  {
+    id: "50000383",
+    internalId: "1001190",
+    name: "Passion UA",
+    symbol: "PASSION",
+    decimals: 12,
+    origin: 1000,
+    isWhiteListed: false,
+  },
+]
 
 const pink = {
   decimals: 10,
@@ -54,7 +147,7 @@ const wud = {
   isWhiteListed: false,
 }
 
-const version = 0.5
+const version = 0.6
 
 const ahTreasuryAdminKeyIds = ["86"]
 
@@ -86,6 +179,7 @@ const mainnet = [
     ...dota,
     internalId: "1000038",
   },
+  ...BLAST_ASSETS,
 ]
 
 const ELEVATED_EXTERNAL_TOKENS = [wud]
@@ -169,6 +263,16 @@ const internalIds = new Map([
   ["888", "1000059"],
   ["2024", "1000070"],
   ["2230", "1000073"],
+  ["50000380", "1001188"],
+  ["50000387", "1001194"],
+  ["50000384", "1001191"],
+  ["50000305", "1001110"],
+  ["50000385", "1001192"],
+  ["50000386", "1001193"],
+  ["50000379", "1001187"],
+  ["50000388", "1001195"],
+  ["50000382", "1001189"],
+  ["50000383", "1001190"],
 ])
 
 export const SELECTABLE_PARACHAINS_IDS = [
@@ -346,7 +450,8 @@ export const useUserExternalTokenStore = create<Store>()(
     {
       name: "external-tokens",
       version,
-      migrate: (persistedState) => {
+      migrate: (persistedState, version) => {
+        console.log("migrate", { persistedState, version })
         const state = persistedState as Store
 
         if (Array.isArray(state.tokens)) {
@@ -370,14 +475,14 @@ export const useUserExternalTokenStore = create<Store>()(
         }
 
         if (state.tokens.mainnet) {
-          const mainnet = state.tokens.mainnet
+          const mainnetStored = state.tokens.mainnet
             .map((token) => ({
               ...token,
               isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
             }))
             .filter(isNotElevatedToken)
 
-          const testnet = state.tokens.testnet
+          const testnetStored = state.tokens.testnet
             .map((token) => ({
               ...token,
               isWhiteListed: ahTreasuryAdminKeyIds.includes(token.id),
@@ -387,8 +492,14 @@ export const useUserExternalTokenStore = create<Store>()(
           return {
             ...state,
             tokens: {
-              testnet,
-              mainnet,
+              testnet: uniqBy(
+                (a) => a.internalId,
+                [...testnet, ...testnetStored],
+              ),
+              mainnet: uniqBy(
+                (a) => a.internalId,
+                [...mainnet, ...mainnetStored],
+              ),
             },
           }
         }

@@ -69,6 +69,7 @@ import { persist } from "zustand/middleware"
 import { getWallets as getStandardizedWallets } from "@mysten/wallet-standard"
 import { BaseDotsamaWallet } from "@talismn/connect-wallets"
 import { Unsubcall } from "@polkadot/extension-inject/types"
+import { pick } from "utils/rx"
 export type { WalletProvider } from "./wallets"
 export { WalletProviderType, getSupportedWallets }
 
@@ -736,4 +737,36 @@ const subscribeSubstrateWalletAccountChange = async (
       isExternalWalletConnected: false,
     })
   })
+}
+
+export const useForceEnableNovaWallet = (condition = false) => {
+  const { account } = useAccount()
+  const { setStatus, setAccount } = useWeb3ConnectStore(
+    useShallow((state) => pick(state, ["setStatus", "setAccount"])),
+  )
+  const { enable } = useEnableWallet(WalletProviderType.NovaWallet)
+
+  const hasTriedEnabling = useRef(false)
+
+  const shouldEnable =
+    condition &&
+    !hasTriedEnabling.current &&
+    !!window?.walletExtension?.isNovaWallet &&
+    !account
+
+  useEffect(() => {
+    if (shouldEnable) {
+      hasTriedEnabling.current = true
+      enable("polkadot", {
+        onSuccess: (data) => {
+          if (!data?.length) return
+          setAccount(mapWalletAccount(data[0]))
+          setStatus(
+            WalletProviderType.NovaWallet,
+            WalletProviderStatus.Connected,
+          )
+        },
+      })
+    }
+  }, [enable, setAccount, setStatus, shouldEnable])
 }

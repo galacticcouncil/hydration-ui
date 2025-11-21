@@ -16,7 +16,9 @@ export const WalletPaymentAsset = () => {
   const { featureFlags } = useRpcProvider()
   const { getAsset } = useAssets()
   const { account } = useAccount()
-  const { data: accountCurrencyId } = useAccountCurrency(account?.address)
+  const { data: accountCurrencyId, isSuccess } = useAccountCurrency(
+    account?.address,
+  )
   const accountCurrencyMeta = accountCurrencyId
     ? getAsset(accountCurrencyId)
     : null
@@ -36,7 +38,9 @@ export const WalletPaymentAsset = () => {
   if (isEvmAccount(account?.address) && !featureFlags.dispatchPermit) {
     return null
   }
-  const isFeePaymentAssetEditable = acceptedFeePaymentAssetsIds.length > 1
+  const isFeePaymentAssetEditable =
+    acceptedFeePaymentAssetsIds.length >
+    (isSuccess && !accountCurrencyId ? 0 : 1)
   const button = (
     <Button
       sx={{ py: 6, px: 8 }}
