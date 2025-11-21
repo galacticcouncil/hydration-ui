@@ -212,7 +212,7 @@ export const useTransactionValues = ({
     acceptedFeePaymentAssets.isInitialLoading ||
     referrer.isInitialLoading
 
-  if (!feePaymentMeta || !paymentFeeHDX || !accountFeePaymentId)
+  if (!paymentFeeHDX)
     return {
       isLoading,
       data: {
@@ -245,7 +245,7 @@ export const useTransactionValues = ({
           .shiftedBy(-native.decimals)
           .multipliedBy(spotPrice?.spotPrice ?? 1)
       : undefined
-  } else {
+  } else if (accountFeePaymentId && feePaymentMeta) {
     const accountFeePaymentCurrency = acceptedFeePaymentAssets.data?.find(
       (acceptedFeePaymentAsset) =>
         acceptedFeePaymentAsset.id === accountFeePaymentId,
@@ -265,15 +265,18 @@ export const useTransactionValues = ({
           )
         : undefined
     }
+  } else {
+    displayFeePaymentValue = paymentFeeHDX
   }
 
-  const isEnoughPaymentBalance = feeAssetBalance?.transferable
-    ? BigNumber(feeAssetBalance.transferable)
-        .shiftedBy(-feePaymentMeta.decimals)
-        .minus(displayFeePaymentValue ?? 0)
-        .minus(displayFeeExtra ?? 0)
-        .gt(0)
-    : false
+  const isEnoughPaymentBalance =
+    feeAssetBalance?.transferable && feePaymentMeta
+      ? BigNumber(feeAssetBalance.transferable)
+          .shiftedBy(-feePaymentMeta.decimals)
+          .minus(displayFeePaymentValue ?? 0)
+          .minus(displayFeeExtra ?? 0)
+          .gt(0)
+      : false
 
   let displayEvmFeePaymentValue
   if (isEvm && evmPaymentFee?.data) {

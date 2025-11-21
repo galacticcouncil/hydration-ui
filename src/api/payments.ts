@@ -14,7 +14,7 @@ import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { useAccountBalances } from "./deposits"
 import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { AAVE_EXTRA_GAS, HOLLAR_ID } from "utils/constants"
+import { AAVE_EXTRA_GAS } from "utils/constants"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -51,7 +51,7 @@ export const useAcceptedCurrencies = (ids: string[]) => {
         if (currency && getAsset(currency.id)?.isErc20) {
           return {
             ...currency,
-            accepted: true, //currency.id === HOLLAR_ID, // exception for hollar
+            accepted: true,
           }
         }
 
@@ -146,8 +146,6 @@ export const getAccountCurrency =
     if (!result.isEmpty) {
       return result.toString()
     }
-
-    return null
   }
 
 export const useAccountCurrency = (address: Maybe<string | AccountId32>) => {

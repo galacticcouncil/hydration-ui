@@ -258,7 +258,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const hasMultipleFeeAssets =
     props.xcallMeta && props.xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY
       ? false
-      : acceptedFeePaymentAssets.length > 1
+      : acceptedFeePaymentAssets.length > (feePaymentMeta ? 1 : 0)
+
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
