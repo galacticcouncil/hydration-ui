@@ -5,7 +5,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
@@ -20,9 +20,10 @@ export const HowToStake: FC = () => {
     <Box>
       <Text
         p={getTokenPx("containers.paddings.primary")}
+        font="primary"
         fw={500}
-        fs="h7"
-        lh={1}
+        fs={17.5}
+        lh={px(21)}
         color={getToken("text.high")}
       >
         {t("staking:howTo.title")}

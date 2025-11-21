@@ -2,10 +2,13 @@ import { Box } from "@/components/Box"
 import { mq } from "@/styles/media"
 import { css, styled } from "@/utils"
 
-export const SSectionHeader = styled(Box)(
-  ({ theme }) => css`
+// TODO rework
+export const SSectionHeader = styled(Box)<{
+  readonly hasDescription?: boolean
+}>(
+  ({ theme, hasDescription }) => css`
     padding: ${theme.scales.paddings.xl}px ${theme.containers.paddings.quint}px
-      ${theme.containers.paddings.secondary}px
+      ${hasDescription ? 0 : theme.containers.paddings.secondary}px
       ${theme.containers.paddings.quint}px;
 
     font-family: ${theme.fontFamilies1.primary};
@@ -17,7 +20,9 @@ export const SSectionHeader = styled(Box)(
     ${mq("sm")} {
       padding-inline: 0;
       padding-top: 0;
-      padding-bottom: ${theme.containers.paddings.tertiary}px;
+      padding-bottom: ${hasDescription
+        ? 0
+        : theme.containers.paddings.tertiary}px;
 
       font-weight: 500;
       font-size: 17.5px;
