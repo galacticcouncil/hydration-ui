@@ -2,7 +2,6 @@ import { getGhoReserve } from "@galacticcouncil/money-market/utils"
 import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
 import { Box, Button, Text, ValueStats } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { bigMin } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import Big from "big.js"
 import { FC, useMemo } from "react"
@@ -46,7 +45,7 @@ export const HollarBanner: FC<HollarBannerProps> = ({ className }) => {
     const borrowCap = Big(reserve.borrowCap)
 
     if (borrowCap.gt(0)) {
-      return bigMin(totalDebt, borrowCap)
+      return Big.min(totalDebt, borrowCap)
     }
 
     return totalDebt
