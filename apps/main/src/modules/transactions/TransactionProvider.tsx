@@ -17,15 +17,14 @@ import {
   doSetStatus,
   doSetTip,
   doSign,
-  doSubmit,
   INITIAL_STATUS,
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
-import { Transaction, useTransactionsStore } from "@/states/transactions"
+import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
-export type TransactionContext = Transaction &
+export type TransactionContext = SingleTransaction &
   TxState & {
     isIdle: boolean
     isSubmitted: boolean
@@ -58,13 +57,14 @@ const TransactionContext = createContext<TransactionContext>(
 
 export const useTransaction = () => useContext(TransactionContext)
 
-export type TransactionProviderProps = Transaction & {
+export type TransactionProviderProps = {
   children: React.ReactNode
+  transaction: SingleTransaction
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   children,
-  ...transaction
+  transaction,
 }) => {
   const { cancelTransaction } = useTransactionsStore()
 
@@ -133,9 +133,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
       onSubmitted: (txHash) => {
-        dispatch(
-          transaction.disableAutoClose ? doSubmit() : doSetStatus("submitted"),
-        )
+        dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
       },

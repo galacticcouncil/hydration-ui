@@ -32,16 +32,12 @@ export const transactionStatusReducer = (
         ...state,
         isSigning: true,
       }
-    case TxActionType.SUBMIT:
-      return {
-        ...state,
-        status: "submitted",
-      }
     case TxActionType.SET_ERROR:
       return {
         ...state,
         error: action.payload,
         status: "error",
+        isSigning: false,
       }
     case TxActionType.SET_STATUS:
       return {
@@ -69,7 +65,6 @@ export const transactionStatusReducer = (
 export const doClose = () => ({ type: TxActionType.CLOSE }) as const
 export const doReset = () => ({ type: TxActionType.RESET }) as const
 export const doSign = () => ({ type: TxActionType.SIGN }) as const
-export const doSubmit = () => ({ type: TxActionType.SUBMIT }) as const
 export const doSetError = (payload: string) =>
   ({
     type: TxActionType.SET_ERROR,
