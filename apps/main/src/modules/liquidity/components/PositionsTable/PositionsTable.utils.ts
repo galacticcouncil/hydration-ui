@@ -69,7 +69,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
   const data = useMemo(() => {
     const freeBalance = Big(scaleHuman(balance ?? 0, meta.decimals))
 
-    let totalBalance = Big(0)
+    const totalBalance = Big(0)
     let totalInFarms = Big(0)
     let totalBalanceDisplay = Big(0)
 
@@ -84,7 +84,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
         const shareTokens = scaleHuman(position.shares, meta.decimals)
         const shareTokensDisplay = Big(shareTokens).times(price).toString()
 
-        totalInFarms = totalInFarms.plus(shareTokens)
+        totalInFarms = totalInFarms.plus(shareTokensDisplay)
 
         return {
           poolId: id,
@@ -101,12 +101,11 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
         }
       })
 
-    totalBalance = totalBalance.plus(totalInFarms)
+    totalBalanceDisplay = totalBalanceDisplay.plus(totalInFarms)
 
     if (freeBalance.gt(0)) {
       const shareTokensDisplay = freeBalance.times(price).toString()
-
-      totalBalance = totalBalance.plus(freeBalance)
+      totalBalanceDisplay = totalBalanceDisplay.plus(shareTokensDisplay)
 
       const liquidity = {
         poolId: id,
@@ -122,8 +121,6 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
 
       positionsData.push(liquidity)
     }
-
-    totalBalanceDisplay = totalBalance.times(price)
 
     return {
       positions: positionsData,
@@ -221,12 +218,12 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
 
         if (joinedFarms.length > 0) {
           totalInFarms = totalInFarms.plus(
-            position.data?.currentValueHuman ?? 0,
+            position.data.currentTotalDisplay ?? 0,
           )
         }
 
         totalBalanceDisplay = totalBalanceDisplay.plus(
-          position.data?.currentTotalDisplay ?? 0,
+          position.data.currentTotalDisplay ?? 0,
         )
 
         const isJoinedAllFarms = farmsToJoin.length === 0
