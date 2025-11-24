@@ -72,7 +72,7 @@ export const useRemoveSelectableXYKPositions = ({
 
   const selectedPositions = positionsData.filter((pos) => pos.isSelected)
 
-  const removableValue = positionsData.reduce(
+  const removableValue = selectedPositions.reduce(
     (acc, pos) => ({
       value: acc.value.plus(pos.sharesShifted),
       displayValue: acc.displayValue.plus(pos.sharesDisplay),

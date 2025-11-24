@@ -6,6 +6,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetSelectModal } from "@/components/AssetSelectModal"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { useAccountBalances } from "@/states/account"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -21,6 +22,7 @@ export type AssetSelectProps = Omit<
   "displayValue" | "displayValueLoading"
 > & {
   assets: TAssetData[]
+  sortedAssets?: TAssetWithBalance[]
   selectedAsset: TSelectedAsset | undefined | null
   maxBalanceFallback?: string
   setSelectedAsset?: (asset: TAssetData) => void
@@ -28,6 +30,7 @@ export type AssetSelectProps = Omit<
 
 export const AssetSelect = ({
   assets,
+  sortedAssets,
   selectedAsset,
   maxBalance: providedMaxBalance,
   maxBalanceFallback,
@@ -80,6 +83,7 @@ export const AssetSelect = ({
       <AssetSelectModal
         open={openModal}
         assets={assets}
+        sortedAssets={sortedAssets}
         onOpenChange={setOpeModal}
         onSelect={setSelectedAsset}
         emptyState={<AssetSelectEmptyState />}
