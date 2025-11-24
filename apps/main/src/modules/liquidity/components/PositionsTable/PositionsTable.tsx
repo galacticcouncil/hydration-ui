@@ -5,6 +5,7 @@ import {
   DataTable,
   Flex,
   Icon,
+  Modal,
   Paper,
   Separator,
   TableContainer,
@@ -15,8 +16,12 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { Circle, Minus } from "lucide-react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { XykDeposit } from "@/api/account"
+import { Farm } from "@/api/farms"
+import { TJoinedFarm } from "@/modules/liquidity/components/Farms/Farms.utils"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -30,6 +35,7 @@ import {
 import { ATokenBalanceTable } from "./ATokenBalanceTable"
 import { ClaimCard } from "./ClaimCard"
 import { OmnipoolPositions } from "./OmnipoolPositions"
+import { PositionDetails } from "./PositionDetails"
 import { PositionsHeader } from "./PositionsHeader"
 import { useIsolatedPositionsTableColumns } from "./PositionsTable.columns"
 import { STableHeader } from "./PositionsTable.styled"
@@ -51,6 +57,11 @@ export const PositionsTable = ({
 
 const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
   const { t } = useTranslation("liquidity")
+  const [selectedPosition, setSelectedPosition] = useState<{
+    joinedFarms: TJoinedFarm[]
+    farmsToJoin: Farm[]
+    position: XykDeposit
+  } | null>(null)
   const columns = useIsolatedPositionsTableColumns(pool.isFarms)
 
   const { positions, totalInFarms, totalBalanceDisplay } =
@@ -94,10 +105,31 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
         columns={columns}
         paginated
         pageSize={10}
+        onRowClick={(row) => {
+          if (row.position) {
+            setSelectedPosition({
+              joinedFarms: row.joinedFarms,
+              farmsToJoin: row.farmsToJoin,
+              position: row.position,
+            })
+          }
+        }}
         columnPinning={{
           left: ["position"],
         }}
       />
+      <Modal
+        open={!!selectedPosition}
+        onOpenChange={() => setSelectedPosition(null)}
+      >
+        {selectedPosition && (
+          <PositionDetails
+            joinedFarms={selectedPosition.joinedFarms}
+            farmsToJoin={selectedPosition.farmsToJoin}
+            position={selectedPosition.position}
+          />
+        )}
+      </Modal>
     </PositionsTableBody>
   )
 }

@@ -2,29 +2,37 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { XykDeposit } from "@/api/account"
 import { TAssetData } from "@/api/assets"
+import { Farm } from "@/api/farms"
 import { useXYKPoolsLiquidity } from "@/api/xyk"
+import {
+  TAprByRewardAsset,
+  TJoinedFarm,
+  useDepositAprs,
+} from "@/modules/liquidity/components/Farms/Farms.utils"
 import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
 import { XYKPoolMeta } from "@/providers/assetsProvider"
-import {
-  AccountOmnipoolPosition,
-  isOmnipoolDepositPosition,
-} from "@/states/account"
+import { AccountOmnipoolPosition } from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 import { numericallyStrDesc } from "@/utils/sort"
 
 export type IsolatedPositionTableData = {
   poolId: string
-  joinedFarms: string[]
+  joinedFarms: TJoinedFarm[]
+  farmsToJoin: Farm[]
+  isJoinedAllFarms: boolean
+  aprsByRewardAsset: TAprByRewardAsset[]
   shareTokens: string
   shareTokensDisplay: string
   shareTokenId: string
   positionId?: string
   meta: XYKPoolMeta
+  position?: XykDeposit
 }
 
 export type BalanceTableData = {
@@ -39,14 +47,18 @@ export type BalanceTableData = {
 
 export type OmnipoolPositionTableData = {
   poolId: string
-  joinedFarms: string[]
+  joinedFarms: TJoinedFarm[]
+  farmsToJoin: Farm[]
+  aprsByRewardAsset: TAprByRewardAsset[]
   isJoinedAllFarms: boolean
   meta: TAssetData
   stableswapId?: string
 } & AccountOmnipoolPosition
 
 export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
-  const { balance, meta, shareTokenId, positions, id } = pool
+  const { balance, meta, shareTokenId, positions, id, allFarms } = pool
+
+  const getDepositAprs = useDepositAprs()
 
   const { data: liquidity } = useXYKPoolsLiquidity(id)
 
@@ -64,8 +76,9 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
     const positionsData = positions
       .sort((a, b) => numericallyStrDesc(a.id, b.id))
       .map((position): IsolatedPositionTableData => {
-        const joinedFarms = position.yield_farm_entries.map((entry) =>
-          entry.global_farm_id.toString(),
+        const { aprsByRewardAsset, joinedFarms, farmsToJoin } = getDepositAprs(
+          position,
+          allFarms,
         )
 
         const shareTokens = scaleHuman(position.shares, meta.decimals)
@@ -76,11 +89,15 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
         return {
           poolId: id,
           joinedFarms,
+          aprsByRewardAsset,
+          isJoinedAllFarms: farmsToJoin.length === 0,
+          farmsToJoin,
           shareTokens,
           shareTokensDisplay,
           positionId: position.id,
           shareTokenId,
           meta,
+          position,
         }
       })
 
@@ -94,6 +111,9 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
       const liquidity = {
         poolId: id,
         joinedFarms: [],
+        aprsByRewardAsset: [],
+        isJoinedAllFarms: true,
+        farmsToJoin: [],
         shareTokens: freeBalance.toString(),
         shareTokensDisplay,
         shareTokenId,
@@ -111,7 +131,16 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
       totalInFarms: totalInFarms.toString(),
       totalBalanceDisplay: totalBalanceDisplay.toString(),
     }
-  }, [balance, id, meta, positions, price, shareTokenId])
+  }, [
+    balance,
+    id,
+    meta,
+    positions,
+    price,
+    shareTokenId,
+    allFarms,
+    getDepositAprs,
+  ])
 
   return data
 }
@@ -128,9 +157,10 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     aStableswapAsset,
     aStableswapBalance,
     allFarms,
-    farms,
     stablepoolData,
   } = pool
+
+  const getDepositAprs = useDepositAprs()
 
   const { price: aStableswapPrice, isValid: aStableswapPriceIsValid } =
     useAssetPrice(aStableswapAsset?.id)
@@ -184,22 +214,10 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     const positionData = positions
       .sort((a, b) => numericallyStrDesc(a.positionId, b.positionId))
       .map((position): OmnipoolPositionTableData => {
-        const joinedFarms: string[] = []
-        const farmsToJoin = new Set(farms.map((farm) => farm.globalFarmId))
-
-        if (isOmnipoolDepositPosition(position)) {
-          position.yield_farm_entries.forEach((entry) => {
-            const farm = allFarms.find(
-              (farm) => farm.globalFarmId === entry.global_farm_id,
-            )
-
-            farmsToJoin.delete(entry.global_farm_id)
-
-            if (farm) {
-              joinedFarms.push(farm.rewardCurrency.toString())
-            }
-          })
-        }
+        const { aprsByRewardAsset, joinedFarms, farmsToJoin } = getDepositAprs(
+          position,
+          allFarms,
+        )
 
         if (joinedFarms.length > 0) {
           totalInFarms = totalInFarms.plus(
@@ -211,12 +229,14 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
           position.data?.currentTotalDisplay ?? 0,
         )
 
-        const isJoinedAllFarms = farmsToJoin.size === 0
+        const isJoinedAllFarms = farmsToJoin.length === 0
 
         return {
           poolId: id,
           joinedFarms,
+          aprsByRewardAsset,
           isJoinedAllFarms,
+          farmsToJoin,
           meta,
           stableswapId,
           ...position,
@@ -242,8 +262,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     id,
     meta,
     allFarms,
-    farms,
     stableswapId,
+    getDepositAprs,
   ])
 
   return data

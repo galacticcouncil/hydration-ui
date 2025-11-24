@@ -105,22 +105,25 @@ export const useFormatOmnipoolPositionData = () => {
     hub: { symbol: hubSymbol },
   } = useAssets()
 
-  return (data: OmnipoolPositionData) => {
-    const {
-      currentValueHuman,
-      currentHubValueHuman,
-      meta: { symbol },
-    } = data
+  return useCallback(
+    (data: OmnipoolPositionData) => {
+      const {
+        currentValueHuman,
+        currentHubValueHuman,
+        meta: { symbol },
+      } = data
 
-    const value = t("currency", { value: currentValueHuman, symbol })
-    const hubValue = currentHubValueHuman
+      const value = t("currency", { value: currentValueHuman, symbol })
+      const hubValue = currentHubValueHuman
 
-    if (Big(hubValue).gt(0)) {
-      return `${value} + ${t("currency", { value: hubValue, symbol: hubSymbol })}`
-    }
+      if (Big(hubValue).gt(0)) {
+        return `${value} + ${t("currency", { value: hubValue, symbol: hubSymbol })}`
+      }
 
-    return value
-  }
+      return value
+    },
+    [t, hubSymbol],
+  )
 }
 
 export const useOmnipoolPositionData = (
