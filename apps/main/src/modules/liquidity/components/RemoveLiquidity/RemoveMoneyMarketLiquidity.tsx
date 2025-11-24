@@ -85,7 +85,7 @@ export const RemoveMoneyMarketLiquidityForm = (
     balance,
     receiveAssetsProportionally,
     meta,
-    minimumTradeAmountShifted,
+    tradeMinReceive,
     mutation,
     healthFactor,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
@@ -189,7 +189,7 @@ export const RemoveMoneyMarketLiquidityForm = (
             ) : (
               <TradeSummary
                 receiveAsset={receiveAsset}
-                minimunReceive={minimumTradeAmountShifted}
+                minReceive={tradeMinReceive}
                 erc20={meta}
                 healthFactor={healthFactor}
               />
@@ -209,12 +209,12 @@ export const RemoveMoneyMarketLiquidityForm = (
 
 const TradeSummary = ({
   receiveAsset,
-  minimunReceive,
+  minReceive,
   erc20,
   healthFactor,
 }: {
   receiveAsset: TSelectedAsset
-  minimunReceive: string
+  minReceive: string
   erc20: TAssetData
   healthFactor: HealthFactorResult | undefined
 }) => {
@@ -235,7 +235,7 @@ const TradeSummary = ({
           {
             label: t("minimumReceive"),
             content: t("currency", {
-              value: minimunReceive,
+              value: minReceive,
               symbol: receiveAsset.symbol,
             }),
           },
