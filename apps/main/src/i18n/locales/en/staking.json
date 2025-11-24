@@ -41,6 +41,7 @@
     "stake.unstake.toasts.onSuccess": "Unstaked {{ amount }}.", 
 
     "referenda.title_zero": "Ongoing referenda",
+    "referenda.title_one": "Ongoing referenda ({{ count }})",
     "referenda.title_other": "Ongoing referenda ({{ count }})",
     "referenda.emptyState.header": "Nothing here",
     "referenda.emptyState.description": "Currently there  are no ongoing referenda to vote in. ",
