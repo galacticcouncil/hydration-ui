@@ -1,4 +1,3 @@
-import { bigMax } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -50,7 +49,7 @@ export const useStakeForm = (balance: string, stakedBalance: string) => {
     .div(100)
     .toString()
 
-  const minStakeUsed = bigMax(
+  const minStakeUsed = Big.max(
     minIncreaseStakePosition,
     scaleHuman(stakingConsts?.minStake ?? 0n, native.decimals),
   ).toString()

@@ -1,6 +1,6 @@
-import { bigMax } from "@galacticcouncil/utils"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
+import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { number, string, z } from "zod/v4"
 
@@ -125,7 +125,7 @@ export const accountVotesQuery = (
         (acc, votedAmount) => {
           if (votedAmount.isUnlocked) {
             return {
-              maxUnlockedValue: bigMax(
+              maxUnlockedValue: Big.max(
                 acc.maxUnlockedValue,
                 votedAmount.amount,
               ).toString(),
@@ -136,7 +136,7 @@ export const accountVotesQuery = (
           }
 
           return {
-            maxLockedValue: bigMax(
+            maxLockedValue: Big.max(
               acc.maxLockedValue,
               votedAmount.amount,
             ).toString(),

@@ -1,5 +1,4 @@
 import { API_ETH_MOCK_ADDRESS } from "@aave/contract-helpers"
-import { bigMin } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import { roundToTokenDecimals } from "./utils"
@@ -45,7 +44,7 @@ export function getMaxAmountAvailableToSupply(
       poolReserve.supplyCap,
       poolReserve.totalLiquidity,
     )
-    maxAmountToSupply = bigMin(
+    maxAmountToSupply = Big.min(
       maxAmountToSupply.toString(),
       remaining.toString(),
     )

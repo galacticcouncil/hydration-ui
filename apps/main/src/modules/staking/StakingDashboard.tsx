@@ -7,7 +7,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { bigMax } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -77,7 +76,7 @@ export const StakingDashboard: FC = () => {
     .minus(stakingPositionsData?.accumulated_locked_rewards?.toString() || "0")
 
   const availableBalance = scaleHuman(
-    bigMax(0, rawAvailableBalance).toString(),
+    Big.max(0, rawAvailableBalance).toString(),
     native.decimals,
   )
 

@@ -1,5 +1,4 @@
 import { calculate_points, sigmoid } from "@galacticcouncil/math-staking"
-import { bigMax } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -89,7 +88,7 @@ export const useRewardsCurveData = () => {
 
         const y = Big(scaleHuman(payablePercentage_, "q")).mul(100).toNumber()
 
-        const x = bigMax(
+        const x = Big.max(
           Big(stakingConsts.periodLength)
             .times(period)
             .times(Big(rpc.slotDurationMs).div(1000))

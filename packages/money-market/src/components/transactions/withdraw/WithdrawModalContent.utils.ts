@@ -1,4 +1,3 @@
-import { bigMin } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import {
@@ -14,7 +13,7 @@ export const calculateMaxWithdrawAmount = (
 ) => {
   const underlyingBalance = Big(userReserve?.underlyingBalance || "0")
   const unborrowedLiquidity = Big(poolReserve.unborrowedLiquidity)
-  let maxAmountToWithdraw = bigMin(underlyingBalance, unborrowedLiquidity)
+  let maxAmountToWithdraw = Big.min(underlyingBalance, unborrowedLiquidity)
   let maxCollateralToWithdrawInETH = Big("0")
   const reserveLiquidationThreshold =
     user.isInEmode && user.userEmodeCategoryId === poolReserve.eModeCategoryId
@@ -32,7 +31,7 @@ export const calculateMaxWithdrawAmount = (
         .mul(user.totalBorrowsMarketReferenceCurrency)
         .div(reserveLiquidationThreshold)
     }
-    maxAmountToWithdraw = bigMin(
+    maxAmountToWithdraw = Big.min(
       maxAmountToWithdraw,
       maxCollateralToWithdrawInETH.div(
         poolReserve.formattedPriceInMarketReferenceCurrency,

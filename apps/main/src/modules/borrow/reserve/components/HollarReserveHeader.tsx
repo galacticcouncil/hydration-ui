@@ -1,6 +1,6 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { Stack, ValueStats } from "@galacticcouncil/ui/components"
-import { bigMax } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 export type HollarReserveHeaderProps = {
@@ -17,7 +17,7 @@ export const HollarReserveHeader: React.FC<HollarReserveHeaderProps> = ({
       <ValueStats
         label={t("borrow:reserve.reserveSize")}
         value={t("currency.compact", {
-          value: bigMax(reserve.totalLiquidityUSD, 0),
+          value: Big.max(reserve.totalLiquidityUSD, 0),
         })}
         size="large"
         wrap={[false, false, true]}
@@ -25,7 +25,7 @@ export const HollarReserveHeader: React.FC<HollarReserveHeaderProps> = ({
       <ValueStats
         label={t("borrow:reserve.maxToBorrow")}
         value={t("currency.compact", {
-          value: bigMax(reserve.borrowCap, 0),
+          value: Big.max(reserve.borrowCap, 0),
         })}
         size="large"
         wrap={[false, false, true]}

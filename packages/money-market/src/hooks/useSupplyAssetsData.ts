@@ -1,5 +1,5 @@
 import { USD_DECIMALS } from "@aave/math-utils"
-import { bigMin, bigShift } from "@galacticcouncil/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import { Big } from "big.js"
 import { useMemo } from "react"
 
@@ -38,7 +38,7 @@ export const useSupplyAssetsData = ({ showAll }: { showAll: boolean }) => {
           availableToDeposit =
             availableToDeposit === "NaN"
               ? "0"
-              : bigMin(
+              : Big.min(
                   availableToDeposit.toString(),
                   Big(reserve.supplyCap)
                     .minus(reserve.totalLiquidity)

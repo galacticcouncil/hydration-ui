@@ -25,6 +25,7 @@ type Props<TKey extends string> = {
   readonly selectedItems?: ReadonlyArray<TKey>
   readonly label?: string
   readonly placeholder?: string
+  readonly className?: string
   readonly onSelectionChange: (values: ReadonlyArray<TKey>) => void
 }
 
@@ -33,11 +34,12 @@ export const Combobox = <TKey extends string>({
   placeholder,
   items,
   selectedItems,
+  className,
   onSelectionChange,
 }: Props<TKey>) => {
   return (
     <Popover.Root>
-      <ComboboxTrigger>
+      <ComboboxTrigger className={className}>
         {label && <SelectLabel>{label}</SelectLabel>}
         {!selectedItems?.length
           ? placeholder
