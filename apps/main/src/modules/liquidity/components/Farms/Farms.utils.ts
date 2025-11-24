@@ -113,14 +113,18 @@ export const useDepositAprs = () => {
       const isDeposit = isDepositPosition(position)
 
       if (!isDeposit || !activeFarms)
-        return { aprsByRewardAsset: [], joinedFarms: [], farmsToJoin: [] }
+        return {
+          aprsByRewardAsset: [],
+          joinedFarms: [],
+          farmsToJoin: activeFarms.filter((farm) => farm.apr !== "0"),
+        }
 
       const joinedFarms: TJoinedFarm[] = []
 
       const farmsToJoin: Farm[] = []
 
       for (const farm of activeFarms) {
-        const farmEntry = position.yield_farm_entries?.find(
+        const farmEntry = position.yield_farm_entries.find(
           (entry) => entry.global_farm_id === farm.globalFarmId,
         )
 

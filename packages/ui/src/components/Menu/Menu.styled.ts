@@ -102,14 +102,20 @@ export const MenuItemAction = styled.div`
 
 export const MenuSelectionItem = styled(MenuItem)<{
   variant?: MenuItemVariant
+  disabled?: boolean
 }>(({ theme, variant = "default" }) => [
   css`
     border-radius: ${theme.containers.cornerRadius.internalPrimary}px;
     cursor: pointer;
 
-    &:hover,
-    &:active {
+    &:hover:not([disabled]),
+    &:active:not([disabled]) {
       background-color: ${theme.buttons.secondary.low.primaryHover};
+    }
+
+    &[disabled] {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
   `,
   menuItemVariants(variant),

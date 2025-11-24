@@ -1,4 +1,5 @@
 import {
+  Amount,
   Modal,
   TableRowDetailsExpand,
   Text,
@@ -11,13 +12,13 @@ import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
-import { MyLiquidityCurrentValue } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityCurrentValue"
 import { MyLiquidityTableActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.actions"
 import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
 
 export enum MyLiquidityTableColumnId {
-  Asset = "asset",
+  META = "meta",
   CurrentValue = "currentValue",
   NumberOfPositions = "numberOfPositions",
   Actions = "actions",
@@ -29,33 +30,35 @@ export const useMyLiquidityColumns = () => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
 
+  const format = useFormatOmnipoolPositionData()
+
   return useMemo(() => {
-    const assetColumn = columnHelper.accessor("asset.symbol", {
-      id: MyLiquidityTableColumnId.Asset,
+    const assetColumn = columnHelper.accessor("meta.symbol", {
+      id: MyLiquidityTableColumnId.META,
       header: t("common:asset"),
       sortingFn: sortBy({
-        select: (row) => row.original.asset.symbol,
+        select: (row) => row.original.meta.symbol,
         compare: naturally,
       }),
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original.asset} />
+      cell: ({ row: { original } }) => {
+        return <AssetLabelFull asset={original.meta} />
       },
     })
 
-    const currentValueColumn = columnHelper.accessor("currentValue", {
+    const currentValueColumn = columnHelper.accessor("currentTotalDisplay", {
       id: MyLiquidityTableColumnId.CurrentValue,
       header: t("myLiquidity.header.currentValue"),
       sortingFn: sortBy({
-        select: (row) => row.original.currentValueDisplay,
+        select: (row) => row.original.currentTotalDisplay,
         compare: numericallyStr,
       }),
-      cell: ({ row }) => (
-        <>
-          <MyLiquidityCurrentValue
-            asset={row.original.asset}
-            currentValue={row.original.currentValue}
-          />
-        </>
+      cell: ({ row: { original } }) => (
+        <Amount
+          value={format(original)}
+          displayValue={t("common:currency", {
+            value: original.currentTotalDisplay,
+          })}
+        />
       ),
     })
 
@@ -88,57 +91,58 @@ export const useMyLiquidityColumns = () => {
           textAlign: "right",
         },
       },
-      cell: ({ row }) => {
-        return <MyLiquidityTableActions assetId={row.original.asset.id} />
+      cell: ({ row: { original } }) => {
+        return <MyLiquidityTableActions assetId={original.meta.id} />
       },
     })
 
-    const assetColumnMobile = columnHelper.accessor("asset.symbol", {
-      id: MyLiquidityTableColumnId.Asset,
+    const assetColumnMobile = columnHelper.accessor("meta.symbol", {
+      id: MyLiquidityTableColumnId.META,
       header: t("common:asset"),
       sortingFn: sortBy({
-        select: (row) => row.original.asset.symbol,
+        select: (row) => row.original.meta.symbol,
         compare: naturally,
       }),
-      cell: ({ row }) => {
-        return <AssetLabelFull asset={row.original.asset} withName={false} />
+      cell: ({ row: { original } }) => {
+        return <AssetLabelFull asset={original.meta} withName={false} />
       },
     })
 
-    const currentValueColumnMobile = columnHelper.accessor("currentValue", {
-      id: MyLiquidityTableColumnId.CurrentValue,
-      header: t("myLiquidity.header.currentValue"),
-      meta: {
-        sx: {
-          textAlign: "right",
+    const currentValueColumnMobile = columnHelper.accessor(
+      "currentTotalDisplay",
+      {
+        id: MyLiquidityTableColumnId.CurrentValue,
+        header: t("myLiquidity.header.currentValue"),
+        meta: {
+          sx: {
+            textAlign: "right",
+          },
+        },
+        sortingFn: sortBy({
+          select: (row) => row.original.currentTotalDisplay,
+          compare: numericallyStr,
+        }),
+        cell: function Cell({ row: { original } }) {
+          const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+          return (
+            <>
+              <TableRowDetailsExpand onClick={() => setIsDetailOpen(true)}>
+                <Amount
+                  value={format(original)}
+                  displayValue={t("common:currency", {
+                    value: original.currentTotalDisplay,
+                  })}
+                />
+              </TableRowDetailsExpand>
+              <Modal open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+                <LiquidityDetailMobileModal {...original} />
+              </Modal>
+            </>
+          )
         },
       },
-      sortingFn: sortBy({
-        select: (row) => row.original.currentValueDisplay,
-        compare: numericallyStr,
-      }),
-      cell: function Cell({ row }) {
-        const [isDetailOpen, setIsDetailOpen] = useState(false)
-
-        return (
-          <>
-            <TableRowDetailsExpand onClick={() => setIsDetailOpen(true)}>
-              <MyLiquidityCurrentValue
-                asset={row.original.asset}
-                currentValue={row.original.currentValue}
-              />
-            </TableRowDetailsExpand>
-            <Modal open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-              <LiquidityDetailMobileModal
-                asset={row.original.asset}
-                currentValue={row.original.currentValue}
-                positions={row.original.positions}
-              />
-            </Modal>
-          </>
-        )
-      },
-    })
+    )
 
     return isMobile
       ? ([
@@ -152,5 +156,5 @@ export const useMyLiquidityColumns = () => {
           positionsColumn,
           actionsColumn,
         ] as ColumnDef<LiquidityPositionByAsset>[])
-  }, [t, isMobile])
+  }, [t, isMobile, format])
 }

@@ -4,16 +4,21 @@ import { useTranslation } from "react-i18next"
 
 import { MyLiquidityActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityActions"
 import { MyLiquidityTable } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable"
-import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 
 type Props = {
   readonly searchPhrase: string
-  readonly data: Array<LiquidityPositionByAsset>
-  readonly isLoading: boolean
 }
 
-export const MyLiquidity: FC<Props> = ({ searchPhrase, data, isLoading }) => {
+export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("wallet")
+
+  const { data: liquidityData, isLoading: liquidityLoading } =
+    useMyLiquidityTableData()
+
+  if (liquidityData.length === 0) {
+    return null
+  }
 
   return (
     <Box>
@@ -24,8 +29,8 @@ export const MyLiquidity: FC<Props> = ({ searchPhrase, data, isLoading }) => {
         <MyLiquidityActions />
       </Flex>
       <MyLiquidityTable
-        data={data}
-        isLoading={isLoading}
+        data={liquidityData}
+        isLoading={liquidityLoading}
         searchPhrase={searchPhrase}
       />
     </Box>

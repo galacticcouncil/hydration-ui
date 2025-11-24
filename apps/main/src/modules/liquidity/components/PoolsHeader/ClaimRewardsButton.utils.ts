@@ -41,7 +41,7 @@ export const useLiquidityMiningRewards = () => {
 }
 
 export const useClaimPositionRewards = (
-  position: OmnipoolDepositFullWithData | XykDeposit,
+  position?: OmnipoolDepositFullWithData | XykDeposit,
 ) => {
   const relayChainBlockNumber = useRelayChainBlockNumber()
 
@@ -49,7 +49,7 @@ export const useClaimPositionRewards = (
     data: rewards,
     isPending,
     refetch,
-  } = useFarmRewards([position], relayChainBlockNumber)
+  } = useFarmRewards(position ? [position] : [], relayChainBlockNumber)
 
   const claimableValues = useSummarizeClaimableValues(
     rewards?.map((deposit) => deposit.rewards),

@@ -13,31 +13,38 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { Farm } from "@/api/farms"
 import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
+import { AccountOmnipoolPosition } from "@/states/account"
 
 type Props = {
   readonly assetId: string
-  readonly positionId: string
+  readonly position: AccountOmnipoolPosition
+  readonly farmsToJoin: Farm[]
 }
 
 export const LiquidityPositionActions: FC<Props> = ({
   assetId,
-  positionId,
+  position,
+  farmsToJoin,
 }) => {
   const { t } = useTranslation(["common", "wallet"])
 
   return (
-    <Flex align="center" gap={6}>
+    <Flex align="center" gap={6} justify="flex-end">
       <ModalRoot>
-        <Button variant="sliderTabActive" asChild>
-          <ModalTrigger>
-            {/* TODO show real count and hide if 0 */}
-            {t("wallet:myLiquidity.expanded.actions.joinFarms", { count: 1 })}
-          </ModalTrigger>
-        </Button>
+        {!!farmsToJoin.length && (
+          <Button variant="sliderTabActive" asChild>
+            <ModalTrigger>
+              {t("wallet:myLiquidity.expanded.actions.joinFarms", {
+                count: farmsToJoin.length,
+              })}
+            </ModalTrigger>
+          </Button>
+        )}
         <ModalContent>
-          <JoinFarmsWrapper positionId={positionId} poolId={assetId} />
+          <JoinFarmsWrapper positionId={position.positionId} poolId={assetId} />
         </ModalContent>
       </ModalRoot>
       <DropdownMenu modal={false}>
@@ -50,7 +57,8 @@ export const LiquidityPositionActions: FC<Props> = ({
         <DropdownMenuContent>
           <LiquidityPositionMoreActions
             assetId={assetId}
-            positionId={positionId}
+            position={position}
+            farmsToJoin={farmsToJoin}
           />
         </DropdownMenuContent>
       </DropdownMenu>

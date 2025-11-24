@@ -106,7 +106,11 @@ export const useFormatOmnipoolPositionData = () => {
   } = useAssets()
 
   return useCallback(
-    (data: OmnipoolPositionData) => {
+    (data: {
+      currentValueHuman: string
+      currentHubValueHuman: string
+      meta: TAssetData
+    }) => {
       const {
         currentValueHuman,
         currentHubValueHuman,

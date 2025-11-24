@@ -4,39 +4,57 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
+  Flex,
+  Text,
 } from "@galacticcouncil/ui/components"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useOmnipoolActiveFarm } from "@/api/farms"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
-import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
+import { AssetLogo } from "@/components/AssetLogo"
+import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
-import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { TAsset } from "@/providers/assetsProvider"
+import { AccountOmnipoolPosition } from "@/states/account"
 
 type Props = {
   readonly asset: TAsset
-  readonly position: MyLiquidityPosition
+  readonly position: AccountOmnipoolPosition
 }
 
 export const LiquidityPositionMobileHeader: FC<Props> = ({
   asset,
   position,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
+  const { data: activeFarms } = useOmnipoolActiveFarm(asset.id)
+  const getDepositAprs = useDepositAprs()
 
-  // TODO integrate
-  const farmsAvailable = 1
+  const { aprsByRewardAsset, joinedFarms, farmsToJoin } = getDepositAprs(
+    position,
+    activeFarms ?? [],
+  )
 
   return (
     <SLiquidityPositionMobileHeader>
       <AssetLabelFull asset={asset} withName={false} />
-      <LiquidityFarms
-        assetId={asset.id}
-        rewards={position.rewards}
-        farmsAvailable={farmsAvailable}
-      />
+      {joinedFarms.length ? (
+        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+          <AssetLogo
+            id={joinedFarms.map(({ farm }) => farm.rewardCurrency.toString())}
+          />
+          <Text fs="p6" color={getToken("text.tint.secondary")}>
+            {aprsByRewardAsset
+              .map((apr) => t("percent", { value: apr.totalApr }))
+              .join(" + ")}
+          </Text>
+        </Flex>
+      ) : (
+        <div />
+      )}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="tertiary" outline>
@@ -47,8 +65,8 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
         <DropdownMenuContent>
           <LiquidityPositionMoreActions
             assetId={asset.id}
-            positionId={position.id}
-            hasJoinFarm
+            position={position}
+            farmsToJoin={farmsToJoin}
           />
         </DropdownMenuContent>
       </DropdownMenu>
