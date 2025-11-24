@@ -1,4 +1,11 @@
-import { ItemText, Root, SelectProps, Value } from "@radix-ui/react-select"
+import {
+  ItemText,
+  Root,
+  SelectProps,
+  Trigger,
+  Value,
+} from "@radix-ui/react-select"
+import { ReactNode } from "react"
 
 import { CaretDown } from "@/assets/icons"
 import { getToken } from "@/utils"
@@ -12,30 +19,44 @@ export type SelectItem<TKey extends string> = {
   label: string
 }
 
+type RenderProps =
+  | {
+      label?: string
+      renderTrigger?: never
+    }
+  | {
+      label?: never
+      renderTrigger: () => ReactNode
+    }
+
 type SelectPropsCustom<TKey extends string> = Omit<
   SelectProps,
   "onValueChange"
-> & {
-  label?: string
-  placeholder?: string
-  items: ReadonlyArray<SelectItem<TKey>>
-  onValueChange: (value: TKey) => void
-}
+> &
+  RenderProps & {
+    placeholder?: string
+    items: ReadonlyArray<SelectItem<TKey>>
+    onValueChange: (value: TKey) => void
+  }
 
 export const Select = <TKey extends string = string>({
   label,
   placeholder,
   items,
+  renderTrigger,
   ...props
 }: SelectPropsCustom<TKey>) => {
   return (
     <Root {...props}>
-      <SelectTrigger>
-        {label && <SelectLabel>{label}</SelectLabel>}
-        <Value placeholder={placeholder} />
-        <SelectCaret />
-      </SelectTrigger>
-
+      {renderTrigger ? (
+        <Trigger sx={{ cursor: "pointer" }}>{renderTrigger()}</Trigger>
+      ) : (
+        <SelectTrigger>
+          {label && <SelectLabel>{label}</SelectLabel>}
+          <Value placeholder={placeholder} />
+          <SelectCaret />
+        </SelectTrigger>
+      )}
       <SContent sideOffset={6} align="center" position="popper">
         <SViewport>
           {items.map((item) => (

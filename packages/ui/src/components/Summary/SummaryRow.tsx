@@ -25,11 +25,7 @@ export const SummaryRow = ({
   className,
   loading,
 }: SummaryRowProps) => {
-  const labelElement = (
-    <Text fs="p5" color={getToken("text.medium")}>
-      {label}:
-    </Text>
-  )
+  const labelElement = <SummaryRowLabel>{label}:</SummaryRowLabel>
 
   return (
     <Flex align="center" justify="space-between" my={8} className={className}>
@@ -60,4 +56,8 @@ export const SummaryRow = ({
 
 export const SummaryRowValue = (props: TextProps) => (
   <Text fs="p5" fw={500} color={getToken("text.high")} {...props} />
+)
+
+export const SummaryRowLabel = (props: TextProps) => (
+  <Text fs="p5" lh={1.4} color={getToken("text.medium")} {...props} />
 )
