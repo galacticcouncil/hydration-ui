@@ -6,25 +6,39 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
+import { ReviewTransactionFeePaymentAssetModal } from "@/modules/transactions/review/ReviewTransactionFeePaymentAssetModal"
 import { ReviewTransactionFooter } from "@/modules/transactions/review/ReviewTransactionFooter"
 import { ReviewTransactionJsonView } from "@/modules/transactions/review/ReviewTransactionJsonView"
 import { ReviewTransactionStatus } from "@/modules/transactions/review/ReviewTransactionStatus"
 import { ReviewTransactionSummary } from "@/modules/transactions/review/ReviewTransactionSummary"
-import { TransactionFeePaymentAssetModal } from "@/modules/transactions/TransactionFeePaymentAssetModal"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
-export const ReviewTransaction = () => {
-  const {
-    open,
-    title,
-    description,
-    onClose,
-    isIdle,
-    isFeePaymentModalOpen,
-    setFeePaymentModalOpen,
-  } = useTransaction()
+export const ReviewTransactionContent = () => {
+  const { isIdle } = useTransaction()
 
+  if (isIdle) {
+    return (
+      <>
+        <ModalBody scrollable={false} noPadding>
+          <ReviewTransactionJsonView />
+        </ModalBody>
+        <ModalBody scrollable={false}>
+          <ReviewTransactionSummary />
+        </ModalBody>
+      </>
+    )
+  }
+
+  return (
+    <ModalBody>
+      <ReviewTransactionStatus />
+    </ModalBody>
+  )
+}
+
+export const ReviewTransaction = () => {
   const { t } = useTranslation()
+  const { title, description, open, onClose } = useTransaction()
 
   return (
     <>
@@ -38,31 +52,12 @@ export const ReviewTransaction = () => {
           title={title ?? t("transaction.title")}
           description={description ?? t("transaction.description")}
         />
-        {isIdle && (
-          <>
-            <ModalBody scrollable={false} noPadding>
-              <ReviewTransactionJsonView />
-            </ModalBody>
-            <ModalBody scrollable={false}>
-              <ReviewTransactionSummary />
-            </ModalBody>
-          </>
-        )}
-        {!isIdle && (
-          <ModalBody>
-            <ReviewTransactionStatus />
-          </ModalBody>
-        )}
-
+        <ReviewTransactionContent />
         <ModalFooter justify="space-between">
           <ReviewTransactionFooter />
         </ModalFooter>
       </Modal>
-      <Modal open={isFeePaymentModalOpen} onOpenChange={setFeePaymentModalOpen}>
-        <TransactionFeePaymentAssetModal
-          onSubmitted={() => setFeePaymentModalOpen(false)}
-        />
-      </Modal>
+      <ReviewTransactionFeePaymentAssetModal />
     </>
   )
 }

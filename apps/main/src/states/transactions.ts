@@ -16,16 +16,31 @@ export enum TransactionType {
   Xcm = "Xcm",
 }
 
-export interface TransactionInput {
-  tx: AnyTransaction
+type TransactionCommon = {
   title?: string
   description?: string
-  steps?: string[]
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
-  disableAutoClose?: boolean
 }
+
+type MultiTransactionConfig = {
+  tx:
+    | AnyTransaction
+    | ((results: TSuccessResult[]) => Promise<AnyTransaction> | AnyTransaction)
+} & TransactionCommon & {
+    stepTitle?: string
+  }
+
+interface SingleTransactionInput extends TransactionCommon {
+  tx: AnyTransaction
+}
+
+interface MultiTransactionInput {
+  tx: MultiTransactionConfig[]
+}
+
+export type TransactionInput = SingleTransactionInput | MultiTransactionInput
 
 export type TransactionProps = Omit<TransactionInput, "meta"> & {
   meta: TransactionMeta
@@ -44,15 +59,15 @@ type TransactionFee = {
   feePaymentAssetId?: string
 }
 
-type TransactionMetaCommons = {
+type TransactionMetaCommon = {
   srcChainKey: string
 }
 
-export type TransactionOnchainMeta = TransactionMetaCommons & {
+export type TransactionOnchainMeta = TransactionMetaCommon & {
   type: TransactionType.Onchain
 }
 
-export type TransactionXcmMeta = TransactionMetaCommons & {
+export type TransactionXcmMeta = TransactionMetaCommon & {
   type: TransactionType.Xcm
   dstChainKey: string
   dstChainFee?: string
@@ -61,6 +76,7 @@ export type TransactionXcmMeta = TransactionMetaCommons & {
 }
 
 export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta
+
 export type TSuccessResult = TxBestBlocksStateResult | TransactionReceipt
 
 export interface TransactionActions {
@@ -75,8 +91,30 @@ export interface TransactionOptions extends TransactionActions {
   onClose?: () => void
 }
 
-export interface Transaction extends TransactionProps, TransactionActions {
-  id: string
+export type SingleTransaction = SingleTransactionInput &
+  TransactionProps &
+  TransactionActions & {
+    id: string
+  }
+
+export type MultiTransaction = MultiTransactionInput &
+  TransactionProps &
+  TransactionActions & {
+    id: string
+  }
+
+export type Transaction = SingleTransaction | MultiTransaction
+
+export const isMultiTransaction = (
+  transaction: Transaction,
+): transaction is MultiTransaction => {
+  return Array.isArray(transaction.tx)
+}
+
+export const isSingleTransaction = (
+  transaction: Transaction,
+): transaction is SingleTransaction => {
+  return !Array.isArray(transaction.tx)
 }
 
 export const isSubstrateTxResult = (
@@ -99,31 +137,33 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   createTransaction: (transaction, options) => {
     return new Promise<TSuccessResult>((resolve, reject) => {
       set((state) => {
-        return {
-          transactions: [
-            {
-              id: uuid(),
-              ...transaction,
-              meta: transaction?.meta ?? {
+        const meta: TransactionMeta =
+          "meta" in transaction && transaction.meta
+            ? transaction.meta
+            : {
                 type: TransactionType.Onchain,
                 srcChainKey: HYDRATION_CHAIN_KEY,
-              },
-              onSubmitted: options?.onSubmitted,
-              onSuccess: (event) => {
-                options?.onSuccess?.(event)
-                resolve(event)
-              },
-              onError: (message) => {
-                options?.onError?.(message)
-                reject(message)
-              },
-              onClose: () => {
-                options?.onClose?.()
-                reject("Transaction closed")
-              },
-            },
-            ...(state.transactions ?? []),
-          ],
+              }
+        const newTransaction: Transaction = {
+          id: uuid(),
+          ...transaction,
+          meta,
+          onSubmitted: options?.onSubmitted,
+          onSuccess: (event) => {
+            options?.onSuccess?.(event)
+            resolve(event)
+          },
+          onError: (message) => {
+            options?.onError?.(message)
+            reject(message)
+          },
+          onClose: () => {
+            options?.onClose?.()
+            reject("Transaction closed")
+          },
+        }
+        return {
+          transactions: [newTransaction, ...(state.transactions ?? [])],
         }
       })
     })
