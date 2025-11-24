@@ -41,7 +41,7 @@
     "@galacticcouncil/math-staking": "^1.2.0",
     "@galacticcouncil/sdk": "^10.1.0",
     "@galacticcouncil/ui": "^5.7.0",
-    "@galacticcouncil/xcm-cfg": "10.17.2-pr225-ef23bca",
+    "@galacticcouncil/xcm-cfg": "^10.18.0",
     "@galacticcouncil/xcm-core": "^8.8.0",
     "@galacticcouncil/xcm-sdk": "^10.9.0",
     "@hookform/resolvers": "^3.3.4",
