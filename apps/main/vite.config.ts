@@ -21,6 +21,11 @@ const headCriticalCss = await transformWithEsbuild(
   { minify: true },
 )
 
+const loaderHtml = fs.readFileSync(
+  "./src/components/Loader/loader.html",
+  "utf-8",
+)
+
 export default defineConfig({
   build: {
     target: "es2022",
@@ -63,6 +68,11 @@ export default defineConfig({
             injectTo: "head-prepend",
             tag: "style",
             children: headCriticalCss.code,
+          },
+          {
+            injectTo: "body-prepend",
+            tag: "div",
+            children: loaderHtml,
           },
         ],
       },
