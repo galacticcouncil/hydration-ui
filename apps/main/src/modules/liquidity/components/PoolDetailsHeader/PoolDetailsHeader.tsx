@@ -39,7 +39,7 @@ export const PoolDetailsHeader = ({
       <Flex>
         <Flex gap={8} align="center">
           <AssetLogo
-            id={isOmnipool ? data.id : data.meta.iconId}
+            id={isOmnipool ? data.meta.id : data.meta.iconId}
             size="large"
           />
 

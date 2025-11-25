@@ -63,14 +63,6 @@ export const AssetSelectModalContent = ({
     search,
     selectedAssetId,
   )
-  const filteredCustomAssets = useFilteredSearchAssets(
-    customSortedAssets ?? [],
-    search,
-  )
-
-  const assetsToDisplay = isProvidedSortedAssets
-    ? filteredCustomAssets
-    : sortedAssets
 
   const filteredCustomAssets = useFilteredSearchAssets(
     customSortedAssets ?? [],
