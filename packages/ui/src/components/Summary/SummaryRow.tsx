@@ -9,7 +9,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { ReactNode } from "react"
 
 export type SummaryRowProps = {
-  label: string
+  label: ReactNode
   content: ReactNode
   description?: string
   tooltip?: ReactNode
@@ -25,7 +25,12 @@ export const SummaryRow = ({
   className,
   loading,
 }: SummaryRowProps) => {
-  const labelElement = <SummaryRowLabel>{label}:</SummaryRowLabel>
+  const labelElement =
+    typeof label === "string" ? (
+      <SummaryRowLabel>{label}:</SummaryRowLabel>
+    ) : (
+      label
+    )
 
   return (
     <Flex align="center" justify="space-between" my={8} className={className}>

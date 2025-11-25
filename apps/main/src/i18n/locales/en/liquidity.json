@@ -70,6 +70,11 @@
   "liquidity.positions.label.omnipool": "In Omnipool",
   "liquidity.positions.label.isolated": "In Isolated Pool",
   "liquidity.positions.label.stablepool": "In Stablepool",
+  "liquidity.position.modal.title": "Position details",
+  "liquidity.position.availableFarms.label": "Available farms",
+  "liquidity.position.exitFarms.label": "Exit farms",
+  "liquidity.farmDetails.expectedEnd.label": "Expected end date",
+  "liquidity.farmDetails.accumulatedRewards.label": "Accumulated rewards",
   "liquidity.add.modal.rewardsFromFees.value": "{{ from, percent }} - {{ to, percent }}",
   "liquidity.add.modal.rewardsFromFees.label": "Rewards from fees:",
   "liquidity.add.modal.price": "1 {{assetSymbol}} = {{ value, currency }}",
@@ -138,5 +143,7 @@
   "liquidity.claimRewards.toast.success": "Farm rewards claimed for {{ value }}",
   "liquidity.joinFarms.modal.validation.minShares": "Minimal value of liquidity position for entering farms is {{ value, number }} {{symbol}}",
   "liquidity.tradeLimit.description": "Here you can control the maximum allowed deviation between your desired price for adding liquidity and the actual execution price. Such deviation can be caused by price changes due to trading activity.",
-  "liquidity.tradeLimit.title": "Liquidity trade limit"
+  "liquidity.tradeLimit.title": "Liquidity trade limit",
+  "liquidity.exitFarms.toast.submitted": "Exiting farms from position",
+  "liquidity.exitFarms.toast.success": "Exited farms from position"
   }
