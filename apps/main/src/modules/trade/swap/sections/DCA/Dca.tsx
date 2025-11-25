@@ -1,5 +1,5 @@
 import { useSearch } from "@tanstack/react-router"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -13,14 +13,17 @@ import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDc
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useTradeSettings } from "@/states/tradeSettings"
 
-import { useDcaForm } from "./useDcaForm"
+import { dcaFormValidationSchema, useDcaForm } from "./useDcaForm"
 
 const PRICE_IMPACT_WARNING_THRESHOLD = 3
 
 export const Dca: FC = () => {
   const { t } = useTranslation(["common", "trade"])
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
+
   const form = useDcaForm({ assetIn, assetOut })
+  const { setError, clearErrors } = form
+
   const { order, healthFactor, isLoading } = useDcaTradeOrder(form)
   const submitDcaOrder = useSubmitDcaOrder()
 
@@ -52,12 +55,37 @@ export const Dca: FC = () => {
       )
     }
 
-    if (order && order.frequency < order.frequencyMin) {
-      errors.push(t("trade:dca.errors.minLimit"))
+    if (
+      order &&
+      order.tradeCount < order.optTradeCount &&
+      order.tradeCount > 3
+    ) {
+      warnings.push(
+        t("trade:dca.errors.optOrders", {
+          count: order.optTradeCount,
+          slippage: t("percent", { value: order.tradeImpactPct }),
+        }),
+      )
     }
+
+    // if (order && order.frequency < order.frequencyMin) {
+    //   errors.push(t("trade:dca.errors.minLimit"))
+    // }
 
     return { warnings, errors }
   })()
+
+  useEffect(() => {
+    if (order && order.tradeCount > order.maxTradeCount) {
+      setError("orders", {
+        message: t("trade:dca.errors.maxOrders", {
+          count: order.maxTradeCount,
+        }),
+      })
+    } else if (!dcaFormValidationSchema.safeParse(order?.tradeCount).error) {
+      clearErrors("orders")
+    }
+  }, [order, t, setError, clearErrors])
 
   const isSubmitEnabled =
     !!order &&

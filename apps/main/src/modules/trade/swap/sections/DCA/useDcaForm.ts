@@ -23,7 +23,7 @@ import {
 
 const MIN_ORDERS = 3
 
-const schema = z.object({
+export const dcaFormValidationSchema = z.object({
   sellAsset: requiredObject<TAsset>(),
   sellAmount: positiveOptional,
   buyAsset: requiredObject<TAsset>(),
@@ -33,7 +33,7 @@ const schema = z.object({
   }),
 })
 
-export type DcaFormValues = z.infer<typeof schema>
+export type DcaFormValues = z.infer<typeof dcaFormValidationSchema>
 
 const useSchema = (account: Account | null) => {
   const { t } = useTranslation()
@@ -42,7 +42,7 @@ const useSchema = (account: Account | null) => {
 
   const refineMaxBalance = useValidateFormMaxBalance()
 
-  const minBudgetSchema = schema
+  const minBudgetSchema = dcaFormValidationSchema
     .check(
       account
         ? refineMaxBalance("sellAmount", (form) => [

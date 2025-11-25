@@ -18,7 +18,6 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
   )
 
   const frequency = getPeriodDuration(frequencyPeriod)
-  const duration = frequency * orders
 
   const [
     { data: orderData, isLoading: isOrderLoading },
@@ -29,8 +28,8 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountIn: sellAmount,
-        duration,
         frequency,
+        orders,
       }),
       healthFactorAfterWithdrawQuery(rpc, {
         address: account?.address ?? "",

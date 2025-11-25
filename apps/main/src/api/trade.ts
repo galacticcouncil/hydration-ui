@@ -217,13 +217,13 @@ type DcaTradeOrderArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
-  readonly duration: number
   readonly frequency: number
+  readonly orders: number
 }
 
 export const dcaTradeOrderQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn, duration, frequency }: DcaTradeOrderArgs,
+  { assetIn, assetOut, amountIn, frequency, orders }: DcaTradeOrderArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -233,16 +233,16 @@ export const dcaTradeOrderQuery = (
       assetIn,
       assetOut,
       amountIn,
-      duration,
       frequency,
+      orders,
     ],
     queryFn: () =>
       sdk.api.scheduler.getDcaOrder(
         Number(assetIn),
         Number(assetOut),
         amountIn,
-        duration,
         frequency,
+        orders,
       ),
     enabled:
       isLoaded &&
@@ -250,7 +250,7 @@ export const dcaTradeOrderQuery = (
       !!assetOut &&
       Big(amountIn || "0").gt(0) &&
       frequency > 0 &&
-      duration > 0,
+      orders > 0,
   })
 
 export const minimumOrderBudgetQuery = (

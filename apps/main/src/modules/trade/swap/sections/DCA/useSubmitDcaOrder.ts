@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query"
 import { formatDistanceToNowStrict } from "date-fns"
 import { useTranslation } from "react-i18next"
 
+import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -38,6 +39,7 @@ export const useSubmitDcaOrder = () => {
       const sellDecimals = sellAsset?.decimals ?? 0
       const sellSymbol = sellAsset?.symbol ?? ""
       const buySymbol = buyAsset?.symbol ?? ""
+      const frequency = getPeriodDuration(formValues.frequency)
 
       const params = {
         amountIn: t("currency", {
@@ -49,7 +51,7 @@ export const useSubmitDcaOrder = () => {
           symbol: sellSymbol,
         }),
         assetOut: buySymbol,
-        frequency: formatDistanceToNowStrict(Date.now() + order.frequency),
+        frequency: formatDistanceToNowStrict(Date.now() + frequency),
       }
 
       return createTransaction({

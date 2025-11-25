@@ -17,6 +17,7 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
@@ -33,7 +34,7 @@ type Props = {
 
 export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
-  const { setError, clearErrors } = useFormContext<DcaFormValues>()
+  const { setError, clearErrors, watch } = useFormContext<DcaFormValues>()
   const { getAsset } = useAssets()
 
   const {
@@ -51,10 +52,13 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
   const [tradeFeeDisplay] = useDisplayAssetPrice(buyAsset?.id ?? "0", tradeFee)
 
   const now = Date.now()
-  const duration = order ? order.tradeCount * order.frequency : 0
+
+  const frequencyPeriod = watch("frequency")
+  const frequency = getPeriodDuration(frequencyPeriod)
+
+  const duration = order ? order.tradeCount * frequency : 0
   const endDate = new Date(now + duration)
   const endDateValid = !isNaN(endDate.valueOf())
-  const frequency = order?.frequency ?? 0
   const timeFrame = new Date(now + frequency)
   const timeFrameValid = !isNaN(timeFrame.valueOf())
 
