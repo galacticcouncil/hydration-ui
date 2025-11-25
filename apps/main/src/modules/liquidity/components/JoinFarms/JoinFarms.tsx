@@ -36,7 +36,6 @@ import { JoinFarmsSkeleton } from "./JoinFarmsSkeleton"
 
 type JoinFarmsProps = {
   positionId?: string
-  depositId?: string
   poolId: string
   closable?: boolean
 }

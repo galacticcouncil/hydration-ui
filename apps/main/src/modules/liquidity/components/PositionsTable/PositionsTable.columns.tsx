@@ -1,5 +1,16 @@
-import { CupSoda, Plus, Trash } from "@galacticcouncil/ui/assets/icons"
-import { Amount, Button, Flex, Text } from "@galacticcouncil/ui/components"
+import {
+  ChevronRight,
+  CupSoda,
+  Plus,
+  Trash,
+} from "@galacticcouncil/ui/assets/icons"
+import {
+  Amount,
+  Button,
+  Flex,
+  Icon,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
@@ -25,7 +36,7 @@ const omnipoolColumnHelper = createColumnHelper<
 const balanceColumnHelper = createColumnHelper<BalanceTableData>()
 const isolatedColumnHelper = createColumnHelper<IsolatedPositionTableData>()
 
-const isOmnipoolPosition = (
+export const isOmnipoolPosition = (
   row: OmnipoolPositionTableData | BalanceTableData,
 ): row is OmnipoolPositionTableData => {
   return "meta" in row && "data" in row
@@ -40,6 +51,15 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
       omnipoolColumnHelper.display({
         id: "position",
         size: 175,
+        meta: {
+          sxFn: (original) =>
+            !isOmnipoolPosition(original)
+              ? {
+                  borderLeft: `2px solid`,
+                  borderColor: getToken("buttons.primary.high.rest"),
+                }
+              : {},
+        },
         header: t("position"),
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) ? (
@@ -59,19 +79,15 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         header: t("liquidity:liquidity.positions.header.initialAmount"),
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) ? (
-            original.data?.initialValueHuman ? (
-              <Amount
-                value={t("currency", {
-                  value: original.data.initialValueHuman,
-                  symbol: original.data.meta.symbol,
-                })}
-                displayValue={t("currency", {
-                  value: original.data.initialDisplay,
-                })}
-              />
-            ) : (
-              "-"
-            )
+            <Amount
+              value={t("currency", {
+                value: original.data.initialValueHuman,
+                symbol: original.data.meta.symbol,
+              })}
+              displayValue={t("currency", {
+                value: original.data.initialDisplay,
+              })}
+            />
           ) : (
             <Amount
               value={t("currency", {
@@ -87,7 +103,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
       omnipoolColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.currentValue"),
         cell: ({ row: { original } }) =>
-          isOmnipoolPosition(original) && original.data?.currentValueHuman ? (
+          isOmnipoolPosition(original) ? (
             <Amount
               value={format(original.data)}
               displayValue={t("currency", {
@@ -107,7 +123,18 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         size: 100,
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) && original.joinedFarms.length ? (
-            <AssetLogo id={original.joinedFarms} />
+            <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+              <AssetLogo
+                id={original.joinedFarms.map(({ farm }) =>
+                  farm.rewardCurrency.toString(),
+                )}
+              />
+              <Text fs="p6" color={getToken("text.tint.secondary")}>
+                {original.aprsByRewardAsset
+                  .map((apr) => t("common:percent", { value: apr.totalApr }))
+                  .join(" + ")}
+              </Text>
+            </Flex>
           ) : null,
       }),
       omnipoolColumnHelper.display({
@@ -124,6 +151,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
             <Flex
               gap={getTokenPx("containers.paddings.tertiary")}
               justify="end"
+              align="center"
             >
               {isOmnipool ? (
                 !original.isJoinedAllFarms ? (
@@ -170,12 +198,20 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   {t("remove")}
                 </Link>
               </Button>
+
+              {isOmnipool && !!original.joinedFarms.length && (
+                <Icon
+                  size={16}
+                  component={ChevronRight}
+                  sx={{ justifySelf: "flex-end" }}
+                />
+              )}
             </Flex>
           )
         },
       }),
     ],
-    [t, format, isFarms],
+    [t, isFarms, format],
   )
 }
 
@@ -304,9 +340,23 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         enableSorting: false,
         cell: ({
           row: {
-            original: { joinedFarms },
+            original: { joinedFarms, aprsByRewardAsset },
           },
-        }) => (joinedFarms.length ? <AssetLogo id={joinedFarms} /> : null),
+        }) =>
+          joinedFarms.length ? (
+            <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+              <AssetLogo
+                id={joinedFarms.map(({ farm }) =>
+                  farm.rewardCurrency.toString(),
+                )}
+              />
+              <Text fs="p6" color={getToken("text.tint.secondary")}>
+                {aprsByRewardAsset
+                  .map((apr) => t("common:percent", { value: apr.totalApr }))
+                  .join(" + ")}
+              </Text>
+            </Flex>
+          ) : null,
       }),
       isolatedColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.actions"),

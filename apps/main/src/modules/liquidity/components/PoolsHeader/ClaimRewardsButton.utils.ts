@@ -4,13 +4,17 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { XykDeposit } from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { FarmRewards, useFarmRewards } from "@/api/farms"
 import { PoolBase, useXykPools } from "@/api/pools"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountPositions } from "@/states/account"
+import {
+  OmnipoolDepositFullWithData,
+  useAccountPositions,
+} from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
@@ -27,6 +31,25 @@ export const useLiquidityMiningRewards = () => {
     isPending,
     refetch,
   } = useFarmRewards(validPositions, relayChainBlockNumber)
+
+  const claimableValues = useSummarizeClaimableValues(
+    rewards?.map((deposit) => deposit.rewards),
+    isPending,
+  )
+
+  return { claimableValues, rewards, refetch }
+}
+
+export const useClaimPositionRewards = (
+  position?: OmnipoolDepositFullWithData | XykDeposit,
+) => {
+  const relayChainBlockNumber = useRelayChainBlockNumber()
+
+  const {
+    data: rewards,
+    isPending,
+    refetch,
+  } = useFarmRewards(position ? [position] : [], relayChainBlockNumber)
 
   const claimableValues = useSummarizeClaimableValues(
     rewards?.map((deposit) => deposit.rewards),

@@ -242,6 +242,7 @@ const DataTable = <TData,>({
                     >
                       {row.getVisibleCells().map((cell) => {
                         const { meta } = cell.getContext().cell.column.columnDef
+                        const { className, sx, sxFn } = meta ?? {}
                         const isPinned = cell
                           .getContext()
                           .cell.column.getIsPinned()
@@ -249,8 +250,10 @@ const DataTable = <TData,>({
                         return (
                           <TableCell
                             key={cell.id}
-                            className={meta?.className}
-                            sx={meta?.sx}
+                            className={className}
+                            sx={
+                              sxFn ? sxFn(cell.getContext().row.original) : sx
+                            }
                             isPinned={isPinned}
                             data-pinned={isPinned}
                             isClickable={!!onRowClick}

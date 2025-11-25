@@ -1,16 +1,14 @@
 import { Amount, Checkbox, Text } from "@galacticcouncil/ui/components"
 import { Flex } from "@galacticcouncil/ui/components/Flex"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { XykDeposit } from "@/api/account"
 import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
-import { useCurrentFarmPeriod } from "@/modules/liquidity/components/Farms/Farms.utils"
-import { getCurrentLoyaltyFactor } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
-import { AccountOmnipoolPosition, isDepositPosition } from "@/states/account"
+import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
+import { AccountOmnipoolPosition } from "@/states/account"
 
 import { SPositionToRemove } from "./PositionToRemove.styled"
 
@@ -30,64 +28,12 @@ export const PositionToRemove = ({
   onClick: (position: AccountOmnipoolPosition | XykDeposit) => void
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const isDeposit = isDepositPosition(position)
-  const getCurrentFarmPeriod = useCurrentFarmPeriod()
+  const getDepositAprs = useDepositAprs()
 
-  const { aprsByRewardAsset, joinedFarms } = useMemo(() => {
-    if (!isDeposit || !activeFarms)
-      return { aprsByRewardAsset: [], joinedFarms: [] }
-
-    const joinedFarms = activeFarms
-      .map((farm) => {
-        const farmEntry = position.yield_farm_entries?.find(
-          (entry) => entry.global_farm_id === farm.globalFarmId,
-        )
-
-        const period = getCurrentFarmPeriod(1)
-
-        if (!farmEntry || !period) return null
-
-        return {
-          farm,
-          farmEntry,
-          period,
-        }
-      })
-      .filter((farm) => farm !== null)
-
-    const totalAprs = joinedFarms.reduce(
-      (acc, { farm, farmEntry, period }) => {
-        const currentPeriodInFarm = Big(period)
-          .minus(farmEntry.entered_at)
-          .toNumber()
-
-        const currentApr = farm.loyaltyCurve
-          ? Big(farm.apr)
-              .times(
-                getCurrentLoyaltyFactor(farm.loyaltyCurve, currentPeriodInFarm),
-              )
-              .toString()
-          : farm.apr
-
-        const key = String(farm.rewardCurrency)
-        const value = currentApr ? Big(currentApr) : Big(0)
-
-        acc[key] = (acc[key] ?? Big(0)).plus(value)
-
-        return acc
-      },
-      {} as Record<string, Big>,
-    )
-
-    const aprsByRewardAsset = Object.entries(totalAprs).map(
-      ([rewardAsset, totalApr]) => ({
-        rewardAsset,
-        totalApr: totalApr.toString(),
-      }),
-    )
-
-    return { aprsByRewardAsset, joinedFarms }
-  }, [position, activeFarms, getCurrentFarmPeriod, isDeposit])
+  const { aprsByRewardAsset, joinedFarms } = useMemo(
+    () => getDepositAprs(position, activeFarms ?? []),
+    [position, activeFarms, getDepositAprs],
+  )
 
   return (
     <SPositionToRemove selected={selected} onClick={() => onClick(position)}>

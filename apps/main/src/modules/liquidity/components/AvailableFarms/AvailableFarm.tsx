@@ -58,22 +58,23 @@ export const AvailableFarm = ({
           <AssetLogo id={meta.id} />
           <Text color={getToken("text.high")} fs="p2" fw={600}>
             {meta.symbol}
-          </Text>
+          </Text>{" "}
+        </Flex>
 
+        <Flex align="center" gap={10}>
           <Chip variant="green" size="small">
             {t("liquidity.availableFarms.apr", {
               value: farm.apr,
             })}
           </Chip>
+          {isSelectable && !isLongVariant ? (
+            <Icon
+              size={16}
+              component={ChevronRight}
+              sx={{ justifySelf: "flex-end" }}
+            />
+          ) : null}
         </Flex>
-
-        {isSelectable && !isLongVariant ? (
-          <Icon
-            size={16}
-            component={ChevronRight}
-            sx={{ justifySelf: "flex-end" }}
-          />
-        ) : null}
       </Flex>
 
       {!isLongVariant && <Separator />}
