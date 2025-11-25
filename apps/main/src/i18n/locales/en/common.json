@@ -201,6 +201,7 @@
   "date.long": "{{ value, date(format: 'MMMM do, yyyy') }}",
   "date.day": "{{ value, date(format: 'MMM dd') }}",
   "date.daytime": "{{ value, date(format: 'MMM dd yyyy, HH:mm') }}",
+  "interval": "{{ value, interval }}",
   "number": "{{ value, number }}",
   "percent": "{{prefix, default('')}}{{ value, percent }}{{suffix, default('')}}",
   "percent.apy": "{{ value, percent }} APY",

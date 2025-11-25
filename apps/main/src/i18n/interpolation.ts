@@ -11,9 +11,28 @@ import {
   isBefore,
   isDate,
 } from "date-fns"
+import {
+  HumanizeDuration,
+  HumanizeDurationLanguage,
+} from "humanize-duration-ts"
 import { FormatFunction } from "i18next"
 
 import i18n from "@/i18n"
+
+const langService = new HumanizeDurationLanguage()
+langService.addLanguage("shortEn", {
+  y: () => "y",
+  mo: () => "mo",
+  w: () => "w",
+  d: () => "d",
+  h: () => "h",
+  m: () => "m",
+  s: () => "s",
+  ms: () => "ms",
+  decimal: "2",
+})
+
+const humanizer = new HumanizeDuration(langService)
 
 const formatters = {
   number: formatNumber,
@@ -58,6 +77,17 @@ const formatters = {
     return isPast
       ? i18n.t("date.relative.past", { value: formatted })
       : i18n.t("date.relative.future", { value: formatted })
+  },
+
+  interval: (intervalMs: number) => {
+    if (typeof intervalMs !== "number") {
+      return ""
+    }
+
+    return humanizer.humanize(intervalMs, {
+      round: true,
+      largest: 2,
+    })
   },
 }
 
@@ -110,6 +140,9 @@ export const interpolationFormat: FormatFunction = (
 
     case "date":
       return formatters.date(value, options)
+
+    case "interval":
+      return formatters.interval(value)
 
     case "relative":
       return formatters.relativeTime(value, options.targetDate ?? new Date())

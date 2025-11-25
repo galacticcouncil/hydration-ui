@@ -1930,10 +1930,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk-next@^0.15.0":
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.15.0.tgz#5cd45f09da1c7bf085340c55d33a05769d1306f3"
-  integrity sha512-/PQMAFNhgHJW8W89E1WC+dRpaaPOziGHsJZpARRIKZ2yBKYcAhSMSRfdpHdy0SN0UtRFoQrliP0K68RIdqC1hg==
+"@galacticcouncil/sdk-next@^0.16.0":
+  version "0.16.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.16.0.tgz#7a0e4694b8f814184576eb4b0681c222be378483"
+  integrity sha512-ciCUtF8AQPso0t2mOL5q0kz5IPmHx5L4BuouwhD4i6Mo6oNf8LxgGMGSmApZsHHuIlFU/TnjGYkhDjBZowGUaw==
   dependencies:
     "@galacticcouncil/common" "^0.1.1"
     "@galacticcouncil/descriptors" "^1.5.1"
@@ -8794,6 +8794,11 @@ human-signals@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-8.0.1.tgz#f08bb593b6d1db353933d06156cedec90abe51fb"
   integrity sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==
+
+humanize-duration-ts@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/humanize-duration-ts/-/humanize-duration-ts-2.1.1.tgz#5382b2789f851005a67229eaf031931d71f37ee9"
+  integrity sha512-TibNF2/fkypjAfHdGpWL/dmWUS0G6Qi+3mKyiB6LDCowbMy+PtzbgPTnFMNTOVAJXDau01jYrJ3tFoz5AJSqhA==
 
 humanize-ms@^1.2.1:
   version "1.2.1"

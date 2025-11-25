@@ -29,11 +29,6 @@ export const DcaSummarySkeleton: FC = () => {
           label={t("trade:dca.summary.slippage")}
           content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
         />
-        <SwapSummaryRow
-          label={t("trade:dca.summary.tradeFee")}
-          content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
-          tooltip={t("trade:dca.summary.tradeFee.tooltip")}
-        />
       </Summary>
     </div>
   )

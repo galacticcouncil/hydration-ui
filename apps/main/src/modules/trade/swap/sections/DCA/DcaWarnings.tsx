@@ -1,27 +1,32 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
-import { Alert, Flex } from "@galacticcouncil/ui/components"
+import { Flex } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
+import { DcaPriceImpactWarning } from "@/modules/trade/swap/sections/DCA/DcaPriceImpactWarning"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
-  readonly warnings: ReadonlyArray<string>
+  readonly priceImpactLossMessage: string | undefined
+  readonly priceImpactLossAccepted: boolean
   readonly healthFactor: HealthFactorResult | undefined
   readonly healthFactorRiskAccepted: boolean
-  readonly setHealthFactorRiskAccepted: (accepted: boolean) => void
+  readonly onPriceImpactLossAcceptedChange: (accepted: boolean) => void
+  readonly onHealthFactorRiskAcceptedChange: (accepted: boolean) => void
 }
 
 export const DcaWarnings: FC<Props> = ({
-  warnings,
+  priceImpactLossMessage,
+  priceImpactLossAccepted,
   healthFactor,
   healthFactorRiskAccepted,
-  setHealthFactorRiskAccepted,
+  onPriceImpactLossAcceptedChange,
+  onHealthFactorRiskAcceptedChange,
 }) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common"])
 
-  if (!warnings.length && !healthFactor?.isUserConsentRequired) {
+  if (!priceImpactLossMessage && !healthFactor?.isUserConsentRequired) {
     return null
   }
 
@@ -29,15 +34,19 @@ export const DcaWarnings: FC<Props> = ({
     <>
       <SwapSectionSeparator />
       <Flex direction="column" my={8} gap={6}>
-        {warnings.map((warning) => (
-          <Alert key={warning} variant="warning" description={warning} />
-        ))}
+        {priceImpactLossMessage && (
+          <DcaPriceImpactWarning
+            message={priceImpactLossMessage}
+            accepted={priceImpactLossAccepted}
+            onAcceptedChange={onPriceImpactLossAcceptedChange}
+          />
+        )}
         {healthFactor?.isUserConsentRequired && (
           <HealthFactorRiskWarning
             message={t("healthFactor.warning")}
             accepted={healthFactorRiskAccepted}
             isUserConsentRequired={healthFactor.isUserConsentRequired}
-            onAcceptedChange={setHealthFactorRiskAccepted}
+            onAcceptedChange={onHealthFactorRiskAcceptedChange}
           />
         )}
       </Flex>
