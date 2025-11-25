@@ -16,7 +16,7 @@ export enum TransactionType {
   Xcm = "Xcm",
 }
 
-type TransactionCommon = {
+export type TransactionCommon = {
   title?: string
   description?: string
   fee?: TransactionFee
@@ -24,16 +24,21 @@ type TransactionCommon = {
   meta?: TransactionMeta
 }
 
-type MultiTransactionConfig = {
-  tx:
-    | AnyTransaction
-    | ((results: TSuccessResult[]) => Promise<AnyTransaction> | AnyTransaction)
-} & TransactionCommon & {
-    stepTitle?: string
-  }
-
 interface SingleTransactionInput extends TransactionCommon {
   tx: AnyTransaction
+}
+
+type SingleTransactionInputDynamic = {
+  tx: (
+    results: TSuccessResult[],
+  ) => Promise<SingleTransactionInput> | SingleTransactionInput
+}
+
+type MultiTransactionConfig = (
+  | SingleTransactionInput
+  | SingleTransactionInputDynamic
+) & {
+  stepTitle: string
 }
 
 interface MultiTransactionInput {

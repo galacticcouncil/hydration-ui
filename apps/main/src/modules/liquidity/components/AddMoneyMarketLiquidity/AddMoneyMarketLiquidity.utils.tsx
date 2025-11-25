@@ -371,12 +371,7 @@ export const useAddMoneyMarketLiquidity = ({
               },
             },
             {
-              title: "Swapping shares",
               stepTitle: "Swap shares",
-              toasts: {
-                submitted: "Swapping shares...",
-                success: "Shares swapped.",
-              },
               tx: async (results) => {
                 const addingSharesResult = results[0]
 
@@ -422,13 +417,21 @@ export const useAddMoneyMarketLiquidity = ({
                   .build()
                   .then((tx) => tx.get())
 
-                return swapTx
+                return {
+                  tx: swapTx,
+                  title: `Swap shares`,
+                  description: `Swap ${addedSharesShifted} shares.`,
+                  toasts: {
+                    submitted: `Swapping ${addedSharesShifted} shares...`,
+                    success: `${addedSharesShifted} shares swapped.`,
+                  },
+                }
               },
             },
           ],
         })
       } else {
-        if (!trade) throw new Error("Trade not found")
+        if (!trade?.tx) throw new Error("Trade not found")
 
         const toastValue = assetsToProvide
           .map(({ asset, amount }) =>
