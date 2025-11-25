@@ -14,12 +14,10 @@ import {
   stakingInitializedEventsQuery,
   subscanHDXSupplyQuery,
 } from "@/api/staking"
+import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_DECIMALS } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
-
-// TODO
-const stakeValue = "0"
 
 const BIG_0 = Big(0)
 const BIG_10 = Big(10)
@@ -81,6 +79,8 @@ export const useStakingAPR = (positionId: bigint) => {
   const { data: potBalance, isLoading: potBalanceLoading } = useQuery(
     potBalanceQuery(rpc),
   )
+
+  const stakeValue = useIncreaseStake((state) => state.stakeValue)
 
   const isLoading =
     bestNumberLoading ||
@@ -244,6 +244,7 @@ export const useStakingAPR = (positionId: bigint) => {
     initializedEvents,
     positionId,
     potBalance,
+    stakeValue,
   ])
 
   return { stakingAPR, isLoading }

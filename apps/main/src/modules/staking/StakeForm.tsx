@@ -10,16 +10,19 @@ import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { useDebounce } from "react-use"
 
 import { TAccountVote } from "@/api/democracy"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { useStakeForm } from "@/modules/staking/Stake.form"
 import { useStake } from "@/modules/staking/Stake.stake"
+import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { scale } from "@/utils/formatting"
 
 type Props = {
   readonly positionId: bigint
-  readonly staked: string
+  readonly staked: string | undefined
   readonly votes: ReadonlyArray<TAccountVote>
   readonly votesSuccess: boolean
   readonly balance: string
@@ -38,7 +41,7 @@ export const StakeForm: FC<Props> = ({
   const { account } = useAccount()
 
   const { native } = useAssets()
-  const { form, minStake } = useStakeForm(balance, staked)
+  const { form, minStake } = useStakeForm(balance, staked || "0")
 
   const stakeMutation = useStake(positionId, votes, votesSuccess, () =>
     form.reset(),
@@ -46,6 +49,20 @@ export const StakeForm: FC<Props> = ({
 
   const submitForm = form.handleSubmit((values) =>
     stakeMutation.mutate(values.amount),
+  )
+
+  const amount = form.watch("amount")
+  const { update } = useIncreaseStake()
+
+  useDebounce(
+    () => {
+      update(
+        staked ? "value" : "stakeValue",
+        amount ? scale(amount, native.decimals) : undefined,
+      )
+    },
+    500,
+    [amount, staked],
   )
 
   return (
