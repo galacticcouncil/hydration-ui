@@ -1,5 +1,5 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { bigMin } from "@galacticcouncil/utils"
+import Big from "big.js"
 
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useWalletBalances } from "@/hooks/app-data-provider/useWalletBalances"
@@ -38,7 +38,7 @@ export const useWalletData = (reserve: ComputedReserveData) => {
 
   if (isGho) {
     const maxMintAmount = getMaxGhoMintAmount(user, reserve)
-    maxAmountToBorrow = bigMin(
+    maxAmountToBorrow = Big.min(
       maxMintAmount,
       ghoReserveData.aaveFacilitatorRemainingCapacity,
     ).toString()

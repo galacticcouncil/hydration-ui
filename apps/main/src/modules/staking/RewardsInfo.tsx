@@ -26,7 +26,7 @@ export const RewardsInfo: FC<Props> = ({ allocatedRewards, isLoading }) => {
       {isLoading ? (
         <Skeleton height={21} width={120} />
       ) : (
-        <Text fw={700} color={getToken("text.high")}>
+        <Text font="primary" fw={700} color={getToken("text.high")}>
           {t("currency", {
             value: allocatedRewards,
             symbol: native.symbol,

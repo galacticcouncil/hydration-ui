@@ -13,12 +13,12 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
 
-  const [sellAsset, buyAsset, sellAmount, period] = form.watch([
-    "sellAsset",
-    "buyAsset",
-    "sellAmount",
-    "period",
-  ])
+  const [sellAsset, buyAsset, sellAmount, frequencyPeriod, orders] = form.watch(
+    ["sellAsset", "buyAsset", "sellAmount", "frequency", "orders"],
+  )
+
+  const frequency = getPeriodDuration(frequencyPeriod)
+  const duration = frequency * orders
 
   const [
     { data: orderData, isLoading: isOrderLoading },
@@ -29,7 +29,8 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountIn: sellAmount,
-        duration: getPeriodDuration(period),
+        duration,
+        frequency,
       }),
       healthFactorAfterWithdrawQuery(rpc, {
         address: account?.address ?? "",

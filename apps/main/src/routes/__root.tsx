@@ -8,14 +8,20 @@ import { useAccountUniquesSubscription } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useAllPools, useOmnipoolIds } from "@/api/pools"
-import { useProviderMetadata, useSquidClient } from "@/api/provider"
+import {
+  providerQuery,
+  useProviderMetadata,
+  useSquidClient,
+} from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { useAccountBalanceSubscription } from "@/api/subscriptions"
+import { Loader } from "@/components/Loader/Loader"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useDisplayAssetStablecoinUpdate } from "@/states/displayAsset"
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -54,6 +60,27 @@ export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
 }>()({
   component: RootComponent,
+  pendingComponent: () => {
+    return (
+      <>
+        <Loader />
+        <ProviderRpcSelect />
+      </>
+    )
+  },
+  beforeLoad: async ({ context }) => {
+    const { autoMode, rpcUrlList, rpcUrl } = useProviderRpcUrlStore.getState()
+
+    const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
+
+    const rpcData = await context.queryClient.ensureQueryData(
+      providerQuery(rpcProviderUrls),
+    )
+
+    await context.queryClient.ensureQueryData(
+      assetsQuery({ ...rpcData, isApiLoaded: true, isLoaded: true }),
+    )
+  },
 })
 
 function RootComponent() {

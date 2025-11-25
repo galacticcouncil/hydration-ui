@@ -13,7 +13,7 @@ import {
   Stack,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { bigMax, bigShift } from "@galacticcouncil/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import Big, { BigSource } from "big.js"
 import BigNumber from "bignumber.js"
 import { useEffect, useRef, useState } from "react"
@@ -215,7 +215,7 @@ export const RepayModalContent: React.FC<
     const remainingBorrowBalance = Big(user?.totalBorrowsUSD || "0").minus(
       Big(reserve.priceInUSD).mul(amount),
     )
-    const borrowBalanceMarketReferenceCurrency = bigMax(
+    const borrowBalanceMarketReferenceCurrency = Big.max(
       remainingBorrowBalance,
       0,
     )

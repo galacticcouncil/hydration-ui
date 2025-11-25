@@ -5,7 +5,6 @@ import {
 } from "@galacticcouncil/money-market/hooks"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { bigMax, bigMin } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -27,11 +26,11 @@ export const HollarReserveConfiguration: React.FC<
 
   const totalDebt = Big(reserve.totalDebt)
   const totalDebtUSD = Big(reserve.totalDebtUSD)
-  const totalBorrowed = bigMin(totalDebt, reserve.borrowCap)
-  const totalBorrowedUSD = bigMin(totalDebtUSD, reserve.borrowCapUSD)
+  const totalBorrowed = Big.min(totalDebt, reserve.borrowCap)
+  const totalBorrowedUSD = Big.min(totalDebtUSD, reserve.borrowCapUSD)
 
-  const maxAvailableToBorrow = bigMax(reserve.borrowCap, 0)
-  const maxAvailableToBorrowUSD = bigMax(reserve.borrowCapUSD, 0)
+  const maxAvailableToBorrow = Big.max(reserve.borrowCap, 0)
+  const maxAvailableToBorrowUSD = Big.max(reserve.borrowCapUSD, 0)
 
   const { borrowCapUsage } = getBorrowCapData(reserve)
 

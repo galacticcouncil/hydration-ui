@@ -15,6 +15,7 @@ export type TradeOrder = sor.TradeOrder
 export type TxBuilderFactory = SdkCtx["tx"]
 
 export const TradeOrderType = sor.TradeOrderType
+export const TradeOrderError = sor.TradeOrderError
 
 type BestSellArgs = {
   readonly assetIn: string
@@ -37,6 +38,7 @@ export const bestSellQuery = (
       assetIn,
       assetOut,
       amountIn,
+      address,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestSell(
@@ -50,12 +52,14 @@ export const bestSellQuery = (
         console.log(swap.toHuman())
       }
 
-      const tx = await sdk.tx
-        .trade(swap)
-        .withSlippage(slippage)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get())
+      const tx = address
+        ? await sdk.tx
+            .trade(swap)
+            .withSlippage(slippage)
+            .withBeneficiary(address)
+            .build()
+            .then((tx) => tx.get())
+        : null
 
       return {
         swap,
@@ -85,6 +89,7 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
+      address,
     ],
     queryFn: async () => {
       const twap = await sdk.api.scheduler.getTwapSellOrder(
@@ -93,13 +98,15 @@ export const bestSellTwapQuery = (
         amountIn,
       )
 
-      const tx = await sdk.tx
-        .order(twap)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get())
+      const tx = address
+        ? await sdk.tx
+            .order(twap)
+            .withSlippage(slippage)
+            .withMaxRetries(maxRetries)
+            .withBeneficiary(address)
+            .build()
+            .then((tx) => tx.get())
+        : null
 
       return { twap, tx }
     },
@@ -132,6 +139,7 @@ export const bestBuyQuery = (
       assetIn,
       assetOut,
       amountOut,
+      address,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestBuy(
@@ -145,12 +153,14 @@ export const bestBuyQuery = (
         console.log(swap.toHuman())
       }
 
-      const tx = await sdk.tx
-        .trade(swap)
-        .withSlippage(slippage)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get())
+      const tx = address
+        ? await sdk.tx
+            .trade(swap)
+            .withSlippage(slippage)
+            .withBeneficiary(address)
+            .build()
+            .then((tx) => tx.get())
+        : null
 
       return {
         swap,
@@ -180,6 +190,7 @@ export const bestBuyTwapQuery = (
       assetIn,
       assetOut,
       amountOut,
+      address,
     ],
     queryFn: async () => {
       const twap = await sdk.api.scheduler.getTwapBuyOrder(
@@ -188,13 +199,15 @@ export const bestBuyTwapQuery = (
         amountOut,
       )
 
-      const tx = await sdk.tx
-        .order(twap)
-        .withSlippage(slippage)
-        .withMaxRetries(maxRetries)
-        .withBeneficiary(address)
-        .build()
-        .then((tx) => tx.get())
+      const tx = address
+        ? await sdk.tx
+            .order(twap)
+            .withSlippage(slippage)
+            .withMaxRetries(maxRetries)
+            .withBeneficiary(address)
+            .build()
+            .then((tx) => tx.get())
+        : null
 
       return { twap, tx }
     },
@@ -211,11 +224,12 @@ type DcaTradeOrderArgs = {
   readonly assetOut: string
   readonly amountIn: string
   readonly duration: number
+  readonly frequency: number
 }
 
 export const dcaTradeOrderQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn, duration }: DcaTradeOrderArgs,
+  { assetIn, assetOut, amountIn, duration, frequency }: DcaTradeOrderArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -226,6 +240,7 @@ export const dcaTradeOrderQuery = (
       assetOut,
       amountIn,
       duration,
+      frequency,
     ],
     queryFn: () =>
       sdk.api.scheduler.getDcaOrder(
@@ -233,13 +248,15 @@ export const dcaTradeOrderQuery = (
         Number(assetOut),
         amountIn,
         duration,
+        frequency,
       ),
     enabled:
       isLoaded &&
       !!assetIn &&
       !!assetOut &&
       Big(amountIn || "0").gt(0) &&
-      duration >= 0,
+      frequency > 0 &&
+      duration > 0,
   })
 
 export const minimumOrderBudgetQuery = (

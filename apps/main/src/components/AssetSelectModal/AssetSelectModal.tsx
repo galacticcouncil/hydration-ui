@@ -72,6 +72,15 @@ export const AssetSelectModalContent = ({
     ? filteredCustomAssets
     : sortedAssets
 
+  const filteredCustomAssets = useFilteredSearchAssets(
+    customSortedAssets ?? [],
+    search,
+  )
+
+  const assetsToDisplay = isProvidedSortedAssets
+    ? filteredCustomAssets
+    : sortedAssets
+
   useEffect(() => {
     inputRef.current?.focus()
   }, [])

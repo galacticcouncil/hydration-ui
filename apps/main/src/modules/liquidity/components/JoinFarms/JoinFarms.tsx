@@ -189,7 +189,7 @@ const JoinFarmsForm = ({
                     value={value}
                     onChange={onChange}
                     error={error?.message}
-                    ignoreDollarValue
+                    ignoreDisplayValue
                     sx={{ pt: 0 }}
                   />
                 ) : (

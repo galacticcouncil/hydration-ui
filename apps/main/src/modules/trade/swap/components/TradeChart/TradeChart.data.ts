@@ -12,15 +12,15 @@ import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
 import { spotPriceQuery } from "@/api/spotPrice"
-import { PeriodType } from "@/components/PeriodInput/PeriodInput"
 import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
+import { TradeChartPeriodType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { numerically, sortBy } from "@/utils/sort"
 
 type Args = {
   readonly assetInId: string
   readonly assetOutId: string
-  readonly period: PeriodType | null
+  readonly period: TradeChartPeriodType | null
 }
 
 export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
@@ -113,7 +113,7 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
   }
 }
 
-const bucketSizes: Record<PeriodType, TimeSeriesBucketTimeRange> = {
+const bucketSizes: Record<TradeChartPeriodType, TimeSeriesBucketTimeRange> = {
   hour: TimeSeriesBucketTimeRange["15S"],
   day: TimeSeriesBucketTimeRange["5M"],
   week: TimeSeriesBucketTimeRange["1H"],

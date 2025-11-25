@@ -1,3 +1,4 @@
+import { formatNumber } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
@@ -16,11 +17,12 @@ export type AssetInputProps = {
   label?: string
   symbol?: string
   value?: string
-  dollarValue?: string
-  dollarValueLoading?: boolean
+  displayValue?: string
+  displayValueLoading?: boolean
   maxBalance?: string
+  maxButtonBalance?: string
   ignoreBalance?: boolean
-  ignoreDollarValue?: boolean
+  ignoreDisplayValue?: boolean
   hideMaxBalanceAction?: boolean
   error?: string
   disabled?: boolean
@@ -30,7 +32,6 @@ export type AssetInputProps = {
   selectedAssetIcon?: ReactNode
   onChange?: (value: string) => void
   onAsssetBtnClick?: () => void
-  formatValue?: (value: string) => string
   className?: string
 }
 
@@ -38,12 +39,13 @@ export const AssetInput = ({
   symbol,
   selectedAssetIcon,
   value,
-  dollarValue,
-  dollarValueLoading,
+  displayValue,
+  displayValueLoading,
   label,
   maxBalance,
+  maxButtonBalance,
   ignoreBalance,
-  ignoreDollarValue,
+  ignoreDisplayValue,
   hideMaxBalanceAction,
   onChange,
   error,
@@ -52,18 +54,19 @@ export const AssetInput = ({
   modalDisabled,
   loading,
   onAsssetBtnClick,
-  formatValue = defaultAssetValueFormatter,
   className,
 }: AssetInputProps) => {
+  const usedMaxBalance = maxButtonBalance || maxBalance
+
   const onMaxButtonClick = () => {
-    if (maxBalance) onChange?.(maxBalance)
+    if (usedMaxBalance) onChange?.(usedMaxBalance)
   }
 
   return (
     <Flex
       direction="column"
       gap={12}
-      sx={{ position: "relative", py: 20 }}
+      sx={{ position: "relative", py: 20, overflow: "hidden" }}
       className={className}
     >
       <Flex align="center" gap={4} justify="space-between">
@@ -100,7 +103,7 @@ export const AssetInput = ({
                   <Skeleton width={48} height={12} />
                 </span>
               ) : (
-                <span>{maxBalance ? formatValue(maxBalance) : ""}</span>
+                <span>{maxBalance ? formatNumber(maxBalance) : ""}</span>
               )}
             </Text>
             {!hideMaxBalanceAction && (
@@ -108,7 +111,7 @@ export const AssetInput = ({
                 aria-label="Max balance button"
                 onClick={onMaxButtonClick}
                 disabled={
-                  Big(maxBalance || "0").lte(0) ||
+                  Big(usedMaxBalance || "0").lte(0) ||
                   loading ||
                   !onChange ||
                   !!disabled
@@ -155,25 +158,14 @@ export const AssetInput = ({
               }}
             />
 
-            {!ignoreDollarValue && (
+            {!ignoreDisplayValue && (
               <Text
                 color={getToken("text.low")}
                 fs={10}
                 fw={400}
                 sx={{ width: "fit-content" }}
               >
-                {(() => {
-                  if (dollarValueLoading) {
-                    return <Skeleton width={48} />
-                  }
-                  if (dollarValue === "NaN") {
-                    return "-"
-                  }
-                  if (!dollarValue) {
-                    return "$0"
-                  }
-                  return `$${formatValue(dollarValue)}`
-                })()}
+                {displayValueLoading ? <Skeleton width={48} /> : displayValue}
               </Text>
             )}
           </Flex>
