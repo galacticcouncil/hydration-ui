@@ -1,8 +1,5 @@
-import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Trigger } from "@radix-ui/react-tooltip"
-
-import { Icon } from "../Icon"
 
 export const STrigger = styled(Trigger)`
   all: unset;
@@ -25,14 +22,3 @@ export const SContent = styled(Content)`
   box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
   border-radius: 8px;
 `
-
-export const SInfoIcon = styled(Icon)(
-  ({ theme }) => css`
-    color: ${theme.icons.onContainer};
-    cursor: pointer;
-
-    [data-state*="open"] > & {
-      color: ${theme.icons.onSurfaceHover};
-    }
-  `,
-)

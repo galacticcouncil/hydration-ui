@@ -51,7 +51,9 @@ export const StakingDashboard: FC = () => {
     isSuccess: votesIsSuccess,
   } = useQuery(accountOpenGovVotesQuery(rpc, address))
 
-  const staked = scaleHuman(stakingPositionsData?.stake ?? 0n, native.decimals)
+  const staked = stakingPositionsData?.stake
+    ? scaleHuman(stakingPositionsData.stake, native.decimals)
+    : undefined
 
   const positionId = stakingPositionsData?.stakePositionId ?? 0n
   const hasPosition = !!positionId
@@ -122,7 +124,7 @@ export const StakingDashboard: FC = () => {
                 )}
                 <DashboardStats
                   positionId={positionId}
-                  staked={staked}
+                  staked={staked || "0"}
                   isStakeLoading={isLoading}
                 />
               </>
@@ -161,7 +163,7 @@ export const StakingDashboard: FC = () => {
               )}
               <DashboardStats
                 positionId={positionId}
-                staked={staked}
+                staked={staked || "0"}
                 isStakeLoading={isLoading}
               />
             </>

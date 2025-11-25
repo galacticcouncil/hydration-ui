@@ -257,3 +257,41 @@ export const referendumInfoQuery = (referendumIndex: number) =>
       return parsed
     },
   })
+
+export type OpenGovReferendum = {
+  id: string
+  referendum: Extract<
+    Awaited<
+      ReturnType<Papi["query"]["Referenda"]["ReferendumInfoFor"]["getEntries"]>
+    >[number]["value"],
+    { type: "Ongoing" }
+  >["value"]
+}
+
+export const openGovRegerendasQuery = ({
+  papi,
+  isApiLoaded,
+  dataEnv,
+}: TProviderContext) =>
+  queryOptions({
+    queryKey: ["openGovReferenda", dataEnv],
+    enabled: isApiLoaded,
+    queryFn: async () => {
+      const newReferendumsRaw =
+        await papi.query.Referenda.ReferendumInfoFor.getEntries()
+
+      // get only ongoing referenas so far
+      return newReferendumsRaw.reduce<Array<OpenGovReferendum>>(
+        (acc, { keyArgs, value }) => {
+          const id = keyArgs[0].toString()
+
+          if (value.type === "Ongoing") {
+            acc.push({ id, referendum: value.value })
+          }
+
+          return acc
+        },
+        [],
+      )
+    },
+  })
