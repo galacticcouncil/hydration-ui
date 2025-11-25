@@ -1,25 +1,30 @@
 import {
   Button,
-  Flex,
   Grid,
   Separator,
-  Text,
+  Summary,
+  SummaryRow,
+  SummaryRowLabel,
+  SummaryRowValue,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { useDebounce } from "react-use"
 
 import { TAccountVote } from "@/api/democracy"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { useStakeForm } from "@/modules/staking/Stake.form"
 import { useStake } from "@/modules/staking/Stake.stake"
+import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useAssets } from "@/providers/assetsProvider"
+import { toBigInt } from "@/utils/formatting"
 
 type Props = {
   readonly positionId: bigint
-  readonly staked: string
+  readonly staked: string | undefined
   readonly votes: ReadonlyArray<TAccountVote>
   readonly votesSuccess: boolean
   readonly balance: string
@@ -38,7 +43,7 @@ export const StakeForm: FC<Props> = ({
   const { account } = useAccount()
 
   const { native } = useAssets()
-  const { form, minStake } = useStakeForm(balance, staked)
+  const { form, minStake } = useStakeForm(balance, staked || "0")
 
   const stakeMutation = useStake(positionId, votes, votesSuccess, () =>
     form.reset(),
@@ -46,6 +51,20 @@ export const StakeForm: FC<Props> = ({
 
   const submitForm = form.handleSubmit((values) =>
     stakeMutation.mutate(values.amount),
+  )
+
+  const amount = form.watch("amount")
+  const { diffDays, update } = useIncreaseStake()
+
+  useDebounce(
+    () => {
+      update(
+        staked ? "value" : "stakeValue",
+        amount ? toBigInt(amount, native.decimals) : undefined,
+      )
+    },
+    500,
+    [amount, staked],
   )
 
   return (
@@ -69,19 +88,37 @@ export const StakeForm: FC<Props> = ({
           )}
         />
         <Separator />
-        <Flex
+        <Summary
           px={getTokenPx("containers.paddings.primary")}
-          py={getTokenPx("containers.paddings.quint")}
-          justify="space-between"
-          align="center"
+          separator={<Separator mx={-20} />}
         >
-          <Text fs="p5" lh={1.4} color={getToken("text.medium")}>
-            {t("staking:stake.stake.minimum")}
-          </Text>
-          <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
-            {t("currency", { value: minStake, symbol: native.symbol })}
-          </Text>
-        </Flex>
+          <SummaryRow
+            sx={{ my: getTokenPx("scales.paddings.s") }}
+            label={t("staking:stake.stake.minimum")}
+            content={t("currency", {
+              value: minStake,
+              symbol: native.symbol,
+            })}
+          />
+          {diffDays && diffDays !== "0" && (
+            <SummaryRow
+              sx={{ my: getTokenPx("scales.paddings.s") }}
+              label={
+                <SummaryRowLabel color={getToken("colors.azureBlue.400")}>
+                  {t("staking:stake.stake.increasedBy")}
+                </SummaryRowLabel>
+              }
+              content={
+                <SummaryRowValue color={getToken("colors.azureBlue.400")}>
+                  ≈{" "}
+                  {t("day", {
+                    count: +diffDays,
+                  })}
+                </SummaryRowValue>
+              }
+            />
+          )}
+        </Summary>
         <Separator />
         {
           <Grid

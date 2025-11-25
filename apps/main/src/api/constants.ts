@@ -56,12 +56,14 @@ export const stakingConstsQuery = ({ papi, isApiLoaded }: TProviderContext) =>
         periodLength,
         timePointsPerPeriod,
         timePointsWeight,
+        stakeWeight,
       ] = await Promise.all([
         papi.constants.Staking.PalletId(),
         papi.constants.Staking.MinStake(),
         papi.constants.Staking.PeriodLength(),
         papi.constants.Staking.TimePointsPerPeriod(),
         papi.constants.Staking.TimePointsWeight(),
+        papi.constants.Staking.CurrentStakeWeight(),
       ])
 
       return {
@@ -70,6 +72,7 @@ export const stakingConstsQuery = ({ papi, isApiLoaded }: TProviderContext) =>
         periodLength,
         timePointsPerPeriod,
         timePointsWeight,
+        stakeWeight: stakeWeight.toString(),
       }
     },
     enabled: isApiLoaded,

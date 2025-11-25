@@ -159,27 +159,40 @@ export const accountVotesQuery = (
   })
 }
 
-export const govReferendaQuery = ({
-  isApiLoaded,
+export type OpenGovReferendum = Extract<
+  Awaited<
+    ReturnType<Papi["query"]["Referenda"]["ReferendumInfoFor"]["getEntries"]>
+  >[number]["value"],
+  { type: "Ongoing" }
+>["value"] & {
+  id: number
+}
+
+export const openGovReferendaQuery = ({
   papi,
+  isApiLoaded,
   dataEnv,
 }: TProviderContext) =>
   queryOptions({
-    queryKey: ["govReferenda", dataEnv],
+    queryKey: ["openGovReferenda", dataEnv],
+    enabled: isApiLoaded,
     queryFn: async () => {
       const newReferendums =
         await papi.query.Referenda.ReferendumInfoFor.getEntries()
 
-      return newReferendums.reduce<ReadonlyArray<GovReferendaStatus>>(
+      return newReferendums.reduce<Array<OpenGovReferendum>>(
         (acc, { keyArgs, value }) => {
           const id = keyArgs[0]
 
-          return [...acc, { id, ...value }]
+          if (value.type === "Ongoing") {
+            acc.push({ id, ...value.value })
+          }
+
+          return acc
         },
         [],
       )
     },
-    enabled: isApiLoaded,
   })
 
 export type TAccountVote = {

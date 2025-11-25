@@ -1,7 +1,8 @@
+import { big } from "@galacticcouncil/common"
 import Big from "big.js"
 
-const TRILL = 12
-const QUINTILL = 18
+export const TRILL_DECIMALS = 12
+export const QUINTILL_DECIMALS = 18
 
 const normalizeValue = (value: string | number | bigint) => {
   if (typeof value === "bigint") return value
@@ -28,7 +29,11 @@ export const scale = (
   )
 
   const _decimals =
-    decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
+    decimals === "t"
+      ? TRILL_DECIMALS
+      : decimals === "q"
+        ? QUINTILL_DECIMALS
+        : decimals
 
   if (_decimals === 0) {
     return amountBig.toFixed(0, 0)
@@ -53,7 +58,11 @@ export const scaleHuman = (
   )
 
   const _decimals =
-    decimals === "t" ? TRILL : decimals === "q" ? QUINTILL : decimals
+    decimals === "t"
+      ? TRILL_DECIMALS
+      : decimals === "q"
+        ? QUINTILL_DECIMALS
+        : decimals
 
   if (_decimals === 0 || !_decimals) {
     return amountBig.toString()
@@ -65,3 +74,23 @@ export const scaleHuman = (
 export const isNegative = (amount: string | number | bigint) => {
   return normalizeValue(amount) < 0n
 }
+
+export const toDecimal = (
+  amount: string | number | bigint | Big,
+  decimals: number,
+): string =>
+  big.toDecimal(
+    typeof amount === "bigint" ? amount : BigInt(amount.toString()),
+    decimals,
+  )
+
+export const toBigInt = (
+  amount: string | number | bigint | Big,
+  decimals: number,
+) =>
+  big.toBigInt(
+    typeof amount === "object" || typeof amount === "bigint"
+      ? amount.toString()
+      : amount,
+    decimals,
+  )

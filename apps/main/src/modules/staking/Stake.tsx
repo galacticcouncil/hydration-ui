@@ -13,7 +13,7 @@ type StakeOption = (typeof stakeOptions)[number]
 
 type Props = {
   readonly positionId: bigint
-  readonly staked: string
+  readonly staked: string | undefined
   readonly votes: ReadonlyArray<TAccountVote>
   readonly votesSuccess: boolean
   readonly balance: string
@@ -63,7 +63,7 @@ export const Stake: FC<Props> = ({
       ) : (
         <UnstakeForm
           positionId={positionId}
-          staked={staked}
+          staked={staked || "0"}
           votes={votes}
           votesSuccess={votesSuccess}
           isLoading={isLoading}

@@ -14,14 +14,14 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 export const stakingRewardsQuery = (
   { sdk, isApiLoaded }: TProviderContext,
   address: string,
-  activeReferendaIds: Array<string>,
+  openGovReferendaIds: Array<string>,
   blockNumber: number,
 ) =>
   queryOptions({
-    queryKey: ["staking", "rewards", address, activeReferendaIds, blockNumber],
+    queryKey: ["staking", "rewards", address, openGovReferendaIds, blockNumber],
     queryFn: () =>
       sdk.api.staking
-        .getRewards(address, activeReferendaIds, blockNumber.toString())
+        .getRewards(address, openGovReferendaIds, blockNumber.toString())
         .then((r) => r ?? null),
     enabled: isApiLoaded && !!address && !!blockNumber,
   })
