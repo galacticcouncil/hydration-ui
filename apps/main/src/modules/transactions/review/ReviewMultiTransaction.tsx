@@ -17,6 +17,7 @@ import { AnyTransaction } from "@/modules/transactions/types"
 import {
   MultiTransaction,
   SingleTransaction,
+  TransactionCommon,
   TSuccessResult,
   useTransactionsStore,
 } from "@/states/transactions"
@@ -38,6 +39,8 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     null,
   )
   const [resolvedTx, setResolvedTx] = useState<AnyTransaction | null>(null)
+  const [resolvedConfig, setResolvedConfig] =
+    useState<TransactionCommon | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isLastSubmitted, setIsLastSubmitted] = useState(false)
   const [hasUserClosedModal, setHasUserClosedModal] = useState(false)
@@ -53,6 +56,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   useEffect(() => {
     if (!currentBaseConfig) {
       setResolvedTx(null)
+      setResolvedConfig(null)
       return
     }
 
@@ -61,10 +65,12 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     if (isFunction(tx)) {
       const previousResults = transactionResults.slice(0, currentIndex)
       Promise.resolve(tx(previousResults)).then((resolved) => {
-        setResolvedTx(resolved)
+        setResolvedTx(resolved.tx)
+        setResolvedConfig(omit(resolved, ["tx"]))
       })
     } else {
       setResolvedTx(tx)
+      setResolvedConfig(null)
     }
   }, [currentBaseConfig, currentIndex, transactionResults])
 
@@ -76,6 +82,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     const config: SingleTransaction = {
       ...transaction,
       ...omit(currentBaseConfig, ["tx"]),
+      ...(resolvedConfig || {}),
       id: `${transaction.id}-${currentIndex}`,
       tx: resolvedTx,
       onSubmitted: (txHash) => {
@@ -94,6 +101,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
           cancelTransaction(transaction.id)
         } else {
           setResolvedTx(null)
+          setResolvedConfig(null)
           setCurrentIndex((prev) => prev + 1)
         }
       },
@@ -116,9 +124,10 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
     transaction,
     txArray.length,
     isLastTransaction,
+    resolvedConfig,
   ])
 
-  if (!currentConfig || !currentBaseConfig) {
+  if (!currentConfig) {
     return null
   }
 
@@ -127,7 +136,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
 
   const isClosable = isFirstTransaction && !isLoading
 
-  const { title, description } = currentBaseConfig
+  const { title, description } = currentConfig
 
   return (
     <TransactionProvider key={currentConfig.id} transaction={currentConfig}>
@@ -148,7 +157,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
         topContent={
           <Stepper
             maxWidth={txArray.length <= 3 ? 300 : undefined}
-            steps={txArray.map((tx) => tx.stepTitle ?? tx.title ?? "")}
+            steps={txArray.map((tx) => tx.stepTitle ?? "")}
             activeStepIndex={currentIndex}
           />
         }
