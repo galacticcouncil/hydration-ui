@@ -70,6 +70,7 @@
   "liquidity.positions.label.omnipool": "In Omnipool",
   "liquidity.positions.label.isolated": "In Isolated Pool",
   "liquidity.positions.label.stablepool": "In Stablepool",
+  "liquidity.position.modal.title": "Position details",
   "liquidity.position.availableFarms.label": "Available farms",
   "liquidity.position.exitFarms.label": "Exit farms",
   "liquidity.farmDetails.expectedEnd.label": "Expected end date",

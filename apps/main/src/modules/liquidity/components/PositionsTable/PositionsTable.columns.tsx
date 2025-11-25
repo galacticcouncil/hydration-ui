@@ -225,10 +225,7 @@ export const useBalanceTableColumns = () => {
         size: 175,
         header: t("position"),
         cell: ({ row: { original } }) => (
-          <>
-            <div sx={{ width: 10, height: "100%", backgroundColor: "red" }} />
-            <AssetLabelFull asset={original.meta} withName={false} />
-          </>
+          <AssetLabelFull asset={original.meta} withName={false} />
         ),
       }),
       balanceColumnHelper.display({

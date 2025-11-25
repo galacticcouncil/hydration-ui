@@ -69,7 +69,6 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
   const data = useMemo(() => {
     const freeBalance = Big(scaleHuman(balance ?? 0, meta.decimals))
 
-    const totalBalance = Big(0)
     let totalInFarms = Big(0)
     let totalBalanceDisplay = Big(0)
 
@@ -124,7 +123,6 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
 
     return {
       positions: positionsData,
-      totalBalance: totalBalance.toString(),
       totalInFarms: totalInFarms.toString(),
       totalBalanceDisplay: totalBalanceDisplay.toString(),
     }

@@ -25,42 +25,34 @@ export const useMyLiquidityTableData = () => {
       return []
     }
 
-    const groupedData = Map.groupBy(
-      data?.all ?? [],
-      (position) => position.assetId,
-    )
-      .entries()
-      .map<LiquidityPositionByAsset>(([assetId, positions]) => {
-        const totals = positions.reduce(
-          (reduced, position) => {
-            reduced.currentValueHuman = reduced.currentValueHuman.plus(
-              position.data.currentValueHuman,
-            )
-            reduced.currentHubValueHuman = reduced.currentHubValueHuman.plus(
-              position.data.currentHubValueHuman,
-            )
-            reduced.currentTotalDisplay = reduced.currentTotalDisplay.plus(
-              position.data.currentTotalDisplay,
-            )
-            return reduced
-          },
-          {
-            currentValueHuman: Big(0),
-            currentHubValueHuman: Big(0),
-            currentTotalDisplay: Big(0),
-          },
-        )
+    const groupedByAssetId = Object.groupBy(data?.all ?? [], (p) => p.assetId)
+    return Object.entries(groupedByAssetId).map(([assetId, positionsEntry]) => {
+      const positions = positionsEntry ?? []
+      const totals = positions.reduce(
+        (acc, { data }) => ({
+          currentValueHuman: acc.currentValueHuman.plus(data.currentValueHuman),
+          currentHubValueHuman: acc.currentHubValueHuman.plus(
+            data.currentHubValueHuman,
+          ),
+          currentTotalDisplay: acc.currentTotalDisplay.plus(
+            data.currentTotalDisplay,
+          ),
+        }),
+        {
+          currentValueHuman: Big(0),
+          currentHubValueHuman: Big(0),
+          currentTotalDisplay: Big(0),
+        },
+      )
 
-        return {
-          currentValueHuman: totals.currentValueHuman.toString(),
-          currentHubValueHuman: totals.currentHubValueHuman.toString(),
-          currentTotalDisplay: totals.currentTotalDisplay.toString(),
-          meta: getAssetWithFallback(assetId),
-          positions,
-        }
-      })
-
-    return Array.from(groupedData)
+      return {
+        currentValueHuman: totals.currentValueHuman.toString(),
+        currentHubValueHuman: totals.currentHubValueHuman.toString(),
+        currentTotalDisplay: totals.currentTotalDisplay.toString(),
+        meta: getAssetWithFallback(assetId),
+        positions,
+      }
+    })
   }, [data, isLoading, getAssetWithFallback])
 
   return { data: groupedData, isLoading }

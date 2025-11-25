@@ -55,7 +55,7 @@ export const PositionDetails = ({
 
   return (
     <>
-      <ModalHeader title={"Position Details"} />
+      <ModalHeader title={t("liquidity.position.modal.title")} />
       <ModalBody>
         {isXyk ? null : (
           <Flex
