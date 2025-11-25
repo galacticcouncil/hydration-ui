@@ -55,7 +55,6 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const form = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset!,
-    receiveAssets: reserves.map((reserve) => reserve.meta),
     balance: balanceShifted,
     asset: { ...meta, iconId: meta.id },
   })
@@ -89,12 +88,12 @@ export const useRemoveMoneyMarketLiquidity = ({
   )
 
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"
-  const amountOutShifted = scaleHuman(amountOut, meta.decimals)
-  const minimumTradeAmount =
-    useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
-  const minimumTradeAmountShifted = scaleHuman(
-    minimumTradeAmount,
-    meta.decimals,
+  const amountOutShifted = scaleHuman(amountOut, receiveAsset.decimals)
+
+  const tradeMinReceive = useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
+  const tradeMinReceiveShifted = scaleHuman(
+    tradeMinReceive,
+    receiveAsset.decimals,
   )
 
   const receiveAssetsProportionally = (() => {
@@ -187,7 +186,7 @@ export const useRemoveMoneyMarketLiquidity = ({
     reserves: reserves,
     receiveAssetsProportionally,
     receiveAsset,
-    minimumTradeAmountShifted,
+    tradeMinReceive: tradeMinReceiveShifted,
     mutation,
     healthFactor,
   }

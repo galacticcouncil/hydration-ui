@@ -12,7 +12,7 @@ import {
   OtcColumn,
   useOtcTableColums,
 } from "@/modules/trade/otc/table/OtcTable.columns"
-import { useOtcOffersQuery } from "@/modules/trade/otc/table/OtcTable.query"
+import { useOtcOffers } from "@/modules/trade/otc/table/OtcTable.query"
 import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
@@ -29,7 +29,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
 
   const { getAsset } = useAssets()
-  const { data, isLoading } = useOtcOffersQuery()
+  const { data, isLoading } = useOtcOffers()
   const columns = useOtcTableColums()
 
   const userAddress = useHydraAccountAddress()

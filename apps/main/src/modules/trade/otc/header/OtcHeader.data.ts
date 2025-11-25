@@ -1,10 +1,10 @@
 import Big from "big.js"
 
-import { useOtcOffersQuery } from "@/modules/trade/otc/table/OtcTable.query"
+import { useOtcOffers } from "@/modules/trade/otc/table/OtcTable.query"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 export const useOtcHeaderData = () => {
-  const { data, isLoading } = useOtcOffersQuery()
+  const { data, isLoading } = useOtcOffers()
 
   const assetIds = Array.from(new Set(data?.map((offer) => offer.assetIn.id)))
 
