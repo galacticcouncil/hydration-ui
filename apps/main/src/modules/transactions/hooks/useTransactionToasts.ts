@@ -5,10 +5,10 @@ import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
 import { useToasts } from "@/states/toasts"
-import { Transaction } from "@/states/transactions"
+import { SingleTransaction } from "@/states/transactions"
 
 export const useTransactionToasts = (
-  transaction: Transaction,
+  transaction: SingleTransaction,
   ecosystem: CallType,
 ) => {
   const { t } = useTranslation()

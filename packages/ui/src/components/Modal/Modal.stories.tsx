@@ -136,6 +136,14 @@ export const WithHeaderAndFooter: Story = {
   render: WithHeaderAndFooterTemplate,
 }
 
+export const WithTopContent: Story = {
+  render: WithHeaderAndFooterTemplate,
+  args: {
+    variant: "popup",
+    topContent: <div>Top Content</div>,
+  },
+}
+
 export const WithCustomHeader: Story = {
   render: WithCustomHeaderTemplate,
 }

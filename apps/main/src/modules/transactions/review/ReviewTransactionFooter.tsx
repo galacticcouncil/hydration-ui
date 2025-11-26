@@ -5,12 +5,20 @@ import { useTransactionAlerts } from "@/modules/transactions/hooks/useTransactio
 import { ReviewTransactionSubmitButton } from "@/modules/transactions/review/ReviewTransactionSubmitButton"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
-export const ReviewTransactionFooter = () => {
+type ReviewTransactionFooterProps = {
+  closable?: boolean
+}
+
+export const ReviewTransactionFooter: React.FC<
+  ReviewTransactionFooterProps
+> = ({ closable = true }) => {
   const { t } = useTranslation()
 
-  const { onClose, isIdle } = useTransaction()
+  const { onClose, isIdle, isSigning, isSubmitted } = useTransaction()
 
   const { alerts } = useTransactionAlerts()
+
+  const isCloseDisabled = isSigning || isSubmitted || !closable
 
   if (isIdle) {
     return (
@@ -23,7 +31,12 @@ export const ReviewTransactionFooter = () => {
           justify="space-between"
           gap={10}
         >
-          <Button size="large" variant="tertiary" onClick={onClose}>
+          <Button
+            size="large"
+            variant="tertiary"
+            onClick={onClose}
+            disabled={isCloseDisabled}
+          >
             {t("close")}
           </Button>
 
@@ -32,8 +45,15 @@ export const ReviewTransactionFooter = () => {
       </Stack>
     )
   }
+
   return (
-    <Button size="large" width="100%" onClick={onClose}>
+    <Button
+      size="large"
+      width="100%"
+      onClick={onClose}
+      variant={isCloseDisabled ? "tertiary" : "primary"}
+      disabled={isCloseDisabled}
+    >
       {t("close")}
     </Button>
   )

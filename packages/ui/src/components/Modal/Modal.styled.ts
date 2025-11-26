@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Overlay } from "@radix-ui/react-dialog"
 
@@ -9,25 +10,31 @@ import { Separator } from "@/components/Separator"
 import { Text } from "@/components/Text"
 import { mq } from "@/theme"
 
-export const SModalOverlay = styled(Overlay)`
-  position: fixed;
-  inset: 0;
+const DEFAULT_ANIMATION_DURATION = 200
 
-  display: grid;
-  place-items: center;
+export const SModalOverlay = styled(Overlay)<{ animationDurationMs?: number }>(
+  ({ theme, animationDurationMs = DEFAULT_ANIMATION_DURATION }) => css`
+    position: fixed;
+    inset: 0;
 
-  z-index: ${({ theme }) => theme.zIndices.modal};
+    display: grid;
+    place-items: center;
 
-  background: ${({ theme }) => theme.details.overlays};
+    z-index: ${theme.zIndices.modal};
 
-  &[data-state="open"] {
-    animation: ${({ theme }) => theme.animations.fadeIn} 0.2s;
-  }
+    background: ${theme.details.overlays};
 
-  &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
-  }
-`
+    &[data-state="open"] {
+      animation: ${theme.animations.fadeIn};
+      animation-duration: ${animationDurationMs}ms;
+    }
+
+    &[data-state="closed"] {
+      animation: ${theme.animations.fadeOut};
+      animation-duration: ${animationDurationMs}ms;
+    }
+  `,
+)
 
 export const SModalClose = styled(ButtonIcon)`
   padding: 4px;
@@ -36,8 +43,11 @@ export const SModalClose = styled(ButtonIcon)`
   cursor: pointer;
 `
 
-export const SModalWrapper = styled(Overlay)`
+export const SModalWrapper = styled(Overlay)<{ animationDurationMs?: number }>`
   --modal-block-offset: 10vh;
+  --modal-animation-duration: ${({
+    animationDurationMs = DEFAULT_ANIMATION_DURATION,
+  }) => animationDurationMs}ms;
 
   position: fixed;
   inset: 0;
@@ -52,50 +62,60 @@ export const SModalWrapper = styled(Overlay)`
   z-index: ${({ theme }) => theme.zIndices.modal};
 
   &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.2s;
+    animation: ${({ theme }) => theme.animations.fadeOut}
+      var(--modal-animation-duration);
   }
 `
 
-export const SModalContent = styled(Content)`
-  --modal-content-padding: 20px;
-  --modal-content-inset: calc(var(--modal-content-padding) * -1);
+export const SModalContent = styled(Content)<{
+  hasTopContent?: boolean
+}>(
+  ({ theme, hasTopContent }) => css`
+    --modal-content-padding: 20px;
+    --modal-content-inset: calc(var(--modal-content-padding) * -1);
+    --modal-top-content-height: ${hasTopContent ? "50px" : "0px"};
 
-  position: fixed;
-  inset: 0;
-  outline: none;
+    position: fixed;
+    inset: 0;
+    outline: none;
 
-  width: 100%;
-  height: 100dvh;
+    width: 100%;
+    height: 100dvh;
 
-  & > div > :not([hidden]) ~ :not([hidden]) {
-    border-top: 1px solid ${({ theme }) => theme.details.separators};
-  }
-
-  &[data-state="open"] {
-    animation: ${({ theme }) => theme.animations.fadeInBottom} 0.2s;
-    animation-timing-function: ${({ theme }) => theme.easings.outExpo};
-  }
-
-  &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOutBottom} 0.2s;
-  }
-
-  ${mq("sm")} {
-    position: relative;
-    inset: auto;
-
-    max-width: 520px;
-    height: auto;
+    & > div > :not([hidden]) ~ :not([hidden]) {
+      border-top: 1px solid ${theme.details.separators};
+    }
 
     &[data-state="open"] {
-      animation: ${({ theme }) => theme.animations.scaleInTop} 0.2s;
+      animation: ${theme.animations.fadeInBottom};
+      animation-timing-function: ${theme.easings.outExpo};
+      animation-duration: var(--modal-animation-duration);
     }
 
     &[data-state="closed"] {
-      animation: ${({ theme }) => theme.animations.scaleOutTop} 0.2s;
+      animation: ${theme.animations.fadeOutBottom};
+      animation-duration: var(--modal-animation-duration);
     }
-  }
-`
+
+    ${mq("sm")} {
+      position: relative;
+      inset: auto;
+
+      max-width: 520px;
+      height: auto;
+
+      &[data-state="open"] {
+        animation: ${theme.animations.scaleInTop};
+        animation-duration: var(--modal-animation-duration);
+      }
+
+      &[data-state="closed"] {
+        animation: ${theme.animations.scaleOutTop};
+        animation-duration: var(--modal-animation-duration);
+      }
+    }
+  `,
+)
 
 export const SModalPaper = styled(Paper)`
   display: flex;
@@ -105,9 +125,10 @@ export const SModalPaper = styled(Paper)`
   padding-bottom: env(safe-area-inset-bottom);
 
   ${mq("max-xs")} {
-    height: 100%;
+    height: calc(100% - var(--modal-top-content-height));
     border: 0;
     border-radius: 0;
+    overflow-y: auto;
   }
 `
 
@@ -169,4 +190,13 @@ export const SModalDescription = styled(Text)`
 
 export const SModalContentDivider = styled(Separator)`
   margin-inline: var(--modal-content-inset);
+`
+
+export const SModalTopContent = styled(Box)`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding-inline: var(--modal-content-padding);
+  height: var(--modal-top-content-height);
 `

@@ -21,10 +21,10 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
-import { Transaction, useTransactionsStore } from "@/states/transactions"
+import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
-export type TransactionContext = Transaction &
+export type TransactionContext = SingleTransaction &
   TxState & {
     isIdle: boolean
     isSubmitted: boolean
@@ -57,13 +57,14 @@ const TransactionContext = createContext<TransactionContext>(
 
 export const useTransaction = () => useContext(TransactionContext)
 
-export type TransactionProviderProps = Transaction & {
+export type TransactionProviderProps = {
   children: React.ReactNode
+  transaction: SingleTransaction
 }
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   children,
-  ...transaction
+  transaction,
 }) => {
   const { cancelTransaction } = useTransactionsStore()
 
@@ -136,10 +137,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
       },
-      onSuccess: () => {
+      onSuccess: (event) => {
         dispatch(doSetStatus("success"))
-        transaction.onSuccess?.()
-        toasts.onSuccess?.()
+        transaction.onSuccess?.(event)
+        toasts.onSuccess?.(event)
       },
       onError: (message) => {
         dispatch(doSetError(message))
