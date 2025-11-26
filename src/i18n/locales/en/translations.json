@@ -127,6 +127,7 @@
   "error.required": "This field is required.",
   "error.maxBalance": "Insufficient balance on your account.",
   "error.whitespace": "Spaces are not allowed.",
+  "error.unknown": "Unknown error",
   "modal.closeButton.name": "Close modal button",
   "selectAssets.asset": "Asset",
   "selectAssets.your_balance": "Your balance",
@@ -435,6 +436,7 @@
   "liquidity.reviewTransaction.modal.confirmButton.invalidEvmPaymentAsset.msg": "Please change your fee payment asset to {{symbol}}",
   "liquidity.reviewTransaction.modal.confirmButton.invalidWalletProvider.msg": "Wallet not supported, switch wallet",
   "liquidity.reviewTransaction.modal.confirmButton.pendingPermit.msg": "Permit transaction is pending.",
+  "liquidity.reviewTransaction.modal.confirmButton.nonce.msg": "Signing not possible at the moment. We are working on solution.",
   "liquidity.reviewTransaction.modal.confirmButton.loading": "Waiting for signature",
   "liquidity.reviewTransaction.modal.confirmButton.warning": "Please sign using your wallet extension.",
   "liquidity.reviewTransaction.modal.walletNotReady.warning": "Wallet is not responding, signing not possible at this moment.",
@@ -1589,5 +1591,9 @@
   "wormhole.tx.claim.title": "Claim {{ symbol }}",
   "wormhole.tx.claim.description": "Claim your {{ amount, bignumber(type: 'token') }} {{ symbol }} on {{ chain }}",
   "wormhole.tx.claim.toast.onLoading": "Claiming <0>{{ amount, bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>...",
-  "wormhole.tx.claim.toast.onSuccess": "Claimed <0>{{ amount , bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>."
+  "wormhole.tx.claim.toast.onSuccess": "Claimed <0>{{ amount , bignumber(type: token) }} {{ symbol }}</0> on <0>{{ chain }}</0>.",
+  "blast.campaign.title": "Earn up to {{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }} APY on USDC",
+  "blast.campaign.description": "Put your Nova Shots rewards to work — earn up to <0>{{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }}</0> APY on your USDC or buy Bitcoin.",
+  "blast.campaign.cta.bitcoin": "Get Bitcoin",
+  "blast.campaign.cta.usdc": "Earn on USDC"
 }

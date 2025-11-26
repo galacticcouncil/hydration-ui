@@ -16,6 +16,7 @@ import { Transaction, useStore } from "state/store"
 import { theme } from "theme"
 import { ReviewTransactionData } from "./ReviewTransactionData"
 import {
+  INVALID_NONCE,
   isTxType,
   toSubmittableExtrinsic,
   useEditFeePaymentAsset,
@@ -122,7 +123,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     permitNonce,
     pendingPermit,
     txWeight,
+    nonce,
   } = transactionValues.data
+
+  const isInvalidNonce = BN(INVALID_NONCE).eq(nonce?.toString() ?? "0")
 
   const hfChange = useHealthFactorChangeFromTxMetadata(props.txMeta)
 
@@ -258,7 +262,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   const hasMultipleFeeAssets =
     props.xcallMeta && props.xcallMeta?.srcChain !== HYDRATION_CHAIN_KEY
       ? false
-      : acceptedFeePaymentAssets.length > 1
+      : acceptedFeePaymentAssets.length > (feePaymentMeta ? 1 : 0)
+
   const isEditPaymentBalance = !isEnoughPaymentBalance && hasMultipleFeeAssets
 
   if (isOpenEditFeePaymentAssetModal) return editFeePaymentAssetModal
@@ -305,7 +310,8 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     !account ||
     isLoading ||
     (!isEnoughPaymentBalance && !hasMultipleFeeAssets) ||
-    (isHfRiskAcceptRequired && !healthFactorRiskAccepted)
+    (isHfRiskAcceptRequired && !healthFactorRiskAccepted) ||
+    isInvalidNonce
 
   return (
     <>
@@ -334,7 +340,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                 openEditFeePaymentAssetModal={openEditFeePaymentAssetModal}
                 onTipChange={isTippingEnabled ? setTipAmount : undefined}
                 onNonceChange={
-                  isCustomNonceEnabled ? setCustomNonce : undefined
+                  isCustomNonceEnabled && !isInvalidNonce
+                    ? setCustomNonce
+                    : undefined
                 }
                 referralCode={isLinking ? storedReferralCode : undefined}
                 currentHealthFactor={hfChange?.currentHealthFactor}
@@ -411,6 +419,13 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   <Text fs={12} lh={16} tAlign="center" color="warning300">
                     {t(
                       "liquidity.reviewTransaction.modal.confirmButton.pendingPermit.msg",
+                    )}
+                  </Text>
+                )}
+                {isInvalidNonce && (
+                  <Text fs={12} lh={16} tAlign="center" color="pink600">
+                    {t(
+                      "liquidity.reviewTransaction.modal.confirmButton.nonce.msg",
                     )}
                   </Text>
                 )}
