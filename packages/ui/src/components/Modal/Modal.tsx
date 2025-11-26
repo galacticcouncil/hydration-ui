@@ -23,6 +23,7 @@ import {
   SModalOverlay,
   SModalPaper,
   SModalTitle,
+  SModalTopContent,
   SModalWrapper,
 } from "./Modal.styled"
 
@@ -48,21 +49,34 @@ type ModalOverlayProps = React.ComponentPropsWithoutRef<
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Overlay>>
 }
 
-const ModalOverlay: FC<ModalOverlayProps> = (props) => (
-  <SModalOverlay ref={props.ref} {...props} />
-)
+const ModalOverlay: FC<ModalOverlayProps & { animationDurationMs?: number }> = (
+  props,
+) => <SModalOverlay ref={props.ref} {...props} />
 
 type ModalContentProps = React.ComponentPropsWithoutRef<
   typeof DialogPrimitive.Content
 > & {
   ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
+  topContent?: ReactNode
+  animationDurationMs?: number
 }
 
-const ModalContent: FC<ModalContentProps> = ({ children, ref, ...props }) => (
-  <ModalPortal>
-    <ModalOverlay />
-    <SModalWrapper onClick={(e) => e.stopPropagation()}>
-      <SModalContent ref={ref} {...props}>
+const ModalContent: FC<ModalContentProps> = ({
+  children,
+  ref,
+  topContent,
+  forceMount,
+  animationDurationMs,
+  ...props
+}) => (
+  <ModalPortal forceMount={forceMount}>
+    <ModalOverlay animationDurationMs={animationDurationMs} />
+    <SModalWrapper
+      onClick={(e) => e.stopPropagation()}
+      animationDurationMs={animationDurationMs}
+    >
+      <SModalContent ref={ref} {...props} hasTopContent={!!topContent}>
+        {topContent && <SModalTopContent>{topContent}</SModalTopContent>}
         <SModalPaper>{children}</SModalPaper>
       </SModalContent>
     </SModalWrapper>
@@ -229,12 +243,16 @@ const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   variant?: ModalVariant
   disableInteractOutside?: boolean
+  topContent?: ReactNode
+  animationDurationMs?: number
 }
 
 const Modal = ({
   children,
   variant = "auto",
   disableInteractOutside = false,
+  topContent,
+  animationDurationMs,
   ...props
 }: ModalProps) => {
   const { gte } = useBreakpoints()
@@ -262,7 +280,9 @@ const Modal = ({
     <ModalContext.Provider value={context}>
       <ModalRoot {...props}>
         <ModalContent
+          animationDurationMs={animationDurationMs}
           onClick={(e) => e.stopPropagation()}
+          topContent={topContent}
           onInteractOutside={
             disableInteractOutside ? (e) => e.preventDefault() : undefined
           }
