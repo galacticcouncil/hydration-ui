@@ -39,6 +39,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const getMinimumTradeAmount = useMinimumTradeAmount()
 
   const {
     liquidity: { slippage },
@@ -94,7 +95,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"
   const amountOutShifted = scaleHuman(amountOut, receiveAsset.decimals)
 
-  const tradeMinReceive = useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
+  const tradeMinReceive = getMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
   const tradeMinReceiveShifted = scaleHuman(
     tradeMinReceive,
     receiveAsset.decimals,
@@ -196,14 +197,15 @@ export const useRemoveMoneyMarketLiquidity = ({
   }
 }
 
-export const useMinimumTradeAmount = (trade?: Trade) => {
+export const useMinimumTradeAmount = () => {
   const {
     swap: {
       single: { swapSlippage },
     },
   } = useTradeSettings()
 
-  if (!trade) return undefined
-
-  return trade.amountOut - calculateSlippage(trade.amountOut, swapSlippage)
+  return (trade?: Trade) =>
+    trade
+      ? trade.amountOut - calculateSlippage(trade.amountOut, swapSlippage)
+      : undefined
 }

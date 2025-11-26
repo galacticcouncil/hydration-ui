@@ -10,6 +10,7 @@ import { FieldError, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z, ZodType } from "zod/v4"
 
+import { TAssetData } from "@/api/assets"
 import { useOmnipoolFarms } from "@/api/farms"
 import {
   useMaxAddLiquidityLimit,
@@ -37,38 +38,77 @@ export const getCustomErrors = (errors?: FieldError) =>
       })
     : undefined
 
-export const useLiquidityOmnipoolShares = (value: string, assetId: string) => {
+export const useLiquidityOmnipoolShares = (assetId: string) => {
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
   const {
     liquidity: { slippage },
   } = useTradeSettings()
   const omnipoolAssetData = omnipoolAssetsData?.get(Number(assetId))
 
-  if (!omnipoolAssetData || !value) return undefined
+  const getOmnipoolGetShares = (value: string) => {
+    if (!omnipoolAssetData || !value) return undefined
 
-  const {
-    hubReserves,
-    shares,
-    balance: assetReserve,
-    decimals,
-  } = omnipoolAssetData
+    const {
+      hubReserves,
+      shares,
+      balance: assetReserve,
+      decimals,
+    } = omnipoolAssetData
 
-  const sharesToGet = calculate_shares(
-    assetReserve.toString(),
-    hubReserves.toString(),
-    shares.toString(),
-    scale(value, decimals ?? 0),
-  )
+    const sharesToGet = calculate_shares(
+      assetReserve.toString(),
+      hubReserves.toString(),
+      shares.toString(),
+      scale(value, decimals ?? 0),
+    )
 
-  const minSharesToGet = Big(sharesToGet)
-    .times(100 - slippage)
-    .div(100)
-    .toFixed(0)
+    const minSharesToGet = Big(sharesToGet)
+      .times(100 - slippage)
+      .div(100)
+      .toFixed(0)
 
-  const totalShares = Big(shares.toString()).plus(minSharesToGet).toString()
-  const poolShare = Big(minSharesToGet).div(totalShares).times(100).toString()
+    const totalShares = Big(shares.toString()).plus(minSharesToGet).toString()
+    const poolShare = Big(minSharesToGet).div(totalShares).times(100).toString()
 
-  return { totalShares, poolShare, sharesToGet, minSharesToGet }
+    return { totalShares, poolShare, sharesToGet, minSharesToGet }
+  }
+
+  return getOmnipoolGetShares
+}
+
+export const useCheckJoinOmnipoolFarm = ({
+  amount,
+  meta,
+  disabled = false,
+}: {
+  amount: string
+  meta: TAssetData
+  disabled?: boolean
+}) => {
+  const { t } = useTranslation("liquidity")
+  const { data: omnipoolFarms } = useOmnipoolFarms()
+
+  const activeFarms =
+    omnipoolFarms?.[meta.id]?.filter((farm) => farm.apr !== "0") ?? []
+  const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
+
+  const isCheckJoinFarms =
+    activeFarms.length > 0 && Big(amount).gt(0) && !disabled
+  const joinFarmErrorMessage =
+    isCheckJoinFarms && Big(amount).lte(minJoinAmount)
+      ? t("liquidity.joinFarms.modal.validation.minShares", {
+          value: minJoinAmount,
+          symbol: meta.symbol,
+        })
+      : undefined
+
+  const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
+
+  return {
+    activeFarms,
+    isJoinFarms,
+    joinFarmErrorMessage,
+  }
 }
 
 export const useAddToOmnipoolZod = (
@@ -185,16 +225,10 @@ export const useAddLiquidity = (assetId: string) => {
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getAssetWithFallback } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
-  const { data: omnipoolFarms } = useOmnipoolFarms()
 
   const meta = getAssetWithFallback(assetId)
 
-  const activeFarms =
-    omnipoolFarms?.[assetId]?.filter((farm) => farm.apr !== "0") ?? []
-  const isFarms = activeFarms.length > 0
-
   const addLiquidityZod = useAddToOmnipoolZod(assetId)
-  const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
 
   const form = useAddLiquidityForm({
     initialAmount: "",
@@ -202,19 +236,16 @@ export const useAddLiquidity = (assetId: string) => {
   })
 
   const amount = Big(form.watch("amount") || "0")
-  const isCheckJoinFarms = isFarms && amount.gt(0)
 
-  const joinFarmErrorMessage =
-    isCheckJoinFarms && amount.lte(minJoinAmount)
-      ? t("liquidity.joinFarms.modal.validation.minShares", {
-          value: minJoinAmount,
-          symbol: meta.symbol,
-        })
-      : undefined
+  const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
+    useCheckJoinOmnipoolFarm({
+      amount: amount.toString(),
+      meta,
+    })
+  const isFarms = activeFarms.length > 0
+  const getOmnipoolGetShares = useLiquidityOmnipoolShares(assetId)
+  const liquidityShares = getOmnipoolGetShares(amount.toString())
 
-  const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
-
-  const liquidityShares = useLiquidityOmnipoolShares(amount.toString(), assetId)
   const balance = scaleHuman(getTransferableBalance(assetId), meta.decimals)
 
   const mutation = useMutation({

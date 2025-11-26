@@ -94,8 +94,7 @@ export const healthFactorAfterWithdrawQuery = (
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled:
-      isLoaded && !!address && !!fromAssetId && Big(fromAmount || "0").gt(0),
+    enabled: isLoaded && !!address && !!fromAssetId,
   })
 
 export const healthFactorAfterSupplyQuery = (
@@ -123,7 +122,7 @@ export const healthFactorAfterSupplyQuery = (
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled: isLoaded && !!address && !!toAssetId && Big(toAmount || "0").gt(0),
+    enabled: isLoaded && !!address && !!toAssetId,
   })
 
 export const healthFactorAfterSwapQuery = (

@@ -9,11 +9,12 @@ import { useTranslation } from "react-i18next"
 import z from "zod"
 
 import { AssetType, TAssetData } from "@/api/assets"
-import { useOmnipoolFarms } from "@/api/farms"
 import { StableSwapBase } from "@/api/pools"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
-import { useAddToOmnipoolZod } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
-import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import {
+  useAddToOmnipoolZod,
+  useCheckJoinOmnipoolFarm,
+} from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import {
   calculatePoolFee,
   TReserve,
@@ -78,13 +79,10 @@ export const useStablepoolAddLiquidity = ({
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getTransferableBalance } = useAccountBalances()
-  const { data: omnipoolFarms } = useOmnipoolFarms()
   const {
     liquidity: { slippage },
   } = useTradeSettings()
 
-  const activeFarms =
-    omnipoolFarms?.[stableswapId]?.filter((farm) => farm.apr !== "0") ?? []
   const meta = getAssetWithFallback(stableswapId)
 
   const { stablepoolAssets, reserveIds, accountBalances } = useMemo(() => {
@@ -144,24 +142,17 @@ export const useStablepoolAddLiquidity = ({
     .div(100)
     .toFixed(0)
 
-  const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
   const stablepoolSharesHuman =
     scaleHuman(minStablepoolShares, meta.decimals) || "0"
+
+  const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
+    useCheckJoinOmnipoolFarm({
+      amount: stablepoolSharesHuman,
+      meta,
+      disabled: option === "stablepool",
+    })
+
   const minReceiveAmount = stablepoolSharesHuman
-  const isCheckJoinFarms =
-    activeFarms.length > 0 &&
-    Big(stablepoolSharesHuman).gt(0) &&
-    option === "omnipool"
-
-  const joinFarmErrorMessage =
-    isCheckJoinFarms && Big(stablepoolSharesHuman).lte(minJoinAmount)
-      ? t("liquidity.joinFarms.modal.validation.minShares", {
-          value: minJoinAmount,
-          symbol: meta.symbol,
-        })
-      : undefined
-
-  const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
 
   useEffect(() => {
     if (!selectedAssetId && initialAssetIdToAdd) {
@@ -248,6 +239,7 @@ export const useStablepoolAddLiquidity = ({
     reserveIds,
     displayOption: true,
     isGETHProviding: false,
+    isGETHPool: false,
   }
 }
 

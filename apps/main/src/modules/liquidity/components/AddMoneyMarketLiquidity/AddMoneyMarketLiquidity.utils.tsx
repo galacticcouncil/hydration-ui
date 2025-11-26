@@ -5,13 +5,16 @@ import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { first } from "remeda"
 import { useDebounce } from "use-debounce"
 
 import { healthFactorAfterWithdrawQuery, healthFactorQuery } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
-import { useOmnipoolFarms } from "@/api/farms"
 import { bestSellQuery } from "@/api/trade"
-import { useLiquidityOmnipoolShares } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
+import {
+  useCheckJoinOmnipoolFarm,
+  useLiquidityOmnipoolShares,
+} from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddMoneyMarketLiquidityWrapperProps } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 import {
   getStablepoolShares,
@@ -19,7 +22,6 @@ import {
   useAssetsToAddToMoneyMarket,
   useStablepoolAddLiquidityForm,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
-import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
@@ -130,6 +132,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     displayOption: false,
     assetsToProvide,
     isGETHProviding,
+    isGETHPool,
     stablepoolAssets,
     erc20Id,
   }
@@ -143,96 +146,453 @@ export const useAddGETHToOmnipool = ({
   props: AddMoneyMarketLiquidityWrapperProps
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, isErc20AToken } = useAssets()
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const { data: omnipoolFarms } = useOmnipoolFarms()
-  const { erc20Id, assetsToProvide } = formData
+  const {
+    liquidity: { slippage },
+    swap: {
+      single: { swapSlippage },
+    },
+  } = useTradeSettings()
+  const { erc20Id, assetsToProvide, stablepoolAssets, isGETHProviding } =
+    formData
+  const { pool } = props.stablepoolDetails
   const meta = getAssetWithFallback(erc20Id)
+  const stableswapMeta = getAssetWithFallback(pool.id)
+  const form = useFormContext<TAddStablepoolLiquidityFormValues>()
+  const getMinimumTradeAmount = useMinimumTradeAmount()
+  const getOmnipoolGetShares = useLiquidityOmnipoolShares(erc20Id)
+  const { getTransferableBalance } = useAccountBalances()
+  const [split, selectedAssetId] = form.watch(["split", "selectedAssetId"])
 
-  const activeFarms =
-    omnipoolFarms?.[erc20Id]?.filter((farm) => farm.apr !== "0") ?? []
-  const amountToProvide = assetsToProvide[0]?.amount || "0"
+  const { assetIn, amounIn, minStablepoolShares } = (() => {
+    if (split) {
+      const stablepoolShares = getStablepoolShares(
+        assetsToProvide,
+        stablepoolAssets,
+        pool,
+      )
 
-  const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
+      const minStablepoolShares = Big(stablepoolShares)
+        .times(100 - slippage)
+        .div(100)
+        .toFixed(0)
 
-  const isCheckJoinFarms = activeFarms.length > 0 && Big(amountToProvide).gt(0)
+      const stablepoolSharesHuman =
+        scaleHuman(minStablepoolShares, meta.decimals) || "0"
 
-  const joinFarmErrorMessage =
-    isCheckJoinFarms && Big(amountToProvide).lte(minJoinAmount)
-      ? t("liquidity.joinFarms.modal.validation.minShares", {
-          value: minJoinAmount,
-          symbol: getAssetWithFallback(erc20Id).symbol,
-        })
-      : undefined
+      const assetIn = props.stableswapId
+      const amounIn = stablepoolSharesHuman
 
-  const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
+      return {
+        assetIn,
+        amounIn,
+        minStablepoolShares,
+      }
+    } else if (isGETHProviding) {
+      return {
+        assetIn: "",
+        amounIn: assetsToProvide[0]?.amount || "0",
+        minStablepoolShares: "0",
+      }
+    } else {
+      const tradeFormAsset = assetsToProvide[0]
 
-  const omnipoolShares = useLiquidityOmnipoolShares(amountToProvide, erc20Id)
+      const assetIn = tradeFormAsset?.asset.id ?? selectedAssetId
+      const amounIn = tradeFormAsset?.amount ?? "0"
+
+      return {
+        assetIn,
+        amounIn,
+        minStablepoolShares: "0",
+      }
+    }
+  })()
+
+  const [debouncedAmountIn] = useDebounce(amounIn, 300)
+  const { data: trade } = useQuery(
+    bestSellQuery(
+      rpc,
+      {
+        assetIn,
+        assetOut: erc20Id,
+        amountIn: debouncedAmountIn,
+        slippage: swapSlippage,
+        address: account?.address ?? "",
+      },
+      true,
+    ),
+  )
+
+  const minGETHToGet = (() => {
+    if (isGETHProviding) {
+      return amounIn
+    } else if (split) {
+      // stablewap token is swapped 1:1 with erc20 token without slippage
+      return scaleHuman(trade?.swap.amountOut ?? "0", meta.decimals)
+    } else {
+      return scaleHuman(
+        getMinimumTradeAmount(trade?.swap)?.toString() ?? "0",
+        meta.decimals,
+      )
+    }
+  })()
+
+  const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
+    useCheckJoinOmnipoolFarm({
+      amount: minGETHToGet,
+      meta,
+    })
+
+  const omnipoolShares = getOmnipoolGetShares(minGETHToGet)
   const minSharesToGet = omnipoolShares?.minSharesToGet ?? "0"
   const minReceiveAmount = scaleHuman(minSharesToGet, meta.decimals)
+  const assetInMeta = getAssetWithFallback(assetIn)
 
-  const [debouncedAmount] = useDebounce(amountToProvide, 300)
-
-  const { data: healthFactor } = useQuery(
+  const { data: healthFactorQueryData } = useQuery(
     healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
-      fromAssetId: props.stableswapId,
-      fromAmount: debouncedAmount,
+      fromAssetId: isErc20AToken(assetInMeta)
+        ? assetInMeta.underlyingAssetId
+        : "",
+      fromAmount: debouncedAmountIn,
     }),
   )
+
+  const healthFactor = isErc20AToken(assetInMeta)
+    ? healthFactorQueryData
+    : undefined
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
       if (!minSharesToGet) throw new Error("minReceiveAmount is not found")
+      if (!account?.address) throw new Error("No account address")
 
-      const { papi } = rpc
-      const amount = Big(scale(amountToProvide, meta.decimals)).toFixed(0)
+      const { papi, sdk } = rpc
+      const tradeTx = trade?.tx
 
-      const tx = isJoinFarms
-        ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms({
-            asset: Number(erc20Id),
-            amount: BigInt(amount),
-            min_shares_limit: BigInt(minSharesToGet),
-            farm_entries: activeFarms.map((farm) => [
-              farm.globalFarmId,
-              farm.yieldFarmId,
-            ]),
-          })
-        : papi.tx.Omnipool.add_liquidity_with_limit({
-            asset: Number(erc20Id),
-            amount: BigInt(amount),
-            min_shares_limit: BigInt(minSharesToGet),
-          })
+      if (isGETHProviding) {
+        const amountToJoinOmnipool = Big(
+          scale(minGETHToGet, meta.decimals),
+        ).toFixed(0)
 
-      const shiftedAmount = scaleHuman(amountToProvide, meta.decimals)
-      const tOptions = {
-        value: shiftedAmount,
-        symbol: meta.symbol,
-        where: "Omnipool",
-      }
+        const omnipoolTx = isJoinFarms
+          ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms({
+              asset: Number(erc20Id),
+              amount: BigInt(amountToJoinOmnipool),
+              min_shares_limit: BigInt(minSharesToGet),
+              farm_entries: activeFarms.map((farm) => [
+                farm.globalFarmId,
+                farm.yieldFarmId,
+              ]),
+            })
+          : papi.tx.Omnipool.add_liquidity_with_limit({
+              asset: Number(erc20Id),
+              amount: BigInt(amountToJoinOmnipool),
+              min_shares_limit: BigInt(minSharesToGet),
+            })
 
-      await createTransaction(
-        {
-          tx,
-          toasts: {
-            submitted: t(
-              isJoinFarms
-                ? "liquidity.add.joinFarms.modal.toast.submitted"
-                : "liquidity.add.modal.toast.submitted",
-              tOptions,
-            ),
-            success: t(
-              isJoinFarms
-                ? "liquidity.add.joinFarms.modal.toast.success"
-                : "liquidity.add.modal.toast.success",
-              tOptions,
-            ),
+        const omnipoolDispatchTx = papi.tx.Dispatcher.dispatch_with_extra_gas({
+          call: omnipoolTx.decodedCall,
+          extra_gas: AAVE_EXTRA_GAS,
+        })
+
+        const tOptions = {
+          value: minGETHToGet,
+          symbol: meta.symbol,
+          where: "Omnipool",
+        }
+
+        const joinOmnipoolToasts = {
+          submitted: t(
+            isJoinFarms
+              ? "liquidity.add.joinFarms.modal.toast.submitted"
+              : "liquidity.add.modal.toast.submitted",
+            tOptions,
+          ),
+          success: t(
+            isJoinFarms
+              ? "liquidity.add.joinFarms.modal.toast.success"
+              : "liquidity.add.modal.toast.success",
+            tOptions,
+          ),
+        }
+        await createTransaction(
+          {
+            tx: omnipoolDispatchTx,
+            toasts: joinOmnipoolToasts,
           },
-        },
-        { onSubmitted: props.onBack },
-      )
+          { onSubmitted: props.onBack },
+        )
+      } else if (split) {
+        const initialShares = getTransferableBalance(pool.id.toString())
+
+        await createTransaction({
+          tx: [
+            {
+              stepTitle: t("liquidity.add.modal.stepper.addLiquidity"),
+              tx: async () => {
+                // provide liquidity and get stableswap shares
+                const assetsToProvideFormatted = assetsToProvide.map(
+                  ({ asset, amount }) => ({
+                    asset_id: Number(asset.id),
+                    amount: BigInt(scale(amount, asset.decimals)),
+                  }),
+                )
+
+                const tx = papi.tx.Dispatcher.dispatch_with_extra_gas({
+                  call: papi.tx.Stableswap.add_assets_liquidity({
+                    pool_id: pool.id,
+                    assets: assetsToProvideFormatted,
+                    min_shares: BigInt(minStablepoolShares),
+                  }).decodedCall,
+                  extra_gas: AAVE_EXTRA_GAS,
+                })
+
+                const providedValue = assetsToProvide
+                  .map(({ asset, amount }) =>
+                    t("common:currency", {
+                      value: amount,
+                      symbol: asset.symbol,
+                    }),
+                  )
+                  .join(", ")
+
+                const tOptions = {
+                  value: providedValue,
+                  where: stableswapMeta.symbol,
+                }
+
+                const toasts = {
+                  submitted: t("liquidity.add.modal.toast.submitted", tOptions),
+                  success: t("liquidity.add.modal.toast.success", tOptions),
+                }
+
+                return {
+                  title: t("liquidity.add.modal.stepper.addLiquidity"),
+                  tx,
+                  toasts,
+                }
+              },
+            },
+            {
+              stepTitle: t("liquidity.add.modal.stepper.joinOmnipool"),
+              tx: async (results) => {
+                const addingSharesResult = results[0]
+
+                let addedShares = 0n
+
+                if (
+                  addingSharesResult &&
+                  isSubstrateTxResult(addingSharesResult)
+                ) {
+                  addedShares =
+                    papi.event.Stableswap.LiquidityAdded.filter(
+                      addingSharesResult.events,
+                    ).find((event) => event.who === account?.address)?.shares ??
+                    0n
+                } else {
+                  const { client } = sdk
+                  const { balance } = client
+
+                  const shares = await balance.getBalance(
+                    account?.address ?? "",
+                    pool.id,
+                  )
+
+                  addedShares = shares.transferable - initialShares
+                }
+
+                const addedSharesShifted = scaleHuman(
+                  addedShares.toString(),
+                  stableswapMeta.decimals,
+                ).toString()
+
+                const swap = await sdk.api.router.getBestSell(
+                  pool.id,
+                  Number(erc20Id),
+                  addedSharesShifted,
+                )
+
+                // swap stableswap shares to erc20 token
+                const swapTx = await sdk.tx
+                  .trade(swap)
+                  .withSlippage(slippage)
+                  .withBeneficiary(account.address)
+                  .build()
+                  .then((tx) => tx.get())
+
+                const minSharesToGet =
+                  getOmnipoolGetShares(addedSharesShifted)?.minSharesToGet
+
+                if (!minSharesToGet)
+                  throw new Error("minSharesToGet is not found")
+
+                const omnipoolTx = isJoinFarms
+                  ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms(
+                      {
+                        asset: Number(erc20Id),
+                        amount: BigInt(addedShares),
+                        min_shares_limit: BigInt(minSharesToGet),
+                        farm_entries: activeFarms.map((farm) => [
+                          farm.globalFarmId,
+                          farm.yieldFarmId,
+                        ]),
+                      },
+                    )
+                  : papi.tx.Omnipool.add_liquidity_with_limit({
+                      asset: Number(erc20Id),
+                      amount: BigInt(addedShares),
+                      min_shares_limit: BigInt(minSharesToGet),
+                    })
+
+                const omnipoolDispatchTx =
+                  papi.tx.Dispatcher.dispatch_with_extra_gas({
+                    call: omnipoolTx.decodedCall,
+                    extra_gas: AAVE_EXTRA_GAS,
+                  })
+
+                const tOptions = {
+                  value: addedSharesShifted,
+                  symbol: meta.symbol,
+                  where: "Omnipool",
+                }
+
+                const joinOmnipoolToasts = {
+                  submitted: t(
+                    isJoinFarms
+                      ? "liquidity.add.joinFarms.modal.toast.submitted"
+                      : "liquidity.add.modal.toast.submitted",
+                    tOptions,
+                  ),
+                  success: t(
+                    isJoinFarms
+                      ? "liquidity.add.joinFarms.modal.toast.success"
+                      : "liquidity.add.modal.toast.success",
+                    tOptions,
+                  ),
+                }
+
+                // join omnipool with erc20 token
+                const tx = papi.tx.Utility.batch_all({
+                  calls: [swapTx, omnipoolDispatchTx].map((t) => t.decodedCall),
+                })
+
+                return {
+                  tx,
+                  title: t("liquidity.add.modal.stepper.getAsset", {
+                    symbol: meta.symbol,
+                  }),
+                  toasts: joinOmnipoolToasts,
+                }
+              },
+            },
+          ],
+        })
+      } else {
+        if (!tradeTx) throw new Error("Trade not found")
+        const initialGethBalance = await getTransferableBalance(erc20Id)
+
+        await createTransaction({
+          tx: [
+            {
+              stepTitle: t("liquidity.add.modal.stepper.addLiquidity"),
+              tx: async () => {
+                const tOptions = {
+                  value: minGETHToGet,
+                  where: meta.symbol,
+                }
+
+                const toasts = {
+                  submitted: t("liquidity.add.modal.toast.submitted", tOptions),
+                  success: t("liquidity.add.modal.toast.success", tOptions),
+                }
+
+                return {
+                  title: t("liquidity.add.modal.stepper.addLiquidity"),
+                  tx: tradeTx,
+                  toasts,
+                }
+              },
+            },
+            {
+              stepTitle: t("liquidity.add.modal.stepper.joinOmnipool"),
+              tx: async () => {
+                const { client } = sdk
+                const { balance } = client
+
+                const shares = await balance.getBalance(
+                  account?.address ?? "",
+                  Number(erc20Id),
+                )
+
+                const addedGeth = shares.transferable - initialGethBalance
+                const addedGethShifted = scaleHuman(
+                  addedGeth.toString(),
+                  meta.decimals,
+                )
+                const minSharesToGet =
+                  getOmnipoolGetShares(addedGethShifted)?.minSharesToGet
+
+                if (!minSharesToGet)
+                  throw new Error("minSharesToGet is not found")
+
+                const omnipoolTx = isJoinFarms
+                  ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms(
+                      {
+                        asset: Number(erc20Id),
+                        amount: BigInt(addedGeth),
+                        min_shares_limit: BigInt(minSharesToGet),
+                        farm_entries: activeFarms.map((farm) => [
+                          farm.globalFarmId,
+                          farm.yieldFarmId,
+                        ]),
+                      },
+                    )
+                  : papi.tx.Omnipool.add_liquidity_with_limit({
+                      asset: Number(erc20Id),
+                      amount: BigInt(addedGeth),
+                      min_shares_limit: BigInt(minSharesToGet),
+                    })
+
+                const tx = papi.tx.Dispatcher.dispatch_with_extra_gas({
+                  call: omnipoolTx.decodedCall,
+                  extra_gas: AAVE_EXTRA_GAS,
+                })
+
+                const tOptions = {
+                  value: addedGethShifted,
+                  symbol: meta.symbol,
+                  where: "Omnipool",
+                }
+
+                const joinOmnipoolToasts = {
+                  submitted: t(
+                    isJoinFarms
+                      ? "liquidity.add.joinFarms.modal.toast.submitted"
+                      : "liquidity.add.modal.toast.submitted",
+                    tOptions,
+                  ),
+                  success: t(
+                    isJoinFarms
+                      ? "liquidity.add.joinFarms.modal.toast.success"
+                      : "liquidity.add.modal.toast.success",
+                    tOptions,
+                  ),
+                }
+
+                return {
+                  tx,
+                  title: t("liquidity.add.modal.stepper.joinOmnipool"),
+                  toasts: joinOmnipoolToasts,
+                }
+              },
+            },
+          ],
+        })
+      }
     },
   })
 
@@ -267,6 +627,7 @@ export const useAddMoneyMarketLiquidity = ({
     },
   } = useTradeSettings()
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
+  const getMinimumTradeAmount = useMinimumTradeAmount()
 
   const { papi, sdk } = rpc
   const { erc20Id, assetsToProvide, stablepoolAssets } = formData
@@ -277,6 +638,7 @@ export const useAddMoneyMarketLiquidity = ({
   } = props
 
   const meta = getAssetWithFallback(stableswapId)
+  const erc20Meta = getAssetWithFallback(erc20Id)
 
   const [split] = form.watch(["split"])
 
@@ -316,11 +678,9 @@ export const useAddMoneyMarketLiquidity = ({
     ),
   )
 
-  const minimumTradeAmount =
-    useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
   const tradeAmountOut = split
     ? (trade?.swap.amountOut ?? "0")
-    : minimumTradeAmount
+    : (getMinimumTradeAmount(trade?.swap)?.toString() ?? "0")
   const minReceiveAmount = scaleHuman(tradeAmountOut, meta.decimals)
 
   //@TODO: decide how to display health factor when providing liquidity to shares and then trade to erc20
@@ -339,17 +699,15 @@ export const useAddMoneyMarketLiquidity = ({
       if (!account?.address) throw new Error("No account address")
       if (!assetsToProvide.length) throw new Error("No assets to provide")
 
-      const assetsToProvideFormatted = assetsToProvide.map(
-        ({ asset, amount }) => ({
-          asset_id: Number(asset.id),
-          amount: BigInt(scale(amount, asset.decimals)),
-        }),
-      )
-
       if (split) {
+        const assetsToProvideFormatted = assetsToProvide.map(
+          ({ asset, amount }) => ({
+            asset_id: Number(asset.id),
+            amount: BigInt(scale(amount, asset.decimals)),
+          }),
+        )
         const initialShares = getTransferableBalance(pool.id.toString())
 
-        //first addding proportionally
         const firstTx = papi.tx.Dispatcher.dispatch_with_extra_gas({
           call: papi.tx.Stableswap.add_assets_liquidity({
             pool_id: pool.id,
@@ -359,19 +717,41 @@ export const useAddMoneyMarketLiquidity = ({
           extra_gas: AAVE_EXTRA_GAS,
         })
 
+        const providedValue = assetsToProvide
+          .map(({ asset, amount }) =>
+            t("common:currency", {
+              value: amount,
+              symbol: asset.symbol,
+            }),
+          )
+          .join(", ")
+
         await createTransaction({
           tx: [
             {
-              title: "Adding shares",
-              stepTitle: "Add shares",
-              tx: firstTx,
-              toasts: {
-                submitted: "Adding shares...",
-                success: "Shares added.",
+              stepTitle: t("liquidity.add.modal.stepper.addLiquidity"),
+              tx: async () => {
+                const tOptions = {
+                  value: providedValue,
+                  where: meta.symbol,
+                }
+
+                const toasts = {
+                  submitted: t("liquidity.add.modal.toast.submitted", tOptions),
+                  success: t("liquidity.add.modal.toast.success", tOptions),
+                }
+
+                return {
+                  title: t("liquidity.add.modal.stepper.addLiquidity"),
+                  tx: firstTx,
+                  toasts,
+                }
               },
             },
             {
-              stepTitle: "Swap shares",
+              stepTitle: t("liquidity.add.modal.stepper.getAsset", {
+                symbol: erc20Meta.symbol,
+              }),
               tx: async (results) => {
                 const addingSharesResult = results[0]
 
@@ -384,14 +764,14 @@ export const useAddMoneyMarketLiquidity = ({
                   addedShares =
                     papi.event.Stableswap.LiquidityAdded.filter(
                       addingSharesResult.events,
-                    ).find((event) => event.who === account?.address)?.shares ??
+                    ).find((event) => event.who === account.address)?.shares ??
                     0n
                 } else {
                   const { client } = sdk
                   const { balance } = client
 
                   const shares = await balance.getBalance(
-                    account?.address ?? "",
+                    account.address,
                     pool.id,
                   )
 
@@ -403,7 +783,6 @@ export const useAddMoneyMarketLiquidity = ({
                   meta.decimals,
                 ).toString()
 
-                //second swap stableswap shares for the current pool
                 const swap = await sdk.api.router.getBestSell(
                   Number(stableswapId),
                   Number(erc20Id),
@@ -417,14 +796,22 @@ export const useAddMoneyMarketLiquidity = ({
                   .build()
                   .then((tx) => tx.get())
 
+                const tOptions = {
+                  value: providedValue,
+                  where: erc20Meta.symbol,
+                }
+
+                const toasts = {
+                  submitted: t("liquidity.add.modal.toast.submitted", tOptions),
+                  success: t("liquidity.add.modal.toast.success", tOptions),
+                }
+
                 return {
                   tx: swapTx,
-                  title: `Swap shares`,
-                  description: `Swap ${addedSharesShifted} shares.`,
-                  toasts: {
-                    submitted: `Swapping ${addedSharesShifted} shares...`,
-                    success: `${addedSharesShifted} shares swapped.`,
-                  },
+                  title: t("liquidity.add.modal.stepper.getAsset", {
+                    symbol: erc20Meta.symbol,
+                  }),
+                  toasts,
                 }
               },
             },
@@ -433,18 +820,18 @@ export const useAddMoneyMarketLiquidity = ({
       } else {
         if (!trade?.tx) throw new Error("Trade not found")
 
-        const toastValue = assetsToProvide
-          .map(({ asset, amount }) =>
-            t("common:number", {
+        const providedValue = first(
+          assetsToProvide.map(({ asset, amount }) =>
+            t("common:currency", {
               value: amount,
               symbol: asset.symbol,
             }),
-          )
-          .join(", ")
+          ),
+        )
 
         const tOptions = {
-          value: toastValue,
-          where: "Stablepool",
+          value: providedValue,
+          where: erc20Meta.symbol,
         }
 
         const toasts = {

@@ -116,7 +116,7 @@ const AddMoneyMarketLiquidityWrapper = (
 
   return (
     <FormProvider {...form}>
-      {formData.isGETHProviding ? (
+      {formData.isGETHPool ? (
         <AddGETHToOmnipool formData={formData} props={props} />
       ) : (
         <AddMoneyMarketLiquidity formData={formData} props={props} />
@@ -226,6 +226,7 @@ export const AddStablepoolLiquidityForm = ({
       const prevField = fields.find(
         (field) => field.assetId === selectedAssetId,
       )
+
       form.setValue("activeFields", [
         prevField ?? { amount: "", assetId: selectedAssetId },
       ])
@@ -283,9 +284,7 @@ export const AddStablepoolLiquidityForm = ({
               justify="space-between"
               my={getTokenPx("containers.paddings.tertiary")}
             >
-              <Text>
-                {t("liquidity.remove.stablepool.modal.proportionally")}
-              </Text>
+              <Text>{t("liquidity.add.stablepool.modal.proportionally")}</Text>
               <Toggle
                 size="large"
                 checked={field.value}
