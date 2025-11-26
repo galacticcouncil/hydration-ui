@@ -54,6 +54,8 @@ export const toSubmittableExtrinsic = (
   return tx
 }
 
+export const INVALID_NONCE = "4294967295"
+
 export const useTransactionValues = ({
   xcallMeta,
   overrides,
