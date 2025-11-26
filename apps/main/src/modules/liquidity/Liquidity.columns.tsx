@@ -187,7 +187,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
       >
         <Button asChild variant="accent" outline>
           <Link
-            to={"/liquidity/$id/add"}
+            to="/liquidity/$id/add"
             search={
               stablepoolData
                 ? {
