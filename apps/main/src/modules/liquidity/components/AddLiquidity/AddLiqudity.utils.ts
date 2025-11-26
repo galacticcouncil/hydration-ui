@@ -220,7 +220,7 @@ export const useAddLiquidityForm = ({
 }
 
 export const useAddLiquidity = (assetId: string) => {
-  const { t } = useTranslation("liquidity")
+  const { t } = useTranslation(["liquidity", "common"])
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getAssetWithFallback } = useAssets()
@@ -280,10 +280,10 @@ export const useAddLiquidity = (assetId: string) => {
 
       const shiftedAmount = scaleHuman(amount, decimals)
       const tOptions = {
-        value: shiftedAmount,
-        symbol: symbol,
+        value: t("common:currency", { value: shiftedAmount, symbol }),
         where: "Omnipool",
       }
+      console.log(tOptions)
 
       await createTransaction({
         tx,

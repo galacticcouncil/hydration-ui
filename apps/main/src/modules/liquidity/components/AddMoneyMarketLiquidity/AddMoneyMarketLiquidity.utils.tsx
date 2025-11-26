@@ -300,8 +300,10 @@ export const useAddGETHToOmnipool = ({
         })
 
         const tOptions = {
-          value: minGETHToGet,
-          symbol: meta.symbol,
+          value: t("common:currency", {
+            value: minGETHToGet,
+            symbol: meta.symbol,
+          }),
           where: "Omnipool",
         }
 
@@ -455,8 +457,10 @@ export const useAddGETHToOmnipool = ({
                   })
 
                 const tOptions = {
-                  value: addedSharesShifted,
-                  symbol: meta.symbol,
+                  value: t("common:currency", {
+                    value: addedSharesShifted,
+                    symbol: meta.symbol,
+                  }),
                   where: "Omnipool",
                 }
 
@@ -501,7 +505,10 @@ export const useAddGETHToOmnipool = ({
               stepTitle: t("liquidity.add.modal.stepper.addLiquidity"),
               tx: async () => {
                 const tOptions = {
-                  value: minGETHToGet,
+                  value: t("common:currency", {
+                    value: minGETHToGet,
+                    symbol: meta.symbol,
+                  }),
                   where: meta.symbol,
                 }
 
@@ -563,8 +570,10 @@ export const useAddGETHToOmnipool = ({
                 })
 
                 const tOptions = {
-                  value: addedGethShifted,
-                  symbol: meta.symbol,
+                  value: t("common:currency", {
+                    value: addedGethShifted,
+                    symbol: meta.symbol,
+                  }),
                   where: "Omnipool",
                 }
 
