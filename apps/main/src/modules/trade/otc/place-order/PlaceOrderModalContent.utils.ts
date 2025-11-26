@@ -22,7 +22,7 @@ export const getPrice = (
       ? priceSettings.value || "0"
       : calculatePriceWithDiff(
           omnipoolPriceBig.toString(),
-          Big(priceSettings.percentage).times(-1).toString(),
+          Big(priceSettings.percentage).toString(),
         )
 
   const priceGain =
@@ -32,12 +32,10 @@ export const getPrice = (
         ? "0"
         : Big(
             math.calculateDiffToRef(
-              BigInt(scale(omnipoolPrice, priceDecimals)),
               BigInt(scale(price, priceDecimals)),
+              BigInt(scale(omnipoolPrice, priceDecimals)),
             ),
-          )
-            .times(-1)
-            .toString()
+          ).toString()
 
   return { price, priceGain }
 }
@@ -45,4 +43,5 @@ export const getPrice = (
 const calculatePriceWithDiff = (
   omnipoolPrice: string,
   percentage: string,
-): string => Big(omnipoolPrice).div(Big(percentage).div(100).plus(1)).toString()
+): string =>
+  Big(omnipoolPrice).times(Big(percentage).div(100).plus(1)).toString()
