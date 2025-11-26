@@ -96,7 +96,6 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
         setIsLoading(false)
         setTransactionResults((prev) => [...prev, event])
         if (isLastTransaction) {
-          console.log({ isLastTransaction, event })
           transaction.onSuccess?.(event)
           cancelTransaction(transaction.id)
         } else {
