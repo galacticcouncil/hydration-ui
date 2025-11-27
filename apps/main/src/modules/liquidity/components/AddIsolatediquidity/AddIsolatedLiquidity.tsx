@@ -197,13 +197,13 @@ export const AddIsolatedLiquidityForm = ({
               />
             )}
 
-            {joinFarmErrorMessage ? (
+            {joinFarmErrorMessage && (
               <Alert
                 variant="warning"
                 description={joinFarmErrorMessage}
                 sx={{ my: getTokenPx("containers.paddings.primary") }}
               />
-            ) : null}
+            )}
 
             <ModalContentDivider />
 

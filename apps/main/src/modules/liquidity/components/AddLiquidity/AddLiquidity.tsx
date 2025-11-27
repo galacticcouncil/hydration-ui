@@ -126,13 +126,13 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
               sx={{ my: getTokenPx("containers.paddings.primary") }}
             />
           ) : null}
-          {joinFarmErrorMessage ? (
+          {joinFarmErrorMessage && (
             <Alert
               variant="warning"
               description={joinFarmErrorMessage}
               sx={{ my: getTokenPx("containers.paddings.primary") }}
             />
-          ) : null}
+          )}
 
           <ModalContentDivider />
 
