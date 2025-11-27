@@ -39,6 +39,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const getMinimumTradeAmount = useMinimumTradeAmount()
 
   const {
     liquidity: { slippage },
@@ -68,19 +69,23 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const [debouncedAmount] = useDebounce(removeAmountShifted, 300)
   const { data: trade } = useQuery(
-    bestSellQuery(rpc, {
-      assetIn: erc20Id,
-      assetOut: split ? stableswapId : receiveAsset.id,
-      amountIn: debouncedAmount,
-      slippage: swapSlippage,
-      address: account?.address ?? "",
-    }),
+    bestSellQuery(
+      rpc,
+      {
+        assetIn: erc20Id,
+        assetOut: split ? stableswapId : receiveAsset.id,
+        amountIn: debouncedAmount,
+        slippage: swapSlippage,
+        address: account?.address ?? "",
+      },
+      true,
+    ),
   )
 
   //@TODO: implement withdraw all function
 
   const { data: healthFactor } = useQuery(
-    healthFactorAfterWithdrawQuery(useRpcProvider(), {
+    healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
       fromAssetId: meta && isErc20AToken(meta) ? meta.underlyingAssetId : "",
       fromAmount: debouncedAmount,
@@ -90,7 +95,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"
   const amountOutShifted = scaleHuman(amountOut, receiveAsset.decimals)
 
-  const tradeMinReceive = useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
+  const tradeMinReceive = getMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
   const tradeMinReceiveShifted = scaleHuman(
     tradeMinReceive,
     receiveAsset.decimals,
@@ -192,14 +197,15 @@ export const useRemoveMoneyMarketLiquidity = ({
   }
 }
 
-const useMinimumTradeAmount = (trade?: Trade) => {
+export const useMinimumTradeAmount = () => {
   const {
     swap: {
       single: { swapSlippage },
     },
   } = useTradeSettings()
 
-  if (!trade) return undefined
-
-  return trade.amountOut - calculateSlippage(trade.amountOut, swapSlippage)
+  return (trade?: Trade) =>
+    trade
+      ? trade.amountOut - calculateSlippage(trade.amountOut, swapSlippage)
+      : undefined
 }

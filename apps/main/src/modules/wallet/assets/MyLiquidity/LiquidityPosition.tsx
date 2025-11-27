@@ -1,58 +1,78 @@
-import { Amount, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { LiquidityFarms } from "@/modules/wallet/assets/MyLiquidity/LiquidityFarms"
+import { TAssetData } from "@/api/assets"
+import { useOmnipoolActiveFarm } from "@/api/farms"
+import { AssetLogo } from "@/components/AssetLogo"
+import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
-import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
-import { TAsset } from "@/providers/assetsProvider"
+import { AccountOmnipoolPosition } from "@/states/account"
+import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 type Props = {
-  readonly asset: TAsset
+  readonly asset: TAssetData
   readonly number: number
-  readonly position: MyLiquidityPosition
+  readonly position: AccountOmnipoolPosition
 }
 
 export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
   const { t } = useTranslation(["wallet", "common"])
+  const format = useFormatOmnipoolPositionData()
+  const { data: activeFarms } = useOmnipoolActiveFarm(asset.id)
+  const getDepositAprs = useDepositAprs()
 
-  const [initialDisplayPrice] = useDisplayAssetPrice(
-    asset.id,
-    position.initialValue,
-  )
-  const [currentDisplayPrice] = useDisplayAssetPrice(
-    asset.id,
-    position.currentValue,
+  const { aprsByRewardAsset, joinedFarms, farmsToJoin } = getDepositAprs(
+    position,
+    activeFarms ?? [],
   )
 
   return (
     <SLiquidityPosition>
       <Text fs="p4" fw={500} color={getToken("text.high")}>
-        {position.isFarm
-          ? t("myLiquidity.position.farmName", { number })
-          : t("myLiquidity.position.name", { number })}
+        {t("myLiquidity.position.name", { number })}
       </Text>
+
       <Amount
         label={t("common:initialValue")}
         value={t("common:currency", {
-          value: position.initialValue,
-          symbol: asset.symbol,
+          value: position.data.initialValueHuman,
+          symbol: position.data.meta.symbol,
         })}
-        displayValue={initialDisplayPrice}
+        displayValue={t("common:currency", {
+          value: position.data.initialDisplay,
+        })}
       />
+
       <Amount
         label={t("common:currentValue")}
-        value={t("common:currency", {
-          value: position.currentValue,
-          symbol: asset.symbol,
+        value={format(position.data)}
+        displayValue={t("common:currency", {
+          value: position.data.currentTotalDisplay,
         })}
-        displayValue={currentDisplayPrice}
       />
-      <LiquidityFarms assetId={asset.id} rewards={position.rewards} />
-      <LiquidityPositionActions assetId={asset.id} positionId={position.id} />
+
+      {joinedFarms.length ? (
+        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+          <AssetLogo
+            id={joinedFarms.map(({ farm }) => farm.rewardCurrency.toString())}
+          />
+          <Text fs="p6" color={getToken("text.tint.secondary")}>
+            {aprsByRewardAsset
+              .map((apr) => t("common:percent", { value: apr.totalApr }))
+              .join(" + ")}
+          </Text>
+        </Flex>
+      ) : (
+        <div />
+      )}
+      <LiquidityPositionActions
+        assetId={asset.id}
+        position={position}
+        farmsToJoin={farmsToJoin}
+      />
     </SLiquidityPosition>
   )
 }

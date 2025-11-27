@@ -1,17 +1,36 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { wrap } from "comlink"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
+import { prop } from "remeda"
 
-import { bestNumberQuery, useRelayChainBlockNumber } from "@/api/chain"
-import { Farm } from "@/api/farms"
+import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
+import { useRelayChainBlockNumber } from "@/api/chain"
+import { Farm, FarmEntry } from "@/api/farms"
+import { getCurrentLoyaltyFactor } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import {
+  AccountOmnipoolPosition,
+  isDepositPosition,
+  isXykDepositPosition,
+} from "@/states/account"
+import { useTransactionsStore } from "@/states/transactions"
 import { QUINTILL, RELAY_BLOCK_TIME } from "@/utils/consts"
 
 import type { worker as WorkerType } from "./LoyaltyGraph.worker"
 import Worker from "./LoyaltyGraph.worker?worker"
 
 let workerInstance: ReturnType<typeof wrap<typeof WorkerType>> | null = null
+
+export type TJoinedFarm = {
+  farm: Farm
+  farmEntry: FarmEntry
+  period: number
+  position: XykDeposit | OmnipoolDepositFull
+}
+
+export type TAprByRewardAsset = { rewardAsset: string; totalApr: string }
 
 const getWorker = () => {
   if (!workerInstance) {
@@ -21,19 +40,18 @@ const getWorker = () => {
 }
 
 export const useSecondsToLeft = (estimatedEndBlock: string) => {
-  const { data } = useQuery(bestNumberQuery(useRpcProvider()))
-  const relaychainBlockNumber = data?.relaychainBlockNumber
+  const relayChainBlockNumber = useRelayChainBlockNumber()
 
-  return relaychainBlockNumber
+  return relayChainBlockNumber
     ? Big(estimatedEndBlock)
-        .minus(relaychainBlockNumber)
+        .minus(relayChainBlockNumber)
         .times(RELAY_BLOCK_TIME)
         .div(1000)
     : undefined
 }
 
-export const useCurrentFarmPeriod = () => {
-  const relayChainBlockNumber = useRelayChainBlockNumber()
+export const useCurrentFarmPeriod = (disableRefetch?: boolean) => {
+  const relayChainBlockNumber = useRelayChainBlockNumber(disableRefetch)
 
   return useCallback(
     (blocksPerPeriod: number) => {
@@ -84,5 +102,133 @@ export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {
       : undefined,
     enabled: !!loyaltyCurve,
     staleTime: Infinity,
+  })
+}
+
+export const useDepositAprs = () => {
+  const getCurrentFarmPeriod = useCurrentFarmPeriod(true)
+
+  return useCallback(
+    (position: AccountOmnipoolPosition | XykDeposit, activeFarms: Farm[]) => {
+      const isDeposit = isDepositPosition(position)
+
+      if (!isDeposit || !activeFarms)
+        return {
+          aprsByRewardAsset: [],
+          joinedFarms: [],
+          farmsToJoin: activeFarms.filter((farm) => farm.apr !== "0"),
+        }
+
+      const joinedFarms: TJoinedFarm[] = []
+
+      const farmsToJoin: Farm[] = []
+
+      for (const farm of activeFarms) {
+        const farmEntry = position.yield_farm_entries.find(
+          (entry) => entry.global_farm_id === farm.globalFarmId,
+        )
+
+        //TODO: Add the period from global farm
+        const period = getCurrentFarmPeriod(1)
+
+        if (farmEntry && period) {
+          joinedFarms.push({
+            farm,
+            farmEntry,
+            period,
+            position,
+          })
+        } else if (farm.apr !== "0") {
+          farmsToJoin.push(farm)
+        }
+      }
+
+      const totalAprs = joinedFarms.reduce(
+        (acc, { farm, farmEntry, period }) => {
+          const currentPeriodInFarm = Big(period)
+            .minus(farmEntry.entered_at)
+            .toNumber()
+
+          const currentApr = farm.loyaltyCurve
+            ? Big(farm.apr)
+                .times(
+                  getCurrentLoyaltyFactor(
+                    farm.loyaltyCurve,
+                    currentPeriodInFarm,
+                  ),
+                )
+                .toString()
+            : farm.apr
+
+          const key = String(farm.rewardCurrency)
+          const value = currentApr ? Big(currentApr) : Big(0)
+
+          acc[key] = (acc[key] ?? Big(0)).plus(value)
+
+          return acc
+        },
+        {} as Record<string, Big>,
+      )
+
+      const aprsByRewardAsset = Object.entries(totalAprs).map(
+        ([rewardAsset, totalApr]) => ({
+          rewardAsset,
+          totalApr: totalApr.toString(),
+        }),
+      )
+
+      return { aprsByRewardAsset, joinedFarms, farmsToJoin }
+    },
+    [getCurrentFarmPeriod],
+  )
+}
+
+export const useExitDepositFarmsMutation = (
+  deposit: XykDeposit | OmnipoolDepositFull,
+) => {
+  const { t } = useTranslation("liquidity")
+  const { papi } = useRpcProvider()
+  const createTransaction = useTransactionsStore(prop("createTransaction"))
+
+  return useMutation({
+    mutationFn: async () => {
+      const isXYK = isXykDepositPosition(deposit)
+
+      const txs = isXYK
+        ? deposit.yield_farm_entries.map((entry) => {
+            return papi.tx.XYKLiquidityMining.withdraw_shares({
+              deposit_id: BigInt(deposit.id),
+              yield_farm_id: entry.yield_farm_id,
+              asset_pair: {
+                asset_in: Number(1),
+                asset_out: Number(2),
+              },
+            })
+          })
+        : deposit.yield_farm_entries.map((entry) => {
+            return papi.tx.OmnipoolLiquidityMining.withdraw_shares({
+              deposit_id: BigInt(deposit.miningId),
+              yield_farm_id: entry.yield_farm_id,
+            })
+          })
+
+      const toasts = {
+        submitted: t("liquidity.exitFarms.toast.submitted"),
+        success: t("liquidity.exitFarms.toast.success"),
+      }
+
+      if (txs.length > 1) {
+        const tx = papi.tx.Utility.batch_all({
+          calls: txs.map((t) => t.decodedCall),
+        })
+        return await createTransaction({ tx, toasts })
+      }
+
+      const tx = txs[0]
+
+      if (!tx) throw new Error("Tx not found")
+
+      return await createTransaction({ tx, toasts })
+    },
   })
 }

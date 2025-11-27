@@ -3,10 +3,12 @@ import { isEthereumSigner, useWallet } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 import { CallType } from "@galacticcouncil/xcm-core"
 
-import { Transaction } from "@/states/transactions"
+import { SingleTransaction } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
-export const useTransactionEcosystem = (transaction: Transaction): CallType => {
+export const useTransactionEcosystem = (
+  transaction: SingleTransaction,
+): CallType => {
   const wallet = useWallet()
 
   const { fee, meta } = transaction

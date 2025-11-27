@@ -3,10 +3,9 @@ import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { Farm } from "@/api/farms"
-import { LoyaltyGraph } from "@/modules/liquidity/components/Farms/LoyaltyGraph"
 import { useAssets } from "@/providers/assetsProvider"
 
-import { AvailableFarm } from "./AvailableFarm"
+import { FarmDetails } from "./FarmDetails"
 
 type AvailableFarmModalBodyProps = {
   farm: Farm | null
@@ -19,6 +18,8 @@ export const AvailableFarmModalBody = ({
   const { getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(farm?.rewardCurrency ?? "")
 
+  if (!farm) return null
+
   return (
     <>
       <ModalHeader
@@ -27,14 +28,7 @@ export const AvailableFarmModalBody = ({
         })}
       />
       <ModalBody>
-        {farm && (
-          <AvailableFarm
-            farm={farm}
-            sx={{ pb: getTokenPx("containers.paddings.secondary") }}
-          />
-        )}
-
-        {farm?.loyaltyCurve && <LoyaltyGraph farm={farm} />}
+        <FarmDetails farm={farm} />
 
         <Text
           fs="p2"

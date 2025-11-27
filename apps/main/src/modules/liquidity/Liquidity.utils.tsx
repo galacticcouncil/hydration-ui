@@ -693,7 +693,6 @@ export const useStablepoolsReserves = (poolIds?: string[]) => {
     for (const token of pool.tokens) {
       const id = token.id.toString()
       const meta = getAssetWithFallback(id)
-
       const amountHuman = scaleHuman(token.balance, meta.decimals)
 
       const { price, isValid } = getAssetPrice(id)

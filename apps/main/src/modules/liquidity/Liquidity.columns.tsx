@@ -177,7 +177,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { isPositions } = pool
   const total = useUserPositionsTotal(pool)
-
+  const stablepoolData = pool.stablepoolData
   return (
     <>
       <Flex
@@ -187,7 +187,15 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
       >
         <Button asChild variant="accent" outline>
           <Link
-            to={pool.isStablePool ? "/liquidity/$id/add" : "/liquidity/$id/add"}
+            to="/liquidity/$id/add"
+            search={
+              stablepoolData
+                ? {
+                    stableswapId: stablepoolData.id.toString(),
+                    erc20Id: stablepoolData.aToken?.id.toString(),
+                  }
+                : undefined
+            }
             params={{ id: pool.id }}
           >
             {t("liquidity:joinPool")}

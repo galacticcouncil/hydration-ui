@@ -1,14 +1,25 @@
 import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
-import { Button, Flex, Icon, Text } from "@galacticcouncil/ui/components"
+import { Button, Flex, Icon, Modal, Text } from "@galacticcouncil/ui/components"
 import { DataTable } from "@galacticcouncil/ui/components/DataTable"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { Minus } from "lucide-react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { Farm } from "@/api/farms"
+import { TJoinedFarm } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { OmnipoolAssetTable } from "@/modules/liquidity/Liquidity.utils"
+import {
+  isOmnipoolDepositPosition,
+  OmnipoolDepositFullWithData,
+} from "@/states/account"
 
-import { useOmnipoolPositionsTableColumns } from "./PositionsTable.columns"
+import { PositionDetails } from "./PositionDetails"
+import {
+  isOmnipoolPosition,
+  useOmnipoolPositionsTableColumns,
+} from "./PositionsTable.columns"
 import { STableHeader } from "./PositionsTable.styled"
 import {
   BalanceTableData,
@@ -23,6 +34,11 @@ export const OmnipoolPositions = ({
   positions: (OmnipoolPositionTableData | BalanceTableData)[]
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
+  const [selectedPosition, setSelectedPosition] = useState<{
+    joinedFarms: TJoinedFarm[]
+    farmsToJoin: Farm[]
+    position: OmnipoolDepositFullWithData
+  } | null>(null)
   const columns = useOmnipoolPositionsTableColumns(pool.isFarms)
 
   return (
@@ -57,6 +73,15 @@ export const OmnipoolPositions = ({
       <DataTable
         data={positions}
         columns={columns}
+        onRowClick={(row) => {
+          if (isOmnipoolPosition(row) && isOmnipoolDepositPosition(row)) {
+            setSelectedPosition({
+              joinedFarms: row.joinedFarms,
+              farmsToJoin: row.farmsToJoin,
+              position: row,
+            })
+          }
+        }}
         paginated
         pageSize={10}
         columnPinning={{
@@ -64,6 +89,19 @@ export const OmnipoolPositions = ({
         }}
         sx={{ minWidth: 900 }}
       />
+
+      <Modal
+        open={!!selectedPosition}
+        onOpenChange={() => setSelectedPosition(null)}
+      >
+        {selectedPosition && (
+          <PositionDetails
+            joinedFarms={selectedPosition.joinedFarms}
+            farmsToJoin={selectedPosition.farmsToJoin}
+            position={selectedPosition.position}
+          />
+        )}
+      </Modal>
     </>
   )
 }

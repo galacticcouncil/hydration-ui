@@ -85,7 +85,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
         data={offersWithPrices}
         columns={columns}
         isLoading={isTableLoading}
-        initialSorting={[{ id: OtcColumn.MarketPrice, desc: true }]}
+        initialSorting={[{ id: OtcColumn.MarketPrice, desc: false }]}
         emptyState={t("otc.noOrders")}
       />
     </TableContainer>
