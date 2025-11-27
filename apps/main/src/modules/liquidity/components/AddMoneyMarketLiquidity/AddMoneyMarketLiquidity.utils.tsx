@@ -80,17 +80,17 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     ]),
   )
 
-  const isGETHPool = erc20Id === GETH_ERC20_ID
+  const defaultOption =
+    initialOption || (erc20Id === GETH_ERC20_ID ? "omnipool" : "stablepool")
+
   const assetsToSelect = useAssetsToAddToMoneyMarket({
     stableswapId,
     reserves,
     options: {
-      blacklist: !isGETHPool ? [erc20Id] : [],
+      blacklist: defaultOption === "omnipool" ? [] : [erc20Id],
     },
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
-  const defaultOption =
-    initialOption || (isGETHPool ? "omnipool" : "stablepool")
 
   const form = useStablepoolAddLiquidityForm({
     poolId: stableswapId,
