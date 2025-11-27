@@ -25,7 +25,7 @@ import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { spotPriceQuery } from "@/api/spotPrice"
-import { useStableswap } from "@/api/stablewap"
+import { useStableswap } from "@/api/stableswap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddLiquiditySummary } from "@/modules/liquidity/components/AddLiquidity/AddLiquidity"
@@ -447,7 +447,7 @@ const AddStablepoolLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: t("common:minimalReceived"),
+          label: t("common:minimumReceived"),
           content: t("common:number", {
             value: minReceiveAmount,
           }),

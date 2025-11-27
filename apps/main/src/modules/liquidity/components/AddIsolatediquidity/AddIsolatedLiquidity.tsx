@@ -249,7 +249,7 @@ const AddLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: t("common:minimalReceived"),
+          label: t("common:minimumReceived"),
           content: t("liquidity.add.modal.sharesToGet", {
             value: scaleHuman(sharesToGet, meta.decimals),
             percentage: poolShare,

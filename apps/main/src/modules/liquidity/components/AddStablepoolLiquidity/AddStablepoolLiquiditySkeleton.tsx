@@ -61,7 +61,7 @@ export const AddStablepoolLiquiditySkeleton = (
           justify="space-between"
           my={getTokenPx("containers.paddings.tertiary")}
         >
-          <Text>{t("liquidity.remove.stablepool.modal.proportionally")}</Text>
+          <Text>{t("liquidity.add.stablepool.modal.proportionally")}</Text>
           <Toggle
             size="large"
             checked={true}
@@ -86,7 +86,7 @@ export const AddStablepoolLiquiditySkeleton = (
           separator={<ModalContentDivider />}
           rows={[
             {
-              label: t("common:minimalReceived"),
+              label: t("common:minimumReceived"),
               loading: true,
               content: "",
             },

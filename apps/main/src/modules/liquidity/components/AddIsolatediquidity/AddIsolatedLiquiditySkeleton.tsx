@@ -54,7 +54,7 @@ export const AddIsolatedLiquiditySkeleton: FC<Props> = ({ closable }) => {
           separator={<ModalContentDivider />}
           rows={[
             {
-              label: t("common:minimalReceived"),
+              label: t("common:minimumReceived"),
               content: "",
               loading: true,
             },

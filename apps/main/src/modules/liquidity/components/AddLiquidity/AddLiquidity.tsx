@@ -177,7 +177,7 @@ export const AddLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: t("common:minimalReceived"),
+          label: t("common:minimumReceived"),
           content: poolShare
             ? t("liquidity.add.modal.sharesToGet", {
                 value: minReceiveAmount,
@@ -229,13 +229,13 @@ export const AddLiquiditySummary = ({
           ? [
               {
                 label: t("common:healthFactor"),
-                content: healthFactor ? (
+                content: (
                   <HealthFactorChange
                     healthFactor={healthFactor.current}
                     futureHealthFactor={healthFactor.future}
                     fontSize="p5"
                   />
-                ) : null,
+                ),
               },
             ]
           : []),
