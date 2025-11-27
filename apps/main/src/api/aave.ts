@@ -88,7 +88,7 @@ export const healthFactorAfterWithdrawQuery = (
         sdk.api.aave.getHealthFactorAfterWithdraw(
           address,
           Number(fromAssetId),
-          fromAmount,
+          fromAmount ?? "0",
         ),
       ])
       return formatHealthFactorResult({ currentHF, futureHF })
@@ -116,7 +116,7 @@ export const healthFactorAfterSupplyQuery = (
         sdk.api.aave.getHealthFactorAfterSupply(
           address,
           Number(toAssetId),
-          toAmount,
+          toAmount ?? "0",
         ),
       ])
       return formatHealthFactorResult({ currentHF, futureHF })
