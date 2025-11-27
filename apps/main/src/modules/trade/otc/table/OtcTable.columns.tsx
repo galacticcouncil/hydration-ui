@@ -27,7 +27,13 @@ import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderM
 import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferMarketPriceColumn"
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import { logically, nullFirst, numerically, sortBy } from "@/utils/sort"
+import {
+  logically,
+  nullFirst,
+  nullLast,
+  numerically,
+  sortBy,
+} from "@/utils/sort"
 
 export enum OtcColumn {
   MarketPrice = "MarketPrice",
@@ -96,7 +102,7 @@ export const useOtcTableColums = () => {
         },
         sortingFn: sortBy({
           select: (row) => row.original.marketPricePercentage,
-          compare: nullFirst(numerically),
+          compare: nullLast(numerically),
         }),
         cell: ({ row }) => {
           return (

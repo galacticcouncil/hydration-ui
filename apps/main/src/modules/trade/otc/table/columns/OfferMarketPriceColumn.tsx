@@ -17,14 +17,16 @@ export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
       fs={13}
       lh={1}
       color={
-        percentageNum > 0
+        percentageNum < 0
           ? getToken("details.values.positive")
-          : percentageNum < 0 && getToken("details.values.negative")
+          : percentageNum > 0 && getToken("details.values.negative")
       }
       truncate
     >
-      {percentageNum < 0 && "+"}
-      {t("percent", { value: percentage === null ? percentage : -percentage })}
+      {percentageNum > 0 && "+"}
+      {t("percent", {
+        value: percentage === null ? null : Math.abs(percentage),
+      })}
     </Text>
   )
 }

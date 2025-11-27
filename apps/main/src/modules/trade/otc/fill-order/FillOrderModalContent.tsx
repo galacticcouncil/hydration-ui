@@ -56,13 +56,13 @@ export const FillOrderModalContent: FC<Props> = ({
     onSubmit: onClose,
   })
 
-  const [sellAmount, buyAmount] = form.watch(["sellAmount", "buyAmount"])
+  const sellAmount = form.watch("sellAmount")
 
-  const feeAsset = otcOffer.assetOut
+  const feeAsset = otcOffer.assetIn
   const fee =
-    !buyAmount || !feePct
+    !sellAmount || !feePct
       ? undefined
-      : Big(buyAmount).div(Big(1).minus(feePct)).minus(buyAmount).toString()
+      : Big(sellAmount).times(feePct).toString()
 
   const [feeDisplay] = useDisplayAssetPrice(feeAsset.id, fee || "0")
 
