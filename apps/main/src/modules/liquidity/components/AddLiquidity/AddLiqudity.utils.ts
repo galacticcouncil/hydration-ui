@@ -281,9 +281,8 @@ export const useAddLiquidity = (assetId: string) => {
       const shiftedAmount = scaleHuman(amount, decimals)
       const tOptions = {
         value: t("common:currency", { value: shiftedAmount, symbol }),
-        where: "Omnipool",
+        where: t("omnipool"),
       }
-      console.log(tOptions)
 
       await createTransaction({
         tx,

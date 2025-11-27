@@ -8,22 +8,19 @@ import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
 
 export const RewardsAPR = ({ farms }: { farms: Farm[] }) => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation("liquidity")
   const groupedFarms = groupBy(farms, (farm) => farm.rewardCurrency)
 
-  return Object.entries(groupedFarms).map(([rewardCurrency, farms]) => {
-    return (
-      <Flex key={rewardCurrency} align="center" gap={4}>
-        <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-          {t("percent", {
-            prefix: "Up to ",
-            value: farms
-              .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
-              .toString(),
-          })}
-        </Text>
-        <AssetLogo id={rewardCurrency.toString()} size="small" />
-      </Flex>
-    )
-  })
+  return Object.entries(groupedFarms).map(([rewardCurrency, farms]) => (
+    <Flex key={rewardCurrency} align="center" gap={4}>
+      <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
+        {t("liquidity.availableFarms.apr.short", {
+          value: farms
+            .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
+            .toString(),
+        })}
+      </Text>
+      <AssetLogo id={rewardCurrency.toString()} size="small" />
+    </Flex>
+  ))
 }

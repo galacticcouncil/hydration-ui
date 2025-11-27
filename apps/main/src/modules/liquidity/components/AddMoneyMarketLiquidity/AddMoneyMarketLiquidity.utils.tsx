@@ -304,7 +304,7 @@ export const useAddGETHToOmnipool = ({
             value: minGETHToGet,
             symbol: meta.symbol,
           }),
-          where: "Omnipool",
+          where: t("omnipool"),
         }
 
         const joinOmnipoolToasts = {
@@ -461,7 +461,7 @@ export const useAddGETHToOmnipool = ({
                     value: addedSharesShifted,
                     symbol: meta.symbol,
                   }),
-                  where: "Omnipool",
+                  where: t("omnipool"),
                 }
 
                 const joinOmnipoolToasts = {
@@ -574,7 +574,7 @@ export const useAddGETHToOmnipool = ({
                     value: addedGethShifted,
                     symbol: meta.symbol,
                   }),
-                  where: "Omnipool",
+                  where: t("omnipool"),
                 }
 
                 const joinOmnipoolToasts = {
@@ -649,7 +649,7 @@ export const useAddMoneyMarketLiquidity = ({
   const meta = getAssetWithFallback(stableswapId)
   const erc20Meta = getAssetWithFallback(erc20Id)
 
-  const [split] = form.watch(["split"])
+  const [split, selectedAssetId] = form.watch(["split", "selectedAssetId"])
 
   const stablepoolShares = getStablepoolShares(
     assetsToProvide,
@@ -665,12 +665,21 @@ export const useAddMoneyMarketLiquidity = ({
   const stablepoolSharesHuman =
     scaleHuman(minStablepoolShares, meta.decimals) || "0"
 
-  const tradeFormAsset = assetsToProvide[0]
+  const { assetIn, amounIn } = (() => {
+    if (split) {
+      return {
+        assetIn: stableswapId,
+        amounIn: stablepoolSharesHuman,
+      }
+    } else {
+      const tradeFormAsset = assetsToProvide[0]
 
-  const assetIn = split ? stableswapId : (tradeFormAsset?.asset.id ?? "")
-  const amounIn = split
-    ? stablepoolSharesHuman
-    : (tradeFormAsset?.amount ?? "0")
+      return {
+        assetIn: tradeFormAsset?.asset.id ?? selectedAssetId,
+        amounIn: tradeFormAsset?.amount ?? "0",
+      }
+    }
+  })()
 
   const [debouncedAmountIn] = useDebounce(amounIn, 300)
   const { data: trade } = useQuery(
