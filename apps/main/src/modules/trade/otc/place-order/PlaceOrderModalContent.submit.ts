@@ -9,10 +9,10 @@ import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
 type Args = {
-  readonly onSubmit: () => void
+  readonly onSubmitted: () => void
 }
 
-export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
+export const useSubmitPlaceOrder = ({ onSubmitted }: Args) => {
   const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
   const { isErc20AToken } = useAssets()
@@ -46,26 +46,30 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
         partially_fillable: isPartiallyFillable,
       })
 
-      onSubmit()
-      await createTransaction({
-        tx: hasAToken
-          ? papi.tx.Dispatcher.dispatch_with_extra_gas({
-              call: tx.decodedCall,
-              extra_gas: AAVE_GAS_LIMIT,
-            })
-          : tx,
-        toasts: {
-          submitted: t("otc.placeOrder.loading", {
-            amount: formattedAmount,
-          }),
-          success: t("otc.placeOrder.success", {
-            amount: formattedAmount,
-          }),
-          error: t("otc.placeOrder.error", {
-            amount: formattedAmount,
-          }),
+      await createTransaction(
+        {
+          tx: hasAToken
+            ? papi.tx.Dispatcher.dispatch_with_extra_gas({
+                call: tx.decodedCall,
+                extra_gas: AAVE_GAS_LIMIT,
+              })
+            : tx,
+          toasts: {
+            submitted: t("otc.placeOrder.loading", {
+              amount: formattedAmount,
+            }),
+            success: t("otc.placeOrder.success", {
+              amount: formattedAmount,
+            }),
+            error: t("otc.placeOrder.error", {
+              amount: formattedAmount,
+            }),
+          },
         },
-      })
+        {
+          onSubmitted,
+        },
+      )
     },
   })
 }

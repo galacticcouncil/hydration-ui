@@ -2,6 +2,7 @@ import {
   DataTable,
   Paper,
   TableContainer,
+  usePriorityTableSort,
 } from "@galacticcouncil/ui/components"
 import { useHydraAccountAddress } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
@@ -10,6 +11,7 @@ import { useTranslation } from "react-i18next"
 
 import {
   OtcColumn,
+  otcColumnSortPriority,
   useOtcTableColums,
 } from "@/modules/trade/otc/table/OtcTable.columns"
 import { useOtcOffers } from "@/modules/trade/otc/table/OtcTable.query"
@@ -27,6 +29,11 @@ type Props = {
 export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("trade")
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
+
+  const [sortState, setSortState] = usePriorityTableSort(
+    otcColumnSortPriority,
+    [{ id: OtcColumn.MarketPrice, desc: false }],
+  )
 
   const { getAsset } = useAssets()
   const { data, isLoading } = useOtcOffers()
@@ -85,8 +92,10 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
         data={offersWithPrices}
         columns={columns}
         isLoading={isTableLoading}
-        initialSorting={[{ id: OtcColumn.MarketPrice, desc: false }]}
         emptyState={t("otc.noOrders")}
+        isMultiSort
+        sorting={sortState}
+        onSortingChange={setSortState}
       />
     </TableContainer>
   )

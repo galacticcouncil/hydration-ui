@@ -1,24 +1,28 @@
 import { Alert, Checkbox, Flex, Label } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { PlaceOrderFormValues } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
+import {
+  PlaceOrderFormValues,
+  PlaceOrderView,
+} from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
 import { TAsset } from "@/providers/assetsProvider"
 
 type Props = {
   readonly offerAsset: TAsset
   readonly buyAsset: TAsset
   readonly priceGain: string
-  readonly isPriceSwitched: boolean
+  readonly view: PlaceOrderView
 }
 
 export const PriceGainWarning: FC<Props> = ({
   offerAsset,
   buyAsset,
   priceGain,
-  isPriceSwitched,
+  view,
 }) => {
   const { t } = useTranslation(["common", "trade"])
   const { control } = useFormContext<PlaceOrderFormValues>()
@@ -32,6 +36,8 @@ export const PriceGainWarning: FC<Props> = ({
     return
   }
 
+  const isOfferView = view === "offerPrice"
+
   return (
     <Flex
       pt={getTokenPx("scales.paddings.m")}
@@ -44,10 +50,10 @@ export const PriceGainWarning: FC<Props> = ({
       <Alert
         variant="error"
         description={t(
-          `trade:otc.placeOrder.priceGainWarning.${isPriceSwitched ? "buy" : "sell"}`,
+          `trade:otc.placeOrder.priceGainWarning.${isOfferView ? "offer" : "buy"}`,
           {
-            asset: isPriceSwitched ? buyAsset.symbol : offerAsset.symbol,
-            percentage: t("percent", { value: priceGain }),
+            asset: isOfferView ? offerAsset.symbol : buyAsset.symbol,
+            percentage: t("percent", { value: Big(priceGain).abs() }),
           },
         )}
       />

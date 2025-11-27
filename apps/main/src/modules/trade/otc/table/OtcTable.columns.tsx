@@ -38,9 +38,13 @@ import {
 export enum OtcColumn {
   MarketPrice = "MarketPrice",
   Price = "Price",
-  Status = "Status",
+  PartiallyFillable = "PartiallyFillable",
   Actions = "Actions",
 }
+
+export const otcColumnSortPriority: ReadonlyArray<OtcColumn> = [
+  OtcColumn.PartiallyFillable,
+]
 
 export type OtcOfferTabular = OtcOffer & {
   readonly offerPrice: string | null
@@ -148,7 +152,7 @@ export const useOtcTableColums = () => {
     })
 
     const partiallyFillable = columnHelper.accessor("isPartiallyFillable", {
-      id: OtcColumn.Status,
+      id: OtcColumn.PartiallyFillable,
       header: t("otc.partiallyFillable"),
       meta: {
         sx: { textAlign: "center" },

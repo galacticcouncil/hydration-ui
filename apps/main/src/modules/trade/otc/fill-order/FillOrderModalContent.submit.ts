@@ -14,10 +14,10 @@ const FULL_ORDER_PCT_LBOUND = 99
 
 type Args = {
   readonly otcOffer: OtcOfferTabular
-  readonly onSubmit: () => void
+  readonly onSubmitted: () => void
 }
 
-export const useSubmitFillOrder = ({ otcOffer, onSubmit }: Args) => {
+export const useSubmitFillOrder = ({ otcOffer, onSubmitted }: Args) => {
   const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
   const { isErc20AToken } = useAssets()
@@ -51,26 +51,30 @@ export const useSubmitFillOrder = ({ otcOffer, onSubmit }: Args) => {
               order_id: Number(otcOffer.id),
             })
 
-      onSubmit()
-      await createTransaction({
-        tx: hasAToken
-          ? papi.tx.Dispatcher.dispatch_with_extra_gas({
-              call: tx.decodedCall,
-              extra_gas: AAVE_GAS_LIMIT,
-            })
-          : tx,
-        toasts: {
-          submitted: t("otc.fillOrder.loading", {
-            amount: formattedAmount,
-          }),
-          success: t("otc.fillOrder.success", {
-            amount: formattedAmount,
-          }),
-          error: t("otc.fillOrder.error", {
-            amount: formattedAmount,
-          }),
+      await createTransaction(
+        {
+          tx: hasAToken
+            ? papi.tx.Dispatcher.dispatch_with_extra_gas({
+                call: tx.decodedCall,
+                extra_gas: AAVE_GAS_LIMIT,
+              })
+            : tx,
+          toasts: {
+            submitted: t("otc.fillOrder.loading", {
+              amount: formattedAmount,
+            }),
+            success: t("otc.fillOrder.success", {
+              amount: formattedAmount,
+            }),
+            error: t("otc.fillOrder.error", {
+              amount: formattedAmount,
+            }),
+          },
         },
-      })
+        {
+          onSubmitted,
+        },
+      )
     },
   })
 }
