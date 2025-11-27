@@ -45,9 +45,11 @@ type TField = {
   assetId: string
 }
 
+export type TAddStablepoolLiquidityOption = "omnipool" | "stablepool"
+
 export type TAddStablepoolLiquidityFormValues = {
   sharesAmount: string
-  option: "omnipool" | "stablepool"
+  option: TAddStablepoolLiquidityOption
   split: boolean
   selectedAssetId: string
   fields: Array<TField>
@@ -238,8 +240,6 @@ export const useStablepoolAddLiquidity = ({
     healthFactor: undefined,
     reserveIds,
     displayOption: true,
-    isGETHProviding: false,
-    isGETHPool: false,
   }
 }
 
@@ -337,7 +337,7 @@ export const useStablepoolAddLiquidityForm = ({
   selectedAssetId,
 }: {
   poolId: string
-  option?: "omnipool" | "stablepool"
+  option?: TAddStablepoolLiquidityOption
   accountBalances: Map<string, string>
   activeFieldIds: string[]
   selectedAssetId: string

@@ -19,6 +19,7 @@ import { AddMoneyMarketLiquidityWrapperProps } from "@/modules/liquidity/compone
 import {
   getStablepoolShares,
   TAddStablepoolLiquidityFormValues,
+  TAddStablepoolLiquidityOption,
   useAssetsToAddToMoneyMarket,
   useStablepoolAddLiquidityForm,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
@@ -44,10 +45,12 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   stablepoolDetails: { reserves },
   stableswapId,
   erc20Id,
+  initialOption,
 }: {
   stablepoolDetails: TStablepoolDetails
   stableswapId: string
   erc20Id: string
+  initialOption?: TAddStablepoolLiquidityOption
 }) => {
   const { getAssetWithFallback } = useAssets()
   const { balances } = useAccountBalances()
@@ -86,12 +89,14 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     },
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
+  const defaultOption =
+    initialOption || (isGETHPool ? "omnipool" : "stablepool")
 
   const form = useStablepoolAddLiquidityForm({
     poolId: stableswapId,
     selectedAssetId: initialAssetIdToAdd ?? "",
     accountBalances,
-    option: "stablepool",
+    option: defaultOption,
     activeFieldIds: reserveIds,
   })
 
@@ -100,9 +105,8 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     "selectedAssetId",
     "activeFields",
   ])
-  const isGETHProviding =
-    isGETHPool && !split && selectedAssetId === GETH_ERC20_ID
-  const meta = getAssetWithFallback(isGETHProviding ? erc20Id : stableswapId)
+
+  const meta = getAssetWithFallback(stableswapId)
 
   const assetsToProvide = activeFields
     .filter(({ amount }) => Big(amount || "0").gt(0))
@@ -119,10 +123,6 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     }
   }, [form, initialAssetIdToAdd, selectedAssetId])
 
-  useEffect(() => {
-    form.setValue("option", isGETHProviding ? "omnipool" : "stablepool")
-  }, [form, isGETHProviding])
-
   return {
     form,
     accountBalances,
@@ -131,14 +131,13 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserveIds,
     displayOption: false,
     assetsToProvide,
-    isGETHProviding,
-    isGETHPool,
     stablepoolAssets,
     erc20Id,
+    defaultOption,
   }
 }
 
-export const useAddGETHToOmnipool = ({
+export const useAddMoneyMarketOmnipoolLiquidity = ({
   formData,
   props,
 }: {
@@ -156,8 +155,7 @@ export const useAddGETHToOmnipool = ({
       single: { swapSlippage },
     },
   } = useTradeSettings()
-  const { erc20Id, assetsToProvide, stablepoolAssets, isGETHProviding } =
-    formData
+  const { erc20Id, assetsToProvide, stablepoolAssets } = formData
   const { pool } = props.stablepoolDetails
   const meta = getAssetWithFallback(erc20Id)
   const stableswapMeta = getAssetWithFallback(pool.id)
@@ -166,6 +164,7 @@ export const useAddGETHToOmnipool = ({
   const getOmnipoolGetShares = useLiquidityOmnipoolShares(erc20Id)
   const { getTransferableBalance } = useAccountBalances()
   const [split, selectedAssetId] = form.watch(["split", "selectedAssetId"])
+  const isERC20Providing = selectedAssetId === erc20Id && !split
 
   const { assetIn, amounIn, minStablepoolShares } = (() => {
     if (split) {
@@ -191,7 +190,7 @@ export const useAddGETHToOmnipool = ({
         amounIn,
         minStablepoolShares,
       }
-    } else if (isGETHProviding) {
+    } else if (isERC20Providing) {
       return {
         assetIn: "",
         amounIn: assetsToProvide[0]?.amount || "0",
@@ -226,8 +225,8 @@ export const useAddGETHToOmnipool = ({
     ),
   )
 
-  const minGETHToGet = (() => {
-    if (isGETHProviding) {
+  const minERC20ToGet = (() => {
+    if (isERC20Providing) {
       return amounIn
     } else if (split) {
       // stablewap token is swapped 1:1 with erc20 token without slippage
@@ -242,11 +241,11 @@ export const useAddGETHToOmnipool = ({
 
   const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
     useCheckJoinOmnipoolFarm({
-      amount: minGETHToGet,
+      amount: minERC20ToGet,
       meta,
     })
 
-  const omnipoolShares = getOmnipoolGetShares(minGETHToGet)
+  const omnipoolShares = getOmnipoolGetShares(minERC20ToGet)
   const minSharesToGet = omnipoolShares?.minSharesToGet ?? "0"
   const minReceiveAmount = scaleHuman(minSharesToGet, meta.decimals)
   const assetInMeta = getAssetWithFallback(assetIn)
@@ -273,9 +272,9 @@ export const useAddGETHToOmnipool = ({
       const { papi, sdk } = rpc
       const tradeTx = trade?.tx
 
-      if (isGETHProviding) {
+      if (isERC20Providing) {
         const amountToJoinOmnipool = Big(
-          scale(minGETHToGet, meta.decimals),
+          scale(minERC20ToGet, meta.decimals),
         ).toFixed(0)
 
         const omnipoolTx = isJoinFarms
@@ -301,7 +300,7 @@ export const useAddGETHToOmnipool = ({
 
         const tOptions = {
           value: t("common:currency", {
-            value: minGETHToGet,
+            value: minERC20ToGet,
             symbol: meta.symbol,
           }),
           where: t("omnipool"),
@@ -506,7 +505,7 @@ export const useAddGETHToOmnipool = ({
               tx: async () => {
                 const tOptions = {
                   value: t("common:currency", {
-                    value: minGETHToGet,
+                    value: minERC20ToGet,
                     symbol: meta.symbol,
                   }),
                   where: meta.symbol,
@@ -613,6 +612,7 @@ export const useAddGETHToOmnipool = ({
     minReceiveAmount,
     healthFactor,
     ...formData,
+    meta,
   }
 }
 

@@ -5,8 +5,8 @@ import {
 
 import {
   TAddMoneyMarketLiquidityWrapperReturn,
-  useAddGETHToOmnipool,
   useAddMoneyMarketLiquidity,
+  useAddMoneyMarketOmnipoolLiquidity,
 } from "./AddMoneyMarketLiquidity.utils"
 
 export const AddGETHToOmnipool = ({
@@ -16,7 +16,10 @@ export const AddGETHToOmnipool = ({
   formData: TAddMoneyMarketLiquidityWrapperReturn
   props: AddMoneyMarketLiquidityWrapperProps
 }) => {
-  const addLiquidityData = useAddGETHToOmnipool({ props, formData })
+  const addLiquidityData = useAddMoneyMarketOmnipoolLiquidity({
+    props,
+    formData,
+  })
 
   return <AddStablepoolLiquidityForm {...props} {...addLiquidityData} />
 }

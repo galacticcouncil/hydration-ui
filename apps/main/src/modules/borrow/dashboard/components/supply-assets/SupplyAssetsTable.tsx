@@ -102,7 +102,11 @@ export const SupplyAssetsTable = () => {
 
       <Modal open={!!modalProps} onOpenChange={() => setModalProps(undefined)}>
         {!!modalProps && (
-          <AddStablepoolLiquidityWrapper {...modalProps} closable />
+          <AddStablepoolLiquidityWrapper
+            {...modalProps}
+            initialOption="stablepool"
+            closable
+          />
         )}
       </Modal>
     </>

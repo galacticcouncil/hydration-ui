@@ -57,12 +57,14 @@ import { scaleHuman } from "@/utils/formatting"
 import {
   addStablepoolOptions,
   TAddStablepoolLiquidityFormValues,
+  TAddStablepoolLiquidityOption,
   useStablepoolAddLiquidity,
 } from "./AddStablepoolLiquidity.utils"
 import { AddStablepoolLiquiditySkeleton } from "./AddStablepoolLiquiditySkeleton"
 
 export type AddStablepoolLiquidityProps = AddLiquidityProps & {
   stableswapId: string
+  initialOption?: TAddStablepoolLiquidityOption
 }
 
 export type AddMoneyMarketLiquidityWrapperProps =
@@ -107,16 +109,17 @@ export const AddStablepoolLiquidityWrapper = (
 const AddMoneyMarketLiquidityWrapper = (
   props: AddMoneyMarketLiquidityWrapperProps,
 ) => {
-  const { erc20Id, stablepoolDetails, stableswapId } = props
+  const { erc20Id, stablepoolDetails, stableswapId, initialOption } = props
   const { form, ...formData } = useAddMoneyMarketLiquidityWrapper({
     stablepoolDetails,
     erc20Id,
     stableswapId,
+    initialOption,
   })
 
   return (
     <FormProvider {...form}>
-      {formData.isGETHPool ? (
+      {formData.defaultOption === "omnipool" ? (
         <AddGETHToOmnipool formData={formData} props={props} />
       ) : (
         <AddMoneyMarketLiquidity formData={formData} props={props} />
@@ -158,7 +161,6 @@ export const AddStablepoolLiquidityForm = ({
   isJoinFarms,
   healthFactor,
   reserveIds,
-  isGETHProviding,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -166,7 +168,11 @@ export const AddStablepoolLiquidityForm = ({
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
 
   const { control, watch, formState, setValue } = form
-  const [split, selectedAssetId] = watch(["split", "selectedAssetId"])
+  const [split, selectedAssetId, option] = watch([
+    "split",
+    "selectedAssetId",
+    "option",
+  ])
 
   const { fields: activeFields } = useFieldArray({
     control,
@@ -346,7 +352,7 @@ export const AddStablepoolLiquidityForm = ({
 
         <ModalContentDivider />
 
-        {isGETHProviding ? (
+        {option === "omnipool" && erc20Id ? (
           <AddLiquiditySummary
             meta={meta}
             minReceiveAmount={minReceiveAmount}
