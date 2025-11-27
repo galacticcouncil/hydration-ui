@@ -1,4 +1,4 @@
-import { Flex, Text } from "@galacticcouncil/ui/components"
+import { Flex, Text, TextSize } from "@galacticcouncil/ui/components"
 import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 
@@ -6,7 +6,7 @@ import { useFormattedHealthFactor } from "@/hooks"
 
 export type HealthFactorNumberProps = {
   value: string
-  fontSize?: ResponsiveStyleValue<number>
+  fontSize?: TextSize | ResponsiveStyleValue<number>
 }
 
 export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({

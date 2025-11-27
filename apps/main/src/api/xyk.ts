@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 
+export type TXYKConsts = NonNullable<ReturnType<typeof useXYKConsts>["data"]>
+
 export const useXYKPoolsLiquidity = (
   poolAddress: string,
   disabled?: boolean,

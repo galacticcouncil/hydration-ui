@@ -23,6 +23,7 @@ import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
 import { NoData } from "@/modules/borrow/components/NoData"
 import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
+import { AddStablepoolLiquidityProps } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
@@ -31,9 +32,12 @@ const columnHelper = createColumnHelper<DashboardReserve>()
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 type AssetType = "base" | "strategy"
 
-export const useSupplyAssetsTableColumns = (type: AssetType) => {
+export const useSupplyAssetsTableColumns = (
+  type: AssetType,
+  onSupplyClick?: (props: AddStablepoolLiquidityProps) => void,
+) => {
   const { t } = useTranslation(["common", "borrow"])
-  const { getAsset } = useAssets()
+  const { getAsset, getRelatedAToken } = useAssets()
 
   const { openSupply } = useModalContext()
 
@@ -165,7 +169,24 @@ export const useSupplyAssetsTableColumns = (type: AssetType) => {
               size="small"
               onClick={(e) => {
                 e.stopPropagation()
-                openSupply(underlyingAsset)
+
+                const assetId = getAssetIdFromAddress(underlyingAsset)
+                const aTokenId = getRelatedAToken(assetId)?.id
+
+                if (
+                  assetId &&
+                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                  aTokenId &&
+                  onSupplyClick
+                ) {
+                  onSupplyClick({
+                    id: assetId,
+                    erc20Id: aTokenId,
+                    stableswapId: assetId,
+                  })
+                } else {
+                  openSupply(underlyingAsset)
+                }
               }}
             >
               {t("borrow:supply")}
@@ -195,7 +216,24 @@ export const useSupplyAssetsTableColumns = (type: AssetType) => {
             width="100%"
             onClick={(e) => {
               e.stopPropagation()
-              openSupply(underlyingAsset)
+
+              const assetId = getAssetIdFromAddress(underlyingAsset)
+              const aTokenId = getRelatedAToken(assetId)?.id
+
+              if (
+                assetId &&
+                MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                aTokenId &&
+                onSupplyClick
+              ) {
+                onSupplyClick({
+                  id: assetId,
+                  erc20Id: aTokenId,
+                  stableswapId: assetId,
+                })
+              } else {
+                openSupply(underlyingAsset)
+              }
             }}
           >
             {t("borrow:supply")}
@@ -211,7 +249,15 @@ export const useSupplyAssetsTableColumns = (type: AssetType) => {
       collateralColunn,
       isMobile ? actionsColumnMobile : actionsColumn,
     ].filter(Boolean)
-  }, [isMobile, getAsset, openSupply, t, isBaseAssetType])
+  }, [
+    isMobile,
+    getAsset,
+    openSupply,
+    t,
+    isBaseAssetType,
+    getRelatedAToken,
+    onSupplyClick,
+  ])
 }
 
 const getIsSupplyDisabled = (reserve: DashboardReserve) => {

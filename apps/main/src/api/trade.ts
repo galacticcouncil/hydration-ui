@@ -28,6 +28,7 @@ type BestSellArgs = {
 export const bestSellQuery = (
   { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountIn, slippage, address }: BestSellArgs,
+  disableDebug = false,
 ) =>
   queryOptions({
     queryKey: [
@@ -47,7 +48,9 @@ export const bestSellQuery = (
       )
 
       // debug for experienced users
-      console.log(swap.toHuman())
+      if (!disableDebug) {
+        console.log(swap.toHuman())
+      }
 
       const tx = address
         ? await sdk.tx
@@ -126,6 +129,7 @@ type BestBuyArgs = {
 export const bestBuyQuery = (
   { sdk, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountOut, slippage, address }: BestBuyArgs,
+  disableDebug = false,
 ) =>
   queryOptions({
     queryKey: [
@@ -145,7 +149,9 @@ export const bestBuyQuery = (
       )
 
       // debug for experienced users
-      console.log(swap.toHuman())
+      if (!disableDebug) {
+        console.log(swap.toHuman())
+      }
 
       const tx = address
         ? await sdk.tx

@@ -24,8 +24,9 @@ export const PoolDetailsHeader = ({
 }: {
   data: OmnipoolAssetTable | IsolatedPoolTable
 }) => {
-  const isOmnipool = !isIsolatedPool(data)
   const { t } = useTranslation("liquidity")
+  const isOmnipool = !isIsolatedPool(data)
+  const stablepoolData = isOmnipool ? data.stablepoolData : undefined
 
   return (
     <Flex
@@ -38,7 +39,7 @@ export const PoolDetailsHeader = ({
       <Flex>
         <Flex gap={8} align="center">
           <AssetLogo
-            id={isOmnipool ? data.id : data.meta.iconId}
+            id={isOmnipool ? data.meta.id : data.meta.iconId}
             size="large"
           />
 
@@ -69,7 +70,21 @@ export const PoolDetailsHeader = ({
         }}
       >
         <Button asChild>
-          <Link from="/liquidity/$id" to="add" resetScroll={false}>
+          <Link
+            to={"/liquidity/$id/add"}
+            params={{
+              id: data.id,
+            }}
+            search={
+              stablepoolData
+                ? {
+                    stableswapId: stablepoolData.id.toString(),
+                    erc20Id: stablepoolData.aToken?.id.toString(),
+                  }
+                : undefined
+            }
+            resetScroll={false}
+          >
             <Icon size={14} component={Plus} />
             {data.isFarms
               ? t("details.header.addJoinFarms")
