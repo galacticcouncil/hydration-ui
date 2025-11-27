@@ -126,10 +126,9 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     nonce,
   } = transactionValues.data
 
-  const nonceToCheck = shouldUsePermit
-    ? permitNonce?.toString()
-    : nonce?.toString()
-  const isInvalidNonce = BN(INVALID_NONCE).eq(nonceToCheck ?? "0")
+  const isInvalidNonce = !shouldUsePermit
+    ? BN(INVALID_NONCE).eq(nonce?.toString() ?? "0")
+    : false
 
   const hfChange = useHealthFactorChangeFromTxMetadata(props.txMeta)
 
