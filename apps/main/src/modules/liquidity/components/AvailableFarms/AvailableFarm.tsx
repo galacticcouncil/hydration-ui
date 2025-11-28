@@ -7,7 +7,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { addSeconds } from "date-fns"
 import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
@@ -51,6 +51,12 @@ export const AvailableFarm = ({
       onClick={() => onClick?.(farm)}
       isSelectable={isSelectable}
       direction={isLongVariant ? "row" : "column"}
+      sx={{
+        p: getTokenPx([
+          "containers.paddings.secondary",
+          "containers.paddings.primary",
+        ]),
+      }}
       className={className}
     >
       <Flex justify="space-between" align="center">

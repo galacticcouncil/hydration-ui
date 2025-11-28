@@ -66,12 +66,12 @@ export const PoolDetailsHeader = ({
         sx={{
           position: ["fixed", "unset"],
           bottom: 72,
-          zIndex: 2,
+          zIndex: 3,
         }}
       >
         <Button asChild>
           <Link
-            to={"/liquidity/$id/add"}
+            to="/liquidity/$id/add"
             params={{
               id: data.id,
             }}
@@ -91,9 +91,18 @@ export const PoolDetailsHeader = ({
               : t("addLiquidity")}
           </Link>
         </Button>
-        <Button variant="secondary">
-          <Icon size={14} component={Plus} />
-          {t("details.header.swap")}
+        <Button variant="secondary" asChild>
+          <Link
+            to="/trade/swap/market"
+            search={{
+              assetOut: stablepoolData
+                ? stablepoolData.aToken?.id || data.id
+                : data.id,
+            }}
+          >
+            <Icon size={14} component={Plus} />
+            {t("details.header.swap")}
+          </Link>
         </Button>
       </Flex>
     </Flex>
