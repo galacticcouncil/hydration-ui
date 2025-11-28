@@ -17,3 +17,6 @@ export const percentageDifference = (
 
   return aBig.minus(bBig).abs().div(aBig.plus(bBig).div(2)).mul(100)
 }
+
+export const getReversePrice = (price: string): string =>
+  Big(price || "0").gt(0) ? Big(1).div(price).toString() : price

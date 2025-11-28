@@ -39,6 +39,50 @@ type Props = {
   readonly onClose: () => void
 }
 
+const getNewBuyAmount = (
+  newOfferAmount: string,
+  isOfferView: boolean,
+  offerPrice: string,
+  buyPrice: string,
+  buyAsset: TAsset,
+) => {
+  const newBuyAmount = (() => {
+    if (isOfferView) {
+      return Big(newOfferAmount).mul(offerPrice)
+    } else if (Big(buyPrice).gt(0)) {
+      return Big(newOfferAmount).div(buyPrice)
+    }
+  })()
+
+  if (!newBuyAmount || !newBuyAmount.gt(0)) {
+    return
+  }
+
+  return formatAssetAmount(newBuyAmount.toString(), buyAsset.decimals)
+}
+
+const getNewOfferAmount = (
+  newBuyAmount: string,
+  isOfferView: boolean,
+  offerPrice: string,
+  buyPrice: string,
+  offerAsset: TAsset,
+) => {
+  const newOfferAmount = (() => {
+    if (isOfferView) {
+      return Big(newBuyAmount).div(offerPrice)
+    } else if (Big(buyPrice).gt(0)) {
+      return Big(newBuyAmount).mul(buyPrice)
+    }
+  })()
+
+  if (!newOfferAmount || !newOfferAmount.gt(0)) {
+    return
+  }
+
+  return formatAssetAmount(newOfferAmount.toString(), offerAsset.decimals)
+}
+
 export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const { t } = useTranslation(["trade", "common"])
   const rpc = useRpcProvider()
@@ -49,21 +93,15 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const form = usePlaceOrderForm()
   const { getValues, setValue, watch, control } = form
 
-  const [
-    offerAsset,
-    offerAmount,
-    buyAsset,
-    buyAmount,
-    priceSettings,
-    isPriceSwitched,
-  ] = watch([
-    "offerAsset",
-    "offerAmount",
-    "buyAsset",
-    "buyAmount",
-    "priceSettings",
-    "isPriceSwitched",
-  ])
+  const [offerAsset, offerAmount, buyAsset, buyAmount, priceSettings, view] =
+    watch([
+      "offerAsset",
+      "offerAmount",
+      "buyAsset",
+      "buyAmount",
+      "priceSettings",
+      "view",
+    ])
 
   const { field: priceConfirmationField } = useController({
     control,
@@ -77,13 +115,15 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
   const [omnipoolPrice, { isPriceValid }] = getOmnipoolPrice(
     spotPrice?.spotPrice,
   )
-  const { price, priceGain } = getPrice(
+  const { offerPrice, buyPrice, priceGain } = getPrice(
     priceSettings,
     omnipoolPrice,
-    offerAsset?.decimals ?? 0,
+    buyAsset?.decimals ?? 0,
   )
 
-  const submit = useSubmitPlaceOrder({ onSubmit: onClose })
+  const isOfferView = view === "offerPrice"
+
+  const submit = useSubmitPlaceOrder({ onSubmitted: onClose })
   const lastTouchedAssetRef = useRef<"offer" | "buy">("offer")
 
   const handleOfferAmountChange = (newOfferAmount: string): void => {
@@ -95,20 +135,23 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
       return
     }
 
-    const priceBig = new Big(price)
-
-    if (!priceBig.gt(0) || !buyAsset) {
+    if (!buyAsset) {
       return
     }
 
-    const newBuyAmount = formatAssetAmount(
-      Big(newOfferAmount).mul(priceBig).toString(),
-      buyAsset.decimals,
+    const newBuyAmount = getNewBuyAmount(
+      newOfferAmount,
+      isOfferView,
+      offerPrice,
+      buyPrice,
+      buyAsset,
     )
 
-    form.setValue("buyAmount", newBuyAmount, {
-      shouldValidate: true,
-    })
+    if (newBuyAmount) {
+      form.setValue("buyAmount", newBuyAmount, {
+        shouldValidate: true,
+      })
+    }
   }
 
   const handleBuyAmountChange = (newBuyAmount: string): void => {
@@ -120,16 +163,21 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
       return
     }
 
-    const priceBig = new Big(price)
-
-    if (!priceBig.gt(0) || !offerAsset) {
+    if (!offerAsset) {
       return
     }
 
-    const newOfferAmount = formatAssetAmount(
-      Big(newBuyAmount).div(priceBig).toString(),
-      offerAsset.decimals,
+    const newOfferAmount = getNewOfferAmount(
+      newBuyAmount,
+      isOfferView,
+      offerPrice,
+      buyPrice,
+      offerAsset,
     )
+
+    if (!newOfferAmount) {
+      return
+    }
 
     form.setValue("offerAmount", newOfferAmount, {
       shouldValidate: true,
@@ -145,53 +193,56 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         buyAmount,
         priceSettings,
         priceConfirmation,
+        view,
       } = formValues
 
       if (!offerAsset || !buyAsset) {
         return
       }
 
-      const { price, priceGain } = getPrice(
+      const isOfferView = view === "offerPrice"
+
+      const { offerPrice, buyPrice, priceGain } = getPrice(
         priceSettings,
         omnipoolPrice,
-        offerAsset.decimals,
+        buyAsset.decimals,
       )
 
-      const priceBig = Big(price)
+      const offerPriceBig = Big(offerPrice)
       const priceGainBig = Big(priceGain)
-      const offerAmountBig = Big(offerAmount || "0")
-      const buyAmountBig = Big(buyAmount || "0")
 
-      if (
-        (!buyAmount || lastTouchedAssetRef.current === "offer") &&
-        offerAmountBig.gt(0) &&
-        priceBig.gt(0)
-      ) {
-        const newBuyAmount = formatAssetAmount(
-          offerAmountBig.mul(price).toString(),
-          buyAsset.decimals,
+      if (!buyAmount || lastTouchedAssetRef.current === "offer") {
+        const newBuyAmount = getNewBuyAmount(
+          offerAmount || "0",
+          isOfferView,
+          offerPrice,
+          buyPrice,
+          buyAsset,
         )
 
-        setValue("buyAmount", newBuyAmount, {
-          shouldValidate: true,
-        })
-      } else if (
-        (!offerAmount || lastTouchedAssetRef.current === "buy") &&
-        buyAmountBig.gt(0) &&
-        priceBig.gt(0)
-      ) {
-        const newOfferAmount = formatAssetAmount(
-          buyAmountBig.div(price).toString(),
-          offerAsset.decimals,
+        if (newBuyAmount) {
+          setValue("buyAmount", newBuyAmount, {
+            shouldValidate: true,
+          })
+        }
+      } else if (!offerAmount || lastTouchedAssetRef.current === "buy") {
+        const newOfferAmount = getNewOfferAmount(
+          buyAmount || "0",
+          isOfferView,
+          offerPrice,
+          buyPrice,
+          offerAsset,
         )
 
-        setValue("offerAmount", newOfferAmount, {
-          shouldValidate: true,
-        })
+        if (newOfferAmount) {
+          setValue("offerAmount", newOfferAmount, {
+            shouldValidate: true,
+          })
+        }
       }
 
       const priceNeedsConfirmation =
-        !priceBig.eq(0) && priceGainBig.lte(-PRICE_GAIN_DIFF_THRESHOLD)
+        !offerPriceBig.eq(0) && priceGainBig.lte(-PRICE_GAIN_DIFF_THRESHOLD)
 
       const priceConfirmationNew = (() => {
         if (priceNeedsConfirmation) {
@@ -242,7 +293,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
         percentage: 0,
       },
       priceConfirmation: null,
-      isPriceSwitched: false,
+      view: "offerPrice",
     })
 
     form.trigger()
@@ -275,7 +326,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
       buyAmount: "",
       priceSettings: { type: "relative", percentage: 0 },
       priceConfirmation: null,
-      isPriceSwitched: false,
+      view: "offerPrice",
     })
 
     form.trigger()
@@ -308,7 +359,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
       buyAmount: "",
       priceSettings: { type: "relative", percentage: 0 },
       priceConfirmation: null,
-      isPriceSwitched: false,
+      view: "offerPrice",
     })
 
     form.trigger()
@@ -323,20 +374,12 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
 
   const areAssetsSelected = !!offerAsset && !!buyAsset
 
-  const inputPrice =
-    priceSettings.type === "fixed" &&
-    priceSettings.wasPriceSwitched === isPriceSwitched
-      ? priceSettings.inputValue
-      : isPriceValid
-        ? // the value is formatted for display only if it was calculated otherwise show what user typed
-          formatNumber(
-            isPriceSwitched && !Big(price).eq(0)
-              ? Big(1).div(price).toString()
-              : price,
-            undefined,
-            { useGrouping: false },
-          )
-        : ""
+  const inputPrice = view === "offerPrice" ? offerPrice : buyPrice
+  const inputPriceFormatted =
+    priceSettings.type === "fixed" && priceSettings.view === view
+      ? inputPrice
+      : // the value needs to be formatted for display if it was calculated
+        formatNumber(inputPrice, undefined, { useGrouping: false })
 
   const isSubmitEnabled =
     !!offerAmount &&
@@ -359,6 +402,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 amountFieldName="offerAmount"
                 label={t("common:offer")}
                 assets={tradable}
+                maxBalanceFallback="0"
                 ignoreBalance={!areAssetsSelected}
                 ignoreDisplayValue={!areAssetsSelected}
                 disabledInput={!areAssetsSelected}
@@ -371,7 +415,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                   <PlaceOrderPrice
                     offerAsset={offerAsset}
                     buyAsset={buyAsset}
-                    price={inputPrice}
+                    price={inputPriceFormatted}
                     priceGain={priceGain}
                     isPriceLoaded={!priceLoading && isPriceValid}
                     onChange={handlePriceSettingsChange}
@@ -384,7 +428,8 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                 amountFieldName="buyAmount"
                 label={t("otc.placeOrder.buy")}
                 assets={tradable}
-                ignoreBalance
+                maxBalanceFallback="0"
+                hideMaxBalanceAction
                 ignoreDisplayValue={!areAssetsSelected}
                 disabledInput={!areAssetsSelected}
                 onAmountChange={handleBuyAmountChange}
@@ -401,7 +446,7 @@ export const PlaceOrderModalContent: FC<Props> = ({ onClose }) => {
                     offerAsset={offerAsset}
                     buyAsset={buyAsset}
                     priceGain={priceGain}
-                    isPriceSwitched={isPriceSwitched}
+                    view={view}
                   />
                 )}
               </>

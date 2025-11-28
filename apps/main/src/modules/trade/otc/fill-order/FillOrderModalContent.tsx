@@ -53,7 +53,7 @@ export const FillOrderModalContent: FC<Props> = ({
   const form = useFillOrderForm(otcOffer, isUsersOffer, feePct)
   const submit = useSubmitFillOrder({
     otcOffer,
-    onSubmit: onClose,
+    onSubmitted: onClose,
   })
 
   const sellAmount = form.watch("sellAmount")
@@ -66,7 +66,8 @@ export const FillOrderModalContent: FC<Props> = ({
 
   const [feeDisplay] = useDisplayAssetPrice(feeAsset.id, fee || "0")
 
-  const isSubmitEnabled = isUsersOffer || form.formState.isValid
+  const isSubmitEnabled =
+    isUsersOffer || (!!sellAmount && form.formState.isValid)
 
   if (isSubmitCancelOpen) {
     return (

@@ -141,7 +141,7 @@
   "otc.placeOrder.lastOmniPoolPrice": "MARKET PRICE",
   "otc.placeOrder.validation.sameAssets": "Cannot place order for the same asset.",
   "otc.placeOrder.priceGainWarning.buy": "Buying {{ asset }} above market price. Your price is {{ percentage }} higher. Check out our Swap page or confirm that you want to continue anyway.",
-  "otc.placeOrder.priceGainWarning.sell": "Selling {{ asset }} below market price. Your price is {{ percentage }} lower. Check out our Swap page or confirm that you want to continue anyway.",
+  "otc.placeOrder.priceGainWarning.offer": "Selling {{ asset }} below market price. Your price is {{ percentage }} lower. Check out our Swap page or confirm that you want to continue anyway.",
   "otc.placeOrder.priceGainWarning.confirmation": "I understand and want to proceed regardless.",
   "otc.fillOrder.tradeFee": "Trade fee ({{ percentage }}%)",
   "otc.fillOrder.cta": "Fill order",
