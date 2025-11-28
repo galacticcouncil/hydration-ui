@@ -19,12 +19,10 @@ import { AddMoneyMarketLiquidityWrapperProps } from "@/modules/liquidity/compone
 import {
   getStablepoolShares,
   TAddStablepoolLiquidityFormValues,
-  TAddStablepoolLiquidityOption,
   useAssetsToAddToMoneyMarket,
   useStablepoolAddLiquidityForm,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
-import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -46,12 +44,8 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   stableswapId,
   erc20Id,
   initialOption,
-}: {
-  stablepoolDetails: TStablepoolDetails
-  stableswapId: string
-  erc20Id: string
-  initialOption?: TAddStablepoolLiquidityOption
-}) => {
+  split: initialSplit,
+}: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
   const { balances } = useAccountBalances()
 
@@ -88,6 +82,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserves,
     options: {
       blacklist: defaultOption === "omnipool" ? [] : [erc20Id],
+      firstAssetId: defaultOption === "omnipool" ? erc20Id : undefined,
     },
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
@@ -98,6 +93,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     accountBalances,
     option: defaultOption,
     activeFieldIds: reserveIds,
+    split: initialSplit,
   })
 
   const [split, selectedAssetId, activeFields] = form.watch([

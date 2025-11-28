@@ -5,6 +5,7 @@ import {
   Flex,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
   Skeleton,
   SliderTabs,
@@ -109,13 +110,7 @@ export const AddStablepoolLiquidityWrapper = (
 const AddMoneyMarketLiquidityWrapper = (
   props: AddMoneyMarketLiquidityWrapperProps,
 ) => {
-  const { erc20Id, stablepoolDetails, stableswapId, initialOption } = props
-  const { form, ...formData } = useAddMoneyMarketLiquidityWrapper({
-    stablepoolDetails,
-    erc20Id,
-    stableswapId,
-    initialOption,
-  })
+  const { form, ...formData } = useAddMoneyMarketLiquidityWrapper(props)
 
   return (
     <FormProvider {...form}>
@@ -398,19 +393,19 @@ export const AddStablepoolLiquidityForm = ({
         )}
 
         <ModalContentDivider />
-
+      </ModalBody>
+      <ModalFooter sx={{ pt: 0 }}>
         <Button
           type="submit"
           size="large"
           width="100%"
-          mt={getTokenPx("containers.paddings.primary")}
           disabled={isSubmitDisabled}
         >
           {isJoinFarms
             ? t("liquidity.add.modal.submitAndjoinFarms")
             : t("liquidity.add.modal.submit")}
         </Button>
-      </ModalBody>
+      </ModalFooter>
     </form>
   )
 }

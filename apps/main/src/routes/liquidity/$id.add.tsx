@@ -16,6 +16,7 @@ import { AddStablepoolLiquidityWrapper } from "@/modules/liquidity/components/Ad
 const AddLiquiditySchema = z.object({
   stableswapId: z.string().optional(),
   erc20Id: z.string().optional(),
+  split: z.boolean().optional(),
 })
 
 export type AddLiquidityType = z.infer<typeof AddLiquiditySchema>

@@ -335,39 +335,44 @@ export const useStablepoolAddLiquidityForm = ({
   option = "omnipool",
   activeFieldIds,
   selectedAssetId,
+  split = true,
 }: {
   poolId: string
   option?: TAddStablepoolLiquidityOption
   accountBalances: Map<string, string>
   activeFieldIds: string[]
   selectedAssetId: string
+  split?: boolean
 }) => {
   const resolver = useStablepoolAddLiquidityFormResolver(
     poolId,
     accountBalances,
   )
 
-  const fields = activeFieldIds.map((id) => ({
-    amount: "",
-    assetId: id,
-  }))
+  const fields = split
+    ? activeFieldIds.map((id) => ({
+        amount: "",
+        assetId: id,
+      }))
+    : [
+        {
+          amount: "",
+          assetId: selectedAssetId,
+        },
+      ]
 
   return useForm<TAddStablepoolLiquidityFormValues>({
     mode: "all",
     defaultValues: {
       option,
       sharesAmount: "",
-      split: true,
+      split,
       fields,
       activeFields: fields,
       selectedAssetId,
     },
     resolver,
   })
-}
-
-type UseNewDepositAssetsOptions = {
-  blacklist?: string[]
 }
 
 export const useAssetsToAddToMoneyMarket = ({
@@ -377,9 +382,17 @@ export const useAssetsToAddToMoneyMarket = ({
 }: {
   stableswapId: string
   reserves: TReserve[]
-  options?: UseNewDepositAssetsOptions
+  options?: {
+    blacklist?: string[]
+    highPriorityAssetIds?: string[]
+    firstAssetId?: string
+  }
 }) => {
-  const { blacklist = [] } = options ?? {}
+  const {
+    blacklist = [],
+    highPriorityAssetIds: initialHighPriorityAssetIds = [],
+    firstAssetId,
+  } = options ?? {}
   const { balances } = useAccountBalances()
   const { getAssetWithFallback, isStableSwap, getErc20AToken, native } =
     useAssets()
@@ -387,7 +400,7 @@ export const useAssetsToAddToMoneyMarket = ({
   const stableswapMeta = getAssetWithFallback(stableswapId)
 
   const highPriorityAssetIds = useMemo(() => {
-    const assetIds: string[] = [stableswapId]
+    const assetIds: string[] = [...initialHighPriorityAssetIds, stableswapId]
 
     for (const reserve of reserves) {
       const reserveAsset = getAssetWithFallback(reserve.asset_id.toString())
@@ -405,7 +418,13 @@ export const useAssetsToAddToMoneyMarket = ({
     }
 
     return assetIds
-  }, [getAssetWithFallback, getErc20AToken, reserves, stableswapId])
+  }, [
+    getAssetWithFallback,
+    getErc20AToken,
+    reserves,
+    stableswapId,
+    initialHighPriorityAssetIds,
+  ])
 
   const { validAssets, priceIds } = useMemo(() => {
     const validAssets = []
@@ -450,6 +469,7 @@ export const useAssetsToAddToMoneyMarket = ({
     {
       lowPriorityAssetIds: [native.id],
       highPriorityAssetIds,
+      firstAssetId,
     },
   )
 

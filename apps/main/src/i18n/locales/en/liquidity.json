@@ -31,6 +31,7 @@
   "omnipool": "Omnipool",
   "isolatedPool": "Isolated pool",
   "addLiquidity": "Add Liquidity",
+  "moveToOmnipool": "Move to Omnipool",
   "removeLiquidity": "Remove Liquidity",
   "joinFarms": "Join Farms",
   "createPool": "Create Pool",
