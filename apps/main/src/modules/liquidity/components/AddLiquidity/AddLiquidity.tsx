@@ -4,6 +4,7 @@ import {
   Button,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
   Skeleton,
   Summary,
@@ -81,8 +82,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+        <ModalBody>
           <Controller
             name="amount"
             control={form.control}
@@ -135,20 +136,20 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
           )}
 
           <ModalContentDivider />
-
+        </ModalBody>
+        <ModalFooter sx={{ pt: 0 }}>
           <Button
             type="submit"
             size="large"
             width="100%"
-            mt={getTokenPx("containers.paddings.primary")}
             disabled={isSubmitDisabled}
           >
             {isJoinFarms
               ? t("liquidity.add.modal.submitAndjoinFarms")
               : t("liquidity.add.modal.submit")}
           </Button>
-        </form>
-      </ModalBody>
+        </ModalFooter>
+      </form>
     </>
   )
 }

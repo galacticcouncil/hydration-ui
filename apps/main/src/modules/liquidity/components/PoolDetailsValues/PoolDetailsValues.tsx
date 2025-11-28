@@ -1,5 +1,6 @@
 import { XykMath } from "@galacticcouncil/sdk"
 import {
+  Box,
   Flex,
   Separator,
   SValueStatsValue,
@@ -31,19 +32,47 @@ export const PoolDetailsValues = ({
 }) => {
   const isOmnipool = !isIsolatedPool(data)
 
-  return (
-    <Flex
-      direction="column"
-      minWidth={300}
-      gap={getTokenPx("containers.paddings.primary")}
-    >
-      {isOmnipool ? (
-        <OmnipoolValues data={data} />
-      ) : (
+  if (!isOmnipool) {
+    return (
+      <Flex
+        direction="column"
+        minWidth={300}
+        gap={getTokenPx("containers.paddings.primary")}
+      >
         <IsolatedPoolValues data={data} />
-      )}
-    </Flex>
-  )
+      </Flex>
+    )
+  } else if (data.stablepoolData) {
+    return (
+      <Flex
+        direction="column"
+        justify="space-between"
+        gap={getTokenPx("containers.paddings.primary")}
+      >
+        <Flex
+          direction="column"
+          minWidth={300}
+          gap={getTokenPx("containers.paddings.primary")}
+        >
+          <OmnipoolValues data={data} />
+          <Separator mx={-20} />
+        </Flex>
+        <Box>
+          <CurrencyReserves stablepoolData={data.stablepoolData} />
+        </Box>
+      </Flex>
+    )
+  } else {
+    return (
+      <Flex
+        direction="column"
+        minWidth={300}
+        gap={getTokenPx("containers.paddings.primary")}
+      >
+        <OmnipoolValues data={data} />
+      </Flex>
+    )
+  }
 }
 
 const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
@@ -92,10 +121,6 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
         isLoading={isOmnipoolShareLoading}
         wrap
       />
-
-      {data.stablepoolData && (
-        <CurrencyReserves stablepoolData={data.stablepoolData} />
-      )}
     </>
   )
 }

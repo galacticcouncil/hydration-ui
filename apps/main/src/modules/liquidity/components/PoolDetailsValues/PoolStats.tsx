@@ -17,6 +17,7 @@ import {
   PoolChart,
 } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import {
+  isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
@@ -40,6 +41,7 @@ export const PoolStats = ({
   data: OmnipoolAssetTable | IsolatedPoolTable
 }) => {
   const { isTablet, isMobile } = useBreakpoints()
+  const isOmnipool = !isIsolatedPool(data)
 
   if (isTablet || isMobile) {
     return <PoolStatsMobile data={data} />
@@ -48,7 +50,10 @@ export const PoolStats = ({
   return (
     <Flex gap={20}>
       <Paper p={[16, 20]} sx={{ flex: 1 }}>
-        <PoolChart assetId={data.id} height={500} />
+        <PoolChart
+          assetId={data.id}
+          height={isOmnipool && data.isStablepoolOnly ? 420 : 500}
+        />
       </Paper>
 
       <Paper p={[16, 20]}>

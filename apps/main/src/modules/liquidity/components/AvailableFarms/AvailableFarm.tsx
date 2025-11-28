@@ -59,12 +59,12 @@ export const AvailableFarm = ({
       }}
       className={className}
     >
-      <Flex justify="space-between" align="center">
+      <Flex justify="space-between" gap={8} align="center">
         <Flex align="center" gap={10}>
           <AssetLogo id={meta.id} />
           <Text color={getToken("text.high")} fs="p2" fw={600}>
             {meta.symbol}
-          </Text>{" "}
+          </Text>
         </Flex>
 
         <Flex align="center" gap={10}>

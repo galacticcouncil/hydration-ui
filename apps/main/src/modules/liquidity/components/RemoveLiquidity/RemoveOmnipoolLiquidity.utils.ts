@@ -185,17 +185,17 @@ export const useRemoveSingleOmnipoolPosition = (
 
       const isMiningPosition = isOmnipoolDepositPosition(position)
 
-      const hub =
+      const hubValue =
         values?.hubToGet && values.hubToGet !== "0"
           ? t("liquidity.remove.modal.toast.hub", {
-              value: values.hubToGet,
+              value: scaleHuman(values.hubToGet, hub.decimals),
             })
           : undefined
 
       const tOptions = {
         value: values?.tokensToGetShifted,
         symbol: meta.symbol,
-        hub,
+        hub: hubValue,
       }
 
       const toasts = {

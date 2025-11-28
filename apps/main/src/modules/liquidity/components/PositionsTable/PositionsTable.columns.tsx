@@ -171,7 +171,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   </Button>
                 ) : null
               ) : original.isStablepoolInOmnipool ? (
-                <Button variant="primary" asChild>
+                <Button variant="secondary" asChild>
                   <Link
                     to="/liquidity/$id/add"
                     params={{
@@ -179,7 +179,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                     }}
                   >
                     <Plus />
-                    {t("liquidity:addLiquidity")}
+                    {t("liquidity:moveToOmnipool")}
                   </Link>
                 </Button>
               ) : null}
@@ -259,26 +259,26 @@ export const useBalanceTableColumns = () => {
             original: { isStablepoolInOmnipool, poolId, stableswapId },
           },
         }) => (
-          <Flex gap={12} align="center">
+          <Flex gap={12} align="center" justify="end">
             {isStablepoolInOmnipool && (
-              <Button variant="primary" sx={{ flex: [1, "auto"] }}>
-                {/* <Link
+              <Button variant="secondary" asChild>
+                <Link
                   to="/liquidity/$id/add"
                   params={{
                     id: poolId,
                   }}
-                > */}
-                <Plus />
-                {t("liquidity:addLiquidity")}
-                {/* </Link> */}
+                  search={{
+                    erc20Id: poolId,
+                    stableswapId: stableswapId,
+                    split: false,
+                  }}
+                >
+                  <Plus />
+                  {t("liquidity:moveToOmnipool")}
+                </Link>
               </Button>
             )}
-            <Button
-              variant="tertiary"
-              outline
-              sx={{ flex: [1, "auto"] }}
-              asChild
-            >
+            <Button variant="tertiary" outline asChild>
               <Link
                 to="/liquidity/$id/remove"
                 params={{
