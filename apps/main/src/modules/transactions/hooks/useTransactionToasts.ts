@@ -1,11 +1,17 @@
-import { subscan } from "@galacticcouncil/utils"
+import { etherscan, subscan, wormholescan } from "@galacticcouncil/utils"
 import { CallType } from "@galacticcouncil/xcm-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
 import { useToasts } from "@/states/toasts"
-import { SingleTransaction } from "@/states/transactions"
+import {
+  isBridgeTransaction,
+  SingleTransaction,
+  TransactionMeta,
+  TransactionType,
+  XcmTag,
+} from "@/states/transactions"
 
 export const useTransactionToasts = (
   transaction: SingleTransaction,
@@ -16,13 +22,15 @@ export const useTransactionToasts = (
 
   const { id, toasts, meta } = transaction
 
+  const isBridge = isBridgeTransaction(meta)
+
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
         pending({
           id,
           title: toasts?.submitted ?? t("transaction.status.submitted.title"),
-          link: subscan.tx(meta.srcChainKey, txHash),
+          link: getTransactionLink(ecosystem, meta, txHash),
           meta: {
             ...meta,
             txHash,
@@ -31,6 +39,13 @@ export const useTransactionToasts = (
         })
       },
       onSuccess: () => {
+        if (isBridge) {
+          return edit(id, {
+            variant: "submitted",
+            dateCreated: new Date().toISOString(),
+          })
+        }
+
         edit(id, {
           variant: "success",
           title: toasts?.success ?? t("transaction.status.success.title"),
@@ -53,6 +68,7 @@ export const useTransactionToasts = (
     ecosystem,
     edit,
     id,
+    isBridge,
     meta,
     pending,
     t,
@@ -60,4 +76,23 @@ export const useTransactionToasts = (
     toasts?.submitted,
     toasts?.success,
   ])
+}
+
+function getTransactionLink(
+  ecosystem: CallType,
+  meta: TransactionMeta,
+  txHash: string,
+) {
+  if (
+    meta.type === TransactionType.Xcm &&
+    meta.tags.includes(XcmTag.Wormhole)
+  ) {
+    return wormholescan.tx(txHash)
+  }
+
+  if (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm) {
+    return etherscan.tx(meta.srcChainKey, txHash)
+  }
+
+  return subscan.tx(meta.srcChainKey, txHash)
 }
