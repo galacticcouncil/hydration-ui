@@ -1,0 +1,3199 @@
+schema {
+  query: Query
+}
+
+"""Big number integer"""
+scalar BigInt
+
+type ChainStatus {
+  height: Float!
+  name: String!
+  paraid: Float
+}
+
+"""
+A date-time string in simplified extended ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+"""
+scalar DateTime
+
+type ElapseResult {
+  elapse: Float!
+}
+
+type ElapseResultNullable {
+  elapse: Float
+}
+
+"""Inbound message dispatched on Ethereum"""
+type InboundMessageDispatchedOnEthereum {
+  blockNumber: Int!
+  channelId: String
+  id: String!
+  messageId: String!
+  nonce: Int!
+  rewardAddress: String
+  success: Boolean
+  timestamp: DateTime!
+  txHash: String!
+}
+
+type InboundMessageDispatchedOnEthereumEdge {
+  cursor: String!
+  node: InboundMessageDispatchedOnEthereum!
+}
+
+enum InboundMessageDispatchedOnEthereumOrderByInput {
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  rewardAddress_ASC
+  rewardAddress_ASC_NULLS_FIRST
+  rewardAddress_ASC_NULLS_LAST
+  rewardAddress_DESC
+  rewardAddress_DESC_NULLS_FIRST
+  rewardAddress_DESC_NULLS_LAST
+  success_ASC
+  success_ASC_NULLS_FIRST
+  success_ASC_NULLS_LAST
+  success_DESC
+  success_DESC_NULLS_FIRST
+  success_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+input InboundMessageDispatchedOnEthereumWhereInput {
+  AND: [InboundMessageDispatchedOnEthereumWhereInput!]
+  OR: [InboundMessageDispatchedOnEthereumWhereInput!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  rewardAddress_contains: String
+  rewardAddress_containsInsensitive: String
+  rewardAddress_endsWith: String
+  rewardAddress_eq: String
+  rewardAddress_gt: String
+  rewardAddress_gte: String
+  rewardAddress_in: [String!]
+  rewardAddress_isNull: Boolean
+  rewardAddress_lt: String
+  rewardAddress_lte: String
+  rewardAddress_not_contains: String
+  rewardAddress_not_containsInsensitive: String
+  rewardAddress_not_endsWith: String
+  rewardAddress_not_eq: String
+  rewardAddress_not_in: [String!]
+  rewardAddress_not_startsWith: String
+  rewardAddress_startsWith: String
+  success_eq: Boolean
+  success_isNull: Boolean
+  success_not_eq: Boolean
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type InboundMessageDispatchedOnEthereumsConnection {
+  edges: [InboundMessageDispatchedOnEthereumEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Inbound message received on BridgeHub"""
+type InboundMessageReceivedOnBridgeHub {
+  blockNumber: Int!
+  channelId: String
+  eventId: String
+  id: String!
+  messageId: String!
+  nonce: Int!
+  timestamp: DateTime!
+  txHash: String!
+}
+
+type InboundMessageReceivedOnBridgeHubEdge {
+  cursor: String!
+  node: InboundMessageReceivedOnBridgeHub!
+}
+
+enum InboundMessageReceivedOnBridgeHubOrderByInput {
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  eventId_ASC
+  eventId_ASC_NULLS_FIRST
+  eventId_ASC_NULLS_LAST
+  eventId_DESC
+  eventId_DESC_NULLS_FIRST
+  eventId_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+input InboundMessageReceivedOnBridgeHubWhereInput {
+  AND: [InboundMessageReceivedOnBridgeHubWhereInput!]
+  OR: [InboundMessageReceivedOnBridgeHubWhereInput!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  eventId_contains: String
+  eventId_containsInsensitive: String
+  eventId_endsWith: String
+  eventId_eq: String
+  eventId_gt: String
+  eventId_gte: String
+  eventId_in: [String!]
+  eventId_isNull: Boolean
+  eventId_lt: String
+  eventId_lte: String
+  eventId_not_contains: String
+  eventId_not_containsInsensitive: String
+  eventId_not_endsWith: String
+  eventId_not_eq: String
+  eventId_not_in: [String!]
+  eventId_not_startsWith: String
+  eventId_startsWith: String
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type InboundMessageReceivedOnBridgeHubsConnection {
+  edges: [InboundMessageReceivedOnBridgeHubEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Message processed on polkadot chains"""
+type MessageProcessedOnPolkadot {
+  blockNumber: Int!
+  eventId: String
+  id: String!
+  messageId: String!
+  network: String
+  paraId: Int
+  success: Boolean
+  timestamp: DateTime!
+}
+
+type MessageProcessedOnPolkadotEdge {
+  cursor: String!
+  node: MessageProcessedOnPolkadot!
+}
+
+enum MessageProcessedOnPolkadotOrderByInput {
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  eventId_ASC
+  eventId_ASC_NULLS_FIRST
+  eventId_ASC_NULLS_LAST
+  eventId_DESC
+  eventId_DESC_NULLS_FIRST
+  eventId_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  network_ASC
+  network_ASC_NULLS_FIRST
+  network_ASC_NULLS_LAST
+  network_DESC
+  network_DESC_NULLS_FIRST
+  network_DESC_NULLS_LAST
+  paraId_ASC
+  paraId_ASC_NULLS_FIRST
+  paraId_ASC_NULLS_LAST
+  paraId_DESC
+  paraId_DESC_NULLS_FIRST
+  paraId_DESC_NULLS_LAST
+  success_ASC
+  success_ASC_NULLS_FIRST
+  success_ASC_NULLS_LAST
+  success_DESC
+  success_DESC_NULLS_FIRST
+  success_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+}
+
+input MessageProcessedOnPolkadotWhereInput {
+  AND: [MessageProcessedOnPolkadotWhereInput!]
+  OR: [MessageProcessedOnPolkadotWhereInput!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  eventId_contains: String
+  eventId_containsInsensitive: String
+  eventId_endsWith: String
+  eventId_eq: String
+  eventId_gt: String
+  eventId_gte: String
+  eventId_in: [String!]
+  eventId_isNull: Boolean
+  eventId_lt: String
+  eventId_lte: String
+  eventId_not_contains: String
+  eventId_not_containsInsensitive: String
+  eventId_not_endsWith: String
+  eventId_not_eq: String
+  eventId_not_in: [String!]
+  eventId_not_startsWith: String
+  eventId_startsWith: String
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  network_contains: String
+  network_containsInsensitive: String
+  network_endsWith: String
+  network_eq: String
+  network_gt: String
+  network_gte: String
+  network_in: [String!]
+  network_isNull: Boolean
+  network_lt: String
+  network_lte: String
+  network_not_contains: String
+  network_not_containsInsensitive: String
+  network_not_endsWith: String
+  network_not_eq: String
+  network_not_in: [String!]
+  network_not_startsWith: String
+  network_startsWith: String
+  paraId_eq: Int
+  paraId_gt: Int
+  paraId_gte: Int
+  paraId_in: [Int!]
+  paraId_isNull: Boolean
+  paraId_lt: Int
+  paraId_lte: Int
+  paraId_not_eq: Int
+  paraId_not_in: [Int!]
+  success_eq: Boolean
+  success_isNull: Boolean
+  success_not_eq: Boolean
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+}
+
+type MessageProcessedOnPolkadotsConnection {
+  edges: [MessageProcessedOnPolkadotEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Outbound message sent on BridgeHub"""
+type OutboundMessageAcceptedOnBridgeHub {
+  blockNumber: Int!
+  channelId: String
+  eventId: String
+  id: String!
+  messageId: String!
+  nonce: Int!
+  timestamp: DateTime!
+}
+
+type OutboundMessageAcceptedOnBridgeHubEdge {
+  cursor: String!
+  node: OutboundMessageAcceptedOnBridgeHub!
+}
+
+enum OutboundMessageAcceptedOnBridgeHubOrderByInput {
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  eventId_ASC
+  eventId_ASC_NULLS_FIRST
+  eventId_ASC_NULLS_LAST
+  eventId_DESC
+  eventId_DESC_NULLS_FIRST
+  eventId_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+}
+
+input OutboundMessageAcceptedOnBridgeHubWhereInput {
+  AND: [OutboundMessageAcceptedOnBridgeHubWhereInput!]
+  OR: [OutboundMessageAcceptedOnBridgeHubWhereInput!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  eventId_contains: String
+  eventId_containsInsensitive: String
+  eventId_endsWith: String
+  eventId_eq: String
+  eventId_gt: String
+  eventId_gte: String
+  eventId_in: [String!]
+  eventId_isNull: Boolean
+  eventId_lt: String
+  eventId_lte: String
+  eventId_not_contains: String
+  eventId_not_containsInsensitive: String
+  eventId_not_endsWith: String
+  eventId_not_eq: String
+  eventId_not_in: [String!]
+  eventId_not_startsWith: String
+  eventId_startsWith: String
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+}
+
+type OutboundMessageAcceptedOnBridgeHubsConnection {
+  edges: [OutboundMessageAcceptedOnBridgeHubEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Outbound message sent on Ethereum"""
+type OutboundMessageAcceptedOnEthereum {
+  blockNumber: Int!
+  channelId: String
+  id: String!
+  messageId: String!
+  nonce: Int!
+  timestamp: DateTime!
+  txHash: String!
+}
+
+type OutboundMessageAcceptedOnEthereumEdge {
+  cursor: String!
+  node: OutboundMessageAcceptedOnEthereum!
+}
+
+enum OutboundMessageAcceptedOnEthereumOrderByInput {
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+input OutboundMessageAcceptedOnEthereumWhereInput {
+  AND: [OutboundMessageAcceptedOnEthereumWhereInput!]
+  OR: [OutboundMessageAcceptedOnEthereumWhereInput!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type OutboundMessageAcceptedOnEthereumsConnection {
+  edges: [OutboundMessageAcceptedOnEthereumEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type PageInfo {
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+}
+
+type Query {
+  fromKusamaElapse: ElapseResult!
+  inboundMessageDispatchedOnEthereumById(id: String!): InboundMessageDispatchedOnEthereum
+  inboundMessageDispatchedOnEthereums(limit: Int, offset: Int, orderBy: [InboundMessageDispatchedOnEthereumOrderByInput!], where: InboundMessageDispatchedOnEthereumWhereInput): [InboundMessageDispatchedOnEthereum!]!
+  inboundMessageDispatchedOnEthereumsConnection(after: String, first: Int, orderBy: [InboundMessageDispatchedOnEthereumOrderByInput!]!, where: InboundMessageDispatchedOnEthereumWhereInput): InboundMessageDispatchedOnEthereumsConnection!
+  inboundMessageReceivedOnBridgeHubById(id: String!): InboundMessageReceivedOnBridgeHub
+  inboundMessageReceivedOnBridgeHubs(limit: Int, offset: Int, orderBy: [InboundMessageReceivedOnBridgeHubOrderByInput!], where: InboundMessageReceivedOnBridgeHubWhereInput): [InboundMessageReceivedOnBridgeHub!]!
+  inboundMessageReceivedOnBridgeHubsConnection(after: String, first: Int, orderBy: [InboundMessageReceivedOnBridgeHubOrderByInput!]!, where: InboundMessageReceivedOnBridgeHubWhereInput): InboundMessageReceivedOnBridgeHubsConnection!
+  latestBlocks(withPKBridge: Boolean! = true): [ChainStatus!]!
+  latestBlocksOfParachain(paraid: Float!): [ChainStatus!]!
+  messageProcessedOnPolkadotById(id: String!): MessageProcessedOnPolkadot
+  messageProcessedOnPolkadots(limit: Int, offset: Int, orderBy: [MessageProcessedOnPolkadotOrderByInput!], where: MessageProcessedOnPolkadotWhereInput): [MessageProcessedOnPolkadot!]!
+  messageProcessedOnPolkadotsConnection(after: String, first: Int, orderBy: [MessageProcessedOnPolkadotOrderByInput!]!, where: MessageProcessedOnPolkadotWhereInput): MessageProcessedOnPolkadotsConnection!
+  outboundMessageAcceptedOnBridgeHubById(id: String!): OutboundMessageAcceptedOnBridgeHub
+  outboundMessageAcceptedOnBridgeHubs(limit: Int, offset: Int, orderBy: [OutboundMessageAcceptedOnBridgeHubOrderByInput!], where: OutboundMessageAcceptedOnBridgeHubWhereInput): [OutboundMessageAcceptedOnBridgeHub!]!
+  outboundMessageAcceptedOnBridgeHubsConnection(after: String, first: Int, orderBy: [OutboundMessageAcceptedOnBridgeHubOrderByInput!]!, where: OutboundMessageAcceptedOnBridgeHubWhereInput): OutboundMessageAcceptedOnBridgeHubsConnection!
+  outboundMessageAcceptedOnEthereumById(id: String!): OutboundMessageAcceptedOnEthereum
+  outboundMessageAcceptedOnEthereums(limit: Int, offset: Int, orderBy: [OutboundMessageAcceptedOnEthereumOrderByInput!], where: OutboundMessageAcceptedOnEthereumWhereInput): [OutboundMessageAcceptedOnEthereum!]!
+  outboundMessageAcceptedOnEthereumsConnection(after: String, first: Int, orderBy: [OutboundMessageAcceptedOnEthereumOrderByInput!]!, where: OutboundMessageAcceptedOnEthereumWhereInput): OutboundMessageAcceptedOnEthereumsConnection!
+  squidStatus: SquidStatus
+  toEthereumElapse(channelId: String = "0xc173fac324158e77fb5840738a1a541f633cbec8884c6a601c567d2b376a0539", lastest: Float = 20): ElapseResult!
+  toEthereumUndeliveredTimeout: [ElapseResultNullable!]!
+  toEthereumV2Elapse(lastest: Float = 20): ElapseResult!
+  toEthereumV2UndeliveredTimeout: [ElapseResultNullable!]!
+  toKusamaElapse: ElapseResult!
+  toPolkadotElapse(channelId: String = "0xc173fac324158e77fb5840738a1a541f633cbec8884c6a601c567d2b376a0539", lastest: Float = 20): ElapseResult!
+  toPolkadotUndeliveredTimeout: [ElapseResultNullable!]!
+  toPolkadotV2Elapse(lastest: Float = 20): ElapseResult!
+  toPolkadotV2UndeliveredTimeout: [ElapseResultNullable!]!
+  transferStatusToEthereumById(id: String!): TransferStatusToEthereum
+  transferStatusToEthereumV2ById(id: String!): TransferStatusToEthereumV2
+  transferStatusToEthereumV2s(limit: Int, offset: Int, orderBy: [TransferStatusToEthereumV2OrderByInput!], where: TransferStatusToEthereumV2WhereInput): [TransferStatusToEthereumV2!]!
+  transferStatusToEthereumV2sConnection(after: String, first: Int, orderBy: [TransferStatusToEthereumV2OrderByInput!]!, where: TransferStatusToEthereumV2WhereInput): TransferStatusToEthereumV2sConnection!
+  transferStatusToEthereums(limit: Int, offset: Int, orderBy: [TransferStatusToEthereumOrderByInput!], where: TransferStatusToEthereumWhereInput): [TransferStatusToEthereum!]!
+  transferStatusToEthereumsConnection(after: String, first: Int, orderBy: [TransferStatusToEthereumOrderByInput!]!, where: TransferStatusToEthereumWhereInput): TransferStatusToEthereumsConnection!
+  transferStatusToPolkadotById(id: String!): TransferStatusToPolkadot
+  transferStatusToPolkadotV2ById(id: String!): TransferStatusToPolkadotV2
+  transferStatusToPolkadotV2s(limit: Int, offset: Int, orderBy: [TransferStatusToPolkadotV2OrderByInput!], where: TransferStatusToPolkadotV2WhereInput): [TransferStatusToPolkadotV2!]!
+  transferStatusToPolkadotV2sConnection(after: String, first: Int, orderBy: [TransferStatusToPolkadotV2OrderByInput!]!, where: TransferStatusToPolkadotV2WhereInput): TransferStatusToPolkadotV2sConnection!
+  transferStatusToPolkadots(limit: Int, offset: Int, orderBy: [TransferStatusToPolkadotOrderByInput!], where: TransferStatusToPolkadotWhereInput): [TransferStatusToPolkadot!]!
+  transferStatusToPolkadotsConnection(after: String, first: Int, orderBy: [TransferStatusToPolkadotOrderByInput!]!, where: TransferStatusToPolkadotWhereInput): TransferStatusToPolkadotsConnection!
+}
+
+type SquidStatus {
+  """The hash of the last processed finalized block"""
+  finalizedHash: String
+  """The height of the last processed finalized block"""
+  finalizedHeight: Int
+  """The hash of the last processed block"""
+  hash: String
+  """The height of the last processed block"""
+  height: Int
+}
+
+"""Transfers from Polkadot to Ethereum"""
+type TransferStatusToEthereum {
+  amount: BigInt
+  blockNumber: Int!
+  channelId: String
+  destinationAddress: String
+  id: String!
+  messageId: String!
+  nonce: Int
+  senderAddress: String
+  sourceParaId: Int
+  status: Int
+  timestamp: DateTime!
+  toAssetHubMessageQueue: MessageProcessedOnPolkadot
+  toBridgeHubMessageQueue: MessageProcessedOnPolkadot
+  toBridgeHubOutboundQueue: OutboundMessageAcceptedOnBridgeHub
+  toDestination: InboundMessageDispatchedOnEthereum
+  tokenAddress: String
+  tokenLocation: String
+  txHash: String!
+}
+
+type TransferStatusToEthereumEdge {
+  cursor: String!
+  node: TransferStatusToEthereum!
+}
+
+enum TransferStatusToEthereumOrderByInput {
+  amount_ASC
+  amount_ASC_NULLS_FIRST
+  amount_ASC_NULLS_LAST
+  amount_DESC
+  amount_DESC_NULLS_FIRST
+  amount_DESC_NULLS_LAST
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  destinationAddress_ASC
+  destinationAddress_ASC_NULLS_FIRST
+  destinationAddress_ASC_NULLS_LAST
+  destinationAddress_DESC
+  destinationAddress_DESC_NULLS_FIRST
+  destinationAddress_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  senderAddress_ASC
+  senderAddress_ASC_NULLS_FIRST
+  senderAddress_ASC_NULLS_LAST
+  senderAddress_DESC
+  senderAddress_DESC_NULLS_FIRST
+  senderAddress_DESC_NULLS_LAST
+  sourceParaId_ASC
+  sourceParaId_ASC_NULLS_FIRST
+  sourceParaId_ASC_NULLS_LAST
+  sourceParaId_DESC
+  sourceParaId_DESC_NULLS_FIRST
+  sourceParaId_DESC_NULLS_LAST
+  status_ASC
+  status_ASC_NULLS_FIRST
+  status_ASC_NULLS_LAST
+  status_DESC
+  status_DESC_NULLS_FIRST
+  status_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_ASC
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_DESC
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_ASC
+  toAssetHubMessageQueue_eventId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_DESC
+  toAssetHubMessageQueue_eventId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_id_ASC
+  toAssetHubMessageQueue_id_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_id_ASC_NULLS_LAST
+  toAssetHubMessageQueue_id_DESC
+  toAssetHubMessageQueue_id_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_id_DESC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_ASC
+  toAssetHubMessageQueue_messageId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_DESC
+  toAssetHubMessageQueue_messageId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_network_ASC
+  toAssetHubMessageQueue_network_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_network_ASC_NULLS_LAST
+  toAssetHubMessageQueue_network_DESC
+  toAssetHubMessageQueue_network_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_network_DESC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_ASC
+  toAssetHubMessageQueue_paraId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_DESC
+  toAssetHubMessageQueue_paraId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_success_ASC
+  toAssetHubMessageQueue_success_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_success_ASC_NULLS_LAST
+  toAssetHubMessageQueue_success_DESC
+  toAssetHubMessageQueue_success_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_success_DESC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_ASC
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_DESC
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_blockNumber_ASC
+  toBridgeHubMessageQueue_blockNumber_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_blockNumber_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_blockNumber_DESC
+  toBridgeHubMessageQueue_blockNumber_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_blockNumber_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_eventId_ASC
+  toBridgeHubMessageQueue_eventId_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_eventId_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_eventId_DESC
+  toBridgeHubMessageQueue_eventId_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_eventId_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_id_ASC
+  toBridgeHubMessageQueue_id_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_id_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_id_DESC
+  toBridgeHubMessageQueue_id_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_id_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_messageId_ASC
+  toBridgeHubMessageQueue_messageId_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_messageId_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_messageId_DESC
+  toBridgeHubMessageQueue_messageId_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_messageId_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_network_ASC
+  toBridgeHubMessageQueue_network_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_network_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_network_DESC
+  toBridgeHubMessageQueue_network_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_network_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_paraId_ASC
+  toBridgeHubMessageQueue_paraId_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_paraId_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_paraId_DESC
+  toBridgeHubMessageQueue_paraId_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_paraId_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_success_ASC
+  toBridgeHubMessageQueue_success_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_success_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_success_DESC
+  toBridgeHubMessageQueue_success_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_success_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_timestamp_ASC
+  toBridgeHubMessageQueue_timestamp_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_timestamp_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_timestamp_DESC
+  toBridgeHubMessageQueue_timestamp_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_blockNumber_ASC
+  toBridgeHubOutboundQueue_blockNumber_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_blockNumber_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_blockNumber_DESC
+  toBridgeHubOutboundQueue_blockNumber_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_blockNumber_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_channelId_ASC
+  toBridgeHubOutboundQueue_channelId_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_channelId_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_channelId_DESC
+  toBridgeHubOutboundQueue_channelId_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_channelId_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_eventId_ASC
+  toBridgeHubOutboundQueue_eventId_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_eventId_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_eventId_DESC
+  toBridgeHubOutboundQueue_eventId_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_eventId_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_id_ASC
+  toBridgeHubOutboundQueue_id_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_id_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_id_DESC
+  toBridgeHubOutboundQueue_id_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_id_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_messageId_ASC
+  toBridgeHubOutboundQueue_messageId_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_messageId_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_messageId_DESC
+  toBridgeHubOutboundQueue_messageId_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_messageId_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_nonce_ASC
+  toBridgeHubOutboundQueue_nonce_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_nonce_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_nonce_DESC
+  toBridgeHubOutboundQueue_nonce_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_nonce_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_timestamp_ASC
+  toBridgeHubOutboundQueue_timestamp_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_timestamp_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_timestamp_DESC
+  toBridgeHubOutboundQueue_timestamp_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_timestamp_DESC_NULLS_LAST
+  toDestination_blockNumber_ASC
+  toDestination_blockNumber_ASC_NULLS_FIRST
+  toDestination_blockNumber_ASC_NULLS_LAST
+  toDestination_blockNumber_DESC
+  toDestination_blockNumber_DESC_NULLS_FIRST
+  toDestination_blockNumber_DESC_NULLS_LAST
+  toDestination_channelId_ASC
+  toDestination_channelId_ASC_NULLS_FIRST
+  toDestination_channelId_ASC_NULLS_LAST
+  toDestination_channelId_DESC
+  toDestination_channelId_DESC_NULLS_FIRST
+  toDestination_channelId_DESC_NULLS_LAST
+  toDestination_id_ASC
+  toDestination_id_ASC_NULLS_FIRST
+  toDestination_id_ASC_NULLS_LAST
+  toDestination_id_DESC
+  toDestination_id_DESC_NULLS_FIRST
+  toDestination_id_DESC_NULLS_LAST
+  toDestination_messageId_ASC
+  toDestination_messageId_ASC_NULLS_FIRST
+  toDestination_messageId_ASC_NULLS_LAST
+  toDestination_messageId_DESC
+  toDestination_messageId_DESC_NULLS_FIRST
+  toDestination_messageId_DESC_NULLS_LAST
+  toDestination_nonce_ASC
+  toDestination_nonce_ASC_NULLS_FIRST
+  toDestination_nonce_ASC_NULLS_LAST
+  toDestination_nonce_DESC
+  toDestination_nonce_DESC_NULLS_FIRST
+  toDestination_nonce_DESC_NULLS_LAST
+  toDestination_rewardAddress_ASC
+  toDestination_rewardAddress_ASC_NULLS_FIRST
+  toDestination_rewardAddress_ASC_NULLS_LAST
+  toDestination_rewardAddress_DESC
+  toDestination_rewardAddress_DESC_NULLS_FIRST
+  toDestination_rewardAddress_DESC_NULLS_LAST
+  toDestination_success_ASC
+  toDestination_success_ASC_NULLS_FIRST
+  toDestination_success_ASC_NULLS_LAST
+  toDestination_success_DESC
+  toDestination_success_DESC_NULLS_FIRST
+  toDestination_success_DESC_NULLS_LAST
+  toDestination_timestamp_ASC
+  toDestination_timestamp_ASC_NULLS_FIRST
+  toDestination_timestamp_ASC_NULLS_LAST
+  toDestination_timestamp_DESC
+  toDestination_timestamp_DESC_NULLS_FIRST
+  toDestination_timestamp_DESC_NULLS_LAST
+  toDestination_txHash_ASC
+  toDestination_txHash_ASC_NULLS_FIRST
+  toDestination_txHash_ASC_NULLS_LAST
+  toDestination_txHash_DESC
+  toDestination_txHash_DESC_NULLS_FIRST
+  toDestination_txHash_DESC_NULLS_LAST
+  tokenAddress_ASC
+  tokenAddress_ASC_NULLS_FIRST
+  tokenAddress_ASC_NULLS_LAST
+  tokenAddress_DESC
+  tokenAddress_DESC_NULLS_FIRST
+  tokenAddress_DESC_NULLS_LAST
+  tokenLocation_ASC
+  tokenLocation_ASC_NULLS_FIRST
+  tokenLocation_ASC_NULLS_LAST
+  tokenLocation_DESC
+  tokenLocation_DESC_NULLS_FIRST
+  tokenLocation_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+"""V2 transfers from Polkadot to Ethereum"""
+type TransferStatusToEthereumV2 {
+  amount: BigInt
+  blockNumber: Int!
+  channelId: String
+  claimer: String
+  destinationAddress: String
+  fee: BigInt
+  fromV1: Boolean
+  id: String!
+  messageId: String!
+  nonce: Int
+  senderAddress: String
+  sourceParaId: Int
+  status: Int
+  timestamp: DateTime!
+  toAssetHubMessageQueue: MessageProcessedOnPolkadot
+  toBridgeHubMessageQueue: MessageProcessedOnPolkadot
+  toBridgeHubOutboundQueue: OutboundMessageAcceptedOnBridgeHub
+  toDestination: InboundMessageDispatchedOnEthereum
+  tokenAddress: String
+  tokenLocation: String
+  txHash: String!
+}
+
+type TransferStatusToEthereumV2Edge {
+  cursor: String!
+  node: TransferStatusToEthereumV2!
+}
+
+enum TransferStatusToEthereumV2OrderByInput {
+  amount_ASC
+  amount_ASC_NULLS_FIRST
+  amount_ASC_NULLS_LAST
+  amount_DESC
+  amount_DESC_NULLS_FIRST
+  amount_DESC_NULLS_LAST
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  claimer_ASC
+  claimer_ASC_NULLS_FIRST
+  claimer_ASC_NULLS_LAST
+  claimer_DESC
+  claimer_DESC_NULLS_FIRST
+  claimer_DESC_NULLS_LAST
+  destinationAddress_ASC
+  destinationAddress_ASC_NULLS_FIRST
+  destinationAddress_ASC_NULLS_LAST
+  destinationAddress_DESC
+  destinationAddress_DESC_NULLS_FIRST
+  destinationAddress_DESC_NULLS_LAST
+  fee_ASC
+  fee_ASC_NULLS_FIRST
+  fee_ASC_NULLS_LAST
+  fee_DESC
+  fee_DESC_NULLS_FIRST
+  fee_DESC_NULLS_LAST
+  fromV1_ASC
+  fromV1_ASC_NULLS_FIRST
+  fromV1_ASC_NULLS_LAST
+  fromV1_DESC
+  fromV1_DESC_NULLS_FIRST
+  fromV1_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  senderAddress_ASC
+  senderAddress_ASC_NULLS_FIRST
+  senderAddress_ASC_NULLS_LAST
+  senderAddress_DESC
+  senderAddress_DESC_NULLS_FIRST
+  senderAddress_DESC_NULLS_LAST
+  sourceParaId_ASC
+  sourceParaId_ASC_NULLS_FIRST
+  sourceParaId_ASC_NULLS_LAST
+  sourceParaId_DESC
+  sourceParaId_DESC_NULLS_FIRST
+  sourceParaId_DESC_NULLS_LAST
+  status_ASC
+  status_ASC_NULLS_FIRST
+  status_ASC_NULLS_LAST
+  status_DESC
+  status_DESC_NULLS_FIRST
+  status_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_ASC
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_DESC
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_ASC
+  toAssetHubMessageQueue_eventId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_DESC
+  toAssetHubMessageQueue_eventId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_id_ASC
+  toAssetHubMessageQueue_id_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_id_ASC_NULLS_LAST
+  toAssetHubMessageQueue_id_DESC
+  toAssetHubMessageQueue_id_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_id_DESC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_ASC
+  toAssetHubMessageQueue_messageId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_DESC
+  toAssetHubMessageQueue_messageId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_network_ASC
+  toAssetHubMessageQueue_network_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_network_ASC_NULLS_LAST
+  toAssetHubMessageQueue_network_DESC
+  toAssetHubMessageQueue_network_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_network_DESC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_ASC
+  toAssetHubMessageQueue_paraId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_DESC
+  toAssetHubMessageQueue_paraId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_success_ASC
+  toAssetHubMessageQueue_success_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_success_ASC_NULLS_LAST
+  toAssetHubMessageQueue_success_DESC
+  toAssetHubMessageQueue_success_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_success_DESC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_ASC
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_DESC
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_blockNumber_ASC
+  toBridgeHubMessageQueue_blockNumber_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_blockNumber_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_blockNumber_DESC
+  toBridgeHubMessageQueue_blockNumber_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_blockNumber_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_eventId_ASC
+  toBridgeHubMessageQueue_eventId_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_eventId_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_eventId_DESC
+  toBridgeHubMessageQueue_eventId_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_eventId_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_id_ASC
+  toBridgeHubMessageQueue_id_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_id_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_id_DESC
+  toBridgeHubMessageQueue_id_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_id_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_messageId_ASC
+  toBridgeHubMessageQueue_messageId_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_messageId_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_messageId_DESC
+  toBridgeHubMessageQueue_messageId_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_messageId_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_network_ASC
+  toBridgeHubMessageQueue_network_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_network_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_network_DESC
+  toBridgeHubMessageQueue_network_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_network_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_paraId_ASC
+  toBridgeHubMessageQueue_paraId_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_paraId_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_paraId_DESC
+  toBridgeHubMessageQueue_paraId_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_paraId_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_success_ASC
+  toBridgeHubMessageQueue_success_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_success_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_success_DESC
+  toBridgeHubMessageQueue_success_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_success_DESC_NULLS_LAST
+  toBridgeHubMessageQueue_timestamp_ASC
+  toBridgeHubMessageQueue_timestamp_ASC_NULLS_FIRST
+  toBridgeHubMessageQueue_timestamp_ASC_NULLS_LAST
+  toBridgeHubMessageQueue_timestamp_DESC
+  toBridgeHubMessageQueue_timestamp_DESC_NULLS_FIRST
+  toBridgeHubMessageQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_blockNumber_ASC
+  toBridgeHubOutboundQueue_blockNumber_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_blockNumber_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_blockNumber_DESC
+  toBridgeHubOutboundQueue_blockNumber_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_blockNumber_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_channelId_ASC
+  toBridgeHubOutboundQueue_channelId_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_channelId_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_channelId_DESC
+  toBridgeHubOutboundQueue_channelId_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_channelId_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_eventId_ASC
+  toBridgeHubOutboundQueue_eventId_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_eventId_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_eventId_DESC
+  toBridgeHubOutboundQueue_eventId_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_eventId_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_id_ASC
+  toBridgeHubOutboundQueue_id_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_id_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_id_DESC
+  toBridgeHubOutboundQueue_id_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_id_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_messageId_ASC
+  toBridgeHubOutboundQueue_messageId_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_messageId_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_messageId_DESC
+  toBridgeHubOutboundQueue_messageId_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_messageId_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_nonce_ASC
+  toBridgeHubOutboundQueue_nonce_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_nonce_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_nonce_DESC
+  toBridgeHubOutboundQueue_nonce_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_nonce_DESC_NULLS_LAST
+  toBridgeHubOutboundQueue_timestamp_ASC
+  toBridgeHubOutboundQueue_timestamp_ASC_NULLS_FIRST
+  toBridgeHubOutboundQueue_timestamp_ASC_NULLS_LAST
+  toBridgeHubOutboundQueue_timestamp_DESC
+  toBridgeHubOutboundQueue_timestamp_DESC_NULLS_FIRST
+  toBridgeHubOutboundQueue_timestamp_DESC_NULLS_LAST
+  toDestination_blockNumber_ASC
+  toDestination_blockNumber_ASC_NULLS_FIRST
+  toDestination_blockNumber_ASC_NULLS_LAST
+  toDestination_blockNumber_DESC
+  toDestination_blockNumber_DESC_NULLS_FIRST
+  toDestination_blockNumber_DESC_NULLS_LAST
+  toDestination_channelId_ASC
+  toDestination_channelId_ASC_NULLS_FIRST
+  toDestination_channelId_ASC_NULLS_LAST
+  toDestination_channelId_DESC
+  toDestination_channelId_DESC_NULLS_FIRST
+  toDestination_channelId_DESC_NULLS_LAST
+  toDestination_id_ASC
+  toDestination_id_ASC_NULLS_FIRST
+  toDestination_id_ASC_NULLS_LAST
+  toDestination_id_DESC
+  toDestination_id_DESC_NULLS_FIRST
+  toDestination_id_DESC_NULLS_LAST
+  toDestination_messageId_ASC
+  toDestination_messageId_ASC_NULLS_FIRST
+  toDestination_messageId_ASC_NULLS_LAST
+  toDestination_messageId_DESC
+  toDestination_messageId_DESC_NULLS_FIRST
+  toDestination_messageId_DESC_NULLS_LAST
+  toDestination_nonce_ASC
+  toDestination_nonce_ASC_NULLS_FIRST
+  toDestination_nonce_ASC_NULLS_LAST
+  toDestination_nonce_DESC
+  toDestination_nonce_DESC_NULLS_FIRST
+  toDestination_nonce_DESC_NULLS_LAST
+  toDestination_rewardAddress_ASC
+  toDestination_rewardAddress_ASC_NULLS_FIRST
+  toDestination_rewardAddress_ASC_NULLS_LAST
+  toDestination_rewardAddress_DESC
+  toDestination_rewardAddress_DESC_NULLS_FIRST
+  toDestination_rewardAddress_DESC_NULLS_LAST
+  toDestination_success_ASC
+  toDestination_success_ASC_NULLS_FIRST
+  toDestination_success_ASC_NULLS_LAST
+  toDestination_success_DESC
+  toDestination_success_DESC_NULLS_FIRST
+  toDestination_success_DESC_NULLS_LAST
+  toDestination_timestamp_ASC
+  toDestination_timestamp_ASC_NULLS_FIRST
+  toDestination_timestamp_ASC_NULLS_LAST
+  toDestination_timestamp_DESC
+  toDestination_timestamp_DESC_NULLS_FIRST
+  toDestination_timestamp_DESC_NULLS_LAST
+  toDestination_txHash_ASC
+  toDestination_txHash_ASC_NULLS_FIRST
+  toDestination_txHash_ASC_NULLS_LAST
+  toDestination_txHash_DESC
+  toDestination_txHash_DESC_NULLS_FIRST
+  toDestination_txHash_DESC_NULLS_LAST
+  tokenAddress_ASC
+  tokenAddress_ASC_NULLS_FIRST
+  tokenAddress_ASC_NULLS_LAST
+  tokenAddress_DESC
+  tokenAddress_DESC_NULLS_FIRST
+  tokenAddress_DESC_NULLS_LAST
+  tokenLocation_ASC
+  tokenLocation_ASC_NULLS_FIRST
+  tokenLocation_ASC_NULLS_LAST
+  tokenLocation_DESC
+  tokenLocation_DESC_NULLS_FIRST
+  tokenLocation_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+input TransferStatusToEthereumV2WhereInput {
+  AND: [TransferStatusToEthereumV2WhereInput!]
+  OR: [TransferStatusToEthereumV2WhereInput!]
+  amount_eq: BigInt
+  amount_gt: BigInt
+  amount_gte: BigInt
+  amount_in: [BigInt!]
+  amount_isNull: Boolean
+  amount_lt: BigInt
+  amount_lte: BigInt
+  amount_not_eq: BigInt
+  amount_not_in: [BigInt!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  claimer_contains: String
+  claimer_containsInsensitive: String
+  claimer_endsWith: String
+  claimer_eq: String
+  claimer_gt: String
+  claimer_gte: String
+  claimer_in: [String!]
+  claimer_isNull: Boolean
+  claimer_lt: String
+  claimer_lte: String
+  claimer_not_contains: String
+  claimer_not_containsInsensitive: String
+  claimer_not_endsWith: String
+  claimer_not_eq: String
+  claimer_not_in: [String!]
+  claimer_not_startsWith: String
+  claimer_startsWith: String
+  destinationAddress_contains: String
+  destinationAddress_containsInsensitive: String
+  destinationAddress_endsWith: String
+  destinationAddress_eq: String
+  destinationAddress_gt: String
+  destinationAddress_gte: String
+  destinationAddress_in: [String!]
+  destinationAddress_isNull: Boolean
+  destinationAddress_lt: String
+  destinationAddress_lte: String
+  destinationAddress_not_contains: String
+  destinationAddress_not_containsInsensitive: String
+  destinationAddress_not_endsWith: String
+  destinationAddress_not_eq: String
+  destinationAddress_not_in: [String!]
+  destinationAddress_not_startsWith: String
+  destinationAddress_startsWith: String
+  fee_eq: BigInt
+  fee_gt: BigInt
+  fee_gte: BigInt
+  fee_in: [BigInt!]
+  fee_isNull: Boolean
+  fee_lt: BigInt
+  fee_lte: BigInt
+  fee_not_eq: BigInt
+  fee_not_in: [BigInt!]
+  fromV1_eq: Boolean
+  fromV1_isNull: Boolean
+  fromV1_not_eq: Boolean
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  senderAddress_contains: String
+  senderAddress_containsInsensitive: String
+  senderAddress_endsWith: String
+  senderAddress_eq: String
+  senderAddress_gt: String
+  senderAddress_gte: String
+  senderAddress_in: [String!]
+  senderAddress_isNull: Boolean
+  senderAddress_lt: String
+  senderAddress_lte: String
+  senderAddress_not_contains: String
+  senderAddress_not_containsInsensitive: String
+  senderAddress_not_endsWith: String
+  senderAddress_not_eq: String
+  senderAddress_not_in: [String!]
+  senderAddress_not_startsWith: String
+  senderAddress_startsWith: String
+  sourceParaId_eq: Int
+  sourceParaId_gt: Int
+  sourceParaId_gte: Int
+  sourceParaId_in: [Int!]
+  sourceParaId_isNull: Boolean
+  sourceParaId_lt: Int
+  sourceParaId_lte: Int
+  sourceParaId_not_eq: Int
+  sourceParaId_not_in: [Int!]
+  status_eq: Int
+  status_gt: Int
+  status_gte: Int
+  status_in: [Int!]
+  status_isNull: Boolean
+  status_lt: Int
+  status_lte: Int
+  status_not_eq: Int
+  status_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  toAssetHubMessageQueue: MessageProcessedOnPolkadotWhereInput
+  toAssetHubMessageQueue_isNull: Boolean
+  toBridgeHubMessageQueue: MessageProcessedOnPolkadotWhereInput
+  toBridgeHubMessageQueue_isNull: Boolean
+  toBridgeHubOutboundQueue: OutboundMessageAcceptedOnBridgeHubWhereInput
+  toBridgeHubOutboundQueue_isNull: Boolean
+  toDestination: InboundMessageDispatchedOnEthereumWhereInput
+  toDestination_isNull: Boolean
+  tokenAddress_contains: String
+  tokenAddress_containsInsensitive: String
+  tokenAddress_endsWith: String
+  tokenAddress_eq: String
+  tokenAddress_gt: String
+  tokenAddress_gte: String
+  tokenAddress_in: [String!]
+  tokenAddress_isNull: Boolean
+  tokenAddress_lt: String
+  tokenAddress_lte: String
+  tokenAddress_not_contains: String
+  tokenAddress_not_containsInsensitive: String
+  tokenAddress_not_endsWith: String
+  tokenAddress_not_eq: String
+  tokenAddress_not_in: [String!]
+  tokenAddress_not_startsWith: String
+  tokenAddress_startsWith: String
+  tokenLocation_contains: String
+  tokenLocation_containsInsensitive: String
+  tokenLocation_endsWith: String
+  tokenLocation_eq: String
+  tokenLocation_gt: String
+  tokenLocation_gte: String
+  tokenLocation_in: [String!]
+  tokenLocation_isNull: Boolean
+  tokenLocation_lt: String
+  tokenLocation_lte: String
+  tokenLocation_not_contains: String
+  tokenLocation_not_containsInsensitive: String
+  tokenLocation_not_endsWith: String
+  tokenLocation_not_eq: String
+  tokenLocation_not_in: [String!]
+  tokenLocation_not_startsWith: String
+  tokenLocation_startsWith: String
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type TransferStatusToEthereumV2sConnection {
+  edges: [TransferStatusToEthereumV2Edge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+input TransferStatusToEthereumWhereInput {
+  AND: [TransferStatusToEthereumWhereInput!]
+  OR: [TransferStatusToEthereumWhereInput!]
+  amount_eq: BigInt
+  amount_gt: BigInt
+  amount_gte: BigInt
+  amount_in: [BigInt!]
+  amount_isNull: Boolean
+  amount_lt: BigInt
+  amount_lte: BigInt
+  amount_not_eq: BigInt
+  amount_not_in: [BigInt!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  destinationAddress_contains: String
+  destinationAddress_containsInsensitive: String
+  destinationAddress_endsWith: String
+  destinationAddress_eq: String
+  destinationAddress_gt: String
+  destinationAddress_gte: String
+  destinationAddress_in: [String!]
+  destinationAddress_isNull: Boolean
+  destinationAddress_lt: String
+  destinationAddress_lte: String
+  destinationAddress_not_contains: String
+  destinationAddress_not_containsInsensitive: String
+  destinationAddress_not_endsWith: String
+  destinationAddress_not_eq: String
+  destinationAddress_not_in: [String!]
+  destinationAddress_not_startsWith: String
+  destinationAddress_startsWith: String
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  senderAddress_contains: String
+  senderAddress_containsInsensitive: String
+  senderAddress_endsWith: String
+  senderAddress_eq: String
+  senderAddress_gt: String
+  senderAddress_gte: String
+  senderAddress_in: [String!]
+  senderAddress_isNull: Boolean
+  senderAddress_lt: String
+  senderAddress_lte: String
+  senderAddress_not_contains: String
+  senderAddress_not_containsInsensitive: String
+  senderAddress_not_endsWith: String
+  senderAddress_not_eq: String
+  senderAddress_not_in: [String!]
+  senderAddress_not_startsWith: String
+  senderAddress_startsWith: String
+  sourceParaId_eq: Int
+  sourceParaId_gt: Int
+  sourceParaId_gte: Int
+  sourceParaId_in: [Int!]
+  sourceParaId_isNull: Boolean
+  sourceParaId_lt: Int
+  sourceParaId_lte: Int
+  sourceParaId_not_eq: Int
+  sourceParaId_not_in: [Int!]
+  status_eq: Int
+  status_gt: Int
+  status_gte: Int
+  status_in: [Int!]
+  status_isNull: Boolean
+  status_lt: Int
+  status_lte: Int
+  status_not_eq: Int
+  status_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  toAssetHubMessageQueue: MessageProcessedOnPolkadotWhereInput
+  toAssetHubMessageQueue_isNull: Boolean
+  toBridgeHubMessageQueue: MessageProcessedOnPolkadotWhereInput
+  toBridgeHubMessageQueue_isNull: Boolean
+  toBridgeHubOutboundQueue: OutboundMessageAcceptedOnBridgeHubWhereInput
+  toBridgeHubOutboundQueue_isNull: Boolean
+  toDestination: InboundMessageDispatchedOnEthereumWhereInput
+  toDestination_isNull: Boolean
+  tokenAddress_contains: String
+  tokenAddress_containsInsensitive: String
+  tokenAddress_endsWith: String
+  tokenAddress_eq: String
+  tokenAddress_gt: String
+  tokenAddress_gte: String
+  tokenAddress_in: [String!]
+  tokenAddress_isNull: Boolean
+  tokenAddress_lt: String
+  tokenAddress_lte: String
+  tokenAddress_not_contains: String
+  tokenAddress_not_containsInsensitive: String
+  tokenAddress_not_endsWith: String
+  tokenAddress_not_eq: String
+  tokenAddress_not_in: [String!]
+  tokenAddress_not_startsWith: String
+  tokenAddress_startsWith: String
+  tokenLocation_contains: String
+  tokenLocation_containsInsensitive: String
+  tokenLocation_endsWith: String
+  tokenLocation_eq: String
+  tokenLocation_gt: String
+  tokenLocation_gte: String
+  tokenLocation_in: [String!]
+  tokenLocation_isNull: Boolean
+  tokenLocation_lt: String
+  tokenLocation_lte: String
+  tokenLocation_not_contains: String
+  tokenLocation_not_containsInsensitive: String
+  tokenLocation_not_endsWith: String
+  tokenLocation_not_eq: String
+  tokenLocation_not_in: [String!]
+  tokenLocation_not_startsWith: String
+  tokenLocation_startsWith: String
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type TransferStatusToEthereumsConnection {
+  edges: [TransferStatusToEthereumEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""Transfers from Ethereum to Polkadot"""
+type TransferStatusToPolkadot {
+  amount: BigInt
+  blockNumber: Int!
+  channelId: String
+  destinationAddress: String
+  destinationNetwork: String
+  destinationParaId: Int
+  id: String!
+  messageId: String!
+  nonce: Int
+  senderAddress: String
+  sourceNetwork: String
+  sourceParaId: Int
+  status: Int
+  timestamp: DateTime!
+  toAssetHubMessageQueue: MessageProcessedOnPolkadot
+  toBridgeHubInboundQueue: InboundMessageReceivedOnBridgeHub
+  toDestination: MessageProcessedOnPolkadot
+  tokenAddress: String
+  tokenLocation: String
+  txHash: String!
+}
+
+type TransferStatusToPolkadotEdge {
+  cursor: String!
+  node: TransferStatusToPolkadot!
+}
+
+enum TransferStatusToPolkadotOrderByInput {
+  amount_ASC
+  amount_ASC_NULLS_FIRST
+  amount_ASC_NULLS_LAST
+  amount_DESC
+  amount_DESC_NULLS_FIRST
+  amount_DESC_NULLS_LAST
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  destinationAddress_ASC
+  destinationAddress_ASC_NULLS_FIRST
+  destinationAddress_ASC_NULLS_LAST
+  destinationAddress_DESC
+  destinationAddress_DESC_NULLS_FIRST
+  destinationAddress_DESC_NULLS_LAST
+  destinationNetwork_ASC
+  destinationNetwork_ASC_NULLS_FIRST
+  destinationNetwork_ASC_NULLS_LAST
+  destinationNetwork_DESC
+  destinationNetwork_DESC_NULLS_FIRST
+  destinationNetwork_DESC_NULLS_LAST
+  destinationParaId_ASC
+  destinationParaId_ASC_NULLS_FIRST
+  destinationParaId_ASC_NULLS_LAST
+  destinationParaId_DESC
+  destinationParaId_DESC_NULLS_FIRST
+  destinationParaId_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  senderAddress_ASC
+  senderAddress_ASC_NULLS_FIRST
+  senderAddress_ASC_NULLS_LAST
+  senderAddress_DESC
+  senderAddress_DESC_NULLS_FIRST
+  senderAddress_DESC_NULLS_LAST
+  sourceNetwork_ASC
+  sourceNetwork_ASC_NULLS_FIRST
+  sourceNetwork_ASC_NULLS_LAST
+  sourceNetwork_DESC
+  sourceNetwork_DESC_NULLS_FIRST
+  sourceNetwork_DESC_NULLS_LAST
+  sourceParaId_ASC
+  sourceParaId_ASC_NULLS_FIRST
+  sourceParaId_ASC_NULLS_LAST
+  sourceParaId_DESC
+  sourceParaId_DESC_NULLS_FIRST
+  sourceParaId_DESC_NULLS_LAST
+  status_ASC
+  status_ASC_NULLS_FIRST
+  status_ASC_NULLS_LAST
+  status_DESC
+  status_DESC_NULLS_FIRST
+  status_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_ASC
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_DESC
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_ASC
+  toAssetHubMessageQueue_eventId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_DESC
+  toAssetHubMessageQueue_eventId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_id_ASC
+  toAssetHubMessageQueue_id_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_id_ASC_NULLS_LAST
+  toAssetHubMessageQueue_id_DESC
+  toAssetHubMessageQueue_id_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_id_DESC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_ASC
+  toAssetHubMessageQueue_messageId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_DESC
+  toAssetHubMessageQueue_messageId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_network_ASC
+  toAssetHubMessageQueue_network_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_network_ASC_NULLS_LAST
+  toAssetHubMessageQueue_network_DESC
+  toAssetHubMessageQueue_network_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_network_DESC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_ASC
+  toAssetHubMessageQueue_paraId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_DESC
+  toAssetHubMessageQueue_paraId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_success_ASC
+  toAssetHubMessageQueue_success_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_success_ASC_NULLS_LAST
+  toAssetHubMessageQueue_success_DESC
+  toAssetHubMessageQueue_success_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_success_DESC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_ASC
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_DESC
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_blockNumber_ASC
+  toBridgeHubInboundQueue_blockNumber_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_blockNumber_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_blockNumber_DESC
+  toBridgeHubInboundQueue_blockNumber_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_blockNumber_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_channelId_ASC
+  toBridgeHubInboundQueue_channelId_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_channelId_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_channelId_DESC
+  toBridgeHubInboundQueue_channelId_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_channelId_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_eventId_ASC
+  toBridgeHubInboundQueue_eventId_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_eventId_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_eventId_DESC
+  toBridgeHubInboundQueue_eventId_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_eventId_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_id_ASC
+  toBridgeHubInboundQueue_id_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_id_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_id_DESC
+  toBridgeHubInboundQueue_id_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_id_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_messageId_ASC
+  toBridgeHubInboundQueue_messageId_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_messageId_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_messageId_DESC
+  toBridgeHubInboundQueue_messageId_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_messageId_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_nonce_ASC
+  toBridgeHubInboundQueue_nonce_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_nonce_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_nonce_DESC
+  toBridgeHubInboundQueue_nonce_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_nonce_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_timestamp_ASC
+  toBridgeHubInboundQueue_timestamp_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_timestamp_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_timestamp_DESC
+  toBridgeHubInboundQueue_timestamp_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_txHash_ASC
+  toBridgeHubInboundQueue_txHash_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_txHash_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_txHash_DESC
+  toBridgeHubInboundQueue_txHash_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_txHash_DESC_NULLS_LAST
+  toDestination_blockNumber_ASC
+  toDestination_blockNumber_ASC_NULLS_FIRST
+  toDestination_blockNumber_ASC_NULLS_LAST
+  toDestination_blockNumber_DESC
+  toDestination_blockNumber_DESC_NULLS_FIRST
+  toDestination_blockNumber_DESC_NULLS_LAST
+  toDestination_eventId_ASC
+  toDestination_eventId_ASC_NULLS_FIRST
+  toDestination_eventId_ASC_NULLS_LAST
+  toDestination_eventId_DESC
+  toDestination_eventId_DESC_NULLS_FIRST
+  toDestination_eventId_DESC_NULLS_LAST
+  toDestination_id_ASC
+  toDestination_id_ASC_NULLS_FIRST
+  toDestination_id_ASC_NULLS_LAST
+  toDestination_id_DESC
+  toDestination_id_DESC_NULLS_FIRST
+  toDestination_id_DESC_NULLS_LAST
+  toDestination_messageId_ASC
+  toDestination_messageId_ASC_NULLS_FIRST
+  toDestination_messageId_ASC_NULLS_LAST
+  toDestination_messageId_DESC
+  toDestination_messageId_DESC_NULLS_FIRST
+  toDestination_messageId_DESC_NULLS_LAST
+  toDestination_network_ASC
+  toDestination_network_ASC_NULLS_FIRST
+  toDestination_network_ASC_NULLS_LAST
+  toDestination_network_DESC
+  toDestination_network_DESC_NULLS_FIRST
+  toDestination_network_DESC_NULLS_LAST
+  toDestination_paraId_ASC
+  toDestination_paraId_ASC_NULLS_FIRST
+  toDestination_paraId_ASC_NULLS_LAST
+  toDestination_paraId_DESC
+  toDestination_paraId_DESC_NULLS_FIRST
+  toDestination_paraId_DESC_NULLS_LAST
+  toDestination_success_ASC
+  toDestination_success_ASC_NULLS_FIRST
+  toDestination_success_ASC_NULLS_LAST
+  toDestination_success_DESC
+  toDestination_success_DESC_NULLS_FIRST
+  toDestination_success_DESC_NULLS_LAST
+  toDestination_timestamp_ASC
+  toDestination_timestamp_ASC_NULLS_FIRST
+  toDestination_timestamp_ASC_NULLS_LAST
+  toDestination_timestamp_DESC
+  toDestination_timestamp_DESC_NULLS_FIRST
+  toDestination_timestamp_DESC_NULLS_LAST
+  tokenAddress_ASC
+  tokenAddress_ASC_NULLS_FIRST
+  tokenAddress_ASC_NULLS_LAST
+  tokenAddress_DESC
+  tokenAddress_DESC_NULLS_FIRST
+  tokenAddress_DESC_NULLS_LAST
+  tokenLocation_ASC
+  tokenLocation_ASC_NULLS_FIRST
+  tokenLocation_ASC_NULLS_LAST
+  tokenLocation_DESC
+  tokenLocation_DESC_NULLS_FIRST
+  tokenLocation_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+"""V2 transfers from Ethereum to Polkadot"""
+type TransferStatusToPolkadotV2 {
+  amount: BigInt
+  blockNumber: Int!
+  channelId: String
+  claimer: String
+  destinationAddress: String
+  destinationNetwork: String
+  destinationParaId: Int
+  fee: BigInt
+  fromV1: Boolean
+  id: String!
+  messageId: String!
+  nonce: Int
+  senderAddress: String
+  sourceNetwork: String
+  sourceParaId: Int
+  status: Int
+  timestamp: DateTime!
+  toAssetHubMessageQueue: MessageProcessedOnPolkadot
+  toBridgeHubInboundQueue: InboundMessageReceivedOnBridgeHub
+  toDestination: MessageProcessedOnPolkadot
+  tokenAddress: String
+  tokenID: String
+  tokenLocation: String
+  txHash: String!
+}
+
+type TransferStatusToPolkadotV2Edge {
+  cursor: String!
+  node: TransferStatusToPolkadotV2!
+}
+
+enum TransferStatusToPolkadotV2OrderByInput {
+  amount_ASC
+  amount_ASC_NULLS_FIRST
+  amount_ASC_NULLS_LAST
+  amount_DESC
+  amount_DESC_NULLS_FIRST
+  amount_DESC_NULLS_LAST
+  blockNumber_ASC
+  blockNumber_ASC_NULLS_FIRST
+  blockNumber_ASC_NULLS_LAST
+  blockNumber_DESC
+  blockNumber_DESC_NULLS_FIRST
+  blockNumber_DESC_NULLS_LAST
+  channelId_ASC
+  channelId_ASC_NULLS_FIRST
+  channelId_ASC_NULLS_LAST
+  channelId_DESC
+  channelId_DESC_NULLS_FIRST
+  channelId_DESC_NULLS_LAST
+  claimer_ASC
+  claimer_ASC_NULLS_FIRST
+  claimer_ASC_NULLS_LAST
+  claimer_DESC
+  claimer_DESC_NULLS_FIRST
+  claimer_DESC_NULLS_LAST
+  destinationAddress_ASC
+  destinationAddress_ASC_NULLS_FIRST
+  destinationAddress_ASC_NULLS_LAST
+  destinationAddress_DESC
+  destinationAddress_DESC_NULLS_FIRST
+  destinationAddress_DESC_NULLS_LAST
+  destinationNetwork_ASC
+  destinationNetwork_ASC_NULLS_FIRST
+  destinationNetwork_ASC_NULLS_LAST
+  destinationNetwork_DESC
+  destinationNetwork_DESC_NULLS_FIRST
+  destinationNetwork_DESC_NULLS_LAST
+  destinationParaId_ASC
+  destinationParaId_ASC_NULLS_FIRST
+  destinationParaId_ASC_NULLS_LAST
+  destinationParaId_DESC
+  destinationParaId_DESC_NULLS_FIRST
+  destinationParaId_DESC_NULLS_LAST
+  fee_ASC
+  fee_ASC_NULLS_FIRST
+  fee_ASC_NULLS_LAST
+  fee_DESC
+  fee_DESC_NULLS_FIRST
+  fee_DESC_NULLS_LAST
+  fromV1_ASC
+  fromV1_ASC_NULLS_FIRST
+  fromV1_ASC_NULLS_LAST
+  fromV1_DESC
+  fromV1_DESC_NULLS_FIRST
+  fromV1_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  messageId_ASC
+  messageId_ASC_NULLS_FIRST
+  messageId_ASC_NULLS_LAST
+  messageId_DESC
+  messageId_DESC_NULLS_FIRST
+  messageId_DESC_NULLS_LAST
+  nonce_ASC
+  nonce_ASC_NULLS_FIRST
+  nonce_ASC_NULLS_LAST
+  nonce_DESC
+  nonce_DESC_NULLS_FIRST
+  nonce_DESC_NULLS_LAST
+  senderAddress_ASC
+  senderAddress_ASC_NULLS_FIRST
+  senderAddress_ASC_NULLS_LAST
+  senderAddress_DESC
+  senderAddress_DESC_NULLS_FIRST
+  senderAddress_DESC_NULLS_LAST
+  sourceNetwork_ASC
+  sourceNetwork_ASC_NULLS_FIRST
+  sourceNetwork_ASC_NULLS_LAST
+  sourceNetwork_DESC
+  sourceNetwork_DESC_NULLS_FIRST
+  sourceNetwork_DESC_NULLS_LAST
+  sourceParaId_ASC
+  sourceParaId_ASC_NULLS_FIRST
+  sourceParaId_ASC_NULLS_LAST
+  sourceParaId_DESC
+  sourceParaId_DESC_NULLS_FIRST
+  sourceParaId_DESC_NULLS_LAST
+  status_ASC
+  status_ASC_NULLS_FIRST
+  status_ASC_NULLS_LAST
+  status_DESC
+  status_DESC_NULLS_FIRST
+  status_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_ASC
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_ASC_NULLS_LAST
+  toAssetHubMessageQueue_blockNumber_DESC
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_blockNumber_DESC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_ASC
+  toAssetHubMessageQueue_eventId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_eventId_DESC
+  toAssetHubMessageQueue_eventId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_eventId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_id_ASC
+  toAssetHubMessageQueue_id_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_id_ASC_NULLS_LAST
+  toAssetHubMessageQueue_id_DESC
+  toAssetHubMessageQueue_id_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_id_DESC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_ASC
+  toAssetHubMessageQueue_messageId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_messageId_DESC
+  toAssetHubMessageQueue_messageId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_messageId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_network_ASC
+  toAssetHubMessageQueue_network_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_network_ASC_NULLS_LAST
+  toAssetHubMessageQueue_network_DESC
+  toAssetHubMessageQueue_network_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_network_DESC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_ASC
+  toAssetHubMessageQueue_paraId_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_ASC_NULLS_LAST
+  toAssetHubMessageQueue_paraId_DESC
+  toAssetHubMessageQueue_paraId_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_paraId_DESC_NULLS_LAST
+  toAssetHubMessageQueue_success_ASC
+  toAssetHubMessageQueue_success_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_success_ASC_NULLS_LAST
+  toAssetHubMessageQueue_success_DESC
+  toAssetHubMessageQueue_success_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_success_DESC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_ASC
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_ASC_NULLS_LAST
+  toAssetHubMessageQueue_timestamp_DESC
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_FIRST
+  toAssetHubMessageQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_blockNumber_ASC
+  toBridgeHubInboundQueue_blockNumber_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_blockNumber_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_blockNumber_DESC
+  toBridgeHubInboundQueue_blockNumber_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_blockNumber_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_channelId_ASC
+  toBridgeHubInboundQueue_channelId_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_channelId_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_channelId_DESC
+  toBridgeHubInboundQueue_channelId_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_channelId_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_eventId_ASC
+  toBridgeHubInboundQueue_eventId_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_eventId_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_eventId_DESC
+  toBridgeHubInboundQueue_eventId_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_eventId_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_id_ASC
+  toBridgeHubInboundQueue_id_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_id_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_id_DESC
+  toBridgeHubInboundQueue_id_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_id_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_messageId_ASC
+  toBridgeHubInboundQueue_messageId_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_messageId_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_messageId_DESC
+  toBridgeHubInboundQueue_messageId_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_messageId_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_nonce_ASC
+  toBridgeHubInboundQueue_nonce_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_nonce_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_nonce_DESC
+  toBridgeHubInboundQueue_nonce_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_nonce_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_timestamp_ASC
+  toBridgeHubInboundQueue_timestamp_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_timestamp_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_timestamp_DESC
+  toBridgeHubInboundQueue_timestamp_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_timestamp_DESC_NULLS_LAST
+  toBridgeHubInboundQueue_txHash_ASC
+  toBridgeHubInboundQueue_txHash_ASC_NULLS_FIRST
+  toBridgeHubInboundQueue_txHash_ASC_NULLS_LAST
+  toBridgeHubInboundQueue_txHash_DESC
+  toBridgeHubInboundQueue_txHash_DESC_NULLS_FIRST
+  toBridgeHubInboundQueue_txHash_DESC_NULLS_LAST
+  toDestination_blockNumber_ASC
+  toDestination_blockNumber_ASC_NULLS_FIRST
+  toDestination_blockNumber_ASC_NULLS_LAST
+  toDestination_blockNumber_DESC
+  toDestination_blockNumber_DESC_NULLS_FIRST
+  toDestination_blockNumber_DESC_NULLS_LAST
+  toDestination_eventId_ASC
+  toDestination_eventId_ASC_NULLS_FIRST
+  toDestination_eventId_ASC_NULLS_LAST
+  toDestination_eventId_DESC
+  toDestination_eventId_DESC_NULLS_FIRST
+  toDestination_eventId_DESC_NULLS_LAST
+  toDestination_id_ASC
+  toDestination_id_ASC_NULLS_FIRST
+  toDestination_id_ASC_NULLS_LAST
+  toDestination_id_DESC
+  toDestination_id_DESC_NULLS_FIRST
+  toDestination_id_DESC_NULLS_LAST
+  toDestination_messageId_ASC
+  toDestination_messageId_ASC_NULLS_FIRST
+  toDestination_messageId_ASC_NULLS_LAST
+  toDestination_messageId_DESC
+  toDestination_messageId_DESC_NULLS_FIRST
+  toDestination_messageId_DESC_NULLS_LAST
+  toDestination_network_ASC
+  toDestination_network_ASC_NULLS_FIRST
+  toDestination_network_ASC_NULLS_LAST
+  toDestination_network_DESC
+  toDestination_network_DESC_NULLS_FIRST
+  toDestination_network_DESC_NULLS_LAST
+  toDestination_paraId_ASC
+  toDestination_paraId_ASC_NULLS_FIRST
+  toDestination_paraId_ASC_NULLS_LAST
+  toDestination_paraId_DESC
+  toDestination_paraId_DESC_NULLS_FIRST
+  toDestination_paraId_DESC_NULLS_LAST
+  toDestination_success_ASC
+  toDestination_success_ASC_NULLS_FIRST
+  toDestination_success_ASC_NULLS_LAST
+  toDestination_success_DESC
+  toDestination_success_DESC_NULLS_FIRST
+  toDestination_success_DESC_NULLS_LAST
+  toDestination_timestamp_ASC
+  toDestination_timestamp_ASC_NULLS_FIRST
+  toDestination_timestamp_ASC_NULLS_LAST
+  toDestination_timestamp_DESC
+  toDestination_timestamp_DESC_NULLS_FIRST
+  toDestination_timestamp_DESC_NULLS_LAST
+  tokenAddress_ASC
+  tokenAddress_ASC_NULLS_FIRST
+  tokenAddress_ASC_NULLS_LAST
+  tokenAddress_DESC
+  tokenAddress_DESC_NULLS_FIRST
+  tokenAddress_DESC_NULLS_LAST
+  tokenID_ASC
+  tokenID_ASC_NULLS_FIRST
+  tokenID_ASC_NULLS_LAST
+  tokenID_DESC
+  tokenID_DESC_NULLS_FIRST
+  tokenID_DESC_NULLS_LAST
+  tokenLocation_ASC
+  tokenLocation_ASC_NULLS_FIRST
+  tokenLocation_ASC_NULLS_LAST
+  tokenLocation_DESC
+  tokenLocation_DESC_NULLS_FIRST
+  tokenLocation_DESC_NULLS_LAST
+  txHash_ASC
+  txHash_ASC_NULLS_FIRST
+  txHash_ASC_NULLS_LAST
+  txHash_DESC
+  txHash_DESC_NULLS_FIRST
+  txHash_DESC_NULLS_LAST
+}
+
+input TransferStatusToPolkadotV2WhereInput {
+  AND: [TransferStatusToPolkadotV2WhereInput!]
+  OR: [TransferStatusToPolkadotV2WhereInput!]
+  amount_eq: BigInt
+  amount_gt: BigInt
+  amount_gte: BigInt
+  amount_in: [BigInt!]
+  amount_isNull: Boolean
+  amount_lt: BigInt
+  amount_lte: BigInt
+  amount_not_eq: BigInt
+  amount_not_in: [BigInt!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  claimer_contains: String
+  claimer_containsInsensitive: String
+  claimer_endsWith: String
+  claimer_eq: String
+  claimer_gt: String
+  claimer_gte: String
+  claimer_in: [String!]
+  claimer_isNull: Boolean
+  claimer_lt: String
+  claimer_lte: String
+  claimer_not_contains: String
+  claimer_not_containsInsensitive: String
+  claimer_not_endsWith: String
+  claimer_not_eq: String
+  claimer_not_in: [String!]
+  claimer_not_startsWith: String
+  claimer_startsWith: String
+  destinationAddress_contains: String
+  destinationAddress_containsInsensitive: String
+  destinationAddress_endsWith: String
+  destinationAddress_eq: String
+  destinationAddress_gt: String
+  destinationAddress_gte: String
+  destinationAddress_in: [String!]
+  destinationAddress_isNull: Boolean
+  destinationAddress_lt: String
+  destinationAddress_lte: String
+  destinationAddress_not_contains: String
+  destinationAddress_not_containsInsensitive: String
+  destinationAddress_not_endsWith: String
+  destinationAddress_not_eq: String
+  destinationAddress_not_in: [String!]
+  destinationAddress_not_startsWith: String
+  destinationAddress_startsWith: String
+  destinationNetwork_contains: String
+  destinationNetwork_containsInsensitive: String
+  destinationNetwork_endsWith: String
+  destinationNetwork_eq: String
+  destinationNetwork_gt: String
+  destinationNetwork_gte: String
+  destinationNetwork_in: [String!]
+  destinationNetwork_isNull: Boolean
+  destinationNetwork_lt: String
+  destinationNetwork_lte: String
+  destinationNetwork_not_contains: String
+  destinationNetwork_not_containsInsensitive: String
+  destinationNetwork_not_endsWith: String
+  destinationNetwork_not_eq: String
+  destinationNetwork_not_in: [String!]
+  destinationNetwork_not_startsWith: String
+  destinationNetwork_startsWith: String
+  destinationParaId_eq: Int
+  destinationParaId_gt: Int
+  destinationParaId_gte: Int
+  destinationParaId_in: [Int!]
+  destinationParaId_isNull: Boolean
+  destinationParaId_lt: Int
+  destinationParaId_lte: Int
+  destinationParaId_not_eq: Int
+  destinationParaId_not_in: [Int!]
+  fee_eq: BigInt
+  fee_gt: BigInt
+  fee_gte: BigInt
+  fee_in: [BigInt!]
+  fee_isNull: Boolean
+  fee_lt: BigInt
+  fee_lte: BigInt
+  fee_not_eq: BigInt
+  fee_not_in: [BigInt!]
+  fromV1_eq: Boolean
+  fromV1_isNull: Boolean
+  fromV1_not_eq: Boolean
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  senderAddress_contains: String
+  senderAddress_containsInsensitive: String
+  senderAddress_endsWith: String
+  senderAddress_eq: String
+  senderAddress_gt: String
+  senderAddress_gte: String
+  senderAddress_in: [String!]
+  senderAddress_isNull: Boolean
+  senderAddress_lt: String
+  senderAddress_lte: String
+  senderAddress_not_contains: String
+  senderAddress_not_containsInsensitive: String
+  senderAddress_not_endsWith: String
+  senderAddress_not_eq: String
+  senderAddress_not_in: [String!]
+  senderAddress_not_startsWith: String
+  senderAddress_startsWith: String
+  sourceNetwork_contains: String
+  sourceNetwork_containsInsensitive: String
+  sourceNetwork_endsWith: String
+  sourceNetwork_eq: String
+  sourceNetwork_gt: String
+  sourceNetwork_gte: String
+  sourceNetwork_in: [String!]
+  sourceNetwork_isNull: Boolean
+  sourceNetwork_lt: String
+  sourceNetwork_lte: String
+  sourceNetwork_not_contains: String
+  sourceNetwork_not_containsInsensitive: String
+  sourceNetwork_not_endsWith: String
+  sourceNetwork_not_eq: String
+  sourceNetwork_not_in: [String!]
+  sourceNetwork_not_startsWith: String
+  sourceNetwork_startsWith: String
+  sourceParaId_eq: Int
+  sourceParaId_gt: Int
+  sourceParaId_gte: Int
+  sourceParaId_in: [Int!]
+  sourceParaId_isNull: Boolean
+  sourceParaId_lt: Int
+  sourceParaId_lte: Int
+  sourceParaId_not_eq: Int
+  sourceParaId_not_in: [Int!]
+  status_eq: Int
+  status_gt: Int
+  status_gte: Int
+  status_in: [Int!]
+  status_isNull: Boolean
+  status_lt: Int
+  status_lte: Int
+  status_not_eq: Int
+  status_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  toAssetHubMessageQueue: MessageProcessedOnPolkadotWhereInput
+  toAssetHubMessageQueue_isNull: Boolean
+  toBridgeHubInboundQueue: InboundMessageReceivedOnBridgeHubWhereInput
+  toBridgeHubInboundQueue_isNull: Boolean
+  toDestination: MessageProcessedOnPolkadotWhereInput
+  toDestination_isNull: Boolean
+  tokenAddress_contains: String
+  tokenAddress_containsInsensitive: String
+  tokenAddress_endsWith: String
+  tokenAddress_eq: String
+  tokenAddress_gt: String
+  tokenAddress_gte: String
+  tokenAddress_in: [String!]
+  tokenAddress_isNull: Boolean
+  tokenAddress_lt: String
+  tokenAddress_lte: String
+  tokenAddress_not_contains: String
+  tokenAddress_not_containsInsensitive: String
+  tokenAddress_not_endsWith: String
+  tokenAddress_not_eq: String
+  tokenAddress_not_in: [String!]
+  tokenAddress_not_startsWith: String
+  tokenAddress_startsWith: String
+  tokenID_contains: String
+  tokenID_containsInsensitive: String
+  tokenID_endsWith: String
+  tokenID_eq: String
+  tokenID_gt: String
+  tokenID_gte: String
+  tokenID_in: [String!]
+  tokenID_isNull: Boolean
+  tokenID_lt: String
+  tokenID_lte: String
+  tokenID_not_contains: String
+  tokenID_not_containsInsensitive: String
+  tokenID_not_endsWith: String
+  tokenID_not_eq: String
+  tokenID_not_in: [String!]
+  tokenID_not_startsWith: String
+  tokenID_startsWith: String
+  tokenLocation_contains: String
+  tokenLocation_containsInsensitive: String
+  tokenLocation_endsWith: String
+  tokenLocation_eq: String
+  tokenLocation_gt: String
+  tokenLocation_gte: String
+  tokenLocation_in: [String!]
+  tokenLocation_isNull: Boolean
+  tokenLocation_lt: String
+  tokenLocation_lte: String
+  tokenLocation_not_contains: String
+  tokenLocation_not_containsInsensitive: String
+  tokenLocation_not_endsWith: String
+  tokenLocation_not_eq: String
+  tokenLocation_not_in: [String!]
+  tokenLocation_not_startsWith: String
+  tokenLocation_startsWith: String
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type TransferStatusToPolkadotV2sConnection {
+  edges: [TransferStatusToPolkadotV2Edge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+input TransferStatusToPolkadotWhereInput {
+  AND: [TransferStatusToPolkadotWhereInput!]
+  OR: [TransferStatusToPolkadotWhereInput!]
+  amount_eq: BigInt
+  amount_gt: BigInt
+  amount_gte: BigInt
+  amount_in: [BigInt!]
+  amount_isNull: Boolean
+  amount_lt: BigInt
+  amount_lte: BigInt
+  amount_not_eq: BigInt
+  amount_not_in: [BigInt!]
+  blockNumber_eq: Int
+  blockNumber_gt: Int
+  blockNumber_gte: Int
+  blockNumber_in: [Int!]
+  blockNumber_isNull: Boolean
+  blockNumber_lt: Int
+  blockNumber_lte: Int
+  blockNumber_not_eq: Int
+  blockNumber_not_in: [Int!]
+  channelId_contains: String
+  channelId_containsInsensitive: String
+  channelId_endsWith: String
+  channelId_eq: String
+  channelId_gt: String
+  channelId_gte: String
+  channelId_in: [String!]
+  channelId_isNull: Boolean
+  channelId_lt: String
+  channelId_lte: String
+  channelId_not_contains: String
+  channelId_not_containsInsensitive: String
+  channelId_not_endsWith: String
+  channelId_not_eq: String
+  channelId_not_in: [String!]
+  channelId_not_startsWith: String
+  channelId_startsWith: String
+  destinationAddress_contains: String
+  destinationAddress_containsInsensitive: String
+  destinationAddress_endsWith: String
+  destinationAddress_eq: String
+  destinationAddress_gt: String
+  destinationAddress_gte: String
+  destinationAddress_in: [String!]
+  destinationAddress_isNull: Boolean
+  destinationAddress_lt: String
+  destinationAddress_lte: String
+  destinationAddress_not_contains: String
+  destinationAddress_not_containsInsensitive: String
+  destinationAddress_not_endsWith: String
+  destinationAddress_not_eq: String
+  destinationAddress_not_in: [String!]
+  destinationAddress_not_startsWith: String
+  destinationAddress_startsWith: String
+  destinationNetwork_contains: String
+  destinationNetwork_containsInsensitive: String
+  destinationNetwork_endsWith: String
+  destinationNetwork_eq: String
+  destinationNetwork_gt: String
+  destinationNetwork_gte: String
+  destinationNetwork_in: [String!]
+  destinationNetwork_isNull: Boolean
+  destinationNetwork_lt: String
+  destinationNetwork_lte: String
+  destinationNetwork_not_contains: String
+  destinationNetwork_not_containsInsensitive: String
+  destinationNetwork_not_endsWith: String
+  destinationNetwork_not_eq: String
+  destinationNetwork_not_in: [String!]
+  destinationNetwork_not_startsWith: String
+  destinationNetwork_startsWith: String
+  destinationParaId_eq: Int
+  destinationParaId_gt: Int
+  destinationParaId_gte: Int
+  destinationParaId_in: [Int!]
+  destinationParaId_isNull: Boolean
+  destinationParaId_lt: Int
+  destinationParaId_lte: Int
+  destinationParaId_not_eq: Int
+  destinationParaId_not_in: [Int!]
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  messageId_contains: String
+  messageId_containsInsensitive: String
+  messageId_endsWith: String
+  messageId_eq: String
+  messageId_gt: String
+  messageId_gte: String
+  messageId_in: [String!]
+  messageId_isNull: Boolean
+  messageId_lt: String
+  messageId_lte: String
+  messageId_not_contains: String
+  messageId_not_containsInsensitive: String
+  messageId_not_endsWith: String
+  messageId_not_eq: String
+  messageId_not_in: [String!]
+  messageId_not_startsWith: String
+  messageId_startsWith: String
+  nonce_eq: Int
+  nonce_gt: Int
+  nonce_gte: Int
+  nonce_in: [Int!]
+  nonce_isNull: Boolean
+  nonce_lt: Int
+  nonce_lte: Int
+  nonce_not_eq: Int
+  nonce_not_in: [Int!]
+  senderAddress_contains: String
+  senderAddress_containsInsensitive: String
+  senderAddress_endsWith: String
+  senderAddress_eq: String
+  senderAddress_gt: String
+  senderAddress_gte: String
+  senderAddress_in: [String!]
+  senderAddress_isNull: Boolean
+  senderAddress_lt: String
+  senderAddress_lte: String
+  senderAddress_not_contains: String
+  senderAddress_not_containsInsensitive: String
+  senderAddress_not_endsWith: String
+  senderAddress_not_eq: String
+  senderAddress_not_in: [String!]
+  senderAddress_not_startsWith: String
+  senderAddress_startsWith: String
+  sourceNetwork_contains: String
+  sourceNetwork_containsInsensitive: String
+  sourceNetwork_endsWith: String
+  sourceNetwork_eq: String
+  sourceNetwork_gt: String
+  sourceNetwork_gte: String
+  sourceNetwork_in: [String!]
+  sourceNetwork_isNull: Boolean
+  sourceNetwork_lt: String
+  sourceNetwork_lte: String
+  sourceNetwork_not_contains: String
+  sourceNetwork_not_containsInsensitive: String
+  sourceNetwork_not_endsWith: String
+  sourceNetwork_not_eq: String
+  sourceNetwork_not_in: [String!]
+  sourceNetwork_not_startsWith: String
+  sourceNetwork_startsWith: String
+  sourceParaId_eq: Int
+  sourceParaId_gt: Int
+  sourceParaId_gte: Int
+  sourceParaId_in: [Int!]
+  sourceParaId_isNull: Boolean
+  sourceParaId_lt: Int
+  sourceParaId_lte: Int
+  sourceParaId_not_eq: Int
+  sourceParaId_not_in: [Int!]
+  status_eq: Int
+  status_gt: Int
+  status_gte: Int
+  status_in: [Int!]
+  status_isNull: Boolean
+  status_lt: Int
+  status_lte: Int
+  status_not_eq: Int
+  status_not_in: [Int!]
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+  toAssetHubMessageQueue: MessageProcessedOnPolkadotWhereInput
+  toAssetHubMessageQueue_isNull: Boolean
+  toBridgeHubInboundQueue: InboundMessageReceivedOnBridgeHubWhereInput
+  toBridgeHubInboundQueue_isNull: Boolean
+  toDestination: MessageProcessedOnPolkadotWhereInput
+  toDestination_isNull: Boolean
+  tokenAddress_contains: String
+  tokenAddress_containsInsensitive: String
+  tokenAddress_endsWith: String
+  tokenAddress_eq: String
+  tokenAddress_gt: String
+  tokenAddress_gte: String
+  tokenAddress_in: [String!]
+  tokenAddress_isNull: Boolean
+  tokenAddress_lt: String
+  tokenAddress_lte: String
+  tokenAddress_not_contains: String
+  tokenAddress_not_containsInsensitive: String
+  tokenAddress_not_endsWith: String
+  tokenAddress_not_eq: String
+  tokenAddress_not_in: [String!]
+  tokenAddress_not_startsWith: String
+  tokenAddress_startsWith: String
+  tokenLocation_contains: String
+  tokenLocation_containsInsensitive: String
+  tokenLocation_endsWith: String
+  tokenLocation_eq: String
+  tokenLocation_gt: String
+  tokenLocation_gte: String
+  tokenLocation_in: [String!]
+  tokenLocation_isNull: Boolean
+  tokenLocation_lt: String
+  tokenLocation_lte: String
+  tokenLocation_not_contains: String
+  tokenLocation_not_containsInsensitive: String
+  tokenLocation_not_endsWith: String
+  tokenLocation_not_eq: String
+  tokenLocation_not_in: [String!]
+  tokenLocation_not_startsWith: String
+  tokenLocation_startsWith: String
+  txHash_contains: String
+  txHash_containsInsensitive: String
+  txHash_endsWith: String
+  txHash_eq: String
+  txHash_gt: String
+  txHash_gte: String
+  txHash_in: [String!]
+  txHash_isNull: Boolean
+  txHash_lt: String
+  txHash_lte: String
+  txHash_not_contains: String
+  txHash_not_containsInsensitive: String
+  txHash_not_endsWith: String
+  txHash_not_eq: String
+  txHash_not_in: [String!]
+  txHash_not_startsWith: String
+  txHash_startsWith: String
+}
+
+type TransferStatusToPolkadotsConnection {
+  edges: [TransferStatusToPolkadotEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}

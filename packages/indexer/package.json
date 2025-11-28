@@ -11,11 +11,13 @@
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
     "codegen:indexer": "graphql-codegen --config src/indexer/codegen.ts",
-    "codegen:squid": "graphql-codegen --config src/squid/codegen.ts"
+    "codegen:squid": "graphql-codegen --config src/squid/codegen.ts",
+    "codegen:snowbridge": "graphql-codegen --config src/snowbridge/codegen.ts"
   },
   "exports": {
     "./indexer": "./src/indexer/index.ts",
-    "./squid": "./src/squid/index.ts"
+    "./squid": "./src/squid/index.ts",
+    "./snowbridge": "./src/snowbridge/index.ts"
   },
   "dependencies": {
     "graphql": "^16.11.0",
