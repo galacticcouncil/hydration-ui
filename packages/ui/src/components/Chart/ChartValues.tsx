@@ -19,7 +19,7 @@ export const ChartValues: React.FC<ChartValuesProps> = ({
     <Flex direction="column" {...props}>
       {(value || isLoading) && (
         <Text fs="p3" fw={600} asChild={typeof value !== "string"}>
-          {isLoading ? <Skeleton width={100} /> : value || <>&nbsp;</>}
+          {isLoading ? <Skeleton width={100} /> : value}
         </Text>
       )}
       {(displayValue || isLoading) && (
@@ -28,7 +28,7 @@ export const ChartValues: React.FC<ChartValuesProps> = ({
           color={getToken("text.medium")}
           asChild={typeof displayValue !== "string"}
         >
-          {isLoading ? <Skeleton width={50} /> : displayValue || <>&nbsp;</>}
+          {isLoading ? <Skeleton width={50} /> : displayValue}
         </Text>
       )}
     </Flex>
