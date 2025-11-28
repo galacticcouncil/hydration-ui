@@ -1,7 +1,9 @@
-import { isH160Address, isSS58Address } from "@galacticcouncil/utils"
+import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "@galacticcouncil/utils"
 import { lazy, Suspense } from "react"
 
 import { EmptyIdenticon } from "@/components/AccountAvatar/identicons/EmptyIdenticon"
+import { SolanaIdenticon } from "@/components/AccountAvatar/identicons/SolanaIdenticon"
+import { SuiIdenticon } from "@/components/AccountAvatar/identicons/SuiIdenticon"
 import { Box, BoxProps } from "@/components/Box"
 import { getToken } from "@/utils"
 
@@ -23,7 +25,13 @@ const EthereumIdenticon = lazy(async () => ({
   ).then((m) => m.EthereumIdenticon),
 }))
 
-export type AccountAvatarTheme = "auto" | "polkadot" | "evm" | "talisman"
+export type AccountAvatarTheme =
+  | "auto"
+  | "polkadot"
+  | "evm"
+  | "talisman"
+  | "solana"
+  | "sui"
 export type AccountAvatarProps = BoxProps & {
   address: string
   size?: number
@@ -55,16 +63,22 @@ export const AccountAvatar: React.FC<AccountAvatarProps> = ({
       {chosenTheme === "polkadot" && (
         <PolkadotIdenticon size={size} {...props} />
       )}
+      {chosenTheme === "solana" && <SolanaIdenticon size={size} {...props} />}
+      {chosenTheme === "sui" && <SuiIdenticon size={size} {...props} />}
     </Suspense>
   )
 }
 
 function getAutoTheme(address: string): AccountAvatarTheme | null {
   switch (true) {
-    case isH160Address(address):
+    case EvmAddr.isValid(address):
       return "evm"
-    case isSS58Address(address):
+    case Ss58Addr.isValid(address):
       return "polkadot"
+    case SolanaAddr.isValid(address):
+      return "solana"
+    case SuiAddr.isValid(address):
+      return "sui"
     default:
       return null
   }

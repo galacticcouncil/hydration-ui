@@ -125,6 +125,8 @@ export const useToasts = () => {
     (id: string, props: Partial<ToastData>) => {
       if (!currentAddress) return
 
+      console.log({ props })
+
       update(currentAddress, (toasts) =>
         toasts.map((toast) =>
           toast.id === id ? { ...toast, ...props } : toast,

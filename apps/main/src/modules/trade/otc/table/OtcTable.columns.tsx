@@ -13,10 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  useAccount,
-  useHydraAccountAddress,
-} from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -57,7 +54,8 @@ export const useOtcTableColums = () => {
   const { t } = useTranslation(["trade", "common"])
   const { isMobile } = useBreakpoints()
 
-  const userAddress = useHydraAccountAddress()
+  const { account } = useAccount()
+  const userAddress = account?.address ?? ""
 
   return useMemo(() => {
     const offer = columnHelper.accessor("assetOut.name", {

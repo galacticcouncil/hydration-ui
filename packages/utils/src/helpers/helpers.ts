@@ -65,3 +65,7 @@ export const getRdnsFromUrl = (url: string): string => {
     return ""
   }
 }
+
+export const stripTrailingSlash = (url: string): string => {
+  return url.replace(/\/$/, "")
+}

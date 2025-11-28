@@ -18,6 +18,7 @@ export type ProviderButtonProps = WalletData & {
   onClick?: React.MouseEventHandler<HTMLButtonElement>
   isConnected?: boolean
   accountCount?: number
+  actionLabel?: string
 }
 
 export const ProviderButton: React.FC<ProviderButtonProps> = ({
@@ -28,6 +29,7 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
   onClick,
   isConnected,
   accountCount = 0,
+  actionLabel,
 }) => {
   return (
     <SProviderButton type="button" onClick={onClick}>
@@ -50,9 +52,7 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
         gap={4}
         align="center"
       >
-        <Text fs={[12, 13]}>
-          {isConnected ? "Disconnect" : installed ? "Continue" : "Download"}
-        </Text>
+        <Text fs={[12, 13]}>{actionLabel}</Text>
         <Icon
           size={14}
           component={isConnected ? LogOut : installed ? ChevronRight : Download}

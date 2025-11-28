@@ -13,6 +13,7 @@ declare global {
       solana: SolanaInjectedWindowProvider
     }
     solflare?: SolanaInjectedWindowProvider
+    braveSolana?: SolanaInjectedWindowProvider
     injectedWeb3?: Record<string, PolkadotInjectedWindowProvider>
     walletExtension?: { isNovaWallet?: boolean }
   }

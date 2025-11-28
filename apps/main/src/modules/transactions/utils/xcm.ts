@@ -2,8 +2,25 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { CallType } from "@galacticcouncil/xcm-core"
 import { Call } from "@galacticcouncil/xcm-sdk"
 import { isObjectType } from "remeda"
+import { decodeFunctionData } from "viem"
 
 import { AnyTransaction } from "@/modules/transactions/types"
+
+const APPROVE_LEADING_BYTES = "0x095ea7b3"
+
+export function isEvmApproveCall(call: Call): boolean {
+  if (!isEvmCall(call)) return false
+
+  const { abi, data } = call
+
+  if (!abi) return false
+
+  const { functionName } = decodeFunctionData({
+    abi: JSON.parse(abi),
+    data: data as `0x${string}`,
+  })
+  return functionName === "approve" && data.startsWith(APPROVE_LEADING_BYTES)
+}
 
 export function isCall(x: AnyTransaction): x is Call {
   return isObjectType(x) && "type" in x
