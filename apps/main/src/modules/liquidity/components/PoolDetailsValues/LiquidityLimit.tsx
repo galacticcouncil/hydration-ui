@@ -21,7 +21,7 @@ export const LiquidityLimit = ({ poolId }: { poolId: string }) => {
         fs={14}
         lh="130%"
         color={getToken("text.high")}
-        sx={{ pb: getTokenPx("containers.paddings.primary") }}
+        sx={{ pb: getTokenPx("containers.paddings.quint") }}
       >
         {t("liquidity:details.values.liquidityLimit")}
       </Text>

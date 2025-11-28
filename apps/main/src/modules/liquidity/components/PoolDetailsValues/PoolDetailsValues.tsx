@@ -134,9 +134,14 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       {assetAIconId && priceA && assetA && (
         <>
           <ValueStats
+            wrap
             customValue={
               <Flex gap={4} align="self-start">
-                <AssetLogo id={assetAIconId} sx={{ mt: 4 }} />
+                <AssetLogo
+                  id={assetAIconId}
+                  size={"medium"}
+                  sx={{ mt: [0, 4] }}
+                />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}
@@ -158,9 +163,10 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       {assetBIconId && priceB && assetB && (
         <>
           <ValueStats
+            wrap
             customValue={
               <Flex gap={4} align="self-start">
-                <AssetLogo id={assetBIconId} sx={{ mt: 4 }} />
+                <AssetLogo id={assetBIconId} sx={{ mt: [0, 4] }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}

@@ -47,11 +47,11 @@ export const PoolStats = ({
 
   return (
     <Flex gap={20}>
-      <Paper p={20} sx={{ flex: 1 }}>
+      <Paper p={[16, 20]} sx={{ flex: 1 }}>
         <PoolChart assetId={data.id} height={500} />
       </Paper>
 
-      <Paper p={20}>
+      <Paper p={[16, 20]}>
         <PoolDetailsValues data={data} />
       </Paper>
     </Flex>
@@ -68,7 +68,11 @@ const PoolStatsMobile = ({
   const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
 
   return (
-    <Paper p={20} sx={{ flex: 1, gap: 12, flexDirection: "column" }} as={Flex}>
+    <Paper
+      p={[16, 20]}
+      sx={{ flex: 1, gap: 12, flexDirection: "column" }}
+      as={Flex}
+    >
       {type === "chart" ? (
         <PoolChart assetId={data.id} height={350} />
       ) : (

@@ -35,7 +35,10 @@ export const YieldOpportunitiesSection = ({
       </SectionHeader>
       <Flex
         width="100%"
-        gap={getTokenPx("containers.paddings.primary")}
+        gap={getTokenPx([
+          "containers.paddings.secondary",
+          "containers.paddings.primary",
+        ])}
         sx={{ flexWrap: "wrap" }}
       >
         {isOmnipool && data.borrowApyData && (
