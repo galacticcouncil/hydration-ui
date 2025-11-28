@@ -1,7 +1,6 @@
 import { XykMath } from "@galacticcouncil/sdk"
 import {
   Flex,
-  Paper,
   Separator,
   SValueStatsValue,
   Text,
@@ -33,19 +32,17 @@ export const PoolDetailsValues = ({
   const isOmnipool = !isIsolatedPool(data)
 
   return (
-    <Paper
-      as={Flex}
-      width={360}
-      p={getTokenPx("containers.paddings.primary")}
+    <Flex
+      direction="column"
+      minWidth={300}
       gap={getTokenPx("containers.paddings.primary")}
-      sx={{ flexDirection: "column" }}
     >
       {isOmnipool ? (
         <OmnipoolValues data={data} />
       ) : (
         <IsolatedPoolValues data={data} />
       )}
-    </Paper>
+    </Flex>
   )
 }
 

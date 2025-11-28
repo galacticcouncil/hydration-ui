@@ -3,9 +3,8 @@ import { Outlet } from "@tanstack/react-router"
 import { FC } from "react"
 
 import { YieldOpportunitiesSection } from "@/modules/liquidity/components/AvailableFarms/YieldOpportunitiesSection"
-import { PoolChart } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import { PoolDetailsHeader } from "@/modules/liquidity/components/PoolDetailsHeader"
-import { PoolDetailsValues } from "@/modules/liquidity/components/PoolDetailsValues"
+import { PoolStats } from "@/modules/liquidity/components/PoolDetailsValues/PoolStats"
 import { PositionsTable } from "@/modules/liquidity/components/PositionsTable"
 import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
 
@@ -31,13 +30,9 @@ export const PoolDetails: FC<Props> = ({ id }) => {
     <Flex direction="column" sx={{ position: "relative" }}>
       <PoolDetailsHeader data={data} />
 
-      {data && <PositionsTable pool={data} />}
+      <PositionsTable pool={data} />
 
-      <Flex gap={20}>
-        <PoolChart assetId={id} />
-
-        <PoolDetailsValues data={data} />
-      </Flex>
+      <PoolStats data={data} />
 
       <YieldOpportunitiesSection data={data} />
 

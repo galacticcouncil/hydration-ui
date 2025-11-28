@@ -17,10 +17,10 @@ export const LiquidityLimit = ({ poolId }: { poolId: string }) => {
     <Flex direction="column">
       <Text
         font="primary"
-        fw={700}
+        fw={500}
         fs={14}
         lh="130%"
-        color={getToken("text.tint.secondary")}
+        color={getToken("text.high")}
         sx={{ pb: getTokenPx("containers.paddings.primary") }}
       >
         {t("liquidity:details.values.liquidityLimit")}

@@ -2,7 +2,6 @@ import {
   Box,
   ChartValues,
   Flex,
-  Paper,
   TradingViewChart,
 } from "@galacticcouncil/ui/components"
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
@@ -24,25 +23,28 @@ const chartPeriodTypes = periodTypes.filter(
   (periodType) => periodType !== "minute",
 )
 
-const height = 500
-
-const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
+export const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
   ChartTimeRangeOptionType<TradeChartPeriodType | "all">
 >((option) => ({
   key: option,
   label: i18n.t(`chart.period.${option}`),
 }))
 
-export const PoolChart = ({ assetId }: { assetId: string }) => {
+export const PoolChart = ({
+  assetId,
+  height,
+}: {
+  assetId: string
+  height: number
+}) => {
   const { t } = useTranslation()
-  const assetIn = assetId
 
   const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
     assetInId: "10",
-    assetOutId: assetIn,
+    assetOutId: assetId,
     period: interval === "all" ? null : interval,
   })
 
@@ -65,17 +67,18 @@ export const PoolChart = ({ assetId }: { assetId: string }) => {
     ) : undefined
 
   return (
-    <Paper p={20} sx={{ flex: 1 }}>
+    <Flex direction="column" justify="space-between" height="100%">
       <Flex align="center" justify="space-between">
         <ChartValues
-          value=""
           displayValue={chartDisplayValue}
           isLoading={isLoading}
+          sx={{ height: 36 }}
         />
         <ChartTimeRange
           options={intervalOptions}
           selectedOption={interval}
           onSelect={(option) => setInterval(option.key)}
+          sx={{ display: ["none", "flex"] }}
         />
       </Flex>
       <ChartState
@@ -91,6 +94,6 @@ export const PoolChart = ({ assetId }: { assetId: string }) => {
           onCrosshairMove={setCrosshair}
         />
       </ChartState>
-    </Paper>
+    </Flex>
   )
 }

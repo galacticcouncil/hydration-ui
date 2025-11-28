@@ -23,7 +23,16 @@ export const YieldOpportunitiesSection = ({
 
   return (
     <>
-      <SectionHeader>{t("details.section.yieldOpportunities")}</SectionHeader>
+      <SectionHeader
+        sx={{
+          mt: getTokenPx([
+            "containers.paddings.mobileContent",
+            "containers.paddings.primary",
+          ]),
+        }}
+      >
+        {t("details.section.yieldOpportunities")}
+      </SectionHeader>
       <Flex
         width="100%"
         gap={getTokenPx("containers.paddings.primary")}
