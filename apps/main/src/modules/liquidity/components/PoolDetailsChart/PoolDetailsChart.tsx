@@ -7,7 +7,7 @@ import {
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { last } from "remeda"
+import { last, prop } from "remeda"
 
 import { ChartState } from "@/components/ChartState"
 import {
@@ -18,6 +18,7 @@ import { periodTypes } from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
 import { TradeChartPeriodType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
+import { useDisplayAssetStore } from "@/states/displayAsset"
 
 const chartPeriodTypes = periodTypes.filter(
   (periodType) => periodType !== "minute",
@@ -38,12 +39,12 @@ export const PoolChart = ({
   height: number
 }) => {
   const { t } = useTranslation()
-
+  const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
   const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
-    assetInId: "10",
+    assetInId: stableCoinId ?? "",
     assetOutId: assetId,
     period: interval === "all" ? null : interval,
   })

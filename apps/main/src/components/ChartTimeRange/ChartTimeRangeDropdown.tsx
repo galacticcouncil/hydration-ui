@@ -31,17 +31,15 @@ export const ChartTimeRangeDropdown = <
       onValueChange={(key) => {
         onSelect(key as TKey)
       }}
-      items={options
-        .filter((option) => option !== selectedOption)
-        .map((option) => {
-          const isKeyOption = typeof option === "string"
-          const key = isKeyOption ? option : option.key
+      items={options.map((option) => {
+        const isKeyOption = typeof option === "string"
+        const key = isKeyOption ? option : option.key
 
-          return {
-            key: key,
-            label: isKeyOption ? option : option.label,
-          }
-        })}
+        return {
+          key: key,
+          label: isKeyOption ? option : option.label,
+        }
+      })}
     />
   )
 }
