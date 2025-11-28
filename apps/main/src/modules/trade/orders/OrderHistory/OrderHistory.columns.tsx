@@ -17,7 +17,7 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { DcaOrderDetailsMobileModal } from "@/modules/trade/orders/DcaOrderDetailsMobileModal"
+import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 
 const columnHelper = createColumnHelper<OrderData>()
@@ -91,7 +91,7 @@ export const useOrderHistoryColumns = () => {
               <DcaOrderStatus status={row.original.status} />
             )}
             <Modal open={modal} onOpenChange={setModal}>
-              <DcaOrderDetailsMobileModal details={row.original} />
+              <DcaOrderDetailsModal details={row.original} />
             </Modal>
           </TableRowDetailsExpand>
         )
@@ -123,7 +123,7 @@ export const useOrderHistoryColumns = () => {
               />
             </TableRowDetailsExpand>
             <Modal open={modal} onOpenChange={setModal}>
-              <DcaOrderDetailsMobileModal details={row.original} />
+              <DcaOrderDetailsModal details={row.original} />
             </Modal>
           </>
         )

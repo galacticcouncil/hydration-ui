@@ -83,7 +83,6 @@ export const DcaForm: FC<Props> = ({ order }) => {
 
   const ordersError =
     formState.errors.frequency?.value?.message ??
-    formState.errors.root?.period?.message ??
     formState.errors.orders?.message
 
   return (
@@ -108,7 +107,7 @@ export const DcaForm: FC<Props> = ({ order }) => {
               handleBuyAssetChange(buyAsset, field.value)
             }}
             assets={buyableAssets}
-            label={t("trade:dca.assetOu.title")}
+            label={t("trade:dca.assetOut.title")}
             ignoreBalance
             value={
               field.value && order

@@ -1,4 +1,3 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import {
   Box,
@@ -9,14 +8,11 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
-import { formatDistanceToNow, formatDistanceToNowStrict } from "date-fns"
-import { FC, useEffect } from "react"
+import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
@@ -27,44 +23,29 @@ import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly order: TradeDcaOrder | undefined
-  readonly healthFactor: HealthFactorResult | undefined
   readonly isLoading: boolean
 }
 
-export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
+export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
   const { t } = useTranslation(["common", "trade"])
-  const { setError, clearErrors } = useFormContext<DcaFormValues>()
+  const { watch } = useFormContext<DcaFormValues>()
   const { getAsset } = useAssets()
 
   const {
     dca: { slippage },
   } = useTradeSettings()
 
-  const buyAsset = getAsset(order?.assetOut ?? 0)
-  const sellAsset = getAsset(order?.assetIn ?? 0)
-  const tradeFee = scaleHuman(order?.tradeFee ?? 0n, buyAsset?.decimals ?? 0)
-  const buyAmount = scaleHuman(order?.amountOut ?? 0n, buyAsset?.decimals ?? 0)
-  const tradeFeePct = Big(buyAmount).gt(0)
-    ? Big(tradeFee).div(buyAmount).times(100).toNumber()
-    : 0
-
-  const [tradeFeeDisplay] = useDisplayAssetPrice(buyAsset?.id ?? "0", tradeFee)
+  const buyAsset = order ? getAsset(order.assetOut) : undefined
+  const sellAsset = order ? getAsset(order.assetIn) : undefined
 
   const now = Date.now()
-  const duration = order ? order.tradeCount * order.frequency : 0
+
+  const frequencyPeriod = watch("frequency")
+  const frequency = getPeriodDuration(frequencyPeriod)
+
+  const duration = order ? order.tradeCount * frequency : 0
   const endDate = new Date(now + duration)
   const endDateValid = !isNaN(endDate.valueOf())
-  const frequency = order?.frequency ?? 0
-  const timeFrame = new Date(now + frequency)
-  const timeFrameValid = !isNaN(timeFrame.valueOf())
-
-  useEffect(() => {
-    if (!endDateValid || !timeFrameValid) {
-      setError("root.period", { message: t("error.period") })
-    } else {
-      clearErrors("root.period")
-    }
-  }, [endDateValid, timeFrameValid, setError, clearErrors, t])
 
   if (isLoading) {
     return (
@@ -79,7 +60,7 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
     return null
   }
 
-  const sellAmount = scaleHuman(order.amountIn, sellAsset.decimals)
+  const tradeAmountIn = scaleHuman(order.tradeAmountIn, sellAsset.decimals)
 
   return (
     <>
@@ -101,12 +82,12 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
               i18nKey="trade:dca.summary.description"
               values={{
                 sellAmount: t("currency", {
-                  value: sellAmount,
+                  value: tradeAmountIn,
                   symbol: sellAsset.symbol,
                 }),
                 buySymbol: buyAsset.symbol,
-                timeframe: timeFrameValid ? formatDistanceToNow(timeFrame) : 0,
-                period: endDateValid ? formatDistanceToNowStrict(endDate) : 0,
+                timeframe: t("interval", { value: frequency }),
+                period: t("interval", { value: duration }),
               }}
             >
               <Box as="span" color={getToken("colors.azureBlue.300")} />
@@ -131,22 +112,6 @@ export const DcaSummary: FC<Props> = ({ order, healthFactor, isLoading }) => {
               </SummaryRowValue>
             }
           />
-          <SwapSummaryRow
-            label={t("trade:dca.summary.tradeFee")}
-            content={`${tradeFeeDisplay} (${t("percent", { value: tradeFeePct })})`}
-            tooltip={t("trade:dca.summary.tradeFee.tooltip")}
-          />
-          {healthFactor?.isSignificantChange && (
-            <SwapSummaryRow
-              label={t("healthFactor")}
-              content={
-                <HealthFactorChange
-                  healthFactor={healthFactor.current}
-                  futureHealthFactor={healthFactor.future}
-                />
-              }
-            />
-          )}
         </Summary>
       </div>
     </>
