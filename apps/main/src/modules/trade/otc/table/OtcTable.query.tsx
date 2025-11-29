@@ -1,6 +1,3 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
-import { useEffect, useState } from "react"
-
 import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
@@ -17,29 +14,11 @@ export type OtcOffer = {
   readonly isPartiallyFillable: boolean
 }
 
-export const otcOffersQueryKey = [
-  QUERY_KEY_BLOCK_PREFIX,
-  "trade",
-  "otc",
-  "offers",
-]
-
 export const useOtcOffers = () => {
   const { getAsset, isExternal } = useAssets()
-  const [isEnabled, setIsEnabled] = useState(false)
-
-  // TODO remove when sdk is fixed and fetch query immediately on subscribe
-  useEffect(() => {
-    if (!isEnabled) {
-      setTimeout(() => {
-        setIsEnabled(true)
-      }, 0)
-    }
-  }, [isEnabled])
 
   return usePapiObservableQuery("OTC.Orders", [{ at: "best" }], {
     watchType: "entries",
-    enabled: isEnabled,
     select({ entries }) {
       return entries
         .map<OtcOffer | null>(({ args, value: offer }) => {
