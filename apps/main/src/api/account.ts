@@ -80,8 +80,6 @@ export const omnipoolPositionsQuery = (
   return queryOptions({
     queryKey: omnipoolPositionsKey(address),
     enabled: isApiLoaded && !!address && !!omnipoolNftId,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
     queryFn: async () => {
       const entries = await papi.query.Uniques.Account.getEntries(
         address,
@@ -113,8 +111,6 @@ export const omnipoolMiningPositionsQuery = (
   return queryOptions({
     queryKey: omnipoolMiningPositionsKey(address),
     enabled: isApiLoaded && !!address && !!miningNftId,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
     queryFn: async () => {
       const entries = await papi.query.Uniques.Account.getEntries(
         address,
@@ -149,8 +145,6 @@ export const xykMiningPositionsQuery = (
   return queryOptions({
     queryKey: xykMiningPositionsKey(address),
     enabled: isApiLoaded && !!address && !!miningNftId,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
     queryFn: async () => {
       const entries = await papi.query.Uniques.Account.getEntries(
         address,
