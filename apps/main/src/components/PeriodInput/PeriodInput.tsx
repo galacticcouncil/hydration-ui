@@ -21,6 +21,7 @@ export type PeriodInputProps = {
   readonly periodType?: PeriodType
   readonly isError?: boolean
   readonly allowedPeriodTypes?: ReadonlySet<PeriodType>
+  readonly className?: string
   readonly onPeriodTypeChange: (periodType: PeriodType) => void
   readonly onPeriodValueChange: (periodValue: number | null) => void
 }
@@ -30,6 +31,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
   periodType,
   isError,
   allowedPeriodTypes,
+  className,
   onPeriodTypeChange,
   onPeriodValueChange,
 }) => {
@@ -46,6 +48,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
 
   return (
     <NumberInput
+      className={className}
       value={periodValue}
       decimalScale={0}
       allowNegative={false}

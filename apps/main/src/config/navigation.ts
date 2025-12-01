@@ -1,4 +1,3 @@
-import { TwoColorSwap, TwoColorUsers } from "@galacticcouncil/ui/assets/icons"
 import { TFunction } from "i18next"
 
 import { FileRouteTypes } from "@/routeTree.gen"
@@ -50,8 +49,8 @@ export const NAVIGATION: NavigationItem[] = [
     key: "trade",
     to: LINKS.trade,
     children: [
-      { key: "swap", icon: TwoColorSwap, to: LINKS.swap },
-      { key: "otc", icon: TwoColorUsers, to: LINKS.otc },
+      { key: "swap", to: LINKS.swap },
+      { key: "otc", to: LINKS.otc },
     ],
   },
   {

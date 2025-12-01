@@ -2,6 +2,7 @@ import { SubScan } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
   Box,
+  Button,
   ExternalLink,
   Flex,
   Grid,
@@ -25,7 +26,7 @@ type Props = {
   readonly details: SwapData | RoutedTradeData
 }
 
-export const SwapDetailsMobileModal = ({ details }: Props) => {
+export const SwapDetailsModal = ({ details }: Props) => {
   const { t } = useTranslation(["common", "trade"])
 
   return (
@@ -38,7 +39,7 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
         <Flex
           justify="space-between"
           align="center"
-          p={getTokenPx("containers.paddings.primary")}
+          pb={getTokenPx("containers.paddings.primary")}
         >
           <SwapAmount
             fromAmount={details.fromAmount}
@@ -58,7 +59,7 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
         <ModalContentDivider />
         <Grid
           columnTemplate="1fr auto 1fr"
-          p={getTokenPx("containers.paddings.primary")}
+          py={getTokenPx("containers.paddings.primary")}
         >
           <Flex
             direction="column"
@@ -92,7 +93,7 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
           </Flex>
         </Grid>
         <ModalContentDivider />
-        <Box p={getTokenPx("containers.paddings.primary")}>
+        <Box py={getTokenPx("containers.paddings.primary")}>
           <Amount
             label={t("date")}
             value={t("date.datetime", {
@@ -105,30 +106,17 @@ export const SwapDetailsMobileModal = ({ details }: Props) => {
             <ModalContentDivider />
             <Flex
               justify="flex-end"
-              p={getTokenPx("containers.paddings.primary")}
               pt={getTokenPx("containers.paddings.secondary")}
+              pb={getTokenPx("containers.paddings.primary")}
             >
-              <ExternalLink
-                sx={{
-                  textDecoration: "none",
-                  display: "flex",
-                  gap: 4,
-                  px: getTokenPx("buttons.paddings.primary"),
-                  border: "1px solid",
-                  borderColor: getToken("buttons.secondary.low.borderRest"),
-                  bg: getToken("buttons.secondary.low.rest"),
-                  color: getToken("buttons.secondary.low.onRest"),
-                  borderRadius: 20,
-                  alignItems: "center",
-                  height: 26,
-                }}
-                href={details.link}
-              >
-                <Icon component={SubScan} size={12} color="#FEFEFE" />
-                <Text fw={500} fs="p6" lh={1.4}>
-                  {t("trade:trade.orders.swapDetail.openOnSubscan")}
-                </Text>
-              </ExternalLink>
+              <Button variant="tertiary" outline asChild>
+                <ExternalLink href={details.link}>
+                  <Icon component={SubScan} size={12} />
+                  <Text fw={500} fs="p6" lh={1.4}>
+                    {t("trade:trade.orders.swapDetail.openOnSubscan")}
+                  </Text>
+                </ExternalLink>
+              </Button>
             </Flex>
           </>
         )}

@@ -72,7 +72,11 @@ export const AssetSwitcher = ({
       <Separator />
       {onSwitchAssets && (
         <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
-          <Icon size={16} component={ArrowDown} />
+          <Icon
+            size={16}
+            component={ArrowDown}
+            color={getToken("icons.primary")}
+          />
         </SSwitchContainer>
       )}
       <>
@@ -81,7 +85,7 @@ export const AssetSwitcher = ({
           disabled={isPriceDisabled}
           onClick={() => setIsReversed((isReversed) => !isReversed)}
         >
-          <Text fs="p6" color={getToken("text.high")}>
+          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
             {!isPriceReady && <Skeleton width={120} />}
             {isPriceReady &&
               (isPriceDisabled

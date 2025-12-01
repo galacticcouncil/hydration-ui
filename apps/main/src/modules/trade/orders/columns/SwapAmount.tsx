@@ -30,7 +30,13 @@ export const SwapAmount = ({
         <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
           {t("number", { value: fromAmount })}
         </Text>
-        <Text fw={500} fs={11} lh={1.4} color={getToken("text.medium")}>
+        <Text
+          fw={500}
+          fs={11}
+          lh={1.4}
+          color={getToken("text.medium")}
+          whiteSpace="nowrap"
+        >
           {from.symbol}
         </Text>
       </Flex>

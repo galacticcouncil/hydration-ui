@@ -6,10 +6,13 @@ export const SHeaderTab = styled(Box)<{ readonly disabled?: boolean }>(
   ({ theme, disabled }) => css`
     color: ${theme.text.low};
 
-    padding: 10px ${theme.containers.paddings.tertiary}px;
+    padding-block: 10px;
+    padding-inline: 12px;
+    border-radius: 30px;
 
     font-weight: 500;
     font-size: 14px;
+    line-height: 18px;
     text-decoration: none;
 
     cursor: pointer;
@@ -20,7 +23,12 @@ export const SHeaderTab = styled(Box)<{ readonly disabled?: boolean }>(
     `}
 
     &[data-status="active"] {
-      color: ${theme.textButtons.onBg.high};
+      color: ${theme.text.high};
+    }
+
+    &:hover {
+      color: ${theme.text.high};
+      background: ${theme.buttons.secondary.low.rest};
     }
   `,
 )

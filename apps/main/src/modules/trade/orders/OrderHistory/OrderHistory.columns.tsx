@@ -24,7 +24,7 @@ const columnHelper = createColumnHelper<OrderData>()
 
 export const useOrderHistoryColumns = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { isDesktop } = useBreakpoints()
+  const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const fromToColumn = columnHelper.display({
@@ -130,8 +130,10 @@ export const useOrderHistoryColumns = () => {
       },
     })
 
-    return !isDesktop
-      ? [fromToColumnMobile, statusColumnMobile]
-      : [fromToColumn, fillPriceColumn, typeColumn, statusColumn]
-  }, [t, isDesktop])
+    if (isMobile) {
+      return [fromToColumnMobile, statusColumnMobile]
+    }
+
+    return [fromToColumn, fillPriceColumn, typeColumn, statusColumn]
+  }, [t, isMobile])
 }
