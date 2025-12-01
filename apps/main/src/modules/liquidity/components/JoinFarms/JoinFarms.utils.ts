@@ -1,5 +1,6 @@
 import { calculate_loyalty_multiplier } from "@galacticcouncil/math-liquidity-mining"
 import { calculate_liquidity_out_asset_a } from "@galacticcouncil/math-xyk"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -8,7 +9,12 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z, ZodType } from "zod/v4"
 
-import { XykDeposit } from "@/api/account"
+import {
+  omnipoolMiningPositionsKey,
+  omnipoolPositionsKey,
+  XykDeposit,
+  xykMiningPositionsKey,
+} from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { Farm, LoyaltyCurve } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
@@ -277,6 +283,7 @@ const useJoinOmnipoolFarmsMutation = ({
   options?: TransactionOptions
 }) => {
   const { t } = useTranslation("liquidity")
+  const { account } = useAccount()
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
@@ -308,6 +315,10 @@ const useJoinOmnipoolFarmsMutation = ({
                     calls: txs.map((t) => t.decodedCall),
                   })
                 : txs[0]!,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
           },
           options,
         )
@@ -337,6 +348,10 @@ const useJoinOmnipoolFarmsMutation = ({
           {
             tx,
             toasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
           },
           options,
         )
@@ -358,6 +373,7 @@ const useJoinIsolatedPoolFarmsMutation = ({
   meta: XYKPoolMeta
   options?: TransactionOptions
 }) => {
+  const { account } = useAccount()
   const { papi } = useRpcProvider()
   const { t } = useTranslation("liquidity")
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -394,6 +410,7 @@ const useJoinIsolatedPoolFarmsMutation = ({
                     calls: txs.map((t) => t.decodedCall),
                   })
                 : txs[0]!,
+            invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
           },
           options,
         )
@@ -427,6 +444,7 @@ const useJoinIsolatedPoolFarmsMutation = ({
           {
             tx,
             toasts,
+            invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
           },
           options,
         )

@@ -9,6 +9,7 @@ import { first } from "remeda"
 import { useDebounce } from "use-debounce"
 
 import { healthFactorAfterWithdrawQuery, healthFactorQuery } from "@/api/aave"
+import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { bestSellQuery } from "@/api/trade"
 import {
@@ -323,6 +324,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
           {
             tx: omnipoolDispatchTx,
             toasts: joinOmnipoolToasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
           },
           { onSubmitted },
         )
@@ -488,6 +493,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                     symbol: meta.symbol,
                   }),
                   toasts: joinOmnipoolToasts,
+                  invalidateQueries: [
+                    omnipoolPositionsKey(account?.address ?? ""),
+                    omnipoolMiningPositionsKey(account?.address ?? ""),
+                  ],
                 }
               },
             },
@@ -594,6 +603,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                   tx,
                   title: t("liquidity.add.modal.stepper.joinOmnipool"),
                   toasts: joinOmnipoolToasts,
+                  invalidateQueries: [
+                    omnipoolPositionsKey(account?.address ?? ""),
+                    omnipoolMiningPositionsKey(account?.address ?? ""),
+                  ],
                 }
               },
             },

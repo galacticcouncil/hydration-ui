@@ -4,7 +4,7 @@ import { createRootRouteWithContext } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { lazy } from "react"
 
-import { useAccountUniquesSubscription } from "@/api/account"
+import { useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useAllPools, useOmnipoolIds } from "@/api/pools"
@@ -47,7 +47,7 @@ const Subscriptions = () => {
   useOmnipoolIds()
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
-  useAccountUniquesSubscription()
+  useAccountUniques()
   usePriceSubscriber()
   useAllPools()
   useQuery(assetsQuery(rpcProvider))

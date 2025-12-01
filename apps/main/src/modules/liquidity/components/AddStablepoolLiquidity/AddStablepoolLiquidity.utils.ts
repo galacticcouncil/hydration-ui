@@ -1,4 +1,5 @@
 import { calculate_shares } from "@galacticcouncil/math-stableswap"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -8,6 +9,7 @@ import { ResolverOptions, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod"
 
+import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
 import { StableSwapBase } from "@/api/pools"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
@@ -86,7 +88,7 @@ export const useStablepoolAddLiquidity = ({
   const {
     liquidity: { slippage },
   } = useTradeSettings()
-
+  const { account } = useAccount()
   const meta = getAssetWithFallback(stableswapId)
 
   const { stablepoolAssets, reserveIds, accountBalances } = useMemo(() => {
@@ -226,6 +228,13 @@ export const useStablepoolAddLiquidity = ({
         {
           tx,
           toasts,
+          invalidateQueries:
+            option === "stablepool"
+              ? undefined
+              : [
+                  omnipoolPositionsKey(account?.address ?? ""),
+                  omnipoolMiningPositionsKey(account?.address ?? ""),
+                ],
         },
         { onSubmitted },
       )

@@ -3,6 +3,7 @@ import {
   calculate_shares,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -10,6 +11,7 @@ import { FieldError, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z, ZodType } from "zod/v4"
 
+import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { useOmnipoolFarms } from "@/api/farms"
 import {
@@ -230,6 +232,7 @@ export const useAddLiquidity = ({
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getAssetWithFallback } = useAssets()
+  const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
 
   const meta = getAssetWithFallback(assetId)
@@ -307,6 +310,10 @@ export const useAddLiquidity = ({
               tOptions,
             ),
           },
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
         },
         { onSubmitted },
       )

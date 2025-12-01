@@ -2,6 +2,7 @@ import {
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -11,7 +12,12 @@ import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import z, { ZodType } from "zod/v4"
 
-import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
+import {
+  OmnipoolDepositFull,
+  omnipoolMiningPositionsKey,
+  OmnipoolPosition,
+  omnipoolPositionsKey,
+} from "@/api/account"
 import {
   useMinWithdrawalFee,
   useOmnipoolAssetsData,
@@ -155,6 +161,7 @@ export const useRemoveSingleOmnipoolPosition = ({
   onSubmitted: () => void
 }) => {
   const { t } = useTranslation("liquidity")
+  const { account } = useAccount()
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
@@ -235,6 +242,10 @@ export const useRemoveSingleOmnipoolPosition = ({
         {
           tx,
           toasts,
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
         },
         { onSubmitted },
       )
@@ -292,7 +303,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
-
+  const { account } = useAccount()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
 
   const form = useRemoveLiquidityForm({
@@ -409,6 +420,10 @@ export const useRemoveMultipleOmnipoolPositions = ({
               calls: txs.map((t) => t.decodedCall),
             }),
             toasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
           },
           { onSubmitted },
         )
@@ -420,6 +435,10 @@ export const useRemoveMultipleOmnipoolPositions = ({
           {
             tx,
             toasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
           },
           { onSubmitted },
         )

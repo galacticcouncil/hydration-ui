@@ -22,6 +22,7 @@ export type TransactionCommon = {
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  invalidateQueries?: string[][]
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -93,7 +94,6 @@ export interface TransactionActions {
 
 export interface TransactionOptions extends TransactionActions {
   onBack?: () => void
-  onClose?: () => void
 }
 
 export type SingleTransaction = SingleTransactionInput &

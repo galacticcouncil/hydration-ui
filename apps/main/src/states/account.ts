@@ -8,9 +8,6 @@ import { useShallow } from "zustand/react/shallow"
 import {
   OmnipoolDepositFull,
   OmnipoolPosition,
-  useAccountOmnipoolMiningPositions,
-  useAccountOmnipoolPositions,
-  useAccountXykMiningPositions,
   XykDeposit,
 } from "@/api/account"
 import { AssetId } from "@/providers/assetsProvider"
@@ -166,20 +163,8 @@ export const useAccountPositions = () => {
     useShallow(pick(["omnipool", "omnipoolMining", "xykMining"])),
   )
 
-  const { isLoading: isOmnipoolPositionsLoading } =
-    useAccountOmnipoolPositions()
-  const { isLoading: isOmnipoolMiningPositionsLoading } =
-    useAccountOmnipoolMiningPositions()
-  const { isLoading: isXykMiningPositionsLoading } =
-    useAccountXykMiningPositions()
-
   const isPositions =
     omnipool.length > 0 || omnipoolMining.length > 0 || xykMining.length > 0
-
-  const isPositionsLoading =
-    isOmnipoolPositionsLoading ||
-    isOmnipoolMiningPositionsLoading ||
-    isXykMiningPositionsLoading
 
   const positions = {
     omnipool,
@@ -212,7 +197,6 @@ export const useAccountPositions = () => {
     positions,
     positionsAmount,
     isPositions,
-    isPositionsLoading,
     getPositions,
   }
 }

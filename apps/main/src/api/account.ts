@@ -1,13 +1,13 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
-import { useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { ObservedValueOf } from "rxjs"
 import { useShallow } from "zustand/shallow"
 
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import {
   getOmnipoolMiningPositions,
@@ -50,6 +50,10 @@ export type AccountUniquesObservedValue = ObservedValueOf<
   ReturnType<Papi["query"]["Uniques"]["Account"]["watchEntries"]>
 >
 
+export type AccountUniquesValues = Awaited<
+  ReturnType<Papi["query"]["Uniques"]["Account"]["getEntries"]>
+>
+
 export type AccountUniquesEntries = AccountUniquesObservedValue["entries"]
 type AccountUniquesUpdater = (data: AccountUniquesObservedValue) => void
 
@@ -58,6 +62,108 @@ export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
   const address = isConnected ? account.address : ""
 
   return usePapiObservableQuery("System.Account", [address, "best"], options)
+}
+
+export const omnipoolPositionsKey = (address: string) => [
+  "uniques",
+  "omnipoolPositions",
+  address,
+]
+export const omnipoolPositionsQuery = (
+  context: TProviderContext,
+  address: string,
+  omnipoolNftId: bigint,
+  onSuccess?: (data: OmnipoolPosition[]) => void,
+) => {
+  const { isApiLoaded, papi } = context
+
+  return queryOptions({
+    queryKey: omnipoolPositionsKey(address),
+    enabled: isApiLoaded && !!address && !!omnipoolNftId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const entries = await papi.query.Uniques.Account.getEntries(
+        address,
+        omnipoolNftId,
+        { at: "best" },
+      )
+
+      const positions = await getOmnipoolPositions(papi, entries)
+      onSuccess?.(positions)
+
+      return positions
+    },
+  })
+}
+
+export const omnipoolMiningPositionsKey = (address: string) => [
+  "uniques",
+  "omnipoolMiningPositions",
+  address,
+]
+export const omnipoolMiningPositionsQuery = (
+  context: TProviderContext,
+  address: string,
+  miningNftId: bigint,
+  onSuccess?: (data: OmnipoolDepositFull[]) => void,
+) => {
+  const { isApiLoaded, papi } = context
+
+  return queryOptions({
+    queryKey: omnipoolMiningPositionsKey(address),
+    enabled: isApiLoaded && !!address && !!miningNftId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const entries = await papi.query.Uniques.Account.getEntries(
+        address,
+        miningNftId,
+        { at: "best" },
+      )
+
+      const omnipoolMiningPositions = await getOmnipoolMiningPositions(
+        papi,
+        entries,
+      )
+      onSuccess?.(omnipoolMiningPositions)
+
+      return omnipoolMiningPositions
+    },
+  })
+}
+
+export const xykMiningPositionsKey = (address: string) => [
+  "uniques",
+  "xykMiningPositions",
+  address,
+]
+export const xykMiningPositionsQuery = (
+  context: TProviderContext,
+  address: string,
+  miningNftId: bigint,
+  onSuccess?: (data: XykDeposit[]) => void,
+) => {
+  const { isApiLoaded, papi } = context
+
+  return queryOptions({
+    queryKey: xykMiningPositionsKey(address),
+    enabled: isApiLoaded && !!address && !!miningNftId,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    queryFn: async () => {
+      const entries = await papi.query.Uniques.Account.getEntries(
+        address,
+        miningNftId,
+        { at: "best" },
+      )
+
+      const omnipoolMiningPositions = await getXykMiningPositions(papi, entries)
+      onSuccess?.(omnipoolMiningPositions)
+
+      return omnipoolMiningPositions
+    },
+  })
 }
 
 export const useAccountOmnipoolPositions = (
@@ -124,8 +230,10 @@ export const useAccountXykMiningPositions = (
   )
 }
 
-export const useAccountUniquesSubscription = () => {
-  const { papi } = useRpcProvider()
+export const useAccountUniques = () => {
+  const provider = useRpcProvider()
+  const { account } = useAccount()
+  const { data: nftIds } = useQuery(uniquesIds(provider))
 
   const {
     setOmnipoolPositions,
@@ -141,24 +249,30 @@ export const useAccountUniquesSubscription = () => {
     ),
   )
 
-  useAccountOmnipoolPositions(async (data) => {
-    if (data.deltas === null) return
-    const omnipoolPositions = await getOmnipoolPositions(papi, data.entries)
-    setOmnipoolPositions(omnipoolPositions)
-  })
+  useQuery(
+    omnipoolPositionsQuery(
+      provider,
+      account?.address ?? "",
+      nftIds?.omnipoolNftId ?? 0n,
+      (data) => setOmnipoolPositions(data),
+    ),
+  )
 
-  useAccountOmnipoolMiningPositions(async (data) => {
-    if (data.deltas === null) return
-    const omnipoolMiningPositions = await getOmnipoolMiningPositions(
-      papi,
-      data.entries,
-    )
-    setOmnipoolMiningPositions(omnipoolMiningPositions)
-  })
+  useQuery(
+    omnipoolMiningPositionsQuery(
+      provider,
+      account?.address ?? "",
+      nftIds?.miningNftId ?? 0n,
+      (data) => setOmnipoolMiningPositions(data),
+    ),
+  )
 
-  useAccountXykMiningPositions(async (data) => {
-    if (data.deltas === null) return
-    const xykMiningPositions = await getXykMiningPositions(papi, data.entries)
-    setXykMiningPositions(xykMiningPositions)
-  })
+  useQuery(
+    xykMiningPositionsQuery(
+      provider,
+      account?.address ?? "",
+      nftIds?.xykMiningNftId ?? 0n,
+      (data) => setXykMiningPositions(data),
+    ),
+  )
 }

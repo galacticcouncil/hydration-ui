@@ -1,10 +1,11 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
-import { XykDeposit } from "@/api/account"
+import { XykDeposit, xykMiningPositionsKey } from "@/api/account"
 import { PoolToken } from "@/api/pools"
 import { useXYKPoolsLiquidity } from "@/api/xyk"
 import { useAssets } from "@/providers/assetsProvider"
@@ -115,7 +116,7 @@ export const useRemoveMultipleXYKPositions = ({
   const { getAssetWithFallback, getMetaFromXYKPoolTokens } = useAssets()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
   const submitToasts = useSubmitToasts()
-
+  const { account } = useAccount()
   const meta = getMetaFromXYKPoolTokens(address, poolTokens)
 
   const { data: liquidity } = useXYKPoolsLiquidity(address)
@@ -178,6 +179,7 @@ export const useRemoveMultipleXYKPositions = ({
             ),
           }),
           toasts,
+          invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
         },
         { onSubmitted },
       )
@@ -223,7 +225,7 @@ export const useRemoveSingleXYKPosition = ({
   onSubmitted: () => void
 }) => {
   const submitToasts = useSubmitToasts()
-
+  const { account } = useAccount()
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, getMetaFromXYKPoolTokens } = useAssets()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
@@ -275,6 +277,7 @@ export const useRemoveSingleXYKPosition = ({
             ),
           }),
           toasts,
+          invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
         },
         { onSubmitted },
       )
