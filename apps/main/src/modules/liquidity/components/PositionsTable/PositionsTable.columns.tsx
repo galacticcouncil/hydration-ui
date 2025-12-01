@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
+  Box,
   Button,
   Flex,
   Icon,
@@ -55,8 +56,8 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           sxFn: (original) =>
             !isOmnipoolPosition(original)
               ? {
-                  borderLeft: `2px solid`,
-                  borderColor: getToken("buttons.primary.high.rest"),
+                  // it needs to be overridden because of the issue for sticky column
+                  p: "0px !important",
                 }
               : {},
         },
@@ -65,14 +66,24 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           isOmnipoolPosition(original) ? (
             <AssetLabelFull asset={original.meta} withName={false} />
           ) : (
-            <Text
-              fs="p5"
-              fw={500}
-              color={getToken("text.high")}
-              sx={{ whiteSpace: "nowrap" }}
+            <Box
+              height={66}
+              py={24}
+              px={18}
+              sx={{
+                borderLeft: `2px solid`,
+                borderColor: getToken("buttons.primary.high.rest"),
+              }}
             >
-              {original.label}
-            </Text>
+              <Text
+                fs="p5"
+                fw={500}
+                color={getToken("text.high")}
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                {original.label}
+              </Text>
+            </Box>
           ),
       }),
       omnipoolColumnHelper.display({

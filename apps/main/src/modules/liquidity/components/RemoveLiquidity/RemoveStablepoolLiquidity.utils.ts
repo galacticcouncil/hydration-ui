@@ -33,10 +33,12 @@ export const useStablepoolRemoveLiquidity = ({
   pool,
   reserves,
   initialReceiveAsset,
+  onSubmitted,
 }: {
   pool: StableSwapBase
   reserves: TReserve[]
   initialReceiveAsset: TAssetWithBalance
+  onSubmitted: () => void
 }) => {
   const { t } = useTranslation("liquidity")
   const { getAssetWithFallback } = useAssets()
@@ -160,10 +162,13 @@ export const useStablepoolRemoveLiquidity = ({
         }),
       }
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 

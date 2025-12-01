@@ -219,7 +219,13 @@ export const useAddLiquidityForm = ({
   return form
 }
 
-export const useAddLiquidity = (assetId: string) => {
+export const useAddLiquidity = ({
+  assetId,
+  onSubmitted,
+}: {
+  assetId: string
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -284,23 +290,26 @@ export const useAddLiquidity = (assetId: string) => {
         where: t("omnipool"),
       }
 
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: t(
-            isJoinFarms
-              ? "liquidity.add.joinFarms.modal.toast.submitted"
-              : "liquidity.add.modal.toast.submitted",
-            tOptions,
-          ),
-          success: t(
-            isJoinFarms
-              ? "liquidity.add.joinFarms.modal.toast.success"
-              : "liquidity.add.modal.toast.success",
-            tOptions,
-          ),
+      await createTransaction(
+        {
+          tx,
+          toasts: {
+            submitted: t(
+              isJoinFarms
+                ? "liquidity.add.joinFarms.modal.toast.submitted"
+                : "liquidity.add.modal.toast.submitted",
+              tOptions,
+            ),
+            success: t(
+              isJoinFarms
+                ? "liquidity.add.joinFarms.modal.toast.success"
+                : "liquidity.add.modal.toast.success",
+              tOptions,
+            ),
+          },
         },
-      })
+        { onSubmitted },
+      )
     },
   })
 

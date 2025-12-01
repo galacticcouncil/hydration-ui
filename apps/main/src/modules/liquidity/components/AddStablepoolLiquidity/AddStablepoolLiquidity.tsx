@@ -37,8 +37,8 @@ import {
   useAddMoneyMarketLiquidityWrapper,
 } from "@/modules/liquidity/components/AddMoneyMarketLiquidity/AddMoneyMarketLiquidity.utils"
 import {
-  AddGETHToOmnipool,
   AddMoneyMarketLiquidity,
+  AddMoneyMarketOmnipoolLiquidity,
 } from "@/modules/liquidity/components/AddMoneyMarketLiquidity/AddMoneyMarketLiquidityWrapper"
 import { StablepoolReserves } from "@/modules/liquidity/components/StablepoolReserves/StablepoolReserves"
 import {
@@ -115,7 +115,7 @@ const AddMoneyMarketLiquidityWrapper = (
   return (
     <FormProvider {...form}>
       {formData.defaultOption === "omnipool" ? (
-        <AddGETHToOmnipool formData={formData} props={props} />
+        <AddMoneyMarketOmnipoolLiquidity formData={formData} props={props} />
       ) : (
         <AddMoneyMarketLiquidity formData={formData} props={props} />
       )}
@@ -128,10 +128,11 @@ const AddStablepoolLiquidity = (
     stablepoolDetails: TStablepoolDetails
   },
 ) => {
-  const { stablepoolDetails, stableswapId } = props
+  const { stablepoolDetails, stableswapId, onSubmitted } = props
   const { form, ...addLiquidityData } = useStablepoolAddLiquidity({
     stablepoolDetails,
     stableswapId,
+    onSubmitted,
   })
 
   return (

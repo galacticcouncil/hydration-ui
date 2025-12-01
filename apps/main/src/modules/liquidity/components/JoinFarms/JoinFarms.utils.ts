@@ -73,9 +73,11 @@ const getAvailableFarms = (
 export const useJoinOmnipoolFarms = ({
   position,
   omnipoolAsset,
+  onSubmitted,
 }: {
   position: AccountOmnipoolPosition
   omnipoolAsset: OmnipoolAssetTable
+  onSubmitted: () => void
 }) => {
   const { farms, meta, id: poolId } = omnipoolAsset
   const isDeposit = isOmnipoolDepositPosition(position)
@@ -91,6 +93,7 @@ export const useJoinOmnipoolFarms = ({
     farms: availableFarms,
     meta,
     positionId: position.positionId,
+    options: { onSubmitted },
   })
 
   if (!schema) return undefined

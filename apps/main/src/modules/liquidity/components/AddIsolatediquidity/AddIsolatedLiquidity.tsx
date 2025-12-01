@@ -47,6 +47,7 @@ export const AddIsolatedLiquidityForm = ({
   consts,
   onBack,
   closable = false,
+  onSubmitted,
 }: AddLiquidityProps & {
   pool: PoolBase
   consts: TXYKConsts
@@ -72,7 +73,7 @@ export const AddIsolatedLiquidityForm = ({
     activeFarms,
     joinFarmErrorMessage,
     isJoinFarms,
-  } = useAddIsolatedLiquidity(pool, consts)
+  } = useAddIsolatedLiquidity({ pool, consts, onSubmitted })
 
   const onSubmit = async () => {
     const values = form.getValues()

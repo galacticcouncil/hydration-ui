@@ -86,7 +86,15 @@ type AddIsolatedLiquidityZodSchema = NonNullable<
   ReturnType<typeof useAddIsolatedLiquidityZod>
 >
 
-export const useAddIsolatedLiquidity = (pool: PoolBase, consts: TXYKConsts) => {
+export const useAddIsolatedLiquidity = ({
+  pool,
+  consts,
+  onSubmitted,
+}: {
+  pool: PoolBase
+  consts: TXYKConsts
+  onSubmitted: () => void
+}) => {
   const rpc = useRpcProvider()
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
@@ -207,20 +215,23 @@ export const useAddIsolatedLiquidity = (pool: PoolBase, consts: TXYKConsts) => {
 
       const sharesHuman = scaleHuman(shares, meta.decimals)
 
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: t("liquidity.add.modal.xyk.toast.submitted", {
-            shares: sharesHuman,
-          }),
-          success: t("liquidity.add.modal.xyk.toast.success", {
-            shares: sharesHuman,
-          }),
-          error: t("liquidity.add.modal.xyk.toast.submitted", {
-            shares: sharesHuman,
-          }),
+      await createTransaction(
+        {
+          tx,
+          toasts: {
+            submitted: t("liquidity.add.modal.xyk.toast.submitted", {
+              shares: sharesHuman,
+            }),
+            success: t("liquidity.add.modal.xyk.toast.success", {
+              shares: sharesHuman,
+            }),
+            error: t("liquidity.add.modal.xyk.toast.submitted", {
+              shares: sharesHuman,
+            }),
+          },
         },
-      })
+        { onSubmitted },
+      )
     },
   })
 

@@ -11,6 +11,8 @@ import { useBalanceTableColumns } from "./PositionsTable.columns"
 import { STableHeader } from "./PositionsTable.styled"
 import { BalanceTableData } from "./PositionsTable.utils"
 
+const bg = getToken("surfaces.containers.high.accent")
+
 export const ATokenBalanceTable = ({
   pool,
   aStableswapDisplayBalance,
@@ -67,7 +69,7 @@ export const ATokenBalanceTable = ({
 
   return (
     <>
-      <STableHeader>
+      <STableHeader sx={{ bg }}>
         <Icon
           component={SuppliedLiquidityIcon}
           size={12}
@@ -85,7 +87,12 @@ export const ATokenBalanceTable = ({
         columnPinning={{
           left: ["meta_name"],
         }}
-        sx={{ minWidth: 900 }}
+        sx={{
+          minWidth: 900,
+          tr: {
+            bg,
+          },
+        }}
       />
     </>
   )

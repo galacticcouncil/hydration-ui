@@ -152,7 +152,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     },
   } = useTradeSettings()
   const { erc20Id, assetsToProvide, stablepoolAssets } = formData
-  const { pool } = props.stablepoolDetails
+  const {
+    onSubmitted,
+    stablepoolDetails: { pool },
+  } = props
   const meta = getAssetWithFallback(erc20Id)
   const stableswapMeta = getAssetWithFallback(pool.id)
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
@@ -321,7 +324,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
             tx: omnipoolDispatchTx,
             toasts: joinOmnipoolToasts,
           },
-          { onSubmitted: props.onBack },
+          { onSubmitted },
         )
       } else if (split) {
         const initialShares = getTransferableBalance(pool.id.toString())
@@ -639,7 +642,7 @@ export const useAddMoneyMarketLiquidity = ({
   const {
     stableswapId,
     stablepoolDetails: { pool },
-    onBack,
+    onSubmitted,
   } = props
 
   const meta = getAssetWithFallback(stableswapId)
@@ -858,7 +861,7 @@ export const useAddMoneyMarketLiquidity = ({
             tx: trade.tx,
             toasts,
           },
-          { onSubmitted: onBack },
+          { onSubmitted },
         )
       }
     },

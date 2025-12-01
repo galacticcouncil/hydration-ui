@@ -52,7 +52,7 @@ export const PoolStats = ({
       <Paper p={[16, 20]} sx={{ flex: 1 }}>
         <PoolChart
           assetId={data.id}
-          height={isOmnipool && data.isStablepoolOnly ? 420 : 500}
+          height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
         />
       </Paper>
 

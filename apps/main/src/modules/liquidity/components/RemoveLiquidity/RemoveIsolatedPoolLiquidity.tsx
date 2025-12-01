@@ -206,6 +206,7 @@ export const RemoveMultipleIsolatedPoolLiquidity = (
     positions: props.positions,
     poolTokens: props.poolTokens,
     address: props.address,
+    onSubmitted: props.onSubmitted,
   })
 
   if (!removeLiquidity) return <RemoveLiquiditySkeleton {...props} />

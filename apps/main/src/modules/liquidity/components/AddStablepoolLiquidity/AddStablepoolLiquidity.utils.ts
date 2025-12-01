@@ -72,9 +72,11 @@ export const addStablepoolOptions = [
 export const useStablepoolAddLiquidity = ({
   stablepoolDetails: { pool, reserves },
   stableswapId,
+  onSubmitted,
 }: {
   stablepoolDetails: TStablepoolDetails
   stableswapId: string
+  onSubmitted: () => void
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { getAssetWithFallback } = useAssets()
@@ -220,10 +222,13 @@ export const useStablepoolAddLiquidity = ({
         success: t("liquidity.add.modal.toast.success", tOptions),
       }
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 

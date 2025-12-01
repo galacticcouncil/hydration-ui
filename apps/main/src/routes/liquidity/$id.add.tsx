@@ -1,17 +1,13 @@
 import { ModalContainer } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
-import {
-  createFileRoute,
-  useParams,
-  useRouter,
-  useSearch,
-} from "@tanstack/react-router"
+import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
 import { AddIsolatedLiquidity } from "@/modules/liquidity/components/AddIsolatediquidity"
 import { AddLiquidity } from "@/modules/liquidity/components/AddLiquidity"
 import { AddStablepoolLiquidityWrapper } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
+import { useNavigateLiquidityBack } from "@/modules/liquidity/Liquidity.utils"
 
 const AddLiquiditySchema = z.object({
   stableswapId: z.string().optional(),
@@ -25,6 +21,7 @@ export type AddLiquidityProps = AddLiquidityType & {
   id: string
   onBack?: () => void
   closable?: boolean
+  onSubmitted: () => void
 }
 
 export const Route = createFileRoute("/liquidity/$id/add")({
@@ -36,17 +33,17 @@ export const Route = createFileRoute("/liquidity/$id/add")({
       from: "/liquidity/$id/add",
     })
 
-    const { history } = useRouter()
+    const navigateBack = useNavigateLiquidityBack()
 
     return (
       <ModalContainer
-        open
         sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
       >
         <AddLiquidityModalContent
           id={id}
           closable={false}
-          onBack={() => history.back()}
+          onBack={navigateBack}
+          onSubmitted={navigateBack}
           {...search}
         />
       </ModalContainer>

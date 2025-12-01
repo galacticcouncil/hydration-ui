@@ -13,27 +13,29 @@ export const LiquidityDetailMobileActions: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation("wallet")
   const [isAddOpen, setIsAddOpen] = useState(false)
 
-  if (isAddOpen)
-    return (
-      <Modal open onOpenChange={setIsAddOpen}>
-        <AddLiquidityModalContent id={assetId} />
-      </Modal>
-    )
-
   return (
-    <Grid columnGap={8} sx={{ gridTemplateColumns: "1fr 1fr" }}>
-      <Button size="large" asChild>
-        <Link to={"/liquidity/$id"} params={{ id: assetId }}>
-          {t("myLiquidity.actions.poolDetails")}
-        </Link>
-      </Button>
-      <Button
-        variant="tertiary"
-        size="large"
-        onClick={() => setIsAddOpen(true)}
-      >
-        {t("myLiquidity.actions.addLiquidity")}
-      </Button>
-    </Grid>
+    <>
+      <Grid columnGap={8} sx={{ gridTemplateColumns: "1fr 1fr" }}>
+        <Button size="large" asChild>
+          <Link to={"/liquidity/$id"} params={{ id: assetId }}>
+            {t("myLiquidity.actions.poolDetails")}
+          </Link>
+        </Button>
+        <Button
+          variant="tertiary"
+          size="large"
+          onClick={() => setIsAddOpen(true)}
+        >
+          {t("myLiquidity.actions.addLiquidity")}
+        </Button>
+      </Grid>
+      <Modal open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <AddLiquidityModalContent
+          id={assetId}
+          closable
+          onSubmitted={() => setIsAddOpen(false)}
+        />
+      </Modal>
+    </>
   )
 }

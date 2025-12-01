@@ -9,7 +9,7 @@ import {
   useAddMoneyMarketOmnipoolLiquidity,
 } from "./AddMoneyMarketLiquidity.utils"
 
-export const AddGETHToOmnipool = ({
+export const AddMoneyMarketOmnipoolLiquidity = ({
   formData,
   props,
 }: {

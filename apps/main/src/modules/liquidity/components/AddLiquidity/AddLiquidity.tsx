@@ -40,6 +40,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
   id,
   onBack,
   closable = false,
+  onSubmitted,
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
 
@@ -52,7 +53,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
     joinFarmErrorMessage,
     mutation,
     isJoinFarms,
-  } = useAddLiquidity(id)
+  } = useAddLiquidity({ assetId: id, onSubmitted })
 
   const onSubmit = async (values: TAddLiquidityFormValues) => {
     if (!liquidityShares || !values.amount)

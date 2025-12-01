@@ -106,8 +106,10 @@ export const useRemoveMultipleXYKPositions = ({
   positions,
   poolTokens,
   address,
+  onSubmitted,
 }: TRemoveXykPositionsProps & {
   positions: XykDeposit[]
+  onSubmitted: () => void
 }) => {
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, getMetaFromXYKPoolTokens } = useAssets()
@@ -168,14 +170,17 @@ export const useRemoveMultipleXYKPositions = ({
 
       const toasts = submitToasts(removeSharesAmount)
 
-      await createTransaction({
-        tx: papi.tx.Utility.batch_all({
-          calls: [...exitingFarmsTxs, ...liquidityTxs].map(
-            (t) => t.decodedCall,
-          ),
-        }),
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx: papi.tx.Utility.batch_all({
+            calls: [...exitingFarmsTxs, ...liquidityTxs].map(
+              (t) => t.decodedCall,
+            ),
+          }),
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 
@@ -212,8 +217,10 @@ export const useRemoveSingleXYKPosition = ({
   address,
   position,
   poolTokens,
+  onSubmitted,
 }: TRemoveXykPositionsProps & {
   position: XykDeposit
+  onSubmitted: () => void
 }) => {
   const submitToasts = useSubmitToasts()
 
@@ -260,12 +267,17 @@ export const useRemoveSingleXYKPosition = ({
         share_amount: BigInt(position.shares.toString()),
       })
 
-      await createTransaction({
-        tx: papi.tx.Utility.batch_all({
-          calls: [...exitFarmsTxs, removeLiquidityTx].map((t) => t.decodedCall),
-        }),
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx: papi.tx.Utility.batch_all({
+            calls: [...exitFarmsTxs, removeLiquidityTx].map(
+              (t) => t.decodedCall,
+            ),
+          }),
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 

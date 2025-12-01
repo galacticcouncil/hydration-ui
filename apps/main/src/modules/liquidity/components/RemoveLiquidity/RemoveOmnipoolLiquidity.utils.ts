@@ -145,10 +145,15 @@ const useRemoveLiquidityOut = (poolId: string) => {
   )
 }
 
-export const useRemoveSingleOmnipoolPosition = (
-  poolId: string,
-  position: AccountOmnipoolPosition,
-) => {
+export const useRemoveSingleOmnipoolPosition = ({
+  poolId,
+  position,
+  onSubmitted,
+}: {
+  poolId: string
+  position: AccountOmnipoolPosition
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
@@ -226,10 +231,13 @@ export const useRemoveSingleOmnipoolPosition = (
           })
         : removeLiquidityTx
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 
@@ -271,10 +279,15 @@ export const useRemoveSingleOmnipoolPosition = (
   }
 }
 
-export const useRemoveMultipleOmnipoolPositions = (
-  poolId: string,
-  positions: AccountOmnipoolPosition[],
-) => {
+export const useRemoveMultipleOmnipoolPositions = ({
+  poolId,
+  positions,
+  onSubmitted,
+}: {
+  poolId: string
+  positions: AccountOmnipoolPosition[]
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
@@ -390,20 +403,26 @@ export const useRemoveMultipleOmnipoolPositions = (
       }
 
       if (txs.length > 1) {
-        await createTransaction({
-          tx: papi.tx.Utility.batch_all({
-            calls: txs.map((t) => t.decodedCall),
-          }),
-          toasts,
-        })
+        await createTransaction(
+          {
+            tx: papi.tx.Utility.batch_all({
+              calls: txs.map((t) => t.decodedCall),
+            }),
+            toasts,
+          },
+          { onSubmitted },
+        )
       } else {
         const tx = txs[0]
 
         if (!tx) return
-        await createTransaction({
-          tx,
-          toasts,
-        })
+        await createTransaction(
+          {
+            tx,
+            toasts,
+          },
+          { onSubmitted },
+        )
       }
     },
   })

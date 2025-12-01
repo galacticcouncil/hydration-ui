@@ -8,6 +8,8 @@ import {
 import { OmniMath } from "@galacticcouncil/sdk"
 import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate } from "@tanstack/react-router"
+import { useRouter } from "@tanstack/react-router"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { isNumber } from "remeda"
@@ -93,6 +95,7 @@ export type IsolatedPoolTable = {
   totalApr: string
   farms: Farm[]
   allFarms: Farm[]
+  isNative: boolean
 }
 
 export type TReserve = {
@@ -573,6 +576,7 @@ export const useIsolatedPools = () => {
           isFeeLoading: false,
           farms,
           allFarms,
+          isNative: false,
         })
 
         return acc
@@ -760,4 +764,17 @@ export const calculatePoolFee = (fee?: number[] | PoolFee) => {
   const tradeFee = Big(numerator).div(denominator)
 
   return tradeFee.times(100).toString()
+}
+
+export const useNavigateLiquidityBack = () => {
+  const { history } = useRouter()
+  const navigate = useNavigate()
+
+  return () => {
+    if (history.canGoBack()) {
+      history.back()
+    } else {
+      navigate({ to: "/liquidity" })
+    }
+  }
 }
