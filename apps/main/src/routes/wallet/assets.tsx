@@ -4,6 +4,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
+import { getPageMeta } from "@/config/navigation"
 import { WalletAssetsPage } from "@/modules/wallet/assets/WalletAssetsPage"
 
 const searchSchema = z.object({
@@ -78,4 +79,11 @@ export const Route = createFileRoute("/wallet/assets")({
   component: WalletAssetsPage,
   pendingComponent: WalletAssetsSkeleton,
   validateSearch: searchSchema,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("wallet", i18n.t),
+  }),
 })
