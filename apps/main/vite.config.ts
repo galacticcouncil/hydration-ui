@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-imports */
 import fs from "node:fs"
 import { resolve } from "node:path"
 
@@ -8,6 +9,8 @@ import { createHtmlPlugin } from "vite-plugin-html"
 import svgr from "vite-plugin-svgr"
 import wasm from "vite-plugin-wasm"
 import tsconfigPaths from "vite-tsconfig-paths"
+
+import { SEO_CONFIG } from "./src/config/seo"
 
 const headInlineScript = await transformWithEsbuild(
   fs.readFileSync("./src/utils/head.js", "utf-8"),
@@ -74,6 +77,7 @@ export default defineConfig({
             tag: "div",
             children: loaderHtml,
           },
+          ...SEO_CONFIG,
         ],
       },
     }),
