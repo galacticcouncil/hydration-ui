@@ -117,6 +117,7 @@ export const AccountSelectContent = () => {
     <>
       <ModalHeader
         title="Select account"
+        align="center"
         customHeader={
           shouldRenderHeader && (
             <Flex direction="column" gap={20} mt={10}>
