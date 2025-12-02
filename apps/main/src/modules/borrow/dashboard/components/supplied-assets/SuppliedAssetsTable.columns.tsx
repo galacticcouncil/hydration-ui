@@ -38,7 +38,9 @@ const columnHelper = createColumnHelper<TSuppliedAssetsRow>()
 export const useSuppliedAssetsTableColumns = ({
   omRemove,
 }: {
-  omRemove: (props: TRemoveMoneyMarketLiquidityProps) => void
+  omRemove: (
+    props: Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted">,
+  ) => void
 }) => {
   const { t } = useTranslation(["common", "borrow"])
   const { isMobile } = useBreakpoints()

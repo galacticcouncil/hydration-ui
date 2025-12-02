@@ -1,29 +1,23 @@
 import { Plus } from "@galacticcouncil/ui/assets/icons"
-import {
-  Button,
-  ModalContent,
-  ModalRoot,
-  ModalTrigger,
-} from "@galacticcouncil/ui/components"
-import { FC } from "react"
+import { Button, Modal } from "@galacticcouncil/ui/components"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { CreateIsolatedPool } from "@/modules/liquidity/components/CreateIsolatedPool"
 
 export const MyLiquidityActions: FC = () => {
   const { t } = useTranslation("wallet")
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <ModalRoot>
-      <Button size="medium" asChild>
-        <ModalTrigger>
-          <Plus />
-          {t("myLiquidity.header.cta")}
-        </ModalTrigger>
+    <>
+      <Button size="medium" onClick={() => setIsOpen(true)}>
+        <Plus />
+        {t("myLiquidity.header.cta")}
       </Button>
-      <ModalContent>
-        <CreateIsolatedPool />
-      </ModalContent>
-    </ModalRoot>
+      <Modal open={isOpen} onOpenChange={setIsOpen}>
+        <CreateIsolatedPool closable onSubmitted={() => setIsOpen(false)} />
+      </Modal>
+    </>
   )
 }
