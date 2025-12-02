@@ -13,7 +13,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { formatDistanceToNow } from "date-fns"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -28,7 +27,7 @@ type Props = {
   readonly details: OrderData
 }
 
-export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
+export const DcaOrderDetailsModal = ({ details }: Props) => {
   const { t } = useTranslation(["common", "trade"])
   const [terminateModalOpen, setTerminateModalOpen] = useState(false)
 
@@ -105,12 +104,7 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: formatDistanceToNow(
-                    Date.now() + details.blocksPeriod * PARACHAIN_BLOCK_TIME,
-                    {
-                      includeSeconds: true,
-                    },
-                  ),
+                  timeframe: details.blocksPeriod * PARACHAIN_BLOCK_TIME,
                   count: details.blocksPeriod,
                 })}
               />

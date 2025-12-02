@@ -38,6 +38,7 @@ export const bestSellQuery = (
       assetIn,
       assetOut,
       amountIn,
+      slippage,
       address,
     ],
     queryFn: async () => {
@@ -89,6 +90,8 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
+      slippage,
+      maxRetries,
       address,
     ],
     queryFn: async () => {
@@ -139,6 +142,7 @@ export const bestBuyQuery = (
       assetIn,
       assetOut,
       amountOut,
+      slippage,
       address,
     ],
     queryFn: async () => {
@@ -190,6 +194,8 @@ export const bestBuyTwapQuery = (
       assetIn,
       assetOut,
       amountOut,
+      slippage,
+      maxRetries,
       address,
     ],
     queryFn: async () => {
@@ -223,13 +229,25 @@ type DcaTradeOrderArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
-  readonly duration: number
   readonly frequency: number
+  readonly orders: number
+  readonly slippage: number
+  readonly maxRetries: number
+  readonly address: string
 }
 
 export const dcaTradeOrderQuery = (
   { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn, duration, frequency }: DcaTradeOrderArgs,
+  {
+    assetIn,
+    assetOut,
+    amountIn,
+    frequency,
+    orders,
+    slippage,
+    maxRetries,
+    address,
+  }: DcaTradeOrderArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -239,24 +257,38 @@ export const dcaTradeOrderQuery = (
       assetIn,
       assetOut,
       amountIn,
-      duration,
       frequency,
+      orders,
+      address,
     ],
-    queryFn: () =>
-      sdk.api.scheduler.getDcaOrder(
+    queryFn: async () => {
+      const order = await sdk.api.scheduler.getDcaOrder(
         Number(assetIn),
         Number(assetOut),
         amountIn,
-        duration,
         frequency,
-      ),
+        orders,
+      )
+
+      const orderTx = address
+        ? await sdk.tx
+            .order(order)
+            .withBeneficiary(address)
+            .withSlippage(slippage)
+            .withMaxRetries(maxRetries)
+            .build()
+            .then((tx) => tx.get())
+        : null
+
+      return { order, orderTx }
+    },
     enabled:
       isLoaded &&
       !!assetIn &&
       !!assetOut &&
       Big(amountIn || "0").gt(0) &&
       frequency > 0 &&
-      duration > 0,
+      orders > 0,
   })
 
 export const minimumOrderBudgetQuery = (

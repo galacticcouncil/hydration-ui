@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 
+import { getPageMeta } from "@/config/navigation"
 import { SubpageLayout } from "@/modules/layout/SubpageLayout"
 import { LiquiditySubpageMenu } from "@/modules/liquidity/components/LiquiditySubpageMenu"
 import {
@@ -31,4 +32,11 @@ const Liquidity = () => {
 
 export const Route = createFileRoute("/liquidity")({
   component: Liquidity,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("liquidity", i18n.t),
+  }),
 })

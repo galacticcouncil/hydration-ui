@@ -1,6 +1,8 @@
 import { TwoColorSwap, TwoColorUsers } from "@galacticcouncil/ui/assets/icons"
+import { TFunction } from "i18next"
 
 import { FileRouteTypes } from "@/routeTree.gen"
+import { getDeployPreviewId } from "@/utils/deploy"
 
 type Route = FileRouteTypes["to"]
 
@@ -106,6 +108,136 @@ export const NAVIGATION: NavigationItem[] = [
   //   to: LINKS.memepad,
   // },
 ]
+
+export const getMenuTranslations = (t: TFunction) =>
+  ({
+    home: {
+      title: t("navigation.home.title"),
+      description: "",
+    },
+    liquidity: {
+      title: t("navigation.liquidity.title"),
+      description: "",
+    },
+    myLiquidity: {
+      title: t("navigation.myLiquidity.title"),
+      description: "",
+    },
+    pools: {
+      title: t("navigation.pools.title"),
+      description: "",
+    },
+    wallet: {
+      title: t("navigation.wallet.title"),
+      description: "",
+    },
+    walletAssets: {
+      title: t("navigation.walletAssets.title"),
+      description: "",
+    },
+    walletTransactions: {
+      title: t("navigation.walletTransactions.title"),
+      description: "",
+    },
+    // crossChain: {
+    //   title: t("navigation.crossChain.title"),
+    //   description: "",
+    // },
+    // bridge: {
+    //   title: t("navigation.bridge.title"),
+    //   description: "",
+    // },
+    trade: {
+      title: t("navigation.trade.title"),
+      description: "",
+    },
+    swap: {
+      title: t("navigation.swap.title"),
+      description: t("navigation.swap.description"),
+    },
+    otc: {
+      title: t("navigation.otc.title"),
+      description: t("navigation.otc.description"),
+    },
+    // stats: {
+    //   title: t("navigation.stats.title"),
+    //   description: t("navigation.stats.description"),
+    // },
+    // statsOverview: {
+    //   title: t("navigation.statsOverview.title"),
+    //   description: "",
+    // },
+    // statsTreasury: {
+    //   title: t("navigation.statsTreasury.title"),
+    //   description: "",
+    // },
+    staking: {
+      title: t("navigation.staking.title"),
+      description: t("navigation.staking.description"),
+    },
+    // stakingDashboard: {
+    //   title: t("navigation.stakingDashboard.title"),
+    //   description: "",
+    // },
+    // stakingGovernance: {
+    //   title: t("navigation.stakingGovernance.title"),
+    //   description: "",
+    // },
+    // referrals: {
+    //   title: t("navigation.referrals.title"),
+    //   description: "",
+    // },
+    borrow: {
+      title: t("navigation.borrow.title"),
+      description: "",
+    },
+    borrowDashboard: {
+      title: t("navigation.borrowDashboard.title"),
+      description: t("navigation.borrowDashboard.description"),
+    },
+    borrowMarkets: {
+      title: t("navigation.borrowMarkets.title"),
+      description: "",
+    },
+    borrowHistory: {
+      title: t("navigation.borrowHistory.title"),
+      description: t("navigation.borrowHistory.description"),
+    },
+    // memepad: {
+    //   title: t("navigation.memepad.title"),
+    //   description: "",
+    // },
+    // submitTransaction: {
+    //   title: t("navigation.submitTransaction.title"),
+    //   description: "",
+    // },
+  }) satisfies Record<NavigationKey, { title: string; description: string }>
+
+export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
+  const previewId = getDeployPreviewId()
+  const translations = getMenuTranslations(t)
+
+  const { title, description } = translations[navKey]
+  const globalTitle = t("meta.title")
+  const fullTitle = title ? `${title} | ${globalTitle}` : globalTitle
+
+  if (previewId) {
+    return [
+      {
+        title: `PR${previewId} | ${fullTitle}`,
+      },
+    ]
+  }
+  return [
+    {
+      title: fullTitle,
+    },
+    {
+      name: "description",
+      content: description || t("meta.description"),
+    },
+  ]
+}
 
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",

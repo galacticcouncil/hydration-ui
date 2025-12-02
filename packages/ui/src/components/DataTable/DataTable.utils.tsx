@@ -8,8 +8,13 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { RowData, TableOptions } from "@tanstack/table-core"
-import { useMemo } from "react"
+import {
+  OnChangeFn,
+  RowData,
+  SortingState,
+  TableOptions,
+} from "@tanstack/table-core"
+import { useMemo, useState } from "react"
 import { range } from "remeda"
 
 import { Skeleton } from "@/components/Skeleton"
@@ -170,4 +175,45 @@ export function getPaginationRange(
   pagination.push(totalPages)
 
   return pagination
+}
+
+export const usePriorityTableSort = <TColumn extends string>(
+  columnSortPriority: ReadonlyArray<TColumn>,
+  defaultSortState: SortingState = [],
+) => {
+  const [sortState, setSortState] = useState<SortingState>(defaultSortState)
+
+  const changeSort = useMemo(
+    (): OnChangeFn<SortingState> => (updater) => {
+      setSortState((prevState) => {
+        const newState =
+          typeof updater === "function" ? updater(prevState) : updater
+
+        // Sort the columns based on priority order
+        const sortedState = [...newState].sort((a, b) => {
+          const aPriority = columnSortPriority.indexOf(a.id as TColumn)
+          const bPriority = columnSortPriority.indexOf(b.id as TColumn)
+
+          // If both columns are in the priority list, sort by priority
+          if (aPriority !== -1 && bPriority !== -1) {
+            return aPriority - bPriority
+          }
+
+          // If only one column is in the priority list, it comes first
+          if (aPriority !== -1) return -1
+          if (bPriority !== -1) return 1
+
+          // If neither is in the priority list, maintain stable order
+          const aIndex = newState.indexOf(a)
+          const bIndex = newState.indexOf(b)
+          return aIndex - bIndex
+        })
+
+        return sortedState
+      })
+    },
+    [columnSortPriority],
+  )
+
+  return [sortState, changeSort] as const
 }

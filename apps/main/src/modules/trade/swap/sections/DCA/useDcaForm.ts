@@ -21,16 +21,18 @@ import {
   validNumber,
 } from "@/utils/validators"
 
-const MIN_ORDERS = 3
+export const MIN_DCA_ORDERS = 3
 
 const schema = z.object({
   sellAsset: requiredObject<TAsset>(),
   sellAmount: positiveOptional,
   buyAsset: requiredObject<TAsset>(),
   frequency: periodInputSchema,
-  orders: validNumber.min(MIN_ORDERS, {
-    error: i18n.t("trade:dca.errors.minOrders", { count: MIN_ORDERS }),
-  }),
+  orders: validNumber
+    .min(MIN_DCA_ORDERS, {
+      error: i18n.t("trade:dca.errors.minOrders", { count: MIN_DCA_ORDERS }),
+    })
+    .nullable(),
 })
 
 export type DcaFormValues = z.infer<typeof schema>
@@ -107,7 +109,7 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
       type: "day",
       value: 1,
     },
-    orders: MIN_ORDERS,
+    orders: null,
   }
 
   const form = useForm<DcaFormValues>({

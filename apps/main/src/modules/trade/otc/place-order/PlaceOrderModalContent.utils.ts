@@ -1,4 +1,5 @@
 import { math } from "@galacticcouncil/sdk-next"
+import { getReversePrice } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import { PriceSettings } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
@@ -17,27 +18,35 @@ export const getPrice = (
 ) => {
   const omnipoolPriceBig = Big(omnipoolPrice)
 
-  const price =
-    priceSettings.type == "fixed"
-      ? priceSettings.value || "0"
-      : calculatePriceWithDiff(
-          omnipoolPriceBig.toString(),
-          Big(priceSettings.percentage).toString(),
-        )
+  if (priceSettings.type === "fixed") {
+    const priceGain = omnipoolPriceBig.eq(0)
+      ? "0"
+      : Big(
+          math.calculateDiffToRef(
+            BigInt(scale(priceSettings.offerPrice, priceDecimals)),
+            BigInt(scale(omnipoolPrice, priceDecimals)),
+          ),
+        ).toString()
 
-  const priceGain =
-    priceSettings.type === "relative"
-      ? priceSettings.percentage.toString()
-      : omnipoolPriceBig.eq(0)
-        ? "0"
-        : Big(
-            math.calculateDiffToRef(
-              BigInt(scale(price, priceDecimals)),
-              BigInt(scale(omnipoolPrice, priceDecimals)),
-            ),
-          ).toString()
+    return {
+      offerPrice: priceSettings.offerPrice || "0",
+      buyPrice: priceSettings.buyPrice || "0",
+      priceGain,
+    }
+  }
 
-  return { price, priceGain }
+  const offerPrice = calculatePriceWithDiff(
+    omnipoolPriceBig.toString(),
+    Big(priceSettings.percentage).toString(),
+  )
+
+  const buyPrice = getReversePrice(offerPrice)
+
+  return {
+    offerPrice,
+    buyPrice,
+    priceGain: priceSettings.percentage.toString(),
+  }
 }
 
 const calculatePriceWithDiff = (

@@ -67,6 +67,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
     rowCount?: number
+    isMultiSort?: boolean
     getIsExpandable?: (item: TData) => boolean
     getIsClickable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
@@ -104,6 +105,7 @@ const DataTable = <TData,>({
   emptyState,
   columnPinning,
   rowCount,
+  isMultiSort,
   getIsExpandable,
   getIsClickable,
   renderSubComponent,
@@ -133,6 +135,7 @@ const DataTable = <TData,>({
     manualSorting,
     enableSortingRemoval,
     globalFilterFn: globalFilterFn ?? "auto",
+    ...(isMultiSort && { isMultiSortEvent: () => true }),
     ...(rowCount !== undefined && {
       rowCount,
       manualPagination: true,

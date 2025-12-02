@@ -1,4 +1,6 @@
 {
+  "meta.title": "Hydration - An Ocean of Liquidity",
+  "meta.description": "Hydration is a next-gen DeFi protocol which is designed to bring an ocean of liquidity to Polkadot. Our tool for the job the Hydration - an innovative Automated Market Maker (AMM) which unlocks unparalleled efficiencies by combining all assets in a single trading pool.",
   "hour_one": "{{ count }} hour",
   "hour_other": "{{ count }} hours",
   "day_one": "{{ count }} day",
@@ -201,6 +203,7 @@
   "date.long": "{{ value, date(format: 'MMMM do, yyyy') }}",
   "date.day": "{{ value, date(format: 'MMM dd') }}",
   "date.daytime": "{{ value, date(format: 'MMM dd yyyy, HH:mm') }}",
+  "interval": "{{ value, interval }}",
   "number": "{{ value, number }}",
   "percent": "{{prefix, default('')}}{{ value, percent }}{{suffix, default('')}}",
   "percent.apy": "{{ value, percent }} APY",

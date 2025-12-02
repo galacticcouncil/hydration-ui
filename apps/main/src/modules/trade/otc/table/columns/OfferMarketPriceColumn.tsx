@@ -23,6 +23,7 @@ export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
       }
       truncate
     >
+      {percentageNum < 0 && "-"}
       {percentageNum > 0 && "+"}
       {t("percent", {
         value: percentage === null ? null : Math.abs(percentage),

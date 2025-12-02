@@ -7,7 +7,7 @@ import { useTransactionsStore } from "@/states/transactions"
 
 export const useSubmitCancelOtcOrder = (
   otcOffer: OtcOfferTabular,
-  onSubmit: () => void,
+  onSubmitted: () => void,
 ) => {
   const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
@@ -25,21 +25,25 @@ export const useSubmitCancelOtcOrder = (
         symbol: otcOffer.assetOut.symbol,
       })
 
-      onSubmit()
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: t("otc.cancelOrder.loading", {
-            amount: formattedAmount,
-          }),
-          success: t("otc.cancelOrder.success", {
-            amount: formattedAmount,
-          }),
-          error: t("otc.cancelOrder.error", {
-            amount: formattedAmount,
-          }),
+      await createTransaction(
+        {
+          tx,
+          toasts: {
+            submitted: t("otc.cancelOrder.loading", {
+              amount: formattedAmount,
+            }),
+            success: t("otc.cancelOrder.success", {
+              amount: formattedAmount,
+            }),
+            error: t("otc.cancelOrder.error", {
+              amount: formattedAmount,
+            }),
+          },
         },
-      })
+        {
+          onSubmitted,
+        },
+      )
     },
   })
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, useMatch } from "@tanstack/react-router"
 import { FC } from "react"
 
+import { getPageMeta } from "@/config/navigation"
 import { SubpageLayout } from "@/modules/layout/SubpageLayout"
 import { WalletAssetsSubpageLayoutActions } from "@/modules/wallet/assets/WalletAssetsSubpageLayoutActions"
 
@@ -28,4 +29,11 @@ const WalletSubpageLayout: FC = () => {
 
 export const Route = createFileRoute("/wallet")({
   component: WalletSubpageLayout,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("wallet", i18n.t),
+  }),
 })

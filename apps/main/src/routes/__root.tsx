@@ -1,6 +1,6 @@
-import { QueryClient, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { createRootRouteWithContext } from "@tanstack/react-router"
+import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { lazy } from "react"
 
@@ -15,6 +15,7 @@ import {
 } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { useAccountBalanceSubscription } from "@/api/subscriptions"
+import { RouterContext } from "@/App"
 import { Loader } from "@/components/Loader/Loader"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
@@ -56,9 +57,7 @@ const Subscriptions = () => {
   return null
 }
 
-export const Route = createRootRouteWithContext<{
-  queryClient: QueryClient
-}>()({
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   pendingComponent: () => {
     return (
@@ -81,6 +80,21 @@ export const Route = createRootRouteWithContext<{
       assetsQuery({ ...rpcData, isApiLoaded: true, isLoaded: true }),
     )
   },
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: [
+      {
+        title: i18n.t("common:meta.title"),
+      },
+      {
+        name: "description",
+        content: i18n.t("common:meta.description"),
+      },
+    ],
+  }),
 })
 
 function RootComponent() {
@@ -89,6 +103,7 @@ function RootComponent() {
 
   return (
     <>
+      <HeadContent />
       <MainLayout />
       {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
       {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}

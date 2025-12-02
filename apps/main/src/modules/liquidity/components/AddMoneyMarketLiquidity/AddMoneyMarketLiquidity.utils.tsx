@@ -8,7 +8,11 @@ import { useTranslation } from "react-i18next"
 import { first } from "remeda"
 import { useDebounce } from "use-debounce"
 
-import { healthFactorAfterWithdrawQuery, healthFactorQuery } from "@/api/aave"
+import {
+  AAVE_GAS_LIMIT,
+  healthFactorAfterWithdrawQuery,
+  healthFactorQuery,
+} from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { bestSellQuery } from "@/api/trade"
@@ -32,7 +36,6 @@ import {
   isSubstrateTxResult,
   useTransactionsStore,
 } from "@/states/transactions"
-import { AAVE_EXTRA_GAS } from "@/utils/consts"
 import { scale, scaleHuman } from "@/utils/formatting"
 
 export type TAddMoneyMarketLiquidityWrapperReturn = Omit<
@@ -295,7 +298,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
 
         const omnipoolDispatchTx = papi.tx.Dispatcher.dispatch_with_extra_gas({
           call: omnipoolTx.decodedCall,
-          extra_gas: AAVE_EXTRA_GAS,
+          extra_gas: AAVE_GAS_LIMIT,
         })
 
         const tOptions = {
@@ -353,7 +356,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                     assets: assetsToProvideFormatted,
                     min_shares: BigInt(minStablepoolShares),
                   }).decodedCall,
-                  extra_gas: AAVE_EXTRA_GAS,
+                  extra_gas: AAVE_GAS_LIMIT,
                 })
 
                 const providedValue = assetsToProvide
@@ -456,7 +459,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                 const omnipoolDispatchTx =
                   papi.tx.Dispatcher.dispatch_with_extra_gas({
                     call: omnipoolTx.decodedCall,
-                    extra_gas: AAVE_EXTRA_GAS,
+                    extra_gas: AAVE_GAS_LIMIT,
                   })
 
                 const tOptions = {
@@ -573,7 +576,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
 
                 const tx = papi.tx.Dispatcher.dispatch_with_extra_gas({
                   call: omnipoolTx.decodedCall,
-                  extra_gas: AAVE_EXTRA_GAS,
+                  extra_gas: AAVE_GAS_LIMIT,
                 })
 
                 const tOptions = {
@@ -744,7 +747,7 @@ export const useAddMoneyMarketLiquidity = ({
             assets: assetsToProvideFormatted,
             min_shares: BigInt(minStablepoolShares),
           }).decodedCall,
-          extra_gas: AAVE_EXTRA_GAS,
+          extra_gas: AAVE_GAS_LIMIT,
         })
 
         const providedValue = assetsToProvide
