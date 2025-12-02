@@ -1,4 +1,3 @@
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Box, Grid, NumberInput, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
@@ -16,13 +15,8 @@ import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
 
-type Props = {
-  readonly order: TradeDcaOrder | undefined
-}
-
-export const DcaForm: FC<Props> = ({ order }) => {
+export const DcaForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
   const { control, formState, getValues, setValue } =
     useFormContext<DcaFormValues>()
@@ -108,12 +102,8 @@ export const DcaForm: FC<Props> = ({ order }) => {
             }}
             assets={buyableAssets}
             label={t("trade:dca.assetOut.title")}
+            hideInput
             ignoreBalance
-            value={
-              field.value && order
-                ? scaleHuman(order.amountOut, field.value.decimals)
-                : ""
-            }
             error={fieldState.error?.message}
           />
         )}
@@ -146,6 +136,7 @@ export const DcaForm: FC<Props> = ({ order }) => {
               value={field.value}
               decimalScale={0}
               allowNegative={false}
+              keepInvalidInput
               onValueChange={({ floatValue }) => field.onChange(floatValue)}
               isError={!!fieldState.error?.message}
               unit={t("trade:dca.orders.unit")}

@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 
 export type HealthFactorRiskWarningProps = FlexProps & {
+  canContinue?: boolean
   message: string
   accepted: boolean
   isUserConsentRequired: boolean
@@ -16,6 +17,7 @@ export type HealthFactorRiskWarningProps = FlexProps & {
 export const HealthFactorRiskWarning: React.FC<
   HealthFactorRiskWarningProps
 > = ({
+  canContinue,
   message,
   accepted,
   onAcceptedChange,
@@ -25,9 +27,10 @@ export const HealthFactorRiskWarning: React.FC<
   return (
     <Flex direction="column" gap={10} {...props}>
       <Alert
-        variant={isUserConsentRequired ? "error" : "warning"}
+        variant="warning"
         description={message}
         action={
+          canContinue !== false &&
           isUserConsentRequired && (
             <Flex align="center" as="label" gap={10}>
               <Toggle

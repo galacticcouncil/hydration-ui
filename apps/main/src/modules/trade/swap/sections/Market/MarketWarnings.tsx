@@ -2,6 +2,7 @@ import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/component
 import { TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Alert, Flex, Modal, TextButton } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
+import Big from "big.js"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -10,6 +11,7 @@ import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/Set
 import { useTradeSettings } from "@/states/tradeSettings"
 
 type Props = {
+  readonly isFormValid: boolean
   readonly isSingleTrade: boolean
   readonly twap: TradeOrder | undefined
   readonly healthFactor: HealthFactorResult | undefined
@@ -18,6 +20,7 @@ type Props = {
 }
 
 export const MarketWarnings: FC<Props> = ({
+  isFormValid,
   isSingleTrade,
   twap,
   healthFactor,
@@ -33,7 +36,7 @@ export const MarketWarnings: FC<Props> = ({
     },
   } = useTradeSettings()
 
-  const hasTwap = !isSingleTrade && twap
+  const hasTwap = !isSingleTrade && !!twap
 
   const shouldRenderSlippageWarning =
     hasTwap &&
@@ -42,7 +45,10 @@ export const MarketWarnings: FC<Props> = ({
 
   const shouldRenderDcaWarning = hasTwap && Math.abs(twap.tradeImpactPct) > 5
 
-  const shouldRenderHealthFactorWarning = !!healthFactor?.isUserConsentRequired
+  const shouldRenderHealthFactorWarning =
+    !!healthFactor &&
+    Big(healthFactor.future).gt(1) &&
+    healthFactor.isUserConsentRequired
 
   if (
     !shouldRenderSlippageWarning &&
@@ -83,6 +89,7 @@ export const MarketWarnings: FC<Props> = ({
       )}
       {shouldRenderHealthFactorWarning && (
         <HealthFactorRiskWarning
+          canContinue={isFormValid}
           message={t("healthFactor.warning")}
           accepted={healthFactorRiskAccepted}
           isUserConsentRequired={healthFactor.isUserConsentRequired}

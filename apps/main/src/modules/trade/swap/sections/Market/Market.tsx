@@ -2,7 +2,7 @@ import { Box } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
 import { TradeType } from "@/api/trade"
@@ -33,6 +33,21 @@ export const Market: FC = () => {
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
+
+  const { watch } = form
+  useEffect(() => {
+    const subscription = watch((_, { type }) => {
+      if (type !== "change") {
+        return
+      }
+
+      setHealthFactorRiskAccepted(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [watch])
 
   const isSell = type === TradeType.Sell
 
@@ -86,6 +101,9 @@ export const Market: FC = () => {
 
   const isExpanded = isLoading || (!!swap && (isSingleTrade || !!twap))
 
+  const isFormValid = isTradeEnabled && form.formState.isValid
+  const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
+
   return (
     <FormProvider {...form}>
       <form
@@ -101,6 +119,7 @@ export const Market: FC = () => {
           <Box pt={8} pb={getTokenPx("scales.paddings.m")}>
             <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
             <MarketWarnings
+              isFormValid={isFormValid}
               isSingleTrade={isSingleTrade}
               twap={twap}
               healthFactor={healthFactor}
@@ -114,11 +133,7 @@ export const Market: FC = () => {
         <MarketSubmit
           isSingleTrade={isSingleTrade}
           isLoading={isLoading || submitSwap.isPending || submitTwap.isPending}
-          isEnabled={
-            isTradeEnabled &&
-            isHealthFactorCheckSatisfied &&
-            form.formState.isValid
-          }
+          isEnabled={isSubmitEnabled}
         />
         <MarketSummary
           swapType={type}
