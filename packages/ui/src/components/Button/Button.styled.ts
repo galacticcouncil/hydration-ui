@@ -66,7 +66,7 @@ const microVariantStyles = (
 
   border-color: ${borderColor};
 
-  &:not(:disabled):hover {
+  &:hover:not(:disabled):not([aria-disabled="true"]) {
     background-color: ${bgHover};
     color: ${colorHover};
   }
@@ -80,7 +80,7 @@ const variantStyles = (
 ) => css`
   background-color: ${bg};
   color: ${color};
-  &:not(:disabled):hover {
+  &:hover:not(:disabled):not([aria-disabled="true"]) {
     background-color: ${bgHover};
     color: ${colorHover};
   }
@@ -94,8 +94,8 @@ const outlineVariantStyles = (
 ) => css`
   background-color: ${bg};
   color: ${color};
-  &:not(:disabled):hover,
-  &:not(:disabled):focus {
+  &:hover:not(:disabled):not([aria-disabled="true"]),
+  &:focus:not(:disabled):not([aria-disabled="true"]) {
     background-color: ${bgHover};
   }
 
@@ -109,7 +109,8 @@ const outlineVariantStyles = (
 `
 
 const disabledStyles = css`
-  &:disabled {
+  &:disabled,
+  &[aria-disabled="true"] {
     cursor: not-allowed;
 
     opacity: 0.2;

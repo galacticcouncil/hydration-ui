@@ -69,7 +69,7 @@ export const PoolDetailsHeader = ({
           zIndex: 3,
         }}
       >
-        <Button asChild>
+        <Button asChild disabled={!data.canAddLiquidity}>
           <Link
             to="/liquidity/$id/add"
             params={{

@@ -13,7 +13,6 @@ import {
   healthFactorAfterWithdrawQuery,
   healthFactorQuery,
 } from "@/api/aave"
-import { TAssetData } from "@/api/assets"
 import { bestSellQuery } from "@/api/trade"
 import {
   useCheckJoinOmnipoolFarm,
@@ -28,7 +27,10 @@ import {
   useStablepoolAddLiquidityForm,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
-import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
+import {
+  TStablepoolDetails,
+  useAddableStablepoolTokens,
+} from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -57,21 +59,18 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 }) => {
   const { getAssetWithFallback } = useAssets()
   const { balances } = useAccountBalances()
+  const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
 
-  const { stablepoolAssets, reserveIds } = useMemo(() => {
-    const stablepoolAssets: { asset: TAssetData; balance: string }[] = []
-    const reserveIds: string[] = []
-
-    for (const reserve of reserves) {
-      stablepoolAssets.push({
-        asset: reserve.meta,
-        balance: reserve.amount,
-      })
-      reserveIds.push(reserve.asset_id.toString())
-    }
-
-    return { stablepoolAssets, reserveIds }
+  const stablepoolAssets = useMemo(() => {
+    return reserves.map((reserve) => ({
+      asset: reserve.meta,
+      balance: reserve.amount,
+    }))
   }, [reserves])
+
+  const reserveIds = addebleReserves.map((reserve) =>
+    reserve.asset_id.toString(),
+  )
 
   const accountBalances = new Map(
     Object.values(balances).map((balance) => [
@@ -88,7 +87,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 
   const assetsToSelect = useAssetsToAddToMoneyMarket({
     stableswapId,
-    reserves,
+    reserves: addebleReserves,
     options: {
       blacklist: defaultOption === "omnipool" ? [] : [erc20Id],
     },

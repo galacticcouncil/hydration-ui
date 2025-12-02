@@ -1,6 +1,7 @@
 import {
   calculate_liquidity_hub_in,
   calculate_shares,
+  is_add_liquidity_allowed,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
@@ -34,7 +35,6 @@ export const getCustomErrors = (errors?: FieldError) =>
     ? (errors as unknown as {
         cap?: { message: string }
         circuitBreaker?: { message: string }
-        farm?: { message: string }
       })
     : undefined
 
@@ -225,8 +225,13 @@ export const useAddLiquidity = (assetId: string) => {
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getAssetWithFallback } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
+  const { dataMap } = useOmnipoolAssetsData()
 
   const meta = getAssetWithFallback(assetId)
+  const omnipoolAsset = dataMap?.get(Number(assetId))
+  const canAddLiquidity = omnipoolAsset?.tradeable
+    ? is_add_liquidity_allowed(omnipoolAsset.tradeable)
+    : false
 
   const addLiquidityZod = useAddToOmnipoolZod(assetId)
 
@@ -314,5 +319,6 @@ export const useAddLiquidity = (assetId: string) => {
     joinFarmErrorMessage,
     isJoinFarms,
     mutation,
+    canAddLiquidity,
   }
 }

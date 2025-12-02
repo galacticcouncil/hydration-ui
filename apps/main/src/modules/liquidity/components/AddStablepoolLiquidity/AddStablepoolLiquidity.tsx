@@ -25,7 +25,7 @@ import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { spotPriceQuery } from "@/api/spotPrice"
-import { useStableswap } from "@/api/stableswap"
+import { useStableswap, useStableSwapTradability } from "@/api/stableswap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddLiquiditySummary } from "@/modules/liquidity/components/AddLiquidity/AddLiquidity"
@@ -87,8 +87,9 @@ export const AddStablepoolLiquidityWrapper = (
   const { stableswapId } = props
   const { data: stablepoolDetails } = useStablepoolReserves(stableswapId)
   const { isBalanceLoading } = useAccountBalances()
+  const { isSuccess } = useStableSwapTradability()
 
-  if (isBalanceLoading || !stablepoolDetails)
+  if (isBalanceLoading || !stablepoolDetails || !isSuccess)
     return <AddStablepoolLiquiditySkeleton {...props} />
 
   if (props.erc20Id) {

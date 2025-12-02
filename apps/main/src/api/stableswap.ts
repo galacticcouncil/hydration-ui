@@ -18,3 +18,14 @@ export const useStableswap = (poolId: string) => {
     enabled: isLoaded,
   })
 }
+
+export const useStableSwapTradability = () => {
+  const { isLoaded, papi } = useRpcProvider()
+
+  return useQuery({
+    queryKey: ["stableswap", "tradability"],
+    queryFn: () => papi.query.Stableswap.AssetTradability.getEntries(),
+    staleTime: Infinity,
+    enabled: isLoaded,
+  })
+}

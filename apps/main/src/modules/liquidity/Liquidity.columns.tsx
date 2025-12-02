@@ -178,6 +178,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
   const { isPositions } = pool
   const total = useUserPositionsTotal(pool)
   const stablepoolData = pool.stablepoolData
+  const { canAddLiquidity } = pool
   return (
     <>
       <Flex
@@ -185,7 +186,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
         onClick={(e) => e.stopPropagation()}
         sx={{ position: "relative" }}
       >
-        <Button asChild variant="accent" outline>
+        <Button asChild variant="accent" outline disabled={!canAddLiquidity}>
           <Link
             to="/liquidity/$id/add"
             search={

@@ -43,6 +43,8 @@ export type BalanceTableData = {
   valueDisplay: string | undefined
   meta: TAssetData
   stableswapId: string
+  canAddLiquidity: boolean
+  canRemoveLiquidity: boolean
 }
 
 export type OmnipoolPositionTableData = {
@@ -53,6 +55,8 @@ export type OmnipoolPositionTableData = {
   isJoinedAllFarms: boolean
   meta: TAssetData
   stableswapId?: string
+  canAddLiquidity: boolean
+  canRemoveLiquidity: boolean
 } & AccountOmnipoolPosition
 
 export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
@@ -153,6 +157,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     aStableswapBalance,
     allFarms,
     stablepoolData,
+    canAddLiquidity,
+    canRemoveLiquidity,
   } = pool
 
   const getDepositAprs = useDepositAprs()
@@ -191,6 +197,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
         ? Big(price).times(freeBalance).toString()
         : undefined,
       stableswapId,
+      canAddLiquidity: true,
+      canRemoveLiquidity: true,
     }
   }, [
     t,
@@ -234,6 +242,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
           farmsToJoin,
           meta,
           stableswapId,
+          canAddLiquidity,
+          canRemoveLiquidity,
           ...position,
         }
       })
@@ -259,6 +269,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     allFarms,
     stableswapId,
     getDepositAprs,
+    canAddLiquidity,
+    canRemoveLiquidity,
   ])
 
   return data
