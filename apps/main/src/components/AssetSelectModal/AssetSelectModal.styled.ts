@@ -11,7 +11,7 @@ export const SOption = styled.div<{ highlighted: boolean }>(
     padding: 0 var(--modal-content-padding);
     height: 100%;
 
-    border-top: 1px solid ${theme.details.borders};
+    border-top: 1px solid ${theme.details.separators};
 
     cursor: pointer;
 

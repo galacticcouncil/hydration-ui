@@ -8,6 +8,7 @@ export const ExternalWalletContent = () => {
       <ModalHeader
         title="View external account"
         description="Paste account address you would like to monitor."
+        align="center"
       />
       <ModalBody>
         <ExternalWalletForm />

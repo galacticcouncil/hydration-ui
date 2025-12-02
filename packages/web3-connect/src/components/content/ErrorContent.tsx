@@ -8,7 +8,7 @@ export const ErrorContent = () => {
   const { error } = useWeb3Connect(useShallow(pick(["error"])))
   return (
     <>
-      <ModalHeader title="Connection error" />
+      <ModalHeader title="Connection error" align="center" />
       <ModalBody>
         <Alert
           variant="error"
