@@ -153,20 +153,15 @@ export const RemoveOmnipoolLiquidity = (props: RemoveLiquidityProps) => {
     ? omnipoolPositions.find((position) => position.positionId === positionId)
     : undefined
 
-  if (isLoading) return <RemoveLiquiditySkeleton />
+  if (isLoading || !omnipoolPositions.length) return <RemoveLiquiditySkeleton />
 
   if (position) {
     return <RemoveSingleOmnipoolLiquidity position={position} {...props} />
   }
 
-  if (omnipoolPositions.length) {
-    return (
-      <RemoveMultipleOmnipoolLiquidity
-        positions={omnipoolPositions}
-        {...props}
-      />
-    )
-  }
+  return (
+    <RemoveMultipleOmnipoolLiquidity positions={omnipoolPositions} {...props} />
+  )
 }
 
 const RemoveSingleOmnipoolLiquidity = (
