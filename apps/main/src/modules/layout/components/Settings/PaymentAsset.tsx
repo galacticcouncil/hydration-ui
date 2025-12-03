@@ -28,7 +28,10 @@ export const PaymentAsset: FC<PaymentAssetProps> = ({ onClick }) => {
     <MenuSelectionItem onClick={onClick}>
       {!isLoading && asset ? (
         <>
-          <MenuItemIcon component={() => <AssetLogo id={asset.id} />} />
+          <MenuItemIcon
+            sx={{ width: "auto" }}
+            component={() => <AssetLogo id={asset.id} />}
+          />
           <MenuItemLabel>{t("paymentAsset")}</MenuItemLabel>
           <MenuItemDescription>{asset.symbol}</MenuItemDescription>
         </>

@@ -110,7 +110,6 @@ export function usePapiObservableQuery<
     enabled: isApiLoaded,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
-    notifyOnChangeProps: [],
     queryFn: () => {
       const observable = PAPI_OBSERVER_MAP[key](papi.query)
 
