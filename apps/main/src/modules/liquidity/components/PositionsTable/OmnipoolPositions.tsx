@@ -82,12 +82,9 @@ export const OmnipoolPositions = ({
             })
           }
         }}
-        getIsClickable={(row) => {
-          if (isOmnipoolPosition(row) && isOmnipoolDepositPosition(row)) {
-            return true
-          }
-          return false
-        }}
+        getIsClickable={(row) =>
+          isOmnipoolPosition(row) && isOmnipoolDepositPosition(row)
+        }
         paginated
         pageSize={10}
         columnPinning={{

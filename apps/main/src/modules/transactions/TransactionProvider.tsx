@@ -142,7 +142,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       onSuccess: (event) => {
         dispatch(doSetStatus("success"))
         transaction.onSuccess?.(event)
-        transaction.invalidateQueries?.map((queryKey) =>
+        transaction.invalidateQueries?.forEach((queryKey) =>
           queryClient.invalidateQueries({ queryKey }),
         )
         toasts.onSuccess?.(event)

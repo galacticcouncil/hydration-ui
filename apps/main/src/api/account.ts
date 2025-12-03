@@ -152,10 +152,10 @@ export const xykMiningPositionsQuery = (
         { at: "best" },
       )
 
-      const omnipoolMiningPositions = await getXykMiningPositions(papi, entries)
-      onSuccess?.(omnipoolMiningPositions)
+      const xykMiningPositions = await getXykMiningPositions(papi, entries)
+      onSuccess?.(xykMiningPositions)
 
-      return omnipoolMiningPositions
+      return xykMiningPositions
     },
   })
 }
