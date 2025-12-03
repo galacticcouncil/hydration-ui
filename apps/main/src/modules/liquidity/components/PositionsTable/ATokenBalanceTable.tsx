@@ -52,6 +52,8 @@ export const ATokenBalanceTable = ({
         value: freeBalance,
         valueDisplay: aStableswapDisplayBalance,
         stableswapId,
+        canAddLiquidity: true,
+        canRemoveLiquidity: true,
       },
     ]
   }, [
