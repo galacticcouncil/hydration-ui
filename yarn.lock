@@ -2609,6 +2609,20 @@
     short-uuid "^4.2.0"
     viem "^2.23.7"
 
+"@galacticcouncil/common@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.1.1.tgz#fbe36b4dfcf9e23c875e455318b097b1ae592b41"
+  integrity sha512-gZmANo66ac3+1Im6LIBxuiix1HujCIZSVR93FJdH8tE67T5J7/cZqSHwYB5DxUIMrI+bE8EITrQwIr0SmLgiew==
+  dependencies:
+    big.js "^6.2.1"
+
+"@galacticcouncil/descriptors@^1.5.1":
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.5.1.tgz#8f7c806f804eedcdab8fbed7f07cc7735aedc823"
+  integrity sha512-Deq1JGbXZOfgteFkxtEvqcT9LqlPNZ0DjK6ApaWXesrRvbrgMbYMXl5kfMHxxpiEI3Vf4MGhxrhueRQXjKgELw==
+  dependencies:
+    "@polkadot-api/descriptors" "file:../../../../.cache/yarn/v6/npm-@galacticcouncil-descriptors-1.5.1-8f7c806f804eedcdab8fbed7f07cc7735aedc823-integrity/node_modules/@galacticcouncil/descriptors/.papi/descriptors"
+
 "@galacticcouncil/math-hsm@^1.1.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.1.0.tgz#51a13c336cf8949602925624b2ef21ed29903e89"
@@ -2643,6 +2657,25 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
+
+"@galacticcouncil/sdk-next@0.17.0-pr226-5070a89":
+  version "0.17.0-pr226-5070a89"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.17.0-pr226-5070a89.tgz#8bf2acb7ea51cee454b05f54eaa2c5aae7ff3da4"
+  integrity sha512-EmQUz2ABZejMW4Ywby7uWFBwjYYrC2KaKTM5T40c0NYwcsKY9He/8e4OqwWY7Wf9b3mS7072AOs7YyG8ylMUyw==
+  dependencies:
+    "@galacticcouncil/common" "^0.1.1"
+    "@galacticcouncil/descriptors" "^1.5.1"
+    "@galacticcouncil/math-hsm" "^1.1.0"
+    "@galacticcouncil/math-lbp" "^1.2.0"
+    "@galacticcouncil/math-liquidity-mining" "^1.2.0"
+    "@galacticcouncil/math-omnipool" "^1.3.0"
+    "@galacticcouncil/math-stableswap" "^2.3.0"
+    "@galacticcouncil/math-staking" "^1.2.0"
+    "@galacticcouncil/math-xyk" "^1.2.0"
+    "@noble/hashes" "^1.6.1"
+    "@thi.ng/cache" "^2.1.35"
+    "@thi.ng/memoize" "^4.0.2"
+    big.js "^6.2.1"
 
 "@galacticcouncil/sdk@^10.1.0":
   version "10.1.0"
