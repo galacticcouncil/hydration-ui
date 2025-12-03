@@ -5,6 +5,7 @@ import {
   Flex,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
   Skeleton,
   SliderTabs,
@@ -36,8 +37,8 @@ import {
   useAddMoneyMarketLiquidityWrapper,
 } from "@/modules/liquidity/components/AddMoneyMarketLiquidity/AddMoneyMarketLiquidity.utils"
 import {
-  AddGETHToOmnipool,
   AddMoneyMarketLiquidity,
+  AddMoneyMarketOmnipoolLiquidity,
 } from "@/modules/liquidity/components/AddMoneyMarketLiquidity/AddMoneyMarketLiquidityWrapper"
 import { StablepoolReserves } from "@/modules/liquidity/components/StablepoolReserves/StablepoolReserves"
 import {
@@ -109,18 +110,12 @@ export const AddStablepoolLiquidityWrapper = (
 const AddMoneyMarketLiquidityWrapper = (
   props: AddMoneyMarketLiquidityWrapperProps,
 ) => {
-  const { erc20Id, stablepoolDetails, stableswapId, initialOption } = props
-  const { form, ...formData } = useAddMoneyMarketLiquidityWrapper({
-    stablepoolDetails,
-    erc20Id,
-    stableswapId,
-    initialOption,
-  })
+  const { form, ...formData } = useAddMoneyMarketLiquidityWrapper(props)
 
   return (
     <FormProvider {...form}>
       {formData.defaultOption === "omnipool" ? (
-        <AddGETHToOmnipool formData={formData} props={props} />
+        <AddMoneyMarketOmnipoolLiquidity formData={formData} props={props} />
       ) : (
         <AddMoneyMarketLiquidity formData={formData} props={props} />
       )}
@@ -133,10 +128,11 @@ const AddStablepoolLiquidity = (
     stablepoolDetails: TStablepoolDetails
   },
 ) => {
-  const { stablepoolDetails, stableswapId } = props
+  const { stablepoolDetails, stableswapId, onSubmitted } = props
   const { form, ...addLiquidityData } = useStablepoolAddLiquidity({
     stablepoolDetails,
     stableswapId,
+    onSubmitted,
   })
 
   return (
@@ -398,19 +394,19 @@ export const AddStablepoolLiquidityForm = ({
         )}
 
         <ModalContentDivider />
-
+      </ModalBody>
+      <ModalFooter sx={{ pt: 0 }}>
         <Button
           type="submit"
           size="large"
           width="100%"
-          mt={getTokenPx("containers.paddings.primary")}
           disabled={isSubmitDisabled}
         >
           {isJoinFarms
             ? t("liquidity.add.modal.submitAndjoinFarms")
             : t("liquidity.add.modal.submit")}
         </Button>
-      </ModalBody>
+      </ModalFooter>
     </form>
   )
 }

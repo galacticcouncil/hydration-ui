@@ -27,11 +27,13 @@ export const useRemoveMoneyMarketLiquidity = ({
   stableswapId,
   pool,
   reserves,
+  onSubmitted,
 }: {
   erc20Id: string
   stableswapId: string
   pool: StableSwapBase
   reserves: TReserve[]
+  onSubmitted: () => void
 }) => {
   const { getAssetWithFallback, isErc20AToken } = useAssets()
   const { t } = useTranslation("liquidity")
@@ -177,10 +179,13 @@ export const useRemoveMoneyMarketLiquidity = ({
         }),
       }
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 

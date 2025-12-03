@@ -43,6 +43,7 @@ export type RemoveLiquidityProps = RemoveLiquidityType & {
   poolId: string
   onBack?: () => void
   closable?: boolean
+  onSubmitted: () => void
 }
 
 export const RemoveLiquidity = (props: RemoveLiquidityProps) => {

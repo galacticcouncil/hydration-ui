@@ -1,4 +1,5 @@
 import { CallType } from "@galacticcouncil/xcm-core"
+import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
@@ -66,6 +67,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   children,
   transaction,
 }) => {
+  const queryClient = useQueryClient()
   const { cancelTransaction } = useTransactionsStore()
 
   const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
@@ -140,6 +142,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       onSuccess: (event) => {
         dispatch(doSetStatus("success"))
         transaction.onSuccess?.(event)
+        transaction.invalidateQueries?.forEach((queryKey) =>
+          queryClient.invalidateQueries({ queryKey }),
+        )
         toasts.onSuccess?.(event)
       },
       onError: (message) => {

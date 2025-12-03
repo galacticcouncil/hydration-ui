@@ -138,6 +138,7 @@ export const TableRow = styled.tr<{
       }
     `}
     color: ${theme.text.medium};
+    background-color: ${theme.surfaces.containers.high.primary};
 
     ${isClickable &&
     css`
@@ -163,11 +164,9 @@ export const TableCell = styled.td<{
     return [
       pinnedColumnStyles(isPinned),
       css`
-        background: ${theme.surfaces.containers.high.primary};
+        background-color: inherit;
         position: sticky;
         z-index: 1;
-
-        background: ${theme.surfaces.containers.high.primary};
 
         ${isClickable &&
         css`
@@ -193,7 +192,7 @@ export const TableHead = styled.th<{
     ${isPinned && [
       pinnedColumnStyles(isPinned)({ theme }),
       css`
-        background: ${theme.surfaces.containers.high.primary};
+        background-color: inherit;
         position: sticky;
         z-index: 1;
       `,

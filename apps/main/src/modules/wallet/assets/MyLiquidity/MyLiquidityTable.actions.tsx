@@ -9,9 +9,6 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
   Modal,
-  ModalContent,
-  ModalRoot,
-  ModalTrigger,
   TableRowAction,
 } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
@@ -28,18 +25,19 @@ type Props = {
 export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
   const { t } = useTranslation("wallet")
   const [isRemoveAllModalOpen, setIsRemoveAllModalOpen] = useState(false)
+  const [isAddOpen, setIsAddOpen] = useState(false)
 
   return (
     <>
       <Flex gap={12} align="center" justify="flex-end">
-        <ModalRoot>
-          <TableRowAction variant="primary" outline={false} asChild>
-            <ModalTrigger>{t("myLiquidity.actions.addLiquidity")}</ModalTrigger>
-          </TableRowAction>
-          <ModalContent>
-            <AddLiquidityModalContent id={assetId} closable />
-          </ModalContent>
-        </ModalRoot>
+        <TableRowAction
+          variant="primary"
+          outline={false}
+          onClick={() => setIsAddOpen(true)}
+        >
+          {t("myLiquidity.actions.addLiquidity")}
+        </TableRowAction>
+
         <TableRowAction asChild>
           <Link to="/liquidity/$id" params={{ id: assetId }}>
             {t("myLiquidity.actions.poolDetails")}
@@ -70,7 +68,19 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
         </DropdownMenu>
       </Flex>
       <Modal open={isRemoveAllModalOpen} onOpenChange={setIsRemoveAllModalOpen}>
-        <RemoveLiquidity poolId={assetId} selectable closable />
+        <RemoveLiquidity
+          poolId={assetId}
+          selectable
+          closable
+          onSubmitted={() => setIsRemoveAllModalOpen(false)}
+        />
+      </Modal>
+      <Modal open={isAddOpen} onOpenChange={setIsAddOpen}>
+        <AddLiquidityModalContent
+          id={assetId}
+          closable
+          onSubmitted={() => setIsAddOpen(false)}
+        />
       </Modal>
     </>
   )

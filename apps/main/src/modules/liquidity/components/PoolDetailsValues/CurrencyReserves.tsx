@@ -29,13 +29,13 @@ export const CurrencyReserves = ({
 
       <Separator mx={-20} />
 
-      {reserves.map((reserve) => (
+      {reserves.map((reserve, index) => (
         <Fragment key={reserve.asset_id}>
           <CurrencyReservesRow
             reserve={reserve}
             totalDisplayAmount={totalDisplayAmount}
           />
-          <Separator mx={-20} />
+          {index !== reserves.length - 1 && <Separator mx={-20} />}
         </Fragment>
       ))}
     </Flex>

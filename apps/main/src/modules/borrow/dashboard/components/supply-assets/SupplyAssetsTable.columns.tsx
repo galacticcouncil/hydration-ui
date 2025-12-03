@@ -34,7 +34,9 @@ type AssetType = "base" | "strategy"
 
 export const useSupplyAssetsTableColumns = (
   type: AssetType,
-  onSupplyClick?: (props: AddStablepoolLiquidityProps) => void,
+  onSupplyClick?: (
+    props: Omit<AddStablepoolLiquidityProps, "onSubmitted">,
+  ) => void,
 ) => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset, getRelatedAToken } = useAssets()

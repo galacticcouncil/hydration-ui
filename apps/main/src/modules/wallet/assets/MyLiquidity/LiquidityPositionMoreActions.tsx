@@ -109,12 +109,14 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
           positionId={position.positionId}
           poolId={assetId}
           closable
+          onSubmitted={() => setAction("none")}
         />
       </Modal>
       <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
         <RemoveLiquidity
           poolId={assetId}
           positionId={position.positionId}
+          onSubmitted={() => setAction("none")}
           closable
         />
       </Modal>

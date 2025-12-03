@@ -25,7 +25,7 @@ import {
 export const SuppliedAssetsTable = () => {
   const { t } = useTranslation(["borrow"])
   const [modalProps, setModalProps] = useState<
-    TRemoveMoneyMarketLiquidityProps | undefined
+    Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted"> | undefined
   >()
   const columns = useSuppliedAssetsTableColumns({ omRemove: setModalProps })
   const { data, isLoading } = useSuppliedAssetsData()
@@ -74,7 +74,11 @@ export const SuppliedAssetsTable = () => {
 
       <Modal open={!!modalProps} onOpenChange={() => setModalProps(undefined)}>
         {!!modalProps && (
-          <RemoveMoneyMarketLiquidity {...modalProps} closable />
+          <RemoveMoneyMarketLiquidity
+            {...modalProps}
+            closable
+            onSubmitted={() => setModalProps(undefined)}
+          />
         )}
       </Modal>
     </>

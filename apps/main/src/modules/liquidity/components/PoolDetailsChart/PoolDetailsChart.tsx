@@ -34,13 +34,16 @@ export const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
 export const PoolChart = ({
   assetId,
   height,
+  interval,
+  setInterval,
 }: {
   assetId: string
   height: number
+  interval: TradeChartPeriodType | "all"
+  setInterval: (interval: TradeChartPeriodType | "all") => void
 }) => {
   const { t } = useTranslation()
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
-  const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({

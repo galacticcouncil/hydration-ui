@@ -1,4 +1,5 @@
 import { calculate_shares } from "@galacticcouncil/math-xyk"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -7,6 +8,7 @@ import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import z from "zod/v4"
 
+import { xykMiningPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { useIsolatedPoolsFarms } from "@/api/farms"
 import { PoolBase, PoolToken } from "@/api/pools"
@@ -86,7 +88,16 @@ type AddIsolatedLiquidityZodSchema = NonNullable<
   ReturnType<typeof useAddIsolatedLiquidityZod>
 >
 
-export const useAddIsolatedLiquidity = (pool: PoolBase, consts: TXYKConsts) => {
+export const useAddIsolatedLiquidity = ({
+  pool,
+  consts,
+  onSubmitted,
+}: {
+  pool: PoolBase
+  consts: TXYKConsts
+  onSubmitted: () => void
+}) => {
+  const { account } = useAccount()
   const rpc = useRpcProvider()
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
@@ -207,20 +218,24 @@ export const useAddIsolatedLiquidity = (pool: PoolBase, consts: TXYKConsts) => {
 
       const sharesHuman = scaleHuman(shares, meta.decimals)
 
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: t("liquidity.add.modal.xyk.toast.submitted", {
-            shares: sharesHuman,
-          }),
-          success: t("liquidity.add.modal.xyk.toast.success", {
-            shares: sharesHuman,
-          }),
-          error: t("liquidity.add.modal.xyk.toast.submitted", {
-            shares: sharesHuman,
-          }),
+      await createTransaction(
+        {
+          tx,
+          toasts: {
+            submitted: t("liquidity.add.modal.xyk.toast.submitted", {
+              shares: sharesHuman,
+            }),
+            success: t("liquidity.add.modal.xyk.toast.success", {
+              shares: sharesHuman,
+            }),
+            error: t("liquidity.add.modal.xyk.toast.submitted", {
+              shares: sharesHuman,
+            }),
+          },
+          invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
         },
-      })
+        { onSubmitted },
+      )
     },
   })
 

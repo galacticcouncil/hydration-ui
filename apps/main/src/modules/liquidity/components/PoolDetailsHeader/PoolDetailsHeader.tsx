@@ -69,28 +69,30 @@ export const PoolDetailsHeader = ({
           zIndex: 3,
         }}
       >
-        <Button asChild>
-          <Link
-            to="/liquidity/$id/add"
-            params={{
-              id: data.id,
-            }}
-            search={
-              stablepoolData
-                ? {
-                    stableswapId: stablepoolData.id.toString(),
-                    erc20Id: stablepoolData.aToken?.id.toString(),
-                  }
-                : undefined
-            }
-            resetScroll={false}
-          >
-            <Icon size={14} component={Plus} />
-            {data.isFarms
-              ? t("details.header.addJoinFarms")
-              : t("addLiquidity")}
-          </Link>
-        </Button>
+        {!data.isNative && (
+          <Button asChild>
+            <Link
+              to="/liquidity/$id/add"
+              params={{
+                id: data.id,
+              }}
+              search={
+                stablepoolData
+                  ? {
+                      stableswapId: stablepoolData.id.toString(),
+                      erc20Id: stablepoolData.aToken?.id.toString(),
+                    }
+                  : undefined
+              }
+              resetScroll={false}
+            >
+              <Icon size={14} component={Plus} />
+              {data.isFarms
+                ? t("details.header.addJoinFarms")
+                : t("addLiquidity")}
+            </Link>
+          </Button>
+        )}
         <Button variant="secondary" asChild>
           <Link
             to="/trade/swap/market"

@@ -13,6 +13,7 @@ import {
   healthFactorAfterWithdrawQuery,
   healthFactorQuery,
 } from "@/api/aave"
+import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { bestSellQuery } from "@/api/trade"
 import {
@@ -23,12 +24,10 @@ import { AddMoneyMarketLiquidityWrapperProps } from "@/modules/liquidity/compone
 import {
   getStablepoolShares,
   TAddStablepoolLiquidityFormValues,
-  TAddStablepoolLiquidityOption,
   useAssetsToAddToMoneyMarket,
   useStablepoolAddLiquidityForm,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity.utils"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
-import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -49,12 +48,8 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   stableswapId,
   erc20Id,
   initialOption,
-}: {
-  stablepoolDetails: TStablepoolDetails
-  stableswapId: string
-  erc20Id: string
-  initialOption?: TAddStablepoolLiquidityOption
-}) => {
+  split: initialSplit,
+}: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
   const { balances } = useAccountBalances()
 
@@ -91,6 +86,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     reserves,
     options: {
       blacklist: defaultOption === "omnipool" ? [] : [erc20Id],
+      firstAssetId: defaultOption === "omnipool" ? erc20Id : undefined,
     },
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
@@ -101,6 +97,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     accountBalances,
     option: defaultOption,
     activeFieldIds: reserveIds,
+    split: initialSplit,
   })
 
   const [split, selectedAssetId, activeFields] = form.watch([
@@ -159,7 +156,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     },
   } = useTradeSettings()
   const { erc20Id, assetsToProvide, stablepoolAssets } = formData
-  const { pool } = props.stablepoolDetails
+  const {
+    onSubmitted,
+    stablepoolDetails: { pool },
+  } = props
   const meta = getAssetWithFallback(erc20Id)
   const stableswapMeta = getAssetWithFallback(pool.id)
   const form = useFormContext<TAddStablepoolLiquidityFormValues>()
@@ -327,8 +327,12 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
           {
             tx: omnipoolDispatchTx,
             toasts: joinOmnipoolToasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
           },
-          { onSubmitted: props.onBack },
+          { onSubmitted },
         )
       } else if (split) {
         const initialShares = getTransferableBalance(pool.id.toString())
@@ -492,6 +496,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                     symbol: meta.symbol,
                   }),
                   toasts: joinOmnipoolToasts,
+                  invalidateQueries: [
+                    omnipoolPositionsKey(account?.address ?? ""),
+                    omnipoolMiningPositionsKey(account?.address ?? ""),
+                  ],
                 }
               },
             },
@@ -598,6 +606,10 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
                   tx,
                   title: t("liquidity.add.modal.stepper.joinOmnipool"),
                   toasts: joinOmnipoolToasts,
+                  invalidateQueries: [
+                    omnipoolPositionsKey(account?.address ?? ""),
+                    omnipoolMiningPositionsKey(account?.address ?? ""),
+                  ],
                 }
               },
             },
@@ -646,7 +658,7 @@ export const useAddMoneyMarketLiquidity = ({
   const {
     stableswapId,
     stablepoolDetails: { pool },
-    onBack,
+    onSubmitted,
   } = props
 
   const meta = getAssetWithFallback(stableswapId)
@@ -865,7 +877,7 @@ export const useAddMoneyMarketLiquidity = ({
             tx: trade.tx,
             toasts,
           },
-          { onSubmitted: onBack },
+          { onSubmitted },
         )
       }
     },

@@ -17,6 +17,7 @@ import {
   PoolChart,
 } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import {
+  isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
@@ -40,15 +41,28 @@ export const PoolStats = ({
   data: OmnipoolAssetTable | IsolatedPoolTable
 }) => {
   const { isTablet, isMobile } = useBreakpoints()
+  const isOmnipool = !isIsolatedPool(data)
+  const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
 
   if (isTablet || isMobile) {
-    return <PoolStatsMobile data={data} />
+    return (
+      <PoolStatsMobile
+        data={data}
+        interval={interval}
+        setInterval={setInterval}
+      />
+    )
   }
 
   return (
     <Flex gap={20}>
       <Paper p={[16, 20]} sx={{ flex: 1 }}>
-        <PoolChart assetId={data.id} height={500} />
+        <PoolChart
+          assetId={data.id}
+          height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
+          interval={interval}
+          setInterval={setInterval}
+        />
       </Paper>
 
       <Paper p={[16, 20]}>
@@ -60,12 +74,15 @@ export const PoolStats = ({
 
 const PoolStatsMobile = ({
   data,
+  interval,
+  setInterval,
 }: {
   data: OmnipoolAssetTable | IsolatedPoolTable
+  interval: TradeChartPeriodType | "all"
+  setInterval: (interval: TradeChartPeriodType | "all") => void
 }) => {
   const [chartType, setChartType] = useState<"price" | "volume">("price")
   const [type, setType] = useState<"chart" | "stats">("chart")
-  const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
 
   return (
     <Paper
@@ -74,7 +91,12 @@ const PoolStatsMobile = ({
       as={Flex}
     >
       {type === "chart" ? (
-        <PoolChart assetId={data.id} height={350} />
+        <PoolChart
+          assetId={data.id}
+          height={350}
+          interval={interval}
+          setInterval={setInterval}
+        />
       ) : (
         <PoolDetailsValues data={data} />
       )}
