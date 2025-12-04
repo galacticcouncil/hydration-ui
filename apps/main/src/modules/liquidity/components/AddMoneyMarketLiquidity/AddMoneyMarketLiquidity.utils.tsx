@@ -52,7 +52,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 }: AddMoneyMarketLiquidityWrapperProps) => {
   const { getAssetWithFallback } = useAssets()
   const { balances } = useAccountBalances()
-  const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
+  const addableReserves = useAddableStablepoolTokens(stableswapId, reserves)
 
   const stablepoolAssets = useMemo(() => {
     return reserves.map((reserve) => ({
@@ -61,7 +61,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     }))
   }, [reserves])
 
-  const reserveIds = addebleReserves.map((reserve) =>
+  const reserveIds = addableReserves.map((reserve) =>
     reserve.asset_id.toString(),
   )
 
@@ -80,7 +80,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 
   const assetsToSelect = useAssetsToAddToMoneyMarket({
     stableswapId,
-    reserves: addebleReserves,
+    reserves: addableReserves,
     options: {
       blacklist: defaultOption === "omnipool" ? [] : [erc20Id],
       firstAssetId: defaultOption === "omnipool" ? erc20Id : undefined,
