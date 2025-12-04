@@ -21,6 +21,7 @@ import {
   calculatePoolFee,
   TReserve,
   TStablepoolDetails,
+  useAddableStablepoolTokens,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -88,19 +89,19 @@ export const useStablepoolAddLiquidity = ({
   const {
     liquidity: { slippage },
   } = useTradeSettings()
+  const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { account } = useAccount()
   const meta = getAssetWithFallback(stableswapId)
 
-  const { stablepoolAssets, reserveIds, accountBalances } = useMemo(() => {
+  const { stablepoolAssets, accountBalances } = useMemo(() => {
     const stablepoolAssets: { asset: TAssetData; balance: string }[] = []
-    const reserveIds: string[] = []
     const accountBalances: Map<string, string> = new Map()
     for (const reserve of reserves) {
       stablepoolAssets.push({
         asset: reserve.meta,
         balance: reserve.amount,
       })
-      reserveIds.push(reserve.asset_id.toString())
+
       accountBalances.set(
         reserve.asset_id.toString(),
         scaleHuman(
@@ -110,11 +111,15 @@ export const useStablepoolAddLiquidity = ({
       )
     }
 
-    return { stablepoolAssets, reserveIds, accountBalances }
+    return { stablepoolAssets, accountBalances }
   }, [reserves, getTransferableBalance])
 
+  const reserveIds = addebleReserves.map((reserve) =>
+    reserve.asset_id.toString(),
+  )
+
   const assetsToSelect = useAssetsToAddToStablepool({
-    reserves,
+    reserves: addebleReserves,
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
 

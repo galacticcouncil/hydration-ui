@@ -182,7 +182,11 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   </Button>
                 ) : null
               ) : original.isStablepoolInOmnipool ? (
-                <Button variant="secondary" asChild>
+                <Button
+                  variant="secondary"
+                  asChild
+                  disabled={!original.canAddLiquidity}
+                >
                   <Link
                     to="/liquidity/$id/add"
                     params={{
@@ -194,7 +198,13 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                   </Link>
                 </Button>
               ) : null}
-              <Button variant="tertiary" outline sx={{ flexShrink: 0 }} asChild>
+              <Button
+                variant="tertiary"
+                outline
+                sx={{ flexShrink: 0 }}
+                asChild
+                disabled={!original.canRemoveLiquidity}
+              >
                 <Link
                   to="/liquidity/$id/remove"
                   params={{

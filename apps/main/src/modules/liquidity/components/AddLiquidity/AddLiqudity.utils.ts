@@ -1,6 +1,7 @@
 import {
   calculate_liquidity_hub_in,
   calculate_shares,
+  is_add_liquidity_allowed,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -36,7 +37,6 @@ export const getCustomErrors = (errors?: FieldError) =>
     ? (errors as unknown as {
         cap?: { message: string }
         circuitBreaker?: { message: string }
-        farm?: { message: string }
       })
     : undefined
 
@@ -234,8 +234,13 @@ export const useAddLiquidity = ({
   const { getAssetWithFallback } = useAssets()
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
+  const { dataMap } = useOmnipoolAssetsData()
 
   const meta = getAssetWithFallback(assetId)
+  const omnipoolAsset = dataMap?.get(Number(assetId))
+  const canAddLiquidity = omnipoolAsset?.tradeable
+    ? is_add_liquidity_allowed(omnipoolAsset.tradeable)
+    : false
 
   const addLiquidityZod = useAddToOmnipoolZod(assetId)
 
@@ -330,5 +335,6 @@ export const useAddLiquidity = ({
     joinFarmErrorMessage,
     isJoinFarms,
     mutation,
+    canAddLiquidity,
   }
 }

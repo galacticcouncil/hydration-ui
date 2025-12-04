@@ -5,6 +5,12 @@ import {
   stablepoolYieldMetricsQuery,
   xykVolumeQuery,
 } from "@galacticcouncil/indexer/squid"
+import {
+  is_add_liquidity_allowed,
+  is_buy_allowed,
+  is_remove_liquidity_allowed,
+  is_sell_allowed,
+} from "@galacticcouncil/math-omnipool"
 import { OmniMath } from "@galacticcouncil/sdk"
 import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -29,6 +35,7 @@ import {
   useXykPoolsIds,
 } from "@/api/pools"
 import { useSquidClient } from "@/api/provider"
+import { useStableSwapTradability } from "@/api/stableswap"
 import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
@@ -73,6 +80,8 @@ export type OmnipoolAssetTable = {
   allFarms: Farm[]
   stablepoolData: TStablepoolData | undefined
   borrowApyData: BorrowAssetApyData | undefined
+  canAddLiquidity: boolean
+  canRemoveLiquidity: boolean
 }
 
 export type IsolatedPoolTable = {
@@ -94,6 +103,8 @@ export type IsolatedPoolTable = {
   totalApr: string
   farms: Farm[]
   allFarms: Farm[]
+  canAddLiquidity: boolean
+  canRemoveLiquidity: boolean
   isNative: boolean
 }
 
@@ -389,6 +400,12 @@ export const useOmnipoolStablepools = () => {
             .toFixed(2)
         : undefined
 
+      const tradability = isStablepoolOnly
+        ? { canAddLiquidity: true, canRemoveLiquidity: true }
+        : pool.tradeable
+          ? getOmnipoolTradability(pool.tradeable)
+          : { canAddLiquidity: false, canRemoveLiquidity: false }
+
       return {
         id: poolId,
         meta:
@@ -419,6 +436,8 @@ export const useOmnipoolStablepools = () => {
         aStableswapAsset,
         borrowApyData,
         stablepoolData: isStablepoolOnly ? pool : stablepoolInOmnipool,
+        canAddLiquidity: tradability.canAddLiquidity,
+        canRemoveLiquidity: tradability.canRemoveLiquidity,
       }
     })
 
@@ -575,6 +594,8 @@ export const useIsolatedPools = () => {
           isFeeLoading: false,
           farms,
           allFarms,
+          canAddLiquidity: true,
+          canRemoveLiquidity: true,
           isNative: false,
         })
 
@@ -763,6 +784,33 @@ export const calculatePoolFee = (fee?: number[] | PoolFee) => {
   const tradeFee = Big(numerator).div(denominator)
 
   return tradeFee.times(100).toString()
+}
+
+const getOmnipoolTradability = (value: number) => {
+  const canBuy = is_buy_allowed(value)
+  const canSell = is_sell_allowed(value)
+  const canAddLiquidity = is_add_liquidity_allowed(value)
+  const canRemoveLiquidity = is_remove_liquidity_allowed(value)
+
+  return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+}
+
+export const useAddableStablepoolTokens = (
+  poolId: string,
+  reserves: TReserve[],
+) => {
+  const { data: tradability } = useStableSwapTradability()
+  const isTradability = !!tradability?.length
+
+  if (!isTradability) return reserves
+
+  return reserves.filter((reserve) => {
+    const tradabilityValue = tradability.find(
+      ({ keyArgs: [poolId_, assetId] }) =>
+        poolId_.toString() === poolId && assetId === reserve.asset_id,
+    )?.value
+    return tradabilityValue ? is_add_liquidity_allowed(tradabilityValue) : true
+  })
 }
 
 export const useNavigateLiquidityBack = () => {
