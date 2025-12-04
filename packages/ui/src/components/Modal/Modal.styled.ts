@@ -36,18 +36,13 @@ export const SModalOverlay = styled(Overlay)<{ animationDurationMs?: number }>(
   `,
 )
 
-export const SModalClose = styled(ButtonIcon)`
-  padding: 4px;
-  flex-grow: 0;
-
-  cursor: pointer;
-`
-
 export const SModalWrapper = styled(Overlay)<{ animationDurationMs?: number }>`
   --modal-block-offset: 10vh;
   --modal-animation-duration: ${({
     animationDurationMs = DEFAULT_ANIMATION_DURATION,
   }) => animationDurationMs}ms;
+
+  --modal-header-button-size: 34px;
 
   position: fixed;
   inset: 0;
@@ -146,6 +141,26 @@ export const SModalHeader = styled(Flex)`
       flex-grow: 1;
     }
   }
+`
+
+export const SModalHeaderButton = styled(ButtonIcon)<{
+  align?: "left" | "right"
+}>`
+  flex-grow: 0;
+
+  width: var(--modal-header-button-size);
+  height: var(--modal-header-button-size);
+
+  cursor: pointer;
+
+  position: absolute;
+  top: 0;
+  ${({ align }) => `${align}: 0`};
+`
+
+export const SModalTitleContainer = styled(Flex)`
+  position: relative;
+  min-height: var(--modal-header-button-size);
 `
 
 export const SModalBody = styled(Box)<{ noPadding?: boolean }>`
