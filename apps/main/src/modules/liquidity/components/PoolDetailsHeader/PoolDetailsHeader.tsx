@@ -92,19 +92,21 @@ export const PoolDetailsHeader = ({
               : t("addLiquidity")}
           </Link>
         </Button>
-        <Button variant="secondary" asChild>
-          <Link
-            to="/trade/swap/market"
-            search={{
-              assetOut: stablepoolData
-                ? stablepoolData.aToken?.id || data.id
-                : data.id,
-            }}
-          >
-            <Icon size={14} component={Plus} />
-            {t("details.header.swap")}
-          </Link>
-        </Button>
+        {isOmnipool && (
+          <Button variant="secondary" asChild>
+            <Link
+              to="/trade/swap/market"
+              search={{
+                assetOut: stablepoolData
+                  ? stablepoolData.aToken?.id || data.id
+                  : data.id,
+              }}
+            >
+              <Icon size={14} component={Plus} />
+              {t("details.header.swap")}
+            </Link>
+          </Button>
+        )}
       </Flex>
     </Flex>
   )

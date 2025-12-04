@@ -122,7 +122,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
         meta,
       }
 
-      positionsData.push(liquidity)
+      positionsData.unshift(liquidity)
     }
 
     return {
