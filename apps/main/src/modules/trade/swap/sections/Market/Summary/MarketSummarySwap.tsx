@@ -170,7 +170,7 @@ export const MarketSummarySwap: FC<Props> = ({
             <SwapSummaryRow
               label={t("trade:market.summary.transactionCosts")}
               content={
-                <SummaryRowValue fw={500} fs="p4" lh={1.2}>
+                <SummaryRowValue>
                   {transactionCostsDisplay} (
                   {t("currency", {
                     value: transactionCosts,

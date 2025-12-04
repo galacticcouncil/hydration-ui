@@ -1,4 +1,4 @@
-import { Paper, Separator } from "@galacticcouncil/ui/components"
+import { Paper, PaperProps, Separator } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 
@@ -8,13 +8,15 @@ import { OpenOrders } from "@/modules/trade/orders/OpenOrders/OpenOrders"
 import { OrderHistory } from "@/modules/trade/orders/OrderHistory/OrderHistory"
 import { TradeOrdersHeader } from "@/modules/trade/orders/TradeOrdersHeader"
 
-export const TradeOrders: FC = () => {
+type Props = PaperProps
+
+export const TradeOrders: FC<Props> = (props) => {
   const { tab, allPairs } = useSearch({
     from: "/trade/_history",
   })
 
   return (
-    <Paper sx={{ overflow: "hidden" }}>
+    <Paper sx={{ overflow: "hidden" }} {...props}>
       <TradeOrdersHeader />
       <Separator />
       <div sx={{ overflowX: "auto" }}>

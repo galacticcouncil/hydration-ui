@@ -117,6 +117,7 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
         sx={{ flexShrink: 0, size: 16, ...sx }}
         onClick={(e) => {
           e.preventDefault()
+          e.stopPropagation()
           onClick?.(e)
         }}
         {...props}

@@ -44,6 +44,7 @@ export type BoxOwnProps = Partial<
     | "gap"
     | "flex"
     | "visibility"
+    | "gridColumn"
   >
 > & {
   asChild?: boolean
@@ -104,6 +105,7 @@ export const Box: React.FC<BoxProps> = ({
   gap,
   flex,
   visibility,
+  gridColumn,
   ...rest
 }) => {
   const SlottedComponent = asChild ? Slot : Component
@@ -148,6 +150,7 @@ export const Box: React.FC<BoxProps> = ({
     gap,
     flex,
     visibility,
+    gridColumn,
   }
 
   return <SlottedComponent sx={fullSx} css={css} {...rest} />

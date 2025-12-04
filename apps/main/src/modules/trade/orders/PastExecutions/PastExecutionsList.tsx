@@ -50,6 +50,7 @@ export const PastExecutionsList: FC<Props> = ({
               <Separator mx={getMinusTokenPx("containers.paddings.primary")} />
             )}
             <TransactionItemMobile
+              sx={{ px: 0 }}
               timestamp={execution.timestamp}
               link={execution.link}
               {...statusProps}

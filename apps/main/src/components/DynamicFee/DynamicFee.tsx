@@ -37,14 +37,14 @@ export const DynamicFee = ({
   return (
     <Flex gap={8} align="center">
       {amount ? (
-        <Text fs="p6" fw={500} lh={1.4}>
+        <Text fs="p5" fw={500} lh={1.2}>
           <span sx={{ color: getToken("text.high") }}>{amount}</span>{" "}
           <span sx={{ color: getToken("colors.skyBlue.500") }}>
             ({t("percent", { value })})
           </span>
         </Text>
       ) : (
-        <Text fs="p6" fw={500} color={getToken("text.high")}>
+        <Text fs="p5" fw={500} lh={1.2} color={getToken("text.high")}>
           {t("percent", { value })}
         </Text>
       )}

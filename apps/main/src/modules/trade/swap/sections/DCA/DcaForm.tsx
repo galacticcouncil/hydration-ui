@@ -122,7 +122,7 @@ export const DcaForm: FC<Props> = ({ order }) => {
       <Grid
         pt={getTokenPx("scales.paddings.l")}
         pb={getTokenPx("scales.paddings.xxl")}
-        columnTemplate="1fr 1fr"
+        columnTemplate="minmax(0,1fr) minmax(0,1fr)"
         rowGap={8}
         columnGap={getTokenPx("containers.paddings.primary")}
       >
@@ -131,17 +131,13 @@ export const DcaForm: FC<Props> = ({ order }) => {
             {label}
           </Text>
         ))}
-        <Box>
-          <PeriodFormField<DcaFormValues>
-            typeName="frequency.type"
-            valueName="frequency.value"
-            allowedPeriodTypes={
-              new Set(
-                periodTypes.filter((periodType) => periodType !== "month"),
-              )
-            }
-          />
-        </Box>
+        <PeriodFormField<DcaFormValues>
+          typeName="frequency.type"
+          valueName="frequency.value"
+          allowedPeriodTypes={
+            new Set(periodTypes.filter((periodType) => periodType !== "month"))
+          }
+        />
         <Controller
           control={control}
           name="orders"
