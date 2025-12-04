@@ -128,8 +128,7 @@ export const useDepositAprs = () => {
           (entry) => entry.global_farm_id === farm.globalFarmId,
         )
 
-        //TODO: Add the period from global farm
-        const period = getCurrentFarmPeriod(1)
+        const period = getCurrentFarmPeriod(farm.blocksPerPeriod)
 
         if (farmEntry && period) {
           joinedFarms.push({
