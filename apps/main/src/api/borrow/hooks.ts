@@ -13,7 +13,13 @@ import { zip } from "remeda"
 
 import { useBorrowReserves, useUserBorrowSummary } from "@/api/borrow/queries"
 import { useDefillamaLatestApyQueries } from "@/api/external/defillama"
-import { isStableSwap, useAssets } from "@/providers/assetsProvider"
+import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
+import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
+import {
+  isStableSwap,
+  TAssetsContext,
+  useAssets,
+} from "@/providers/assetsProvider"
 
 type UnderlyingAssetApy = {
   id: string
@@ -34,13 +40,23 @@ export type BorrowAssetApyData = {
   underlyingBorrowApy: number
   totalSupplyApy: number
   totalBorrowApy: number
+  stablepoolData: TStablepoolDetails | undefined
   // farms: TFarmAprData[] | undefined @TODO farms
-  // stablepoolData: TStablePoolDetails | undefined @TODO stablepoolData
 }
 
 export const useBorrowAssetsApy = (assetIds: string[]) => {
-  const { getAsset, getErc20AToken } = useAssets()
-  const { data: borrowReserves, isLoading } = useBorrowReserves()
+  const { getAsset, getErc20AToken, getRelatedAToken } = useAssets()
+  const { data: borrowReserves, isLoading: isLoadingBorrowReserves } =
+    useBorrowReserves()
+
+  const { data: stablepoolsReserves, isLoading: isLoadingStablepoolsReserves } =
+    useStablepoolsReserves(assetIds)
+
+  const stablepoolsMap = useMemo<Map<string, TStablepoolDetails>>(() => {
+    return new Map(
+      stablepoolsReserves.map((item) => [item.pool.id.toString(), item]),
+    )
+  }, [stablepoolsReserves])
 
   const assetIdsMemo = useStableArray(assetIds)
 
@@ -64,6 +80,8 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     const externalApyEntries = zip(allAssetIds, externalApys)
     return new Map(externalApyEntries)
   }, [allAssetIds, externalApys])
+
+  const isLoading = isLoadingBorrowReserves || isLoadingStablepoolsReserves
 
   const data = useMemo<BorrowAssetApyData[]>(() => {
     if (isLoading) return []
@@ -93,23 +111,29 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
           .includes(reserve.underlyingAsset)
       })
 
+      const stablepoolData = stablepoolsMap.get(assetId)
+
       const calculatedData = calculateAssetApyTotals(
         stableSwapAssetIds,
         underlyingReserves,
         assetReserve?.aIncentivesData ?? [],
         externalApysMap,
-        // getRelatedAToken,
+        stablepoolData,
+        getRelatedAToken,
       )
 
       return {
         assetId,
         incentives,
         lpAPY: undefined, // @TODO lpAPY
+        stablepoolData,
         ...calculatedData,
       } satisfies BorrowAssetApyData
     })
   }, [
+    getRelatedAToken,
     assetIdsMemo,
+    stablepoolsMap,
     externalApysMap,
     getAsset,
     getErc20AToken,
@@ -180,12 +204,28 @@ type CalculatedAssetApyTotals = Pick<
   | "incentivesNetAPR"
 >
 
+const calculateAssetProportionInStablepool = (
+  assetId: string,
+  stablepoolData: TStablepoolDetails | undefined,
+) => {
+  const allReserves = stablepoolData?.reserves ?? []
+  const reserve = allReserves.find(
+    (reserve) => reserve.asset_id.toString() === assetId,
+  )
+  const totalAmount = stablepoolData?.totalDisplayAmount
+  const reserveAmount = reserve?.displayAmount
+
+  if (totalAmount && reserveAmount) {
+    return Big(reserveAmount).div(totalAmount).toNumber()
+  }
+}
 const calculateAssetApyTotals = (
   stableSwapAssetIds: string[],
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
   externalApysMap: Map<string, UseQueryResult<number>>,
-  // getRelatedAToken: TAssetsContext["getRelatedAToken"],
+  stablepoolData: TStablepoolDetails | undefined,
+  getRelatedAToken: TAssetsContext["getRelatedAToken"],
 ): CalculatedAssetApyTotals => {
   const assetCount = stableSwapAssetIds.length
   const incentivesNetAPR = calculateIncentivesNetAPR(incentives)
@@ -195,14 +235,11 @@ const calculateAssetApyTotals = (
       const id = getAssetIdFromAddress(reserve.underlyingAsset)
       const supplyAPY = Big(reserve.supplyAPY)
       const borrowAPY = Big(reserve.variableBorrowAPY)
-      const percentage = 100 / assetCount
 
-      // @TODO proportion based on balance in pool
-      // const balanceId = getRelatedAToken(id)?.id ?? id
-      // stableSwapBalances.find((bal) => bal.id === balanceId)?.percentage ??
-      // 100 / assetCount
-
-      const proportion = percentage / 100
+      const balanceId = getRelatedAToken(id)?.id ?? id
+      const proportion =
+        calculateAssetProportionInStablepool(balanceId, stablepoolData) ||
+        1 / assetCount
 
       return {
         id,
@@ -217,9 +254,9 @@ const calculateAssetApyTotals = (
     const externalApy = externalApysMap.get(id)
 
     if (externalApy?.data) {
-      const percentage = 100 / assetCount
-
-      const proportion = percentage / 100
+      const proportion =
+        calculateAssetProportionInStablepool(id, stablepoolData) ||
+        1 / assetCount
 
       underlyingAssetsApyData.push({
         id,
