@@ -155,7 +155,7 @@ export const TableRow = styled.tr<{
       pointer-events: none;
     `};
 
-    ${!isClickable &&
+    ${isClickable === false &&
     css`
       pointer-events: none;
     `}

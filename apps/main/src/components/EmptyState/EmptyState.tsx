@@ -37,25 +37,32 @@ export const EmptyState: FC<Props> = ({
       className={className}
     >
       {icon || <Image src={image} alt="Empty state" width={96} height={96} />}
-      <Text color={getToken("text.high")} fs={14} lh={1.2} fw={500}>
+      <Text
+        font="primary"
+        color={getToken("text.high")}
+        fs="h7"
+        lh={1}
+        fw={500}
+      >
         {header}
       </Text>
-      <Text
-        key={description}
-        color={getToken("text.medium")}
-        fs={12}
-        lh={1.2}
-        fw={400}
-        align="center"
-      >
-        {description.split(". ").map((sentence, index) => (
-          <Fragment key={index}>
-            {sentence}
-            <br />
-          </Fragment>
-        ))}
-      </Text>
-      {action}
+      <Flex direction="column" gap={20} align="center">
+        <Text
+          key={description}
+          color={getToken("text.medium")}
+          fs="p5"
+          lh={1.3}
+          align="center"
+        >
+          {description.split(". ").map((sentence, index) => (
+            <Fragment key={index}>
+              {sentence}
+              <br />
+            </Fragment>
+          ))}
+        </Text>
+        {action}
+      </Flex>
     </Flex>
   )
 }

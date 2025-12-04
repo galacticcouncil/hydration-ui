@@ -7,6 +7,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 
 import { LiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded"
+import { MyLiquidityEmptyState } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityEmptyState"
 import {
   MyLiquidityTableColumnId,
   useMyLiquidityColumns,
@@ -52,6 +53,7 @@ export const MyLiquidityTable: FC<Props> = ({
         renderSubComponent={({ meta, positions }) => (
           <LiquidityDetailExpanded asset={meta} positions={positions} />
         )}
+        emptyState={<MyLiquidityEmptyState />}
       />
     </TableContainer>
   )
