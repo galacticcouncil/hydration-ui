@@ -32,9 +32,9 @@ export const AllPools = () => {
     ? {
         liquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0"),
         stablepool: Big(platformTotal?.stablepoolsTvlNorm ?? "0"),
-        volume: Big(platformTotal?.omnipoolVolNorm ?? "0").plus(
-          platformTotal?.stableswapVolNorm ?? "0",
-        ),
+        volume: Big(platformTotal?.omnipoolVolNorm ?? "0")
+          .plus(platformTotal?.stableswapVolNorm ?? "0")
+          .plus(xykTotals.volume),
         totalLiquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0")
           .plus(platformTotal?.stablepoolsTvlNorm ?? "0")
           .plus(xykTotals.liquidity),
@@ -61,9 +61,9 @@ export const AllPools = () => {
       <ValueStats
         label={t("liquidity:header.volume")}
         value={t("common:currency", {
-          value: Big(totals.volume).plus(xykTotals.volume),
+          value: totals.volume,
         })}
-        isLoading={isLoadingPlatformTotal}
+        isLoading={isLoadingPlatformTotal || isLoadingXYK}
         size="medium"
         wrap
       />
