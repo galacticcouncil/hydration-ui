@@ -1,10 +1,11 @@
 import styled from "@emotion/styled"
 import { Content } from "@radix-ui/react-dialog"
 
+import { Box } from "@/components/Box"
 import {
   SModalBody,
-  SModalClose,
   SModalHeader,
+  SModalHeaderButton,
   SModalOverlay,
   SModalWrapper,
 } from "@/components/Modal/Modal.styled"
@@ -14,7 +15,7 @@ import { mq } from "@/theme"
 
 export const SSheetOverlay = SModalOverlay
 
-export const SSheetClose = SModalClose
+export const SSheetClose = SModalHeaderButton
 
 export const SSheetWrapper = styled(SModalWrapper)`
   inset: 8px;
@@ -68,12 +69,16 @@ export const SSheetPaper = styled(Paper)`
 `
 
 export const SSheetHeader = styled(SModalHeader)`
+  padding: 15px var(--modal-content-padding);
+`
+
+export const SSheetTitleContainer = styled(Box)`
+  position: relative;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-
-  padding: 15px var(--modal-content-padding);
+  min-height: var(--modal-header-button-size);
 `
 
 export const SSheetBody = SModalBody

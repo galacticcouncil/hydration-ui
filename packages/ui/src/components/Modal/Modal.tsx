@@ -4,9 +4,8 @@ import { ArrowLeft, X } from "lucide-react"
 import { createContext, FC, ReactNode, Ref, useContext, useMemo } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
-import { ButtonIcon } from "@/components/Button"
 import { DrawerContent, DrawerHeader, DrawerRoot } from "@/components/Drawer"
-import { Flex, FlexProps } from "@/components/Flex"
+import { FlexProps } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
 import { ScrollArea } from "@/components/ScrollArea"
 import { useBreakpoints } from "@/theme"
@@ -14,15 +13,16 @@ import { useBreakpoints } from "@/theme"
 import { Paper } from "../Paper"
 import {
   SModalBody,
-  SModalClose,
   SModalContent,
   SModalContentDivider,
   SModalDescription,
   SModalFooter,
   SModalHeader,
+  SModalHeaderButton,
   SModalOverlay,
   SModalPaper,
   SModalTitle,
+  SModalTitleContainer,
   SModalTopContent,
   SModalWrapper,
 } from "./Modal.styled"
@@ -126,11 +126,11 @@ type ModalCloseProps = React.ComponentProps<typeof DialogPrimitive.Close>
 
 const ModalClose: FC<ModalCloseProps> = (props) => {
   return (
-    <SModalClose asChild>
+    <SModalHeaderButton asChild align="right">
       <DialogPrimitive.Close {...props}>
         <Icon component={X} size={20} />
       </DialogPrimitive.Close>
-    </SModalClose>
+    </SModalHeaderButton>
   )
 }
 
@@ -161,11 +161,11 @@ const ModalHeader: FC<ModalHeaderProps> = ({
 
   return (
     <SModalHeader {...props}>
-      <Flex>
+      <SModalTitleContainer>
         {onBack && (
-          <ButtonIcon style={{ flexGrow: 0 }} onClick={onBack}>
+          <SModalHeaderButton onClick={onBack} align="left">
             <Icon component={ArrowLeft} size={18} />
-          </ButtonIcon>
+          </SModalHeaderButton>
         )}
 
         {customTitle ? (
@@ -177,14 +177,18 @@ const ModalHeader: FC<ModalHeaderProps> = ({
           </>
         ) : (
           <ModalTitle
-            sx={{ textAlign: align === "center" ? "center" : "left" }}
+            sx={{
+              textAlign: align === "center" ? "center" : "left",
+              pr: 40,
+              pl: align === "default" && !onBack ? 0 : 40,
+            }}
           >
             {title}
           </ModalTitle>
         )}
 
         {closable && <ModalClose />}
-      </Flex>
+      </SModalTitleContainer>
 
       {customDescription ? (
         <>
