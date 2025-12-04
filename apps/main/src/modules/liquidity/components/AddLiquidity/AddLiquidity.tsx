@@ -53,6 +53,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
     joinFarmErrorMessage,
     mutation,
     isJoinFarms,
+    canAddLiquidity,
   } = useAddLiquidity({ assetId: id, onSubmitted })
 
   const onSubmit = async (values: TAddLiquidityFormValues) => {
@@ -71,10 +72,6 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
   }
 
   const customErrors = getCustomErrors(form.formState.errors.amount)
-
-  const isSubmitDisabled = !!Object.keys(customErrors ?? {}).filter(
-    (key) => key !== "farm",
-  ).length
 
   return (
     <>
@@ -143,7 +140,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
             type="submit"
             size="large"
             width="100%"
-            disabled={isSubmitDisabled}
+            mt={getTokenPx("containers.paddings.primary")}
+            disabled={!canAddLiquidity}
           >
             {isJoinFarms
               ? t("liquidity.add.modal.submitAndjoinFarms")

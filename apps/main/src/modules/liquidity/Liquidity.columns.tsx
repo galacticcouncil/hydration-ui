@@ -178,6 +178,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
   const { isPositions } = pool
   const total = useUserPositionsTotal(pool)
   const stablepoolData = pool.stablepoolData
+  const { canAddLiquidity } = pool
   return (
     <>
       <Flex
@@ -186,24 +187,27 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
         onClick={(e) => e.stopPropagation()}
         sx={{ position: "relative" }}
       >
-        {!pool.isNative && (
-          <Button asChild variant="accent" outline>
-            <Link
-              to="/liquidity/$id/add"
-              search={
-                stablepoolData
-                  ? {
-                      stableswapId: stablepoolData.id.toString(),
-                      erc20Id: stablepoolData.aToken?.id.toString(),
-                    }
-                  : undefined
-              }
-              params={{ id: pool.id }}
-            >
-              {t("liquidity:joinPool")}
-            </Link>
-          </Button>
-        )}
+        <Button
+          asChild
+          variant="accent"
+          outline
+          disabled={!canAddLiquidity || pool.isNative}
+        >
+          <Link
+            to="/liquidity/$id/add"
+            search={
+              stablepoolData
+                ? {
+                    stableswapId: stablepoolData.id.toString(),
+                    erc20Id: stablepoolData.aToken?.id.toString(),
+                  }
+                : undefined
+            }
+            params={{ id: pool.id }}
+          >
+            {t("liquidity:joinPool")}
+          </Link>
+        </Button>
         <Button variant="tertiary" outline asChild>
           <Link to="/liquidity/$id" params={{ id: pool.id }}>
             {isPositions ? t("manage") : t("details")}

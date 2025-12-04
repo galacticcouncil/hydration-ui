@@ -42,8 +42,9 @@ const fetchDefillamaLatestApy = async (id: string): Promise<number> => {
 
   const json = await res.json()
   const parsed = defillamaApiResponseSchema.parse(json)
-  const latest = parsed.data[parsed.data.length - 1]?.apy ?? 0
-  return latest
+  const latestEntry = parsed.data[parsed.data.length - 1]
+  const latestApy = latestEntry?.apyBase || latestEntry?.apy || 0
+  return latestApy
 }
 
 export const defillamaLatestApyQuery = (id: string) =>
