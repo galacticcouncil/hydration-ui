@@ -16,7 +16,9 @@ export const AssetYields = ({
   const { t } = useTranslation("common")
   const isOmnipool = !isIsolatedPool(data)
 
-  if (!isOmnipool)
+  if (!isOmnipool) {
+    if (data.totalApr === "0") return null
+
     return (
       <Chip variant="green" size="small">
         {t("percent.apr", {
@@ -24,6 +26,7 @@ export const AssetYields = ({
         })}
       </Chip>
     )
+  }
 
   let apy = Big(0)
   let incentivesApr = Big(0)

@@ -287,7 +287,7 @@ export const useUserPositionsTotal = (pool: OmnipoolAssetTable) => {
   } = pool
 
   const { price: aStableswapPrice, isValid: aStableswapIsValid } =
-    useAssetPrice(stableswapBalance ? aStableswapAsset?.id : undefined)
+    useAssetPrice(stableswapBalance || aStableswapBalance ? meta.id : undefined)
 
   const aStableswapDisplayBalance = (() => {
     if (!aStableswapBalance || !aStableswapAsset || !aStableswapIsValid)
