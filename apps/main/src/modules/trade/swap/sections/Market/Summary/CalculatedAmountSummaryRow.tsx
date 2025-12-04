@@ -40,20 +40,9 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
     <SwapSummaryRow
       label={label}
       content={
-        <Flex
-          as="button"
-          sx={{ cursor: "pointer" }}
-          align="center"
-          gap={10}
-          onClick={(e) => {
-            e.preventDefault()
-            onIsExpandedChange(!isExpanded)
-          }}
-        >
+        <Flex align="center" gap={10}>
           {typeof amount === "string" ? (
-            <SummaryRowValue fw={600} fs="p4" lh={1.2}>
-              {amount}
-            </SummaryRowValue>
+            <SummaryRowValue>{amount}</SummaryRowValue>
           ) : (
             amount
           )}
@@ -64,6 +53,10 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
           />
         </Flex>
       }
+      onClick={(e) => {
+        e.preventDefault()
+        onIsExpandedChange(!isExpanded)
+      }}
       tooltip={
         <Flex direction="column" gap={8}>
           <Box>{tooltip}</Box>

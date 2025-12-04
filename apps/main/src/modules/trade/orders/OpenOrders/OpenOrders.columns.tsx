@@ -26,7 +26,7 @@ const columnHelper = createColumnHelper<OrderData>()
 
 export const useOpenOrdersColumns = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { isDesktop } = useBreakpoints()
+  const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const fromToColumn = columnHelper.display({
@@ -102,6 +102,8 @@ export const useOpenOrdersColumns = () => {
             <Button
               variant="danger"
               outline
+              height={28}
+              width={34}
               onClick={(e) => {
                 e.stopPropagation()
                 setModal("confirmation")
@@ -165,14 +167,16 @@ export const useOpenOrdersColumns = () => {
       },
     })
 
-    return !isDesktop
-      ? [fromToColumnMobile, statusColumnMobile]
-      : [
-          fromToColumn,
-          averagePriceColumn,
-          typeColumn,
-          statusColumn,
-          actionColumn,
-        ]
-  }, [t, isDesktop])
+    if (isMobile) {
+      return [fromToColumnMobile, statusColumnMobile]
+    }
+
+    return [
+      fromToColumn,
+      averagePriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
+  }, [t, isMobile])
 }

@@ -3,6 +3,7 @@ import { Alert, Button, Summary, Text } from "@galacticcouncil/ui/components"
 import {
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
@@ -46,6 +47,7 @@ export const AddIsolatedLiquidityForm = ({
   consts,
   onBack,
   closable = false,
+  onSubmitted,
 }: AddLiquidityProps & {
   pool: PoolBase
   consts: TXYKConsts
@@ -71,7 +73,7 @@ export const AddIsolatedLiquidityForm = ({
     activeFarms,
     joinFarmErrorMessage,
     isJoinFarms,
-  } = useAddIsolatedLiquidity(pool, consts)
+  } = useAddIsolatedLiquidity({ pool, consts, onSubmitted })
 
   const onSubmit = async () => {
     const values = form.getValues()
@@ -106,9 +108,9 @@ export const AddIsolatedLiquidityForm = ({
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <FormProvider {...form}>
-          <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
+      <FormProvider {...form}>
+        <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
+          <ModalBody>
             <AssetSelectFormField<TAddIsolatedLiquidityFormValues>
               label={t("liquidity.createPool.modal.assetA")}
               assetFieldName="assetA"
@@ -138,6 +140,7 @@ export const AddIsolatedLiquidityForm = ({
                   shouldTouch: true,
                 })
               }}
+              sx={{ pt: 0 }}
             />
 
             <AssetSwitcher
@@ -206,21 +209,21 @@ export const AddIsolatedLiquidityForm = ({
             )}
 
             <ModalContentDivider />
-
+          </ModalBody>
+          <ModalFooter sx={{ pt: 0 }}>
             <Button
               type="submit"
               size="large"
               width="100%"
-              mt={getTokenPx("containers.paddings.primary")}
               disabled={!form.formState.isValid}
             >
               {isJoinFarms
                 ? t("liquidity.add.modal.submitAndjoinFarms")
                 : t("liquidity.add.modal.submit")}
             </Button>
-          </form>
-        </FormProvider>
-      </ModalBody>
+          </ModalFooter>
+        </form>
+      </FormProvider>
     </>
   )
 }

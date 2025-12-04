@@ -1,15 +1,11 @@
 import { ModalContainer } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import {
-  createFileRoute,
-  useParams,
-  useRouter,
-  useSearch,
-} from "@tanstack/react-router"
+import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import z from "zod/v4"
 
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
+import { useNavigateLiquidityBack } from "@/modules/liquidity/Liquidity.utils"
 
 const RemoveLiquiditySchema = z.object({
   positionId: z.string().optional(),
@@ -43,7 +39,7 @@ function RouteComponent() {
     from: "/liquidity/$id/remove",
   })
 
-  const { history } = useRouter()
+  const navigateBack = useNavigateLiquidityBack()
 
   return (
     <ModalContainer
@@ -53,7 +49,8 @@ function RouteComponent() {
       <RemoveLiquidity
         poolId={poolId}
         closable={false}
-        onBack={() => history.back()}
+        onBack={navigateBack}
+        onSubmitted={navigateBack}
         {...search}
       />
     </ModalContainer>

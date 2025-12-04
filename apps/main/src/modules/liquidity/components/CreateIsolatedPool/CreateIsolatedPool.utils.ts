@@ -40,7 +40,11 @@ export const zodCreateIsolatedPool = (
       ),
   })
 
-export const useSubmitCreateIsolatedPool = () => {
+export const useSubmitCreateIsolatedPool = ({
+  onSubmitted,
+}: {
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
@@ -72,7 +76,7 @@ export const useSubmitCreateIsolatedPool = () => {
         error: t("liquidity.createPool.toast.submitted", tOptions),
       }
 
-      await createTransaction({ tx, toasts })
+      await createTransaction({ tx, toasts }, { onSubmitted })
     },
   })
 }

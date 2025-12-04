@@ -17,9 +17,6 @@ export const PriceImpactSummaryRow: FC<Props> = ({ priceImpact }) => {
       label={t("trade:market.summary.priceImpact")}
       content={
         <SummaryRowValue
-          fw={500}
-          fs="p4"
-          lh={1.2}
           color={
             priceImpact <= -1 ? getToken("alarmRed.400") : getToken("text.high")
           }

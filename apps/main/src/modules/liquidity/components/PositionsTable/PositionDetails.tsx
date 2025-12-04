@@ -153,6 +153,7 @@ export const PositionDetails = ({
         <JoinFarmsWrapper
           poolId={isXyk ? position.amm_pool_id : position.assetId}
           positionId={isXyk ? position.id : position.positionId}
+          onSubmitted={() => setOpen(false)}
           closable
         />
       </Modal>

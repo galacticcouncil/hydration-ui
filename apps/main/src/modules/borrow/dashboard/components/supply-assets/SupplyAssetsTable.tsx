@@ -24,7 +24,7 @@ import {
 
 export const SupplyAssetsTable = () => {
   const [modalProps, setModalProps] = useState<
-    AddStablepoolLiquidityProps | undefined
+    Omit<AddStablepoolLiquidityProps, "onSubmitted"> | undefined
   >()
   const baseColumns = useSupplyAssetsTableColumns("base")
   const strategyColumns = useSupplyAssetsTableColumns("strategy", setModalProps)
@@ -106,6 +106,7 @@ export const SupplyAssetsTable = () => {
             {...modalProps}
             initialOption="stablepool"
             closable
+            onSubmitted={() => setModalProps(undefined)}
           />
         )}
       </Modal>

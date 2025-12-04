@@ -24,7 +24,7 @@ export const TransactionType: FC<Props> = ({ type }) => {
       color={
         type === TradeOperation.ExactOut
           ? getToken("accents.success.emphasis")
-          : getToken("alarmRed.500")
+          : getToken("accents.danger.secondary")
       }
       transform="capitalize"
     >

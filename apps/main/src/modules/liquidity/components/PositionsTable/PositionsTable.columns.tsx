@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
+  Box,
   Button,
   Flex,
   Icon,
@@ -55,8 +56,8 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           sxFn: (original) =>
             !isOmnipoolPosition(original)
               ? {
-                  borderLeft: `2px solid`,
-                  borderColor: getToken("buttons.primary.high.rest"),
+                  // it needs to be overridden because of the issue for sticky column
+                  p: "0px !important",
                 }
               : {},
         },
@@ -65,14 +66,24 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           isOmnipoolPosition(original) ? (
             <AssetLabelFull asset={original.meta} withName={false} />
           ) : (
-            <Text
-              fs="p5"
-              fw={500}
-              color={getToken("text.high")}
-              sx={{ whiteSpace: "nowrap" }}
+            <Box
+              height={66}
+              py={24}
+              px={18}
+              sx={{
+                borderLeft: `2px solid`,
+                borderColor: getToken("buttons.primary.high.rest"),
+              }}
             >
-              {original.label}
-            </Text>
+              <Text
+                fs="p5"
+                fw={500}
+                color={getToken("text.high")}
+                sx={{ whiteSpace: "nowrap" }}
+              >
+                {original.label}
+              </Text>
+            </Box>
           ),
       }),
       omnipoolColumnHelper.display({
@@ -172,7 +183,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                 ) : null
               ) : original.isStablepoolInOmnipool ? (
                 <Button
-                  variant="primary"
+                  variant="secondary"
                   asChild
                   disabled={!original.canAddLiquidity}
                 >
@@ -183,7 +194,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                     }}
                   >
                     <Plus />
-                    {t("liquidity:addLiquidity")}
+                    {t("liquidity:moveToOmnipool")}
                   </Link>
                 </Button>
               ) : null}
@@ -269,26 +280,26 @@ export const useBalanceTableColumns = () => {
             original: { isStablepoolInOmnipool, poolId, stableswapId },
           },
         }) => (
-          <Flex gap={12} align="center">
+          <Flex gap={12} align="center" justify="end">
             {isStablepoolInOmnipool && (
-              <Button variant="primary" sx={{ flex: [1, "auto"] }}>
-                {/* <Link
+              <Button variant="secondary" asChild>
+                <Link
                   to="/liquidity/$id/add"
                   params={{
                     id: poolId,
                   }}
-                > */}
-                <Plus />
-                {t("liquidity:addLiquidity")}
-                {/* </Link> */}
+                  search={{
+                    erc20Id: poolId,
+                    stableswapId: stableswapId,
+                    split: false,
+                  }}
+                >
+                  <Plus />
+                  {t("liquidity:moveToOmnipool")}
+                </Link>
               </Button>
             )}
-            <Button
-              variant="tertiary"
-              outline
-              sx={{ flex: [1, "auto"] }}
-              asChild
-            >
+            <Button variant="tertiary" outline asChild>
               <Link
                 to="/liquidity/$id/remove"
                 params={{

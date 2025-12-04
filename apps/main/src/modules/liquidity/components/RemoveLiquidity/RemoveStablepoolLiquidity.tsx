@@ -63,6 +63,7 @@ export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
 const RemoveStablepoolLiquidityJSX = ({
   pool,
   onBack,
+  onSubmitted,
   closable,
   initialReceiveAsset,
   editable,
@@ -86,6 +87,7 @@ const RemoveStablepoolLiquidityJSX = ({
   } = useStablepoolRemoveLiquidity({
     ...pool,
     initialReceiveAsset,
+    onSubmitted,
   })
 
   const {

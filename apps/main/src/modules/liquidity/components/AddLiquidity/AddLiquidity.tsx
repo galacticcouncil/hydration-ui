@@ -4,6 +4,7 @@ import {
   Button,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
   Skeleton,
   Summary,
@@ -39,6 +40,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
   id,
   onBack,
   closable = false,
+  onSubmitted,
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
 
@@ -52,7 +54,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
     mutation,
     isJoinFarms,
     canAddLiquidity,
-  } = useAddLiquidity(id)
+  } = useAddLiquidity({ assetId: id, onSubmitted })
 
   const onSubmit = async (values: TAddLiquidityFormValues) => {
     if (!liquidityShares || !values.amount)
@@ -78,8 +80,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+        <ModalBody>
           <Controller
             name="amount"
             control={form.control}
@@ -132,7 +134,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
           )}
 
           <ModalContentDivider />
-
+        </ModalBody>
+        <ModalFooter sx={{ pt: 0 }}>
           <Button
             type="submit"
             size="large"
@@ -144,8 +147,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
               ? t("liquidity.add.modal.submitAndjoinFarms")
               : t("liquidity.add.modal.submit")}
           </Button>
-        </form>
-      </ModalBody>
+        </ModalFooter>
+      </form>
     </>
   )
 }

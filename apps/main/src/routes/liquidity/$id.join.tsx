@@ -4,6 +4,7 @@ import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
 import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
+import { useNavigateLiquidityBack } from "@/modules/liquidity/Liquidity.utils"
 
 const joinFarmsSchema = z.object({
   positionId: z.string().optional(),
@@ -23,12 +24,20 @@ function RouteComponent() {
     from: "/liquidity/$id/join",
   })
 
+  const navigateBack = useNavigateLiquidityBack()
+
   return (
     <ModalContainer
       open
       sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
     >
-      <JoinFarmsWrapper positionId={positionId} poolId={id} closable={false} />
+      <JoinFarmsWrapper
+        positionId={positionId}
+        poolId={id}
+        closable={false}
+        onBack={navigateBack}
+        onSubmitted={navigateBack}
+      />
     </ModalContainer>
   )
 }

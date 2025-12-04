@@ -29,9 +29,15 @@ export type CreateIsolatedPoolFormData = z.infer<
 
 type Props = {
   readonly closable?: boolean
+  readonly onBack?: () => void
+  readonly onSubmitted: () => void
 }
 
-export const CreateIsolatedPool: FC<Props> = ({ closable }) => {
+export const CreateIsolatedPool: FC<Props> = ({
+  closable,
+  onBack,
+  onSubmitted,
+}) => {
   const { t } = useTranslation("liquidity")
   const { tradable } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
@@ -56,7 +62,9 @@ export const CreateIsolatedPool: FC<Props> = ({ closable }) => {
     },
   })
 
-  const { mutate: submitCreateIsolatedPool } = useSubmitCreateIsolatedPool()
+  const { mutate: submitCreateIsolatedPool } = useSubmitCreateIsolatedPool({
+    onSubmitted,
+  })
 
   const [amountA, amountB] = form.watch(["amountA", "amountB"])
 
@@ -81,6 +89,7 @@ export const CreateIsolatedPool: FC<Props> = ({ closable }) => {
       <ModalHeader
         title={t("liquidity.createPool.modal.title")}
         closable={closable}
+        onBack={onBack}
       />
       <ModalBody>
         <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>

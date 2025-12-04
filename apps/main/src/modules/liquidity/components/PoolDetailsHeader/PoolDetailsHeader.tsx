@@ -26,6 +26,7 @@ export const PoolDetailsHeader = ({
 }) => {
   const { t } = useTranslation("liquidity")
   const isOmnipool = !isIsolatedPool(data)
+  const isNative = isOmnipool ? data.isNative : false
   const stablepoolData = isOmnipool ? data.stablepoolData : undefined
 
   return (
@@ -69,7 +70,7 @@ export const PoolDetailsHeader = ({
           zIndex: 3,
         }}
       >
-        <Button asChild disabled={!data.canAddLiquidity}>
+        <Button asChild disabled={!data.canAddLiquidity || isNative}>
           <Link
             to="/liquidity/$id/add"
             params={{

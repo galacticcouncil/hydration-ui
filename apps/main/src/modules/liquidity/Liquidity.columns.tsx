@@ -183,10 +183,16 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
     <>
       <Flex
         gap={getTokenPx("containers.paddings.quint")}
+        justify="end"
         onClick={(e) => e.stopPropagation()}
         sx={{ position: "relative" }}
       >
-        <Button asChild variant="accent" outline disabled={!canAddLiquidity}>
+        <Button
+          asChild
+          variant="accent"
+          outline
+          disabled={!canAddLiquidity || pool.isNative}
+        >
           <Link
             to="/liquidity/$id/add"
             search={

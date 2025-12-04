@@ -1,5 +1,5 @@
 import {
-  AccountUniquesEntries,
+  AccountUniquesValues,
   OmnipoolDeposit,
   OmnipoolDepositFull,
   OmnipoolPosition,
@@ -8,23 +8,23 @@ import {
 import { Papi } from "@/providers/rpcProvider"
 
 export const getUniquesEntriesIds = (
-  entries: AccountUniquesEntries,
-): [bigint][] => entries.map(({ args }) => [args[2]])
+  entries: AccountUniquesValues,
+): [bigint][] => entries.map(({ keyArgs }) => [keyArgs[2]])
 
 export const getOmnipoolPositions = async (
   papi: Papi,
-  entries: AccountUniquesEntries,
+  entries: AccountUniquesValues,
 ) => {
   const positions = await papi.query.Omnipool.Positions.getValues(
-    entries.map(({ args }) => [args[2]]),
+    entries.map(({ keyArgs }) => [keyArgs[2]]),
     { at: "best" },
   )
-  return entries.reduce<OmnipoolPosition[]>((acc, { args }, i) => {
+  return entries.reduce<OmnipoolPosition[]>((acc, { keyArgs }, i) => {
     const position = positions[i]
 
     if (position) {
       acc.push({
-        positionId: args[2].toString(),
+        positionId: keyArgs[2].toString(),
         assetId: position?.asset_id.toString(),
         shares: position?.shares,
         price: position?.price,
@@ -38,7 +38,7 @@ export const getOmnipoolPositions = async (
 
 export const getOmnipoolMiningPositions = async (
   papi: Papi,
-  entries: AccountUniquesEntries,
+  entries: AccountUniquesValues,
 ) => {
   const ids = getUniquesEntriesIds(entries)
   const [omnipoolDepositPositionIds, omnipoolDeposits] = await Promise.all([
@@ -55,7 +55,7 @@ export const getOmnipoolMiningPositions = async (
     const depositData = omnipoolDeposits[i]
 
     if (positionId && miningNft && depositData) {
-      acc.push({ miningId: miningNft.args[2], positionId, ...depositData })
+      acc.push({ miningId: miningNft.keyArgs[2], positionId, ...depositData })
     }
 
     return acc
@@ -90,18 +90,18 @@ export const getOmnipoolMiningPositions = async (
 
 export const getXykMiningPositions = async (
   papi: Papi,
-  entries: AccountUniquesEntries,
+  entries: AccountUniquesValues,
 ) => {
   const ids = getUniquesEntriesIds(entries)
   const xykDeposits = await papi.query.XYKWarehouseLM.Deposit.getValues(ids, {
     at: "best",
   })
 
-  return entries.reduce<XykDeposit[]>((acc, { args }, i) => {
+  return entries.reduce<XykDeposit[]>((acc, { keyArgs }, i) => {
     const depositData = xykDeposits[i]
 
     if (depositData) {
-      acc.push({ ...depositData, id: args[2].toString() })
+      acc.push({ ...depositData, id: keyArgs[2].toString() })
     }
 
     return acc

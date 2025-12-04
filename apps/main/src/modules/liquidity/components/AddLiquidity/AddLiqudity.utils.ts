@@ -4,6 +4,7 @@ import {
   is_add_liquidity_allowed,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -11,6 +12,7 @@ import { FieldError, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z, ZodType } from "zod/v4"
 
+import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { useOmnipoolFarms } from "@/api/farms"
 import {
@@ -219,11 +221,18 @@ export const useAddLiquidityForm = ({
   return form
 }
 
-export const useAddLiquidity = (assetId: string) => {
+export const useAddLiquidity = ({
+  assetId,
+  onSubmitted,
+}: {
+  assetId: string
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getAssetWithFallback } = useAssets()
+  const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
   const { dataMap } = useOmnipoolAssetsData()
 
@@ -289,23 +298,30 @@ export const useAddLiquidity = (assetId: string) => {
         where: t("omnipool"),
       }
 
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: t(
-            isJoinFarms
-              ? "liquidity.add.joinFarms.modal.toast.submitted"
-              : "liquidity.add.modal.toast.submitted",
-            tOptions,
-          ),
-          success: t(
-            isJoinFarms
-              ? "liquidity.add.joinFarms.modal.toast.success"
-              : "liquidity.add.modal.toast.success",
-            tOptions,
-          ),
+      await createTransaction(
+        {
+          tx,
+          toasts: {
+            submitted: t(
+              isJoinFarms
+                ? "liquidity.add.joinFarms.modal.toast.submitted"
+                : "liquidity.add.modal.toast.submitted",
+              tOptions,
+            ),
+            success: t(
+              isJoinFarms
+                ? "liquidity.add.joinFarms.modal.toast.success"
+                : "liquidity.add.modal.toast.success",
+              tOptions,
+            ),
+          },
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
         },
-      })
+        { onSubmitted },
+      )
     },
   })
 

@@ -14,6 +14,7 @@ import {
 import { OmniMath } from "@galacticcouncil/sdk"
 import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate, useRouter } from "@tanstack/react-router"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { isNumber } from "remeda"
@@ -104,6 +105,7 @@ export type IsolatedPoolTable = {
   allFarms: Farm[]
   canAddLiquidity: boolean
   canRemoveLiquidity: boolean
+  isNative: boolean
 }
 
 export type TReserve = {
@@ -594,6 +596,7 @@ export const useIsolatedPools = () => {
           allFarms,
           canAddLiquidity: true,
           canRemoveLiquidity: true,
+          isNative: false,
         })
 
         return acc
@@ -808,4 +811,17 @@ export const useAddableStablepoolTokens = (
     )?.value
     return tradabilityValue ? is_add_liquidity_allowed(tradabilityValue) : true
   })
+}
+
+export const useNavigateLiquidityBack = () => {
+  const { history } = useRouter()
+  const navigate = useNavigate()
+
+  return () => {
+    if (history.canGoBack()) {
+      history.back()
+    } else {
+      navigate({ to: "/liquidity" })
+    }
+  }
 }
