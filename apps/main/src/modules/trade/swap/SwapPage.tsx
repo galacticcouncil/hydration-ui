@@ -14,11 +14,11 @@ const SwapPageMobile = lazy(async () => ({
 }))
 
 export const SwapPage = () => {
-  const { isDesktop } = useBreakpoints()
+  const { isMobile, isTablet } = useBreakpoints()
 
-  if (isDesktop) {
-    return <SwapPageDesktop />
+  if (isMobile || isTablet) {
+    return <SwapPageMobile />
   }
 
-  return <SwapPageMobile />
+  return <SwapPageDesktop />
 }

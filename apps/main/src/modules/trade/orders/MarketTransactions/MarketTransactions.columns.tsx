@@ -1,5 +1,7 @@
-import { ArrowRightLeft } from "@galacticcouncil/ui/assets/icons"
+import { ArrowRightLeft, SubScan } from "@galacticcouncil/ui/assets/icons"
 import {
+  ButtonIcon,
+  ExternalLink,
   Flex,
   Icon,
   Modal,
@@ -16,13 +18,13 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { TransactionType } from "@/modules/trade/orders/columns/TransactionType"
 import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
-import { SwapDetailsMobileModal } from "@/modules/trade/orders/SwapDetailsMobileModal"
+import { SwapDetailsModal } from "@/modules/trade/orders/SwapDetailsModal"
 
 const columnHelper = createColumnHelper<SwapData>()
 
 export const useMarketTransactionsColumns = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { isDesktop } = useBreakpoints()
+  const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const fromToColumn = columnHelper.display({
@@ -80,21 +82,25 @@ export const useMarketTransactionsColumns = () => {
       meta: {
         sx: { textAlign: "center" },
       },
-      cell: function Cell({ row }) {
-        const [modal, setModal] = useState(false)
-        return (
-          <TableRowDetailsExpand onClick={() => setModal(true)}>
-            <AccountDate
-              align="center"
-              address={row.original.address}
-              date={row.original.date}
-            />
-            <Modal open={modal} onOpenChange={setModal}>
-              <SwapDetailsMobileModal details={row.original} />
-            </Modal>
-          </TableRowDetailsExpand>
-        )
-      },
+      cell: ({ row }) => (
+        <Flex align="center" gap={6}>
+          <AccountDate
+            align="center"
+            address={row.original.address}
+            date={row.original.date}
+          />
+          {row.original.link && (
+            <ButtonIcon asChild>
+              <ExternalLink
+                href={row.original.link}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Icon component={SubScan} size={16} />
+              </ExternalLink>
+            </ButtonIcon>
+          )}
+        </Flex>
+      ),
     })
 
     const fromToColumnMobile = columnHelper.display({
@@ -130,15 +136,17 @@ export const useMarketTransactionsColumns = () => {
               date={row.original.date}
             />
             <Modal open={modal} onOpenChange={setModal}>
-              <SwapDetailsMobileModal details={row.original} />
+              <SwapDetailsModal details={row.original} />
             </Modal>
           </TableRowDetailsExpand>
         )
       },
     })
 
-    return !isDesktop
-      ? [fromToColumnMobile, dateColumnMobile]
-      : [fromToColumn, typeColumn, fillPriceColumn, dateColumn]
-  }, [t, isDesktop])
+    if (isMobile) {
+      return [fromToColumnMobile, dateColumnMobile]
+    }
+
+    return [fromToColumn, typeColumn, fillPriceColumn, dateColumn]
+  }, [t, isMobile])
 }

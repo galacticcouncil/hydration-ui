@@ -41,7 +41,7 @@ export const DcaOrderDetailsModal = ({ details }: Props) => {
         <Flex
           justify="space-between"
           align="center"
-          p={getTokenPx("containers.paddings.primary")}
+          pb={getTokenPx("containers.paddings.primary")}
         >
           <SwapAmount
             fromAmount={details.fromAmountBudget}
@@ -54,7 +54,7 @@ export const DcaOrderDetailsModal = ({ details }: Props) => {
         <ModalContentDivider />
         <Flex
           justify="space-between"
-          p={getTokenPx("containers.paddings.primary")}
+          py={getTokenPx("containers.paddings.primary")}
         >
           <Flex
             direction="column"
@@ -97,7 +97,7 @@ export const DcaOrderDetailsModal = ({ details }: Props) => {
         <ModalContentDivider />
         <Flex
           justify="space-between"
-          p={getTokenPx("containers.paddings.primary")}
+          py={getTokenPx("containers.paddings.primary")}
         >
           {details.blocksPeriod && (
             <>
@@ -123,8 +123,8 @@ export const DcaOrderDetailsModal = ({ details }: Props) => {
         {details.status === DcaScheduleStatus.Created && (
           <Flex
             justify="flex-end"
-            p={getTokenPx("containers.paddings.primary")}
             pt={getTokenPx("containers.paddings.secondary")}
+            pb={getTokenPx("containers.paddings.primary")}
           >
             <Button
               variant="danger"

@@ -137,7 +137,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
           label={t("trade:market.summary.maxSent")}
           tooltip={t("trade:market.summary.maxSent.tooltip")}
           amount={
-            <SummaryRowValue fw={600} fs="p4" lh={1.2}>
+            <SummaryRowValue>
               <span>
                 {t("currency", {
                   value: twapPriceHuman,
@@ -158,7 +158,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
           label={t("trade:market.summary.minReceived")}
           tooltip={t("trade:market.summary.minReceived.tooltip")}
           amount={
-            <SummaryRowValue fw={600} fs="p4" lh={1.2}>
+            <SummaryRowValue>
               <span>
                 {t("currency", {
                   value: twapPriceHuman,
@@ -193,7 +193,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
           <SwapSummaryRow
             label={t("trade:market.summary.transactionCosts")}
             content={
-              <SummaryRowValue fw={500} fs="p4" lh={1.2}>
+              <SummaryRowValue>
                 {transactionCostsDisplay} (
                 {t("currency", {
                   value: transactionCosts,

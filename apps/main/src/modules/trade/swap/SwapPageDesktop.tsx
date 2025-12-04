@@ -1,4 +1,4 @@
-import { Flex, Grid, Separator, Stack } from "@galacticcouncil/ui/components"
+import { Grid, Separator, Stack } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 
 import { TradeOrders } from "@/modules/trade/orders/TradeOrders"
@@ -12,16 +12,23 @@ export const SwapPageDesktop = () => {
   return (
     <Stack gap={20}>
       <PageHeader />
-      <Grid columnTemplate="3fr 2fr" columnGap={20} align="start">
-        <Flex direction="column" gap={20}>
-          <TradeChart height={500} />
-          <TradeOrders />
-        </Flex>
+      <Grid
+        columnTemplate={[
+          null,
+          null,
+          "minmax(390px, 1fr) minmax(0, 400px)",
+          "minmax(470px, 1fr) minmax(0, 440px)",
+        ]}
+        gap={20}
+        align="start"
+      >
+        <TradeChart height={456} />
         <SSwapFormContainer>
           <FormHeader />
           <Separator mx={-20} />
           <Outlet />
         </SSwapFormContainer>
+        <TradeOrders gridColumn={[null, null, "1/-1", "1"]} />
       </Grid>
     </Stack>
   )
