@@ -25,7 +25,7 @@ const defillamaApiResponseSchema = z.object({
 
 export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
   [VDOT_ASSET_ID]: "ff05ab26-971e-4e68-b1c6-c61a4c12c364",
-  [WSTETH_ASSET_ID]: "816836c2-671f-4399-b3da-d1a4610a2ebf",
+  [WSTETH_ASSET_ID]: "747c1d2a-c668-4682-b9f9-296708a3dd90",
   [SUSDE_ASSET_ID]: "66985a81-9c51-46ca-9977-42b4fe7bc6df",
   [SUSDS_ASSET_ID]: "d8c4eff5-c8a9-46fc-a888-057c4c668e72",
 }
@@ -42,8 +42,9 @@ const fetchDefillamaLatestApy = async (id: string): Promise<number> => {
 
   const json = await res.json()
   const parsed = defillamaApiResponseSchema.parse(json)
-  const latest = parsed.data[parsed.data.length - 1]?.apy ?? 0
-  return latest
+  const latestEntry = parsed.data[parsed.data.length - 1]
+  const latestApy = latestEntry?.apyBase || latestEntry?.apy || 0
+  return latestApy
 }
 
 export const defillamaLatestApyQuery = (id: string) =>
