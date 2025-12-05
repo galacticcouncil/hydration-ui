@@ -1,6 +1,11 @@
 import { chainsMap } from "@galacticcouncil/xcm-cfg"
 
-import { createQueryString, getRdnsFromUrl, stringEquals } from "./helpers"
+import {
+  createQueryString,
+  getRdnsFromUrl,
+  stringEquals,
+  stripTrailingSlash,
+} from "./helpers"
 
 type SubscanLinkPath = "tx" | "account" | "block"
 
@@ -19,7 +24,7 @@ export const subscan = {
     ) {
       return ""
     }
-    return `${chain.explorer}/${path}/${data}${createQueryString(query)}`
+    return `${stripTrailingSlash(chain.explorer)}/${path}/${data}${createQueryString(query)}`
   },
   tx: (chainKey: string, txHash: string) => {
     return subscan.link(chainKey, "tx", txHash)

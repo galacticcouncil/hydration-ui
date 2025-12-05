@@ -1,6 +1,6 @@
 import { isBinary, safeParse } from "@galacticcouncil/utils"
 import { CompatibilityToken } from "polkadot-api"
-import { fromEntries, isFunction, pipe, prop, zip } from "remeda"
+import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
 import { AnyTransaction } from "@/modules/transactions/types"
@@ -26,11 +26,10 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
     const args = decodedData?.args || []
 
     const formattedArgs = args.map((value) => {
-      if (value === null || value === undefined) return String(value)
-      if (isFunction(value.toString)) {
-        return value.toString()
+      if (value === null || value === undefined || isBigInt(value)) {
+        return String(value)
       }
-      return String(value)
+      return value
     })
 
     const argNames = inputs.map(prop("name"))

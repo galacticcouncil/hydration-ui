@@ -1,4 +1,5 @@
 import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
+import { SnowbridgeSdk } from "@galacticcouncil/indexer/snowbridge"
 import { CallType } from "@galacticcouncil/xcm-core"
 import { QueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
@@ -75,12 +76,13 @@ const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
 export const createToastProcessorFn = (
   queryClient: QueryClient,
   indexerSdk: IndexerSdk,
+  snowbridgeSdk: SnowbridgeSdk,
   evm: PublicClient,
 ): ToastProcessorFn => {
   const substrateProcessor = processors.substrate(queryClient, indexerSdk)
   const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
   const wormholeProcessor = processors.wormhole()
-  const snowbridgeProcessor = processors.snowbridge()
+  const snowbridgeProcessor = processors.snowbridge(queryClient, snowbridgeSdk)
   const invalidProcessor = processors.invalid()
 
   return async (toast) => {

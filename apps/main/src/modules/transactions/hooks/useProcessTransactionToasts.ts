@@ -5,7 +5,25 @@ import { prop } from "remeda"
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { ToastData, useToasts } from "@/states/toasts"
-import { useTransactionsStore } from "@/states/transactions"
+import {
+  isBridgeTransaction,
+  TransactionType,
+  useTransactionsStore,
+} from "@/states/transactions"
+
+const isPendingOnChainToast = (toast: ToastData) => {
+  return (
+    toast.variant === "pending" && toast.meta.type === TransactionType.Onchain
+  )
+}
+
+const isSubmittedBridgeToast = (toast: ToastData) => {
+  return toast.variant === "submitted" && isBridgeTransaction(toast.meta)
+}
+
+const isValidToastForProcessing = (toast: ToastData) => {
+  return isPendingOnChainToast(toast) || isSubmittedBridgeToast(toast)
+}
 
 export const useProcessTransactionToasts = (toasts: ToastData[]) => {
   const { isLoaded } = useRpcProvider()
@@ -14,7 +32,8 @@ export const useProcessTransactionToasts = (toasts: ToastData[]) => {
 
   const toastsToProcess = toasts.filter(
     (toast) =>
-      toast.variant === "pending" &&
+      isValidToastForProcessing(toast) &&
+      // make sure we don't process toasts of transactions that are not finalized yet
       !transactions.some((transaction) => transaction.id === toast.id),
   )
 
@@ -34,6 +53,7 @@ export const useProcessTransactionToasts = (toasts: ToastData[]) => {
 
           edit(toast.id, {
             variant: result.status,
+            link: result.link || toast.link,
             dateCreated: result.dateUpdated,
           })
 
