@@ -124,7 +124,7 @@ export const AssetInput = ({
         )}
       </Flex>
       <Flex direction="column">
-        <Flex align="center" justify="space-between">
+        <Flex align="center" justify="space-between" gap={12}>
           <AssetButton
             symbol={symbol}
             icon={selectedAssetIcon}
@@ -138,6 +138,7 @@ export const AssetInput = ({
             height={38}
             justify="space-evenly"
             align="end"
+            flex={1}
           >
             <SAssetInput
               isError={!!error}

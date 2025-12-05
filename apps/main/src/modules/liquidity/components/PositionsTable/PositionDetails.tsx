@@ -35,14 +35,19 @@ export const PositionDetails = ({
   joinedFarms,
   farmsToJoin,
   position,
+  onSubmitted,
 }: {
   joinedFarms: TJoinedFarm[]
   farmsToJoin: Farm[]
   position: OmnipoolDepositFullWithData | XykDeposit
+  onSubmitted: () => void
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const [open, setOpen] = useState(false)
-  const exitDepositFarmsMutation = useExitDepositFarmsMutation(position)
+  const exitDepositFarmsMutation = useExitDepositFarmsMutation(
+    position,
+    onSubmitted,
+  )
   const { claimableValues, rewards, refetch } =
     useClaimPositionRewards(position)
   const { mutate: claimRewards } = useClaimFarmRewardsMutation({

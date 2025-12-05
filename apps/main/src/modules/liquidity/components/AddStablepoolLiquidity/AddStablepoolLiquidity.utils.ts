@@ -212,7 +212,7 @@ export const useStablepoolAddLiquidity = ({
 
       const toastValue = assetsToProvide
         .map(({ asset, amount }) =>
-          t("common:number", {
+          t("common:currency", {
             value: amount,
             symbol: asset.symbol,
           }),

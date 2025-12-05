@@ -300,7 +300,7 @@ export const AddStablepoolLiquidityForm = ({
         <ModalContentDivider />
 
         {activeFields.map((field, index) => {
-          const balance = accountBalances.get(field.assetId)
+          const balance = accountBalances.get(field.assetId) ?? "0"
 
           return (
             <Fragment key={field.id}>

@@ -129,6 +129,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
             joinedFarms={selectedPosition.joinedFarms}
             farmsToJoin={selectedPosition.farmsToJoin}
             position={selectedPosition.position}
+            onSubmitted={() => setSelectedPosition(null)}
           />
         )}
       </Modal>

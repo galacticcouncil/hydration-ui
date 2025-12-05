@@ -153,11 +153,11 @@ export const useStablepoolRemoveLiquidity = ({
 
       const toasts = {
         submitted: t("liquidity.remove.stablepool.modal.toast.submitted", {
-          value: removeAmount,
+          value: removeAmountShifted,
           symbol: t("shares"),
         }),
         success: t("liquidity.remove.stablepool.modal.toast.success", {
-          value: removeAmount,
+          value: removeAmountShifted,
           symbol: t("shares"),
         }),
       }

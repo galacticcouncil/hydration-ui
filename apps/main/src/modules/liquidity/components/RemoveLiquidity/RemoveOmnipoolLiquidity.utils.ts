@@ -123,12 +123,12 @@ const useRemoveLiquidityOut = (poolId: string) => {
         const tokensToGet = Big(valueWithFee.currentValue)
           .times(100 - slippage)
           .div(100)
-          .toFixed(0)
+          .toString()
 
         const tokensToGetShifted = Big(valueWithFee.currentValueHuman)
           .times(100 - slippage)
           .div(100)
-          .toFixed(0)
+          .toString()
 
         return {
           tokensToGet,
@@ -187,7 +187,8 @@ export const useRemoveSingleOmnipoolPosition = ({
     .times(position.shares.toString())
     .toFixed(0)
 
-  const values = calculateLiquidityValues(position, removeShares)
+  const values =
+    calculateLiquidityValues(position, removeShares) ?? defaultValues
 
   const minAmountOut = values?.tokensToGet
 
@@ -218,7 +219,7 @@ export const useRemoveSingleOmnipoolPosition = ({
       const removeLiquidityTx = papi.tx.Omnipool.remove_liquidity_with_limit({
         position_id: BigInt(position.positionId),
         amount: BigInt(removeShares),
-        min_limit: BigInt(minAmountOut),
+        min_limit: BigInt(Big(minAmountOut).toFixed(0)),
       })
 
       const exitFarmsTxs = isMiningPosition
@@ -251,8 +252,6 @@ export const useRemoveSingleOmnipoolPosition = ({
       )
     },
   })
-
-  if (!values || !minAmountOut) return undefined
 
   const receiveAssets: TReceiveAsset[] = [
     {

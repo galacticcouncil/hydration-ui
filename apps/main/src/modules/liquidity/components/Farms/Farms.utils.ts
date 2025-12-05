@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { wrap } from "comlink"
@@ -5,7 +6,13 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
-import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
+import {
+  OmnipoolDepositFull,
+  omnipoolMiningPositionsKey,
+  XykDeposit,
+  xykMiningPositionsKey,
+} from "@/api/account"
+import { omnipoolPositionsKey } from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { Farm, FarmEntry } from "@/api/farms"
 import { useXykPools } from "@/api/pools"
@@ -186,7 +193,9 @@ export const useDepositAprs = () => {
 
 export const useExitDepositFarmsMutation = (
   deposit: XykDeposit | OmnipoolDepositFull,
+  onSubmitted: () => void,
 ) => {
+  const { account } = useAccount()
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
@@ -226,6 +235,13 @@ export const useExitDepositFarmsMutation = (
         })
       }
 
+      const invalidateQueries = isXYK
+        ? [xykMiningPositionsKey(account?.address ?? "")]
+        : [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ]
+
       const toasts = {
         submitted: t("liquidity.exitFarms.toast.submitted"),
         success: t("liquidity.exitFarms.toast.success"),
@@ -235,14 +251,20 @@ export const useExitDepositFarmsMutation = (
         const tx = papi.tx.Utility.batch_all({
           calls: txs.map((t) => t.decodedCall),
         })
-        return await createTransaction({ tx, toasts })
+        return await createTransaction(
+          { tx, toasts, invalidateQueries },
+          { onSubmitted },
+        )
       }
 
       const tx = txs[0]
 
       if (!tx) throw new Error("Tx not found")
 
-      return await createTransaction({ tx, toasts })
+      return await createTransaction(
+        { tx, toasts, invalidateQueries },
+        { onSubmitted },
+      )
     },
   })
 }
