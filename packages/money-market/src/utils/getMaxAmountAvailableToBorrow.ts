@@ -1,6 +1,6 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { FormatUserSummaryAndIncentivesResponse } from "@aave/math-utils"
-import { bigMax, bigMin, bigShift } from "@galacticcouncil/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { ethers } from "ethers"
 
@@ -32,7 +32,7 @@ export function getMaxAmountAvailableToBorrow(
   rateMode: InterestRate,
 ): string {
   const availableInPoolUSD = poolReserve.availableLiquidityUSD
-  const availableForUserUSD = bigMin(
+  const availableForUserUSD = Big.min(
     user.availableBorrowsUSD,
     availableInPoolUSD,
   )
@@ -41,8 +41,8 @@ export function getMaxAmountAvailableToBorrow(
     poolReserve.borrowCap === "0"
       ? Big(ethers.constants.MaxUint256.toString())
       : Big(Number(poolReserve.borrowCap)).minus(poolReserve.totalDebt)
-  const availableLiquidity = bigMax(
-    bigMin(
+  const availableLiquidity = Big.max(
+    Big.min(
       poolReserve.formattedAvailableLiquidity,
       availableBorrowCap.toString(),
     ),
@@ -53,13 +53,13 @@ export function getMaxAmountAvailableToBorrow(
     user?.availableBorrowsMarketReferenceCurrency || 0,
   ).div(poolReserve.formattedPriceInMarketReferenceCurrency)
 
-  let maxUserAmountToBorrow = bigMin(
+  let maxUserAmountToBorrow = Big.min(
     availableForUserMarketReferenceCurrency.toString(),
     availableLiquidity,
   )
 
   if (rateMode === InterestRate.Stable) {
-    maxUserAmountToBorrow = bigMin(
+    maxUserAmountToBorrow = Big.min(
       maxUserAmountToBorrow,
       // TODO: put MAX_STABLE_RATE_BORROW_SIZE_PERCENT on uipooldataprovider instead of using the static value here
       Big(poolReserve.formattedAvailableLiquidity).mul(0.25),
@@ -126,8 +126,8 @@ export function getMaxGhoMintAmount(
       ? Big(ethers.constants.MaxUint256.toString())
       : Big(Number(poolReserve.borrowCap)).minus(poolReserve.totalDebt)
 
-  const maxAmountUserCanMint = bigMax(
-    bigMin(userAvailableBorrows, availableBorrowCap),
+  const maxAmountUserCanMint = Big.max(
+    Big.min(userAvailableBorrows, availableBorrowCap),
     0,
   )
 

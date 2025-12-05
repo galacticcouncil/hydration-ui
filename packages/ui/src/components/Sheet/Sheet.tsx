@@ -13,6 +13,7 @@ import {
   SSheetOverlay,
   SSheetPaper,
   SSheetTitle,
+  SSheetTitleContainer,
   SSheetWrapper,
 } from "./Sheet.styled"
 
@@ -28,7 +29,7 @@ const SheetClose: FC<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Close>
 > = (props) => {
   return (
-    <SSheetClose asChild>
+    <SSheetClose asChild align="right">
       <DialogPrimitive.Close {...props}>
         <Icon component={X} size={20} />
       </DialogPrimitive.Close>
@@ -73,8 +74,10 @@ type SheetHeaderProps = Omit<FlexProps, "title"> & {
 
 const SheetHeader: FC<SheetHeaderProps> = ({ title, ...props }) => (
   <SSheetHeader {...props}>
-    <SheetTitle>{title || <>&nbsp;</>}</SheetTitle>
-    <SheetClose />
+    <SSheetTitleContainer>
+      <SheetTitle>{title || <>&nbsp;</>}</SheetTitle>
+      <SheetClose />
+    </SSheetTitleContainer>
   </SSheetHeader>
 )
 

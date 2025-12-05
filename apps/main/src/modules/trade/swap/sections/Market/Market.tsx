@@ -39,8 +39,15 @@ export const Market: FC = () => {
   // We need to preserve component state and focus on changing market type
   const useMarketData = isSell ? useMarketSellData : useMarketBuyData
 
-  const { swap, swapTx, twap, twapTx, healthFactor, isLoading } =
-    useMarketData(form)
+  const {
+    swap,
+    swapTx,
+    twap,
+    twapTx,
+    healthFactor,
+    isLoading,
+    isHealthFactorLoading,
+  } = useMarketData(form)
 
   const isTradeEnabled = isSingleTrade
     ? !!swap && !swap.swaps.flatMap((swap) => swap.errors).length
@@ -120,7 +127,7 @@ export const Market: FC = () => {
           twap={twap}
           twapTx={twapTx}
           healthFactor={healthFactor}
-          isLoading={isLoading}
+          isLoading={isLoading || isHealthFactorLoading}
         />
       </form>
     </FormProvider>

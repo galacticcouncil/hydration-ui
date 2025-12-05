@@ -8,6 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getReversePrice } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useController, useFormContext } from "react-hook-form"
@@ -16,6 +17,7 @@ import { useTranslation } from "react-i18next"
 import {
   marketPriceOptions,
   PlaceOrderFormValues,
+  PlaceOrderView,
   PriceSettings,
 } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
 import { TAsset } from "@/providers/assetsProvider"
@@ -48,10 +50,12 @@ export const PlaceOrderPrice: FC<Props> = ({
     name: "priceSettings",
   })
 
-  const { field: isPriceSwitchedField } = useController({
+  const { field: viewField } = useController({
     control,
-    name: "isPriceSwitched",
+    name: "view",
   })
+
+  const isOfferView = viewField.value === "offerPrice"
 
   const optionsWithFlags = marketPriceOptions.map(
     (option) =>
@@ -81,9 +85,7 @@ export const PlaceOrderPrice: FC<Props> = ({
       <Flex justify="space-between" height={18} align="center">
         <Text fw={500} fs="p5" lh={px(14.4)} color={getToken("text.medium")}>
           {t("otc.placeOrder.priceFor1", {
-            symbol: isPriceSwitchedField.value
-              ? buyAsset.symbol
-              : offerAsset.symbol,
+            symbol: isOfferView ? offerAsset.symbol : buyAsset.symbol,
           })}
         </Text>
         {!isPriceLoaded ? (
@@ -96,11 +98,10 @@ export const PlaceOrderPrice: FC<Props> = ({
               const isOmnipoolPrice = isDefault && !hasCustomOption
               const isCustom = isDefault && hasCustomOption
 
-              const usedOption = isPriceSwitchedField.value
-                ? Big(option).times(-1).toString()
-                : option
-
-              const shownOption = isCustom ? priceGain : usedOption
+              const usedOption = isCustom ? priceGain : option
+              const shownOption = isOfferView
+                ? usedOption
+                : Big(usedOption).times(-1).toString()
 
               return (
                 <MicroButton
@@ -135,34 +136,39 @@ export const PlaceOrderPrice: FC<Props> = ({
         <Flex py={4} pl={4} gap={4} align="center">
           <ButtonIcon
             onClick={() =>
-              isPriceSwitchedField.onChange(!isPriceSwitchedField.value)
+              viewField.onChange(
+                (isOfferView
+                  ? "buyPrice"
+                  : "offerPrice") satisfies PlaceOrderView,
+              )
             }
           >
             <AssetIcon />
           </ButtonIcon>
           <Text fw={600} fs="p3" lh={px(14)} color={getToken("text.high")}>
-            {isPriceSwitchedField.value ? offerAsset.symbol : buyAsset.symbol}
+            {isOfferView ? buyAsset.symbol : offerAsset.symbol}
           </Text>
         </Flex>
         <NumberInput
           variant="embedded"
           value={price}
           allowNegative={false}
-          onValueChange={({ value }, { source }) => {
+          onValueChange={({ value: price }, { source }) => {
             if (source === "prop") {
               return
             }
 
-            const newValue =
-              isPriceSwitchedField.value && Big(value || "0").gt(0)
-                ? Big(1).div(value).toString()
-                : value
+            const reversePrice = getReversePrice(price)
+
+            const [offerPrice, buyPrice] = isOfferView
+              ? [price, reversePrice]
+              : [reversePrice, price]
 
             changePriceSettings({
               type: "fixed",
-              value: newValue,
-              inputValue: value,
-              wasPriceSwitched: isPriceSwitchedField.value,
+              offerPrice,
+              buyPrice,
+              view: viewField.value,
             })
           }}
           placeholder="0"

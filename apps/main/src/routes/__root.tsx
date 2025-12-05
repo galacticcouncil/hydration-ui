@@ -1,21 +1,28 @@
-import { QueryClient, useQuery } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { createRootRouteWithContext } from "@tanstack/react-router"
+import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { lazy } from "react"
 
-import { useAccountUniquesSubscription } from "@/api/account"
+import { useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import { useAllPools, useOmnipoolIds } from "@/api/pools"
-import { useProviderMetadata, useSquidClient } from "@/api/provider"
+import {
+  providerQuery,
+  useProviderMetadata,
+  useSquidClient,
+} from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { useAccountBalanceSubscription } from "@/api/subscriptions"
+import { RouterContext } from "@/App"
+import { Loader } from "@/components/Loader/Loader"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useDisplayAssetStablecoinUpdate } from "@/states/displayAsset"
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 const MobileTabBar = lazy(async () => ({
   default: await import(
@@ -41,7 +48,7 @@ const Subscriptions = () => {
   useOmnipoolIds()
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
-  useAccountUniquesSubscription()
+  useAccountUniques()
   usePriceSubscriber()
   useAllPools()
   useQuery(assetsQuery(rpcProvider))
@@ -50,10 +57,44 @@ const Subscriptions = () => {
   return null
 }
 
-export const Route = createRootRouteWithContext<{
-  queryClient: QueryClient
-}>()({
+export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
+  pendingComponent: () => {
+    return (
+      <>
+        <Loader />
+        <ProviderRpcSelect />
+      </>
+    )
+  },
+  beforeLoad: async ({ context }) => {
+    const { autoMode, rpcUrlList, rpcUrl } = useProviderRpcUrlStore.getState()
+
+    const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
+
+    const rpcData = await context.queryClient.ensureQueryData(
+      providerQuery(rpcProviderUrls),
+    )
+
+    await context.queryClient.ensureQueryData(
+      assetsQuery({ ...rpcData, isApiLoaded: true, isLoaded: true }),
+    )
+  },
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: [
+      {
+        title: i18n.t("common:meta.title"),
+      },
+      {
+        name: "description",
+        content: i18n.t("common:meta.description"),
+      },
+    ],
+  }),
 })
 
 function RootComponent() {
@@ -62,6 +103,7 @@ function RootComponent() {
 
   return (
     <>
+      <HeadContent />
       <MainLayout />
       {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
       {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}

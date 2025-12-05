@@ -27,11 +27,13 @@ export const useRemoveMoneyMarketLiquidity = ({
   stableswapId,
   pool,
   reserves,
+  onSubmitted,
 }: {
   erc20Id: string
   stableswapId: string
   pool: StableSwapBase
   reserves: TReserve[]
+  onSubmitted: () => void
 }) => {
   const { getAssetWithFallback, isErc20AToken } = useAssets()
   const { t } = useTranslation("liquidity")
@@ -39,6 +41,7 @@ export const useRemoveMoneyMarketLiquidity = ({
   const rpc = useRpcProvider()
   const { account } = useAccount()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const getMinimumTradeAmount = useMinimumTradeAmount()
 
   const {
     liquidity: { slippage },
@@ -55,7 +58,6 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const form = useRemoveStablepoolLiquidityForm({
     receiveAsset: initialReceiveAsset!,
-    receiveAssets: reserves.map((reserve) => reserve.meta),
     balance: balanceShifted,
     asset: { ...meta, iconId: meta.id },
   })
@@ -69,19 +71,23 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const [debouncedAmount] = useDebounce(removeAmountShifted, 300)
   const { data: trade } = useQuery(
-    bestSellQuery(rpc, {
-      assetIn: erc20Id,
-      assetOut: split ? stableswapId : receiveAsset.id,
-      amountIn: debouncedAmount,
-      slippage: swapSlippage,
-      address: account?.address ?? "",
-    }),
+    bestSellQuery(
+      rpc,
+      {
+        assetIn: erc20Id,
+        assetOut: split ? stableswapId : receiveAsset.id,
+        amountIn: debouncedAmount,
+        slippage: swapSlippage,
+        address: account?.address ?? "",
+      },
+      true,
+    ),
   )
 
   //@TODO: implement withdraw all function
 
   const { data: healthFactor } = useQuery(
-    healthFactorAfterWithdrawQuery(useRpcProvider(), {
+    healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
       fromAssetId: meta && isErc20AToken(meta) ? meta.underlyingAssetId : "",
       fromAmount: debouncedAmount,
@@ -89,12 +95,12 @@ export const useRemoveMoneyMarketLiquidity = ({
   )
 
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"
-  const amountOutShifted = scaleHuman(amountOut, meta.decimals)
-  const minimumTradeAmount =
-    useMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
-  const minimumTradeAmountShifted = scaleHuman(
-    minimumTradeAmount,
-    meta.decimals,
+  const amountOutShifted = scaleHuman(amountOut, receiveAsset.decimals)
+
+  const tradeMinReceive = getMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
+  const tradeMinReceiveShifted = scaleHuman(
+    tradeMinReceive,
+    receiveAsset.decimals,
   )
 
   const receiveAssetsProportionally = (() => {
@@ -173,10 +179,13 @@ export const useRemoveMoneyMarketLiquidity = ({
         }),
       }
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 
@@ -187,20 +196,21 @@ export const useRemoveMoneyMarketLiquidity = ({
     reserves: reserves,
     receiveAssetsProportionally,
     receiveAsset,
-    minimumTradeAmountShifted,
+    tradeMinReceive: tradeMinReceiveShifted,
     mutation,
     healthFactor,
   }
 }
 
-const useMinimumTradeAmount = (trade?: Trade) => {
+export const useMinimumTradeAmount = () => {
   const {
     swap: {
       single: { swapSlippage },
     },
   } = useTradeSettings()
 
-  if (!trade) return undefined
-
-  return trade.amountOut - calculateSlippage(trade.amountOut, swapSlippage)
+  return (trade?: Trade) =>
+    trade
+      ? trade.amountOut - calculateSlippage(trade.amountOut, swapSlippage)
+      : undefined
 }

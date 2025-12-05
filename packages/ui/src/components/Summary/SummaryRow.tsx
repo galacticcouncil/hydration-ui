@@ -6,15 +6,16 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { ReactNode } from "react"
+import { MouseEventHandler, ReactNode } from "react"
 
 export type SummaryRowProps = {
-  label: string
+  label: ReactNode
   content: ReactNode
   description?: string
   tooltip?: ReactNode
   className?: string
   loading?: boolean
+  onClick?: MouseEventHandler
 }
 
 export const SummaryRow = ({
@@ -24,20 +25,31 @@ export const SummaryRow = ({
   tooltip,
   className,
   loading,
+  onClick,
 }: SummaryRowProps) => {
-  const labelElement = (
-    <Text fs="p5" color={getToken("text.medium")}>
-      {label}:
-    </Text>
-  )
+  const renderTooltip = (body: ReactNode) =>
+    tooltip ? (
+      <Tooltip text={tooltip} side="left" asChild>
+        {body}
+      </Tooltip>
+    ) : (
+      body
+    )
 
-  return (
-    <Flex align="center" justify="space-between" my={8} className={className}>
+  return renderTooltip(
+    <Flex
+      sx={{ ...(onClick && { cursor: "pointer" }) }}
+      align="center"
+      justify="space-between"
+      my={8}
+      className={className}
+      onClick={onClick}
+    >
       <Flex direction="column" justify="space-between" gap={4}>
-        {tooltip ? (
-          <Tooltip text={tooltip}>{labelElement}</Tooltip>
+        {typeof label === "string" ? (
+          <SummaryRowLabel>{label}:</SummaryRowLabel>
         ) : (
-          labelElement
+          label
         )}
 
         {description && (
@@ -54,10 +66,14 @@ export const SummaryRow = ({
       ) : (
         content
       )}
-    </Flex>
+    </Flex>,
   )
 }
 
 export const SummaryRowValue = (props: TextProps) => (
-  <Text fs="p5" fw={500} color={getToken("text.high")} {...props} />
+  <Text fs="p5" fw={500} lh={1.2} color={getToken("text.high")} {...props} />
+)
+
+export const SummaryRowLabel = (props: TextProps) => (
+  <Text fs="p5" lh={1.4} color={getToken("text.medium")} {...props} />
 )

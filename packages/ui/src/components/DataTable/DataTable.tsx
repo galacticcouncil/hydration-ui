@@ -67,7 +67,9 @@ export type DataTableProps<TData extends RowData> = TableProps &
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
     rowCount?: number
+    isMultiSort?: boolean
     getIsExpandable?: (item: TData) => boolean
+    getIsClickable?: (item: TData) => boolean
     renderSubComponent?: (item: TData) => React.ReactElement
     renderOverride?: (item: TData) => React.ReactElement | undefined
     onRowClick?: (item: TData) => void
@@ -103,7 +105,9 @@ const DataTable = <TData,>({
   emptyState,
   columnPinning,
   rowCount,
+  isMultiSort,
   getIsExpandable,
+  getIsClickable,
   renderSubComponent,
   renderOverride,
   onRowClick,
@@ -131,6 +135,7 @@ const DataTable = <TData,>({
     manualSorting,
     enableSortingRemoval,
     globalFilterFn: globalFilterFn ?? "auto",
+    ...(isMultiSort && { isMultiSortEvent: () => true }),
     ...(rowCount !== undefined && {
       rowCount,
       manualPagination: true,
@@ -202,6 +207,9 @@ const DataTable = <TData,>({
                 ? renderOverride?.(row.original)
                 : undefined
 
+              const isRowClickable =
+                getIsClickable?.(row.original) ?? !!onRowClick
+
               const isRowExpanded = row.getIsExpanded()
               const isRowExpandable =
                 isRowExpanded ||
@@ -238,10 +246,11 @@ const DataTable = <TData,>({
                       }}
                       isExpandable={isRowExpandable}
                       hasOverride={!!override}
-                      isClickable={!!onRowClick}
+                      isClickable={isRowClickable}
                     >
                       {row.getVisibleCells().map((cell) => {
                         const { meta } = cell.getContext().cell.column.columnDef
+                        const { className, sx, sxFn } = meta ?? {}
                         const isPinned = cell
                           .getContext()
                           .cell.column.getIsPinned()
@@ -249,11 +258,13 @@ const DataTable = <TData,>({
                         return (
                           <TableCell
                             key={cell.id}
-                            className={meta?.className}
-                            sx={meta?.sx}
+                            className={className}
+                            sx={
+                              sxFn ? sxFn(cell.getContext().row.original) : sx
+                            }
                             isPinned={isPinned}
                             data-pinned={isPinned}
-                            isClickable={!!onRowClick}
+                            isClickable={isRowClickable}
                           >
                             {flexRender(
                               cell.column.columnDef.cell,

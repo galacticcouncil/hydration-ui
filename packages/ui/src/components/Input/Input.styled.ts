@@ -87,8 +87,8 @@ export const SInput = styled.input<CustomInputProps>(
   css``,
   ({ theme, isError = false }) => [
     css`
-      width: 100%;
-
+      flex: 1;
+      min-width: 0;
       box-sizing: border-box;
 
       display: flex;

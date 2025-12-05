@@ -11,6 +11,7 @@ import * as z from "zod/v4"
 import { TAssetData, TStableswap } from "@/api/assets"
 import { StableSwapBase } from "@/api/pools"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { TRemoveLiquidityFormValues } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquidity.utils"
 import { calculatePoolFee, TReserve } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
@@ -26,19 +27,18 @@ export type TRemoveStablepoolLiquidityFormValues =
     split: boolean
     receiveAsset: TAssetData
     receiveAmount: string
-    receiveAssets: TAssetData[]
   }
 
 export const useStablepoolRemoveLiquidity = ({
   pool,
   reserves,
   initialReceiveAsset,
-  initialBalance,
+  onSubmitted,
 }: {
   pool: StableSwapBase
   reserves: TReserve[]
-  initialReceiveAsset: TAssetData
-  initialBalance?: string
+  initialReceiveAsset: TAssetWithBalance
+  onSubmitted: () => void
 }) => {
   const { t } = useTranslation("liquidity")
   const { getAssetWithFallback } = useAssets()
@@ -53,7 +53,7 @@ export const useStablepoolRemoveLiquidity = ({
   const fee = calculatePoolFee(pool.fee)
 
   const balanceShifted = scaleHuman(
-    initialBalance ?? getTransferableBalance(pool.id.toString()).toString(),
+    getTransferableBalance(pool.id.toString()).toString(),
     meta.decimals,
   )
 
@@ -61,7 +61,6 @@ export const useStablepoolRemoveLiquidity = ({
     receiveAsset: initialReceiveAsset,
     balance: balanceShifted,
     asset: { ...meta, iconId: meta.underlyingAssetId },
-    receiveAssets: reserves.map((reserve) => reserve.meta),
   })
 
   const removeAmountShifted = form.watch("amount") || "0"
@@ -163,10 +162,13 @@ export const useStablepoolRemoveLiquidity = ({
         }),
       }
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 
@@ -189,12 +191,10 @@ export const useRemoveStablepoolLiquidityForm = ({
   asset,
   balance,
   receiveAsset,
-  receiveAssets,
 }: {
   asset?: TSelectedAsset
   receiveAsset: TAssetData
   balance: string
-  receiveAssets: TAssetData[]
 }) => {
   return useForm<TRemoveStablepoolLiquidityFormValues>({
     mode: "onChange",
@@ -203,7 +203,6 @@ export const useRemoveStablepoolLiquidityForm = ({
       asset,
       split: true,
       receiveAsset,
-      receiveAssets,
       receiveAmount: "",
     },
     resolver: standardSchemaResolver(
@@ -212,7 +211,6 @@ export const useRemoveStablepoolLiquidityForm = ({
         asset: z.custom<TSelectedAsset>(),
         split: z.boolean(),
         receiveAsset: z.custom<TAssetData>(),
-        receiveAssets: z.array(z.custom<TAssetData>()),
         receiveAmount: z.string(),
       }),
     ),

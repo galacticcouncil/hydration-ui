@@ -1,3 +1,4 @@
+import { formatAssetAmount } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -10,43 +11,46 @@ import { OtcOfferTabular } from "@/modules/trade/otc/table/OtcTable.columns"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   positiveOptional,
+  useValidateFormMaxBalance,
   validateFieldExistentialDeposit,
-  validateFieldMaxBalance,
 } from "@/utils/validators"
 
-const useSchema = (offer: OtcOfferTabular, assetInBalance: string) => {
+const useSchema = (offer: OtcOfferTabular) => {
   const rpc = useRpcProvider()
   const { data: existentialDepositMultiplier } = useQuery(
     otcExistentialDepositorMultiplierQuery(rpc),
   )
 
+  const refineMaxBalance = useValidateFormMaxBalance()
+
   return object({
     sellAmount: positiveOptional.check(
-      validateFieldMaxBalance(assetInBalance),
+      refine(
+        (value) => new Big(offer.assetAmountIn).gte(value || "0"),
+        i18n.t("trade:otc.fillOrder.validation.orderTooBig"),
+      ),
       validateFieldExistentialDeposit(
         offer.assetIn,
         existentialDepositMultiplier,
       ),
     ),
     buyAmount: positiveOptional.check(
-      refine(
-        (value) => new Big(offer.assetAmountOut).gte(value),
-        i18n.t("trade:otc.fillOrder.validation.orderTooBig"),
-      ),
       validateFieldExistentialDeposit(
         offer.assetOut,
         existentialDepositMultiplier,
       ),
     ),
-  })
+  }).check(
+    refineMaxBalance("sellAmount", (form) => [offer.assetIn, form.sellAmount]),
+  )
 }
 
 export type FillOrderFormValues = Infer<ReturnType<typeof useSchema>>
 
 export const useFillOrderForm = (
   otcOffer: OtcOfferTabular,
-  assetInBalance: string,
   isUsersOffer: boolean,
+  feePrice: string,
 ) => {
   const defaultValues: FillOrderFormValues =
     !isUsersOffer && otcOffer.isPartiallyFillable
@@ -56,10 +60,15 @@ export const useFillOrderForm = (
         }
       : {
           sellAmount: otcOffer.assetAmountIn,
-          buyAmount: otcOffer.assetAmountOut,
+          buyAmount: formatAssetAmount(
+            Big(otcOffer.assetAmountOut)
+              .minus(Big(otcOffer.assetAmountOut).times(feePrice))
+              .toString(),
+            otcOffer.assetOut.decimals,
+          ),
         }
 
-  const schema = useSchema(otcOffer, assetInBalance)
+  const schema = useSchema(otcOffer)
 
   return useForm<FillOrderFormValues>({
     defaultValues,

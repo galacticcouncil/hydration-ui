@@ -33,8 +33,8 @@ const DrawerContent: FC<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
     ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Content>>
   }
-> = ({ className, children, ref, ...props }) => (
-  <DrawerPortal>
+> = ({ className, children, ref, forceMount, ...props }) => (
+  <DrawerPortal forceMount={forceMount}>
     <DrawerOverlay />
     <SDrawerContent ref={ref} className={className} {...props}>
       <SDrawerHandle />

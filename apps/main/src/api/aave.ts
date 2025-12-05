@@ -55,9 +55,9 @@ const formatHealthFactorResult = ({
   const future = Big(futureHF)
 
   const isBelowRiskThreshold = future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
-  const isSignificantChange = future
+  const isSignificantChange = !future
     .round(2, Big.roundDown)
-    .lt(current.round(2, Big.roundDown))
+    .eq(current.round(2, Big.roundDown))
 
   return {
     current: current.toString(),
@@ -88,14 +88,13 @@ export const healthFactorAfterWithdrawQuery = (
         sdk.api.aave.getHealthFactorAfterWithdraw(
           address,
           Number(fromAssetId),
-          fromAmount,
+          fromAmount || "0",
         ),
       ])
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled:
-      isLoaded && !!address && !!fromAssetId && Big(fromAmount || "0").gt(0),
+    enabled: isLoaded && !!address && !!fromAssetId,
   })
 
 export const healthFactorAfterSupplyQuery = (
@@ -117,13 +116,13 @@ export const healthFactorAfterSupplyQuery = (
         sdk.api.aave.getHealthFactorAfterSupply(
           address,
           Number(toAssetId),
-          toAmount,
+          toAmount || "0",
         ),
       ])
       return formatHealthFactorResult({ currentHF, futureHF })
     },
     placeholderData: keepPreviousData,
-    enabled: isLoaded && !!address && !!toAssetId && Big(toAmount || "0").gt(0),
+    enabled: isLoaded && !!address && !!toAssetId,
   })
 
 export const healthFactorAfterSwapQuery = (

@@ -18,7 +18,7 @@ const MAX_BALANCE = "12345"
 const Template = (args: React.ComponentPropsWithoutRef<typeof AssetInput>) => {
   const [value, setValue] = useState<string>()
 
-  const dollarValue =
+  const displayValue =
     value !== undefined ? Number(SPOT_PRICE) * Number(value) : undefined
 
   return (
@@ -32,7 +32,7 @@ const Template = (args: React.ComponentPropsWithoutRef<typeof AssetInput>) => {
         {...args}
         value={args.value ?? value}
         maxBalance={args.maxBalance ?? MAX_BALANCE}
-        dollarValue={args.dollarValue ?? dollarValue?.toString()}
+        displayValue={args.displayValue ?? displayValue?.toString()}
         onChange={setValue}
         label="Sell"
       />
@@ -56,7 +56,7 @@ export const ErrorAssetSelector: Story = {
   args: {
     symbol: "HDX",
     value: "1234",
-    dollarValue: "123",
+    displayValue: "123",
     error: "Not enough balance",
   },
 }

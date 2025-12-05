@@ -2,6 +2,7 @@ import {
   DataTable,
   Paper,
   TableContainer,
+  usePriorityTableSort,
 } from "@galacticcouncil/ui/components"
 import { useHydraAccountAddress } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
@@ -10,14 +11,15 @@ import { useTranslation } from "react-i18next"
 
 import {
   OtcColumn,
+  otcColumnSortPriority,
   useOtcTableColums,
 } from "@/modules/trade/otc/table/OtcTable.columns"
-import { useOtcOffersQuery } from "@/modules/trade/otc/table/OtcTable.query"
+import { useOtcOffers } from "@/modules/trade/otc/table/OtcTable.query"
 import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
 } from "@/modules/trade/otc/table/OtcTable.utils"
-import { useAssets } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
@@ -28,8 +30,13 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("trade")
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
 
+  const [sortState, setSortState] = usePriorityTableSort(
+    otcColumnSortPriority,
+    [{ id: OtcColumn.MarketPrice, desc: false }],
+  )
+
   const { getAsset } = useAssets()
-  const { data, isLoading } = useOtcOffersQuery()
+  const { data, isLoading } = useOtcOffers()
   const columns = useOtcTableColums()
 
   const userAddress = useHydraAccountAddress()
@@ -78,12 +85,22 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
         paginated
         pageSize={10}
         globalFilter={searchPhrase}
+        globalFilterFn={(row) =>
+          matchAsset(row.original.assetIn, searchPhrase) ||
+          matchAsset(row.original.assetOut, searchPhrase)
+        }
         data={offersWithPrices}
         columns={columns}
         isLoading={isTableLoading}
-        initialSorting={[{ id: OtcColumn.MarketPrice, desc: true }]}
         emptyState={t("otc.noOrders")}
+        isMultiSort
+        sorting={sortState}
+        onSortingChange={setSortState}
       />
     </TableContainer>
   )
 }
+
+const matchAsset = (asset: TAsset, searchPhrase: string): boolean =>
+  asset.symbol.toLowerCase().includes(searchPhrase.toLowerCase()) ||
+  asset.name.toLowerCase().includes(searchPhrase.toLowerCase())

@@ -13,7 +13,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { formatDistanceToNow } from "date-fns"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -28,7 +27,7 @@ type Props = {
   readonly details: OrderData
 }
 
-export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
+export const DcaOrderDetailsModal = ({ details }: Props) => {
   const { t } = useTranslation(["common", "trade"])
   const [terminateModalOpen, setTerminateModalOpen] = useState(false)
 
@@ -42,7 +41,7 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
         <Flex
           justify="space-between"
           align="center"
-          p={getTokenPx("containers.paddings.primary")}
+          pb={getTokenPx("containers.paddings.primary")}
         >
           <SwapAmount
             fromAmount={details.fromAmountBudget}
@@ -55,7 +54,7 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
         <ModalContentDivider />
         <Flex
           justify="space-between"
-          p={getTokenPx("containers.paddings.primary")}
+          py={getTokenPx("containers.paddings.primary")}
         >
           <Flex
             direction="column"
@@ -98,19 +97,14 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
         <ModalContentDivider />
         <Flex
           justify="space-between"
-          p={getTokenPx("containers.paddings.primary")}
+          py={getTokenPx("containers.paddings.primary")}
         >
           {details.blocksPeriod && (
             <>
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: formatDistanceToNow(
-                    Date.now() + details.blocksPeriod * PARACHAIN_BLOCK_TIME,
-                    {
-                      includeSeconds: true,
-                    },
-                  ),
+                  timeframe: details.blocksPeriod * PARACHAIN_BLOCK_TIME,
                   count: details.blocksPeriod,
                 })}
               />
@@ -129,8 +123,8 @@ export const DcaOrderDetailsMobileModal = ({ details }: Props) => {
         {details.status === DcaScheduleStatus.Created && (
           <Flex
             justify="flex-end"
-            p={getTokenPx("containers.paddings.primary")}
             pt={getTokenPx("containers.paddings.secondary")}
+            pb={getTokenPx("containers.paddings.primary")}
           >
             <Button
               variant="danger"

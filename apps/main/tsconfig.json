@@ -1,6 +1,6 @@
 {
   "extends": "@galacticcouncil/typescript-config/vite.json",
-  "include": ["src"],
+  "include": ["src", "vite.config.ts"],
   "references": [
     { "path": "../../packages/ui" },
     { "path": "../../packages/utils" },

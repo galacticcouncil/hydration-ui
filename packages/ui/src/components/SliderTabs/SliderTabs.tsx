@@ -6,6 +6,7 @@ type SliderTabsOptionKey = string | number
 export type SliderTabsOption<TKey extends SliderTabsOptionKey> = {
   readonly id: TKey
   readonly label: string
+  readonly icon?: React.ReactNode
 }
 
 type SliderTabsProps<TKey extends SliderTabsOptionKey> = {
@@ -13,6 +14,7 @@ type SliderTabsProps<TKey extends SliderTabsOptionKey> = {
   readonly selected?: NoInfer<TKey>
   readonly onSelect: (option: SliderTabsOption<NoInfer<TKey>>) => void
   readonly disabled?: boolean
+  readonly className?: string
 }
 
 export const SliderTabs = <TKey extends SliderTabsOptionKey>({
@@ -20,9 +22,10 @@ export const SliderTabs = <TKey extends SliderTabsOptionKey>({
   selected,
   onSelect,
   disabled,
+  className,
 }: SliderTabsProps<TKey>) => {
   return (
-    <SSliderTabs>
+    <SSliderTabs className={className}>
       {options.map((option) => {
         const isSelected = selected === option.id
 
@@ -35,6 +38,7 @@ export const SliderTabs = <TKey extends SliderTabsOptionKey>({
             disabled={disabled}
             sx={{ flex: 1 }}
           >
+            {option.icon}
             {option.label}
           </Button>
         )

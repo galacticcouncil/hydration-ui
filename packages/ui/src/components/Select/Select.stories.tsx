@@ -16,9 +16,9 @@ export default {
   component: Select,
 } satisfies Meta<typeof Select>
 
-const Template = (args: React.ComponentPropsWithoutRef<typeof Select>) => (
-  <Select {...args} items={items} />
-)
+const Template = (
+  args: Omit<React.ComponentPropsWithoutRef<typeof Select>, "renderTrigger">,
+) => <Select {...args} items={items} />
 
 export const Default: Story = {
   render: (args) => (

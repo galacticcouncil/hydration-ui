@@ -5,12 +5,12 @@ import { SLiquidityPositionsMobile } from "@/modules/wallet/assets/MyLiquidity/L
 import { SLiquidityPositionMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"
 import { LiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobileHeader"
 import { LiquidityPositionMobileValues } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobileValues"
-import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { TAsset } from "@/providers/assetsProvider"
+import { AccountOmnipoolPosition } from "@/states/account"
 
 type Props = {
   readonly asset: TAsset
-  readonly positions: ReadonlyArray<MyLiquidityPosition>
+  readonly positions: ReadonlyArray<AccountOmnipoolPosition>
 }
 
 export const LiquidityPositionsMobile: FC<Props> = ({ asset, positions }) => {
@@ -20,7 +20,7 @@ export const LiquidityPositionsMobile: FC<Props> = ({ asset, positions }) => {
         <SLiquidityPositionMobile key={index}>
           <LiquidityPositionMobileHeader asset={asset} position={position} />
           <Separator />
-          <LiquidityPositionMobileValues asset={asset} position={position} />
+          <LiquidityPositionMobileValues position={position} />
         </SLiquidityPositionMobile>
       ))}
     </SLiquidityPositionsMobile>

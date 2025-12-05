@@ -1,6 +1,7 @@
 import { useSupplyAssetsData } from "@galacticcouncil/money-market/hooks"
 import {
   DataTable,
+  Modal,
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
@@ -10,16 +11,24 @@ import {
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { sortBy } from "remeda"
 
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable.columns"
+import {
+  AddStablepoolLiquidityProps,
+  AddStablepoolLiquidityWrapper,
+} from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 
 export const SupplyAssetsTable = () => {
+  const [modalProps, setModalProps] = useState<
+    Omit<AddStablepoolLiquidityProps, "onSubmitted"> | undefined
+  >()
   const baseColumns = useSupplyAssetsTableColumns("base")
-  const strategyColumns = useSupplyAssetsTableColumns("strategy")
+  const strategyColumns = useSupplyAssetsTableColumns("strategy", setModalProps)
+
   const { data, isLoading } = useSupplyAssetsData({ showAll: true })
   const navigate = useNavigate()
   const { isMobile } = useBreakpoints()
@@ -45,47 +54,62 @@ export const SupplyAssetsTable = () => {
     }
   }, [data])
 
-  return isMobile ? (
-    <Paper>
-      <StackedTable
-        skeletonRowCount={4}
-        isLoading={isLoading}
-        data={strategyAssets}
-        columns={strategyColumns}
-      />
-      <StackedTable
-        skeletonRowCount={4}
-        isLoading={isLoading}
-        data={baseAssets}
-        columns={baseColumns}
-      />
-    </Paper>
-  ) : (
-    <TableContainer as={TablePaper}>
-      <DataTable
-        skeletonRowCount={4}
-        isLoading={isLoading}
-        onRowClick={(row) =>
-          navigate({
-            to: `/borrow/markets/${row.underlyingAsset}`,
-          })
-        }
-        fixedLayout
-        data={strategyAssets}
-        columns={strategyColumns}
-      />
-      <DataTable
-        skeletonRowCount={4}
-        isLoading={isLoading}
-        onRowClick={(row) =>
-          navigate({
-            to: `/borrow/markets/${row.underlyingAsset}`,
-          })
-        }
-        fixedLayout
-        data={baseAssets}
-        columns={baseColumns}
-      />
-    </TableContainer>
+  return (
+    <>
+      {isMobile ? (
+        <Paper>
+          <StackedTable
+            skeletonRowCount={4}
+            isLoading={isLoading}
+            data={strategyAssets}
+            columns={strategyColumns}
+          />
+          <StackedTable
+            skeletonRowCount={4}
+            isLoading={isLoading}
+            data={baseAssets}
+            columns={baseColumns}
+          />
+        </Paper>
+      ) : (
+        <TableContainer as={TablePaper}>
+          <DataTable
+            skeletonRowCount={4}
+            isLoading={isLoading}
+            onRowClick={(row) =>
+              navigate({
+                to: `/borrow/markets/${row.underlyingAsset}`,
+              })
+            }
+            fixedLayout
+            data={strategyAssets}
+            columns={strategyColumns}
+          />
+          <DataTable
+            skeletonRowCount={4}
+            isLoading={isLoading}
+            onRowClick={(row) =>
+              navigate({
+                to: `/borrow/markets/${row.underlyingAsset}`,
+              })
+            }
+            fixedLayout
+            data={baseAssets}
+            columns={baseColumns}
+          />
+        </TableContainer>
+      )}
+
+      <Modal open={!!modalProps} onOpenChange={() => setModalProps(undefined)}>
+        {!!modalProps && (
+          <AddStablepoolLiquidityWrapper
+            {...modalProps}
+            initialOption="stablepool"
+            closable
+            onSubmitted={() => setModalProps(undefined)}
+          />
+        )}
+      </Modal>
+    </>
   )
 }

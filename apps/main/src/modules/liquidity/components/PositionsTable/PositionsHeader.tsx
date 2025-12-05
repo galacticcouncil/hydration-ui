@@ -40,7 +40,10 @@ export const PositionsHeader = ({
           align="center"
           justify="space-between"
           sx={{
-            px: getTokenPx("containers.paddings.primary"),
+            px: getTokenPx([
+              "containers.paddings.secondary",
+              "containers.paddings.primary",
+            ]),
             py: getTokenPx("containers.paddings.secondary"),
             borderBottom: "1px solid",
             borderColor: getToken("details.separators"),
@@ -71,7 +74,10 @@ export const PositionsHeader = ({
         align="center"
         gap={24}
         sx={{
-          px: getTokenPx("containers.paddings.primary"),
+          px: getTokenPx([
+            "containers.paddings.secondary",
+            "containers.paddings.primary",
+          ]),
           py: getTokenPx("containers.paddings.secondary"),
           borderBottom: showMore ? "1px solid" : "none",
           borderColor: getToken("details.separators"),

@@ -9,13 +9,14 @@ import {
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 
 const PAPI_OBSERVER_MAP = {
-  "Timestamp.Now": (papi: Papi) => papi.query.Timestamp.Now,
-  "System.Account": (papi: Papi) => papi.query.System.Account,
-  "System.Number": (papi: Papi) => papi.query.System.Number,
-  "Uniques.Account": (papi: Papi) => papi.query.Uniques.Account,
-  "MultiTransactionPayment.AccountCurrencyMap": (papi: Papi) =>
-    papi.query.MultiTransactionPayment.AccountCurrencyMap,
-} as const
+  "Timestamp.Now": (query) => query.Timestamp.Now,
+  "System.Account": (query) => query.System.Account,
+  "System.Number": (query) => query.System.Number,
+  "Uniques.Account": (query) => query.Uniques.Account,
+  "MultiTransactionPayment.AccountCurrencyMap": (query) =>
+    query.MultiTransactionPayment.AccountCurrencyMap,
+  "OTC.Orders": (query) => query.OTC.Orders,
+} as const satisfies Record<string, (query: Papi["query"]) => unknown>
 
 type PapiObservableKey = keyof typeof PAPI_OBSERVER_MAP
 type PapiObservableFn<K extends PapiObservableKey> =
@@ -55,29 +56,38 @@ type PapiObservableReturnEntries<K extends PapiObservableKey> =
 
 export type UsePapiObservableQueryOptions<
   T,
+  TData = T,
   W extends PapiObservableWatchType = "value",
-> = Omit<UseObservableQueryOptions<T>, "queryKey" | "observable"> & {
+> = Omit<UseObservableQueryOptions<T, TData>, "queryKey" | "observable"> & {
   watchType?: W
 }
 
-export function usePapiObservableQuery<K extends PapiObservableKey>(
+export function usePapiObservableQuery<
+  K extends PapiObservableKey,
+  TData = PapiObservableReturnValue<K>,
+>(
   key: K,
   args: PapiObservableArgs<K, "value">,
   options?: UsePapiObservableQueryOptions<
     PapiObservableReturnValue<K>,
+    TData,
     "value"
   >,
-): ReturnType<typeof useObservableQuery<PapiObservableReturnValue<K>>>
-export function usePapiObservableQuery<K extends PapiObservableKey>(
+): ReturnType<typeof useObservableQuery<PapiObservableReturnValue<K>, TData>>
+export function usePapiObservableQuery<
+  K extends PapiObservableKey,
+  TData = PapiObservableReturnEntries<K>,
+>(
   key: K,
   args: PapiObservableArgs<K, "entries">,
   options: UsePapiObservableQueryOptions<
     PapiObservableReturnEntries<K>,
+    TData,
     "entries"
   > & {
     watchType: "entries"
   },
-): ReturnType<typeof useObservableQuery<PapiObservableReturnEntries<K>>>
+): ReturnType<typeof useObservableQuery<PapiObservableReturnEntries<K>, TData>>
 export function usePapiObservableQuery<
   K extends PapiObservableKey,
   W extends PapiObservableWatchType = "value",
@@ -86,6 +96,7 @@ export function usePapiObservableQuery<
   args: PapiObservableArgs<K, "value"> | PapiObservableArgs<K, "entries">,
   options?: UsePapiObservableQueryOptions<
     PapiObservableReturnValue<K> | PapiObservableReturnEntries<K>,
+    unknown,
     W
   >,
 ) {
@@ -99,9 +110,8 @@ export function usePapiObservableQuery<
     enabled: isApiLoaded,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
-    notifyOnChangeProps: [],
     queryFn: () => {
-      const observable = PAPI_OBSERVER_MAP[key](papi)
+      const observable = PAPI_OBSERVER_MAP[key](papi.query)
 
       const watcher =
         watchType === "entries"

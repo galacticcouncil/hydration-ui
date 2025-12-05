@@ -1,6 +1,7 @@
 import Big from "big.js"
 import { isNullish } from "remeda"
 
+const DEFAULT_LOCALE = "en-US"
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
 const NA_VALUE = "N/A"
 const MIN_PERCENTAGE_THRESHOLD = Big(0.01)
@@ -43,7 +44,7 @@ export const getMaxSignificantDigits = (
 
 export const formatNumber = (
   value: number | bigint | string | null | undefined,
-  lng?: string,
+  lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
   if (!isValidNumber(value)) {
@@ -66,7 +67,7 @@ export const formatNumber = (
 
 export const formatPercent = (
   value: number | bigint | null | undefined,
-  lng?: string,
+  lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
   if (!isValidNumber(value)) {
@@ -97,7 +98,7 @@ export const formatPercent = (
 
 export const formatCurrency = (
   value: number | bigint | string | null | undefined,
-  lng?: string,
+  lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
   if (!isValidNumber(value)) {
@@ -125,4 +126,29 @@ export const formatCurrency = (
   }
 
   return parts.map(formatNumberParts).join("")
+}
+
+const FORMAT_ASSET_AMOUNT_REGEXP =
+  /^(?<integer>[^.,]*)(?<separator>[.,])(?<decimals>.*)$/
+
+export const formatAssetAmount = (
+  amount: string,
+  maxDecimals: number,
+): string => {
+  if (!amount || !maxDecimals) {
+    return amount
+  }
+
+  const match = amount.match(FORMAT_ASSET_AMOUNT_REGEXP)
+
+  if (!match || !match.groups) {
+    return amount
+  }
+
+  const { integer, separator, decimals } = match.groups
+
+  const validDecimals = decimals.slice(0, maxDecimals)
+  const trimmedDecimals = validDecimals.replace(/0+$/, "")
+
+  return trimmedDecimals ? `${integer}${separator}${trimmedDecimals}` : integer
 }

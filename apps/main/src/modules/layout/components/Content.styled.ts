@@ -5,12 +5,15 @@ import { mq } from "@galacticcouncil/ui/theme"
 export const SContent = styled(Box)`
   --layout-gutter: 8px;
   --layout-bottom-safe-area: 10px;
+
+  max-width: 1160px;
+
   ${mq("lg")} {
     --layout-gutter: 30px;
     --layout-bottom-safe-area: 40px;
-  }
 
-  max-width: 1160px;
+    max-width: 1360px;
+  }
 
   margin: 0 auto;
 

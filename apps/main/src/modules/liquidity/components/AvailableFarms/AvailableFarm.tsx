@@ -7,7 +7,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { addSeconds } from "date-fns"
 import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
@@ -51,29 +51,36 @@ export const AvailableFarm = ({
       onClick={() => onClick?.(farm)}
       isSelectable={isSelectable}
       direction={isLongVariant ? "row" : "column"}
+      sx={{
+        p: getTokenPx([
+          "containers.paddings.secondary",
+          "containers.paddings.primary",
+        ]),
+      }}
       className={className}
     >
-      <Flex justify="space-between" align="center">
+      <Flex justify="space-between" gap={8} align="center">
         <Flex align="center" gap={10}>
           <AssetLogo id={meta.id} />
           <Text color={getToken("text.high")} fs="p2" fw={600}>
             {meta.symbol}
           </Text>
+        </Flex>
 
+        <Flex align="center" gap={10}>
           <Chip variant="green" size="small">
             {t("liquidity.availableFarms.apr", {
               value: farm.apr,
             })}
           </Chip>
+          {isSelectable && !isLongVariant ? (
+            <Icon
+              size={16}
+              component={ChevronRight}
+              sx={{ justifySelf: "flex-end" }}
+            />
+          ) : null}
         </Flex>
-
-        {isSelectable && !isLongVariant ? (
-          <Icon
-            size={16}
-            component={ChevronRight}
-            sx={{ justifySelf: "flex-end" }}
-          />
-        ) : null}
       </Flex>
 
       {!isLongVariant && <Separator />}

@@ -56,58 +56,109 @@ export const nullFirst =
     return compare(a, b)
   }
 
+export const nullLast =
+  <T>(compare: Compare<T>): Compare<T | null> =>
+  (a, b) => {
+    if (a === null) {
+      return 1
+    }
+    if (b === null) {
+      return -1
+    }
+
+    return compare(a, b)
+  }
+
 export const naturally: Compare<string> = (a, b) => a.localeCompare(b)
 export const naturallyDesc = descending(naturally)
 
 export const logically: Compare<boolean> = (a, b) =>
   numerically(Number(a), Number(b))
 
+type SortAssetsOptions = {
+  firstAssetId?: string
+  tickerOrder?: string[]
+  lowPriorityAssetIds?: string[]
+  highPriorityAssetIds?: string[]
+}
+
+const SORT_ASSETS_TICKER_ORDER = [
+  "HDX",
+  "DOT",
+  "USDC",
+  "USDT",
+  "IBTC",
+  "VDOT",
+  "WETH",
+  "WBTC",
+]
+
 export const sortAssets = <T extends TAssetData>(
   assets: Array<T>,
   balanceKey: Extract<KeyOfType<T, string>, string>,
-  firstAssetId?: string,
+  options?: SortAssetsOptions,
 ) => {
-  const tickerOrder = [
-    "HDX",
-    "DOT",
-    "USDC",
-    "USDT",
-    "IBTC",
-    "VDOT",
-    "WETH",
-    "WBTC",
-  ]
+  const {
+    firstAssetId,
+    lowPriorityAssetIds = [],
+    highPriorityAssetIds = [],
+    tickerOrder = SORT_ASSETS_TICKER_ORDER,
+  } = options ?? {}
+
   const getTickerIndex = (ticker: string) => {
-    const index = tickerOrder.indexOf(ticker.toUpperCase())
+    // include aTokens of assets in ticker order
+    const formattedTicker = ticker.startsWith("a") ? ticker.slice(1) : ticker
+    const index = tickerOrder.indexOf(formattedTicker.toUpperCase())
     return index === -1 ? Infinity : index
   }
 
+  const isLowPriority = (id: string) => lowPriorityAssetIds.includes(id)
+  const isHighPriority = (id: string) => highPriorityAssetIds.includes(id)
+
   return [...assets].sort((a, b) => {
-    if (firstAssetId) {
-      if (a.id === firstAssetId) return -1
-      if (b.id === firstAssetId) return 1
-    }
+    // 1. Prioritize first asset if provided
+    if (a.id === firstAssetId) return -1
+    if (b.id === firstAssetId) return 1
+
     const balanceA = a[balanceKey] as string
     const balanceB = b[balanceKey] as string
 
-    if (!balanceA || !balanceB) {
-      if (!balanceA && balanceB) return 1
-      if (balanceA && !balanceB) return -1
+    const hasBalanceA = balanceA && Big(balanceA).gt(0)
+    const hasBalanceB = balanceB && Big(balanceB).gt(0)
 
-      if (a.symbol && b.symbol) return a.symbol.localeCompare(b.symbol)
+    // 2. Assets with balance first, high priority first, low priority last (if both have balance)
+    if (hasBalanceA && hasBalanceB) {
+      const isHighPrioA = isHighPriority(a.id)
+      const isHighPrioB = isHighPriority(b.id)
+      const isLowPrioA = isLowPriority(a.id)
+      const isLowPrioB = isLowPriority(b.id)
+
+      if (isHighPrioA !== isHighPrioB) return isHighPrioA ? -1 : 1
+      if (isLowPrioA !== isLowPrioB) return isLowPrioA ? 1 : -1
+      return Big(balanceB).minus(balanceA).toNumber()
     }
 
-    if (balanceB === "0" && balanceA === "0") {
-      const tickerIndexA = getTickerIndex(a.symbol)
-      const tickerIndexB = getTickerIndex(b.symbol)
+    // 3. One has balance, the other doesn't
+    if (hasBalanceA !== hasBalanceB) return hasBalanceA ? -1 : 1
 
-      if (tickerIndexA === tickerIndexB) {
-        return a.symbol.localeCompare(b.symbol)
-      } else {
-        return tickerIndexA - tickerIndexB
-      }
+    // 4. Both have no balance → prioritize high priority, then non-low-priority
+    const isHighPrioA = isHighPriority(a.id)
+    const isHighPrioB = isHighPriority(b.id)
+    const isLowPrioA = isLowPriority(a.id)
+    const isLowPrioB = isLowPriority(b.id)
+
+    if (isHighPrioA !== isHighPrioB) return isHighPrioA ? -1 : 1
+    if (isLowPrioA !== isLowPrioB) return isLowPrioA ? 1 : -1
+
+    // 5. Use ticker order
+    const tickerIndexA = getTickerIndex(a.symbol)
+    const tickerIndexB = getTickerIndex(b.symbol)
+
+    if (tickerIndexA !== tickerIndexB) {
+      return tickerIndexA - tickerIndexB
     }
 
-    return Big(balanceB).minus(balanceA).toNumber()
+    // 6. Fallback: alphabetical
+    return a.symbol.localeCompare(b.symbol)
   })
 }

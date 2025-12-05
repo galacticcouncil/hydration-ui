@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
 import { Page404 } from "@/components/Page404"
+import { getPageMeta } from "@/config/navigation"
 import { transactionTypesMock } from "@/modules/wallet/transactions/WalletTransactionsTable.data"
 
 const typeSchema = z.object({
@@ -14,4 +15,11 @@ export const Route = createFileRoute("/wallet/transactions")({
   component: Page404,
   // pendingComponent: WalletTransactionsSkeleton,
   validateSearch: typeSchema,
+  head: ({
+    match: {
+      context: { i18n },
+    },
+  }) => ({
+    meta: getPageMeta("walletTransactions", i18n.t),
+  }),
 })

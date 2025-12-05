@@ -19,12 +19,17 @@ import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 
 import { SOption } from "./AssetSelectModal.styled"
-import { useAssetSelectModalAssets } from "./AssetSelectModal.utils"
+import {
+  TAssetWithBalance,
+  useAssetSelectModalAssets,
+  useFilteredSearchAssets,
+} from "./AssetSelectModal.utils"
 
 const VIRTUALIZED_ITEM_HEIGHT = 50
 
 export type AssetSelectProps = {
   assets: TAssetData[]
+  sortedAssets?: TAssetWithBalance[]
   selectedAssetId?: string
   onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
@@ -38,6 +43,7 @@ export type AssetSelectModalProps = AssetSelectProps & {
 
 export const AssetSelectModalContent = ({
   assets,
+  sortedAssets: customSortedAssets,
   onSelect,
   emptyState,
   selectedAssetId,
@@ -50,11 +56,22 @@ export const AssetSelectModalContent = ({
   const [search, setSearch] = useState("")
   const [highlighted, setHighlighted] = useState(0)
 
+  const isProvidedSortedAssets =
+    customSortedAssets && customSortedAssets.length > 0
   const { sortedAssets, isLoading } = useAssetSelectModalAssets(
-    assets,
+    isProvidedSortedAssets ? [] : assets,
     search,
     selectedAssetId,
   )
+
+  const filteredCustomAssets = useFilteredSearchAssets(
+    customSortedAssets ?? [],
+    search,
+  )
+
+  const assetsToDisplay = isProvidedSortedAssets
+    ? filteredCustomAssets
+    : sortedAssets
 
   useEffect(() => {
     inputRef.current?.focus()
@@ -71,7 +88,7 @@ export const AssetSelectModalContent = ({
     if (e.key === "ArrowDown") {
       setHighlighted((prevIndex) => {
         const nextIndex =
-          prevIndex < sortedAssets.length - 1 ? prevIndex + 1 : prevIndex
+          prevIndex < assetsToDisplay.length - 1 ? prevIndex + 1 : prevIndex
         scrollToHighlighted(nextIndex)
         return nextIndex
       })
@@ -85,7 +102,7 @@ export const AssetSelectModalContent = ({
       setSearch((prevValue) => prevValue.slice(0, -1))
       inputRef.current?.focus()
     } else if (e.key === "Enter") {
-      const asset = sortedAssets[highlighted]
+      const asset = assetsToDisplay[highlighted]
 
       if (asset) {
         onSelectOption(asset)
@@ -180,9 +197,9 @@ export const AssetSelectModalContent = ({
                 </Flex>
               ))}
             </Flex>
-          ) : sortedAssets.length ? (
+          ) : assetsToDisplay.length ? (
             <VirtualizedList
-              items={sortedAssets}
+              items={assetsToDisplay}
               maxVisibleItems={[8, null, null, 10]}
               itemSize={VIRTUALIZED_ITEM_HEIGHT}
               renderItem={(item, { key, index }) => (

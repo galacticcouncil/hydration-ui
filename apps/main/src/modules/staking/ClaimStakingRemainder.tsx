@@ -21,6 +21,10 @@ export const ClaimStakingRemainder: FC<Props> = ({
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
 
+  const amountColor = isModal
+    ? getToken("accents.alertAlt.primary")
+    : getToken("text.tint.primary")
+
   return (
     <Text as="div" lh={1.3} className={className}>
       <div>{t("staking:dashboard.remainder1")}</div>
@@ -33,7 +37,7 @@ export const ClaimStakingRemainder: FC<Props> = ({
             symbol: native.symbol,
           }}
         >
-          <span sx={{ color: getToken("accents.alertAlt.primary") }} />
+          <span sx={{ color: amountColor }} />
         </Trans>
       ) : (
         <>
@@ -45,7 +49,7 @@ export const ClaimStakingRemainder: FC<Props> = ({
                 amount: t("number", { value: unclaimable }),
               }}
             >
-              <span sx={{ color: getToken("accents.alertAlt.primary") }} />
+              <span sx={{ color: amountColor }} />
             </Trans>
           </div>
           <Trans
@@ -55,7 +59,7 @@ export const ClaimStakingRemainder: FC<Props> = ({
               symbol: native.symbol,
             }}
           >
-            <span sx={{ color: getToken("accents.alertAlt.primary") }} />
+            <span sx={{ color: amountColor }} />
           </Trans>
         </>
       )}

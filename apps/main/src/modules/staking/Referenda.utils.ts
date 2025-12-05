@@ -1,4 +1,3 @@
-import { bigMax, bigMin } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -85,7 +84,7 @@ const makeReciprocalCurve = (
       .plus(yOffset.toString())
       .div(Math.pow(10, 9))
       .toString()
-    return bigMax(calcValue, 0).toString()
+    return Big.max(calcValue, 0).toString()
   }
 }
 
@@ -93,14 +92,14 @@ const makeLinearCurve = (length: number, floor: number, ceil: number) => {
   return (percentage: number) => {
     const x = percentage * Math.pow(10, 9)
 
-    const xValue = bigMin(x, length)
+    const xValue = Big.min(x, length)
 
     const slope = Big(ceil).minus(floor).div(length)
     const deducted = slope.mul(xValue)
 
     const perbill = Big(ceil).minus(deducted).toFixed(0, Big.roundDown)
     const calcValue = Big(perbill).div(Math.pow(10, 9))
-    return bigMax(calcValue, 0).toString()
+    return Big.max(calcValue, 0).toString()
   }
 }
 
@@ -115,7 +114,7 @@ const getDecidingEndPercentage = (
 
   const gone = Big(endHeight).minus(decidingSince)
 
-  return bigMin(gone.div(decisionPeriod), 1).toNumber()
+  return Big.min(gone.div(decisionPeriod), 1).toNumber()
 }
 
 export const getPerbillPercentage = (perbill = 0): number => {
@@ -158,7 +157,7 @@ export const getSupportThreshold = (
     return Big(getApprovalThreshold?.(percentage) ?? 0)?.times(Math.pow(10, 9))
   })()
 
-  const maxSupportBarValue = bigMax(support, threshold?.toNumber() ?? 0)
+  const maxSupportBarValue = Big.max(support, threshold?.toNumber() ?? 0)
     .mul(1.25)
     .toNumber()
 

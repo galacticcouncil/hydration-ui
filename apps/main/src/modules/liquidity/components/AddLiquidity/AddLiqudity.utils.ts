@@ -1,63 +1,116 @@
 import {
   calculate_liquidity_hub_in,
   calculate_shares,
+  is_add_liquidity_allowed,
   verify_asset_cap,
 } from "@galacticcouncil/math-omnipool"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
-import { FieldError } from "react-hook-form"
+import { FieldError, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { z } from "zod/v4"
+import { z, ZodType } from "zod/v4"
 
+import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
+import { TAssetData } from "@/api/assets"
+import { useOmnipoolFarms } from "@/api/farms"
 import {
   useMaxAddLiquidityLimit,
   useOmnipoolAssetsData,
   useOmnipoolMinLiquidity,
 } from "@/api/omnipool"
+import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useOmnipoolAsset } from "@/states/liquidity"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
-export const getLimitShares = (shares: string, limit: number) => {
-  return Big(shares).times(Big(100).minus(limit).div(100)).toFixed(0)
-}
+export type TAddLiquidityFormValues = { amount: string }
 
 export const getCustomErrors = (errors?: FieldError) =>
   errors
     ? (errors as unknown as {
         cap?: { message: string }
         circuitBreaker?: { message: string }
-        farm?: { message: string }
       })
     : undefined
 
-export const useLiquidityShares = (value: string, assetId: string) => {
+export const useLiquidityOmnipoolShares = (assetId: string) => {
   const { dataMap: omnipoolAssetsData } = useOmnipoolAssetsData()
+  const {
+    liquidity: { slippage },
+  } = useTradeSettings()
   const omnipoolAssetData = omnipoolAssetsData?.get(Number(assetId))
 
-  if (!omnipoolAssetData || !value) return undefined
+  const getOmnipoolGetShares = (value: string) => {
+    if (!omnipoolAssetData || !value) return undefined
 
-  const {
-    hubReserves,
-    shares,
-    balance: assetReserve,
-    decimals,
-  } = omnipoolAssetData
+    const {
+      hubReserves,
+      shares,
+      balance: assetReserve,
+      decimals,
+    } = omnipoolAssetData
 
-  const sharesToGet = calculate_shares(
-    assetReserve.toString(),
-    hubReserves.toString(),
-    shares.toString(),
-    scale(value, decimals ?? 0),
-  )
+    const sharesToGet = calculate_shares(
+      assetReserve.toString(),
+      hubReserves.toString(),
+      shares.toString(),
+      scale(value, decimals ?? 0),
+    )
 
-  const totalShares = Big(shares.toString()).plus(sharesToGet).toString()
-  const poolShare = Big(sharesToGet).div(totalShares).times(100).toString()
+    const minSharesToGet = Big(sharesToGet)
+      .times(100 - slippage)
+      .div(100)
+      .toFixed(0)
 
-  return { totalShares, poolShare, sharesToGet }
+    const totalShares = Big(shares.toString()).plus(minSharesToGet).toString()
+    const poolShare = Big(minSharesToGet).div(totalShares).times(100).toString()
+
+    return { totalShares, poolShare, sharesToGet, minSharesToGet }
+  }
+
+  return getOmnipoolGetShares
+}
+
+export const useCheckJoinOmnipoolFarm = ({
+  amount,
+  meta,
+  disabled = false,
+}: {
+  amount: string
+  meta: TAssetData
+  disabled?: boolean
+}) => {
+  const { t } = useTranslation("liquidity")
+  const { data: omnipoolFarms } = useOmnipoolFarms()
+
+  const activeFarms =
+    omnipoolFarms?.[meta.id]?.filter((farm) => farm.apr !== "0") ?? []
+  const minJoinAmount = useMinOmnipoolFarmJoin(activeFarms, meta) || "0"
+
+  const isCheckJoinFarms =
+    activeFarms.length > 0 && Big(amount).gt(0) && !disabled
+  const joinFarmErrorMessage =
+    isCheckJoinFarms && Big(amount).lte(minJoinAmount)
+      ? t("liquidity.joinFarms.modal.validation.minShares", {
+          value: minJoinAmount,
+          symbol: meta.symbol,
+        })
+      : undefined
+
+  const isJoinFarms = isCheckJoinFarms && !joinFarmErrorMessage
+
+  return {
+    activeFarms,
+    isJoinFarms,
+    joinFarmErrorMessage,
+  }
 }
 
 export const useAddToOmnipoolZod = (
@@ -119,7 +172,7 @@ export const useAddToOmnipoolZod = (
         )
 
         const isWithinLimit = verify_asset_cap(
-          assetReserve.toString(),
+          hubReserves.toString(),
           cap.toString(),
           hubIn,
           hubBalance.toString(),
@@ -147,17 +200,69 @@ export const useAddToOmnipoolZod = (
       },
     )
 
-  return z.object({
-    amount: rules,
-  })
+  return rules
 }
 
-export const useSubmitAddLiquidity = () => {
-  const { t } = useTranslation("liquidity")
+export const useAddLiquidityForm = ({
+  initialAmount,
+  rule,
+}: {
+  initialAmount?: string
+  rule?: ZodType<string, string> | undefined
+}) => {
+  const form = useForm<TAddLiquidityFormValues>({
+    mode: "onChange",
+    defaultValues: { amount: initialAmount ?? "" },
+    resolver: rule
+      ? standardSchemaResolver(z.object({ amount: rule }))
+      : undefined,
+  })
+
+  return form
+}
+
+export const useAddLiquidity = ({
+  assetId,
+  onSubmitted,
+}: {
+  assetId: string
+  onSubmitted: () => void
+}) => {
+  const { t } = useTranslation(["liquidity", "common"])
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const { getAssetWithFallback } = useAssets()
+  const { account } = useAccount()
+  const { getTransferableBalance } = useAccountBalances()
+  const { dataMap } = useOmnipoolAssetsData()
 
-  return useMutation({
+  const meta = getAssetWithFallback(assetId)
+  const omnipoolAsset = dataMap?.get(Number(assetId))
+  const canAddLiquidity = omnipoolAsset?.tradeable
+    ? is_add_liquidity_allowed(omnipoolAsset.tradeable)
+    : false
+
+  const addLiquidityZod = useAddToOmnipoolZod(assetId)
+
+  const form = useAddLiquidityForm({
+    initialAmount: "",
+    rule: addLiquidityZod,
+  })
+
+  const amount = Big(form.watch("amount") || "0")
+
+  const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
+    useCheckJoinOmnipoolFarm({
+      amount: amount.toString(),
+      meta,
+    })
+  const isFarms = activeFarms.length > 0
+  const getOmnipoolGetShares = useLiquidityOmnipoolShares(assetId)
+  const liquidityShares = getOmnipoolGetShares(amount.toString())
+
+  const balance = scaleHuman(getTransferableBalance(assetId), meta.decimals)
+
+  const mutation = useMutation({
     mutationFn: async ({
       assetId,
       amount,
@@ -171,33 +276,65 @@ export const useSubmitAddLiquidity = () => {
       symbol: string
       decimals: number
     }): Promise<void> => {
-      const tx = papi.tx.Omnipool.add_liquidity_with_limit({
-        asset: Number(assetId),
-        amount: BigInt(amount),
-        min_shares_limit: BigInt(shares),
-      })
-      const shiftedAmount = scaleHuman(amount, decimals)
+      const tx = isJoinFarms
+        ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms({
+            asset: Number(assetId),
+            amount: BigInt(amount),
+            min_shares_limit: BigInt(shares),
+            farm_entries: activeFarms.map((farm) => [
+              farm.globalFarmId,
+              farm.yieldFarmId,
+            ]),
+          })
+        : papi.tx.Omnipool.add_liquidity_with_limit({
+            asset: Number(assetId),
+            amount: BigInt(amount),
+            min_shares_limit: BigInt(shares),
+          })
 
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: t("liquidity.add.modal.toast.submitted", {
-            value: shiftedAmount,
-            symbol: symbol,
-            where: "Omnipool",
-          }),
-          success: t("liquidity.add.modal.toast.success", {
-            value: shiftedAmount,
-            symbol: symbol,
-            where: "Omnipool",
-          }),
-          error: t("liquidity.add.modal.toast.submitted", {
-            value: shiftedAmount,
-            symbol: symbol,
-            where: "Omnipool",
-          }),
+      const shiftedAmount = scaleHuman(amount, decimals)
+      const tOptions = {
+        value: t("common:currency", { value: shiftedAmount, symbol }),
+        where: t("omnipool"),
+      }
+
+      await createTransaction(
+        {
+          tx,
+          toasts: {
+            submitted: t(
+              isJoinFarms
+                ? "liquidity.add.joinFarms.modal.toast.submitted"
+                : "liquidity.add.modal.toast.submitted",
+              tOptions,
+            ),
+            success: t(
+              isJoinFarms
+                ? "liquidity.add.joinFarms.modal.toast.success"
+                : "liquidity.add.modal.toast.success",
+              tOptions,
+            ),
+          },
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
         },
-      })
+        { onSubmitted },
+      )
     },
   })
+
+  return {
+    form,
+    liquidityShares,
+    balance,
+    isFarms,
+    activeFarms,
+    meta,
+    joinFarmErrorMessage,
+    isJoinFarms,
+    mutation,
+    canAddLiquidity,
+  }
 }

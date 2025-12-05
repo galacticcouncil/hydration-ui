@@ -5,14 +5,22 @@ import {
   stablepoolYieldMetricsQuery,
   xykVolumeQuery,
 } from "@galacticcouncil/indexer/squid"
+import {
+  is_add_liquidity_allowed,
+  is_buy_allowed,
+  is_remove_liquidity_allowed,
+  is_sell_allowed,
+} from "@galacticcouncil/math-omnipool"
 import { OmniMath } from "@galacticcouncil/sdk"
+import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
+import { useNavigate, useRouter } from "@tanstack/react-router"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
 import { isNumber } from "remeda"
 
 import { XykDeposit } from "@/api/account"
-import { AssetType, TAssetData, TErc20 } from "@/api/assets"
+import { AssetType, TAssetData, TErc20, TErc20AToken } from "@/api/assets"
 import { BorrowAssetApyData, useBorrowAssetsApy } from "@/api/borrow/hooks"
 import { Farm, useIsolatedPoolsFarms, useOmnipoolFarms } from "@/api/farms"
 import { useOmnipoolAssetsData } from "@/api/omnipool"
@@ -27,6 +35,7 @@ import {
   useXykPoolsIds,
 } from "@/api/pools"
 import { useSquidClient } from "@/api/provider"
+import { useStableSwapTradability } from "@/api/stableswap"
 import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
@@ -71,6 +80,8 @@ export type OmnipoolAssetTable = {
   allFarms: Farm[]
   stablepoolData: TStablepoolData | undefined
   borrowApyData: BorrowAssetApyData | undefined
+  canAddLiquidity: boolean
+  canRemoveLiquidity: boolean
 }
 
 export type IsolatedPoolTable = {
@@ -92,6 +103,9 @@ export type IsolatedPoolTable = {
   totalApr: string
   farms: Farm[]
   allFarms: Farm[]
+  canAddLiquidity: boolean
+  canRemoveLiquidity: boolean
+  isNative: boolean
 }
 
 export type TReserve = {
@@ -99,7 +113,7 @@ export type TReserve = {
   meta: TAssetData
   amount: string
   amountHuman: string
-  displayAmount: string | undefined
+  displayAmount: string
 }
 
 export type TStablepoolData = {
@@ -111,7 +125,7 @@ export type TStablepoolData = {
   balance: string
   isStablepool: boolean
   lpFee: string | undefined
-  aToken: TErc20 | undefined
+  aToken: TErc20AToken | undefined
   borrowApyData: BorrowAssetApyData | undefined
 }
 
@@ -120,6 +134,8 @@ export type TStablepoolDetails = {
   reserves: TReserve[]
   totalDisplayAmount: string
 }
+
+const OVERRIDE_META = [...GIGA_ASSETS, ...HOLLAR_ASSETS]
 
 const isStablepoolData = (
   pool: TStablepoolData | OmniPoolToken,
@@ -134,7 +150,7 @@ export const useStablepools = () => {
   const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
     stablepoolYieldMetricsQuery(squidClient),
   )
-  const { getRelatedAToken } = useAssets()
+  const { getRelatedAToken, isErc20AToken } = useAssets()
 
   const volumeByAsset = useMemo(
     () => new Map((volumes ?? []).map((v) => [v.poolId, v.poolVolNorm])),
@@ -148,7 +164,7 @@ export const useStablepools = () => {
   )
 
   const { stablePoolData, aTokens } = useMemo(() => {
-    const aTokens = new Map<string, TErc20>()
+    const aTokens = new Map<string, TErc20AToken>()
 
     if (!pools) {
       return { stablePoolData: [], aTokens }
@@ -159,7 +175,7 @@ export const useStablepools = () => {
       const poolId = id.toString()
       const aToken = getRelatedAToken(poolId)
 
-      if (aToken) {
+      if (aToken && isErc20AToken(aToken)) {
         aTokens.set(poolId, aToken)
       }
 
@@ -170,7 +186,7 @@ export const useStablepools = () => {
     })
 
     return { stablePoolData: list, aTokens }
-  }, [pools, getRelatedAToken])
+  }, [pools, getRelatedAToken, isErc20AToken])
 
   const { data: borrowAssetsApy } = useBorrowAssetsApy(
     stablePoolData
@@ -384,9 +400,18 @@ export const useOmnipoolStablepools = () => {
             .toFixed(2)
         : undefined
 
+      const tradability = isStablepoolOnly
+        ? { canAddLiquidity: true, canRemoveLiquidity: true }
+        : pool.tradeable
+          ? getOmnipoolTradability(pool.tradeable)
+          : { canAddLiquidity: false, canRemoveLiquidity: false }
+
       return {
         id: poolId,
-        meta,
+        meta:
+          aStableswapAsset && OVERRIDE_META.includes(poolId)
+            ? aStableswapAsset
+            : meta,
         price,
         tvlDisplay,
         lpFeeOmnipool,
@@ -411,6 +436,8 @@ export const useOmnipoolStablepools = () => {
         aStableswapAsset,
         borrowApyData,
         stablepoolData: isStablepoolOnly ? pool : stablepoolInOmnipool,
+        canAddLiquidity: tradability.canAddLiquidity,
+        canRemoveLiquidity: tradability.canRemoveLiquidity,
       }
     })
 
@@ -567,6 +594,9 @@ export const useIsolatedPools = () => {
           isFeeLoading: false,
           farms,
           allFarms,
+          canAddLiquidity: true,
+          canRemoveLiquidity: true,
+          isNative: false,
         })
 
         return acc
@@ -678,22 +708,23 @@ export const useStablepoolsReserves = (poolIds?: string[]) => {
     ...tokenSet,
   ])
 
+  if (isPriceLoading) return { data: [], isLoading: true }
+
   const data: TStablepoolDetails[] = stablepools_.map((pool) => {
     const reserves: TReserve[] = []
     let totalDisplayAmount = Big(0)
 
-    pool.tokens.forEach((token) => {
+    for (const token of pool.tokens) {
       const id = token.id.toString()
       const meta = getAssetWithFallback(id)
-
       const amountHuman = scaleHuman(token.balance, meta.decimals)
-      const assetPrice = getAssetPrice(id)
 
-      const displayAmount = assetPrice.isValid
-        ? toBig(assetPrice.price)?.times(amountHuman).toString()
-        : undefined
+      const { price, isValid } = getAssetPrice(id)
 
-      totalDisplayAmount = totalDisplayAmount.plus(displayAmount ?? 0)
+      if (!isValid) continue
+
+      const displayAmount = Big(amountHuman).times(price).toString()
+      totalDisplayAmount = totalDisplayAmount.plus(displayAmount)
 
       reserves.push({
         asset_id: Number(id),
@@ -702,7 +733,7 @@ export const useStablepoolsReserves = (poolIds?: string[]) => {
         amountHuman,
         displayAmount,
       })
-    })
+    }
 
     return {
       pool,
@@ -753,4 +784,44 @@ export const calculatePoolFee = (fee?: number[] | PoolFee) => {
   const tradeFee = Big(numerator).div(denominator)
 
   return tradeFee.times(100).toString()
+}
+
+const getOmnipoolTradability = (value: number) => {
+  const canBuy = is_buy_allowed(value)
+  const canSell = is_sell_allowed(value)
+  const canAddLiquidity = is_add_liquidity_allowed(value)
+  const canRemoveLiquidity = is_remove_liquidity_allowed(value)
+
+  return { canBuy, canSell, canAddLiquidity, canRemoveLiquidity }
+}
+
+export const useAddableStablepoolTokens = (
+  poolId: string,
+  reserves: TReserve[],
+) => {
+  const { data: tradability } = useStableSwapTradability()
+  const isTradability = !!tradability?.length
+
+  if (!isTradability) return reserves
+
+  return reserves.filter((reserve) => {
+    const tradabilityValue = tradability.find(
+      ({ keyArgs: [poolId_, assetId] }) =>
+        poolId_.toString() === poolId && assetId === reserve.asset_id,
+    )?.value
+    return tradabilityValue ? is_add_liquidity_allowed(tradabilityValue) : true
+  })
+}
+
+export const useNavigateLiquidityBack = () => {
+  const { history } = useRouter()
+  const navigate = useNavigate()
+
+  return () => {
+    if (history.canGoBack()) {
+      history.back()
+    } else {
+      navigate({ to: "/liquidity" })
+    }
+  }
 }

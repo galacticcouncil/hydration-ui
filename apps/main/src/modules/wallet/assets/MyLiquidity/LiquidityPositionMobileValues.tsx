@@ -4,48 +4,36 @@ import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
-import { TAsset } from "@/providers/assetsProvider"
+import { AccountOmnipoolPosition } from "@/states/account"
+import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 type Props = {
-  readonly asset: TAsset
-  readonly position: MyLiquidityPosition
+  readonly position: AccountOmnipoolPosition
 }
 
-export const LiquidityPositionMobileValues: FC<Props> = ({
-  asset,
-  position,
-}) => {
-  const { t } = useTranslation()
-
-  const [initialValueDisplayPrice] = useDisplayAssetPrice(
-    asset.id,
-    position.initialValue,
-  )
-
-  const [currentValueDisplayPrice] = useDisplayAssetPrice(
-    asset.id,
-    position.currentValue,
-  )
+export const LiquidityPositionMobileValues: FC<Props> = ({ position }) => {
+  const { t } = useTranslation("common")
+  const format = useFormatOmnipoolPositionData()
 
   return (
     <Flex px={getTokenPx("containers.paddings.primary")} gap={54}>
       <Amount
         label={t("initialValue")}
         value={t("currency", {
-          value: position.initialValue,
-          symbol: asset.symbol,
+          value: position.data.initialValueHuman,
+          symbol: position.data.meta.symbol,
         })}
-        displayValue={initialValueDisplayPrice}
+        displayValue={t("currency", {
+          value: position.data.initialDisplay,
+        })}
       />
+
       <Amount
         label={t("currentValue")}
-        value={t("currency", {
-          value: position.currentValue,
-          symbol: asset.symbol,
+        value={format(position.data)}
+        displayValue={t("currency", {
+          value: position.data.currentTotalDisplay,
         })}
-        displayValue={currentValueDisplayPrice}
       />
     </Flex>
   )

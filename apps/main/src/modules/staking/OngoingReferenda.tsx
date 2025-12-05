@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   CollapsibleContent,
   CollapsibleRoot,
   CollapsibleTrigger,
@@ -9,7 +10,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -60,56 +61,64 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
 
   return (
     <CollapsibleRoot open={!isCollapsed}>
-      <Flex align={isMobile ? "center" : "flex-start"} justify="space-between">
-        <SectionHeader>
-          {t("staking:referenda.title", { count: referenda.length })}
-        </SectionHeader>
-        {!isLoading && referenda.length > 0 && (
+      <Flex direction="column" gap={getTokenPx("scales.paddings.m")}>
+        <Box>
           <Flex
-            px={getTokenPx("scales.paddings.base")}
-            height={22}
-            py={8}
-            bg={getToken("buttons.secondary.low.rest")}
-            borderRadius={20}
-            borderWidth={1}
-            borderStyle="solid"
-            borderColor={getToken("buttons.secondary.low.borderRest")}
-            align="center"
-            gap={getTokenPx("containers.paddings.quint")}
-            asChild
+            align={isMobile ? "center" : "flex-start"}
+            justify="space-between"
           >
-            <CollapsibleTrigger
-              sx={{ cursor: "pointer" }}
-              onClick={() => {
-                setIsCollapsed((prev) => !prev)
-
-                if (!isMobile) {
-                  setTimeout(() => {
-                    gridRef.current?.scrollIntoView({ behavior: "smooth" })
-                  }, 0)
-                }
-              }}
-            >
-              <Text
-                fw={500}
-                fs={10}
-                lh={1.4}
-                color={getToken("text.medium")}
-                transform="uppercase"
+            <SectionHeader hasDescription>
+              {t("staking:referenda.title", { count: referenda.length })}
+            </SectionHeader>
+            {!isLoading && referenda.length > 0 && (
+              <Flex
+                px={getTokenPx("scales.paddings.base")}
+                height={22}
+                py={8}
+                bg={getToken("buttons.secondary.low.rest")}
+                borderRadius={20}
+                borderWidth={1}
+                borderStyle="solid"
+                borderColor={getToken("buttons.secondary.low.borderRest")}
+                align="center"
+                gap={getTokenPx("containers.paddings.quint")}
+                asChild
               >
-                {isCollapsed ? t("show") : t("hide")}
-              </Text>
-              <Icon
-                size={12}
-                component={isCollapsed ? ChevronDown : ChevronUp}
-                color={getToken("icons.onContainer")}
-              />
-            </CollapsibleTrigger>
+                <CollapsibleTrigger
+                  sx={{ cursor: "pointer" }}
+                  onClick={() => {
+                    setIsCollapsed((prev) => !prev)
+
+                    if (!isMobile) {
+                      setTimeout(() => {
+                        gridRef.current?.scrollIntoView({ behavior: "smooth" })
+                      }, 0)
+                    }
+                  }}
+                >
+                  <Text
+                    fw={500}
+                    fs={10}
+                    lh={1.4}
+                    color={getToken("text.medium")}
+                    transform="uppercase"
+                  >
+                    {isCollapsed ? t("show") : t("hide")}
+                  </Text>
+                  <Icon
+                    size={12}
+                    component={isCollapsed ? ChevronDown : ChevronUp}
+                    color={getToken("icons.onContainer")}
+                  />
+                </CollapsibleTrigger>
+              </Flex>
+            )}
           </Flex>
-        )}
-      </Flex>
-      <CollapsibleContent>
-        <Flex direction="column" gap={getTokenPx("scales.paddings.base")}>
+          <Text fs={11} lh={px(15)} color={getToken("text.medium")}>
+            {t("staking:referenda.participate")}
+          </Text>
+        </Box>
+        <CollapsibleContent>
           {isLoading && (
             <SReferendaList>
               {Array(isMobile ? 1 : 3)
@@ -141,17 +150,8 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
             ) : (
               <OngoingReferendaEmptyState />
             ))}
-          <Text
-            fw={500}
-            fs={13}
-            lh={1.4}
-            color={getToken("text.tint.primary")}
-            align="center"
-          >
-            {t("staking:referenda.participate")}
-          </Text>
-        </Flex>
-      </CollapsibleContent>
+        </CollapsibleContent>
+      </Flex>
     </CollapsibleRoot>
   )
 }

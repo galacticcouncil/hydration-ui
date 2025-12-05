@@ -1,20 +1,22 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
+import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { PlaceOrderFormValues } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
-import { otcOffersQueryKey } from "@/modules/trade/otc/table/OtcTable.query"
+import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
 type Args = {
-  readonly onSubmit: () => void
+  readonly onSubmitted: () => void
 }
 
-export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
+export const useSubmitPlaceOrder = ({ onSubmitted }: Args) => {
   const { t } = useTranslation(["trade", "common"])
   const { papi } = useRpcProvider()
-  const client = useQueryClient()
+  const { isErc20AToken } = useAssets()
+
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
 
   return useMutation({
@@ -34,28 +36,40 @@ export const useSubmitPlaceOrder = ({ onSubmit }: Args) => {
         symbol: offerAsset.symbol,
       })
 
-      onSubmit()
-      await createTransaction({
-        tx: papi.tx.OTC.place_order({
-          amount_in: BigInt(scale(buyAmount, buyAsset.decimals)),
-          amount_out: BigInt(scale(offerAmount, offerAsset.decimals)),
-          asset_in: Number(buyAsset.id),
-          asset_out: Number(offerAsset.id),
-          partially_fillable: isPartiallyFillable,
-        }),
-        toasts: {
-          submitted: t("otc.placeOrder.loading", {
-            amount: formattedAmount,
-          }),
-          success: t("otc.placeOrder.success", {
-            amount: formattedAmount,
-          }),
-          error: t("otc.placeOrder.error", {
-            amount: formattedAmount,
-          }),
-        },
+      const hasAToken = isErc20AToken(offerAsset) || isErc20AToken(buyAsset)
+
+      const tx = papi.tx.OTC.place_order({
+        amount_in: BigInt(scale(buyAmount, buyAsset.decimals)),
+        amount_out: BigInt(scale(offerAmount, offerAsset.decimals)),
+        asset_in: Number(buyAsset.id),
+        asset_out: Number(offerAsset.id),
+        partially_fillable: isPartiallyFillable,
       })
+
+      await createTransaction(
+        {
+          tx: hasAToken
+            ? papi.tx.Dispatcher.dispatch_with_extra_gas({
+                call: tx.decodedCall,
+                extra_gas: AAVE_GAS_LIMIT,
+              })
+            : tx,
+          toasts: {
+            submitted: t("otc.placeOrder.loading", {
+              amount: formattedAmount,
+            }),
+            success: t("otc.placeOrder.success", {
+              amount: formattedAmount,
+            }),
+            error: t("otc.placeOrder.error", {
+              amount: formattedAmount,
+            }),
+          },
+        },
+        {
+          onSubmitted,
+        },
+      )
     },
-    onSuccess: () => client.invalidateQueries({ queryKey: otcOffersQueryKey }),
   })
 }

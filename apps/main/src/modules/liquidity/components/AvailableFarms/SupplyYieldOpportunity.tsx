@@ -5,7 +5,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { BorrowAssetApyData } from "@/api/borrow"
@@ -22,7 +22,17 @@ export const SupplyYieldOpportunity = ({
   const value = borrowApyData.underlyingSupplyApy
 
   return (
-    <SYieldOpportunityContainer as={Paper} direction="column" gap={10}>
+    <SYieldOpportunityContainer
+      as={Paper}
+      direction="column"
+      gap={10}
+      sx={{
+        p: getTokenPx([
+          "containers.paddings.secondary",
+          "containers.paddings.primary",
+        ]),
+      }}
+    >
       <Flex align="center" gap={10}>
         <Text color={getToken("text.high")} fs="p2" fw={600}>
           {t("apy")}

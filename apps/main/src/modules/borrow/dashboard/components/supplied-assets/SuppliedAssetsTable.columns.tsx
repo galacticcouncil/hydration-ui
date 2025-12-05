@@ -16,13 +16,18 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import {
+  getAssetIdFromAddress,
+  MONEY_MARKET_STRATEGY_ASSETS,
+} from "@galacticcouncil/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ApyColumn } from "@/modules/borrow/components/ApyColumn"
 import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
+import { TRemoveMoneyMarketLiquidityProps } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity"
+import { useAssets } from "@/providers/assetsProvider"
 import { numericallyStr, sortBy } from "@/utils/sort"
 
 type TSuppliedAssetsTable = typeof useSuppliedAssetsData
@@ -30,9 +35,16 @@ type TSuppliedAssetsTableData = ReturnType<TSuppliedAssetsTable>
 type TSuppliedAssetsRow = TSuppliedAssetsTableData["data"][number]
 const columnHelper = createColumnHelper<TSuppliedAssetsRow>()
 
-export const useSuppliedAssetsTableColumns = () => {
+export const useSuppliedAssetsTableColumns = ({
+  omRemove,
+}: {
+  omRemove: (
+    props: Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted">,
+  ) => void
+}) => {
   const { t } = useTranslation(["common", "borrow"])
   const { isMobile } = useBreakpoints()
+  const { getRelatedAToken } = useAssets()
   const { user } = useMoneyMarketData()
   const { openWithdraw, openCollateralChange } = useModalContext()
 
@@ -162,8 +174,24 @@ export const useSuppliedAssetsTableColumns = () => {
               variant="tertiary"
               size="small"
               onClick={(e) => {
+                const assetId = getAssetIdFromAddress(underlyingAsset)
+                const aTokenId = getRelatedAToken(assetId)?.id
+
                 e.stopPropagation()
-                openWithdraw(underlyingAsset)
+
+                if (
+                  assetId &&
+                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                  aTokenId
+                ) {
+                  omRemove({
+                    poolId: assetId,
+                    erc20Id: aTokenId!,
+                    stableswapId: assetId,
+                  })
+                } else {
+                  openWithdraw(underlyingAsset)
+                }
               }}
             >
               {t("borrow:withdraw")}
@@ -220,5 +248,7 @@ export const useSuppliedAssetsTableColumns = () => {
     user.isInIsolationMode,
     user.isolatedReserve?.underlyingAsset,
     user.totalCollateralMarketReferenceCurrency,
+    getRelatedAToken,
+    omRemove,
   ])
 }

@@ -25,9 +25,10 @@ export enum TradeLimitType {
 
 type TradeLimitRowProps = {
   type: TradeLimitType
+  disabled?: boolean
 }
 
-export const TradeLimitRow = ({ type }: TradeLimitRowProps) => {
+export const TradeLimit = ({ type, disabled }: TradeLimitRowProps) => {
   const { t } = useTranslation(["common", "liquidity", "trade"])
   const [isEditing, setIsEditing] = useState(false)
   const { update, ...tradeSettings } = useTradeSettings()
@@ -57,19 +58,18 @@ export const TradeLimitRow = ({ type }: TradeLimitRowProps) => {
 
   return (
     <>
-      <SummaryRow
-        label={t("tradeLimit")}
-        content={
-          <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
-            <Text fs="p5" fw={500} color={getToken("text.high")}>
-              {t("percent", { value })}
-            </Text>
-            <MicroButton variant="emphasis" onClick={() => setIsEditing(true)}>
-              {t("edit")}
-            </MicroButton>
-          </Flex>
-        }
-      />
+      <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+        <Text fs="p5" fw={500} color={getToken("text.high")}>
+          {t("percent", { value })}
+        </Text>
+        <MicroButton
+          variant="emphasis"
+          onClick={() => setIsEditing(true)}
+          disabled={disabled}
+        >
+          {t("edit")}
+        </MicroButton>
+      </Flex>
 
       <Modal open={isEditing} onOpenChange={setIsEditing}>
         <ModalHeader title={t("liquidity:liquidity.tradeLimit.title")} />
@@ -108,5 +108,13 @@ export const TradeLimitRow = ({ type }: TradeLimitRowProps) => {
         </ModalBody>
       </Modal>
     </>
+  )
+}
+
+export const TradeLimitRow = ({ type }: TradeLimitRowProps) => {
+  const { t } = useTranslation(["common"])
+
+  return (
+    <SummaryRow label={t("tradeLimit")} content={<TradeLimit type={type} />} />
   )
 }

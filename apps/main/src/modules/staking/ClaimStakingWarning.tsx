@@ -61,9 +61,12 @@ export const ClaimStakingWarning: FC<Props> = ({
             gap={getTokenPx("containers.paddings.tertiary")}
           >
             <Text
+              font="primary"
               fs="h7"
+              fw={600}
+              lh={1.3}
               color={getToken("text.high")}
-              maxWidth={180}
+              maxWidth={200}
               align="center"
             >
               {t("staking:claim.header")}

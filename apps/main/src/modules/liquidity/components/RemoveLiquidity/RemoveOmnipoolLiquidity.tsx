@@ -172,8 +172,12 @@ export const RemoveOmnipoolLiquidity = (props: RemoveLiquidityProps) => {
 const RemoveSingleOmnipoolLiquidity = (
   props: RemoveLiquidityProps & { position: AccountOmnipoolPosition },
 ) => {
-  const { poolId, position } = props
-  const removeLiquidity = useRemoveSingleOmnipoolPosition(poolId, position)
+  const { poolId, position, onSubmitted } = props
+  const removeLiquidity = useRemoveSingleOmnipoolPosition({
+    poolId,
+    position,
+    onSubmitted,
+  })
 
   if (!removeLiquidity) return <RemoveLiquiditySkeleton {...props} />
 
@@ -189,8 +193,12 @@ const RemoveSingleOmnipoolLiquidity = (
 const RemoveMultipleOmnipoolLiquidity = (
   props: RemoveLiquidityProps & { positions: AccountOmnipoolPosition[] },
 ) => {
-  const { poolId, positions } = props
-  const removeLiquidity = useRemoveMultipleOmnipoolPositions(poolId, positions)
+  const { poolId, positions, onSubmitted } = props
+  const removeLiquidity = useRemoveMultipleOmnipoolPositions({
+    poolId,
+    positions,
+    onSubmitted,
+  })
 
   if (!removeLiquidity) return <RemoveLiquiditySkeleton {...props} />
 

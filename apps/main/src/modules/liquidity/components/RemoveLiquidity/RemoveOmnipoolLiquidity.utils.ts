@@ -2,6 +2,7 @@ import {
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
@@ -11,7 +12,12 @@ import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import z, { ZodType } from "zod/v4"
 
-import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
+import {
+  OmnipoolDepositFull,
+  omnipoolMiningPositionsKey,
+  OmnipoolPosition,
+  omnipoolPositionsKey,
+} from "@/api/account"
 import {
   useMinWithdrawalFee,
   useOmnipoolAssetsData,
@@ -145,11 +151,17 @@ const useRemoveLiquidityOut = (poolId: string) => {
   )
 }
 
-export const useRemoveSingleOmnipoolPosition = (
-  poolId: string,
-  position: AccountOmnipoolPosition,
-) => {
+export const useRemoveSingleOmnipoolPosition = ({
+  poolId,
+  position,
+  onSubmitted,
+}: {
+  poolId: string
+  position: AccountOmnipoolPosition
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation("liquidity")
+  const { account } = useAccount()
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
@@ -185,17 +197,17 @@ export const useRemoveSingleOmnipoolPosition = (
 
       const isMiningPosition = isOmnipoolDepositPosition(position)
 
-      const hub =
+      const hubValue =
         values?.hubToGet && values.hubToGet !== "0"
           ? t("liquidity.remove.modal.toast.hub", {
-              value: values.hubToGet,
+              value: scaleHuman(values.hubToGet, hub.decimals),
             })
           : undefined
 
       const tOptions = {
         value: values?.tokensToGetShifted,
         symbol: meta.symbol,
-        hub,
+        hub: hubValue,
       }
 
       const toasts = {
@@ -226,10 +238,17 @@ export const useRemoveSingleOmnipoolPosition = (
           })
         : removeLiquidityTx
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
+        },
+        { onSubmitted },
+      )
     },
   })
 
@@ -271,15 +290,20 @@ export const useRemoveSingleOmnipoolPosition = (
   }
 }
 
-export const useRemoveMultipleOmnipoolPositions = (
-  poolId: string,
-  positions: AccountOmnipoolPosition[],
-) => {
+export const useRemoveMultipleOmnipoolPositions = ({
+  poolId,
+  positions,
+  onSubmitted,
+}: {
+  poolId: string
+  positions: AccountOmnipoolPosition[]
+  onSubmitted: () => void
+}) => {
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
-
+  const { account } = useAccount()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
 
   const form = useRemoveLiquidityForm({
@@ -390,20 +414,34 @@ export const useRemoveMultipleOmnipoolPositions = (
       }
 
       if (txs.length > 1) {
-        await createTransaction({
-          tx: papi.tx.Utility.batch_all({
-            calls: txs.map((t) => t.decodedCall),
-          }),
-          toasts,
-        })
+        await createTransaction(
+          {
+            tx: papi.tx.Utility.batch_all({
+              calls: txs.map((t) => t.decodedCall),
+            }),
+            toasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
+          },
+          { onSubmitted },
+        )
       } else {
         const tx = txs[0]
 
         if (!tx) return
-        await createTransaction({
-          tx,
-          toasts,
-        })
+        await createTransaction(
+          {
+            tx,
+            toasts,
+            invalidateQueries: [
+              omnipoolPositionsKey(account?.address ?? ""),
+              omnipoolMiningPositionsKey(account?.address ?? ""),
+            ],
+          },
+          { onSubmitted },
+        )
       }
     },
   })

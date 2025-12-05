@@ -2,12 +2,12 @@ import { FC } from "react"
 
 import { SLiquidityDetailExpandedContainer } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded.styled"
 import { LiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition"
-import { MyLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { TAsset } from "@/providers/assetsProvider"
+import { AccountOmnipoolPosition } from "@/states/account"
 
 type Props = {
   readonly asset: TAsset
-  readonly positions: ReadonlyArray<MyLiquidityPosition>
+  readonly positions: ReadonlyArray<AccountOmnipoolPosition>
 }
 
 export const LiquidityDetailExpanded: FC<Props> = ({ asset, positions }) => {

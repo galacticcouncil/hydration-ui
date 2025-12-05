@@ -6,54 +6,65 @@ import {
   DropdownMenuTrigger,
   Flex,
   Icon,
-  ModalContent,
-  ModalRoot,
-  ModalTrigger,
+  Modal,
 } from "@galacticcouncil/ui/components"
-import { FC } from "react"
+import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { Farm } from "@/api/farms"
 import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
+import { AccountOmnipoolPosition } from "@/states/account"
 
 type Props = {
   readonly assetId: string
-  readonly positionId: string
+  readonly position: AccountOmnipoolPosition
+  readonly farmsToJoin: Farm[]
 }
 
 export const LiquidityPositionActions: FC<Props> = ({
   assetId,
-  positionId,
+  position,
+  farmsToJoin,
 }) => {
   const { t } = useTranslation(["common", "wallet"])
+  const [open, setOpen] = useState(false)
 
   return (
-    <Flex align="center" gap={6}>
-      <ModalRoot>
-        <Button variant="sliderTabActive" asChild>
-          <ModalTrigger>
-            {/* TODO show real count and hide if 0 */}
-            {t("wallet:myLiquidity.expanded.actions.joinFarms", { count: 1 })}
-          </ModalTrigger>
-        </Button>
-        <ModalContent>
-          <JoinFarmsWrapper positionId={positionId} poolId={assetId} />
-        </ModalContent>
-      </ModalRoot>
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
-          <Button variant="tertiary" outline>
-            {t("actions")}
-            <Icon component={Ellipsis} size={16} />
+    <>
+      <Flex align="center" gap={6} justify="flex-end">
+        {!!farmsToJoin.length && (
+          <Button variant="sliderTabActive" onClick={() => setOpen(true)}>
+            {t("wallet:myLiquidity.expanded.actions.joinFarms", {
+              count: farmsToJoin.length,
+            })}
           </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <LiquidityPositionMoreActions
-            assetId={assetId}
-            positionId={positionId}
-          />
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </Flex>
+        )}
+
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="tertiary" outline>
+              {t("actions")}
+              <Icon component={Ellipsis} size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <LiquidityPositionMoreActions
+              assetId={assetId}
+              position={position}
+              farmsToJoin={farmsToJoin}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Flex>
+      <Modal open={open} onOpenChange={setOpen}>
+        <JoinFarmsWrapper
+          positionId={position.positionId}
+          poolId={assetId}
+          closable
+          onSubmitted={() => setOpen(false)}
+        />
+      </Modal>
+    </>
   )
 }

@@ -18,7 +18,7 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { DcaOrderDetailsMobileModal } from "@/modules/trade/orders/DcaOrderDetailsMobileModal"
+import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
@@ -26,7 +26,7 @@ const columnHelper = createColumnHelper<OrderData>()
 
 export const useOpenOrdersColumns = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { isDesktop } = useBreakpoints()
+  const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const fromToColumn = columnHelper.display({
@@ -102,6 +102,8 @@ export const useOpenOrdersColumns = () => {
             <Button
               variant="danger"
               outline
+              height={28}
+              width={34}
               onClick={(e) => {
                 e.stopPropagation()
                 setModal("confirmation")
@@ -126,7 +128,7 @@ export const useOpenOrdersColumns = () => {
               open={modal === "details"}
               onOpenChange={() => setModal("none")}
             >
-              <DcaOrderDetailsMobileModal details={row.original} />
+              <DcaOrderDetailsModal details={row.original} />
             </Modal>
           </Flex>
         )
@@ -158,21 +160,23 @@ export const useOpenOrdersColumns = () => {
               />
             </TableRowDetailsExpand>
             <Modal open={modal} onOpenChange={setModal}>
-              <DcaOrderDetailsMobileModal details={row.original} />
+              <DcaOrderDetailsModal details={row.original} />
             </Modal>
           </>
         )
       },
     })
 
-    return !isDesktop
-      ? [fromToColumnMobile, statusColumnMobile]
-      : [
-          fromToColumn,
-          averagePriceColumn,
-          typeColumn,
-          statusColumn,
-          actionColumn,
-        ]
-  }, [t, isDesktop])
+    if (isMobile) {
+      return [fromToColumnMobile, statusColumnMobile]
+    }
+
+    return [
+      fromToColumn,
+      averagePriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
+  }, [t, isMobile])
 }

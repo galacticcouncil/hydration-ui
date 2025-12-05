@@ -40,17 +40,17 @@ export const MyLiquidityTable: FC<Props> = ({
         ]}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
-          row.original.asset.symbol
+          row.original.meta.symbol
             .toLowerCase()
             .includes(searchPhrase.toLowerCase()) ||
-          row.original.asset.name
+          row.original.meta.name
             .toLowerCase()
             .includes(searchPhrase.toLowerCase())
         }
         expandable={isMobile ? false : "single"}
         getIsExpandable={({ positions }) => positions.length >= 1}
-        renderSubComponent={({ asset, positions }) => (
-          <LiquidityDetailExpanded asset={asset} positions={positions} />
+        renderSubComponent={({ meta, positions }) => (
+          <LiquidityDetailExpanded asset={meta} positions={positions} />
         )}
       />
     </TableContainer>

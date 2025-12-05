@@ -1,8 +1,13 @@
-import { Flex, Skeleton, Summary, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import {
+  Flex,
+  Skeleton,
+  Summary,
+  SummaryRowLabel,
+} from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 export const DcaSummarySkeleton: FC = () => {
@@ -11,22 +16,20 @@ export const DcaSummarySkeleton: FC = () => {
   return (
     <div>
       <Flex direction="column" gap={8} py={8}>
-        <Text fw={500} fs={14} lh={px(22)} color={getToken("text.medium")}>
-          {t("summary")}
-        </Text>
-        <Skeleton sx={{ width: "100%", height: 28 }} />
+        <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
+        <Skeleton sx={{ width: "100%", height: 13 }} />
       </Flex>
-      <SwapSectionSeparator />
-      <Summary
-        separator={<SwapSectionSeparator />}
-        withTrailingSeparator
-        rows={[
-          {
-            label: t("trade:market.summary.priceImpact"),
-            content: <Skeleton sx={{ width: 150, marginLeft: "auto" }} />,
-          },
-        ]}
-      />
+      <SwapSectionSeparator sx={{ mt: 9 }} />
+      <Summary separator={<SwapSectionSeparator />} withTrailingSeparator>
+        <SwapSummaryRow
+          label={t("trade:dca.summary.scheduleEnd")}
+          content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
+        />
+        <SwapSummaryRow
+          label={t("trade:dca.summary.slippage")}
+          content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
+        />
+      </Summary>
     </div>
   )
 }

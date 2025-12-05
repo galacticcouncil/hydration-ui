@@ -5,10 +5,10 @@ import { createStyles } from "@galacticcouncil/ui/utils"
 
 const buttonStyles = createStyles(
   (theme) => css`
-    background: ${theme.details.separators};
+    background: ${theme.controls.dim.base};
 
     &:hover:not([disabled]) {
-      opacity: 0.2;
+      background: ${theme.controls.dim.hover};
     }
 
     &[disabled] {

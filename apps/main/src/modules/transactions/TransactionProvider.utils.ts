@@ -37,6 +37,7 @@ export const transactionStatusReducer = (
         ...state,
         error: action.payload,
         status: "error",
+        isSigning: false,
       }
     case TxActionType.SET_STATUS:
       return {

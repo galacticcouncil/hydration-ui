@@ -1,14 +1,13 @@
 import { AssetInput, AssetInputProps } from "@galacticcouncil/ui/components"
-import Big from "big.js"
 import { useState } from "react"
-import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelectEmptyState } from "@/components/AssetSelect/AssetSelectEmptyState"
 import { AssetSelectModal } from "@/components/AssetSelectModal"
+import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import { useAccountBalances } from "@/states/account"
-import { useAssetPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
 export type TSelectedAsset = {
@@ -20,9 +19,10 @@ export type TSelectedAsset = {
 
 export type AssetSelectProps = Omit<
   AssetInputProps,
-  "dollarValue" | "dollarValueLoading"
+  "displayValue" | "displayValueLoading"
 > & {
   assets: TAssetData[]
+  sortedAssets?: TAssetWithBalance[]
   selectedAsset: TSelectedAsset | undefined | null
   maxBalanceFallback?: string
   setSelectedAsset?: (asset: TAssetData) => void
@@ -30,24 +30,20 @@ export type AssetSelectProps = Omit<
 
 export const AssetSelect = ({
   assets,
+  sortedAssets,
   selectedAsset,
   maxBalance: providedMaxBalance,
   maxBalanceFallback,
   setSelectedAsset,
   ...props
 }: AssetSelectProps) => {
-  const { t } = useTranslation("common")
   const [openModal, setOpeModal] = useState(false)
 
-  const {
-    price: assetPrice,
-    isLoading: assetPriceLoading,
-    isValid,
-  } = useAssetPrice(props.ignoreDollarValue ? undefined : selectedAsset?.id)
-
-  const dollarValue = isValid
-    ? new Big(assetPrice).times(props.value || "0").toString()
-    : "NaN"
+  const [displayValue, { isLoading: displayValueLoading }] =
+    useDisplayAssetPrice(
+      props.ignoreDisplayValue ? "" : (selectedAsset?.id ?? ""),
+      props.value || "0",
+    )
 
   const { getTransferableBalance } = useAccountBalances()
   const maxBalance = ((): string | undefined => {
@@ -76,8 +72,8 @@ export const AssetSelect = ({
         }
         symbol={selectedAsset?.symbol}
         modalDisabled={!setSelectedAsset}
-        dollarValue={t("number", { value: dollarValue })}
-        dollarValueLoading={assetPriceLoading}
+        displayValue={displayValue}
+        displayValueLoading={displayValueLoading}
         maxBalance={maxBalance}
         onAsssetBtnClick={
           setSelectedAsset ? () => setOpeModal(true) : undefined
@@ -87,6 +83,7 @@ export const AssetSelect = ({
       <AssetSelectModal
         open={openModal}
         assets={assets}
+        sortedAssets={sortedAssets}
         onOpenChange={setOpeModal}
         onSelect={setSelectedAsset}
         emptyState={<AssetSelectEmptyState />}

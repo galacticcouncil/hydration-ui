@@ -9,7 +9,6 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
-import { useRouter } from "@tanstack/react-router"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -36,9 +35,10 @@ import { JoinFarmsSkeleton } from "./JoinFarmsSkeleton"
 
 type JoinFarmsProps = {
   positionId?: string
-  depositId?: string
   poolId: string
   closable?: boolean
+  onBack?: () => void
+  onSubmitted: () => void
 }
 
 export const JoinFarmsWrapper = (props: JoinFarmsProps) =>
@@ -85,11 +85,12 @@ const OmnipoolJoinFarms = (
     omnipoolAsset: OmnipoolAssetTable
   },
 ) => {
-  const { position, omnipoolAsset } = props
+  const { position, omnipoolAsset, onSubmitted } = props
 
   const data = useJoinOmnipoolFarms({
     position,
     omnipoolAsset,
+    onSubmitted,
   })
 
   if (!data) return <JoinFarmsSkeleton />
@@ -100,10 +101,11 @@ const OmnipoolJoinFarms = (
 const IsolatedPoolJoinFarms = (
   props: JoinFarmsProps & { xykData: IsolatedPoolTable },
 ) => {
-  const { xykData, positionId } = props
+  const { xykData, positionId, onSubmitted } = props
   const data = useJoinIsolatedPoolFarms({
     xykData,
     positionId,
+    options: { onSubmitted },
   })
 
   if (!data) return <JoinFarmsSkeleton />
@@ -114,6 +116,7 @@ const IsolatedPoolJoinFarms = (
 const JoinFarmsForm = ({
   onSubmit,
   closable,
+  onBack,
   availableFarms,
   meta,
   formValues,
@@ -128,7 +131,6 @@ const JoinFarmsForm = ({
   displayValue?: string
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { history } = useRouter()
 
   const {
     control,
@@ -143,11 +145,7 @@ const JoinFarmsForm = ({
 
   return (
     <>
-      <ModalHeader
-        title={t("joinFarms")}
-        closable={closable}
-        onBack={!closable ? () => history.back() : undefined}
-      />
+      <ModalHeader title={t("joinFarms")} closable={closable} onBack={onBack} />
       <ModalBody>
         <AvailableFarms farms={availableFarms} />
         <form
@@ -189,7 +187,7 @@ const JoinFarmsForm = ({
                     value={value}
                     onChange={onChange}
                     error={error?.message}
-                    ignoreDollarValue
+                    ignoreDisplayValue
                     sx={{ pt: 0 }}
                   />
                 ) : (

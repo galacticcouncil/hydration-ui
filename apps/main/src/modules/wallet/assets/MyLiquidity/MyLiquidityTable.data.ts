@@ -1,22 +1,19 @@
 import Big from "big.js"
 import { useMemo } from "react"
 
-import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { useAccountOmnipoolPositionsData } from "@/states/account"
-
-export type MyLiquidityPosition = {
-  readonly id: string
-  readonly initialValue: string
-  readonly currentValue: string
-  readonly isFarm: boolean
-  readonly rewards: number
-}
+import { TAssetData } from "@/api/assets"
+import { useAssets } from "@/providers/assetsProvider"
+import {
+  AccountOmnipoolPosition,
+  useAccountOmnipoolPositionsData,
+} from "@/states/account"
 
 export type LiquidityPositionByAsset = {
-  readonly asset: TAsset
-  readonly currentValue: string
-  readonly currentValueDisplay: string
-  readonly positions: ReadonlyArray<MyLiquidityPosition>
+  readonly meta: TAssetData
+  readonly currentValueHuman: string
+  readonly currentHubValueHuman: string
+  readonly currentTotalDisplay: string
+  readonly positions: ReadonlyArray<AccountOmnipoolPosition>
 }
 
 export const useMyLiquidityTableData = () => {
@@ -28,59 +25,34 @@ export const useMyLiquidityTableData = () => {
       return []
     }
 
-    const groupedData = Map.groupBy(
-      [
-        ...(data?.omnipool ?? []).map((position) => ({
-          position,
-          isFarm: false,
-        })),
-        ...(data?.omnipoolMining ?? []).map((position) => ({
-          position,
-          isFarm: true,
-        })),
-      ]
-        .map(({ position, isFarm }) =>
-          position.data
-            ? {
-                id: position.positionId,
-                assetId: position.assetId,
-                data: position.data,
-                isFarm,
-              }
-            : null,
-        )
-        .filter((position) => !!position),
-      (position) => position.assetId,
-    )
-      .entries()
-      .map<LiquidityPositionByAsset>(([assetId, positions]) => {
-        return {
-          asset: getAssetWithFallback(assetId),
-          currentValue: positions
-            .reduce(
-              (reduced, position) =>
-                reduced.plus(position.data.currentValueHuman),
-              Big(0),
-            )
-            .toString(),
-          currentValueDisplay: positions
-            .reduce(
-              (reduced, position) => reduced.plus(position.data.currentDisplay),
-              Big(0),
-            )
-            .toString(),
-          positions: positions.map<MyLiquidityPosition>((position) => ({
-            id: position.id,
-            initialValue: position.data.initialValueHuman,
-            currentValue: position.data.currentValueHuman,
-            isFarm: position.isFarm,
-            // TODO integrate rewards
-            rewards: Math.random() * 150,
-          })),
-        }
-      })
+    const groupedByAssetId = Object.groupBy(data?.all ?? [], (p) => p.assetId)
+    return Object.entries(groupedByAssetId).map(([assetId, positionsEntry]) => {
+      const positions = positionsEntry ?? []
+      const totals = positions.reduce(
+        (acc, { data }) => ({
+          currentValueHuman: acc.currentValueHuman.plus(data.currentValueHuman),
+          currentHubValueHuman: acc.currentHubValueHuman.plus(
+            data.currentHubValueHuman,
+          ),
+          currentTotalDisplay: acc.currentTotalDisplay.plus(
+            data.currentTotalDisplay,
+          ),
+        }),
+        {
+          currentValueHuman: Big(0),
+          currentHubValueHuman: Big(0),
+          currentTotalDisplay: Big(0),
+        },
+      )
 
-    return Array.from(groupedData)
+      return {
+        currentValueHuman: totals.currentValueHuman.toString(),
+        currentHubValueHuman: totals.currentHubValueHuman.toString(),
+        currentTotalDisplay: totals.currentTotalDisplay.toString(),
+        meta: getAssetWithFallback(assetId),
+        positions,
+      }
+    })
   }, [data, isLoading, getAssetWithFallback])
 
   return { data: groupedData, isLoading }

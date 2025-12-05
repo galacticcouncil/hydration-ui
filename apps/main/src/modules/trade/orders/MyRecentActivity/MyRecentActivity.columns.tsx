@@ -21,14 +21,14 @@ import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
 import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
-import { SwapDetailsMobileModal } from "@/modules/trade/orders/SwapDetailsMobileModal"
+import { SwapDetailsModal } from "@/modules/trade/orders/SwapDetailsModal"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const columnHelper = createColumnHelper<RoutedTradeData>()
 
 export const useMyRecentActivityColumns = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { isDesktop } = useBreakpoints()
+  const { isMobile } = useBreakpoints()
 
   return useMemo(() => {
     const fromToColumn = columnHelper.display({
@@ -112,13 +112,15 @@ export const useMyRecentActivityColumns = () => {
         >("none")
 
         return (
-          <Flex gap={8} align="center" justify="flex-end">
+          <Flex gap={8} align="center" justify="flex-end" height={28}>
             {status?.kind === "dca" &&
               status.status === DcaScheduleStatus.Created && (
                 <>
                   <Button
                     variant="danger"
                     outline
+                    height={28}
+                    width={34}
                     onClick={(e) => {
                       e.preventDefault()
                       setModal("dcaTermination")
@@ -145,7 +147,7 @@ export const useMyRecentActivityColumns = () => {
               open={modal === "details"}
               onOpenChange={() => setModal("none")}
             >
-              <SwapDetailsMobileModal details={row.original} />
+              <SwapDetailsModal details={row.original} />
             </Modal>
           </Flex>
         )
@@ -177,15 +179,23 @@ export const useMyRecentActivityColumns = () => {
               />
             </TableRowDetailsExpand>
             <Modal open={modal} onOpenChange={setModal}>
-              <SwapDetailsMobileModal details={row.original} />
+              <SwapDetailsModal details={row.original} />
             </Modal>
           </>
         )
       },
     })
 
-    return !isDesktop
-      ? [fromToColumnMobile, statusColumnMobile]
-      : [fromToColumn, fillPriceColumn, typeColumn, statusColumn, actionColumn]
-  }, [t, isDesktop])
+    if (isMobile) {
+      return [fromToColumnMobile, statusColumnMobile]
+    }
+
+    return [
+      fromToColumn,
+      fillPriceColumn,
+      typeColumn,
+      statusColumn,
+      actionColumn,
+    ]
+  }, [t, isMobile])
 }

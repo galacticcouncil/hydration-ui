@@ -1,8 +1,12 @@
 import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { tags } from "@galacticcouncil/xcm-cfg"
+import { TransactionReceipt } from "viem"
 import { create } from "zustand"
 
-import { AnyTransaction } from "@/modules/transactions/types"
+import {
+  AnyTransaction,
+  TxBestBlocksStateResult,
+} from "@/modules/transactions/types"
 
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
@@ -12,15 +16,37 @@ export enum TransactionType {
   Xcm = "Xcm",
 }
 
-export interface TransactionInput {
-  tx: AnyTransaction
+export type TransactionCommon = {
   title?: string
   description?: string
-  steps?: unknown[]
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  invalidateQueries?: string[][]
 }
+
+interface SingleTransactionInput extends TransactionCommon {
+  tx: AnyTransaction
+}
+
+type SingleTransactionInputDynamic = {
+  tx: (
+    results: TSuccessResult[],
+  ) => Promise<SingleTransactionInput> | SingleTransactionInput
+}
+
+type MultiTransactionConfig = (
+  | SingleTransactionInput
+  | SingleTransactionInputDynamic
+) & {
+  stepTitle: string
+}
+
+interface MultiTransactionInput {
+  tx: MultiTransactionConfig[]
+}
+
+export type TransactionInput = SingleTransactionInput | MultiTransactionInput
 
 export type TransactionProps = Omit<TransactionInput, "meta"> & {
   meta: TransactionMeta
@@ -39,15 +65,15 @@ type TransactionFee = {
   feePaymentAssetId?: string
 }
 
-type TransactionMetaCommons = {
+type TransactionMetaCommon = {
   srcChainKey: string
 }
 
-export type TransactionOnchainMeta = TransactionMetaCommons & {
+export type TransactionOnchainMeta = TransactionMetaCommon & {
   type: TransactionType.Onchain
 }
 
-export type TransactionXcmMeta = TransactionMetaCommons & {
+export type TransactionXcmMeta = TransactionMetaCommon & {
   type: TransactionType.Xcm
   dstChainKey: string
   dstChainFee?: string
@@ -57,8 +83,10 @@ export type TransactionXcmMeta = TransactionMetaCommons & {
 
 export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta
 
+export type TSuccessResult = TxBestBlocksStateResult | TransactionReceipt
+
 export interface TransactionActions {
-  onSuccess?: () => void
+  onSuccess?: (event: TSuccessResult) => void
   onSubmitted?: (txHash: string) => void
   onError?: (message: string) => void
   onClose?: () => void
@@ -66,11 +94,38 @@ export interface TransactionActions {
 
 export interface TransactionOptions extends TransactionActions {
   onBack?: () => void
-  onClose?: () => void
 }
 
-export interface Transaction extends TransactionProps, TransactionActions {
-  id: string
+export type SingleTransaction = SingleTransactionInput &
+  TransactionProps &
+  TransactionActions & {
+    id: string
+  }
+
+export type MultiTransaction = MultiTransactionInput &
+  TransactionProps &
+  TransactionActions & {
+    id: string
+  }
+
+export type Transaction = SingleTransaction | MultiTransaction
+
+export const isMultiTransaction = (
+  transaction: Transaction,
+): transaction is MultiTransaction => {
+  return Array.isArray(transaction.tx)
+}
+
+export const isSingleTransaction = (
+  transaction: Transaction,
+): transaction is SingleTransaction => {
+  return !Array.isArray(transaction.tx)
+}
+
+export const isSubstrateTxResult = (
+  result: TSuccessResult,
+): result is TxBestBlocksStateResult => {
+  return "type" in result && result.type === "txBestBlocksState"
 }
 
 interface TransactionsStore {
@@ -78,40 +133,42 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<void>
+  ) => Promise<TSuccessResult>
   cancelTransaction: (id: string) => void
 }
 
 export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<TSuccessResult>((resolve, reject) => {
       set((state) => {
-        return {
-          transactions: [
-            {
-              id: uuid(),
-              ...transaction,
-              meta: transaction?.meta ?? {
+        const meta: TransactionMeta =
+          "meta" in transaction && transaction.meta
+            ? transaction.meta
+            : {
                 type: TransactionType.Onchain,
                 srcChainKey: HYDRATION_CHAIN_KEY,
-              },
-              onSubmitted: options?.onSubmitted,
-              onSuccess: () => {
-                options?.onSuccess?.()
-                resolve()
-              },
-              onError: (message) => {
-                options?.onError?.(message)
-                reject(message)
-              },
-              onClose: () => {
-                options?.onClose?.()
-                reject("Transaction closed")
-              },
-            },
-            ...(state.transactions ?? []),
-          ],
+              }
+        const newTransaction: Transaction = {
+          id: uuid(),
+          ...transaction,
+          meta,
+          onSubmitted: options?.onSubmitted,
+          onSuccess: (event) => {
+            options?.onSuccess?.(event)
+            resolve(event)
+          },
+          onError: (message) => {
+            options?.onError?.(message)
+            reject(message)
+          },
+          onClose: () => {
+            options?.onClose?.()
+            reject("Transaction closed")
+          },
+        }
+        return {
+          transactions: [newTransaction, ...(state.transactions ?? [])],
         }
       })
     })

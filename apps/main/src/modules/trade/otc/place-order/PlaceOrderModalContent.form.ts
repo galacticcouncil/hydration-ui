@@ -18,6 +18,8 @@ import {
 
 export const marketPriceOptions = [-3, -1, 0, 3, 5, 10] as const
 
+const view = z.literal(["offerPrice", "buyPrice"])
+
 const useSchema = () => {
   const rpc = useRpcProvider()
   const { data: existentialDepositMultiplier } = useQuery(
@@ -39,9 +41,9 @@ const useSchema = () => {
         }),
         z.object({
           type: z.literal("fixed"),
-          value: required.pipe(positive),
-          inputValue: z.string(),
-          wasPriceSwitched: z.boolean(),
+          offerPrice: required.pipe(positive),
+          buyPrice: required.pipe(positive),
+          view,
         }),
       ]),
       priceConfirmation: z
@@ -49,7 +51,7 @@ const useSchema = () => {
           confirmed: z.boolean(),
         })
         .nullable(),
-      isPriceSwitched: z.boolean(),
+      view,
       isPartiallyFillable: z.boolean(),
     })
     .check(
@@ -80,6 +82,7 @@ const useSchema = () => {
 
 export type PlaceOrderFormValues = z.infer<ReturnType<typeof useSchema>>
 export type PriceSettings = PlaceOrderFormValues["priceSettings"]
+export type PlaceOrderView = PlaceOrderFormValues["view"]
 
 export const usePlaceOrderForm = () => {
   const defaultValues: PlaceOrderFormValues = {
@@ -92,7 +95,7 @@ export const usePlaceOrderForm = () => {
       percentage: 0,
     },
     priceConfirmation: null,
-    isPriceSwitched: false,
+    view: "offerPrice",
     isPartiallyFillable: true,
   }
 
