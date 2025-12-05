@@ -8,7 +8,9 @@ import { prop } from "remeda"
 import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { Farm, FarmEntry } from "@/api/farms"
+import { useXykPools } from "@/api/pools"
 import { getCurrentLoyaltyFactor } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import { AnyPapiTx } from "@/modules/transactions/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
@@ -188,28 +190,41 @@ export const useExitDepositFarmsMutation = (
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const { data: pools } = useXykPools()
 
   return useMutation({
     mutationFn: async () => {
       const isXYK = isXykDepositPosition(deposit)
 
-      const txs = isXYK
-        ? deposit.yield_farm_entries.map((entry) => {
+      let txs: Array<AnyPapiTx> = []
+
+      if (isXYK) {
+        const [assetA, assetB] =
+          pools?.find((pool) => pool.address === deposit.amm_pool_id)?.tokens ??
+          []
+
+        if (assetA && assetB) {
+          txs = deposit.yield_farm_entries.map((entry) => {
             return papi.tx.XYKLiquidityMining.withdraw_shares({
               deposit_id: BigInt(deposit.id),
               yield_farm_id: entry.yield_farm_id,
               asset_pair: {
-                asset_in: Number(1),
-                asset_out: Number(2),
+                asset_in: assetA.id,
+                asset_out: assetB.id,
               },
             })
           })
-        : deposit.yield_farm_entries.map((entry) => {
-            return papi.tx.OmnipoolLiquidityMining.withdraw_shares({
-              deposit_id: BigInt(deposit.miningId),
-              yield_farm_id: entry.yield_farm_id,
-            })
+        } else {
+          throw new Error("Pool not found")
+        }
+      } else {
+        txs = deposit.yield_farm_entries.map((entry) => {
+          return papi.tx.OmnipoolLiquidityMining.withdraw_shares({
+            deposit_id: BigInt(deposit.miningId),
+            yield_farm_id: entry.yield_farm_id,
           })
+        })
+      }
 
       const toasts = {
         submitted: t("liquidity.exitFarms.toast.submitted"),
