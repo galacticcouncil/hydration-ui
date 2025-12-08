@@ -17,7 +17,7 @@ export const AssetYields = ({
   const isOmnipool = !isIsolatedPool(data)
 
   if (!isOmnipool) {
-    if (data.totalApr === "0") return null
+    if (Big(data.totalApr).eq(0)) return null
 
     return (
       <Chip variant="green" size="small">

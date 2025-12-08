@@ -9,9 +9,9 @@ export const platformTotalQuery = (squidSdk: SquidSdk) =>
       const data = await squidSdk.PlatformTotal()
 
       const tvl = data.platformTotalTvl.nodes.filter((node) => node !== null)[0]
-      const volumes = data.platformTotalVolumesByPeriod.nodes.filter(
+      const volumes = data.platformTotalVolumesByPeriod.nodes.find(
         (node) => node !== null,
-      )[0]
+      )
 
       return {
         omnipoolTvlNorm: tvl?.omnipoolTvlNorm,
