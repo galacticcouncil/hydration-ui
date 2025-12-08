@@ -29,6 +29,10 @@ export const getMaxSignificantDigits = (
 
   const numberBig = Big(typeof value === "bigint" ? value.toString() : value)
 
+  if (numberBig.lte(0.00001)) {
+    return 1
+  }
+
   if (numberBig.lte(1)) {
     return 4
   }

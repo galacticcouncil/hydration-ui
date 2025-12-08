@@ -50,6 +50,7 @@ export const PoolStats = ({
         data={data}
         interval={interval}
         setInterval={setInterval}
+        isEmptyData={!isOmnipool}
       />
     )
   }
@@ -62,6 +63,7 @@ export const PoolStats = ({
           height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
           interval={interval}
           setInterval={setInterval}
+          isEmptyData={!isOmnipool}
         />
       </Paper>
 
@@ -76,10 +78,12 @@ const PoolStatsMobile = ({
   data,
   interval,
   setInterval,
+  isEmptyData = false,
 }: {
   data: OmnipoolAssetTable | IsolatedPoolTable
   interval: TradeChartPeriodType | "all"
   setInterval: (interval: TradeChartPeriodType | "all") => void
+  isEmptyData?: boolean
 }) => {
   const [chartType, setChartType] = useState<"price" | "volume">("price")
   const [type, setType] = useState<"chart" | "stats">("chart")
@@ -96,6 +100,7 @@ const PoolStatsMobile = ({
           height={350}
           interval={interval}
           setInterval={setInterval}
+          isEmptyData={isEmptyData}
         />
       ) : (
         <PoolDetailsValues data={data} />

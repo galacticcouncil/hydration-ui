@@ -46,6 +46,11 @@ export type MoneyMarketEventsQueryVariables = Types.Exact<{
 
 export type MoneyMarketEventsQuery = { __typename?: 'Query', moneyMarketEvents?: { __typename?: 'MoneyMarketEventsConnection', totalCount: number, nodes: Array<{ __typename?: 'MoneyMarketEvent', eventName?: string | null, event?: { __typename?: 'Event', block?: { __typename?: 'Block', timestamp: string } | null } | null, supply?: { __typename?: 'MmSupply', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, withdraw?: { __typename?: 'MmWithdraw', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, borrow?: { __typename?: 'MmBorrow', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, repay?: { __typename?: 'MmRepay', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, reserveUsedAsCollateralEnabled?: { __typename?: 'MmReserveUsedAsCollateralEnabledEvent', asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, reserveUsedAsCollateralDisabled?: { __typename?: 'MmReserveUsedAsCollateralDisabledEvent', asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, liquidationCall?: { __typename?: 'MmLiquidationCall', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null, userEModeSet?: { __typename?: 'MmUserEModeSet', categoryId?: number | null } | null } | null> } | null };
 
+export type PlatformTotalQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type PlatformTotalQuery = { __typename?: 'Query', platformTotalTvl: { __typename?: 'PlatformTotalTvlResponse', nodes: Array<{ __typename?: 'PlatformTotalTvl', omnipoolTvlNorm: string, stablepoolsTvlNorm: string } | null> }, platformTotalVolumesByPeriod: { __typename?: 'PlatformTotalVolumesByPeriodResponse', nodes: Array<{ __typename?: 'PlatformTotalVolumesByPeriod', omnipoolVolNorm: string, stableswapVolNorm: string } | null> } };
+
 export type OmnipoolYieldMetricsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 

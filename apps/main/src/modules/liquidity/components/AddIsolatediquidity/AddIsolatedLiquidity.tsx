@@ -144,8 +144,8 @@ export const AddIsolatedLiquidityForm = ({
             />
 
             <AssetSwitcher
-              assetInId={assetAMeta.id}
-              assetOutId={assetBMeta.id}
+              assetInId={assetBMeta.id}
+              assetOutId={assetAMeta.id}
               fallbackPrice={price}
               isFallbackPriceLoading={isPriceLoading}
             />

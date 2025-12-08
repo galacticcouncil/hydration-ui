@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { wrap } from "comlink"
@@ -5,10 +6,18 @@ import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
-import { OmnipoolDepositFull, XykDeposit } from "@/api/account"
+import {
+  OmnipoolDepositFull,
+  omnipoolMiningPositionsKey,
+  XykDeposit,
+  xykMiningPositionsKey,
+} from "@/api/account"
+import { omnipoolPositionsKey } from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { Farm, FarmEntry } from "@/api/farms"
+import { useXykPools } from "@/api/pools"
 import { getCurrentLoyaltyFactor } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import { AnyPapiTx } from "@/modules/transactions/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
@@ -184,32 +193,54 @@ export const useDepositAprs = () => {
 
 export const useExitDepositFarmsMutation = (
   deposit: XykDeposit | OmnipoolDepositFull,
+  onSubmitted: () => void,
 ) => {
+  const { account } = useAccount()
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const { data: pools } = useXykPools()
 
   return useMutation({
     mutationFn: async () => {
       const isXYK = isXykDepositPosition(deposit)
 
-      const txs = isXYK
-        ? deposit.yield_farm_entries.map((entry) => {
+      let txs: Array<AnyPapiTx> = []
+
+      if (isXYK) {
+        const [assetA, assetB] =
+          pools?.find((pool) => pool.address === deposit.amm_pool_id)?.tokens ??
+          []
+
+        if (assetA && assetB) {
+          txs = deposit.yield_farm_entries.map((entry) => {
             return papi.tx.XYKLiquidityMining.withdraw_shares({
               deposit_id: BigInt(deposit.id),
               yield_farm_id: entry.yield_farm_id,
               asset_pair: {
-                asset_in: Number(1),
-                asset_out: Number(2),
+                asset_in: assetA.id,
+                asset_out: assetB.id,
               },
             })
           })
-        : deposit.yield_farm_entries.map((entry) => {
-            return papi.tx.OmnipoolLiquidityMining.withdraw_shares({
-              deposit_id: BigInt(deposit.miningId),
-              yield_farm_id: entry.yield_farm_id,
-            })
+        } else {
+          throw new Error("Pool not found")
+        }
+      } else {
+        txs = deposit.yield_farm_entries.map((entry) => {
+          return papi.tx.OmnipoolLiquidityMining.withdraw_shares({
+            deposit_id: BigInt(deposit.miningId),
+            yield_farm_id: entry.yield_farm_id,
           })
+        })
+      }
+
+      const invalidateQueries = isXYK
+        ? [xykMiningPositionsKey(account?.address ?? "")]
+        : [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ]
 
       const toasts = {
         submitted: t("liquidity.exitFarms.toast.submitted"),
@@ -220,14 +251,20 @@ export const useExitDepositFarmsMutation = (
         const tx = papi.tx.Utility.batch_all({
           calls: txs.map((t) => t.decodedCall),
         })
-        return await createTransaction({ tx, toasts })
+        return await createTransaction(
+          { tx, toasts, invalidateQueries },
+          { onSubmitted },
+        )
       }
 
       const tx = txs[0]
 
       if (!tx) throw new Error("Tx not found")
 
-      return await createTransaction({ tx, toasts })
+      return await createTransaction(
+        { tx, toasts, invalidateQueries },
+        { onSubmitted },
+      )
     },
   })
 }

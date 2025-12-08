@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import { useDebounce } from "use-debounce"
 
-import { AAVE_GAS_LIMIT, healthFactorAfterWithdrawQuery } from "@/api/aave"
+import { AAVE_GAS_LIMIT, healthFactorQuery } from "@/api/aave"
 import { StableSwapBase } from "@/api/pools"
 import { bestSellQuery, Trade } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
@@ -62,11 +62,8 @@ export const useRemoveMoneyMarketLiquidity = ({
     asset: { ...meta, iconId: meta.id },
   })
 
-  const [removeAmountShifted = "0", receiveAsset, split] = form.watch([
-    "amount",
-    "receiveAsset",
-    "split",
-  ])
+  const [removeAmountShifted = "0", receiveAsset, split, receiveAmount] =
+    form.watch(["amount", "receiveAsset", "split", "receiveAmount"])
   const removeAmount = Big(scale(removeAmountShifted, meta.decimals))
 
   const [debouncedAmount] = useDebounce(removeAmountShifted, 300)
@@ -84,16 +81,6 @@ export const useRemoveMoneyMarketLiquidity = ({
     ),
   )
 
-  //@TODO: implement withdraw all function
-
-  const { data: healthFactor } = useQuery(
-    healthFactorAfterWithdrawQuery(rpc, {
-      address: account?.address ?? "",
-      fromAssetId: meta && isErc20AToken(meta) ? meta.underlyingAssetId : "",
-      fromAmount: debouncedAmount,
-    }),
-  )
-
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"
   const amountOutShifted = scaleHuman(amountOut, receiveAsset.decimals)
 
@@ -106,10 +93,11 @@ export const useRemoveMoneyMarketLiquidity = ({
   const receiveAssetsProportionally = (() => {
     const totalIssuance = pool.totalIssuance.toString()
     const fee = calculatePoolFee(pool.fee)
+    const minReceive = Big(tradeMinReceive)
 
-    if (removeAmount.gt(0) && fee) {
+    if (minReceive.gt(0) && fee) {
       return reserves.map((reserve) => {
-        const maxValue = removeAmount
+        const maxValue = minReceive
           .div(totalIssuance)
           .times(reserve.amount)
           .toFixed(0)
@@ -122,6 +110,24 @@ export const useRemoveMoneyMarketLiquidity = ({
       })
     }
   })()
+
+  const receiveErc20Asset = receiveAssetsProportionally?.find((asset) =>
+    isErc20AToken(asset.asset),
+  )
+  const toAsset = split ? (receiveErc20Asset?.asset ?? null) : receiveAsset
+  const toAmount = split
+    ? scaleHuman(receiveErc20Asset?.value ?? "0", toAsset?.decimals ?? 0)
+    : receiveAmount
+
+  const { data: healthFactor } = useQuery(
+    healthFactorQuery(rpc, {
+      address: account?.address ?? "",
+      fromAsset: meta,
+      fromAmount: debouncedAmount,
+      toAsset,
+      toAmount,
+    }),
+  )
 
   useEffect(() => {
     if (!split) {
@@ -166,17 +172,20 @@ export const useRemoveMoneyMarketLiquidity = ({
 
       if (!tx) throw new Error("Transaction not found")
 
+      const tOptions = {
+        value: removeAmountShifted,
+        symbol: t("shares"),
+        where: meta.symbol,
+      }
       const toasts = {
-        submitted: t("liquidity.remove.moneyMarket.modal.toast.submitted", {
-          value: removeAmount.toFixed(0),
-          symbol: t("shares"),
-          where: meta.symbol,
-        }),
-        success: t("liquidity.remove.moneyMarket.modal.toast.success", {
-          value: removeAmount.toFixed(0),
-          symbol: t("shares"),
-          where: meta.symbol,
-        }),
+        submitted: t(
+          "liquidity.remove.moneyMarket.modal.toast.submitted",
+          tOptions,
+        ),
+        success: t(
+          "liquidity.remove.moneyMarket.modal.toast.success",
+          tOptions,
+        ),
       }
 
       await createTransaction(

@@ -1,45 +1,53 @@
+import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import { Separator, ValueStats } from "@galacticcouncil/ui/components"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { useOmnipoolStablepoolAssets } from "@/states/liquidity"
+import { useSquidClient } from "@/api/provider"
 
 export const Omnipool = () => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { data: omnipoolStablepoolAssets = [], isLoading } =
-    useOmnipoolStablepoolAssets()
+  const {
+    data: platformTotal,
+    isLoading: isLoadingPlatformTotal,
+    isSuccess,
+  } = useQuery(platformTotalQuery(useSquidClient()))
 
-  const totals = omnipoolStablepoolAssets.reduce(
-    (acc, asset) => ({
-      liquidity: acc.liquidity.plus(asset.tvlDisplay ?? 0),
-      stablepool: asset.isStablePool
-        ? acc.stablepool.plus(asset.tvlDisplay ?? 0)
-        : acc.stablepool,
-      volume: acc.volume.plus(asset.volumeDisplay ?? 0),
-    }),
-    {
-      liquidity: Big(0),
-      stablepool: Big(0),
-      volume: Big(0),
-    },
-  )
+  const totals = isSuccess
+    ? {
+        liquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0"),
+        stablepool: Big(platformTotal?.stablepoolsTvlNorm ?? "0"),
+        volume: Big(platformTotal?.omnipoolVolNorm ?? "0").plus(
+          platformTotal?.stableswapVolNorm ?? "0",
+        ),
+        totalLiquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0").plus(
+          platformTotal?.stablepoolsTvlNorm ?? "0",
+        ),
+      }
+    : {
+        liquidity: NaN,
+        stablepool: NaN,
+        volume: NaN,
+        totalLiquidity: NaN,
+      }
 
   return (
     <>
       <ValueStats
         label={t("liquidity:header.totalLiquidity")}
         value={t("common:currency", {
-          value: Big(totals.liquidity).plus(totals.stablepool).toString(),
+          value: totals.totalLiquidity.toString(),
         })}
         size="medium"
-        isLoading={isLoading}
+        isLoading={isLoadingPlatformTotal}
         wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
         label={t("liquidity:header.volume")}
         value={t("common:currency", { value: totals.volume })}
-        isLoading={isLoading}
+        isLoading={isLoadingPlatformTotal}
         size="medium"
         wrap
       />
@@ -48,7 +56,7 @@ export const Omnipool = () => {
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency", { value: totals.liquidity })}
         size="medium"
-        isLoading={isLoading}
+        isLoading={isLoadingPlatformTotal}
         wrap
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
@@ -56,7 +64,7 @@ export const Omnipool = () => {
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency", { value: totals.stablepool })}
         size="medium"
-        isLoading={isLoading}
+        isLoading={isLoadingPlatformTotal}
         wrap
       />
     </>

@@ -303,7 +303,7 @@ export const useBalanceTableColumns = () => {
               <Link
                 to="/liquidity/$id/remove"
                 params={{
-                  id: poolId,
+                  id: stableswapId,
                 }}
                 search={{
                   erc20Id: poolId,
@@ -330,13 +330,38 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
       isolatedColumnHelper.display({
         id: "position",
         size: 250,
+        meta: {
+          sxFn: (original) =>
+            !original.position
+              ? {
+                  // it needs to be overridden because of the issue for sticky column
+                  p: "0px !important",
+                }
+              : {},
+        },
         header: t("position"),
-        cell: ({ row }) => (
-          <AssetLabelXYK
-            iconIds={row.original.meta.iconId}
-            symbol={row.original.meta.symbol}
-          />
-        ),
+        cell: ({ row: { original } }) =>
+          original.position ? (
+            <AssetLabelXYK
+              iconIds={original.meta.iconId}
+              symbol={original.meta.symbol}
+            />
+          ) : (
+            <Box
+              height={66}
+              py={20}
+              px={18}
+              sx={{
+                borderLeft: `2px solid`,
+                borderColor: getToken("buttons.primary.high.rest"),
+              }}
+            >
+              <AssetLabelXYK
+                iconIds={original.meta.iconId}
+                symbol={original.meta.symbol}
+              />
+            </Box>
+          ),
       }),
       isolatedColumnHelper.display({
         header: t("liquidity:liquidity.positions.header.amount"),

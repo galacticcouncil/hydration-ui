@@ -66,12 +66,11 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
       assetId: id,
       amount,
       shares: liquidityShares.minSharesToGet,
-      symbol: meta.symbol,
-      decimals: meta.decimals,
     })
   }
+  const { formState, control, handleSubmit } = form
 
-  const customErrors = getCustomErrors(form.formState.errors.amount)
+  const customErrors = getCustomErrors(formState.errors.amount)
 
   return (
     <>
@@ -80,11 +79,11 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
         closable={closable}
         onBack={onBack}
       />
-      <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
+      <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
           <Controller
             name="amount"
-            control={form.control}
+            control={control}
             render={({ field: { value, onChange }, fieldState: { error } }) => (
               <AssetSelect
                 label={t("liquidity.add.modal.selectAsset")}
@@ -140,8 +139,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
             type="submit"
             size="large"
             width="100%"
-            mt={getTokenPx("containers.paddings.primary")}
-            disabled={!canAddLiquidity}
+            disabled={!canAddLiquidity || !formState.isValid}
           >
             {isJoinFarms
               ? t("liquidity.add.modal.submitAndjoinFarms")

@@ -122,7 +122,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
         meta,
       }
 
-      positionsData.push(liquidity)
+      positionsData.unshift(liquidity)
     }
 
     return {
@@ -287,7 +287,7 @@ export const useUserPositionsTotal = (pool: OmnipoolAssetTable) => {
   } = pool
 
   const { price: aStableswapPrice, isValid: aStableswapIsValid } =
-    useAssetPrice(stableswapBalance ? aStableswapAsset?.id : undefined)
+    useAssetPrice(stableswapBalance || aStableswapBalance ? meta.id : undefined)
 
   const aStableswapDisplayBalance = (() => {
     if (!aStableswapBalance || !aStableswapAsset || !aStableswapIsValid)
@@ -318,19 +318,22 @@ export const useUserPositionsTotal = (pool: OmnipoolAssetTable) => {
 }
 
 export const useUserIsolatedPositionsTotal = (pool: IsolatedPoolTable) => {
-  const { positions, id, meta } = pool
+  const { positions, id, meta, balance } = pool
 
   const { data: liquidity } = useXYKPoolsLiquidity(id)
 
   const price = Big(pool.tvlDisplay)
     .div(liquidity ? scaleHuman(liquidity, pool.meta.decimals) : 1)
     .toString()
+  const balanceDisplay = balance
+    ? Big(price).times(scaleHuman(balance, meta.decimals)).toString()
+    : undefined
 
   return positions
     .reduce(
       (acc, position) =>
         acc.plus(Big(price).times(scaleHuman(position.shares, meta.decimals))),
-      Big(0),
+      Big(balanceDisplay ?? 0),
     )
     .toString()
 }

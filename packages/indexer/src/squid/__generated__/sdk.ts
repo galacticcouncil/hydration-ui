@@ -204,6 +204,22 @@ export const MoneyMarketEventsDocument = `
   }
 }
     ${MoneyMarketEventFragmentDoc}`;
+export const PlatformTotalDocument = `
+    query PlatformTotal {
+  platformTotalTvl {
+    nodes {
+      omnipoolTvlNorm
+      stablepoolsTvlNorm
+    }
+  }
+  platformTotalVolumesByPeriod(filter: {period: _24H_}) {
+    nodes {
+      omnipoolVolNorm
+      stableswapVolNorm
+    }
+  }
+}
+    `;
 export const OmnipoolYieldMetricsDocument = `
     query OmnipoolYieldMetrics {
   omnipoolAssetsYieldMetrics {
@@ -432,6 +448,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     MoneyMarketEvents(variables?: Types.MoneyMarketEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.MoneyMarketEventsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.MoneyMarketEventsQuery>({ document: MoneyMarketEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'MoneyMarketEvents', 'query', variables);
+    },
+    PlatformTotal(variables?: Types.PlatformTotalQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.PlatformTotalQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.PlatformTotalQuery>({ document: PlatformTotalDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'PlatformTotal', 'query', variables);
     },
     OmnipoolYieldMetrics(variables?: Types.OmnipoolYieldMetricsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.OmnipoolYieldMetricsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.OmnipoolYieldMetricsQuery>({ document: OmnipoolYieldMetricsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'OmnipoolYieldMetrics', 'query', variables);

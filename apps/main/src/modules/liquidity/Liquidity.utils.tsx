@@ -386,7 +386,8 @@ export const useOmnipoolStablepools = () => {
 
       const isPositions =
         positionsAmount > 0 ||
-        (Big(stableswapBalance.toString()).gt(0) && isStablePool)
+        (Big(stableswapBalance.toString()).gt(0) && isStablePool) ||
+        Big(aStableswapBalance?.toString() ?? 0).gt(0)
 
       const tvlDisplay = isStablepoolOnly
         ? pool.balance

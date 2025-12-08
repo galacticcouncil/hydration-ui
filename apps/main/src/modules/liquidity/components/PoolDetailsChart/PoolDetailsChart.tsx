@@ -36,18 +36,20 @@ export const PoolChart = ({
   height,
   interval,
   setInterval,
+  isEmptyData = false,
 }: {
   assetId: string
   height: number
   interval: TradeChartPeriodType | "all"
   setInterval: (interval: TradeChartPeriodType | "all") => void
+  isEmptyData?: boolean
 }) => {
   const { t } = useTranslation()
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
-    assetInId: stableCoinId ?? "",
+    assetInId: isEmptyData ? "" : (stableCoinId ?? ""),
     assetOutId: assetId,
     period: interval === "all" ? null : interval,
   })
@@ -87,9 +89,9 @@ export const PoolChart = ({
       </Flex>
       <ChartState
         sx={{ height }}
-        isError={isError}
-        isLoading={isLoading}
-        isEmpty={isEmpty}
+        isError={isEmptyData ? false : isError}
+        isLoading={isEmptyData ? false : isLoading}
+        isEmpty={isEmptyData ? true : isEmpty}
       >
         <TradingViewChart
           height={height}

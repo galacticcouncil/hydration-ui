@@ -67,6 +67,8 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
   const { positions, totalInFarms, totalBalanceDisplay } =
     useIsolatedPositions(pool)
 
+  if (Big(totalBalanceDisplay).eq(0)) return null
+
   return (
     <PositionsTableBody
       totalInFarms={totalInFarms}
@@ -127,6 +129,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
             joinedFarms={selectedPosition.joinedFarms}
             farmsToJoin={selectedPosition.farmsToJoin}
             position={selectedPosition.position}
+            onSubmitted={() => setSelectedPosition(null)}
           />
         )}
       </Modal>

@@ -1,0 +1,14 @@
+query PlatformTotal {
+  platformTotalTvl {
+    nodes {
+      omnipoolTvlNorm
+      stablepoolsTvlNorm
+    }
+  }
+  platformTotalVolumesByPeriod(filter: { period: _24H_ }) {
+    nodes {
+      omnipoolVolNorm
+      stableswapVolNorm
+    }
+  }
+}

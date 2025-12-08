@@ -8,11 +8,14 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { PoolToken } from "@/api/pools"
+import { useXYKConsts } from "@/api/xyk"
 import { AssetLogo } from "@/components/AssetLogo"
 import {
+  calculatePoolFee,
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
@@ -127,8 +130,15 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
 
 const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
+  const { getAssetWithFallback } = useAssets()
   const [assetA, assetB] = data.tokens
   const [assetAIconId, assetBIconId] = data.meta.iconId
+  const { data: consts, isLoading: isConstsLoading } = useXYKConsts()
+
+  const assetAMeta = getAssetWithFallback(assetA.id)
+  const assetBMeta = getAssetWithFallback(assetB.id)
+
+  const tradeFee = calculatePoolFee(consts?.fee)
 
   const priceA =
     assetA && assetB
@@ -173,7 +183,11 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
                   width="100%"
                 >
                   <SValueStatsValue>
-                    {t("currency", { value: priceA })}
+                    {t("currency", { value: 1, symbol: assetAMeta.symbol })} ={" "}
+                    {t("currency", {
+                      value: priceA,
+                      symbol: assetBMeta.symbol,
+                    })}
                   </SValueStatsValue>
                   <Separator />
                   <AssetPrice asset={assetA} />
@@ -198,7 +212,11 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
                   width="100%"
                 >
                   <SValueStatsValue>
-                    {t("currency", { value: priceB })}
+                    {t("currency", { value: 1, symbol: assetBMeta.symbol })} ={" "}
+                    {t("currency", {
+                      value: priceB,
+                      symbol: assetAMeta.symbol,
+                    })}
                   </SValueStatsValue>
                   <Separator />
                   <AssetPrice asset={assetB} />
@@ -229,7 +247,12 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
       <ValueStats
         wrap
         label={t("liquidity:details.values.feeFarmApr")}
-        value={t("percent", { value: "5" })}
+        isLoading={isConstsLoading}
+        value={t("percent", {
+          value: Big(tradeFee ?? 0)
+            .plus(data?.totalApr ?? 0)
+            .toString(),
+        })}
       />
 
       <Separator mx={-20} />

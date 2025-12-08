@@ -267,14 +267,10 @@ export const useAddLiquidity = ({
       assetId,
       amount,
       shares,
-      decimals,
-      symbol,
     }: {
       assetId: string
       amount: string
       shares: string
-      symbol: string
-      decimals: number
     }): Promise<void> => {
       const tx = isJoinFarms
         ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms({
@@ -292,29 +288,33 @@ export const useAddLiquidity = ({
             min_shares_limit: BigInt(shares),
           })
 
-      const shiftedAmount = scaleHuman(amount, decimals)
+      const shiftedAmount = scaleHuman(amount, meta.decimals)
       const tOptions = {
-        value: t("common:currency", { value: shiftedAmount, symbol }),
+        value: t("common:currency", {
+          value: shiftedAmount,
+          symbol: meta.symbol,
+        }),
         where: t("omnipool"),
+      }
+      const toasts = {
+        submitted: t(
+          isJoinFarms
+            ? "liquidity.add.joinFarms.modal.toast.submitted"
+            : "liquidity.add.modal.toast.submitted",
+          tOptions,
+        ),
+        success: t(
+          isJoinFarms
+            ? "liquidity.add.joinFarms.modal.toast.success"
+            : "liquidity.add.modal.toast.success",
+          tOptions,
+        ),
       }
 
       await createTransaction(
         {
           tx,
-          toasts: {
-            submitted: t(
-              isJoinFarms
-                ? "liquidity.add.joinFarms.modal.toast.submitted"
-                : "liquidity.add.modal.toast.submitted",
-              tOptions,
-            ),
-            success: t(
-              isJoinFarms
-                ? "liquidity.add.joinFarms.modal.toast.success"
-                : "liquidity.add.modal.toast.success",
-              tOptions,
-            ),
-          },
+          toasts,
           invalidateQueries: [
             omnipoolPositionsKey(account?.address ?? ""),
             omnipoolMiningPositionsKey(account?.address ?? ""),

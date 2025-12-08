@@ -46,5 +46,6 @@ export const SAssetInput = styled(Input)`
   text-align: right;
   font-size: 16px;
   height: auto;
-  padding-right: 0px;
+  width: 100%;
+  padding: 0px;
 `
