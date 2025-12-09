@@ -2,6 +2,7 @@ import { Bell as BellIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   ButtonIcon,
   Collapsible,
+  Icon,
   SheetBody,
   SheetContent,
   SheetHeader,
@@ -34,7 +35,7 @@ export const NotificationCenter: FC = () => {
     <SheetRoot>
       <SheetTrigger asChild>
         <ButtonIcon>
-          <BellIcon size={19} />
+          <Icon component={BellIcon} size={20} />
           {pending.length > 0 && (
             <Spinner
               sx={{

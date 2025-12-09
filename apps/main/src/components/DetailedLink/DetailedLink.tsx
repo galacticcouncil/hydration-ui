@@ -29,18 +29,29 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
 }) => (
   <SDetailedLink asChild {...props}>
     <Link to={to} search={search}>
-      {IconComponent && <Icon size={20} component={IconComponent} />}
+      {IconComponent && (
+        <Icon
+          size={20}
+          component={IconComponent}
+          color={getToken("icons.onContainer")}
+        />
+      )}
       <Box>
-        <Text fw={600} fs={13}>
+        <Text fw={600} fs={13} lh={1.4}>
           {title}
         </Text>
         {description && (
-          <Text fs={12} color={getToken("text.low")}>
+          <Text fs={12} lh={1.25} color={getToken("text.low")}>
             {description}
           </Text>
         )}
       </Box>
-      <Icon size={20} component={ArrowRight} ml="auto" />
+      <Icon
+        size={20}
+        component={ArrowRight}
+        ml="auto"
+        color={getToken("icons.onSurface")}
+      />
     </Link>
   </SDetailedLink>
 )

@@ -14,6 +14,7 @@ export const SMobileTabBar = styled.nav(
 
     display: flex;
     justify-content: space-between;
+    align-items: center;
 
     background-color: ${theme.surfaces.containers.high.accent};
     border-top: 1px solid ${theme.details.separators};
@@ -38,7 +39,9 @@ export const STabBarItem = styled.div`
 
 export const STabBarIcon = styled(Icon)(
   ({ theme }) => css`
-    color: ${theme.icons.soft};
+    color: ${theme.icons.onSurface};
+    width: 20px;
+    height: 20px;
 
     *[data-status="active"] &,
     ${STabBarItem}[data-state="open"] &,
@@ -80,8 +83,8 @@ export const STabBarMenuAction = styled.div(
     cursor: pointer;
 
     & svg {
-      height: 24px;
-      width: 24px;
+      height: 20px;
+      width: 20px;
 
       color: ${theme.icons.onSurface};
     }

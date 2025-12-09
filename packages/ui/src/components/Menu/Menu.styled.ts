@@ -10,7 +10,7 @@ export type MenuItemVariant = "default" | "filterLink"
 const menuItemVariants = createVariants<MenuItemVariant>((theme) => ({
   default: css`
     & ${MenuItemIcon} {
-      color: ${theme.icons.soft};
+      color: ${theme.icons.onContainer};
     }
 
     & ${MenuItemLabel} {
@@ -56,6 +56,8 @@ export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
 
 export const MenuItemIcon = styled(Icon)`
   grid-row: 1 / -1;
+  width: 20px;
+  height: 20px;
 `
 
 export const MenuItemLabel = styled.span(
