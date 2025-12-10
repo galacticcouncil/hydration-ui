@@ -1,12 +1,9 @@
-import { ValueStats, ValueStatsValue } from "@galacticcouncil/ui/components"
-import { USDT_ASSET_ID } from "@galacticcouncil/utils"
+import { ValueStats } from "@galacticcouncil/ui/components"
 import { FC } from "react"
-
-import { AssetPrice } from "@/components/AssetPrice"
 
 type Props = {
   readonly label: string
-  readonly price: number
+  readonly price: string
   readonly isLoading: boolean
 }
 
@@ -16,13 +13,7 @@ export const OtcValue: FC<Props> = ({ label, price, isLoading }) => {
       label={label}
       wrap={[false, true]}
       isLoading={isLoading}
-      customValue={
-        <AssetPrice
-          assetId={USDT_ASSET_ID}
-          value={price}
-          wrapper={<ValueStatsValue />}
-        />
-      }
+      value={price}
     />
   )
 }
