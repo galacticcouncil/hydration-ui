@@ -9,33 +9,36 @@ import { FC, Ref } from "react"
 
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
 import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow"
-import { useMyAssetsColumns } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
-import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.data"
+import { MyAssetsEmptyState } from "@/modules/wallet/assets/MyAssets/MyAssetsEmptyState"
+import {
+  MyAsset,
+  useMyAssetsColumns,
+} from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
+  readonly data: Array<MyAsset>
+  readonly isLoading: boolean
   readonly searchPhrase: string
-  readonly showAllAssets: boolean
   readonly ref?: Ref<DataTableRef>
 }
 
 export const MyAssetsTable: FC<Props> = ({
+  data,
+  isLoading,
   searchPhrase,
-  showAllAssets,
   ref,
 }) => {
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
 
-  const { data: tableAssets, isLoading: arePricesLoading } =
-    useMyAssetsTableData(showAllAssets)
   const columns = useMyAssetsColumns()
 
   return (
     <TableContainer as={Paper}>
       <DataTable
         ref={ref}
-        isLoading={arePricesLoading}
+        isLoading={isLoading}
         paginated
         pageSize={10}
         globalFilter={searchPhrase}
@@ -45,7 +48,7 @@ export const MyAssetsTable: FC<Props> = ({
             .includes(searchPhrase.toLowerCase()) ||
           row.original.name.toLowerCase().includes(searchPhrase.toLowerCase())
         }
-        data={tableAssets}
+        data={data}
         columns={columns}
         expandable={!isMobile}
         renderSubComponent={(asset) =>
@@ -55,6 +58,7 @@ export const MyAssetsTable: FC<Props> = ({
             <AssetDetailExpanded asset={asset} />
           )
         }
+        emptyState={<MyAssetsEmptyState />}
       />
     </TableContainer>
   )

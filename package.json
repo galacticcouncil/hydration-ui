@@ -35,6 +35,7 @@
     "strip-ansi": "6.0.1"
   },
   "dependencies": {
+    "@galacticcouncil/common": "^0.1.1",
     "@galacticcouncil/descriptors": "^1.5.1",
     "@galacticcouncil/math-lbp": "^1.0.0",
     "@galacticcouncil/math-liquidity-mining": "^1.0.0",

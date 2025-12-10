@@ -12,16 +12,19 @@ export const WalletAssetsSubpageMenu = () => {
           to: "/wallet/assets",
           search: { category: "all" },
           title: t("all"),
+          resetScroll: false,
         },
         {
           to: "/wallet/assets",
           search: { category: "assets" },
           title: t("assets"),
+          resetScroll: false,
         },
         {
           to: "/wallet/assets",
           search: { category: "liquidity" },
           title: t("liquidity"),
+          resetScroll: false,
         },
       ]}
     />

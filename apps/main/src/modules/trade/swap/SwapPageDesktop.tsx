@@ -19,11 +19,12 @@ export const SwapPageDesktop = () => {
           "minmax(390px, 1fr) minmax(0, 400px)",
           "minmax(470px, 1fr) minmax(0, 440px)",
         ]}
+        rowTemplate="auto auto"
         gap={20}
         align="start"
       >
         <TradeChart height={456} />
-        <SSwapFormContainer>
+        <SSwapFormContainer gridColumn={2} gridRow={[null, null, null, "1/-1"]}>
           <FormHeader />
           <Separator mx={-20} />
           <Outlet />

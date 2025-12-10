@@ -208,7 +208,7 @@ const DataTable = <TData,>({
                 : undefined
 
               const isRowClickable =
-                getIsClickable?.(row.original) ?? !!onRowClick
+                !isLoading && (getIsClickable?.(row.original) ?? !!onRowClick)
 
               const isRowExpanded = row.getIsExpanded()
               const isRowExpandable =

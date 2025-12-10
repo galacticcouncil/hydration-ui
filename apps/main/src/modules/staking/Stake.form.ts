@@ -8,7 +8,7 @@ import { stakingConstsQuery } from "@/api/constants"
 import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scaleHuman } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 const MIN_INCREASE_PERCENTAGE = 1
@@ -51,7 +51,7 @@ export const useStakeForm = (balance: string, stakedBalance: string) => {
 
   const minStakeUsed = Big.max(
     minIncreaseStakePosition,
-    scaleHuman(stakingConsts?.minStake ?? 0n, native.decimals),
+    toDecimal(stakingConsts?.minStake ?? 0n, native.decimals),
   ).toString()
 
   const form = useForm<StakeFormValues>({

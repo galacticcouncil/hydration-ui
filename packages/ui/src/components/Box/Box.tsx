@@ -45,6 +45,7 @@ export type BoxOwnProps = Partial<
     | "flex"
     | "visibility"
     | "gridColumn"
+    | "gridRow"
   >
 > & {
   asChild?: boolean
@@ -106,6 +107,7 @@ export const Box: React.FC<BoxProps> = ({
   flex,
   visibility,
   gridColumn,
+  gridRow,
   ...rest
 }) => {
   const SlottedComponent = asChild ? Slot : Component
@@ -151,6 +153,7 @@ export const Box: React.FC<BoxProps> = ({
     flex,
     visibility,
     gridColumn,
+    gridRow,
   }
 
   return <SlottedComponent sx={fullSx} css={css} {...rest} />
