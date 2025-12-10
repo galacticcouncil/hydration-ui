@@ -1,10 +1,15 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  isEthereumSigner,
+  useAccount,
+  useWallet,
+} from "@galacticcouncil/web3-connect"
 import { HydrationQueries } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { ObservedValueOf } from "rxjs"
 import { useShallow } from "zustand/shallow"
 
+import { usePermitNonce } from "@/api/evm"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -269,4 +274,12 @@ export const useAccountUniques = () => {
       (data) => setXykMiningPositions(data),
     ),
   )
+}
+
+export const useAccountPermitNonce = () => {
+  const { account } = useAccount()
+  const wallet = useWallet()
+  const isEvmSigner = isEthereumSigner(wallet?.signer)
+  const address = isEvmSigner && account ? account.address : ""
+  return usePermitNonce(address)
 }

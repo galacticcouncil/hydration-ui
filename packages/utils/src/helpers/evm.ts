@@ -1,7 +1,11 @@
+import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { Buffer } from "buffer"
 import { Address, checksumAddress, isAddress } from "viem"
+
+import { createQueryString, stripTrailingSlash } from "./helpers"
 
 const H160_PREFIX_BYTES = Buffer.from("ETH\0")
 const ASSET_BASE_ADDRESS = "0000000000000000000000000000000100000000"
@@ -97,4 +101,30 @@ export const getAddressFromAssetId = (assetId: string): string => {
   } catch {
     return ""
   }
+}
+
+type EtherscanLinkPath = "tx" | "address" | "block"
+
+export const etherscan = {
+  link: (
+    chainKey: string,
+    path: EtherscanLinkPath,
+    data: string | number,
+    query: Record<string, string | number> = {},
+  ): string => {
+    const chain = chainsMap.get(chainKey)
+    if (!chain?.explorer || chain.ecosystem !== ChainEcosystem.Ethereum) {
+      return ""
+    }
+    return `${stripTrailingSlash(chain.explorer)}/${path}/${data}${createQueryString(query)}`
+  },
+  tx: (chainKey: string, txHash: string) => {
+    return etherscan.link(chainKey, "tx", txHash)
+  },
+  account: (chainKey: string, address: string) => {
+    return etherscan.link(chainKey, "address", address)
+  },
+  block: (chainKey: string, blockHashOrNumber: string | number) => {
+    return etherscan.link(chainKey, "block", blockHashOrNumber)
+  },
 }

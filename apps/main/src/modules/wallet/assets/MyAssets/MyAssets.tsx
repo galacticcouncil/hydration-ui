@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { MyAssetsActions } from "@/modules/wallet/assets/MyAssets/MyAssetsActions"
 import { MyAssetsTable } from "@/modules/wallet/assets/MyAssets/MyAssetsTable"
+import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.data"
 
 type Props = {
   readonly searchPhrase: string
@@ -20,11 +21,15 @@ export const MyAssets: FC<Props> = ({ searchPhrase, className }) => {
 
   const tableRef = useRef<DataTableRef>(null)
 
+  const { data, isLoading } = useMyAssetsTableData(showAllAssets)
+  const hasFunds = data.length > 0
+
   return (
     <div className={className}>
       <Flex justify="space-between" align="center">
         <SectionHeader>{t("myAssets.header.title")}</SectionHeader>
         <MyAssetsActions
+          hasFunds={hasFunds}
           showAllAssets={showAllAssets}
           onToggleShowAllAssets={() => {
             setShowAllAssets((showAllAssets) => !showAllAssets)
@@ -34,8 +39,9 @@ export const MyAssets: FC<Props> = ({ searchPhrase, className }) => {
       </Flex>
       <MyAssetsTable
         ref={tableRef}
+        data={data}
+        isLoading={isLoading}
         searchPhrase={searchPhrase}
-        showAllAssets={showAllAssets}
       />
     </div>
   )

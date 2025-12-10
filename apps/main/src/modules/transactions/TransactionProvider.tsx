@@ -3,8 +3,8 @@ import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
-import { useAccountInfo } from "@/api/account"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
+import { useNonce } from "@/modules/transactions/hooks/useNonce"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
 import { useTransactionEcosystem } from "@/modules/transactions/hooks/useTransactionEcosystem"
 import { useTransactionPaymentInfo } from "@/modules/transactions/hooks/useTransactionPaymentInfo"
@@ -74,9 +74,6 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const ecosystem = useTransactionEcosystem(transaction)
   const toasts = useTransactionToasts(transaction, ecosystem)
 
-  const { data: accountInfo, isLoading: isLoadingNonce } = useAccountInfo()
-  const nonce = accountInfo?.nonce
-
   const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
     transaction.tx,
     transaction?.fee?.feePaymentAssetId,
@@ -89,6 +86,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const feeEstimate = fee?.feeEstimate
   const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
   const feeAssetBalance = fee?.feeAssetBalance
+
+  const { nonce, isLoading: isLoadingNonce } = useNonce(feeAssetId)
 
   const onClose = useCallback(() => {
     dispatch(doClose())

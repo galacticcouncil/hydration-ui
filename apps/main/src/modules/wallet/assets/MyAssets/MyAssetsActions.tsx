@@ -10,11 +10,13 @@ import { useTranslation } from "react-i18next"
 import { MyAssetsFeePaymentChange } from "@/modules/wallet/assets/MyAssets/MyAssetsFeePaymentChange"
 
 type Props = {
+  readonly hasFunds: boolean
   readonly showAllAssets: boolean
   readonly onToggleShowAllAssets: () => void
 }
 
 export const MyAssetsActions: FC<Props> = ({
+  hasFunds,
   showAllAssets,
   onToggleShowAllAssets,
 }) => {
@@ -34,7 +36,7 @@ export const MyAssetsActions: FC<Props> = ({
           onCheckedChange={onToggleShowAllAssets}
         />
       </ToggleRoot>
-      <MyAssetsFeePaymentChange />
+      {hasFunds && <MyAssetsFeePaymentChange />}
     </Flex>
   )
 }

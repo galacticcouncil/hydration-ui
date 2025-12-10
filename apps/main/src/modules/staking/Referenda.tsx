@@ -18,7 +18,7 @@ import { ReferendaSeparator } from "@/modules/staking/ReferendaSeparator"
 import { ReferendaStatus } from "@/modules/staking/ReferendaStatus"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scaleHuman } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 
 type Props = {
   readonly id: number
@@ -86,10 +86,10 @@ export const Referenda: FC<Props> = ({
         isTitledLoading={isLoading}
       />
       <ReferendaStatus
-        ayeValue={scaleHuman(item.tally.ayes, native.decimals)}
+        ayeValue={toDecimal(item.tally.ayes, native.decimals)}
         ayePercent={ayesPercentage}
         thresholdPercent={thresholdPercentage}
-        nayValue={scaleHuman(item.tally.nays, native.decimals)}
+        nayValue={toDecimal(item.tally.nays, native.decimals)}
         nayPercent={naysPercentage}
         supportPercent={barPercentage}
         supportThreshold={getPerbillPercentage(_)}

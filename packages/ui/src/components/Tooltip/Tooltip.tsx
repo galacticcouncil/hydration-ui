@@ -4,12 +4,13 @@ import {
   TooltipContentProps,
   Trigger,
 } from "@radix-ui/react-tooltip"
-import { ReactNode, useState } from "react"
+import { FC, ReactNode, useState } from "react"
 
 import { CircleInfo } from "@/assets/icons"
-import { Text } from "@/components"
+import { BoxProps, Icon, Text } from "@/components"
+import { getToken } from "@/utils"
 
-import { SContent, SInfoIcon, STrigger } from "./Tooltip.styled"
+import { SContent, STrigger } from "./Tooltip.styled"
 
 type InfoTooltipProps = {
   text: ReactNode | string
@@ -50,7 +51,7 @@ export const Tooltip = ({
           e.stopPropagation()
         }}
       >
-        {children || <SInfoIcon component={CircleInfo} size={14} />}
+        {children || <TooltipIcon />}
       </TriggerComp>
       <Portal>
         <SContent
@@ -72,3 +73,13 @@ export const Tooltip = ({
     </Root>
   )
 }
+
+export const TooltipIcon: FC<BoxProps> = (props) => (
+  <Icon
+    sx={{ cursor: "pointer" }}
+    component={CircleInfo}
+    size={14}
+    color={getToken("icons.onContainer")}
+    {...props}
+  />
+)

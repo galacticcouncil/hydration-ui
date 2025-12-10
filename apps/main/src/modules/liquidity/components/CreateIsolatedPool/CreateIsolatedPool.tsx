@@ -5,27 +5,23 @@ import {
   ModalHeader,
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { FC, useState } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { FC, useMemo } from "react"
+import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { z } from "zod/v4"
 
-import { TAssetData } from "@/api/assets"
-import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { useXykPools } from "@/api/pools"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
-import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
-import { scale, scaleHuman } from "@/utils/formatting"
+import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { scale } from "@/utils/formatting"
 
 import {
+  CreateIsolatedPoolFormData,
+  createPoolExclusivityMap,
+  filterIdsByExclusivity,
+  useAllowedXYKPoolAssets,
+  useIsolatedPoolForm,
   useSubmitCreateIsolatedPool,
-  zodCreateIsolatedPool,
 } from "./CreateIsolatedPool.utils"
-
-export type CreateIsolatedPoolFormData = z.infer<
-  ReturnType<typeof zodCreateIsolatedPool>
->
 
 type Props = {
   readonly closable?: boolean
@@ -39,38 +35,45 @@ export const CreateIsolatedPool: FC<Props> = ({
   onSubmitted,
 }) => {
   const { t } = useTranslation("liquidity")
-  const { tradable } = useAssets()
-  const { getTransferableBalance } = useAccountBalances()
-  const [assetA, setAssetA] = useState<TAssetData | undefined>(undefined)
-  const [assetB, setAssetB] = useState<TAssetData | undefined>(undefined)
 
-  const assetABalance = assetA
-    ? scaleHuman(getTransferableBalance(assetA.id), assetA.decimals)
-    : "0"
-  const assetBBalance = assetB
-    ? scaleHuman(getTransferableBalance(assetB.id), assetB.decimals)
-    : "0"
+  const form = useIsolatedPoolForm()
+  const [assetA, amountA, assetB, amountB] = form.watch([
+    "assetA",
+    "amountA",
+    "assetB",
+    "amountB",
+  ])
 
-  const form = useForm<CreateIsolatedPoolFormData>({
-    mode: "onChange",
-    resolver: standardSchemaResolver(
-      zodCreateIsolatedPool(assetABalance, assetBBalance, assetA, assetB),
-    ),
-    defaultValues: {
-      amountA: "",
-      amountB: "",
-    },
-  })
+  const { data: xykPools } = useXykPools()
+  const poolExclusivityMap = useMemo(
+    () =>
+      createPoolExclusivityMap(
+        xykPools?.map(
+          ({ tokens }) =>
+            tokens.map((token) => token.id.toString()) as [string, string],
+        ) ?? [],
+      ),
+    [xykPools],
+  )
+
+  const allowedAssets = useAllowedXYKPoolAssets()
+  const allowedAssetsA = useMemo(
+    () => filterIdsByExclusivity(assetB?.id, allowedAssets, poolExclusivityMap),
+    [assetB, allowedAssets, poolExclusivityMap],
+  )
+  const allowedAssetsB = useMemo(
+    () => filterIdsByExclusivity(assetA?.id, allowedAssets, poolExclusivityMap),
+    [assetA, allowedAssets, poolExclusivityMap],
+  )
 
   const { mutate: submitCreateIsolatedPool } = useSubmitCreateIsolatedPool({
     onSubmitted,
   })
 
-  const [amountA, amountB] = form.watch(["amountA", "amountB"])
-
   const onSwitchAssets = () => {
-    setAssetA(assetB)
-    setAssetB(assetA)
+    form.setValue("assetA", assetB)
+    form.setValue("assetB", assetA)
+    form.trigger()
   }
 
   const onSubmit = (values: CreateIsolatedPoolFormData) => {
@@ -85,7 +88,7 @@ export const CreateIsolatedPool: FC<Props> = ({
   }
 
   return (
-    <>
+    <FormProvider {...form}>
       <ModalHeader
         title={t("liquidity.createPool.modal.title")}
         closable={closable}
@@ -93,22 +96,13 @@ export const CreateIsolatedPool: FC<Props> = ({
       />
       <ModalBody>
         <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
-          <Controller
-            name="amountA"
-            control={form.control}
-            render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <AssetSelect
-                label={t("liquidity.createPool.modal.assetA")}
-                value={value}
-                onChange={onChange}
-                assets={tradable}
-                selectedAsset={assetA}
-                setSelectedAsset={(asset) => setAssetA(asset)}
-                error={error?.message}
-                disabled={!assetA}
-                maxBalance={assetABalance}
-              />
-            )}
+          <AssetSelectFormField<CreateIsolatedPoolFormData>
+            assetFieldName="assetA"
+            amountFieldName="amountA"
+            label={t("liquidity.createPool.modal.assetA")}
+            assets={allowedAssetsA}
+            disabled={!assetA}
+            onAssetChange={() => form.trigger()}
           />
 
           <AssetSwitcher
@@ -119,22 +113,13 @@ export const CreateIsolatedPool: FC<Props> = ({
             onSwitchAssets={onSwitchAssets}
           />
 
-          <Controller
-            name="amountB"
-            control={form.control}
-            render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <AssetSelect
-                label={t("liquidity.createPool.modal.assetB")}
-                value={value}
-                onChange={onChange}
-                assets={tradable}
-                selectedAsset={assetB}
-                setSelectedAsset={(asset) => setAssetB(asset)}
-                error={error?.message}
-                maxBalance={assetBBalance}
-                disabled={!assetB}
-              />
-            )}
+          <AssetSelectFormField<CreateIsolatedPoolFormData>
+            assetFieldName="assetB"
+            amountFieldName="amountB"
+            label={t("liquidity.createPool.modal.assetB")}
+            assets={allowedAssetsB}
+            disabled={!assetB}
+            onAssetChange={() => form.trigger()}
           />
 
           <ModalContentDivider />
@@ -150,6 +135,6 @@ export const CreateIsolatedPool: FC<Props> = ({
           </Button>
         </form>
       </ModalBody>
-    </>
+    </FormProvider>
   )
 }

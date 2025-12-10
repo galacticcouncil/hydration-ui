@@ -60,7 +60,9 @@ export const SummaryRow = ({
       </Flex>
 
       {loading ? (
-        <Skeleton width={50} height={12} />
+        <SummaryRowValue>
+          <Skeleton width={50} height="1em" />
+        </SummaryRowValue>
       ) : typeof content === "string" ? (
         <SummaryRowValue>{content}</SummaryRowValue>
       ) : (

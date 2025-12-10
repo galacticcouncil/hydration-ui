@@ -118,18 +118,32 @@ export class EthereumSigner {
     )
   }
 
+  getPermitNonce = async (): Promise<bigint> => {
+    const callPermitContract = getContract({
+      address: EVM_CALL_PERMIT_ADDRESS,
+      abi: EVM_CALL_PERMIT_ABI,
+      client: this.publicClient,
+    })
+    return callPermitContract.read.nonces([this.address as Hex])
+  }
+
   getPermit = async (
     data: string,
     options: EthereumSignerOptions,
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
-      const weight = options.weight ?? 0n
+      const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
+      const chain = chainsMap.get(chainKey)
 
-      const callPermitContract = getContract({
-        address: EVM_CALL_PERMIT_ADDRESS,
-        abi: EVM_CALL_PERMIT_ABI,
-        client: this.publicClient,
-      })
+      const isEvmChain = !!chain && isAnyEvmChain(chain)
+
+      if (!isEvmChain) throw new Error(`Chain ${chainKey} is not an EVM chain`)
+
+      const { client } = chain
+
+      await this.walletClient.switchChain({ id: client.chain.id })
+
+      const weight = options.weight ?? 0n
 
       const tx = {
         from: this.address as Address,
@@ -141,7 +155,7 @@ export class EthereumSigner {
         this.publicClient.getBlock(),
         this.publicClient.getChainId(),
         this.estimateGas(tx, weight),
-        callPermitContract.read.nonces([this.address as Hex]),
+        this.getPermitNonce(),
       ])
 
       const createPermitMessageData = () => {

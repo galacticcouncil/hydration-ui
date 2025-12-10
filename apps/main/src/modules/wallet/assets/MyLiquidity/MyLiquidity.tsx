@@ -16,10 +16,6 @@ export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { data: liquidityData, isLoading: liquidityLoading } =
     useMyLiquidityTableData()
 
-  if (liquidityData.length === 0) {
-    return null
-  }
-
   return (
     <Box>
       <Flex justify="space-between" align="center">

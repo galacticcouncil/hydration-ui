@@ -17,7 +17,7 @@ import { useTranslation } from "react-i18next"
 
 import { HDXIssuanceQuery } from "@/api/balances"
 import { referendaTracksQuery } from "@/api/constants"
-import { govReferendaQuery, TAccountVote } from "@/api/democracy"
+import { openGovReferendaQuery, TAccountVote } from "@/api/democracy"
 import { OngoingReferendaEmptyState } from "@/modules/staking/OngoingReferendaEmptyState"
 import { Referenda } from "@/modules/staking/Referenda"
 import { SReferendaList } from "@/modules/staking/Referenda.styled"
@@ -37,14 +37,9 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
 
   const [isCollapsed, setIsCollapsed] = useState(isMobile)
 
-  const { data: govReferendaData, isPending: govLoading } = useQuery(
-    govReferendaQuery(rpc),
+  const { data: referenda = [], isPending: referendaLoading } = useQuery(
+    openGovReferendaQuery(rpc),
   )
-
-  const referenda =
-    govReferendaData
-      ?.filter((referendum) => referendum.type === "Ongoing")
-      .map(({ id, value }) => ({ id, ...value })) ?? []
 
   const { data: tracksData, isLoading: tracksLoading } = useQuery(
     referendaTracksQuery(rpc),
@@ -57,7 +52,9 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
   const gridRef = useRef<HTMLDivElement>(null)
 
   const isLoading =
-    govLoading || tracksLoading || isVotesLoading || totalIssuanceLoading
+    referendaLoading || tracksLoading || isVotesLoading || totalIssuanceLoading
+
+  // TODO use open gov referenda here
 
   return (
     <CollapsibleRoot open={!isCollapsed}>
