@@ -7,7 +7,7 @@ import { useProcessedVotes } from "@/modules/staking/Stake.data"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale } from "@/utils/formatting"
+import { toBigInt } from "@/utils/formatting"
 
 export const useStake = (
   positionId: bigint,
@@ -48,16 +48,16 @@ export const useStake = (
         symbol: native.symbol,
       })
 
-      const rawAmount = scale(amount, native.decimals)
+      const rawAmount = toBigInt(amount, native.decimals)
 
       const tx = (() => {
         if (!isStakePosition) {
-          return papi.tx.Staking.stake({ amount: BigInt(rawAmount) })
+          return papi.tx.Staking.stake({ amount: rawAmount })
         }
 
         const increaseStakeTx = papi.tx.Staking.increase_stake({
           position_id: positionId,
-          amount: BigInt(rawAmount),
+          amount: rawAmount,
         })
 
         if (!newProcessedVotesIds.length && !oldProcessedVotesIds.length) {

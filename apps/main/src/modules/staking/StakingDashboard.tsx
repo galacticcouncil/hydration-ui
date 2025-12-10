@@ -27,7 +27,7 @@ import { Stake } from "@/modules/staking/Stake"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 
 export const StakingDashboard: FC = () => {
   const { t } = useTranslation("staking")
@@ -51,7 +51,9 @@ export const StakingDashboard: FC = () => {
     isSuccess: votesIsSuccess,
   } = useQuery(accountOpenGovVotesQuery(rpc, address))
 
-  const staked = scaleHuman(stakingPositionsData?.stake ?? 0n, native.decimals)
+  const staked = stakingPositionsData?.stake
+    ? toDecimal(stakingPositionsData.stake, native.decimals)
+    : undefined
 
   const positionId = stakingPositionsData?.stakePositionId ?? 0n
   const hasPosition = !!positionId
@@ -75,16 +77,16 @@ export const StakingDashboard: FC = () => {
     .minus(stakingPositionsData?.stake?.toString() || "0")
     .minus(stakingPositionsData?.accumulated_locked_rewards?.toString() || "0")
 
-  const availableBalance = scaleHuman(
-    Big.max(0, rawAvailableBalance).toString(),
+  const availableBalance = toDecimal(
+    Big.max(0, rawAvailableBalance),
     native.decimals,
   )
 
-  const { isMobile } = useBreakpoints()
+  const { isMobile, isTablet } = useBreakpoints()
 
   const isLoading = !!account && stakingPositionsPending
 
-  if (isMobile) {
+  if (isMobile || isTablet) {
     return (
       <Flex direction="column" gap={10}>
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
@@ -122,7 +124,7 @@ export const StakingDashboard: FC = () => {
                 )}
                 <DashboardStats
                   positionId={positionId}
-                  staked={staked}
+                  staked={staked || "0"}
                   isStakeLoading={isLoading}
                 />
               </>
@@ -134,14 +136,18 @@ export const StakingDashboard: FC = () => {
   }
 
   return (
-    <Box>
-      <SectionHeader>{t("dashboard.title")}</SectionHeader>
+    <Flex direction="column" gap={28}>
       <Grid
-        columnTemplate="minmax(min-content, 640px) minmax(min-content, 1fr)"
+        columnTemplate={[
+          null,
+          null,
+          "minmax(390px, 1fr) minmax(0, 400px)",
+          "minmax(470px, 1fr) minmax(0, 440px)",
+        ]}
+        columnGap={20}
         align="start"
-        gap={30}
-        pb={getTokenPx("scales.paddings.xxl")}
       >
+        <SectionHeader gridColumn="1/-1">{t("dashboard.title")}</SectionHeader>
         <Paper>
           {isLoading ? (
             <>
@@ -161,7 +167,7 @@ export const StakingDashboard: FC = () => {
               )}
               <DashboardStats
                 positionId={positionId}
-                staked={staked}
+                staked={staked || "0"}
                 isStakeLoading={isLoading}
               />
             </>
@@ -180,6 +186,6 @@ export const StakingDashboard: FC = () => {
         />
       </Grid>
       <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
-    </Box>
+    </Flex>
   )
 }
