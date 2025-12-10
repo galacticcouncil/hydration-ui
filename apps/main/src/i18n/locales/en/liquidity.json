@@ -142,8 +142,6 @@
   "liquidity.createPool.modal.assetB": "Asset B",
   "liquidity.createPool.toast.submitted": "Creating {{ symbolA }}/{{ symbolB }} pool...",
   "liquidity.createPool.toast.success": "Created {{ symbolA }}/{{ symbolB }} pool.",
-  "liquidity.createPool.modal.validation.assetA": "Asset A is not defined",
-  "liquidity.createPool.modal.validation.assetB": "Asset B is not defined",
   "liquidity.pool.poolAsset": "Pool asset",
   "liquidity.pool.positions.total": "Your liquidity: {{ value, currency }}",
   "liquidity.tooltip.fee.apr.title": "Estimated APR, based on past month's fees, farm rewards and current TVL, without considering the effects of Impermanent Loss",
