@@ -1,3 +1,15 @@
+import {
+  ArrowRightLeftIcon,
+  BanknoteIcon,
+  ChartPieIcon,
+  CoinsIcon,
+  DropletIcon,
+  DropletsIcon,
+  Grid2X2Icon,
+  HistoryIcon,
+  WalletCardsIcon,
+  WavesIcon,
+} from "@galacticcouncil/ui/assets/icons"
 import { TFunction } from "i18next"
 
 import { FileRouteTypes } from "@/routeTree.gen"
@@ -48,35 +60,45 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "trade",
     to: LINKS.trade,
+    icon: ArrowRightLeftIcon,
     children: [
-      { key: "swap", to: LINKS.swap },
-      { key: "otc", to: LINKS.otc },
+      { key: "swap", to: LINKS.swap, icon: ArrowRightLeftIcon },
+      { key: "otc", to: LINKS.otc, icon: CoinsIcon },
     ],
   },
   {
     key: "borrow",
     to: LINKS.borrow,
+    icon: BanknoteIcon,
     children: [
-      { key: "borrowDashboard", to: LINKS.borrowDashboard },
-      { key: "borrowMarkets", to: LINKS.borrowMarkets },
-      { key: "borrowHistory", to: LINKS.borrowHistory },
+      { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
+      { key: "borrowMarkets", to: LINKS.borrowMarkets, icon: Grid2X2Icon },
+      { key: "borrowHistory", to: LINKS.borrowHistory, icon: HistoryIcon },
     ],
   },
   {
     key: "liquidity",
     to: LINKS.liquidity,
+    icon: DropletIcon,
     children: [
       {
         key: "myLiquidity",
         to: LINKS.liquidity,
+        icon: DropletsIcon,
         search: { myLiquidity: true },
       },
-      { key: "pools", to: LINKS.liquidity, search: { myLiquidity: false } },
+      {
+        key: "pools",
+        to: LINKS.liquidity,
+        search: { myLiquidity: false },
+        icon: WavesIcon,
+      },
     ],
   },
   {
     key: "wallet",
     to: LINKS.wallet,
+    icon: WalletCardsIcon,
     children: [
       { key: "walletAssets", to: LINKS.walletAssets },
       // { key: "walletTransactions", to: LINKS.walletTransactions },

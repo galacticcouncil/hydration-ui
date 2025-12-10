@@ -1,4 +1,4 @@
-import { IconPlaceholder } from "@galacticcouncil/ui/assets/icons"
+import { IconPlaceholder, MenuSlanted } from "@galacticcouncil/ui/assets/icons"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +8,7 @@ import {
   Modal,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { preventDefault } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -53,15 +54,22 @@ export const MobileTabBar: FC = () => {
       {navItems
         .slice(0, itemsShown)
         .map(({ key, icon, to, children }, index) => (
-          <DropdownMenu key={key}>
+          <DropdownMenu key={key} modal={false}>
             <DropdownMenuTrigger asChild>
-              <STabBarItem as={Link} {...{ to }} tabIndex={index + 1}>
+              <STabBarItem
+                as={Link}
+                {...{ to }}
+                tabIndex={index + 1}
+                onClick={
+                  children && children.length > 1 ? preventDefault : undefined
+                }
+              >
                 <STabBarIcon component={icon ?? IconPlaceholder} />
                 <STabBarLabel>{translations[key]?.title}</STabBarLabel>
               </STabBarItem>
             </DropdownMenuTrigger>
             {children && children.length > 1 && (
-              <DropdownMenuContent fullWidth>
+              <DropdownMenuContent fullWidth animation="slide-bottom">
                 {children.map((item) => (
                   <DropdownMenuItem key={item.key} asChild>
                     <MobileTabBarSubmenuItem item={item} />
@@ -72,15 +80,15 @@ export const MobileTabBar: FC = () => {
           </DropdownMenu>
         ))}
       {moreItems.length > 0 && (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <STabBarItem sx={{ cursor: "pointer" }} tabIndex={itemsShown + 1}>
-              <STabBarIcon component={IconPlaceholder} />
+              <STabBarIcon component={MenuSlanted} />
               <STabBarLabel>{t("more")}</STabBarLabel>
             </STabBarItem>
           </DropdownMenuTrigger>
           {!drawer && (
-            <DropdownMenuContent fullWidth>
+            <DropdownMenuContent fullWidth animation="slide-bottom">
               <MobileTabBarActions onOpenDrawer={setDrawer} />
               <DropdownMenuContentDivider />
               {moreItems.map((item) => (
