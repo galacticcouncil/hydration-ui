@@ -154,6 +154,11 @@ export const TableRow = styled.tr<{
       position: relative;
       pointer-events: none;
     `};
+
+    ${isClickable === false &&
+    css`
+      pointer-events: none;
+    `}
   `,
 )
 export const TableCell = styled.td<{

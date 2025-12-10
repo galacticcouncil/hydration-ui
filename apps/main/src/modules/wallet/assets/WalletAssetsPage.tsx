@@ -1,7 +1,7 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Grid, Input } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -12,6 +12,7 @@ import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
 import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSubpageMenu"
+import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
 import { OmnipoolSubscriber } from "@/routes/liquidity/route"
 
 export const WalletAssetsPage = () => {
@@ -29,8 +30,7 @@ export const WalletAssetsPage = () => {
   }, [isMobile])
 
   if (!account) {
-    // TODO add real fallback, this is placeholder
-    return <Web3ConnectButton size="large" />
+    return <WalletEmptyState />
   }
 
   return (
