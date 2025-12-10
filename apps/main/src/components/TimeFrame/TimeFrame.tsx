@@ -1,3 +1,8 @@
+import {
+  TimeFrame as TimeFrameModel,
+  TimeFrameType,
+  timeFrameTypes,
+} from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { ChevronDown } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
@@ -8,47 +13,39 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
+import { produce } from "immer"
 import { FC, useRef } from "react"
 import { useTranslation } from "react-i18next"
 
-import {
-  PeriodType,
-  periodTypes,
-} from "@/components/PeriodInput/PeriodInput.utils"
-
-export type PeriodInputProps = {
-  readonly periodValue?: number | null
-  readonly periodType: PeriodType
+export type TimeFrameProps = {
+  readonly timeFrame: TimeFrameModel
   readonly isError?: boolean
-  readonly allowedPeriodTypes?: ReadonlySet<PeriodType>
+  readonly allowedTypes?: ReadonlySet<TimeFrameType>
   readonly className?: string
-  readonly onPeriodTypeChange: (periodType: PeriodType) => void
-  readonly onPeriodValueChange: (periodValue: number | null) => void
+  readonly onChange: (timeFrame: TimeFrameModel) => void
 }
 
-export const PeriodInput: FC<PeriodInputProps> = ({
-  periodValue,
-  periodType,
+export const TimeFrame: FC<TimeFrameProps> = ({
+  timeFrame,
   isError,
-  allowedPeriodTypes,
+  allowedTypes,
   className,
-  onPeriodTypeChange,
-  onPeriodValueChange,
+  onChange,
 }) => {
   const { t } = useTranslation(["common"])
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  const formatPeriod = (type: PeriodType) =>
-    t(`period.${type}`, { count: periodValue ?? 0 })
+  const formatTimeFrame = (type: TimeFrameType) =>
+    t(`timeFrame.${type}`, { count: timeFrame.value ?? 0 })
 
-  const periodOptions = (
-    allowedPeriodTypes
-      ? periodTypes.filter((periodType) => allowedPeriodTypes.has(periodType))
-      : periodTypes
+  const timeFrameOptions = (
+    allowedTypes
+      ? timeFrameTypes.filter((type) => allowedTypes.has(type))
+      : timeFrameTypes
   ).map(
-    (type): SelectItem<PeriodType> => ({
+    (type): SelectItem<TimeFrameType> => ({
       key: type,
-      label: formatPeriod(type),
+      label: formatTimeFrame(type),
     }),
   )
 
@@ -56,18 +53,22 @@ export const PeriodInput: FC<PeriodInputProps> = ({
     <NumberInput
       ref={inputRef}
       className={className}
-      value={periodValue}
+      value={timeFrame.value}
       decimalScale={0}
       allowNegative={false}
       isError={isError}
       keepInvalidInput
       onValueChange={({ floatValue }) => {
-        onPeriodValueChange(floatValue ?? null)
+        onChange(
+          produce(timeFrame, (draft) => {
+            draft.value = floatValue ?? null
+          }),
+        )
       }}
       trailingElement={
         <Select
-          items={periodOptions}
-          value={periodType}
+          items={timeFrameOptions}
+          value={timeFrame.type}
           renderTrigger={() => (
             <Flex gap={2} align="center">
               <Text
@@ -77,7 +78,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
                 transform="uppercase"
                 color={getToken("buttons.secondary.low.onRest")}
               >
-                {formatPeriod(periodType)}
+                {formatTimeFrame(timeFrame.type)}
               </Text>
               <Icon
                 component={ChevronDown}
@@ -86,7 +87,13 @@ export const PeriodInput: FC<PeriodInputProps> = ({
               />
             </Flex>
           )}
-          onValueChange={onPeriodTypeChange}
+          onValueChange={(type) =>
+            onChange(
+              produce(timeFrame, (draft) => {
+                draft.type = type
+              }),
+            )
+          }
           onOpenChange={(open) => {
             if (!open) {
               // focus is removed when the popover is closed so we need to wait a tick after closing

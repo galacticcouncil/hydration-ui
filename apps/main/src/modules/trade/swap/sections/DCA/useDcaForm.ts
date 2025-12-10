@@ -1,3 +1,4 @@
+import { timeFrameSchema } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQueryClient } from "@tanstack/react-query"
@@ -8,7 +9,6 @@ import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
 import { minimumOrderBudgetQuery } from "@/api/trade"
-import { periodInputSchema } from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -23,16 +23,34 @@ import {
 
 export const MIN_DCA_ORDERS = 3
 
+export enum DcaOrdersMode {
+  Custom = "Custom",
+  Auto = "Auto",
+}
+
+const ordersSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal(DcaOrdersMode.Custom),
+    value: validNumber
+      .min(MIN_DCA_ORDERS, {
+        error: i18n.t("trade:dca.errors.minOrders", { count: MIN_DCA_ORDERS }),
+      })
+      .nullable(),
+  }),
+  z.object({
+    type: z.literal(DcaOrdersMode.Auto),
+    value: z.never().optional(),
+  }),
+])
+
+export type DcaOrders = z.infer<typeof ordersSchema>
+
 const schema = z.object({
   sellAsset: requiredObject<TAsset>(),
   sellAmount: positiveOptional,
   buyAsset: requiredObject<TAsset>(),
-  frequency: periodInputSchema,
-  orders: validNumber
-    .min(MIN_DCA_ORDERS, {
-      error: i18n.t("trade:dca.errors.minOrders", { count: MIN_DCA_ORDERS }),
-    })
-    .nullable(),
+  duration: timeFrameSchema,
+  orders: ordersSchema,
 })
 
 export type DcaFormValues = z.infer<typeof schema>
@@ -105,11 +123,14 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAsset: getAsset(assetIn) ?? null,
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
-    frequency: {
+    duration: {
       type: "day",
       value: 1,
     },
-    orders: null,
+    orders: {
+      type: DcaOrdersMode.Custom,
+      value: null,
+    },
   }
 
   const form = useForm<DcaFormValues>({

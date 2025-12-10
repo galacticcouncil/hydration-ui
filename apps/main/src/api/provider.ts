@@ -8,7 +8,7 @@ import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory, hasOwn } from "@galacticcouncil/utils"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
-import { PolkadotClient } from "polkadot-api"
+import { createClient, PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -72,7 +72,7 @@ export const providerQuery = (rpcUrlList: string[]) => {
 
 const getProviderData = async (rpcUrlList: string[] = []) => {
   let endpoint = ""
-  const papiClient = await api.getWs(rpcUrlList, {
+  const ws = api.getWs(rpcUrlList, {
     onStatusChanged: (status) => {
       if (status.type === WsEvent.CONNECTED) {
         endpoint = status.uri
@@ -80,6 +80,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     },
   })
 
+  const papiClient = createClient(ws)
   const papi = papiClient.getTypedApi(hydration)
 
   const metadata = AssetMetadataFactory.getInstance()

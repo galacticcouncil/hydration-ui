@@ -1,3 +1,4 @@
+import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import {
   Box,
@@ -12,7 +13,6 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
-import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
@@ -40,10 +40,11 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
 
   const now = Date.now()
 
-  const frequencyPeriod = watch("frequency")
-  const frequency = getPeriodDuration(frequencyPeriod)
+  const durationTimeFrame = watch("duration")
+  const duration = getTimeFrameMillis(durationTimeFrame)
+  const frequency =
+    order && order.tradeCount > 0 ? duration / order.tradeCount : 0
 
-  const duration = order ? order.tradeCount * frequency : 0
   const endDate = new Date(now + duration)
   const endDateValid = !isNaN(endDate.valueOf())
 
@@ -78,8 +79,8 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
                   symbol: sellAsset.symbol,
                 }),
                 buySymbol: buyAsset.symbol,
-                timeframe: t("interval", { value: frequency }),
-                period: t("interval", { value: duration }),
+                frequency: t("interval", { value: frequency }),
+                duration: t("interval", { value: duration }),
               }}
             >
               <Box as="span" color={getToken("text.tint.secondary")} />
