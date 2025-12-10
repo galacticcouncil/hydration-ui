@@ -17,7 +17,7 @@ export const BorrowHistoryPage = () => {
     pageSize: 10,
   })
 
-  if (!account?.address) {
+  if (!account) {
     return <BorrowHistoryPlaceholder />
   }
 
