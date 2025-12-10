@@ -44,7 +44,7 @@ export const SuppliedAssetsTable = () => {
 
   return (
     <>
-      <TablePaper isTransparent>
+      <TablePaper>
         <SuppliedAssetsHeader />
         <Separator />
         {isMobile ? (

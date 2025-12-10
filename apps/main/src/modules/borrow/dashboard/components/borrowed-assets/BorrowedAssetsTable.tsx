@@ -34,7 +34,7 @@ export const BorrowedAssetsTable = () => {
   }
 
   return (
-    <TablePaper isTransparent>
+    <TablePaper>
       <BorrowedAssetsHeader />
       <Separator />
       {isMobile ? (
