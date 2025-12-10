@@ -26,8 +26,11 @@ export const useWalletRewardsSectionData = () => {
   const stakingEmpty = Big(staking?.maxRewards || "0").lte(0)
   const referralsEmpty = Big(referral?.totalRewards || "0").lte(0)
 
-  const isEmpty =
-    incentivesEmpty && farmingEmpty && stakingEmpty && referralsEmpty
+  // TODO when staking claim is approved it should affect possibility of claiming all rewards
+  // const isEmpty =
+  //   incentivesEmpty && farmingEmpty && stakingEmpty && referralsEmpty
+
+  const isEmpty = incentivesEmpty && farmingEmpty && referralsEmpty
 
   const isLoading =
     incentivesLoading || liquidityLoading || stakingLoading || referralLoading
