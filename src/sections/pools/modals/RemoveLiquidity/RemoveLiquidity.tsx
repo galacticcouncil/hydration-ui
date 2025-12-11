@@ -21,7 +21,7 @@ type RemoveLiquidityProps = {
   pool: TAnyPool
 }
 
-export enum Page {
+enum Page {
   REMOVE_LIQUIDITY,
   LIMIT_LIQUIDITY,
 }
