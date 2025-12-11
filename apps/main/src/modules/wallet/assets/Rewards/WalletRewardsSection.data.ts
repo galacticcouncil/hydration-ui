@@ -3,6 +3,7 @@ import Big from "big.js"
 import { useBorrowClaimableRewards } from "@/api/borrow"
 import { useReferralRewards } from "@/hooks/data/useReferralRewards"
 import { useStakingRewards } from "@/hooks/data/useStakingRewards"
+import { MIN_CLAIMABLE_INCENTIVES_USDT } from "@/modules/borrow/dashboard/components/DashboardHeader"
 import { useLiquidityMiningRewards } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -21,7 +22,7 @@ export const useWalletRewardsSectionData = () => {
   const { data: staking, isLoading: stakingLoading } = useStakingRewards()
   const { data: referral, isLoading: referralLoading } = useReferralRewards()
 
-  const incentivesEmpty = claimableRewardsUsd <= 0
+  const incentivesEmpty = claimableRewardsUsd < MIN_CLAIMABLE_INCENTIVES_USDT
   const farmingEmpty = Big(liquidityUSD).lte(0)
   const stakingEmpty = Big(staking?.maxRewards || "0").lte(0)
   const referralsEmpty = Big(referral?.totalRewards || "0").lte(0)
