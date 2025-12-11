@@ -46,7 +46,11 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
           {
             title: t("liquidity.add.modal.title"),
             content: isXYK ? (
-              <AddLiquidityFormXYK pool={pool} onClose={onClose} />
+              <AddLiquidityFormXYK
+                pool={pool}
+                onClose={onClose}
+                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+              />
             ) : (
               <AddLiquidityForm
                 assetId={assetId}

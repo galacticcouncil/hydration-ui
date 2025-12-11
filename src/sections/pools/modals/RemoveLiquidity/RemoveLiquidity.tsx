@@ -66,6 +66,7 @@ export const RemoveLiquidity = ({
                 onClose={onClose}
                 onSuccess={onSuccess}
                 pool={pool}
+                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ) : position ? (
               <RemoveLiquidityForm

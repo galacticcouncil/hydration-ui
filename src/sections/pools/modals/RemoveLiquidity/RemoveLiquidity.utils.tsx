@@ -51,7 +51,7 @@ const defaultValues = {
   minWithdrawalFee: BN_0,
 }
 
-const useMinSharesToGet = () => {
+export const useMinSharesToGet = () => {
   const { addLiquidityLimit } = useLiquidityLimit()
 
   return (sharesToGet: BN) =>

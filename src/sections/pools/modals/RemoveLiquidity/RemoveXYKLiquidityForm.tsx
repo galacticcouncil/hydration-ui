@@ -14,17 +14,21 @@ import { TXYKPool } from "sections/pools/PoolsPage.utils"
 import { useXYKSDKPools, useXYKTotalLiquidity } from "api/xyk"
 import { useAccountBalances } from "api/deposits"
 import BN from "bignumber.js"
+import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
+import { useMinSharesToGet } from "./RemoveLiquidity.utils"
 
 type RemoveLiquidityProps = {
   onClose: () => void
   onSuccess: () => void
   pool: TXYKPool
+  setLiquidityLimit: () => void
 }
 
 export const RemoveXYKLiquidityForm = ({
   onClose,
   onSuccess,
   pool,
+  setLiquidityLimit,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const form = useForm<{ value: number }>({ defaultValues: { value: 25 } })
@@ -40,6 +44,8 @@ export const RemoveXYKLiquidityForm = ({
     []
 
   const totalLiquidity = useXYKTotalLiquidity(pool.poolAddress)
+
+  const getMinAssetToGet = useMinSharesToGet()
 
   const { data: accountAssets } = useAccountBalances()
   const shareTokenBalance = accountAssets?.accountAssetsMap.get(
@@ -66,12 +72,21 @@ export const RemoveXYKLiquidityForm = ({
   })
 
   const handleSubmit = async () => {
+    const [amountA = BN_0, amountB = BN_0] = removeAmount
+
+    if (amountA.isZero() && amountB.isZero()) return
+
+    const minAmountA = getMinAssetToGet(amountA)
+    const minAmountB = getMinAssetToGet(amountB)
+
     await createTransaction(
       {
-        tx: api.tx.xyk.removeLiquidity(
+        tx: api.tx.xyk.removeLiquidityWithLimits(
           assetAMeta.id,
           assetBMeta.id,
           removeShareToken.toFixed(),
+          minAmountA,
+          minAmountB,
         ),
       },
       {
@@ -166,6 +181,10 @@ export const RemoveXYKLiquidityForm = ({
           </STradingPairContainer>
         </div>
         <Spacer size={6} />
+        <LiquidityLimitField
+          setLiquidityLimit={setLiquidityLimit}
+          type="liquidity"
+        />
       </div>
       <div>
         <Spacer size={20} />
