@@ -1,5 +1,4 @@
 import {
-  ArrowRightLeftIcon,
   BanknoteIcon,
   ChartPieIcon,
   CoinsIcon,
