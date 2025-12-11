@@ -16,21 +16,30 @@ import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/Sett
 
 type Props = {
   readonly slippage: number | null
-  readonly onSlippageChange: (slippage: number | null) => void
+  readonly options?: ReadonlyArray<number>
   readonly helpTooltip?: string
   readonly description?: string
   readonly error?: string
+  readonly onSlippageChange: (slippage: number | null) => void
 }
 
 export const TradeSlippage: FC<Props> = ({
   slippage,
-  onSlippageChange,
+  options = defaultSlippageOptions,
   helpTooltip,
   description,
   error,
+  onSlippageChange,
 }) => {
   const { t } = useTranslation()
   const isError = !!error
+
+  const slippageOptions = Array.from(new Set(options).values()).map<
+    SliderTabsOption<number>
+  >((slippage) => ({
+    id: slippage,
+    label: t("percent", { value: slippage }),
+  }))
 
   return (
     <Flex direction="column" gap={getTokenPx("buttons.paddings.quart")}>
@@ -71,8 +80,4 @@ export const TradeSlippage: FC<Props> = ({
   )
 }
 
-const slippageOptions: ReadonlyArray<SliderTabsOption<number>> = [
-  { id: 0.5, label: "0.5%" },
-  { id: 1, label: "1%" },
-  { id: 3, label: "3%" },
-]
+const defaultSlippageOptions: ReadonlyArray<number> = [0.5, 1, 3]

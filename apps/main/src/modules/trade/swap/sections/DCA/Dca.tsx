@@ -1,5 +1,5 @@
 import { useSearch } from "@tanstack/react-router"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
@@ -8,7 +8,10 @@ import { DcaForm } from "@/modules/trade/swap/sections/DCA/DcaForm"
 import { DcaOrderInfo } from "@/modules/trade/swap/sections/DCA/DcaOrderInfo"
 import { DcaSummary } from "@/modules/trade/swap/sections/DCA/DcaSummary"
 import { DcaWarnings } from "@/modules/trade/swap/sections/DCA/DcaWarnings"
-import { useDcaPriceImpactValidation } from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
+import {
+  DcaValidationWarning,
+  useDcaPriceImpactValidation,
+} from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
 import { useDcaTradeOrder } from "@/modules/trade/swap/sections/DCA/useDcaTradeOrder"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
@@ -21,25 +24,41 @@ export const Dca: FC = () => {
   const form = useDcaForm({ assetIn, assetOut })
 
   const { order, orderTx, healthFactor, isLoading } = useDcaTradeOrder(form)
-  const { errors, priceImpactLossMessage } = useDcaPriceImpactValidation(order)
+  const { warnings, errors } = useDcaPriceImpactValidation(order)
+
   const submitDcaOrder = useSubmitDcaOrder()
 
   const [priceImpactLossAccepted, setPriceImpactLossAccepted] = useState(false)
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
+  const { watch } = form
+  useEffect(() => {
+    const subscription = watch((_, { type }) => {
+      if (type !== "change") {
+        return
+      }
+
+      setPriceImpactLossAccepted(false)
+      setHealthFactorRiskAccepted(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [watch])
+
+  const isFormValid = !!order && form.formState.isValid && !errors.length
+
   const isPriceImpactCheckSatisfied =
-    !priceImpactLossMessage || priceImpactLossAccepted
+    !warnings.includes(DcaValidationWarning.PriceImpact) ||
+    priceImpactLossAccepted
 
   const isHealthFactorCheckSatisfied =
     !healthFactor?.isUserConsentRequired || healthFactorRiskAccepted
 
   const isSubmitEnabled =
-    !!order &&
-    isPriceImpactCheckSatisfied &&
-    isHealthFactorCheckSatisfied &&
-    form.formState.isValid &&
-    !errors.length
+    isFormValid && isPriceImpactCheckSatisfied && isHealthFactorCheckSatisfied
 
   return (
     <FormProvider {...form}>
@@ -49,17 +68,19 @@ export const Dca: FC = () => {
             order && orderTx && submitDcaOrder.mutate([values, order, orderTx]),
         )}
       >
-        <DcaForm order={order} />
+        <DcaForm />
         <DcaSummary order={order} isLoading={isLoading} />
+        <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
         <DcaWarnings
-          priceImpactLossMessage={priceImpactLossMessage}
+          isFormValid={isFormValid}
+          order={order}
+          warnings={warnings}
           priceImpactLossAccepted={priceImpactLossAccepted}
           healthFactor={healthFactor}
           healthFactorRiskAccepted={healthFactorRiskAccepted}
           onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
           onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
         />
-        <DcaErrors errors={errors} />
         <SwapSectionSeparator />
         <DcaFooter isEnabled={isSubmitEnabled} />
         <DcaOrderInfo

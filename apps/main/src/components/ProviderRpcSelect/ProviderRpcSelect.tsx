@@ -1,6 +1,6 @@
 import { Button, Skeleton, Spinner } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { FC, useState } from "react"
 
 import { bestNumberQuery } from "@/api/chain"
 import { useActiveProviderProps } from "@/api/provider"
@@ -9,7 +9,11 @@ import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
 import { SContainer } from "@/components/ProviderRpcSelect/ProviderRpcSelect.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-export const ProviderRpcSelect = () => {
+type Props = {
+  readonly bottomPinned?: boolean
+}
+
+export const ProviderRpcSelect: FC<Props> = ({ bottomPinned }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const provider = useRpcProvider()
 
@@ -17,7 +21,7 @@ export const ProviderRpcSelect = () => {
   const providerProps = useActiveProviderProps()
 
   return (
-    <SContainer>
+    <SContainer bottomPinned={bottomPinned}>
       <Button
         variant="tertiary"
         size="small"

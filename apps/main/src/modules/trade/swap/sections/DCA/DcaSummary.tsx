@@ -7,7 +7,7 @@ import {
   SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -68,15 +68,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
       <div>
         <Flex direction="column" gap={8} py={8}>
           <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text
-            display="flex"
-            sx={{ flexWrap: "wrap" }}
-            gap={3}
-            fw={500}
-            fs="p4"
-            lh={1}
-            color={getToken("text.high")}
-          >
+          <Text fw={500} fs="p2" lh={px(21)} color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey="trade:dca.summary.description"
@@ -90,7 +82,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
                 period: t("interval", { value: duration }),
               }}
             >
-              <Box as="span" color={getToken("colors.azureBlue.300")} />
+              <Box as="span" color={getToken("text.tint.secondary")} />
             </Trans>
           </Text>
         </Flex>

@@ -21,7 +21,7 @@ import {
 import { AddressBookModal, useAccount } from "@galacticcouncil/web3-connect"
 import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { useQuery } from "@tanstack/react-query"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -65,6 +65,21 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
   const [cexDisclaimerAccepted, setCexDisclaimerAccepted] = useState(false)
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
+
+  const { watch } = form
+  useEffect(() => {
+    const subscription = watch((_, { type }) => {
+      if (type !== "change") {
+        return
+      }
+
+      setHealthFactorRiskAccepted(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [watch])
 
   const { addresses: userOwnedAddresses } = useAddressStore()
 
