@@ -2,6 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useCallback } from "react"
 
+import { useGetClaimAllBorrowRewardsTx } from "@/api/borrow"
 import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { useXykPools } from "@/api/pools"
@@ -64,6 +65,7 @@ export const useClaimAllWalletRewards = () => {
   const { rewards: miningRewards = [], refetch: refetchMiningRewards } =
     useLiquidityMiningRewards()
 
+  const getClaimBorrowTx = useGetClaimAllBorrowRewardsTx()
   const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
   const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
@@ -71,11 +73,15 @@ export const useClaimAllWalletRewards = () => {
 
   return useMutation({
     mutationFn: async () => {
+      const claimBorrow = await getClaimBorrowTx()
       // const claimStaking = getClaimStakingTx()
       const claimReferral = papi.tx.Referrals.claim_rewards()
 
       const tx = papi.tx.Utility.batch_all({
         calls: [
+          ...(!walletRewards.incentives.isEmpty
+            ? [claimBorrow.decodedCall]
+            : []),
           ...(!walletRewards.farming.isEmpty
             ? farmRewardsTx.map((tx) => tx.decodedCall)
             : []),

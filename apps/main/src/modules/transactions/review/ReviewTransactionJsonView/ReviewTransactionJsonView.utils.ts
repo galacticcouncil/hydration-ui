@@ -1,4 +1,4 @@
-import { isBinary, safeParse } from "@galacticcouncil/utils"
+import { isBinary, safeParse, safeStringify } from "@galacticcouncil/utils"
 import { CompatibilityToken } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
@@ -43,7 +43,7 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
 
 export const decodeTx = (tx: AnyTransaction): object => {
   if (isPapiTransaction(tx)) {
-    return tx.decodedCall
+    return safeParse(safeStringify(tx.decodedCall))
   }
 
   if (isEvmCall(tx)) {

@@ -21,6 +21,8 @@ import { useTranslation } from "react-i18next"
 
 import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk"
 
+export const MIN_CLAIMABLE_INCENTIVES_USDT = 0.01
+
 export const DashboardHeader = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { user, isConnected, loading } = useMoneyMarketData()
@@ -104,7 +106,7 @@ export const DashboardHeader = () => {
           size="large"
         />
 
-        {Big(claimableRewardsUsd).gte(0.01) && (
+        {Big(claimableRewardsUsd).gte(MIN_CLAIMABLE_INCENTIVES_USDT) && (
           <ValueStats
             label={t("borrow:availableRewards")}
             wrap={[false, false, true]}
