@@ -2,7 +2,7 @@ import { useOraclePrice } from "api/farms"
 import { useOmnipoolDataObserver } from "api/omnipool"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
-import { BN_0, MIN_WITHDRAWAL_FEE } from "utils/constants"
+import { BN_0, BN_100, MIN_WITHDRAWAL_FEE } from "utils/constants"
 import BN from "bignumber.js"
 import {
   calculate_lrna_spot_price,
@@ -18,6 +18,7 @@ import { TLPData, useLiquidityPositionData } from "utils/omnipool"
 import { useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
+import { useLiquidityLimit } from "state/liquidityLimit"
 
 export type RemoveLiquidityProps = {
   onClose: () => void
@@ -25,6 +26,18 @@ export type RemoveLiquidityProps = {
   onSuccess: () => void
   onSubmitted?: (tokensToGet: string) => void
   onError?: () => void
+  setLiquidityLimit: () => void
+}
+
+type TLiquidityOut = {
+  tokensToGet: BN
+  tokensToGetShifted: BN
+  lrnaToGet: BN
+  lrnaToGetShifted: BN
+  lrnaPayWith: BN
+  tokensPayWith: BN
+  withdrawalFee: BN
+  minWithdrawalFee: BN
 }
 
 const defaultValues = {
@@ -36,6 +49,13 @@ const defaultValues = {
   tokensPayWith: BN_0,
   withdrawalFee: BN_0,
   minWithdrawalFee: BN_0,
+}
+
+const useMinSharesToGet = () => {
+  const { addLiquidityLimit } = useLiquidityLimit()
+
+  return (sharesToGet: BN) =>
+    sharesToGet.times(BN_100.minus(addLiquidityLimit).div(BN_100)).toFixed(0)
 }
 
 export const useRemoveLiquidity = (
@@ -52,6 +72,7 @@ export const useRemoveLiquidity = (
   const { hub } = useAssets()
   const { pool } = usePoolData()
   const { createBatch } = useCreateBatchTx()
+  const getMinSharesToGet = useMinSharesToGet()
 
   const isPositionMultiple = Array.isArray(position)
 
@@ -99,7 +120,7 @@ export const useRemoveLiquidity = (
     }, [meta, isPositionMultiple, position, percentage])
 
   const calculateLiquidityValues = useCallback(
-    (position: TLPData, removeSharesValue: BN) => {
+    (position: TLPData, removeSharesValue: BN): TLiquidityOut | undefined => {
       if (omnipoolAsset && oracle && minlFeeQuery) {
         const oraclePrice = oracle.oraclePrice ?? BN_0
         const minWithdrawalFee = minlFeeQuery
@@ -155,38 +176,68 @@ export const useRemoveLiquidity = (
     [getData, minlFeeQuery, omnipoolAsset, oracle, pool.canAddLiquidity],
   )
 
-  const values = useMemo(() => {
+  const { values, liquidityOut } = useMemo(() => {
     if (isPositionMultiple) {
-      return position.reduce((acc, pos) => {
-        const values = calculateLiquidityValues(pos, BN(pos.shares))
+      const { liquidityOut, values } = position.reduce<{
+        liquidityOut: Array<{ position: TLPData; liquidityOut: TLiquidityOut }>
+        values: TLiquidityOut
+      }>(
+        (acc, pos) => {
+          const values = calculateLiquidityValues(pos, BN(pos.shares))
 
-        if (values) {
-          return {
-            tokensToGet: acc.tokensToGet.plus(values.tokensToGet),
-            tokensToGetShifted: acc.tokensToGetShifted.plus(
-              values.tokensToGetShifted,
-            ),
-            lrnaToGetShifted: acc.lrnaToGetShifted.plus(
-              values.lrnaToGetShifted,
-            ),
-            lrnaToGet: acc.lrnaToGet.plus(values.lrnaToGet),
-            lrnaPayWith: acc.lrnaPayWith.plus(values.lrnaPayWith),
-            tokensPayWith: acc.tokensPayWith.plus(values.tokensPayWith),
-            withdrawalFee: values.withdrawalFee,
-            minWithdrawalFee: values.minWithdrawalFee,
+          if (values) {
+            acc.liquidityOut.push({ position: pos, liquidityOut: values })
+            return {
+              liquidityOut: acc.liquidityOut,
+              values: {
+                tokensToGet: acc.values.tokensToGet.plus(values.tokensToGet),
+                tokensToGetShifted: acc.values.tokensToGetShifted.plus(
+                  values.tokensToGetShifted,
+                ),
+                lrnaToGetShifted: acc.values.lrnaToGetShifted.plus(
+                  values.lrnaToGetShifted,
+                ),
+                lrnaToGet: acc.values.lrnaToGet.plus(values.lrnaToGet),
+                lrnaPayWith: acc.values.lrnaPayWith.plus(values.lrnaPayWith),
+                tokensPayWith: acc.values.tokensPayWith.plus(
+                  values.tokensPayWith,
+                ),
+                withdrawalFee: values.withdrawalFee,
+                minWithdrawalFee: values.minWithdrawalFee,
+              },
+            }
           }
-        }
 
-        return acc
-      }, defaultValues)
+          return acc
+        },
+        {
+          values: defaultValues,
+          liquidityOut: [],
+        },
+      )
+
+      return {
+        values,
+        liquidityOut,
+      }
     }
 
-    return calculateLiquidityValues(position, removeShares)
+    const values = calculateLiquidityValues(position, removeShares)
+
+    return {
+      values,
+      liquidityOut: [
+        {
+          position: position,
+          liquidityOut: values ?? defaultValues,
+        },
+      ],
+    }
   }, [calculateLiquidityValues, isPositionMultiple, position, removeShares])
 
   const mutation = useMutation(async () => {
     if (isPositionMultiple) {
-      if (!values) return null
+      if (!values || liquidityOut.length === 0) return null
 
       const toast = TOAST_MESSAGES.reduce((memo, type) => {
         const msType = type === "onError" ? "onLoading" : type
@@ -207,12 +258,16 @@ export const useRemoveLiquidity = (
         onError,
       }
 
-      const txs = position.map((position) =>
-        api.tx.omnipool.removeLiquidity(
+      const txs = liquidityOut.map(({ position, liquidityOut }) => {
+        const shares = BN(position.shares)
+        const minShares = getMinSharesToGet(liquidityOut.tokensToGet)
+
+        return api.tx.omnipool.removeLiquidityWithLimit(
           position.id,
-          BN(position.shares).toFixed(0),
-        ),
-      )
+          shares.toFixed(),
+          minShares,
+        )
+      })
 
       if (txs.length > 1) {
         return await createBatch(txs, {}, transactionOptions)
@@ -249,9 +304,10 @@ export const useRemoveLiquidity = (
 
       return await createTransaction(
         {
-          tx: api.tx.omnipool.removeLiquidity(
+          tx: api.tx.omnipool.removeLiquidityWithLimit(
             position.id,
             removeShares.toFixed(0),
+            getMinSharesToGet(values.tokensToGet),
           ),
         },
         {

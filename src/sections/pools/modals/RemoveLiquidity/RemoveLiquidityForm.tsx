@@ -17,6 +17,7 @@ import {
 } from "./RemoveLiquidity.utils"
 import { useAssets } from "providers/assets"
 import { useRpcProvider } from "providers/rpcProvider"
+import { LiquidityLimitField } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
 
 export const RemoveLiquidityForm = ({
   onClose,
@@ -24,6 +25,7 @@ export const RemoveLiquidityForm = ({
   onSubmitted,
   onError,
   position,
+  setLiquidityLimit,
 }: RemoveLiquidityProps) => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -120,6 +122,13 @@ export const RemoveLiquidityForm = ({
           )}
         </STradingPairContainer>
       </div>
+      <Spacer size={6} />
+
+      <LiquidityLimitField
+        setLiquidityLimit={setLiquidityLimit}
+        type="liquidity"
+      />
+
       <Spacer size={6} />
       <FeeRange
         minFee={values?.minWithdrawalFee.multipliedBy(100)}
