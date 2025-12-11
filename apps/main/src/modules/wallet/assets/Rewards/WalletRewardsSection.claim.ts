@@ -1,5 +1,6 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
+import { useCallback } from "react"
 
 import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
@@ -15,21 +16,14 @@ import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/Wal
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
-export const useClaimAllWalletRewards = () => {
-  const { account } = useAccount()
-  const address = account?.address
-
+// @ts-expect-error Temporarily unused
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const useGetClaimStakingTx = () => {
   const rpc = useRpcProvider()
   const { papi } = rpc
 
-  const { createTransaction } = useTransactionsStore()
-
-  const { data: pools = [] } = useXykPools()
-
-  const { rewards: miningRewards = [], refetch: refetchMiningRewards } =
-    useLiquidityMiningRewards()
-
-  const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
+  const { account } = useAccount()
+  const address = account?.address
 
   const { data: uniquesData } = useQuery(uniquesIds(rpc))
   const stakingId = uniquesData?.stakingId ?? 0n
@@ -47,22 +41,37 @@ export const useClaimAllWalletRewards = () => {
     votesSuccess,
   )
 
-  const walletRewards = useWalletRewardsSectionData()
+  return useCallback(() => {
+    return positionId === undefined
+      ? undefined
+      : getClaimStakingTx(
+          papi,
+          positionId,
+          newProcessedVotesIds,
+          oldProcessedVotesIds,
+        )
+  }, [papi, positionId, newProcessedVotesIds, oldProcessedVotesIds])
+}
 
+export const useClaimAllWalletRewards = () => {
+  const rpc = useRpcProvider()
+  const { papi } = rpc
+
+  const { createTransaction } = useTransactionsStore()
+
+  const { data: pools = [] } = useXykPools()
+
+  const { rewards: miningRewards = [], refetch: refetchMiningRewards } =
+    useLiquidityMiningRewards()
+
+  const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
+  const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
+  // const getClaimStakingTx = useGetClaimStakingTx()
 
   return useMutation({
     mutationFn: async () => {
-      const claimStaking =
-        positionId === undefined
-          ? undefined
-          : getClaimStakingTx(
-              papi,
-              positionId,
-              newProcessedVotesIds,
-              oldProcessedVotesIds,
-            )
-
+      // const claimStaking = getClaimStakingTx()
       const claimReferral = papi.tx.Referrals.claim_rewards()
 
       const tx = papi.tx.Utility.batch_all({
@@ -70,11 +79,12 @@ export const useClaimAllWalletRewards = () => {
           ...(!walletRewards.farming.isEmpty
             ? farmRewardsTx.map((tx) => tx.decodedCall)
             : []),
-          ...(!walletRewards.staking.isEmpty && claimStaking
-            ? claimStaking.decodedCall.type === "Staking"
-              ? [claimStaking.decodedCall]
-              : claimStaking.decodedCall.value.value.calls
-            : []),
+          // TODO staking claim is disabled currently
+          // ...(!walletRewards.staking.isEmpty && claimStaking
+          //   ? claimStaking.decodedCall.type === "Staking"
+          //     ? [claimStaking.decodedCall]
+          //     : claimStaking.decodedCall.value.value.calls
+          //   : []),
           ...(!walletRewards.referral.isEmpty
             ? [claimReferral.decodedCall]
             : []),
