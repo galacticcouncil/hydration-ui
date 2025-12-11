@@ -15,11 +15,14 @@ import {
   Fragment,
   ReactNode,
   Ref,
+  useEffect,
   useImperativeHandle,
   useMemo,
+  useState,
 } from "react"
 
 import { Button } from "@/components/Button"
+import { CollapsibleContent, CollapsibleRoot } from "@/components/Collapsible"
 import {
   SCollapsible,
   SPagination,
@@ -296,16 +299,13 @@ const DataTable = <TData,>({
                       {override}
                     </TableRowOverride>
                   )}
-                  {isRowExpandable && renderSubComponent && isRowExpanded && (
-                    <TableRow>
-                      <TableCell
-                        colSpan={table.getVisibleLeafColumns().length + 1}
-                      >
-                        <SCollapsible>
-                          {renderSubComponent(row.original)}
-                        </SCollapsible>
-                      </TableCell>
-                    </TableRow>
+                  {isRowExpandable && renderSubComponent && (
+                    <DataTableCollapsibleRow
+                      colSpan={table.getVisibleLeafColumns().length + 1}
+                      isExpanded={isRowExpanded}
+                    >
+                      {renderSubComponent(row.original)}
+                    </DataTableCollapsibleRow>
                   )}
                 </Fragment>
               )
@@ -419,4 +419,42 @@ const DataTableExternalLink: FC<ComponentProps<typeof ExternalLink>> = ({
   ...props
 }) => {
   return href ? <ExternalLink href={href} {...props} /> : props.children
+}
+
+type DataTableCollapsibleRowProps = {
+  colSpan: number
+  isExpanded: boolean
+  children: ReactNode
+}
+
+const DataTableCollapsibleRow: FC<DataTableCollapsibleRowProps> = ({
+  colSpan,
+  isExpanded,
+  children,
+}) => {
+  const [isVisible, setIsVisible] = useState(isExpanded)
+
+  useEffect(() => {
+    if (isExpanded) {
+      setIsVisible(true)
+    }
+  }, [isExpanded])
+
+  const handleAnimationEnd = () => {
+    if (!isExpanded) {
+      setIsVisible(false)
+    }
+  }
+
+  return (
+    <TableRow sx={{ display: isVisible ? "table-row" : "none" }}>
+      <TableCell colSpan={colSpan} sx={{ p: "0!important" }}>
+        <CollapsibleRoot open={isExpanded}>
+          <CollapsibleContent onAnimationEnd={handleAnimationEnd}>
+            <SCollapsible>{children}</SCollapsible>
+          </CollapsibleContent>
+        </CollapsibleRoot>
+      </TableCell>
+    </TableRow>
+  )
 }
