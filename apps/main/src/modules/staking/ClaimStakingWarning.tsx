@@ -1,9 +1,8 @@
-import { Warning3D } from "@galacticcouncil/ui/assets/icons"
+import Warning3D from "@galacticcouncil/ui/assets/images/Warning3D.webp"
 import {
-  Box,
   Button,
   Flex,
-  Icon,
+  Image,
   ModalBody,
   ModalClose,
   ModalFooter,
@@ -47,14 +46,15 @@ export const ClaimStakingWarning: FC<Props> = ({
           <ModalClose />
         </Flex>
         <Flex pt={10} pb={20} direction="column" gap={20} align="center">
-          <Box
-            p={24}
+          <Flex
             bg={getToken("accents.alertAlt.dimBg")}
             borderRadius="full"
-            width="min-content"
+            size={94}
+            align="center"
+            justify="center"
           >
-            <Icon component={Warning3D} size={45} />
-          </Box>
+            <Image src={Warning3D} width={45} height={45} />
+          </Flex>
           <Flex
             direction="column"
             align="center"

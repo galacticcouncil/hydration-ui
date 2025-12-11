@@ -35,6 +35,12 @@ export default defineConfig({
     outDir: "build",
     rollupOptions: {
       output: {
+        chunkFileNames: "chunk-[hash].js",
+        manualChunks: (id) => {
+          if (id.includes("/assets/icons")) {
+            return "icons"
+          }
+        },
         experimentalMinChunkSize: 100_000,
       },
     },
