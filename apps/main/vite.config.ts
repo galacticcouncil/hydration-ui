@@ -33,11 +33,6 @@ export default defineConfig({
   build: {
     target: "es2022",
     outDir: "build",
-    rollupOptions: {
-      output: {
-        experimentalMinChunkSize: 200_000,
-      },
-    },
   },
   resolve: {
     alias: {
