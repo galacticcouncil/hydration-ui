@@ -1,5 +1,5 @@
 import { QuestionCircleRegular } from "@galacticcouncil/ui/assets/icons"
-import { ButtonIcon, ExternalLink } from "@galacticcouncil/ui/components"
+import { ButtonIcon, ExternalLink, Icon } from "@galacticcouncil/ui/components"
 import { FC, lazy } from "react"
 
 import { HYDRATION_DOCS_LINK } from "@/config/links"
@@ -22,7 +22,7 @@ export const HeaderToolbar: FC = () => {
       {hasTopNavbar && (
         <ButtonIcon asChild>
           <ExternalLink href={HYDRATION_DOCS_LINK}>
-            <QuestionCircleRegular />
+            <Icon component={QuestionCircleRegular} size={20} />
           </ExternalLink>
         </ButtonIcon>
       )}

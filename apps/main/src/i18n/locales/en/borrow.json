@@ -26,6 +26,8 @@
   "debt": "Debt",
   "emode.category": "E-mode category",
   "emode.label": "E-mode",
+  "emptyState.title": "No wallet connected",
+  "emptyState.description": "Connect a wallet to view your transaction history.",
   "healthFactor": "Health factor",
   "history.event.all": "All",
   "history.event.borrow": "Borrow",

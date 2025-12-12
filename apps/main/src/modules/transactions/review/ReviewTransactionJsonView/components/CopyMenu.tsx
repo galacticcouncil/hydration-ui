@@ -45,7 +45,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
         <Icon size={14} component={CopyIcon} />
         {t("transaction.jsonview.copy.title")}
       </CopyMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" sideOffset={0}>
         {isObjectType(txJson) && (
           <DropdownMenuItem asChild>
             <MenuSelectionItem asChild variant="filterLink">

@@ -1,6 +1,7 @@
 import { Settings as SettingsIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   ButtonIcon,
+  Icon,
   ModalContent,
   ModalRoot,
   ModalTrigger,
@@ -13,7 +14,7 @@ export const Settings: FC = () => (
   <ModalRoot>
     <ModalTrigger asChild>
       <ButtonIcon>
-        <SettingsIcon size={19} />
+        <Icon component={SettingsIcon} size={20} />
       </ButtonIcon>
     </ModalTrigger>
     <ModalContent>

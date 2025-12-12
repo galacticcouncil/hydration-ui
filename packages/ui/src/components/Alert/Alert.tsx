@@ -1,6 +1,6 @@
-import { FC, ReactNode } from "react"
+import { ComponentType, FC, ReactNode } from "react"
 
-import { CircleInfo, TriangleAlert } from "@/assets/icons"
+import { CircleInfo, ExclamationMark, TriangleAlert } from "@/assets/icons"
 import {
   AlertVariant,
   SAlertContainer,
@@ -33,7 +33,8 @@ export const Alert: FC<AlertProps> = ({
       {displayIcon && (
         <SAlertIcon
           variant={variant}
-          component={variant === "warning" ? TriangleAlert : CircleInfo}
+          size={16}
+          component={alertIcons[variant]}
         />
       )}
 
@@ -55,4 +56,10 @@ export const Alert: FC<AlertProps> = ({
       </Flex>
     </SAlertContainer>
   )
+}
+
+const alertIcons: Record<AlertVariant, ComponentType> = {
+  info: CircleInfo,
+  warning: TriangleAlert,
+  error: ExclamationMark,
 }

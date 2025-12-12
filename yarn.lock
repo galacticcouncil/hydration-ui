@@ -1869,6 +1869,10 @@
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.5.1.tgz#8f7c806f804eedcdab8fbed7f07cc7735aedc823"
   integrity sha512-Deq1JGbXZOfgteFkxtEvqcT9LqlPNZ0DjK6ApaWXesrRvbrgMbYMXl5kfMHxxpiEI3Vf4MGhxrhueRQXjKgELw==
+"@galacticcouncil/descriptors@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.6.0.tgz#7607586cfc3f42ad06a27921cb522d7c4cdb00bb"
+  integrity sha512-JF6FDfu10AiGQAA8N2u3MUbhYJm2Re/Jyc2K0SmarmppUgrrmXhrL0EASeXOsm7PHP4mzct2NEFP/uwdWTYERw==
 
 "@galacticcouncil/math-hsm@^1.1.0":
   version "1.1.0"
@@ -1931,12 +1935,12 @@
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
 "@galacticcouncil/sdk-next@^0.18.0":
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.18.0.tgz#80bf79d38f696f7488555abc08408446f553707d"
-  integrity sha512-Kyh1agef8RWfAxTQIjHUfF2ZCa1ZVaAgrpceKgO0aSeP+FTqvNWMBoMdMMo2jfevCL/xvT/WmB3L5xp7FGLE4A==
+  version "0.18.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.18.1.tgz#62f5b949d98e88cbd251f673c4337f38f54232f0"
+  integrity sha512-M4FZ+RPjJ/Ub9tWHozYXUMkrXLQxt67fgdlRizsZG5eCFNRuKHyGtM3sInb9UhDkRSLxxyj2zRpt7aSD7baKRw==
   dependencies:
     "@galacticcouncil/common" "^0.1.1"
-    "@galacticcouncil/descriptors" "^1.5.1"
+    "@galacticcouncil/descriptors" "^1.6.0"
     "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"
     "@galacticcouncil/math-liquidity-mining" "^1.2.0"

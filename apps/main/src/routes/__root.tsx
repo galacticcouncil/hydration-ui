@@ -60,7 +60,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     return (
       <>
         <Loader />
-        <ProviderRpcSelect />
+        <ProviderRpcSelect bottomPinned />
       </>
     )
   },

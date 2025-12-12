@@ -31,13 +31,13 @@ export const SAlertContainer = styled.div<{
 
 const textColorVariants = createVariants<AlertVariant>((theme) => ({
   info: css`
-    color: ${theme.icons.primary};
+    color: ${theme.accents.info.onPrimary};
   `,
   error: css`
-    color: #ff674c;
+    color: ${theme.accents.danger.secondary};
   `,
   warning: css`
-    color: ${theme.accents.alert.primary};
+    color: ${theme.accents.alertAlt.primary};
   `,
 }))
 
@@ -55,10 +55,4 @@ export const SAlertTitle = styled.span<{
 
 export const SAlertIcon = styled(Icon)<{
   readonly variant: AlertVariant
-}>(({ variant }) => [
-  css`
-    width: 14px;
-    height: 14px;
-  `,
-  textColorVariants(variant),
-])
+}>(({ variant }) => textColorVariants(variant))

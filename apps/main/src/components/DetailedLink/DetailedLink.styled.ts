@@ -15,14 +15,10 @@ export const SDetailedLink = styled(Box)(
 
     text-decoration: none;
 
-    svg {
-      color: ${theme.icons.soft};
-    }
-
     &:hover {
       background: ${theme.surfaces.containers.high.hover};
       svg {
-        color: ${theme.controls.solid.activeHover};
+        color: ${theme.icons.primary};
       }
     }
   `,

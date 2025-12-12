@@ -261,4 +261,44 @@ export const animations = {
       opacity: 0;
     }
   `,
+  slideInTop: keyframes`
+    0% {
+      transform: translateY(-20%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  `,
+  slideOutTop: keyframes`
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-20%);
+      opacity: 0;
+    }
+  `,
+  slideInBottom: keyframes`
+    0% {
+      transform: translateY(20%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  `,
+  slideOutBottom: keyframes`
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(20%);
+      opacity: 0;
+    }
+  `,
 }

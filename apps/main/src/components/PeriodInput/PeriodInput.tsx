@@ -8,17 +8,17 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, px } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { FC, useRef } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   PeriodType,
   periodTypes,
 } from "@/components/PeriodInput/PeriodInput.utils"
-import i18n from "@/i18n"
 
 export type PeriodInputProps = {
   readonly periodValue?: number | null
-  readonly periodType?: PeriodType
+  readonly periodType: PeriodType
   readonly isError?: boolean
   readonly allowedPeriodTypes?: ReadonlySet<PeriodType>
   readonly className?: string
@@ -35,6 +35,12 @@ export const PeriodInput: FC<PeriodInputProps> = ({
   onPeriodTypeChange,
   onPeriodValueChange,
 }) => {
+  const { t } = useTranslation(["common"])
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  const formatPeriod = (type: PeriodType) =>
+    t(`period.${type}`, { count: periodValue ?? 0 })
+
   const periodOptions = (
     allowedPeriodTypes
       ? periodTypes.filter((periodType) => allowedPeriodTypes.has(periodType))
@@ -42,20 +48,22 @@ export const PeriodInput: FC<PeriodInputProps> = ({
   ).map(
     (type): SelectItem<PeriodType> => ({
       key: type,
-      label: i18n.t(`period.${type}`, { count: periodValue ?? 0 }),
+      label: formatPeriod(type),
     }),
   )
 
   return (
     <NumberInput
+      ref={inputRef}
       className={className}
       value={periodValue}
       decimalScale={0}
       allowNegative={false}
       isError={isError}
-      onValueChange={({ floatValue }) =>
+      keepInvalidInput
+      onValueChange={({ floatValue }) => {
         onPeriodValueChange(floatValue ?? null)
-      }
+      }}
       trailingElement={
         <Select
           items={periodOptions}
@@ -69,7 +77,7 @@ export const PeriodInput: FC<PeriodInputProps> = ({
                 transform="uppercase"
                 color={getToken("buttons.secondary.low.onRest")}
               >
-                {periodType}
+                {formatPeriod(periodType)}
               </Text>
               <Icon
                 component={ChevronDown}
@@ -79,6 +87,14 @@ export const PeriodInput: FC<PeriodInputProps> = ({
             </Flex>
           )}
           onValueChange={onPeriodTypeChange}
+          onOpenChange={(open) => {
+            if (!open) {
+              // focus is removed when the popover is closed so we need to wait a tick after closing
+              setTimeout(() => {
+                inputRef.current?.focus()
+              }, 0)
+            }
+          }}
         />
       }
     />
