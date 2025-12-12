@@ -65,7 +65,7 @@ export const AddStablepoolLiquidityWrapper = (
         assetId={selectedAssetId}
         farms={farms}
         onClose={props.onClose}
-        setLiquidityLimit={setLiquidityLimit}
+        onSetLiquidityLimit={setLiquidityLimit}
         onAssetOpen={onAssetOpen}
         initialAmount={initialAmount}
       />

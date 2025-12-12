@@ -49,14 +49,14 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
               <AddLiquidityFormXYK
                 pool={pool}
                 onClose={onClose}
-                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                onSetLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ) : (
               <AddLiquidityForm
                 assetId={assetId}
                 farms={farms}
                 onClose={onClose}
-                setLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                onSetLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
               />
             ),
           },

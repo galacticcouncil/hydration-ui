@@ -46,7 +46,7 @@ type Props = {
   onAssetOpen?: () => void
   onSuccess?: (result: ISubmittableResult, value: string) => void
   farms: TFarmAprData[]
-  setLiquidityLimit: () => void
+  onSetLiquidityLimit: () => void
 }
 
 export const AddLiquidityForm = ({
@@ -56,7 +56,7 @@ export const AddLiquidityForm = ({
   onSuccess,
   initialAmount,
   farms,
-  setLiquidityLimit,
+  onSetLiquidityLimit,
 }: Props) => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -222,7 +222,7 @@ export const AddLiquidityForm = ({
           <Spacer size={20} />
 
           <LiquidityLimitField
-            setLiquidityLimit={setLiquidityLimit}
+            setLiquidityLimit={onSetLiquidityLimit}
             type="liquidity"
           />
 
