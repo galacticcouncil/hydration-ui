@@ -1,9 +1,10 @@
-import { ProjectedAPR, StakedBalance } from "@galacticcouncil/ui/assets/icons"
+import ProjectedAPR from "@galacticcouncil/ui/assets/images/ProjectedAPR.webp"
+import StakedBalance from "@galacticcouncil/ui/assets/images/StakedBalance.webp"
 import { Pie, PieChart, Skeleton } from "@galacticcouncil/ui/components"
 import {
   Box,
   Flex,
-  Icon,
+  Image,
   Separator,
   Text,
   Tooltip,
@@ -128,7 +129,7 @@ export const DashboardStats: FC<Props> = ({
       <Flex direction="column" gap={getTokenPx("containers.paddings.tertiary")}>
         {isMobile && <Separator />}
         <Flex gap={9} align="center">
-          <Icon component={ProjectedAPR} size={50} />
+          <Image src={ProjectedAPR} width={50} height={50} />
           <Flex direction="column" gap={3}>
             <Flex gap={4} align="center">
               <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
@@ -163,7 +164,7 @@ export const DashboardStats: FC<Props> = ({
           <>
             <Separator />
             <Flex gap={10} align="center">
-              <Icon component={StakedBalance} size={50} />
+              <Image src={StakedBalance} width={50} height={50} />
               <Flex direction="column" gap={10}>
                 <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
                   {t("staking:dashboard.balance")}
