@@ -121,12 +121,18 @@ export const useStablepoolRemoveLiquidity = ({
 
   useEffect(() => {
     if (!split && liquidityOutOneAsset) {
+      const receiveAmount = scaleHuman(
+        liquidityOutOneAsset,
+        receiveAsset.decimals,
+      )
       form.setValue(
         "receiveAmount",
-        scaleHuman(liquidityOutOneAsset, receiveAsset.decimals),
+        Big(receiveAmount)
+          .minus(Big(slippage).times(receiveAmount).div(100))
+          .toFixed(0),
       )
     }
-  }, [form, split, liquidityOutOneAsset, receiveAsset.decimals])
+  }, [form, split, liquidityOutOneAsset, receiveAsset.decimals, slippage])
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {

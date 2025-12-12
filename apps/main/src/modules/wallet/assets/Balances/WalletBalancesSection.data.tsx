@@ -3,13 +3,19 @@ import Big from "big.js"
 import { useUserBorrowSummary } from "@/api/borrow"
 import { useMyLiquidityAmount } from "@/modules/liquidity/components/PoolsHeader/MyLiquidity.data"
 import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances } from "@/states/account"
+import {
+  isOmnipoolDepositPosition,
+  useAccountBalances,
+  useAccountOmnipoolPositionsData,
+} from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useWalletBalancesSectionData = () => {
-  const { totalAmount, omnipool, isLoading, isLoadingPositions } =
-    useMyLiquidityAmount()
+  const { totalAmount, isLoading } = useMyLiquidityAmount()
+
+  const { data: positions, isLoading: isLoadingPositions } =
+    useAccountOmnipoolPositionsData()
 
   const { data: userBorrowSummary, isLoading: isLoadingBorrowSummary } =
     useUserBorrowSummary()
@@ -36,14 +42,32 @@ export const useWalletBalancesSectionData = () => {
     return acc.plus(balancePrice)
   }, new Big(0))
 
+  const omnipoolLiquidity = positions?.all.reduce(
+    (acc, position) => {
+      acc.liquidity = acc.liquidity.plus(
+        position.data?.currentTotalDisplay ?? 0,
+      )
+
+      if (isOmnipoolDepositPosition(position)) {
+        acc.farming = acc.farming.plus(position.data?.currentTotalDisplay ?? 0)
+      }
+
+      return acc
+    },
+    {
+      liquidity: Big(0),
+      farming: Big(0),
+    },
+  )
+
   return {
     assets: totalAssets.toString(),
     isAssetsLoading: isBalanceLoading || isAssetPriceLoading,
     liquidity: totalAmount,
-    farms: omnipool?.farming.toString() ?? "0",
+    farms: omnipoolLiquidity?.farming.toString() ?? "",
     isLiquidityLoading: isLoading || isLoadingPositions,
-    supply: userBorrowSummary?.totalLiquidityUSD ?? "0",
-    borrow: userBorrowSummary?.totalBorrowsUSD ?? "0",
+    supply: userBorrowSummary?.totalLiquidityUSD ?? "",
+    borrow: userBorrowSummary?.totalBorrowsUSD ?? "",
     isBorrowLoading: isLoadingBorrowSummary,
   }
 }

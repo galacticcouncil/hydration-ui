@@ -10,12 +10,12 @@ import z from "zod/v4"
 
 import { xykMiningPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { useIsolatedPoolsFarms } from "@/api/farms"
-import { PoolBase, PoolToken } from "@/api/pools"
+import { useIsolatedPoolFarms } from "@/api/farms"
+import { PoolToken } from "@/api/pools"
 import { spotPriceQuery } from "@/api/spotPrice"
-import { TXYKConsts, useXYKPoolsLiquidity } from "@/api/xyk"
+import { TXYKConsts, XYKPoolWithLiquidity } from "@/api/xyk"
 import { useXYKFarmMinShares } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
-import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
+import { TShareToken } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTransactionsStore } from "@/states/transactions"
@@ -91,10 +91,12 @@ type AddIsolatedLiquidityZodSchema = NonNullable<
 export const useAddIsolatedLiquidity = ({
   pool,
   consts,
+  shareTokenMeta,
   onSubmitted,
 }: {
-  pool: PoolBase
+  pool: XYKPoolWithLiquidity
   consts: TXYKConsts
+  shareTokenMeta: TShareToken
   onSubmitted: () => void
 }) => {
   const { account } = useAccount()
@@ -102,25 +104,18 @@ export const useAddIsolatedLiquidity = ({
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
-  const { getAssetWithFallback, getMetaFromXYKPoolTokens } = useAssets()
   const { getTransferableBalance } = useAccountBalances()
-  const { data: liquidity, isLoading } = useXYKPoolsLiquidity(pool.address)
-  const { data: farms } = useIsolatedPoolsFarms()
-  const activeFarms =
-    farms?.[pool.address]?.filter((farm) => farm.apr !== "0") ?? []
+  const { data: farms } = useIsolatedPoolFarms(shareTokenMeta.poolAddress)
+  const activeFarms = farms?.filter((farm) => farm.apr !== "0") ?? []
   const isFarms = activeFarms.length > 0
 
+  const liquidity = pool.totalLiquidity
   const [assetA, assetB] = pool.tokens as [PoolToken, PoolToken]
 
-  const assetAMeta = getAssetWithFallback(assetA.id)
-  const assetBMeta = getAssetWithFallback(assetB.id)
   const reserveA = assetA.balance.toString()
   const reserveB = assetB.balance.toString()
 
-  const meta = getMetaFromXYKPoolTokens(pool.address, [
-    assetA,
-    assetB,
-  ]) as XYKPoolMeta
+  const [assetAMeta, assetBMeta] = shareTokenMeta.assets
 
   const assetABalance = scaleHuman(
     getTransferableBalance(assetAMeta.id),
@@ -175,8 +170,8 @@ export const useAddIsolatedLiquidity = ({
   const joinFarmErrorMessage =
     isCheckJoinFarms && Big(shares).lte(minJoinAmount)
       ? t("liquidity.joinFarms.modal.validation.minShares", {
-          value: scaleHuman(minJoinAmount, meta.decimals),
-          symbol: meta.symbol,
+          value: scaleHuman(minJoinAmount, shareTokenMeta.decimals),
+          symbol: shareTokenMeta.symbol,
         })
       : undefined
 
@@ -216,7 +211,7 @@ export const useAddIsolatedLiquidity = ({
             ),
           })
 
-      const sharesHuman = scaleHuman(shares, meta.decimals)
+      const sharesHuman = scaleHuman(shares, shareTokenMeta.decimals)
 
       await createTransaction(
         {
@@ -245,12 +240,10 @@ export const useAddIsolatedLiquidity = ({
     reserveB,
     ratio,
     mutation,
-    isLoading,
     assetABalance,
     assetBBalance,
     assetAMeta,
     assetBMeta,
-    meta,
     shares,
     getShares,
     price: spotPriceData?.spotPrice?.toString(),

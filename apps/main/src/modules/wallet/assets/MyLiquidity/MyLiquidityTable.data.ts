@@ -1,19 +1,26 @@
 import Big from "big.js"
 import { useMemo } from "react"
 
+import { XykDeposit } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { useAssets } from "@/providers/assetsProvider"
+import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
 
+export type XYKPosition = XykDeposit & { price: string; meta: TShareToken }
+
+export const isXYKPosition = (
+  position: AccountOmnipoolPosition | XYKPosition,
+): position is XYKPosition => "amm_pool_id" in position
+
 export type LiquidityPositionByAsset = {
-  readonly meta: TAssetData
+  readonly meta: TAssetData | TShareToken
   readonly currentValueHuman: string
   readonly currentHubValueHuman: string
   readonly currentTotalDisplay: string
-  readonly positions: ReadonlyArray<AccountOmnipoolPosition>
+  readonly positions: ReadonlyArray<AccountOmnipoolPosition | XYKPosition>
 }
 
 export const useMyLiquidityTableData = () => {
@@ -21,9 +28,7 @@ export const useMyLiquidityTableData = () => {
   const { data, isLoading } = useAccountOmnipoolPositionsData()
 
   const groupedData = useMemo<Array<LiquidityPositionByAsset>>(() => {
-    if (isLoading) {
-      return []
-    }
+    if (isLoading) return []
 
     const groupedByAssetId = Object.groupBy(data?.all ?? [], (p) => p.assetId)
     return Object.entries(groupedByAssetId).map(([assetId, positionsEntry]) => {

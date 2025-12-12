@@ -5,7 +5,7 @@ import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { useSquidClient } from "@/api/provider"
-import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
+import { useXYKPools } from "@/states/liquidity"
 
 export const AllPools = () => {
   const { t } = useTranslation(["liquidity", "common"])
@@ -16,7 +16,6 @@ export const AllPools = () => {
     isSuccess,
   } = useQuery(platformTotalQuery(useSquidClient()))
   const { data: xykPools = [], isLoading: isLoadingXYK } = useXYKPools()
-  const { data: omnipoolStablepoolAssets = [] } = useOmnipoolStablepoolAssets()
 
   const xykTotals = xykPools.reduce(
     (acc, asset) => ({
@@ -29,27 +28,6 @@ export const AllPools = () => {
     },
   )
 
-  const totals_ = omnipoolStablepoolAssets.reduce(
-    (acc, asset) => ({
-      liquidity: acc.liquidity.plus(
-        !asset.isStablepoolOnly ? asset.tvlDisplay || "0" : 0,
-      ),
-      stablepool: asset.isStablePool
-        ? acc.stablepool.plus(asset.tvlDisplay || "0")
-        : acc.stablepool,
-      volume: acc.volume.plus(asset.volumeDisplay || "0"),
-    }),
-    {
-      liquidity: Big(0),
-      stablepool: Big(0),
-      volume: Big(0),
-    },
-  )
-  console.log({
-    omnipool: totals_.liquidity.toString(),
-    stablepool: totals_.stablepool.toString(),
-    volume: totals_.volume.toString(),
-  })
   const totals = isSuccess
     ? {
         liquidity: Big(platformTotal?.omnipoolTvlNorm ?? "0"),

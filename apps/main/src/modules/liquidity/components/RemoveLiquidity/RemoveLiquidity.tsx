@@ -22,7 +22,7 @@ import {
   TradeLimitRow,
   TradeLimitType,
 } from "@/modules/liquidity/components/TradeLimitRow/TradeLimitRow"
-import { isXYKPoolMeta, XYKPoolMeta } from "@/providers/assetsProvider"
+import { isShareToken, TShareToken } from "@/providers/assetsProvider"
 import { RemoveLiquidityType } from "@/routes/liquidity/$id.remove"
 import { useAssetPrice } from "@/states/displayAsset"
 
@@ -93,7 +93,7 @@ export const RemoveLiquidityForm = ({
   editable?: boolean
   mutation: UseMutationResult<void, Error, void>
   isIsolatedPool?: boolean
-  meta: TAssetData | XYKPoolMeta
+  meta: TAssetData | TShareToken
   deposits?: Array<XykDeposit | OmnipoolDepositFull>
   feesBreakdown?: FeeBreakdown[]
 }) => {
@@ -136,7 +136,7 @@ export const RemoveLiquidityForm = ({
                 gap={getTokenPx("containers.paddings.quart")}
               >
                 <AssetLogo
-                  id={isXYKPoolMeta(meta) ? meta.iconId : meta.id}
+                  id={isShareToken(meta) ? meta.iconId : meta.id}
                   size="large"
                 />
                 <Text

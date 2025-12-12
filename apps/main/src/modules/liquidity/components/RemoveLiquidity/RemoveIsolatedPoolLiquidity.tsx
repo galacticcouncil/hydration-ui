@@ -14,7 +14,8 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { XykDeposit } from "@/api/account"
-import { useXykPools } from "@/api/pools"
+import { useXYKPoolWithLiquidity } from "@/api/xyk"
+import { useAssets } from "@/providers/assetsProvider"
 import { useAccountPositions } from "@/states/account"
 
 import { AmountToRemove } from "./AmountToRemove"
@@ -31,10 +32,13 @@ import { RemoveLiquiditySkeleton } from "./RemoveLiquiditySkeleton"
 
 export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
   const { t } = useTranslation(["liquidity", "common"])
+  const { getShareTokenByAddress } = useAssets()
+  const shareTokenMeta = getShareTokenByAddress(props.poolId)
   const [confirmedSelection, setConfirmedSelection] = useState(false)
   const selectablePositions = useRemoveSelectableXYKPositions(props)
 
-  if (!selectablePositions) return <RemoveLiquiditySkeleton {...props} />
+  if (!selectablePositions || !shareTokenMeta)
+    return <RemoveLiquiditySkeleton {...props} />
 
   const {
     removableValues,
@@ -43,8 +47,7 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
     setSelectedPositionIds,
     selectedPositionIds,
     selectedPositions,
-    tokens,
-    address,
+    pool,
   } = selectablePositions
 
   const onSelectPosition = (position: XykDeposit) => {
@@ -65,8 +68,8 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
     return (
       <RemoveMultipleIsolatedPoolLiquidity
         positions={selectedPositions}
-        poolTokens={tokens}
-        address={address}
+        pool={pool}
+        shareTokenMeta={shareTokenMeta}
         {...props}
         onBack={() => setConfirmedSelection(false)}
       />
@@ -153,19 +156,21 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
 export const RemoveIsolatedPoolsLiquidity = (props: RemoveLiquidityProps) => {
   const { positionId } = props
   const { getPositions } = useAccountPositions()
-  const { data: pools } = useXykPools()
+  const { getShareTokenByAddress } = useAssets()
+  const { data: pool } = useXYKPoolWithLiquidity(props.poolId)
+  const shareTokenMeta = getShareTokenByAddress(props.poolId)
 
-  const pool = pools?.find((pool) => pool.address === props.poolId)
   const positions = getPositions(props.poolId).xykMiningPositions
 
-  if (!positions || !pool) return <RemoveLiquiditySkeleton {...props} />
+  if (!positions || !pool || !shareTokenMeta)
+    return <RemoveLiquiditySkeleton {...props} />
 
   if (props.shareTokenId) {
     return (
       <RemoveXYKShares
         shareTokenId={props.shareTokenId}
-        poolTokens={pool.tokens}
-        address={pool.address}
+        pool={pool}
+        shareTokenMeta={shareTokenMeta}
         {...props}
       />
     )
@@ -179,8 +184,8 @@ export const RemoveIsolatedPoolsLiquidity = (props: RemoveLiquidityProps) => {
     return (
       <RemoveSingleIsolatedPoolLiquidity
         position={position}
-        poolTokens={pool.tokens}
-        address={pool.address}
+        pool={pool}
+        shareTokenMeta={shareTokenMeta}
         {...props}
       />
     )
@@ -190,8 +195,8 @@ export const RemoveIsolatedPoolsLiquidity = (props: RemoveLiquidityProps) => {
     return (
       <RemoveMultipleIsolatedPoolLiquidity
         positions={positions}
-        poolTokens={pool.tokens}
-        address={pool.address}
+        pool={pool}
+        shareTokenMeta={shareTokenMeta}
         {...props}
       />
     )
@@ -204,9 +209,9 @@ export const RemoveMultipleIsolatedPoolLiquidity = (
 ) => {
   const removeLiquidity = useRemoveMultipleXYKPositions({
     positions: props.positions,
-    poolTokens: props.poolTokens,
-    address: props.address,
+    pool: props.pool,
     onSubmitted: props.onSubmitted,
+    shareTokenMeta: props.shareTokenMeta,
   })
 
   if (!removeLiquidity) return <RemoveLiquiditySkeleton {...props} />

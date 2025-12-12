@@ -56,7 +56,6 @@
   "liquidity.stablepool.position.supplied": "Supplied liquidity",
   "liquidity.stablepool.position": "#{{ value }} Position",
   "liquidity.stablepool.currencyReserves.label": "Currency Reserves",
-  "liquidity.stablepool.currencyReserves.amount": "<0>{{ value, number }}</0> <1>({{ percentage, percent }})</1>",
   "liquidity.isolatedPool.position.label": "In Isolated Pool",
   "liquidity.isolatedPool.position.shares": "Isolated pool shares",
   "liquidity.positions.header.locked": "Locked in liq. positions",

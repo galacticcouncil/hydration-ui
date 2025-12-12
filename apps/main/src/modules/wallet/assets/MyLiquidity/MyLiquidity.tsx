@@ -6,6 +6,8 @@ import { MyLiquidityActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquid
 import { MyLiquidityTable } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable"
 import { useMyLiquidityTableData } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 
+import { useMyIsolatedPoolsLiquidity } from "./MyIsolatedPoolsLiquidity.data"
+
 type Props = {
   readonly searchPhrase: string
 }
@@ -16,6 +18,11 @@ export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { data: liquidityData, isLoading: liquidityLoading } =
     useMyLiquidityTableData()
 
+  const {
+    data: isolatedPoolsLiquidity,
+    isLoading: isLoadingIsolatedPoolsLiquidity,
+  } = useMyIsolatedPoolsLiquidity()
+
   return (
     <Box>
       <Flex justify="space-between" align="center">
@@ -25,8 +32,8 @@ export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
         <MyLiquidityActions />
       </Flex>
       <MyLiquidityTable
-        data={liquidityData}
-        isLoading={liquidityLoading}
+        data={[...liquidityData, ...isolatedPoolsLiquidity]}
+        isLoading={liquidityLoading || isLoadingIsolatedPoolsLiquidity}
         searchPhrase={searchPhrase}
       />
     </Box>

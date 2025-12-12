@@ -18,8 +18,8 @@ import {
 import { TAssetData } from "@/api/assets"
 import { Farm, LoyaltyCurve } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
-import { PoolToken, useXykPools } from "@/api/pools"
-import { useXYKPoolsLiquidity } from "@/api/xyk"
+import { PoolToken, useXykPool } from "@/api/pools"
+import { useXYKPoolWithLiquidity } from "@/api/xyk"
 import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
@@ -121,12 +121,11 @@ export const useJoinOmnipoolFarms = ({
 }
 
 export const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
-  const { data: pools } = useXykPools()
+  const { data: pool } = useXykPool(poolAddress)
 
   const minDeposit = getMinimalDeposit(farms)
 
-  const [assetAReserve, assetBReserve] =
-    pools?.find((xykPool) => xykPool.address === poolAddress)?.tokens ?? []
+  const [assetAReserve, assetBReserve] = pool?.tokens ?? []
 
   const { data: oracle } = useOraclePrice(
     assetAReserve?.id,
@@ -210,7 +209,8 @@ export const useJoinIsolatedPoolFarms = ({
     balance = 0n,
     tvlDisplay,
   } = xykData
-  const { data: liquidity } = useXYKPoolsLiquidity(poolId)
+  const { data: pool } = useXYKPoolWithLiquidity(poolId)
+  const liquidity = pool?.totalLiquidity
 
   const price = Big(tvlDisplay)
     .div(liquidity ? scaleHuman(liquidity, meta.decimals) : 1)

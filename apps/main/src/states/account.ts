@@ -24,6 +24,10 @@ export type Positions = {
   xykMining: XykDeposit[]
 }
 
+export type XYKDepositPrice = XykDeposit & {
+  price: string | undefined
+}
+
 export type DepositPosition =
   | XykDeposit
   | OmnipoolDepositFull

@@ -62,10 +62,13 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
     farmsToJoin: Farm[]
     position: XykDeposit
   } | null>(null)
-  const columns = useIsolatedPositionsTableColumns(pool.isFarms)
 
   const { positions, totalInFarms, totalBalanceDisplay } =
     useIsolatedPositions(pool)
+
+  const columns = useIsolatedPositionsTableColumns(
+    Big(totalInFarms).gt(0) || pool.isFarms,
+  )
 
   if (Big(totalBalanceDisplay).eq(0)) return null
 
@@ -156,7 +159,12 @@ const OmnipoolStablepoolPositions = ({
 
   if (isVisibleOmnipool) {
     tables.push(
-      <OmnipoolPositions pool={pool} positions={positions} key="omnipool" />,
+      <OmnipoolPositions
+        pool={pool}
+        positions={positions}
+        isFarms={Big(totalInFarms).gt(0) || pool.isFarms}
+        key="omnipool"
+      />,
     )
   }
 

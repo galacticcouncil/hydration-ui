@@ -1,14 +1,12 @@
-import { useQuery } from "@tanstack/react-query"
 import { useCallback, useMemo } from "react"
-import { isNonNullish, prop } from "remeda"
+import { isNonNullish } from "remeda"
 import { create } from "zustand"
 import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
-import { TAssetData } from "@/api/assets"
 import { useSubscribedPriceKeys } from "@/api/spotPrice"
-import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAssetRegistry } from "@/states/assetRegistry"
+
+const DISPLAY_ASSET_ID = import.meta.env.VITE_DISPLAY_ASSET_ID
 
 type TDisplayAsset = {
   id: string | undefined
@@ -26,8 +24,8 @@ export type DisplayAssetStore = TDisplayAsset & {
 export const useDisplayAssetStore = create<DisplayAssetStore>()(
   persist(
     (set) => ({
-      id: undefined,
-      stableCoinId: undefined,
+      id: DISPLAY_ASSET_ID,
+      stableCoinId: DISPLAY_ASSET_ID,
       symbol: "$",
       isDollar: true,
       isRealUSD: false,
@@ -44,13 +42,11 @@ export type AssetPrice = { price: string; isLoading: boolean; isValid: boolean }
 
 type Store = {
   assets: TStoredAssetPrice
-  referenceAssetId: string
   setAssets: (asset: { id: string; price: string | null }[]) => void
-  setReferenceAssetId: (id: string) => void
 }
 
 export const useDisplaySpotPriceStore = create<Store>(
-  combine({ assets: {} as TStoredAssetPrice, referenceAssetId: "" }, (set) => ({
+  combine({ assets: {} as TStoredAssetPrice }, (set) => ({
     setAssets: (assets) => {
       set((state) => {
         const newValues = { ...state.assets }
@@ -60,7 +56,6 @@ export const useDisplaySpotPriceStore = create<Store>(
         return { assets: newValues }
       })
     },
-    setReferenceAssetId: (id) => set({ referenceAssetId: id }),
   })),
 )
 
@@ -76,8 +71,6 @@ export const useAssetsPrice = (assetIds: string[]) => {
       ),
     ),
   )
-
-  const referenceAssetId = useDisplaySpotPriceStore(prop("referenceAssetId"))
 
   // subscribe to price changes by asset id
   useSubscribedPriceKeys(assetIds)
@@ -108,7 +101,7 @@ export const useAssetsPrice = (assetIds: string[]) => {
     [prices],
   )
 
-  return { prices, isLoading, referenceAssetId, getAssetPrice }
+  return { prices, isLoading, getAssetPrice }
 }
 
 export const useAssetPrice = (assetId?: string): AssetPrice => {
@@ -122,55 +115,4 @@ export const useAssetPrice = (assetId?: string): AssetPrice => {
     isLoading: !!assetId && price === undefined,
     isValid: isNonNullish(price),
   }
-}
-
-const findStableCoinId = (assets: TAssetData[]): string | null => {
-  const usdtAsset = assets.find((asset) => asset.symbol === "USDT")
-  if (usdtAsset) {
-    return usdtAsset.id
-  }
-
-  const daiAsset = assets.find((asset) => asset.symbol === "DAI")
-  if (daiAsset) {
-    return daiAsset.id
-  }
-
-  return null
-}
-
-export const useDisplayAssetStablecoinUpdate = () => {
-  const { assets } = useAssetRegistry()
-  const { dataEnv } = useRpcProvider()
-  const {
-    isStableCoin,
-    stableCoinId: currentStableCoinId,
-    update,
-  } = useDisplayAssetStore()
-
-  useQuery({
-    notifyOnChangeProps: [],
-    queryKey: ["displayAssetStablecoin", dataEnv],
-    queryFn: () => {
-      if (!assets.length) return null
-
-      const stableCoinId = findStableCoinId(assets)
-
-      if (
-        stableCoinId &&
-        isStableCoin &&
-        currentStableCoinId !== stableCoinId
-      ) {
-        // setting stable coin id from asset registry
-        update({
-          id: stableCoinId,
-          symbol: "$",
-          isRealUSD: false,
-          isStableCoin: true,
-          stableCoinId,
-        })
-      }
-
-      return stableCoinId
-    },
-  })
 }

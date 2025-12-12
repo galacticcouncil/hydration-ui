@@ -5,22 +5,32 @@ import { LiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/Liquidity
 import { TAsset } from "@/providers/assetsProvider"
 import { AccountOmnipoolPosition } from "@/states/account"
 
+import { isXYKPosition, XYKPosition } from "./MyLiquidityTable.data"
+import { XYKDeposit } from "./XYKDeposit"
+
 type Props = {
   readonly asset: TAsset
-  readonly positions: ReadonlyArray<AccountOmnipoolPosition>
+  readonly positions: ReadonlyArray<AccountOmnipoolPosition | XYKPosition>
 }
 
-export const LiquidityDetailExpanded: FC<Props> = ({ asset, positions }) => {
-  return (
-    <SLiquidityDetailExpandedContainer>
-      {positions.map((position, index) => (
+export const LiquidityDetailExpanded: FC<Props> = ({ asset, positions }) => (
+  <SLiquidityDetailExpandedContainer>
+    {positions.map((position, index) =>
+      isXYKPosition(position) ? (
+        <XYKDeposit
+          key={index}
+          asset={asset}
+          number={index + 1}
+          position={position}
+        />
+      ) : (
         <LiquidityPosition
           key={index}
           asset={asset}
           number={index + 1}
           position={position}
         />
-      ))}
-    </SLiquidityDetailExpandedContainer>
-  )
-}
+      ),
+    )}
+  </SLiquidityDetailExpandedContainer>
+)

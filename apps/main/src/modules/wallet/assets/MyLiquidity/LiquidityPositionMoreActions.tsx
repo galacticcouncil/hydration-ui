@@ -18,11 +18,13 @@ import {
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
 import { AccountOmnipoolPosition, isDepositPosition } from "@/states/account"
 
+import { isXYKPosition, XYKPosition } from "./MyLiquidityTable.data"
+
 type LiquidityPositionAction = "none" | "join" | "remove"
 
 type Props = {
   readonly assetId: string
-  readonly position: AccountOmnipoolPosition
+  readonly position: AccountOmnipoolPosition | XYKPosition
   readonly farmsToJoin: Farm[]
 }
 
@@ -42,6 +44,8 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
     claimableDeposits: rewards ?? [],
     onSuccess: () => refetch(),
   })
+
+  const isXyk = isXYKPosition(position)
 
   const isDisabledClaiming = claimableValues.totalUSD === "0"
 
@@ -106,16 +110,16 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
       )}
       <Modal open={action === "join"} onOpenChange={() => setAction("none")}>
         <JoinFarmsWrapper
-          positionId={position.positionId}
-          poolId={assetId}
+          positionId={isXyk ? position.id : position.positionId}
+          poolId={isXyk ? position.amm_pool_id : assetId}
           closable
           onSubmitted={() => setAction("none")}
         />
       </Modal>
       <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
         <RemoveLiquidity
-          poolId={assetId}
-          positionId={position.positionId}
+          poolId={isXyk ? position.amm_pool_id : assetId}
+          positionId={isXyk ? position.id : position.positionId}
           onSubmitted={() => setAction("none")}
           closable
         />
