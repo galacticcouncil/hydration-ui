@@ -1,6 +1,6 @@
 import { Controller, FieldErrors, FormProvider, useForm } from "react-hook-form"
 import BN from "bignumber.js"
-import { AAVE_EXTRA_GAS, BN_100 } from "utils/constants"
+import { AAVE_EXTRA_GAS } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -37,6 +37,7 @@ import { ProtocolAction } from "@aave/contract-helpers"
 import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/HealthFactorRiskWarning"
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { useSwapLimit } from "./components/LimitModal/LimitModal.utils"
+import { useMinSharesToGet } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.utils"
 
 type Props = {
   assetId: string
@@ -67,7 +68,7 @@ export const AddLiquidityForm = ({
     useState(false)
 
   const refetchAccountAssets = useRefetchAccountAssets()
-  const { addLiquidityLimit } = useLiquidityLimit()
+  const getMinSharesToGet = useMinSharesToGet()
 
   const assetMeta = getAssetWithFallback(assetId)
   const zodSchema = useAddToOmnipoolZod(assetMeta, farms)
@@ -118,9 +119,7 @@ export const AddLiquidityForm = ({
     if (assetMeta.decimals == null) throw new Error("Missing asset meta")
 
     const amount = scale(values.amount, assetMeta.decimals).toString()
-    const shares = sharesToGet
-      .times(BN_100.minus(addLiquidityLimit).div(BN_100))
-      .toFixed(0)
+    const shares = getMinSharesToGet(sharesToGet)
 
     const tx = isJoinFarms
       ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(

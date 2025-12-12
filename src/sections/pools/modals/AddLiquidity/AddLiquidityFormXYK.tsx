@@ -1,6 +1,6 @@
 import { Controller, FieldErrors, FormProvider, useForm } from "react-hook-form"
 import BN from "bignumber.js"
-import { BN_0, BN_1, BN_100 } from "utils/constants"
+import { BN_0, BN_1 } from "utils/constants"
 import { WalletTransferAssetSelect } from "sections/wallet/transfer/WalletTransferAssetSelect"
 import { SummaryRow } from "components/Summary/SummaryRow"
 import { Spacer } from "components/Spacer/Spacer"
@@ -29,14 +29,14 @@ import { useRefetchAccountAssets } from "api/deposits"
 import { AvailableFarmsForm } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useXYKSDKPools } from "api/xyk"
 import { LiquidityLimitField } from "./AddLiquidityForm"
-import { useLiquidityLimit } from "state/liquidityLimit"
+import { useMinSharesToGet } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.utils"
 
 type Props = {
   onClose: () => void
   pool: TXYKPool
   onSuccess?: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
-  setLiquidityLimit: () => void
+  onSetLiquidityLimit: () => void
 }
 
 type FormValues = {
@@ -54,7 +54,7 @@ export const AddLiquidityFormXYK = ({
   pool,
   onClose,
   onSuccess,
-  setLiquidityLimit,
+  onSetLiquidityLimit,
 }: Props) => {
   const { t } = useTranslation()
   const refetchAccountAssets = useRefetchAccountAssets()
@@ -68,7 +68,6 @@ export const AddLiquidityFormXYK = ({
   const [assetA, assetB] = assets
   const isFarms = farms.length > 0
   const [isJoinFarms, setIsJoinFarms] = useState(isFarms)
-  const { addLiquidityLimit } = useLiquidityLimit()
 
   const { zodSchema, balanceAMax, balanceBMax, balanceA, balanceB } =
     useXYKZodSchema(assetA, assetB, pool.meta, farms, pool.poolAddress)
@@ -89,6 +88,8 @@ export const AddLiquidityFormXYK = ({
 
   const { data: spotPrice } = useSpotPrice(assetA.id, assetB.id)
   const { data: xykPools } = useXYKSDKPools()
+  const getMinSharesToGet = useMinSharesToGet()
+
   const [assetAReserve, assetBReserve] =
     xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
     []
@@ -133,9 +134,7 @@ export const AddLiquidityFormXYK = ({
         ).decimalPlaces(0),
       },
     }
-    const minShares = BN(shares)
-      .times(BN_100.minus(addLiquidityLimit).div(BN_100))
-      .toFixed(0)
+    const minShares = getMinSharesToGet(BN(shares))
 
     return await createTransaction(
       {
@@ -304,7 +303,7 @@ export const AddLiquidityFormXYK = ({
           />
           <Spacer size={4} />
           <LiquidityLimitField
-            setLiquidityLimit={setLiquidityLimit}
+            setLiquidityLimit={onSetLiquidityLimit}
             type="liquidity"
           />
           <Spacer size={4} />

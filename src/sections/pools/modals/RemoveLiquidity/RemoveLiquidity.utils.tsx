@@ -54,8 +54,11 @@ const defaultValues = {
 export const useMinSharesToGet = () => {
   const { addLiquidityLimit } = useLiquidityLimit()
 
-  return (sharesToGet: BN) =>
-    sharesToGet.times(BN_100.minus(addLiquidityLimit).div(BN_100)).toFixed(0)
+  return useCallback(
+    (sharesToGet: BN) =>
+      sharesToGet.times(BN_100.minus(addLiquidityLimit).div(BN_100)).toFixed(0),
+    [addLiquidityLimit],
+  )
 }
 
 export const useRemoveLiquidity = (
@@ -184,31 +187,28 @@ export const useRemoveLiquidity = (
       }>(
         (acc, pos) => {
           const values = calculateLiquidityValues(pos, BN(pos.shares))
+          if (!values) return acc
 
-          if (values) {
-            acc.liquidityOut.push({ position: pos, liquidityOut: values })
-            return {
-              liquidityOut: acc.liquidityOut,
-              values: {
-                tokensToGet: acc.values.tokensToGet.plus(values.tokensToGet),
-                tokensToGetShifted: acc.values.tokensToGetShifted.plus(
-                  values.tokensToGetShifted,
-                ),
-                lrnaToGetShifted: acc.values.lrnaToGetShifted.plus(
-                  values.lrnaToGetShifted,
-                ),
-                lrnaToGet: acc.values.lrnaToGet.plus(values.lrnaToGet),
-                lrnaPayWith: acc.values.lrnaPayWith.plus(values.lrnaPayWith),
-                tokensPayWith: acc.values.tokensPayWith.plus(
-                  values.tokensPayWith,
-                ),
-                withdrawalFee: values.withdrawalFee,
-                minWithdrawalFee: values.minWithdrawalFee,
-              },
-            }
+          acc.liquidityOut.push({ position: pos, liquidityOut: values })
+          return {
+            liquidityOut: acc.liquidityOut,
+            values: {
+              tokensToGet: acc.values.tokensToGet.plus(values.tokensToGet),
+              tokensToGetShifted: acc.values.tokensToGetShifted.plus(
+                values.tokensToGetShifted,
+              ),
+              lrnaToGetShifted: acc.values.lrnaToGetShifted.plus(
+                values.lrnaToGetShifted,
+              ),
+              lrnaToGet: acc.values.lrnaToGet.plus(values.lrnaToGet),
+              lrnaPayWith: acc.values.lrnaPayWith.plus(values.lrnaPayWith),
+              tokensPayWith: acc.values.tokensPayWith.plus(
+                values.tokensPayWith,
+              ),
+              withdrawalFee: values.withdrawalFee,
+              minWithdrawalFee: values.minWithdrawalFee,
+            },
           }
-
-          return acc
         },
         {
           values: defaultValues,
