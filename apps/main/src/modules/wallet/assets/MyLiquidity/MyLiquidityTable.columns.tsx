@@ -129,7 +129,14 @@ export const useMyLiquidityColumns = () => {
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
-        return <AssetLabelFull asset={original.meta} withName={false} />
+        return isShareToken(original.meta) ? (
+          <AssetLabelXYK
+            iconIds={original.meta.iconId}
+            symbol={original.meta.symbol}
+          />
+        ) : (
+          <AssetLabelFull asset={original.meta} withName={false} />
+        )
       },
     })
 
@@ -154,7 +161,14 @@ export const useMyLiquidityColumns = () => {
             <>
               <TableRowDetailsExpand onClick={() => setIsDetailOpen(true)}>
                 <Amount
-                  value={format(original)}
+                  value={
+                    isShareToken(original.meta)
+                      ? t("common:currency", {
+                          value: original.currentValueHuman,
+                          symbol: "Shares",
+                        })
+                      : format(original)
+                  }
                   displayValue={t("common:currency", {
                     value: original.currentTotalDisplay,
                   })}

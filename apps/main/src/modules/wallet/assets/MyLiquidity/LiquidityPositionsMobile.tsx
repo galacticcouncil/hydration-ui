@@ -8,9 +8,11 @@ import { LiquidityPositionMobileValues } from "@/modules/wallet/assets/MyLiquidi
 import { TAsset } from "@/providers/assetsProvider"
 import { AccountOmnipoolPosition } from "@/states/account"
 
+import { XYKPosition } from "./MyLiquidityTable.data"
+
 type Props = {
   readonly asset: TAsset
-  readonly positions: ReadonlyArray<AccountOmnipoolPosition>
+  readonly positions: ReadonlyArray<AccountOmnipoolPosition | XYKPosition>
 }
 
 export const LiquidityPositionsMobile: FC<Props> = ({ asset, positions }) => {

@@ -7,6 +7,7 @@ import { SAssetDetailModalBody } from "@/modules/wallet/assets/MyAssets/AssetDet
 import { LiquidityDetailMobileActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileActions"
 import { LiquidityPositionsMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionsMobile"
 import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { isShareToken } from "@/providers/assetsProvider"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 export const LiquidityDetailMobileModal: FC<LiquidityPositionByAsset> = ({
@@ -19,18 +20,29 @@ export const LiquidityDetailMobileModal: FC<LiquidityPositionByAsset> = ({
   const { t } = useTranslation(["wallet", "common"])
   const format = useFormatOmnipoolPositionData()
 
+  const isXykShares = isShareToken(meta)
+
   return (
     <>
       <ModalHeader sx={{ p: 16 }} title={meta.symbol} description={meta.name} />
       <SAssetDetailModalBody>
         <Amount
-          value={format({ meta, currentValueHuman, currentHubValueHuman })}
+          value={
+            isXykShares
+              ? t("common:currency", {
+                  value: currentValueHuman,
+                  symbol: "Shares",
+                })
+              : format({ meta, currentValueHuman, currentHubValueHuman })
+          }
           displayValue={t("common:currency", {
             value: currentTotalDisplay,
           })}
         />
         <SAssetDetailMobileSeparator />
-        <LiquidityDetailMobileActions assetId={meta.id} />
+        <LiquidityDetailMobileActions
+          assetId={isXykShares ? meta.poolAddress : meta.id}
+        />
         <SAssetDetailMobileSeparator />
         <LiquidityPositionsMobile asset={meta} positions={positions} />
       </SAssetDetailModalBody>

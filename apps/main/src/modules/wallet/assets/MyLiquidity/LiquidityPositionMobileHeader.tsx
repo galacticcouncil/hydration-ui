@@ -12,17 +12,19 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolActiveFarm } from "@/api/farms"
-import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { AssetLabelFull, AssetLabelXYK } from "@/components/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
-import { TAsset } from "@/providers/assetsProvider"
+import { isShareToken, TAsset } from "@/providers/assetsProvider"
 import { AccountOmnipoolPosition } from "@/states/account"
+
+import { XYKPosition } from "./MyLiquidityTable.data"
 
 type Props = {
   readonly asset: TAsset
-  readonly position: AccountOmnipoolPosition
+  readonly position: AccountOmnipoolPosition | XYKPosition
 }
 
 export const LiquidityPositionMobileHeader: FC<Props> = ({
@@ -40,7 +42,11 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
 
   return (
     <SLiquidityPositionMobileHeader>
-      <AssetLabelFull asset={asset} withName={false} />
+      {isShareToken(asset) ? (
+        <AssetLabelXYK iconIds={asset.iconId} symbol={asset.symbol} />
+      ) : (
+        <AssetLabelFull asset={asset} withName={false} />
+      )}
       {joinedFarms.length ? (
         <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
           <AssetLogo
