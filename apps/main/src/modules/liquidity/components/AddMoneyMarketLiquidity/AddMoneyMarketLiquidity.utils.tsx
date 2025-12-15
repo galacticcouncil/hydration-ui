@@ -384,6 +384,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
             },
             {
               stepTitle: t("liquidity.add.modal.stepper.joinOmnipool"),
+              onSubmitted,
               tx: async (results) => {
                 const addingSharesResult = results[0]
 
@@ -533,6 +534,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
             },
             {
               stepTitle: t("liquidity.add.modal.stepper.joinOmnipool"),
+              onSubmitted,
               tx: async () => {
                 const { client } = sdk
                 const { balance } = client
@@ -782,6 +784,7 @@ export const useAddMoneyMarketLiquidity = ({
               stepTitle: t("liquidity.add.modal.stepper.getAsset", {
                 symbol: erc20Meta.symbol,
               }),
+              onSubmitted,
               tx: async (results) => {
                 const addingSharesResult = results[0]
 

@@ -16,7 +16,7 @@ import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useXYKPool } from "@/states/liquidity"
 import { TransactionToasts, useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman } from "@/utils/formatting"
+import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 import { useRemoveLiquidityForm } from "./RemoveLiquidity.utils"
@@ -339,9 +339,11 @@ export const useRemoveXYKShares = ({
   pool,
   shareTokenId,
   shareTokenMeta,
+  onSubmitted,
 }: TRemoveXykPositionsProps & {
   shareTokenId: string
   shareTokenMeta: TShareToken
+  onSubmitted: () => void
 }) => {
   const submitToasts = useSubmitToasts()
   const { papi } = useRpcProvider()
@@ -352,7 +354,6 @@ export const useRemoveXYKShares = ({
 
   const balance = getTransferableBalance(shareTokenId).toString()
   const balanceShifted = scaleHuman(balance, shareTokenMeta.decimals)
-  // const poolsTokens = shareTokenMeta.assets
 
   const { tokens, totalLiquidity } = pool
 
@@ -391,7 +392,9 @@ export const useRemoveXYKShares = ({
 
       if (!assetA || !assetB) throw new Error("Pool not found")
 
-      const toasts = submitToasts(removeSharesAmount)
+      const toasts = submitToasts(
+        toDecimal(removeSharesAmount, shareTokenMeta.decimals),
+      )
 
       const minAssetA = getLiquidityMinLimit(assetA.value)
       const minAssetB = getLiquidityMinLimit(assetB.value)
@@ -404,10 +407,13 @@ export const useRemoveXYKShares = ({
         min_amount_b: BigInt(minAssetB),
       })
 
-      await createTransaction({
-        tx,
-        toasts,
-      })
+      await createTransaction(
+        {
+          tx,
+          toasts,
+        },
+        { onSubmitted },
+      )
     },
   })
 

@@ -196,6 +196,7 @@ export const useMinOmnipoolFarmJoin = (farms: Farm[], meta?: TAssetData) => {
 export const useJoinIsolatedPoolFarms = ({
   xykData,
   positionId,
+  options,
 }: {
   xykData: IsolatedPoolTable
   positionId?: string
@@ -231,6 +232,7 @@ export const useJoinIsolatedPoolFarms = ({
     farms: availableFarms,
     tokens: xykData.tokens,
     meta,
+    options,
   })
 
   const onSubmit = (amount: string) => {

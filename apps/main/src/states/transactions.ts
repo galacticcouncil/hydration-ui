@@ -42,6 +42,8 @@ type MultiTransactionConfig = (
   | SingleTransactionInputDynamic
 ) & {
   stepTitle: string
+  //@TODO consider separate all transaction actions per tx
+  onSubmitted?: (txHash: string) => void
 }
 
 interface MultiTransactionInput {
