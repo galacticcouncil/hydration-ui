@@ -5,7 +5,7 @@ import {
   useThemeUI as useThemeUIHook,
 } from "@theme-ui/core"
 import { get } from "@theme-ui/css"
-import React, { createContext, useContext, useEffect, useMemo } from "react"
+import React, { createContext, useContext, useEffect, useState } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -90,12 +90,10 @@ const getCurrentTheme = (theme: ThemeName) =>
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const { themePreference, setThemePreference } = useThemeStore()
-  const [systemTheme, setSystemTheme] =
-    React.useState<ThemeName>(getSystemTheme)
+  const [systemTheme, setSystemTheme] = useState<ThemeName>(getSystemTheme)
 
-  const resolvedTheme = useMemo(() => {
-    return themePreference === "system" ? systemTheme : themePreference
-  }, [themePreference, systemTheme])
+  const resolvedTheme =
+    themePreference === "system" ? systemTheme : themePreference
 
   useEffect(() => {
     applyTheme(resolvedTheme)

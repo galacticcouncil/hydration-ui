@@ -11,6 +11,7 @@ import {
   MenuItemLabel,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
 } from "@galacticcouncil/ui/components"
 import {
   ThemePreference as ThemePreferenceType,
@@ -55,7 +56,14 @@ export const ThemePreference: FC = () => {
         >
           {themeOptions.map((theme) => (
             <ToggleGroupItem key={theme} value={theme}>
-              {createElement(getIconByTheme(theme))}
+              <Tooltip
+                text={t(`theme.${theme}`)}
+                side="top"
+                sideOffset={10}
+                asChild
+              >
+                {createElement(getIconByTheme(theme))}
+              </Tooltip>
             </ToggleGroupItem>
           ))}
         </ToggleGroup>

@@ -17,6 +17,8 @@ type InfoTooltipProps = {
   children?: ReactNode
   side?: TooltipContentProps["side"]
   align?: TooltipContentProps["align"]
+  sideOffset?: TooltipContentProps["sideOffset"]
+  alignOffset?: TooltipContentProps["alignOffset"]
   asChild?: boolean
   preventDefault?: boolean
 }
@@ -26,6 +28,8 @@ export const Tooltip = ({
   children,
   side = "bottom",
   align = "center",
+  sideOffset = 3,
+  alignOffset = -10,
   asChild = false,
   preventDefault,
 }: InfoTooltipProps) => {
@@ -57,8 +61,8 @@ export const Tooltip = ({
         <SContent
           side={side}
           align={align}
-          sideOffset={3}
-          alignOffset={-10}
+          sideOffset={sideOffset}
+          alignOffset={alignOffset}
           collisionPadding={12}
         >
           {typeof text === "string" ? (
