@@ -5,22 +5,33 @@ import {
   useThemeUI as useThemeUIHook,
 } from "@theme-ui/core"
 import { get } from "@theme-ui/css"
-import React, { createContext, useContext } from "react"
+import React, { createContext, useContext, useEffect, useMemo } from "react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { GlobalStyles } from "@/styles"
-import { ThemeName, ThemeProps, themes, ThemeToken } from "@/theme"
+import {
+  ThemeName,
+  ThemePreference,
+  ThemeProps,
+  themes,
+  ThemeToken,
+} from "@/theme"
 
-const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-const defaultTheme: ThemeName = prefersDark ? "dark" : "light"
+const getSystemTheme = (): ThemeName => {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light"
+}
 
 const ThemeContext = createContext<{
   theme: ThemeName
-  setTheme: (theme: ThemeName) => void
+  themePreference: ThemePreference
+  setThemePreference: (theme: ThemePreference) => void
 }>({
-  theme: defaultTheme,
-  setTheme: () => {},
+  theme: getSystemTheme(),
+  themePreference: "system",
+  setThemePreference: () => {},
 })
 
 type ThemeProviderProps = {
@@ -43,40 +54,75 @@ export function useTheme() {
 }
 
 type ThemeStore = {
-  theme: ThemeName
-  setTheme: (theme: ThemeName) => void
+  themePreference: ThemePreference
+  setThemePreference: (theme: ThemePreference) => void
 }
 
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set) => ({
-      theme: defaultTheme,
-      setTheme: (theme) => set({ theme }),
+      themePreference: "system",
+      setThemePreference: (themePreference) => set({ themePreference }),
     }),
     {
       name: "theme",
-      version: 0,
+      version: 1,
     },
   ),
 )
 
-useThemeStore.subscribe(() => {
-  const { theme } = useThemeStore.getState()
+const applyTheme = (theme: ThemeName) => {
   const html = window.document.documentElement
   html.classList.remove("light", "dark")
   html.classList.add(theme)
   html.style.colorScheme = theme
+}
+
+useThemeStore.subscribe((state) => {
+  const { themePreference } = state
+  const theme =
+    themePreference === "system" ? getSystemTheme() : themePreference
+  applyTheme(theme)
 })
 
 const getCurrentTheme = (theme: ThemeName) =>
   themes[theme] as unknown as ThemeUITheme
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const { theme, setTheme } = useThemeStore()
+  const { themePreference, setThemePreference } = useThemeStore()
+  const [systemTheme, setSystemTheme] =
+    React.useState<ThemeName>(getSystemTheme)
+
+  const resolvedTheme = useMemo(() => {
+    return themePreference === "system" ? systemTheme : themePreference
+  }, [themePreference, systemTheme])
+
+  useEffect(() => {
+    applyTheme(resolvedTheme)
+  }, [resolvedTheme])
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+
+    const handleChange = () => {
+      const newTheme = getSystemTheme()
+      setSystemTheme(newTheme)
+      if (themePreference === "system") {
+        applyTheme(newTheme)
+      }
+    }
+
+    setSystemTheme(getSystemTheme())
+
+    mediaQuery.addEventListener("change", handleChange)
+    return () => mediaQuery.removeEventListener("change", handleChange)
+  }, [themePreference])
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      <ThemeUIProvider theme={getCurrentTheme(theme)}>
+    <ThemeContext.Provider
+      value={{ theme: resolvedTheme, themePreference, setThemePreference }}
+    >
+      <ThemeUIProvider theme={getCurrentTheme(resolvedTheme)}>
         <GlobalStyles />
         {children}
       </ThemeUIProvider>

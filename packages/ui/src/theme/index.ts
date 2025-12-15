@@ -12,6 +12,7 @@ import lightJSON from "./tokens/light.json"
 export type ThemeBaseProps = Omit<typeof base, "buttons" | "text">
 export type ThemeProps = ThemeBaseProps & typeof lightJSON
 export type ThemeName = keyof typeof themes
+export type ThemePreference = ThemeName | "system"
 export type ThemeColor = Join<Paths<ThemeProps["colors"]>, ".">
 export type ThemeToken = Join<Paths<ThemeProps>, ".">
 export type ThemeFont = "mono" | keyof ThemeProps["fontFamilies1"]
