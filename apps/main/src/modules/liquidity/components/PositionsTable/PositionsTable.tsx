@@ -1,3 +1,4 @@
+import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   CollapsibleContent,
@@ -15,7 +16,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { Circle, Minus } from "lucide-react"
+import { Minus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -84,7 +85,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
           gap={getTokenPx("scales.paddings.s")}
           color={getToken("buttons.primary.high.hover")}
         >
-          <Icon component={Circle} size={12} />
+          <Icon component={LiquidityIcon} size={12} />
           <Text fw={500} font="primary">
             {t("liquidity.positions.label.isolated")}
           </Text>

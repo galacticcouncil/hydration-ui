@@ -303,7 +303,7 @@ export const useBalanceTableColumns = () => {
               <Link
                 to="/liquidity/$id/remove"
                 params={{
-                  id: stableswapId,
+                  id: poolId,
                 }}
                 search={{
                   erc20Id: poolId,

@@ -29,13 +29,15 @@ export type TRemoveXykPositionsProps = {
 const useSubmitToasts = () => {
   const { t } = useTranslation("liquidity")
 
-  return (value: string): TransactionToasts => {
+  return (value: string, symbol: string): TransactionToasts => {
     return {
       submitted: t("liquidity.remove.modal.xyk.toast.submitted", {
         value,
+        symbol,
       }),
       success: t("liquidity.remove.modal.xyk.toast.success", {
         value,
+        symbol,
       }),
     }
   }
@@ -184,7 +186,7 @@ export const useRemoveMultipleXYKPositions = ({
         { liquidityTxs: [], exitingFarmsTxs: [] },
       )
 
-      const toasts = submitToasts(removeSharesAmount)
+      const toasts = submitToasts(removeSharesAmount, shareTokenMeta.symbol)
 
       await createTransaction(
         {
@@ -266,7 +268,7 @@ export const useRemoveSingleXYKPosition = ({
 
       if (!assetA || !assetB) throw new Error("Pool not found")
 
-      const toasts = submitToasts(removeSharesAmount)
+      const toasts = submitToasts(removeSharesAmount, shareTokenMeta.symbol)
 
       const exitFarmsTxs = position.yield_farm_entries.map((entry) =>
         papi.tx.XYKLiquidityMining.withdraw_shares({
@@ -394,6 +396,7 @@ export const useRemoveXYKShares = ({
 
       const toasts = submitToasts(
         toDecimal(removeSharesAmount, shareTokenMeta.decimals),
+        shareTokenMeta.symbol,
       )
 
       const minAssetA = getLiquidityMinLimit(assetA.value)
