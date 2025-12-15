@@ -17,13 +17,6 @@ export const SPagination = styled(Flex)(
 
 export const SCollapsible = styled(Box)(
   () => css`
-    interpolate-size: allow-keywords;
-
-    @starting-style {
-      height: 0px;
-    }
-
-    height: max-content;
-    transition: height 0.3s ease;
+    padding: var(--table-column-padding-x);
   `,
 )
