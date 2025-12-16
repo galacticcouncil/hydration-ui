@@ -71,6 +71,13 @@ export const RemoveLiquidityModal = ({
   const [currentStep, setCurrentStep] = useState(0)
   const [splitRemove, setSplitRemove] = useState(true)
 
+  const goBackFromLimitPage = () =>
+    paginateTo(
+      currentStep === RemoveStablepoolLiquidityPage.REMOVE_FROM_OMNIPOOL
+        ? RemoveStablepoolLiquidityPage.REMOVE_FROM_OMNIPOOL
+        : RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
+    )
+
   const handleBack = () => {
     if (page === RemoveStablepoolLiquidityPage.ASSETS) {
       return paginateTo(RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL)
@@ -81,7 +88,7 @@ export const RemoveLiquidityModal = ({
     }
 
     if (page === RemoveStablepoolLiquidityPage.LIMIT_LIQUIDITY) {
-      return paginateTo(RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL)
+      return goBackFromLimitPage()
     }
 
     paginateTo(page - 1)
@@ -166,6 +173,9 @@ export const RemoveLiquidityModal = ({
                   onSuccess()
                   onClose()
                 }}
+                setLiquidityLimit={() =>
+                  paginateTo(RemoveStablepoolLiquidityPage.LIMIT_LIQUIDITY)
+                }
                 onError={onClose}
                 position={position}
                 onSubmitted={(shares) => {
@@ -267,14 +277,7 @@ export const RemoveLiquidityModal = ({
             noPadding: true,
             headerVariant: "GeistMono",
             content: (
-              <LimitModal
-                onConfirm={() =>
-                  paginateTo(
-                    RemoveStablepoolLiquidityPage.REMOVE_FROM_STABLEPOOL,
-                  )
-                }
-                type="liquidity"
-              />
+              <LimitModal onConfirm={goBackFromLimitPage} type="liquidity" />
             ),
           },
         ]}

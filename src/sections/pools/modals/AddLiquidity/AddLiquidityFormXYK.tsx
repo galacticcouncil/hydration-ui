@@ -28,12 +28,15 @@ import { ISubmittableResult } from "@polkadot/types/types"
 import { useRefetchAccountAssets } from "api/deposits"
 import { AvailableFarmsForm } from "./components/JoinFarmsSection/JoinFarmsSection"
 import { useXYKSDKPools } from "api/xyk"
+import { LiquidityLimitField } from "./AddLiquidityForm"
+import { useMinSharesToGet } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.utils"
 
 type Props = {
   onClose: () => void
   pool: TXYKPool
   onSuccess?: (result: ISubmittableResult, shares: string) => void
   onSubmitted?: () => void
+  onSetLiquidityLimit: () => void
 }
 
 type FormValues = {
@@ -47,7 +50,12 @@ type FormValues = {
 const opposite = (value: "assetA" | "assetB") =>
   value === "assetA" ? "assetB" : "assetA"
 
-export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
+export const AddLiquidityFormXYK = ({
+  pool,
+  onClose,
+  onSuccess,
+  onSetLiquidityLimit,
+}: Props) => {
   const { t } = useTranslation()
   const refetchAccountAssets = useRefetchAccountAssets()
   const { api } = useRpcProvider()
@@ -80,6 +88,8 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
 
   const { data: spotPrice } = useSpotPrice(assetA.id, assetB.id)
   const { data: xykPools } = useXYKSDKPools()
+  const getMinSharesToGet = useMinSharesToGet()
+
   const [assetAReserve, assetBReserve] =
     xykPools?.find((xykPool) => xykPool.address === pool.poolAddress)?.tokens ??
     []
@@ -124,6 +134,7 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
         ).decimalPlaces(0),
       },
     }
+    const minShares = getMinSharesToGet(BN(shares))
 
     return await createTransaction(
       {
@@ -138,11 +149,12 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
                 farm.yieldFarmId,
               ]),
             )
-          : api.tx.xyk.addLiquidity(
+          : api.tx.xyk.addLiquidityWithLimits(
               inputData.assetA.id,
               inputData.assetB.id,
               inputData.assetA.amount.toFixed(),
               inputData.assetB.amount.toFixed(),
+              minShares,
             ),
       },
       {
@@ -288,6 +300,11 @@ export const AddLiquidityFormXYK = ({ pool, onClose, onSuccess }: Props) => {
                 balanceMax={balanceBMax ? BN(balanceBMax) : undefined}
               />
             )}
+          />
+          <Spacer size={4} />
+          <LiquidityLimitField
+            setLiquidityLimit={onSetLiquidityLimit}
+            type="liquidity"
           />
           <Spacer size={4} />
           <SummaryRow
