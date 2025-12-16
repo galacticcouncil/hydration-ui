@@ -116,10 +116,19 @@ export const useEvmAccount = () => {
 
   useEffect(() => {
     if (wallet && isEvmWalletExtension(wallet?.extension)) {
-      // Refetch chainId on chainChanged event from wallet extension
-      wallet.extension.on("chainChanged", refetch)
+      // Some EIP-1193 wallets use different methods for adding and removing listeners
+      if (wallet.extension?.on) {
+        wallet.extension.on("chainChanged", refetch)
+      } else if (wallet.extension?.addListener) {
+        wallet.extension.addListener("chainChanged", refetch)
+      }
+
       return () => {
-        wallet.extension.off("chainChanged", refetch)
+        if (wallet.extension?.off) {
+          wallet.extension.off("chainChanged", refetch)
+        } else if (wallet.extension?.removeListener) {
+          wallet.extension.removeListener("chainChanged", refetch)
+        }
       }
     }
   }, [refetch, wallet])
