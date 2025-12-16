@@ -18,6 +18,7 @@ import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
 import { Loader } from "@/components/Loader/Loader"
 import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
+import { RouteError } from "@/components/RouteError"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -80,6 +81,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       assetsQuery({ ...rpcData, isApiLoaded: true, isLoaded: true }),
     )
   },
+  errorComponent: RouteError,
   head: ({
     match: {
       context: { i18n },

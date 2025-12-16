@@ -16,9 +16,9 @@ import { useBestNumber, useChainSpecData } from "@/api/chain"
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { TxStatus } from "@/modules/transactions/types"
-import { stringifyTxErrorContext } from "@/modules/transactions/utils/errors"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
+import { stringifyErrorContext } from "@/utils/errors"
 
 export type ReviewTransactionStatusProps = {
   status: TxStatus
@@ -102,7 +102,7 @@ const ErrorCopyButton = () => {
     <MicroButton
       onClick={() =>
         copy(
-          stringifyTxErrorContext({
+          stringifyErrorContext({
             message: error ?? "",
             address: account?.address ?? "",
             wallet: account?.provider ?? "",
@@ -118,9 +118,7 @@ const ErrorCopyButton = () => {
     >
       <Flex gap={4} color={copied && getToken("accents.success.emphasis")}>
         {copied && <Icon size={12} component={Check} />}
-        <Text>
-          {copied ? t("copied") : t("transaction.status.error.copyError")}
-        </Text>
+        <Text>{copied ? t("copied") : t("copyError")}</Text>
       </Flex>
     </MicroButton>
   )
