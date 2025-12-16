@@ -24,10 +24,16 @@ import { scaleHuman } from "@/utils/formatting"
 type Props = {
   readonly swap: Trade | undefined
   readonly twap: TradeOrder | undefined
-  readonly isLoading: boolean
+  readonly isSwapLoading: boolean
+  readonly isTwapLoading: boolean
 }
 
-export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
+export const MarketTradeOptions: FC<Props> = ({
+  swap,
+  twap,
+  isSwapLoading,
+  isTwapLoading,
+}) => {
   const { t } = useTranslation("trade")
   const rpc = useRpcProvider()
 
@@ -39,14 +45,10 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
   const calculateSellAmount = useCalculateSellAmount()
 
   const { data: tradeOrderDuration = 0 } = useQuery(
-    tradeOrderDurationQuery(
-      rpc,
-      twap?.tradeCount ?? 0,
-      !!swap && !!twap && !isLoading,
-    ),
+    tradeOrderDurationQuery(rpc, twap?.tradeCount ?? 0),
   )
 
-  if (isLoading) {
+  if (isSwapLoading || !swap) {
     return (
       <Flex direction="column" gap={8}>
         <TradeOptionSkeleton />
@@ -55,18 +57,18 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
     )
   }
 
-  if (!buyAsset || !sellAsset || !swap || !twap) {
+  if (!buyAsset || !sellAsset) {
     return null
   }
 
   const isBuy = swap.type === TradeType.Buy
 
   const [asset, amount, twapAmount] = isBuy
-    ? [sellAsset, swap.amountIn, twap.amountIn]
-    : [buyAsset, swap.amountOut, twap.amountOut]
+    ? [sellAsset, swap.amountIn, twap?.amountIn]
+    : [buyAsset, swap.amountOut, twap?.amountOut]
 
   const price = scaleHuman(amount, asset.decimals)
-  const twapPrice = scaleHuman(twapAmount, asset.decimals)
+  const twapPrice = twapAmount ? scaleHuman(twapAmount, asset.decimals) : "0"
   const diff = Big(twapPrice).minus(price).toString()
 
   const recalculateAmount = async (isSingleTrade: boolean): Promise<void> => {
@@ -116,24 +118,28 @@ export const MarketTradeOptions: FC<Props> = ({ swap, twap, isLoading }) => {
             label={t("market.form.type.single")}
             time={t("market.form.type.single.instant")}
           />
-          <TradeOption
-            asset={asset}
-            value={twapPrice}
-            diff={diff}
-            isBuy={twap.type === TradeOrderType.TwapBuy}
-            active={!field.value}
-            onClick={(): void => {
-              field.onChange(false)
-              recalculateAmount(false)
-            }}
-            label={t("market.form.type.split")}
-            time={t("market.form.type.split.timeframe", {
-              timeframe: formatDistanceToNowStrict(
-                Date.now() + tradeOrderDuration,
-              ),
-            })}
-            disabled={!!twap.errors.length}
-          />
+          {isTwapLoading || !twap ? (
+            <TradeOptionSkeleton />
+          ) : (
+            <TradeOption
+              asset={asset}
+              value={twapPrice}
+              diff={diff}
+              isBuy={twap.type === TradeOrderType.TwapBuy}
+              active={!field.value}
+              onClick={(): void => {
+                field.onChange(false)
+                recalculateAmount(false)
+              }}
+              label={t("market.form.type.split")}
+              time={t("market.form.type.split.timeframe", {
+                timeframe: formatDistanceToNowStrict(
+                  Date.now() + tradeOrderDuration,
+                ),
+              })}
+              disabled={!!twap.errors.length}
+            />
+          )}
         </Flex>
       )}
     />

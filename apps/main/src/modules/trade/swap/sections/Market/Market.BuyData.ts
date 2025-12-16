@@ -74,7 +74,8 @@ export const useMarketBuyData = (
     twap: twapData?.twap,
     twapTx: twapData?.tx ?? null,
     healthFactor: healthFactorData,
-    isLoading: isSwapLoading || isTwapLoading,
+    isSwapLoading,
+    isTwapLoading,
     isHealthFactorLoading,
   }
 }
