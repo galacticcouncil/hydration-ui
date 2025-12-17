@@ -1,71 +1,119 @@
 import Big from "big.js"
+import { useMemo } from "react"
 
+import { AssetType } from "@/api/assets"
 import { useUserBorrowSummary } from "@/api/borrow"
-import { useMyLiquidityAmount } from "@/modules/liquidity/components/PoolsHeader/MyLiquidity.data"
-import { useAssets } from "@/providers/assetsProvider"
+import { useMyIsolatedPoolsLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import {
   isOmnipoolDepositPosition,
-  useAccountBalances,
+  useAccountBalancesWithPriceByAssetType,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
-import { useAssetsPrice } from "@/states/displayAsset"
-import { scaleHuman } from "@/utils/formatting"
+import { toBig } from "@/utils/formatting"
+
+const calculateBalancesTotal = (
+  balances: Array<{
+    balance: { transferable: bigint }
+    meta: { decimals: number }
+    price?: string
+  }>,
+) => {
+  if (!balances) return Big(0)
+
+  return balances.reduce((acc, { balance, meta, price }) => {
+    const balanceShifted = toBig(balance.transferable, meta.decimals)
+    const displayValue = price ? balanceShifted.times(price).toString() : "0"
+    return acc.plus(displayValue)
+  }, Big(0))
+}
 
 export const useWalletBalancesSectionData = () => {
-  const { totalAmount, isLoading } = useMyLiquidityAmount()
-
   const { data: positions, isLoading: isLoadingPositions } =
     useAccountOmnipoolPositionsData()
+
+  const {
+    data: isolatedPoolsLiquidity,
+    isLoading: isLoadingIsolatedPoolsLiquidity,
+  } = useMyIsolatedPoolsLiquidity()
 
   const { data: userBorrowSummary, isLoading: isLoadingBorrowSummary } =
     useUserBorrowSummary()
 
-  const { getAsset } = useAssets()
-  const { balances, isBalanceLoading } = useAccountBalances()
-  const { getAssetPrice, isLoading: isAssetPriceLoading } = useAssetsPrice(
-    Array.from(new Set(Object.keys(balances))),
-  )
+  const { data: balancesWithPrice, isLoading: isBalanceLoading } =
+    useAccountBalancesWithPriceByAssetType([
+      AssetType.STABLESWAP,
+      AssetType.TOKEN,
+      AssetType.ERC20,
+    ])
 
-  const totalAssets = Object.values(balances).reduce((acc, balance) => {
-    const asset = getAsset(balance.assetId)
+  const { liquidityTotal, farmingTotal, assetsTotal } = useMemo(() => {
+    const omnipoolLiquidity = (positions?.all ?? []).reduce(
+      (acc, position) => {
+        acc.liquidity = acc.liquidity.plus(
+          position.data?.currentTotalDisplay ?? 0,
+        )
 
-    if (!asset) {
-      return acc
-    }
+        if (isOmnipoolDepositPosition(position)) {
+          acc.farming = acc.farming.plus(
+            position.data?.currentTotalDisplay ?? 0,
+          )
+        }
 
-    const assetBalance = scaleHuman(balance.total, asset.decimals)
-    const assetPrice = getAssetPrice(balance.assetId)
-    const balancePrice = new Big(
-      assetPrice.isValid ? assetPrice.price : 0,
-    ).times(assetBalance)
+        return acc
+      },
+      {
+        liquidity: Big(0),
+        farming: Big(0),
+      },
+    )
 
-    return acc.plus(balancePrice)
-  }, new Big(0))
+    const isolatedPoolsLiquidityTotals = isolatedPoolsLiquidity.reduce(
+      (acc, asset) => {
+        acc.liquidity = acc.liquidity.plus(asset.currentTotalDisplay ?? 0)
+        acc.farming = acc.farming.plus(
+          asset.positions.reduce((acc, position) => {
+            const displaValue = toBig(position.shares, position.meta.decimals)
+              .times(position.price)
+              .toString()
+            return acc.plus(displaValue ?? 0)
+          }, Big(0)),
+        )
+        return acc
+      },
+      { liquidity: Big(0), farming: Big(0) },
+    )
 
-  const omnipoolLiquidity = positions?.all.reduce(
-    (acc, position) => {
-      acc.liquidity = acc.liquidity.plus(
-        position.data?.currentTotalDisplay ?? 0,
-      )
+    const tokensTotal = calculateBalancesTotal(
+      balancesWithPrice?.tokenBalances ?? [],
+    )
 
-      if (isOmnipoolDepositPosition(position)) {
-        acc.farming = acc.farming.plus(position.data?.currentTotalDisplay ?? 0)
-      }
+    const erc20Total = calculateBalancesTotal(
+      balancesWithPrice?.erc20Balances ?? [],
+    )
 
-      return acc
-    },
-    {
-      liquidity: Big(0),
-      farming: Big(0),
-    },
-  )
+    const stableSwapTotal = calculateBalancesTotal(
+      balancesWithPrice?.stableSwapBalances ?? [],
+    )
+
+    const assetsTotal = tokensTotal.plus(erc20Total).toString()
+
+    const liquidityTotal = omnipoolLiquidity.liquidity
+      .plus(stableSwapTotal)
+      .plus(isolatedPoolsLiquidityTotals.liquidity)
+
+    const farmingTotal = omnipoolLiquidity.farming.plus(
+      isolatedPoolsLiquidityTotals.farming,
+    )
+
+    return { omnipoolLiquidity, assetsTotal, liquidityTotal, farmingTotal }
+  }, [balancesWithPrice, isolatedPoolsLiquidity, positions?.all])
 
   return {
-    assets: totalAssets.toString(),
-    isAssetsLoading: isBalanceLoading || isAssetPriceLoading,
-    liquidity: totalAmount,
-    farms: omnipoolLiquidity?.farming.toString() ?? "",
-    isLiquidityLoading: isLoading || isLoadingPositions,
+    assets: assetsTotal.toString(),
+    isAssetsLoading: isBalanceLoading,
+    liquidity: liquidityTotal.toString(),
+    farms: farmingTotal.toString(),
+    isLiquidityLoading: isLoadingIsolatedPoolsLiquidity || isLoadingPositions,
     supply: userBorrowSummary?.totalLiquidityUSD ?? "",
     borrow: userBorrowSummary?.totalBorrowsUSD ?? "",
     isBorrowLoading: isLoadingBorrowSummary,

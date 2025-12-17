@@ -86,7 +86,7 @@ export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {
             .div(QUINTILL.toString())
             .toNumber()
 
-          const axisScale = periods / 100
+          const axisScale = Math.floor(periods / 100)
 
           const result = await getWorker().getLoyaltyFactor(
             periods,

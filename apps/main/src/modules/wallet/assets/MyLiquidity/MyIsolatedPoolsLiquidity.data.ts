@@ -1,16 +1,23 @@
 import Big from "big.js"
 import { useMemo } from "react"
-import { prop } from "remeda"
+import { pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { XykDeposit } from "@/api/account"
 import { useShareTokenPrices } from "@/api/spotPrice"
-import { useAssets } from "@/providers/assetsProvider"
-import { useAccountBalances, useAccountData } from "@/states/account"
+import { TShareToken, useAssets } from "@/providers/assetsProvider"
+import { useAccountData } from "@/states/account"
 import { toBig } from "@/utils/formatting"
 
 import { LiquidityPositionByAsset } from "./MyLiquidityTable.data"
 
+type IsolatedPoolsLiquidityByPool = Omit<
+  LiquidityPositionByAsset,
+  "meta" | "positions"
+> & {
+  positions: Array<XykDeposit & { price: string; meta: TShareToken }>
+  meta: TShareToken
+}
 type ShareTokenBalance = { shares: bigint; amm_pool_id: string }
 const isDeposit = (
   position: XykDeposit | ShareTokenBalance,
@@ -19,7 +26,9 @@ const isDeposit = (
 export const useMyIsolatedPoolsLiquidity = () => {
   const { getShareToken, getShareTokenByAddress } = useAssets()
   const xykMining = useAccountData(useShallow(prop("xykMining")))
-  const { balances } = useAccountBalances()
+  const { balances, isBalanceLoading } = useAccountData(
+    useShallow(pick(["balances", "isBalanceLoading"])),
+  )
 
   const shareTokensBalances = useMemo(() => {
     const accountXYKShareTokens: Array<{
@@ -46,7 +55,7 @@ export const useMyIsolatedPoolsLiquidity = () => {
       ...shareTokensBalances.map((p) => p.amm_pool_id),
     ])
 
-  const groupedXykData = useMemo<Array<LiquidityPositionByAsset>>(() => {
+  const groupedXykData = useMemo<Array<IsolatedPoolsLiquidityByPool>>(() => {
     if (isShareTokenPricesLoading) return []
 
     const xykArray: Array<XykDeposit | ShareTokenBalance> = [
@@ -55,7 +64,7 @@ export const useMyIsolatedPoolsLiquidity = () => {
     ]
     const groupedXykData = Object.groupBy(xykArray, (p) => p.amm_pool_id)
 
-    const xykEntries: Array<LiquidityPositionByAsset> = []
+    const xykEntries: Array<IsolatedPoolsLiquidityByPool> = []
 
     for (const [amm_pool_id, shareTokenEntry] of Object.entries(
       groupedXykData,
@@ -97,6 +106,6 @@ export const useMyIsolatedPoolsLiquidity = () => {
 
   return {
     data: groupedXykData,
-    isLoading: isShareTokenPricesLoading,
+    isLoading: isShareTokenPricesLoading || isBalanceLoading,
   }
 }

@@ -26,6 +26,7 @@ export enum AssetType {
   ERC20 = "Erc20",
   External = "External",
   Unknown = "Unknown",
+  XYK = "XYK",
 }
 
 import { ChainEcosystem } from "@galacticcouncil/xcm-core"

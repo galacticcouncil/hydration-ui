@@ -1,6 +1,6 @@
 import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
 import { produce } from "immer"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { pick } from "remeda"
 import { create, StateCreator } from "zustand"
 import { useShallow } from "zustand/react/shallow"
@@ -10,8 +10,10 @@ import {
   OmnipoolPosition,
   XykDeposit,
 } from "@/api/account"
-import { AssetId } from "@/providers/assetsProvider"
+import { AssetType, TBond, TErc20, TStableswap, TToken } from "@/api/assets"
+import { AssetId, useAssets } from "@/providers/assetsProvider"
 
+import { useAssetsPrice } from "./displayAsset"
 import { OmnipoolPositionData, useOmnipoolPositionData } from "./liquidity"
 
 export type Balance = SdkBalance & {
@@ -259,4 +261,138 @@ export const useAccountOmnipoolPositionsData = () => {
   )
 
   return { data, isLoading, getAssetPositions }
+}
+
+export const useAccountBalancesWithPriceByAssetType = (
+  assetTypes: Array<
+    Exclude<AssetType, AssetType.External | AssetType.Unknown | AssetType.XYK>
+  >,
+) => {
+  const [stableAssetTypes] = useState(assetTypes)
+  const { getAsset, isToken, isStableSwap, isErc20, isBond } = useAssets()
+  const { balances, isBalanceLoading } = useAccountData(
+    useShallow(pick(["balances", "isBalanceLoading"])),
+  )
+
+  const {
+    tokenBalances,
+    erc20Balances,
+    stableSwapBalances,
+    bondBalances,
+    priceIds,
+  } = useMemo(() => {
+    const tokenBalances: Array<{ balance: Balance; meta: TToken }> = []
+    const erc20Balances: Array<{ balance: Balance; meta: TErc20 }> = []
+    const stableSwapBalances: Array<{ balance: Balance; meta: TStableswap }> =
+      []
+    const bondBalances: Array<{ balance: Balance; meta: TBond }> = []
+    const priceIds: Array<string> = []
+
+    if (isBalanceLoading) {
+      return {
+        tokenBalances,
+        erc20Balances,
+        stableSwapBalances,
+        bondBalances,
+        priceIds,
+      }
+    }
+
+    for (const balance of Object.values(balances)) {
+      const asset = getAsset(balance.assetId)
+      if (!asset) continue
+
+      const isTokenType = isToken(asset)
+      const isErc20Type = isErc20(asset)
+      const isStableSwapType = isStableSwap(asset)
+      const isBondType = isBond(asset)
+
+      const isSupportedType =
+        isTokenType || isErc20Type || isStableSwapType || isBondType
+      const isValidType = isSupportedType
+        ? stableAssetTypes.includes(asset.type)
+        : false
+
+      if (!isValidType) continue
+
+      priceIds.push(balance.assetId)
+
+      if (isTokenType) {
+        tokenBalances.push({
+          balance: balance,
+          meta: asset,
+        })
+      } else if (isStableSwapType) {
+        stableSwapBalances.push({
+          balance: balance,
+          meta: asset,
+        })
+      } else if (isErc20Type) {
+        erc20Balances.push({
+          balance: balance,
+          meta: asset,
+        })
+      } else if (isBondType) {
+        bondBalances.push({
+          balance: balance,
+          meta: asset,
+        })
+      }
+    }
+
+    return {
+      tokenBalances,
+      erc20Balances,
+      stableSwapBalances,
+      bondBalances,
+      priceIds,
+    }
+  }, [
+    balances,
+    getAsset,
+    isToken,
+    isErc20,
+    isStableSwap,
+    isBond,
+    stableAssetTypes,
+    isBalanceLoading,
+  ])
+
+  const { getAssetPrice, isLoading: isAssetPriceLoading } =
+    useAssetsPrice(priceIds)
+
+  const mapBalancesWithPrice = useCallback(
+    <T extends { meta: { id: string } }>(
+      balances: T[],
+    ): Array<T & { price: string | undefined }> => {
+      return balances.map((balance) => {
+        const assetPrice = getAssetPrice(balance.meta.id)
+        return {
+          ...balance,
+          price: assetPrice.isValid ? assetPrice.price : undefined,
+        }
+      })
+    },
+    [getAssetPrice],
+  )
+
+  const data = useMemo(() => {
+    if (isAssetPriceLoading) return
+
+    return {
+      tokenBalances: mapBalancesWithPrice(tokenBalances),
+      erc20Balances: mapBalancesWithPrice(erc20Balances),
+      stableSwapBalances: mapBalancesWithPrice(stableSwapBalances),
+      bondBalances: mapBalancesWithPrice(bondBalances),
+    }
+  }, [
+    bondBalances,
+    erc20Balances,
+    mapBalancesWithPrice,
+    isAssetPriceLoading,
+    stableSwapBalances,
+    tokenBalances,
+  ])
+
+  return { data, isLoading: isAssetPriceLoading || isBalanceLoading }
 }
