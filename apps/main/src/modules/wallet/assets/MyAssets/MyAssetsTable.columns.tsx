@@ -15,11 +15,8 @@ import { useTranslation } from "react-i18next"
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
-import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal"
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
-import { useAssets } from "@/providers/assetsProvider"
 import { naturally, numericallyStr, sortBy } from "@/utils/sort"
 
 export enum MyAssetsTableColumn {
@@ -48,7 +45,6 @@ export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 export const useMyAssetsColumns = () => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
-  const { native } = useAssets()
 
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
@@ -124,6 +120,7 @@ export const useMyAssetsColumns = () => {
       meta: {
         sx: {
           textAlign: "right",
+          pr: "0 !important",
         },
       },
       cell: function Cell({ row }) {
@@ -177,53 +174,21 @@ export const useMyAssetsColumns = () => {
         compare: numericallyStr,
       }),
       cell: function Cell({ row }) {
-        type Modal = "detail" | `action:${AssetDetailModal}`
-
-        const [modal, setModal] = useState<Modal | null>(null)
         const [displayPrice] = useDisplayAssetPrice(
           row.original.id,
           row.original.total,
         )
 
         return (
-          <>
-            <TableRowDetailsExpand onClick={() => setModal("detail")}>
-              <Amount
-                variant="small"
-                value={t("common:number", {
-                  value: row.original.total,
-                })}
-                displayValue={displayPrice}
-              />
-            </TableRowDetailsExpand>
-            <Modal
-              open={modal === "detail"}
-              onOpenChange={() => setModal(null)}
-            >
-              {row.original.id === native.id ? (
-                <AssetDetailNativeMobileModal
-                  asset={row.original}
-                  onModalOpen={(action) => setModal(`action:${action}`)}
-                />
-              ) : (
-                <AssetDetailMobileModal
-                  asset={row.original}
-                  onModalOpen={(action) => setModal(`action:${action}`)}
-                />
-              )}
-            </Modal>
-            <Modal
-              open={modal?.startsWith("action")}
-              onOpenChange={() => setModal("detail")}
-            >
-              {modal === "action:transfer" && (
-                <TransferPositionModal
-                  assetId={row.original.id}
-                  onClose={() => setModal("detail")}
-                />
-              )}
-            </Modal>
-          </>
+          <TableRowDetailsExpand>
+            <Amount
+              variant="small"
+              value={t("common:number", {
+                value: row.original.total,
+              })}
+              displayValue={displayPrice}
+            />
+          </TableRowDetailsExpand>
         )
       },
     })
@@ -237,5 +202,5 @@ export const useMyAssetsColumns = () => {
           stakingColumn,
           actionsColumn,
         ] as Array<ColumnDef<MyAsset>>)
-  }, [isMobile, t, native])
+  }, [isMobile, t])
 }

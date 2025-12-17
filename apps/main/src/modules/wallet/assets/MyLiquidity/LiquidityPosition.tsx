@@ -9,6 +9,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
+import { LiquidityPositionAction } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 import { AccountOmnipoolPosition } from "@/states/account"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
@@ -16,9 +17,17 @@ type Props = {
   readonly asset: TAssetData
   readonly number: number
   readonly position: AccountOmnipoolPosition
+  readonly onAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
+  ) => void
 }
 
-export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
+export const LiquidityPosition: FC<Props> = ({
+  asset,
+  number,
+  position,
+  onAction,
+}) => {
   const { t } = useTranslation(["wallet", "common"])
   const format = useFormatOmnipoolPositionData()
   const { data: activeFarms } = useOmnipoolActiveFarm(asset.id)
@@ -69,9 +78,9 @@ export const LiquidityPosition: FC<Props> = ({ asset, number, position }) => {
         <div />
       )}
       <LiquidityPositionActions
-        assetId={asset.id}
         position={position}
         farmsToJoin={farmsToJoin}
+        onAction={onAction}
       />
     </SLiquidityPosition>
   )

@@ -1,4 +1,4 @@
-import { Box, Flex, Grid } from "@galacticcouncil/ui/components"
+import { Box, Flex, Grid, Separator } from "@galacticcouncil/ui/components"
 import { Outlet } from "@tanstack/react-router"
 import { FC, ReactNode } from "react"
 
@@ -17,12 +17,13 @@ export const SubpageLayout: FC<Props> = ({
 }) => {
   return (
     <Flex direction="column" py={8}>
-      <Grid columnTemplate="1fr auto" align="center" mb={20}>
+      <Grid columnTemplate="1fr auto" align="center">
         {subpageMenu ?? (
           <SubpageMenu ignoreCurrentSearch={ignoreCurrentSearch} />
         )}
         <Box sx={{ gridColumn: 2 }}>{actions}</Box>
       </Grid>
+      <Separator mt={8} mb={20} mx={-30} />
       <Outlet />
     </Flex>
   )

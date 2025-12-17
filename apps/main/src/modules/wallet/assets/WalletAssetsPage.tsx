@@ -1,5 +1,5 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Grid, Input } from "@galacticcouncil/ui/components"
+import { Flex, Grid, Icon, Input } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
@@ -35,20 +35,23 @@ export const WalletAssetsPage = () => {
   return (
     <>
       <Flex direction="column" gap={[0, 20]}>
+        <HollarBanner />
         <Grid
           columnGap={[10, 20]}
-          sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}
+          sx={{
+            gridTemplateColumns: "1fr minmax(0, 400px)",
+            overflowX: "auto",
+          }}
         >
           <WalletBalances />
           <WalletRewards />
         </Grid>
-        <HollarBanner />
         {!isMobile && (
           <Flex pt={12} align="flex-end" justify="space-between">
             <WalletAssetsSubpageMenu />
             <Input
               placeholder={t("search.placeholder.assets")}
-              iconStart={Search}
+              leadingElement={<Icon size={18} component={Search} mr={8} />}
               onChange={(e) => setSearchPhrase(e.target.value)}
             />
           </Flex>

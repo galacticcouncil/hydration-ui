@@ -126,7 +126,7 @@ export const TableRow = styled.tr<{
     }
 
     ${!isEmptyState &&
-    isClickable &&
+    (isClickable || isExpandable) &&
     css`
       ${TableBody} &:hover {
         background: ${theme.surfaces.containers.high.hover};

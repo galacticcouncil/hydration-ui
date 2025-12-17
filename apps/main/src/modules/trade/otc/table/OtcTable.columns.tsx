@@ -117,30 +117,13 @@ export const useOtcTableColums = () => {
         select: (row) => row.original.marketPricePercentage,
         compare: nullLast(numerically),
       }),
-      cell: function Cell({ row }) {
-        const { isConnected } = useAccount()
-        const [isFillOpen, setIsFillOpen] = useState(false)
-
-        return (
-          <>
-            <TableRowDetailsExpand
-              disabled={!isConnected}
-              onClick={() => setIsFillOpen(true)}
-            >
-              <OfferMarketPriceColumn
-                percentage={row.original.marketPricePercentage}
-              />
-            </TableRowDetailsExpand>
-            <Modal open={isFillOpen} onOpenChange={setIsFillOpen}>
-              <FillOrderModalContent
-                otcOffer={row.original}
-                isUsersOffer={row.original.owner === userAddress}
-                onClose={() => setIsFillOpen(false)}
-              />
-            </Modal>
-          </>
-        )
-      },
+      cell: ({ row }) => (
+        <TableRowDetailsExpand>
+          <OfferMarketPriceColumn
+            percentage={row.original.marketPricePercentage}
+          />
+        </TableRowDetailsExpand>
+      ),
     })
 
     const partiallyFillable = columnHelper.accessor("isPartiallyFillable", {

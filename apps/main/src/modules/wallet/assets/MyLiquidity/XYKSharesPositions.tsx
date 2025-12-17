@@ -15,13 +15,20 @@ import { useIsolatedPoolFarms } from "@/api/farms"
 import { toBig } from "@/utils/formatting"
 
 import { SLiquidityPosition } from "./LiquidityPosition.styled"
-import { XYKSharesPositionMoreActions } from "./LiquidityPositionMoreActions"
+import {
+  LiquidityPositionAction,
+  XYKSharesPositionMoreActions,
+} from "./LiquidityPositionMoreActions"
 import { ShareTokenBalance } from "./MyIsolatedPoolsLiquidity.data"
 
 export const XYKSharesPositions = ({
   position,
+  onAction,
 }: {
   position: ShareTokenBalance
+  onAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
+  ) => void
 }) => {
   const { t } = useTranslation(["wallet", "common", "liquidity"])
   const { data: activeFarms } = useIsolatedPoolFarms(position.amm_pool_id)
@@ -58,8 +65,8 @@ export const XYKSharesPositions = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <XYKSharesPositionMoreActions
-            position={position}
             farmsToJoin={activeFarms?.filter((farm) => farm.apr !== "0") ?? []}
+            onAction={onAction}
           />
         </DropdownMenuContent>
       </DropdownMenu>
