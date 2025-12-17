@@ -60,6 +60,8 @@
   "settings": "Settings",
   "docs": "Docs",
   "off": "Off",
+  "copy": "Copy",
+  "copyError": "Copy error",
   "copied": "Copied",
   "claim": "Claim",
   "showAll": "Show All",
@@ -237,7 +239,6 @@
   "transaction.status.error.title": "Failed to submit transaction",
   "transaction.status.error.description": "Unfortunately there was an issue while submitted your transaction. Please try again later.",
   "transaction.status.error.tryAgain": "Try again",
-  "transaction.status.error.copyError": "Copy error",
   "transaction.status.submitted.title": "Submitting...",
   "transaction.status.submitted.description": "Fantastic! Data has been broadcasted and awaits confirmation on the blockchain.",
   "transaction.summary.cost.label": "Transaction cost",
@@ -265,5 +266,9 @@
   "hollar.banner.cta": "Jump in",
   "currentApr": "Current APR",
   "tradeLimit": "Trade limit",
-  "healthFactor": "Health factor"
+  "healthFactor": "Health factor",
+  "routeError.title": "Something went wrong 😞",
+  "routeError.reloadPage": "Reload page",
+  "page404.title": "404 - Not Found",
+  "page404.goBackToHome": "Go back to home"
 }
