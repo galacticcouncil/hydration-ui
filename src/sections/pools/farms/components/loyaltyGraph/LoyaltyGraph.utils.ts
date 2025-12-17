@@ -33,7 +33,7 @@ export const useLoyaltyRates = (
             .toNumber()
           const scaleCoef = Number(loyaltyCurve.scaleCoef)
 
-          const axisScale = periods / 100
+          const axisScale = Math.floor(periods / 100)
 
           const result = await worker.getLoyaltyFactor(
             periods,
