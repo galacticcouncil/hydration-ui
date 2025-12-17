@@ -16,7 +16,13 @@ export const OfferPriceColumn: FC<Props> = ({ offerPrice, assetOutSymbol }) => {
       <Text fw={500} fs="p4" lh={px(13)} sx={{ color: getToken("text.high") }}>
         {t("currency.compact", { value: offerPrice })}
       </Text>
-      <Text fw={500} fs="p4" lh={px(13)} sx={{ color: getToken("text.low") }}>
+      <Text
+        fw={500}
+        fs="p4"
+        lh={px(13)}
+        sx={{ color: getToken("text.low") }}
+        whiteSpace="nowrap"
+      >
         ({t("per")} {assetOutSymbol})
       </Text>
     </Flex>

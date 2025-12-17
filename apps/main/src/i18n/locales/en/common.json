@@ -212,6 +212,7 @@
   "currency": "{{prefix, default('')}}{{ value, currency }}{{suffix, default('')}}",
   "number.compact": "{{ value, number(notation: 'compact'; maximumFractionDigits: 2) }}",
   "currency.compact": "{{ value, currency(notation: 'compact'; maximumFractionDigits: 2) }}",
+  "percent.compact": "{{ value, percent(notation: 'compact'; maximumFractionDigits: 2) }}",
   "assetSelector.empty.mainText": "No assets found",
   "assetSelector.empty.secondaryText": "The asset your are looking for is missing, feel free to add custom asset.",
   "assetSelector.empty.btn.addAsset": "Add custom asset",
