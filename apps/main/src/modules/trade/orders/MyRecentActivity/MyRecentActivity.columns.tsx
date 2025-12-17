@@ -107,9 +107,7 @@ export const useMyRecentActivityColumns = () => {
       id: "actions",
       cell: function Cell({ row }) {
         const { status } = row.original
-        const [modal, setModal] = useState<
-          "none" | "dcaTermination" | "details"
-        >("none")
+        const [modal, setModal] = useState<"none" | "dcaTermination">("none")
 
         return (
           <Flex gap={8} align="center" justify="flex-end" height={28}>
@@ -142,13 +140,7 @@ export const useMyRecentActivityColumns = () => {
                   </Modal>
                 </>
               )}
-            <TableRowDetailsExpand onClick={() => setModal("details")} />
-            <Modal
-              open={modal === "details"}
-              onOpenChange={() => setModal("none")}
-            >
-              <SwapDetailsModal details={row.original} />
-            </Modal>
+            <TableRowDetailsExpand />
           </Flex>
         )
       },

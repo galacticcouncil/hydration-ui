@@ -210,9 +210,6 @@ const DataTable = <TData,>({
                 ? renderOverride?.(row.original)
                 : undefined
 
-              const isRowClickable =
-                !isLoading && (getIsClickable?.(row.original) ?? !!onRowClick)
-
               const isRowExpanded = row.getIsExpanded()
               const isRowExpandable =
                 isRowExpanded ||
@@ -220,6 +217,11 @@ const DataTable = <TData,>({
                   !!expandable &&
                   !override &&
                   (getIsExpandable?.(row.original) ?? true))
+
+              const isRowClickable =
+                !isLoading &&
+                !isRowExpandable &&
+                (getIsClickable?.(row.original) ?? !!onRowClick)
 
               return (
                 <Fragment key={row.id}>
@@ -244,8 +246,9 @@ const DataTable = <TData,>({
                           }
 
                           row.toggleExpanded()
+                        } else {
+                          onRowClick?.(row.original)
                         }
-                        onRowClick?.(row.original)
                       }}
                       isExpandable={isRowExpandable}
                       hasOverride={!!override}
@@ -278,7 +281,7 @@ const DataTable = <TData,>({
                       })}
 
                       {isRowExpandable && (
-                        <TableCell>
+                        <TableCell sx={{ pl: "0 !important" }}>
                           <Flex justify="end" align="center">
                             <Icon
                               size={18}

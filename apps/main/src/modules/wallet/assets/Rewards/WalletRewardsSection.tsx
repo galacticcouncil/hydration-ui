@@ -1,5 +1,4 @@
 import { Button, Flex, ValueStats } from "@galacticcouncil/ui/components"
-import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -18,11 +17,16 @@ export const WalletRewardsSection: FC = () => {
   const claimAll = useClaimAllWalletRewards()
 
   const [incentivesDisplay] = useDisplayAssetPrice(
-    USDT_ASSET_ID,
+    incentives.assetId,
     incentives.value,
   )
 
-  const [farmingDisplay] = useDisplayAssetPrice(USDT_ASSET_ID, farming.value)
+  const [farmingDisplay] = useDisplayAssetPrice(farming.assetId, farming.value)
+
+  const [referralsDisplay] = useDisplayAssetPrice(
+    referral.assetId,
+    referral.value,
+  )
 
   return (
     <SWalletRewardsSection separated>
@@ -76,10 +80,7 @@ export const WalletRewardsSection: FC = () => {
           wrap
           size="medium"
           label={t("rewards.referrals")}
-          value={t("common:currency", {
-            value: referral.value,
-            symbol: referral.symbol,
-          })}
+          value={referralsDisplay}
           isLoading={referral.loading}
         />
         {referral.isEmpty && !referral.loading && (

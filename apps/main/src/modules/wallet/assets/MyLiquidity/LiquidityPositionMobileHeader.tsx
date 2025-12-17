@@ -18,6 +18,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"
 import {
+  LiquidityPositionAction,
   LiquidityPositionMoreActions,
   StableswapPositionMoreActions,
   XYKSharesPositionMoreActions,
@@ -37,11 +38,21 @@ import {
 type Props = {
   readonly asset: TAssetData
   readonly position: AccountOmnipoolPosition | StableswapPosition
+  readonly onLiquidityAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
+    position: AccountOmnipoolPosition,
+  ) => void
+  readonly onStableSwapAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Add,
+    position: StableswapPosition,
+  ) => void
 }
 
 export const LiquidityPositionMobileHeader: FC<Props> = ({
   asset,
   position,
+  onLiquidityAction,
+  onStableSwapAction,
 }) => {
   const { t } = useTranslation("common")
   const { data: activeFarms } = useOmnipoolActiveFarm(asset.id)
@@ -78,12 +89,14 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           {isStableswap ? (
-            <StableswapPositionMoreActions position={position} />
+            <StableswapPositionMoreActions
+              onAction={(action) => onStableSwapAction(action, position)}
+            />
           ) : (
             <LiquidityPositionMoreActions
-              assetId={asset.id}
               position={position}
               farmsToJoin={farmsToJoin}
+              onAction={(action) => onLiquidityAction(action, position)}
             />
           )}
         </DropdownMenuContent>
@@ -95,9 +108,13 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
 export const XYKLiquidityPositionMobileHeader = ({
   asset,
   position,
+  onAction,
 }: {
   readonly asset: TShareToken
   readonly position: XYKPosition
+  readonly onAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
+  ) => void
 }) => {
   const { t } = useTranslation("common")
   const { data: activeFarms } = useIsolatedPoolFarms(asset.id)
@@ -135,14 +152,14 @@ export const XYKLiquidityPositionMobileHeader = ({
         <DropdownMenuContent>
           {!isDepositPosition ? (
             <XYKSharesPositionMoreActions
-              position={position}
               farmsToJoin={farmsToJoin}
+              onAction={onAction}
             />
           ) : (
             <LiquidityPositionMoreActions
-              assetId={asset.id}
               position={position}
               farmsToJoin={farmsToJoin}
+              onAction={onAction}
             />
           )}
         </DropdownMenuContent>

@@ -7,16 +7,12 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { MyAssetsFeePaymentChange } from "@/modules/wallet/assets/MyAssets/MyAssetsFeePaymentChange"
-
 type Props = {
-  readonly hasFunds: boolean
   readonly showAllAssets: boolean
   readonly onToggleShowAllAssets: () => void
 }
 
 export const MyAssetsActions: FC<Props> = ({
-  hasFunds,
   showAllAssets,
   onToggleShowAllAssets,
 }) => {
@@ -24,11 +20,6 @@ export const MyAssetsActions: FC<Props> = ({
 
   return (
     <Flex gap={16} direction={["column", "row"]} align={["flex-end", "center"]}>
-      {/* TODO add new asset */}
-      {/* <Button size="medium">
-        <Plus />
-        {t("myAssets.header.cta")}
-      </Button> */}
       <ToggleRoot>
         <ToggleLabel>{t("myAssets.header.toggle")}</ToggleLabel>
         <Toggle
@@ -36,7 +27,6 @@ export const MyAssetsActions: FC<Props> = ({
           onCheckedChange={onToggleShowAllAssets}
         />
       </ToggleRoot>
-      {hasFunds && <MyAssetsFeePaymentChange />}
     </Flex>
   )
 }

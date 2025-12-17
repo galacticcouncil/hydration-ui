@@ -18,15 +18,22 @@ import { useTranslation } from "react-i18next"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 import { SLiquidityPosition } from "./LiquidityPosition.styled"
-import { StableswapPositionMoreActions } from "./LiquidityPositionMoreActions"
+import {
+  LiquidityPositionAction,
+  StableswapPositionMoreActions,
+} from "./LiquidityPositionMoreActions"
 import { StableswapPosition } from "./MyLiquidityTable.data"
 
 type StableswapPositionProps = {
   readonly position: StableswapPosition
+  readonly onAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Add,
+  ) => void
 }
 
 export const StableswapLiquidityPosition = ({
   position,
+  onAction,
 }: StableswapPositionProps) => {
   const { t } = useTranslation(["wallet", "common", "liquidity"])
   const format = useFormatOmnipoolPositionData()
@@ -67,7 +74,7 @@ export const StableswapLiquidityPosition = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <StableswapPositionMoreActions position={position} />
+          <StableswapPositionMoreActions onAction={onAction} />
         </DropdownMenuContent>
       </DropdownMenu>
     </SLiquidityPosition>
