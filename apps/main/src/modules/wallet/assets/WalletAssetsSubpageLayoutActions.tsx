@@ -1,4 +1,5 @@
-import { Button, Flex, Modal } from "@galacticcouncil/ui/components"
+import { Minus, Plus } from "@galacticcouncil/ui/assets/icons"
+import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
@@ -24,23 +25,14 @@ export const WalletAssetsSubpageLayoutActions = () => {
       <Button variant="accent" outline onClick={() => setModal("send")}>
         {t("send")}
       </Button>
-      {/* TODO withdraw and deposit */}
-      {/* <Button
-        variant="emphasis"
-        outline
-        onClick={() => setModal("withdraw")}
-      >
-        <Minus />
+      <Button variant="emphasis" outline disabled>
+        <Icon width={16} height={9} component={Minus} />
         {t("withdraw")}
       </Button>
-      <Button
-        variant="emphasis"
-        outline
-        onClick={() => setModal("deposit")}
-      >
-        <Plus />
+      <Button variant="emphasis" outline disabled>
+        <Icon width={16} height={9} component={Plus} />
         {t("deposit")}
-      </Button> */}
+      </Button>
       <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
         {modal === "send" && (
           <TransferPositionModal onClose={() => setModal(null)} />
