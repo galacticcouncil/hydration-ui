@@ -64,9 +64,12 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
             align={isMobile ? "center" : "flex-start"}
             justify="space-between"
           >
-            <SectionHeader hasDescription>
-              {t("staking:referenda.title", { count: referenda.length })}
-            </SectionHeader>
+            <SectionHeader
+              title={t("staking:referenda.title", {
+                count: referenda.length,
+              })}
+              hasDescription
+            />
             {!isLoading && referenda.length > 0 && (
               <Flex
                 px={getTokenPx("scales.paddings.base")}

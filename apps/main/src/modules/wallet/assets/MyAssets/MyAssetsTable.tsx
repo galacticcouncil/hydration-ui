@@ -1,19 +1,24 @@
 import {
   DataTable,
   DataTableRef,
+  Modal,
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { FC, Ref } from "react"
+import { FC, Ref, useState } from "react"
 
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
+import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
+import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal"
 import { ExpandedNativeRow } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow"
 import { MyAssetsEmptyState } from "@/modules/wallet/assets/MyAssets/MyAssetsEmptyState"
 import {
+  AssetDetailModal,
   MyAsset,
   useMyAssetsColumns,
 } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
+import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
@@ -33,6 +38,11 @@ export const MyAssetsTable: FC<Props> = ({
   const { native } = useAssets()
 
   const columns = useMyAssetsColumns()
+
+  const [isDetailOpen, setIsDetailOpen] = useState<{
+    type: AssetDetailModal | null
+    detail: MyAsset
+  } | null>(null)
 
   return (
     <TableContainer as={Paper}>
@@ -59,7 +69,42 @@ export const MyAssetsTable: FC<Props> = ({
           )
         }
         emptyState={<MyAssetsEmptyState />}
+        onRowClick={(asset) => setIsDetailOpen({ type: null, detail: asset })}
       />
+      <Modal
+        open={!!isDetailOpen}
+        onOpenChange={() =>
+          setIsDetailOpen(
+            !isDetailOpen?.type ? null : { ...isDetailOpen, type: null },
+          )
+        }
+      >
+        {isDetailOpen?.type === null && (
+          <>
+            {isDetailOpen.detail.id === native.id ? (
+              <AssetDetailNativeMobileModal
+                asset={isDetailOpen.detail}
+                onModalOpen={(type) =>
+                  setIsDetailOpen({ ...isDetailOpen, type })
+                }
+              />
+            ) : (
+              <AssetDetailMobileModal
+                asset={isDetailOpen.detail}
+                onModalOpen={(type) =>
+                  setIsDetailOpen({ ...isDetailOpen, type })
+                }
+              />
+            )}
+          </>
+        )}
+        {isDetailOpen?.type === "transfer" && (
+          <TransferPositionModal
+            assetId={isDetailOpen.detail.id}
+            onClose={() => setIsDetailOpen({ ...isDetailOpen, type: null })}
+          />
+        )}
+      </Modal>
     </TableContainer>
   )
 }

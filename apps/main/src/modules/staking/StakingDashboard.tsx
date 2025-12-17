@@ -92,7 +92,7 @@ export const StakingDashboard: FC = () => {
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap={20}>
           <Box>
-            <SectionHeader>{t("dashboard.title")}</SectionHeader>
+            <SectionHeader title={t("dashboard.title")} />
             <Stake
               key={address}
               staked={staked}
@@ -147,7 +147,10 @@ export const StakingDashboard: FC = () => {
         columnGap={20}
         align="start"
       >
-        <SectionHeader gridColumn="1/-1">{t("dashboard.title")}</SectionHeader>
+        <SectionHeader
+          sx={{ gridColumn: "1/-1" }}
+          title={t("dashboard.title")}
+        />
         <Paper>
           {isLoading ? (
             <>

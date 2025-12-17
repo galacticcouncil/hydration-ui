@@ -11,7 +11,7 @@ export const WalletBalances: FC = () => {
 
   return (
     <Grid rowTemplate="auto 1fr">
-      <SectionHeader>{t("balances.title")}</SectionHeader>
+      <SectionHeader title={t("balances.title")} />
       <SWalletBalances>
         <NetWorth />
         <Separator

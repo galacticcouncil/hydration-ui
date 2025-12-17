@@ -10,6 +10,7 @@ import {
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
+import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const PAGE_SIZE = 10
 
@@ -22,7 +23,10 @@ export const OpenOrders: FC<Props> = ({ allPairs }) => {
     from: "/trade/_history",
   })
 
-  const [isDetailOpen, setIsDetailOpen] = useState<OrderData | null>(null)
+  const [isDetailOpen, setIsDetailOpen] = useState<{
+    readonly detail: OrderData
+    readonly isTermination: boolean
+  } | null>(null)
 
   const [page, setPage] = useState(1)
   const { orders, totalCount, isLoading } = useOrdersData(
@@ -31,6 +35,7 @@ export const OpenOrders: FC<Props> = ({ allPairs }) => {
     page,
     PAGE_SIZE,
   )
+
   const columns = useOpenOrdersColumns()
 
   return (
@@ -43,11 +48,37 @@ export const OpenOrders: FC<Props> = ({ allPairs }) => {
         pageSize={PAGE_SIZE}
         rowCount={totalCount}
         onPageClick={setPage}
-        onRowClick={setIsDetailOpen}
+        onRowClick={(detail) =>
+          setIsDetailOpen({ detail, isTermination: false })
+        }
         emptyState={<OrdersEmptyState />}
       />
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
-        {isDetailOpen && <DcaOrderDetailsModal details={isDetailOpen} />}
+        {isDetailOpen?.isTermination === false && (
+          <DcaOrderDetailsModal
+            details={isDetailOpen.detail}
+            onTerminate={() =>
+              setIsDetailOpen({
+                ...isDetailOpen,
+                isTermination: true,
+              })
+            }
+          />
+        )}
+        {isDetailOpen?.isTermination === true && (
+          <TerminateDcaScheduleModalContent
+            scheduleId={isDetailOpen.detail.scheduleId}
+            sold={isDetailOpen.detail.fromAmountExecuted}
+            total={isDetailOpen.detail.fromAmountBudget}
+            symbol={isDetailOpen.detail.from.symbol}
+            onClose={() =>
+              setIsDetailOpen({
+                detail: isDetailOpen.detail,
+                isTermination: false,
+              })
+            }
+          />
+        )}
       </Modal>
     </>
   )
