@@ -1,3 +1,4 @@
+import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   Box,
   ChartValues,
@@ -14,21 +15,19 @@ import {
   ChartTimeRange,
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
-import { periodTypes } from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
-import { TradeChartPeriodType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import { useDisplayAssetStore } from "@/states/displayAsset"
 
-const chartPeriodTypes = periodTypes.filter(
-  (periodType) => periodType !== "minute",
-)
+const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
 
-export const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
-  ChartTimeRangeOptionType<TradeChartPeriodType | "all">
+export type PoolChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
+
+export const intervalOptions = (["all", ...chartTimeFrameTypes] as const).map<
+  ChartTimeRangeOptionType<PoolChartTimeFrameType | "all">
 >((option) => ({
   key: option,
-  label: i18n.t(`chart.period.${option}`),
+  label: i18n.t(`chart.timeFrame.${option}`),
 }))
 
 export const PoolChart = ({
@@ -40,8 +39,8 @@ export const PoolChart = ({
 }: {
   assetId: string
   height: number
-  interval: TradeChartPeriodType | "all"
-  setInterval: (interval: TradeChartPeriodType | "all") => void
+  interval: PoolChartTimeFrameType | "all"
+  setInterval: (interval: PoolChartTimeFrameType | "all") => void
   isEmptyData?: boolean
 }) => {
   const { t } = useTranslation()
@@ -51,7 +50,7 @@ export const PoolChart = ({
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
     assetInId: isEmptyData ? "" : (stableCoinId ?? ""),
     assetOutId: assetId,
-    period: interval === "all" ? null : interval,
+    timeFrame: interval === "all" ? null : interval,
   })
 
   const isEmpty = isSuccess && !prices.length

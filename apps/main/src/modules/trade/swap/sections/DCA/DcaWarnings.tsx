@@ -1,14 +1,19 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
-import { Flex } from "@galacticcouncil/ui/components"
+import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { Alert, Flex } from "@galacticcouncil/ui/components"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { DcaPriceImpactWarning } from "@/modules/trade/swap/sections/DCA/DcaPriceImpactWarning"
+import { DcaValidationWarning } from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
-  readonly priceImpactLossMessage: string | undefined
+  readonly isFormValid: boolean
+  readonly order: TradeDcaOrder | undefined
+  readonly warnings: ReadonlyArray<DcaValidationWarning>
   readonly priceImpactLossAccepted: boolean
   readonly healthFactor: HealthFactorResult | undefined
   readonly healthFactorRiskAccepted: boolean
@@ -17,32 +22,62 @@ type Props = {
 }
 
 export const DcaWarnings: FC<Props> = ({
-  priceImpactLossMessage,
+  isFormValid,
+  order,
+  warnings,
   priceImpactLossAccepted,
   healthFactor,
   healthFactorRiskAccepted,
   onPriceImpactLossAcceptedChange,
   onHealthFactorRiskAcceptedChange,
 }) => {
-  const { t } = useTranslation(["common"])
+  const { t } = useTranslation(["common", "trade"])
 
-  if (!priceImpactLossMessage && !healthFactor?.isUserConsentRequired) {
+  const shouldRenderHealthFactorWarning =
+    !!order &&
+    !!healthFactor &&
+    Big(healthFactor.future).gt(1) &&
+    healthFactor.isUserConsentRequired
+
+  if (!warnings.length && !shouldRenderHealthFactorWarning) {
     return null
+  }
+
+  const warningDescriptions: Record<DcaValidationWarning, string> = {
+    [DcaValidationWarning.PriceImpact]: t(
+      isFormValid
+        ? "trade:dca.warnings.priceImpact.canContinue"
+        : "trade:dca.warnings.priceImpact.cantContinue",
+      {
+        percentage: Math.abs(order?.tradeImpactPct ?? 0),
+      },
+    ),
   }
 
   return (
     <>
       <SwapSectionSeparator />
       <Flex direction="column" my={8} gap={6}>
-        {priceImpactLossMessage && (
-          <DcaPriceImpactWarning
-            message={priceImpactLossMessage}
-            accepted={priceImpactLossAccepted}
-            onAcceptedChange={onPriceImpactLossAcceptedChange}
-          />
+        {warnings.map((warning) =>
+          warning === DcaValidationWarning.PriceImpact ? (
+            <DcaPriceImpactWarning
+              key={warning}
+              canContinue={isFormValid}
+              message={warningDescriptions[warning]}
+              accepted={priceImpactLossAccepted}
+              onAcceptedChange={onPriceImpactLossAcceptedChange}
+            />
+          ) : (
+            <Alert
+              key={warning}
+              variant="warning"
+              description={warningDescriptions[warning]}
+            />
+          ),
         )}
-        {healthFactor?.isUserConsentRequired && (
+        {order && healthFactor?.isUserConsentRequired && (
           <HealthFactorRiskWarning
+            canContinue={isFormValid}
             message={t("healthFactor.warning")}
             accepted={healthFactorRiskAccepted}
             isUserConsentRequired={healthFactor.isUserConsentRequired}

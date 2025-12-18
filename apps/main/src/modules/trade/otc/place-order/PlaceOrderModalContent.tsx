@@ -27,10 +27,8 @@ import {
   getOmnipoolPrice,
   getPrice,
 } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.utils"
-import {
-  PlaceOrderPrice,
-  PRICE_GAIN_DIFF_THRESHOLD,
-} from "@/modules/trade/otc/place-order/PlaceOrderPrice"
+import { PlaceOrderPrice } from "@/modules/trade/otc/place-order/PlaceOrderPrice"
+import { PRICE_GAIN_DIFF_THRESHOLD } from "@/modules/trade/otc/place-order/PlaceOrderPriceButtons"
 import { PriceGainWarning } from "@/modules/trade/otc/place-order/PriceGainWarning"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"

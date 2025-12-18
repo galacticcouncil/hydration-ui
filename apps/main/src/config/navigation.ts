@@ -1,12 +1,13 @@
 import {
-  ArrowRightLeftIcon,
   BanknoteIcon,
   ChartPieIcon,
   CoinsIcon,
   DropletIcon,
   DropletsIcon,
+  GemIcon,
   Grid2X2Icon,
   HistoryIcon,
+  Repeat2Icon,
   WalletCardsIcon,
   WavesIcon,
 } from "@galacticcouncil/ui/assets/icons"
@@ -60,9 +61,9 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "trade",
     to: LINKS.trade,
-    icon: ArrowRightLeftIcon,
+    icon: Repeat2Icon,
     children: [
-      { key: "swap", to: LINKS.swap, icon: ArrowRightLeftIcon },
+      { key: "swap", to: LINKS.swap, icon: Repeat2Icon },
       { key: "otc", to: LINKS.otc, icon: CoinsIcon },
     ],
   },
@@ -107,6 +108,7 @@ export const NAVIGATION: NavigationItem[] = [
   // {
   //   key: "crossChain",
   //   to: LINKS.crossChain,
+  //   icon: ArrowRightLeftIcon,
   // },
   // {
   //   key: "stats",
@@ -119,6 +121,7 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "staking",
     to: LINKS.staking,
+    icon: GemIcon,
   },
   // {
   //   key: "referrals",

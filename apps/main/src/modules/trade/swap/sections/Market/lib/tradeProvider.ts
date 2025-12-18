@@ -8,6 +8,7 @@ export type TradeProviderProps = {
   readonly twap: TradeOrder | undefined
   readonly twapTx: AnyTransaction | null
   readonly healthFactor: HealthFactorResult | undefined
-  readonly isLoading: boolean
+  readonly isSwapLoading: boolean
+  readonly isTwapLoading: boolean
   readonly isHealthFactorLoading: boolean
 }

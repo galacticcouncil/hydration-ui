@@ -1,28 +1,24 @@
-import { AssetIcon, X } from "@galacticcouncil/ui/assets/icons"
+import { AssetIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   ButtonIcon,
   Flex,
-  Icon,
-  MicroButton,
   NumberInput,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, px } from "@galacticcouncil/ui/utils"
 import { getReversePrice } from "@galacticcouncil/utils"
-import Big from "big.js"
 import { FC } from "react"
 import { useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import {
-  marketPriceOptions,
   PlaceOrderFormValues,
   PlaceOrderView,
   PriceSettings,
 } from "@/modules/trade/otc/place-order/PlaceOrderModalContent.form"
+import { PlaceOrderPriceButtons } from "@/modules/trade/otc/place-order/PlaceOrderPriceButtons"
 import { TAsset } from "@/providers/assetsProvider"
-
-export const PRICE_GAIN_DIFF_THRESHOLD = 0.1
 
 type Props = {
   readonly offerAsset: TAsset
@@ -42,7 +38,7 @@ export const PlaceOrderPrice: FC<Props> = ({
   onChange,
 }) => {
   const { t } = useTranslation(["trade", "common"])
-
+  const { isMobile } = useBreakpoints()
   const { control } = useFormContext<PlaceOrderFormValues>()
 
   const { field: priceSettingsField } = useController({
@@ -57,24 +53,6 @@ export const PlaceOrderPrice: FC<Props> = ({
 
   const isOfferView = viewField.value === "offerPrice"
 
-  const optionsWithFlags = marketPriceOptions.map(
-    (option) =>
-      [
-        option,
-        {
-          isDefault: option === 0,
-          isSelected: Big(priceGain)
-            .minus(option)
-            .abs()
-            .lt(PRICE_GAIN_DIFF_THRESHOLD),
-        },
-      ] as const,
-  )
-
-  const hasCustomOption =
-    !Big(price || "0").eq(0) &&
-    !optionsWithFlags.some(([, { isSelected }]) => isSelected)
-
   const changePriceSettings = (priceSettings: PriceSettings): void => {
     priceSettingsField.onChange(priceSettings)
     onChange(priceSettings)
@@ -88,48 +66,14 @@ export const PlaceOrderPrice: FC<Props> = ({
             symbol: isOfferView ? offerAsset.symbol : buyAsset.symbol,
           })}
         </Text>
-        {!isPriceLoaded ? (
-          <MicroButton disabled>
-            {t("otc.placeOrder.lastOmniPoolPrice")}
-          </MicroButton>
-        ) : (
-          <Flex align="center" gap={4}>
-            {optionsWithFlags.map(([option, { isDefault, isSelected }]) => {
-              const isOmnipoolPrice = isDefault && !hasCustomOption
-              const isCustom = isDefault && hasCustomOption
-
-              const usedOption = isCustom ? priceGain : option
-              const shownOption = isOfferView
-                ? usedOption
-                : Big(usedOption).times(-1).toString()
-
-              return (
-                <MicroButton
-                  key={option}
-                  size="small"
-                  variant={isCustom || isSelected ? "emphasis" : "low"}
-                  onClick={() =>
-                    changePriceSettings({
-                      type: "relative",
-                      percentage: isCustom ? 0 : option,
-                    })
-                  }
-                >
-                  {isOmnipoolPrice ? (
-                    t("otc.placeOrder.lastOmniPoolPrice")
-                  ) : (
-                    <Flex align="center">
-                      {Big(shownOption).gt(0) && "+"}
-                      {t("common:percent", {
-                        value: Big(shownOption).toFixed(1, Big.roundDown),
-                      })}
-                      {isCustom && <Icon size={12} component={X} />}
-                    </Flex>
-                  )}
-                </MicroButton>
-              )
-            })}
-          </Flex>
+        {!isMobile && (
+          <PlaceOrderPriceButtons
+            isOfferView={isOfferView}
+            price={price}
+            priceGain={priceGain}
+            isPriceLoaded={isPriceLoaded}
+            onChange={changePriceSettings}
+          />
         )}
       </Flex>
       <Flex justify="space-between" align="center">
@@ -181,6 +125,17 @@ export const PlaceOrderPrice: FC<Props> = ({
           }}
         />
       </Flex>
+      {isMobile && (
+        <Flex justify="end">
+          <PlaceOrderPriceButtons
+            isOfferView={isOfferView}
+            price={price}
+            priceGain={priceGain}
+            isPriceLoaded={isPriceLoaded}
+            onChange={changePriceSettings}
+          />
+        </Flex>
+      )}
     </Flex>
   )
 }

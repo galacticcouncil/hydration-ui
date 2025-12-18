@@ -2,7 +2,7 @@ import { Box } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
 import { TradeType } from "@/api/trade"
@@ -34,6 +34,21 @@ export const Market: FC = () => {
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
 
+  const { watch } = form
+  useEffect(() => {
+    const subscription = watch((_, { type }) => {
+      if (type !== "change") {
+        return
+      }
+
+      setHealthFactorRiskAccepted(false)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [watch])
+
   const isSell = type === TradeType.Sell
 
   // We need to preserve component state and focus on changing market type
@@ -45,7 +60,8 @@ export const Market: FC = () => {
     twap,
     twapTx,
     healthFactor,
-    isLoading,
+    isSwapLoading,
+    isTwapLoading,
     isHealthFactorLoading,
   } = useMarketData(form)
 
@@ -84,7 +100,10 @@ export const Market: FC = () => {
     return scaleHuman(swapSpotPrice, assetInPriceMeta.decimals)
   })()
 
-  const isExpanded = isLoading || (!!swap && (isSingleTrade || !!twap))
+  const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
+
+  const isFormValid = isTradeEnabled && form.formState.isValid
+  const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
 
   return (
     <FormProvider {...form}>
@@ -99,8 +118,14 @@ export const Market: FC = () => {
         <MarketFields price={spotPrice} />
         {isExpanded && (
           <Box pt={8} pb={getTokenPx("scales.paddings.m")}>
-            <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
+            <MarketTradeOptions
+              swap={swap}
+              twap={twap}
+              isSwapLoading={isSwapLoading}
+              isTwapLoading={isTwapLoading}
+            />
             <MarketWarnings
+              isFormValid={isFormValid}
               isSingleTrade={isSingleTrade}
               twap={twap}
               healthFactor={healthFactor}
@@ -113,12 +138,10 @@ export const Market: FC = () => {
         <SwapSectionSeparator />
         <MarketSubmit
           isSingleTrade={isSingleTrade}
-          isLoading={isLoading || submitSwap.isPending || submitTwap.isPending}
-          isEnabled={
-            isTradeEnabled &&
-            isHealthFactorCheckSatisfied &&
-            form.formState.isValid
+          isLoading={
+            isSwapLoading || submitSwap.isPending || submitTwap.isPending
           }
+          isEnabled={isSubmitEnabled}
         />
         <MarketSummary
           swapType={type}
@@ -127,7 +150,10 @@ export const Market: FC = () => {
           twap={twap}
           twapTx={twapTx}
           healthFactor={healthFactor}
-          isLoading={isLoading || isHealthFactorLoading}
+          isLoading={
+            isHealthFactorLoading ||
+            (isSingleTrade ? isSwapLoading : isTwapLoading)
+          }
         />
       </form>
     </FormProvider>

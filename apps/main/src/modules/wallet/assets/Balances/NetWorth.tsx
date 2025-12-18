@@ -1,3 +1,4 @@
+import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   AreaChart,
   Flex,
@@ -15,30 +16,29 @@ import {
   ChartTimeRange,
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
-import { periodTypes } from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
 import {
   NetWorthData,
   useNetWorthData,
 } from "@/modules/wallet/assets/Balances/NetWorth.data"
 
-const chartPeriodTypes = periodTypes.filter(
-  (periodType) => periodType !== "minute",
+const netWorthTimeFrameTypes = timeFrameTypes.filter(
+  (type) => type !== "minute",
 )
 
-export type NetWorthPeriodType = (typeof chartPeriodTypes)[number]
+export type NetWorthTimeFrameType = (typeof netWorthTimeFrameTypes)[number]
 
-const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
-  ChartTimeRangeOptionType<NetWorthPeriodType | "all">
+const intervalOptions = (["all", ...netWorthTimeFrameTypes] as const).map<
+  ChartTimeRangeOptionType<NetWorthTimeFrameType | "all">
 >((option) => ({
   key: option,
-  label: i18n.t(`chart.period.${option}`),
+  label: i18n.t(`chart.timeFrame.${option}`),
 }))
 
 export const NetWorth: FC = () => {
   const { t } = useTranslation(["wallet", "common"])
 
-  const [interval, setInterval] = useState<NetWorthPeriodType | "all">("all")
+  const [interval, setInterval] = useState<NetWorthTimeFrameType | "all">("all")
   const [crosshair, setCrosshair] = useState<NetWorthData | null>(null)
 
   const { balances, assetId, isLoading, isSuccess, isError } = useNetWorthData(

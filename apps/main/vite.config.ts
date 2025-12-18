@@ -33,6 +33,17 @@ export default defineConfig({
   build: {
     target: "es2022",
     outDir: "build",
+    rollupOptions: {
+      output: {
+        chunkFileNames: "chunk-[hash].js",
+        manualChunks: (id) => {
+          if (id.includes("/assets/icons")) {
+            return "icons"
+          }
+        },
+        experimentalMinChunkSize: 100_000,
+      },
+    },
   },
   resolve: {
     alias: {

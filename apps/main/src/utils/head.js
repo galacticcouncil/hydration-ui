@@ -15,7 +15,7 @@
     const themeStore = localStorage.getItem("theme");
     const savedTheme =
       typeof themeStore === "string"
-        ? JSON.parse(themeStore)?.state?.theme
+        ? JSON.parse(themeStore)?.state?.themePreference
         : null;
 
     // If theme is "system" or not set, use system preference

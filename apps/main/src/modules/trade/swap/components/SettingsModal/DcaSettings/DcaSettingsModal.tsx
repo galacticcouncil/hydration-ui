@@ -14,7 +14,7 @@ import { useDcaSettingsForm } from "@/modules/trade/swap/components/SettingsModa
 import { SettingLabel } from "@/modules/trade/swap/components/SettingsModal/SettingLabel"
 import { SettingsSection } from "@/modules/trade/swap/components/SettingsModal/SettingsSection"
 import { TradeSlippage } from "@/modules/trade/swap/components/SettingsModal/TradeSlippage"
-import { useTradeSettings } from "@/states/tradeSettings"
+import { DCA_SLIPPAGE_SETTINGS, useTradeSettings } from "@/states/tradeSettings"
 
 export const DcaSettingsModal: FC = () => {
   const { t } = useTranslation("trade")
@@ -42,9 +42,10 @@ export const DcaSettingsModal: FC = () => {
               }) => (
                 <TradeSlippage
                   slippage={value}
-                  onSlippageChange={onChange}
+                  options={DCA_SLIPPAGE_SETTINGS}
                   helpTooltip={t("dca.settings.modal.slippage.help")}
                   error={error?.message}
+                  onSlippageChange={onChange}
                 />
               )}
             />

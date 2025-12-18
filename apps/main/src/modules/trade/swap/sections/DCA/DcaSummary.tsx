@@ -1,3 +1,4 @@
+import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import {
   Box,
@@ -7,12 +8,11 @@ import {
   SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, px } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
-import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
@@ -40,10 +40,11 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
 
   const now = Date.now()
 
-  const frequencyPeriod = watch("frequency")
-  const frequency = getPeriodDuration(frequencyPeriod)
+  const durationTimeFrame = watch("duration")
+  const duration = getTimeFrameMillis(durationTimeFrame)
+  const frequency =
+    order && order.tradeCount > 0 ? duration / order.tradeCount : 0
 
-  const duration = order ? order.tradeCount * frequency : 0
   const endDate = new Date(now + duration)
   const endDateValid = !isNaN(endDate.valueOf())
 
@@ -68,15 +69,7 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
       <div>
         <Flex direction="column" gap={8} py={8}>
           <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text
-            display="flex"
-            sx={{ flexWrap: "wrap" }}
-            gap={3}
-            fw={500}
-            fs="p4"
-            lh={1}
-            color={getToken("text.high")}
-          >
+          <Text fw={500} fs="p2" lh={px(21)} color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey="trade:dca.summary.description"
@@ -86,11 +79,11 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
                   symbol: sellAsset.symbol,
                 }),
                 buySymbol: buyAsset.symbol,
-                timeframe: t("interval", { value: frequency }),
-                period: t("interval", { value: duration }),
+                frequency: t("interval", { value: frequency }),
+                duration: t("interval", { value: duration }),
               }}
             >
-              <Box as="span" color={getToken("colors.azureBlue.300")} />
+              <Box as="span" color={getToken("text.tint.secondary")} />
             </Trans>
           </Text>
         </Flex>

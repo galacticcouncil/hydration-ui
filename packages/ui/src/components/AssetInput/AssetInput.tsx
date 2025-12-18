@@ -27,6 +27,7 @@ export type AssetInputProps = {
   error?: string
   disabled?: boolean
   disabledInput?: boolean
+  hideInput?: boolean
   modalDisabled?: boolean
   loading?: boolean
   selectedAssetIcon?: ReactNode
@@ -51,6 +52,7 @@ export const AssetInput = ({
   error,
   disabled,
   disabledInput,
+  hideInput,
   modalDisabled,
   loading,
   onAsssetBtnClick,
@@ -126,6 +128,7 @@ export const AssetInput = ({
       <Flex direction="column">
         <Flex align="center" justify="space-between" gap={12}>
           <AssetButton
+            sx={{ ...(hideInput && { flex: 1 }) }}
             symbol={symbol}
             icon={selectedAssetIcon}
             loading={loading}
@@ -133,43 +136,45 @@ export const AssetInput = ({
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
-          <Flex
-            direction="column"
-            height={38}
-            justify="space-evenly"
-            align="end"
-            flex={1}
-          >
-            <SAssetInput
-              isError={!!error}
-              placeholder="0"
-              variant="embedded"
-              disabled={disabled || loading || !onChange || disabledInput}
-              value={defaultAssetValueFormatter(value ?? "")}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                if (e.target.validity.valid) {
-                  const formattedValue = e.target.value
-                    .replace(/\s+/g, "")
-                    .replace(/,/g, ".")
+          {!hideInput && (
+            <Flex
+              direction="column"
+              height={38}
+              justify="space-evenly"
+              align="end"
+              flex={1}
+            >
+              <SAssetInput
+                isError={!!error}
+                placeholder="0"
+                variant="embedded"
+                disabled={disabled || loading || !onChange || disabledInput}
+                value={defaultAssetValueFormatter(value ?? "")}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  if (e.target.validity.valid) {
+                    const formattedValue = e.target.value
+                      .replace(/\s+/g, "")
+                      .replace(/,/g, ".")
 
-                  if (!isNaN(Number(formattedValue))) {
-                    onChange?.(formattedValue)
+                    if (!isNaN(Number(formattedValue))) {
+                      onChange?.(formattedValue)
+                    }
                   }
-                }
-              }}
-            />
+                }}
+              />
 
-            {!ignoreDisplayValue && (
-              <Text
-                color={getToken("text.low")}
-                fs={10}
-                fw={400}
-                sx={{ width: "fit-content" }}
-              >
-                {displayValueLoading ? <Skeleton width={48} /> : displayValue}
-              </Text>
-            )}
-          </Flex>
+              {!ignoreDisplayValue && (
+                <Text
+                  color={getToken("text.low")}
+                  fs={10}
+                  fw={400}
+                  sx={{ width: "fit-content" }}
+                >
+                  {displayValueLoading ? <Skeleton width={48} /> : displayValue}
+                </Text>
+              )}
+            </Flex>
+          )}
         </Flex>
         {error && (
           <Text
@@ -193,6 +198,7 @@ export const AssetButton = ({
   error,
   icon,
   disabled,
+  className,
   onAsssetBtnClick,
 }: {
   loading?: boolean
@@ -200,16 +206,23 @@ export const AssetButton = ({
   icon?: ReactNode
   error: boolean
   disabled?: boolean
+  className?: string
   onAsssetBtnClick?: () => void
 }) => {
   if (loading)
     return (
-      <Flex direction="column" height={38} gap={2} justify="center">
+      <Flex
+        direction="column"
+        height={38}
+        gap={2}
+        justify="center"
+        className={className}
+      >
         <div sx={{ height: 12, lineHeight: 1 }}>
           <Skeleton width={24} height={12} />
         </div>
         <div sx={{ height: 12, lineHeight: 1 }}>
-          <Skeleton width={48} height={12} />
+          <Skeleton sx={{ minWidth: 48 }} width="100%" height={12} />
         </div>
       </Flex>
     )
@@ -217,13 +230,14 @@ export const AssetButton = ({
   if (symbol && icon)
     return (
       <SAssetButton
+        className={className}
         type="button"
         disabled={!!disabled}
         isError={!!error}
         onClick={onAsssetBtnClick}
       >
         {icon}
-        <Flex align="center" gap={4}>
+        <Flex flex={1} align="center" gap={4} justify="space-between">
           <Text
             color={getToken("text.high")}
             fw={600}
@@ -245,7 +259,12 @@ export const AssetButton = ({
     )
 
   return (
-    <SAssetButtonEmpty variant="secondary" onClick={onAsssetBtnClick}>
+    <SAssetButtonEmpty
+      variant="secondary"
+      sx={{ justifyContent: "space-between" }}
+      className={className}
+      onClick={onAsssetBtnClick}
+    >
       <Text fw={600} fs="p3" whiteSpace="nowrap">
         Select asset
       </Text>

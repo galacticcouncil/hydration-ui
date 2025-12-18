@@ -15,7 +15,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { CSSProperties, useCallback, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetAmount } from "@/components/AssetAmount/AssetAmount"
@@ -24,13 +24,7 @@ import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderM
 import { OfferMarketPriceColumn } from "@/modules/trade/otc/table/columns/OfferMarketPriceColumn"
 import { OfferPriceColumn } from "@/modules/trade/otc/table/columns/OfferPriceColumn"
 import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
-import {
-  logically,
-  nullFirst,
-  nullLast,
-  numerically,
-  sortBy,
-} from "@/utils/sort"
+import { logically, nullLast, numerically, sortBy } from "@/utils/sort"
 
 export enum OtcColumn {
   MarketPrice = "MarketPrice",
@@ -118,10 +112,10 @@ export const useOtcTableColums = () => {
 
     const profitMobile = columnHelper.accessor("marketPricePercentage", {
       id: OtcColumn.MarketPrice,
-      header: t("common:profit"),
+      header: t("common:marketPrice"),
       sortingFn: sortBy({
         select: (row) => row.original.marketPricePercentage,
-        compare: nullFirst(numerically),
+        compare: nullLast(numerically),
       }),
       cell: function Cell({ row }) {
         const { isConnected } = useAccount()
@@ -185,7 +179,19 @@ export const useOtcTableColums = () => {
       },
       cell: function Cell({ row }) {
         const { isConnected } = useAccount()
+
         const [modal, setModal] = useState<"none" | "fill" | "cancel">("none")
+        const [fillWidth, setFillWidth] = useState(0)
+        const [cancelWidth, setCancelWidth] = useState(0)
+
+        const buttonWidth = Math.max(fillWidth, cancelWidth)
+
+        // renders both buttons but shows only the relevant one because they need to have equal width
+        const hiddenStyle: CSSProperties = {
+          position: "absolute",
+          visibility: "hidden",
+          pointerEvents: "none",
+        }
 
         const isUsersOffer = row.original.owner === userAddress
 
@@ -193,15 +199,42 @@ export const useOtcTableColums = () => {
           <>
             <Flex justify="right">
               <Button
-                variant={isUsersOffer ? "danger" : "accent"}
+                ref={useCallback(
+                  (el: HTMLElement | null) =>
+                    setFillWidth(el?.offsetWidth ?? 0),
+                  [],
+                )}
+                style={!isUsersOffer ? {} : hiddenStyle}
+                variant="accent"
+                minWidth={buttonWidth}
                 outline
                 disabled={!isConnected}
-                onClick={() => setModal(isUsersOffer ? "cancel" : "fill")}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setModal("fill")
+                }}
               >
-                {isUsersOffer ? <Minus /> : <Plus />}
-                {isUsersOffer
-                  ? t("trade.cancelOrder.cta")
-                  : t("otc.fillOrder.cta")}
+                <Plus />
+                {t("otc.fillOrder.cta")}
+              </Button>
+              <Button
+                ref={useCallback(
+                  (el: HTMLElement | null) =>
+                    setCancelWidth(el?.offsetWidth ?? 0),
+                  [],
+                )}
+                style={isUsersOffer ? {} : hiddenStyle}
+                variant="danger"
+                minWidth={buttonWidth}
+                outline
+                disabled={!isConnected}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setModal("cancel")
+                }}
+              >
+                <Minus />
+                {t("trade.cancelOrder.cta")}
               </Button>
             </Flex>
             <Modal
@@ -230,7 +263,7 @@ export const useOtcTableColums = () => {
     })
 
     return isMobile
-      ? [offer, price, profitMobile]
+      ? [offer, accepting, profitMobile]
       : [
           offer,
           accepting,

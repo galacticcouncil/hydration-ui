@@ -1,6 +1,4 @@
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
-import { Box, Grid, NumberInput, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { Box } from "@galacticcouncil/ui/components"
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
@@ -8,24 +6,17 @@ import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
-import { periodTypes } from "@/components/PeriodInput/PeriodInput.utils"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { PeriodFormField } from "@/form/PeriodFormField"
 import { DcaAssetSwitcher } from "@/modules/trade/swap/sections/DCA/DcaAssetSwitcher"
+import { DcaDurationField } from "@/modules/trade/swap/sections/DCA/DcaDurationField"
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
 
-type Props = {
-  readonly order: TradeDcaOrder | undefined
-}
-
-export const DcaForm: FC<Props> = ({ order }) => {
+export const DcaForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { control, formState, getValues, setValue } =
-    useFormContext<DcaFormValues>()
+  const { control, getValues, setValue } = useFormContext<DcaFormValues>()
 
   const { tradable } = useAssets()
   const switchAssets = useSwitchAssets()
@@ -81,10 +72,6 @@ export const DcaForm: FC<Props> = ({ order }) => {
     switchAssets.mutate()
   }
 
-  const ordersError =
-    formState.errors.frequency?.value?.message ??
-    formState.errors.orders?.message
-
   return (
     <Box>
       <AssetSelectFormField<DcaFormValues>
@@ -108,64 +95,14 @@ export const DcaForm: FC<Props> = ({ order }) => {
             }}
             assets={buyableAssets}
             label={t("trade:dca.assetOut.title")}
+            hideInput
             ignoreBalance
-            value={
-              field.value && order
-                ? scaleHuman(order.amountOut, field.value.decimals)
-                : ""
-            }
             error={fieldState.error?.message}
           />
         )}
       />
       <SwapSectionSeparator />
-      <Grid
-        pt={getTokenPx("scales.paddings.l")}
-        pb={getTokenPx("scales.paddings.xxl")}
-        columnTemplate="minmax(0,1fr) minmax(0,1fr)"
-        rowGap={8}
-        columnGap={getTokenPx("containers.paddings.primary")}
-      >
-        {[t("every"), t("over")].map((label, i) => (
-          <Text key={i} fw={500} fs="p5" lh={1.2} color={getToken("text.low")}>
-            {label}
-          </Text>
-        ))}
-        <PeriodFormField<DcaFormValues>
-          typeName="frequency.type"
-          valueName="frequency.value"
-          allowedPeriodTypes={
-            new Set(periodTypes.filter((periodType) => periodType !== "month"))
-          }
-        />
-        <Controller
-          control={control}
-          name="orders"
-          render={({ field, fieldState }) => (
-            <NumberInput
-              value={field.value}
-              decimalScale={0}
-              allowNegative={false}
-              onValueChange={({ floatValue }) => field.onChange(floatValue)}
-              isError={!!fieldState.error?.message}
-              unit={t("trade:dca.orders.unit")}
-            />
-          )}
-        />
-        {ordersError && (
-          <Text
-            sx={{ gridColumn: "1/-1" }}
-            font="secondary"
-            fw={400}
-            fs={12}
-            lh={1}
-            color={getToken("accents.danger.secondary")}
-            ml="auto"
-          >
-            {ordersError}
-          </Text>
-        )}
-      </Grid>
+      <DcaDurationField />
     </Box>
   )
 }
