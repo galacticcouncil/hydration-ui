@@ -2,6 +2,7 @@ import {
   TimeSeriesBucketTimeRange,
   tradePricesQuery,
 } from "@galacticcouncil/indexer/squid"
+import { TIME_FRAME_MS } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   OhlcData,
   toUTCTimestamp,
@@ -12,34 +13,37 @@ import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
 import { spotPriceQuery } from "@/api/spotPrice"
-import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
-import { TradeChartPeriodType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
+import { TradeChartTimeFrameType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { numerically, sortBy } from "@/utils/sort"
 
 type Args = {
   readonly assetInId: string
   readonly assetOutId: string
-  readonly period: TradeChartPeriodType | null
+  readonly timeFrame: TradeChartTimeFrameType | null
 }
 
-export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
+export const useTradeChartData = ({
+  assetInId,
+  assetOutId,
+  timeFrame,
+}: Args) => {
   const rpc = useRpcProvider()
   const squidClient = useSquidClient()
 
   const [startTimestamp, endTimestamp] = useMemo(() => {
-    if (!period) {
+    if (!timeFrame) {
       return []
     }
 
     const now = Date.now()
-    const ms = PERIOD_MS[period]
+    const ms = TIME_FRAME_MS[timeFrame]
 
     return [(now - ms).toString(), now.toString()]
-  }, [period])
+  }, [timeFrame])
 
-  const bucketSize = period
-    ? bucketSizes[period]
+  const bucketSize = timeFrame
+    ? bucketSizes[timeFrame]
     : TimeSeriesBucketTimeRange["4H"]
 
   // To prevent refetching on asset switch
@@ -113,9 +117,10 @@ export const useTradeChartData = ({ assetInId, assetOutId, period }: Args) => {
   }
 }
 
-const bucketSizes: Record<TradeChartPeriodType, TimeSeriesBucketTimeRange> = {
-  hour: TimeSeriesBucketTimeRange["15S"],
-  day: TimeSeriesBucketTimeRange["5M"],
-  week: TimeSeriesBucketTimeRange["1H"],
-  month: TimeSeriesBucketTimeRange["4H"],
-}
+const bucketSizes: Record<TradeChartTimeFrameType, TimeSeriesBucketTimeRange> =
+  {
+    hour: TimeSeriesBucketTimeRange["15S"],
+    day: TimeSeriesBucketTimeRange["5M"],
+    week: TimeSeriesBucketTimeRange["1H"],
+    month: TimeSeriesBucketTimeRange["4H"],
+  }

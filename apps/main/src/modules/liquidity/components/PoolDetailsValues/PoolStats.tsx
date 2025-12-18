@@ -15,13 +15,13 @@ import i18n from "@/i18n"
 import {
   intervalOptions,
   PoolChart,
+  PoolChartTimeFrameType,
 } from "@/modules/liquidity/components/PoolDetailsChart/PoolDetailsChart"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
-import { TradeChartPeriodType } from "@/modules/trade/swap/components/TradeChart/TradeChart"
 
 import { PoolDetailsValues } from "./PoolDetailsValues"
 
@@ -42,7 +42,9 @@ export const PoolStats = ({
 }) => {
   const { isTablet, isMobile } = useBreakpoints()
   const isOmnipool = !isIsolatedPool(data)
-  const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
+  const [interval, setInterval] = useState<PoolChartTimeFrameType | "all">(
+    "all",
+  )
 
   if (isTablet || isMobile) {
     return (
@@ -81,8 +83,8 @@ const PoolStatsMobile = ({
   isEmptyData = false,
 }: {
   data: OmnipoolAssetTable | IsolatedPoolTable
-  interval: TradeChartPeriodType | "all"
-  setInterval: (interval: TradeChartPeriodType | "all") => void
+  interval: PoolChartTimeFrameType | "all"
+  setInterval: (interval: PoolChartTimeFrameType | "all") => void
   isEmptyData?: boolean
 }) => {
   const [chartType, setChartType] = useState<"price" | "volume">("price")

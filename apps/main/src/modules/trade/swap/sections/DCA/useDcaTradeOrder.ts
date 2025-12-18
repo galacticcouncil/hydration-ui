@@ -1,11 +1,14 @@
+import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
 import { dcaTradeOrderQuery } from "@/api/trade"
-import { getPeriodDuration } from "@/components/PeriodInput/PeriodInput.utils"
-import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import {
+  DcaFormValues,
+  DcaOrdersMode,
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -22,19 +25,21 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     dca: { slippage, maxRetries },
   } = useTradeSettings()
 
-  const [sellAsset, buyAsset, sellAmount, frequencyPeriod, orders] = form.watch(
-    ["sellAsset", "buyAsset", "sellAmount", "frequency", "orders"],
-  )
+  const [sellAsset, buyAsset, sellAmount, durationTimeFrame, orders] =
+    form.watch(["sellAsset", "buyAsset", "sellAmount", "duration", "orders"])
 
-  const frequency = getPeriodDuration(frequencyPeriod)
+  const tradeCount =
+    orders.type === DcaOrdersMode.Auto ? null : (orders.value ?? 0)
+
+  const duration = getTimeFrameMillis(durationTimeFrame)
 
   const { data: orderData, isLoading: isOrderLoading } = useQuery(
     dcaTradeOrderQuery(rpc, {
       assetIn: sellAsset?.id ?? "",
       assetOut: buyAsset?.id ?? "",
       amountIn: sellAmount,
-      frequency,
-      orders: orders ?? 0,
+      duration,
+      orders: tradeCount,
       slippage,
       maxRetries,
       address,
