@@ -1,4 +1,5 @@
 import { Text } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -9,6 +10,8 @@ type Props = {
 
 export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoints()
+
   const percentageNum = Number(percentage)
 
   return (
@@ -25,7 +28,7 @@ export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
     >
       {percentageNum < 0 && "-"}
       {percentageNum > 0 && "+"}
-      {t("percent", {
+      {t(isMobile ? "percent.compact" : "percent", {
         value: percentage === null ? null : Math.abs(percentage),
       })}
     </Text>

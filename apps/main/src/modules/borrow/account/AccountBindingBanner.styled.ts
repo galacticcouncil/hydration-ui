@@ -51,8 +51,8 @@ export const SBannerImageContainer = styled.div(
       &::after {
         background: linear-gradient(
             270deg,
-            ${hexToRgba(theme.surfaces.themeBasePalette.background, 0)} 26.98%,
-            ${theme.surfaces.themeBasePalette.background} 74.17%
+            ${hexToRgba(theme.surfaces.themeBasePalette.background, 0)} 25%,
+            ${theme.surfaces.themeBasePalette.background} 55%
           ),
           no-repeat;
       }

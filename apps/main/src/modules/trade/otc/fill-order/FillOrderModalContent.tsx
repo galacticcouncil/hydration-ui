@@ -9,7 +9,7 @@ import {
 import { formatAssetAmount } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -55,6 +55,13 @@ export const FillOrderModalContent: FC<Props> = ({
     otcOffer,
     onSubmitted: onClose,
   })
+
+  const { trigger } = form
+  useEffect(() => {
+    if (!otcOffer.isPartiallyFillable) {
+      trigger()
+    }
+  }, [otcOffer.isPartiallyFillable, trigger])
 
   const sellAmount = form.watch("sellAmount")
 

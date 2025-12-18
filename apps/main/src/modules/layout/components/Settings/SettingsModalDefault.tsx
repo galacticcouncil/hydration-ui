@@ -3,13 +3,13 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 
 import { Contacts } from "@/modules/layout/components/Settings/Contacts"
-import { DarkMode } from "@/modules/layout/components/Settings/DarkMode"
 // import { DegenMode } from "@/modules/layout/components/Settings/DegenMode"
 import { PaymentAsset } from "@/modules/layout/components/Settings/PaymentAsset"
 import {
   SSettingsContent,
   SSettingsSection,
 } from "@/modules/layout/components/Settings/Settings.styled"
+import { ThemePreference } from "@/modules/layout/components/Settings/ThemePreference"
 
 type Props = {
   readonly onPaymentAssetClick: () => void
@@ -32,7 +32,7 @@ export const SettingsModalDefault: FC<Props> = ({
         <ModalContentDivider />
         <SSettingsSection>
           {/* <DegenMode /> */}
-          <DarkMode />
+          <ThemePreference />
         </SSettingsSection>
       </SSettingsContent>
     </ModalBody>

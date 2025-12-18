@@ -3,13 +3,13 @@ import {
   latestAccountBalanceQuery,
 } from "@galacticcouncil/indexer/squid"
 import { TimeSeriesBucketTimeRange } from "@galacticcouncil/indexer/squid"
+import { TIME_FRAME_MS } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
-import { PERIOD_MS } from "@/components/PeriodInput/PeriodInput.utils"
-import { NetWorthPeriodType } from "@/modules/wallet/assets/Balances/NetWorth"
+import { NetWorthTimeFrameType } from "@/modules/wallet/assets/Balances/NetWorth"
 import { chronologically, sortBy } from "@/utils/sort"
 
 export type NetWorthData = {
@@ -17,23 +17,23 @@ export type NetWorthData = {
   readonly time: Date
 }
 
-export const useNetWorthData = (period: NetWorthPeriodType | null) => {
+export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
   const squidClient = useSquidClient()
   const { account } = useAccount()
 
   const [startTimestamp, endTimestamp] = useMemo(() => {
-    if (!period) {
+    if (!timeFrame) {
       return []
     }
 
     const now = Date.now()
-    const ms = PERIOD_MS[period]
+    const ms = TIME_FRAME_MS[timeFrame]
 
     return [(now - ms).toString(), now.toString()]
-  }, [period])
+  }, [timeFrame])
 
-  const bucketSize = period
-    ? bucketSizes[period]
+  const bucketSize = timeFrame
+    ? bucketSizes[timeFrame]
     : TimeSeriesBucketTimeRange["1D"]
 
   const { data, isError, isLoading, isSuccess } = useQuery({
@@ -124,7 +124,7 @@ export const useNetWorthData = (period: NetWorthPeriodType | null) => {
   }
 }
 
-const bucketSizes: Record<NetWorthPeriodType, TimeSeriesBucketTimeRange> = {
+const bucketSizes: Record<NetWorthTimeFrameType, TimeSeriesBucketTimeRange> = {
   hour: TimeSeriesBucketTimeRange["15S"],
   day: TimeSeriesBucketTimeRange["5M"],
   week: TimeSeriesBucketTimeRange["1H"],

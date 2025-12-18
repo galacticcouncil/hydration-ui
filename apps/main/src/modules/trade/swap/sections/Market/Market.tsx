@@ -60,7 +60,8 @@ export const Market: FC = () => {
     twap,
     twapTx,
     healthFactor,
-    isLoading,
+    isSwapLoading,
+    isTwapLoading,
     isHealthFactorLoading,
   } = useMarketData(form)
 
@@ -99,7 +100,7 @@ export const Market: FC = () => {
     return scaleHuman(swapSpotPrice, assetInPriceMeta.decimals)
   })()
 
-  const isExpanded = isLoading || (!!swap && (isSingleTrade || !!twap))
+  const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 
   const isFormValid = isTradeEnabled && form.formState.isValid
   const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
@@ -117,7 +118,12 @@ export const Market: FC = () => {
         <MarketFields price={spotPrice} />
         {isExpanded && (
           <Box pt={8} pb={getTokenPx("scales.paddings.m")}>
-            <MarketTradeOptions swap={swap} twap={twap} isLoading={isLoading} />
+            <MarketTradeOptions
+              swap={swap}
+              twap={twap}
+              isSwapLoading={isSwapLoading}
+              isTwapLoading={isTwapLoading}
+            />
             <MarketWarnings
               isFormValid={isFormValid}
               isSingleTrade={isSingleTrade}
@@ -132,7 +138,9 @@ export const Market: FC = () => {
         <SwapSectionSeparator />
         <MarketSubmit
           isSingleTrade={isSingleTrade}
-          isLoading={isLoading || submitSwap.isPending || submitTwap.isPending}
+          isLoading={
+            isSwapLoading || submitSwap.isPending || submitTwap.isPending
+          }
           isEnabled={isSubmitEnabled}
         />
         <MarketSummary
@@ -142,7 +150,10 @@ export const Market: FC = () => {
           twap={twap}
           twapTx={twapTx}
           healthFactor={healthFactor}
-          isLoading={isLoading || isHealthFactorLoading}
+          isLoading={
+            isHealthFactorLoading ||
+            (isSingleTrade ? isSwapLoading : isTwapLoading)
+          }
         />
       </form>
     </FormProvider>

@@ -1,9 +1,9 @@
-import { ReferendaEmptyState } from "@galacticcouncil/ui/assets/icons"
+import ReferendaEmptyState from "@galacticcouncil/ui/assets/images/ReferendaEmptyState.webp"
 import {
   Button,
   ExternalLink,
   Flex,
-  Icon,
+  Image,
   Paper,
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
@@ -21,7 +21,7 @@ export const OngoingReferendaEmptyState: FC = () => {
       <Flex direction="column" gap={20} align="center">
         <EmptyState
           sx={{ maxWidth: "100%", pb: 0 }}
-          icon={<Icon component={ReferendaEmptyState} size={null} my={-40} />}
+          icon={<Image src={ReferendaEmptyState} width={100} height={100} />}
           header={t("referenda.emptyState.header")}
           description={t("referenda.emptyState.description")}
         />

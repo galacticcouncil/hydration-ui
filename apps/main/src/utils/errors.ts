@@ -1,7 +1,7 @@
 import { isEvmAccount } from "@galacticcouncil/sdk"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 
-type TxErrorContext = {
+type ErrorContext = {
   message: string
   address: string
   wallet: string
@@ -12,7 +12,7 @@ type TxErrorContext = {
   transaction?: string
 }
 
-export function stringifyTxErrorContext(data: TxErrorContext) {
+export function stringifyErrorContext(data: ErrorContext) {
   return Object.entries(data)
     .map(([key, value]) => {
       if (key === "address" && isEvmAccount(value))

@@ -1,19 +1,22 @@
 import {
   DataTable,
+  Modal,
   Paper,
   TableContainer,
   usePriorityTableSort,
 } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
-import { FC, useMemo } from "react"
+import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
 
+import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import {
   OtcColumn,
   otcColumnSortPriority,
+  OtcOfferTabular,
   useOtcTableColums,
 } from "@/modules/trade/otc/table/OtcTable.columns"
 import { useOtcOffers } from "@/modules/trade/otc/table/OtcTable.query"
@@ -36,6 +39,8 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
     otcColumnSortPriority,
     [{ id: OtcColumn.MarketPrice, desc: false }],
   )
+
+  const [isDetailOpen, setIsDetailOpen] = useState<OtcOfferTabular | null>(null)
 
   const { getAsset } = useAssets()
   const { data, isLoading } = useOtcOffers()
@@ -80,24 +85,36 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   )
 
   return (
-    <TableContainer as={Paper}>
-      <DataTable
-        paginated
-        pageSize={10}
-        globalFilter={searchPhrase}
-        globalFilterFn={(row) =>
-          matchAsset(row.original.assetIn, searchPhrase) ||
-          matchAsset(row.original.assetOut, searchPhrase)
-        }
-        data={offersWithPrices}
-        columns={columns}
-        isLoading={isTableLoading}
-        emptyState={t("otc.noOrders")}
-        isMultiSort
-        sorting={sortState}
-        onSortingChange={setSortState}
-      />
-    </TableContainer>
+    <>
+      <TableContainer as={Paper}>
+        <DataTable
+          paginated
+          pageSize={10}
+          globalFilter={searchPhrase}
+          globalFilterFn={(row) =>
+            matchAsset(row.original.assetIn, searchPhrase) ||
+            matchAsset(row.original.assetOut, searchPhrase)
+          }
+          data={offersWithPrices}
+          columns={columns}
+          isLoading={isTableLoading}
+          emptyState={t("otc.noOrders")}
+          isMultiSort
+          sorting={sortState}
+          onSortingChange={setSortState}
+          onRowClick={setIsDetailOpen}
+        />
+      </TableContainer>
+      <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
+        {isDetailOpen && (
+          <FillOrderModalContent
+            otcOffer={isDetailOpen}
+            isUsersOffer={isDetailOpen.owner === userAddress}
+            onClose={() => setIsDetailOpen(null)}
+          />
+        )}
+      </Modal>
+    </>
   )
 }
 

@@ -35,22 +35,28 @@ export const MarketSummary = ({
     return <MarketSummarySkeleton type={swapType} />
   }
 
-  if (!swap || !twap) {
+  if (!swap) {
     return null
   }
 
-  return (
-    <>
-      <SwapSectionSeparator />
-      {isSingleTrade ? (
-        <MarketSummarySwap
-          swap={swap}
-          swapTx={swapTx}
-          healthFactor={healthFactor}
-        />
-      ) : (
+  if (isSingleTrade) {
+    return (
+      <MarketSummarySwap
+        swap={swap}
+        swapTx={swapTx}
+        healthFactor={healthFactor}
+      />
+    )
+  }
+
+  if (twap) {
+    return (
+      <>
+        <SwapSectionSeparator />
         <MarketSummaryTwap swap={swap} twap={twap} twapTx={twapTx} />
-      )}
-    </>
-  )
+      </>
+    )
+  }
+
+  return null
 }

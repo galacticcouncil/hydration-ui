@@ -1,3 +1,4 @@
+import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   Box,
   ChartValues,
@@ -17,22 +18,19 @@ import {
   ChartTimeRange,
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
-import { periodTypes } from "@/components/PeriodInput/PeriodInput.utils"
 import i18n from "@/i18n"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import { useAssets } from "@/providers/assetsProvider"
 
-const chartPeriodTypes = periodTypes.filter(
-  (periodType) => periodType !== "minute",
-)
+const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
 
-export type TradeChartPeriodType = (typeof chartPeriodTypes)[number]
+export type TradeChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
 
-const intervalOptions = (["all", ...chartPeriodTypes] as const).map<
-  ChartTimeRangeOptionType<TradeChartPeriodType | "all">
+const intervalOptions = (["all", ...chartTimeFrameTypes] as const).map<
+  ChartTimeRangeOptionType<TradeChartTimeFrameType | "all">
 >((option) => ({
   key: option,
-  label: i18n.t(`chart.period.${option}`),
+  label: i18n.t(`chart.timeFrame.${option}`),
 }))
 
 type TradeChartProps = {
@@ -44,13 +42,15 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
-  const [interval, setInterval] = useState<TradeChartPeriodType | "all">("all")
+  const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
+    "all",
+  )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
     assetInId: assetIn,
     assetOutId: assetOut,
-    period: interval === "all" ? null : interval,
+    timeFrame: interval === "all" ? null : interval,
   })
 
   const isEmpty = isSuccess && !prices.length

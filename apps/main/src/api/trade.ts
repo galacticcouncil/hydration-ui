@@ -230,8 +230,8 @@ type DcaTradeOrderArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
-  readonly frequency: number
-  readonly orders: number
+  readonly duration: number
+  readonly orders: number | null
   readonly slippage: number
   readonly maxRetries: number
   readonly address: string
@@ -243,7 +243,7 @@ export const dcaTradeOrderQuery = (
     assetIn,
     assetOut,
     amountIn,
-    frequency,
+    duration,
     orders,
     slippage,
     maxRetries,
@@ -258,7 +258,7 @@ export const dcaTradeOrderQuery = (
       assetIn,
       assetOut,
       amountIn,
-      frequency,
+      duration,
       orders,
       address,
     ],
@@ -267,8 +267,8 @@ export const dcaTradeOrderQuery = (
         Number(assetIn),
         Number(assetOut),
         amountIn,
-        frequency,
-        orders,
+        duration,
+        orders ?? undefined,
       )
 
       const orderTx = address
@@ -288,8 +288,8 @@ export const dcaTradeOrderQuery = (
       !!assetIn &&
       !!assetOut &&
       Big(amountIn || "0").gt(0) &&
-      frequency > 0 &&
-      orders > 0,
+      duration > 0 &&
+      (orders === null || orders > 0),
   })
 
 export const minimumOrderBudgetQuery = (
@@ -309,7 +309,6 @@ export const minimumOrderBudgetQuery = (
 export const tradeOrderDurationQuery = (
   { sdk, isApiLoaded }: TProviderContext,
   tradeCount: number,
-  isEnabled: boolean,
 ) =>
   queryOptions({
     queryKey: [
@@ -319,5 +318,5 @@ export const tradeOrderDurationQuery = (
       tradeCount,
     ],
     queryFn: () => sdk.api.scheduler.getTwapExecutionTime(tradeCount),
-    enabled: isEnabled && isApiLoaded && !!tradeCount,
+    enabled: isApiLoaded && tradeCount > 0,
   })
