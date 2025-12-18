@@ -19,7 +19,7 @@ export const PastExecutionsList: FC<Props> = ({
   assetOut,
   executions,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common"])
 
   return (
     <Flex

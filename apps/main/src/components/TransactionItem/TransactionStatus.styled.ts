@@ -5,6 +5,7 @@ export enum TransactionStatusVariant {
   Pending = "Pending",
   Success = "Success",
   Warning = "Warning",
+  Error = "Error",
 }
 
 const colorVariants = createVariants<TransactionStatusVariant>((theme) => ({
@@ -16,6 +17,9 @@ const colorVariants = createVariants<TransactionStatusVariant>((theme) => ({
   `,
   [TransactionStatusVariant.Warning]: css`
     color: ${theme.accents.alertAlt.primary};
+  `,
+  [TransactionStatusVariant.Error]: css`
+    color: ${theme.accents.danger.secondary};
   `,
 }))
 

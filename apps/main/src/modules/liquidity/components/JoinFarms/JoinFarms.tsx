@@ -178,7 +178,7 @@ const JoinFarmsForm = ({
                     maxBalance={formValues.amount}
                     value={value}
                     onChange={onChange}
-                    error={error?.message}
+                    amountError={error?.message}
                     ignoreDisplayValue
                     sx={{ pt: 0 }}
                   />

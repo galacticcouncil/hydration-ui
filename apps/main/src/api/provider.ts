@@ -72,7 +72,9 @@ export const providerQuery = (rpcUrlList: string[]) => {
   })
 }
 
-const getProviderData = async (rpcUrlList: string[] = []) => {
+const getProviderData = async (
+  rpcUrlList: string[] = [],
+): Promise<TProviderData> => {
   let endpoint = ""
   const ws = api.getWs(rpcUrlList, {
     onStatusChanged: (status) => {
@@ -129,7 +131,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
-  } satisfies TProviderData
+  }
 }
 
 export const useSquidUrl = (): string => {

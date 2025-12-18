@@ -1,5 +1,10 @@
 import { SubScan } from "@galacticcouncil/ui/assets/icons"
-import { ExternalLink, Flex, Icon } from "@galacticcouncil/ui/components"
+import {
+  ButtonIcon,
+  ExternalLink,
+  Flex,
+  Icon,
+} from "@galacticcouncil/ui/components"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
@@ -13,15 +18,15 @@ import { TransactionStatusVariant } from "@/components/TransactionItem/Transacti
 
 type StatusProps =
   | {
-      readonly status: TransactionStatusVariant.Pending
-    }
-  | {
       readonly status: TransactionStatusVariant.Success
       readonly sent: string
       readonly received: string
     }
   | {
-      readonly status: TransactionStatusVariant.Warning
+      readonly status: Exclude<
+        TransactionStatusVariant,
+        TransactionStatusVariant.Success
+      >
     }
 
 type Props = StatusProps & {
@@ -82,9 +87,11 @@ export const TransactionItemMobile: FC<Props> = ({
           )}
         </Flex>
         {link && (
-          <ExternalLink href={link}>
-            <Icon size={14} component={SubScan} color="#FEFEFE" />
-          </ExternalLink>
+          <ButtonIcon asChild>
+            <ExternalLink href={link}>
+              <Icon size={14} component={SubScan} color="#FEFEFE" />
+            </ExternalLink>
+          </ButtonIcon>
         )}
       </Flex>
     </Flex>

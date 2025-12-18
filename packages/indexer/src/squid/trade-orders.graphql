@@ -43,15 +43,15 @@ fragment Swap on Swap {
 # TODO allow liquidity add/remove swaps when we know how to handle them
 query UserSwaps(
   $swapperIdFilter: StringFilter
-  $allInvolvedAssetRegistryIds: StringListFilter
+  $orFilter: [SwapFilter!]
   $offset: Int!
   $pageSize: Int!
 ) {
   swaps(
     filter: {
       swapperId: $swapperIdFilter
-      allInvolvedAssetRegistryIds: $allInvolvedAssetRegistryIds
       operationType: { in: ["ExactIn", "ExactOut"] }
+      or: $orFilter
     }
     offset: $offset
     first: $pageSize

@@ -154,7 +154,7 @@ export const FillOrderModalContent: FC<Props> = ({
                     maxButtonBalance={assetInMax}
                     maxBalanceFallback="0"
                     hideMaxBalanceAction={!otcOffer.isPartiallyFillable}
-                    error={fieldState.error?.message}
+                    amountError={fieldState.error?.message}
                   />
                 )}
               />
@@ -199,7 +199,7 @@ export const FillOrderModalContent: FC<Props> = ({
                     modalDisabled
                     maxBalanceFallback="0"
                     hideMaxBalanceAction
-                    error={fieldState.error?.message}
+                    amountError={fieldState.error?.message}
                   />
                 )}
               />

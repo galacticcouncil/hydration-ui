@@ -312,7 +312,7 @@ export const AddStablepoolLiquidityForm = ({
                     sortedAssets={assetsToSelect}
                     maxBalance={balance}
                     selectedAsset={getAssetWithFallback(value.assetId)}
-                    error={error?.message}
+                    amountError={error?.message}
                     value={value.amount}
                     onChange={(amount) => {
                       const updatedValue = { ...value, amount }

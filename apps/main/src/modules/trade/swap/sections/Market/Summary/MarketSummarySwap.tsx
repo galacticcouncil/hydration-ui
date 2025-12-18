@@ -92,6 +92,17 @@ export const MarketSummarySwap: FC<Props> = ({
     return null
   }
 
+  const minSummaryAsset = isBuy ? sellAsset : buyAsset
+  const minSummaryValue = isBuy
+    ? scaleHuman(
+        swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
+        sellAsset.decimals,
+      )
+    : scaleHuman(
+        swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage),
+        buyAsset.decimals,
+      )
+
   const tradeFeePct = swap.tradeFeePct
   const tradeFeeRange = swap.tradeFeeRange ?? [0, 0]
 
@@ -122,36 +133,24 @@ export const MarketSummarySwap: FC<Props> = ({
         open={isSummaryExpanded}
         onOpenChange={changeSummaryExpanded}
       >
-        {isBuy ? (
-          <CalculatedAmountSummaryRow
-            label={t("trade:market.summary.maxSent")}
-            tooltip={t("trade:market.summary.maxSent.tooltip")}
-            amount={t("currency", {
-              value: scaleHuman(
-                swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
-                sellAsset.decimals,
-              ),
-              symbol: sellAsset.symbol,
-            })}
-            isExpanded={isSummaryExpanded}
-            onIsExpandedChange={changeSummaryExpanded}
-          />
-        ) : (
-          <CalculatedAmountSummaryRow
-            label={t("trade:market.summary.minReceived")}
-            tooltip={t("trade:market.summary.minReceived.tooltip")}
-            amount={t("currency", {
-              value: scaleHuman(
-                swap.amountOut -
-                  calculateSlippage(swap.amountOut, swapSlippage),
-                buyAsset.decimals,
-              ),
-              symbol: buyAsset.symbol,
-            })}
-            isExpanded={isSummaryExpanded}
-            onIsExpandedChange={changeSummaryExpanded}
-          />
-        )}
+        <CalculatedAmountSummaryRow
+          label={
+            isBuy
+              ? t("trade:market.summary.maxSent")
+              : t("trade:market.summary.minReceived")
+          }
+          tooltip={
+            isBuy
+              ? t("trade:market.summary.maxSent.tooltip")
+              : t("trade:market.summary.minReceived.tooltip")
+          }
+          amount={t("currency", {
+            value: minSummaryValue,
+            symbol: minSummaryAsset.symbol,
+          })}
+          isExpanded={isSummaryExpanded}
+          onIsExpandedChange={changeSummaryExpanded}
+        />
         <CollapsibleContent asChild>
           <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
             <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
