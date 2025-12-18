@@ -19,7 +19,7 @@ export const PastExecutionsList: FC<Props> = ({
   assetOut,
   executions,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common"])
 
   return (
     <Flex
@@ -53,6 +53,7 @@ export const PastExecutionsList: FC<Props> = ({
               sx={{ px: 0 }}
               timestamp={execution.timestamp}
               link={execution.link}
+              errorState={execution.errorState}
               {...statusProps}
             />
           </Fragment>

@@ -1,5 +1,6 @@
 import {
   Check,
+  ExclamationMark,
   LoaderCircle,
   TriangleAlert,
 } from "@galacticcouncil/ui/assets/icons"
@@ -7,6 +8,7 @@ import { Icon, Text } from "@galacticcouncil/ui/components"
 import { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { ApiRegistryError } from "@/api/registry"
 import {
   STransactionStatus,
   STransactionStatusMessage,
@@ -15,9 +17,10 @@ import {
 
 type Props = {
   readonly variant: TransactionStatusVariant
+  readonly apiRegistryError?: ApiRegistryError | null
 }
 
-export const TransactionStatus: FC<Props> = ({ variant }) => {
+export const TransactionStatus: FC<Props> = ({ apiRegistryError, variant }) => {
   const { t } = useTranslation()
 
   const [icon, status] = (
@@ -25,13 +28,16 @@ export const TransactionStatus: FC<Props> = ({ variant }) => {
       [TransactionStatusVariant.Pending]: [LoaderCircle, t("pending")],
       [TransactionStatusVariant.Success]: [Check, t("success")],
       [TransactionStatusVariant.Warning]: [TriangleAlert, t("warning")],
+      [TransactionStatusVariant.Error]: [ExclamationMark, t("error")],
     } satisfies Record<TransactionStatusVariant, [React.ComponentType, string]>
   )[variant]
 
   return (
     <STransactionStatus variant={variant}>
       <Text fw={500} fs="p4" lh={1}>
-        {status}
+        {variant === TransactionStatusVariant.Error && apiRegistryError?.name
+          ? formatErrorName(apiRegistryError.name)
+          : status}
       </Text>
       <Icon size={14} component={icon} />
     </STransactionStatus>
@@ -45,3 +51,10 @@ export const TransactionStatusMessage: FC<
 > = ({ ...props }) => {
   return <STransactionStatusMessage fs="p5" lh={1.4} {...props} />
 }
+
+const formatErrorName = (name: string): string =>
+  name
+    .replace(/([A-Z])/g, " $1")
+    .trim()
+    .toLowerCase()
+    .replace(/^\w/, (c) => c.toUpperCase())

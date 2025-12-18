@@ -1,4 +1,5 @@
 import { AssetMetadataFactory, changeProvider } from "@galacticcouncil/utils"
+import { ApiPromise } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
@@ -41,6 +42,7 @@ const defaultData: TProviderContext = {
   featureFlags: {} as TProviderData["featureFlags"],
   poolService: {} as TProviderData["poolService"],
   metadata: AssetMetadataFactory.getInstance(),
+  apiRegistry: {} as ApiPromise["registry"],
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
