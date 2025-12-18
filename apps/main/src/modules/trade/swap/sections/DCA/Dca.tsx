@@ -15,6 +15,7 @@ import {
 import { useDcaTradeOrder } from "@/modules/trade/swap/sections/DCA/useDcaTradeOrder"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
+import { maxBalanceError } from "@/utils/validators"
 
 import { useDcaForm } from "./useDcaForm"
 
@@ -60,6 +61,9 @@ export const Dca: FC = () => {
   const isSubmitEnabled =
     isFormValid && isPriceImpactCheckSatisfied && isHealthFactorCheckSatisfied
 
+  const isHealthFactorShown =
+    form.formState.errors.sellAmount?.message !== maxBalanceError
+
   return (
     <FormProvider {...form}>
       <form
@@ -86,7 +90,7 @@ export const Dca: FC = () => {
         <DcaOrderInfo
           order={order}
           orderTx={orderTx}
-          healthFactor={healthFactor}
+          healthFactor={isHealthFactorShown ? healthFactor : undefined}
           isLoading={isLoading}
         />
       </form>

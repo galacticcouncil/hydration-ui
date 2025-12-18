@@ -33,6 +33,7 @@
   "pending": "Pending",
   "success": "Success",
   "warning": "Warning",
+  "error": "Error",
   "completed": "Completed",
   "open": "Open",
   "add": "Add",
