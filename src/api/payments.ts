@@ -15,6 +15,16 @@ import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
 import { AAVE_EXTRA_GAS } from "utils/constants"
 import { NATIVE_ASSET_ID } from "utils/api"
+import {
+  u8aConcat,
+  stringToU8a,
+  bnToU8a,
+  BN,
+  compactAddLength,
+  u8aToHex,
+  hexToU8a,
+} from "@polkadot/util"
+import { decodeAddress } from "@polkadot/util-crypto"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -84,6 +94,31 @@ export const useAcceptedCurrencies = (ids: string[]) => {
   )
 }
 
+function getMessage(address: string, assetId: string) {
+  const MESSAGE_PREFIX = "EVMAccounts::claim_account"
+
+  const prefixU8a = compactAddLength(stringToU8a(MESSAGE_PREFIX))
+  const assetIdU8a = bnToU8a(new BN(assetId), {
+    isLe: true,
+    bitLength: 32,
+  })
+
+  const publicKey = decodeAddress(address)
+
+  const message = u8aConcat(prefixU8a, publicKey, assetIdU8a)
+
+  console.log("prefix encoded:", Buffer.from(prefixU8a).toString("hex"))
+  console.log("account encoded:", Buffer.from(publicKey).toString("hex"))
+  console.log(
+    `assetId (${assetId}) encoded:`,
+    Buffer.from(assetIdU8a).toString("hex"),
+  )
+  console.log("message:", Buffer.from(message).toString("hex"))
+  console.log("length", message.length)
+
+  return message
+}
+
 export const useSetAsFeePayment = () => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -95,6 +130,7 @@ export const useSetAsFeePayment = () => {
   return useMutation(
     async (tokenId?: string) => {
       if (!tokenId) return
+      if (!account?.address) return
 
       const meta = getAssetWithFallback(tokenId)
 
@@ -111,7 +147,30 @@ export const useSetAsFeePayment = () => {
 
       const paymentInfoData = await api.tx.currencies
         .transfer("", native.id, "0")
-        .paymentInfo(account?.address ?? "")
+        .paymentInfo(account.address)
+
+      const accountInfo = await api.query.system.account(account.address)
+
+      console.log({
+        nonce: accountInfo.nonce.toString(),
+        providers: accountInfo.providers.toString(),
+        sufficients: accountInfo.sufficients.toString(),
+      })
+
+      const isUnclaimedAccount =
+        BigNumber(accountInfo.nonce.toString()).eq(0) &&
+        BigNumber(accountInfo.providers.toString()).eq(0) &&
+        BigNumber(accountInfo.sufficients.toString()).eq(0)
+
+      console.log({ isUnclaimedAccount })
+
+      if (isUnclaimedAccount) {
+        return await createTransaction({
+          tx: api.tx.evmAccounts.claimAccount(account.address, tokenId, {
+            Sr25519: getMessage(account.address, "1000001"),
+          }),
+        })
+      }
 
       return await createTransaction(
         {
