@@ -24,7 +24,8 @@ export type AssetInputProps = {
   ignoreBalance?: boolean
   ignoreDisplayValue?: boolean
   hideMaxBalanceAction?: boolean
-  error?: string
+  assetError?: string
+  amountError?: string
   disabled?: boolean
   disabledInput?: boolean
   hideInput?: boolean
@@ -49,7 +50,8 @@ export const AssetInput = ({
   ignoreDisplayValue,
   hideMaxBalanceAction,
   onChange,
-  error,
+  assetError,
+  amountError,
   disabled,
   disabledInput,
   hideInput,
@@ -63,6 +65,8 @@ export const AssetInput = ({
   const onMaxButtonClick = () => {
     if (usedMaxBalance) onChange?.(usedMaxBalance)
   }
+
+  const errorMessage = assetError ?? amountError
 
   return (
     <Flex
@@ -132,7 +136,7 @@ export const AssetInput = ({
             symbol={symbol}
             icon={selectedAssetIcon}
             loading={loading}
-            error={!!error}
+            error={!!assetError}
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
@@ -145,7 +149,7 @@ export const AssetInput = ({
               flex={1}
             >
               <SAssetInput
-                isError={!!error}
+                isError={!!amountError}
                 placeholder="0"
                 variant="embedded"
                 disabled={disabled || loading || !onChange || disabledInput}
@@ -176,7 +180,7 @@ export const AssetInput = ({
             </Flex>
           )}
         </Flex>
-        {error && (
+        {errorMessage && (
           <Text
             fs={12}
             font="secondary"
@@ -184,7 +188,7 @@ export const AssetInput = ({
             color={getToken("accents.danger.secondary")}
             sx={{ marginLeft: "auto", lineHeight: 1 }}
           >
-            {error}
+            {errorMessage}
           </Text>
         )}
       </Flex>

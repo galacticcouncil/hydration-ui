@@ -255,9 +255,9 @@ export const StableswapYieldMetricsDocument = `
 }
     `;
 export const UserSwapsDocument = `
-    query UserSwaps($swapperIdFilter: StringFilter, $allInvolvedAssetRegistryIds: StringListFilter, $offset: Int!, $pageSize: Int!) {
+    query UserSwaps($swapperIdFilter: StringFilter, $orFilter: [SwapFilter!], $offset: Int!, $pageSize: Int!) {
   swaps(
-    filter: {swapperId: $swapperIdFilter, allInvolvedAssetRegistryIds: $allInvolvedAssetRegistryIds, operationType: {in: ["ExactIn", "ExactOut"]}}
+    filter: {swapperId: $swapperIdFilter, operationType: {in: ["ExactIn", "ExactOut"]}, or: $orFilter}
     offset: $offset
     first: $pageSize
     orderBy: ID_DESC
@@ -339,6 +339,7 @@ export const DcaScheduleExecutionsDocument = `
                 timestamp
               }
             }
+            errorState
           }
         }
       }

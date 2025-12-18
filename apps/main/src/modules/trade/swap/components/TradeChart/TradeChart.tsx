@@ -26,7 +26,7 @@ const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
 
 export type TradeChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
 
-const intervalOptions = (["all", ...chartTimeFrameTypes] as const).map<
+const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
   ChartTimeRangeOptionType<TradeChartTimeFrameType | "all">
 >((option) => ({
   key: option,
@@ -43,7 +43,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
-    "all",
+    "week",
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
