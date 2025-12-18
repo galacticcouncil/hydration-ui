@@ -135,7 +135,7 @@ export const AddLiquidityForm = ({
 
     return await createTransaction(
       {
-        tx: isGETH
+        tx: assetMeta.isErc20
           ? api.tx.dispatcher.dispatchWithExtraGas(
               tx.inner.toHex(),
               AAVE_EXTRA_GAS,
@@ -185,7 +185,7 @@ export const AddLiquidityForm = ({
     hfChange?.isHealthFactorBelowThreshold
   )
 
-  const isHFDisabled = isGETH
+  const isHFDisabled = assetMeta.isErc20
     ? isHfRiskAcceptRequired && !healthFactorRiskAccepted
     : false
 

@@ -268,7 +268,7 @@ export const usePools = () => {
         const filteredMiningPositions = positions?.omnipoolDeposits ?? []
         const isPositions =
           !!positions?.isPoolPositions ||
-          !!accountAsset?.isPoolPositions ||
+          (!!accountAsset?.isPoolPositions && !meta.isErc20) ||
           !!accountAAsset?.isPoolPositions
 
         const metaOverride =
