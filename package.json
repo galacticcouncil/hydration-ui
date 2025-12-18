@@ -37,7 +37,7 @@
     "@emotion/styled": "^11.10.4",
     "@ethersproject/address": "^5.7.0",
     "@ethersproject/providers": "^5.7.2",
-    "@galacticcouncil/apps": "^13.10.0",
+    "@galacticcouncil/apps": "^13.11.0",
     "@galacticcouncil/math-staking": "^1.2.0",
     "@galacticcouncil/sdk": "^10.4.0",
     "@galacticcouncil/ui": "^5.7.0",
