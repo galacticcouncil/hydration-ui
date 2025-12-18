@@ -89,7 +89,7 @@ export const Market: FC = () => {
       }
 
       return Big(1)
-        .div(scaleHuman(swapSpotPrice, assetOutPriceMeta.decimals))
+        .div(scaleHuman(swapSpotPrice, 18))
         .toString()
     }
 
@@ -97,7 +97,7 @@ export const Market: FC = () => {
       return null
     }
 
-    return scaleHuman(swapSpotPrice, assetInPriceMeta.decimals)
+    return scaleHuman(swapSpotPrice, 18)
   })()
 
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
