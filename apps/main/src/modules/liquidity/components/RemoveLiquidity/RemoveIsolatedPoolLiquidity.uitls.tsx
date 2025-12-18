@@ -4,8 +4,11 @@ import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { XykDeposit, xykMiningPositionsKey } from "@/api/account"
+import { useIsolatedPoolFarms } from "@/api/farms"
+import { useShareTokenPrices } from "@/api/spotPrice"
 import { useXYKPoolWithLiquidity, XYKPoolWithLiquidity } from "@/api/xyk"
 import {
   convertXYKSharesToValues,
@@ -13,8 +16,7 @@ import {
 } from "@/modules/liquidity/Liquidity.utils"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalances } from "@/states/account"
-import { useXYKPool } from "@/states/liquidity"
+import { useAccountBalances, useAccountData } from "@/states/account"
 import { TransactionToasts, useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
@@ -48,21 +50,18 @@ export const useRemoveSelectableXYKPositions = ({
 }: {
   poolId: string
 }) => {
+  const { getShareTokenByAddress } = useAssets()
   const [selectedPositionIds, setSelectedPositionIds] = useState<Set<string>>(
     new Set(),
   )
-
-  const { data: xykData } = useXYKPool(poolId)
+  const positions = useAccountData(useShallow(prop("xykMining")))
+  const { data: shareTokenPrices } = useShareTokenPrices([poolId])
   const { data: pool } = useXYKPoolWithLiquidity(poolId)
+  const { data: farms } = useIsolatedPoolFarms(poolId)
 
-  if (!xykData || !pool) return undefined
-
-  const { meta, tvlDisplay, positions, allFarms, tokens } = xykData
-  const liquidity = pool.totalLiquidity
-
-  const price = Big(tvlDisplay)
-    .div(liquidity ? scaleHuman(liquidity, meta.decimals) : 1)
-    .toString()
+  const price = shareTokenPrices.get(poolId)
+  const meta = getShareTokenByAddress(poolId)
+  if (!pool || !price || !meta) return undefined
 
   const positionsData = positions.map((position) => {
     const isSelected = selectedPositionIds.has(position.id)
@@ -100,11 +99,11 @@ export const useRemoveSelectableXYKPositions = ({
     ],
     meta,
     positions: positionsData,
-    activeFarms: allFarms,
+    activeFarms: farms,
     setSelectedPositionIds,
     selectedPositionIds,
     selectedPositions,
-    tokens,
+    tokens: pool.tokens,
     address: poolId,
     pool,
   }

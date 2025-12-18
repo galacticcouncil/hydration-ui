@@ -16,26 +16,39 @@ import {
   useClaimPositionRewards,
 } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
 import { RemoveLiquidity } from "@/modules/liquidity/components/RemoveLiquidity"
+import { AddLiquidityModalContent } from "@/routes/liquidity/$id.add"
 import { AccountOmnipoolPosition, isDepositPosition } from "@/states/account"
 
-import { isXYKPosition, XYKPosition } from "./MyLiquidityTable.data"
+import {
+  ShareTokenBalance,
+  XYKPositionDeposit,
+} from "./MyIsolatedPoolsLiquidity.data"
+import { isXYKPosition, StableswapPosition } from "./MyLiquidityTable.data"
 
-type LiquidityPositionAction = "none" | "join" | "remove"
+type LiquidityPositionAction = "none" | "join" | "remove" | "add"
 
-type Props = {
+type LiquidityPositionMoreActionsProps = {
   readonly assetId: string
-  readonly position: AccountOmnipoolPosition | XYKPosition
+  readonly position: AccountOmnipoolPosition | XYKPositionDeposit
   readonly farmsToJoin: Farm[]
 }
 
-export const LiquidityPositionMoreActions: FC<Props> = ({
-  assetId,
-  position,
-  farmsToJoin,
-}) => {
+type XYKSharesPositionMoreActionsProps = {
+  readonly position: ShareTokenBalance
+  readonly farmsToJoin: Farm[]
+}
+
+type StableswapPositionMoreActionsProps = {
+  readonly position: StableswapPosition
+}
+
+export const LiquidityPositionMoreActions: FC<
+  LiquidityPositionMoreActionsProps
+> = ({ assetId, position, farmsToJoin }) => {
   const { t } = useTranslation("wallet")
   const [action, setAction] = useState<LiquidityPositionAction>("none")
 
+  const isXyk = isXYKPosition(position)
   const isDeposit = isDepositPosition(position)
   const { claimableValues, rewards, refetch } = useClaimPositionRewards(
     isDeposit ? position : undefined,
@@ -44,8 +57,6 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
     claimableDeposits: rewards ?? [],
     onSuccess: () => refetch(),
   })
-
-  const isXyk = isXYKPosition(position)
 
   const isDisabledClaiming = claimableValues.totalUSD === "0"
 
@@ -122,6 +133,119 @@ export const LiquidityPositionMoreActions: FC<Props> = ({
           positionId={isXyk ? position.id : position.positionId}
           onSubmitted={() => setAction("none")}
           closable
+        />
+      </Modal>
+    </>
+  )
+}
+
+export const XYKSharesPositionMoreActions: FC<
+  XYKSharesPositionMoreActionsProps
+> = ({ position, farmsToJoin }) => {
+  const { t } = useTranslation(["wallet", "liquidity"])
+  const [action, setAction] = useState<LiquidityPositionAction>("none")
+
+  return (
+    <>
+      {action === "none" && (
+        <>
+          {!!farmsToJoin.length && (
+            <DropdownMenuItem asChild>
+              <MenuSelectionItem
+                variant="filterLink"
+                onClick={(e) => {
+                  e.preventDefault()
+                  setAction("join")
+                }}
+              >
+                <MenuItemIcon component={Plus} />
+                <MenuItemLabel>{t("liquidity:joinFarms")}</MenuItemLabel>
+              </MenuSelectionItem>
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem
+              variant="filterLink"
+              onClick={(e) => {
+                e.preventDefault()
+                setAction("remove")
+              }}
+            >
+              <MenuItemIcon component={CircleMinus} />
+              <MenuItemLabel>{t("liquidity:removeLiquidity")}</MenuItemLabel>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+        </>
+      )}
+      <Modal open={action === "join"} onOpenChange={() => setAction("none")}>
+        <JoinFarmsWrapper
+          poolId={position.amm_pool_id}
+          closable
+          onSubmitted={() => setAction("none")}
+        />
+      </Modal>
+      <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
+        <RemoveLiquidity
+          poolId={position.amm_pool_id}
+          shareTokenId={position.meta.id}
+          closable
+          onSubmitted={() => setAction("none")}
+        />
+      </Modal>
+    </>
+  )
+}
+
+export const StableswapPositionMoreActions: FC<
+  StableswapPositionMoreActionsProps
+> = ({ position }) => {
+  const { t } = useTranslation(["wallet", "liquidity"])
+  const [action, setAction] = useState<LiquidityPositionAction>("none")
+
+  return (
+    <>
+      {action === "none" && (
+        <>
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem
+              variant="filterLink"
+              onClick={(e) => {
+                e.preventDefault()
+                setAction("add")
+              }}
+            >
+              <MenuItemIcon component={Plus} />
+              <MenuItemLabel>{t("liquidity:moveToOmnipool")}</MenuItemLabel>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem asChild>
+            <MenuSelectionItem
+              variant="filterLink"
+              onClick={(e) => {
+                e.preventDefault()
+                setAction("remove")
+              }}
+            >
+              <MenuItemIcon component={CircleMinus} />
+              <MenuItemLabel>{t("liquidity:removeLiquidity")}</MenuItemLabel>
+            </MenuSelectionItem>
+          </DropdownMenuItem>
+        </>
+      )}
+      <Modal open={action === "add"} onOpenChange={() => setAction("none")}>
+        <AddLiquidityModalContent
+          id={position.assetId}
+          closable
+          onSubmitted={() => setAction("none")}
+        />
+      </Modal>
+      <Modal open={action === "remove"} onOpenChange={() => setAction("none")}>
+        <RemoveLiquidity
+          poolId={position.assetId}
+          stableswapId={position.assetId}
+          closable
+          onSubmitted={() => setAction("none")}
         />
       </Modal>
     </>

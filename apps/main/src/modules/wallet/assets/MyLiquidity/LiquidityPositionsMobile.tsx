@@ -3,16 +3,18 @@ import { FC } from "react"
 
 import { SLiquidityPositionsMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal.styled"
 import { SLiquidityPositionMobile } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobile.styled"
-import { LiquidityPositionMobileHeader } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobileHeader"
+import {
+  LiquidityPositionMobileHeader,
+  XYKLiquidityPositionMobileHeader,
+} from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobileHeader"
 import { LiquidityPositionMobileValues } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMobileValues"
 import { TAsset } from "@/providers/assetsProvider"
-import { AccountOmnipoolPosition } from "@/states/account"
 
-import { XYKPosition } from "./MyLiquidityTable.data"
+import { isXYKPosition, MyLiquidityPosition } from "./MyLiquidityTable.data"
 
 type Props = {
   readonly asset: TAsset
-  readonly positions: ReadonlyArray<AccountOmnipoolPosition | XYKPosition>
+  readonly positions: ReadonlyArray<MyLiquidityPosition>
 }
 
 export const LiquidityPositionsMobile: FC<Props> = ({ asset, positions }) => {
@@ -20,7 +22,14 @@ export const LiquidityPositionsMobile: FC<Props> = ({ asset, positions }) => {
     <SLiquidityPositionsMobile>
       {positions.map((position, index) => (
         <SLiquidityPositionMobile key={index}>
-          <LiquidityPositionMobileHeader asset={asset} position={position} />
+          {isXYKPosition(position) ? (
+            <XYKLiquidityPositionMobileHeader
+              asset={position.meta}
+              position={position}
+            />
+          ) : (
+            <LiquidityPositionMobileHeader asset={asset} position={position} />
+          )}
           <Separator />
           <LiquidityPositionMobileValues position={position} />
         </SLiquidityPositionMobile>

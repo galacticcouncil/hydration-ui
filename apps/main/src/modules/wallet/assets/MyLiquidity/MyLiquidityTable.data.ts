@@ -1,18 +1,39 @@
 import Big from "big.js"
 import { useMemo } from "react"
 
-import { XykDeposit } from "@/api/account"
-import { TAssetData } from "@/api/assets"
+import { TAssetData, TStableswap } from "@/api/assets"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
 
-export type XYKPosition = XykDeposit & { price: string; meta: TShareToken }
+import { XYKPosition } from "./MyIsolatedPoolsLiquidity.data"
+import { useMyStableswapLiquidity } from "./MyStableswapLiquidity.data"
+
+export type StableswapPosition = {
+  data: {
+    currentValueHuman: string
+    currentTotalDisplay: string
+    currentHubValueHuman: string
+    initialValue: undefined
+    meta: TStableswap
+  }
+  assetId: string
+}
+
+export type MyLiquidityPosition =
+  | AccountOmnipoolPosition
+  | XYKPosition
+  | StableswapPosition
+
+export const isStableswapPosition = (
+  position: MyLiquidityPosition,
+): position is StableswapPosition =>
+  "data" in position && !position.data.initialValue
 
 export const isXYKPosition = (
-  position: AccountOmnipoolPosition | XYKPosition,
+  position: MyLiquidityPosition,
 ): position is XYKPosition => "amm_pool_id" in position
 
 export type LiquidityPositionByAsset = {
@@ -20,19 +41,27 @@ export type LiquidityPositionByAsset = {
   readonly currentValueHuman: string
   readonly currentHubValueHuman: string
   readonly currentTotalDisplay: string
-  readonly positions: ReadonlyArray<AccountOmnipoolPosition | XYKPosition>
+  readonly positions: ReadonlyArray<MyLiquidityPosition>
 }
 
 export const useMyLiquidityTableData = () => {
   const { getAssetWithFallback } = useAssets()
-  const { data, isLoading } = useAccountOmnipoolPositionsData()
+  const { data, isLoading: isLoadingOmnipoolPositions } =
+    useAccountOmnipoolPositionsData()
+  const { data: stableswapLiquidity, isLoading: isLoadingStableswapLiquidity } =
+    useMyStableswapLiquidity()
+
+  const isLoading = isLoadingOmnipoolPositions || isLoadingStableswapLiquidity
 
   const groupedData = useMemo<Array<LiquidityPositionByAsset>>(() => {
     if (isLoading) return []
 
-    const groupedByAssetId = Object.groupBy(data?.all ?? [], (p) => p.assetId)
-    return Object.entries(groupedByAssetId).map(([assetId, positionsEntry]) => {
-      const positions = positionsEntry ?? []
+    const groupedByAssetId = Object.groupBy(
+      [...(stableswapLiquidity ?? []), ...(data?.all ?? [])],
+      (p) => p.assetId,
+    )
+
+    return Object.entries(groupedByAssetId).map(([assetId, positions = []]) => {
       const totals = positions.reduce(
         (acc, { data }) => ({
           currentValueHuman: acc.currentValueHuman.plus(data.currentValueHuman),
@@ -58,7 +87,7 @@ export const useMyLiquidityTableData = () => {
         positions,
       }
     })
-  }, [data, isLoading, getAssetWithFallback])
+  }, [data, isLoading, stableswapLiquidity, getAssetWithFallback])
 
   return { data: groupedData, isLoading }
 }

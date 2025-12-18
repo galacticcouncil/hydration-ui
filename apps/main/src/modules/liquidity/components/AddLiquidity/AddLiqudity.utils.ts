@@ -24,7 +24,6 @@ import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
-import { useOmnipoolAsset } from "@/states/liquidity"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
 import { scale, scaleHuman } from "@/utils/formatting"
@@ -117,8 +116,8 @@ export const useAddToOmnipoolZod = (
   assetId: string,
   isStablepool?: boolean,
 ) => {
+  const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation("liquidity")
-  const { data: omnipoolAsset } = useOmnipoolAsset(assetId)
 
   const { dataMap: omnipoolAssetsData, hubToken } = useOmnipoolAssetsData()
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
@@ -134,12 +133,11 @@ export const useAddToOmnipoolZod = (
     !minPoolLiquidity ||
     !omnipoolAssetData ||
     !hubBalance ||
-    !maxAddLiquidityLimit ||
-    !omnipoolAsset
+    !maxAddLiquidityLimit
   )
     return undefined
 
-  const { decimals, symbol } = omnipoolAsset.meta
+  const { decimals, symbol } = getAssetWithFallback(assetId)
   const { balance: assetReserve, hubReserves, shares, cap } = omnipoolAssetData
 
   const circuitBreakerLimit = scaleHuman(

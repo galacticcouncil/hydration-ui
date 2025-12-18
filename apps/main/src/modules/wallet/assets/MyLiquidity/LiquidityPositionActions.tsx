@@ -16,12 +16,12 @@ import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 import { AccountOmnipoolPosition } from "@/states/account"
 
-import { XYKPosition } from "./MyLiquidityTable.data"
+import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
 import { isXYKPosition } from "./MyLiquidityTable.data"
 
 type Props = {
   readonly assetId: string
-  readonly position: AccountOmnipoolPosition | XYKPosition
+  readonly position: AccountOmnipoolPosition | XYKPositionDeposit
   readonly farmsToJoin: Farm[]
 }
 

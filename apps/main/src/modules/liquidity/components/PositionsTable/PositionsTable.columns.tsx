@@ -414,19 +414,16 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         },
         cell: ({
           row: {
-            original: { poolId, positionId, shareTokenId },
+            original: { poolId, positionId, shareTokenId, farmsToJoin },
           },
         }) => (
           <Flex gap={12} align="center" justify="end">
-            {isFarms && !positionId && (
+            {!!farmsToJoin.length && !positionId && (
               <Button variant="primary" asChild>
                 <Link
                   to="/liquidity/$id/join"
                   params={{
                     id: poolId,
-                  }}
-                  search={{
-                    positionId,
                   }}
                 >
                   <Plus />

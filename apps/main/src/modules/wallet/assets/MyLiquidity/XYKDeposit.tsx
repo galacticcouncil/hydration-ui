@@ -4,7 +4,6 @@ import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData } from "@/api/assets"
 import { useIsolatedPoolFarms } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
@@ -12,15 +11,14 @@ import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/Liquidit
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
 import { toBig } from "@/utils/formatting"
 
-import { XYKPosition } from "./MyLiquidityTable.data"
+import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
 
 type Props = {
-  readonly asset: TAssetData
   readonly number: number
-  readonly position: XYKPosition
+  readonly position: XYKPositionDeposit
 }
 
-export const XYKDeposit: FC<Props> = ({ asset, number, position }) => {
+export const XYKDeposit: FC<Props> = ({ number, position }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { data: activeFarms } = useIsolatedPoolFarms(position.amm_pool_id)
   const getDepositAprs = useDepositAprs()
@@ -63,7 +61,7 @@ export const XYKDeposit: FC<Props> = ({ asset, number, position }) => {
         <div />
       )}
       <LiquidityPositionActions
-        assetId={asset.id}
+        assetId={position.meta.id}
         position={position}
         farmsToJoin={farmsToJoin}
       />

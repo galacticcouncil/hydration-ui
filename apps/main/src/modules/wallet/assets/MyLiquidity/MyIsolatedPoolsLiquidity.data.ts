@@ -11,17 +11,31 @@ import { toBig } from "@/utils/formatting"
 
 import { LiquidityPositionByAsset } from "./MyLiquidityTable.data"
 
+export type ShareTokenBalance = {
+  shares: bigint
+  amm_pool_id: string
+  price: string
+  meta: TShareToken
+}
+
+export type XYKPositionDeposit = XykDeposit & {
+  price: string
+  meta: TShareToken
+}
+
+export type XYKPosition = XYKPositionDeposit | ShareTokenBalance
+
 type IsolatedPoolsLiquidityByPool = Omit<
   LiquidityPositionByAsset,
   "meta" | "positions"
 > & {
-  positions: Array<XykDeposit & { price: string; meta: TShareToken }>
+  positions: Array<XYKPosition>
   meta: TShareToken
 }
-type ShareTokenBalance = { shares: bigint; amm_pool_id: string }
-const isDeposit = (
-  position: XykDeposit | ShareTokenBalance,
-): position is XykDeposit => "id" in position
+
+export const isXYKPositionDeposit = (
+  position: XYKPosition,
+): position is XYKPositionDeposit => "id" in position
 
 export const useMyIsolatedPoolsLiquidity = () => {
   const { getShareToken, getShareTokenByAddress } = useAssets()
@@ -58,10 +72,9 @@ export const useMyIsolatedPoolsLiquidity = () => {
   const groupedXykData = useMemo<Array<IsolatedPoolsLiquidityByPool>>(() => {
     if (isShareTokenPricesLoading) return []
 
-    const xykArray: Array<XykDeposit | ShareTokenBalance> = [
-      ...xykMining,
-      ...shareTokensBalances,
-    ]
+    const xykArray: Array<
+      XykDeposit | Omit<ShareTokenBalance, "price" | "meta">
+    > = [...shareTokensBalances, ...xykMining]
     const groupedXykData = Object.groupBy(xykArray, (p) => p.amm_pool_id)
 
     const xykEntries: Array<IsolatedPoolsLiquidityByPool> = []
@@ -86,7 +99,7 @@ export const useMyIsolatedPoolsLiquidity = () => {
         currentValueHuman: totalHuman.toString(),
         currentTotalDisplay: totalDisplay.toString(),
         currentHubValueHuman: "0",
-        positions: shareTokenEntry.filter(isDeposit).map((p) => ({
+        positions: shareTokenEntry.map((p) => ({
           ...p,
           price,
           meta,
