@@ -20,13 +20,17 @@ export const DcaSummarySkeleton: FC = () => {
         <Skeleton sx={{ width: "100%", height: 13 }} />
       </Flex>
       <SwapSectionSeparator sx={{ mt: 9 }} />
-      <Summary separator={<SwapSectionSeparator />} withTrailingSeparator>
+      <Summary separator={<SwapSectionSeparator />}>
         <SwapSummaryRow
           label={t("trade:dca.summary.scheduleEnd")}
           content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
         />
         <SwapSummaryRow
           label={t("trade:dca.summary.slippage")}
+          content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
+        />
+        <SwapSummaryRow
+          label={t("trade:dca.summary.priceImpact")}
           content={<Skeleton sx={{ width: 150, marginLeft: "auto" }} />}
         />
       </Summary>
