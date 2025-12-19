@@ -108,8 +108,8 @@ export const omnipoolTokensQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
   })
 
 export const xykPoolQuery = (
-  queryClient: QueryClient,
   sdk: SdkCtx,
+  queryClient: QueryClient,
   address: string,
 ) =>
   queryOptions({
@@ -143,7 +143,7 @@ export const useXykPool = (address: string) => {
   const queryClient = useQueryClient()
   const { sdk } = useRpcProvider()
 
-  return useQuery(xykPoolQuery(queryClient, sdk, address))
+  return useQuery(xykPoolQuery(sdk, queryClient, address))
 }
 
 export const useStablePools = () => {

@@ -58,7 +58,7 @@ export const useAcceptedFeePaymentAssets = (ids: string[]) => {
           return acc
         }
 
-        const hasPoolWithDOT = !!pools.allPools.find(
+        const hasPoolWithDOT = pools.allPools.some(
           (pool) =>
             pool.tokens.find((token) => token.id === Number(asset.id)) &&
             pool.tokens.find((token) => token.id === Number(DOT_ASSET_ID)),

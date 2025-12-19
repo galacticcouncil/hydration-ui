@@ -72,9 +72,11 @@ export const useWalletBalancesSectionData = () => {
         acc.liquidity = acc.liquidity.plus(asset.currentTotalDisplay ?? 0)
         acc.farming = acc.farming.plus(
           asset.positions.reduce((acc, position) => {
-            const displaValue = toBig(position.shares, position.meta.decimals)
-              .times(position.price)
-              .toString()
+            const displaValue = toBig(
+              position.shares,
+              position.meta.decimals,
+            ).times(position.price)
+
             return acc.plus(displaValue ?? 0)
           }, Big(0)),
         )
@@ -95,7 +97,7 @@ export const useWalletBalancesSectionData = () => {
       balancesWithPrice?.stableSwapBalances ?? [],
     )
 
-    const assetsTotal = tokensTotal.plus(erc20Total).toString()
+    const assetsTotal = tokensTotal.plus(erc20Total)
 
     const liquidityTotal = omnipoolLiquidity.liquidity
       .plus(stableSwapTotal)

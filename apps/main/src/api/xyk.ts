@@ -23,7 +23,7 @@ export const xykPoolWithLiquidityQuery = (
 
     queryFn: async () => {
       const xykPool = await queryClient.ensureQueryData(
-        xykPoolQuery(queryClient, sdk, address),
+        xykPoolQuery(sdk, queryClient, address),
       )
 
       const totalLiquidity =

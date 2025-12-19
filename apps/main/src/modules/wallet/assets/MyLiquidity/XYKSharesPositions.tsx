@@ -37,7 +37,7 @@ export const XYKSharesPositions = ({
       <Amount
         value={t("common:currency", {
           value: sharesHuman.toString(),
-          symbol: "Shares",
+          symbol: t("common:shares"),
         })}
         displayValue={t("common:currency", {
           value: sharesHuman.times(position.price).toString(),

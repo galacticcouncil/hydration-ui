@@ -73,8 +73,7 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
           transferable: transferable.toString(),
           transferableDisplay,
           reserved: reserved.toString(),
-          // TODO how to get reserved DCA
-          reservedDca: "1234567890",
+          reservedDca: undefined,
           canStake: meta.id === native.id,
           rugCheckData: undefined,
         }

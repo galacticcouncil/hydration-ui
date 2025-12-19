@@ -1,6 +1,5 @@
 import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -42,7 +41,7 @@ export const XYKDeposit: FC<Props> = ({ number, position }) => {
           symbol: "Shares",
         })}
         displayValue={t("common:currency", {
-          value: Big(sharesHuman).times(position.price).toString(),
+          value: sharesHuman.times(position.price).toString(),
         })}
       />
 

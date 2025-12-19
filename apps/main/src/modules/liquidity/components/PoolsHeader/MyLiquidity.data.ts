@@ -55,10 +55,12 @@ export const useMyLiquidityTotals = () => {
         acc.liquidity = acc.liquidity.plus(asset.currentTotalDisplay ?? 0)
         acc.farming = acc.farming.plus(
           asset.positions.reduce((acc, position) => {
-            const displaValue = toBig(position.shares, position.meta.decimals)
-              .times(position.price)
-              .toString()
-            return acc.plus(displaValue ?? 0)
+            const displayValue = toBig(
+              position.shares,
+              position.meta.decimals,
+            ).times(position.price)
+
+            return acc.plus(displayValue)
           }, Big(0)),
         )
         return acc
@@ -70,9 +72,7 @@ export const useMyLiquidityTotals = () => {
       (acc, { balance, meta, price }) => {
         const balanceShifted = toBig(balance.transferable, meta.decimals)
 
-        const displayValue = price
-          ? balanceShifted.times(price).toString()
-          : "0"
+        const displayValue = price ? balanceShifted.times(price) : "0"
 
         return acc.plus(displayValue)
       },
