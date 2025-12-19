@@ -2,6 +2,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { wrap } from "comlink"
+import { subSeconds } from "date-fns"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
@@ -72,6 +73,28 @@ export const useCurrentFarmPeriod = (disableRefetch?: boolean) => {
   )
 }
 
+export const useEnteredDate = () => {
+  const relayChainBlockNumber = useRelayChainBlockNumber(true)
+
+  return useCallback(
+    (enteredAtBlock: number) => {
+      if (!relayChainBlockNumber) return undefined
+
+      const blockRange = Big(relayChainBlockNumber).minus(enteredAtBlock)
+      const blockRangeSeconds = blockRange.times(RELAY_BLOCK_TIME).div(1000)
+
+      const currentDateSeconds = Big(Date.now())
+      const enteredAtDateSeconds = currentDateSeconds.minus(blockRangeSeconds)
+
+      const rangeSeconds = currentDateSeconds.minus(enteredAtDateSeconds)
+      const enteredAtDate = subSeconds(Date.now(), rangeSeconds.toNumber())
+
+      return enteredAtDate
+    },
+    [relayChainBlockNumber],
+  )
+}
+
 export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {
   const { loyaltyCurve, globalFarmId, plannedYieldingPeriods, apr } = farm
 
@@ -86,26 +109,23 @@ export const useLoyaltyRates = (farm: Farm, periodsInFarm?: number) => {
             .div(QUINTILL.toString())
             .toNumber()
 
-          const axisScale = periods / 100
-
           const result = await getWorker().getLoyaltyFactor(
             periods,
             initialRewardPercentage,
             loyaltyCurve.scale_coef,
             periodsInFarm,
-            axisScale,
           )
 
-          return result.map((y, x) => ({
-            x: new Big(x)
-              .div(RELAY_BLOCK_TIME)
-              .times(1000)
+          return result.map(({ period, rate, current }) => ({
+            x: Big(period)
+              .times(RELAY_BLOCK_TIME)
+              .div(1000)
+              .div(60)
               .div(60)
               .div(24)
-              .times(axisScale)
               .toNumber(),
-            y: new Big(y.rate).times(Big(apr).div(100)).toNumber(),
-            current: y.current,
+            y: Big(rate).times(Big(apr).div(100)).toNumber(),
+            current,
           }))
         }
       : undefined,

@@ -46,6 +46,7 @@ type AreaChartOwnProps<TData extends TChartData> = {
   yAxisLabelProps?: AxisLabelCssProps
   withoutReferenceLine?: boolean
   withoutTooltip?: boolean
+  staticChart?: boolean
   legend?: ReactNode
 }
 
@@ -79,6 +80,7 @@ export function AreaChart<TData extends TChartData>({
   withoutReferenceLine,
   withoutTooltip,
   legend,
+  staticChart,
 }: AreaChartProps<TData>) {
   const { series, xAxisKey } = getConfigWithDefaults(config)
   const { themeProps: theme } = useTheme()
@@ -90,6 +92,7 @@ export function AreaChart<TData extends TChartData>({
   const [activePointValue, setActivePointValue] = useState<number | null>(null)
 
   const onMouseMove: CategoricalChartFunc = (chartState) => {
+    if (staticChart) return
     const index = Number(chartState?.activeTooltipIndex)
 
     if (Number.isNaN(index)) {
@@ -225,7 +228,7 @@ export function AreaChart<TData extends TChartData>({
                   isLineGradientFill ? `url(#${gradientId})` : colors.primary
                 }
                 dot={customDot}
-                activeDot={{ fill: colors.primary, r: 5 }}
+                activeDot={staticChart ? false : { fill: colors.primary, r: 5 }}
                 stackId="a"
                 animationDuration={600}
               />

@@ -1,25 +1,22 @@
 import { expose } from "comlink"
 
+const MAX_POINTS = 100
+
 export const worker = {
   getLoyaltyFactor(
     plannedYieldingPeriods: number,
     initialRewardPercentage: number,
     scaleCoef: number,
     periodsInFarm: number | undefined,
-    axisScale: number,
   ) {
-    const result = []
+    const result: { rate: number; current: boolean; period: number }[] = []
+    let isCurrent = false
 
-    for (let periods = 0; periods <= plannedYieldingPeriods; periods++) {
-      //reduce the number of periods by taking one period each axisScale periods
-      if (
-        periods % axisScale !== 0 &&
-        periods !== periodsInFarm &&
-        periods !== plannedYieldingPeriods
-      )
-        continue
+    const gap = Math.floor(plannedYieldingPeriods / MAX_POINTS)
+    const periods = Array.from({ length: MAX_POINTS + 1 }, (_, i) => i * gap)
 
-      const tau = periods / ((initialRewardPercentage + 1) * scaleCoef)
+    periods.forEach((period, index) => {
+      const tau = period / ((initialRewardPercentage + 1) * scaleCoef)
       const tauAddTauMulInitialRewardPercentage =
         tau + tau * initialRewardPercentage
 
@@ -27,16 +24,26 @@ export const worker = {
       const denom = tauAddTauMulInitialRewardPercentage + 1
 
       const rate = Math.min(1, num / denom) * 100
-      const current = periodsInFarm
-        ? periods === periodsInFarm ||
-          (periods === plannedYieldingPeriods && periods < periodsInFarm)
-        : false
+
+      let current = false
+      const nextPeriod = periods[index + 1]
+
+      if (periodsInFarm && !isCurrent) {
+        if (!nextPeriod) {
+          current = true
+        } else {
+          current = nextPeriod > periodsInFarm && periodsInFarm >= period
+        }
+      }
+
+      if (current) isCurrent = true
 
       result.push({
         rate,
+        period,
         current,
       })
-    }
+    })
 
     return result
   },
