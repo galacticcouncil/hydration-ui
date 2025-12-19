@@ -1,3 +1,4 @@
+import { RUNTIME_DECIMALS } from "@galacticcouncil/common"
 import { Box } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
@@ -88,16 +89,14 @@ export const Market: FC = () => {
         return null
       }
 
-      return Big(1)
-        .div(scaleHuman(swapSpotPrice, 18))
-        .toString()
+      return Big(1).div(scaleHuman(swapSpotPrice, RUNTIME_DECIMALS)).toString()
     }
 
     if (!assetInPriceMeta) {
       return null
     }
 
-    return scaleHuman(swapSpotPrice, 18)
+    return scaleHuman(swapSpotPrice, RUNTIME_DECIMALS)
   })()
 
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
