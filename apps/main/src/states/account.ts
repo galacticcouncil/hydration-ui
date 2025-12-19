@@ -1,6 +1,7 @@
 import { Balance as SdkBalance } from "@galacticcouncil/sdk-next"
+import { useStableArray } from "@galacticcouncil/utils"
 import { produce } from "immer"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import { pick } from "remeda"
 import { create, StateCreator } from "zustand"
 import { useShallow } from "zustand/react/shallow"
@@ -268,7 +269,7 @@ export const useAccountBalancesWithPriceByAssetType = (
     Exclude<AssetType, AssetType.External | AssetType.Unknown | AssetType.XYK>
   >,
 ) => {
-  const [stableAssetTypes] = useState(assetTypes)
+  const stableAssetTypes = useStableArray(assetTypes)
   const { getAsset, isToken, isStableSwap, isErc20, isBond } = useAssets()
   const { balances, isBalanceLoading } = useAccountData(
     useShallow(pick(["balances", "isBalanceLoading"])),
