@@ -1,0 +1,16 @@
+{
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.workingDirectories": [
+    "./apps/main",
+    "./packages/ui",
+    "./packages/utils",
+    "./packages/web3-connect",
+    "./packages/money-market",
+    "./packages/indexer"
+  ],
+}
