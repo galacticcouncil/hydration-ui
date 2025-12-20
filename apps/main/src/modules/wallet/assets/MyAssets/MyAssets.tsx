@@ -22,14 +22,12 @@ export const MyAssets: FC<Props> = ({ searchPhrase, className }) => {
   const tableRef = useRef<DataTableRef>(null)
 
   const { data, isLoading } = useMyAssetsTableData(showAllAssets)
-  const hasFunds = data.length > 0
 
   return (
     <div className={className}>
       <Flex justify="space-between" align="center">
         <SectionHeader>{t("myAssets.header.title")}</SectionHeader>
         <MyAssetsActions
-          hasFunds={hasFunds}
           showAllAssets={showAllAssets}
           onToggleShowAllAssets={() => {
             setShowAllAssets((showAllAssets) => !showAllAssets)

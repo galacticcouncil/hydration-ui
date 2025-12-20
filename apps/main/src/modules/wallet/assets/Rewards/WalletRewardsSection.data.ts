@@ -1,3 +1,4 @@
+import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 
 import { useBorrowClaimableRewards } from "@/api/borrow"
@@ -39,11 +40,13 @@ export const useWalletRewardsSectionData = () => {
   return {
     incentives: {
       value: claimableRewardsUsd,
+      assetId: USDT_ASSET_ID,
       loading: incentivesLoading,
       isEmpty: incentivesEmpty,
     },
     farming: {
       value: liquidityUSD,
+      assetId: USDT_ASSET_ID,
       loading: liquidityLoading,
       isEmpty: farmingEmpty,
     },
@@ -55,7 +58,7 @@ export const useWalletRewardsSectionData = () => {
     },
     referral: {
       value: referral?.totalRewards || "0",
-      symbol: referral?.symbol ?? native.symbol,
+      assetId: native.id,
       loading: referralLoading,
       isEmpty: referralsEmpty,
     },

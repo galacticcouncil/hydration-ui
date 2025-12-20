@@ -56,10 +56,11 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
                   <MenuItemLabel
                     onClick={(e) => {
                       e.stopPropagation()
+                      e.preventDefault()
                       setIsRemoveAllModalOpen(true)
                     }}
                   >
-                    {t("myLiquidity.actions.removeAllLiquidity")}
+                    {t("myLiquidity.actions.removeLiquidity")}
                   </MenuItemLabel>
                 </div>
               </MenuSelectionItem>
