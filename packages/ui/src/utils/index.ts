@@ -49,3 +49,6 @@ export function createVariants<TKey = string>(
 
 export { css, type SxProp }
 export { default as styled } from "@emotion/styled"
+
+// Container Query utilities
+export * from "../styles/container"

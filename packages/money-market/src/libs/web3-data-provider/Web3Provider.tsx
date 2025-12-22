@@ -3,7 +3,7 @@ import { IAaveIncentivesControllerV2__factory } from "@aave/contract-helpers/src
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { CallType } from "@galacticcouncil/xcm-core"
+import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import { PopulatedTransaction } from "ethers"
 import React, { ReactElement, useCallback, useEffect } from "react"

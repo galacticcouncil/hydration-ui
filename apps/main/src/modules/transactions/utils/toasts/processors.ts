@@ -10,12 +10,17 @@ import {
   TransferStatusToEthQuery,
   TransferStatusToPolkadotQuery,
 } from "@galacticcouncil/indexer/snowbridge"
-import { snowbridgescan, wormholescan } from "@galacticcouncil/utils"
-import { CallType } from "@galacticcouncil/xcm-core"
+import {
+  HYDRATION_CHAIN_KEY,
+  snowbridgescan,
+  wormholescan,
+} from "@galacticcouncil/utils"
+import { CallType } from "@galacticcouncil/xc-core"
 import { QueryClient } from "@tanstack/react-query"
 import { first } from "remeda"
 import { PublicClient } from "viem"
 
+import { getWormholeHashByExtrinsicIndex } from "@/modules/transactions/utils/wormhole"
 import { ToastData } from "@/states/toasts"
 
 type ToastStatus = {
@@ -108,24 +113,123 @@ const substrate =
     }
   }
 
-const womrhole = (): ToastProcessorFn => async (toast) => {
-  const res = await fetch(
-    wormholescan.api("operations", { txHash: toast.meta.txHash }),
-  )
-  const data = await res.json()
+const getExtrinsicIndex = async (
+  queryClient: QueryClient,
+  indexerSdk: IndexerSdk,
+  evm: PublicClient,
+  txHash: string,
+  ecosystem: CallType,
+): Promise<{ blockNumber: number; index: number } | null> => {
+  if (ecosystem === CallType.Evm) {
+    const receipt = await evm.getTransactionReceipt({
+      hash: txHash as `0x${string}`,
+    })
 
-  const operation = first(data.operations ?? [])
-  const operationStatus = operation?.targetChain?.status
-  const operationVaa = operation?.vaa?.raw
+    const res = await queryClient.fetchQuery(
+      extrinsicByBlockAndIndexQuery(
+        indexerSdk,
+        Number(receipt.blockNumber),
+        Number(receipt.transactionIndex),
+      ),
+    )
 
-  const isCompleted = !!operationVaa && operationStatus === "completed"
+    const extrinsic = first(res?.extrinsics ?? [])
+    if (!extrinsic) return null
 
-  return {
-    status: isCompleted ? "success" : "unknown",
-    processed: isCompleted,
-    dateUpdated: new Date().toISOString(),
+    return {
+      blockNumber: extrinsic.block.height,
+      index: extrinsic.indexInBlock,
+    }
+  } else {
+    const res = await queryClient.fetchQuery(
+      extrinsicByHashQuery(indexerSdk, txHash),
+    )
+
+    const extrinsic = first(res?.extrinsics ?? [])
+    if (!extrinsic) return null
+
+    return {
+      blockNumber: extrinsic.block.height,
+      index: extrinsic.indexInBlock,
+    }
   }
 }
+
+const wormhole =
+  (
+    queryClient: QueryClient,
+    indexerSdk: IndexerSdk,
+    evm: PublicClient,
+  ): ToastProcessorFn =>
+  async (toast) => {
+    const srcChainKey = toast.meta.srcChainKey
+    const txHash = toast.meta.txHash
+    const ecosystem = toast.meta.ecosystem
+
+    // Wormhole transactions submitted from outside of Hydration can be processed directly via wormholescan
+    if (srcChainKey !== HYDRATION_CHAIN_KEY) {
+      const res = await fetch(wormholescan.api("operations", { txHash }))
+      const data = await res.json()
+
+      const operation = first(data.operations ?? [])
+      const operationStatus = operation?.targetChain?.status
+      const operationVaa = operation?.vaa?.raw
+
+      const isCompleted = !!operationVaa && operationStatus === "completed"
+
+      return {
+        status: isCompleted ? "success" : "unknown",
+        processed: isCompleted,
+        dateUpdated: new Date().toISOString(),
+      }
+    }
+
+    const extrinsicIndex = await getExtrinsicIndex(
+      queryClient,
+      indexerSdk,
+      evm,
+      txHash,
+      ecosystem,
+    )
+
+    if (!extrinsicIndex) {
+      return {
+        status: "unknown",
+        processed: false,
+        dateUpdated: new Date().toISOString(),
+      }
+    }
+
+    const extrinsicIndexString = `${extrinsicIndex.blockNumber}-${extrinsicIndex.index}`
+    const wormholeTxHash =
+      await getWormholeHashByExtrinsicIndex(extrinsicIndexString)
+
+    if (!wormholeTxHash) {
+      return {
+        status: "unknown",
+        processed: false,
+        dateUpdated: new Date().toISOString(),
+      }
+    }
+
+    const res = await fetch(
+      wormholescan.api("operations", { txHash: wormholeTxHash }),
+    )
+    const data = await res.json()
+
+    const operation = first(data.operations ?? [])
+    const operationStatus = operation?.targetChain?.status
+    const operationVaa = operation?.vaa?.raw
+
+    const isCompleted = !!operationVaa && operationStatus === "completed"
+
+    return {
+      status: isCompleted ? "success" : "unknown",
+      link: wormholeTxHash ? wormholescan.tx(wormholeTxHash) : undefined,
+      processed: isCompleted,
+      dateUpdated: new Date().toISOString(),
+    }
+  }
 
 const parseSnowbridgeResult = (
   result:
@@ -184,7 +288,7 @@ const snowbridge =
 export const processors = {
   evm,
   substrate,
-  wormhole: womrhole,
+  wormhole,
   snowbridge,
   invalid,
 } as const

@@ -1,7 +1,7 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { isEthereumSigner, useWallet } from "@galacticcouncil/web3-connect"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { CallType } from "@galacticcouncil/xcm-core"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { CallType } from "@galacticcouncil/xc-core"
 
 import { SingleTransaction } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
@@ -21,10 +21,15 @@ export const useTransactionEcosystem = (
     isEthereumSigner(wallet?.signer) &&
     fee?.feePaymentAssetId === NATIVE_EVM_ASSET_ID
 
+  const isExternalParachainEvmCall =
+    chain.key !== HYDRATION_CHAIN_KEY &&
+    chain.isEvmParachain() &&
+    isEthereumSigner(wallet?.signer)
+
   switch (true) {
     case isNativeHydrationEvmCall:
+    case isExternalParachainEvmCall:
     case chain.isEvmChain():
-    case chain.isEvmParachain() && isEthereumSigner(wallet?.signer):
       return CallType.Evm
     case chain.isSolana():
       return CallType.Solana

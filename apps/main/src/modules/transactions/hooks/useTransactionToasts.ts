@@ -1,5 +1,10 @@
-import { etherscan, subscan, wormholescan } from "@galacticcouncil/utils"
-import { CallType } from "@galacticcouncil/xcm-core"
+import {
+  etherscan,
+  HYDRATION_CHAIN_KEY,
+  subscan,
+  wormholescan,
+} from "@galacticcouncil/utils"
+import { CallType } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -85,6 +90,7 @@ function getTransactionLink(
 ) {
   if (
     meta.type === TransactionType.Xcm &&
+    meta.srcChainKey !== HYDRATION_CHAIN_KEY &&
     meta.tags.includes(XcmTag.Wormhole)
   ) {
     return wormholescan.tx(txHash)

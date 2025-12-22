@@ -1,6 +1,8 @@
 import {
   isEthereumSigner,
   isPolkadotSigner,
+  isSolanaSigner,
+  isSuiSigner,
   useWallet,
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
@@ -17,13 +19,19 @@ import {
   signAndSubmitPolkadotTx,
   submitUnsignedPolkadotTx,
 } from "@/modules/transactions/utils/polkadot"
+import { signAndSubmitSolanaTx } from "@/modules/transactions/utils/solana"
+import { signAndSubmitSuiTx } from "@/modules/transactions/utils/sui"
 import {
   isValidEvmCallForPermit,
   isValidPapiTxForPermit,
   transformEvmCallToPapiTx,
   transformPermitToPapiTx,
 } from "@/modules/transactions/utils/tx"
-import { isEvmCall } from "@/modules/transactions/utils/xcm"
+import {
+  isEvmCall,
+  isSolanaCall,
+  isSuiCall,
+} from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"
 
@@ -77,7 +85,17 @@ export const useSignAndSubmit = (
         )
       }
 
-      throw new Error("Unsupported transaction or signer type")
+      if (isSolanaCall(tx) && isSolanaSigner(signer)) {
+        return signAndSubmitSolanaTx(tx, signer, txOptions)
+      }
+
+      if (isSuiCall(tx) && isSuiSigner(signer)) {
+        return signAndSubmitSuiTx(tx, signer, txOptions)
+      }
+
+      const err = new Error("Unsupported transaction or signer type")
+      txOptions.onError(err.message)
+      throw err
     },
     onSettled: (result) => {
       if (result instanceof Subscription) {

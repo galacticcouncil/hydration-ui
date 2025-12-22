@@ -40,6 +40,7 @@ function VirtualizedList<T>({
   ...props
 }: VirtualizedListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
+  const hasScrolledToInitial = useRef(false)
 
   const maxVisible = useResponsiveValue(maxVisibleItems, 0)
 
@@ -52,12 +53,18 @@ function VirtualizedList<T>({
   })
 
   useEffect(() => {
-    if (isNullish(initialScrollIndex) || items.length === 0) return
+    if (
+      hasScrolledToInitial.current ||
+      isNullish(initialScrollIndex) ||
+      items.length === 0
+    )
+      return
     const index = Math.max(0, Math.min(initialScrollIndex, items.length - 1))
     rowVirtualizer.scrollToIndex(index, {
       align: "start",
       behavior: "auto",
     })
+    hasScrolledToInitial.current = true
   }, [initialScrollIndex, items.length, rowVirtualizer])
 
   const virtualItems = rowVirtualizer.getVirtualItems()
