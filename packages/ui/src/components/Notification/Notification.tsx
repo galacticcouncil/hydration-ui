@@ -91,9 +91,9 @@ export const Notification = ({
         </Stack>
         <Flex ml="auto">
           {hint && (
-            <Tooltip text={hint}>
-              <ButtonIcon asChild>
-                <Icon component={QuestionCircleRegular} size={24} />
+            <Tooltip text={hint} asChild>
+              <ButtonIcon>
+                <Icon component={QuestionCircleRegular} size={18} />
               </ButtonIcon>
             </Tooltip>
           )}

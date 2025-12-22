@@ -2,8 +2,10 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import { FC, Ref } from "react"
 
+import { Box, BoxProps } from "@/components/Box"
 import { FlexProps } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
+import { ScrollArea } from "@/components/ScrollArea"
 
 import {
   SSheetBody,
@@ -81,7 +83,33 @@ const SheetHeader: FC<SheetHeaderProps> = ({ title, ...props }) => (
   </SSheetHeader>
 )
 
-const SheetBody = (props: FlexProps) => <SSheetBody {...props} />
+type SheetBodyProps = BoxProps & {
+  scrollable?: boolean
+}
+
+const SheetBody = ({
+  scrollable = true,
+  children,
+  maxHeight,
+  ...props
+}: SheetBodyProps) => {
+  if (scrollable) {
+    return (
+      <ScrollArea sx={{ flex: 1, height: "auto", minHeight: 0 }}>
+        <Box
+          maxHeight={maxHeight ?? "calc(75vh - var(--modal-block-offset) * 2)"}
+        >
+          <SSheetBody {...props}>{children}</SSheetBody>
+        </Box>
+      </ScrollArea>
+    )
+  }
+  return (
+    <SSheetBody {...props} maxHeight={maxHeight}>
+      {children}
+    </SSheetBody>
+  )
+}
 
 export type SheetProps = React.ComponentProps<typeof SheetRoot> & {
   title?: string
