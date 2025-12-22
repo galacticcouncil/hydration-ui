@@ -84,8 +84,18 @@ const observeTransactionEvents = <T extends TxEventOrError>(
     }
 
     if (event.type === "txBestBlocksState" && event.found) {
-      if (event.ok) options?.onSuccess(event as TxBestBlocksStateResult)
-      if (!event.ok) options?.onError(formatTxError(event.dispatchError))
+      const isEvmError = event.events.some(
+        ({ type, value }) => type === "EVM" && value.type === "ExecutedFailed",
+      )
+      if (isEvmError) {
+        options?.onError(
+          formatTxError(event.dispatchError || "EVM execution failed"),
+        )
+      } else if (!event.ok) {
+        options?.onError(formatTxError(event.dispatchError))
+      } else {
+        options?.onSuccess(event as TxBestBlocksStateResult)
+      }
     }
 
     if (event.type === "finalized") {
