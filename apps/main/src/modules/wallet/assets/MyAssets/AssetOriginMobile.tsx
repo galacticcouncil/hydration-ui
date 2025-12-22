@@ -1,5 +1,5 @@
 import { Amount } from "@galacticcouncil/ui/components"
-import { AnyChain } from "@galacticcouncil/xcm-core"
+import { AnyChain } from "@galacticcouncil/xc-core"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 

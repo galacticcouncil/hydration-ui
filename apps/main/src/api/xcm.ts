@@ -1,0 +1,229 @@
+import {
+  EvmAddr,
+  HYDRATION_CHAIN_KEY,
+  isAnyParachain,
+  safeConvertAddressSS58,
+  safeConvertH160toSS58,
+  safeConvertSS58toH160,
+  safeConvertSS58ToSolanaAddress,
+  safeConvertSS58ToSuiAddress,
+  SolanaAddr,
+  SuiAddr,
+} from "@galacticcouncil/utils"
+import { createXcContext } from "@galacticcouncil/xc"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
+import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
+import {
+  queryOptions,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+  useSuspenseQuery,
+} from "@tanstack/react-query"
+import { secondsToMilliseconds } from "date-fns"
+import { useEffect, useRef, useState } from "react"
+
+import { useRpcProvider } from "@/providers/rpcProvider"
+
+export const useCrossChainConfig = () => {
+  const { poolService } = useRpcProvider()
+  return useSuspenseQuery({
+    staleTime: Infinity,
+    gcTime: Infinity,
+    queryKey: ["xcm", "context"],
+    queryFn: () =>
+      createXcContext({
+        poolCtx: poolService,
+      }),
+  })
+}
+
+export const useCrossChainConfigService = () => {
+  const { data } = useCrossChainConfig()
+  return data.config
+}
+
+export const useCrossChainWallet = () => {
+  const { data } = useCrossChainConfig()
+  return data.wallet
+}
+
+const createCrossChainBalanceQueryKey = (chainKey: string, address: string) => {
+  return ["xcm", "balance", chainKey, address] as const
+}
+
+export const useCrossChainBalance = (address: string, chainKey: string) => {
+  return useQuery({
+    queryKey: createCrossChainBalanceQueryKey(chainKey, address),
+    enabled: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    queryFn: () => {
+      // This should never be called since we're using setQueryData
+      // But we need a function here
+      return new Map<string, AssetAmount>()
+    },
+  })
+}
+
+export const useCrossChainBalanceSubscription = (
+  address: string,
+  chainKey: string,
+  onSuccess?: (balances: AssetAmount[]) => void,
+) => {
+  const queryClient = useQueryClient()
+  const wallet = useCrossChainWallet()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const onSuccessRef = useRef(onSuccess)
+  useEffect(() => {
+    onSuccessRef.current = onSuccess
+  }, [onSuccess])
+
+  useEffect(() => {
+    const chain = chainsMap.get(chainKey)
+    const queryKey = createCrossChainBalanceQueryKey(chainKey, address)
+    const formattedAddress =
+      address && chain ? formatAddress(address, chain) : ""
+
+    if (!wallet || !formattedAddress || !chain) {
+      setIsLoading(false)
+      return
+    }
+
+    let subscription:
+      | Awaited<ReturnType<typeof wallet.subscribeBalance>>
+      | undefined
+
+    async function subscribeBalance(formattedAddress: string, chain: AnyChain) {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        subscription = await wallet.subscribeBalance(
+          formattedAddress,
+          chain,
+          (balances) => {
+            const balanceMap = new Map(
+              balances.map((balance) => [balance.key, balance]),
+            )
+
+            queryClient.setQueryData<Map<string, AssetAmount>>(
+              queryKey,
+              balanceMap,
+            )
+
+            onSuccessRef.current?.(balances)
+            setIsLoading(false)
+          },
+        )
+      } catch (err) {
+        console.error(err)
+        setError(err instanceof Error ? err : new Error("Subscription failed"))
+        setIsLoading(false)
+      }
+    }
+
+    subscribeBalance(formattedAddress, chain)
+
+    return () => {
+      subscription?.unsubscribe()
+    }
+  }, [address, chainKey, queryClient, wallet])
+
+  return { isLoading, error }
+}
+
+type XcmTransferArgs = {
+  readonly srcAddress: string
+  readonly srcAsset: string
+  readonly srcChain: string
+  readonly destAddress: string
+  readonly destAsset: string
+  readonly destChain: string
+}
+
+export const xcmTransferQuery = (
+  wallet: Wallet,
+  {
+    srcAddress,
+    srcAsset,
+    srcChain,
+    destAddress,
+    destChain,
+    destAsset,
+  }: XcmTransferArgs,
+  options?: UseQueryOptions<Transfer>,
+) => {
+  return queryOptions({
+    refetchInterval: secondsToMilliseconds(30),
+    refetchOnWindowFocus: false,
+    queryKey: [
+      "xcm",
+      "transfer",
+      srcAddress,
+      destAddress,
+      srcAsset,
+      destAsset,
+      srcChain,
+      destChain,
+    ],
+    queryFn: () =>
+      TransferBuilder(wallet)
+        .withAsset(srcAsset)
+        .withSource(srcChain)
+        .withDestination(destChain)
+        .build({
+          srcAddress: srcAddress,
+          dstAddress: destAddress,
+          dstAsset: destAsset,
+        }),
+    enabled:
+      !!srcAddress &&
+      !!destAddress &&
+      !!srcAsset &&
+      !!destAsset &&
+      !!srcChain &&
+      !!destChain,
+    ...options,
+  })
+}
+
+export function formatAddress(address: string, chain: AnyChain): string {
+  if (chain.isSolana()) {
+    return SolanaAddr.isValid(address)
+      ? address
+      : safeConvertSS58ToSolanaAddress(address)
+  }
+
+  if (chain.isSui()) {
+    return SuiAddr.isValid(address)
+      ? address
+      : safeConvertSS58ToSuiAddress(address)
+  }
+
+  if (chain.isEvmChain()) {
+    return EvmAddr.isValid(address) ? address : safeConvertSS58toH160(address)
+  }
+
+  if (isAnyParachain(chain) && chain.usesH160Acc) {
+    return EvmAddr.isValid(address) ? address : safeConvertSS58toH160(address)
+  }
+
+  if (isAnyParachain(chain) && !chain.usesH160Acc) {
+    return EvmAddr.isValid(address)
+      ? safeConvertH160toSS58(address)
+      : safeConvertAddressSS58(address)
+  }
+
+  return safeConvertAddressSS58(address)
+}
+
+export function formatDestAddress(address: string, chain: AnyChain): string {
+  if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
+    return safeConvertH160toSS58(address)
+  }
+  return address
+}

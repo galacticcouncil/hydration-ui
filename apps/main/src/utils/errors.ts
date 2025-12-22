@@ -1,5 +1,4 @@
-import { isEvmAccount } from "@galacticcouncil/sdk"
-import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
+import { isH160Address, safeConvertH160toSS58 } from "@galacticcouncil/utils"
 
 type ErrorContext = {
   message: string
@@ -15,8 +14,8 @@ type ErrorContext = {
 export function stringifyErrorContext(data: ErrorContext) {
   return Object.entries(data)
     .map(([key, value]) => {
-      if (key === "address" && isEvmAccount(value))
-        return `${key}: ${safeConvertSS58toH160(value)} (${value})`
+      if (key === "address" && isH160Address(value))
+        return `${key}: ${value} (${safeConvertH160toSS58(value)})`
 
       return `${key}: ${value}`
     })
