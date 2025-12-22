@@ -248,7 +248,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
   if (previewId) {
     return [
       {
-        title: `PR${previewId} | ${fullTitle}`,
+        title: `${previewId} | ${fullTitle}`,
       },
     ]
   }

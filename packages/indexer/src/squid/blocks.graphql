@@ -1,0 +1,9 @@
+query LatestBlockHeightQuery {
+  blocks(last: 1) {
+    edges {
+      node {
+        height
+      }
+    }
+  }
+}

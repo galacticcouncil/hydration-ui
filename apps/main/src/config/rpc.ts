@@ -28,6 +28,17 @@ export const createProvider = (
   dataEnv,
 })
 
+export const SQUID_URLS = [
+  {
+    name: "Whale Prod Pool 01",
+    url: "https://galacticcouncil.squids.live/hydration-pools:whale-prod-pool-01/api/graphql",
+  },
+  {
+    name: "Whale Prod Pool 02",
+    url: "https://galacticcouncil.squids.live/hydration-pools:whale-prod-pool-02/api/graphql",
+  },
+]
+
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
   createProvider("Helikon", "wss://rpc.helikon.io/hydradx"),

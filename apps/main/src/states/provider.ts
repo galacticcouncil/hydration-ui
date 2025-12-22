@@ -40,20 +40,24 @@ export const useRpcListStore = create<RpcListStore>()(
 export const useProviderRpcUrlStore = create(
   persist<{
     rpcUrl: string
+    squidUrl: string
     rpcUrlList: string[]
     autoMode: boolean
     updatedAt: number
     setRpcUrl: (rpcUrl: string | undefined) => void
+    setSquidUrl: (squidUrl: string | undefined) => void
     setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
     getDataEnv: () => TDataEnv
     setAutoMode: (state: boolean) => void
   }>(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
+      squidUrl: import.meta.env.VITE_SQUID_URL,
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
+      setSquidUrl: (squidUrl) => set({ squidUrl }),
       setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
       getDataEnv: () => {
@@ -63,7 +67,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.2,
+      version: 2.3,
     },
   ),
 )

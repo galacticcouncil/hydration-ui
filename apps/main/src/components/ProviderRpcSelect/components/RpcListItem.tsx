@@ -3,7 +3,6 @@ import {
   Box,
   ButtonTransparent,
   Flex,
-  Grid,
   Icon,
   Input,
   Spinner,
@@ -40,11 +39,9 @@ export type RpcListItemProps = {
 export const RpcListHeader: React.FC = () => {
   const { t } = useTranslation()
   return (
-    <Grid
-      columnTemplate="3fr 2fr 1fr"
-      gap={10}
-      p={"6px var(--modal-content-padding)"}
+    <SRpcListItem
       bg={getToken("details.separatorsOnDim")}
+      sx={{ height: "auto", borderTop: 0 }}
     >
       <Text fs="p5" color={getToken("text.medium")}>
         {t("rpc.change.modal.column.name")}
@@ -60,7 +57,7 @@ export const RpcListHeader: React.FC = () => {
       >
         {t("rpc.change.modal.column.rpc")}
       </Text>
-    </Grid>
+    </SRpcListItem>
   )
 }
 
@@ -166,7 +163,11 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
   }
 
   return (
-    <SRpcListItem data-loading={isLoading} onClick={() => onClick?.(url)}>
+    <SRpcListItem
+      data-loading={isLoading}
+      onClick={() => onClick?.(url)}
+      isInteractive={!!onClick || !!onRemove}
+    >
       <Box>
         <Text
           fs={[14, 16]}

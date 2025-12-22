@@ -1,97 +1,73 @@
 import {
-  Box,
   Button,
-  Flex,
   Modal,
-  ModalBody,
   ModalCloseTrigger,
   ModalFooter,
   ModalHeader,
   ModalProps,
   Separator,
-  Spinner,
-  Text,
-  Toggle,
+  Stack,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useActiveProviderProps } from "@/api/provider"
+import { RpcAutoModeToggle } from "@/components/ProviderRpcSelect/components/RpcAutoModeToggle"
 import { RpcForm } from "@/components/ProviderRpcSelect/components/RpcForm"
-import { RpcList } from "@/components/ProviderRpcSelect/components/RpcList"
-import { RpcListItemActive } from "@/components/ProviderRpcSelect/components/RpcListItem"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { RpcListModalContent } from "@/components/ProviderRpcSelect/components/RpcListModalContent"
+import { SquidListModalContent } from "@/components/ProviderRpcSelect/components/SquidListModalContent"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type RpcSelectModalProps = ModalProps
 
 export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
   const { t } = useTranslation()
+  const [view, setView] = useState<"rpc" | "squid">("rpc")
   const { autoMode, setAutoMode } = useProviderRpcUrlStore()
-  const activeProvider = useActiveProviderProps()
-  const { isLoaded } = useRpcProvider()
 
   return (
     <Modal disableInteractOutside {...props}>
       <ModalHeader
         title={t("rpc.change.modal.title")}
+        align="center"
         customHeader={
-          <Flex direction="column">
-            <Separator my={10} mx="var(--modal-content-inset)" />
-            <Flex align="center" justify="space-between">
-              <Box>
-                <Text>{t("rpc.change.modal.autoMode.title")}</Text>
-                <Text
-                  fs={12}
-                  color={getToken("text.medium")}
-                  maxWidth={["100%", "75%"]}
-                >
-                  {t("rpc.change.modal.autoMode.desc")}
-                </Text>
-              </Box>
-              <Toggle
+          <Stack
+            separated
+            pt={getTokenPx("scales.paddings.m")}
+            separator={
+              <Separator
+                my="var(--modal-content-padding)"
+                mx="var(--modal-content-inset)"
+              />
+            }
+          >
+            <ToggleGroup
+              type="single"
+              value={view}
+              onValueChange={(value) => value && setView(value)}
+            >
+              <ToggleGroupItem value="rpc">
+                {t("rpc.change.modal.view.rpc")}
+              </ToggleGroupItem>
+              <ToggleGroupItem value="squid">
+                {t("rpc.change.modal.view.indexer")}
+              </ToggleGroupItem>
+            </ToggleGroup>
+            {view === "rpc" && (
+              <RpcAutoModeToggle
                 size="large"
                 checked={autoMode}
                 onCheckedChange={setAutoMode}
               />
-            </Flex>
-            {!autoMode && (
-              <>
-                <Separator my={16} mx="var(--modal-content-inset)" />
-                <RpcForm />
-              </>
             )}
-          </Flex>
+            {view === "rpc" && !autoMode && <RpcForm />}
+          </Stack>
         }
       />
-      {autoMode && (
-        <ModalBody>
-          {isLoaded && activeProvider ? (
-            <Box
-              bg={getToken("surfaces.containers.dim.dimOnBg")}
-              borderRadius="lg"
-              p={4}
-            >
-              <RpcListItemActive
-                url={activeProvider.url}
-                name={activeProvider.name}
-              />
-            </Box>
-          ) : (
-            <Flex align="center" justify="center" gap={10} p={10} height={64}>
-              <Spinner size={14} />
-              <Text fs="p5" color={getToken("text.medium")}>
-                {t("rpc.change.modal.autoMode.loading")}
-              </Text>
-            </Flex>
-          )}
-        </ModalBody>
-      )}
-      {!autoMode && (
-        <ModalBody noPadding scrollable={false}>
-          <RpcList />
-        </ModalBody>
-      )}
+      {view === "rpc" && <RpcListModalContent />}
+      {view === "squid" && <SquidListModalContent />}
       <ModalFooter>
         <ModalCloseTrigger asChild>
           <Button size="large" width="100%">
