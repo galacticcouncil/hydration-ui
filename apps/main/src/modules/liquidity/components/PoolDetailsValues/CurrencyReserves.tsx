@@ -2,7 +2,7 @@ import { Flex, Separator, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import { Trans, useTranslation } from "react-i18next"
+import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { TReserve, TStablepoolData } from "@/modules/liquidity/Liquidity.utils"
@@ -67,25 +67,27 @@ export const CurrencyReservesRow = ({
           <Text color={getToken("text.high")} fs="p3" fw={600}>
             {reserve.meta.symbol}
           </Text>
-        </Flex>
-
-        <Flex align="center" gap={6}>
-          <Trans
-            t={t}
-            i18nKey="liquidity:liquidity.stablepool.currencyReserves.amount"
-            values={{
-              value: reserve.amountHuman,
-              percentage: reserve.displayAmount
+          <Text color={getToken("text.low")} fw={500} fs={12}>
+            (
+            {t("percent", {
+              value: reserve.displayAmount
                 ? Big(reserve.displayAmount)
                     .div(totalDisplayAmount)
                     .times(100)
                     .toFixed(1)
                 : 0,
-            }}
-          >
-            <Text color={getToken("text.high")} fw={500} fs={12} />
-            <Text color={getToken("text.low")} fw={500} fs={12} />
-          </Trans>
+            })}
+            )
+          </Text>
+        </Flex>
+
+        <Flex direction="column" align="end">
+          <Text color={getToken("text.high")} fw={500} fs={12}>
+            {t("number", { value: reserve.amountHuman })}
+          </Text>
+          <Text color={getToken("text.medium")} fw={500} fs={11}>
+            {t("currency", { value: reserve.displayAmount })}
+          </Text>
         </Flex>
       </Flex>
       {separator}

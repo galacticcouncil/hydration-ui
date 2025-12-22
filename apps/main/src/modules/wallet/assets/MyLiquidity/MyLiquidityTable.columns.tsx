@@ -10,10 +10,11 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AssetLabelFull } from "@/components/AssetLabelFull"
+import { AssetLabelFull, AssetLabelXYK } from "@/components/AssetLabelFull"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { MyLiquidityTableActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.actions"
 import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
+import { useAssets } from "@/providers/assetsProvider"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 import { naturally, numerically, numericallyStr, sortBy } from "@/utils/sort"
 
@@ -27,6 +28,7 @@ export enum MyLiquidityTableColumnId {
 const columnHelper = createColumnHelper<LiquidityPositionByAsset>()
 
 export const useMyLiquidityColumns = () => {
+  const { isShareToken } = useAssets()
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
 
@@ -41,7 +43,15 @@ export const useMyLiquidityColumns = () => {
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
-        return <AssetLabelFull asset={original.meta} />
+        return isShareToken(original.meta) ? (
+          <AssetLabelXYK
+            iconIds={original.meta.iconId}
+            symbol={original.meta.symbol}
+            name={original.meta.name}
+          />
+        ) : (
+          <AssetLabelFull asset={original.meta} />
+        )
       },
     })
 
@@ -54,7 +64,14 @@ export const useMyLiquidityColumns = () => {
       }),
       cell: ({ row: { original } }) => (
         <Amount
-          value={format(original)}
+          value={
+            isShareToken(original.meta)
+              ? t("common:currency", {
+                  value: original.currentValueHuman,
+                  symbol: "Shares",
+                })
+              : format(original)
+          }
           displayValue={t("common:currency", {
             value: original.currentTotalDisplay,
           })}
@@ -92,7 +109,15 @@ export const useMyLiquidityColumns = () => {
         },
       },
       cell: ({ row: { original } }) => {
-        return <MyLiquidityTableActions assetId={original.meta.id} />
+        return (
+          <MyLiquidityTableActions
+            assetId={
+              isShareToken(original.meta)
+                ? original.meta.poolAddress
+                : original.meta.id
+            }
+          />
+        )
       },
     })
 
@@ -104,7 +129,14 @@ export const useMyLiquidityColumns = () => {
         compare: naturally,
       }),
       cell: ({ row: { original } }) => {
-        return <AssetLabelFull asset={original.meta} withName={false} />
+        return isShareToken(original.meta) ? (
+          <AssetLabelXYK
+            iconIds={original.meta.iconId}
+            symbol={original.meta.symbol}
+          />
+        ) : (
+          <AssetLabelFull asset={original.meta} withName={false} />
+        )
       },
     })
 
@@ -129,7 +161,14 @@ export const useMyLiquidityColumns = () => {
             <>
               <TableRowDetailsExpand onClick={() => setIsDetailOpen(true)}>
                 <Amount
-                  value={format(original)}
+                  value={
+                    isShareToken(original.meta)
+                      ? t("common:currency", {
+                          value: original.currentValueHuman,
+                          symbol: "Shares",
+                        })
+                      : format(original)
+                  }
                   displayValue={t("common:currency", {
                     value: original.currentTotalDisplay,
                   })}
@@ -156,5 +195,5 @@ export const useMyLiquidityColumns = () => {
           positionsColumn,
           actionsColumn,
         ] as ColumnDef<LiquidityPositionByAsset>[])
-  }, [t, isMobile, format])
+  }, [t, isMobile, format, isShareToken])
 }

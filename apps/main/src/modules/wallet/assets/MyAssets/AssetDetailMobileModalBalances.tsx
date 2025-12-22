@@ -3,19 +3,18 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
-import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
+//import { SAssetDetailMobileSeparator } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { useAssets } from "@/providers/assetsProvider"
 
 type Props = {
   readonly assetId: string
   readonly reserved: string
-  readonly reservedDca: string
+  readonly reservedDca: string | undefined
 }
 
 export const AssetDetailMobileModalBalances: FC<Props> = ({
   assetId,
   reserved,
-  reservedDca,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
 
@@ -23,7 +22,7 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({
   const asset = getAssetWithFallback(assetId)
 
   const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, reserved)
-  const [reservedDcaDisplayPrice] = useDisplayAssetPrice(asset.id, reservedDca)
+  //const [reservedDcaDisplayPrice] = useDisplayAssetPrice(asset.id, reservedDca)
 
   return (
     <>
@@ -35,7 +34,7 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({
         })}
         displayValue={reservedDisplayPrice}
       />
-      <SAssetDetailMobileSeparator />
+      {/* <SAssetDetailMobileSeparator />
       <Amount
         variant="horizontalLabel"
         label={t("myAssets.expandedAsset.reservedDca")}
@@ -43,7 +42,7 @@ export const AssetDetailMobileModalBalances: FC<Props> = ({
           value: reservedDca,
         })}
         displayValue={reservedDcaDisplayPrice}
-      />
+      /> */}
     </>
   )
 }

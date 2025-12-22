@@ -1,14 +1,15 @@
-import { Asset, Bond, pool } from "@galacticcouncil/sdk-next"
+import { Asset, Bond } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   HYDRATION_PARACHAIN_ID,
 } from "@galacticcouncil/utils"
-import { queryOptions } from "@tanstack/react-query"
-import { isNonNullish } from "remeda"
+import { QueryClient, queryOptions } from "@tanstack/react-query"
+import { isNonNullish, zip } from "remeda"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 import {
   TATokenPairStored,
+  TShareTokenStored,
   useAssetRegistryStore,
 } from "@/states/assetRegistry"
 import {
@@ -25,9 +26,12 @@ export enum AssetType {
   ERC20 = "Erc20",
   External = "External",
   Unknown = "Unknown",
+  XYK = "XYK",
 }
 
 import { ChainEcosystem } from "@galacticcouncil/xcm-core"
+
+import { allPools } from "./pools"
 
 type TCommonAssetData = {
   id: string
@@ -85,22 +89,45 @@ export type TAssetData =
   | TExternal
   | TUnknown
 
-export const assetsQuery = (data: TProviderContext) => {
-  const { sdk, isApiLoaded, dataEnv, metadata } = data
+export const assetsQuery = (
+  context: TProviderContext,
+  queryClient: QueryClient,
+) => {
+  const { sdk, papi, isApiLoaded, dataEnv, metadata } = context
 
   return queryOptions({
     queryKey: ["assets", dataEnv],
     queryFn: async () => {
-      const { syncAssets, syncATokenPairs } = useAssetRegistryStore.getState()
+      const { syncAssets, syncATokenPairs, syncShareTokens } =
+        useAssetRegistryStore.getState()
 
       const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
-        sdk.api.router.getPools(),
+        queryClient.ensureQueryData(allPools(sdk)),
         sdk.client.asset.getOnChainAssets(true),
       ])
 
-      const aTokenPairs: TATokenPairStored[] = pools
-        .filter((p) => p.type === pool.PoolType.Aave)
+      const xykPoolsAddress = pools.xykPools.map<[string]>((p) => [p.address])
+      const xykPoolsShareTokens =
+        await papi.query.XYK.ShareToken.getValues(xykPoolsAddress)
+
+      const entries = zip(pools.xykPools, xykPoolsShareTokens)
+
+      const shareTokens: TShareTokenStored[] = []
+      for (const [pool, shareToken] of entries) {
+        const assetAId = pool.tokens[0]?.id.toString()
+        const assetBId = pool.tokens[1]?.id.toString()
+
+        if (assetAId && assetBId) {
+          shareTokens.push({
+            poolAddress: pool.address,
+            shareTokenId: shareToken.toString(),
+            assets: [assetAId, assetBId],
+          })
+        }
+      }
+
+      const aTokenPairs: TATokenPairStored[] = pools.aavePools
         .map((p) => {
           const [reserve, atoken] = p.tokens
 
@@ -146,6 +173,7 @@ export const assetsQuery = (data: TProviderContext) => {
       })
 
       syncAssets(assetsData)
+      syncShareTokens(shareTokens)
 
       return []
     },

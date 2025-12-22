@@ -16,7 +16,7 @@ import {
 import { omnipoolPositionsKey } from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { Farm, FarmEntry } from "@/api/farms"
-import { useXykPools } from "@/api/pools"
+import { useXykPool } from "@/api/pools"
 import { getCurrentLoyaltyFactor } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -219,20 +219,17 @@ export const useExitDepositFarmsMutation = (
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore(prop("createTransaction"))
-  const { data: pools } = useXykPools()
+  const isXYK = isXykDepositPosition(deposit)
+  const { data: pool } = useXykPool(isXYK ? deposit.amm_pool_id : "")
 
   return useMutation({
     mutationFn: async () => {
-      const isXYK = isXykDepositPosition(deposit)
-
       let txs: Array<AnyPapiTx> = []
 
       if (isXYK) {
-        const [assetA, assetB] =
-          pools?.find((pool) => pool.address === deposit.amm_pool_id)?.tokens ??
-          []
+        if (pool) {
+          const [assetA, assetB] = pool.tokens
 
-        if (assetA && assetB) {
           txs = deposit.yield_farm_entries.map((entry) => {
             return papi.tx.XYKLiquidityMining.withdraw_shares({
               deposit_id: BigInt(deposit.id),

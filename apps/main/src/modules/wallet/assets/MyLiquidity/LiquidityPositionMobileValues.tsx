@@ -4,11 +4,17 @@ import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { AccountOmnipoolPosition } from "@/states/account"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
+import { toBig, toDecimal } from "@/utils/formatting"
+
+import {
+  isStableswapPosition,
+  isXYKPosition,
+  MyLiquidityPosition,
+} from "./MyLiquidityTable.data"
 
 type Props = {
-  readonly position: AccountOmnipoolPosition
+  readonly position: MyLiquidityPosition
 }
 
 export const LiquidityPositionMobileValues: FC<Props> = ({ position }) => {
@@ -17,24 +23,49 @@ export const LiquidityPositionMobileValues: FC<Props> = ({ position }) => {
 
   return (
     <Flex px={getTokenPx("containers.paddings.primary")} gap={54}>
-      <Amount
-        label={t("initialValue")}
-        value={t("currency", {
-          value: position.data.initialValueHuman,
-          symbol: position.data.meta.symbol,
-        })}
-        displayValue={t("currency", {
-          value: position.data.initialDisplay,
-        })}
-      />
+      {isXYKPosition(position) ? (
+        <Amount
+          label={t("currentValue")}
+          value={t("currency", {
+            value: toDecimal(position.shares, position.meta.decimals),
+            symbol: "Shares",
+          })}
+          displayValue={t("currency", {
+            value: toBig(position.shares, position.meta.decimals)
+              .times(position.price)
+              .toString(),
+          })}
+        />
+      ) : isStableswapPosition(position) ? (
+        <Amount
+          label={t("currentValue")}
+          value={format(position.data)}
+          displayValue={t("currency", {
+            value: position.data.currentTotalDisplay,
+          })}
+        />
+      ) : (
+        <>
+          <Amount
+            label={t("initialValue")}
+            value={t("currency", {
+              value: position.data.initialValueHuman,
+              symbol: position.data.meta.symbol,
+            })}
+            displayValue={t("currency", {
+              value: position.data.initialDisplay,
+            })}
+          />
 
-      <Amount
-        label={t("currentValue")}
-        value={format(position.data)}
-        displayValue={t("currency", {
-          value: position.data.currentTotalDisplay,
-        })}
-      />
+          <Amount
+            label={t("currentValue")}
+            value={format(position.data)}
+            displayValue={t("currency", {
+              value: position.data.currentTotalDisplay,
+            })}
+          />
+        </>
+      )}
     </Flex>
   )
 }

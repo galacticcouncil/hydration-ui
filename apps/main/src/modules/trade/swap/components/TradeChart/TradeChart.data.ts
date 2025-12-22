@@ -7,6 +7,7 @@ import {
   OhlcData,
   toUTCTimestamp,
 } from "@galacticcouncil/ui/components/TradingViewChart/utils"
+import { isValidBigSource } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -76,7 +77,7 @@ export const useTradeChartData = ({
 
     const prices = data.assetPairPricesAndVolumesByPeriod.nodes
       .flatMap((node) => node?.buckets ?? [])
-      .filter((bucket) => bucket.priceAvrgNorm !== "NaN")
+      .filter((bucket) => isValidBigSource(bucket.priceAvrgNorm))
       .map((bucket) => ({
         timestamp: Number(bucket.timestamp) || 0,
         amount: isAssetInFirst

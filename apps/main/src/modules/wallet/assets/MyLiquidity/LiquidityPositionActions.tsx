@@ -16,9 +16,12 @@ import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { LiquidityPositionMoreActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 import { AccountOmnipoolPosition } from "@/states/account"
 
+import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
+import { isXYKPosition } from "./MyLiquidityTable.data"
+
 type Props = {
   readonly assetId: string
-  readonly position: AccountOmnipoolPosition
+  readonly position: AccountOmnipoolPosition | XYKPositionDeposit
   readonly farmsToJoin: Farm[]
 }
 
@@ -29,6 +32,8 @@ export const LiquidityPositionActions: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "wallet"])
   const [open, setOpen] = useState(false)
+
+  const isXyk = isXYKPosition(position)
 
   return (
     <>
@@ -59,8 +64,8 @@ export const LiquidityPositionActions: FC<Props> = ({
       </Flex>
       <Modal open={open} onOpenChange={setOpen}>
         <JoinFarmsWrapper
-          positionId={position.positionId}
-          poolId={assetId}
+          positionId={isXyk ? position.id : position.positionId}
+          poolId={isXyk ? position.amm_pool_id : assetId}
           closable
           onSubmitted={() => setOpen(false)}
         />

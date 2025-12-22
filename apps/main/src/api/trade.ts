@@ -13,6 +13,7 @@ export type TradeType = (typeof tradeTypes)[number]
 export type Trade = sor.Trade
 export type TradeOrder = sor.TradeOrder
 export type TxBuilderFactory = SdkCtx["tx"]
+export type TradeRouter = sor.TradeRouter
 
 export const TradeOrderType = sor.TradeOrderType
 export const TradeOrderError = sor.TradeOrderError

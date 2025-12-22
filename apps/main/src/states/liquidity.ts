@@ -18,7 +18,8 @@ import { useShallow } from "zustand/shallow"
 
 import { OmnipoolDepositFull, OmnipoolPosition } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { OmniPoolToken, omnipoolTokens } from "@/api/pools"
+import { useOmnipoolAssetsData } from "@/api/omnipool"
+import { OmniPoolToken, useOmnipoolIds } from "@/api/pools"
 import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
@@ -34,13 +35,6 @@ export const getTradabilityFromBits = (bits: number) => ({
   canAddLiquidity: is_add_liquidity_allowed(bits),
   canRemoveLiquidity: is_remove_liquidity_allowed(bits),
 })
-
-export const useOmnipoolIds = create<{ ids?: string[] }>(() => ({
-  ids: undefined,
-}))
-
-export const setOmnipoolIds = (ids: string[]) =>
-  useOmnipoolIds.setState({ ids })
 
 type LiquidityOutParams = Parameters<typeof calculate_liquidity_out>
 
@@ -136,8 +130,8 @@ export const useOmnipoolPositionData = (
   const { hub, getAssetWithFallback } = useAssets()
 
   const { data: omnipoolTokensData = [], isLoading: isOmnipoolTokensLoading } =
-    useQuery({ ...omnipoolTokens, enabled })
-  const { ids } = useOmnipoolIds()
+    useOmnipoolAssetsData()
+  const { data: ids } = useOmnipoolIds()
 
   const { isLoading: isPriceLoading, getAssetPrice } = useAssetsPrice(
     enabled && ids ? [...ids, hub.id] : [],
@@ -281,13 +275,11 @@ export const useOmnipoolAsset = (assetId: string) => {
 
 type XYKPoolsStore = {
   data?: IsolatedPoolTable[]
-  validAddresses?: string[]
   isLoading?: boolean
 }
 
 export const useXYKPoolsStore = create<XYKPoolsStore>(() => ({
   data: undefined,
-  validAddresses: undefined,
   isLoading: true,
 }))
 

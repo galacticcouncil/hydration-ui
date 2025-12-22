@@ -44,6 +44,22 @@ export const useIsolatedPoolsFarms = () => {
   return { data, isLoading }
 }
 
+export const useIsolatedPoolFarms = (address: string) => {
+  const { isApiLoaded, sdk } = useRpcProvider()
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["isolatedPoolFarms", address],
+    queryFn: async () => {
+      const data = await sdk.api.farm.getIsolatedFarms(address)
+      return data.filter((farm) => !!farm)
+    },
+    enabled: isApiLoaded,
+    staleTime: Infinity,
+  })
+
+  return { data, isLoading }
+}
+
 export const useOmnipoolActiveFarm = (poolId: string) => {
   const { isApiLoaded, sdk } = useRpcProvider()
 

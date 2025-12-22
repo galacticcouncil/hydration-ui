@@ -1,3 +1,4 @@
+import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   CollapsibleContent,
@@ -15,7 +16,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
-import { Circle, Minus } from "lucide-react"
+import { Minus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -62,10 +63,13 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
     farmsToJoin: Farm[]
     position: XykDeposit
   } | null>(null)
-  const columns = useIsolatedPositionsTableColumns(pool.isFarms)
 
   const { positions, totalInFarms, totalBalanceDisplay } =
     useIsolatedPositions(pool)
+
+  const columns = useIsolatedPositionsTableColumns(
+    Big(totalInFarms).gt(0) || pool.isFarms,
+  )
 
   if (Big(totalBalanceDisplay).eq(0)) return null
 
@@ -81,7 +85,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
           gap={getTokenPx("scales.paddings.s")}
           color={getToken("buttons.primary.high.hover")}
         >
-          <Icon component={Circle} size={12} />
+          <Icon component={LiquidityIcon} size={12} />
           <Text fw={500} font="primary">
             {t("liquidity.positions.label.isolated")}
           </Text>
@@ -156,7 +160,12 @@ const OmnipoolStablepoolPositions = ({
 
   if (isVisibleOmnipool) {
     tables.push(
-      <OmnipoolPositions pool={pool} positions={positions} key="omnipool" />,
+      <OmnipoolPositions
+        pool={pool}
+        positions={positions}
+        isFarms={Big(totalInFarms).gt(0) || pool.isFarms}
+        key="omnipool"
+      />,
     )
   }
 

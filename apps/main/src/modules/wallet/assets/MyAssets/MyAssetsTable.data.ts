@@ -1,110 +1,93 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import Big from "big.js"
 import { useMemo } from "react"
-import { pick } from "remeda"
-import { useShallow } from "zustand/shallow"
+import { uniqueBy } from "remeda"
 
+import { AssetType } from "@/api/assets"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import {
   myAssetsMobileSorter,
   myAssetsSorter,
 } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.utils"
-import { useAssets } from "@/providers/assetsProvider"
-import { useAccountData } from "@/states/account"
-import { useAssetsPrice } from "@/states/displayAsset"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
+import {
+  Balance,
+  useAccountBalancesWithPriceByAssetType,
+} from "@/states/account"
 import { getAssetOrigin } from "@/utils/externalAssets"
-import { scaleHuman } from "@/utils/formatting"
+import { toBig } from "@/utils/formatting"
 
 export const useMyAssetsTableData = (showAllAssets: boolean) => {
   const { isMobile } = useBreakpoints()
-  const { native, all, isExternal, tradable } = useAssets()
-  const { balances, isBalanceLoading } = useAccountData(
-    useShallow(pick(["balances", "isBalanceLoading"])),
-  )
+  const { native, tokens, erc20 } = useAssets()
 
-  const assetsWithBalance = useMemo(
-    () =>
-      showAllAssets
-        ? Array.from(all.values()).map((asset) => ({
-            ...asset,
-            balance: balances[asset.id],
-          }))
-        : Object.entries(balances)
-            .map(([assetId, balance]) => {
-              const asset = all.get(assetId)
-
-              if (!asset) {
-                return null
-              }
-
-              return {
-                ...asset,
-                balance,
-              }
-            })
-            .filter((asset) => !!asset),
-    [all, balances, showAllAssets],
-  )
-
-  const { isLoading: arePricesLoading, prices } = useAssetsPrice(
-    assetsWithBalance.map((asset) => asset.id),
-  )
-
-  const isLoading = arePricesLoading || isBalanceLoading
+  const { data: balancesWithPrice, isLoading } =
+    useAccountBalancesWithPriceByAssetType([AssetType.TOKEN, AssetType.ERC20])
 
   const tableAssets = useMemo(() => {
     if (isLoading) {
       return []
     }
 
-    return assetsWithBalance
-      .filter((asset) => !isExternal(asset) || !!asset.name)
-      .map<MyAsset>((asset) => {
-        const price = prices[asset.id]
-        const priceBig = new Big(price?.isValid ? price.price : "0")
+    let assetsToDisplay: Array<{
+      meta: TAsset
+      balance: Balance | undefined
+      price: string | undefined
+    }> = []
 
-        const total = scaleHuman(
-          balances[asset.id]?.total ?? 0n,
-          asset.decimals,
-        )
+    const allAssetsWithPrice = [
+      ...(balancesWithPrice?.tokenBalances ?? []),
+      ...(balancesWithPrice?.erc20Balances ?? []),
+    ]
 
-        const transferable = scaleHuman(
-          balances[asset.id]?.transferable ?? 0n,
-          asset.decimals,
-        )
+    if (showAllAssets) {
+      const validAssets = [...tokens, ...erc20].map((asset) => ({
+        meta: asset,
+        balance: undefined,
+        price: undefined,
+      }))
 
-        const reserved = scaleHuman(
-          balances[asset.id]?.reserved ?? 0n,
-          asset.decimals,
-        )
+      assetsToDisplay = uniqueBy(
+        [...allAssetsWithPrice, ...validAssets],
+        (asset) => asset.meta.id,
+      )
+    } else {
+      assetsToDisplay = allAssetsWithPrice
+    }
+
+    return assetsToDisplay
+      .map<MyAsset>(({ meta, balance, price }) => {
+        const total = toBig(balance?.total ?? 0n, meta.decimals)
+        const transferable = toBig(balance?.transferable ?? 0n, meta.decimals)
+        const reserved = toBig(balance?.reserved ?? 0n, meta.decimals)
+
+        const totalDisplay = price ? total.times(price).toString() : "0"
+        const transferableDisplay = price
+          ? transferable.times(price).toString()
+          : "0"
 
         return {
-          ...asset,
-          origin: getAssetOrigin(asset),
-          total,
-          totalDisplay: priceBig.times(total).toString(),
-          transferable,
-          transferableDisplay: priceBig.times(transferable).toString(),
-          reserved,
-          // TODO how to get reserved DCA
-          reservedDca: "1234567890",
-          canStake: asset.id === native.id,
+          ...meta,
+          origin: getAssetOrigin(meta),
+          total: total.toString(),
+          totalDisplay,
+          transferable: transferable.toString(),
+          transferableDisplay,
+          reserved: reserved.toString(),
+          reservedDca: undefined,
+          canStake: meta.id === native.id,
           rugCheckData: undefined,
-          isTradeable: tradable.some(
-            (tradeAsset) => tradeAsset.id === asset.id,
-          ),
         }
       })
       .sort(isMobile ? myAssetsMobileSorter : myAssetsSorter)
   }, [
-    native.id,
-    balances,
-    isExternal,
-    tradable,
-    prices,
-    assetsWithBalance,
     isLoading,
+    balancesWithPrice?.tokenBalances,
+    balancesWithPrice?.erc20Balances,
+    showAllAssets,
     isMobile,
+    tokens,
+    erc20,
+    native.id,
   ])
 
   return {

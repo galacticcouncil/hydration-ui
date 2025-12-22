@@ -86,6 +86,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
       id: `${transaction.id}-${currentIndex}`,
       tx: resolvedTx,
       onSubmitted: (txHash) => {
+        currentBaseConfig.onSubmitted?.(txHash)
         transaction.onSubmitted?.(txHash)
         setIsLoading(true)
         if (isLastTransaction) {

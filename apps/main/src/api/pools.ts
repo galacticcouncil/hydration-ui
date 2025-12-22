@@ -1,51 +1,51 @@
 import { pool, SdkCtx } from "@galacticcouncil/sdk-next"
+import { AavePool } from "@galacticcouncil/sdk-next/build/types/pool/aave"
 import {
   type QueryClient,
   queryOptions,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { useEffect } from "react"
 
-import { useIsActiveQueries } from "@/hooks/useIsActiveQueries"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import {
-  setOmnipoolIds,
-  setXYKPools,
-  useXYKPoolsStore,
-} from "@/states/liquidity"
 import { HUB_ID } from "@/utils/consts"
 
 export type OmniPoolToken = pool.omni.OmniPoolToken
 export type StableSwapBase = pool.stable.StableSwapBase
-export type PoolBase = pool.PoolBase
+export type PoolBase = Omit<pool.PoolBase, "tokens"> & {
+  tokens: [PoolToken, PoolToken]
+}
 export type PoolToken = pool.PoolToken
 export type PoolFee = pool.PoolFee
 
 export const PoolType = pool.PoolType
 
-export const allPools = (
-  tradeRouter: SdkCtx["api"]["router"],
-  queryClient: QueryClient,
-) =>
+export const allPools = (sdk: SdkCtx) =>
   queryOptions({
     queryKey: ["allPools"],
     queryFn: async () => {
-      const pools = await tradeRouter.getPools()
+      const pools = await sdk.api.router.getPools()
 
-      const stablePools_: StableSwapBase[] = []
-      const xykPools_: PoolBase[] = []
-      const omnipoolTokens_: OmniPoolToken[] = []
+      const stablePools: StableSwapBase[] = []
+      const xykPools: PoolBase[] = []
+      const omnipoolTokens: OmniPoolToken[] = []
+      const aavePools: AavePool[] = []
       let hub: PoolToken | undefined
 
       for (const pool of pools) {
         if (pool.type === PoolType.Stable) {
-          stablePools_.push(pool as StableSwapBase)
+          stablePools.push(pool as StableSwapBase)
         } else if (
           pool.type === PoolType.XYK &&
           pool.tokens.every((token) => !!token.decimals)
         ) {
-          xykPools_.push(pool)
+          const [tokenA, tokenB] = pool.tokens
+          if (!tokenA || !tokenB) continue
+
+          xykPools.push({
+            ...pool,
+            tokens: [tokenA, tokenB],
+          })
         } else if (pool.type === PoolType.Omni) {
           const tokens = pool.tokens as OmniPoolToken[]
 
@@ -53,113 +53,118 @@ export const allPools = (
             if (token.id === Number(HUB_ID)) {
               hub = token
             } else {
-              omnipoolTokens_.push(token)
+              omnipoolTokens.push(token)
             }
           }
+        } else if (pool.type === PoolType.Aave) {
+          aavePools.push(pool as AavePool)
         }
       }
 
-      queryClient.setQueryData(omnipoolTokens.queryKey, omnipoolTokens_)
-      queryClient.setQueryData(stablePools.queryKey, stablePools_)
-      queryClient.setQueryData(hubToken.queryKey, hub)
-      queryClient.setQueryData(xykPools.queryKey, xykPools_)
-
-      return false
+      return {
+        omnipoolTokens,
+        stablePools,
+        hub: hub,
+        xykPools,
+        aavePools,
+        allPools: pools,
+      }
     },
   })
 
-export const useAllPools = () => {
-  const { isApiLoaded, sdk } = useRpcProvider()
-  const queryClient = useQueryClient()
-  const activeQueriesAmount = useIsActiveQueries(["pools"])
+export const stablePoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
+  queryOptions<StableSwapBase[]>({
+    queryKey: ["pools", "stable"],
+    queryFn: async () => {
+      const { stablePools } = await queryClient.ensureQueryData(allPools(sdk))
 
-  return useQuery({
-    ...allPools(sdk.api.router, queryClient),
-    notifyOnChangeProps: [],
-    enabled: isApiLoaded && activeQueriesAmount,
+      return stablePools
+    },
+    staleTime: Infinity,
   })
-}
 
-export const stablePools = queryOptions<StableSwapBase[]>({
-  queryKey: ["pools", "stable"],
-  queryFn: () => {
-    throw new Error("queryFn should not run")
-  },
-  staleTime: Infinity,
-})
+export const hubTokenQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
+  queryOptions<PoolToken | undefined>({
+    queryKey: ["pool", "hub"],
+    queryFn: async () => {
+      const { hub } = await queryClient.ensureQueryData(allPools(sdk))
 
-export const hubToken = queryOptions<PoolToken>({
-  queryKey: ["pools", "hub"],
-  queryFn: () => {
-    throw new Error("queryFn should not run")
-  },
-  staleTime: Infinity,
-})
+      return hub
+    },
+    staleTime: Infinity,
+  })
 
-export const omnipoolTokens = queryOptions<OmniPoolToken[]>({
-  queryKey: ["pools", "omnipool"],
-  queryFn: () => {
-    throw new Error("queryFn should not run")
-  },
-  staleTime: Infinity,
-})
+export const omnipoolTokensQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
+  queryOptions<OmniPoolToken[]>({
+    queryKey: ["pools", "omnipool"],
+    queryFn: async () => {
+      const { omnipoolTokens } = await queryClient.ensureQueryData(
+        allPools(sdk),
+      )
 
-const xykPools = queryOptions<PoolBase[]>({
-  queryKey: ["pools", "xyk"],
-  queryFn: () => {
-    throw new Error("queryFn should not run")
-  },
-  staleTime: Infinity,
-})
+      return omnipoolTokens
+    },
+    staleTime: Infinity,
+  })
+
+export const xykPoolQuery = (
+  sdk: SdkCtx,
+  queryClient: QueryClient,
+  address: string,
+) =>
+  queryOptions({
+    queryKey: ["pool", "xyk", address],
+    queryFn: async () => {
+      const { xykPools } = await queryClient.ensureQueryData(allPools(sdk))
+
+      return xykPools.find((pool) => pool.address === address)
+    },
+  })
+
+const xykPoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
+  queryOptions<PoolBase[]>({
+    queryKey: ["pools", "xyk"],
+    queryFn: async () => {
+      const { xykPools } = await queryClient.ensureQueryData(allPools(sdk))
+
+      return xykPools
+    },
+    staleTime: Infinity,
+  })
 
 export const useXykPools = () => {
-  const storedXykPoolsLength = useXYKPoolsStore((state) => state.data?.length)
+  const queryClient = useQueryClient()
+  const { sdk } = useRpcProvider()
 
-  const query = useQuery(xykPools)
+  return useQuery(xykPoolsQuery(sdk, queryClient))
+}
 
-  const data = query.data
+export const useXykPool = (address: string) => {
+  const queryClient = useQueryClient()
+  const { sdk } = useRpcProvider()
 
-  useEffect(() => {
-    if (data && data.length !== storedXykPoolsLength) {
-      const validAddresses = data
-        .filter((pool) => pool.tokens.some((asset) => asset))
-        .map((pool) => pool.address)
+  return useQuery(xykPoolQuery(sdk, queryClient, address))
+}
 
-      setXYKPools({ validAddresses })
-    }
-  }, [data, storedXykPoolsLength])
+export const useStablePools = () => {
+  const queryClient = useQueryClient()
+  const { sdk } = useRpcProvider()
 
-  return query
+  return useQuery(stablePoolsQuery(sdk, queryClient))
 }
 
 export const useOmnipoolIds = () => {
-  const { isApiLoaded, papi } = useRpcProvider()
-
-  useQuery({
-    queryKey: ["omnipoolIds"],
-    queryFn: async () => {
-      const assets = await papi.query.Omnipool.Assets.getEntries()
-      const ids = assets.map(({ keyArgs }) => keyArgs[0].toString())
-
-      setOmnipoolIds(ids)
-
-      return null
-    },
-    staleTime: Infinity,
-    enabled: isApiLoaded,
-    notifyOnChangeProps: [],
-  })
-}
-
-export const useXykPoolsIds = () => {
-  const { isApiLoaded, papi } = useRpcProvider()
+  const { isApiLoaded, sdk } = useRpcProvider()
+  const queryClient = useQueryClient()
 
   return useQuery({
-    queryKey: ["xykPoolsIds"],
+    queryKey: ["omnipoolIds"],
     queryFn: async () => {
-      const pools = await papi.query.XYK.ShareToken.getEntries()
+      const omnipoolTokens = await queryClient.ensureQueryData(
+        omnipoolTokensQuery(sdk, queryClient),
+      )
 
-      return new Map(pools.map((pool) => [pool.keyArgs[0], pool.value]))
+      return omnipoolTokens.map((token) => token.id.toString())
     },
     staleTime: Infinity,
     enabled: isApiLoaded,
