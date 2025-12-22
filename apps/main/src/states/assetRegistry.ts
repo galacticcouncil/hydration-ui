@@ -7,7 +7,7 @@ import { createIndexedDBStore, IndexedDBStores } from "@/utils/indexedDB"
 export type TAssetStored = TAssetData
 export type TShareTokenStored = {
   poolAddress: string
-  assets: string[]
+  assets: [string, string]
   shareTokenId: string
 }
 export type TATokenPairStored = readonly [

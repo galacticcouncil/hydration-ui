@@ -11,13 +11,18 @@ import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { Farm } from "@/api/farms"
-import { PoolBase, useXykPools } from "@/api/pools"
-import { TXYKConsts, useXYKConsts } from "@/api/xyk"
+import {
+  TXYKConsts,
+  useXYKConsts,
+  useXYKPoolWithLiquidity,
+  XYKPoolWithLiquidity,
+} from "@/api/xyk"
 import { AssetSwitcher } from "@/components/AssetSwitcher/AssetSwitcher"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { RewardsAPR } from "@/modules/liquidity/components/AddLiquidity/RewardsAPR"
 import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
-import { XYKPoolMeta } from "@/providers/assetsProvider"
+import { TShareToken, XYKPoolMeta } from "@/providers/assetsProvider"
+import { useAssets } from "@/providers/assetsProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { scale } from "@/utils/formatting"
 import { scaleHuman } from "@/utils/formatting"
@@ -30,15 +35,21 @@ import {
 import { AddIsolatedLiquiditySkeleton } from "./AddIsolatedLiquiditySkeleton"
 
 export const AddIsolatedLiquidity = (props: AddLiquidityProps) => {
-  const { data: pools, isLoading } = useXykPools()
   const { data: consts } = useXYKConsts()
+  const { getShareTokenByAddress } = useAssets()
+  const { data: pool, isLoading } = useXYKPoolWithLiquidity(props.id)
 
-  const pool = pools?.find((pool) => pool.address === props.id)
+  const shareTokenMeta = getShareTokenByAddress(pool?.address ?? "")
 
-  return isLoading || !pool || !consts ? (
+  return isLoading || !pool || !consts || !shareTokenMeta ? (
     <AddIsolatedLiquiditySkeleton {...props} />
   ) : (
-    <AddIsolatedLiquidityForm pool={pool} consts={consts} {...props} />
+    <AddIsolatedLiquidityForm
+      pool={pool}
+      consts={consts}
+      shareTokenMeta={shareTokenMeta}
+      {...props}
+    />
   )
 }
 
@@ -48,9 +59,11 @@ export const AddIsolatedLiquidityForm = ({
   onBack,
   closable = false,
   onSubmitted,
+  shareTokenMeta,
 }: AddLiquidityProps & {
-  pool: PoolBase
+  pool: XYKPoolWithLiquidity
   consts: TXYKConsts
+  shareTokenMeta: TShareToken
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
 
@@ -59,9 +72,7 @@ export const AddIsolatedLiquidityForm = ({
     reserveA,
     reserveB,
     ratio,
-    meta,
     mutation,
-    isLoading,
     assetABalance,
     assetBBalance,
     assetAMeta,
@@ -73,7 +84,7 @@ export const AddIsolatedLiquidityForm = ({
     activeFarms,
     joinFarmErrorMessage,
     isJoinFarms,
-  } = useAddIsolatedLiquidity({ pool, consts, onSubmitted })
+  } = useAddIsolatedLiquidity({ pool, consts, onSubmitted, shareTokenMeta })
 
   const onSubmit = async () => {
     const values = form.getValues()
@@ -184,12 +195,11 @@ export const AddIsolatedLiquidityForm = ({
             <ModalContentDivider />
 
             <AddLiquiditySummary
-              meta={meta}
+              meta={shareTokenMeta}
               poolShare={ratio ?? "0"}
               sharesToGet={shares ?? "0"}
               farms={activeFarms}
               consts={consts}
-              isLoading={isLoading}
             />
 
             {sharesError && (
@@ -241,7 +251,7 @@ const AddLiquiditySummary = ({
   sharesToGet: string
   farms: Farm[]
   consts: TXYKConsts
-  isLoading: boolean
+  isLoading?: boolean
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
 

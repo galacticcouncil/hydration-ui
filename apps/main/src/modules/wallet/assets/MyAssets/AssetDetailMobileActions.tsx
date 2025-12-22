@@ -34,7 +34,7 @@ export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
       <Button
         variant="tertiary"
         size="large"
-        disabled={!asset.isTradeable}
+        disabled={!asset.isTradable}
         onClick={() =>
           navigate({
             to: "/trade/swap/market",

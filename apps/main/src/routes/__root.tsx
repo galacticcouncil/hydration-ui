@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
@@ -7,7 +7,6 @@ import { lazy } from "react"
 import { useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
-import { useAllPools, useOmnipoolIds } from "@/api/pools"
 import {
   providerQuery,
   useProviderMetadata,
@@ -22,7 +21,6 @@ import { RouteError } from "@/components/RouteError"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useDisplayAssetStablecoinUpdate } from "@/states/displayAsset"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 const MobileTabBar = lazy(async () => ({
@@ -45,15 +43,14 @@ const Web3ConnectModal = lazy(async () => ({
 
 const Subscriptions = () => {
   const rpcProvider = useRpcProvider()
+  const queryClient = useQueryClient()
+
   useProviderMetadata()
-  useOmnipoolIds()
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
   useAccountUniques()
   usePriceSubscriber()
-  useAllPools()
-  useQuery(assetsQuery(rpcProvider))
-  useDisplayAssetStablecoinUpdate()
+  useQuery(assetsQuery(rpcProvider, queryClient))
 
   return null
 }
@@ -78,7 +75,10 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     )
 
     await context.queryClient.ensureQueryData(
-      assetsQuery({ ...rpcData, isApiLoaded: true, isLoaded: true }),
+      assetsQuery(
+        { ...rpcData, isApiLoaded: true, isLoaded: true },
+        context.queryClient,
+      ),
     )
   },
   errorComponent: RouteError,

@@ -173,18 +173,21 @@ export const RemoveMoneyMarketLiquidityForm = (
             {split ? (
               <div>
                 <TradeLimitRow type={TradeLimitType.Liquidity} />
-                <ModalContentDivider />
-                <SummaryRow
-                  label={t("common:healthFactor")}
-                  content={
-                    healthFactor ? (
-                      <HealthFactorChange
-                        healthFactor={healthFactor.current}
-                        futureHealthFactor={healthFactor.future}
-                      />
-                    ) : null
-                  }
-                />
+
+                {healthFactor?.isSignificantChange ? (
+                  <>
+                    <ModalContentDivider />
+                    <SummaryRow
+                      label={t("common:healthFactor")}
+                      content={
+                        <HealthFactorChange
+                          healthFactor={healthFactor.current}
+                          futureHealthFactor={healthFactor.future}
+                        />
+                      }
+                    />
+                  </>
+                ) : null}
               </div>
             ) : (
               <TradeSummary
@@ -247,15 +250,19 @@ const TradeSummary = ({
               `${t("currency", { value: 1, symbol: receiveAsset.symbol })}≈${t("currency", { value: spotPriceData?.spotPrice, symbol: erc20.symbol })}`
             ),
           },
-          {
-            label: t("healthFactor"),
-            content: healthFactor ? (
-              <HealthFactorChange
-                healthFactor={healthFactor.current}
-                futureHealthFactor={healthFactor.future}
-              />
-            ) : null,
-          },
+          ...(healthFactor?.isSignificantChange
+            ? [
+                {
+                  label: t("healthFactor"),
+                  content: (
+                    <HealthFactorChange
+                      healthFactor={healthFactor.current}
+                      futureHealthFactor={healthFactor.future}
+                    />
+                  ),
+                },
+              ]
+            : []),
         ]}
       />
     </div>

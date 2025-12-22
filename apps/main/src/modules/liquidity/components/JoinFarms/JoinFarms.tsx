@@ -14,16 +14,15 @@ import { Controller } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { Farm } from "@/api/farms"
+import { Farm, useOmnipoolActiveFarm } from "@/api/farms"
+import { useXYKPoolWithLiquidity, XYKPoolWithLiquidity } from "@/api/xyk"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AvailableFarms } from "@/modules/liquidity/components/AvailableFarms"
+import { TShareToken, useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import {
-  IsolatedPoolTable,
-  OmnipoolAssetTable,
-} from "@/modules/liquidity/Liquidity.utils"
-import { XYKPoolMeta } from "@/providers/assetsProvider"
-import { AccountOmnipoolPosition } from "@/states/account"
-import { useOmnipoolAsset, useXYKPool } from "@/states/liquidity"
+  AccountOmnipoolPosition,
+  useAccountOmnipoolPositionsData,
+} from "@/states/account"
 
 import {
   TJoinFarmsForm,
@@ -33,7 +32,7 @@ import {
 } from "./JoinFarms.utils"
 import { JoinFarmsSkeleton } from "./JoinFarmsSkeleton"
 
-type JoinFarmsProps = {
+export type JoinFarmsProps = {
   positionId?: string
   poolId: string
   closable?: boolean
@@ -49,47 +48,43 @@ export const JoinFarmsWrapper = (props: JoinFarmsProps) =>
   )
 
 const OmnipoolJoinFarmsWrapper = (props: JoinFarmsProps) => {
-  const { data: omnipoolAsset, isLoading: isOmnipoolAssetLoading } =
-    useOmnipoolAsset(props.poolId)
+  const { data: activeFarms } = useOmnipoolActiveFarm(props.poolId)
+  const { getAssetPositions } = useAccountOmnipoolPositionsData()
+  const farms = activeFarms?.filter((farm) => farm.apr !== "0") ?? []
 
-  const position = omnipoolAsset?.positions.find(
+  const position = getAssetPositions(props.poolId).all.find(
     (position) => position.positionId === props.positionId,
   )
 
-  if (!omnipoolAsset || isOmnipoolAssetLoading || !position) {
+  if (!farms || !position) {
     return <JoinFarmsSkeleton />
   }
 
-  return (
-    <OmnipoolJoinFarms
-      position={position}
-      omnipoolAsset={omnipoolAsset}
-      {...props}
-    />
-  )
+  return <OmnipoolJoinFarms position={position} farms={farms} {...props} />
 }
 
 const IsolatedPoolJoinFarmsWrapper = (props: JoinFarmsProps) => {
-  const { data: xykData, isLoading: isXYKLoading } = useXYKPool(props.poolId)
+  const { getShareTokenByAddress } = useAssets()
+  const { data: pool } = useXYKPoolWithLiquidity(props.poolId)
+  const meta = getShareTokenByAddress(props.poolId)
 
-  if (!xykData || isXYKLoading) {
+  if (!pool || !meta) {
     return <JoinFarmsSkeleton />
   }
 
-  return <IsolatedPoolJoinFarms xykData={xykData} {...props} />
+  return <IsolatedPoolJoinFarms pool={pool} meta={meta} {...props} />
 }
 
 const OmnipoolJoinFarms = (
   props: JoinFarmsProps & {
     position: AccountOmnipoolPosition
-    omnipoolAsset: OmnipoolAssetTable
+    farms: Farm[]
   },
 ) => {
-  const { position, omnipoolAsset, onSubmitted } = props
-
+  const { position, farms, onSubmitted } = props
   const data = useJoinOmnipoolFarms({
     position,
-    omnipoolAsset,
+    farms,
     onSubmitted,
   })
 
@@ -98,15 +93,12 @@ const OmnipoolJoinFarms = (
   return <JoinFarmsForm {...props} {...data} />
 }
 
-const IsolatedPoolJoinFarms = (
-  props: JoinFarmsProps & { xykData: IsolatedPoolTable },
-) => {
-  const { xykData, positionId, onSubmitted } = props
-  const data = useJoinIsolatedPoolFarms({
-    xykData,
-    positionId,
-    options: { onSubmitted },
-  })
+const IsolatedPoolJoinFarms = ({
+  pool,
+  meta,
+  ...props
+}: JoinFarmsProps & { pool: XYKPoolWithLiquidity; meta: TShareToken }) => {
+  const data = useJoinIsolatedPoolFarms({ props, pool, meta })
 
   if (!data) return <JoinFarmsSkeleton />
 

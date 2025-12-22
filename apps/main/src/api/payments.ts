@@ -1,6 +1,6 @@
 import { DOT_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useMutation, useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { isBigInt, isNumber, pick, prop, unique, zip } from "remeda"
@@ -14,6 +14,8 @@ import { useAccountData } from "@/states/account"
 import { TransactionOptions, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
+import { allPools } from "./pools"
+
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
   // Native asset is always accepted
   if (asset.id === NATIVE_ASSET_ID) return true
@@ -26,6 +28,7 @@ const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
 
 export const useAcceptedFeePaymentAssets = (ids: string[]) => {
   const { papi, isLoaded, sdk } = useRpcProvider()
+  const queryClient = useQueryClient()
   const { getAsset } = useAssets()
 
   return useQuery({
@@ -35,7 +38,7 @@ export const useAcceptedFeePaymentAssets = (ids: string[]) => {
       const assetIds = ids.map<[number]>((id) => [Number(id)])
 
       const [pools, acceptedCurrencies] = await Promise.all([
-        sdk.api.router.getPools(),
+        queryClient.ensureQueryData(allPools(sdk)),
         papi.query.MultiTransactionPayment.AcceptedCurrencies.getValues(
           assetIds,
         ),
@@ -48,16 +51,22 @@ export const useAcceptedFeePaymentAssets = (ids: string[]) => {
 
         if (!asset) return acc
 
-        const hasPoolWithDOT = !!pools.find(
+        const isAccepted = isCurrencyAccepted(asset, data)
+
+        if (isAccepted) {
+          acc.push(asset)
+          return acc
+        }
+
+        const hasPoolWithDOT = pools.allPools.some(
           (pool) =>
             pool.tokens.find((token) => token.id === Number(asset.id)) &&
             pool.tokens.find((token) => token.id === Number(DOT_ASSET_ID)),
         )
 
-        const isAccepted = isCurrencyAccepted(asset, data)
-
-        if (isAccepted || hasPoolWithDOT) {
+        if (hasPoolWithDOT) {
           acc.push(asset)
+          return acc
         }
 
         return acc

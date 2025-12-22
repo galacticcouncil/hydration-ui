@@ -29,8 +29,10 @@ import {
 export const OmnipoolPositions = ({
   pool,
   positions,
+  isFarms,
 }: {
   pool: OmnipoolAssetTable
+  isFarms: boolean
   positions: (OmnipoolPositionTableData | BalanceTableData)[]
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
@@ -39,7 +41,7 @@ export const OmnipoolPositions = ({
     farmsToJoin: Farm[]
     position: OmnipoolDepositFullWithData
   } | null>(null)
-  const columns = useOmnipoolPositionsTableColumns(pool.isFarms)
+  const columns = useOmnipoolPositionsTableColumns(isFarms)
 
   return (
     <>

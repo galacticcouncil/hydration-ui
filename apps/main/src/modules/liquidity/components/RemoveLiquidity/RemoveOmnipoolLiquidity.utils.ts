@@ -395,7 +395,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
             papi.tx.Omnipool.remove_liquidity_with_limit({
               amount: position.shares,
               position_id: BigInt(position.positionId),
-              min_limit: BigInt(minAmountOut),
+              min_limit: BigInt(Big(minAmountOut).toFixed(0)),
             }),
           )
 

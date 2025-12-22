@@ -17,7 +17,6 @@ import {
   TStableswap,
   TToken,
 } from "@/api/assets"
-import { PoolToken } from "@/api/pools"
 import { TAssetStored, useAssetRegistry } from "@/states/assetRegistry"
 import { HUB_ID, NATIVE_ASSET_ID } from "@/utils/consts"
 import { ASSETHUB_ID_BLACKLIST } from "@/utils/externalAssets"
@@ -40,6 +39,8 @@ type TAssetsState = {
 export type AssetId = string | number
 
 export type TAssetsContext = TAssetsState & {
+  xykShareTokens: TShareToken[]
+} & {
   getAsset: (id: AssetId) => TAsset | undefined
   getAssets: (ids: AssetId[]) => (TAsset | undefined)[]
   getBond: (id: AssetId) => TBond | undefined
@@ -54,10 +55,11 @@ export type TAssetsContext = TAssetsState & {
   isErc20: (asset: TAsset) => asset is TErc20
   isErc20AToken: (asset: TAsset) => asset is TErc20AToken
   isStableSwap: (asset: TAsset) => asset is TStableswap
-  getMetaFromXYKPoolTokens: (
-    id: string,
-    tokens: PoolToken[],
-  ) => XYKPoolMeta | null
+  isShareToken: (asset: TAsset | TShareToken) => asset is TShareToken
+  getShareToken: (id: string) => TShareToken | undefined
+  getShareTokens: (ids: string[]) => (TShareToken | undefined)[]
+  getShareTokenByAddress: (poolAddress: string) => TShareToken | undefined
+  getShareTokensByAddress: (addresses: string[]) => (TShareToken | undefined)[]
 }
 
 const AssetsContext = createContext<TAssetsContext>({} as TAssetsContext)
@@ -92,11 +94,18 @@ const fallbackAsset: TAsset = {
   ecosystem: ChainEcosystem.Polkadot,
 }
 
+const getXYKShareTokenDecimals = (assetA: TAsset, assetB: TAsset) => {
+  return Number(assetA.id) > Number(assetB.id)
+    ? assetB.decimals
+    : assetA.decimals
+}
+
 export type TAsset = TAssetData
 
 export type TShareToken = TAsset & {
   poolAddress: string
-  assets: TAsset[]
+  assets: [TAsset, TAsset]
+  iconId: string[]
 }
 
 export type XYKPoolMeta = {
@@ -111,8 +120,16 @@ export const isXYKPoolMeta = (
   meta: XYKPoolMeta | TAssetData,
 ): meta is XYKPoolMeta => (meta as XYKPoolMeta).iconId !== undefined
 
+export const isShareToken = (
+  meta: TAssetData | TShareToken,
+): meta is TShareToken => (meta as XYKPoolMeta).iconId !== undefined
+
 export const AssetsProvider = ({ children }: { children: ReactNode }) => {
-  const { assets, aTokenReverseMap } = useAssetRegistry()
+  const {
+    assets,
+    aTokenReverseMap,
+    shareTokens: shareTokensRaw,
+  } = useAssetRegistry()
 
   const {
     all,
@@ -191,34 +208,48 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     )
   }, [assets])
 
-  const getMetaFromXYKPoolTokens = useCallback(
-    (id: string, tokens: PoolToken[]): XYKPoolMeta | null => {
-      const assetA = all.get(tokens[0]?.id.toString() ?? "")
-      const assetB = all.get(tokens[1]?.id.toString() ?? "")
+  const { shareTokens, shareTokensMap, shareTokensMapByAddress } =
+    useMemo(() => {
+      const shareTokens: TShareToken[] = []
+      const shareTokensMap = new Map<string, TShareToken>()
+      const shareTokensMapByAddress = new Map<string, TShareToken>()
 
-      if (!assetA || !assetB) return null
+      for (const token of shareTokensRaw) {
+        const assetA = all.get(token.assets[0])
+        const assetB = all.get(token.assets[1])
 
-      const decimals =
-        Number(assetA.id) > Number(assetB.id)
-          ? assetB.decimals
-          : assetA.decimals
-      const symbol = `${assetA.symbol}/${assetB.symbol}`
-      const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
-      const iconId = [
-        isBond(assetA) ? assetA.underlyingAssetId : assetA.id,
-        isBond(assetB) ? assetB.underlyingAssetId : assetB.id,
-      ]
+        if (assetA && assetB && assetA.symbol && assetB.symbol) {
+          const decimals = getXYKShareTokenDecimals(assetA, assetB)
+          const symbol = `${assetA.symbol}/${assetB.symbol}`
+          const name = `${assetA.name.split(" (")[0]}/${assetB.name.split(" (")[0]}`
+          const iconId = [
+            isBond(assetA) ? assetA.underlyingAssetId : assetA.id,
+            isBond(assetB) ? assetB.underlyingAssetId : assetB.id,
+          ]
+
+          const tokenFull = {
+            ...fallbackAsset,
+            id: token.shareTokenId,
+            poolAddress: token.poolAddress,
+            assets: [assetA, assetB] as [TAsset, TAsset],
+            isShareToken: true,
+            decimals,
+            symbol,
+            name,
+            iconId,
+          }
+          shareTokens.push(tokenFull)
+          shareTokensMap.set(tokenFull.id, tokenFull)
+          shareTokensMapByAddress.set(token.poolAddress, tokenFull)
+        }
+      }
 
       return {
-        id,
-        symbol,
-        name,
-        iconId,
-        decimals,
+        shareTokens,
+        shareTokensMap,
+        shareTokensMapByAddress,
       }
-    },
-    [all],
-  )
+    }, [shareTokensRaw, all])
 
   const getAsset = useCallback((id: AssetId) => all.get(id.toString()), [all])
   const getAssetWithFallback = useCallback(
@@ -263,6 +294,26 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
     [aTokenReverseMap, getErc20],
   )
 
+  const getShareToken = useCallback(
+    (id: string) => shareTokensMap.get(id),
+    [shareTokensMap],
+  )
+  const getShareTokens = useCallback(
+    (ids: string[]) => ids.map((id) => getShareToken(id)),
+    [getShareToken],
+  )
+
+  const getShareTokenByAddress = useCallback(
+    (poolAddress: string) => shareTokensMapByAddress.get(poolAddress),
+    [shareTokensMapByAddress],
+  )
+
+  const getShareTokensByAddress = useCallback(
+    (addresses: string[]) =>
+      addresses.map((address) => getShareTokenByAddress(address)),
+    [getShareTokenByAddress],
+  )
+
   return (
     <AssetsContext.Provider
       value={{
@@ -276,21 +327,26 @@ export const AssetsProvider = ({ children }: { children: ReactNode }) => {
         tradable,
         native,
         hub,
+        xykShareTokens: shareTokens,
         getAsset,
         getAssets,
         getBond,
         getAssetWithFallback,
         getExternalByExternalId,
-        getMetaFromXYKPoolTokens,
         getErc20,
         getErc20AToken,
         getRelatedAToken,
+        getShareToken,
+        getShareTokens,
+        getShareTokenByAddress,
+        getShareTokensByAddress,
         isToken,
         isErc20AToken,
         isExternal,
         isBond,
         isErc20,
         isStableSwap,
+        isShareToken,
       }}
     >
       {children}

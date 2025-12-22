@@ -13,10 +13,10 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
-  const [reservedDcaDisplayPrice] = useDisplayAssetPrice(
-    asset.id,
-    asset.reservedDca,
-  )
+  // const [reservedDcaDisplayPrice] = useDisplayAssetPrice(
+  //   asset.id,
+  //   asset.reservedDca,
+  // )
 
   return (
     <Flex px={50} justify="space-around">
@@ -38,7 +38,7 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
         })}
         displayValue={reservedDisplayPrice}
       />
-      <Separator orientation="vertical" />
+      {/* <Separator orientation="vertical" />
       <Amount
         label={t("myAssets.expandedAsset.reservedDca")}
         value={t("common:currency", {
@@ -46,7 +46,7 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
           symbol: asset.symbol,
         })}
         displayValue={reservedDcaDisplayPrice}
-      />
+      /> */}
     </Flex>
   )
 }

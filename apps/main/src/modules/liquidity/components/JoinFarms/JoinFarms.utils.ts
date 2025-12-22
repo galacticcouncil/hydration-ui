@@ -7,7 +7,9 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
+import { prop } from "remeda"
 import { z, ZodType } from "zod/v4"
+import { useShallow } from "zustand/shallow"
 
 import {
   omnipoolMiningPositionsKey,
@@ -16,20 +18,19 @@ import {
   xykMiningPositionsKey,
 } from "@/api/account"
 import { TAssetData } from "@/api/assets"
-import { Farm, LoyaltyCurve } from "@/api/farms"
+import { Farm, LoyaltyCurve, useIsolatedPoolFarms } from "@/api/farms"
 import { useOraclePrice } from "@/api/omnipool"
-import { PoolToken, useXykPools } from "@/api/pools"
-import { useXYKPoolsLiquidity } from "@/api/xyk"
-import {
-  IsolatedPoolTable,
-  OmnipoolAssetTable,
-} from "@/modules/liquidity/Liquidity.utils"
-import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
+import { PoolToken, useXykPool } from "@/api/pools"
+import { useShareTokenPrices } from "@/api/spotPrice"
+import { XYKPoolWithLiquidity } from "@/api/xyk"
+import { TShareToken, useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
   isDepositPosition,
   isOmnipoolDepositPosition,
+  useAccountBalances,
+  useAccountData,
 } from "@/states/account"
 import {
   TransactionOptions,
@@ -39,6 +40,8 @@ import {
 import { QUINTILL } from "@/utils/consts"
 import { scale, scaleHuman } from "@/utils/formatting"
 import { required, validateFieldMaxBalance } from "@/utils/validators"
+
+import { JoinFarmsProps } from "./JoinFarms"
 
 const LIQUIDITY_OUT_SHARES = "10000"
 
@@ -78,20 +81,22 @@ const getAvailableFarms = (
 
 export const useJoinOmnipoolFarms = ({
   position,
-  omnipoolAsset,
+  farms,
   onSubmitted,
 }: {
   position: AccountOmnipoolPosition
-  omnipoolAsset: OmnipoolAssetTable
+  farms: Farm[]
   onSubmitted: () => void
 }) => {
-  const { farms, meta, id: poolId } = omnipoolAsset
+  const {
+    data: { meta },
+  } = position
   const isDeposit = isOmnipoolDepositPosition(position)
 
   const availableFarms = getAvailableFarms(farms, position)
 
   const schema = useOmnipoolZodSchema({
-    id: poolId,
+    id: meta.id,
     farms: availableFarms,
   })
 
@@ -121,12 +126,11 @@ export const useJoinOmnipoolFarms = ({
 }
 
 export const useXYKFarmMinShares = (poolAddress: string, farms: Farm[]) => {
-  const { data: pools } = useXykPools()
+  const { data: pool } = useXykPool(poolAddress)
 
   const minDeposit = getMinimalDeposit(farms)
 
-  const [assetAReserve, assetBReserve] =
-    pools?.find((xykPool) => xykPool.address === poolAddress)?.tokens ?? []
+  const [assetAReserve, assetBReserve] = pool?.tokens ?? []
 
   const { data: oracle } = useOraclePrice(
     assetAReserve?.id,
@@ -195,26 +199,23 @@ export const useMinOmnipoolFarmJoin = (farms: Farm[], meta?: TAssetData) => {
 }
 
 export const useJoinIsolatedPoolFarms = ({
-  xykData,
-  positionId,
+  props: { poolId, positionId, onSubmitted },
+  meta,
+  pool,
 }: {
-  xykData: IsolatedPoolTable
-  positionId?: string
-  options?: TransactionOptions
+  props: JoinFarmsProps
+  pool: XYKPoolWithLiquidity
+  meta: TShareToken
 }) => {
-  const {
-    meta,
-    farms,
-    id: poolId,
-    positions,
-    balance = 0n,
-    tvlDisplay,
-  } = xykData
-  const { data: liquidity } = useXYKPoolsLiquidity(poolId)
+  const { tokens } = pool
+  const positions = useAccountData(useShallow(prop("xykMining")))
+  const { data: shareTokenPrices } = useShareTokenPrices([poolId])
+  const { data: activeFarms } = useIsolatedPoolFarms(poolId)
+  const farms = activeFarms?.filter((farm) => farm.apr !== "0") ?? []
 
-  const price = Big(tvlDisplay)
-    .div(liquidity ? scaleHuman(liquidity, meta.decimals) : 1)
-    .toString()
+  const { getTransferableBalance } = useAccountBalances()
+  const balance = getTransferableBalance(meta.id)
+  const price = shareTokenPrices.get(poolId)
 
   const isDeposit = !!positionId
 
@@ -229,8 +230,9 @@ export const useJoinIsolatedPoolFarms = ({
 
   const mutation = useJoinIsolatedPoolFarmsMutation({
     farms: availableFarms,
-    tokens: xykData.tokens,
+    tokens,
     meta,
+    options: { onSubmitted },
   })
 
   const onSubmit = (amount: string) => {
@@ -240,7 +242,7 @@ export const useJoinIsolatedPoolFarms = ({
     })
   }
 
-  if (!schema) return undefined
+  if (!schema || !price) return undefined
 
   if (isDeposit && position) {
     return {

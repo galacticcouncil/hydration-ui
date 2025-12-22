@@ -1,33 +1,32 @@
-import { sor } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import {
+  QueryClient,
   queryOptions,
   useQueries,
   useQuery,
   useQueryClient,
+  UseQueryResult,
 } from "@tanstack/react-query"
-import { useEffect } from "react"
-import { isNullish, pick, prop } from "remeda"
+import Big from "big.js"
+import { isNonNullish, isNullish, prop, unique, zipWith } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import {
   useDisplayAssetStore,
   useDisplaySpotPriceStore,
 } from "@/states/displayAsset"
-import { scaleHuman } from "@/utils/formatting"
+import { toBig, toDecimal } from "@/utils/formatting"
+
+import { TradeRouter } from "./trade"
+import { xykPoolWithLiquidityQuery } from "./xyk"
 
 export const usePriceSubscriber = () => {
   const { isApiLoaded, sdk } = useRpcProvider()
   const queryClient = useQueryClient()
-  const { setAssets, setReferenceAssetId } = useDisplaySpotPriceStore(
-    useShallow(pick(["setAssets", "setReferenceAssetId"])),
-  )
+  const setAssets = useDisplaySpotPriceStore(useShallow(prop("setAssets")))
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
-
-  useEffect(() => {
-    setReferenceAssetId(stableCoinId ?? "")
-  }, [stableCoinId, setReferenceAssetId])
 
   return useQuery({
     queryKey: ["displayPrices", stableCoinId],
@@ -83,8 +82,7 @@ export const spotPriceQuery = (
 }
 
 export const getSpotPrice =
-  (tradeRouter: sor.TradeRouter, tokenIn: string, tokenOut: string) =>
-  async () => {
+  (tradeRouter: TradeRouter, tokenIn: string, tokenOut: string) => async () => {
     const tokenInParam = tokenIn
     const tokenOutParam = tokenOut
     // X -> X would return undefined, no need for spot price in such case
@@ -101,7 +99,7 @@ export const getSpotPrice =
       )
 
       if (res) {
-        spotPrice = scaleHuman(res.amount.toString(), res.decimals)
+        spotPrice = toDecimal(res.amount.toString(), res.decimals)
       }
     } catch (e) {
       return { tokenIn, tokenOut, spotPrice }
@@ -109,38 +107,135 @@ export const getSpotPrice =
     return { tokenIn, tokenOut, spotPrice }
   }
 
+export const spotPriceQueryKey = (assetId: string) => ["spotPriceKey", assetId]
+
+export const spotPriceKeyQuery = (
+  context: TProviderContext,
+  assetId: string,
+) => {
+  const stableCoinId = useDisplayAssetStore.getState().stableCoinId
+  const setAssets = useDisplaySpotPriceStore.getState().setAssets
+  const { sdk, isApiLoaded } = context
+
+  return queryOptions({
+    queryKey: spotPriceQueryKey(assetId),
+    queryFn: async () => {
+      const price = await getSpotPrice(
+        sdk.api.router,
+        assetId,
+        stableCoinId ?? "",
+      )()
+
+      setAssets([{ id: assetId, price: price.spotPrice }])
+
+      return price.spotPrice
+    },
+    notifyOnChangeProps: [],
+    staleTime: Infinity,
+    enabled: isApiLoaded,
+  })
+}
+
 export const useSubscribedPriceKeys = (assetIds: string[]) => {
-  const stableCoinId = useDisplayAssetStore(
-    useShallow((state) => state.stableCoinId),
-  )
-
-  const { setAssets, setReferenceAssetId } = useDisplaySpotPriceStore(
-    useShallow(pick(["setAssets", "setReferenceAssetId"])),
-  )
-
-  useEffect(() => {
-    setReferenceAssetId(stableCoinId ?? "")
-  }, [stableCoinId, setReferenceAssetId])
-
-  const { isLoaded, sdk } = useRpcProvider()
+  const rpc = useRpcProvider()
 
   useQueries({
-    queries: assetIds.map((assetId) => ({
-      queryKey: ["spotPriceKey", assetId],
-      queryFn: async () => {
-        const price = await getSpotPrice(
-          sdk.api.router,
-          assetId,
-          stableCoinId ?? "",
-        )()
+    queries: assetIds.map((assetId) => spotPriceKeyQuery(rpc, assetId)),
+  })
+}
 
-        setAssets([{ id: assetId, price: price.spotPrice }])
+const combineShareTokenPrices = (
+  queries: UseQueryResult<string | undefined, Error>[],
+  addresses: Array<string>,
+) => {
+  const isLoading = queries.some((query) => query.isLoading)
 
-        return true
-      },
-      notifyOnChangeProps: [],
-      staleTime: Infinity,
-      enabled: isLoaded,
-    })),
+  return {
+    data: isLoading
+      ? new Map<string, string>()
+      : new Map(
+          addresses.map((poolAddress, index) => {
+            const data = queries[index]?.data
+
+            return [poolAddress, data]
+          }),
+        ),
+    isLoading,
+  }
+}
+
+const shareTokenPriceQuery = (
+  ql: QueryClient,
+  rpc: TProviderContext,
+  shareToken: TShareToken,
+) => {
+  const stableCoinId = useDisplayAssetStore.getState().stableCoinId
+
+  return queryOptions({
+    queryKey: ["shareTokenPrice", shareToken.poolAddress, stableCoinId],
+    queryFn: async () => {
+      const { poolAddress, assets } = shareToken
+      const pool = await ql.ensureQueryData(
+        xykPoolWithLiquidityQuery(rpc, ql, poolAddress),
+      )
+
+      if (!pool) return undefined
+
+      const assetsWithPoolBalance = zipWith(
+        pool.tokens,
+        assets,
+        (token, asset) => ({
+          balance: token.balance,
+          asset,
+        }),
+      )
+
+      let shareTokenPrice: string | undefined
+
+      for (const { asset, balance } of assetsWithPoolBalance) {
+        const spotPriceAsset = await ql.ensureQueryData(
+          spotPriceKeyQuery(rpc, asset.id),
+        )
+
+        if (spotPriceAsset) {
+          const tvl = toBig(
+            Big(balance.toString()).times(2).toString(),
+            asset.decimals,
+          )
+
+          shareTokenPrice = tvl
+            .times(spotPriceAsset)
+            .div(toDecimal(pool.totalLiquidity, shareToken.decimals))
+            .toString()
+
+          break
+        }
+      }
+
+      return shareTokenPrice
+    },
+  })
+}
+
+export const useShareTokenPrices = (poolAddresses: Array<string>) => {
+  const { getShareTokensByAddress } = useAssets()
+  const queryClient = useQueryClient()
+  const rpc = useRpcProvider()
+
+  // should be unique keys, since combine will not trigger with duplications
+  const uniquePoolAddresses = unique(poolAddresses)
+
+  const shareTokens =
+    getShareTokensByAddress(uniquePoolAddresses).filter(isNonNullish)
+
+  return useQueries({
+    queries: shareTokens.map((shareToken) =>
+      shareTokenPriceQuery(queryClient, rpc, shareToken),
+    ),
+    combine: (queries) =>
+      combineShareTokenPrices(
+        queries,
+        shareTokens.map((shareToken) => shareToken.poolAddress),
+      ),
   })
 }

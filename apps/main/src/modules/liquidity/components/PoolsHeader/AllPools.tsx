@@ -59,16 +59,6 @@ export const AllPools = () => {
       />
       <Separator orientation="vertical" sx={{ my: 10 }} />
       <ValueStats
-        label={t("liquidity:header.volume")}
-        value={t("common:currency", {
-          value: totals.volume,
-        })}
-        isLoading={isLoadingPlatformTotal || isLoadingXYK}
-        size="medium"
-        wrap
-      />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
-      <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency", { value: totals.liquidity })}
         size="medium"
@@ -89,6 +79,16 @@ export const AllPools = () => {
         value={t("common:currency", {
           value: xykTotals.liquidity,
         })}
+        size="medium"
+        wrap
+      />
+      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <ValueStats
+        label={t("liquidity:header.volume")}
+        value={t("common:currency", {
+          value: totals.volume,
+        })}
+        isLoading={isLoadingPlatformTotal || isLoadingXYK}
         size="medium"
         wrap
       />

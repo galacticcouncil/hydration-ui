@@ -489,17 +489,17 @@ const AddStablepoolLiquiditySummary = ({
             ]
           : []),
 
-        ...(erc20Id
+        ...(erc20Id && healthFactor?.isSignificantChange
           ? [
               {
                 label: t("common:healthFactor"),
-                content: healthFactor ? (
+                content: (
                   <HealthFactorChange
                     healthFactor={healthFactor.current}
                     futureHealthFactor={healthFactor.future}
                     fontSize="p5"
                   />
-                ) : null,
+                ),
               },
             ]
           : []),

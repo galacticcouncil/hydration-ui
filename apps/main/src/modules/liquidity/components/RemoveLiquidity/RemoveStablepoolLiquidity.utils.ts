@@ -19,7 +19,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman } from "@/utils/formatting"
+import { scale, scaleHuman, toBig } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 export type TRemoveStablepoolLiquidityFormValues =
@@ -121,12 +121,10 @@ export const useStablepoolRemoveLiquidity = ({
 
   useEffect(() => {
     if (!split && liquidityOutOneAsset) {
-      form.setValue(
-        "receiveAmount",
-        scaleHuman(liquidityOutOneAsset, receiveAsset.decimals),
-      )
+      const receiveAmount = toBig(liquidityOutOneAsset, receiveAsset.decimals)
+      form.setValue("receiveAmount", receiveAmount.toFixed(0))
     }
-  }, [form, split, liquidityOutOneAsset, receiveAsset.decimals])
+  }, [form, split, liquidityOutOneAsset, receiveAsset.decimals, slippage])
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {

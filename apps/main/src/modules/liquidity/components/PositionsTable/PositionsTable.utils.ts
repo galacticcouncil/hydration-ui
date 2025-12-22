@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 import { XykDeposit } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
-import { useXYKPoolsLiquidity } from "@/api/xyk"
+import { useXYKPoolWithLiquidity } from "@/api/xyk"
 import {
   TAprByRewardAsset,
   TJoinedFarm,
@@ -64,7 +64,8 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
 
   const getDepositAprs = useDepositAprs()
 
-  const { data: liquidity } = useXYKPoolsLiquidity(id)
+  const { data: poolWithLiquidity } = useXYKPoolWithLiquidity(id)
+  const liquidity = poolWithLiquidity?.totalLiquidity
 
   const price = Big(pool.tvlDisplay)
     .div(liquidity ? scaleHuman(liquidity, pool.meta.decimals) : 1)
@@ -320,7 +321,8 @@ export const useUserPositionsTotal = (pool: OmnipoolAssetTable) => {
 export const useUserIsolatedPositionsTotal = (pool: IsolatedPoolTable) => {
   const { positions, id, meta, balance } = pool
 
-  const { data: liquidity } = useXYKPoolsLiquidity(id)
+  const { data: poolWithLiquidity } = useXYKPoolWithLiquidity(id)
+  const liquidity = poolWithLiquidity?.totalLiquidity
 
   const price = Big(pool.tvlDisplay)
     .div(liquidity ? scaleHuman(liquidity, pool.meta.decimals) : 1)

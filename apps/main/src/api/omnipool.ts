@@ -1,5 +1,5 @@
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary, Enum } from "polkadot-api"
@@ -7,16 +7,20 @@ import { useMemo } from "react"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 
-import { hubToken, omnipoolTokens } from "./pools"
+import { hubTokenQuery, omnipoolTokensQuery } from "./pools"
 
 type OraclePricePoolType = "omnipool" | "hydraxyk"
 
 export const useOmnipoolAssetsData = () => {
-  const { data: omnipoolTokensData, isLoading: isOmnipoolTokensLoading } =
-    useQuery(omnipoolTokens)
+  const { sdk } = useRpcProvider()
+  const queryClient = useQueryClient()
 
-  const { data: hubTokenData, isLoading: isHubTokenLoading } =
-    useQuery(hubToken)
+  const { data: omnipoolTokensData, isLoading: isOmnipoolTokensLoading } =
+    useQuery(omnipoolTokensQuery(sdk, queryClient))
+
+  const { data: hubTokenData, isLoading: isHubTokenLoading } = useQuery(
+    hubTokenQuery(sdk, queryClient),
+  )
 
   const dataMap = useMemo(
     () =>

@@ -17,7 +17,8 @@ import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
-import { isNumber } from "remeda"
+import { isNumber, prop } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { XykDeposit } from "@/api/account"
 import { AssetType, TAssetData, TErc20, TErc20AToken } from "@/api/assets"
@@ -29,14 +30,15 @@ import {
   PoolBase,
   PoolFee,
   PoolToken,
-  stablePools,
   StableSwapBase,
+  useOmnipoolIds,
+  useStablePools,
   useXykPools,
-  useXykPoolsIds,
 } from "@/api/pools"
 import { useSquidClient } from "@/api/provider"
 import { useStableSwapTradability } from "@/api/stableswap"
-import { useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
+import { XYKPoolWithLiquidity } from "@/api/xyk"
+import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   useAccountBalances,
@@ -47,9 +49,9 @@ import { useAssetsPrice } from "@/states/displayAsset"
 import {
   setOmnipoolAssets,
   setXYKPools,
-  useOmnipoolIds,
   useOmnipoolStablepoolAssets,
 } from "@/states/liquidity"
+import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 export type OmnipoolAssetTable = {
@@ -87,7 +89,7 @@ export type IsolatedPoolTable = {
   id: string
   tokens: [PoolToken, PoolToken]
   tvlDisplay: string
-  meta: XYKPoolMeta
+  meta: TShareToken
   isPositions: boolean
   volumeDisplay: string | undefined
   isFeeLoading: boolean
@@ -238,7 +240,7 @@ export const useOmnipoolStablepools = () => {
     getAssetWithFallback,
     native: { id: nativeId },
   } = useAssets()
-  const { ids: omnipoolIds = [] } = useOmnipoolIds()
+  const { data: omnipoolIds = [] } = useOmnipoolIds()
   const { data: omnipoolAssets, isLoading: isOmnipoolAssetsLoading } =
     useOmnipoolAssetsData()
 
@@ -467,10 +469,8 @@ export const useOmnipoolStablepools = () => {
 export const useIsolatedPools = () => {
   const squidClient = useSquidClient()
   const { data: pools, isLoading: isPoolsLoading } = useXykPools()
-  const { getMetaFromXYKPoolTokens } = useAssets()
+  const { getShareTokenByAddress } = useAssets()
   const { getPositions } = useAccountPositions()
-  const { data: xykPoolsIds, isLoading: isXykPoolsIdsLoading } =
-    useXykPoolsIds()
   const { data: xykVolumes, isLoading: isVolumeLoading } = useQuery(
     xykVolumeQuery(squidClient, pools?.map((pool) => pool.address) ?? []),
   )
@@ -527,56 +527,52 @@ export const useIsolatedPools = () => {
   }, [pools])
 
   const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice(pricesIds)
-  const isLoading = isPriceLoading || isPoolsLoading || isXykPoolsIdsLoading
+  const isLoading = isPriceLoading || isPoolsLoading
 
   const data = useMemo(() => {
     if (isLoading) return []
 
     return poolsData.reduce<IsolatedPoolTable[]>(
       (acc, { pool, tvl, spotPriceId }) => {
+        const {
+          tokens: [tokenA, tokenB],
+          address,
+          minTradingLimit,
+        } = pool
         const assetPrice = getAssetPrice(spotPriceId)
         const price = assetPrice.isValid ? assetPrice.price : undefined
         const tvlDisplay = price
-          ? (toBig(price)?.times(tvl).toString() ?? "0")
+          ? (Big(price).times(tvl).toString() ?? "0")
           : "0"
 
-        const allFarms = isolatedPoolsFarms?.[pool.address] ?? []
+        const allFarms = isolatedPoolsFarms?.[address] ?? []
         const farms =
-          isolatedPoolsFarms?.[pool.address]?.filter(
-            (farm) => farm.apr !== "0",
-          ) ?? []
+          isolatedPoolsFarms?.[address]?.filter((farm) => farm.apr !== "0") ??
+          []
         const isFarms = farms.length > 0
         const totalApr = farms
           .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
           .toString()
 
-        const shareTokenId = xykPoolsIds?.get(pool.address)?.toString()
-        const meta = getMetaFromXYKPoolTokens(
-          shareTokenId ?? pool.address,
-          pool.tokens,
-        )
+        const meta = getShareTokenByAddress(address)
 
-        const tokenA = pool.tokens[0]
-        const tokenB = pool.tokens[1]
+        if (!meta || !tokenA || !tokenB) return acc
 
-        if (!meta || !shareTokenId || !tokenA || !tokenB) return acc
-
-        const { xykMiningPositions } = getPositions(pool.address)
+        const shareTokenId = meta.id
+        const { xykMiningPositions } = getPositions(address)
 
         const volumeDisplay = xykVolumes?.find(
-          (volume) => volume.poolId === pool.address,
+          (volume) => volume.poolId === address,
         )?.poolVolume
 
-        const balance = shareTokenId
-          ? getTransferableBalance(shareTokenId)
-          : undefined
+        const balance = getTransferableBalance(shareTokenId)
 
         const positionsAmount = Big(xykMiningPositions.length)
           .plus(balance ? 1 : 0)
           .toNumber()
 
         acc.push({
-          id: pool.address,
+          id: address,
           tokens: [tokenA, tokenB],
           meta,
           tvlDisplay,
@@ -587,7 +583,7 @@ export const useIsolatedPools = () => {
           price,
           shareTokenId,
           positions: xykMiningPositions,
-          minTradingLimit: pool.minTradingLimit,
+          minTradingLimit,
           isVolumeLoading,
           isFarms,
           totalApr,
@@ -606,10 +602,9 @@ export const useIsolatedPools = () => {
   }, [
     poolsData,
     getAssetPrice,
-    getMetaFromXYKPoolTokens,
+    getShareTokenByAddress,
     getPositions,
     getTransferableBalance,
-    xykPoolsIds,
     isLoading,
     xykVolumes,
     isVolumeLoading,
@@ -676,7 +671,7 @@ export const useStablepoolReserves = (poolId: string) => {
 
 export const useStablepoolsReserves = (poolIds?: string[]) => {
   const { getAssetWithFallback } = useAssets()
-  const { data: pools = [], isLoading: isPoolsLoading } = useQuery(stablePools)
+  const { data: pools = [], isLoading: isPoolsLoading } = useStablePools()
 
   const stablepools_: StableSwapBase[] = []
   const tokenSet = new Set<string>()
@@ -824,4 +819,42 @@ export const useNavigateLiquidityBack = () => {
       navigate({ to: "/liquidity" })
     }
   }
+}
+
+export const useLiquidityMinLimit = () => {
+  const { slippage } = useTradeSettings(useShallow(prop("liquidity")))
+
+  return (value: string | number | Big) =>
+    Big(value)
+      .times(100 - slippage)
+      .div(100)
+      .toFixed(0)
+}
+
+export const convertXYKSharesToValues = (
+  pool: XYKPoolWithLiquidity,
+  shares: bigint | string,
+  cb?: (value: string) => string,
+): [
+  { token: PoolToken; value: string },
+  { token: PoolToken; value: string },
+] => {
+  const { tokens, totalLiquidity } = pool
+
+  const [tokenA, tokenB] = tokens
+
+  const valueA = Big(tokenA.balance.toString())
+    .times(shares.toString())
+    .div(totalLiquidity.toString())
+    .toString()
+
+  const valueB = Big(tokenB.balance.toString())
+    .times(shares.toString())
+    .div(totalLiquidity.toString())
+    .toString()
+
+  return [
+    { token: tokenA, value: cb ? cb(valueA) : valueA },
+    { token: tokenB, value: cb ? cb(valueB) : valueB },
+  ]
 }

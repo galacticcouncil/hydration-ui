@@ -13,7 +13,6 @@ import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
 import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSubpageMenu"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
-import { OmnipoolSubscriber } from "@/routes/liquidity/route"
 
 export const WalletAssetsPage = () => {
   const { t } = useTranslation("common")
@@ -35,7 +34,6 @@ export const WalletAssetsPage = () => {
 
   return (
     <>
-      <OmnipoolSubscriber />
       <Flex direction="column" gap={[0, 20]}>
         <Grid
           columnGap={[10, 20]}

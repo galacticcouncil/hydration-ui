@@ -12,6 +12,7 @@ import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
@@ -19,7 +20,6 @@ import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/A
 import { AssetDetailStaking } from "@/modules/wallet/assets/MyAssets/AssetDetailStaking"
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 import { useAssets } from "@/providers/assetsProvider"
-import { TAssetStored } from "@/states/assetRegistry"
 import { naturally, numericallyStr, sortBy } from "@/utils/sort"
 
 export enum MyAssetsTableColumn {
@@ -30,16 +30,15 @@ export enum MyAssetsTableColumn {
   Actions = "actions",
 }
 
-export type MyAsset = TAssetStored & {
+export type MyAsset = TAssetData & {
   readonly origin: AnyChain | null
   readonly total: string
   readonly totalDisplay: string
   readonly transferable: string
   readonly transferableDisplay: string
   readonly reserved: string
-  readonly reservedDca: string
+  readonly reservedDca: string | undefined
   readonly canStake: boolean
-  readonly isTradeable: boolean
 }
 
 const columnHelper = createColumnHelper<MyAsset>()
@@ -135,11 +134,11 @@ export const useMyAssetsColumns = () => {
             <TableRowAction onClick={() => setModal("transfer")}>
               {t("common:send")}
             </TableRowAction>
-            <TableRowAction disabled={!row.original.isTradeable} asChild>
+            <TableRowAction disabled={!row.original.isTradable} asChild>
               <Link
                 to="/trade/swap/market"
                 search={{ assetIn: row.original.id }}
-                disabled={!row.original.isTradeable}
+                disabled={!row.original.isTradable}
               >
                 {t("common:trade")}
               </Link>

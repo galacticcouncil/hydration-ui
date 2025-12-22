@@ -42,8 +42,6 @@ export const SModalWrapper = styled(Overlay)<{ animationDurationMs?: number }>`
     animationDurationMs = DEFAULT_ANIMATION_DURATION,
   }) => animationDurationMs}ms;
 
-  --modal-header-button-size: 34px;
-
   position: fixed;
   inset: 0;
   padding-block: var(--modal-block-offset);
@@ -131,6 +129,7 @@ export const SModalHeader = styled(Flex)`
   flex-direction: column;
 
   padding: var(--modal-content-padding);
+  --modal-header-button-size: 34px;
 
   & > div:first-of-type {
     justify-content: space-between;
