@@ -1,30 +1,29 @@
-import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
-import { useStore } from "state/store"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { useAssets } from "providers/assets"
-import { useMemo } from "react"
-import { uniqBy } from "utils/rx"
-import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useAccountBalances } from "./deposits"
-import { createToastMessages } from "state/toasts"
-import { useTranslation } from "react-i18next"
-import { AAVE_EXTRA_GAS } from "utils/constants"
-import { NATIVE_ASSET_ID } from "utils/api"
 import {
-  u8aConcat,
-  stringToU8a,
-  bnToU8a,
   BN,
+  bnToU8a,
   compactAddLength,
-  u8aToHex,
-  hexToU8a,
+  stringToU8a,
+  u8aConcat,
 } from "@polkadot/util"
-import { decodeAddress } from "@polkadot/util-crypto"
+import { decodeAddress, signatureVerify } from "@polkadot/util-crypto"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import BigNumber from "bignumber.js"
+import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
+import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
+import { isPolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
+import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import { useStore } from "state/store"
+import { createToastMessages } from "state/toasts"
+import { NATIVE_ASSET_ID } from "utils/api"
+import { AAVE_EXTRA_GAS } from "utils/constants"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { Maybe, identity, isNotNil, undefinedNoop } from "utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { uniqBy } from "utils/rx"
+import { useAccountBalances } from "./deposits"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -114,7 +113,6 @@ function getMessage(address: string, assetId: string) {
     Buffer.from(assetIdU8a).toString("hex"),
   )
   console.log("message:", Buffer.from(message).toString("hex"))
-  console.log("length", message.length)
 
   return message
 }
@@ -126,11 +124,13 @@ export const useSetAsFeePayment = () => {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { wallet } = useWallet()
 
   return useMutation(
     async (tokenId?: string) => {
       if (!tokenId) return
       if (!account?.address) return
+      if (!wallet) return
 
       const meta = getAssetWithFallback(tokenId)
 
@@ -162,14 +162,31 @@ export const useSetAsFeePayment = () => {
         BigNumber(accountInfo.providers.toString()).eq(0) &&
         BigNumber(accountInfo.sufficients.toString()).eq(0)
 
-      console.log({ isUnclaimedAccount })
+      const signer = wallet.extension.signer
 
-      if (isUnclaimedAccount) {
-        return await createTransaction({
-          tx: api.tx.evmAccounts.claimAccount(account.address, tokenId, {
-            Sr25519: getMessage(account.address, "1000001"),
-          }),
+      if (isUnclaimedAccount && isPolkadotSigner(signer)) {
+        const message = getMessage(account.address, tokenId)
+
+        const { signature } = await signer.signRaw({
+          address: account.address,
+          data: `0x${Buffer.from(message).toString("hex")}`,
+          type: "bytes",
         })
+
+        console.log(
+          "signature:",
+          signature,
+          signatureVerify(message, signature, decodeAddress(account.address)),
+        )
+        const unsignedTx = api.tx.evmAccounts.claimAccount(
+          account.address,
+          tokenId,
+          {
+            Sr25519: signature,
+          },
+        )
+        await unsignedTx.send()
+        console.log("SENT")
       }
 
       return await createTransaction(
