@@ -1,27 +1,39 @@
-import { Button, Input, Stack, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { Controller, FormProvider } from "react-hook-form"
+import {
+  AccountInput,
+  Button,
+  Flex,
+  FormError,
+  FormLabel,
+  Separator,
+  Stack,
+} from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { Controller, useFormContext } from "react-hook-form"
 import { first, pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import {
-  ExternalWalletFormValues,
-  useExternalWalletForm,
-} from "@/components/external/ExternalWalletForm.form"
+import { AddressBookButton } from "@/components/address-book/AddressBookButton"
+import { ExternalWalletFormValues } from "@/components/external/ExternalWalletForm.form"
 import { WalletProviderType } from "@/config/providers"
 import { useWeb3Connect, useWeb3Enable } from "@/hooks"
 import { toStoredAccount } from "@/utils"
 import { ExternalWallet, getWallet } from "@/wallets"
 
-export const ExternalWalletForm = () => {
+type ExternalWalletFormProps = {
+  readonly onAddressBookOpen: () => void
+}
+
+export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
+  onAddressBookOpen,
+}) => {
   const { enable } = useWeb3Enable()
   const { setAccount, toggle } = useWeb3Connect(
     useShallow(pick(["setAccount", "toggle"])),
   )
 
-  const wallet = getWallet(WalletProviderType.ExternalWallet)
+  const form = useFormContext<ExternalWalletFormValues>()
 
-  const form = useExternalWalletForm()
+  const wallet = getWallet(WalletProviderType.ExternalWallet)
 
   const onSubmit = async (values: ExternalWalletFormValues) => {
     const isExternalWallet = wallet instanceof ExternalWallet
@@ -41,39 +53,32 @@ export const ExternalWalletForm = () => {
   }
 
   return (
-    <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Stack gap={4}>
-          <Controller
-            name="address"
-            control={form.control}
-            render={({ field: { onChange, value }, fieldState: { error } }) => (
-              <>
-                <Input
-                  value={value}
-                  onChange={onChange}
-                  customSize="large"
-                  placeholder="Paste account address here..."
-                  isError={!!error}
-                />
-                {error && (
-                  <Text
-                    fs={12}
-                    font="secondary"
-                    fw={400}
-                    color={getToken("accents.danger.secondary")}
-                  >
-                    {error.message}
-                  </Text>
-                )}
-              </>
-            )}
-          />
-          <Button type="submit" size="large" width="100%">
-            Confirm
-          </Button>
-        </Stack>
-      </form>
-    </FormProvider>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Stack gap="var(--modal-content-padding)">
+        <Controller
+          name="address"
+          control={form.control}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <Stack gap={getTokenPx("scales.paddings.m")}>
+              <Flex justify="space-between" align="center">
+                <FormLabel>Account address</FormLabel>
+                <AddressBookButton onClick={onAddressBookOpen} />
+              </Flex>
+              <AccountInput
+                value={value}
+                onChange={onChange}
+                placeholder="Paste account address here..."
+                isError={!!error}
+              />
+              {error && <FormError>{error.message}</FormError>}
+            </Stack>
+          )}
+        />
+        <Separator mx="var(--modal-content-inset)" />
+        <Button type="submit" size="large" width="100%">
+          Confirm
+        </Button>
+      </Stack>
+    </form>
   )
 }

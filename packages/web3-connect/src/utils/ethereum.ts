@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmChain } from "@galacticcouncil/xcm-core"
+import { isAnyEvmChain } from "@galacticcouncil/utils"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { isFunction } from "remeda"
 import { EIP1193Provider } from "viem"
 
@@ -84,11 +84,11 @@ export type AddEvmChainParams = {
 const getAddEvmChainParams = (chainKey: string): AddEvmChainParams => {
   const chain = chainsMap.get(chainKey)
 
-  if (!chain?.isEvmChain || !chain?.isEvmParachain) {
+  if (!chain || !isAnyEvmChain(chain)) {
     throw new Error("Chain is not an EVM chain")
   }
 
-  const chainProps = (chain as EvmChain).client.chain
+  const chainProps = chain.evmClient.chain
 
   return {
     chainId: "0x" + Number(chainProps.id).toString(16),

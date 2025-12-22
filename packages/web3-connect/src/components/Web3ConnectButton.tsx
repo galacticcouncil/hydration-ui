@@ -16,13 +16,31 @@ import { useAccount } from "@/hooks/useAccount"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { getAccountAvatarTheme } from "@/utils"
 
-export type Web3ConnectButtonProps = ButtonProps
+export type Web3ConnectButtonProps = ButtonProps & {
+  allowIncompatibleAccounts?: boolean
+}
 
 export const Web3ConnectButton: FC<
   Web3ConnectButtonProps & { ref?: Ref<HTMLButtonElement> }
-> = ({ ref, ...props }) => {
+> = ({ ref, allowIncompatibleAccounts = false, ...props }) => {
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
+
+  if (!allowIncompatibleAccounts && account?.isIncompatible) {
+    return (
+      <Button
+        ref={ref}
+        onClick={() => toggle()}
+        {...props}
+        variant="accent"
+        outline
+      >
+        <Icon size={16} component={Wallet} mr={4} />
+        <Text fs="p3">Select Account</Text>
+      </Button>
+    )
+  }
+
   if (account) {
     const shortDisplayAddr = shortenAccountAddress(account.displayAddress)
 

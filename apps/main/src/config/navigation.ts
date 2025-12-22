@@ -1,4 +1,5 @@
 import {
+  ArrowRightLeftIcon,
   BanknoteIcon,
   ChartPieIcon,
   CoinsIcon,
@@ -27,7 +28,7 @@ export const LINKS = {
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
-  // crossChain: "/cross-chain",
+  crossChain: "/cross-chain",
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
@@ -105,11 +106,11 @@ export const NAVIGATION: NavigationItem[] = [
       // { key: "walletTransactions", to: LINKS.walletTransactions },
     ],
   },
-  // {
-  //   key: "crossChain",
-  //   to: LINKS.crossChain,
-  //   icon: ArrowRightLeftIcon,
-  // },
+  {
+    key: "crossChain",
+    to: LINKS.crossChain,
+    icon: ArrowRightLeftIcon,
+  },
   // {
   //   key: "stats",
   //   to: LINKS.stats,
@@ -163,10 +164,10 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.walletTransactions.title"),
       description: "",
     },
-    // crossChain: {
-    //   title: t("navigation.crossChain.title"),
-    //   description: "",
-    // },
+    crossChain: {
+      title: t("navigation.crossChain.title"),
+      description: "",
+    },
     // bridge: {
     //   title: t("navigation.bridge.title"),
     //   description: "",
@@ -268,7 +269,7 @@ export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "borrow",
   "liquidity",
   "wallet",
-  // "crossChain",
+  "crossChain",
   // "stats",
   "staking",
   // "referrals",
@@ -279,7 +280,7 @@ export const bottomNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "liquidity",
   "borrow",
-  // "crossChain",
+  "crossChain",
   // "stats",
   "staking",
   // "referrals",
