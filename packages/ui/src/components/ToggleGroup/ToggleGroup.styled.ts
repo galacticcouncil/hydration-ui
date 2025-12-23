@@ -47,17 +47,19 @@ const disabledStyles = css`
 
 export const SToggleGroup = styled(ToggleGroupPrimitive.Root, {
   shouldForwardProp: (prop) => isPropValid(prop) && prop !== "size",
-})<ToggleGroupProps>(({ theme }) => [
+})<ToggleGroupProps>(({ theme, size = "medium" }) => [
   css`
-    display: inline-flex;
-    width: fit-content;
+    display: flex;
     align-items: center;
-    gap: ${theme.scales.paddings.xs}px;
-
-    padding: ${theme.scales.paddings.xs}px;
+    gap: ${size === "small"
+      ? theme.scales.paddings.xs
+      : theme.scales.paddings.s}px;
+    padding: ${size === "small"
+      ? theme.scales.paddings.xs
+      : theme.scales.paddings.s}px;
 
     border-radius: ${theme.radii.full}px;
-    border: 1px solid ${theme.controls.outline.base};
+    border: 1px solid ${theme.buttons.secondary.low.borderRest};
   `,
 ])
 
@@ -68,6 +70,7 @@ export const SToggleGroupItem = styled(ToggleGroupPrimitive.Item, {
 }>(({ theme, size = "medium" }) => [
   css`
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
     gap: ${theme.scales.paddings.base}px;

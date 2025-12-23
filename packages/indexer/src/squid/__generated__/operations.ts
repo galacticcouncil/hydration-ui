@@ -17,6 +17,11 @@ export type LatestAccountsBalancesQueryVariables = Types.Exact<{
 
 export type LatestAccountsBalancesQuery = { __typename?: 'Query', accountTotalBalanceHistoricalData?: { __typename?: 'AccountTotalBalanceHistoricalDataConnection', nodes: Array<{ __typename?: 'AccountTotalBalanceHistoricalDatum', totalTransferableNorm: string } | null> } | null };
 
+export type LatestBlockHeightQueryQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type LatestBlockHeightQueryQuery = { __typename?: 'Query', blocks?: { __typename?: 'BlocksConnection', edges: Array<{ __typename?: 'BlocksEdge', node?: { __typename?: 'Block', height: number } | null }> } | null };
+
 export type SupplyFragment = { __typename?: 'MmSupply', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null };
 
 export type WithdrawFragment = { __typename?: 'MmWithdraw', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null };

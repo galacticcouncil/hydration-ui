@@ -22,6 +22,7 @@ import {
 } from "@/config/rpc"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { ApiMetadata, useApiMetadataStore } from "@/states/metadata"
+import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = object
 
@@ -119,7 +120,8 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
 }
 
 export const useSquidUrl = (): string => {
-  return useState(() => import.meta.env.VITE_SQUID_URL)[0]
+  const { squidUrl } = useProviderRpcUrlStore()
+  return squidUrl
 }
 
 export const useIndexerUrl = (): string => {

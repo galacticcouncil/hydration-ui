@@ -17,6 +17,7 @@ import {
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
+import Big from "big.js"
 import { useEffect } from "react"
 import { Controller, useFieldArray, useFormContext } from "react-hook-form"
 import { FormProvider } from "react-hook-form"
@@ -25,6 +26,7 @@ import { useTranslation } from "react-i18next"
 import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
+import { useAssetFeeParameters } from "@/api/omnipool"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { useStableswap, useStableSwapTradability } from "@/api/stableswap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
@@ -369,6 +371,7 @@ export const AddStablepoolLiquidityForm = ({
             }
             healthFactor={healthFactor}
             erc20Id={erc20Id}
+            option={option}
           />
         )}
 
@@ -420,6 +423,7 @@ const AddStablepoolLiquiditySummary = ({
   limitType = TradeLimitType.Liquidity,
   healthFactor,
   erc20Id,
+  option,
 }: {
   farms: Farm[]
   minReceiveAmount: string
@@ -428,17 +432,22 @@ const AddStablepoolLiquiditySummary = ({
   limitType?: TradeLimitType
   healthFactor?: HealthFactorResult
   erc20Id?: string
+  option: TAddStablepoolLiquidityOption
 }) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation(["liquidity", "common"])
-  const { data: stableswap } = useStableswap(poolMeta.id)
+  const { data: stableswap, isLoading: isStableswapFeeLoading } = useStableswap(
+    poolMeta.id,
+  )
+  const { data: feeParameters, isLoading: isFeeLoading } =
+    useAssetFeeParameters()
   const { data: spotPriceData, isLoading: isPriceLoading } = useQuery(
     spotPriceQuery(rpc, erc20Id ?? poolMeta.id, selectedAssetId ?? ""),
   )
   const erc20Meta = erc20Id ? getAssetWithFallback(erc20Id) : undefined
+  const stableswapFee = scaleHuman(stableswap?.fee ?? 0, 4)
 
-  //@TODO: probably accumulate omnipool and stabpool fees if omnipool is selected
   return (
     <Summary
       separator={<ModalContentDivider />}
@@ -463,11 +472,21 @@ const AddStablepoolLiquiditySummary = ({
           : []),
         {
           label: t("common:apy"),
+          loading: isFeeLoading || isStableswapFeeLoading,
           content: (
             <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-              {t("common:percent", {
-                value: scaleHuman(stableswap?.fee ?? 0, 4),
-              })}
+              {option === "omnipool"
+                ? t("liquidity.add.modal.rewardsFromFees.value", {
+                    from: Big(stableswapFee).plus(
+                      Big(feeParameters?.minFee ?? 0).times(100),
+                    ),
+                    to: Big(stableswapFee).plus(
+                      Big(feeParameters?.maxFee ?? 0).times(100),
+                    ),
+                  })
+                : t("common:percent", {
+                    value: stableswapFee,
+                  })}
             </Text>
           ),
         },

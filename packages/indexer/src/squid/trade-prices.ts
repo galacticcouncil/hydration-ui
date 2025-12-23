@@ -1,4 +1,4 @@
-import { queryOptions } from "@tanstack/react-query"
+import { keepPreviousData, queryOptions } from "@tanstack/react-query"
 
 import { SquidSdk } from "@/squid"
 import { TimeSeriesBucketTimeRange } from "@/squid/__generated__/types"
@@ -12,6 +12,7 @@ export const tradePricesQuery = (
   bucketSize?: TimeSeriesBucketTimeRange | undefined,
 ) =>
   queryOptions({
+    placeholderData: keepPreviousData,
     queryKey: [
       "trade",
       "prices",

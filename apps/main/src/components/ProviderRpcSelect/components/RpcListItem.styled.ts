@@ -3,40 +3,53 @@ import styled from "@emotion/styled"
 import { Box } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 
-export const SRpcListItem = styled(Box)`
-  display: grid;
-  grid-template-columns: 3fr 2fr 1fr;
-  gap: 10px;
+export const SRpcListItem = styled(Box)<{ isInteractive?: boolean }>(
+  ({ theme, isInteractive }) => css`
+    display: grid;
+    grid-template-columns: 3fr 2fr 1fr;
+    gap: 10px;
 
-  align-items: center;
-  padding: 10px var(--modal-content-padding);
-  height: 56px;
+    align-items: center;
+    padding: 10px var(--modal-content-padding);
+    height: 56px;
 
-  &[data-edit="true"] {
-    grid-template-columns: 1fr 1fr;
-    background: ${({ theme }) => theme.surfaces.containers.dim.dimOnBg};
-  }
+    &[data-edit="true"] {
+      grid-template-columns: 1fr 1fr;
+      background: ${theme.surfaces.containers.dim.dimOnBg};
+    }
 
-  &[data-loading="true"] {
-    opacity: 0.5;
-    pointer-events: none;
-  }
+    &[data-loading="true"] {
+      opacity: 0.5;
+      pointer-events: none;
+    }
 
-  ${mq("sm")} {
-    grid-template-columns: 3fr 2fr 5fr;
-  }
+    ${isInteractive &&
+    css`
+      border-top: 1px solid ${theme.details.separators};
+      cursor: ${isInteractive ? "pointer" : "default"};
+      &:hover,
+      &:active {
+        transition: ${theme.transitions.colors};
+        background: ${theme.surfaces.containers.dim.dimOnBg};
+      }
+    `}
 
-  & > * {
-    min-width: 0;
-  }
+    ${mq("sm")} {
+      grid-template-columns: 3fr 2fr 5fr;
+    }
 
-  p {
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-`
+    & > * {
+      min-width: 0;
+    }
+
+    p {
+      line-height: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  `,
+)
 
 export const SRpcRadio = styled.div(
   ({ theme }) => css`
