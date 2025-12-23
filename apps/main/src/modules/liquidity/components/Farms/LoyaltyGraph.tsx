@@ -22,7 +22,7 @@ export const LoyaltyGraph = ({
     <AreaChart
       aspectRatio="16 / 9"
       data={data ?? []}
-      staticChart
+      withoutActiveDot
       xAxisProps={{
         type: "number",
         interval: 0,
