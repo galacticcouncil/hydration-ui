@@ -66,6 +66,7 @@ export const SUSDE_ASSET_ID = "1000625"
 export const SUSDS_ASSET_ID = "1000745"
 export const USDT_POOL_ASSET_ID = "103"
 export const HOLLAR_ID = "222"
+export const aDOT_ASSET_ID = "1001"
 
 export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"

@@ -62,7 +62,8 @@ export const AddStablepoolLiquidityWrapper = (
   if (isMoveGETHToOmnipool && !split) {
     return (
       <AddLiquidityForm
-        assetId={selectedAssetId}
+        selectedAssetId={selectedAssetId}
+        poolId={stablepoolAsset.id}
         farms={farms}
         onClose={props.onClose}
         onSetLiquidityLimit={setLiquidityLimit}
@@ -151,6 +152,7 @@ const StablepoolOmnipool = (props: AddStablepoolProps) => {
     props,
     useAddToOmnipoolZod(
       props.stablepoolAsset,
+      props.stablepoolAsset.id,
       props.farms,
       getReservesZodSchema(balancesMax),
     ),

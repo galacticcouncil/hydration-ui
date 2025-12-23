@@ -78,6 +78,7 @@ export const AddSplitMoneyMarketStablepoolOmnipool = (
     props,
     useAddToOmnipoolZod(
       props.stablepoolAsset,
+      props.stablepoolAsset.id,
       props.farms,
       getReservesZodSchema(balancesMax),
     ),
@@ -138,6 +139,7 @@ export const AddMoneyMarketStablepoolOmnipool = (
     props,
     useAddToOmnipoolZod(
       props.stablepoolAsset,
+      props.stablepoolAsset.id,
       props.farms,
       getReservesZodSchema(balancesMax),
     ),
