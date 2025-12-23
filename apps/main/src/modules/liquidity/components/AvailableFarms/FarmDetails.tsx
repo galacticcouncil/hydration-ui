@@ -17,6 +17,7 @@ import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
 import {
   TJoinedFarm,
+  useEnteredDate,
   useSecondsToLeft,
 } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { LoyaltyGraph } from "@/modules/liquidity/components/Farms/LoyaltyGraph"
@@ -39,6 +40,7 @@ export const FarmDetails = ({
   const meta = getAssetWithFallback(farm.rewardCurrency)
 
   const secondsToLeft = useSecondsToLeft(farm.estimatedEndBlock)
+  const getEnteredDate = useEnteredDate()
 
   const { value: rewards } = useTotalRewardsToReceive(
     joinedFarm
@@ -48,20 +50,19 @@ export const FarmDetails = ({
 
   const formattedRewards = useFormatRewards(rewards)
 
-  const currentApr = useMemo(() => {
-    if (!joinedFarm) return undefined
-    if (!farm.loyaltyCurve) return farm.apr
+  const { apr: currentApr, periodsInFarm } = useMemo(() => {
+    if (!joinedFarm) return { apr: undefined, periodsInFarm: undefined }
+    if (!farm.loyaltyCurve) return { apr: farm.apr, periodsInFarm: undefined }
 
-    return Big(farm.apr)
-      .times(
-        getCurrentLoyaltyFactor(
-          farm.loyaltyCurve,
-          Big(joinedFarm.period)
-            .minus(joinedFarm.farmEntry.entered_at)
-            .toNumber(),
-        ),
-      )
+    const periodsInFarm = Big(joinedFarm.period)
+      .minus(joinedFarm.farmEntry.entered_at)
+      .toNumber()
+
+    const apr = Big(farm.apr)
+      .times(getCurrentLoyaltyFactor(farm.loyaltyCurve, periodsInFarm))
       .toString()
+
+    return { apr, periodsInFarm }
   }, [farm, joinedFarm])
 
   return (
@@ -92,7 +93,9 @@ export const FarmDetails = ({
 
       <ModalContentDivider />
 
-      {farm.loyaltyCurve && <LoyaltyGraph farm={farm} />}
+      {farm.loyaltyCurve && (
+        <LoyaltyGraph farm={farm} periodsInFarm={periodsInFarm} />
+      )}
 
       <Summary
         rows={[
@@ -125,30 +128,71 @@ export const FarmDetails = ({
                 },
               ]
             : []),
-          {
-            label: (
-              <Flex align="center" gap={4}>
-                <Icon
-                  component={Calendar}
-                  size={18}
-                  color={getToken("text.medium")}
-                />
-                <Text fs="p3" color={getToken("text.high")}>
-                  {t("liquidity.farmDetails.expectedEnd.label")}
-                </Text>
-              </Flex>
-            ),
-            content: (
-              <Text fs="p3" fw={600} color={getToken("text.tint.secondary")}>
-                {secondsToLeft
-                  ? t("common:date.default", {
-                      value: addSeconds(new Date(), secondsToLeft.toNumber()),
-                      format: "dd.MM.yyyy",
-                    })
-                  : "N/A"}
-              </Text>
-            ),
-          },
+          ...(joinedFarm
+            ? [
+                {
+                  label: (
+                    <Flex align="center" gap={4}>
+                      <Icon
+                        component={Calendar}
+                        size={18}
+                        color={getToken("text.medium")}
+                      />
+                      <Text fs="p3" color={getToken("text.high")}>
+                        {t("common:joined")}
+                      </Text>
+                    </Flex>
+                  ),
+                  content: (
+                    <Text
+                      fs="p3"
+                      fw={600}
+                      color={getToken("text.tint.secondary")}
+                    >
+                      {t("common:date.default", {
+                        value: getEnteredDate(joinedFarm.farmEntry.entered_at),
+                        format: "dd.MM.yyyy",
+                      })}
+                    </Text>
+                  ),
+                },
+              ]
+            : []),
+          ...(currentApr && currentApr !== "0"
+            ? [
+                {
+                  label: (
+                    <Flex align="center" gap={4}>
+                      <Icon
+                        component={Calendar}
+                        size={18}
+                        color={getToken("text.medium")}
+                      />
+                      <Text fs="p3" color={getToken("text.high")}>
+                        {t("liquidity.farmDetails.expectedEnd.label")}
+                      </Text>
+                    </Flex>
+                  ),
+                  content: (
+                    <Text
+                      fs="p3"
+                      fw={600}
+                      color={getToken("text.tint.secondary")}
+                    >
+                      {secondsToLeft
+                        ? t("common:date.default", {
+                            value: addSeconds(
+                              new Date(),
+                              secondsToLeft.toNumber(),
+                            ),
+                            format: "dd.MM.yyyy",
+                          })
+                        : "N/A"}
+                    </Text>
+                  ),
+                },
+              ]
+            : []),
           ...(rewards.length
             ? [
                 {

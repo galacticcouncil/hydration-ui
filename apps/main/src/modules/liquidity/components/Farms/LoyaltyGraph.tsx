@@ -1,3 +1,4 @@
+import { CrosshairDot } from "@galacticcouncil/ui/assets/icons"
 import { AreaChart } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { useTranslation } from "react-i18next"
@@ -6,15 +7,22 @@ import { Farm } from "@/api/farms"
 
 import { useLoyaltyRates } from "./Farms.utils"
 
-export const LoyaltyGraph = ({ farm }: { farm: Farm }) => {
+export const LoyaltyGraph = ({
+  farm,
+  periodsInFarm,
+}: {
+  farm: Farm
+  periodsInFarm?: number
+}) => {
   const { t } = useTranslation("liquidity")
-  const { data } = useLoyaltyRates(farm)
+  const { data } = useLoyaltyRates(farm, periodsInFarm)
   const theme = useTheme()
 
   return (
     <AreaChart
       aspectRatio="16 / 9"
       data={data ?? []}
+      withoutActiveDot
       xAxisProps={{
         type: "number",
         interval: 0,
@@ -55,6 +63,18 @@ export const LoyaltyGraph = ({ farm }: { farm: Farm }) => {
           },
         ],
       }}
+      customDot={({ key, payload, cx = 0, cy = 0 }) => (
+        <>
+          {payload.current && (
+            <CrosshairDot
+              key={key}
+              x={cx - 7}
+              y={cy - 7}
+              color={theme.themeProps.icons.primary}
+            />
+          )}
+        </>
+      )}
     />
   )
 }
