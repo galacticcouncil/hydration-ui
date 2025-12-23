@@ -7,11 +7,7 @@ import {
   ToggleGroupSize,
 } from "./ToggleGroup.styled"
 
-const ToggleGroupContext = React.createContext<
-  ToggleGroupProps & {
-    spacing?: number
-  }
->({
+const ToggleGroupContext = React.createContext<ToggleGroupProps>({
   size: "medium",
 })
 
@@ -46,7 +42,9 @@ function ToggleGroup<T extends string>({
 }: ToggleGroupRootProps<T>) {
   return (
     <ToggleGroupContext.Provider value={{ size }}>
-      <SToggleGroup {...props}>{children}</SToggleGroup>
+      <SToggleGroup {...props} size={size}>
+        {children}
+      </SToggleGroup>
     </ToggleGroupContext.Provider>
   )
 }

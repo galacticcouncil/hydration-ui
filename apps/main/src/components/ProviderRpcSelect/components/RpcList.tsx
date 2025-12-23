@@ -1,4 +1,4 @@
-import { VirtualizedList } from "@galacticcouncil/ui/components"
+import { Stack, VirtualizedList } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { prop, uniqueBy } from "remeda"
@@ -10,8 +10,6 @@ import {
   RpcListItem,
 } from "@/components/ProviderRpcSelect/components/RpcListItem"
 import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
-
-import { SRpcList } from "./RpcList.styled"
 
 export type RpcListProps = {
   className?: string
@@ -47,7 +45,7 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
   })
 
   return (
-    <SRpcList className={className}>
+    <Stack className={className}>
       <RpcListHeader />
       <VirtualizedList
         items={providerList}
@@ -67,6 +65,6 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
           )
         }}
       />
-    </SRpcList>
+    </Stack>
   )
 }

@@ -189,6 +189,17 @@ export const LatestAccountsBalancesDocument = `
   }
 }
     `;
+export const LatestBlockHeightQueryDocument = `
+    query LatestBlockHeightQuery {
+  blocks(last: 1) {
+    edges {
+      node {
+        height
+      }
+    }
+  }
+}
+    `;
 export const MoneyMarketEventsDocument = `
     query MoneyMarketEvents($filter: MoneyMarketEventFilter, $first: Int, $offset: Int) {
   moneyMarketEvents(
@@ -445,6 +456,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     LatestAccountsBalances(variables?: Types.LatestAccountsBalancesQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.LatestAccountsBalancesQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.LatestAccountsBalancesQuery>({ document: LatestAccountsBalancesDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'LatestAccountsBalances', 'query', variables);
+    },
+    LatestBlockHeightQuery(variables?: Types.LatestBlockHeightQueryQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.LatestBlockHeightQueryQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.LatestBlockHeightQueryQuery>({ document: LatestBlockHeightQueryDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'LatestBlockHeightQuery', 'query', variables);
     },
     MoneyMarketEvents(variables?: Types.MoneyMarketEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.MoneyMarketEventsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.MoneyMarketEventsQuery>({ document: MoneyMarketEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'MoneyMarketEvents', 'query', variables);

@@ -1,18 +1,28 @@
+import {
+  getSquidSdk,
+  latestBlockHeightQuery,
+} from "@galacticcouncil/indexer/squid"
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
-import { Box, Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
+import { Box, Flex, Stack, Text, Tooltip } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { PingResponse } from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
 import {
   SStatusOffline,
   SStatusSuccess,
 } from "@/components/ProviderRpcSelect/components/RpcStatus.styled"
 import { useElapsedTimeStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
+import { SQUID_URLS } from "@/config/rpc"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 export type RpcStatusProps = Partial<PingResponse> & {
   url: string
   name: string
+  squidUrl?: string
 }
 
 export const RpcStatusSuccess = () => {
@@ -38,6 +48,46 @@ export const RpcStatusSlow = () => (
 
 export const RpcStatusOffline = () => <SStatusOffline />
 
+const SquidStatus: React.FC<{
+  name: string
+  url: string
+  blockNumber: number
+}> = ({ name, url, blockNumber }) => {
+  const { t } = useTranslation(["common"])
+
+  const squidSdk = useMemo(() => getSquidSdk(url), [url])
+  const { data: blockHeight } = useQuery(
+    latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2),
+  )
+
+  const blockHeightDifference =
+    isNumber(blockNumber) && isNumber(blockHeight)
+      ? blockNumber - blockHeight
+      : null
+
+  const isIndexerBehind =
+    isNumber(blockHeightDifference) && blockHeightDifference > 50
+
+  return (
+    <Box>
+      <Text fs={14} lh={1.4} fw={600}>
+        {name}
+      </Text>
+      <Text
+        color={
+          isIndexerBehind
+            ? getToken("accents.danger.emphasis")
+            : getToken("accents.success.emphasis")
+        }
+      >
+        {t("rpc.status.blockHeightDiff", {
+          value: blockHeightDifference,
+        })}
+      </Text>
+    </Box>
+  )
+}
+
 const rpcStatusTextMap = {
   // t("rpc.status.online")
   online: "rpc.status.online",
@@ -59,6 +109,7 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
   timestamp,
   blockNumber,
   ping = Infinity,
+  squidUrl,
 }) => {
   const { t } = useTranslation()
 
@@ -66,18 +117,28 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
   const statusText = status ? t(rpcStatusTextMap[status]) : ""
   const statusColor = statusColorMap[status]
 
+  const currentSquidIndexer = SQUID_URLS.find((squid) => squid.url === squidUrl)
+
   return (
     <Box>
       <Tooltip
         text={
-          <>
+          <Stack gap={10}>
             {(name || url) && (
               <Text fs={14} lh={1.4} fw={600}>
                 {name || url}
               </Text>
             )}
             <Text>{statusText}</Text>
-          </>
+
+            {currentSquidIndexer && isNumber(blockNumber) && (
+              <SquidStatus
+                name={currentSquidIndexer.name}
+                url={currentSquidIndexer.url}
+                blockNumber={blockNumber}
+              />
+            )}
+          </Stack>
         }
         side="left"
         asChild

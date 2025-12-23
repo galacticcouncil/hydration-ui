@@ -3,6 +3,7 @@ import { GraphQLClient } from "graphql-request"
 import { getSdk } from "@/squid/__generated__/sdk"
 
 export * from "./account-balances"
+export * from "./blocks"
 export * from "./money-market"
 export * from "./platform-total"
 export * from "./pool-metrics"
