@@ -9,7 +9,7 @@ import { AssetMetadataFactory, hasOwn } from "@galacticcouncil/utils"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createClient, PolkadotClient } from "polkadot-api"
-import { WsEvent } from "polkadot-api/ws-provider"
+import { WsJsonRpcProvider } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
@@ -33,10 +33,7 @@ export type TProviderData = {
   papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
   evm: PublicClient
   featureFlags: TFeatureFlags
-  rpcUrlList: string[]
   poolService: pool.PoolContextProvider
-  endpoint: string
-  dataEnv: TDataEnv
   slotDurationMs: number
   metadata: AssetMetadataFactory
 }
@@ -61,26 +58,27 @@ export const getProviderDataEnv = (rpcUrl: string) => {
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
-export const providerQuery = (rpcUrlList: string[]) => {
+export const papiClientQuery = (ws: WsJsonRpcProvider) => {
   return queryOptions({
-    queryKey: ["provider"],
-    queryFn: () => getProviderData(rpcUrlList),
+    queryKey: ["papiClient"],
+    queryFn: () => getPapiClientData(ws),
     retry: false,
     refetchOnWindowFocus: false,
     gcTime: 0,
   })
 }
 
-const getProviderData = async (rpcUrlList: string[] = []) => {
-  let endpoint = ""
-  const ws = api.getWs(rpcUrlList, {
-    onStatusChanged: (status) => {
-      if (status.type === WsEvent.CONNECTED) {
-        endpoint = status.uri
-      }
-    },
+export const wsProviderQuery = (rpcUrlList: string[]) => {
+  return queryOptions({
+    queryKey: ["wsProvider", rpcUrlList],
+    queryFn: () => api.getWs(rpcUrlList),
+    retry: false,
+    refetchOnWindowFocus: false,
+    gcTime: 0,
   })
+}
 
+const getPapiClientData = async (ws: WsJsonRpcProvider) => {
   const papiClient = createClient(ws)
   const papi = papiClient.getTypedApi(hydration)
 
@@ -108,11 +106,8 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     papiClient,
     papiCompatibilityToken,
     evm,
-    endpoint,
     poolService,
     sdk,
-    rpcUrlList,
-    dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
