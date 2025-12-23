@@ -9,6 +9,7 @@ import { isXYKPoolType } from "sections/pools/PoolsPage.utils"
 import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "./components/LimitModal/LimitModal"
+import { aDOT_ASSET_ID, DOT_ASSET_ID } from "utils/constants"
 
 export enum Page {
   ADD_LIQUIDITY,
@@ -29,6 +30,7 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
 
   const farms = pool.farms
   const isXYK = isXYKPoolType(pool)
+  const isADot = pool.id === aDOT_ASSET_ID
 
   return (
     <Modal open={isOpen} disableCloseOutside onClose={onClose}>
@@ -53,10 +55,14 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
               />
             ) : (
               <AddLiquidityForm
-                assetId={assetId}
+                selectedAssetId={assetId}
+                poolId={pool.id}
                 farms={farms}
                 onClose={onClose}
                 onSetLiquidityLimit={() => paginateTo(Page.LIMIT_LIQUIDITY)}
+                onAssetOpen={
+                  isADot ? () => paginateTo(Page.ASSET_SELECTOR) : undefined
+                }
               />
             ),
           },
@@ -67,6 +73,8 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
             content: (
               <AssetsModalContent
                 defaultSelectedAsssetId={pool.id}
+                hideInactiveAssets
+                allowedAssets={isADot ? [pool.id, DOT_ASSET_ID] : undefined}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
                   back()

@@ -38,9 +38,11 @@ import { HealthFactorRiskWarning } from "sections/lending/components/Warnings/He
 import { HealthFactorChange } from "sections/lending/components/HealthFactorChange"
 import { useSwapLimit } from "./components/LimitModal/LimitModal.utils"
 import { useMinSharesToGet } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.utils"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 
 type Props = {
-  assetId: string
+  selectedAssetId: string
+  poolId: string
   initialAmount?: string
   onClose: () => void
   onAssetOpen?: () => void
@@ -50,7 +52,8 @@ type Props = {
 }
 
 export const AddLiquidityForm = ({
-  assetId,
+  selectedAssetId,
+  poolId,
   onClose,
   onAssetOpen,
   onSuccess,
@@ -59,7 +62,9 @@ export const AddLiquidityForm = ({
   onSetLiquidityLimit,
 }: Props) => {
   const { t } = useTranslation()
-  const { api } = useRpcProvider()
+  const { account } = useAccount()
+  const { swapLimit } = useSwapLimit()
+  const { api, sdk } = useRpcProvider()
   const { native, getAssetWithFallback } = useAssets()
   const { createTransaction } = useStore()
   const isFarms = farms.length > 0
@@ -70,8 +75,9 @@ export const AddLiquidityForm = ({
   const refetchAccountAssets = useRefetchAccountAssets()
   const getMinSharesToGet = useMinSharesToGet()
 
-  const assetMeta = getAssetWithFallback(assetId)
-  const zodSchema = useAddToOmnipoolZod(assetMeta, farms)
+  const assetMeta = getAssetWithFallback(selectedAssetId)
+  const poolMeta = getAssetWithFallback(poolId)
+  const zodSchema = useAddToOmnipoolZod(poolMeta, selectedAssetId, farms)
   const form = useForm<{
     amount: string
     farms: boolean
@@ -93,10 +99,10 @@ export const AddLiquidityForm = ({
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
   const { totalShares, omnipoolFee, assetBalance, sharesToGet, isGETH } =
-    useAddLiquidity(assetId, debouncedAmount)
+    useAddLiquidity(poolId, selectedAssetId, debouncedAmount)
 
   const hfChange = useHealthFactorChange({
-    assetId,
+    assetId: selectedAssetId,
     amount: debouncedAmount,
     action: ProtocolAction.withdraw,
   })
@@ -120,27 +126,50 @@ export const AddLiquidityForm = ({
 
     const amount = scale(values.amount, assetMeta.decimals).toString()
     const shares = getMinSharesToGet(sharesToGet)
+    const needSwap = poolId !== selectedAssetId
 
-    const tx = isJoinFarms
+    const getSwapTx = async () => {
+      const builtTx = await sdk.tx
+        .trade(
+          await sdk.api.router.getBestSell(
+            selectedAssetId,
+            poolId,
+            values.amount,
+          ),
+        )
+        .withSlippage(Number(swapLimit))
+        .withBeneficiary(account?.address ?? "")
+        .build()
+
+      return api.tx(builtTx.hex)
+    }
+
+    const addOmnipoolTx = isJoinFarms
       ? api.tx.omnipoolLiquidityMining.addLiquidityAndJoinFarms(
           farms.map<[string, string]>((farm) => [
             farm.globalFarmId,
             farm.yieldFarmId,
           ]),
-          assetId,
+          poolId,
           amount,
           shares,
         )
-      : api.tx.omnipool.addLiquidityWithLimit(assetId, amount, shares)
+      : api.tx.omnipool.addLiquidityWithLimit(poolId, amount, shares)
+
+    const validAddOmnipoolTx = poolMeta.isErc20
+      ? api.tx.dispatcher.dispatchWithExtraGas(
+          addOmnipoolTx.inner.toHex(),
+          AAVE_EXTRA_GAS,
+        )
+      : addOmnipoolTx
+
+    const tx = needSwap
+      ? api.tx.utility.batchAll([await getSwapTx(), validAddOmnipoolTx])
+      : validAddOmnipoolTx
 
     return await createTransaction(
       {
-        tx: assetMeta.isErc20
-          ? api.tx.dispatcher.dispatchWithExtraGas(
-              tx.inner.toHex(),
-              AAVE_EXTRA_GAS,
-            )
-          : tx,
+        tx,
       },
       {
         onSuccess: (result) => {
@@ -159,7 +188,7 @@ export const AddLiquidityForm = ({
             t,
             tOptions: {
               value: BN(values.amount),
-              symbol: assetMeta?.symbol,
+              symbol: assetMeta.symbol,
               where: "Omnipool",
             },
             components: ["span", "span.highlight"],
@@ -211,7 +240,7 @@ export const AddLiquidityForm = ({
                   onChange(v)
                   trigger("farms")
                 }}
-                asset={assetId}
+                asset={selectedAssetId}
                 balance={BN(balanceMax)}
                 balanceMax={BN(balanceMax)}
                 error={error?.message}
@@ -230,7 +259,7 @@ export const AddLiquidityForm = ({
             label={t("liquidity.add.modal.tradeFee")}
             description={t("liquidity.add.modal.tradeFee.description")}
             content={
-              assetId === native.id
+              poolId === native.id
                 ? "--"
                 : t("value.percentage.range", {
                     from: omnipoolFee?.minFee.multipliedBy(100),
