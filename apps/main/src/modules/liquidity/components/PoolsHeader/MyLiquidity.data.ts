@@ -70,7 +70,7 @@ export const useMyLiquidityTotals = () => {
 
     const stableSwapTotal = (stableSwapBalances ?? []).reduce(
       (acc, { balance, meta, price }) => {
-        const balanceShifted = toBig(balance.transferable, meta.decimals)
+        const balanceShifted = toBig(balance.total, meta.decimals)
 
         const displayValue = price ? balanceShifted.times(price) : "0"
 

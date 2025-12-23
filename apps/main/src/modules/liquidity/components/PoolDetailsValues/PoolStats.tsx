@@ -58,7 +58,7 @@ export const PoolStats = ({
   }
 
   return (
-    <Flex gap={20}>
+    <Flex gap={20} wrap>
       <Paper p={[16, 20]} sx={{ flex: 1 }}>
         <PoolChart
           assetId={data.id}
