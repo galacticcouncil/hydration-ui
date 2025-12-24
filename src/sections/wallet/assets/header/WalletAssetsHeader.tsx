@@ -140,7 +140,6 @@ export const WalletAssetsHeader = ({ disconnected }: Props) => {
                 size="compact"
                 variant="mutedSecondary"
                 onClick={() => navigate({ to: LINKS.withdraw })}
-                disabled
                 sx={{ width: ["100%", "auto"] }}
               >
                 <Icon size={14} sx={{ ml: -4 }} icon={<UploadIcon />} />
