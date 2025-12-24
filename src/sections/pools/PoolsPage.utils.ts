@@ -266,10 +266,13 @@ export const usePools = () => {
 
         const filteredOmnipoolPositions = positions?.liquidityPositions ?? []
         const filteredMiningPositions = positions?.omnipoolDeposits ?? []
+        const isStableSwapPositions =
+          meta.isStableSwap && accountAsset?.isPoolPositions
+        const isErc20Positions = meta.isErc20 && accountAAsset?.isPoolPositions
         const isPositions =
           !!positions?.isPoolPositions ||
-          (!!accountAsset?.isPoolPositions && !meta.isErc20) ||
-          !!accountAAsset?.isPoolPositions
+          isStableSwapPositions ||
+          isErc20Positions
 
         const metaOverride =
           relatedAToken &&
