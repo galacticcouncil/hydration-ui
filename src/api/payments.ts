@@ -115,12 +115,10 @@ export const useSetAsFeePayment = () => {
 
       return await createTransaction(
         {
-          tx: meta.isErc20
-            ? api.tx.dispatcher.dispatchWithExtraGas(
-                api.tx.multiTransactionPayment.setCurrency(tokenId),
-                AAVE_EXTRA_GAS,
-              )
-            : api.tx.multiTransactionPayment.setCurrency(tokenId),
+          tx: api.tx.dispatcher.dispatchWithExtraGas(
+            api.tx.multiTransactionPayment.setCurrency(tokenId),
+            AAVE_EXTRA_GAS,
+          ),
           overrides: {
             fee: new BigNumber(paymentInfoData.partialFee.toHex()),
             currencyId: tokenId,
