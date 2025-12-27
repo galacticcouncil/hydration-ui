@@ -80,7 +80,7 @@ export const usePoolColumns = () => {
           ),
       }),
       columnHelper.accessor("totalFee", {
-        header: t("fee"),
+        header: t("yield"),
         sortingFn: (a, b) =>
           numericallyStrDesc(
             b.original.totalFee ?? "0",

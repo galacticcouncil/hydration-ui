@@ -64,6 +64,7 @@ export const getOmnipoolMiningPositions = async (
   const omnipoolDepositPositions =
     await papi.query.Omnipool.Positions.getValues(
       validOmnipoolDeposits.map(({ positionId }) => [positionId]),
+      { at: "best" },
     )
 
   return omnipoolDepositPositions.reduce<OmnipoolDepositFull[]>(

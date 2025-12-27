@@ -123,10 +123,10 @@ export const omnipoolMiningPositionsQuery = (
         { at: "best" },
       )
 
-      const omnipoolMiningPositions = await getOmnipoolMiningPositions(
-        papi,
-        entries,
-      )
+      const omnipoolMiningPositions = entries.length
+        ? await getOmnipoolMiningPositions(papi, entries)
+        : []
+
       onSuccess?.(omnipoolMiningPositions)
 
       return omnipoolMiningPositions

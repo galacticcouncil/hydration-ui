@@ -5,6 +5,7 @@ import { AssetType } from "@/api/assets"
 import { useUserBorrowSummary } from "@/api/borrow"
 import { useMyIsolatedPoolsLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import {
+  Balance,
   isOmnipoolDepositPosition,
   useAccountBalancesWithPriceByAssetType,
   useAccountOmnipoolPositionsData,
@@ -13,7 +14,7 @@ import { toBig } from "@/utils/formatting"
 
 const calculateBalancesTotal = (
   balances: Array<{
-    balance: { transferable: bigint }
+    balance: Balance
     meta: { decimals: number }
     price?: string
   }>,
@@ -21,7 +22,7 @@ const calculateBalancesTotal = (
   if (!balances) return Big(0)
 
   return balances.reduce((acc, { balance, meta, price }) => {
-    const balanceShifted = toBig(balance.transferable, meta.decimals)
+    const balanceShifted = toBig(balance.total, meta.decimals)
     const displayValue = price ? balanceShifted.times(price).toString() : "0"
     return acc.plus(displayValue)
   }, Big(0))

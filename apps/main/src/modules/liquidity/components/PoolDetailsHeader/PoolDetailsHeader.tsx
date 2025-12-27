@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
-import { Plus } from "lucide-react"
+import { Plus, Repeat } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -87,9 +87,7 @@ export const PoolDetailsHeader = ({
             resetScroll={false}
           >
             <Icon size={14} component={Plus} />
-            {data.isFarms
-              ? t("details.header.addJoinFarms")
-              : t("addLiquidity")}
+            {t("addLiquidity")}
           </Link>
         </Button>
         {isOmnipool && (
@@ -102,7 +100,7 @@ export const PoolDetailsHeader = ({
                   : data.id,
               }}
             >
-              <Icon size={14} component={Plus} />
+              <Icon size={14} component={Repeat} />
               {t("details.header.swap")}
             </Link>
           </Button>
