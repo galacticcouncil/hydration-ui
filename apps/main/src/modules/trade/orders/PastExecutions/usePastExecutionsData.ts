@@ -92,5 +92,5 @@ const statusMap: Record<DcaScheduleExecutionStatus, TransactionStatusVariant> =
   {
     [DcaScheduleExecutionStatus.Planned]: TransactionStatusVariant.Pending,
     [DcaScheduleExecutionStatus.Executed]: TransactionStatusVariant.Success,
-    [DcaScheduleExecutionStatus.Failed]: TransactionStatusVariant.Warning,
+    [DcaScheduleExecutionStatus.Failed]: TransactionStatusVariant.Error,
   }

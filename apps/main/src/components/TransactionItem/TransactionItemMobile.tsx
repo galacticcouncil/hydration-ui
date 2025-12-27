@@ -13,15 +13,15 @@ import { TransactionStatusVariant } from "@/components/TransactionItem/Transacti
 
 type StatusProps =
   | {
-      readonly status: TransactionStatusVariant.Pending
-    }
-  | {
       readonly status: TransactionStatusVariant.Success
       readonly sent: string
       readonly received: string
     }
   | {
-      readonly status: TransactionStatusVariant.Warning
+      readonly status: Exclude<
+        TransactionStatusVariant,
+        TransactionStatusVariant.Success
+      >
     }
 
 type Props = StatusProps & {

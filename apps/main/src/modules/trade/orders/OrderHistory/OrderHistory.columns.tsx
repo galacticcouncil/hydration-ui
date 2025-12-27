@@ -48,7 +48,7 @@ export const useOrderHistoryColumns = () => {
       },
       header: () => (
         <Flex gap={4} align="center" justify="center">
-          {t("trade:trade.orders.orderHistory.fillPrice")}
+          {t("trade:trade.orders.orderHistory.averagePrice")}
           <Icon
             size={12}
             component={ArrowRightLeft}

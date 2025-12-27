@@ -92,7 +92,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
                 maxBalance={balance}
                 value={value}
                 onChange={onChange}
-                error={error?.message}
+                amountError={error?.message}
                 sx={{ pt: 0 }}
               />
             )}
