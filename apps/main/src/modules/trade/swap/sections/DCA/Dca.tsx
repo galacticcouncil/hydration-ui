@@ -9,6 +9,7 @@ import { DcaOrderInfo } from "@/modules/trade/swap/sections/DCA/DcaOrderInfo"
 import { DcaSummary } from "@/modules/trade/swap/sections/DCA/DcaSummary"
 import { DcaWarnings } from "@/modules/trade/swap/sections/DCA/DcaWarnings"
 import {
+  DcaValidationError,
   DcaValidationWarning,
   useDcaPriceImpactValidation,
 } from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
@@ -69,7 +70,17 @@ export const Dca: FC = () => {
         )}
       >
         <DcaForm />
-        <DcaSummary order={order} isLoading={isLoading} />
+        <DcaSummary
+          order={order}
+          priceImpactLevel={
+            errors.includes(DcaValidationError.PriceImpact)
+              ? "error"
+              : warnings.includes(DcaValidationWarning.PriceImpact)
+                ? "warning"
+                : undefined
+          }
+          isLoading={isLoading}
+        />
         <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
         <DcaWarnings
           isFormValid={isFormValid}
@@ -85,7 +96,6 @@ export const Dca: FC = () => {
         <DcaFooter isEnabled={isSubmitEnabled} />
         <DcaOrderInfo
           order={order}
-          orderTx={orderTx}
           healthFactor={healthFactor}
           isLoading={isLoading}
         />
