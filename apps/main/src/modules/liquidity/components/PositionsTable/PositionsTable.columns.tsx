@@ -167,7 +167,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
               align="center"
             >
               {isOmnipool && canJoinFarms && (
-                <Button variant="primary" asChild>
+                <Button variant="secondary" asChild>
                   <Link
                     to="/liquidity/$id/join"
                     params={{
@@ -426,7 +426,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         }) => (
           <Flex gap={12} align="center" justify="end">
             {!!farmsToJoin.length && !positionId && canJoinFarms && (
-              <Button variant="primary" asChild>
+              <Button variant="secondary" asChild>
                 <Link
                   to="/liquidity/$id/join"
                   params={{

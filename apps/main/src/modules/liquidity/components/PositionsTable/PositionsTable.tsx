@@ -231,7 +231,7 @@ const PositionsTableBody = ({
       <CollapsibleRoot open={expanded}>
         <TableContainer
           as={Paper}
-          sx={{ mb: getTokenPx("containers.paddings.primary") }}
+          sx={{ mt: getTokenPx("containers.paddings.primary") }}
         >
           <PositionsHeader
             onClick={onClick}
