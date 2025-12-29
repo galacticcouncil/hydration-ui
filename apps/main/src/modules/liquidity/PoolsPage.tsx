@@ -9,6 +9,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -67,6 +68,7 @@ export const OmnipoolAndStablepoolTable = ({
       <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
+          size="large"
           isLoading={isLoading}
           globalFilter={search}
           data={filteredData ?? []}
@@ -111,8 +113,15 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <Flex justify="space-between" align="center" gap={20} sx={{ my: 12 }}>
-        <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+      <Flex justify="space-between" align="center" gap={20}>
+        <SectionHeader
+          sx={{
+            pb: getTokenPx("scales.paddings.m"),
+            pt: getTokenPx("scales.paddings.xxl"),
+          }}
+        >
+          {t("section.isolatedPools")}
+        </SectionHeader>
         <Button asChild>
           <Link to="/liquidity/create">
             <Icon component={Plus} size={14} />

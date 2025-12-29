@@ -219,8 +219,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
             fs={10}
             sx={{
               position: "absolute",
-              bottom: -16,
-              right: 16,
+              bottom: -20,
             }}
           >
             {t("liquidity:liquidity.pool.positions.total", {
