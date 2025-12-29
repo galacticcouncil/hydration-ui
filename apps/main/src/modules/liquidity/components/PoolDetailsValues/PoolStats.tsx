@@ -25,12 +25,12 @@ import {
 
 import { PoolDetailsValues } from "./PoolDetailsValues"
 
-const chartTypes: ReadonlyArray<SliderTabsOption<"price" | "volume">> = [
+export const chartTypes: ReadonlyArray<SliderTabsOption<"price" | "volume">> = [
   { id: "price", label: i18n.t("price") },
   //{ id: "volume", label: i18n.t("volume") },
 ]
 
-const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
+export const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
   { id: "chart", label: "", icon: <Icon size={14} component={ChartLine} /> },
   { id: "stats", label: "", icon: <Icon size={14} component={ChartPie} /> },
 ]
@@ -58,8 +58,8 @@ export const PoolStats = ({
   }
 
   return (
-    <Flex gap={20} wrap>
-      <Paper p={[16, 20]} sx={{ flex: 1 }}>
+    <Flex gap={20}>
+      <Paper p={[16, 20]} sx={{ flex: 1, flexBasis: 500 }}>
         <PoolChart
           assetId={data.id}
           height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
@@ -69,7 +69,13 @@ export const PoolStats = ({
         />
       </Paper>
 
-      <Paper p={[16, 20]}>
+      <Paper
+        p={[16, 20]}
+        sx={{
+          flex: 0,
+          flexBasis: 360,
+        }}
+      >
         <PoolDetailsValues data={data} />
       </Paper>
     </Flex>

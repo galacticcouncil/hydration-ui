@@ -79,7 +79,6 @@ export const OmnipoolAndStablepoolTable = ({
           }}
           onRowClick={(asset) => {
             router.navigate({
-              resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
               search: { expanded: false },
@@ -113,11 +112,16 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <Flex justify="space-between" align="center" gap={20}>
+      <Flex
+        justify="space-between"
+        align="end"
+        gap={20}
+        pb={getTokenPx("scales.paddings.m")}
+        sx={{ minHeight: [54, 62] }}
+      >
         <SectionHeader
           sx={{
-            pb: getTokenPx("scales.paddings.m"),
-            pt: getTokenPx("scales.paddings.xxl"),
+            p: [0, 0],
           }}
         >
           {t("section.isolatedPools")}
@@ -135,6 +139,7 @@ export const IsolatedPoolsTable = ({
       </Flex>
       <TableContainer as={Paper}>
         <DataTable
+          size="large"
           data={filteredData}
           globalFilter={search}
           columns={columns}
@@ -144,7 +149,6 @@ export const IsolatedPoolsTable = ({
           initialSorting={[{ id: "tvlDisplay", desc: true }]}
           onRowClick={(asset) =>
             router.navigate({
-              resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
               search: { expanded: false },

@@ -215,7 +215,8 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
         </Button>
         {total !== "0" && (
           <Text
-            color="text.secondary"
+            color={getToken("text.tint.secondary")}
+            fw={500}
             fs={10}
             sx={{
               position: "absolute",

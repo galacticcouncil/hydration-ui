@@ -112,13 +112,13 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
         paginated
         pageSize={10}
         onRowClick={(row) => {
-          if (row.position) {
-            setSelectedPosition({
-              joinedFarms: row.joinedFarms,
-              farmsToJoin: row.farmsToJoin,
-              position: row.position,
-            })
-          }
+          if (!row.position) return
+
+          setSelectedPosition({
+            joinedFarms: row.joinedFarms,
+            farmsToJoin: row.farmsToJoin,
+            position: row.position,
+          })
         }}
         columnPinning={{
           left: ["position"],
@@ -220,6 +220,7 @@ const PositionsTableBody = ({
     navigate({
       search: (prev) => ({ ...prev, expanded: !prev.expanded }),
       replace: true,
+      resetScroll: false,
     })
   }
 

@@ -481,7 +481,6 @@ const useOmnipoolZodSchema = ({ id, farms }: { id: string; farms: Farm[] }) => {
 
   return required.refine(
     (value) => {
-      console.log(value, minJoinAmount)
       return Big(value).gte(minJoinAmount)
     },
     {

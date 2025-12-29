@@ -12,7 +12,7 @@ import { getToken } from "@/utils"
 
 import { SContent, STrigger } from "./Tooltip.styled"
 
-type InfoTooltipProps = {
+export type InfoTooltipProps = {
   text: ReactNode | string
   children?: ReactNode
   side?: TooltipContentProps["side"]
@@ -21,6 +21,7 @@ type InfoTooltipProps = {
   alignOffset?: TooltipContentProps["alignOffset"]
   asChild?: boolean
   preventDefault?: boolean
+  iconColor?: BoxProps["color"]
 }
 
 export const Tooltip = ({
@@ -32,6 +33,7 @@ export const Tooltip = ({
   alignOffset = -10,
   asChild = false,
   preventDefault,
+  iconColor,
 }: InfoTooltipProps) => {
   const [open, setOpen] = useState(false)
 
@@ -55,7 +57,7 @@ export const Tooltip = ({
           e.stopPropagation()
         }}
       >
-        {children || <TooltipIcon />}
+        {children || <TooltipIcon color={iconColor} />}
       </TriggerComp>
       <Portal>
         <SContent

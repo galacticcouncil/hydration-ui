@@ -1,4 +1,9 @@
-import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  InfoTooltipProps,
+  Text,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
@@ -14,12 +19,13 @@ export const TooltipAPR = ({
   stablepoolFee,
   farms,
   borrowApyData,
+  ...props
 }: {
   omnipoolFee?: string
   stablepoolFee?: string
   farms: Farm[]
   borrowApyData?: BorrowAssetApyData
-}) => {
+} & Omit<InfoTooltipProps, "text">) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { getAssetWithFallback } = useAssets()
 
@@ -27,6 +33,7 @@ export const TooltipAPR = ({
 
   return (
     <Tooltip
+      {...props}
       text={
         <Flex direction="column" gap={4}>
           <Text fs={12}>{t("liquidity:liquidity.tooltip.fee.apr.title")}</Text>

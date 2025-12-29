@@ -82,6 +82,7 @@ const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
   return (
     <Flex
       gap={getTokenPx("containers.paddings.quint")}
+      justify="end"
       onClick={(e) => e.stopPropagation()}
       sx={{ position: "relative" }}
     >
@@ -97,12 +98,12 @@ const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
       </Button>
       {total !== "0" && (
         <Text
-          color="text.secondary"
+          color={getToken("text.tint.secondary")}
+          fw={500}
           fs={10}
           sx={{
             position: "absolute",
-            bottom: -16,
-            right: 16,
+            bottom: -20,
           }}
         >
           {t("liquidity:liquidity.pool.positions.total", {

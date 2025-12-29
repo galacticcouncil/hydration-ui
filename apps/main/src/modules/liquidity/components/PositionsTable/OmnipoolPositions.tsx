@@ -6,9 +6,12 @@ import { Link } from "@tanstack/react-router"
 import { Minus } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { usePrevious } from "react-use"
 
+import { OmnipoolPosition } from "@/api/account"
 import { Farm } from "@/api/farms"
 import { TJoinedFarm } from "@/modules/liquidity/components/Farms/Farms.utils"
+import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { OmnipoolAssetTable } from "@/modules/liquidity/Liquidity.utils"
 import {
   isOmnipoolDepositPosition,
@@ -39,9 +42,11 @@ export const OmnipoolPositions = ({
   const [selectedPosition, setSelectedPosition] = useState<{
     joinedFarms: TJoinedFarm[]
     farmsToJoin: Farm[]
-    position: OmnipoolDepositFullWithData
+    position: OmnipoolDepositFullWithData | OmnipoolPosition
   } | null>(null)
+  const previousSelectedPosition = usePrevious(selectedPosition)
   const columns = useOmnipoolPositionsTableColumns(isFarms)
+  const position = selectedPosition ?? previousSelectedPosition
 
   return (
     <>
@@ -76,7 +81,7 @@ export const OmnipoolPositions = ({
         data={positions}
         columns={columns}
         onRowClick={(row) => {
-          if (isOmnipoolPosition(row) && isOmnipoolDepositPosition(row)) {
+          if (isOmnipoolPosition(row) && row.canJoinFarms) {
             setSelectedPosition({
               joinedFarms: row.joinedFarms,
               farmsToJoin: row.farmsToJoin,
@@ -84,9 +89,7 @@ export const OmnipoolPositions = ({
             })
           }
         }}
-        getIsClickable={(row) =>
-          isOmnipoolPosition(row) && isOmnipoolDepositPosition(row)
-        }
+        getIsClickable={(row) => isOmnipoolPosition(row) && row.canJoinFarms}
         paginated
         pageSize={10}
         columnPinning={{
@@ -99,14 +102,23 @@ export const OmnipoolPositions = ({
         open={!!selectedPosition}
         onOpenChange={() => setSelectedPosition(null)}
       >
-        {selectedPosition && (
-          <PositionDetails
-            joinedFarms={selectedPosition.joinedFarms}
-            farmsToJoin={selectedPosition.farmsToJoin}
-            position={selectedPosition.position}
-            onSubmitted={() => setSelectedPosition(null)}
-          />
-        )}
+        {position ? (
+          isOmnipoolDepositPosition(position.position) ? (
+            <PositionDetails
+              joinedFarms={position.joinedFarms}
+              farmsToJoin={position.farmsToJoin}
+              position={position.position as OmnipoolDepositFullWithData}
+              onSubmitted={() => setSelectedPosition(null)}
+            />
+          ) : (
+            <JoinFarmsWrapper
+              positionId={position.position.positionId}
+              poolId={position.position.assetId}
+              closable
+              onSubmitted={() => setSelectedPosition(null)}
+            />
+          )
+        ) : null}
       </Modal>
     </>
   )

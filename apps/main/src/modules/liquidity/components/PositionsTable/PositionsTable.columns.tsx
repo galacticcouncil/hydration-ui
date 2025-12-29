@@ -159,6 +159,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           const isOmnipool = isOmnipoolPosition(original)
           const canJoinFarms =
             isOmnipool && !original.isJoinedAllFarms && original.canJoinFarms
+          const isJoinedFarms = isOmnipool && !!original.joinedFarms.length
 
           return (
             <Flex
@@ -166,7 +167,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
               justify="end"
               align="center"
             >
-              {isOmnipool && canJoinFarms && (
+              {canJoinFarms && (
                 <Button variant="secondary" asChild>
                   <Link
                     to="/liquidity/$id/join"
@@ -221,7 +222,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
                 </Link>
               </Button>
 
-              {isOmnipool && !!original.joinedFarms.length && (
+              {(canJoinFarms || isJoinedFarms) && (
                 <Icon
                   size={16}
                   component={ChevronRight}

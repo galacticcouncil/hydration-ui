@@ -1,6 +1,5 @@
 import { XykMath } from "@galacticcouncil/sdk"
 import {
-  Box,
   Flex,
   Separator,
   SValueStatsValue,
@@ -37,13 +36,9 @@ export const PoolDetailsValues = ({
 
   if (!isOmnipool) {
     return (
-      <Flex
-        direction="column"
-        minWidth={300}
-        gap={getTokenPx("containers.paddings.primary")}
-      >
+      <PoolDetailsValuesContainer>
         <IsolatedPoolValues data={data} />
-      </Flex>
+      </PoolDetailsValuesContainer>
     )
   } else if (data.stablepoolData) {
     return (
@@ -52,28 +47,19 @@ export const PoolDetailsValues = ({
         justify="space-between"
         gap={getTokenPx("containers.paddings.primary")}
       >
-        <Flex
-          direction="column"
-          minWidth={300}
-          gap={getTokenPx("containers.paddings.primary")}
-        >
+        <PoolDetailsValuesContainer>
           <OmnipoolValues data={data} />
           <Separator mx={-20} />
-        </Flex>
-        <Box>
-          <CurrencyReserves stablepoolData={data.stablepoolData} />
-        </Box>
+        </PoolDetailsValuesContainer>
+
+        <CurrencyReserves stablepoolData={data.stablepoolData} />
       </Flex>
     )
   } else {
     return (
-      <Flex
-        direction="column"
-        minWidth={300}
-        gap={getTokenPx("containers.paddings.primary")}
-      >
+      <PoolDetailsValuesContainer>
         <OmnipoolValues data={data} />
-      </Flex>
+      </PoolDetailsValuesContainer>
     )
   }
 }
@@ -272,5 +258,22 @@ const AssetPrice = ({ asset }: { asset: PoolToken }) => {
         priceSymbol: getAssetWithFallback(asset.id).symbol,
       })}
     </Text>
+  )
+}
+
+const PoolDetailsValuesContainer = ({
+  children,
+}: {
+  children: React.ReactNode
+}) => {
+  return (
+    <Flex
+      direction="column"
+      minWidth={260}
+      maxWidth={["auto", "auto", 360]}
+      gap={getTokenPx("containers.paddings.primary")}
+    >
+      {children}
+    </Flex>
   )
 }
