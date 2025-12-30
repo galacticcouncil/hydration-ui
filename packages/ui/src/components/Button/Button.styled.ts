@@ -359,10 +359,6 @@ export const SButtonIcon = styled(Box)(
     &[data-state="open"],
     &:active {
       color: ${theme.icons.primary};
-
-      svg {
-        fill: ${theme.icons.primary};
-      }
     }
 
     &[disabled] {

@@ -114,23 +114,23 @@ export const usePoolColumns = () => {
           })
 
           return (
-            <Flex align="center" gap={4}>
-              {!!incentivesIcons.length && (
-                <AssetLogo id={incentivesIcons} size="extra-small" />
-              )}
-              <Text color={getToken("text.tint.secondary")}>
-                {t("percent", {
-                  value: Number(original.totalFee),
-                })}
-              </Text>
-
-              <TooltipAPR
-                farms={original.farms}
-                omnipoolFee={original.lpFeeOmnipool}
-                stablepoolFee={original.lpFeeStablepool}
-                borrowApyData={original.borrowApyData}
-              />
-            </Flex>
+            <TooltipAPR
+              farms={original.farms}
+              omnipoolFee={original.lpFeeOmnipool}
+              stablepoolFee={original.lpFeeStablepool}
+              borrowApyData={original.borrowApyData}
+            >
+              <Flex align="center" gap={4}>
+                {!!incentivesIcons.length && (
+                  <AssetLogo id={incentivesIcons} size="extra-small" />
+                )}
+                <Text color={getToken("text.tint.secondary")}>
+                  {t("percent", {
+                    value: Number(original.totalFee),
+                  })}
+                </Text>
+              </Flex>
+            </TooltipAPR>
           )
         },
       }),

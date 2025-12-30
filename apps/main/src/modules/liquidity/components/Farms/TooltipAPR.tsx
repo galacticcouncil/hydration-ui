@@ -36,7 +36,9 @@ export const TooltipAPR = ({
       {...props}
       text={
         <Flex direction="column" gap={4}>
-          <Text fs={12}>{t("liquidity:liquidity.tooltip.fee.apr.title")}</Text>
+          <Text fs="p6" fw={500} mb={10}>
+            {t("liquidity:liquidity.tooltip.fee.apr.title")}
+          </Text>
 
           {omnipoolFee && (
             <Row
@@ -133,12 +135,17 @@ const Row = ({
 }) => {
   return (
     <Flex justify="space-between" align="center">
-      <Text transform="uppercase" fs={10} color={getToken("text.medium")}>
+      <Text
+        transform="uppercase"
+        fs={8}
+        fw={600}
+        color={getToken("text.medium")}
+      >
         {label}
       </Text>
       <Text
         transform="uppercase"
-        fs={12}
+        fs="p5"
         color={getToken("text.high")}
         fw={500}
       >
