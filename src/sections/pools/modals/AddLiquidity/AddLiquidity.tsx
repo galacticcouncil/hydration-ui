@@ -72,8 +72,9 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
             headerVariant: "GeistMono",
             content: (
               <AssetsModalContent
-                defaultSelectedAsssetId={pool.id}
+                defaultSelectedAsssetId={assetId}
                 hideInactiveAssets
+                displayZeroBalance
                 allowedAssets={isADot ? [pool.id, DOT_ASSET_ID] : undefined}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
