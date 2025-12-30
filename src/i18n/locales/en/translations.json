@@ -1184,6 +1184,8 @@
   "yield.toast.onSuccess": "<0>Placed a Yield DCA order on </0><1>{{ amount }} {{ symbol }}</1>.",
   "banner.newFarms.label": "New Farms for {{symbols}}",
   "banner.invalidPositions.label": "Important notice. Please remove your KILT or CFG liquidity",
+  "banner.dotLiquidity.label": "DOT rewards have ended. Switch to aDOT to continue earning rewards.",
+  "banner.dotLiquidity.link": "Go to DOT Pool Details \u2192",
   "banner.newFarms.link": "Go to Liquidity \u2192",
   "banner.invalidPositions.link": "Go to My Positions \u2192",
   "searchFilter.empty.title": "No results found",
