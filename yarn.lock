@@ -2673,17 +2673,17 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^10.18.0":
-  version "10.18.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.18.0.tgz#414d334fd5593b3107351d4fe2d986c9b6a7b9b7"
-  integrity sha512-BetfrKAt6xoQemxyjmK7foma/CsIzrye1TaFFhg+kNh27bkpFhGsbbncuVlVujxhHbSb3FKY9JuLm4ptPp3vxg==
+"@galacticcouncil/xcm-cfg@^10.19.1":
+  version "10.19.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.19.1.tgz#b8a88ab427097f59571c76efd82753580d06fa0d"
+  integrity sha512-nSKbwGW1s2qjdhENBEWnI6YUN8m5NyTPJONnqt0RtrJ+dOS0s/OKM2SxoWJQfAoglFuwVYDy/ftV5meqGvMEow==
   dependencies:
-    "@galacticcouncil/xcm-core" "^8.8.0"
+    "@galacticcouncil/xcm-core" "^8.9.0"
 
-"@galacticcouncil/xcm-core@^8.8.0":
-  version "8.8.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.8.0.tgz#1f0f11cb79b0b58a08a0da62c1e59672186039bc"
-  integrity sha512-lmu5wSIID2rjt0f9gCnmBSFZgCeVKDK0rpqwl9pRGvIr5EtNgEwneO903xX532+J2yqLlfVBGaPJFC3vJf7mdQ==
+"@galacticcouncil/xcm-core@^8.9.0":
+  version "8.9.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.9.0.tgz#79a6b165bfd8a579a450e8542235d6f7458c88e4"
+  integrity sha512-NNEYjlV+biHDa/0YLvUxivIPakWXQ+yeFBVs7lGQFm9oBdwLwG/9X/RzE3bPWoDlMLxLsxmnJFtkLmlK7+ZToQ==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -2700,12 +2700,12 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-sdk@^10.9.0":
-  version "10.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-10.9.0.tgz#06c5d17e8c38c2d80d68a1950202c5da88c694e4"
-  integrity sha512-IL5dB8l2MZu0rJ6448UeFn0veUlOzlxCUEwsFN7frCbupmfzIzpbG4+s16eOznJg4eh5Hynnv/3gzMLx11ukRQ==
+"@galacticcouncil/xcm-sdk@^10.10.0":
+  version "10.10.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-10.10.0.tgz#c2f946e78f19b018fa72d5aa55ced6a2065007d6"
+  integrity sha512-rGeg+l9qW+vxLTFBS9vhLoYwZs9BPABKbhW6auOm/unzXDF/AMKUJU9GbC8G/r2ERs+sReqEGVd4ojv8CShjCA==
   dependencies:
-    "@galacticcouncil/xcm-core" "^8.8.0"
+    "@galacticcouncil/xcm-core" "^8.9.0"
 
 "@gql.tada/cli-utils@1.7.1":
   version "1.7.1"
