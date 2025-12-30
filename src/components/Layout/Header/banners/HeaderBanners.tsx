@@ -9,6 +9,8 @@ import {
   LiquidityPositionsBanner,
   LiquidityPositionsBannerWrapper,
 } from "./LiquidityPositionsBanner"
+import { DOTLiquidityPositionsBannerWrapper } from "./DOTLiquidityPositionsBanner.utils"
+import { DOTLiquidityPositionsBanner } from "./DOTLiquidityPositionsBanner"
 
 export const HeaderBanners = () => {
   const { t } = useTranslation()
@@ -34,6 +36,12 @@ export const HeaderBanners = () => {
         <LiquidityPositionsBannerWrapper />
       ) : (
         <LiquidityPositionsBanner />
+      )}
+
+      {warnings.warnings.dotLiquidity.visible === undefined ? (
+        <DOTLiquidityPositionsBannerWrapper />
+      ) : (
+        <DOTLiquidityPositionsBanner />
       )}
 
       {isLoaded && <NewFarmsBanner />}

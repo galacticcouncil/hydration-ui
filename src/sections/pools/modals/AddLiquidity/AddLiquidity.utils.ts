@@ -19,7 +19,14 @@ import { z, ZodTypeAny } from "zod"
 import { maxBalance, positive, required } from "utils/validators"
 import { scale, scaleHuman } from "utils/balance"
 import { TFarmAprData, useOraclePrice } from "api/farms"
-import { BN_0, BN_100, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
+import {
+  aDOT_ASSET_ID,
+  BN_0,
+  BN_100,
+  BN_NAN,
+  DOT_ASSET_ID,
+  GETH_ERC20_ASSET_ID,
+} from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
@@ -27,6 +34,7 @@ import { useEstimatedFees } from "api/transaction"
 import { TAsset } from "providers/assets"
 import { useAccountBalances } from "api/deposits"
 import { useAssets } from "providers/assets"
+import { TAnyPool } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -458,4 +466,23 @@ export const calculateLimitShares = (sharesToGet: string, limit: string) => {
   return BigNumber(sharesToGet)
     .times(BN_100.minus(limit).div(BN_100))
     .toFixed(0)
+}
+
+export const useInitialAssetId = (pool: TAnyPool) => {
+  const { data: accountBalances } = useAccountBalances()
+
+  const isADot = pool.id === aDOT_ASSET_ID
+
+  if (!isADot) return pool.id
+
+  const isADotBalance = isADot && !!pool.balance?.transferable
+
+  if (isADotBalance) return aDOT_ASSET_ID
+
+  const isDOTBalance =
+    !!accountBalances?.accountAssetsMap.get(DOT_ASSET_ID)?.balance?.transferable
+
+  if (isDOTBalance) return DOT_ASSET_ID
+
+  return pool.id
 }
