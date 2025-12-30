@@ -10,6 +10,7 @@ import { AddLiquidityFormXYK } from "./AddLiquidityFormXYK"
 import { usePoolData } from "sections/pools/pool/Pool"
 import { LimitModal } from "./components/LimitModal/LimitModal"
 import { aDOT_ASSET_ID, DOT_ASSET_ID } from "utils/constants"
+import { useInitialAssetId } from "./AddLiquidity.utils"
 
 export enum Page {
   ADD_LIQUIDITY,
@@ -26,7 +27,8 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
   const { pool } = usePoolData()
   const { t } = useTranslation()
   const { page, direction, back, paginateTo } = useModalPagination()
-  const [assetId, setAssetId] = useState(pool.id)
+  const initialAssetId = useInitialAssetId(pool)
+  const [assetId, setAssetId] = useState(initialAssetId)
 
   const farms = pool.farms
   const isXYK = isXYKPoolType(pool)
@@ -72,8 +74,9 @@ export const AddLiquidity = ({ isOpen, onClose }: AddLiquidityProps) => {
             headerVariant: "GeistMono",
             content: (
               <AssetsModalContent
-                defaultSelectedAsssetId={pool.id}
+                defaultSelectedAsssetId={assetId}
                 hideInactiveAssets
+                displayZeroBalance
                 allowedAssets={isADot ? [pool.id, DOT_ASSET_ID] : undefined}
                 onSelect={(asset) => {
                   setAssetId(asset.id)
