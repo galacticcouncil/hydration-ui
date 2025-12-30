@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware"
 type TWarningStore = {
   warnings: {
     hdxLiquidity: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
+    dotLiquidity: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
     invalidPositions: { visible?: boolean; visibility: (keyof typeof LINKS)[] }
   }
   setWarnings: (key: TWarningsType, isOpen: boolean) => void
@@ -27,7 +28,10 @@ export const useWarningsStore = create(
             "walletVesting",
           ],
         },
-
+        dotLiquidity: {
+          visible: undefined,
+          visibility: [],
+        },
         invalidPositions: {
           visible: undefined,
           visibility: [],
@@ -43,7 +47,7 @@ export const useWarningsStore = create(
     }),
     {
       name: "warnings",
-      version: 0.6,
+      version: 0.7,
       getStorage: () => window.sessionStorage,
     },
   ),
