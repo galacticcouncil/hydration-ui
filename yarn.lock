@@ -2644,6 +2644,23 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
+"@galacticcouncil/sdk-next@0.23.0-pr232-a884477":
+  version "0.23.0-pr232-a884477"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.23.0-pr232-a884477.tgz#f36c54041d0b722abd942c7fe00bd05b66ea04c1"
+  integrity sha512-rbLXvMCdTRWfxbGP+JmpYJ7MKX24N4Q9tIJflxWJxpty41bOc9EMBJNS/CxzdQ7TGk4Wl5zsQBKNPqrhEL6+aA==
+  dependencies:
+    "@galacticcouncil/math-hsm" "^1.1.0"
+    "@galacticcouncil/math-lbp" "^1.2.0"
+    "@galacticcouncil/math-liquidity-mining" "^1.2.0"
+    "@galacticcouncil/math-omnipool" "^1.3.0"
+    "@galacticcouncil/math-stableswap" "^2.4.0"
+    "@galacticcouncil/math-staking" "^1.2.0"
+    "@galacticcouncil/math-xyk" "^1.2.0"
+    "@noble/hashes" "^1.6.1"
+    "@thi.ng/cache" "^2.1.35"
+    "@thi.ng/memoize" "^4.0.2"
+    big.js "^6.2.1"
+
 "@galacticcouncil/sdk@^10.4.0":
   version "10.4.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk/-/sdk-10.4.0.tgz#ef026f09651d13056544d207b48f53d644b7b11b"
