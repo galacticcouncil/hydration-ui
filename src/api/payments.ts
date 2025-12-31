@@ -1,20 +1,29 @@
-import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
+import {
+  BN,
+  bnToU8a,
+  compactAddLength,
+  stringToU8a,
+  u8aConcat,
+} from "@polkadot/util"
+import { decodeAddress, signatureVerify } from "@polkadot/util-crypto"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
-import { useStore } from "state/store"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
-import { uniqBy } from "utils/rx"
-import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useAccountBalances } from "./deposits"
-import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { AAVE_EXTRA_GAS } from "utils/constants"
+import { isPolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
+import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import { useStore } from "state/store"
+import { createToastMessages } from "state/toasts"
 import { NATIVE_ASSET_ID } from "utils/api"
+import { AAVE_EXTRA_GAS } from "utils/constants"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { Maybe, identity, isNotNil, undefinedNoop } from "utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { uniqBy } from "utils/rx"
+import { useAccountBalances } from "./deposits"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -84,6 +93,30 @@ export const useAcceptedCurrencies = (ids: string[]) => {
   )
 }
 
+function getMessage(address: string, assetId: string) {
+  const MESSAGE_PREFIX = "EVMAccounts::claim_account"
+
+  const prefixU8a = compactAddLength(stringToU8a(MESSAGE_PREFIX))
+  const assetIdU8a = bnToU8a(new BN(assetId), {
+    isLe: true,
+    bitLength: 32,
+  })
+
+  const publicKey = decodeAddress(address)
+
+  const message = u8aConcat(prefixU8a, publicKey, assetIdU8a)
+
+  console.log("prefix encoded:", Buffer.from(prefixU8a).toString("hex"))
+  console.log("account encoded:", Buffer.from(publicKey).toString("hex"))
+  console.log(
+    `assetId (${assetId}) encoded:`,
+    Buffer.from(assetIdU8a).toString("hex"),
+  )
+  console.log("message:", Buffer.from(message).toString("hex"))
+
+  return message
+}
+
 export const useSetAsFeePayment = () => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -91,10 +124,13 @@ export const useSetAsFeePayment = () => {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { wallet } = useWallet()
 
   return useMutation(
     async (tokenId?: string) => {
       if (!tokenId) return
+      if (!account?.address) return
+      if (!wallet) return
 
       const meta = getAssetWithFallback(tokenId)
 
@@ -111,7 +147,47 @@ export const useSetAsFeePayment = () => {
 
       const paymentInfoData = await api.tx.currencies
         .transfer("", native.id, "0")
-        .paymentInfo(account?.address ?? "")
+        .paymentInfo(account.address)
+
+      const accountInfo = await api.query.system.account(account.address)
+
+      console.log({
+        nonce: accountInfo.nonce.toString(),
+        providers: accountInfo.providers.toString(),
+        sufficients: accountInfo.sufficients.toString(),
+      })
+
+      const isUnclaimedAccount =
+        BigNumber(accountInfo.nonce.toString()).eq(0) &&
+        BigNumber(accountInfo.providers.toString()).eq(0) &&
+        BigNumber(accountInfo.sufficients.toString()).eq(0)
+
+      const signer = wallet.extension.signer
+
+      if (isUnclaimedAccount && isPolkadotSigner(signer)) {
+        const message = getMessage(account.address, tokenId)
+
+        const { signature } = await signer.signRaw({
+          address: account.address,
+          data: `0x${Buffer.from(message).toString("hex")}`,
+          type: "bytes",
+        })
+
+        console.log(
+          "signature:",
+          signature,
+          signatureVerify(message, signature, decodeAddress(account.address)),
+        )
+        const unsignedTx = api.tx.evmAccounts.claimAccount(
+          account.address,
+          tokenId,
+          {
+            Sr25519: signature,
+          },
+        )
+        await unsignedTx.send()
+        console.log("SENT")
+      }
 
       return await createTransaction(
         {
