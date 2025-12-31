@@ -73,7 +73,7 @@ export const OmnipoolPositions = ({
             }}
           >
             <Minus />
-            {t("liquidity.positions.removeAll")}
+            {t("removeLiquidity")}
           </Link>
         </Button>
       </STableHeader>

@@ -5,12 +5,14 @@ import {
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { Plus, Repeat } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
+import { SPoolDetailsActionsContainer } from "@/modules/liquidity/components/PoolDetailsHeader/PoolDetailsHeader.styled"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -28,6 +30,7 @@ export const PoolDetailsHeader = ({
   const isOmnipool = !isIsolatedPool(data)
   const isNative = isOmnipool ? data.isNative : false
   const stablepoolData = isOmnipool ? data.stablepoolData : undefined
+  const { isMobile } = useBreakpoints()
 
   return (
     <Flex
@@ -37,40 +40,39 @@ export const PoolDetailsHeader = ({
         pb: getTokenPx("scales.paddings.m"),
       }}
     >
-      <Flex>
-        <Flex gap={8} align="center">
-          <AssetLogo
-            id={isOmnipool ? data.meta.id : data.meta.iconId}
-            size="large"
-          />
+      <Flex gap={8} align="flex-start" wrap>
+        <AssetLogo
+          id={isOmnipool ? data.meta.id : data.meta.iconId}
+          size="large"
+        />
 
-          <Flex direction="column">
-            <Flex gap={4} align="center">
-              <Text font="primary" fw={700} fs={18} lh="130%">
-                {data.meta.name}
-              </Text>
-              {data.isFeeLoading ? (
-                <Skeleton width={60} height="1em" />
-              ) : (
-                <AssetYields data={data} />
-              )}
-            </Flex>
-            <Text fw={600} fs={11} color={getToken("text.medium")}>
-              {data.meta.symbol}
-            </Text>
-          </Flex>
+        <Flex direction="column">
+          <Text font="primary" fw={700} fs={18} lh="130%">
+            {data.meta.name}
+          </Text>
+
+          <Text fw={600} fs={11} color={getToken("text.medium")}>
+            {data.meta.symbol}
+          </Text>
         </Flex>
+
+        {data.isFeeLoading ? (
+          <Skeleton width={60} height="1em" />
+        ) : (
+          <AssetYields data={data} />
+        )}
       </Flex>
-      <Flex
+
+      <SPoolDetailsActionsContainer
         align="center"
         gap={getTokenPx("containers.paddings.tertiary")}
-        sx={{
-          position: ["fixed", "unset"],
-          bottom: 72,
-          zIndex: 3,
-        }}
       >
-        <Button asChild disabled={!data.canAddLiquidity || isNative}>
+        <Button
+          size={isMobile ? "medium" : "small"}
+          width="100%"
+          asChild
+          disabled={!data.canAddLiquidity || isNative}
+        >
           <Link
             to="/liquidity/$id/add"
             params={{
@@ -91,7 +93,12 @@ export const PoolDetailsHeader = ({
           </Link>
         </Button>
         {isOmnipool && (
-          <Button variant="secondary" asChild>
+          <Button
+            variant="secondary"
+            size={isMobile ? "medium" : "small"}
+            width="100%"
+            asChild
+          >
             <Link
               to="/trade/swap/market"
               search={{
@@ -105,7 +112,7 @@ export const PoolDetailsHeader = ({
             </Link>
           </Button>
         )}
-      </Flex>
+      </SPoolDetailsActionsContainer>
     </Flex>
   )
 }

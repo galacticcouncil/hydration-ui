@@ -263,16 +263,19 @@ const outlineVariants = createVariants<ButtonVariant>((theme) => ({
 const sizes = createVariants<ButtonSize>((theme) => ({
   small: css`
     line-height: 1.2;
+    height: 30px;
     font-size: ${theme.paragraphSize.p6};
     padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
   `,
   medium: css`
     line-height: 1.2;
+    height: 40px;
     font-size: ${theme.paragraphSize.p5};
     padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
   `,
   large: css`
     line-height: 1;
+    height: 50px;
     font-size: ${theme.paragraphSize.p3};
     padding: ${theme.buttons.paddings.primary}px ${theme.scales.paddings.xl}px;
   `,
@@ -282,7 +285,7 @@ export const SButton = styled(Box, {
   shouldForwardProp: (prop) => !["variant", "size", "outline"].includes(prop),
 })<SButtonProps>(
   defaulStyles,
-  ({ variant = "primary", size = "medium", outline = false }) => [
+  ({ variant = "primary", size = "small", outline = false }) => [
     sizes(size),
     outline ? outlineVariants(variant) : variants(variant),
   ],

@@ -12,7 +12,6 @@ import {
   TableContainer,
   Text,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
@@ -34,7 +33,6 @@ import {
 } from "@/states/account"
 
 import { ATokenBalanceTable } from "./ATokenBalanceTable"
-import { ClaimCard } from "./ClaimCard"
 import { OmnipoolPositions } from "./OmnipoolPositions"
 import { PositionDetails } from "./PositionDetails"
 import { PositionsHeader } from "./PositionsHeader"
@@ -102,7 +100,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
             }}
           >
             <Minus />
-            {t("liquidity.positions.removeAll")}
+            {t("removeLiquidity")}
           </Link>
         </Button>
       </STableHeader>
@@ -214,7 +212,6 @@ const PositionsTableBody = ({
     }) ?? false
 
   const navigate = useNavigate({ from: "/liquidity/$id" })
-  const { isTablet, isMobile } = useBreakpoints()
 
   const onClick = () => {
     navigate({
@@ -225,27 +222,22 @@ const PositionsTableBody = ({
   }
 
   return (
-    <>
-      {(isTablet || isMobile) && !!totalInFarms && (
-        <ClaimCard sx={{ mb: 12 }} positions={positions} />
-      )}
-      <CollapsibleRoot open={expanded}>
-        <TableContainer
-          as={Paper}
-          sx={{ mt: getTokenPx("containers.paddings.primary") }}
-        >
-          <PositionsHeader
-            onClick={onClick}
-            showMore={expanded}
-            totalInFarms={totalInFarms}
-            totalBalanceDisplay={totalBalanceDisplay}
-            positions={positions}
-          />
-          <CollapsibleContent css={{ overflowX: "auto" }}>
-            {children}
-          </CollapsibleContent>
-        </TableContainer>
-      </CollapsibleRoot>
-    </>
+    <CollapsibleRoot open={expanded}>
+      <TableContainer
+        as={Paper}
+        sx={{ mt: getTokenPx("containers.paddings.primary") }}
+      >
+        <PositionsHeader
+          onClick={onClick}
+          showMore={expanded}
+          totalInFarms={totalInFarms}
+          totalBalanceDisplay={totalBalanceDisplay}
+          positions={positions}
+        />
+        <CollapsibleContent css={{ overflowX: "auto" }}>
+          {children}
+        </CollapsibleContent>
+      </TableContainer>
+    </CollapsibleRoot>
   )
 }

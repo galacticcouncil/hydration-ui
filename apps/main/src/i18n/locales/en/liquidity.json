@@ -68,7 +68,6 @@
   "liquidity.positions.header.amount": "Amount",
   "liquidity.positions.header.joinedFarms": "Joined farms",
   "liquidity.positions.header.actions": "Actions",
-  "liquidity.positions.removeAll": "Remove all liquidity",
   "liquidity.positions.label.omnipool": "In Omnipool",
   "liquidity.positions.label.isolated": "In Isolated Pool",
   "liquidity.positions.label.stablepool": "In Stablepool",
