@@ -19,7 +19,7 @@ import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
 import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
-import { usePoolColumns } from "./Liquidity.columns"
+import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
   const [search, setSearch] = useState("")
@@ -56,8 +56,8 @@ export const OmnipoolAndStablepoolTable = ({
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useOmnipoolStablepoolAssets()
   const columns = usePoolColumns()
-
   const router = useRouter()
+  const { isMobile } = useBreakpoints()
 
   const filteredData = useMemo(() => {
     return withPositions ? data?.filter((asset) => asset.isPositions) : data
@@ -68,15 +68,24 @@ export const OmnipoolAndStablepoolTable = ({
       <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
-          size="large"
+          size={isMobile ? "small" : "large"}
           isLoading={isLoading}
           globalFilter={search}
           data={filteredData ?? []}
           columns={columns}
           initialSorting={[{ id: "id", desc: true }]}
+          columnVisibility={getPoolColumnsVisibility(isMobile)}
           columnPinning={{
             left: ["meta_name"],
           }}
+          globalFilterFn={(row) =>
+            row.original.meta.name
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
+            row.original.meta.symbol
+              .toLowerCase()
+              .includes(search.toLowerCase())
+          }
           onRowClick={(asset) => {
             router.navigate({
               to: "/liquidity/$id",
@@ -139,7 +148,7 @@ export const IsolatedPoolsTable = ({
       </Flex>
       <TableContainer as={Paper}>
         <DataTable
-          size="large"
+          size={isMobile ? "small" : "large"}
           data={filteredData}
           globalFilter={search}
           columns={columns}
@@ -147,6 +156,18 @@ export const IsolatedPoolsTable = ({
           paginated
           pageSize={10}
           initialSorting={[{ id: "tvlDisplay", desc: true }]}
+          columnVisibility={getPoolColumnsVisibility(isMobile)}
+          columnPinning={{
+            left: ["meta_name"],
+          }}
+          globalFilterFn={(row) =>
+            row.original.meta.name
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
+            row.original.meta.symbol
+              .toLowerCase()
+              .includes(search.toLowerCase())
+          }
           onRowClick={(asset) =>
             router.navigate({
               to: "/liquidity/$id",

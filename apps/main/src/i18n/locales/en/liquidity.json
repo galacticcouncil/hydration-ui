@@ -143,7 +143,7 @@
   "liquidity.createPool.toast.submitted": "Creating {{ symbolA }}/{{ symbolB }} pool...",
   "liquidity.createPool.toast.success": "Created {{ symbolA }}/{{ symbolB }} pool.",
   "liquidity.pool.poolAsset": "Pool asset",
-  "liquidity.pool.positions.total": "Your liquidity: {{ value, currency }}",
+  "liquidity.pool.positions.total": "Your liquidity: {{ value, currency(maximumFractionDigits: 2) }}",
   "liquidity.tooltip.fee.apr.title": "Estimated APR, based on past month's fees, farm rewards and current TVL, without considering the effects of Impermanent Loss",
   "liquidity.tooltip.fee.apr.omnipoolFee": "Omnipool fee",
   "liquidity.tooltip.fee.apr.stablepoolFee": "Stablepool fee",

@@ -1,11 +1,14 @@
+import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import {
   AssetLabel,
   Box,
   Button,
   Flex,
+  Icon,
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
@@ -22,8 +25,16 @@ import { IsolatedPoolTable } from "./Liquidity.utils"
 
 const isolatedColumnHelper = createColumnHelper<IsolatedPoolTable>()
 
+export const getIsolatedPoolsColumnsVisibility = (isMobile: boolean) => ({
+  ["meta.name"]: !isMobile,
+  volumeDisplay: true,
+  tvlDisplay: true,
+  actions: !isMobile,
+})
+
 export const useIsolatedPoolsColumns = () => {
   const { t } = useTranslation(["common", "liquidity"])
+  const { isMobile } = useBreakpoints()
 
   return useMemo(
     () => [
@@ -35,14 +46,29 @@ export const useIsolatedPoolsColumns = () => {
       }),
       isolatedColumnHelper.accessor("volumeDisplay", {
         header: t("liquidity:24hVolume"),
-        cell: ({ row }) =>
-          row.original.isVolumeLoading ? (
+        meta: {
+          sx: { textAlign: isMobile ? "right" : "left" },
+        },
+        cell: ({ row }) => {
+          const volume = t("currency", {
+            value: Number(row.original.volumeDisplay),
+          })
+
+          return row.original.isVolumeLoading ? (
             <Skeleton width={60} height="1em" />
+          ) : isMobile ? (
+            <Flex align="center" gap={4} justify="flex-end">
+              {volume}
+              <Icon
+                component={ChevronRight}
+                size={18}
+                color={getToken("text.low")}
+              />
+            </Flex>
           ) : (
-            t("currency", {
-              value: Number(row.original.volumeDisplay),
-            })
-          ),
+            volume
+          )
+        },
         sortingFn: (a, b) =>
           new Big(a.original.volumeDisplay ?? 0).gt(
             b.original.volumeDisplay ?? 0,
@@ -59,9 +85,6 @@ export const useIsolatedPoolsColumns = () => {
         sortingFn: (a, b) =>
           new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
       }),
-      isolatedColumnHelper.accessor("meta.symbol", {
-        meta: { visibility: false },
-      }),
       isolatedColumnHelper.display({
         id: "actions",
         size: 170,
@@ -70,7 +93,7 @@ export const useIsolatedPoolsColumns = () => {
         },
       }),
     ],
-    [t],
+    [t, isMobile],
   )
 }
 

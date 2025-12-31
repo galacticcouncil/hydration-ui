@@ -21,21 +21,21 @@ export const ApyRow: React.FC<ApyRowProps> = ({ assetId, value, label }) => {
         {asset && (
           <>
             <AssetLogo id={asset.id} size="extra-small" />
-            <Text fs={11} fw={600} color={getToken("text.high")}>
+            <Text fs="p5" fw={500} color={getToken("text.high")}>
               {asset.symbol}
             </Text>
           </>
         )}
         <Text
-          fs={11}
+          fs="p5"
           fw={500}
-          color={getToken("text.medium")}
+          color={getToken("text.high")}
           transform={assetId ? "none" : "uppercase"}
         >
           {label}
         </Text>
       </Flex>
-      <Text fs={12} fw={600}>
+      <Text fs="p5" fw={500}>
         {value}
       </Text>
     </Flex>

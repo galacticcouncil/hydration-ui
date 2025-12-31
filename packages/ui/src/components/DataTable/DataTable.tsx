@@ -7,6 +7,7 @@ import {
   RowData,
   SortingState,
   Table as TableDef,
+  VisibilityState,
 } from "@tanstack/react-table"
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react"
 import {
@@ -67,6 +68,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
       | ColumnDef<TData>[]
     className?: string
     columnPinning?: ColumnPinningState | undefined
+    columnVisibility?: VisibilityState
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
     rowCount?: number
@@ -107,6 +109,7 @@ const DataTable = <TData,>({
   globalFilterFn,
   emptyState,
   columnPinning,
+  columnVisibility,
   rowCount,
   isMultiSort,
   getIsExpandable,
@@ -156,6 +159,9 @@ const DataTable = <TData,>({
       // need this prevent disabling native sorting, cause undefined value disable it
       ...(isControlledSorting && {
         sorting,
+      }),
+      ...(columnVisibility && {
+        columnVisibility,
       }),
     },
     ...(isControlledSorting && {

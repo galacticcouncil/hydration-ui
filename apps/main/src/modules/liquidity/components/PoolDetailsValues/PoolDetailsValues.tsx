@@ -2,7 +2,6 @@ import { XykMath } from "@galacticcouncil/sdk"
 import {
   Flex,
   Separator,
-  SValueStatsValue,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
@@ -158,23 +157,24 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
             wrap
             customValue={
               <Flex gap={4} align="self-start">
-                <AssetLogo
-                  id={assetAIconId}
-                  size={"medium"}
-                  sx={{ mt: [0, 4] }}
-                />
+                <AssetLogo id={assetAIconId} sx={{ mt: [0, 2] }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}
                   width="100%"
                 >
-                  <SValueStatsValue>
+                  <Text
+                    fs="h7"
+                    fw={500}
+                    color={getToken("text.high")}
+                    font="primary"
+                  >
                     {t("currency", { value: 1, symbol: assetAMeta.symbol })} ={" "}
                     {t("currency", {
                       value: priceA,
                       symbol: assetBMeta.symbol,
                     })}
-                  </SValueStatsValue>
+                  </Text>
                   <Separator />
                   <AssetPrice asset={assetA} />
                 </Flex>
@@ -191,19 +191,24 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
             wrap
             customValue={
               <Flex gap={4} align="self-start">
-                <AssetLogo id={assetBIconId} sx={{ mt: [0, 4] }} />
+                <AssetLogo id={assetBIconId} sx={{ mt: [0, 2] }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}
                   width="100%"
                 >
-                  <SValueStatsValue>
+                  <Text
+                    fs="h7"
+                    fw={500}
+                    color={getToken("text.high")}
+                    font="primary"
+                  >
                     {t("currency", { value: 1, symbol: assetBMeta.symbol })} ={" "}
                     {t("currency", {
                       value: priceB,
                       symbol: assetAMeta.symbol,
                     })}
-                  </SValueStatsValue>
+                  </Text>
                   <Separator />
                   <AssetPrice asset={assetB} />
                 </Flex>

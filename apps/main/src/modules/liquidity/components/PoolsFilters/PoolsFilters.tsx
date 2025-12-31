@@ -21,7 +21,7 @@ export const PoolsFilters = ({ onChange }: PoolsFiltersProps) => {
       justify={isHiddenTabs ? "flex-end" : "space-between"}
       align="center"
       gap={20}
-      sx={{ pt: 30, pb: getTokenPx("containers.paddings.secondary") }}
+      sx={{ pt: [10, 30], pb: getTokenPx("containers.paddings.secondary") }}
     >
       {!isHiddenTabs && <PoolTypeTabs />}
       <SearchInput

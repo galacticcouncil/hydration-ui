@@ -1,4 +1,5 @@
 import {
+  Box,
   Flex,
   InfoTooltipProps,
   Text,
@@ -35,8 +36,8 @@ export const TooltipAPR = ({
     <Tooltip
       {...props}
       text={
-        <Flex direction="column" gap={4}>
-          <Text fs="p6" fw={500} mb={10}>
+        <Flex direction="column" gap={8}>
+          <Text fs="p6" fw={500} mb={6}>
             {t("liquidity:liquidity.tooltip.fee.apr.title")}
           </Text>
 
@@ -59,18 +60,9 @@ export const TooltipAPR = ({
           )}
 
           {!!farms?.length && (
-            <>
+            <Box>
               <Row
                 label={t("liquidity:liquidity.tooltip.fee.apr.farmRewardsApr")}
-                value={
-                  <Text
-                    transform="uppercase"
-                    fs={10}
-                    color={getToken("text.medium")}
-                  >
-                    {t("liquidity:liquidity.tooltip.fee.apr.apr")}
-                  </Text>
-                }
               />
               {farms.map((farm, index) => (
                 <Row
@@ -81,7 +73,7 @@ export const TooltipAPR = ({
                         id={farm.rewardCurrency.toString()}
                         size="small"
                       />
-                      <Text>
+                      <Text fs="p5" fw={500} color={getToken("text.high")}>
                         {
                           getAssetWithFallback(farm.rewardCurrency.toString())
                             .symbol
@@ -92,7 +84,7 @@ export const TooltipAPR = ({
                   value={t("percent", { value: farm.apr })}
                 />
               ))}
-            </>
+            </Box>
           )}
         </Flex>
       }
@@ -131,26 +123,34 @@ const Row = ({
   value,
 }: {
   label: React.ReactNode
-  value: React.ReactNode
+  value?: React.ReactNode
 }) => {
   return (
     <Flex justify="space-between" align="center">
-      <Text
-        transform="uppercase"
-        fs={8}
-        fw={600}
-        color={getToken("text.medium")}
-      >
-        {label}
-      </Text>
-      <Text
-        transform="uppercase"
-        fs="p5"
-        color={getToken("text.high")}
-        fw={500}
-      >
-        {value}
-      </Text>
+      {typeof label === "string" ? (
+        <Text
+          transform="uppercase"
+          fs={8}
+          fw={600}
+          color={getToken("text.medium")}
+        >
+          {label}
+        </Text>
+      ) : (
+        label
+      )}
+      {value && typeof value === "string" ? (
+        <Text
+          transform="uppercase"
+          fs="p5"
+          color={getToken("text.high")}
+          fw={500}
+        >
+          {value}
+        </Text>
+      ) : (
+        value
+      )}
     </Flex>
   )
 }

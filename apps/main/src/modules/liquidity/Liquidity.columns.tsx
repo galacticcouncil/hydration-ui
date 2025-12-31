@@ -1,4 +1,11 @@
-import { Button, Flex, Skeleton, Text } from "@galacticcouncil/ui/components"
+import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
+import {
+  Button,
+  Flex,
+  Icon,
+  Skeleton,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
@@ -23,6 +30,16 @@ import { OmnipoolAssetTable } from "./Liquidity.utils"
 
 const columnHelper = createColumnHelper<OmnipoolAssetTable>()
 
+export const getPoolColumnsVisibility = (isMobile: boolean) => ({
+  ["meta.name"]: !isMobile,
+  price: !isMobile,
+  volumeDisplay: true,
+  tvlDisplay: !isMobile,
+  totalFee: !isMobile,
+  id: false,
+  actions: !isMobile,
+})
+
 export const usePoolColumns = () => {
   const { t } = useTranslation(["common", "liquidity"])
   const { isMobile } = useBreakpoints()
@@ -39,7 +56,7 @@ export const usePoolColumns = () => {
               withName={!isMobile}
             />
           ) : (
-            <AssetLabelFull asset={row.original.meta} />
+            <AssetLabelFull asset={row.original.meta} withName={!isMobile} />
           ),
         sortingFn: (a, b) =>
           a.original.meta.symbol.localeCompare(b.original.meta.symbol),
@@ -52,14 +69,28 @@ export const usePoolColumns = () => {
       }),
       columnHelper.accessor("volumeDisplay", {
         header: t("liquidity:24hVolume"),
-        cell: ({ row }) =>
-          row.original.isVolumeLoading ? (
+        meta: {
+          sx: { textAlign: isMobile ? "right" : "left" },
+        },
+        cell: ({ row }) => {
+          const volume = t("currency", {
+            value: Number(row.original.volumeDisplay),
+          })
+          return row.original.isVolumeLoading ? (
             <Skeleton width={60} height="1em" />
+          ) : isMobile ? (
+            <Flex align="center" gap={4} justify="flex-end">
+              {volume}
+              <Icon
+                component={ChevronRight}
+                size={18}
+                color={getToken("text.low")}
+              />
+            </Flex>
           ) : (
-            t("currency", {
-              value: Number(row.original.volumeDisplay),
-            })
-          ),
+            volume
+          )
+        },
         sortingFn: (a, b) =>
           new Big(a.original.volumeDisplay ?? 0).gt(
             b.original.volumeDisplay ?? 0,
@@ -140,27 +171,11 @@ export const usePoolColumns = () => {
           if (a.original.isNative) return 1
           if (b.original.isNative) return -1
 
-          return new Big(a.original.tvlDisplay ?? "0").gt(
-            b.original.tvlDisplay ?? "0",
-          )
-            ? 1
-            : -1
-        },
-      }),
-      columnHelper.accessor("id", {
-        meta: { visibility: false },
-        sortingFn: (a, b) => {
-          if (a.original.isNative) return 1
-          if (b.original.isNative) return -1
-
           return numericallyStrDesc(
             b.original.tvlDisplay ?? "0",
             a.original.tvlDisplay ?? "0",
           )
         },
-      }),
-      columnHelper.accessor("meta.symbol", {
-        meta: { visibility: false },
       }),
       columnHelper.display({
         id: "actions",
