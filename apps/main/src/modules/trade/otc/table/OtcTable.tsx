@@ -102,7 +102,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
           isMultiSort
           sorting={sortState}
           onSortingChange={setSortState}
-          onRowClick={setIsDetailOpen}
+          onRowClick={account ? setIsDetailOpen : undefined}
         />
       </TableContainer>
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>

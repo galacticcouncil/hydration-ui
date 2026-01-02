@@ -18,7 +18,6 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
@@ -93,9 +92,7 @@ export const useOpenOrdersColumns = () => {
     const actionColumn = columnHelper.display({
       id: "actions",
       cell: function Cell({ row }) {
-        const [modal, setModal] = useState<"confirmation" | "details" | "none">(
-          "none",
-        )
+        const [modal, setModal] = useState<"confirmation" | "none">("none")
 
         return (
           <Flex align="center" gap={8}>
@@ -111,7 +108,7 @@ export const useOpenOrdersColumns = () => {
             >
               <Icon component={Trash} size={14} />
             </Button>
-            <TableRowDetailsExpand onClick={() => setModal("details")} />
+            <TableRowDetailsExpand />
             <Modal
               open={modal === "confirmation"}
               onOpenChange={() => setModal("none")}
@@ -123,12 +120,6 @@ export const useOpenOrdersColumns = () => {
                 symbol={row.original.from.symbol}
                 onClose={() => setModal("none")}
               />
-            </Modal>
-            <Modal
-              open={modal === "details"}
-              onOpenChange={() => setModal("none")}
-            >
-              <DcaOrderDetailsModal details={row.original} />
             </Modal>
           </Flex>
         )
@@ -147,24 +138,15 @@ export const useOpenOrdersColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: function Cell({ row }) {
-        const [modal, setModal] = useState(false)
-
-        return (
-          <>
-            <TableRowDetailsExpand onClick={() => setModal(true)}>
-              <AmountMobile
-                fromAmount={row.original.fromAmountExecuted}
-                from={row.original.from}
-                status={row.original.status}
-              />
-            </TableRowDetailsExpand>
-            <Modal open={modal} onOpenChange={setModal}>
-              <DcaOrderDetailsModal details={row.original} />
-            </Modal>
-          </>
-        )
-      },
+      cell: ({ row }) => (
+        <TableRowDetailsExpand>
+          <AmountMobile
+            fromAmount={row.original.fromAmountExecuted}
+            from={row.original.from}
+            status={row.original.status}
+          />
+        </TableRowDetailsExpand>
+      ),
     })
 
     if (isMobile) {

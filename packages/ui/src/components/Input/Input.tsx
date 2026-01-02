@@ -1,9 +1,19 @@
-import { FC, ReactNode, Ref, useId } from "react"
+import React, { FC, ReactNode, Ref, useId } from "react"
 
 import { getToken, px } from "@/utils"
 
 import { Text } from "../Text"
 import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
+
+type LeadingElementProps =
+  | {
+      iconStart?: React.ComponentType
+      leadingElement?: never
+    }
+  | {
+      iconStart?: never
+      leadingElement?: ReactNode
+    }
 
 type TrailingElementProps =
   | {
@@ -19,9 +29,9 @@ type TrailingElementProps =
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement> &
   CustomInputProps &
+  LeadingElementProps &
   TrailingElementProps & {
     isError?: boolean
-    iconStart?: React.ComponentType
     className?: string
     ref?: Ref<HTMLInputElement>
   }
@@ -30,6 +40,7 @@ export const Input: FC<InputProps> = ({
   iconStart: IconStart,
   iconEnd: IconEnd,
   unit,
+  leadingElement,
   trailingElement,
   variant,
   customSize,
@@ -47,6 +58,7 @@ export const Input: FC<InputProps> = ({
       customSize={customSize}
       className={className}
     >
+      {leadingElement}
       {IconStart && <IconStart />}
       <SInput ref={ref} id={usedInputId} {...props} />
       {unit && (

@@ -4,13 +4,12 @@ import {
   ExternalLink,
   Flex,
   Icon,
-  Modal,
   TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AccountDate } from "@/modules/trade/orders/columns/AccountDate"
@@ -18,7 +17,6 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { TransactionType } from "@/modules/trade/orders/columns/TransactionType"
 import { SwapData } from "@/modules/trade/orders/lib/useSwapsData"
-import { SwapDetailsModal } from "@/modules/trade/orders/SwapDetailsModal"
 
 const columnHelper = createColumnHelper<SwapData>()
 
@@ -125,22 +123,15 @@ export const useMarketTransactionsColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: function Cell({ row }) {
-        const [modal, setModal] = useState(false)
-
-        return (
-          <TableRowDetailsExpand onClick={() => setModal(true)}>
-            <AccountDate
-              align="end"
-              address={row.original.address}
-              date={row.original.date}
-            />
-            <Modal open={modal} onOpenChange={setModal}>
-              <SwapDetailsModal details={row.original} />
-            </Modal>
-          </TableRowDetailsExpand>
-        )
-      },
+      cell: ({ row }) => (
+        <TableRowDetailsExpand>
+          <AccountDate
+            align="end"
+            address={row.original.address}
+            date={row.original.date}
+          />
+        </TableRowDetailsExpand>
+      ),
     })
 
     if (isMobile) {

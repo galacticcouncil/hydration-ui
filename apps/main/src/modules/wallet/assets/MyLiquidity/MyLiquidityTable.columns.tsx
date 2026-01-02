@@ -1,17 +1,15 @@
 import {
   Amount,
-  Modal,
   TableRowDetailsExpand,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetLabelFull, AssetLabelXYK } from "@/components/AssetLabelFull"
-import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { MyLiquidityTableActions } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.actions"
 import { LiquidityPositionByAsset } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { useAssets } from "@/providers/assetsProvider"
@@ -106,6 +104,7 @@ export const useMyLiquidityColumns = () => {
       meta: {
         sx: {
           textAlign: "right",
+          pr: "0 !important",
         },
       },
       cell: ({ row: { original } }) => {
@@ -154,32 +153,23 @@ export const useMyLiquidityColumns = () => {
           select: (row) => row.original.currentTotalDisplay,
           compare: numericallyStr,
         }),
-        cell: function Cell({ row: { original } }) {
-          const [isDetailOpen, setIsDetailOpen] = useState(false)
-
-          return (
-            <>
-              <TableRowDetailsExpand onClick={() => setIsDetailOpen(true)}>
-                <Amount
-                  value={
-                    isShareToken(original.meta)
-                      ? t("common:currency", {
-                          value: original.currentValueHuman,
-                          symbol: "Shares",
-                        })
-                      : format(original)
-                  }
-                  displayValue={t("common:currency", {
-                    value: original.currentTotalDisplay,
-                  })}
-                />
-              </TableRowDetailsExpand>
-              <Modal open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <LiquidityDetailMobileModal {...original} />
-              </Modal>
-            </>
-          )
-        },
+        cell: ({ row: { original } }) => (
+          <TableRowDetailsExpand>
+            <Amount
+              value={
+                isShareToken(original.meta)
+                  ? t("common:currency", {
+                      value: original.currentValueHuman,
+                      symbol: "Shares",
+                    })
+                  : format(original)
+              }
+              displayValue={t("common:currency", {
+                value: original.currentTotalDisplay,
+              })}
+            />
+          </TableRowDetailsExpand>
+        ),
       },
     )
 

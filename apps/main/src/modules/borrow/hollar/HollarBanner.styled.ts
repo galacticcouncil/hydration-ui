@@ -1,99 +1,78 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { mq } from "@galacticcouncil/ui/theme"
-export const SContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
 
-  position: relative;
-`
-
-export const SInnerContainer = styled.div(
+export const SContainer = styled.div(
   ({ theme }) => css`
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    gap: 6px;
-
-    overflow: hidden;
-
     position: relative;
 
-    border: 1px solid ${theme.details.separators};
-    border-radius: ${theme.radii.xl}px;
+    display: flex;
+    height: 89px;
 
-    ${mq("md")} {
-      height: 89px;
-    }
+    border: 1px solid ${theme.details.separators};
+    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
 
     &:before {
       content: "";
       position: absolute;
       inset: -1px;
       overflow: hidden;
-      border-radius: ${theme.radii.xl}px;
+      border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
 
       background: linear-gradient(
-        180deg,
-        #b3cf92 0%,
-        rgba(179, 207, 146, 0.75) 100%
+        90deg,
+        #c3e19f 52.49%,
+        rgba(179, 207, 146, 0) 98.87%
       );
 
       ${mq("md")} {
         background: linear-gradient(
           90deg,
-          #b3cf92 0%,
-          #c3e19f 25%,
-          rgba(179, 207, 146, 0) 75%
+          #c3e19f 24.74%,
+          rgba(179, 207, 146, 0) 62.63%
         );
       }
     }
   `,
 )
 
-export const SContent = styled.div`
-  position: relative;
-  height: 100%;
+export const SContent = styled.div(
+  ({ theme }) => css`
+    position: relative;
+    width: 100%;
+    height: 89px;
 
-  padding: 20px;
+    padding-block: 18px;
+    padding-left: 21px;
 
-  display: flex;
-  gap: 8px;
-
-  flex-direction: column;
-
-  ${mq("md")} {
-    gap: 20px;
-
-    padding-left: 140px;
-    padding-right: 34px;
-
-    flex-direction: row;
+    display: flex;
     align-items: center;
-  }
-`
+    justify-content: space-between;
+    gap: ${theme.scales.paddings.s}px;
 
-export const SValuesContainer = styled.div`
-  display: none;
-  ${mq("md")} {
-    display: grid;
-    grid-template-columns: 1fr 1fr auto;
-    margin-left: auto;
-    margin-top: 0;
+    ${mq("md")} {
+      gap: 8px;
+    }
+  `,
+)
+
+export const SValuesContainer = styled.div(
+  ({ theme }) => css`
+    display: flex;
     align-items: center;
-    gap: 60px;
-  }
-`
-export const SHollarImage = styled.img`
-  position: absolute;
+    gap: ${theme.scales.paddings.xxl}px;
+    padding-right: 30px;
+  `,
+)
 
-  top: -14px;
-  right: -8px;
+export const SText = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.scales.paddings.s}px;
 
-  ${mq("md")} {
-    left: 14px;
-
-    right: auto;
-  }
-`
+    ${mq("md")} {
+      gap: 6px;
+    }
+  `,
+)

@@ -2,13 +2,12 @@ import { ArrowRightLeft } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
   Icon,
-  Modal,
   TableRowDetailsExpand,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AmountMobile } from "@/modules/trade/orders/columns/AmountMobile"
@@ -17,7 +16,6 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 
 const columnHelper = createColumnHelper<OrderData>()
@@ -82,20 +80,13 @@ export const useOrderHistoryColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: function Cell({ row }) {
-        const [modal, setModal] = useState(false)
-
-        return (
-          <TableRowDetailsExpand onClick={() => setModal(true)}>
-            {row.original.status && (
-              <DcaOrderStatus status={row.original.status} />
-            )}
-            <Modal open={modal} onOpenChange={setModal}>
-              <DcaOrderDetailsModal details={row.original} />
-            </Modal>
-          </TableRowDetailsExpand>
-        )
-      },
+      cell: ({ row }) => (
+        <TableRowDetailsExpand>
+          {row.original.status && (
+            <DcaOrderStatus status={row.original.status} />
+          )}
+        </TableRowDetailsExpand>
+      ),
     })
 
     const fromToColumnMobile = columnHelper.display({
@@ -110,24 +101,15 @@ export const useOrderHistoryColumns = () => {
       meta: {
         sx: { textAlign: "end" },
       },
-      cell: function Cell({ row }) {
-        const [modal, setModal] = useState(false)
-
-        return (
-          <>
-            <TableRowDetailsExpand onClick={() => setModal(true)}>
-              <AmountMobile
-                fromAmount={row.original.fromAmountExecuted}
-                from={row.original.from}
-                status={row.original.status}
-              />
-            </TableRowDetailsExpand>
-            <Modal open={modal} onOpenChange={setModal}>
-              <DcaOrderDetailsModal details={row.original} />
-            </Modal>
-          </>
-        )
-      },
+      cell: ({ row }) => (
+        <TableRowDetailsExpand>
+          <AmountMobile
+            fromAmount={row.original.fromAmountExecuted}
+            from={row.original.from}
+            status={row.original.status}
+          />
+        </TableRowDetailsExpand>
+      ),
     })
 
     if (isMobile) {

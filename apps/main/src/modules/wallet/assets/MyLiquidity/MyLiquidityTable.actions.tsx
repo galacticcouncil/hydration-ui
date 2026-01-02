@@ -37,7 +37,6 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
         >
           {t("myLiquidity.actions.addLiquidity")}
         </TableRowAction>
-
         <TableRowAction asChild>
           <Link to="/liquidity/$id" params={{ id: assetId }}>
             {t("myLiquidity.actions.poolDetails")}
@@ -56,10 +55,11 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
                   <MenuItemLabel
                     onClick={(e) => {
                       e.stopPropagation()
+                      e.preventDefault()
                       setIsRemoveAllModalOpen(true)
                     }}
                   >
-                    {t("myLiquidity.actions.removeAllLiquidity")}
+                    {t("myLiquidity.actions.removeLiquidity")}
                   </MenuItemLabel>
                 </div>
               </MenuSelectionItem>
