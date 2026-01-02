@@ -101,7 +101,7 @@ export const AssetYields = ({
               omnipoolFee={data.lpFeeOmnipool}
               stablepoolFee={data.lpFeeStablepool}
               farms={[]}
-              iconColor={getToken("accents.success.primary")}
+              iconColor={getToken("accents.success.emphasis")}
             />
           </Flex>
         </Chip>

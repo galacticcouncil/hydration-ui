@@ -12,6 +12,7 @@ import {
   TableContainer,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
@@ -36,7 +37,10 @@ import { ATokenBalanceTable } from "./ATokenBalanceTable"
 import { OmnipoolPositions } from "./OmnipoolPositions"
 import { PositionDetails } from "./PositionDetails"
 import { PositionsHeader } from "./PositionsHeader"
-import { useIsolatedPositionsTableColumns } from "./PositionsTable.columns"
+import {
+  getIsolatedPositionsTableColumns,
+  useIsolatedPositionsTableColumns,
+} from "./PositionsTable.columns"
 import { STableHeader } from "./PositionsTable.styled"
 import {
   useIsolatedPositions,
@@ -56,6 +60,7 @@ export const PositionsTable = ({
 
 const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
   const { t } = useTranslation("liquidity")
+  const { isMobile } = useBreakpoints()
   const [selectedPosition, setSelectedPosition] = useState<{
     joinedFarms: TJoinedFarm[]
     farmsToJoin: Farm[]
@@ -109,6 +114,10 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
         columns={columns}
         paginated
         pageSize={10}
+        columnVisibility={getIsolatedPositionsTableColumns(
+          isMobile,
+          pool.isFarms || !!pool.positions.length,
+        )}
         onRowClick={(row) => {
           if (!row.position) return
 
@@ -169,7 +178,12 @@ const OmnipoolStablepoolPositions = ({
 
   if (isVisibleABalance) {
     if (tables.length > 0) {
-      tables.push(<Separator key="separator-atoken" sx={{ minWidth: 900 }} />)
+      tables.push(
+        <Separator
+          key="separator-atoken"
+          sx={{ minWidth: [undefined, 900] }}
+        />,
+      )
     }
 
     tables.push(

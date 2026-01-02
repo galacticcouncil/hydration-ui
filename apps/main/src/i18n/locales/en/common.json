@@ -238,6 +238,8 @@
   "chart.timeFrame.day": "1D",
   "chart.timeFrame.week": "1W",
   "chart.timeFrame.month": "1M",
+  "chart": "Chart",
+  "stats": "Stats",
   "contacts": "Contacts",
   "contacts.description": "Manage & save adresses",
   "transaction.description": "Review transaction details",

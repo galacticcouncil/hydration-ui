@@ -57,7 +57,7 @@ export const SupplyYieldOpportunity = ({
             omnipoolFee={omnipoolFee}
             stablepoolFee={stablepoolFee}
             farms={[]}
-            iconColor={getToken("accents.success.primary")}
+            iconColor={getToken("accents.success.emphasis")}
           />
         </Chip>
       </Flex>

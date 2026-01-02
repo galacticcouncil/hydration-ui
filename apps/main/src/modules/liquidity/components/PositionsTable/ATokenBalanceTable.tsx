@@ -1,5 +1,6 @@
 import { SuppliedLiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import { DataTable, Icon, Text } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -7,7 +8,10 @@ import { useTranslation } from "react-i18next"
 import { OmnipoolAssetTable } from "@/modules/liquidity/Liquidity.utils"
 import { scaleHuman } from "@/utils/formatting"
 
-import { useBalanceTableColumns } from "./PositionsTable.columns"
+import {
+  getBalanceTableColumns,
+  useBalanceTableColumns,
+} from "./PositionsTable.columns"
 import { STableHeader } from "./PositionsTable.styled"
 import { BalanceTableData } from "./PositionsTable.utils"
 
@@ -21,6 +25,7 @@ export const ATokenBalanceTable = ({
   aStableswapDisplayBalance?: string
 }) => {
   const { t } = useTranslation(["liquidity"])
+  const { isMobile } = useBreakpoints()
   const balanceColumns = useBalanceTableColumns()
   const {
     aStableswapBalance,
@@ -84,13 +89,12 @@ export const ATokenBalanceTable = ({
       <DataTable
         data={tableData}
         columns={balanceColumns}
-        paginated
-        pageSize={10}
         columnPinning={{
           left: ["meta_name"],
         }}
+        columnVisibility={getBalanceTableColumns(isMobile)}
         sx={{
-          minWidth: 900,
+          minWidth: [undefined, 900],
           tr: {
             bg,
           },

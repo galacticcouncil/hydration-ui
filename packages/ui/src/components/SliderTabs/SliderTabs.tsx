@@ -1,3 +1,5 @@
+import { Ref } from "react"
+
 import { Button } from "@/components/Button"
 import { SSliderTabs } from "@/components/SliderTabs/SliderTabs.styled"
 
@@ -15,6 +17,7 @@ type SliderTabsProps<TKey extends SliderTabsOptionKey> = {
   readonly onSelect: (option: SliderTabsOption<NoInfer<TKey>>) => void
   readonly disabled?: boolean
   readonly className?: string
+  readonly ref?: Ref<HTMLDivElement>
 }
 
 export const SliderTabs = <TKey extends SliderTabsOptionKey>({
@@ -23,9 +26,10 @@ export const SliderTabs = <TKey extends SliderTabsOptionKey>({
   onSelect,
   disabled,
   className,
+  ref,
 }: SliderTabsProps<TKey>) => {
   return (
-    <SSliderTabs className={className}>
+    <SSliderTabs className={className} ref={ref}>
       {options.map((option) => {
         const isSelected = selected === option.id
 

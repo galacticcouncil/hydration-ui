@@ -1,6 +1,7 @@
 import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Modal, Text } from "@galacticcouncil/ui/components"
 import { DataTable } from "@galacticcouncil/ui/components/DataTable"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { Minus } from "lucide-react"
@@ -20,6 +21,7 @@ import {
 
 import { PositionDetails } from "./PositionDetails"
 import {
+  getOmnipoolPositionsTableColumns,
   isOmnipoolPosition,
   useOmnipoolPositionsTableColumns,
 } from "./PositionsTable.columns"
@@ -47,6 +49,7 @@ export const OmnipoolPositions = ({
   const previousSelectedPosition = usePrevious(selectedPosition)
   const columns = useOmnipoolPositionsTableColumns(isFarms)
   const position = selectedPosition ?? previousSelectedPosition
+  const { isMobile } = useBreakpoints()
 
   return (
     <>
@@ -95,7 +98,8 @@ export const OmnipoolPositions = ({
         columnPinning={{
           left: ["position"],
         }}
-        sx={{ minWidth: 900 }}
+        columnVisibility={getOmnipoolPositionsTableColumns(isMobile, isFarms)}
+        sx={{ minWidth: [undefined, 900] }}
       />
 
       <Modal

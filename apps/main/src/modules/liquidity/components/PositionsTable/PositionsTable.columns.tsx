@@ -1,6 +1,7 @@
 import {
   ChevronRight,
   CupSoda,
+  Ellipsis,
   Plus,
   Trash,
 } from "@galacticcouncil/ui/assets/icons"
@@ -8,10 +9,18 @@ import {
   Amount,
   Box,
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Flex,
   Icon,
+  MenuItemIcon,
+  MenuItemLabel,
+  MenuSelectionItem,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
@@ -43,9 +52,37 @@ export const isOmnipoolPosition = (
   return "meta" in row && "data" in row
 }
 
+export const getOmnipoolPositionsTableColumns = (
+  isMobile: boolean,
+  isFarms: boolean,
+) => ({
+  position: !isMobile,
+  initialAmount: !isMobile,
+  currentValue: true,
+  joinedFarms: !isMobile || isFarms,
+  actions: true,
+})
+
+export const getBalanceTableColumns = (isMobile: boolean) => ({
+  ["meta_name"]: !isMobile,
+  totalValue: true,
+  actions: true,
+})
+
+export const getIsolatedPositionsTableColumns = (
+  isMobile: boolean,
+  isFarms: boolean,
+) => ({
+  position: !isMobile,
+  amount: true,
+  joinedFarms: !isMobile || isFarms,
+  actions: true,
+})
+
 export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
   const { t } = useTranslation(["common", "liquidity"])
   const format = useFormatOmnipoolPositionData()
+  const { isMobile } = useBreakpoints()
 
   return useMemo(
     () => [
@@ -87,6 +124,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           ),
       }),
       omnipoolColumnHelper.display({
+        id: "initialAmount",
         header: t("liquidity:liquidity.positions.header.initialAmount"),
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) ? (
@@ -97,6 +135,21 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
               })}
               displayValue={t("currency", {
                 value: original.data.initialDisplay,
+              })}
+            />
+          ) : (
+            "-"
+          ),
+      }),
+      omnipoolColumnHelper.display({
+        id: "currentValue",
+        header: t("liquidity:liquidity.positions.header.currentValue"),
+        cell: ({ row: { original } }) =>
+          isOmnipoolPosition(original) ? (
+            <Amount
+              value={format(original.data)}
+              displayValue={t("currency", {
+                value: original.data.currentTotalDisplay,
               })}
             />
           ) : (
@@ -111,21 +164,8 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
             />
           ),
       }),
-      omnipoolColumnHelper.display({
-        header: t("liquidity:liquidity.positions.header.currentValue"),
-        cell: ({ row: { original } }) =>
-          isOmnipoolPosition(original) ? (
-            <Amount
-              value={format(original.data)}
-              displayValue={t("currency", {
-                value: original.data.currentTotalDisplay,
-              })}
-            />
-          ) : (
-            "-"
-          ),
-      }),
       omnipoolColumnHelper.accessor("joinedFarms", {
+        id: "joinedFarms",
         header: t("liquidity:liquidity.positions.header.joinedFarms"),
         meta: {
           visibility: isFarms,
@@ -134,7 +174,11 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         size: 100,
         cell: ({ row: { original } }) =>
           isOmnipoolPosition(original) && original.joinedFarms.length ? (
-            <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+            <Flex
+              direction={isMobile ? "column" : "row"}
+              align="center"
+              gap={getTokenPx("containers.paddings.quint")}
+            >
               <AssetLogo
                 id={original.joinedFarms.map(({ farm }) =>
                   farm.rewardCurrency.toString(),
@@ -149,6 +193,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           ) : null,
       }),
       omnipoolColumnHelper.display({
+        id: "actions",
         header: t("liquidity:liquidity.positions.header.actions"),
         meta: {
           sx: {
@@ -160,6 +205,106 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
           const canJoinFarms =
             isOmnipool && !original.isJoinedAllFarms && original.canJoinFarms
           const isJoinedFarms = isOmnipool && !!original.joinedFarms.length
+
+          if (isMobile) {
+            return (
+              <Flex align="center" gap={4} justify="flex-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger>
+                      <Button variant="tertiary" outline>
+                        <Icon component={Ellipsis} size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    {canJoinFarms && (
+                      <DropdownMenuItem asChild>
+                        <MenuSelectionItem
+                          variant="filterLink"
+                          onClick={(e) => {
+                            e.preventDefault()
+                          }}
+                        >
+                          <MenuItemIcon component={CupSoda} />
+                          <MenuItemLabel>
+                            <Link
+                              to="/liquidity/$id/join"
+                              params={{
+                                id: original.poolId,
+                              }}
+                              search={{
+                                positionId: original.positionId,
+                              }}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              {t("liquidity:joinFarms")}
+                            </Link>
+                          </MenuItemLabel>
+                        </MenuSelectionItem>
+                      </DropdownMenuItem>
+                    )}
+                    {!isOmnipool && (
+                      <DropdownMenuItem asChild>
+                        <MenuSelectionItem
+                          variant="filterLink"
+                          onClick={(e) => {
+                            e.preventDefault()
+                          }}
+                        >
+                          <MenuItemIcon component={Plus} />
+                          <MenuItemLabel>
+                            <Link
+                              to="/liquidity/$id/add"
+                              params={{
+                                id: original.poolId,
+                              }}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              {t("liquidity:moveToOmnipool")}
+                            </Link>
+                          </MenuItemLabel>
+                        </MenuSelectionItem>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem asChild>
+                      <MenuSelectionItem
+                        variant="filterLink"
+                        onClick={(e) => {
+                          e.preventDefault()
+                        }}
+                      >
+                        <MenuItemIcon component={Trash} />
+                        <MenuItemLabel>
+                          <Link
+                            to="/liquidity/$id/remove"
+                            params={{
+                              id: original.poolId,
+                            }}
+                            search={{
+                              positionId: isOmnipool ? original.positionId : "",
+                              stableswapId: original.stableswapId,
+                            }}
+                            sx={{ textDecoration: "none" }}
+                          >
+                            {t("remove")}
+                          </Link>
+                        </MenuItemLabel>
+                      </MenuSelectionItem>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {(canJoinFarms || isJoinedFarms) && (
+                  <Icon
+                    component={ChevronRight}
+                    size={18}
+                    color={getToken("text.low")}
+                  />
+                )}
+              </Flex>
+            )
+          }
 
           return (
             <Flex
@@ -234,12 +379,13 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         },
       }),
     ],
-    [t, isFarms, format],
+    [t, isFarms, format, isMobile],
   )
 }
 
 export const useBalanceTableColumns = () => {
   const { t } = useTranslation(["common", "liquidity"])
+  const { isMobile } = useBreakpoints()
 
   return useMemo(
     () => [
@@ -252,6 +398,7 @@ export const useBalanceTableColumns = () => {
         ),
       }),
       balanceColumnHelper.display({
+        id: "totalValue",
         header: t("totalValue"),
         cell: ({
           row: {
@@ -270,6 +417,7 @@ export const useBalanceTableColumns = () => {
         ),
       }),
       balanceColumnHelper.display({
+        id: "actions",
         header: t("liquidity:liquidity.positions.header.actions"),
         size: 320,
         meta: {
@@ -281,51 +429,126 @@ export const useBalanceTableColumns = () => {
           row: {
             original: { isStablepoolInOmnipool, poolId, stableswapId },
           },
-        }) => (
-          <Flex gap={12} align="center" justify="end">
-            {isStablepoolInOmnipool && (
-              <Button variant="secondary" asChild>
+        }) => {
+          if (isMobile) {
+            return (
+              <Flex align="center" gap={4} justify="flex-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger>
+                      <Button variant="tertiary" outline>
+                        <Icon component={Ellipsis} size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    {isStablepoolInOmnipool && (
+                      <DropdownMenuItem asChild>
+                        <MenuSelectionItem
+                          variant="filterLink"
+                          onClick={(e) => {
+                            e.preventDefault()
+                          }}
+                        >
+                          <MenuItemIcon component={Plus} />
+                          <MenuItemLabel>
+                            <Link
+                              to="/liquidity/$id/add"
+                              params={{
+                                id: poolId,
+                              }}
+                              search={{
+                                erc20Id: poolId,
+                                stableswapId: stableswapId,
+                                split: false,
+                              }}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              {t("liquidity:moveToOmnipool")}
+                            </Link>
+                          </MenuItemLabel>
+                        </MenuSelectionItem>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem asChild>
+                      <MenuSelectionItem
+                        variant="filterLink"
+                        onClick={(e) => {
+                          e.preventDefault()
+                        }}
+                      >
+                        <MenuItemIcon component={Trash} />
+                        <MenuItemLabel>
+                          <Link
+                            to="/liquidity/$id/remove"
+                            params={{
+                              id: poolId,
+                            }}
+                            search={{
+                              erc20Id: poolId,
+                              stableswapId: stableswapId,
+                            }}
+                            sx={{ textDecoration: "none" }}
+                          >
+                            {t("remove")}
+                          </Link>
+                        </MenuItemLabel>
+                      </MenuSelectionItem>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </Flex>
+            )
+          }
+
+          return (
+            <Flex gap={12} align="center" justify="end">
+              {isStablepoolInOmnipool && (
+                <Button variant="secondary" asChild>
+                  <Link
+                    to="/liquidity/$id/add"
+                    params={{
+                      id: poolId,
+                    }}
+                    search={{
+                      erc20Id: poolId,
+                      stableswapId: stableswapId,
+                      split: false,
+                    }}
+                  >
+                    <Plus />
+                    {t("liquidity:moveToOmnipool")}
+                  </Link>
+                </Button>
+              )}
+              <Button variant="tertiary" outline asChild>
                 <Link
-                  to="/liquidity/$id/add"
+                  to="/liquidity/$id/remove"
                   params={{
                     id: poolId,
                   }}
                   search={{
                     erc20Id: poolId,
                     stableswapId: stableswapId,
-                    split: false,
                   }}
                 >
-                  <Plus />
-                  {t("liquidity:moveToOmnipool")}
+                  <Trash />
+                  {t("remove")}
                 </Link>
               </Button>
-            )}
-            <Button variant="tertiary" outline asChild>
-              <Link
-                to="/liquidity/$id/remove"
-                params={{
-                  id: poolId,
-                }}
-                search={{
-                  erc20Id: poolId,
-                  stableswapId: stableswapId,
-                }}
-              >
-                <Trash />
-                {t("remove")}
-              </Link>
-            </Button>
-          </Flex>
-        ),
+            </Flex>
+          )
+        },
       }),
     ],
-    [t],
+    [t, isMobile],
   )
 }
 
 export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
   const { t } = useTranslation(["common", "liquidity"])
+  const { isMobile } = useBreakpoints()
 
   return useMemo(
     () => [
@@ -366,6 +589,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
           ),
       }),
       isolatedColumnHelper.display({
+        id: "amount",
         header: t("liquidity:liquidity.positions.header.amount"),
         cell: ({ row: { original } }) => (
           <Amount
@@ -380,6 +604,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         ),
       }),
       isolatedColumnHelper.accessor("joinedFarms", {
+        id: "joinedFarms",
         header: t("liquidity:liquidity.positions.header.joinedFarms"),
         size: 150,
         meta: {
@@ -392,7 +617,11 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
           },
         }) =>
           joinedFarms.length ? (
-            <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+            <Flex
+              direction={isMobile ? "column" : "row"}
+              align="center"
+              gap={getTokenPx("containers.paddings.quint")}
+            >
               <AssetLogo
                 id={joinedFarms.map(({ farm }) =>
                   farm.rewardCurrency.toString(),
@@ -407,6 +636,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
           ) : null,
       }),
       isolatedColumnHelper.display({
+        id: "actions",
         header: t("liquidity:liquidity.positions.header.actions"),
         size: 300,
         meta: {
@@ -424,40 +654,111 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
               canJoinFarms,
             },
           },
-        }) => (
-          <Flex gap={12} align="center" justify="end">
-            {!!farmsToJoin.length && !positionId && canJoinFarms && (
-              <Button variant="secondary" asChild>
+        }) => {
+          if (isMobile) {
+            return (
+              <Flex align="center" gap={4} justify="flex-end">
+                <DropdownMenu modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger>
+                      <Button variant="tertiary" outline>
+                        <Icon component={Ellipsis} size={16} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    {!!farmsToJoin.length && !positionId && canJoinFarms && (
+                      <DropdownMenuItem asChild>
+                        <MenuSelectionItem
+                          variant="filterLink"
+                          onClick={(e) => {
+                            e.preventDefault()
+                          }}
+                        >
+                          <MenuItemIcon component={Plus} />
+                          <MenuItemLabel>
+                            <Link
+                              to="/liquidity/$id/join"
+                              params={{
+                                id: poolId,
+                              }}
+                              sx={{ textDecoration: "none" }}
+                            >
+                              {t("liquidity:joinFarms")}
+                            </Link>
+                          </MenuItemLabel>
+                        </MenuSelectionItem>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuItem asChild>
+                      <MenuSelectionItem
+                        variant="filterLink"
+                        onClick={(e) => {
+                          e.preventDefault()
+                        }}
+                      >
+                        <MenuItemIcon component={Trash} />
+                        <MenuItemLabel>
+                          <Link
+                            to="/liquidity/$id/remove"
+                            params={{
+                              id: poolId,
+                            }}
+                            search={{
+                              positionId,
+                              shareTokenId: !positionId
+                                ? shareTokenId
+                                : undefined,
+                            }}
+                            sx={{ textDecoration: "none" }}
+                          >
+                            {t("remove")}
+                          </Link>
+                        </MenuItemLabel>
+                      </MenuSelectionItem>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </Flex>
+            )
+          }
+
+          return (
+            <Flex gap={12} align="center" justify="end">
+              {!!farmsToJoin.length && !positionId && canJoinFarms && (
+                <Button variant="secondary" asChild>
+                  <Link
+                    to="/liquidity/$id/join"
+                    params={{
+                      id: poolId,
+                    }}
+                  >
+                    <Plus />
+                    {t("liquidity:joinFarms")}
+                  </Link>
+                </Button>
+              )}
+              <Button variant="tertiary" outline asChild>
                 <Link
-                  to="/liquidity/$id/join"
+                  to="/liquidity/$id/remove"
                   params={{
                     id: poolId,
                   }}
+                  search={{
+                    positionId,
+                    shareTokenId: !positionId ? shareTokenId : undefined,
+                  }}
                 >
-                  <Plus />
-                  {t("liquidity:joinFarms")}
+                  <Trash />
+                  {t("remove")}
                 </Link>
               </Button>
-            )}
-            <Button variant="tertiary" outline asChild>
-              <Link
-                to="/liquidity/$id/remove"
-                params={{
-                  id: poolId,
-                }}
-                search={{
-                  positionId,
-                  shareTokenId: !positionId ? shareTokenId : undefined,
-                }}
-              >
-                <Trash />
-                {t("remove")}
-              </Link>
-            </Button>
-          </Flex>
-        ),
+            </Flex>
+          )
+        },
       }),
     ],
-    [t, isFarms],
+    [t, isFarms, isMobile],
   )
 }
