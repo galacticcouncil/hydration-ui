@@ -79,15 +79,17 @@ export const useSubmitCreateIsolatedPool = ({
         amount_b: BigInt(Big(amountB).toFixed(0)),
       })
 
-      const tOptions = { assetA: assetA.symbol, assetB: assetB.symbol }
+      const tOptions = { symbolA: assetA.symbol, symbolB: assetB.symbol }
 
       const toasts = {
         submitted: t("liquidity.createPool.toast.submitted", tOptions),
         success: t("liquidity.createPool.toast.success", tOptions),
-        error: t("liquidity.createPool.toast.submitted", tOptions),
       }
 
-      await createTransaction({ tx, toasts }, { onSubmitted })
+      await createTransaction(
+        { tx, toasts, invalidateQueries: [["allPools"]] },
+        { onSubmitted },
+      )
     },
   })
 }

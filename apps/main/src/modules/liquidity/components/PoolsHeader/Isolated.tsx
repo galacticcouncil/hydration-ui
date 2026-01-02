@@ -1,8 +1,10 @@
-import { Separator, ValueStats } from "@galacticcouncil/ui/components"
+import { ValueStats } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { useXYKPools } from "@/states/liquidity"
+
+import { PoolsHeaderSeparator } from "./PoolsHeaderSeparator"
 
 export const Isolated = () => {
   const { t } = useTranslation(["liquidity", "common"])
@@ -30,7 +32,7 @@ export const Isolated = () => {
         size="medium"
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.volume")}
         value={t("common:currency", { value: totals.volume })}

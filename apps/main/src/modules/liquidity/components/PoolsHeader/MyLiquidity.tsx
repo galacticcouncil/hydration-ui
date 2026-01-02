@@ -1,9 +1,10 @@
-import { Separator, ValueStats } from "@galacticcouncil/ui/components"
+import { ValueStats } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 import { useMyLiquidityTotals } from "@/modules/liquidity/components/PoolsHeader/MyLiquidity.data"
 
 import { ClaimRewardsButton } from "./ClaimRewardsButton"
+import { PoolsHeaderSeparator } from "./PoolsHeaderSeparator"
 
 export const MyLiquidity = () => {
   const { t } = useTranslation(["liquidity", "common"])
@@ -31,7 +32,7 @@ export const MyLiquidity = () => {
         isLoading={isLiquidityLoading}
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency", {
@@ -41,7 +42,7 @@ export const MyLiquidity = () => {
         isLoading={isLiquidityLoading}
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency", { value: stablepoolTotal })}
@@ -49,7 +50,7 @@ export const MyLiquidity = () => {
         isLoading={isBalanceLoading}
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
         value={t("common:currency", { value: isolatedPoolsTotal })}
@@ -57,7 +58,7 @@ export const MyLiquidity = () => {
         size="medium"
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ClaimRewardsButton />
     </>
   )

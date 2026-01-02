@@ -33,15 +33,20 @@ export const StablepoolReserves = ({
   return (
     <Flex direction="column" gap={8}>
       <CollapsibleRoot open={expanded}>
-        <Flex align="center" justify="space-between" my={8}>
-          <Text fs="p5" color={getToken("text.medium")}>
-            {t("liquidity.add.modal.reserves")}
-          </Text>
-
-          <CollapsibleTrigger
-            onClick={() => setExpanded((prev) => !prev)}
-            sx={{ cursor: "pointer", ":hover": { opacity: 0.6 } }}
-          >
+        <CollapsibleTrigger
+          onClick={() => setExpanded((prev) => !prev)}
+          sx={{
+            cursor: "pointer",
+            ":hover": { backgroundColor: getToken("controls.dim.base") },
+            width: "calc(100% + var(--modal-content-padding) * 2)",
+            mx: "var(--modal-content-inset)",
+            px: "var(--modal-content-padding)",
+          }}
+        >
+          <Flex align="center" justify="space-between" my={8}>
+            <Text fs="p5" color={getToken("text.medium")}>
+              {t("liquidity.add.modal.reserves")}
+            </Text>
             <Flex gap={8} align="center">
               {isLoading ? (
                 <Skeleton width={50} height={12} />
@@ -61,8 +66,8 @@ export const StablepoolReserves = ({
                 }}
               />
             </Flex>
-          </CollapsibleTrigger>
-        </Flex>
+          </Flex>
+        </CollapsibleTrigger>
 
         {expanded && separator}
 

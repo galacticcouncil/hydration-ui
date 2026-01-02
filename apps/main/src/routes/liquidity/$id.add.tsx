@@ -4,7 +4,7 @@ import { isSS58Address } from "@galacticcouncil/utils"
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
-import { AddIsolatedLiquidity } from "@/modules/liquidity/components/AddIsolatediquidity"
+import { AddIsolatedLiquidity } from "@/modules/liquidity/components/AddIsolatedLiquidity"
 import { AddLiquidity } from "@/modules/liquidity/components/AddLiquidity"
 import { AddStablepoolLiquidityWrapper } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 import { useNavigateLiquidityBack } from "@/modules/liquidity/Liquidity.utils"

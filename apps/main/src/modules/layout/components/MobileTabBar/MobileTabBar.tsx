@@ -29,6 +29,7 @@ import {
 import { MobileTabBarActions } from "@/modules/layout/components/MobileTabBar/MobileTabBarActions"
 import { MobileTabBarSubmenuItem } from "@/modules/layout/components/MobileTabBar/MobileTabBarSubMenu"
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
+import { useHasMobNavbar } from "@/modules/layout/use-has-mob-navbar"
 
 export enum MobileTabBarDrawer {
   Settings = "Settings",
@@ -38,6 +39,7 @@ export const MobileTabBar: FC = () => {
   const { t } = useTranslation()
   const translations = useMenuTranslations()
   const { isMobile } = useBreakpoints()
+  const hasMobNavbar = useHasMobNavbar()
 
   const [drawer, setDrawer] = useState<MobileTabBarDrawer | null>(null)
   const closeDrawer = () => setDrawer(null)
@@ -48,6 +50,8 @@ export const MobileTabBar: FC = () => {
       bottomNavOrder.indexOf(item1.key) - bottomNavOrder.indexOf(item2.key),
   )
   const moreItems = navItems.slice(itemsShown)
+
+  if (!hasMobNavbar) return null
 
   return (
     <SMobileTabBar>

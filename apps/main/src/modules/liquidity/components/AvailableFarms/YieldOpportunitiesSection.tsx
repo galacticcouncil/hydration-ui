@@ -18,8 +18,9 @@ export const YieldOpportunitiesSection = ({
 }) => {
   const { t } = useTranslation("liquidity")
   const isOmnipool = !isIsolatedPool(data)
+  const isSupplyApy = isOmnipool && data.borrowApyData
 
-  if (data.farms.length === 0) return null
+  if (data.farms.length === 0 && !isSupplyApy) return null
 
   return (
     <>
@@ -42,7 +43,11 @@ export const YieldOpportunitiesSection = ({
         sx={{ flexWrap: "wrap" }}
       >
         {isOmnipool && data.borrowApyData && (
-          <SupplyYieldOpportunity borrowApyData={data.borrowApyData} />
+          <SupplyYieldOpportunity
+            borrowApyData={data.borrowApyData}
+            omnipoolFee={data.lpFeeOmnipool}
+            stablepoolFee={data.lpFeeStablepool}
+          />
         )}
         <AvailableFarms farms={data.farms} />
       </Flex>

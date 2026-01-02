@@ -13,6 +13,30 @@ const formatNumberParts = (part: Intl.NumberFormatPart) => {
   return part.value
 }
 
+const formatFractionDigits = (
+  value: number | bigint,
+  maximumFractionDigits: number,
+  parts: Intl.NumberFormatPart[],
+) => {
+  const minValue = Math.pow(10, -maximumFractionDigits)
+
+  if (value < minValue) {
+    const newParts = parts.filter(({ type }) => type !== "fraction")
+    newParts.unshift({
+      type: "literal",
+      value: "<",
+    })
+    newParts.push({
+      type: "fraction",
+      value: minValue.toString().split(".")[1],
+    })
+
+    return newParts.map(formatNumberParts).join("")
+  }
+
+  return parts.map(formatNumberParts).join("")
+}
+
 const isValidNumber = (
   value: number | bigint | string | null | undefined,
 ): value is number | bigint | string => {
@@ -127,6 +151,14 @@ export const formatCurrency = (
       { type: "literal", value: NB_SPACE },
       { type: "currency", value: options.symbol } as Intl.NumberFormatPart,
     ]
+  }
+
+  if (options.maximumFractionDigits) {
+    return formatFractionDigits(
+      numericValue,
+      Number(options.maximumFractionDigits),
+      parts,
+    )
   }
 
   return parts.map(formatNumberParts).join("")

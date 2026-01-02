@@ -22,12 +22,14 @@ const columnSizeStyles = createVariants<TableSize>((theme) => ({
   `,
   medium: css`
     --table-column-padding-x: 18px;
+
     padding: var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p4};
   `,
   large: css`
     --table-column-padding-x: 20px;
 
+    height: 84px;
     padding: var(--table-column-padding-x);
     font-size: ${theme.paragraphSize.p3};
   `,

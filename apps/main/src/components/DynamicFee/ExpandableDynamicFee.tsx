@@ -70,26 +70,32 @@ export const ExpandableDynamicFee = ({
   return (
     <Flex direction="column" gap={8} className={className}>
       <CollapsibleRoot open={expanded}>
-        <Flex align="center" justify="space-between" my={8}>
-          <Flex direction="column" justify="space-between" gap={4}>
-            <Text fs="p5" color={getToken("text.medium")}>
-              {label}
-            </Text>
-
-            {description && (
-              <Text fs="p6" fw={400} color={getToken("text.low")}>
-                {description}
+        <CollapsibleTrigger
+          onClick={() => setExpanded((prev) => !prev)}
+          sx={{
+            cursor: "pointer",
+            ":hover": { backgroundColor: getToken("controls.dim.base") },
+            width: "calc(100% + var(--modal-content-padding) * 2)",
+            mx: "var(--modal-content-inset)",
+            px: "var(--modal-content-padding)",
+          }}
+        >
+          <Flex align="center" justify="space-between" my={8}>
+            <Flex direction="column" justify="space-between" gap={4}>
+              <Text fs="p5" color={getToken("text.medium")}>
+                {label}
               </Text>
-            )}
-          </Flex>
 
-          {loading ? (
-            <Skeleton width={50} height={12} />
-          ) : (
-            <CollapsibleTrigger
-              onClick={() => setExpanded((prev) => !prev)}
-              sx={{ cursor: "pointer" }}
-            >
+              {description && (
+                <Text fs="p6" fw={400} color={getToken("text.low")}>
+                  {description}
+                </Text>
+              )}
+            </Flex>
+
+            {loading ? (
+              <Skeleton width={50} height={12} />
+            ) : (
               <Flex gap={8} align="center">
                 <Flex gap={2}>
                   {valueDisplay && (
@@ -132,9 +138,9 @@ export const ExpandableDynamicFee = ({
                   }}
                 />
               </Flex>
-            </CollapsibleTrigger>
-          )}
-        </Flex>
+            )}
+          </Flex>
+        </CollapsibleTrigger>
 
         <CollapsibleContent>
           <Flex direction="column" gap={8}>

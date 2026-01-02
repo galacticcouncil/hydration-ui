@@ -1,10 +1,12 @@
 import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
-import { Separator, ValueStats } from "@galacticcouncil/ui/components"
+import { ValueStats } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { useSquidClient } from "@/api/provider"
+
+import { PoolsHeaderSeparator } from "./PoolsHeaderSeparator"
 
 export const Omnipool = () => {
   const { t } = useTranslation(["liquidity", "common"])
@@ -43,7 +45,7 @@ export const Omnipool = () => {
         isLoading={isLoadingPlatformTotal}
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInOmnipool")}
         value={t("common:currency", { value: totals.liquidity })}
@@ -51,7 +53,7 @@ export const Omnipool = () => {
         isLoading={isLoadingPlatformTotal}
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.valueInStablepool")}
         value={t("common:currency", { value: totals.stablepool })}
@@ -59,7 +61,7 @@ export const Omnipool = () => {
         isLoading={isLoadingPlatformTotal}
         wrap
       />
-      <Separator orientation="vertical" sx={{ my: 10 }} />
+      <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.volume")}
         value={t("common:currency", { value: totals.volume })}

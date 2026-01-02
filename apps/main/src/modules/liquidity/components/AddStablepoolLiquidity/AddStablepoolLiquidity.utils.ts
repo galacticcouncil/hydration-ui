@@ -301,7 +301,7 @@ const useStablepoolAddLiquidityFormResolver = (
   poolId: string,
   accountReserveBalances: Map<string, string>,
 ) => {
-  const omnipoolZodSchema = useAddToOmnipoolZod(poolId, true)
+  const omnipoolZodSchema = useAddToOmnipoolZod(poolId)
 
   return (
     values: TAddStablepoolLiquidityFormValues,

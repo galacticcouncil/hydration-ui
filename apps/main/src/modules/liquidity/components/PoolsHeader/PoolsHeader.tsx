@@ -10,21 +10,22 @@ export const PoolsHeader = () => {
   const { myLiquidity, type } = useSearch({
     from: "/liquidity/",
   })
+  const isIsolated = type === "isolated"
 
   return (
     <Flex
-      gap={20}
-      justify="space-between"
+      gap={[15, isIsolated ? 90 : 20]}
+      justify={isIsolated ? "flex-start" : "space-between"}
       sx={{ py: 20, overflowX: "auto", height: 85 }}
     >
       {myLiquidity ? (
         <MyLiquidity />
       ) : type === "all" ? (
         <AllPools />
-      ) : type === "omnipoolStablepool" ? (
-        <Omnipool />
-      ) : (
+      ) : isIsolated ? (
         <Isolated />
+      ) : (
+        <Omnipool />
       )}
     </Flex>
   )

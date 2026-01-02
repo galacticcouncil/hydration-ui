@@ -9,6 +9,7 @@ import {
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -18,7 +19,7 @@ import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
 import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
-import { usePoolColumns } from "./Liquidity.columns"
+import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
   const [search, setSearch] = useState("")
@@ -55,8 +56,8 @@ export const OmnipoolAndStablepoolTable = ({
   const { t } = useTranslation("liquidity")
   const { data, isLoading } = useOmnipoolStablepoolAssets()
   const columns = usePoolColumns()
-
   const router = useRouter()
+  const { isMobile } = useBreakpoints()
 
   const filteredData = useMemo(() => {
     return withPositions ? data?.filter((asset) => asset.isPositions) : data
@@ -67,17 +68,26 @@ export const OmnipoolAndStablepoolTable = ({
       <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
       <TableContainer as={Paper}>
         <DataTable
+          size={isMobile ? "small" : "large"}
           isLoading={isLoading}
           globalFilter={search}
           data={filteredData ?? []}
           columns={columns}
           initialSorting={[{ id: "id", desc: true }]}
+          columnVisibility={getPoolColumnsVisibility(isMobile)}
           columnPinning={{
             left: ["meta_name"],
           }}
+          globalFilterFn={(row) =>
+            row.original.meta.name
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
+            row.original.meta.symbol
+              .toLowerCase()
+              .includes(search.toLowerCase())
+          }
           onRowClick={(asset) => {
             router.navigate({
-              resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
               search: { expanded: false },
@@ -111,8 +121,20 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <Flex justify="space-between" align="center" gap={20} sx={{ my: 12 }}>
-        <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+      <Flex
+        justify="space-between"
+        align="end"
+        gap={20}
+        pb={getTokenPx("scales.paddings.m")}
+        sx={{ minHeight: [54, 62] }}
+      >
+        <SectionHeader
+          sx={{
+            p: [0, 0],
+          }}
+        >
+          {t("section.isolatedPools")}
+        </SectionHeader>
         <Button asChild>
           <Link to="/liquidity/create">
             <Icon component={Plus} size={14} />
@@ -126,6 +148,7 @@ export const IsolatedPoolsTable = ({
       </Flex>
       <TableContainer as={Paper}>
         <DataTable
+          size={isMobile ? "small" : "large"}
           data={filteredData}
           globalFilter={search}
           columns={columns}
@@ -133,9 +156,20 @@ export const IsolatedPoolsTable = ({
           paginated
           pageSize={10}
           initialSorting={[{ id: "tvlDisplay", desc: true }]}
+          columnVisibility={getPoolColumnsVisibility(isMobile)}
+          columnPinning={{
+            left: ["meta_name"],
+          }}
+          globalFilterFn={(row) =>
+            row.original.meta.name
+              .toLowerCase()
+              .includes(search.toLowerCase()) ||
+            row.original.meta.symbol
+              .toLowerCase()
+              .includes(search.toLowerCase())
+          }
           onRowClick={(asset) =>
             router.navigate({
-              resetScroll: true,
               to: "/liquidity/$id",
               params: { id: asset.id },
               search: { expanded: false },

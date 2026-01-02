@@ -8,7 +8,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
-import { useState } from "react"
+import { useRef, useState } from "react"
 
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
 import i18n from "@/i18n"
@@ -25,14 +25,22 @@ import {
 
 import { PoolDetailsValues } from "./PoolDetailsValues"
 
-const chartTypes: ReadonlyArray<SliderTabsOption<"price" | "volume">> = [
+export const chartTypes: ReadonlyArray<SliderTabsOption<"price" | "volume">> = [
   { id: "price", label: i18n.t("price") },
   //{ id: "volume", label: i18n.t("volume") },
 ]
 
-const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
-  { id: "chart", label: "", icon: <Icon size={14} component={ChartLine} /> },
-  { id: "stats", label: "", icon: <Icon size={14} component={ChartPie} /> },
+export const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
+  {
+    id: "chart",
+    label: i18n.t("chart"),
+    icon: <Icon size={14} component={ChartLine} />,
+  },
+  {
+    id: "stats",
+    label: i18n.t("stats"),
+    icon: <Icon size={14} component={ChartPie} />,
+  },
 ]
 
 export const PoolStats = ({
@@ -59,7 +67,7 @@ export const PoolStats = ({
 
   return (
     <Flex gap={20}>
-      <Paper p={[16, 20]} sx={{ flex: 1 }}>
+      <Paper p={[16, 20]} sx={{ flex: 1, flexBasis: 500 }}>
         <PoolChart
           assetId={data.id}
           height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
@@ -69,7 +77,13 @@ export const PoolStats = ({
         />
       </Paper>
 
-      <Paper p={[16, 20]}>
+      <Paper
+        p={[16, 20]}
+        sx={{
+          flex: 0,
+          flexBasis: 360,
+        }}
+      >
         <PoolDetailsValues data={data} />
       </Paper>
     </Flex>
@@ -87,7 +101,8 @@ const PoolStatsMobile = ({
   setInterval: (interval: PoolChartTimeFrameType | "all") => void
   isEmptyData?: boolean
 }) => {
-  const [chartType, setChartType] = useState<"price" | "volume">("price")
+  const ref = useRef<HTMLDivElement>(null)
+  //const [chartType, setChartType] = useState<"price" | "volume">("price")
   const [type, setType] = useState<"chart" | "stats">("chart")
 
   return (
@@ -109,16 +124,21 @@ const PoolStatsMobile = ({
       )}
       <Flex gap={8} justify="space-between">
         <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
-          <SliderTabs
+          {/* TODO: Enable when new charts are added*/}
+          {/* <SliderTabs
             options={chartTypes}
             selected={chartTypes.find((option) => option.id === chartType)?.id}
             onSelect={(option) => setChartType(option.id)}
             disabled={type === "stats"}
-          />
+          /> */}
           <SliderTabs
             options={types}
             selected={types.find((option) => option.id === type)?.id}
-            onSelect={(option) => setType(option.id)}
+            onSelect={(option) => {
+              setType(option.id)
+              ref.current?.scrollIntoView()
+            }}
+            ref={ref}
           />
         </Flex>
         <ChartTimeRangeDropdown
