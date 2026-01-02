@@ -1,6 +1,7 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components/primitives"
 import {
   Alert,
+  Box,
   Button,
   Flex,
   ModalBody,
@@ -528,5 +529,44 @@ const AddStablepoolLiquiditySummary = ({
 }
 
 export const AddStablepoolLiquidityTooltip = () => {
-  return <Tooltip text="TBD" />
+  const { t } = useTranslation("liquidity")
+
+  return (
+    <Tooltip
+      text={
+        <Flex direction="column" gap={14}>
+          <Text fs="p6" fw={500} color={getToken("text.high")}>
+            {t("liquidity.add.modal.stablepool.tooltip.desc")}
+          </Text>
+          <Box>
+            <Text
+              transform="uppercase"
+              fs={8}
+              fw={600}
+              color={getToken("text.tint.primary")}
+            >
+              {t("liquidity.add.modal.option.omnipool")}
+            </Text>
+            <Text fs="p6" fw={500} color={getToken("text.high")}>
+              {t("liquidity.add.modal.stablepool.tooltip.omnipool")}
+            </Text>
+          </Box>
+
+          <Box>
+            <Text
+              transform="uppercase"
+              fs={8}
+              fw={600}
+              color={getToken("text.tint.secondary")}
+            >
+              {t("liquidity.add.modal.option.stablepool")}
+            </Text>
+            <Text fs="p6" fw={500} color={getToken("text.high")}>
+              {t("liquidity.add.modal.stablepool.tooltip.stablepoolOnly")}
+            </Text>
+          </Box>
+        </Flex>
+      }
+    />
+  )
 }
