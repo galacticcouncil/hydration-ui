@@ -36,7 +36,7 @@ export const PoolDetailsHeader = ({
     <Flex
       justify="space-between"
       sx={{
-        pt: getTokenPx("containers.paddings.primary"),
+        pt: getTokenPx(["scales.paddings.base", "containers.paddings.primary"]),
         pb: getTokenPx("scales.paddings.m"),
       }}
     >

@@ -23,7 +23,10 @@ export const Route = createFileRoute("/liquidity/$id/remove")({
   pendingComponent: () => (
     <ModalContainer
       open
-      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+      sx={{
+        m: "auto",
+        mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
+      }}
     >
       <RemoveLiquiditySkeleton />
     </ModalContainer>
@@ -44,7 +47,10 @@ function RouteComponent() {
   return (
     <ModalContainer
       open
-      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+      sx={{
+        m: "auto",
+        mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
+      }}
     >
       <RemoveLiquidity
         poolId={poolId}

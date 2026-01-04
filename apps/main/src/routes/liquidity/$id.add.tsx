@@ -38,7 +38,10 @@ export const Route = createFileRoute("/liquidity/$id/add")({
     return (
       <ModalContainer
         open
-        sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+        sx={{
+          m: "auto",
+          mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
+        }}
       >
         <AddLiquidityModalContent
           id={id}
