@@ -210,12 +210,16 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
             return (
               <Flex align="center" gap={4} justify="flex-end">
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <DropdownMenuTrigger>
-                      <Button variant="tertiary" outline>
-                        <Icon component={Ellipsis} size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
+                  >
+                    <Button variant="tertiary" outline>
+                      <Icon component={Ellipsis} size={16} />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     {canJoinFarms && (
@@ -434,12 +438,16 @@ export const useBalanceTableColumns = () => {
             return (
               <Flex align="center" gap={4} justify="flex-end">
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <DropdownMenuTrigger>
-                      <Button variant="tertiary" outline>
-                        <Icon component={Ellipsis} size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
+                  >
+                    <Button variant="tertiary" outline>
+                      <Icon component={Ellipsis} size={16} />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     {isStablepoolInOmnipool && (
@@ -659,12 +667,16 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
             return (
               <Flex align="center" gap={4} justify="flex-end">
                 <DropdownMenu modal={false}>
-                  <DropdownMenuTrigger asChild>
-                    <DropdownMenuTrigger>
-                      <Button variant="tertiary" outline>
-                        <Icon component={Ellipsis} size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
+                  <DropdownMenuTrigger
+                    asChild
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                    }}
+                  >
+                    <Button variant="tertiary" outline>
+                      <Icon component={Ellipsis} size={16} />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     {!!farmsToJoin.length && !positionId && canJoinFarms && (
