@@ -65,20 +65,22 @@ export const OmnipoolPositions = ({
           </Text>
         </Flex>
 
-        <Button variant="tertiary" outline asChild>
-          <Link
-            to="/liquidity/$id/remove"
-            params={{
-              id: pool.id,
-            }}
-            search={{
-              selectable: true,
-            }}
-          >
-            <Minus />
-            {t("removeLiquidity")}
-          </Link>
-        </Button>
+        {positions.some(isOmnipoolPosition) && (
+          <Button variant="tertiary" outline asChild>
+            <Link
+              to="/liquidity/$id/remove"
+              params={{
+                id: pool.id,
+              }}
+              search={{
+                selectable: true,
+              }}
+            >
+              <Minus />
+              {t("removeLiquidity")}
+            </Link>
+          </Button>
+        )}
       </STableHeader>
       <DataTable
         data={positions}

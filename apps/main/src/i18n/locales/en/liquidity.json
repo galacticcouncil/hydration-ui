@@ -126,6 +126,7 @@
   "liquidity.remove.modal.rewardsToReceive": "Rewards to receive:",
   "liquidity.remove.modal.fee.description": "Withdrawal fees protect the Omnipool liquidity. These dynamic fees are based on the short-term volatility of the asset.",
   "liquidity.remove.modal.fee.breakdown": "Fees breakdown",
+  "liquidity.remove.modal.multiple.button": "Continue to summary",
   "liquidity.joinFarms.modal.submit.btn_one": "Join {{count, number}} Farm",
   "liquidity.joinFarms.modal.submit.btn_other": "Join {{count, number}} Farms",
   "liquidity.remove.stablepool.modal.proportionally": "Remove proportionally",

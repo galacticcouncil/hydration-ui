@@ -94,20 +94,22 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
           </Text>
         </Flex>
 
-        <Button variant="tertiary" outline asChild>
-          <Link
-            to="/liquidity/$id/remove"
-            params={{
-              id: pool.id,
-            }}
-            search={{
-              selectable: true,
-            }}
-          >
-            <Minus />
-            {t("removeLiquidity")}
-          </Link>
-        </Button>
+        {!!pool.positions.length && (
+          <Button variant="tertiary" outline asChild>
+            <Link
+              to="/liquidity/$id/remove"
+              params={{
+                id: pool.id,
+              }}
+              search={{
+                selectable: true,
+              }}
+            >
+              <Minus />
+              {t("removeLiquidity")}
+            </Link>
+          </Button>
+        )}
       </STableHeader>
       <DataTable
         data={positions}
