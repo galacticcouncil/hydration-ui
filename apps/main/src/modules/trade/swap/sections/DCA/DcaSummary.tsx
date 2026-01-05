@@ -1,8 +1,13 @@
 import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import {
+  ExclamationMark,
+  TriangleAlert,
+} from "@galacticcouncil/ui/assets/icons"
+import {
   Box,
   Flex,
+  Icon,
   Summary,
   SummaryRowLabel,
   SummaryRowValue,
@@ -23,10 +28,15 @@ import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly order: TradeDcaOrder | undefined
+  readonly priceImpactLevel: "error" | "warning" | undefined
   readonly isLoading: boolean
 }
 
-export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
+export const DcaSummary: FC<Props> = ({
+  order,
+  priceImpactLevel,
+  isLoading,
+}) => {
   const { t } = useTranslation(["common", "trade"])
   const { watch } = useFormContext<DcaFormValues>()
   const { getAsset } = useAssets()
@@ -102,6 +112,37 @@ export const DcaSummary: FC<Props> = ({ order, isLoading }) => {
             content={
               <SummaryRowValue color={getToken("colors.azureBlue.300")}>
                 {t("percent", { value: slippage })}
+              </SummaryRowValue>
+            }
+          />
+          <SwapSummaryRow
+            label={t("trade:dca.summary.priceImpact")}
+            content={
+              <SummaryRowValue
+                color={(() => {
+                  switch (priceImpactLevel) {
+                    case "error":
+                      return getToken("accents.danger.secondary")
+                    case "warning":
+                      return getToken("accents.alertAlt.primary")
+                    default:
+                      return undefined
+                  }
+                })()}
+              >
+                <Flex align="center" gap={6}>
+                  {t("percent", { value: order.tradeImpactPct })}
+                  {(() => {
+                    switch (priceImpactLevel) {
+                      case "error":
+                        return <Icon size={14} component={ExclamationMark} />
+                      case "warning":
+                        return <Icon size={14} component={TriangleAlert} />
+                      default:
+                        return null
+                    }
+                  })()}
+                </Flex>
               </SummaryRowValue>
             }
           />
