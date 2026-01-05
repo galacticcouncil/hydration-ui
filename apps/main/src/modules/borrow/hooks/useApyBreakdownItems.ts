@@ -7,13 +7,11 @@ import { BorrowAssetApyData } from "@/api/borrow"
 import { ApyRowProps } from "@/components/DetailedApy/DetailedApy"
 import { ApyBreakdownProps } from "@/modules/borrow/components/ApyBreakdown"
 
-type Options = Pick<ApyBreakdownProps, "type" | "omnipoolFee"> &
-  Pick<BorrowAssetApyData, "lpAPY" | "underlyingAssetsApyData" | "incentives">
+type Options = Pick<ApyBreakdownProps, "type"> &
+  Pick<BorrowAssetApyData, "underlyingAssetsApyData" | "incentives">
 
 export const useApyBreakdownItems = ({
   type,
-  omnipoolFee,
-  lpAPY,
   underlyingAssetsApyData,
   incentives,
 }: Options) => {
@@ -23,19 +21,6 @@ export const useApyBreakdownItems = ({
 
   return useMemo(() => {
     const items: ApyRowProps[] = []
-    if (Big(omnipoolFee ?? 0).gt(0)) {
-      items.push({
-        label: t("apr.lpFeeOmnipool"),
-        value: t("percent", { value: omnipoolFee }),
-      })
-    }
-
-    if (Big(lpAPY ?? 0).gt(0)) {
-      items.push({
-        label: t("apr.lpFeeOmnipool"),
-        value: t("percent", { value: lpAPY }),
-      })
-    }
 
     const underlyingAssetsItems = underlyingAssetsApyData.map(
       ({ id, isStaked, borrowApy, supplyApy }) => ({
@@ -62,5 +47,5 @@ export const useApyBreakdownItems = ({
     )
 
     return items.concat(underlyingAssetsItems).concat(incentivesItems)
-  }, [incentives, isSupply, lpAPY, omnipoolFee, t, underlyingAssetsApyData])
+  }, [incentives, isSupply, t, underlyingAssetsApyData])
 }

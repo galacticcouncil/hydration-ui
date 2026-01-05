@@ -16,16 +16,20 @@ import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItem
 import { useAssets } from "@/providers/assetsProvider"
 
 export const TooltipAPR = ({
+  lpAPY,
   omnipoolFee,
   stablepoolFee,
   farms,
   borrowApyData,
+  description,
   ...props
 }: {
+  lpAPY?: number
   omnipoolFee?: string
   stablepoolFee?: string
   farms: Farm[]
   borrowApyData?: BorrowAssetApyData
+  description?: string
 } & Omit<InfoTooltipProps, "text">) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { getAssetWithFallback } = useAssets()
@@ -38,7 +42,7 @@ export const TooltipAPR = ({
       text={
         <Flex direction="column" gap={8}>
           <Text fs="p6" fw={500} mb={6}>
-            {t("liquidity:liquidity.tooltip.fee.apr.title")}
+            {description ?? t("liquidity:liquidity.tooltip.fee.apr.title")}
           </Text>
 
           {omnipoolFee && (
@@ -52,6 +56,13 @@ export const TooltipAPR = ({
             <Row
               label={t("liquidity:liquidity.tooltip.fee.apr.stablepoolFee")}
               value={t("percent", { value: stablepoolFee })}
+            />
+          )}
+
+          {lpAPY && (
+            <Row
+              label={t("apr.lpFee")}
+              value={t("percent", { value: lpAPY })}
             />
           )}
 
@@ -94,17 +105,13 @@ export const TooltipAPR = ({
 
 const BorrowApyBreakdown = ({
   borrowApyData,
-  omnipoolFee,
 }: {
   borrowApyData: BorrowAssetApyData
-  omnipoolFee?: string
 }) => {
-  const { lpAPY, underlyingAssetsApyData, incentives } = borrowApyData
+  const { underlyingAssetsApyData, incentives } = borrowApyData
 
   const apyBreakdownItems = useApyBreakdownItems({
     type: "supply",
-    omnipoolFee,
-    lpAPY,
     underlyingAssetsApyData,
     incentives,
   })
