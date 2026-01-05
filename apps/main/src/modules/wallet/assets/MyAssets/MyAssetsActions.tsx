@@ -1,9 +1,4 @@
-import {
-  Flex,
-  Toggle,
-  ToggleLabel,
-  ToggleRoot,
-} from "@galacticcouncil/ui/components"
+import { Toggle, ToggleLabel, ToggleRoot } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -19,14 +14,9 @@ export const MyAssetsActions: FC<Props> = ({
   const { t } = useTranslation("wallet")
 
   return (
-    <Flex gap={16} direction={["column", "row"]} align={["flex-end", "center"]}>
-      <ToggleRoot>
-        <ToggleLabel>{t("myAssets.header.toggle")}</ToggleLabel>
-        <Toggle
-          checked={showAllAssets}
-          onCheckedChange={onToggleShowAllAssets}
-        />
-      </ToggleRoot>
-    </Flex>
+    <ToggleRoot>
+      <ToggleLabel>{t("myAssets.header.toggle")}</ToggleLabel>
+      <Toggle checked={showAllAssets} onCheckedChange={onToggleShowAllAssets} />
+    </ToggleRoot>
   )
 }

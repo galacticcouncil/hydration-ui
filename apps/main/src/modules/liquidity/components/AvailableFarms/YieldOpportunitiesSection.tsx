@@ -30,9 +30,8 @@ export const YieldOpportunitiesSection = ({
             "containers.paddings.primary",
           ]),
         }}
-      >
-        {t("details.section.yieldOpportunities")}
-      </SectionHeader>
+        title={t("details.section.yieldOpportunities")}
+      />
       <Flex
         width="100%"
         gap={getTokenPx([

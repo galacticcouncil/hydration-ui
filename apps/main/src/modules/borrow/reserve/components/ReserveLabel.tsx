@@ -38,7 +38,7 @@ export const ReserveLabel: React.FC<ReserveLabelProps> = ({
         size={size}
       />
       <AssetLabel
-        size={size === "large" ? "large" : "medium"}
+        variant={size === "large" ? "large" : "medium"}
         name={withName ? reserve.name : undefined}
         symbol={reserve.symbol}
       />

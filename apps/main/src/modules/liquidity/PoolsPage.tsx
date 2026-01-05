@@ -64,7 +64,7 @@ export const OmnipoolAndStablepoolTable = ({
 
   return (
     <>
-      <SectionHeader>{t("section.omnipoolStablepool")}</SectionHeader>
+      <SectionHeader title={t("section.omnipoolStablepool")} />
       <TableContainer as={Paper}>
         <DataTable
           isLoading={isLoading}
@@ -112,7 +112,7 @@ export const IsolatedPoolsTable = ({
   return (
     <>
       <Flex justify="space-between" align="center" gap={20} sx={{ my: 12 }}>
-        <SectionHeader>{t("section.isolatedPools")}</SectionHeader>
+        <SectionHeader title={t("section.isolatedPools")} />
         <Button asChild>
           <Link to="/liquidity/create">
             <Icon component={Plus} size={14} />

@@ -1,3 +1,4 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { createFileRoute, useMatch } from "@tanstack/react-router"
 import { FC } from "react"
 
@@ -6,6 +7,8 @@ import { SubpageLayout } from "@/modules/layout/SubpageLayout"
 import { WalletAssetsSubpageLayoutActions } from "@/modules/wallet/assets/WalletAssetsSubpageLayoutActions"
 
 const WalletSubpageLayout: FC = () => {
+  const { account } = useAccount()
+
   const isAssetsPage = useMatch({
     from: "/wallet/assets",
     shouldThrow: false,
@@ -19,9 +22,8 @@ const WalletSubpageLayout: FC = () => {
   return (
     <SubpageLayout
       actions={
-        (isAssetsPage || isTransactionsPage) && (
-          <WalletAssetsSubpageLayoutActions />
-        )
+        (isAssetsPage || isTransactionsPage) &&
+        account && <WalletAssetsSubpageLayoutActions />
       }
     />
   )

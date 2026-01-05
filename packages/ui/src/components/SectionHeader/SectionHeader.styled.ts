@@ -2,29 +2,40 @@ import { Box } from "@/components/Box"
 import { mq } from "@/styles/media"
 import { css, styled } from "@/utils"
 
-// TODO rework
-export const SSectionHeader = styled(Box)<{
+export const SSectionHeaderContainer = styled.div<{
   readonly hasDescription?: boolean
 }>(
   ({ theme, hasDescription }) => css`
-    padding: ${theme.scales.paddings.xl}px ${theme.containers.paddings.quint}px
-      ${hasDescription ? 0 : theme.containers.paddings.secondary}px
-      ${theme.containers.paddings.quint}px;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    padding-top: ${theme.containers.paddings.primary}px;
+    padding-bottom: ${hasDescription
+      ? 0
+      : theme.containers.paddings.secondary}px;
 
+    ${mq("sm")} {
+      align-items: center;
+      padding-top: ${theme.scales.paddings.xxl};
+      padding-bottom: ${hasDescription
+        ? 0
+        : theme.containers.paddings.tertiary}px;
+    }
+  `,
+)
+
+export const SSectionHeaderTitle = styled(Box)<{
+  readonly hasDescription?: boolean
+}>(
+  ({ theme }) => css`
     font-family: ${theme.fontFamilies1.primary};
     font-size: 14px;
+    font-weight: 500;
     line-height: 15px;
 
     color: ${theme.text.high};
 
     ${mq("sm")} {
-      padding-inline: 0;
-      padding-top: 0;
-      padding-bottom: ${hasDescription
-        ? 0
-        : theme.containers.paddings.tertiary}px;
-
-      font-weight: 500;
       font-size: 17.5px;
       line-height: 21px;
     }

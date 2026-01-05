@@ -1,17 +1,18 @@
-import { ReactNode } from "react"
+import { FC, ReactNode } from "react"
 
-import { getToken } from "@/utils"
+import { LogoSize } from "@/components/Logo"
+import { getToken, px } from "@/utils"
 
 import { Flex } from "../Flex"
 import { Skeleton } from "../Skeleton"
-import { Text } from "../Text"
+import { Text, TextProps } from "../Text"
 
-type AssetLabelSize = "large" | "medium"
+type AssetLabelVariant = Extract<LogoSize, "medium" | "large"> | "primary"
 
 export type AssetLabelProps = {
   name?: string
   symbol: string
-  size?: AssetLabelSize
+  variant?: AssetLabelVariant
   loading?: boolean
   badge?: ReactNode
 }
@@ -19,12 +20,10 @@ export type AssetLabelProps = {
 export const AssetLabel = ({
   name,
   symbol,
-  size = "medium",
+  variant = "medium",
   loading,
   badge,
 }: AssetLabelProps) => {
-  const isMedium = size === "medium"
-
   if (loading) {
     return (
       <div>
@@ -35,43 +34,57 @@ export const AssetLabel = ({
   }
 
   return (
-    <Flex direction="column" gap={2} minWidth={0}>
-      {badge ? (
-        <Flex gap={4} align="center">
-          <Text
-            color={getToken("text.high")}
-            fs={isMedium ? "p5" : "p3"}
-            fw={600}
-            lh={1}
-            whiteSpace="nowrap"
-          >
-            {symbol}
-          </Text>
-          {badge}
-        </Flex>
-      ) : (
-        <Text
-          color={getToken("text.high")}
-          fs={isMedium ? "p5" : "p3"}
-          fw={600}
-          lh={1}
-          whiteSpace="nowrap"
-        >
-          {symbol}
-        </Text>
-      )}
-
-      {name && (
-        <Text
-          color={getToken("text.medium")}
-          fs={isMedium ? "p6" : "p5"}
-          fw={400}
-          lh={1}
-          truncate
-        >
-          {name}
-        </Text>
-      )}
+    <Flex direction="column" gap={variant === "primary" ? 0 : 2} minWidth={0}>
+      <Flex gap={4} align="center">
+        <Symbol variant={variant}>{symbol}</Symbol>
+        {badge}
+      </Flex>
+      {name && <Name variant={variant}>{name}</Name>}
     </Flex>
+  )
+}
+
+const Symbol: FC<TextProps & { variant: AssetLabelVariant }> = ({
+  variant,
+  ...props
+}) => {
+  if (variant === "primary") {
+    return (
+      <Text
+        font="primary"
+        fs={22}
+        fw={500}
+        lh={px(24)}
+        whiteSpace="nowrap"
+        {...props}
+      />
+    )
+  }
+
+  return (
+    <Text
+      color={getToken("text.high")}
+      fs={variant === "medium" ? "p5" : "p3"}
+      fw={600}
+      lh={1}
+      whiteSpace="nowrap"
+      {...props}
+    />
+  )
+}
+
+const Name: FC<TextProps & { variant: AssetLabelVariant }> = ({
+  variant,
+  ...props
+}) => {
+  return (
+    <Text
+      color={getToken("text.medium")}
+      fs={variant === "medium" ? "p6" : "p5"}
+      fw={400}
+      lh={variant === "primary" ? 1.3 : 1}
+      truncate
+      {...props}
+    />
   )
 }

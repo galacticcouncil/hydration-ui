@@ -1,32 +1,28 @@
 import { Send } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { TransferPositionModal } from "@/modules/wallet/assets/Transfer/TransferPositionModal"
 
 type Modal = "send" | "withdraw" | "deposit"
 
 export const WalletAssetsSubpageLayoutActions = () => {
-  const { account } = useAccount()
+  const { t } = useTranslation()
   const { isMobile } = useBreakpoints()
-
   const [modal, setModal] = useState<Modal | null>(null)
-
-  if (!account || isMobile) {
-    return null
-  }
 
   return (
     <Flex gap={12}>
       <Button
-        css={{ padding: 14 }}
+        css={{ paddingBlock: 14, paddingInline: 18 }}
         variant="accent"
+        size="small"
         outline
         onClick={() => setModal("send")}
       >
-        <Icon component={Send} size={16} />
+        {isMobile ? <Icon component={Send} size={16} /> : t("send")}
       </Button>
       {/* <Button variant="emphasis" outline disabled>
         <Icon width={16} height={9} component={Minus} />

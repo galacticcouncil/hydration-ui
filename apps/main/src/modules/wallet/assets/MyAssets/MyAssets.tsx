@@ -1,6 +1,6 @@
 import {
+  Box,
   DataTableRef,
-  Flex,
   SectionHeader,
 } from "@galacticcouncil/ui/components"
 import { FC, useRef, useState } from "react"
@@ -12,10 +12,9 @@ import { useMyAssetsTableData } from "@/modules/wallet/assets/MyAssets/MyAssetsT
 
 type Props = {
   readonly searchPhrase: string
-  readonly className?: string
 }
 
-export const MyAssets: FC<Props> = ({ searchPhrase, className }) => {
+export const MyAssets: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("wallet")
   const [showAllAssets, setShowAllAssets] = useState(false)
 
@@ -24,23 +23,25 @@ export const MyAssets: FC<Props> = ({ searchPhrase, className }) => {
   const { data, isLoading } = useMyAssetsTableData(showAllAssets)
 
   return (
-    <div className={className}>
-      <Flex justify="space-between" align="center">
-        <SectionHeader>{t("myAssets.header.title")}</SectionHeader>
-        <MyAssetsActions
-          showAllAssets={showAllAssets}
-          onToggleShowAllAssets={() => {
-            setShowAllAssets((showAllAssets) => !showAllAssets)
-            tableRef.current?.onPaginationReset()
-          }}
-        />
-      </Flex>
+    <Box>
+      <SectionHeader
+        title={t("myAssets.header.title")}
+        actions={
+          <MyAssetsActions
+            showAllAssets={showAllAssets}
+            onToggleShowAllAssets={() => {
+              setShowAllAssets((showAllAssets) => !showAllAssets)
+              tableRef.current?.onPaginationReset()
+            }}
+          />
+        }
+      />
       <MyAssetsTable
         ref={tableRef}
         data={data}
         isLoading={isLoading}
         searchPhrase={searchPhrase}
       />
-    </div>
+    </Box>
   )
 }

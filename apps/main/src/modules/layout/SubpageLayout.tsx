@@ -1,8 +1,11 @@
 import { Box, Flex, Grid, Separator } from "@galacticcouncil/ui/components"
-import { Outlet } from "@tanstack/react-router"
-import { FC, ReactNode } from "react"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { Outlet, useLocation } from "@tanstack/react-router"
+import { FC, ReactNode, useMemo } from "react"
 
-import { SubpageMenu } from "@/modules/layout/components/SubpageMenu"
+import { TabItem, TabMenu } from "@/components/TabMenu"
+import { NAVIGATION } from "@/config/navigation"
+import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 
 type Props = {
   readonly actions?: ReactNode
@@ -15,15 +18,53 @@ export const SubpageLayout: FC<Props> = ({
   subpageMenu,
   ignoreCurrentSearch,
 }) => {
+  const translations = useMenuTranslations()
+  const pathname = useLocation({
+    select: (state) => state.pathname,
+  })
+
+  const subNav = useMemo(
+    () =>
+      NAVIGATION.find(({ to }) =>
+        pathname.startsWith(to),
+      )?.children?.map<TabItem>((nav) => ({
+        to: nav.to,
+        title: translations[nav.key].title,
+        icon: nav.icon,
+        search: nav.search,
+      })) || [],
+    [pathname, translations],
+  )
+
   return (
     <Flex direction="column" py={8}>
       <Grid columnTemplate="1fr auto" align="center">
-        {subpageMenu ?? (
-          <SubpageMenu ignoreCurrentSearch={ignoreCurrentSearch} />
-        )}
+        {subpageMenu ||
+          (subNav.length >= 2 && (
+            <TabMenu
+              items={subNav}
+              size="large"
+              variant="transparent"
+              ignoreCurrentSearch={ignoreCurrentSearch}
+            />
+          ))}
         <Box sx={{ gridColumn: 2 }}>{actions}</Box>
       </Grid>
-      <Separator mt={8} mb={20} mx={-30} />
+      {(!!subpageMenu || subNav.length >= 2 || !!actions) && (
+        <Separator
+          mt={8}
+          mb={getTokenPx("scales.paddings.xxl")}
+          sx={{
+            width: "100vw",
+            maxWidth: "100vw",
+            position: "relative",
+            left: "50%",
+            right: "50%",
+            marginLeft: "-50vw",
+            marginRight: "-50vw",
+          }}
+        />
+      )}
       <Outlet />
     </Flex>
   )

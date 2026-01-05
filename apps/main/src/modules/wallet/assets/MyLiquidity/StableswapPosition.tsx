@@ -63,20 +63,28 @@ export const StableswapLiquidityPosition = ({
 
       <div />
 
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger
-          asChild
-          sx={{ width: "min-content", justifySelf: "flex-end" }}
+      <Flex align="center" gap={8}>
+        <Button
+          variant="secondary"
+          onClick={() => onAction(LiquidityPositionAction.Add)}
         >
-          <Button variant="tertiary" outline>
-            {t("common:actions")}
-            <Icon component={Ellipsis} size={16} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <StableswapPositionMoreActions onAction={onAction} />
-        </DropdownMenuContent>
-      </DropdownMenu>
+          {t("liquidity:moveToOmnipool")}
+        </Button>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger
+            asChild
+            sx={{ width: "min-content", justifySelf: "flex-end" }}
+          >
+            <Button variant="tertiary" outline>
+              {t("common:actions")}
+              <Icon component={Ellipsis} size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <StableswapPositionMoreActions onAction={onAction} />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Flex>
     </SLiquidityPosition>
   )
 }

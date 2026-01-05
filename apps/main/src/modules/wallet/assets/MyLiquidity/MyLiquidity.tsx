@@ -1,4 +1,5 @@
-import { Box, Flex, SectionHeader } from "@galacticcouncil/ui/components"
+import { Box, SectionHeader } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -14,6 +15,7 @@ type Props = {
 
 export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("wallet")
+  const { isMobile } = useBreakpoints()
 
   const { data: liquidityData, isLoading: liquidityLoading } =
     useMyLiquidityTableData()
@@ -25,12 +27,10 @@ export const MyLiquidity: FC<Props> = ({ searchPhrase }) => {
 
   return (
     <Box>
-      <Flex justify="space-between" align="center">
-        <Box pt={28}>
-          <SectionHeader>{t("myLiquidity.header.title")}</SectionHeader>
-        </Box>
-        <MyLiquidityActions />
-      </Flex>
+      <SectionHeader
+        title={t("myLiquidity.header.title")}
+        actions={!isMobile && <MyLiquidityActions />}
+      />
       <MyLiquidityTable
         data={[...liquidityData, ...isolatedPoolsLiquidity]}
         isLoading={liquidityLoading || isLoadingIsolatedPoolsLiquidity}

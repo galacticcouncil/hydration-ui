@@ -5,6 +5,7 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -160,21 +161,24 @@ export const StableswapPositionMoreActions: FC<
   StableswapPositionMoreActionsProps
 > = ({ onAction }) => {
   const { t } = useTranslation(["wallet", "liquidity"])
+  const { isMobile } = useBreakpoints()
 
   return (
     <>
-      <DropdownMenuItem asChild>
-        <MenuSelectionItem
-          variant="filterLink"
-          onClick={(e) => {
-            e.preventDefault()
-            onAction(LiquidityPositionAction.Add)
-          }}
-        >
-          <MenuItemIcon component={Plus} />
-          <MenuItemLabel>{t("liquidity:moveToOmnipool")}</MenuItemLabel>
-        </MenuSelectionItem>
-      </DropdownMenuItem>
+      {isMobile && (
+        <DropdownMenuItem asChild>
+          <MenuSelectionItem
+            variant="filterLink"
+            onClick={(e) => {
+              e.preventDefault()
+              onAction(LiquidityPositionAction.Add)
+            }}
+          >
+            <MenuItemIcon component={Plus} />
+            <MenuItemLabel>{t("liquidity:moveToOmnipool")}</MenuItemLabel>
+          </MenuSelectionItem>
+        </DropdownMenuItem>
+      )}
 
       <DropdownMenuItem asChild>
         <MenuSelectionItem
