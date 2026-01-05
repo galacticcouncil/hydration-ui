@@ -47,7 +47,7 @@ export const PoolTypeTabs = () => {
 
   return (
     <TabMenu
-      size="large"
+      size="medium"
       variant="muted"
       items={[
         {

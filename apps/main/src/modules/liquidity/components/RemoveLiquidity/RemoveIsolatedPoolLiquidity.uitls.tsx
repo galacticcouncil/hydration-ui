@@ -270,11 +270,7 @@ export const useRemoveSingleXYKPosition = ({
 
       if (!assetA || !assetB) throw new Error("Pool not found")
 
-      const toasts = submitToasts(
-        toDecimal(balanceShifted, shareTokenMeta.decimals),
-        shareTokenMeta.symbol,
-      )
-
+      const toasts = submitToasts(balanceShifted, shareTokenMeta.symbol)
       const exitFarmsTxs = position.yield_farm_entries.map((entry) =>
         papi.tx.XYKLiquidityMining.withdraw_shares({
           deposit_id: BigInt(position.id),
