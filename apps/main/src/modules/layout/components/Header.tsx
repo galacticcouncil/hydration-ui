@@ -1,4 +1,4 @@
-import { FC, lazy, LazyExoticComponent, SVGProps } from "react"
+import { FC, forwardRef, lazy, LazyExoticComponent, SVGProps } from "react"
 
 import { SHeader } from "@/modules/layout/components/Header.styled"
 import { HeaderToolbar } from "@/modules/layout/components/HeaderToolbar"
@@ -22,7 +22,7 @@ const HydrationLogoFull = lazy(async () => ({
   ),
 }))
 
-export const Header = () => {
+export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
   const hasTopNavbar = useHasTopNavbar()
 
   const Logo: LazyExoticComponent<FC<SVGProps<SVGSVGElement>>> = hasTopNavbar
@@ -30,10 +30,12 @@ export const Header = () => {
     : HydrationLogo
 
   return (
-    <SHeader>
+    <SHeader ref={ref}>
       <Logo />
       {hasTopNavbar && <HeaderMenu />}
       <HeaderToolbar />
     </SHeader>
   )
-}
+})
+
+Header.displayName = "Header"

@@ -12,11 +12,11 @@ export const SContainer = styled(Flex)(
       position: absolute;
       bottom: -8px;
       left: 0;
-      width: 100vw;
+      width: var(--header-width);
       height: 1px;
       background-color: ${theme.details.separators};
       left: 50%;
-      transform: translateX(-50vw);
+      transform: translateX(-50%);
     }
   `,
 )
