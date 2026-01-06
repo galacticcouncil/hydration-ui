@@ -19,7 +19,13 @@ export const SContent = styled(Box)(
 
     margin: 0 auto;
 
-    padding-bottom: var(--layout-bottom-safe-area);
     padding-inline: var(--layout-gutter);
   `,
 )
+
+export const SMainContent = styled(SContent)`
+  display: flex;
+  flex-direction: column;
+  padding-block: 8px;
+  padding-bottom: var(--layout-bottom-safe-area);
+`

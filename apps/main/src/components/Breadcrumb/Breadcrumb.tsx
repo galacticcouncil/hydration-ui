@@ -1,17 +1,17 @@
-import { Text } from "@galacticcouncil/ui/components"
+import { Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import React from "react"
 
-import { SContainer } from "./Breadcrumb.styled"
+export type BreadcrumbItem = { label: string; path: string }
 
 type BreadcrumbProps = {
-  crumbs: { label: string; path: string }[]
+  crumbs: BreadcrumbItem[]
 }
 
 export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
   return (
-    <SContainer gap={8} align="center">
+    <Flex gap={8} align="center">
       {crumbs.map((crumb, index) => (
         <React.Fragment key={index}>
           {index === crumbs.length - 1 ? (
@@ -45,6 +45,6 @@ export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
           )}
         </React.Fragment>
       ))}
-    </SContainer>
+    </Flex>
   )
 }
