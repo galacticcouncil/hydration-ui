@@ -1,14 +1,13 @@
 import { useMatches } from "@tanstack/react-router"
 import { t } from "i18next"
-import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { AssetType } from "@/api/assets"
-import { Breadcrumb } from "@/components/Breadcrumb"
+import { BreadcrumbItem } from "@/components/Breadcrumb"
 import { useAssets } from "@/providers/assetsProvider"
 import { FileRouteTypes } from "@/routeTree.gen"
 
-const useLiquidityCrumbs = () => {
+export const useLiquidityCrumbs = (): BreadcrumbItem[] => {
   const { t } = useTranslation(["common", "liquidity"])
   const { getAsset } = useAssets()
 
@@ -69,10 +68,4 @@ const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
     default:
       return "N/A"
   }
-}
-
-export const LiquidityBreadcrumb: FC = () => {
-  const crumbs = useLiquidityCrumbs()
-
-  return <Breadcrumb crumbs={crumbs} />
 }
