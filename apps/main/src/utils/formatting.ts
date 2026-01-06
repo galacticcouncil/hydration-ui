@@ -80,7 +80,7 @@ export const toDecimal = (
   decimals: number,
 ): string =>
   big.toDecimal(
-    typeof amount === "bigint" ? amount : BigInt(amount.toString()),
+    typeof amount === "object" ? amount.toString() : amount,
     decimals,
   )
 

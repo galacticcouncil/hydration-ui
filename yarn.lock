@@ -1858,10 +1858,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.1.tgz#a7ee12f92bec7ddd2553d0f185693fb22f29f28c"
   integrity sha512-psIJv4hY/CEz3jXzd/mrRGtCtwmMQtCzi5OwDlJ8wbYtdxScCkIlHfZXRxDjUvgWTgG7xu9TbjeyifsJE6yHqw==
 
-"@galacticcouncil/common@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.1.3.tgz#b2d39ca78ab7f5c29496788a6c607bde618e43df"
-  integrity sha512-7xGCr3O7LZl8zMOuJAkXgLXQlqP4QVV0j6Co8SX3vlQhbVq3qo70Q5V8NslsbQC+uGFWMhNNqsAWOSxpXTUWrQ==
+"@galacticcouncil/common@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.2.0.tgz#ac2035dd52d43d285d4b8ad738d0ed35b899140b"
+  integrity sha512-NAdYVpqOsi+3Ax8hzf0vQPjjmsaDfKZiqlh7u7NQZTXXOPaEX7YCdSt1Kh3R2BVbUs3ci/I8R0vPVKebIyNLow==
   dependencies:
     big.js "^6.2.1"
 
