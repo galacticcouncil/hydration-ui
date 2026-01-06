@@ -205,6 +205,7 @@ const JoinFarmsForm = ({
                               })
                             : undefined
                         }
+                        variant="horizontalLabel"
                         size="large"
                       />
                     </Flex>
@@ -212,9 +213,8 @@ const JoinFarmsForm = ({
                       <Text
                         fs={12}
                         font="secondary"
-                        fw={400}
                         color={getToken("accents.danger.secondary")}
-                        sx={{ marginLeft: "auto", lineHeight: 1 }}
+                        pt={4}
                       >
                         {error.message}
                       </Text>

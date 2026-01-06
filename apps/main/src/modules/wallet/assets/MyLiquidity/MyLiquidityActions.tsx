@@ -11,7 +11,7 @@ export const MyLiquidityActions: FC = () => {
 
   return (
     <>
-      <Button size="medium" onClick={() => setIsOpen(true)}>
+      <Button onClick={() => setIsOpen(true)}>
         <Plus />
         {t("myLiquidity.header.cta")}
       </Button>

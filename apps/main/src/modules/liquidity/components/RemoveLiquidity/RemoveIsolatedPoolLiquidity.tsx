@@ -143,9 +143,10 @@ export const RemoveSelectableXYKPositions = (props: RemoveLiquidityProps) => {
             type="submit"
             size="large"
             width="100%"
+            disabled={!selectedPositions.length}
             onClick={() => setConfirmedSelection(true)}
           >
-            {t("removeLiquidity")}
+            {t("liquidity.remove.modal.multiple.button")}
           </Button>
         </Flex>
       </ModalBody>

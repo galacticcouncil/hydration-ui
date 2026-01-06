@@ -34,11 +34,13 @@ import {
 } from "@/states/account"
 
 import { ATokenBalanceTable } from "./ATokenBalanceTable"
-import { ClaimCard } from "./ClaimCard"
 import { OmnipoolPositions } from "./OmnipoolPositions"
 import { PositionDetails } from "./PositionDetails"
 import { PositionsHeader } from "./PositionsHeader"
-import { useIsolatedPositionsTableColumns } from "./PositionsTable.columns"
+import {
+  getIsolatedPositionsTableColumns,
+  useIsolatedPositionsTableColumns,
+} from "./PositionsTable.columns"
 import { STableHeader } from "./PositionsTable.styled"
 import {
   useIsolatedPositions,
@@ -58,6 +60,7 @@ export const PositionsTable = ({
 
 const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
   const { t } = useTranslation("liquidity")
+  const { isMobile } = useBreakpoints()
   const [selectedPosition, setSelectedPosition] = useState<{
     joinedFarms: TJoinedFarm[]
     farmsToJoin: Farm[]
@@ -91,34 +94,40 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
           </Text>
         </Flex>
 
-        <Button variant="tertiary" outline asChild>
-          <Link
-            to="/liquidity/$id/remove"
-            params={{
-              id: pool.id,
-            }}
-            search={{
-              selectable: true,
-            }}
-          >
-            <Minus />
-            {t("liquidity.positions.removeAll")}
-          </Link>
-        </Button>
+        {!!pool.positions.length && (
+          <Button variant="tertiary" outline asChild>
+            <Link
+              to="/liquidity/$id/remove"
+              params={{
+                id: pool.id,
+              }}
+              search={{
+                selectable: true,
+              }}
+            >
+              <Minus />
+              {t("removeLiquidity")}
+            </Link>
+          </Button>
+        )}
       </STableHeader>
       <DataTable
         data={positions}
         columns={columns}
         paginated
         pageSize={10}
+        columnVisibility={getIsolatedPositionsTableColumns(
+          isMobile,
+          pool.isFarms || !!pool.positions.length,
+        )}
         onRowClick={(row) => {
-          if (row.position) {
-            setSelectedPosition({
-              joinedFarms: row.joinedFarms,
-              farmsToJoin: row.farmsToJoin,
-              position: row.position,
-            })
-          }
+          if (!row.position) return
+
+          setSelectedPosition({
+            joinedFarms: row.joinedFarms,
+            farmsToJoin: row.farmsToJoin,
+            position: row.position,
+          })
         }}
         columnPinning={{
           left: ["position"],
@@ -171,7 +180,12 @@ const OmnipoolStablepoolPositions = ({
 
   if (isVisibleABalance) {
     if (tables.length > 0) {
-      tables.push(<Separator key="separator-atoken" sx={{ minWidth: 900 }} />)
+      tables.push(
+        <Separator
+          key="separator-atoken"
+          sx={{ minWidth: [undefined, 900] }}
+        />,
+      )
     }
 
     tables.push(
@@ -214,37 +228,32 @@ const PositionsTableBody = ({
     }) ?? false
 
   const navigate = useNavigate({ from: "/liquidity/$id" })
-  const { isTablet, isMobile } = useBreakpoints()
 
   const onClick = () => {
     navigate({
       search: (prev) => ({ ...prev, expanded: !prev.expanded }),
       replace: true,
+      resetScroll: false,
     })
   }
 
   return (
-    <>
-      {(isTablet || isMobile) && !!totalInFarms && (
-        <ClaimCard sx={{ mb: 12 }} positions={positions} />
-      )}
-      <CollapsibleRoot open={expanded}>
-        <TableContainer
-          as={Paper}
-          sx={{ mb: getTokenPx("containers.paddings.primary") }}
-        >
-          <PositionsHeader
-            onClick={onClick}
-            showMore={expanded}
-            totalInFarms={totalInFarms}
-            totalBalanceDisplay={totalBalanceDisplay}
-            positions={positions}
-          />
-          <CollapsibleContent css={{ overflowX: "auto" }}>
-            {children}
-          </CollapsibleContent>
-        </TableContainer>
-      </CollapsibleRoot>
-    </>
+    <CollapsibleRoot open={expanded}>
+      <TableContainer
+        as={Paper}
+        sx={{ mt: getTokenPx("containers.paddings.primary") }}
+      >
+        <PositionsHeader
+          onClick={onClick}
+          showMore={expanded}
+          totalInFarms={totalInFarms}
+          totalBalanceDisplay={totalBalanceDisplay}
+          positions={positions}
+        />
+        <CollapsibleContent css={{ overflowX: "auto" }}>
+          {children}
+        </CollapsibleContent>
+      </TableContainer>
+    </CollapsibleRoot>
   )
 }

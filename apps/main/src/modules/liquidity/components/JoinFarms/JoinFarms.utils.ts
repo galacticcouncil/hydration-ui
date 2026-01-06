@@ -479,12 +479,17 @@ const useOmnipoolZodSchema = ({ id, farms }: { id: string; farms: Farm[] }) => {
 
   if (!minJoinAmount) return undefined
 
-  return required.refine((value) => Big(value).gte(minJoinAmount), {
-    error: t("liquidity.joinFarms.modal.validation.minShares", {
-      value: minJoinAmount,
-      symbol: meta.symbol,
-    }),
-  })
+  return required.refine(
+    (value) => {
+      return Big(value).gte(minJoinAmount)
+    },
+    {
+      error: t("liquidity.joinFarms.modal.validation.minShares", {
+        value: minJoinAmount,
+        symbol: meta.symbol,
+      }),
+    },
+  )
 }
 
 const useXYKJoinFarmsZodSchema = ({

@@ -371,6 +371,7 @@ export const useOmnipoolStablepools = () => {
       if (borrowApyData?.totalSupplyApy) {
         totalFee = Big(borrowApyData.totalSupplyApy)
           .plus(totalFee ?? 0)
+          .minus(lpFeeStablepool ?? 0)
           .toString()
       }
 

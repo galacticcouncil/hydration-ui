@@ -1,3 +1,4 @@
+import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
 import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
@@ -6,13 +7,14 @@ import {
   getAssetIdFromAddress,
   useStableArray,
 } from "@galacticcouncil/utils"
-import { UseQueryResult } from "@tanstack/react-query"
+import { useQuery, UseQueryResult } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 import { zip } from "remeda"
 
 import { useBorrowReserves, useUserBorrowSummary } from "@/api/borrow/queries"
 import { useDefillamaLatestApyQueries } from "@/api/external/defillama"
+import { useSquidClient } from "@/api/provider"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
 import {
@@ -41,10 +43,10 @@ export type BorrowAssetApyData = {
   totalSupplyApy: number
   totalBorrowApy: number
   stablepoolData: TStablepoolDetails | undefined
-  // farms: TFarmAprData[] | undefined @TODO farms
 }
 
 export const useBorrowAssetsApy = (assetIds: string[]) => {
+  const squidClient = useSquidClient()
   const { getAsset, getErc20AToken, getRelatedAToken } = useAssets()
   const { data: borrowReserves, isLoading: isLoadingBorrowReserves } =
     useBorrowReserves()
@@ -59,6 +61,19 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
   }, [stablepoolsReserves])
 
   const assetIdsMemo = useStableArray(assetIds)
+
+  const { data: yieldMetrics, isLoading: isYieldMetricsLoading } = useQuery(
+    stablepoolYieldMetricsQuery(squidClient),
+  )
+
+  const yieldsMap = useMemo<Map<string, number>>(() => {
+    return new Map(
+      yieldMetrics?.map((item) => [
+        item.poolId,
+        Number(item.projectedApyPerc),
+      ]) ?? [],
+    )
+  }, [yieldMetrics])
 
   const reserves = useMemo(
     () => borrowReserves?.formattedReserves ?? [],
@@ -81,7 +96,10 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     return new Map(externalApyEntries)
   }, [allAssetIds, externalApys])
 
-  const isLoading = isLoadingBorrowReserves || isLoadingStablepoolsReserves
+  const isLoading =
+    isLoadingBorrowReserves ||
+    isLoadingStablepoolsReserves ||
+    isYieldMetricsLoading
 
   const data = useMemo<BorrowAssetApyData[]>(() => {
     if (isLoading) return []
@@ -112,6 +130,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
       })
 
       const stablepoolData = stablepoolsMap.get(assetId)
+      const lpAPY = yieldsMap.get(assetId)
 
       const calculatedData = calculateAssetApyTotals(
         stableSwapAssetIds,
@@ -119,13 +138,14 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
         assetReserve?.aIncentivesData ?? [],
         externalApysMap,
         stablepoolData,
+        lpAPY ?? 0,
         getRelatedAToken,
       )
 
       return {
         assetId,
         incentives,
-        lpAPY: undefined, // @TODO lpAPY
+        lpAPY,
         stablepoolData,
         ...calculatedData,
       } satisfies BorrowAssetApyData
@@ -139,6 +159,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     getErc20AToken,
     isLoading,
     reserves,
+    yieldsMap,
   ])
 
   return {
@@ -225,6 +246,7 @@ const calculateAssetApyTotals = (
   incentives: ReserveIncentiveResponse[],
   externalApysMap: Map<string, UseQueryResult<number>>,
   stablepoolData: TStablepoolDetails | undefined,
+  lpAPY: number,
   getRelatedAToken: TAssetsContext["getRelatedAToken"],
 ): CalculatedAssetApyTotals => {
   const assetCount = stableSwapAssetIds.length
@@ -267,7 +289,6 @@ const calculateAssetApyTotals = (
     }
   }
 
-  const lpAPY = 0 // @TODO lpAPY
   const farmsAPR = 0 // @TODO farmsAPR
 
   const apySums = calculateTotalSupplyAndBorrowApy(

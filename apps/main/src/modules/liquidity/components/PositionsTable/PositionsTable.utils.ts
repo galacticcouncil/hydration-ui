@@ -12,6 +12,10 @@ import {
   useDepositAprs,
 } from "@/modules/liquidity/components/Farms/Farms.utils"
 import {
+  useMinOmnipoolFarmJoin,
+  useXYKFarmMinShares,
+} from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import {
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
@@ -30,6 +34,7 @@ export type IsolatedPositionTableData = {
   shareTokens: string
   shareTokensDisplay: string
   shareTokenId: string
+  canJoinFarms: boolean
   positionId?: string
   meta: XYKPoolMeta
   position?: XykDeposit
@@ -57,6 +62,7 @@ export type OmnipoolPositionTableData = {
   stableswapId?: string
   canAddLiquidity: boolean
   canRemoveLiquidity: boolean
+  canJoinFarms: boolean
 } & AccountOmnipoolPosition
 
 export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
@@ -70,6 +76,8 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
   const price = Big(pool.tvlDisplay)
     .div(liquidity ? scaleHuman(liquidity, pool.meta.decimals) : 1)
     .toString()
+
+  const minJoinAmount = useXYKFarmMinShares(pool.id, pool.farms)
 
   const data = useMemo(() => {
     const freeBalance = Big(scaleHuman(balance ?? 0, meta.decimals))
@@ -87,6 +95,9 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
 
         const shareTokens = scaleHuman(position.shares, meta.decimals)
         const shareTokensDisplay = Big(shareTokens).times(price).toString()
+        const canJoinFarms = Big(position.shares.toString()).gt(
+          minJoinAmount ?? 0,
+        )
 
         totalInFarms = totalInFarms.plus(shareTokensDisplay)
 
@@ -102,6 +113,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
           shareTokenId,
           meta,
           position,
+          canJoinFarms,
         }
       })
 
@@ -110,6 +122,8 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
     if (freeBalance.gt(0)) {
       const shareTokensDisplay = freeBalance.times(price).toString()
       totalBalanceDisplay = totalBalanceDisplay.plus(shareTokensDisplay)
+
+      const canJoinFarms = Big(freeBalance.toString()).gt(minJoinAmount ?? 0)
 
       const liquidity = {
         poolId: id,
@@ -121,6 +135,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
         shareTokensDisplay,
         shareTokenId,
         meta,
+        canJoinFarms,
       }
 
       positionsData.unshift(liquidity)
@@ -133,13 +148,14 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
     }
   }, [
     balance,
-    id,
     meta,
     positions,
-    price,
-    shareTokenId,
-    allFarms,
     getDepositAprs,
+    allFarms,
+    price,
+    minJoinAmount,
+    id,
+    shareTokenId,
   ])
 
   return data
@@ -160,9 +176,11 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     stablepoolData,
     canAddLiquidity,
     canRemoveLiquidity,
+    farms,
   } = pool
 
   const getDepositAprs = useDepositAprs()
+  const minJoinAmount = useMinOmnipoolFarmJoin(farms, meta)
 
   const { price: aStableswapPrice, isValid: aStableswapPriceIsValid } =
     useAssetPrice(aStableswapAsset?.id)
@@ -234,12 +252,16 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
         )
 
         const isJoinedAllFarms = farmsToJoin.length === 0
+        const canJoinFarms = Big(position.data.currentTotalValueHuman).gt(
+          minJoinAmount ?? 0,
+        )
 
         return {
           poolId: id,
           joinedFarms,
           aprsByRewardAsset,
           isJoinedAllFarms,
+          canJoinFarms,
           farmsToJoin,
           meta,
           stableswapId,
@@ -272,6 +294,7 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     getDepositAprs,
     canAddLiquidity,
     canRemoveLiquidity,
+    minJoinAmount,
   ])
 
   return data

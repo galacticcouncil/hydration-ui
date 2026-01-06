@@ -1,4 +1,10 @@
-import { Flex, Text, Tooltip } from "@galacticcouncil/ui/components"
+import {
+  Box,
+  Flex,
+  InfoTooltipProps,
+  Text,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
@@ -10,16 +16,21 @@ import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItem
 import { useAssets } from "@/providers/assetsProvider"
 
 export const TooltipAPR = ({
+  lpAPY,
   omnipoolFee,
   stablepoolFee,
   farms,
   borrowApyData,
+  description,
+  ...props
 }: {
+  lpAPY?: number
   omnipoolFee?: string
   stablepoolFee?: string
   farms: Farm[]
   borrowApyData?: BorrowAssetApyData
-}) => {
+  description?: string
+} & Omit<InfoTooltipProps, "text">) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { getAssetWithFallback } = useAssets()
 
@@ -27,9 +38,12 @@ export const TooltipAPR = ({
 
   return (
     <Tooltip
+      {...props}
       text={
-        <Flex direction="column" gap={4}>
-          <Text fs={12}>{t("liquidity:liquidity.tooltip.fee.apr.title")}</Text>
+        <Flex direction="column" gap={8}>
+          <Text fs="p6" fw={500} mb={6}>
+            {description ?? t("liquidity:liquidity.tooltip.fee.apr.title")}
+          </Text>
 
           {omnipoolFee && (
             <Row
@@ -45,23 +59,21 @@ export const TooltipAPR = ({
             />
           )}
 
+          {lpAPY && (
+            <Row
+              label={t("apr.lpFee")}
+              value={t("percent", { value: lpAPY })}
+            />
+          )}
+
           {borrowApyData && (
             <BorrowApyBreakdown borrowApyData={borrowApyData} />
           )}
 
           {!!farms?.length && (
-            <>
+            <Box>
               <Row
                 label={t("liquidity:liquidity.tooltip.fee.apr.farmRewardsApr")}
-                value={
-                  <Text
-                    transform="uppercase"
-                    fs={10}
-                    color={getToken("text.medium")}
-                  >
-                    {t("liquidity:liquidity.tooltip.fee.apr.apr")}
-                  </Text>
-                }
               />
               {farms.map((farm, index) => (
                 <Row
@@ -72,7 +84,7 @@ export const TooltipAPR = ({
                         id={farm.rewardCurrency.toString()}
                         size="small"
                       />
-                      <Text>
+                      <Text fs="p5" fw={500} color={getToken("text.high")}>
                         {
                           getAssetWithFallback(farm.rewardCurrency.toString())
                             .symbol
@@ -83,7 +95,7 @@ export const TooltipAPR = ({
                   value={t("percent", { value: farm.apr })}
                 />
               ))}
-            </>
+            </Box>
           )}
         </Flex>
       }
@@ -93,17 +105,13 @@ export const TooltipAPR = ({
 
 const BorrowApyBreakdown = ({
   borrowApyData,
-  omnipoolFee,
 }: {
   borrowApyData: BorrowAssetApyData
-  omnipoolFee?: string
 }) => {
-  const { lpAPY, underlyingAssetsApyData, incentives } = borrowApyData
+  const { underlyingAssetsApyData, incentives } = borrowApyData
 
   const apyBreakdownItems = useApyBreakdownItems({
     type: "supply",
-    omnipoolFee,
-    lpAPY,
     underlyingAssetsApyData,
     incentives,
   })
@@ -122,21 +130,34 @@ const Row = ({
   value,
 }: {
   label: React.ReactNode
-  value: React.ReactNode
+  value?: React.ReactNode
 }) => {
   return (
     <Flex justify="space-between" align="center">
-      <Text transform="uppercase" fs={10} color={getToken("text.medium")}>
-        {label}
-      </Text>
-      <Text
-        transform="uppercase"
-        fs={12}
-        color={getToken("text.high")}
-        fw={500}
-      >
-        {value}
-      </Text>
+      {typeof label === "string" ? (
+        <Text
+          transform="uppercase"
+          fs={8}
+          fw={600}
+          color={getToken("text.medium")}
+        >
+          {label}
+        </Text>
+      ) : (
+        label
+      )}
+      {value && typeof value === "string" ? (
+        <Text
+          transform="uppercase"
+          fs="p5"
+          color={getToken("text.high")}
+          fw={500}
+        >
+          {value}
+        </Text>
+      ) : (
+        value
+      )}
     </Flex>
   )
 }

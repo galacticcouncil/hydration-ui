@@ -29,7 +29,10 @@ function RouteComponent() {
   return (
     <ModalContainer
       open
-      sx={{ m: "auto", mt: getTokenPx("containers.paddings.primary") }}
+      sx={{
+        m: "auto",
+        mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
+      }}
     >
       <JoinFarmsWrapper
         positionId={positionId}

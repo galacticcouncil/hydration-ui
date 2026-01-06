@@ -6,7 +6,6 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
@@ -31,7 +30,6 @@ export const PositionsHeader = ({
   positions,
 }: PositionsHeaderProps) => {
   const { t } = useTranslation(["common", "liquidity"])
-  const { isTablet, isMobile } = useBreakpoints()
 
   return (
     <Flex direction="column" sx={{ position: "sticky", left: 0 }}>
@@ -70,8 +68,9 @@ export const PositionsHeader = ({
         </Flex>
       </CollapsibleTrigger>
       <Flex
+        direction={["column-reverse", "column-reverse", "row"]}
         justify="space-between"
-        align="center"
+        align={[undefined, undefined, "center"]}
         gap={24}
         sx={{
           px: getTokenPx([
@@ -107,7 +106,7 @@ export const PositionsHeader = ({
           size="medium"
         />
 
-        {!isTablet && !isMobile && <ClaimCard positions={positions} />}
+        <ClaimCard positions={positions} />
       </Flex>
     </Flex>
   )

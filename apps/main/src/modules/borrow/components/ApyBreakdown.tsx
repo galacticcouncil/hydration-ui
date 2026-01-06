@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next"
 import { ApyType, BorrowAssetApyData } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
 import { DetailedApy } from "@/components/DetailedApy/DetailedApy"
-import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItems"
 
 export type ApyBreakdownProps = FlexProps & {
   type: ApyType
@@ -19,21 +18,13 @@ export type ApyBreakdownProps = FlexProps & {
 
 export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
   type,
-  //withFarms,
   omnipoolFee,
   apyData,
   ...props
 }) => {
   const { t } = useTranslation()
 
-  const {
-    totalSupplyApy,
-    totalBorrowApy,
-    lpAPY,
-    underlyingAssetsApyData,
-    incentives,
-    // farms = [] @TODO: farms
-  } = apyData
+  const { totalSupplyApy, totalBorrowApy, incentives } = apyData
 
   const isSupply = type === "supply"
   const baseApy = isSupply ? totalSupplyApy : totalBorrowApy
@@ -41,18 +32,10 @@ export const ApyBreakdown: React.FC<ApyBreakdownProps> = ({
     .plus(omnipoolFee ?? 0)
     .toNumber()
 
-  const apyBreakdownItems = useApyBreakdownItems({
-    type,
-    omnipoolFee,
-    lpAPY,
-    underlyingAssetsApyData,
-    incentives,
-  })
-
   return (
     <DetailedApy
+      apyData={apyData}
       description={t("apy.rewards.description")}
-      items={apyBreakdownItems}
       {...props}
     >
       {incentives.length > 0 && (

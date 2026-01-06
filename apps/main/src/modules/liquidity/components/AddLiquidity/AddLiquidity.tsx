@@ -12,14 +12,14 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
-import { Controller } from "react-hook-form"
+import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { Farm } from "@/api/farms"
 import { useAssetFeeParameters } from "@/api/omnipool"
-import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   TradeLimit,
   TradeLimitType,
@@ -27,7 +27,7 @@ import {
 import { useAssets } from "@/providers/assetsProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { useAssetPrice } from "@/states/displayAsset"
-import { scale, scaleHuman } from "@/utils/formatting"
+import { scaleHuman } from "@/utils/formatting"
 
 import {
   getCustomErrors,
@@ -47,33 +47,20 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
   const {
     form,
     liquidityShares,
-    balance,
-    meta,
+    poolMeta,
     activeFarms,
     joinFarmErrorMessage,
-    mutation,
+    onSubmit,
     isJoinFarms,
     canAddLiquidity,
-  } = useAddLiquidity({ assetId: id, onSubmitted })
+    underlyingAssetMeta,
+  } = useAddLiquidity({ poolId: id, onSubmitted })
 
-  const onSubmit = async (values: TAddLiquidityFormValues) => {
-    if (!liquidityShares || !values.amount)
-      throw new Error("Invalid input data")
-
-    const amount = scale(values.amount, meta.decimals).toString()
-
-    mutation.mutate({
-      assetId: id,
-      amount,
-      shares: liquidityShares.minSharesToGet,
-    })
-  }
-  const { formState, control, handleSubmit } = form
-
+  const { formState, handleSubmit } = form
   const customErrors = getCustomErrors(formState.errors.amount)
 
   return (
-    <>
+    <FormProvider {...form}>
       <ModalHeader
         title={t("addLiquidity")}
         closable={closable}
@@ -81,31 +68,23 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
       />
       <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
-          <Controller
-            name="amount"
-            control={control}
-            render={({ field: { value, onChange }, fieldState: { error } }) => (
-              <AssetSelect
-                label={t("liquidity.add.modal.selectAsset")}
-                assets={[]}
-                selectedAsset={meta}
-                maxBalance={balance}
-                value={value}
-                onChange={onChange}
-                error={error?.message}
-                sx={{ pt: 0 }}
-              />
-            )}
+          <AssetSelectFormField<TAddLiquidityFormValues>
+            label={t("liquidity.add.modal.selectAsset")}
+            assetFieldName="asset"
+            amountFieldName="amount"
+            assets={underlyingAssetMeta ? [underlyingAssetMeta, poolMeta] : []}
+            sx={{ pt: 0 }}
+            disabledAssetSelector={!underlyingAssetMeta}
           />
 
           <ModalContentDivider />
 
           <AddLiquiditySummary
-            meta={meta}
+            meta={poolMeta}
             poolShare={liquidityShares?.poolShare ?? "0"}
             minReceiveAmount={scaleHuman(
               liquidityShares?.minSharesToGet ?? "0",
-              meta.decimals,
+              poolMeta.decimals,
             )}
             farms={activeFarms}
           />
@@ -147,7 +126,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
           </Button>
         </ModalFooter>
       </form>
-    </>
+    </FormProvider>
   )
 }
 

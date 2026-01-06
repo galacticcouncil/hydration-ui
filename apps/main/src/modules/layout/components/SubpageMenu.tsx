@@ -33,7 +33,7 @@ export const SubpageMenu: FC<Props> = ({ ignoreCurrentSearch }) => {
   return (
     <TabMenu
       items={subnav}
-      size="large"
+      size="medium"
       variant="transparent"
       ignoreCurrentSearch={ignoreCurrentSearch}
     />

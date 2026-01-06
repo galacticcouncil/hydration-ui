@@ -32,8 +32,12 @@ export const SDrawerContent = styled(Content)`
 
   background: ${({ theme }) => theme.surfaces.themeBasePalette.surfaceHigh};
 
-  border-top-left-radius: ${({ theme }) => theme.radii.xxl}px;
-  border-top-right-radius: ${({ theme }) => theme.radii.xxl}px;
+  border-top-left-radius: ${({ theme }) =>
+    theme.containers.cornerRadius.containersPrimary}px;
+  border-top-right-radius: ${({ theme }) =>
+    theme.containers.cornerRadius.containersPrimary}px;
+
+  border: 1px solid ${({ theme }) => theme.details.borders};
 
   display: flex;
   flex-direction: column;

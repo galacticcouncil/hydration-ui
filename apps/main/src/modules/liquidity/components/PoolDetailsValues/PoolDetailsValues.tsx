@@ -1,9 +1,7 @@
 import { XykMath } from "@galacticcouncil/sdk"
 import {
-  Box,
   Flex,
   Separator,
-  SValueStatsValue,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
@@ -37,13 +35,9 @@ export const PoolDetailsValues = ({
 
   if (!isOmnipool) {
     return (
-      <Flex
-        direction="column"
-        minWidth={300}
-        gap={getTokenPx("containers.paddings.primary")}
-      >
+      <PoolDetailsValuesContainer>
         <IsolatedPoolValues data={data} />
-      </Flex>
+      </PoolDetailsValuesContainer>
     )
   } else if (data.stablepoolData) {
     return (
@@ -52,28 +46,19 @@ export const PoolDetailsValues = ({
         justify="space-between"
         gap={getTokenPx("containers.paddings.primary")}
       >
-        <Flex
-          direction="column"
-          minWidth={300}
-          gap={getTokenPx("containers.paddings.primary")}
-        >
+        <PoolDetailsValuesContainer>
           <OmnipoolValues data={data} />
           <Separator mx={-20} />
-        </Flex>
-        <Box>
-          <CurrencyReserves stablepoolData={data.stablepoolData} />
-        </Box>
+        </PoolDetailsValuesContainer>
+
+        <CurrencyReserves stablepoolData={data.stablepoolData} />
       </Flex>
     )
   } else {
     return (
-      <Flex
-        direction="column"
-        minWidth={300}
-        gap={getTokenPx("containers.paddings.primary")}
-      >
+      <PoolDetailsValuesContainer>
         <OmnipoolValues data={data} />
-      </Flex>
+      </PoolDetailsValuesContainer>
     )
   }
 }
@@ -172,23 +157,24 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
             wrap
             customValue={
               <Flex gap={4} align="self-start">
-                <AssetLogo
-                  id={assetAIconId}
-                  size={"medium"}
-                  sx={{ mt: [0, 4] }}
-                />
+                <AssetLogo id={assetAIconId} sx={{ mt: [0, 2] }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}
                   width="100%"
                 >
-                  <SValueStatsValue>
+                  <Text
+                    fs="h7"
+                    fw={500}
+                    color={getToken("text.high")}
+                    font="primary"
+                  >
                     {t("currency", { value: 1, symbol: assetAMeta.symbol })} ={" "}
                     {t("currency", {
                       value: priceA,
                       symbol: assetBMeta.symbol,
                     })}
-                  </SValueStatsValue>
+                  </Text>
                   <Separator />
                   <AssetPrice asset={assetA} />
                 </Flex>
@@ -205,19 +191,24 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
             wrap
             customValue={
               <Flex gap={4} align="self-start">
-                <AssetLogo id={assetBIconId} sx={{ mt: [0, 4] }} />
+                <AssetLogo id={assetBIconId} sx={{ mt: [0, 2] }} />
                 <Flex
                   direction="column"
                   gap={getTokenPx("scales.paddings.s")}
                   width="100%"
                 >
-                  <SValueStatsValue>
+                  <Text
+                    fs="h7"
+                    fw={500}
+                    color={getToken("text.high")}
+                    font="primary"
+                  >
                     {t("currency", { value: 1, symbol: assetBMeta.symbol })} ={" "}
                     {t("currency", {
                       value: priceB,
                       symbol: assetAMeta.symbol,
                     })}
-                  </SValueStatsValue>
+                  </Text>
                   <Separator />
                   <AssetPrice asset={assetB} />
                 </Flex>
@@ -272,5 +263,22 @@ const AssetPrice = ({ asset }: { asset: PoolToken }) => {
         priceSymbol: getAssetWithFallback(asset.id).symbol,
       })}
     </Text>
+  )
+}
+
+const PoolDetailsValuesContainer = ({
+  children,
+}: {
+  children: React.ReactNode
+}) => {
+  return (
+    <Flex
+      direction="column"
+      minWidth={260}
+      maxWidth={["auto", "auto", 360]}
+      gap={getTokenPx("containers.paddings.primary")}
+    >
+      {children}
+    </Flex>
   )
 }

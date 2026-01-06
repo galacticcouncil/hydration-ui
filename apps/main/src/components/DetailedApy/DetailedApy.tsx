@@ -1,7 +1,9 @@
-import { Flex, FlexProps, Text, Tooltip } from "@galacticcouncil/ui/components"
+import { Flex, FlexProps, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 
+import { BorrowAssetApyData } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
+import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type ApyRowProps = {
@@ -21,21 +23,21 @@ export const ApyRow: React.FC<ApyRowProps> = ({ assetId, value, label }) => {
         {asset && (
           <>
             <AssetLogo id={asset.id} size="extra-small" />
-            <Text fs={11} fw={600} color={getToken("text.high")}>
+            <Text fs="p5" fw={500} color={getToken("text.high")}>
               {asset.symbol}
             </Text>
           </>
         )}
         <Text
-          fs={11}
+          fs="p5"
           fw={500}
-          color={getToken("text.medium")}
+          color={getToken("text.high")}
           transform={assetId ? "none" : "uppercase"}
         >
           {label}
         </Text>
       </Flex>
-      <Text fs={12} fw={600}>
+      <Text fs="p5" fw={500}>
         {value}
       </Text>
     </Flex>
@@ -45,31 +47,23 @@ export const ApyRow: React.FC<ApyRowProps> = ({ assetId, value, label }) => {
 type DetailedApyProps = FlexProps & {
   children: React.ReactNode
   description?: string
-  items: ApyRowProps[]
+  apyData: BorrowAssetApyData
 }
 
 export const DetailedApy: React.FC<DetailedApyProps> = ({
   children,
   description,
-  items,
+  apyData,
   ...props
 }) => {
   return (
     <Flex gap={4} align="center" {...props}>
       {children}
-      <Tooltip
-        text={
-          <Flex direction="column" gap={4}>
-            {description && (
-              <Text fs={12} fw={500}>
-                {description}
-              </Text>
-            )}
-            {items.map((props, index) => (
-              <ApyRow key={`${props.label}-${index}`} {...props} />
-            ))}
-          </Flex>
-        }
+      <TooltipAPR
+        farms={[]}
+        borrowApyData={apyData}
+        lpAPY={apyData.lpAPY}
+        description={description}
       />
     </Flex>
   )

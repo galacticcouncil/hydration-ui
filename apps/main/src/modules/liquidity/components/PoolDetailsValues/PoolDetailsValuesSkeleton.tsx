@@ -17,9 +17,13 @@ export const PoolDetailsValuesSkeleton = () => {
     <Paper
       as={Flex}
       width={360}
-      p={getTokenPx("containers.paddings.primary")}
+      p={[16, 20]}
+      sx={{
+        flex: 0,
+        flexBasis: 360,
+        flexDirection: "column",
+      }}
       gap={getTokenPx("containers.paddings.primary")}
-      sx={{ flexDirection: "column" }}
     >
       <Flex direction="column">
         <Text

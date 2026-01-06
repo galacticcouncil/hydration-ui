@@ -1,7 +1,9 @@
 import { Chip, Flex } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import {
   isIsolatedPool,
   IsolatedPoolTable,
@@ -32,7 +34,10 @@ export const AssetYields = ({
   let incentivesApr = Big(0)
 
   if (data.borrowApyData?.underlyingSupplyApy)
-    apy = apy.plus(data.borrowApyData.underlyingSupplyApy)
+    apy = apy
+      .plus(data.borrowApyData.underlyingSupplyApy)
+      .plus(data.lpFeeOmnipool ?? 0)
+      .plus(data.lpFeeStablepool ?? 0)
 
   if (data.farms.length > 0) {
     incentivesApr = incentivesApr.plus(
@@ -82,9 +87,23 @@ export const AssetYields = ({
           size="small"
           sx={{ borderRadius: `0 ${borderRadius}px ${borderRadius}px 0` }}
         >
-          {t("percent.apy", {
-            value: apy,
-          })}
+          <Flex align="center" gap={4}>
+            {t("percent.apy", {
+              value: apy,
+            })}
+
+            <TooltipAPR
+              borrowApyData={
+                data.borrowApyData
+                  ? { ...data.borrowApyData, incentives: [] }
+                  : undefined
+              }
+              omnipoolFee={data.lpFeeOmnipool}
+              stablepoolFee={data.lpFeeStablepool}
+              farms={[]}
+              iconColor={getToken("accents.success.emphasis")}
+            />
+          </Flex>
         </Chip>
       </Flex>
     )

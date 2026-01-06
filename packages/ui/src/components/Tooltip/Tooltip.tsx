@@ -7,12 +7,21 @@ import {
 import { FC, ReactNode, useState } from "react"
 
 import { CircleInfo } from "@/assets/icons"
-import { BoxProps, Icon, Text } from "@/components"
+import {
+  BoxProps,
+  ButtonIcon,
+  DrawerHeader,
+  Icon,
+  Modal,
+  ModalBody,
+  Text,
+} from "@/components"
+import { useBreakpoints } from "@/theme"
 import { getToken } from "@/utils"
 
 import { SContent, STrigger } from "./Tooltip.styled"
 
-type InfoTooltipProps = {
+export type InfoTooltipProps = {
   text: ReactNode | string
   children?: ReactNode
   side?: TooltipContentProps["side"]
@@ -21,6 +30,7 @@ type InfoTooltipProps = {
   alignOffset?: TooltipContentProps["alignOffset"]
   asChild?: boolean
   preventDefault?: boolean
+  iconColor?: BoxProps["color"]
 }
 
 export const Tooltip = ({
@@ -32,8 +42,44 @@ export const Tooltip = ({
   alignOffset = -10,
   asChild = false,
   preventDefault,
+  iconColor,
 }: InfoTooltipProps) => {
   const [open, setOpen] = useState(false)
+  const { isMobile } = useBreakpoints()
+
+  if (isMobile) {
+    return (
+      <>
+        <ButtonIcon
+          asChild={asChild}
+          onClick={(e) => {
+            if (preventDefault) {
+              e.preventDefault()
+              e.stopPropagation()
+            }
+
+            setOpen(true)
+          }}
+          onPointerDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+          sx={{ p: 0, height: "auto", width: "auto" }}
+        >
+          {children || <TooltipIcon color={iconColor} />}
+        </ButtonIcon>
+
+        <Modal open={open} onOpenChange={setOpen}>
+          <DrawerHeader
+            customTitle=" "
+            title="Tooltip"
+            sx={{ borderBottom: "none" }}
+          />
+          <ModalBody>{text}</ModalBody>
+        </Modal>
+      </>
+    )
+  }
 
   const TriggerComp = asChild ? Trigger : STrigger
 
@@ -55,7 +101,7 @@ export const Tooltip = ({
           e.stopPropagation()
         }}
       >
-        {children || <TooltipIcon />}
+        {children || <TooltipIcon color={iconColor} />}
       </TriggerComp>
       <Portal>
         <SContent

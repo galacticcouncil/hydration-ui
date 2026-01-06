@@ -20,7 +20,7 @@ export const TipInput: React.FC<NumberInputProps> = (props) => {
       onClick={(e) => e.currentTarget.select()}
       allowLeadingZeros={false}
       allowNegative={false}
-      sx={{ borderRadius: "md", maxWidth: 120 }}
+      sx={{ maxWidth: 120 }}
       {...props}
     />
   )
