@@ -1858,10 +1858,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/api-augment/-/api-augment-0.3.1.tgz#a7ee12f92bec7ddd2553d0f185693fb22f29f28c"
   integrity sha512-psIJv4hY/CEz3jXzd/mrRGtCtwmMQtCzi5OwDlJ8wbYtdxScCkIlHfZXRxDjUvgWTgG7xu9TbjeyifsJE6yHqw==
 
-"@galacticcouncil/common@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.1.3.tgz#b2d39ca78ab7f5c29496788a6c607bde618e43df"
-  integrity sha512-7xGCr3O7LZl8zMOuJAkXgLXQlqP4QVV0j6Co8SX3vlQhbVq3qo70Q5V8NslsbQC+uGFWMhNNqsAWOSxpXTUWrQ==
+"@galacticcouncil/common@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.2.0.tgz#ac2035dd52d43d285d4b8ad738d0ed35b899140b"
+  integrity sha512-NAdYVpqOsi+3Ax8hzf0vQPjjmsaDfKZiqlh7u7NQZTXXOPaEX7YCdSt1Kh3R2BVbUs3ci/I8R0vPVKebIyNLow==
   dependencies:
     big.js "^6.2.1"
 
@@ -1935,10 +1935,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
   integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
 
-"@galacticcouncil/sdk-next@^0.24.0":
-  version "0.24.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.24.0.tgz#547e2648a64334ed97e69dfe131426a97e9fe93c"
-  integrity sha512-l/5BCQ6i1J278j4x+LELR+ARccuiH5eBaNJ4Uw8oTY+eWM+WJdrVAdQfqaWBCFAsYSjhNCwEi4AWj3wJMLITpQ==
+"@galacticcouncil/sdk-next@^0.25.0":
+  version "0.25.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.25.0.tgz#866c9d24bd82f586f446ea6ea1736122aadea09a"
+  integrity sha512-BHHz8fQ3KbMlXWoR+EQCz3+QRw8AhT6+jo2dJ+D0L/r2L7LGBBywAljvIzpk4aqH6Kzee+4rEykj4Aji1Ltqcw==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.1.0"
     "@galacticcouncil/math-lbp" "^1.2.0"

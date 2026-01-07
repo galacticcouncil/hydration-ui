@@ -63,7 +63,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     if (!chartContainerRef.current) return
 
     const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
+      autoSize: true,
       height,
       layout: layout(themeProps),
       rightPriceScale,
@@ -107,15 +107,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       )
     }
 
-    const handleResize = () => {
-      chart.applyOptions({
-        width: chartContainerRef.current?.clientWidth,
-      })
-    }
-
-    window.addEventListener("resize", handleResize)
     return () => {
-      window.removeEventListener("resize", handleResize)
       chart.remove()
     }
   }, [data, height, themeProps, type, hidePriceIndicator])

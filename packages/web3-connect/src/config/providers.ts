@@ -34,14 +34,6 @@ export const TALISMAN_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TalismanEvm,
 ]
 
-export const MOBILE_ONLY_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.NovaWallet,
-]
-
-export const DESKTOP_ONLY_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.PolkadotJS,
-]
-
 export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
   WalletProviderType.TalismanEvm,

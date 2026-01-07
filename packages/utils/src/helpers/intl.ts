@@ -53,10 +53,6 @@ export const getMaxSignificantDigits = (
 
   const numberBig = Big(typeof value === "bigint" ? value.toString() : value)
 
-  if (numberBig.lte(0.00001)) {
-    return 1
-  }
-
   if (numberBig.lte(1)) {
     return 4
   }
@@ -125,10 +121,12 @@ export const formatPercent = (
 }
 
 export const formatCurrency = (
-  value: number | bigint | string | null | undefined,
+  _value: number | bigint | string | Big | null | undefined,
   lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
+  const value = typeof _value === "object" ? _value?.toNumber() : _value
+
   if (!isValidNumber(value)) {
     return NA_VALUE
   }

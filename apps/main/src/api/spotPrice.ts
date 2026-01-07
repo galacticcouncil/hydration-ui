@@ -99,7 +99,7 @@ export const getSpotPrice =
       )
 
       if (res) {
-        spotPrice = toDecimal(res.amount.toString(), res.decimals)
+        spotPrice = toDecimal(res.amount, res.decimals)
       }
     } catch (e) {
       return { tokenIn, tokenOut, spotPrice }
