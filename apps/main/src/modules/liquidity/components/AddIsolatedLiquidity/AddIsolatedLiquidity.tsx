@@ -6,6 +6,7 @@ import {
   ModalFooter,
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -253,6 +254,7 @@ const AddLiquiditySummary = ({
   consts: TXYKConsts
   isLoading?: boolean
 }) => {
+  const { isMobile } = useBreakpoints()
   const { t } = useTranslation(["liquidity", "common"])
 
   const tradeFee = calculatePoolFee(consts.fee)
@@ -262,7 +264,9 @@ const AddLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: t("common:minimumReceived"),
+          label: isMobile
+            ? t("liquidity.add.modal.sharesToGet.label.mob")
+            : t("liquidity.add.modal.sharesToGet.label"),
           content: t("liquidity.add.modal.sharesToGet", {
             value: scaleHuman(sharesToGet, meta.decimals),
             percentage: poolShare,

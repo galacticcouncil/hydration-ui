@@ -10,6 +10,7 @@ import {
   Summary,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
@@ -145,6 +146,7 @@ export const AddLiquiditySummary = ({
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { native } = useAssets()
+  const { isMobile } = useBreakpoints()
 
   const { data: feeParameters, isLoading } = useAssetFeeParameters()
   const { price, isLoading: isPriceLoading } = useAssetPrice(meta.id)
@@ -154,7 +156,9 @@ export const AddLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: t("common:minimumReceived"),
+          label: isMobile
+            ? t("liquidity.add.modal.sharesToGet.label.mob")
+            : t("liquidity.add.modal.sharesToGet.label"),
           content: poolShare
             ? t("liquidity.add.modal.sharesToGet", {
                 value: minReceiveAmount,
