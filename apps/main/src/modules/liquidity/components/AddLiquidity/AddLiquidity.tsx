@@ -8,19 +8,19 @@ import {
   ModalHeader,
   Skeleton,
   Summary,
-  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
+import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
-import { useAssetFeeParameters } from "@/api/omnipool"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { AddLiquidityYield } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityYield"
 import {
   TradeLimit,
   TradeLimitType,
@@ -35,7 +35,6 @@ import {
   TAddLiquidityFormValues,
   useAddLiquidity,
 } from "./AddLiqudity.utils"
-import { RewardsAPR } from "./RewardsAPR"
 
 export const AddLiquidity: FC<AddLiquidityProps> = ({
   id,
@@ -137,18 +136,21 @@ export const AddLiquiditySummary = ({
   minReceiveAmount,
   farms,
   healthFactor,
+  stablepoolId,
+  borrowApyData,
 }: {
   meta: TAssetData
   poolShare?: string
   minReceiveAmount: string
   farms: Farm[]
+  stablepoolId?: string
   healthFactor?: HealthFactorResult
+  borrowApyData?: BorrowAssetApyData
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const { native } = useAssets()
   const { isMobile } = useBreakpoints()
 
-  const { data: feeParameters, isLoading } = useAssetFeeParameters()
   const { price, isLoading: isPriceLoading } = useAssetPrice(meta.id)
 
   return (
@@ -172,28 +174,19 @@ export const AddLiquiditySummary = ({
           label: t("common:tradeLimit"),
           content: <TradeLimit type={TradeLimitType.Liquidity} />,
         },
-        ...(farms.length > 0
-          ? [
-              {
-                label: t("liquidity.add.modal.rewardsAPR"),
-                content: <RewardsAPR farms={farms} />,
-              },
-            ]
-          : []),
         {
-          label: t("common:apy"),
-          content: isLoading ? (
-            <Skeleton width={100} height="100%" />
-          ) : meta.id === native.id || !feeParameters ? (
-            "--"
-          ) : (
-            <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-              {t("liquidity.add.modal.rewardsFromFees.value", {
-                from: feeParameters.minFee * 100,
-                to: feeParameters.maxFee * 100,
-              })}
-            </Text>
-          ),
+          label: t("common:yield"),
+          content:
+            meta.id === native.id ? (
+              "--"
+            ) : (
+              <AddLiquidityYield
+                omnipoolId={meta.id}
+                stablepoolId={stablepoolId}
+                farms={farms}
+                borrowApyData={borrowApyData}
+              />
+            ),
         },
         {
           label: t("common:price"),

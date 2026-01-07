@@ -18,7 +18,6 @@ import {
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import Big from "big.js"
 import { useEffect } from "react"
 import { Controller, useFieldArray, useFormContext } from "react-hook-form"
 import { FormProvider } from "react-hook-form"
@@ -26,14 +25,14 @@ import { useTranslation } from "react-i18next"
 
 import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
+import { useBorrowAssetsApy } from "@/api/borrow"
 import { Farm } from "@/api/farms"
-import { useAssetFeeParameters } from "@/api/omnipool"
 import { spotPriceQuery } from "@/api/spotPrice"
-import { useStableswap, useStableSwapTradability } from "@/api/stableswap"
+import { useStableSwapTradability } from "@/api/stableswap"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { getCustomErrors } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import { AddLiquiditySummary } from "@/modules/liquidity/components/AddLiquidity/AddLiquidity"
-import { RewardsAPR } from "@/modules/liquidity/components/AddLiquidity/RewardsAPR"
+import { AddLiquidityYield } from "@/modules/liquidity/components/AddLiquidity/AddLiquidityYield"
 import {
   TAddMoneyMarketLiquidityWrapperReturn,
   useAddMoneyMarketLiquidity,
@@ -56,7 +55,6 @@ import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { AddLiquidityProps } from "@/routes/liquidity/$id.add"
 import { useAccountBalances } from "@/states/account"
-import { scaleHuman } from "@/utils/formatting"
 
 import {
   addStablepoolOptions,
@@ -352,29 +350,18 @@ export const AddStablepoolLiquidityForm = ({
 
         <ModalContentDivider />
 
-        {option === "omnipool" && erc20Id ? (
-          <AddLiquiditySummary
-            meta={meta}
-            minReceiveAmount={minReceiveAmount}
-            farms={activeFarms}
-            healthFactor={healthFactor}
-          />
-        ) : (
-          <AddStablepoolLiquiditySummary
-            farms={activeFarms}
-            minReceiveAmount={minReceiveAmount}
-            selectedAssetId={!split ? selectedAssetId : undefined}
-            poolMeta={meta}
-            limitType={
-              erc20Id && !split
-                ? TradeLimitType.Trade
-                : TradeLimitType.Liquidity
-            }
-            healthFactor={healthFactor}
-            erc20Id={erc20Id}
-            option={option}
-          />
-        )}
+        <AddStablepoolLiquiditySummary
+          farms={joinFarmErrorMessage ? [] : activeFarms}
+          minReceiveAmount={minReceiveAmount}
+          selectedAssetId={!split ? selectedAssetId : undefined}
+          poolMeta={meta}
+          limitType={
+            erc20Id && !split ? TradeLimitType.Trade : TradeLimitType.Liquidity
+          }
+          healthFactor={healthFactor}
+          erc20Id={erc20Id}
+          option={option}
+        />
 
         {customErrors?.cap ? (
           <Alert
@@ -436,18 +423,32 @@ const AddStablepoolLiquiditySummary = ({
   option: TAddStablepoolLiquidityOption
 }) => {
   const rpc = useRpcProvider()
-  const { getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback, getErc20AToken } = useAssets()
   const { t } = useTranslation(["liquidity", "common"])
-  const { data: stableswap, isLoading: isStableswapFeeLoading } = useStableswap(
-    poolMeta.id,
-  )
-  const { data: feeParameters, isLoading: isFeeLoading } =
-    useAssetFeeParameters()
+
   const { data: spotPriceData, isLoading: isPriceLoading } = useQuery(
     spotPriceQuery(rpc, erc20Id ?? poolMeta.id, selectedAssetId ?? ""),
   )
-  const erc20Meta = erc20Id ? getAssetWithFallback(erc20Id) : undefined
-  const stableswapFee = scaleHuman(stableswap?.fee ?? 0, 4)
+
+  const erc20Meta = erc20Id ? getErc20AToken(erc20Id) : undefined
+  const { data: borrowApy } = useBorrowAssetsApy(
+    erc20Meta ? [erc20Meta.underlyingAssetId] : [],
+  )
+
+  const borrowApyData = borrowApy?.[0]
+
+  if (erc20Meta && option === "omnipool") {
+    return (
+      <AddLiquiditySummary
+        meta={poolMeta}
+        minReceiveAmount={minReceiveAmount}
+        farms={farms}
+        healthFactor={healthFactor}
+        stablepoolId={erc20Meta.underlyingAssetId}
+        borrowApyData={borrowApyData}
+      />
+    )
+  }
 
   return (
     <Summary
@@ -463,35 +464,17 @@ const AddStablepoolLiquiditySummary = ({
           label: t("common:tradeLimit"),
           content: <TradeLimit key={limitType} type={limitType} />,
         },
-        ...(farms.length > 0
-          ? [
-              {
-                label: t("liquidity.add.modal.rewardsAPR"),
-                content: <RewardsAPR farms={farms} />,
-              },
-            ]
-          : []),
         {
-          label: t("common:apy"),
-          loading: isFeeLoading || isStableswapFeeLoading,
+          label: t("common:yield"),
           content: (
-            <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-              {option === "omnipool"
-                ? t("liquidity.add.modal.rewardsFromFees.value", {
-                    from: Big(stableswapFee).plus(
-                      Big(feeParameters?.minFee ?? 0).times(100),
-                    ),
-                    to: Big(stableswapFee).plus(
-                      Big(feeParameters?.maxFee ?? 0).times(100),
-                    ),
-                  })
-                : t("common:percent", {
-                    value: stableswapFee,
-                  })}
-            </Text>
+            <AddLiquidityYield
+              stablepoolId={poolMeta.id}
+              omnipoolId={option === "omnipool" ? poolMeta.id : undefined}
+              farms={farms}
+              borrowApyData={borrowApyData}
+            />
           ),
         },
-
         ...(selectedAssetId
           ? [
               {
