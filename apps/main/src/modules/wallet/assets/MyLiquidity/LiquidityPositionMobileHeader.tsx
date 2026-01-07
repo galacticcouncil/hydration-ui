@@ -62,7 +62,7 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
           />
           <Text fs="p6" color={getToken("text.tint.secondary")}>
             {aprsByRewardAsset
-              .map((apr) => t("percent", { value: apr.totalApr }))
+              .map(({ apr }) => t("percent", { value: apr }))
               .join(" + ")}
           </Text>
         </Flex>
@@ -118,7 +118,7 @@ export const XYKLiquidityPositionMobileHeader = ({
           />
           <Text fs="p6" color={getToken("text.tint.secondary")}>
             {aprsByRewardAsset
-              .map((apr) => t("percent", { value: apr.totalApr }))
+              .map(({ apr }) => t("percent", { value: apr }))
               .join(" + ")}
           </Text>
         </Flex>

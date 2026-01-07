@@ -47,7 +47,7 @@ export const OmnipoolPositions = ({
     position: OmnipoolDepositFullWithData | OmnipoolPosition
   } | null>(null)
   const previousSelectedPosition = usePrevious(selectedPosition)
-  const columns = useOmnipoolPositionsTableColumns(isFarms)
+  const columns = useOmnipoolPositionsTableColumns()
   const position = selectedPosition ?? previousSelectedPosition
   const { isMobile } = useBreakpoints()
 
