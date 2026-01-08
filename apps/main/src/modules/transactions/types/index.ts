@@ -1,9 +1,13 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { tx } from "@galacticcouncil/sdk-next"
-import { Call } from "@galacticcouncil/xcm-sdk"
+import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
+import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
+import { Call } from "@galacticcouncil/xc-sdk"
 import { InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
 import { Subscription } from "rxjs"
 import { TransactionReceipt } from "viem"
+
+import { TFinalizedResult, TSuccessResult } from "@/states/transactions"
 
 export type AnyPapiTx = tx.Transaction
 export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
@@ -23,9 +27,9 @@ export type TxMortalityPeriod = 32 | 64 | 128 | 256 | 512 | 1024
 
 export type TxStatusCallbacks = {
   onSubmitted: (txHash: string) => void
-  onSuccess: (event: TxBestBlocksStateResult | TransactionReceipt) => void
+  onSuccess: (event: TSuccessResult) => void
   onError: (error: string) => void
-  onFinalized: (event: TxFinalizedResult | TransactionReceipt) => void
+  onFinalized: (event: TFinalizedResult) => void
 }
 
 export type TxOptions = TxStatusCallbacks & {
@@ -51,7 +55,12 @@ export type TxFinalizedResult = Extract<
   { type: "finalized"; found: true; ok: true }
 >
 
-export type TxResult = Subscription | TransactionReceipt | void
+export type TxResult =
+  | Subscription
+  | TransactionReceipt
+  | SolanaTxStatus
+  | SuiTxStatus
+  | void
 
 export type TxSignAndSubmitFn<T = unknown, S = unknown> = (
   tx: T,

@@ -1,5 +1,5 @@
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { EvmParachain } from "@galacticcouncil/xcm-core"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { EvmParachain } from "@galacticcouncil/xc-core"
 
 export enum ChainId {
   hydration = 222222,
@@ -40,7 +40,7 @@ export type NetworkConfig = {
   }
 }
 
-const hydration = (chainsMap.get("hydration") as EvmParachain).client.chain
+const hydration = (chainsMap.get("hydration") as EvmParachain).evmClient.chain
 
 export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
 

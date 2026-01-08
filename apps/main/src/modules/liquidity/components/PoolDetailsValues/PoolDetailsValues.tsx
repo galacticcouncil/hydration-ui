@@ -1,4 +1,4 @@
-import { XykMath } from "@galacticcouncil/sdk"
+import { pool } from "@galacticcouncil/sdk-next"
 import {
   Flex,
   Separator,
@@ -128,7 +128,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
   const priceA =
     assetA && assetB
       ? scaleHuman(
-          XykMath.getSpotPrice(
+          pool.xyk.XykMath.getSpotPrice(
             assetA.balance.toString(),
             assetB.balance.toString(),
             scale(1, assetA.decimals ?? 0),
@@ -140,7 +140,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
   const priceB =
     assetA && assetB
       ? scaleHuman(
-          XykMath.getSpotPrice(
+          pool.xyk.XykMath.getSpotPrice(
             assetB.balance.toString(),
             assetA.balance.toString(),
             scale(1, assetB.decimals ?? 0),

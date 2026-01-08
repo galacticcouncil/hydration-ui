@@ -1,4 +1,5 @@
-import { CallType } from "@galacticcouncil/xcm-core"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
@@ -75,7 +76,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const toasts = useTransactionToasts(transaction, ecosystem)
 
   const { data: fee, isLoading: isLoadingFeeEstimate } = useEstimateFee(
-    transaction.tx,
+    transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+      ? transaction.tx
+      : null,
     transaction?.fee?.feePaymentAssetId,
   )
 

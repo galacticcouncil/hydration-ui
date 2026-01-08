@@ -104,7 +104,7 @@ const ErrorCopyButton = () => {
         copy(
           stringifyErrorContext({
             message: error ?? "",
-            address: account?.address ?? "",
+            address: account?.rawAddress ?? "",
             wallet: account?.provider ?? "",
             feePaymentAsset: `${getAssetWithFallback(feeAssetId).symbol} (${feeAssetId})`,
             specVersion:

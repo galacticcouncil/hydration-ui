@@ -1,7 +1,8 @@
-import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
+import { isH160Address, safeConvertAddressSS58 } from "@galacticcouncil/utils"
 import {
   connectInjectedExtension,
   InjectedExtension,
+  InjectedPolkadotAccount,
   PolkadotSigner,
 } from "polkadot-api/pjs-signer"
 
@@ -81,7 +82,7 @@ export class BaseSubstrateWallet implements Wallet {
         )
       }
 
-      const accounts = rawExtension.getAccounts()
+      const accounts = rawExtension.getAccounts().filter(this.accountFilter)
 
       if (!accounts.length) {
         throw new AuthError(
@@ -107,18 +108,22 @@ export class BaseSubstrateWallet implements Wallet {
         this,
       )
     }
-    const accounts = this._extension.getAccounts()
-    // @ts-expect-error Papi types dont expect ethereum accounts from substrate wallets,
-    // but it can happen in Talisman or SubWallet
-    return accounts.filter(({ type }) => type !== "ethereum")
+
+    return this._extension.getAccounts()
+  }
+
+  accountFilter = (account: InjectedPolkadotAccount) => {
+    return !!account
   }
 
   getAccounts = async (): Promise<WalletAccount[]> => {
     const accounts = this.getInjectedAccounts()
-    const accountsWithWallet = accounts.map(
+    const accountsWithWallet = accounts.filter(this.accountFilter).map(
       (account) =>
         ({
-          address: safeConvertAddressSS58(account.address),
+          address: isH160Address(account.address)
+            ? account.address
+            : safeConvertAddressSS58(account.address),
           name: account.name ?? "",
           provider: this.provider,
         }) satisfies WalletAccount,
@@ -135,13 +140,15 @@ export class BaseSubstrateWallet implements Wallet {
       )
     }
     const unsubscribe = this._extension.subscribe((accounts) => {
-      const accountsWithWallet = accounts.map((account) => {
-        return {
-          address: account.address,
-          name: account.name ?? "",
-          provider: this.provider,
-        }
-      })
+      const accountsWithWallet = accounts
+        .filter(this.accountFilter)
+        .map((account) => {
+          return {
+            address: account.address,
+            name: account.name ?? "",
+            provider: this.provider,
+          }
+        })
       callback(accountsWithWallet)
     })
 

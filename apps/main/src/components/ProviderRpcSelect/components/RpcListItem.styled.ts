@@ -66,7 +66,7 @@ export const SRpcRadio = styled.div(
     background: ${theme.controls.dim.base};
     border: 1px solid ${theme.controls.outline.base};
 
-    transition: all ${theme.transitions.colors};
+    transition: ${theme.transitions.colors};
     flex-shrink: 0;
   `,
 )

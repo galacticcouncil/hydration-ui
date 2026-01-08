@@ -1,7 +1,9 @@
-import { H160, isEvmAddress } from "@galacticcouncil/sdk"
+import { h160 } from "@galacticcouncil/common"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { Binary } from "polkadot-api"
+
+const { H160, isEvmAddress } = h160
 
 export const isBinary = (value: unknown): value is Binary =>
   value instanceof Binary

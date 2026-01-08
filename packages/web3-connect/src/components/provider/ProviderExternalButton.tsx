@@ -39,6 +39,7 @@ export const ProviderExternalButton = () => {
       }}
       isConnected={isConnected}
       accountCount={accountCount}
+      actionLabel={isConnected ? "Disconnect" : "Continue"}
     />
   )
 }
