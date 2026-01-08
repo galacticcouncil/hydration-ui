@@ -1,3 +1,4 @@
+import { ClassNames } from "@emotion/react"
 import {
   Box,
   Flex,
@@ -147,10 +148,15 @@ export const StakingDashboard: FC = () => {
         columnGap={20}
         align="start"
       >
-        <SectionHeader
-          sx={{ gridColumn: "1/-1" }}
-          title={t("dashboard.title")}
-        />
+        <ClassNames>
+          {({ css }) => (
+            <SectionHeader
+              containerClassName={css({ gridColumn: "1/-1" })}
+              title={t("dashboard.title")}
+            />
+          )}
+        </ClassNames>
+
         <Paper>
           {isLoading ? (
             <>
