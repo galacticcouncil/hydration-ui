@@ -54,6 +54,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
     isJoinFarms,
     canAddLiquidity,
     underlyingAssetMeta,
+    healthFactor,
   } = useAddLiquidity({ poolId: id, onSubmitted })
 
   const { formState, handleSubmit } = form
@@ -86,7 +87,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
               liquidityShares?.minSharesToGet ?? "0",
               poolMeta.decimals,
             )}
-            farms={activeFarms}
+            farms={joinFarmErrorMessage ? [] : activeFarms}
+            healthFactor={healthFactor}
           />
 
           {customErrors?.cap ? (
