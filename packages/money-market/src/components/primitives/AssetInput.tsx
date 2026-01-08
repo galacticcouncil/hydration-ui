@@ -8,7 +8,6 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 import { useState } from "react"
 
 import { ReserveLogo } from "@/components/primitives/ReserveLogo"
@@ -73,9 +72,7 @@ export const AssetInput = <T extends Asset = Asset>({
         label="Amount"
         symbol={symbol}
         value={value}
-        maxBalance={Big(maxValue || 0)
-          .round(6, Big.roundDown)
-          .toString()}
+        maxBalance={maxValue}
         selectedAssetIcon={<ReserveLogo address={asset.address} />}
         onAsssetBtnClick={
           hasMultipleAssets ? () => setIsAssetSelectOpen(true) : undefined

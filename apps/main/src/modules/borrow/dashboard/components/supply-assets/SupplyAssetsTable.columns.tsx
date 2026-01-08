@@ -50,7 +50,6 @@ export const useSupplyAssetsTableColumns = (
   return useMemo(() => {
     const assetColumn = columnHelper.accessor("symbol", {
       header: isMobile ? "" : t("asset"),
-      size: isBaseAssetType ? undefined : 210,
       cell: ({ row }) => {
         if (isBaseAssetType) {
           const assetId = isGho(row.original)
@@ -88,10 +87,10 @@ export const useSupplyAssetsTableColumns = (
         sx: {
           textAlign: "right",
         },
-        visibility: isBaseAssetType ? undefined : [],
       },
 
       cell: ({ row }) => {
+        if (!isBaseAssetType) return null
         const { walletBalance, walletBalanceUSD } = row.original
 
         return (
