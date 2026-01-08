@@ -46,7 +46,11 @@ export const RewardsList: FC<Props> = ({
   return (
     <Box>
       <Flex
-        sx={{ borderBottomLeftRadius: 0, borderBottomRightRadius: 0 }}
+        sx={{
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          borderBottom: "none",
+        }}
         px={getTokenPx("containers.paddings.primary")}
         py={getTokenPx("containers.paddings.primary")}
         bg={getToken("surfaces.containers.mid.primary")}
@@ -121,10 +125,16 @@ export const RewardsList: FC<Props> = ({
         <RewardsCurve />
       </Flex>
       <Flex
-        sx={{ borderTopLeftRadius: 0, borderTopRightRadius: 0 }}
-        px={getTokenPx("containers.paddings.primary")}
-        py={getTokenPx("containers.paddings.tertiary")}
-        bg={getToken("accents.info.primary")}
+        sx={{
+          borderTopLeftRadius: 0,
+          borderTopRightRadius: 0,
+          borderTop: "none",
+        }}
+        p={getTokenPx("containers.paddings.primary")}
+        bg={getToken("surfaces.containers.dim.dimOnBg")}
+        borderStyle="solid"
+        borderColor={getToken("buttons.secondary.low.onOutline")}
+        borderWidth={1}
         borderRadius={getTokenPx("containers.cornerRadius.containersPrimary")}
         align="center"
         justify="space-between"
@@ -138,7 +148,7 @@ export const RewardsList: FC<Props> = ({
           disabled={Big(claimableRewards).lte(0)}
           onClick={() => setClaimModal(true)}
         >
-          {t("claim")}
+          {t("staking:dashboard.remainder.cta")}
         </Button>
       </Flex>
       <Modal open={claimModal} onOpenChange={setClaimModal}>

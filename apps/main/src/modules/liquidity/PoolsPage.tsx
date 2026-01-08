@@ -128,12 +128,7 @@ export const IsolatedPoolsTable = ({
         pb={getTokenPx("scales.paddings.m")}
         sx={{ minHeight: [54, 62] }}
       >
-        <SectionHeader
-          sx={{
-            p: [0, 0],
-          }}
-          title={t("section.isolatedPools")}
-        />
+        <SectionHeader title={t("section.isolatedPools")} />
         <Button asChild>
           <Link to="/liquidity/create">
             <Icon component={Plus} size={14} />

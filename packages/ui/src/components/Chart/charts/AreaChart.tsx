@@ -48,6 +48,9 @@ type AreaChartOwnProps<TData extends TChartData> = {
   withoutTooltip?: boolean
   withoutActiveDot?: boolean
   legend?: ReactNode
+  gridStroke?: string
+  gridOpacity?: number
+  gridStrokeDasharray?: string
 }
 
 export type AreaChartProps<TData extends TChartData> =
@@ -80,6 +83,9 @@ export function AreaChart<TData extends TChartData>({
   withoutReferenceLine,
   withoutTooltip,
   legend,
+  gridStroke,
+  gridOpacity,
+  gridStrokeDasharray,
   withoutActiveDot,
 }: AreaChartProps<TData>) {
   const { series, xAxisKey } = getConfigWithDefaults(config)
@@ -136,9 +142,10 @@ export function AreaChart<TData extends TChartData>({
           shapeRendering="crispEdges"
           horizontalValues={gridHorizontalValues}
           verticalValues={gridVerticalValues}
-          stroke={theme.text.low}
-          opacity={0.15}
+          stroke={gridStroke ?? theme.text.low}
+          opacity={gridOpacity ?? 0.15}
           strokeWidth={1}
+          strokeDasharray={gridStrokeDasharray}
         />
         <XAxis
           dataKey={xAxisKey}

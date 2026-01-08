@@ -30,6 +30,7 @@ type ValueStatsProps = {
   readonly customBottomLabel?: ReactNode
   readonly isLoading?: boolean
   readonly className?: string
+  readonly containerClassName?: string
 }
 
 export const ValueStats: FC<ValueStatsProps> = ({
@@ -44,13 +45,14 @@ export const ValueStats: FC<ValueStatsProps> = ({
   customBottomLabel,
   isLoading,
   className,
+  containerClassName,
 }) => {
   const shouldWrap = useResponsiveValue(wrap, false)
 
   return (
     <SValueStats shouldWrap={shouldWrap} size={size} className={className}>
       {customLabel ?? <SValueStatsLabel>{label}</SValueStatsLabel>}
-      <SValueStatsValueContainer size={size}>
+      <SValueStatsValueContainer size={size} className={containerClassName}>
         {isLoading ? (
           <SValueStatsValue font={font} size={size}>
             <Skeleton width={120} height="100%" />
