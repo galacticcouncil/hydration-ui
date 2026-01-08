@@ -57,7 +57,10 @@ export const useBorrowedAssetsTableColumns = () => {
             value={t("number", {
               value: totalBorrows,
             })}
-            displayValue={t("currency", { value: totalBorrowsUSD })}
+            displayValue={t("currency", {
+              value: totalBorrowsUSD,
+              maximumFractionDigits: 2,
+            })}
           />
         )
       },

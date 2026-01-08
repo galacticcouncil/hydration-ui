@@ -98,7 +98,10 @@ export const useSupplyAssetsTableColumns = (
             value={t("number", {
               value: walletBalance,
             })}
-            displayValue={t("currency", { value: walletBalanceUSD })}
+            displayValue={t("currency", {
+              value: walletBalanceUSD,
+              maximumFractionDigits: 2,
+            })}
           />
         )
       },
