@@ -12,11 +12,12 @@ import { SAccountTileContainer } from "./AccountTile.styled"
 type Props = {
   readonly name: string
   readonly address: string
-  readonly value: string
+  readonly value?: string
   readonly active?: boolean
   readonly label?: string
   readonly className?: string
   readonly walletLogoSrc?: string
+  readonly shortenAddress?: boolean
   readonly onClick?: () => void
 }
 
@@ -29,6 +30,7 @@ export const AccountTile: FC<Props> = ({
   className,
   walletLogoSrc,
   onClick,
+  shortenAddress = true,
 }) => {
   return (
     <Flex
@@ -48,7 +50,7 @@ export const AccountTile: FC<Props> = ({
         isInteractive={!!onClick}
       >
         <AccountAvatar address={address} />
-        <Flex direction="column" gap={4}>
+        <Flex direction="column" gap={4} sx={{ minWidth: 0 }}>
           <Flex gap={4} align="center">
             {walletLogoSrc && <Logo size="extra-small" src={walletLogoSrc} />}
             <Text
@@ -62,14 +64,16 @@ export const AccountTile: FC<Props> = ({
             </Text>
           </Flex>
           <Flex gap={2}>
-            <Text fs="p5" lh={px(15)} color={getToken("text.medium")}>
-              {shortenAccountAddress(address)}
+            <Text fs="p5" lh={px(15)} truncate color={getToken("text.medium")}>
+              {shortenAddress ? shortenAccountAddress(address) : address}
             </Text>
           </Flex>
         </Flex>
-        <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
-          {value}
-        </Text>
+        {value && (
+          <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
+            {value}
+          </Text>
+        )}
       </SAccountTileContainer>
     </Flex>
   )

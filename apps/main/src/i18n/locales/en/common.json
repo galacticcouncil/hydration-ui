@@ -177,6 +177,8 @@
   "navigation.wallet.title": "Wallet",
   "navigation.walletAssets.title": "Overview",
   "navigation.walletTransactions.title": "Transactions",
+  "navigation.deposit.title": "Deposit",
+  "navigation.deposit.description": "Deposit your asssets to Hydration",
   "remove": "Remove",
   "rpc.change.modal.autoMode.desc": "Enabling this will automatically switch RPCs when one of active ones is unavailable.",
   "rpc.change.modal.autoMode.title": "Auto-connect to working RPC",
