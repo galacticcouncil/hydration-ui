@@ -1,27 +1,35 @@
 import { SubScan } from "@galacticcouncil/ui/assets/icons"
-import { ExternalLink, Flex, Icon } from "@galacticcouncil/ui/components"
+import {
+  ButtonIcon,
+  ExternalLink,
+  Flex,
+  Icon,
+} from "@galacticcouncil/ui/components"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { registryErrorQuery } from "@/api/registry"
 import {
   TransactionStatus,
   TransactionStatusMessage,
 } from "@/components/TransactionItem/TransactionStatus"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type StatusProps =
-  | {
-      readonly status: TransactionStatusVariant.Pending
-    }
   | {
       readonly status: TransactionStatusVariant.Success
       readonly sent: string
       readonly received: string
     }
   | {
-      readonly status: TransactionStatusVariant.Warning
+      readonly status: Exclude<
+        TransactionStatusVariant,
+        TransactionStatusVariant.Success
+      >
     }
 
 type Props = StatusProps & {
@@ -29,6 +37,7 @@ type Props = StatusProps & {
   readonly message?: string
   readonly link?: string | null
   readonly className?: string
+  readonly errorState?: unknown
 }
 
 export const TransactionItemMobile: FC<Props> = ({
@@ -36,14 +45,20 @@ export const TransactionItemMobile: FC<Props> = ({
   message,
   link,
   className,
+  errorState,
   ...statusProps
 }) => {
   const { t } = useTranslation()
+  const rpc = useRpcProvider()
+
+  const { data: error } = useQuery(registryErrorQuery(rpc, errorState))
 
   const [sent, received] =
     statusProps.status === TransactionStatusVariant.Success
       ? [statusProps.sent, statusProps.received]
       : [null, null]
+
+  const errorMessage = error?.docs.join(" ")
 
   return (
     <Flex
@@ -71,20 +86,26 @@ export const TransactionItemMobile: FC<Props> = ({
           <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
             {received ?? "⎯"}
           </Text>
-          <TransactionStatus variant={statusProps.status} />
-          {message && (
-            <TransactionStatusMessage
-              variant={statusProps.status}
-              sx={{ maxWidth: "200px", textAlign: "end" }}
-            >
-              {message}
-            </TransactionStatusMessage>
-          )}
+          <TransactionStatus
+            variant={statusProps.status}
+            apiRegistryError={error}
+          />
+          {message ||
+            (errorMessage && (
+              <TransactionStatusMessage
+                variant={statusProps.status}
+                sx={{ maxWidth: "200px", textAlign: "end" }}
+              >
+                {message || errorMessage}
+              </TransactionStatusMessage>
+            ))}
         </Flex>
         {link && (
-          <ExternalLink href={link}>
-            <Icon size={14} component={SubScan} color="#FEFEFE" />
-          </ExternalLink>
+          <ButtonIcon asChild>
+            <ExternalLink href={link}>
+              <Icon size={14} component={SubScan} color="#FEFEFE" />
+            </ExternalLink>
+          </ButtonIcon>
         )}
       </Flex>
     </Flex>

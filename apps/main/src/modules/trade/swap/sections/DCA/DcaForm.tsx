@@ -97,7 +97,7 @@ export const DcaForm: FC = () => {
             label={t("trade:dca.assetOut.title")}
             hideInput
             ignoreBalance
-            error={fieldState.error?.message}
+            assetError={fieldState.error?.message}
           />
         )}
       />

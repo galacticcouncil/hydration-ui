@@ -21,6 +21,7 @@ import { MarketSummary } from "@/modules/trade/swap/sections/Market/Summary/Mark
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
+import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
@@ -104,6 +105,9 @@ export const Market: FC = () => {
   const isFormValid = isTradeEnabled && form.formState.isValid
   const isSubmitEnabled = isFormValid && isHealthFactorCheckSatisfied
 
+  const isHealthFactorShown =
+    form.formState.errors.sellAmount?.message !== maxBalanceError
+
   return (
     <FormProvider {...form}>
       <form
@@ -148,7 +152,7 @@ export const Market: FC = () => {
           swapTx={swapTx}
           twap={twap}
           twapTx={twapTx}
-          healthFactor={healthFactor}
+          healthFactor={isHealthFactorShown ? healthFactor : undefined}
           isLoading={
             isHealthFactorLoading ||
             (isSingleTrade ? isSwapLoading : isTwapLoading)

@@ -14,10 +14,10 @@ export const PastExecutionsListHeader: FC = () => {
       px={getTokenPx("containers.paddings.secondary")}
     >
       <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
-        {t("received")}/{t("date")}
+        {t("price")}/{t("date")}
       </Text>
       <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
-        {t("price")}/{t("status")}
+        {t("received")}/{t("status")}
       </Text>
     </Flex>
   )

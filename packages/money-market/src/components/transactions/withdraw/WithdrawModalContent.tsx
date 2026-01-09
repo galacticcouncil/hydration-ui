@@ -124,7 +124,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
             <span>Supply balance</span>
           )
         }
-        error={
+        amountError={
           isMaxExceeded ? "Insufficient balance on your account." : errorText
         }
       />

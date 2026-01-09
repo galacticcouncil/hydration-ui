@@ -12,6 +12,7 @@ import { isArray } from "remeda"
 
 import {
   AssetInput,
+  AssetInputProps,
   HealthFactorChange,
   HealthFactorRiskWarning,
 } from "@/components/primitives"
@@ -111,13 +112,15 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     blockingError = ErrorType.BORROWING_NOT_AVAILABLE
   }
 
-  const handleBlocked = () => {
+  const handleBlocked = (): Partial<AssetInputProps> => {
     switch (blockingError) {
       case ErrorType.BORROWING_NOT_AVAILABLE:
-        return `Borrowing is currently unavailable for ${poolReserve.symbol}.`
+        return {
+          assetError: `Borrowing is currently unavailable for ${poolReserve.symbol}.`,
+        }
 
       default:
-        return
+        return {}
     }
   }
 
@@ -143,7 +146,7 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         isMaxSelected={isMaxSelected}
         maxValue={maxAmountToBorrow}
         balanceText="Available"
-        error={handleBlocked()}
+        {...handleBlocked()}
       />
 
       <Separator mx="var(--modal-content-inset)" />

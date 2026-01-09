@@ -6,6 +6,7 @@ import {
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory, hasOwn } from "@galacticcouncil/utils"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createClient, PolkadotClient } from "polkadot-api"
@@ -39,6 +40,7 @@ export type TProviderData = {
   dataEnv: TDataEnv
   slotDurationMs: number
   metadata: AssetMetadataFactory
+  apiRegistry: ApiPromise["registry"]
 }
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
@@ -71,7 +73,9 @@ export const providerQuery = (rpcUrlList: string[]) => {
   })
 }
 
-const getProviderData = async (rpcUrlList: string[] = []) => {
+const getProviderData = async (
+  rpcUrlList: string[] = [],
+): Promise<TProviderData> => {
   let endpoint = ""
   const ws = api.getWs(rpcUrlList, {
     onStatusChanged: (status) => {
@@ -79,6 +83,10 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
         endpoint = status.uri
       }
     },
+  })
+
+  const apiPromise = await ApiPromise.create({
+    provider: new WsProvider("wss://rpc.hydradx.cloud"),
   })
 
   const papiClient = createClient(ws)
@@ -116,7 +124,8 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
-  } satisfies TProviderData
+    apiRegistry: apiPromise.registry,
+  }
 }
 
 export const useSquidUrl = (): string => {
