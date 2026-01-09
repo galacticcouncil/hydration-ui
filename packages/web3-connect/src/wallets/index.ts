@@ -3,51 +3,86 @@ import { pick } from "remeda"
 import { WalletProviderType } from "@/config/providers"
 import { Wallet, WalletData } from "@/types/wallet"
 import { AlephZero } from "@/wallets/AlephZeroSigner"
+import { BraveWallet, BraveWalletSol } from "@/wallets/BraveWallet"
 import { Enkrypt } from "@/wallets/Enkrypt"
 import { ExternalWallet } from "@/wallets/ExternalWallet"
 import { FearlessWallet } from "@/wallets/FearlessWallet"
 import { MantaWallet } from "@/wallets/MantaWallet"
 import { MetaMask } from "@/wallets/MetaMask"
 import { NovaWallet } from "@/wallets/NovaWallet"
+import { Phantom, PhantomSui } from "@/wallets/Phantom"
 import { PolkadotJS } from "@/wallets/PolkadotJS"
 import { PolkaGate } from "@/wallets/PolkaGate"
 import { RabbyWallet } from "@/wallets/RabbyWallet"
-import { SubWallet, SubWalletEvm } from "@/wallets/SubWallet"
-import { Talisman, TalismanEvm } from "@/wallets/Talisman"
+import { Slush } from "@/wallets/Slush"
+import { Solflare } from "@/wallets/Solflare"
+import { SubWallet, SubWalletEvm, SubWalletH160 } from "@/wallets/SubWallet"
+import { Suiet } from "@/wallets/Suiet"
+import { Talisman, TalismanEvm, TalismanH160 } from "@/wallets/Talisman"
 
 export {
   AlephZero,
+  BraveWallet,
+  BraveWalletSol,
   Enkrypt,
   ExternalWallet,
   FearlessWallet,
   MantaWallet,
   MetaMask,
   NovaWallet,
+  Phantom,
+  PhantomSui,
   PolkadotJS,
   PolkaGate,
   RabbyWallet,
+  Slush,
+  Solflare,
   SubWallet,
   SubWalletEvm,
+  SubWalletH160,
+  Suiet,
   Talisman,
   TalismanEvm,
+  TalismanH160,
 }
 
 const wallets = [
+  // Substrate
+  new PolkadotJS(),
+  new NovaWallet(),
+  new Talisman(),
+  new SubWallet(),
   new AlephZero(),
   new Enkrypt(),
-  new ExternalWallet(),
   new FearlessWallet(),
   new MantaWallet(),
-  new MetaMask(),
-  new NovaWallet(),
   new PolkaGate(),
-  new PolkadotJS(),
-  new RabbyWallet(),
-  new SubWallet(),
-  new SubWalletEvm(),
-  new Talisman(),
+
+  // Substrate H160
+  new SubWalletH160(),
+  new TalismanH160(),
+
+  // EVM
+  new MetaMask(),
+  new BraveWallet(),
   new TalismanEvm(),
+  new SubWalletEvm(),
+  new RabbyWallet(),
+
+  // Solana
+  new Phantom(),
+  new Solflare(),
+  new BraveWalletSol(),
+
+  // Sui
+  new Suiet(),
+  new Slush(),
+  new PhantomSui(),
+
+  // Other
+  new ExternalWallet(),
 ]
+
 export function getWallets(): Wallet[] {
   return wallets
 }

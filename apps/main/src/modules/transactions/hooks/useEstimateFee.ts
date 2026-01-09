@@ -40,6 +40,8 @@ export const useEstimateFee = (
   return useQuery({
     enabled:
       isLoaded &&
+      !!tx &&
+      !!feeAsset &&
       !isLoadingFeePaymentAssetId &&
       !isBalanceLoading &&
       isSS58Address(address),
