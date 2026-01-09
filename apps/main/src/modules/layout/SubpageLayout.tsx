@@ -85,13 +85,13 @@ export const SubpageLayout: FC<Props> = ({
 
 const SubpageLayoutBottomSeparator = styled(Separator)(
   ({ theme }) => css`
-    position: "relative";
-    left: "50%";
-    right: "50%";
-    margin-left: "-50vw";
-    margin-right: "-50vw";
-    width: "100vw";
-    max-width: "100vw";
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    width: 100vw;
+    max-width: 100vw;
 
     margin-top: 8px;
     margin-bottom: ${theme.scales.paddings.xxl}px;
