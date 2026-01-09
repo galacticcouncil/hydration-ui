@@ -18,7 +18,6 @@ import {
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect } from "react"
 import { Controller, useFieldArray, useFormContext } from "react-hook-form"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -159,6 +158,7 @@ export const AddStablepoolLiquidityForm = ({
   isJoinFarms,
   healthFactor,
   reserveIds,
+  poolShare,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -182,12 +182,6 @@ export const AddStablepoolLiquidityForm = ({
   const customErrors = getCustomErrors(formState.errors.sharesAmount)
 
   const isSubmitDisabled = !formState.isValid
-
-  useEffect(() => {
-    setValue("sharesAmount", minReceiveAmount, {
-      shouldValidate: true,
-    })
-  }, [setValue, minReceiveAmount])
 
   if (!split && !selectedAssetId)
     return (
@@ -361,6 +355,7 @@ export const AddStablepoolLiquidityForm = ({
           healthFactor={healthFactor}
           erc20Id={erc20Id}
           option={option}
+          poolShare={poolShare}
         />
 
         {customErrors?.cap ? (
@@ -384,6 +379,17 @@ export const AddStablepoolLiquidityForm = ({
             sx={{ my: getTokenPx("containers.paddings.primary") }}
           />
         )}
+
+        {customErrors?.supplyCap ? (
+          <Alert
+            variant="warning"
+            description={t("liquidity.add.modal.validation.supplyCap", {
+              value: customErrors.supplyCap.message,
+              symbol: meta.symbol,
+            })}
+            sx={{ my: getTokenPx("containers.paddings.primary") }}
+          />
+        ) : null}
 
         <ModalContentDivider />
       </ModalBody>
@@ -412,6 +418,7 @@ const AddStablepoolLiquiditySummary = ({
   healthFactor,
   erc20Id,
   option,
+  poolShare,
 }: {
   farms: Farm[]
   minReceiveAmount: string
@@ -421,6 +428,7 @@ const AddStablepoolLiquiditySummary = ({
   healthFactor?: HealthFactorResult
   erc20Id?: string
   option: TAddStablepoolLiquidityOption
+  poolShare?: string
 }) => {
   const rpc = useRpcProvider()
   const { getAssetWithFallback, getErc20AToken } = useAssets()
@@ -441,6 +449,7 @@ const AddStablepoolLiquiditySummary = ({
     return (
       <AddLiquiditySummary
         meta={poolMeta}
+        poolShare={poolShare}
         minReceiveAmount={minReceiveAmount}
         farms={farms}
         healthFactor={healthFactor}

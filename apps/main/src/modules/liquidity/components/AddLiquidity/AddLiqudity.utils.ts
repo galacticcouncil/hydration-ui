@@ -39,6 +39,7 @@ export const getCustomErrors = (errors?: FieldError) =>
     ? (errors as unknown as {
         cap?: { message: string }
         circuitBreaker?: { message: string }
+        supplyCap?: { message: string }
       })
     : undefined
 

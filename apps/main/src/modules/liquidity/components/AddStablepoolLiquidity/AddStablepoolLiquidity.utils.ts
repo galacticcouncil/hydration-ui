@@ -1,4 +1,5 @@
 import { calculate_shares } from "@galacticcouncil/math-stableswap"
+import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
@@ -11,6 +12,7 @@ import z from "zod"
 
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
+import { useBorrowReserves } from "@/api/borrow"
 import { StableSwapBase } from "@/api/pools"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import {
@@ -148,13 +150,15 @@ export const useStablepoolAddLiquidity = ({
     pool,
   )
 
+  const stablepoolSharesHuman =
+    scaleHuman(stablepoolShares, meta.decimals) || "0"
+
   const minStablepoolShares = Big(stablepoolShares)
     .times(100 - slippage)
     .div(100)
     .toFixed(0)
 
-  const stablepoolSharesHuman =
-    scaleHuman(minStablepoolShares, meta.decimals) || "0"
+  const minReceiveAmount = scaleHuman(minStablepoolShares, meta.decimals) || "0"
 
   const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
     useCheckJoinOmnipoolFarm({
@@ -162,8 +166,6 @@ export const useStablepoolAddLiquidity = ({
       meta,
       disabled: option === "stablepool",
     })
-
-  const minReceiveAmount = stablepoolSharesHuman
 
   useEffect(() => {
     if (!selectedAssetId && initialAssetIdToAdd) {
@@ -259,6 +261,7 @@ export const useStablepoolAddLiquidity = ({
     healthFactor: undefined,
     reserveIds,
     displayOption: true,
+    poolShare: undefined,
   }
 }
 
@@ -302,6 +305,15 @@ const useStablepoolAddLiquidityFormResolver = (
   accountReserveBalances: Map<string, string>,
 ) => {
   const omnipoolZodSchema = useAddToOmnipoolZod(poolId)
+  const { data: reserves } = useBorrowReserves()
+
+  const assetReserve = reserves?.formattedReserves.find(
+    ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(poolId),
+  )
+
+  const maxCapToAdd = assetReserve
+    ? Big(assetReserve.supplyCap).minus(assetReserve.totalLiquidity).toString()
+    : undefined
 
   return (
     values: TAddStablepoolLiquidityFormValues,
@@ -327,7 +339,18 @@ const useStablepoolAddLiquidityFormResolver = (
     )
 
     const schema = z.object({
-      sharesAmount: omnipoolZodSchema ?? required.pipe(positive),
+      sharesAmount:
+        omnipoolZodSchema ??
+        required.pipe(positive).refine(
+          (value) => {
+            if (!maxCapToAdd) return true
+            return Big(value).lte(maxCapToAdd)
+          },
+          {
+            message: maxCapToAdd,
+            path: ["supplyCap"],
+          },
+        ),
       option: z.enum(["omnipool", "stablepool"]),
       split: z.boolean(),
       selectedAssetId: z.string(),

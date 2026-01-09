@@ -165,7 +165,6 @@ export const AddLiquiditySummary = ({
             : t("liquidity.add.modal.sharesToGet.label"),
           content: poolShare
             ? t("liquidity.add.modal.sharesToGet", {
-                value: minReceiveAmount,
                 percentage: poolShare,
               })
             : t("common:number", {
