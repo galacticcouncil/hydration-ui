@@ -53,7 +53,9 @@ const animationVariants = createVariants<DropdownMenuAnimation>((theme) => ({
   `,
 }))
 
-const SDropdownMenuContent = styled(DropdownMenuPrimitive.Content)<{
+const SDropdownMenuContent = styled(DropdownMenuPrimitive.Content, {
+  shouldForwardProp: (prop) => !["fullWidth", "animation"].includes(prop),
+})<{
   readonly fullWidth?: boolean
   readonly animation?: DropdownMenuAnimation
 }>(({ theme, animation = "scale-top", fullWidth }) => [

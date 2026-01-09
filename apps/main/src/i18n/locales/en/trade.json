@@ -55,8 +55,6 @@
   "swap.settings.modal.split.slippage.help": "TODO",
   "swap.settings.modal.split.maxRetries": "Max retries",
   "swap.settings.modal.split.maxRetries.help": "TODO",
-  "swap.header.dca": "DCA",
-  "swap.header.market": "Market",
   "market.form.type.single": "Single trade",
   "market.form.type.single.instant": "Instant execution",
   "market.form.type.split": "Split trade",

@@ -24,6 +24,8 @@ export const LINKS = {
   myLiquidity: "/liquidity",
   pools: "/liquidity",
   swap: "/trade/swap",
+  swapMarket: "/trade/swap/market",
+  swapDca: "/trade/swap/dca",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
@@ -54,6 +56,7 @@ export type NavigationItem = {
   icon?: React.ComponentType
   enabled?: boolean
   children?: NavigationItem[]
+  defaultChild?: Route
   search?: Record<string, string | boolean>
 }
 
@@ -61,15 +64,25 @@ export const NAVIGATION: NavigationItem[] = [
   {
     key: "trade",
     to: LINKS.trade,
+    defaultChild: LINKS.swapMarket,
     icon: Repeat2Icon,
     children: [
-      { key: "swap", to: LINKS.swap, icon: Repeat2Icon },
+      {
+        key: "swap",
+        to: LINKS.swap,
+        icon: Repeat2Icon,
+        children: [
+          { key: "swapMarket", to: LINKS.swapMarket },
+          { key: "swapDca", to: LINKS.swapDca },
+        ],
+      },
       { key: "otc", to: LINKS.otc, icon: CoinsIcon },
     ],
   },
   {
     key: "borrow",
     to: LINKS.borrow,
+    defaultChild: LINKS.borrowDashboard,
     icon: BanknoteIcon,
     children: [
       { key: "borrowDashboard", to: LINKS.borrowDashboard, icon: ChartPieIcon },
@@ -100,6 +113,7 @@ export const NAVIGATION: NavigationItem[] = [
     key: "wallet",
     to: LINKS.wallet,
     icon: WalletCardsIcon,
+    defaultChild: LINKS.walletAssets,
     children: [
       { key: "walletAssets", to: LINKS.walletAssets },
       // { key: "walletTransactions", to: LINKS.walletTransactions },
@@ -178,6 +192,14 @@ export const getMenuTranslations = (t: TFunction) =>
     swap: {
       title: t("navigation.swap.title"),
       description: t("navigation.swap.description"),
+    },
+    swapMarket: {
+      title: t("navigation.swapMarket.title"),
+      description: "",
+    },
+    swapDca: {
+      title: t("navigation.swapDca.title"),
+      description: "",
     },
     otc: {
       title: t("navigation.otc.title"),
