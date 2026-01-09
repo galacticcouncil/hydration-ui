@@ -16,6 +16,7 @@
   "connect": "Connect",
   "error.maxAmount": "Maximum transferable amount is {{ amount }} {{ symbol }}",
   "error.minAmount": "Minimum transferable amount is {{ amount }} {{ symbol }}",
+  "error.invalidAddress": "The address is invalid",
   "feeDisplay.destinationFee": "Destination Fee",
   "feeDisplay.free": "FREE",
   "feeDisplay.sourceChainFee": "Source chain Fee",
