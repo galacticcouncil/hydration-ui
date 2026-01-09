@@ -9,7 +9,7 @@ export const useSuppliedAssetsData = () => {
   const data = useMemo(() => {
     if (!user?.userReservesData) return []
     return user.userReservesData
-      .filter((userReserve) => Big(userReserve.underlyingBalanceUSD).gt(0.0001))
+      .filter((userReserve) => Big(userReserve.underlyingBalance).gt(0))
       .map((userReserve) => ({
         ...userReserve,
         supplyAPY: userReserve.reserve.supplyAPY,

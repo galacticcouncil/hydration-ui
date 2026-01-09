@@ -151,7 +151,7 @@ export const formatCurrency = (
     ]
   }
 
-  if (options.maximumFractionDigits) {
+  if (options.maximumFractionDigits && numericValue > 0) {
     return formatFractionDigits(
       numericValue,
       Number(options.maximumFractionDigits),
