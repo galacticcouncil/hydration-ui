@@ -4,34 +4,33 @@ import { Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { LINKS, NAVIGATION } from "@/config/navigation"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
-import { FileRouteTypes } from "@/routeTree.gen"
 
 import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
 
-type GetTradeSwapTab<T> = T extends `/trade/swap/${infer Tab}` ? Tab : never
-type ToRoute = FileRouteTypes["to"]
-type TradeSwapTab = GetTradeSwapTab<ToRoute>
-
-export const swapTabs: ReadonlyArray<TradeSwapTab> = ["market", "dca"] as const
+const swapRouteItems =
+  NAVIGATION.find((item) => item.key === "trade")?.children?.find(
+    (item) => item.key === "swap",
+  )?.children ?? []
 
 export const FormHeader = () => {
-  const { t } = useTranslation("trade")
+  const { t } = useTranslation(["trade", "common"])
   const [openSettings, setOpenSettings] = useState(false)
 
   const search = useSearch({ from: "/trade/_history/swap" })
   const matchRoute = useMatchRoute()
   const hasSettings =
-    !!matchRoute({ to: "/trade/swap/market" }) ||
-    !!matchRoute({ to: "/trade/swap/dca" })
+    !!matchRoute({ to: LINKS.swapMarket }) ||
+    !!matchRoute({ to: LINKS.swapDca })
 
   return (
     <SFormHeader justify="space-between" align="center">
       <Flex>
-        {swapTabs.map((tab) => (
-          <SHeaderTab key={tab} asChild>
-            <Link to={`/trade/swap/${tab}`} search={search}>
-              {t(`swap.header.${tab}`)}
+        {swapRouteItems.map((routeItem) => (
+          <SHeaderTab key={routeItem.key} asChild>
+            <Link to={routeItem.to} search={search}>
+              {t(`common:navigation.${routeItem.key}.title`)}
             </Link>
           </SHeaderTab>
         ))}

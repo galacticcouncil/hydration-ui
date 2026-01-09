@@ -173,6 +173,8 @@
   "navigation.swap.description": "Trade instantly using the Omnipool",
   "navigation.swap.title": "Swap",
   "navigation.trade.title": "Trade",
+  "navigation.swapMarket.title": "Market",
+  "navigation.swapDca.title": "DCA",
   "navigation.wallet.title": "Wallet",
   "navigation.walletAssets.title": "Overview",
   "navigation.walletTransactions.title": "Transactions",

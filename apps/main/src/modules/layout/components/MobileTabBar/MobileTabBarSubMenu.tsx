@@ -19,16 +19,20 @@ type Props = {
 
 export const MobileTabBarSubmenuItem = ({ item, ...props }: Props) => {
   const translations = useMenuTranslations()
-  const { key, icon, to } = item
+  const { key, icon, to, search } = item
 
   const { title, description } = translations[key] ?? {}
 
   return (
-    <MenuSelectionItem as={Link} {...{ to }} {...props}>
-      <MenuItemIcon component={icon ?? IconPlaceholder} />
-      <MenuItemLabel>{title}</MenuItemLabel>
-      {description && <MenuItemDescription>{description}</MenuItemDescription>}
-      <MenuSelectionItemArrow />
+    <MenuSelectionItem {...props} asChild>
+      <Link to={to} search={search}>
+        <MenuItemIcon component={icon ?? IconPlaceholder} />
+        <MenuItemLabel>{title}</MenuItemLabel>
+        {description && (
+          <MenuItemDescription>{description}</MenuItemDescription>
+        )}
+        <MenuSelectionItemArrow />
+      </Link>
     </MenuSelectionItem>
   )
 }

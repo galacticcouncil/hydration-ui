@@ -57,22 +57,21 @@ export const MobileTabBar: FC = () => {
     <SMobileTabBar>
       {navItems
         .slice(0, itemsShown)
-        .map(({ key, icon, to, children }, index) => (
-          <DropdownMenu key={key} modal={false}>
-            <DropdownMenuTrigger asChild>
-              <STabBarItem
-                as={Link}
-                {...{ to }}
-                tabIndex={index + 1}
-                onClick={
-                  children && children.length > 1 ? preventDefault : undefined
-                }
-              >
-                <STabBarIcon component={icon ?? IconPlaceholder} />
-                <STabBarLabel>{translations[key]?.title}</STabBarLabel>
-              </STabBarItem>
-            </DropdownMenuTrigger>
-            {children && children.length > 1 && (
+        .map(({ key, icon, to, children }, index) =>
+          children && children.length > 1 ? (
+            <DropdownMenu key={key} modal={false}>
+              <DropdownMenuTrigger asChild>
+                <STabBarItem
+                  as={Link}
+                  {...{ to }}
+                  tabIndex={index + 1}
+                  onClick={preventDefault}
+                >
+                  <STabBarIcon component={icon ?? IconPlaceholder} />
+                  <STabBarLabel>{translations[key]?.title}</STabBarLabel>
+                </STabBarItem>
+              </DropdownMenuTrigger>
+
               <DropdownMenuContent fullWidth animation="slide-bottom">
                 {children.map((item) => (
                   <DropdownMenuItem key={item.key} asChild>
@@ -80,9 +79,14 @@ export const MobileTabBar: FC = () => {
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
-            )}
-          </DropdownMenu>
-        ))}
+            </DropdownMenu>
+          ) : (
+            <STabBarItem key={key} as={Link} {...{ to }} tabIndex={index + 1}>
+              <STabBarIcon component={icon ?? IconPlaceholder} />
+              <STabBarLabel>{translations[key]?.title}</STabBarLabel>
+            </STabBarItem>
+          ),
+        )}
       {moreItems.length > 0 && (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>

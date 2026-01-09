@@ -44,8 +44,7 @@ export const STabBarIcon = styled(Icon)(
     height: 20px;
 
     *[data-status="active"] &,
-    ${STabBarItem}[data-state="open"] &,
-    ${STabBarItem}:hover & {
+    ${STabBarItem}[data-state="open"] & {
       color: ${theme.controls.solid.activeHover};
     }
   `,
@@ -63,8 +62,7 @@ export const STabBarLabel = styled.span(
     white-space: nowrap;
 
     *[data-status="active"] &,
-    ${STabBarItem}[data-state="open"] &,
-    ${STabBarItem}:hover & {
+    ${STabBarItem}[data-state="open"] & {
       color: ${theme.textButtons.small.hover};
     }
   `,
