@@ -41,6 +41,7 @@ export const DashboardStats: FC<Props> = ({
 
   const {
     supplyStaked,
+    supplyStakedPercent,
     circulatingSupply,
     isLoading: isSupplyLoading,
   } = useStakingSupply()
@@ -74,7 +75,7 @@ export const DashboardStats: FC<Props> = ({
                 innerRadius={15}
                 outerRadius={45}
                 startAngle={180}
-                endAngle={180 - (360 * Number(supplyStaked)) / 100}
+                endAngle={180 - (360 * Number(supplyStakedPercent)) / 100}
                 stroke="none"
                 fill={themeProps.controls.solid.activeHover}
               />
@@ -82,7 +83,7 @@ export const DashboardStats: FC<Props> = ({
           </Flex>
           <Flex
             direction="column"
-            gap={getTokenPx("containers.paddings.quart")}
+            gap={getTokenPx("scales.paddings.m")}
             maxWidth="min-content"
           >
             <Text
@@ -96,22 +97,25 @@ export const DashboardStats: FC<Props> = ({
                 symbol: native.symbol,
               })}
             </Text>
-            <Flex direction="column" gap={getTokenPx("scales.paddings.xs")}>
-              <Text
-                font="primary"
-                fw={500}
-                fs={28}
-                lh={px(30)}
-                color={getToken("text.high")}
-              >
-                {t("percent", { value: supplyStaked })}
-              </Text>
-              <Text
-                fw={400}
-                fs={11}
-                lh={px(15)}
-                color={getToken("text.medium")}
-              >
+            <Flex direction="column" gap={getTokenPx("scales.paddings.base")}>
+              <Flex direction="column">
+                <Text
+                  font="primary"
+                  fw={500}
+                  fs={28}
+                  lh={0.9}
+                  color={getToken("text.high")}
+                >
+                  {t("percent", { value: supplyStakedPercent })}
+                </Text>
+                <Text fw={500} fs={10} lh={1.2} color={getToken("text.high")}>
+                  {t("currency", {
+                    value: supplyStaked,
+                    symbol: native.symbol,
+                  })}
+                </Text>
+              </Flex>
+              <Text fs={11} lh={px(12)} color={getToken("text.medium")}>
                 <Trans
                   t={t}
                   i18nKey="staking:dashboard.supplyStaked.ofSupply"

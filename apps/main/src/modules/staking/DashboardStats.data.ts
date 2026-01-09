@@ -33,7 +33,12 @@ export const useStakingSupply = () => {
 
   const circulatingSupply = Big(hdxSupply?.available_balance || "0")
 
-  const supplyStaked =
+  const supplyStaked = toDecimal(
+    stakeData?.total_stake.toString() ?? "0",
+    NATIVE_ASSET_DECIMALS,
+  )
+
+  const supplyStakedPercent =
     stakeData && circulatingSupply.gt(0)
       ? Big(stakeData.total_stake.toString())
           .div(circulatingSupply)
@@ -43,6 +48,7 @@ export const useStakingSupply = () => {
 
   return {
     supplyStaked,
+    supplyStakedPercent,
     circulatingSupply: toDecimal(
       circulatingSupply.toString(),
       NATIVE_ASSET_DECIMALS,
