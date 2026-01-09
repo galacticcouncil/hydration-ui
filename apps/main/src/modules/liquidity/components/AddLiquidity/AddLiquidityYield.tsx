@@ -38,20 +38,21 @@ export const AddLiquidityYield = ({
   })
 
   const {
-    data: stablepoolYeldMetrics,
-    isLoading: isStablepoolYeldMetricsLoading,
+    data: stablepoolYieldMetrics,
+    isLoading: isStablepoolYieldMetricsLoading,
   } = useQuery({
     ...stablepoolYieldMetricsQuery(squidClient),
     enabled: !!stablepoolId,
     select: (data) => data?.find((item) => item.poolId === stablepoolId),
   })
 
-  if (isOmnipoolYieldMetricsLoading || isStablepoolYeldMetricsLoading)
+  if (isOmnipoolYieldMetricsLoading || isStablepoolYieldMetricsLoading) {
     return <Skeleton width={50} height="100%" />
+  }
 
   const isFarms = !!farms.length
   const omnipoolFee = omnipoolYieldMetrics?.fee?.toString()
-  const stablepoolFee = stablepoolYeldMetrics?.projectedAprPerc
+  const stablepoolFee = stablepoolYieldMetrics?.projectedAprPerc
   const totalApr = farms
     .reduce((acc, farm) => acc.plus(farm.apr), Big(0))
     .plus(omnipoolFee ?? 0)
@@ -68,7 +69,7 @@ export const AddLiquidityYield = ({
       </Text>
     )
 
-  const incetivesLogoIds = isFarms
+  const incentivesLogoIds = isFarms
     ? farms.map(({ rewardCurrency }) => rewardCurrency.toString())
     : borrowApyData?.incentives.map(({ rewardTokenAddress }) =>
         getAssetIdFromAddress(rewardTokenAddress),
@@ -87,8 +88,8 @@ export const AddLiquidityYield = ({
             value: totalApr,
           })}
         </Text>
-        {!!incetivesLogoIds?.length && (
-          <AssetLogo size="small" id={incetivesLogoIds.map((id) => id)} />
+        {!!incentivesLogoIds?.length && (
+          <AssetLogo size="small" id={incentivesLogoIds} />
         )}
       </Flex>
     </TooltipAPR>
