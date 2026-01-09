@@ -22,6 +22,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import { useMemo } from "react"
@@ -32,6 +33,7 @@ import {
   AssetLabelXYK,
 } from "@/components/AssetLabelFull/AssetLabelFull"
 import { AssetLogo } from "@/components/AssetLogo"
+import { TooltipAPR } from "@/modules/liquidity/components/Farms/TooltipAPR"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 import {
@@ -79,7 +81,7 @@ export const getIsolatedPositionsTableColumns = (
   actions: true,
 })
 
-export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
+export const useOmnipoolPositionsTableColumns = () => {
   const { t } = useTranslation(["common", "liquidity"])
   const format = useFormatOmnipoolPositionData()
   const { isMobile } = useBreakpoints()
@@ -166,31 +168,49 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
       }),
       omnipoolColumnHelper.accessor("joinedFarms", {
         id: "joinedFarms",
-        header: t("liquidity:liquidity.positions.header.joinedFarms"),
-        meta: {
-          visibility: isFarms,
-        },
+        header: t("yield"),
         enableSorting: false,
         size: 100,
-        cell: ({ row: { original } }) =>
-          isOmnipoolPosition(original) && original.joinedFarms.length ? (
-            <Flex
-              direction={isMobile ? "column" : "row"}
-              align="center"
-              gap={getTokenPx("containers.paddings.quint")}
-            >
-              <AssetLogo
-                id={original.joinedFarms.map(({ farm }) =>
-                  farm.rewardCurrency.toString(),
-                )}
-              />
-              <Text fs="p6" color={getToken("text.tint.secondary")}>
-                {original.aprsByRewardAsset
-                  .map((apr) => t("common:percent", { value: apr.totalApr }))
-                  .join(" + ")}
+        cell: ({ row: { original } }) => {
+          const isOmnipool = isOmnipoolPosition(original)
+
+          if (!isOmnipool || !original.apr.aprsByRewardAsset.length) {
+            return (
+              <Text color={getToken("text.tint.secondary")}>
+                {t("percent", {
+                  value: Number(original.totalApr),
+                })}
               </Text>
-            </Flex>
-          ) : null,
+            )
+          }
+
+          const isFarms = !!original.joinedFarms.length
+
+          return (
+            <TooltipAPR
+              farms={original.apr.aprsByRewardAsset}
+              omnipoolFee={original.apr.lpFeeOmnipool}
+              stablepoolFee={original.apr.lpFeeStablepool}
+              borrowApyData={original.apr.borrowApyData}
+            >
+              <Flex align="center" gap={4}>
+                {isFarms && (
+                  <AssetLogo
+                    size="small"
+                    id={original.joinedFarms.map(({ farm }) =>
+                      farm.rewardCurrency.toString(),
+                    )}
+                  />
+                )}
+                <Text color={getToken("text.tint.secondary")}>
+                  {t("percent", {
+                    value: Number(original.totalApr),
+                  })}
+                </Text>
+              </Flex>
+            </TooltipAPR>
+          )
+        },
       }),
       omnipoolColumnHelper.display({
         id: "actions",
@@ -383,7 +403,7 @@ export const useOmnipoolPositionsTableColumns = (isFarms: boolean) => {
         },
       }),
     ],
-    [t, isFarms, format, isMobile],
+    [t, format, isMobile],
   )
 }
 
@@ -419,6 +439,41 @@ export const useBalanceTableColumns = () => {
             })}
           />
         ),
+      }),
+      balanceColumnHelper.display({
+        id: "apr",
+        header: t("yield"),
+        cell: ({
+          row: {
+            original: { totalApr, apr },
+          },
+        }) => {
+          const incentives = apr.borrowApyData?.incentives ?? []
+
+          return (
+            <TooltipAPR
+              farms={[]}
+              stablepoolFee={apr.lpFeeStablepool}
+              borrowApyData={apr.borrowApyData}
+            >
+              <Flex align="center" gap={4}>
+                {!!incentives.length && (
+                  <AssetLogo
+                    size="small"
+                    id={incentives.map(({ rewardTokenAddress }) =>
+                      getAssetIdFromAddress(rewardTokenAddress),
+                    )}
+                  />
+                )}
+                <Text color={getToken("text.tint.secondary")}>
+                  {t("percent", {
+                    value: Number(totalApr),
+                  })}
+                </Text>
+              </Flex>
+            </TooltipAPR>
+          )
+        },
       }),
       balanceColumnHelper.display({
         id: "actions",
@@ -613,7 +668,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
       }),
       isolatedColumnHelper.accessor("joinedFarms", {
         id: "joinedFarms",
-        header: t("liquidity:liquidity.positions.header.joinedFarms"),
+        header: t("yield"),
         size: 150,
         meta: {
           visibility: isFarms,
@@ -621,27 +676,29 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         enableSorting: false,
         cell: ({
           row: {
-            original: { joinedFarms, aprsByRewardAsset },
+            original: { joinedFarms, totalApr },
           },
-        }) =>
-          joinedFarms.length ? (
-            <Flex
-              direction={isMobile ? "column" : "row"}
-              align="center"
-              gap={getTokenPx("containers.paddings.quint")}
-            >
+        }) => (
+          <Flex
+            direction={isMobile ? "column" : "row"}
+            align="center"
+            gap={getTokenPx("containers.paddings.quint")}
+          >
+            {!!joinedFarms.length && (
               <AssetLogo
+                size="small"
                 id={joinedFarms.map(({ farm }) =>
                   farm.rewardCurrency.toString(),
                 )}
               />
-              <Text fs="p6" color={getToken("text.tint.secondary")}>
-                {aprsByRewardAsset
-                  .map((apr) => t("common:percent", { value: apr.totalApr }))
-                  .join(" + ")}
-              </Text>
-            </Flex>
-          ) : null,
+            )}
+            <Text color={getToken("text.tint.secondary")}>
+              {t("percent", {
+                value: Number(totalApr),
+              })}
+            </Text>
+          </Flex>
+        ),
       }),
       isolatedColumnHelper.display({
         id: "actions",

@@ -33,10 +33,15 @@ const DrawerContent: FC<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
     ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Content>>
   }
-> = ({ className, children, ref, forceMount, ...props }) => (
+> = ({ className, children, ref, forceMount, onClick, ...props }) => (
   <DrawerPortal forceMount={forceMount}>
-    <DrawerOverlay />
-    <SDrawerContent ref={ref} className={className} {...props}>
+    <DrawerOverlay onClick={onClick} />
+    <SDrawerContent
+      ref={ref}
+      onClick={(e) => e.stopPropagation()}
+      className={className}
+      {...props}
+    >
       <SDrawerHandle />
       {children}
     </SDrawerContent>
@@ -133,8 +138,21 @@ const Drawer = ({
   return (
     <DrawerRoot {...props}>
       <DrawerContent
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+
+          if (disableInteractOutside) return
+
+          props.onOpenChange?.(false)
+        }}
         onInteractOutside={
-          disableInteractOutside ? (e) => e.preventDefault() : undefined
+          disableInteractOutside
+            ? (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+            : undefined
         }
       >
         <DrawerHeader

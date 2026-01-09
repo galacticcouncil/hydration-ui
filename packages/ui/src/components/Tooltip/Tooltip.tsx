@@ -10,10 +10,9 @@ import { CircleInfo } from "@/assets/icons"
 import {
   BoxProps,
   ButtonIcon,
-  DrawerHeader,
+  Drawer,
+  DrawerBody,
   Icon,
-  Modal,
-  ModalBody,
   Text,
 } from "@/components"
 import { useBreakpoints } from "@/theme"
@@ -69,14 +68,14 @@ export const Tooltip = ({
           {children || <TooltipIcon color={iconColor} />}
         </ButtonIcon>
 
-        <Modal open={open} onOpenChange={setOpen}>
-          <DrawerHeader
-            customTitle=" "
-            title="Tooltip"
-            sx={{ borderBottom: "none" }}
-          />
-          <ModalBody>{text}</ModalBody>
-        </Modal>
+        <Drawer
+          open={open}
+          onOpenChange={setOpen}
+          customTitle=" "
+          title="Tooltip"
+        >
+          <DrawerBody>{text}</DrawerBody>
+        </Drawer>
       </>
     )
   }

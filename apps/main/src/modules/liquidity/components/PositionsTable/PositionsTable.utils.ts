@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next"
 
 import { XykDeposit } from "@/api/account"
 import { TAssetData } from "@/api/assets"
+import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
-import { useXYKPoolWithLiquidity } from "@/api/xyk"
+import { useXYKConsts, useXYKPoolWithLiquidity } from "@/api/xyk"
 import {
   TAprByRewardAsset,
   TJoinedFarm,
@@ -16,6 +17,7 @@ import {
   useXYKFarmMinShares,
 } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
 import {
+  calculatePoolFee,
   IsolatedPoolTable,
   OmnipoolAssetTable,
 } from "@/modules/liquidity/Liquidity.utils"
@@ -30,7 +32,6 @@ export type IsolatedPositionTableData = {
   joinedFarms: TJoinedFarm[]
   farmsToJoin: Farm[]
   isJoinedAllFarms: boolean
-  aprsByRewardAsset: TAprByRewardAsset[]
   shareTokens: string
   shareTokensDisplay: string
   shareTokenId: string
@@ -38,6 +39,11 @@ export type IsolatedPositionTableData = {
   positionId?: string
   meta: XYKPoolMeta
   position?: XykDeposit
+  apr: {
+    lpFee: string
+    aprsByRewardAsset: TAprByRewardAsset[]
+  }
+  totalApr: string
 }
 
 export type BalanceTableData = {
@@ -50,25 +56,39 @@ export type BalanceTableData = {
   stableswapId: string
   canAddLiquidity: boolean
   canRemoveLiquidity: boolean
+  apr: {
+    borrowApyData?: BorrowAssetApyData
+    lpFeeStablepool?: string
+  }
+  totalApr: string
 }
 
 export type OmnipoolPositionTableData = {
   poolId: string
   joinedFarms: TJoinedFarm[]
   farmsToJoin: Farm[]
-  aprsByRewardAsset: TAprByRewardAsset[]
   isJoinedAllFarms: boolean
   meta: TAssetData
   stableswapId?: string
   canAddLiquidity: boolean
   canRemoveLiquidity: boolean
   canJoinFarms: boolean
+  apr: {
+    borrowApyData?: BorrowAssetApyData
+    aprsByRewardAsset: TAprByRewardAsset[]
+    lpFeeOmnipool?: string
+    lpFeeStablepool?: string
+  }
+  totalApr: string
 } & AccountOmnipoolPosition
 
 export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
   const { balance, meta, shareTokenId, positions, id, allFarms } = pool
 
   const getDepositAprs = useDepositAprs()
+  const { data: consts } = useXYKConsts()
+
+  const tradeFee = calculatePoolFee(consts?.fee)
 
   const { data: poolWithLiquidity } = useXYKPoolWithLiquidity(id)
   const liquidity = poolWithLiquidity?.totalLiquidity
@@ -101,10 +121,20 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
 
         totalInFarms = totalInFarms.plus(shareTokensDisplay)
 
+        const lpFee = tradeFee ?? "0"
+        const totalApr = aprsByRewardAsset
+          .reduce((acc, { apr }) => acc.plus(apr), Big(0))
+          .plus(lpFee)
+          .toString()
+
         return {
           poolId: id,
           joinedFarms,
-          aprsByRewardAsset,
+          apr: {
+            aprsByRewardAsset,
+            lpFee,
+          },
+          totalApr,
           isJoinedAllFarms: farmsToJoin.length === 0,
           farmsToJoin,
           shareTokens,
@@ -124,11 +154,16 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
       totalBalanceDisplay = totalBalanceDisplay.plus(shareTokensDisplay)
 
       const canJoinFarms = Big(freeBalance.toString()).gt(minJoinAmount ?? 0)
+      const lpFee = tradeFee ?? "0"
 
       const liquidity = {
         poolId: id,
         joinedFarms: [],
-        aprsByRewardAsset: [],
+        apr: {
+          aprsByRewardAsset: [],
+          lpFee,
+        },
+        totalApr: lpFee,
         isJoinedAllFarms: true,
         farmsToJoin: [],
         shareTokens: freeBalance.toString(),
@@ -156,6 +191,7 @@ export const useIsolatedPositions = (pool: IsolatedPoolTable) => {
     minJoinAmount,
     id,
     shareTokenId,
+    tradeFee,
   ])
 
   return data
@@ -177,6 +213,9 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     canAddLiquidity,
     canRemoveLiquidity,
     farms,
+    borrowApyData,
+    lpFeeOmnipool,
+    lpFeeStablepool,
   } = pool
 
   const getDepositAprs = useDepositAprs()
@@ -206,6 +245,15 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
 
     const freeBalance = scaleHuman(stableswapBalance, meta.decimals)
 
+    const apr = {
+      borrowApyData,
+      aprsByRewardAsset: [],
+      lpFeeOmnipool: undefined,
+      lpFeeStablepool,
+    }
+
+    const totalApr = Big(lpFeeStablepool ?? 0).toString()
+
     return {
       meta,
       label: t("liquidity:liquidity.stablepool.position.shares"),
@@ -218,6 +266,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
       stableswapId,
       canAddLiquidity: true,
       canRemoveLiquidity: true,
+      apr,
+      totalApr,
     }
   }, [
     t,
@@ -227,6 +277,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     price,
     meta,
     stableswapId,
+    borrowApyData,
+    lpFeeStablepool,
   ])
 
   const data = useMemo(() => {
@@ -256,10 +308,23 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
           minJoinAmount ?? 0,
         )
 
+        const apr = {
+          borrowApyData,
+          aprsByRewardAsset,
+          lpFeeOmnipool,
+          lpFeeStablepool,
+        }
+
+        const totalApr = aprsByRewardAsset
+          .reduce((acc, { apr }) => acc.plus(apr), Big(0))
+          .plus(lpFeeOmnipool ?? 0)
+          .plus(lpFeeStablepool ?? 0)
+          .plus(borrowApyData?.supplyMMApy ?? 0)
+          .toString()
+
         return {
           poolId: id,
           joinedFarms,
-          aprsByRewardAsset,
           isJoinedAllFarms,
           canJoinFarms,
           farmsToJoin,
@@ -267,6 +332,8 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
           stableswapId,
           canAddLiquidity,
           canRemoveLiquidity,
+          apr,
+          totalApr,
           ...position,
         }
       })
@@ -295,6 +362,9 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     canAddLiquidity,
     canRemoveLiquidity,
     minJoinAmount,
+    borrowApyData,
+    lpFeeOmnipool,
+    lpFeeStablepool,
   ])
 
   return data

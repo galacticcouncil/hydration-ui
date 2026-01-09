@@ -163,7 +163,8 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
   const getMinimumTradeAmount = useMinimumTradeAmount()
   const getOmnipoolGetShares = useLiquidityOmnipoolShares(erc20Id)
   const { getTransferableBalance } = useAccountBalances()
-  const [split, selectedAssetId] = form.watch(["split", "selectedAssetId"])
+  const { watch, setValue } = form
+  const [split, selectedAssetId] = watch(["split", "selectedAssetId"])
   const isERC20Providing = selectedAssetId === erc20Id && !split
 
   const { assetIn, amounIn, minStablepoolShares } = (() => {
@@ -618,6 +619,12 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     },
   })
 
+  useEffect(() => {
+    setValue("sharesAmount", minReceiveAmount, {
+      shouldValidate: true,
+    })
+  }, [setValue, minReceiveAmount])
+
   return {
     joinFarmErrorMessage,
     isJoinFarms,
@@ -625,6 +632,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     mutation,
     minReceiveAmount,
     healthFactor,
+    poolShare: omnipoolShares?.poolShare,
     ...formData,
     meta,
   }
@@ -662,8 +670,9 @@ export const useAddMoneyMarketLiquidity = ({
 
   const meta = getAssetWithFallback(stableswapId)
   const erc20Meta = getAssetWithFallback(erc20Id)
+  const { setValue, watch } = form
 
-  const [split, selectedAssetId] = form.watch(["split", "selectedAssetId"])
+  const [split, selectedAssetId] = watch(["split", "selectedAssetId"])
 
   const stablepoolShares = getStablepoolShares(
     assetsToProvide,
@@ -883,11 +892,18 @@ export const useAddMoneyMarketLiquidity = ({
     },
   })
 
+  useEffect(() => {
+    setValue("sharesAmount", minReceiveAmount, {
+      shouldValidate: true,
+    })
+  }, [setValue, minReceiveAmount])
+
   return {
     mutation,
     activeFarms: [],
     joinFarmErrorMessage: undefined,
     isJoinFarms: false,
+    poolShare: "",
     minReceiveAmount,
     healthFactor: Big(debouncedAmountIn).gt(0) ? healthFactor : undefined,
     ...formData,

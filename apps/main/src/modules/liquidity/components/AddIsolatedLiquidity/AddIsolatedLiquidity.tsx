@@ -1,12 +1,13 @@
 import { calculate_liquidity_in } from "@galacticcouncil/math-xyk"
-import { Alert, Button, Summary, Text } from "@galacticcouncil/ui/components"
+import { Alert, Button, Summary } from "@galacticcouncil/ui/components"
 import {
   ModalBody,
   ModalContentDivider,
   ModalFooter,
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -253,6 +254,7 @@ const AddLiquiditySummary = ({
   consts: TXYKConsts
   isLoading?: boolean
 }) => {
+  const { isMobile } = useBreakpoints()
   const { t } = useTranslation(["liquidity", "common"])
 
   const tradeFee = calculatePoolFee(consts.fee)
@@ -262,7 +264,9 @@ const AddLiquiditySummary = ({
       separator={<ModalContentDivider />}
       rows={[
         {
-          label: t("common:minimumReceived"),
+          label: isMobile
+            ? t("liquidity.add.modal.sharesToGet.label.mob")
+            : t("liquidity.add.modal.sharesToGet.label"),
           content: t("liquidity.add.modal.sharesToGet", {
             value: scaleHuman(sharesToGet, meta.decimals),
             percentage: poolShare,
@@ -270,19 +274,8 @@ const AddLiquiditySummary = ({
           loading: isLoading,
         },
         {
-          label: t("liquidity.add.modal.rewardsAPR"),
-          content: <RewardsAPR farms={farms} />,
-          loading: isLoading,
-        },
-        {
-          label: t("common:apy"),
-          content: (
-            <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
-              {t("common:percent", {
-                value: tradeFee,
-              })}
-            </Text>
-          ),
+          label: t("common:yield"),
+          content: <RewardsAPR farms={farms} fee={tradeFee} />,
           loading: isLoading,
         },
       ]}

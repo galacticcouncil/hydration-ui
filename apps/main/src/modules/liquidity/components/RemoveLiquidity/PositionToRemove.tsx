@@ -55,7 +55,7 @@ export const PositionToRemove = ({
           />
           <Text fs="p6" color={getToken("text.tint.secondary")}>
             {aprsByRewardAsset
-              .map((apr) => t("common:percent", { value: apr.totalApr }))
+              .map(({ apr }) => t("common:percent", { value: apr }))
               .join(" + ")}
           </Text>
         </Flex>

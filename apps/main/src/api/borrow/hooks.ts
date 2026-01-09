@@ -42,6 +42,8 @@ export type BorrowAssetApyData = {
   underlyingBorrowApy: number
   totalSupplyApy: number
   totalBorrowApy: number
+  supplyMMApy: number
+  borrowMMApy: number
   stablepoolData: TStablepoolDetails | undefined
 }
 
@@ -203,13 +205,16 @@ const calculateTotalSupplyAndBorrowApy = (
     0,
   )
 
-  const totalSupplyApy =
-    underlyingSupplyApy + incentivesNetAPR + lpAPY + farmsAPR
-  const totalBorrowApy = underlyingBorrowApy + incentivesNetAPR + lpAPY
+  const supplyMMApy = underlyingSupplyApy + incentivesNetAPR
+  const borrowMMApy = underlyingBorrowApy + incentivesNetAPR
+  const totalSupplyApy = supplyMMApy + lpAPY + farmsAPR
+  const totalBorrowApy = borrowMMApy + lpAPY
 
   return {
     underlyingSupplyApy,
     underlyingBorrowApy,
+    supplyMMApy,
+    borrowMMApy,
     totalSupplyApy,
     totalBorrowApy,
   }
@@ -223,6 +228,8 @@ type CalculatedAssetApyTotals = Pick<
   | "underlyingSupplyApy"
   | "underlyingAssetsApyData"
   | "incentivesNetAPR"
+  | "supplyMMApy"
+  | "borrowMMApy"
 >
 
 const calculateAssetProportionInStablepool = (
