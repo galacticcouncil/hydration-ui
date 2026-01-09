@@ -8,8 +8,8 @@ export const WalletRewards: FC = () => {
   const { t } = useTranslation("wallet")
 
   return (
-    <Grid rowTemplate="auto 1fr" maxWidth={400}>
-      <SectionHeader>{t("rewards.title")}</SectionHeader>
+    <Grid rowTemplate="auto 1fr">
+      <SectionHeader title={t("rewards.title")} />
       <WalletRewardsSection />
     </Grid>
   )

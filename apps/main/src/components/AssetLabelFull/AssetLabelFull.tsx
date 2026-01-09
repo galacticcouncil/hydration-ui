@@ -4,6 +4,7 @@ import {
   Flex,
   Skeleton,
 } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
@@ -15,15 +16,17 @@ export const AssetLabelFull = ({
   size,
   withName = true,
   loading = false,
+  variant = "horizontal",
 }: {
   asset?: TAssetData
   size?: AssetLabelProps["size"]
   withName?: boolean
   loading?: boolean
+  variant?: AssetLabelFullVariant
 }) => {
   if (loading && !asset) {
     return (
-      <AssetLabelFullContainer>
+      <AssetLabelFullContainer variant={variant}>
         <Skeleton circle width={24} height={24} />
         <AssetLabel
           symbol={""}
@@ -38,11 +41,11 @@ export const AssetLabelFull = ({
   if (!asset) return null
 
   return (
-    <AssetLabelFullContainer>
+    <AssetLabelFullContainer variant={variant}>
       {loading ? (
         <Skeleton circle width={24} height={24} />
       ) : (
-        <AssetLogo id={asset.id} size={size} />
+        <AssetLogo id={asset.id} size={size === "primary" ? "large" : size} />
       )}
       <AssetLabel
         symbol={asset.symbol}
@@ -84,7 +87,7 @@ export const AssetLabelStablepool = ({
 }) => {
   return (
     <AssetLabelFullContainer>
-      <AssetLogo id={asset.id} size={size} />
+      <AssetLogo id={asset.id} size={size === "primary" ? "large" : size} />
       <AssetLabel
         symbol={asset.symbol}
         name={withName ? asset.name : undefined}
@@ -95,11 +98,26 @@ export const AssetLabelStablepool = ({
   )
 }
 
+type AssetLabelFullVariant = "horizontal" | "vertical"
+
 export const AssetLabelFullContainer: FC<{
   children: ReactNode
-}> = ({ children }) => {
+  variant?: AssetLabelFullVariant
+}> = ({ children, variant = "horizontal" }) => {
+  if (variant === "horizontal") {
+    return (
+      <Flex
+        gap={getTokenPx("scales.paddings.base")}
+        align="center"
+        minWidth={0}
+      >
+        {children}
+      </Flex>
+    )
+  }
+
   return (
-    <Flex gap={8} align="center" minWidth={0}>
+    <Flex gap={getTokenPx("scales.paddings.base")} direction="column">
       {children}
     </Flex>
   )

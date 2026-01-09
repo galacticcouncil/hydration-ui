@@ -12,7 +12,7 @@ export const WalletTransactionsPage = () => {
   return (
     <div>
       <Flex justify="space-between" align="center">
-        <SectionHeader>{t("transactions.header.title")}</SectionHeader>
+        <SectionHeader title={t("transactions.header.title")} />
         <Input
           placeholder={t("transactions.search.placeholder")}
           iconStart={Search}

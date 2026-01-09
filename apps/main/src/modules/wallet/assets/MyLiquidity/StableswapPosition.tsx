@@ -18,15 +18,22 @@ import { useTranslation } from "react-i18next"
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
 
 import { SLiquidityPosition } from "./LiquidityPosition.styled"
-import { StableswapPositionMoreActions } from "./LiquidityPositionMoreActions"
+import {
+  LiquidityPositionAction,
+  StableswapPositionMoreActions,
+} from "./LiquidityPositionMoreActions"
 import { StableswapPosition } from "./MyLiquidityTable.data"
 
 type StableswapPositionProps = {
   readonly position: StableswapPosition
+  readonly onAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Add,
+  ) => void
 }
 
 export const StableswapLiquidityPosition = ({
   position,
+  onAction,
 }: StableswapPositionProps) => {
   const { t } = useTranslation(["wallet", "common", "liquidity"])
   const format = useFormatOmnipoolPositionData()
@@ -56,20 +63,28 @@ export const StableswapLiquidityPosition = ({
 
       <div />
 
-      <DropdownMenu modal={false}>
-        <DropdownMenuTrigger
-          asChild
-          sx={{ width: "min-content", justifySelf: "flex-end" }}
+      <Flex align="center" gap={8}>
+        <Button
+          variant="secondary"
+          onClick={() => onAction(LiquidityPositionAction.Add)}
         >
-          <Button variant="tertiary" outline>
-            {t("common:actions")}
-            <Icon component={Ellipsis} size={16} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <StableswapPositionMoreActions position={position} />
-        </DropdownMenuContent>
-      </DropdownMenu>
+          {t("liquidity:moveToOmnipool")}
+        </Button>
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger
+            asChild
+            sx={{ width: "min-content", justifySelf: "flex-end" }}
+          >
+            <Button variant="tertiary" outline>
+              {t("common:actions")}
+              <Icon component={Ellipsis} size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <StableswapPositionMoreActions onAction={onAction} />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Flex>
     </SLiquidityPosition>
   )
 }

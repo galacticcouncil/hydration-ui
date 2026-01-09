@@ -5,7 +5,6 @@ import {
   Button,
   Flex,
   Icon,
-  Modal,
   ModalBody,
   ModalContentDivider,
   ModalHeader,
@@ -13,23 +12,21 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
 import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
 import { PastExecutions } from "@/modules/trade/orders/PastExecutions/PastExecutions"
-import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 type Props = {
   readonly details: OrderData
+  readonly onTerminate: () => void
 }
 
-export const DcaOrderDetailsModal = ({ details }: Props) => {
+export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
   const { t } = useTranslation(["common", "trade"])
-  const [terminateModalOpen, setTerminateModalOpen] = useState(false)
 
   return (
     <>
@@ -126,26 +123,10 @@ export const DcaOrderDetailsModal = ({ details }: Props) => {
             pt={getTokenPx("containers.paddings.secondary")}
             pb={getTokenPx("containers.paddings.primary")}
           >
-            <Button
-              variant="danger"
-              outline
-              onClick={() => setTerminateModalOpen(true)}
-            >
+            <Button variant="danger" outline onClick={onTerminate}>
               <Icon component={Trash} size={14} />
               {t("trade:trade.cancelOrder.cta")}
             </Button>
-            <Modal
-              open={terminateModalOpen}
-              onOpenChange={setTerminateModalOpen}
-            >
-              <TerminateDcaScheduleModalContent
-                scheduleId={details.scheduleId}
-                sold={details.fromAmountExecuted}
-                total={details.fromAmountBudget}
-                symbol={details.from.symbol}
-                onClose={() => setTerminateModalOpen(false)}
-              />
-            </Modal>
           </Flex>
         )}
         <PastExecutions

@@ -181,7 +181,8 @@ export const LatestAccountsBalancesDocument = `
     query LatestAccountsBalances($accountId: String) {
   accountTotalBalanceHistoricalData(
     filter: {accountId: {equalTo: $accountId}}
-    last: 1
+    orderBy: PARA_BLOCK_HEIGHT_DESC
+    first: 1
   ) {
     nodes {
       totalTransferableNorm

@@ -1,6 +1,8 @@
 import { Flex, ModalHeader } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { AssetDetailMobileActions } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
 import { AssetDetailMobileModalBalancesHeader } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalancesHeader"
 import {
@@ -29,20 +31,25 @@ export const AssetDetailNativeMobileModal: FC<Props> = ({
       <ModalHeader
         sx={{ p: 16 }}
         title={asset.symbol}
-        description={asset.name}
+        customTitle={
+          <AssetLabelFull asset={asset} size="primary" variant="vertical" />
+        }
       />
       <SAssetDetailModalBody>
-        <Flex justify="space-between" align="center">
-          <AssetDetailTotal assetId={asset.id} total={asset.total} />
-          <AssetDetailStaking asset={asset} />
+        <Flex direction="column" gap={getTokenPx("scales.paddings.base")}>
+          <SAssetDetailMobileSeparator />
+          <Flex justify="space-between" align="center">
+            <AssetDetailTotal assetId={asset.id} total={asset.total} />
+            <AssetDetailStaking asset={asset} />
+          </Flex>
         </Flex>
-        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
         <div>
           <SAssetDetailMobileSeparator />
           <AssetDetailMobileModalBalancesHeader />
           <SAssetDetailMobileSeparator />
         </div>
         <AssetDetailNativeMobileModalBalances asset={asset} />
+        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
       </SAssetDetailModalBody>
     </>
   )

@@ -11,7 +11,7 @@ export const BorrowHistoryPlaceholder: FC = () => {
 
   return (
     <Flex direction="column" gap={10}>
-      <SectionHeader>{t("history.table.title")}</SectionHeader>
+      <SectionHeader title={t("history.table.title")} />
       <Paper py={93}>
         <EmptyState
           image={NoFunds}

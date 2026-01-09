@@ -28,7 +28,7 @@ export const BorrowHistoryPage = () => {
         justify="space-between"
         align={["flex-start", "center"]}
       >
-        <SectionHeader>{t("borrow:history.table.title")}</SectionHeader>
+        <SectionHeader title={t("borrow:history.table.title")} />
         <BorrowHistorySearch
           onChange={(searchPhrase) => {
             setSearchPhrase(searchPhrase)

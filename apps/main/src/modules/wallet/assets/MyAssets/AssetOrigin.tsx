@@ -7,7 +7,7 @@ type Props = {
   readonly origin: AnyChain
 }
 
-export const AssetOriginMobile: FC<Props> = ({ origin }) => {
+export const AssetOrigin: FC<Props> = ({ origin }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   return (

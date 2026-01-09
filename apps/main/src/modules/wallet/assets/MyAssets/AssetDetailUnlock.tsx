@@ -1,3 +1,4 @@
+import { Key } from "@galacticcouncil/ui/assets/icons"
 import { Button } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -27,6 +28,7 @@ export const AssetDetailUnlock: FC<Props> = ({
       disabled={!unlockableIds.length || unlock.isPending}
       onClick={() => unlock.mutate()}
     >
+      <Key />
       {t("myAssets.expandedNative.actions.unlockAvailableAssets")}
     </Button>
   )

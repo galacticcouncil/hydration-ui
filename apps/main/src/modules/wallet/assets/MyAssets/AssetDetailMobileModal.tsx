@@ -1,6 +1,8 @@
-import { ModalHeader } from "@galacticcouncil/ui/components"
+import { Flex, ModalHeader } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 
+import { AssetLabelFull } from "@/components/AssetLabelFull"
 import { AssetDetailMobileActions } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileActions"
 import { AssetDetailMobileModalBalances } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalances"
 import { AssetDetailMobileModalBalancesHeader } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModalBalancesHeader"
@@ -9,7 +11,7 @@ import {
   SAssetDetailModalBody,
 } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal.styled"
 import { AssetDetailTotal } from "@/modules/wallet/assets/MyAssets/AssetDetailTotal"
-import { AssetOriginMobile } from "@/modules/wallet/assets/MyAssets/AssetOriginMobile"
+import { AssetOrigin } from "@/modules/wallet/assets/MyAssets/AssetOrigin"
 import {
   AssetDetailModal,
   MyAsset,
@@ -26,15 +28,19 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
       <ModalHeader
         sx={{ p: 16 }}
         title={asset.symbol}
-        description={asset.name}
+        customTitle={
+          <AssetLabelFull asset={asset} size="primary" variant="vertical" />
+        }
       />
       <SAssetDetailModalBody>
-        <AssetDetailTotal assetId={asset.id} total={asset.total} />
-        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
+        <Flex direction="column" gap={getTokenPx("scales.paddings.base")}>
+          <SAssetDetailMobileSeparator />
+          <AssetDetailTotal assetId={asset.id} total={asset.total} />
+        </Flex>
         {asset.origin?.name && (
           <>
             <SAssetDetailMobileSeparator />
-            <AssetOriginMobile origin={asset.origin} />
+            <AssetOrigin origin={asset.origin} />
           </>
         )}
         <div>
@@ -47,6 +53,7 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
           reserved={asset.reserved}
           reservedDca={asset.reservedDca}
         />
+        <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
       </SAssetDetailModalBody>
     </>
   )
