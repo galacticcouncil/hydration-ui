@@ -79,7 +79,7 @@ const useSchema = (account: Account | null) => {
       }
 
       const minAmount = await queryClient.ensureQueryData(
-        minimumOrderBudgetQuery(rpc, sellAsset.id),
+        minimumOrderBudgetQuery(rpc, sellAsset.id, sellAsset.decimals),
       )
 
       const minAmountHuman = scaleHuman(

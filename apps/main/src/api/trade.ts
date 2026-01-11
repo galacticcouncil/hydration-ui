@@ -295,11 +295,18 @@ export const dcaTradeOrderQuery = (
 export const minimumOrderBudgetQuery = (
   { isLoaded, sdk }: TProviderContext,
   assetId: string,
+  assetDecimals: number,
 ) => {
   return queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "trade", "minOrderBudget", assetId],
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      "trade",
+      "minOrderBudget",
+      assetId,
+      assetDecimals,
+    ],
     queryFn: async () =>
-      sdk.api.scheduler.getMinimumOrderBudget(Number(assetId)),
+      sdk.api.scheduler.getMinimumOrderBudget(Number(assetId), assetDecimals),
     enabled: isLoaded,
     gcTime: GC_TIME,
     staleTime: STALE_TIME,
