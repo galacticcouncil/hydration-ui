@@ -40,7 +40,7 @@ export type TJoinedFarm = {
   position: XykDeposit | OmnipoolDepositFull
 }
 
-export type TAprByRewardAsset = { rewardAsset: string; totalApr: string }
+export type TAprByRewardAsset = { rewardCurrency: number; apr: string }
 
 const getWorker = () => {
   if (!workerInstance) {
@@ -188,20 +188,20 @@ export const useDepositAprs = () => {
                 .toString()
             : farm.apr
 
-          const key = String(farm.rewardCurrency)
+          const key = farm.rewardCurrency
           const value = currentApr ? Big(currentApr) : Big(0)
 
           acc[key] = (acc[key] ?? Big(0)).plus(value)
 
           return acc
         },
-        {} as Record<string, Big>,
+        {} as Record<number, Big>,
       )
 
       const aprsByRewardAsset = Object.entries(totalAprs).map(
-        ([rewardAsset, totalApr]) => ({
-          rewardAsset,
-          totalApr: totalApr.toString(),
+        ([rewardCurrency, totalApr]) => ({
+          rewardCurrency: Number(rewardCurrency),
+          apr: totalApr.toString(),
         }),
       )
 

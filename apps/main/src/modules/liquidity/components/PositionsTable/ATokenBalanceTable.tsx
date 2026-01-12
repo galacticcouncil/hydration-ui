@@ -32,6 +32,8 @@ export const ATokenBalanceTable = ({
     aStableswapAsset,
     isStablepoolInOmnipool,
     stablepoolData,
+    borrowApyData,
+    lpFeeStablepool,
   } = pool
 
   const stableswapId = stablepoolData?.id.toString()
@@ -50,6 +52,13 @@ export const ATokenBalanceTable = ({
       aStableswapAsset.decimals,
     )
 
+    const apr = {
+      borrowApyData,
+      lpFeeStablepool,
+    }
+
+    const totalApr = (borrowApyData?.totalSupplyApy ?? 0).toString()
+
     return [
       {
         meta: aStableswapAsset,
@@ -61,6 +70,8 @@ export const ATokenBalanceTable = ({
         stableswapId,
         canAddLiquidity: true,
         canRemoveLiquidity: true,
+        apr,
+        totalApr,
       },
     ]
   }, [
@@ -70,6 +81,8 @@ export const ATokenBalanceTable = ({
     isStablepoolInOmnipool,
     aStableswapDisplayBalance,
     stableswapId,
+    borrowApyData,
+    lpFeeStablepool,
   ])
 
   if (!tableData.length) return null

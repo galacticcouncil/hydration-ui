@@ -32,11 +32,17 @@ const DrawerOverlay: FC<
 const DrawerContent: FC<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
     ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Content>>
+    onOverlayClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   }
-> = ({ className, children, ref, forceMount, ...props }) => (
+> = ({ className, children, ref, forceMount, onOverlayClick, ...props }) => (
   <DrawerPortal forceMount={forceMount}>
-    <DrawerOverlay />
-    <SDrawerContent ref={ref} className={className} {...props}>
+    <DrawerOverlay onClick={onOverlayClick} />
+    <SDrawerContent
+      ref={ref}
+      onClick={(e) => e.stopPropagation()}
+      className={className}
+      {...props}
+    >
       <SDrawerHandle />
       {children}
     </SDrawerContent>
@@ -133,8 +139,21 @@ const Drawer = ({
   return (
     <DrawerRoot {...props}>
       <DrawerContent
+        onOverlayClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+
+          if (disableInteractOutside) return
+
+          props.onOpenChange?.(false)
+        }}
         onInteractOutside={
-          disableInteractOutside ? (e) => e.preventDefault() : undefined
+          disableInteractOutside
+            ? (e) => {
+                e.preventDefault()
+                e.stopPropagation()
+              }
+            : undefined
         }
       >
         <DrawerHeader

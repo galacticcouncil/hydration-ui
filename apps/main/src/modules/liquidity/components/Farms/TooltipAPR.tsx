@@ -9,7 +9,6 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { BorrowAssetApyData } from "@/api/borrow"
-import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
 import { ApyRow } from "@/components/DetailedApy/DetailedApy"
 import { useApyBreakdownItems } from "@/modules/borrow/hooks/useApyBreakdownItems"
@@ -27,7 +26,7 @@ export const TooltipAPR = ({
   lpAPY?: number
   omnipoolFee?: string
   stablepoolFee?: string
-  farms: Farm[]
+  farms: { rewardCurrency: number; apr: string }[]
   borrowApyData?: BorrowAssetApyData
   description?: string
 } & Omit<InfoTooltipProps, "text">) => {
@@ -38,6 +37,8 @@ export const TooltipAPR = ({
 
   return (
     <Tooltip
+      asChild
+      preventDefault
       {...props}
       text={
         <Flex direction="column" gap={8}>

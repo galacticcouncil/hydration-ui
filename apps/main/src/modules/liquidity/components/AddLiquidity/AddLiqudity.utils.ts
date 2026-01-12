@@ -6,13 +6,13 @@ import {
 } from "@galacticcouncil/math-omnipool"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { FieldError, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z, ZodType } from "zod/v4"
 
-import { AAVE_GAS_LIMIT } from "@/api/aave"
+import { AAVE_GAS_LIMIT, healthFactorAfterWithdrawQuery } from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { TAssetData } from "@/api/assets"
 import { useOmnipoolFarms } from "@/api/farms"
@@ -39,6 +39,7 @@ export const getCustomErrors = (errors?: FieldError) =>
     ? (errors as unknown as {
         cap?: { message: string }
         circuitBreaker?: { message: string }
+        supplyCap?: { message: string }
       })
     : undefined
 
@@ -241,7 +242,8 @@ export const useAddLiquidity = ({
   onSubmitted: () => void
 }) => {
   const getToasts = useAddToOmnipoolToasts()
-  const { papi, sdk } = useRpcProvider()
+  const rpc = useRpcProvider()
+
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const { getAssetWithFallback, isErc20AToken, getErc20AToken } = useAssets()
   const { account } = useAccount()
@@ -254,6 +256,7 @@ export const useAddLiquidity = ({
 
   const poolMeta = getAssetWithFallback(poolId)
   const isErc20Asset = isErc20AToken(poolMeta)
+  const { papi, sdk } = rpc
 
   const omnipoolAsset = dataMap?.get(Number(poolId))
   const canAddLiquidity = omnipoolAsset?.tradeable
@@ -282,6 +285,14 @@ export const useAddLiquidity = ({
   const isFarms = activeFarms.length > 0
   const getOmnipoolGetShares = useLiquidityOmnipoolShares(poolId)
   const liquidityShares = getOmnipoolGetShares(amount.toString())
+
+  const { data: healthFactor } = useQuery(
+    healthFactorAfterWithdrawQuery(rpc, {
+      address: account?.address ?? "",
+      fromAssetId: isErc20AToken(poolMeta) ? poolMeta.underlyingAssetId : "",
+      fromAmount: amount.toString(),
+    }),
+  )
 
   const mutation = useMutation({
     mutationFn: async ({
@@ -377,6 +388,7 @@ export const useAddLiquidity = ({
     isJoinFarms,
     canAddLiquidity,
     onSubmit,
+    healthFactor,
     underlyingAssetMeta: underlyingAssetId
       ? getAssetWithFallback(underlyingAssetId)
       : undefined,
