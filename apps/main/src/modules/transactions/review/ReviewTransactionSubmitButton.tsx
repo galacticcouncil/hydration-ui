@@ -4,6 +4,7 @@ import {
   LoadingButton,
 } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
@@ -12,6 +13,7 @@ import {
   useTransactionAlerts,
 } from "@/modules/transactions/hooks/useTransactionAlerts"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
+import { TransactionType } from "@/states/transactions"
 
 export const ReviewTransactionSubmitButton = () => {
   const { t } = useTranslation()
@@ -19,6 +21,7 @@ export const ReviewTransactionSubmitButton = () => {
 
   const {
     tx,
+    meta,
     isSigning,
     signAndSubmit,
     isLoadingFeeEstimate,
@@ -29,9 +32,14 @@ export const ReviewTransactionSubmitButton = () => {
 
   const pjsUrl = usePolkadotJSExtrinsicUrl(tx)
 
-  const isIncompatible = !!account?.isIncompatible
+  const isExternalWallet =
+    account?.provider === WalletProviderType.ExternalWallet
+  const isIncompatibleOnChain =
+    meta.type === TransactionType.Onchain && !!account?.isIncompatible
 
-  if (isIncompatible && pjsUrl) {
+  const isSigningBlocked = isExternalWallet || isIncompatibleOnChain
+
+  if (isSigningBlocked && pjsUrl) {
     return (
       <Button size="large" asChild>
         <ExternalLink href={pjsUrl}>
@@ -54,7 +62,7 @@ export const ReviewTransactionSubmitButton = () => {
   }
 
   const isLoading = isSigning || isLoadingFeeEstimate
-  const isDisabled = isIncompatible || hasAlerts || isLoading
+  const isDisabled = isSigningBlocked || hasAlerts || isLoading
 
   return (
     <LoadingButton

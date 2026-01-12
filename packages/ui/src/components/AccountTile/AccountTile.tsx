@@ -31,7 +31,12 @@ export const AccountTile: FC<Props> = ({
   onClick,
 }) => {
   return (
-    <Flex direction="column" gap={getTokenPx("containers.paddings.quint")}>
+    <Flex
+      direction="column"
+      gap={getTokenPx("containers.paddings.quint")}
+      onClick={onClick}
+      as={onClick ? "button" : "div"}
+    >
       {label && (
         <Text fw={500} fs="p5" lh={1.2} color={getToken("text.medium")}>
           {label}
@@ -46,7 +51,13 @@ export const AccountTile: FC<Props> = ({
         <Flex direction="column" gap={4}>
           <Flex gap={4} align="center">
             {walletLogoSrc && <Logo size="extra-small" src={walletLogoSrc} />}
-            <Text fw={500} fs="p3" lh={1} color={getToken("text.high")}>
+            <Text
+              fw={500}
+              fs="p3"
+              lh={1}
+              color={getToken("text.high")}
+              truncate={160}
+            >
               {name}
             </Text>
           </Flex>

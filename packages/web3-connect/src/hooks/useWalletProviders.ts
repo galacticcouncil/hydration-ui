@@ -1,8 +1,6 @@
 import { useMemo } from "react"
 
-import { AccountFilterOption } from "@/components/account/AccountFilter"
-import { WalletProviderType } from "@/config/providers"
-import { PROVIDERS_BY_WALLET_MODE } from "@/hooks/useWeb3Connect"
+import { PROVIDERS_BY_WALLET_MODE, WalletMode } from "@/hooks/useWeb3Connect"
 import { Wallet } from "@/types/wallet"
 import { getWallets } from "@/wallets"
 
@@ -12,21 +10,15 @@ type UseWalletProvidersResult = {
 }
 
 export const useWalletProviders = (
-  filter: AccountFilterOption,
+  mode: WalletMode,
 ): UseWalletProvidersResult => {
   return useMemo(() => {
     const wallets = getWallets()
 
-    const filteredProviders = wallets
-      .filter(({ provider }) => {
-        const providers = PROVIDERS_BY_WALLET_MODE[filter]
-
-        return providers.includes(provider)
-      })
-      .sort((a, b) => {
-        const order = Object.values(WalletProviderType)
-        return order.indexOf(a.provider) - order.indexOf(b.provider)
-      })
+    const filteredProviders = wallets.filter(({ provider }) => {
+      const providers = PROVIDERS_BY_WALLET_MODE[mode]
+      return providers.includes(provider)
+    })
 
     const groups = Object.groupBy(filteredProviders, (wallet) =>
       wallet?.installed ? "installed" : "other",
@@ -36,5 +28,5 @@ export const useWalletProviders = (
       installed: groups?.installed || [],
       other: groups?.other || [],
     }
-  }, [filter])
+  }, [mode])
 }

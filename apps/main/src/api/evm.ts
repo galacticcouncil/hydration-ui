@@ -1,4 +1,4 @@
-import { H160, isEvmAccount, isEvmAddress } from "@galacticcouncil/sdk"
+import { h160 } from "@galacticcouncil/common"
 import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import {
   EVM_CALL_PERMIT_ABI,
@@ -16,6 +16,8 @@ import { getContract, Hex } from "viem"
 
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
+
+const { H160, isEvmAccount, isEvmAddress } = h160
 
 export const evmAccountBindingQuery = (
   { papi, isLoaded }: TProviderContext,

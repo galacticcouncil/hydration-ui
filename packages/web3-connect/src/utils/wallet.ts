@@ -1,27 +1,68 @@
 import { AccountAvatarTheme } from "@galacticcouncil/ui/components"
 import {
+  EvmAddr,
   isEvmParachainAccount,
   isH160Address,
   safeConvertAddressSS58,
   safeConvertH160toSS58,
+  safeConvertSolanaAddressToSS58,
   safeConvertSS58toH160,
   safeConvertSS58toPublicKey,
+  safeConvertSuiAddressToSS58,
+  SolanaAddr,
+  Ss58Addr,
 } from "@galacticcouncil/utils"
-import { addr } from "@galacticcouncil/xcm-core"
 
-import { WalletProviderType } from "@/config/providers"
+import {
+  AccountFilterOption,
+  allAccountFilterOptions,
+} from "@/components/account/AccountFilter"
+import {
+  SOLANA_PROVIDERS,
+  SUI_PROVIDERS,
+  WalletProviderType,
+} from "@/config/providers"
 import {
   Account,
   COMPATIBLE_WALLET_PROVIDERS,
+  PROVIDERS_BY_WALLET_MODE,
   StoredAccount,
   useWeb3Connect,
   WalletMode,
 } from "@/hooks/useWeb3Connect"
 import { Wallet, WalletAccount } from "@/types/wallet"
 
-const { Ss58Addr, EvmAddr, SolanaAddr } = addr
+const toStoredSolanaAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => {
+  const ss58Format = safeConvertSolanaAddressToSS58(address)
+  return {
+    publicKey: safeConvertSS58toPublicKey(ss58Format),
+    address: ss58Format,
+    rawAddress: address,
+    name: name ?? "",
+    provider: provider,
+  }
+}
 
-export const toStoredAccount = ({
+const toStoredSuiAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => {
+  const ss58Format = safeConvertSuiAddressToSS58(address)
+  return {
+    publicKey: safeConvertSS58toPublicKey(ss58Format),
+    address: ss58Format,
+    rawAddress: address,
+    name: name ?? "",
+    provider: provider,
+  }
+}
+
+const toStoredDefaultAccount = ({
   address,
   name,
   provider,
@@ -37,8 +78,24 @@ export const toStoredAccount = ({
   return {
     publicKey,
     address: ss58Format,
+    rawAddress: address,
     name: name ?? "",
     provider: provider,
+  }
+}
+
+export const toStoredAccount = ({
+  address,
+  name,
+  provider,
+}: WalletAccount): StoredAccount => {
+  switch (true) {
+    case SOLANA_PROVIDERS.includes(provider):
+      return toStoredSolanaAccount({ address, name, provider })
+    case SUI_PROVIDERS.includes(provider):
+      return toStoredSuiAccount({ address, name, provider })
+    default:
+      return toStoredDefaultAccount({ address, name, provider })
   }
 }
 
@@ -47,17 +104,18 @@ export const toAccount = (account: StoredAccount): Account => {
     ...account,
     displayAddress: isEvmParachainAccount(account.address)
       ? safeConvertSS58toH160(account.address)
-      : account.address,
+      : account.rawAddress,
     isIncompatible:
-      account.provider === WalletProviderType.ExternalWallet ||
-      !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider),
+      !COMPATIBLE_WALLET_PROVIDERS.includes(account.provider) &&
+      account.provider !== WalletProviderType.ExternalWallet,
   }
 }
 
 export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
   if (
     account.provider === WalletProviderType.Talisman ||
-    account.provider === WalletProviderType.TalismanEvm
+    account.provider === WalletProviderType.TalismanEvm ||
+    account.provider === WalletProviderType.TalismanH160
   ) {
     return "talisman"
   }
@@ -65,16 +123,28 @@ export const getAccountAvatarTheme = (account: Account): AccountAvatarTheme => {
   return "auto"
 }
 
-export function getWalletModeFromAddress(address: string) {
-  if (EvmAddr.isValid(address)) {
-    return WalletMode.EVM
-  } else if (Ss58Addr.isValid(address)) {
-    return WalletMode.Substrate
-  } else if (SolanaAddr.isValid(address)) {
-    return WalletMode.Solana
+export const getWalletModeByAddress = (address: string) => {
+  switch (true) {
+    case EvmAddr.isValid(address):
+      return WalletMode.EVM
+    case Ss58Addr.isValid(address):
+      return WalletMode.Substrate
+    case SolanaAddr.isValid(address):
+      return WalletMode.Solana
+    default:
+      return null
   }
+}
 
-  return null
+export const getDefaultAccountFilterByMode = (
+  mode: WalletMode,
+): AccountFilterOption => {
+  if (mode !== WalletMode.Default)
+    return (
+      allAccountFilterOptions.find((option) => option === mode) ||
+      WalletMode.Default
+    )
+  return WalletMode.Default
 }
 
 export type AccountsSubscribeOptions = {
@@ -112,4 +182,27 @@ export function subscribeWalletAccounts(
   })
 
   return unsubscribe
+}
+
+export function getWalletModeIcon(mode: WalletMode) {
+  switch (mode) {
+    case WalletMode.EVM:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
+    case WalletMode.Substrate:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg"
+    case WalletMode.Solana:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg"
+    case WalletMode.Sui:
+      return "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/1000753/icon.svg"
+    default:
+      return ""
+  }
+}
+
+export function getWalletModesByProviderType(
+  walletType: WalletProviderType,
+): WalletMode[] {
+  return Object.entries(PROVIDERS_BY_WALLET_MODE)
+    .filter(([_, providers]) => providers.includes(walletType))
+    .map(([mode, _]) => mode as WalletMode)
 }

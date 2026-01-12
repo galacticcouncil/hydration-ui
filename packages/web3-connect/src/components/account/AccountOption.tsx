@@ -96,8 +96,8 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
             {onEdit && <AccountEditButton onClick={() => setIsEditing(true)} />}
           </Flex>
           <Flex align="center" justify="space-between" gap={4}>
-            <Text fs="p4" color={getToken("text.medium")}>
-              <Text as="span" display={["none", "block"]}>
+            <Text fs="p4" color={getToken("text.medium")} sx={{ minWidth: 0 }}>
+              <Text as="span" truncate display={["none", "block"]}>
                 {account.displayAddress}
               </Text>
               <Text as="span" display={["block", "none"]}>
