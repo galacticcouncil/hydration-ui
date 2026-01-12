@@ -32,7 +32,7 @@ const DrawerOverlay: FC<
 const DrawerContent: FC<
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content> & {
     ref?: Ref<React.ElementRef<typeof DrawerPrimitive.Content>>
-    onOverlayClick: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+    onOverlayClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
   }
 > = ({ className, children, ref, forceMount, onOverlayClick, ...props }) => (
   <DrawerPortal forceMount={forceMount}>
