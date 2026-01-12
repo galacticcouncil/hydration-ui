@@ -1,7 +1,10 @@
 import {
+  SContainer,
   SContent,
-  SMainContent,
+  SContentContainer,
 } from "@/modules/layout/components/Content.styled"
 
+export const Container = SContainer
+export const ContentContainer = SContentContainer
 export const Content = SContent
-export const MainContent = SMainContent.withComponent("main")
+export const MainContent = SContent.withComponent("main")
