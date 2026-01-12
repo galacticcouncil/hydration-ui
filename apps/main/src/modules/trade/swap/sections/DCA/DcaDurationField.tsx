@@ -1,4 +1,3 @@
-import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   Box,
   Flex,
@@ -20,6 +19,7 @@ import {
   DcaFormValues,
   DcaOrders,
   DcaOrdersMode,
+  dcaTimeFrameTypes,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 
 export const DcaDurationField: FC = () => {
@@ -80,9 +80,7 @@ export const DcaDurationField: FC = () => {
           gridColumn: isAuto ? "1/-1" : "1",
         }}
         fieldName="duration"
-        allowedTypes={
-          new Set(timeFrameTypes.filter((type) => type !== "month"))
-        }
+        allowedTypes={new Set(dcaTimeFrameTypes)}
       />
       {!isAuto && (
         <Controller

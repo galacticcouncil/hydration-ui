@@ -1,3 +1,4 @@
+import { IndexerErrorState } from "@galacticcouncil/indexer/squid/lib/parseIndexerErrorState"
 import { Flex, Separator } from "@galacticcouncil/ui/components"
 import { getMinusTokenPx, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC, Fragment } from "react"
@@ -44,15 +45,22 @@ export const PastExecutionsList: FC<Props> = ({
               }
             : { status: execution.status }
 
+        const error = getDcaError(execution.errorState)
+
         return (
           <Fragment key={execution.id}>
             {index > 0 && (
-              <Separator mx={getMinusTokenPx("containers.paddings.primary")} />
+              <Separator
+                sx={{ flexShrink: 0 }}
+                mx={getMinusTokenPx("containers.paddings.primary")}
+              />
             )}
             <TransactionItemMobile
               sx={{ px: 0 }}
               timestamp={execution.timestamp}
               link={execution.link}
+              errorTitle={error?.title}
+              errorMessage={error?.message}
               {...statusProps}
             />
           </Fragment>
@@ -60,4 +68,36 @@ export const PastExecutionsList: FC<Props> = ({
       })}
     </Flex>
   )
+}
+
+const getDcaError = (errorState: IndexerErrorState | null | undefined) => {
+  if (!errorState) {
+    return undefined
+  }
+
+  switch (errorState.error) {
+    case "0x0d000000":
+      return {
+        title: "SlippageLimitReached",
+        message:
+          "Slippage limit calculated from oracle is reached, leading to retry",
+      }
+
+    case "0x04000000":
+      return {
+        title: "PriceUnstable",
+        message:
+          "Price is unstable as price change from oracle data is bigger than max allowed",
+      }
+
+    case "0x0c000000": {
+      return {
+        title: "TradeLimitReached",
+        message: "Absolutely trade limit reached, leading to retry",
+      }
+    }
+
+    default:
+      return undefined
+  }
 }

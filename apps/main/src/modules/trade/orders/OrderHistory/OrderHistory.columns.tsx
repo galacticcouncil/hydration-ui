@@ -7,6 +7,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -30,9 +31,9 @@ export const useOrderHistoryColumns = () => {
       cell: ({ row }) => {
         return (
           <SwapAmount
-            fromAmount={row.original.fromAmountExecuted}
+            fromAmount={row.original.fromAmountBudget}
             from={row.original.from}
-            toAmount={row.original.toAmountExecuted}
+            toAmount={row.original.toAmountExecuted ?? "0"}
             to={row.original.to}
           />
         )
@@ -55,13 +56,14 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        return (
-          <SwapPrice
-            from={row.original.from}
-            to={row.original.to}
-            price={row.original.price}
-          />
-        )
+        const { from, to, fromAmountBudget, toAmountExecuted } = row.original
+
+        const price =
+          toAmountExecuted && fromAmountBudget && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmountBudget).div(toAmountExecuted).toString()
+            : null
+
+        return <SwapPrice from={from} to={to} price={price} />
       },
     })
 

@@ -339,6 +339,7 @@ export const DcaScheduleExecutionsDocument = `
                 timestamp
               }
             }
+            errorState
           }
         }
       }

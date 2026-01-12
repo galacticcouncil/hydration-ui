@@ -142,6 +142,7 @@ query DcaScheduleExecutions($scheduleId: String!) {
                 timestamp
               }
             }
+            errorState
           }
         }
       }

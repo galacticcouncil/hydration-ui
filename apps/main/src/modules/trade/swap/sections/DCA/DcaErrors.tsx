@@ -19,9 +19,9 @@ export const DcaErrors: FC<Props> = ({ priceImpact, errors }) => {
 
   const errorDescriptions: Record<DcaValidationError, string> = {
     [DcaValidationError.PriceImpact]: t("trade:dca.errors.priceImpact", {
-      percentage: t("percent", { value: Math.abs(priceImpact) }),
+      percentage: t("percent", { value: priceImpact }),
     }),
-    [DcaValidationError.MaxOrders]: t("trade:dca.errors.maxOrders"),
+    [DcaValidationError.MinOrderBudget]: t("trade:dca.errors.minOrderBudget"),
   }
 
   return (

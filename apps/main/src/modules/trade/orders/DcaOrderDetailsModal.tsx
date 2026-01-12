@@ -85,7 +85,7 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
             </Text>
             <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
               {t("currency", {
-                value: details.toAmountExecuted,
+                value: details.toAmountExecuted ?? "0",
                 symbol: details.to.symbol,
               })}
             </Text>

@@ -1,7 +1,7 @@
 import { Box } from "@galacticcouncil/ui/components"
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useNavigate, useSearch } from "@tanstack/react-router"
-import { FC } from "react"
+import { FC, useMemo } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -12,7 +12,7 @@ import { DcaDurationField } from "@/modules/trade/swap/sections/DCA/DcaDurationF
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
+import { isErc20AToken, TAsset, useAssets } from "@/providers/assetsProvider"
 
 export const DcaForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -24,8 +24,12 @@ export const DcaForm: FC = () => {
   const navigate = useNavigate()
   const search = useSearch({ from: "/trade/_history" })
 
-  const buyableAssets = tradable.filter(
-    (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
+  const buyableAssets = useMemo(
+    () =>
+      tradable
+        .filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id))
+        .filter(noATokens),
+    [tradable],
   )
 
   const handlesellAssetChange = (
@@ -77,7 +81,7 @@ export const DcaForm: FC = () => {
       <AssetSelectFormField<DcaFormValues>
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
-        assets={tradable}
+        assets={useMemo(() => tradable.filter(noATokens), [tradable])}
         label={t("trade:dca.assetIn.title")}
         maxBalanceFallback="0"
         onAssetChange={handlesellAssetChange}
@@ -106,3 +110,6 @@ export const DcaForm: FC = () => {
     </Box>
   )
 }
+
+// TODO remove filter once runtime is fixed
+const noATokens = (asset: TAsset): boolean => !isErc20AToken(asset)

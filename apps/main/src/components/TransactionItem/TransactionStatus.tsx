@@ -16,9 +16,10 @@ import {
 
 type Props = {
   readonly variant: TransactionStatusVariant
+  readonly errorTitle?: string
 }
 
-export const TransactionStatus: FC<Props> = ({ variant }) => {
+export const TransactionStatus: FC<Props> = ({ variant, errorTitle }) => {
   const { t } = useTranslation()
 
   const [icon, status] = (
@@ -33,7 +34,9 @@ export const TransactionStatus: FC<Props> = ({ variant }) => {
   return (
     <STransactionStatus variant={variant}>
       <Text fw={500} fs="p4" lh={1}>
-        {status}
+        {variant === TransactionStatusVariant.Error && errorTitle
+          ? errorTitle
+          : status}
       </Text>
       <Icon size={14} component={icon} />
     </STransactionStatus>
