@@ -1,8 +1,11 @@
-import { Amount, Flex, Separator } from "@galacticcouncil/ui/components"
+import { Hourglass, Landmark } from "@galacticcouncil/ui/assets/icons"
+import { Amount, Flex } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
+import { AssetOrigin } from "@/modules/wallet/assets/MyAssets/AssetOrigin"
+import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 
 type Props = {
@@ -13,40 +16,45 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
-  // const [reservedDcaDisplayPrice] = useDisplayAssetPrice(
-  //   asset.id,
-  //   asset.reservedDca,
-  // )
+
+  // TODO integrate
+  const xcm = "-1"
+  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
 
   return (
-    <Flex px={50} justify="space-around">
+    <Flex direction="column" gap={20}>
       {asset.origin?.name && (
         <>
-          <Amount
-            label={t("myAssets.expandedAsset.assetOrigin")}
-            value={asset.origin.name}
-            sx={{ alignSelf: "center" }}
-          />
-          <Separator orientation="vertical" />
+          <AssetOrigin origin={asset.origin} />
+          <ExpandedRowSeparator />
         </>
       )}
       <Amount
-        label={t("myAssets.expandedAsset.reserved")}
-        value={t("common:currency", {
+        variant="horizontalLabel"
+        label={t("myAssets.expandedNative.lockedInDCA")}
+        labelIcon={Landmark}
+        value={t("common:number", {
           value: asset.reserved,
-          symbol: asset.symbol,
         })}
         displayValue={reservedDisplayPrice}
       />
-      {/* <Separator orientation="vertical" />
-      <Amount
-        label={t("myAssets.expandedAsset.reservedDca")}
-        value={t("common:currency", {
-          value: asset.reservedDca,
-          symbol: asset.symbol,
-        })}
-        displayValue={reservedDcaDisplayPrice}
-      /> */}
+      {xcm !== "-1" && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInXCM")}
+            labelIcon={Hourglass}
+            description={t("myAssets.expandedNative.lockedInXCM.description", {
+              returnObjects: true,
+            })}
+            value={t("common:number", {
+              value: xcm,
+            })}
+            displayValue={xcmDisplay}
+          />
+        </>
+      )}
     </Flex>
   )
 }

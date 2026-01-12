@@ -20,29 +20,33 @@ export const HeaderMenu: React.FC<
   return (
     <NavigationMenu {...props}>
       <NavigationMenuList>
-        {NAVIGATION.map(({ key, children, to, search }) => (
-          <NavigationMenuItem key={key} data-intersect={key}>
-            <NavigationMenuTrigger asChild>
-              <Link to={to} search={search}>
-                {translations[key].title}
-              </Link>
-            </NavigationMenuTrigger>
-            {children && children.length > 1 && (
-              <NavigationMenuContent>
-                {children.map(({ to, search, key, icon }) => (
-                  <DetailedLink
-                    key={key}
-                    to={to}
-                    search={search}
-                    title={translations[key].title}
-                    description={translations[key].description}
-                    icon={icon ?? IconPlaceholder}
-                  />
-                ))}
-              </NavigationMenuContent>
-            )}
-          </NavigationMenuItem>
-        ))}
+        {NAVIGATION.map(({ key, children, to, search, defaultChild }) => {
+          const linkTo = defaultChild ?? to
+
+          return (
+            <NavigationMenuItem key={key} data-intersect={key}>
+              <NavigationMenuTrigger asChild>
+                <Link to={linkTo} search={search}>
+                  {translations[key].title}
+                </Link>
+              </NavigationMenuTrigger>
+              {children && children.length > 1 && (
+                <NavigationMenuContent>
+                  {children.map(({ to, search, key, icon }) => (
+                    <DetailedLink
+                      key={key}
+                      to={to}
+                      search={search}
+                      title={translations[key].title}
+                      description={translations[key].description}
+                      icon={icon ?? IconPlaceholder}
+                    />
+                  ))}
+                </NavigationMenuContent>
+              )}
+            </NavigationMenuItem>
+          )
+        })}
       </NavigationMenuList>
     </NavigationMenu>
   )

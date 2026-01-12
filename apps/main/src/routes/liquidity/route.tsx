@@ -29,10 +29,7 @@ const Liquidity = () => {
 
   return (
     <>
-      <SubpageLayout
-        crumbs={!isPoolsPage ? crumbs : undefined}
-        subpageMenuHidden={!isPoolsPage}
-      />
+      <SubpageLayout crumbs={!isPoolsPage ? crumbs : undefined} />
       <OmnipoolSubscriber />
       <IsolatedPoolsSubscriber />
     </>

@@ -1,3 +1,4 @@
+import { ArrowDownUp, Repeat } from "@galacticcouncil/ui/assets/icons"
 import { Button } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import { FC } from "react"
@@ -32,7 +33,6 @@ export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
         {t("withdraw")}
       </Button> */}
       <Button
-        variant="tertiary"
         size="large"
         disabled={!asset.isTradable}
         onClick={() =>
@@ -42,13 +42,15 @@ export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
           })
         }
       >
-        {t("trade")}
+        <Repeat />
+        {t("swap")}
       </Button>
       <Button
-        variant="tertiary"
+        variant="secondary"
         size="large"
         onClick={() => onModalOpen("transfer")}
       >
+        <ArrowDownUp />
         {t("transfer")}
       </Button>
     </SAssetDetailMobileActions>

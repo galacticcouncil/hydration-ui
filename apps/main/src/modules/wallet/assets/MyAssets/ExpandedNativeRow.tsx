@@ -1,9 +1,12 @@
 import {
-  Amount,
-  ExpandedTableRowHorizontalSeparator,
-  Flex,
-  Separator,
-} from "@galacticcouncil/ui/components"
+  Hourglass,
+  Landmark,
+  Layers,
+  LockOpen,
+  Vote,
+} from "@galacticcouncil/ui/assets/icons"
+import { Amount, Flex } from "@galacticcouncil/ui/components"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -14,6 +17,7 @@ import {
   useNativeAssetLocks,
   useUnlockableNativeTokens,
 } from "@/modules/wallet/assets/MyAssets/ExpandedNativeRow.data"
+import { ExpandedRowSeparator } from "@/modules/wallet/assets/MyAssets/ExpandedRowSeparator"
 import { FullExpiration } from "@/modules/wallet/assets/MyAssets/FullExpiration"
 import { MyAsset } from "@/modules/wallet/assets/MyAssets/MyAssetsTable.columns"
 import { LockExpiration } from "@/modules/wallet/assets/MyLiquidity/LockExpiration"
@@ -30,95 +34,124 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
 
   const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
 
+  // TODO integrate
+  const xcm = "-1"
+  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
+
   return (
     <Flex direction="column" gap={20}>
-      <Flex px={50} justify="space-around">
-        <Amount
-          // separators with size auto are not shown when flexbox has align
-          sx={{ alignSelf: "center" }}
-          label={t("myAssets.expandedNative.lockedInStaking")}
-          value={t("common:number", {
-            value: locks.lockedInStaking,
-          })}
-          displayValue={locks.lockedInStakingDisplayPrice}
-        />
-        <Separator orientation="vertical" />
-        <Flex
-          direction="column"
-          gap={8}
-          // separators with size auto are not shown when flexbox has align
-          sx={{ alignSelf: "center" }}
-        >
+      <Amount
+        variant="horizontalLabel"
+        label={t("myAssets.expandedNative.lockedInDCA")}
+        labelIcon={Landmark}
+        value={t("common:number", {
+          value: asset.reserved,
+        })}
+        displayValue={reservedDisplayPrice}
+      />
+      {xcm !== "-1" && (
+        <>
+          <ExpandedRowSeparator />
           <Amount
-            label={t("myAssets.expandedNative.lockedInDemocracy")}
-            value={t("common:number", {
-              value: locks.lockedInDemocracy,
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInXCM")}
+            labelIcon={Hourglass}
+            description={t("myAssets.expandedNative.lockedInXCM.description", {
+              returnObjects: true,
             })}
-            displayValue={locks.lockedInDemocracyDisplayPrice}
+            value={t("common:number", {
+              value: xcm,
+            })}
+            displayValue={xcmDisplay}
           />
-          {unlockable.lockedSeconds > 0 && (
-            <FullExpiration initialLockedSeconds={unlockable.lockedSeconds} />
-          )}
-        </Flex>
-        <Separator orientation="vertical" />
-        <Flex
-          gap={20}
-          align="center"
-          // separators with size auto are not shown when flexbox has align
-          sx={{ alignSelf: "center" }}
-        >
-          <Flex direction="column" gap={8}>
-            <Amount
-              label={t("myAssets.expandedNative.unlockable")}
-              value={t("common:number", {
-                value: unlockable.value,
-              })}
-              displayValue={unlockable.displayValue}
+        </>
+      )}
+      <ExpandedRowSeparator />
+      <Amount
+        variant="horizontalLabel"
+        label={t("myAssets.expandedNative.lockedInStaking")}
+        labelIcon={Layers}
+        value={t("common:number", {
+          value: locks.lockedInStaking,
+        })}
+        displayValue={locks.lockedInStakingDisplayPrice}
+      />
+      <ExpandedRowSeparator />
+      <Amount
+        variant="horizontalLabel"
+        label={t("myAssets.expandedNative.lockedInDemocracy")}
+        labelIcon={Vote}
+        value={t("common:number", {
+          value: locks.lockedInDemocracy,
+        })}
+        displayValue={locks.lockedInDemocracyDisplayPrice}
+        descriptionCustom={
+          unlockable.lockedSeconds > 0 && (
+            <FullExpiration
+              sx={{ width: "fit-content" }}
+              initialLockedSeconds={unlockable.lockedSeconds}
             />
-            {unlockable.unlockableIds.length > 0 && (
-              <LockExpiration>
+          )
+        }
+      />
+      <ExpandedRowSeparator />
+      <Flex align="center" gap={getTokenPx("scales.paddings.m")}>
+        <Amount
+          css={{ flex: 1 }}
+          variant="horizontalLabel"
+          color="tint"
+          label={t("myAssets.expandedNative.unlockableInDemocracy")}
+          labelIcon={LockOpen}
+          value={t("common:number", {
+            value: unlockable.value,
+          })}
+          displayValue={unlockable.displayValue}
+          descriptionCustom={
+            unlockable.unlockableIds.length > 0 && (
+              <LockExpiration
+                sx={{
+                  width: "fit-content",
+                }}
+              >
                 {t("myAssets.expandedNative.expiredLocks", {
                   amount: unlockable.unlockableIds.length,
                 })}
               </LockExpiration>
-            )}
-          </Flex>
-          <AssetDetailUnlock
-            unlockableIds={unlockable.unlockableIds}
-            value={unlockable.value}
+            )
+          }
+        />
+        <AssetDetailUnlock
+          unlockableIds={unlockable.unlockableIds}
+          value={unlockable.value}
+        />
+      </Flex>
+      {new Big(locks.lockedInOpenGov).gt(0) && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInReferenda")}
+            value={t("common:number", {
+              value: locks.lockedInOpenGov,
+            })}
+            displayValue={locks.lockedInOpenGovDisplayPrice}
           />
-        </Flex>
-      </Flex>
-      <ExpandedTableRowHorizontalSeparator />
-      <Flex px={50} justify="space-around">
-        <Amount
-          label={t("myAssets.expandedNative.lockedInReferenda")}
-          value={t("common:number", {
-            value: locks.lockedInOpenGov,
-          })}
-          displayValue={locks.lockedInOpenGovDisplayPrice}
-        />
-        <Separator orientation="vertical" />
-        <Amount
-          label={t("myAssets.expandedNative.reserved")}
-          value={t("common:number", {
-            value: asset.reserved,
-          })}
-          displayValue={reservedDisplayPrice}
-        />
-        {new Big(locks.lockedInVesting).gt(0) && (
-          <>
-            <Separator orientation="vertical" />
-            <Amount
-              label={t("myAssets.expandedNative.lockedInVesting")}
-              value={t("common:number", {
-                value: locks.lockedInVesting,
-              })}
-              displayValue={locks.lockedInVestingDisplayPrice}
-            />
-          </>
-        )}
-      </Flex>
+        </>
+      )}
+
+      {new Big(locks.lockedInVesting).gt(0) && (
+        <>
+          <ExpandedRowSeparator />
+          <Amount
+            variant="horizontalLabel"
+            label={t("myAssets.expandedNative.lockedInVesting")}
+            value={t("common:number", {
+              value: locks.lockedInVesting,
+            })}
+            displayValue={locks.lockedInVestingDisplayPrice}
+          />
+        </>
+      )}
     </Flex>
   )
 }

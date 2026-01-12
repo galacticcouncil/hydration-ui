@@ -1,6 +1,7 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Grid, Input } from "@galacticcouncil/ui/components"
+import { Flex, Grid, Icon, Input } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { useEffect, useState } from "react"
@@ -34,31 +35,45 @@ export const WalletAssetsPage = () => {
 
   return (
     <>
-      <Flex direction="column" gap={[0, 20]}>
+      <Flex direction="column">
+        <HollarBanner />
         <Grid
+          sx={{
+            overflowX: "auto",
+          }}
           columnGap={[10, 20]}
-          sx={{ gridTemplateColumns: "2fr 1fr", overflowX: "auto" }}
+          columnTemplate="1fr minmax(0, 400px)"
+          pb={isMobile ? 8 : getTokenPx("containers.paddings.primary")}
         >
           <WalletBalances />
           <WalletRewards />
         </Grid>
-        <HollarBanner />
         {!isMobile && (
-          <Flex pt={12} align="flex-end" justify="space-between">
+          <Flex
+            pt={getTokenPx("containers.paddings.tertiary")}
+            align="flex-end"
+            justify="space-between"
+          >
             <WalletAssetsSubpageMenu />
             <Input
               placeholder={t("search.placeholder.assets")}
-              iconStart={Search}
+              leadingElement={<Icon size={18} component={Search} mr={8} />}
               onChange={(e) => setSearchPhrase(e.target.value)}
             />
           </Flex>
         )}
-        <Flex direction="column" gap={12}>
+        <Flex direction="column">
           {(isMobile || category === "all" || category === "assets") && (
-            <MyAssets searchPhrase={searchPhrase} sx={{ pt: 8 }} />
+            <MyAssets
+              key={account.address + "_assets"}
+              searchPhrase={searchPhrase}
+            />
           )}
           {(isMobile || category === "all" || category === "liquidity") && (
-            <MyLiquidity searchPhrase={searchPhrase} />
+            <MyLiquidity
+              key={account.address + "_liquidity"}
+              searchPhrase={searchPhrase}
+            />
           )}
         </Flex>
       </Flex>

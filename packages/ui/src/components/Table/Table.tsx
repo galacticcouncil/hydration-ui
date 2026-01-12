@@ -84,17 +84,18 @@ export const ExpandedTableRowHorizontalSeparator: FC<
   )
 }
 
-export const TableRowAction: FC<ComponentProps<typeof Button>> = ({
-  children,
-  onClick,
-  ...props
-}) => {
+export const TableRowAction: FC<
+  ComponentProps<typeof Button> & { readonly allowPropagation?: boolean }
+> = ({ children, allowPropagation, onClick, ...props }) => {
   return (
     <Button
       variant="tertiary"
       outline
       onClick={(e) => {
-        e.stopPropagation()
+        if (!allowPropagation) {
+          e.stopPropagation()
+        }
+
         onClick?.(e)
       }}
       {...props}

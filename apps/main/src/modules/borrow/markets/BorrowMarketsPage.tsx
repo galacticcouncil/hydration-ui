@@ -28,9 +28,7 @@ export const BorrowMarketsPage = () => {
           align={["flex-start", "center"]}
           mb={4}
         >
-          <SectionHeader as="h1">
-            {t("borrow:market.table.title")}
-          </SectionHeader>
+          <SectionHeader as="h1" title={t("borrow:market.table.title")} />
           <Input
             sx={{ minWidth: ["100%", 250] }}
             placeholder={t("search.placeholder.assets")}

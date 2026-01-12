@@ -8,7 +8,7 @@ import { SThumb, SToggle, ToggleProps } from "./Toggle.styled"
 
 export const ToggleRoot: FC<FlexProps> = ({ children, ...props }) => {
   return (
-    <Flex gap={8} align="center" {...props}>
+    <Flex gap={10} align="center" {...props}>
       {children}
     </Flex>
   )

@@ -78,7 +78,10 @@ export const useSuppliedAssetsTableColumns = ({
             value={t("number", {
               value: underlyingBalance,
             })}
-            displayValue={t("currency", { value: underlyingBalanceUSD })}
+            displayValue={t("currency", {
+              value: underlyingBalanceUSD,
+              maximumFractionDigits: 2,
+            })}
           />
         )
       },

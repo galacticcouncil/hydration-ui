@@ -21,6 +21,8 @@ export const SDrawerContent = styled(Content)`
   --modal-content-padding: 12px;
   --modal-content-inset: calc(-1 * var(--modal-content-padding));
   --modal-block-offset: 30px;
+  --modal-background: ${({ theme }) =>
+    theme.surfaces.themeBasePalette.surfaceHigh};
 
   position: fixed;
   left: 0;
@@ -30,7 +32,7 @@ export const SDrawerContent = styled(Content)`
 
   max-height: calc(100dvh - var(--modal-block-offset));
 
-  background: ${({ theme }) => theme.surfaces.themeBasePalette.surfaceHigh};
+  background: var(--modal-background);
 
   border-top-left-radius: ${({ theme }) =>
     theme.containers.cornerRadius.containersPrimary}px;

@@ -8,6 +8,7 @@ import { AssetLogo } from "@/components/AssetLogo"
 import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
+import { LiquidityPositionAction } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 import { toBig } from "@/utils/formatting"
 
 import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
@@ -15,9 +16,12 @@ import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
 type Props = {
   readonly number: number
   readonly position: XYKPositionDeposit
+  readonly onAction: (
+    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
+  ) => void
 }
 
-export const XYKDeposit: FC<Props> = ({ number, position }) => {
+export const XYKDeposit: FC<Props> = ({ number, position, onAction }) => {
   const { t } = useTranslation(["wallet", "common"])
   const { data: activeFarms } = useIsolatedPoolFarms(position.amm_pool_id)
   const getDepositAprs = useDepositAprs()
@@ -60,9 +64,9 @@ export const XYKDeposit: FC<Props> = ({ number, position }) => {
         <div />
       )}
       <LiquidityPositionActions
-        assetId={position.meta.id}
         position={position}
         farmsToJoin={farmsToJoin}
+        onAction={onAction}
       />
     </SLiquidityPosition>
   )
