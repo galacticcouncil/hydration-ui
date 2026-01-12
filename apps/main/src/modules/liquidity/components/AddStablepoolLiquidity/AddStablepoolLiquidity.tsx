@@ -380,12 +380,12 @@ export const AddStablepoolLiquidityForm = ({
           />
         )}
 
-        {customErrors?.supplyCap ? (
+        {customErrors?.supplyCap && erc20Id ? (
           <Alert
             variant="warning"
             description={t("liquidity.add.modal.validation.supplyCap", {
               value: customErrors.supplyCap.message,
-              symbol: meta.symbol,
+              symbol: getAssetWithFallback(erc20Id).symbol,
             })}
             sx={{ my: getTokenPx("containers.paddings.primary") }}
           />
