@@ -13,9 +13,9 @@ import {
 } from "@/modules/liquidity/components/PoolsHeader/ClaimRewardsButton.utils"
 import { getClaimStakingTx } from "@/modules/staking/ClaimStaking.tx"
 import { useProcessedVotes } from "@/modules/staking/Stake.data"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useWalletRewardsSectionData } from "@/modules/wallet/assets/Rewards/WalletRewardsSection.data"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
 
 // @ts-expect-error Temporarily unused
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -58,12 +58,12 @@ export const useClaimAllWalletRewards = () => {
   const rpc = useRpcProvider()
   const { papi } = rpc
 
-  const { createTransaction } = useTransactionsStore()
-
   const { data: pools = [] } = useXykPools()
 
   const { rewards: miningRewards = [], refetch: refetchMiningRewards } =
     useLiquidityMiningRewards()
+
+  const createBatch = useCreateBatchTx()
 
   const getClaimBorrowTx = useGetClaimAllBorrowRewardsTx()
   const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
@@ -77,44 +77,30 @@ export const useClaimAllWalletRewards = () => {
       // const claimStaking = getClaimStakingTx()
       const claimReferral = papi.tx.Referrals.claim_rewards()
 
-      const tx = papi.tx.Utility.batch_all({
-        calls: [
-          ...(!walletRewards.incentives.isEmpty
-            ? [claimBorrow.decodedCall]
-            : []),
-          ...(!walletRewards.farming.isEmpty
-            ? farmRewardsTx.map((tx) => tx.decodedCall)
-            : []),
-          // TODO staking claim is disabled currently
-          // ...(!walletRewards.staking.isEmpty && claimStaking
-          //   ? claimStaking.decodedCall.type === "Staking"
-          //     ? [claimStaking.decodedCall]
-          //     : claimStaking.decodedCall.value.value.calls
-          //   : []),
-          ...(!walletRewards.referral.isEmpty
-            ? [claimReferral.decodedCall]
-            : []),
-        ],
+      const txs = [
+        ...(!walletRewards.incentives.isEmpty ? [claimBorrow] : []),
+        ...(!walletRewards.farming.isEmpty ? farmRewardsTx : []),
+        ...(!walletRewards.referral.isEmpty ? [claimReferral] : []),
+      ]
+
+      const toasts = {
+        submitted: "TODO",
+        success: "TODO",
+      }
+
+      const result = await createBatch({
+        txs,
+        transaction: {
+          toasts,
+        },
       })
 
-      return await createTransaction(
-        {
-          tx,
-          // TODO add toasts
-          toasts: {
-            submitted: "TODO",
-            success: "TODO",
-          },
-        },
-        {
-          async onSuccess() {
-            await Promise.all([
-              ...(farmRewardsTx.length ? [refetchMiningRewards] : []),
-              invalidateStakeData.mutateAsync(),
-            ])
-          },
-        },
-      )
+      await Promise.all([
+        ...(farmRewardsTx.length ? [refetchMiningRewards] : []),
+        invalidateStakeData.mutateAsync(),
+      ])
+
+      return result
     },
   })
 }

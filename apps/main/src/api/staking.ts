@@ -8,8 +8,7 @@ import {
 } from "@tanstack/react-query"
 import { z } from "zod/v4"
 
-import { uniquesIds } from "@/api/constants"
-import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext } from "@/providers/rpcProvider"
 
 export const stakingRewardsQuery = (
   { sdk, isApiLoaded }: TProviderContext,
@@ -58,10 +57,11 @@ export const subscanHDXSupplyQuery = queryOptions({
   retry: 0,
 })
 
-export const StakingPositionsQueryKey = (
-  address: string,
-  stakingCollectionId: bigint,
-) => ["staking", "positions", address, stakingCollectionId.toString()]
+export const StakingPositionsQueryKey = (address: string) => [
+  "staking",
+  "positions",
+  address,
+]
 
 export const stakingPositionsQuery = (
   { isApiLoaded, papi }: TProviderContext,
@@ -69,7 +69,7 @@ export const stakingPositionsQuery = (
   stakingCollectionId: bigint,
 ) =>
   queryOptions({
-    queryKey: StakingPositionsQueryKey(address, stakingCollectionId),
+    queryKey: StakingPositionsQueryKey(address),
     queryFn: async () => {
       const uniques = await papi.query.Uniques.Account.getEntries(
         address,
@@ -97,7 +97,6 @@ export const stakingPositionsQuery = (
   })
 
 export const useInvalidateStakeData = () => {
-  const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
   const { account } = useAccount()
@@ -105,11 +104,9 @@ export const useInvalidateStakeData = () => {
 
   return useMutation({
     mutationFn: async () => {
-      const { stakingId } = await queryClient.fetchQuery(uniquesIds(rpc))
-
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: StakingPositionsQueryKey(address, stakingId),
+          queryKey: StakingPositionsQueryKey(address),
         }),
         queryClient.invalidateQueries({
           queryKey: StakeQueryKey,
