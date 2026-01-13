@@ -1,5 +1,4 @@
 import { ModalContainer } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
@@ -40,7 +39,6 @@ export const Route = createFileRoute("/liquidity/$id/add")({
         open
         sx={{
           m: "auto",
-          mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
         }}
       >
         <AddLiquidityModalContent

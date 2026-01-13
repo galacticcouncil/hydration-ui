@@ -1,5 +1,4 @@
 import { ModalContainer } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { createFileRoute, useParams, useSearch } from "@tanstack/react-router"
 import { z } from "zod/v4"
 
@@ -31,7 +30,6 @@ function RouteComponent() {
       open
       sx={{
         m: "auto",
-        mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
       }}
     >
       <JoinFarmsWrapper
