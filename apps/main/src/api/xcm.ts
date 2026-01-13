@@ -75,7 +75,7 @@ export const useCrossChainBalanceSubscription = (
   const queryClient = useQueryClient()
   const wallet = useCrossChainWallet()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<Error | null>(null)
+  const [isError, setIsError] = useState(false)
 
   const onSuccessRef = useRef(onSuccess)
   useEffect(() => {
@@ -100,7 +100,7 @@ export const useCrossChainBalanceSubscription = (
     async function subscribeBalance(formattedAddress: string, chain: AnyChain) {
       try {
         setIsLoading(true)
-        setError(null)
+        setIsError(false)
 
         subscription = await wallet.subscribeBalance(
           formattedAddress,
@@ -121,7 +121,7 @@ export const useCrossChainBalanceSubscription = (
         )
       } catch (err) {
         console.error(err)
-        setError(err instanceof Error ? err : new Error("Subscription failed"))
+        setIsError(true)
         setIsLoading(false)
       }
     }
@@ -133,7 +133,7 @@ export const useCrossChainBalanceSubscription = (
     }
   }, [address, chainKey, queryClient, wallet])
 
-  return { isLoading, error }
+  return { isLoading, isError }
 }
 
 type XcmTransferArgs = {

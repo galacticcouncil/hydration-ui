@@ -1,4 +1,5 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
+import { HexString } from "@galacticcouncil/utils"
 import { CallType } from "@galacticcouncil/xc-core"
 import { Call, SolanaCall, SuiCall } from "@galacticcouncil/xc-sdk"
 import { isObjectType } from "remeda"
@@ -17,7 +18,7 @@ export function isEvmApproveCall(call: Call): boolean {
 
   const { functionName } = decodeFunctionData({
     abi: JSON.parse(abi),
-    data: data as `0x${string}`,
+    data: data as HexString,
   })
   return functionName === "approve" && data.startsWith(APPROVE_LEADING_BYTES)
 }

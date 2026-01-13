@@ -52,9 +52,10 @@ export const ProviderSelect = () => {
               onClick={() => setPage(Web3ConnectModalPage.AccountSelect)}
             />
           )}
-          {installed.map(getWalletData).map((props) => (
-            <ProviderInstalledButton key={props.provider} {...props} />
-          ))}
+          {installed.map((wallet) => {
+            const props = getWalletData(wallet)
+            return <ProviderInstalledButton key={props.provider} {...props} />
+          })}
           {isDefaultMode && <ProviderExternalButton />}
         </Grid>
         {isDefaultMode && <ProviderConnectAll installed={installed} />}
@@ -69,14 +70,17 @@ export const ProviderSelect = () => {
             defaultOpen={installed.length === 0}
           >
             <Grid columns={[2, 4]} gap={10}>
-              {other.map(getWalletData).map((props) => (
-                <ProviderButton
-                  key={props.provider}
-                  {...props}
-                  onClick={() => openUrl(props.installUrl)}
-                  actionLabel="Download"
-                />
-              ))}
+              {other.map((wallet) => {
+                const props = getWalletData(wallet)
+                return (
+                  <ProviderButton
+                    key={props.provider}
+                    {...props}
+                    onClick={() => openUrl(props.installUrl)}
+                    actionLabel="Download"
+                  />
+                )
+              })}
             </Grid>
           </Collapsible>
         </>

@@ -18,7 +18,7 @@ import {
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
-import { filter, pipe, prop, sortBy } from "remeda"
+import { filter, first, pipe, prop, sortBy } from "remeda"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
@@ -63,9 +63,11 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
     }
   })()
 
-  const srcAsset: Asset | null = srcChain?.assetsData
-    ? Array.from(srcChain.assetsData.values())[0]?.asset || null
-    : null
+  const srcChainAssets = srcChain?.assetsData
+    ? [...srcChain.assetsData.values()]
+    : []
+
+  const srcAsset: Asset | null = first(srcChainAssets)?.asset || null
 
   const destChain = chainsMap.get(HYDRATION_CHAIN_KEY) || null
 

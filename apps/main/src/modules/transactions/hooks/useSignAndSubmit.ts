@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { MutationOptions, useMutation } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Subscription } from "rxjs"
 
 import { TxOptions, TxResult } from "@/modules/transactions/types"
@@ -39,6 +40,7 @@ export const useSignAndSubmit = (
   transaction: SingleTransaction,
   options: MutationOptions<TxResult, Error, TxOptions>,
 ) => {
+  const { t } = useTranslation("common")
   const { papi, papiClient } = useRpcProvider()
   const wallet = useWallet()
 
@@ -93,7 +95,7 @@ export const useSignAndSubmit = (
         return signAndSubmitSuiTx(tx, signer, txOptions)
       }
 
-      const err = new Error("Unsupported transaction or signer type")
+      const err = new Error(t("transaction.error.unsupportedTransaction"))
       txOptions.onError(err.message)
       throw err
     },

@@ -118,22 +118,21 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     [chainAssetPairs, pendingChain],
   )
 
-  const availableAssetsWithRoutes = useMemo(() => {
+  const filteredAssetsWithRoutes = useMemo(() => {
     const assets = selectedChainPair?.assets ?? []
     const routes = selectedChainPair?.routes ?? []
-    if (routes.length === 0) {
-      return assets.map((asset) => ({ asset, route: null }))
-    }
-    return pipe(
-      zip(routes, assets),
-      map(([route, asset]) => ({ route, asset })),
-    )
-  }, [selectedChainPair])
 
-  const filteredAssetsWithRoutes = availableAssetsWithRoutes.filter(
-    ({ asset }) =>
+    const assetsWithRoutes = routes.length
+      ? pipe(
+          zip(routes, assets),
+          map(([route, asset]) => ({ route, asset })),
+        )
+      : assets.map((asset) => ({ asset, route: null }))
+
+    return assetsWithRoutes.filter(({ asset }) =>
       asset.originSymbol.toLowerCase().includes(assetSearch.toLowerCase()),
-  )
+    )
+  }, [assetSearch, selectedChainPair?.assets, selectedChainPair?.routes])
 
   const isCompatibleWalletMode =
     type === "source"
@@ -170,40 +169,38 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
             autoComplete="off"
           />
         </Box>
-        {pendingChain && (
-          <>
-            {isCompatibleWalletMode ? (
-              <AssetList
-                registryChain={registryChain}
-                items={filteredAssetsWithRoutes}
-                address={address}
-                selectedAsset={currentSelection?.asset}
-                selectedChain={pendingChain}
-                setSelectedAsset={(asset) => {
-                  onAssetSelect({ chain: pendingChain, asset })
-                }}
-              />
-            ) : (
-              <ConnectChainTile
-                p={10}
-                chain={pendingChain}
-                onConnect={() =>
-                  toggle(getWalletModeByChain(pendingChain), {
-                    title: t("xcm:connect.modal.title", {
-                      chain: pendingChain.name,
-                    }),
-                    description: t("xcm:connect.modal.description", {
-                      chain: pendingChain.name,
-                    }),
-                  })
-                }
-              />
-            )}
-          </>
+        {pendingChain && isCompatibleWalletMode && (
+          <AssetList
+            registryChain={registryChain}
+            items={filteredAssetsWithRoutes}
+            address={address}
+            selectedAsset={currentSelection?.asset}
+            selectedChain={pendingChain}
+            setSelectedAsset={(asset) => {
+              onAssetSelect({ chain: pendingChain, asset })
+            }}
+          />
+        )}
+
+        {pendingChain && !isCompatibleWalletMode && (
+          <ConnectChainTile
+            p={10}
+            chain={pendingChain}
+            onConnect={() =>
+              toggle(getWalletModeByChain(pendingChain), {
+                title: t("xcm:connect.modal.title", {
+                  chain: pendingChain.name,
+                }),
+                description: t("xcm:connect.modal.description", {
+                  chain: pendingChain.name,
+                }),
+              })
+            }
+          />
         )}
 
         {!filteredAssetsWithRoutes.length && (
-          <Flex flex={1} align="center" justify="center">
+          <Flex flex={1} align="center" justify="center" asChild>
             <Text align="center" fs="p5" color={getToken("text.medium")}>
               {t("xcm:chainAssetSelect.emptyState.noAssets")}
             </Text>

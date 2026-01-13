@@ -4,7 +4,7 @@ import {
   Button,
   FormError,
   Label,
-  Separator,
+  ModalContentDivider,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -20,6 +20,7 @@ import {
 import { useAddressStore } from "@galacticcouncil/web3-connect/src/components/address-book/AddressBook.store"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
+import { useMemo } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useUnmount } from "react-use"
@@ -60,10 +61,17 @@ export const RecipientCustomAddressForm: React.FC<
   const { addresses, add: addAddressToAddressBook } = useAddressStore()
 
   const customAddress = form.watch("customAddress")
+
+  const customAddressesOnChain = useMemo(
+    () =>
+      addresses.filter(
+        (a) => a.isCustom && isAddressValidOnChain(a.address, destChain),
+      ),
+    [addresses, destChain],
+  )
+
   const addressBookAddresses = arraySearch(
-    addresses.filter((a) => {
-      return a.isCustom && isAddressValidOnChain(a.address, destChain)
-    }),
+    customAddressesOnChain,
     customAddress,
     ["name", "address"],
   )
@@ -125,7 +133,7 @@ export const RecipientCustomAddressForm: React.FC<
           </Box>
         )}
       />
-      <Separator mx="var(--modal-content-inset)" />
+      <ModalContentDivider />
       {addressBookAddresses.length > 0 ? (
         <RecipientAddressBook
           addresses={addressBookAddresses}
@@ -137,10 +145,7 @@ export const RecipientCustomAddressForm: React.FC<
           description={t("recipient.modal.empty.description")}
         />
       )}
-      <Separator
-        mb="var(--modal-content-padding)"
-        mx="var(--modal-content-inset)"
-      />
+      <ModalContentDivider mb="var(--modal-content-padding)" />
       <Button
         width="100%"
         size="large"

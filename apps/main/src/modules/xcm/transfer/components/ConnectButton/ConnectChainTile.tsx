@@ -21,7 +21,7 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
   onConnect,
   ...props
 }) => {
-  const { t } = useTranslation("xcm")
+  const { t } = useTranslation(["common", "xcm"])
   return (
     <Paper variant="plain" {...props}>
       <Flex
@@ -36,7 +36,7 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
             <Flex gap={10} align="center">
               <ChainLogo chain={chain} size="large" />
               <Text fs="p3" fw={500}>
-                {t("chainNotConnected", {
+                {t("xcm:chainNotConnected", {
                   chainName: chain.name,
                 })}
               </Text>

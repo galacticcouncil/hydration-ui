@@ -32,7 +32,7 @@ import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
 
 export const XcmForm = () => {
-  const { t } = useTranslation("xcm")
+  const { t } = useTranslation(["common", "xcm"])
   const { account, isConnected } = useAccount()
   const { toggle } = useWeb3ConnectModal()
   const handleChainSwitch = useChainSwitch()
@@ -74,10 +74,10 @@ export const XcmForm = () => {
   function onConnect() {
     if (!srcChain) return toggle()
     toggle(getWalletModeByChain(srcChain), {
-      title: t("connect.modal.title", {
+      title: t("xcm:connect.modal.title", {
         chain: srcChain.name,
       }),
-      description: t("connect.modal.description", {
+      description: t("xcm:connect.modal.description", {
         chain: srcChain.name,
       }),
     })
@@ -137,33 +137,31 @@ export const XcmForm = () => {
         <Paper>
           <Box p={20}>
             <Text fs="h7" fw={500} align="center" font="primary">
-              {t("form.title")}
+              {t("xcm:form.title")}
             </Text>
           </Box>
           <Separator />
           <Stack p={20} gap={10}>
             <Flex justify="space-between">
               <Flex gap={10} direction="column">
-                <Flex justify="space-between">
-                  <Flex gap={4} align="center">
-                    <Text fs="p5" color={getToken("text.medium")}>
-                      {t("form.from")}
-                    </Text>
-                    {isConnected && (
-                      <ConnectButton
-                        walletProvider={
-                          isConnectedAccountValid ? account.provider : undefined
-                        }
-                        address={
-                          isConnectedAccountValid
-                            ? account.displayAddress
-                            : undefined
-                        }
-                        placeholder={t("form.connectWallet")}
-                        onClick={onConnect}
-                      />
-                    )}
-                  </Flex>
+                <Flex gap={4} align="center">
+                  <Text fs="p5" color={getToken("text.medium")}>
+                    {t("from")}
+                  </Text>
+                  {isConnected && (
+                    <ConnectButton
+                      walletProvider={
+                        isConnectedAccountValid ? account.provider : undefined
+                      }
+                      address={
+                        isConnectedAccountValid
+                          ? account.displayAddress
+                          : undefined
+                      }
+                      placeholder={t("connectWallet")}
+                      onClick={onConnect}
+                    />
+                  )}
                 </Flex>
                 <ChainAssetFormField
                   fieldName="srcAsset"
@@ -197,24 +195,22 @@ export const XcmForm = () => {
           <Stack p={20} gap={10}>
             <Flex justify="space-between">
               <Flex gap={10} direction="column">
-                <Flex justify="space-between">
-                  <Flex gap={4} align="center">
-                    <Text fs="p5" color={getToken("text.medium")}>
-                      {t("form.to")}
-                    </Text>
-                    {destChain && destAsset && (
-                      <RecipientSelectButton
-                        value={destAddress}
-                        onChange={(address, account) => {
-                          reset((prev) => ({
-                            ...prev,
-                            destAddress: address,
-                            destAccount: account ?? null,
-                          }))
-                        }}
-                      />
-                    )}
-                  </Flex>
+                <Flex gap={4} align="center">
+                  <Text fs="p5" color={getToken("text.medium")}>
+                    {t("to")}
+                  </Text>
+                  {destChain && destAsset && (
+                    <RecipientSelectButton
+                      value={destAddress}
+                      onChange={(address, account) => {
+                        reset((prev) => ({
+                          ...prev,
+                          destAddress: address,
+                          destAccount: account ?? null,
+                        }))
+                      }}
+                    />
+                  )}
                 </Flex>
                 <ChainAssetFormField
                   fieldName="destAsset"
@@ -236,15 +232,16 @@ export const XcmForm = () => {
           </Stack>
           <XcmSummary />
           <Separator />
-          <Stack p={20}>
+          <Box p={20}>
             <SubmitButton
               status={status}
               disabled={isLoading || submit.isPending || !formState.isValid}
               isLoading={isLoading || submit.isPending}
               variant={formState.isValid ? "primary" : "muted"}
               loadingVariant="muted"
+              width="100%"
             />
-          </Stack>
+          </Box>
         </Paper>
       </Stack>
     </form>

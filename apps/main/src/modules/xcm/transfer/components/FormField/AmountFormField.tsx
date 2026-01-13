@@ -44,40 +44,36 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
 
   return (
     <Flex className={className} flex={1} gap={10} direction="column">
-      <Flex justify="flex-end">
-        <Flex align="center" gap={4}>
-          {isLoading ? (
-            <Text fs="p6">
-              <Skeleton width={80} />
-            </Text>
-          ) : (
-            <>
-              <Text fs="p6" color={getToken("text.low")}>
-                {t("balance")}:{" "}
-                {balance
-                  ? t("number", {
-                      value: toDecimal(balance.amount, balance.decimals),
-                    })
-                  : "-"}
-              </Text>{" "}
-              {withMaxButton && (
-                <MicroButton
-                  onClick={() => {
-                    const amount = balanceMax
-                      ? toDecimal(balanceMax.amount, balanceMax.decimals)
-                      : ""
-                    field.onChange(amount)
-                  }}
-                  disabled={
-                    disabled || !balanceMax || balanceMax.toBig().lte(0)
-                  }
-                >
-                  {t("max")}
-                </MicroButton>
-              )}
-            </>
-          )}
-        </Flex>
+      <Flex ml="auto" align="center" gap={4}>
+        {isLoading ? (
+          <Text fs="p6">
+            <Skeleton width={80} />
+          </Text>
+        ) : (
+          <>
+            <Text fs="p6" color={getToken("text.low")}>
+              {t("balance")}:{" "}
+              {balance
+                ? t("number", {
+                    value: toDecimal(balance.amount, balance.decimals),
+                  })
+                : "-"}
+            </Text>{" "}
+            {withMaxButton && (
+              <MicroButton
+                onClick={() => {
+                  const amount = balanceMax
+                    ? toDecimal(balanceMax.amount, balanceMax.decimals)
+                    : ""
+                  field.onChange(amount)
+                }}
+                disabled={disabled || !balanceMax || balanceMax.toBig().lte(0)}
+              >
+                {t("max")}
+              </MicroButton>
+            )}
+          </>
+        )}
       </Flex>
       {isLoading ? (
         <Skeleton width={100} height="100%" sx={{ ml: "auto" }} />

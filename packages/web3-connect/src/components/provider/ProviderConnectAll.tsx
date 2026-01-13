@@ -26,7 +26,6 @@ export const ProviderConnectAll: React.FC<Props> = ({ installed }) => {
 
   return (
     <SProviderButton
-      type="button"
       sx={{ width: "100%", mt: 8, py: 10 }}
       onClick={enableCompatible}
     >

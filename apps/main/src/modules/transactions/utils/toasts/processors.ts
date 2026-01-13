@@ -11,6 +11,7 @@ import {
   TransferStatusToPolkadotQuery,
 } from "@galacticcouncil/indexer/snowbridge"
 import {
+  HexString,
   HYDRATION_CHAIN_KEY,
   snowbridgescan,
   wormholescan,
@@ -48,7 +49,7 @@ const evm =
   async (toast) => {
     const hash = toast.meta.txHash
     const receipt = await evm.getTransactionReceipt({
-      hash: hash as `0x${string}`,
+      hash: hash as HexString,
     })
 
     const res = await queryClient.fetchQuery(
@@ -122,7 +123,7 @@ const getExtrinsicIndex = async (
 ): Promise<{ blockNumber: number; index: number } | null> => {
   if (ecosystem === CallType.Evm) {
     const receipt = await evm.getTransactionReceipt({
-      hash: txHash as `0x${string}`,
+      hash: txHash as HexString,
     })
 
     const res = await queryClient.fetchQuery(

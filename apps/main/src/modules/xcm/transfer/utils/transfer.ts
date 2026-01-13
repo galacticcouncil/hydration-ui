@@ -1,8 +1,9 @@
-import { Asset } from "@galacticcouncil/xc-core"
+import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { XCM_BRIDGE_TAGS, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 export enum XcmTransferStatus {
@@ -43,4 +44,9 @@ export const calculateTransferDestAmount = (
   }
 
   return amount
+}
+
+export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
+  const tags = (route?.tags ?? []) as XcmTags
+  return tags.some((tag) => XCM_BRIDGE_TAGS.includes(tag))
 }

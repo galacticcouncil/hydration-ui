@@ -67,9 +67,14 @@ export const XcmTransferSkeleton = () => {
       <Paper>
         <XcmSectionSkeleton />
         <Separator />
-        <Stack p={20}>
-          <LoadingButton isLoading size="large" loadingVariant="muted" />
-        </Stack>
+        <Box p={20}>
+          <LoadingButton
+            isLoading
+            size="large"
+            loadingVariant="muted"
+            width="100%"
+          />
+        </Box>
       </Paper>
     </Stack>
   )

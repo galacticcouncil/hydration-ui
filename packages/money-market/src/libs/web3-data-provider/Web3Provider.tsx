@@ -1,7 +1,7 @@
 import { ProtocolAction } from "@aave/contract-helpers"
 import { IAaveIncentivesControllerV2__factory } from "@aave/contract-helpers/src/incentive-controller-v2/typechain/IAaveIncentivesControllerV2__factory"
 import { IPool__factory } from "@aave/contract-helpers/src/v3-pool-contract/typechain/IPool__factory"
-import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
+import { HexString, safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
@@ -86,7 +86,7 @@ export const Web3ContextProvider: React.FC<{
       const evmCall: ExtendedEvmCall = {
         data: tx.data ?? "",
         from: tx.from ?? "",
-        to: tx.to as `0x${string}`,
+        to: tx.to as HexString,
         type: CallType.Evm,
         abi,
         gasLimit: tx.gasLimit ? BigInt(tx.gasLimit.toString()) : 0n,

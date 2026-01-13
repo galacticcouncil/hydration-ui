@@ -1,13 +1,12 @@
+import {
+  formatDestChainAddress,
+  formatSourceChainAddress,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
 
-import {
-  formatAddress,
-  formatDestAddress,
-  useCrossChainWallet,
-  xcmTransferQuery,
-} from "@/api/xcm"
+import { useCrossChainWallet, xcmTransferQuery } from "@/api/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
 export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
@@ -22,22 +21,27 @@ export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
     "destAddress",
   ])
 
-  const isValidPair = srcChain
-    ? srcChain.assetsData
-        .values()
-        .map((a) => a.asset)
-        .some((a) => a.key === srcAsset?.key)
-    : false
+  const isValidPair =
+    srcChain && srcAsset
+      ? srcChain.assetsData
+          .values()
+          .map((a) => a.asset)
+          .some((a) => a.key === srcAsset.key)
+      : false
 
   const isValidAsset = !!srcAsset && !!destAsset && isValidPair
 
   return useQuery(
     xcmTransferQuery(wallet, {
       srcAddress:
-        account && srcChain ? formatAddress(account.address, srcChain) : "",
+        account && srcChain
+          ? formatSourceChainAddress(account.address, srcChain)
+          : "",
       srcAsset: isValidAsset ? srcAsset.key : "",
       srcChain: srcChain?.key ?? "",
-      destAddress: destChain ? formatDestAddress(destAddress, destChain) : "",
+      destAddress: destChain
+        ? formatDestChainAddress(destAddress, destChain)
+        : "",
       destAsset: isValidAsset ? destAsset.key : "",
       destChain: destChain?.key ?? "",
     }),

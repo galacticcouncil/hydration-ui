@@ -15,7 +15,7 @@ export const RecipientConnectTile: React.FC<RecipientConnectTileProps> = ({
   onSelect,
   onConnect,
 }) => {
-  const { t } = useTranslation("xcm")
+  const { t } = useTranslation(["common"])
   return (
     <Box position="relative">
       <AccountTile
@@ -24,7 +24,7 @@ export const RecipientConnectTile: React.FC<RecipientConnectTileProps> = ({
         walletLogoSrc={walletLogoSrc}
         name={account.name}
         address={account.displayAddress}
-        value=""
+        width="100%"
       />
       <Button
         onClick={onConnect}

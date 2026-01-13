@@ -9,7 +9,7 @@ import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useShallowCompareEffect } from "react-use"
-import { first, isNonNullish, unique, zip } from "remeda"
+import { first, prop, unique } from "remeda"
 
 import {
   useCrossChainBalanceSubscription,
@@ -56,15 +56,12 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const sourceChainAssetPairs = useMemo<ChainAssetPair[]>(() => {
     return XCM_CHAINS.map((chain) => {
-      const chainAssets = [...chain.assetsData.values()].map(
-        (chainAssetData) => chainAssetData.asset,
-      )
-      const destinations = chainAssets.map((asset) =>
-        config.asset(asset).source(chain),
-      )
-      const assets = zip(chainAssets, destinations)
-        .filter(([, destination]) => destination.destinationChains.length > 0)
-        .map(([asset]) => asset)
+      const assets = [...chain.assetsData.values()]
+        .map(({ asset }) => asset)
+        .filter((asset) => {
+          const assetSource = config.asset(asset).source(chain)
+          return assetSource.destinationChains.length > 0
+        })
       return { chain, routes: [], assets }
     })
   }, [config])
@@ -79,25 +76,23 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     const srcChainAssetRoutes = srcChainRoutes.getRoutes()
 
-    const destWhitelist = XCM_CHAINS.map((c) => c.key)
+    const destWhitelist = new Set(XCM_CHAINS.map(prop("key")))
     const destChains = srcChainAssetRoutes
       .filter(
         (a) =>
           a.source.asset.key === srcAsset.key &&
-          destWhitelist.includes(a.destination.chain.key),
+          destWhitelist.has(a.destination.chain.key),
       )
       .map((a) => a.destination.chain)
 
-    return unique(destChains)
-      .map((chain) => {
-        const { routes } = config
-          .asset(srcAsset)
-          .source(srcChain)
-          .destination(chain)
+    return unique(destChains).map((chain) => {
+      const { routes } = config
+        .asset(srcAsset)
+        .source(srcChain)
+        .destination(chain)
 
-        return { chain, routes, assets: routes.map((r) => r.destination.asset) }
-      })
-      .filter(isNonNullish)
+      return { chain, routes, assets: routes.map((r) => r.destination.asset) }
+    })
   }, [config, srcAsset, srcChain, configService])
 
   useEffect(() => {

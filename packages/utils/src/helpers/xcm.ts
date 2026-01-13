@@ -8,6 +8,14 @@ import {
   Parachain,
 } from "@galacticcouncil/xc-core"
 
+import { HYDRATION_CHAIN_KEY } from "../constants"
+import {
+  safeConvertAddressSS58,
+  safeConvertH160toSS58,
+  safeConvertSS58toH160,
+  safeConvertSS58ToSolanaAddress,
+  safeConvertSS58ToSuiAddress,
+} from "../helpers"
 import { EvmAddr, SolanaAddr, Ss58Addr, SuiAddr } from "./address"
 
 export function getChainAssetId(chain: AnyChain, asset: Asset) {
@@ -69,4 +77,47 @@ export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
     chain.getType() === ChainType.EvmChain ||
     chain.getType() === ChainType.EvmParachain
   )
+}
+
+export function formatSourceChainAddress(
+  address: string,
+  chain: AnyChain,
+): string {
+  if (chain.isSolana()) {
+    return SolanaAddr.isValid(address)
+      ? address
+      : safeConvertSS58ToSolanaAddress(address)
+  }
+
+  if (chain.isSui()) {
+    return SuiAddr.isValid(address)
+      ? address
+      : safeConvertSS58ToSuiAddress(address)
+  }
+
+  if (chain.isEvmChain()) {
+    return EvmAddr.isValid(address) ? address : safeConvertSS58toH160(address)
+  }
+
+  if (isAnyParachain(chain) && chain.usesH160Acc) {
+    return EvmAddr.isValid(address) ? address : safeConvertSS58toH160(address)
+  }
+
+  if (isAnyParachain(chain) && !chain.usesH160Acc) {
+    return EvmAddr.isValid(address)
+      ? safeConvertH160toSS58(address)
+      : safeConvertAddressSS58(address)
+  }
+
+  return safeConvertAddressSS58(address)
+}
+
+export function formatDestChainAddress(
+  address: string,
+  chain: AnyChain,
+): string {
+  if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
+    return safeConvertH160toSS58(address)
+  }
+  return address
 }
