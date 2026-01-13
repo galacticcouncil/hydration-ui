@@ -1,8 +1,6 @@
-import { RUNTIME_DECIMALS } from "@galacticcouncil/common"
 import { Box } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
-import Big from "big.js"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
 
@@ -19,13 +17,10 @@ import { MarketTradeOptions } from "@/modules/trade/swap/sections/Market/MarketT
 import { MarketWarnings } from "@/modules/trade/swap/sections/Market/MarketWarnings"
 import { MarketSummary } from "@/modules/trade/swap/sections/Market/Summary/MarketSummary"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
 import { maxBalanceError } from "@/utils/validators"
 
 export const Market: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
-  const { getAsset } = useAssets()
 
   const submitSwap = useSubmitSwap()
   const submitTwap = useSubmitTwap()
@@ -75,31 +70,6 @@ export const Market: FC = () => {
     ? healthFactorRiskAccepted
     : true
 
-  const assetInPriceMeta = getAsset(assetIn)
-  const assetOutPriceMeta = getAsset(assetOut)
-
-  const spotPrice = (() => {
-    const swapSpotPrice = swap?.spotPrice
-
-    if (!swapSpotPrice) {
-      return null
-    }
-
-    if (isSell) {
-      if (!assetOutPriceMeta) {
-        return null
-      }
-
-      return Big(1).div(scaleHuman(swapSpotPrice, RUNTIME_DECIMALS)).toString()
-    }
-
-    if (!assetInPriceMeta) {
-      return null
-    }
-
-    return scaleHuman(swapSpotPrice, RUNTIME_DECIMALS)
-  })()
-
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 
   const isFormValid = isTradeEnabled && form.formState.isValid
@@ -118,7 +88,7 @@ export const Market: FC = () => {
             : twap && twapTx && submitTwap.mutate([values, twap, twapTx]),
         )}
       >
-        <MarketFields price={spotPrice} />
+        <MarketFields swap={swap} />
         {isExpanded && (
           <Box pt={8} pb={getTokenPx("scales.paddings.m")}>
             <MarketTradeOptions

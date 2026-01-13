@@ -246,7 +246,7 @@ export const useAddIsolatedLiquidity = ({
     assetBMeta,
     shares,
     getShares,
-    price: spotPriceData?.spotPrice?.toString(),
+    price: spotPriceData?.spotPrice,
     isPriceLoading: isSpotPricePending,
     activeFarms,
     isJoinFarms,
