@@ -21,6 +21,9 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
   const squidClient = useSquidClient()
   const { account } = useAccount()
 
+  const { data: latestBalanceData, isLoading: isLatestBalanceLoading } =
+    useQuery(latestAccountBalanceQuery(squidClient, account?.publicKey ?? ""))
+
   const [startTimestamp, endTimestamp] = useMemo(() => {
     if (!timeFrame) {
       return []
@@ -30,7 +33,9 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
     const ms = TIME_FRAME_MS[timeFrame]
 
     return [(now - ms).toString(), now.toString()]
-  }, [timeFrame])
+    // refetch net worth data on latest balance change to keep it consistent
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeFrame, latestBalanceData])
 
   const bucketSize = timeFrame
     ? bucketSizes[timeFrame]
@@ -46,9 +51,6 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
     ),
     placeholderData: (prev) => prev,
   })
-
-  const { data: latestBalanceData, isLoading: isLatestBalanceLoading } =
-    useQuery(latestAccountBalanceQuery(squidClient, account?.publicKey ?? ""))
 
   const balances = useMemo(() => {
     if (isLoading || isLatestBalanceLoading) {
