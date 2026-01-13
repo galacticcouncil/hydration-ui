@@ -103,16 +103,6 @@ export const XcmForm = () => {
       previousSelection,
       newSelection,
     }: ChainAssetSelectModalSelectionChange) => {
-      if (!isAddressValidOnChain(destAddress, newSelection.chain)) {
-        return reset((prev) => ({
-          ...prev,
-          srcAmount: "",
-          destAmount: "",
-          destAddress: "",
-          destAccount: null,
-        }))
-      }
-
       const isSameAsset =
         previousSelection?.asset?.key === newSelection.asset.key
       const isSameChain =
@@ -120,7 +110,18 @@ export const XcmForm = () => {
 
       if (isSameAsset && isSameChain) return
 
-      setValue("destChain", newSelection.chain)
+      if (isAddressValidOnChain(destAddress, newSelection.chain)) {
+        return setValue("destChain", newSelection.chain)
+      }
+
+      return reset((prev) => ({
+        ...prev,
+        srcAmount: "",
+        destAmount: "",
+        destAddress: "",
+        destAccount: null,
+        destChain: newSelection.chain,
+      }))
     },
     [setValue, destAddress, reset],
   )
@@ -239,7 +240,6 @@ export const XcmForm = () => {
               isLoading={isLoading || submit.isPending}
               variant={formState.isValid ? "primary" : "muted"}
               loadingVariant="muted"
-              width="100%"
             />
           </Box>
         </Paper>

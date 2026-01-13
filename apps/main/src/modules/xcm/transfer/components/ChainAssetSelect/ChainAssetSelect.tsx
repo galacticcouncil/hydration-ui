@@ -111,14 +111,12 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
       chain.key.toLowerCase().includes(chainSearch.toLowerCase()),
   )
 
-  const selectedChainPair = useMemo(
-    () =>
-      chainAssetPairs.find(({ chain }) => chain.key === pendingChain?.key) ??
-      null,
-    [chainAssetPairs, pendingChain],
-  )
-
   const filteredAssetsWithRoutes = useMemo(() => {
+    if (!pendingChain) return []
+    const selectedChainPair = chainAssetPairs.find(
+      ({ chain }) => chain.key === pendingChain.key,
+    )
+
     const assets = selectedChainPair?.assets ?? []
     const routes = selectedChainPair?.routes ?? []
 
@@ -132,7 +130,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
     return assetsWithRoutes.filter(({ asset }) =>
       asset.originSymbol.toLowerCase().includes(assetSearch.toLowerCase()),
     )
-  }, [assetSearch, selectedChainPair?.assets, selectedChainPair?.routes])
+  }, [assetSearch, chainAssetPairs, pendingChain])
 
   const isCompatibleWalletMode =
     type === "source"

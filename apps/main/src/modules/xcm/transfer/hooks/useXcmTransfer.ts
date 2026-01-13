@@ -23,10 +23,7 @@ export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
 
   const isValidPair =
     srcChain && srcAsset
-      ? srcChain.assetsData
-          .values()
-          .map((a) => a.asset)
-          .some((a) => a.key === srcAsset.key)
+      ? srcChain.assetsData.values().some((a) => a.asset.key === srcAsset.key)
       : false
 
   const isValidAsset = !!srcAsset && !!destAsset && isValidPair

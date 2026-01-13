@@ -1,15 +1,4 @@
-import {
-  EvmAddr,
-  HYDRATION_CHAIN_KEY,
-  isAnyParachain,
-  safeConvertAddressSS58,
-  safeConvertH160toSS58,
-  safeConvertSS58toH160,
-  safeConvertSS58ToSolanaAddress,
-  safeConvertSS58ToSuiAddress,
-  SolanaAddr,
-  SuiAddr,
-} from "@galacticcouncil/utils"
+import { formatSourceChainAddress } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
@@ -86,7 +75,7 @@ export const useCrossChainBalanceSubscription = (
     const chain = chainsMap.get(chainKey)
     const queryKey = createCrossChainBalanceQueryKey(chainKey, address)
     const formattedAddress =
-      address && chain ? formatAddress(address, chain) : ""
+      address && chain ? formatSourceChainAddress(address, chain) : ""
 
     if (!wallet || !formattedAddress || !chain) {
       setIsLoading(false)
@@ -189,41 +178,4 @@ export const xcmTransferQuery = (
       !!destChain,
     ...options,
   })
-}
-
-export function formatAddress(address: string, chain: AnyChain): string {
-  if (chain.isSolana()) {
-    return SolanaAddr.isValid(address)
-      ? address
-      : safeConvertSS58ToSolanaAddress(address)
-  }
-
-  if (chain.isSui()) {
-    return SuiAddr.isValid(address)
-      ? address
-      : safeConvertSS58ToSuiAddress(address)
-  }
-
-  if (chain.isEvmChain()) {
-    return EvmAddr.isValid(address) ? address : safeConvertSS58toH160(address)
-  }
-
-  if (isAnyParachain(chain) && chain.usesH160Acc) {
-    return EvmAddr.isValid(address) ? address : safeConvertSS58toH160(address)
-  }
-
-  if (isAnyParachain(chain) && !chain.usesH160Acc) {
-    return EvmAddr.isValid(address)
-      ? safeConvertH160toSS58(address)
-      : safeConvertAddressSS58(address)
-  }
-
-  return safeConvertAddressSS58(address)
-}
-
-export function formatDestAddress(address: string, chain: AnyChain): string {
-  if (chain.key === HYDRATION_CHAIN_KEY && EvmAddr.isValid(address)) {
-    return safeConvertH160toSS58(address)
-  }
-  return address
 }

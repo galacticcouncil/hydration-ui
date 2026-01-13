@@ -1,5 +1,4 @@
 import {
-  ArrowRightLeftIcon,
   BanknoteIcon,
   ChartPieIcon,
   CoinsIcon,
@@ -120,11 +119,11 @@ export const NAVIGATION: NavigationItem[] = [
       // { key: "walletTransactions", to: LINKS.walletTransactions },
     ],
   },
-  {
-    key: "crossChain",
-    to: LINKS.crossChain,
-    icon: ArrowRightLeftIcon,
-  },
+  // {
+  //   key: "crossChain",
+  //   to: LINKS.crossChain,
+  //   icon: ArrowRightLeftIcon,
+  // },
   // {
   //   key: "stats",
   //   to: LINKS.stats,

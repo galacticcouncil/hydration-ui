@@ -34,8 +34,8 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   }
 
   return (
-    <AuthorizedAction size="large">
-      <SSubmitButton {...props} size="large" type="submit">
+    <AuthorizedAction size="large" width="100%">
+      <SSubmitButton {...props} size="large" type="submit" width="100%">
         {!props.isLoading && getSubmitButtonText()}
       </SSubmitButton>
     </AuthorizedAction>
