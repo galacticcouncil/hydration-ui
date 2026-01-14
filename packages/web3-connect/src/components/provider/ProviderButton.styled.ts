@@ -1,6 +1,7 @@
+import { ButtonTransparent } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SProviderButton = styled.button(
+export const SProviderButton = styled(ButtonTransparent)(
   ({ theme }) => css`
     --border-color: ${theme.details.borders};
     --background-color: ${theme.surfaces.containers.dim.dimOnBg};

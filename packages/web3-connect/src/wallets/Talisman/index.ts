@@ -1,3 +1,6 @@
+import { isH160Address, isSS58Address } from "@galacticcouncil/utils"
+import { InjectedPolkadotAccount } from "polkadot-api/pjs-signer"
+
 import { WalletProviderType } from "@/config/providers"
 import { BaseEIP1193Wallet } from "@/wallets/BaseEIP1193Wallet"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
@@ -10,6 +13,20 @@ export class Talisman extends BaseSubstrateWallet {
   accessor = "talisman"
   installUrl = "https://talisman.xyz/download"
   logo = logo
+  accountFilter = (account: InjectedPolkadotAccount) => {
+    return isSS58Address(account.address)
+  }
+}
+
+export class TalismanH160 extends BaseSubstrateWallet {
+  provider = WalletProviderType.TalismanH160
+  title = "Talisman"
+  accessor = "talisman"
+  installUrl = "https://talisman.xyz/download"
+  logo = logo
+  accountFilter = (account: InjectedPolkadotAccount) => {
+    return isH160Address(account.address)
+  }
 }
 
 export class TalismanEvm extends BaseEIP1193Wallet {

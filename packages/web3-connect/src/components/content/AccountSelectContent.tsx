@@ -1,4 +1,3 @@
-import { isEvmAccount } from "@galacticcouncil/sdk"
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
@@ -8,7 +7,6 @@ import {
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
-import { isSS58Address } from "@galacticcouncil/utils"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
@@ -26,11 +24,10 @@ import {
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
 import { WalletProviderType } from "@/config/providers"
+import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
-import { toAccount } from "@/utils"
-import { getWallet } from "@/wallets"
-import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
+import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
 const getAccountOptionComponent = (account: Account) => {
   switch (account.provider) {
@@ -43,14 +40,16 @@ const getAccountOptionComponent = (account: Account) => {
 
 export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
-  const { accounts, setAccount, toggle, getConnectedProviders } =
-    useWeb3Connect(
-      useShallow(
-        pick(["accounts", "setAccount", "toggle", "getConnectedProviders"]),
-      ),
-    )
+  const { onAccountSelect, isControlled, mode } = useWeb3ConnectContext()
+  const { accounts, toggle, getConnectedProviders } = useWeb3Connect(
+    useShallow(pick(["accounts", "toggle", "getConnectedProviders"])),
+  )
 
-  const [filter, setFilter] = useState<AccountFilterOption>(WalletMode.Default)
+  const isDefaultMode = mode === WalletMode.Default
+
+  const [filter, setFilter] = useState<AccountFilterOption>(
+    getDefaultAccountFilterByMode(mode),
+  )
   const [searchVal, setSearchVal] = useState("")
   const [search, setSearch] = useState("")
   useDebounce(
@@ -61,7 +60,7 @@ export const AccountSelectContent = () => {
     [searchVal],
   )
 
-  const providers = getConnectedProviders()
+  const providers = getConnectedProviders(mode)
   const isProvidersConnecting = providers.some(
     ({ status }) => status === "pending",
   )
@@ -79,36 +78,19 @@ export const AccountSelectContent = () => {
 
   const hasNoResults = accountList.length === 0
 
-  const onAccountSelect = useCallback(
+  const handleAccountSelect = useCallback(
     (account: Account) => {
-      setAccount(account)
-      toggle()
-
-      const wallet = getWallet(account.provider)
-      if (wallet instanceof BaseSubstrateWallet) {
-        wallet.setSigner(account.address)
+      onAccountSelect(account)
+      if (!isControlled) {
+        toggle()
       }
     },
-    [setAccount, toggle],
+    [isControlled, onAccountSelect, toggle],
   )
 
-  const groups = Object.groupBy(accountList, (acc) => {
-    if (isEvmAccount(acc.address)) {
-      return WalletMode.EVM
-    }
-
-    if (isSS58Address(acc.address)) {
-      return WalletMode.Substrate
-    }
-
-    return WalletMode.Unknown
-  })
-
-  const groupCount = Object.keys(groups).length ?? 0
-  const shouldRenderFilter = groupCount > 1 || filter !== WalletMode.Default
   const shouldRenderSearch = accounts.length > 1
   const shouldRenderHeader =
-    !isProvidersConnecting && (shouldRenderFilter || shouldRenderSearch)
+    !isProvidersConnecting && (isDefaultMode || shouldRenderSearch)
 
   const { accountsWithBalances, areBalancesLoading } =
     useAccountsWithBalance(accountList)
@@ -130,7 +112,7 @@ export const AccountSelectContent = () => {
                   placeholder="Search by name or paste address"
                 />
               )}
-              {shouldRenderFilter && (
+              {isDefaultMode && (
                 <AccountFilter
                   active={filter}
                   onSetActive={(mode) => setFilter(mode)}
@@ -154,7 +136,7 @@ export const AccountSelectContent = () => {
                     key={`${account.publicKey}-${account.provider}`}
                     {...account}
                     isBalanceLoading={areBalancesLoading}
-                    onSelect={onAccountSelect}
+                    onSelect={handleAccountSelect}
                   />
                 )
               })}

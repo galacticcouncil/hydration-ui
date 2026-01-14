@@ -1,4 +1,6 @@
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
+import { isAddressValidOnChain } from "@galacticcouncil/utils"
+import { AnyChain } from "@galacticcouncil/xc-core"
 import Big from "big.js"
 import { FieldValues, Path } from "react-hook-form"
 import * as z from "zod/v4"
@@ -148,3 +150,9 @@ export const validateAssetSellOnly = z.refine<TAsset | null>(
     error: i18n.t("error.sellOnly"),
   },
 )
+
+export const validateAddressOnChain = (chain: AnyChain) => {
+  return required.refine((value) => isAddressValidOnChain(value, chain), {
+    error: i18n.t("error.validAddressOnChain", { chain: chain.name }),
+  })
+}

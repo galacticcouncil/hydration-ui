@@ -1,16 +1,9 @@
-import {
-  AccountInput,
-  Button,
-  Flex,
-  Icon,
-  Label,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { AccountInput, Flex, Label, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
-import { BookOpen } from "lucide-react"
 import { FC, useId } from "react"
 
 import { useAddressStore } from "@/components/address-book/AddressBook.store"
+import { AddressBookButton } from "@/components/address-book/AddressBookButton"
 import { TALISMAN_PROVIDERS } from "@/config/providers"
 
 export type AddressBookProps = {
@@ -48,20 +41,7 @@ export const AddressBook: FC<AddressBookProps> = ({
           >
             Destination address
           </Label>
-          <Button
-            variant="accent"
-            outline
-            size="small"
-            sx={{
-              py: 2,
-              px: getTokenPx("scales.paddings.base"),
-              textTransform: "uppercase",
-            }}
-            onClick={onOpenMyContacts}
-          >
-            <Icon size={10} component={BookOpen} />
-            My contacts
-          </Button>
+          <AddressBookButton onClick={onOpenMyContacts} />
         </Flex>
         <AccountInput
           id={id}

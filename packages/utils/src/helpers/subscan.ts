@@ -1,4 +1,4 @@
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 
 import {
   createQueryString,
@@ -8,6 +8,9 @@ import {
 } from "./helpers"
 
 type SubscanLinkPath = "tx" | "account" | "block"
+
+const SUBSCAN_API_PROXY_URL =
+  "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/proxy/subscan"
 
 export const subscan = {
   rdns: "io.subscan",
@@ -25,6 +28,9 @@ export const subscan = {
       return ""
     }
     return `${stripTrailingSlash(chain.explorer)}/${path}/${data}${createQueryString(query)}`
+  },
+  api: (path: string, query: Record<string, string | number> = {}) => {
+    return `${SUBSCAN_API_PROXY_URL}/${path}${createQueryString(query)}`
   },
   tx: (chainKey: string, txHash: string) => {
     return subscan.link(chainKey, "tx", txHash)

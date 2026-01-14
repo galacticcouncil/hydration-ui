@@ -1,12 +1,12 @@
 import { Asset } from "@galacticcouncil/sdk-next"
 import { isAnyParachain } from "@galacticcouncil/utils"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xcm-core"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xc-core"
 import {
-  HydradxRuntimeXcmAssetLocation,
   XcmV3Junction,
-} from "@polkadot/types/lookup"
-//import { assethub, pendulum } from "api/external"
+  XcmV3Junctions,
+  XcmVersionedLocation,
+} from "@polkadot-api/descriptors"
 import { Buffer } from "buffer"
 import { FixedSizeBinary } from "polkadot-api"
 
@@ -77,7 +77,7 @@ export type TRegisteredAsset = Omit<TExternalAsset, "supply"> & {
 }
 
 export type TExternalAssetWithLocation = TExternalAsset & {
-  location?: HydradxRuntimeXcmAssetLocation
+  location?: XcmVersionedLocation
 }
 
 export type InteriorTypes = {
@@ -99,7 +99,7 @@ export const PARACHAIN_CONFIG: {
     palletInstance: string
     network: string
     parents: string
-    interior: HydradxRuntimeXcmAssetLocation["interior"]["type"]
+    interior: XcmV3Junctions["type"]
   }
 } = {
   [assethub.parachainId]: {
@@ -131,45 +131,6 @@ export const getParachainInputData = (asset: TExternalAssetWithLocation) => {
       ],
     },
   }
-}
-
-export const getPendulumInputData = (
-  location: HydradxRuntimeXcmAssetLocation,
-): TExternalAssetInput => {
-  const interiorType = location.interior.type
-
-  if (interiorType !== "Here") {
-    const interior = location.interior[
-      `as${interiorType}`
-    ].toHuman() as InteriorProp[]
-
-    const newInteriorType = `X${Number(interiorType.slice(1)) + 1}`
-
-    return {
-      parents: "1",
-      interior: {
-        [newInteriorType]: [
-          { Parachain: pendulum.parachainId.toString() },
-          ...interior,
-        ],
-      },
-    }
-  } else {
-    return {
-      parents: location.parents.toString(),
-      interior: interiorType,
-    }
-  }
-}
-
-export const getInputData = (
-  asset: TExternalAssetWithLocation,
-): TExternalAssetInput | undefined => {
-  if (asset.origin === pendulum.parachainId && asset.location) {
-    return getPendulumInputData(asset.location)
-  }
-
-  return getParachainInputData(asset)
 }
 
 type GeneralKeyType = {

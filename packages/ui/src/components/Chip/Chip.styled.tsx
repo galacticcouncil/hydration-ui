@@ -13,6 +13,7 @@ export type ChipVariant =
   | "warning"
   | "danger"
   | "green"
+  | "accent"
 
 export type ChipSize = "small" | "medium" | "large"
 export type SChipProps = {

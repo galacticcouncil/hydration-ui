@@ -65,7 +65,7 @@ export const UnstakeForm: FC<Props> = ({
               {t("staking:stake.unstake.cta")}
             </Button>
           ) : (
-            <Web3ConnectButton variant="sliderTabActive" size="large" />
+            <Web3ConnectButton variant="secondary" size="large" />
           )}
         </Grid>
       }

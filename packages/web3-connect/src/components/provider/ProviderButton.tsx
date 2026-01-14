@@ -11,13 +11,27 @@ import {
   SConnectionIndicator,
   SProviderButton,
 } from "@/components/provider/ProviderButton.styled"
-import { EVM_PROVIDERS } from "@/config/providers"
+import { WalletMode } from "@/hooks/useWeb3Connect"
 import { WalletData } from "@/types/wallet"
+import { getWalletModeIcon, getWalletModesByProviderType } from "@/utils/wallet"
 
 export type ProviderButtonProps = WalletData & {
   onClick?: React.MouseEventHandler<HTMLButtonElement>
   isConnected?: boolean
   accountCount?: number
+  actionLabel?: string
+}
+
+const modesWithIconsConfig = {
+  [WalletMode.EVM]: true,
+  [WalletMode.Solana]: true,
+  [WalletMode.Sui]: true,
+} as const
+
+function hasModeIcon(
+  mode: WalletMode,
+): mode is keyof typeof modesWithIconsConfig {
+  return mode in modesWithIconsConfig
 }
 
 export const ProviderButton: React.FC<ProviderButtonProps> = ({
@@ -28,19 +42,23 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
   onClick,
   isConnected,
   accountCount = 0,
+  actionLabel,
 }) => {
+  const modes = getWalletModesByProviderType(provider)
   return (
     <SProviderButton type="button" onClick={onClick}>
       <Box sx={{ position: "relative" }}>
         <img width={32} height={32} src={logo} alt={title} />
-        {EVM_PROVIDERS.includes(provider) && (
-          <img
-            width={16}
-            height={16}
+        {modes.filter(hasModeIcon).map((mode) => (
+          <Box
             sx={{ position: "absolute", bottom: -4, right: -4 }}
-            src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg"
-          />
-        )}
+            borderRadius="full"
+            bg={getToken("surfaces.themeBasePalette.background")}
+            key={mode}
+          >
+            <img width={16} height={16} src={getWalletModeIcon(mode)} />
+          </Box>
+        ))}
       </Box>
       <Text fs={14} align="center" mt={10}>
         {title}
@@ -50,9 +68,7 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
         gap={4}
         align="center"
       >
-        <Text fs={[12, 13]}>
-          {isConnected ? "Disconnect" : installed ? "Continue" : "Download"}
-        </Text>
+        <Text fs={[12, 13]}>{actionLabel}</Text>
         <Icon
           size={14}
           component={isConnected ? LogOut : installed ? ChevronRight : Download}

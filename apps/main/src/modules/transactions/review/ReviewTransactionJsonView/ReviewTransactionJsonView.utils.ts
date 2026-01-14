@@ -5,7 +5,11 @@ import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
-import { isEvmCall } from "@/modules/transactions/utils/xcm"
+import {
+  isEvmCall,
+  isSolanaCall,
+  isSuiCall,
+} from "@/modules/transactions/utils/xcm"
 
 export const decodeEvmCall = (abi: Abi, data: Hex) => {
   try {
@@ -53,6 +57,14 @@ export const decodeTx = (tx: AnyTransaction): object => {
     return decodeEvmCall(abi, tx.data as Hex)
   }
 
+  if (isSolanaCall(tx)) {
+    return tx.ix
+  }
+
+  if (isSuiCall(tx)) {
+    return tx.commands
+  }
+
   return {}
 }
 
@@ -65,7 +77,7 @@ export const getTxCallHash = (
     return isBinary(binary) ? binary.asHex() : ""
   }
 
-  if (isEvmCall(tx)) {
+  if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {
     return tx.data
   }
 

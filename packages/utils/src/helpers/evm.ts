@@ -1,5 +1,4 @@
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { ChainEcosystem } from "@galacticcouncil/xcm-core"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { u8aToHex } from "@polkadot/util"
 import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
 import { Buffer } from "buffer"
@@ -113,9 +112,7 @@ export const etherscan = {
     query: Record<string, string | number> = {},
   ): string => {
     const chain = chainsMap.get(chainKey)
-    if (!chain?.explorer || chain.ecosystem !== ChainEcosystem.Ethereum) {
-      return ""
-    }
+    if (!chain?.explorer) return ""
     return `${stripTrailingSlash(chain.explorer)}/${path}/${data}${createQueryString(query)}`
   },
   tx: (chainKey: string, txHash: string) => {

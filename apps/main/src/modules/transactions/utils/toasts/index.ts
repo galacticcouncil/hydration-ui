@@ -1,6 +1,6 @@
 import { IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import { SnowbridgeSdk } from "@galacticcouncil/indexer/snowbridge"
-import { CallType } from "@galacticcouncil/xcm-core"
+import { CallType } from "@galacticcouncil/xc-core"
 import { QueryClient } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
 import { PublicClient } from "viem"
@@ -81,7 +81,7 @@ export const createToastProcessorFn = (
 ): ToastProcessorFn => {
   const substrateProcessor = processors.substrate(queryClient, indexerSdk)
   const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
-  const wormholeProcessor = processors.wormhole()
+  const wormholeProcessor = processors.wormhole(queryClient, indexerSdk, evm)
   const snowbridgeProcessor = processors.snowbridge(queryClient, snowbridgeSdk)
   const invalidProcessor = processors.invalid()
 
