@@ -1,10 +1,17 @@
-import { HydrationLogo } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Skeleton, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
-import { useTranslation } from "react-i18next"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { FC, lazy } from "react"
 
-import { useAssets } from "@/providers/assetsProvider"
+const RewardsInfoDesktop = lazy(async () => ({
+  default: await import("@/modules/staking/RewardsInfo.desktop").then(
+    (m) => m.RewardsInfoDesktop,
+  ),
+}))
+
+const RewardsInfoMobile = lazy(async () => ({
+  default: await import("@/modules/staking/RewardsInfo.mobile").then(
+    (m) => m.RewardsInfoMobile,
+  ),
+}))
 
 type Props = {
   readonly allocatedRewards: string
@@ -12,27 +19,21 @@ type Props = {
 }
 
 export const RewardsInfo: FC<Props> = ({ allocatedRewards, isLoading }) => {
-  const { t } = useTranslation(["common", "staking"])
-  const { native } = useAssets()
+  const { isMobile } = useBreakpoints()
+
+  if (isMobile) {
+    return (
+      <RewardsInfoMobile
+        allocatedRewards={allocatedRewards}
+        isLoading={isLoading}
+      />
+    )
+  }
 
   return (
-    <Flex align="center" justify="space-between">
-      <Flex align="center" gap={8}>
-        <Icon component={HydrationLogo} size={18} />
-        <Text fs={15} fw={500} lh={1.2} color={getToken("text.high")}>
-          {t("staking:dashboard.allocated")}
-        </Text>
-      </Flex>
-      {isLoading ? (
-        <Skeleton height={21} width={120} />
-      ) : (
-        <Text font="primary" fw={700} color={getToken("text.high")}>
-          {t("currency", {
-            value: allocatedRewards,
-            symbol: native.symbol,
-          })}
-        </Text>
-      )}
-    </Flex>
+    <RewardsInfoDesktop
+      allocatedRewards={allocatedRewards}
+      isLoading={isLoading}
+    />
   )
 }

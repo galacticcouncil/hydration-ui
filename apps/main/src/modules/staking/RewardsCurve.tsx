@@ -1,4 +1,5 @@
 import { CrosshairDot } from "@galacticcouncil/ui/assets/icons"
+import { Ellipse } from "@galacticcouncil/ui/assets/icons"
 import {
   AreaChart,
   AxisLabelCssProps,
@@ -17,33 +18,6 @@ import { Legend } from "recharts"
 import { ChartState } from "@/components/ChartState"
 import { useRewardsCurveData } from "@/modules/staking/RewardsCurve.data"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
-
-type EllipseProps = {
-  readonly className?: string
-}
-
-const Ellipse: FC<EllipseProps> = ({ className }) => {
-  return (
-    <Box
-      className={className}
-      position="relative"
-      width={9}
-      height={9}
-      borderRadius="full"
-    >
-      <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        width="50%"
-        height="50%"
-        transform="translate(-50%, -50%)"
-        borderRadius="full"
-        bg={getToken("surfaces.containers.mid.primary")}
-      />
-    </Box>
-  )
-}
 
 export const RewardsCurve: FC = () => {
   const { t } = useTranslation(["common", "staking"])
@@ -135,6 +109,9 @@ export const RewardsCurve: FC = () => {
           horizontalGridHidden={false}
           verticalGridHidden={false}
           gridHorizontalValues={[(1 / 4) * 100, (2 / 4) * 100, (3 / 4) * 100]}
+          gridStroke={themeProps.controls.outline.base}
+          gridOpacity={0.75}
+          gridStrokeDasharray="2 3"
           strokeWidth={1.5}
           strokeDasharray="4 1.5"
           legend={
@@ -152,7 +129,7 @@ export const RewardsCurve: FC = () => {
                     <Flex align="center" gap={4}>
                       <Ellipse
                         sx={{
-                          bg: getToken("buttons.secondary.emphasis.onRest"),
+                          color: getToken("buttons.secondary.emphasis.onRest"),
                         }}
                       />
                       <Text
@@ -165,21 +142,10 @@ export const RewardsCurve: FC = () => {
                       </Text>
                     </Flex>
                   )}
-                  <Flex align="center" gap={4}>
-                    <Ellipse sx={{ bg: "#53A4F3" }} />
-                    <Text
-                      fs="p6"
-                      lh={1.4}
-                      color={getToken("text.high")}
-                      whiteSpace="nowrap"
-                    >
-                      {t("staking:dashboard.chart.legend.current")}
-                    </Text>
-                  </Flex>
                   {isGraphSecondaryPoint && (
                     <Flex align="center" gap={4}>
                       <Ellipse
-                        sx={{ bg: getToken("accents.success.emphasis") }}
+                        sx={{ color: getToken("accents.success.emphasis") }}
                       />
                       <Text
                         fs="p6"
@@ -204,6 +170,17 @@ export const RewardsCurve: FC = () => {
                       </Tooltip>
                     </Flex>
                   )}
+                  <Flex align="center" gap={4}>
+                    <Ellipse sx={{ color: getToken("icons.Contrast-") }} />
+                    <Text
+                      fs="p6"
+                      lh={1.4}
+                      color={getToken("text.high")}
+                      whiteSpace="nowrap"
+                    >
+                      {t("staking:dashboard.chart.legend.current")}
+                    </Text>
+                  </Flex>
                 </Flex>
               )}
               style={{
@@ -247,7 +224,12 @@ export const RewardsCurve: FC = () => {
             series: [
               {
                 key: "y",
-                color: ["#53A4F3", "#53A4F3", 1, 1],
+                color: [
+                  themeProps.controls.outline.active,
+                  themeProps.controls.outline.active,
+                  1,
+                  1,
+                ],
               },
             ],
           }}
