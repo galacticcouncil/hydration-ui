@@ -32,6 +32,16 @@ export const useTradeChartData = ({
   const rpc = useRpcProvider()
   const squidClient = useSquidClient()
 
+  // To prevent refetching on asset switch
+  const isAssetInFirst = Number(assetOutId) >= Number(assetOutId)
+  const sortedAssets = isAssetInFirst
+    ? ([assetInId, assetOutId] as const)
+    : ([assetOutId, assetInId] as const)
+
+  const { data: spotPriceData, isLoading: isSpotPriceLoading } = useQuery(
+    spotPriceQuery(rpc, assetInId, assetOutId),
+  )
+
   const [startTimestamp, endTimestamp] = useMemo(() => {
     if (!timeFrame) {
       return []
@@ -41,17 +51,13 @@ export const useTradeChartData = ({
     const ms = TIME_FRAME_MS[timeFrame]
 
     return [(now - ms).toString(), now.toString()]
-  }, [timeFrame])
+    // refetch chart data on spot price change to keep it consistent
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeFrame, spotPriceData])
 
   const bucketSize = timeFrame
     ? bucketSizes[timeFrame]
     : TimeSeriesBucketTimeRange["4H"]
-
-  // To prevent refetching on asset switch
-  const isAssetInFirst = Number(assetOutId) >= Number(assetOutId)
-  const sortedAssets = isAssetInFirst
-    ? ([assetInId, assetOutId] as const)
-    : ([assetOutId, assetInId] as const)
 
   const { data, isError, isLoading, isSuccess } = useQuery(
     tradePricesQuery(
@@ -62,10 +68,6 @@ export const useTradeChartData = ({
       endTimestamp,
       bucketSize,
     ),
-  )
-
-  const { data: spotPriceData, isLoading: isSpotPriceLoading } = useQuery(
-    spotPriceQuery(rpc, assetInId, assetOutId),
   )
 
   const prices = useMemo(() => {
