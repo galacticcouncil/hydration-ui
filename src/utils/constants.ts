@@ -90,3 +90,5 @@ export const STRATEGY_ASSETS = [
 ]
 
 export const AAVE_EXTRA_GAS = 1_000_000n
+
+export const EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX = "EVMAccounts::claim_account"

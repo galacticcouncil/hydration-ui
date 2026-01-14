@@ -18,7 +18,10 @@ import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
 import { useStore } from "state/store"
 import { createToastMessages, useToast } from "state/toasts"
 import { NATIVE_ASSET_ID } from "utils/api"
-import { AAVE_EXTRA_GAS } from "utils/constants"
+import {
+  AAVE_EXTRA_GAS,
+  EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX,
+} from "utils/constants"
 import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
 import { Maybe, identity, isNotNil, undefinedNoop } from "utils/helpers"
 import { QUERY_KEYS } from "utils/queryKeys"
@@ -95,9 +98,9 @@ export const useAcceptedCurrencies = (ids: string[]) => {
 }
 
 function getEvmAccountClaimMessage(address: string, assetId: string) {
-  const MESSAGE_PREFIX = "EVMAccounts::claim_account"
-
-  const prefixU8a = compactAddLength(stringToU8a(MESSAGE_PREFIX))
+  const prefixU8a = compactAddLength(
+    stringToU8a(EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX),
+  )
   const assetIdU8a = bnToU8a(new BN(assetId), {
     isLe: true,
     bitLength: 32,
