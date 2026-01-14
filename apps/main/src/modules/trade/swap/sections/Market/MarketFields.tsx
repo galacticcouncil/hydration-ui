@@ -5,7 +5,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebouncedCallback } from "use-debounce"
 
-import { TradeType } from "@/api/trade"
+import { Trade, TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
 import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
@@ -17,10 +17,10 @@ import { TAsset, useAssets } from "@/providers/assetsProvider"
 const RECALCULATE_DEBOUNCE_MS = 250
 
 type Props = {
-  readonly price: string | null
+  readonly swap: Trade | undefined
 }
 
-export const MarketFields: FC<Props> = ({ price }) => {
+export const MarketFields: FC<Props> = ({ swap }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
@@ -197,7 +197,7 @@ export const MarketFields: FC<Props> = ({ price }) => {
           handleSellChange(sellAmount)
         }}
       />
-      <MarketSwitcher price={price} />
+      <MarketSwitcher swap={swap} />
       <AssetSelectFormField<MarketFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
