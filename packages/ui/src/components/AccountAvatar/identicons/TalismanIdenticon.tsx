@@ -1,7 +1,7 @@
 import { isH160Address } from "@galacticcouncil/utils"
-import { encodeAddress } from "@polkadot/util-crypto"
 import color from "color"
 import md5 from "md5"
+import { AccountId } from "polkadot-api"
 import { FC, useId, useMemo } from "react"
 
 import { Flex, FlexProps } from "@/components/Flex"
@@ -27,7 +27,7 @@ function normalizeSeed(seed: string) {
   if (isEthereum) return seed
 
   try {
-    return encodeAddress(seed)
+    return AccountId().dec(seed)
   } catch (e) {
     return seed
   }

@@ -11,6 +11,7 @@
     "lint:eslint": "eslint src"
   },
   "dependencies": {
+    "@noble/hashes": "^2.0.1",
     "@types/uuid": "^10.0.0",
     "buffer": "^6.0.3",
     "uuid": "^11.0.5"
