@@ -11,15 +11,15 @@ export const gasLimitRecommendations: GasRecommendationType = {
     recommended: "600000",
   },
   [ProtocolAction.borrow]: {
-    limit: "600000",
-    recommended: "600000",
+    limit: "1000000",
+    recommended: "1000000",
   },
   [ProtocolAction.setUsageAsCollateral]: {
     limit: "500000",
     recommended: "500000",
   },
   [ProtocolAction.claimRewards]: {
-    limit: "500000",
-    recommended: "500000",
+    limit: "1000000",
+    recommended: "1000000",
   },
 }

@@ -133,7 +133,6 @@ export const SupplyModalContent = React.memo(
             .div(totalCollateralMarketReferenceCurrencyAfter)
         : "-1"
 
-    const isMaxSelected = amount === maxAmountToSupply
     const isMaxExceeded = !!amount && Big(amount).gt(maxAmountToSupply)
 
     let healthFactorAfterDeposit = user ? user.healthFactor : "-1"
@@ -216,10 +215,9 @@ export const SupplyModalContent = React.memo(
     return (
       <>
         <AssetInput
-          name="supply-amount"
           value={amount}
           onChange={handleChange}
-          usdValue={amountInUsd.toString()}
+          displayValue={amountInUsd.toString()}
           symbol={
             supplyUnWrapped
               ? currentNetworkConfig.baseAssetSymbol
@@ -237,9 +235,8 @@ export const SupplyModalContent = React.memo(
               address: poolReserve.underlyingAsset,
             },
           ]}
-          isMaxSelected={isMaxSelected}
           disabled={supplyTxState.loading}
-          maxValue={maxAmountToSupply}
+          maxButtonBalance={maxAmountToSupply}
           amountError={
             isMaxExceeded ? "Insufficient balance on your account." : undefined
           }
