@@ -36,7 +36,7 @@
     "big.js": "^6.2.2",
     "immer": "^10.0.3",
     "p-wait-for": "^6.0.0",
-    "polkadot-api": "1.23.0",
+    "polkadot-api": "1.23.2",
     "react-hook-form": "^7.54.2",
     "react-use": "^17.6.0",
     "remeda": "^2.19.0",
