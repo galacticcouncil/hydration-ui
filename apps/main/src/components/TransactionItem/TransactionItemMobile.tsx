@@ -34,6 +34,8 @@ type Props = StatusProps & {
   readonly message?: string
   readonly link?: string | null
   readonly className?: string
+  readonly errorTitle?: string
+  readonly errorMessage?: string
 }
 
 export const TransactionItemMobile: FC<Props> = ({
@@ -41,6 +43,8 @@ export const TransactionItemMobile: FC<Props> = ({
   message,
   link,
   className,
+  errorTitle,
+  errorMessage,
   ...statusProps
 }) => {
   const { t } = useTranslation()
@@ -76,13 +80,16 @@ export const TransactionItemMobile: FC<Props> = ({
           <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
             {received ?? "⎯"}
           </Text>
-          <TransactionStatus variant={statusProps.status} />
-          {message && (
+          <TransactionStatus
+            variant={statusProps.status}
+            errorTitle={errorTitle}
+          />
+          {(message || errorMessage) && (
             <TransactionStatusMessage
               variant={statusProps.status}
               sx={{ maxWidth: "200px", textAlign: "end" }}
             >
-              {message}
+              {message || errorMessage}
             </TransactionStatusMessage>
           )}
         </Flex>

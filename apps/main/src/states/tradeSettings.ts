@@ -54,8 +54,6 @@ export type TradeSettings = z.infer<typeof tradeSettingsSchema>
 
 const version = 1
 
-export const DCA_SLIPPAGE_SETTINGS = [0.1, 0.3, 0.5] as const
-
 const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
   swap: {
@@ -71,7 +69,7 @@ const defaultState: TradeSettings = {
     slippage: 3,
   },
   dca: {
-    slippage: DCA_SLIPPAGE_SETTINGS[2],
+    slippage: 1,
     maxRetries: 5,
   },
 }

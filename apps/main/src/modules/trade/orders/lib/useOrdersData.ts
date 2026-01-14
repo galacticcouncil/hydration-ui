@@ -27,7 +27,6 @@ export type OrderData = {
   readonly singleTradeSize: string | null
   readonly to: TAsset
   readonly toAmountExecuted: string | null
-  readonly price: string | null
   readonly status: DcaScheduleStatus | null
   readonly blocksPeriod: number | null
 }
@@ -84,13 +83,6 @@ export const useOrdersData = (
             ? scaleHuman(schedule.totalExecutedAmountOut, to.decimals)
             : null
 
-          const price =
-            toAmountExecuted &&
-            fromAmountExecuted &&
-            Big(toAmountExecuted).gt(0)
-              ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
-              : null
-
           return {
             kind: OrderKind.Dca,
             scheduleId: Number(schedule.id),
@@ -101,7 +93,6 @@ export const useOrdersData = (
             singleTradeSize,
             to,
             toAmountExecuted,
-            price,
             status: isDcaScheduleStatus(schedule.status)
               ? schedule.status
               : null,

@@ -9,6 +9,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
+import Big from "big.js"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -57,13 +58,14 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        return (
-          <SwapPrice
-            from={row.original.from}
-            to={row.original.to}
-            price={row.original.price}
-          />
-        )
+        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+
+        const price =
+          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
+            : null
+
+        return <SwapPrice from={from} to={to} price={price} />
       },
     })
 

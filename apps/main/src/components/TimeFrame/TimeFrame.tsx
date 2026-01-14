@@ -75,7 +75,6 @@ export const TimeFrame: FC<TimeFrameProps> = ({
                 fw={500}
                 fs={11}
                 lh={px(15)}
-                transform="uppercase"
                 color={getToken("buttons.secondary.low.onRest")}
               >
                 {formatTimeFrame(timeFrame.type)}

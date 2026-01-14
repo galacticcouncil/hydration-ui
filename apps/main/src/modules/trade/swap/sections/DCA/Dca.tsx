@@ -26,7 +26,8 @@ export const Dca: FC = () => {
   const form = useDcaForm({ assetIn, assetOut })
 
   const { order, orderTx, healthFactor, isLoading } = useDcaTradeOrder(form)
-  const { warnings, errors } = useDcaPriceImpactValidation(order)
+  const duration = form.watch("duration")
+  const { warnings, errors } = useDcaPriceImpactValidation(order, duration)
 
   const submitDcaOrder = useSubmitDcaOrder()
 

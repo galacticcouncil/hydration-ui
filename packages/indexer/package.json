@@ -17,6 +17,7 @@
   "exports": {
     "./indexer": "./src/indexer/index.ts",
     "./squid": "./src/squid/index.ts",
+    "./squid/lib/*": "./src/squid/lib/*.ts",
     "./snowbridge": "./src/snowbridge/index.ts"
   },
   "dependencies": {

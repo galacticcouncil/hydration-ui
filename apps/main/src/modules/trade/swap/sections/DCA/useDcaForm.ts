@@ -1,10 +1,16 @@
-import { timeFrameSchema } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
+import {
+  getTimeFrameMillis,
+  getTimeFrameSchema,
+  TimeFrame,
+  timeFrameTypes,
+} from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
+import { millisecondsInHour } from "date-fns/constants"
 import { useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { FieldPath, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
@@ -22,6 +28,14 @@ import {
 } from "@/utils/validators"
 
 export const MIN_DCA_ORDERS = 3
+// once per block (600) and accounted for a buffer
+const MAX_DCA_ORDERS_PER_HOUR = 540
+
+export const getAbsoluteMaxDcaOrders = (duration: TimeFrame): number => {
+  const hours = getTimeFrameMillis(duration) / millisecondsInHour
+
+  return hours * MAX_DCA_ORDERS_PER_HOUR
+}
 
 export enum DcaOrdersMode {
   Custom = "Custom",
@@ -45,15 +59,35 @@ const ordersSchema = z.discriminatedUnion("type", [
 
 export type DcaOrders = z.infer<typeof ordersSchema>
 
-const schema = z.object({
+export const dcaTimeFrameTypes = timeFrameTypes.filter(
+  (type) => type !== "month",
+)
+
+const schemaBase = z.object({
   sellAsset: requiredObject<TAsset>(),
   sellAmount: positiveOptional,
   buyAsset: requiredObject<TAsset>(),
-  duration: timeFrameSchema,
+  duration: getTimeFrameSchema(dcaTimeFrameTypes),
   orders: ordersSchema,
 })
 
-export type DcaFormValues = z.infer<typeof schema>
+export type DcaFormValues = z.infer<typeof schemaBase>
+
+const schema = schemaBase.superRefine(({ duration, orders }, { addIssue }) => {
+  if (orders.type === DcaOrdersMode.Auto) {
+    return
+  }
+
+  const maxOrders = getAbsoluteMaxDcaOrders(duration)
+
+  if (orders.value && orders.value > maxOrders) {
+    addIssue({
+      code: "custom",
+      message: i18n.t("trade:dca.errors.maxOrders", { count: maxOrders }),
+      path: ["orders.value" satisfies FieldPath<DcaFormValues>],
+    })
+  }
+})
 
 const useSchema = (account: Account | null) => {
   const { t } = useTranslation()
@@ -124,12 +158,11 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
     duration: {
-      type: "day",
+      type: "hour",
       value: 1,
     },
     orders: {
-      type: DcaOrdersMode.Custom,
-      value: null,
+      type: DcaOrdersMode.Auto,
     },
   }
 

@@ -1,13 +1,17 @@
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 
-import { MIN_DCA_ORDERS } from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { TimeFrame } from "@/components/TimeFrame/TimeFrame.utils"
+import {
+  getAbsoluteMaxDcaOrders,
+  MIN_DCA_ORDERS,
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useTradeSettings } from "@/states/tradeSettings"
 
-const PRICE_IMPACT_WARNING_THRESHOLD = 0.1
+const PRICE_IMPACT_WARNING_THRESHOLD = -0.1
 
 export enum DcaValidationError {
   PriceImpact = "PriceImpact",
-  MaxOrders = "MaxOrders",
+  MinOrderBudget = "MinOrderBudget",
 }
 
 export enum DcaValidationWarning {
@@ -16,6 +20,7 @@ export enum DcaValidationWarning {
 
 export const useDcaPriceImpactValidation = (
   order: TradeDcaOrder | undefined,
+  duration: TimeFrame,
 ): {
   readonly warnings: ReadonlyArray<DcaValidationWarning>
   readonly errors: ReadonlyArray<DcaValidationError>
@@ -24,22 +29,29 @@ export const useDcaPriceImpactValidation = (
     dca: { slippage },
   } = useTradeSettings()
 
-  const priceImpact = order?.tradeImpactPct ?? 0
+  if (!order) {
+    return { warnings: [], errors: [] }
+  }
+
+  const priceImpact = order.tradeImpactPct
 
   const warnings: Array<DcaValidationWarning> = []
   const errors: Array<DcaValidationError> = []
 
-  if (Math.abs(priceImpact) > slippage) {
+  if (priceImpact < -slippage) {
     errors.push(DcaValidationError.PriceImpact)
-  } else if (Math.abs(priceImpact) > PRICE_IMPACT_WARNING_THRESHOLD) {
+  } else if (priceImpact < PRICE_IMPACT_WARNING_THRESHOLD) {
     warnings.push(DcaValidationWarning.PriceImpact)
   }
 
+  const maxOrders = getAbsoluteMaxDcaOrders(duration)
+
   if (
     order &&
+    order.tradeCount <= maxOrders &&
     order.tradeCount > Math.max(order.maxTradeCount, MIN_DCA_ORDERS)
   ) {
-    errors.push(DcaValidationError.MaxOrders)
+    errors.push(DcaValidationError.MinOrderBudget)
   }
 
   return { warnings, errors }

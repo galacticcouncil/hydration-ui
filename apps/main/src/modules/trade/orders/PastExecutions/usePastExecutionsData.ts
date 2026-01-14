@@ -3,6 +3,10 @@ import {
   DcaScheduleExecutionStatus,
   isDcaScheduleExecutionStatus,
 } from "@galacticcouncil/indexer/squid"
+import {
+  IndexerErrorState,
+  parseIndexerErrorState,
+} from "@galacticcouncil/indexer/squid/lib/parseIndexerErrorState"
 import { subscan } from "@galacticcouncil/utils"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -20,6 +24,7 @@ export type PastExecutionData = {
   readonly amountOut: string
   readonly timestamp: string | null
   readonly link: string | null
+  readonly errorState: IndexerErrorState | null
 }
 
 export const usePastExecutionsData = (scheduleId: number) => {
@@ -81,6 +86,7 @@ export const usePastExecutionsData = (scheduleId: number) => {
             amountOut,
             timestamp,
             link,
+            errorState: parseIndexerErrorState(executionEvent?.errorState),
           }
         })
         .filter((execution) => execution !== null) ?? []

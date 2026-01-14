@@ -49,7 +49,7 @@ export const DcaWarnings: FC<Props> = ({
         ? "trade:dca.warnings.priceImpact.canContinue"
         : "trade:dca.warnings.priceImpact.cantContinue",
       {
-        percentage: Math.abs(order?.tradeImpactPct ?? 0),
+        percentage: order?.tradeImpactPct ?? 0,
       },
     ),
   }
