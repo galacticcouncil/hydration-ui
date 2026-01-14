@@ -83,7 +83,7 @@ export const StakeForm: FC<Props> = ({
               maxBalance={balance}
               value={field.value}
               onChange={field.onChange}
-              error={fieldState.error?.message}
+              amountError={fieldState.error?.message}
             />
           )}
         />

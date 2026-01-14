@@ -255,7 +255,7 @@ export const RepayModalContent: React.FC<
         onSelect={setTokenToRepayWith}
         isMaxSelected={isMaxSelected}
         maxValue={maxAmountToRepay.toString()}
-        error={isMaxExceeded ? "Remaining debt exceeded" : undefined}
+        amountError={isMaxExceeded ? "Remaining debt exceeded" : undefined}
       />
 
       <Separator mx="var(--modal-content-inset)" />

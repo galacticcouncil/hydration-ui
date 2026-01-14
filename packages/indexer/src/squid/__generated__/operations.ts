@@ -72,7 +72,7 @@ export type SwapFragment = { __typename?: 'Swap', paraTimestamp: string, operati
 
 export type UserSwapsQueryVariables = Types.Exact<{
   swapperIdFilter?: Types.InputMaybe<Types.StringFilter>;
-  allInvolvedAssetRegistryIds?: Types.InputMaybe<Types.StringListFilter>;
+  orFilter?: Types.InputMaybe<Array<Types.SwapFilter> | Types.SwapFilter>;
   offset: Types.Scalars['Int']['input'];
   pageSize: Types.Scalars['Int']['input'];
 }>;

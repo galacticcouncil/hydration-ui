@@ -57,10 +57,12 @@ export const usePastExecutionsData = (scheduleId: number) => {
 
           const status = statusMap[execution.status]
 
-          const event =
+          const executionEvent =
             execution.dcaScheduleExecutionEventsByScheduleExecutionId.nodes.at(
               0,
-            )?.event
+            )
+
+          const event = executionEvent?.event
 
           const timestamp = event?.block?.timestamp ?? null
 
@@ -92,5 +94,5 @@ const statusMap: Record<DcaScheduleExecutionStatus, TransactionStatusVariant> =
   {
     [DcaScheduleExecutionStatus.Planned]: TransactionStatusVariant.Pending,
     [DcaScheduleExecutionStatus.Executed]: TransactionStatusVariant.Success,
-    [DcaScheduleExecutionStatus.Failed]: TransactionStatusVariant.Warning,
+    [DcaScheduleExecutionStatus.Failed]: TransactionStatusVariant.Error,
   }

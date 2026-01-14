@@ -41,7 +41,8 @@ export interface AssetInputProps<T extends Asset = Asset> {
   balanceText?: React.ReactNode
   loading?: boolean
   className?: string
-  error?: string
+  assetError?: string
+  amountError?: string
 }
 
 export const AssetInput = <T extends Asset = Asset>({
@@ -53,7 +54,8 @@ export const AssetInput = <T extends Asset = Asset>({
   maxValue,
   loading = false,
   className,
-  error,
+  assetError,
+  amountError,
 }: AssetInputProps<T>) => {
   const { formatCurrency } = useAppFormatters()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
@@ -80,7 +82,8 @@ export const AssetInput = <T extends Asset = Asset>({
         modalDisabled={!hasMultipleAssets}
         onChange={onChange}
         loading={loading}
-        error={error}
+        assetError={assetError}
+        amountError={amountError}
       />
       <Modal open={isAssetSelectOpen} onOpenChange={setIsAssetSelectOpen}>
         <ModalHeader title="Select asset" />

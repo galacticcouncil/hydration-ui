@@ -57,7 +57,7 @@ export const ErrorAssetSelector: Story = {
     symbol: "HDX",
     value: "1234",
     displayValue: "123",
-    error: "Not enough balance",
+    amountError: "Not enough balance",
   },
 }
 

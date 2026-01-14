@@ -100,7 +100,11 @@ export const TradeOrdersHeader = () => {
       />
       <Flex gap={12} align="center">
         <ToggleRoot>
-          <ToggleLabel>{t("trade.orders.allPairs")}</ToggleLabel>
+          <ToggleLabel>
+            {allPairs
+              ? t("trade.orders.allPairs.on")
+              : t("trade.orders.allPairs.off")}
+          </ToggleLabel>
           <Toggle
             checked={allPairs}
             onCheckedChange={(checked) => {
