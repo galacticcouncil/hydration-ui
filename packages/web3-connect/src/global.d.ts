@@ -1,4 +1,3 @@
-import { InjectedWindowProvider as PolkadotInjectedWindowProvider } from "@polkadot/extension-inject/types"
 import { EIP1193Provider } from "viem"
 
 import { SolanaInjectedWindowProvider } from "@/types/solana"
@@ -14,7 +13,7 @@ declare global {
     }
     solflare?: SolanaInjectedWindowProvider
     braveSolana?: SolanaInjectedWindowProvider
-    injectedWeb3?: Record<string, PolkadotInjectedWindowProvider>
+    injectedWeb3?: InjectedWeb3
     walletExtension?: { isNovaWallet?: boolean }
   }
 }
