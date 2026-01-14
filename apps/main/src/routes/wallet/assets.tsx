@@ -11,6 +11,8 @@ const searchSchema = z.object({
   category: z.enum(["all", "assets", "liquidity"]).default("all"),
 })
 
+export type WalletAssetsCategory = z.infer<typeof searchSchema>["category"]
+
 const WalletAssetsSkeleton = () => {
   const { isMobile } = useBreakpoints()
 
