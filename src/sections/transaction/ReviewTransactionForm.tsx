@@ -147,6 +147,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     openEditFeePaymentAssetModal,
     editFeePaymentAssetModal,
     isOpenEditFeePaymentAssetModal,
+    isFeePaymentAssetChangePending,
   } = useEditFeePaymentAsset(acceptedFeePaymentAssets, feePaymentMeta?.id)
 
   const { wallet } = useWallet()
@@ -285,6 +286,10 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.openPolkadotJS",
     )
+  } else if (isFeePaymentAssetChangePending) {
+    btnText = t(
+      "liquidity.reviewTransaction.modal.confirmButton.feePaymentPending",
+    )
   } else if (isEditPaymentBalance) {
     btnText = t(
       "liquidity.reviewTransaction.modal.confirmButton.notEnoughBalance",
@@ -307,6 +312,7 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
   )
 
   const isSubmitDisabled =
+    isFeePaymentAssetChangePending ||
     isPermitTxPending ||
     !isWalletReady ||
     !account ||
@@ -382,7 +388,11 @@ export const ReviewTransactionForm: FC<Props> = (props) => {
                   <Button
                     text={btnText}
                     variant="primary"
-                    isLoading={isPermitTxPending || isLoading}
+                    isLoading={
+                      isFeePaymentAssetChangePending ||
+                      isPermitTxPending ||
+                      isLoading
+                    }
                     disabled={isSubmitDisabled}
                     onClick={onConfirmClick}
                   />
