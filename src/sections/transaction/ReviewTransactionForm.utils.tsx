@@ -336,6 +336,7 @@ export const useEditFeePaymentAsset = (
     openEditFeePaymentAssetModal,
     editFeePaymentAssetModal,
     isOpenEditFeePaymentAssetModal,
+    isFeePaymentAssetChangePending: feeAsPayment.isLoading,
   }
 }
 

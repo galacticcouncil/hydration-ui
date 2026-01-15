@@ -76,3 +76,14 @@ export class PolkadotSigner implements Signer {
     return { id: ++this.id, signature }
   }
 }
+
+export const isPolkadotSigner = (signer: unknown): signer is PolkadotSigner => {
+  return (
+    !!signer &&
+    typeof signer === "object" &&
+    "signRaw" in signer &&
+    "signPayload" in signer &&
+    typeof signer.signRaw === "function" &&
+    typeof signer.signPayload === "function"
+  )
+}

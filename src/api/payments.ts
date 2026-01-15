@@ -1,20 +1,33 @@
-import BigNumber from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
+import {
+  BN,
+  bnToU8a,
+  compactAddLength,
+  stringToU8a,
+  u8aConcat,
+} from "@polkadot/util"
+import { decodeAddress } from "@polkadot/util-crypto"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { QUERY_KEYS } from "utils/queryKeys"
-import { Maybe, isNotNil, identity, undefinedNoop } from "utils/helpers"
-import { useStore } from "state/store"
-import { useRpcProvider } from "providers/rpcProvider"
-import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import BigNumber from "bignumber.js"
 import { useAssets } from "providers/assets"
+import { useRpcProvider } from "providers/rpcProvider"
 import { useMemo } from "react"
-import { uniqBy } from "utils/rx"
-import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
-import { useAccountBalances } from "./deposits"
-import { createToastMessages } from "state/toasts"
 import { useTranslation } from "react-i18next"
-import { AAVE_EXTRA_GAS } from "utils/constants"
+import { isPolkadotSigner } from "sections/web3-connect/signer/PolkadotSigner"
+import { useAccount, useWallet } from "sections/web3-connect/Web3Connect.utils"
+import { useStore } from "state/store"
+import { createToastMessages, useToast } from "state/toasts"
 import { NATIVE_ASSET_ID } from "utils/api"
+import {
+  AAVE_EXTRA_GAS,
+  EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX,
+} from "utils/constants"
+import { NATIVE_EVM_ASSET_ID, isEvmAccount } from "utils/evm"
+import { Maybe, identity, isNotNil, undefinedNoop } from "utils/helpers"
+import { QUERY_KEYS } from "utils/queryKeys"
+import { uniqBy } from "utils/rx"
+import { useAccountBalances } from "./deposits"
+import { sendUnsignedTx } from "utils/extrinsic"
 
 export const getAcceptedCurrency = (api: ApiPromise) => async () => {
   const dataRaw =
@@ -84,6 +97,20 @@ export const useAcceptedCurrencies = (ids: string[]) => {
   )
 }
 
+function getEvmAccountClaimMessage(address: string, assetId: string) {
+  const prefixU8a = compactAddLength(
+    stringToU8a(EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX),
+  )
+  const assetIdU8a = bnToU8a(new BN(assetId), {
+    isLe: true,
+    bitLength: 32,
+  })
+
+  const publicKey = decodeAddress(address)
+
+  return u8aConcat(prefixU8a, publicKey, assetIdU8a)
+}
+
 export const useSetAsFeePayment = () => {
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -91,12 +118,16 @@ export const useSetAsFeePayment = () => {
   const { account } = useAccount()
   const { createTransaction } = useStore()
   const queryClient = useQueryClient()
+  const { wallet } = useWallet()
+  const toasts = useToast()
 
   return useMutation(
-    async (tokenId?: string) => {
-      if (!tokenId) return
+    async (assetId?: string) => {
+      if (!assetId) return
+      if (!account?.address) return
+      if (!wallet) return
 
-      const meta = getAssetWithFallback(tokenId)
+      const meta = getAssetWithFallback(assetId)
 
       const toast = createToastMessages(
         "wallet.assets.table.actions.payment.toast",
@@ -111,19 +142,66 @@ export const useSetAsFeePayment = () => {
 
       const paymentInfoData = await api.tx.currencies
         .transfer("", native.id, "0")
-        .paymentInfo(account?.address ?? "")
+        .paymentInfo(account.address)
+
+      const accountInfo = await api.query.system.account(account.address)
+
+      const isUnclaimedAccount =
+        BigNumber(accountInfo.nonce.toString()).eq(0) &&
+        BigNumber(accountInfo.providers.toString()).eq(0) &&
+        BigNumber(accountInfo.sufficients.toString()).eq(0)
+
+      const signer = wallet.extension.signer
+
+      if (isUnclaimedAccount && isPolkadotSigner(signer)) {
+        const message = getEvmAccountClaimMessage(account.address, assetId)
+
+        const { signature } = await signer.signRaw({
+          address: account.address,
+          data: `0x${Buffer.from(message).toString("hex")}`,
+          type: "bytes",
+        })
+
+        const unsignedTx = api.tx.evmAccounts.claimAccount(
+          account.address,
+          assetId,
+          {
+            Sr25519: signature,
+          },
+        )
+        return sendUnsignedTx(unsignedTx, {
+          onSubmitted: () => {
+            if (!toast.onLoading) return
+            toasts.loading({
+              title: toast.onLoading,
+            })
+          },
+          onSuccess: () => {
+            if (!toast.onSuccess) return
+            toasts.success({
+              title: toast.onSuccess,
+            })
+          },
+          onError: () => {
+            if (!toast.onError) return
+            toasts.error({
+              title: toast.onError,
+            })
+          },
+        })
+      }
 
       return await createTransaction(
         {
           tx: meta.isErc20
             ? api.tx.dispatcher.dispatchWithExtraGas(
-                api.tx.multiTransactionPayment.setCurrency(tokenId),
+                api.tx.multiTransactionPayment.setCurrency(assetId),
                 AAVE_EXTRA_GAS,
               )
-            : api.tx.multiTransactionPayment.setCurrency(tokenId),
+            : api.tx.multiTransactionPayment.setCurrency(assetId),
           overrides: {
             fee: new BigNumber(paymentInfoData.partialFee.toHex()),
-            currencyId: tokenId,
+            currencyId: assetId,
           },
         },
         { toast },
