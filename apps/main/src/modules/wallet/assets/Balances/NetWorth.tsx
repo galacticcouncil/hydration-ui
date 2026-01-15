@@ -6,6 +6,7 @@ import {
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
+import Big from "big.js"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
@@ -35,14 +36,33 @@ const intervalOptions = (["all", ...netWorthTimeFrameTypes] as const).map<
   label: i18n.t(`chart.timeFrame.${option}`),
 }))
 
-export const NetWorth: FC = () => {
+type Props = {
+  readonly assetBalance: string
+  readonly liquidityBalance: string
+  readonly borrowed: string
+  readonly isCurrentLoading: boolean
+}
+
+export const NetWorth: FC<Props> = ({
+  assetBalance,
+  liquidityBalance,
+  borrowed,
+  isCurrentLoading,
+}) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const [interval, setInterval] = useState<NetWorthTimeFrameType | "all">("all")
   const [crosshair, setCrosshair] = useState<NetWorthData | null>(null)
 
+  const currentNetWorth = Big(assetBalance || "0")
+    .plus(liquidityBalance || "0")
+    .minus(borrowed || "0")
+    .toString()
+
   const { balances, assetId, isLoading, isSuccess, isError } = useNetWorthData(
     interval === "all" ? null : interval,
+    currentNetWorth,
+    isCurrentLoading,
   )
 
   const lastDataPoint = last(balances)

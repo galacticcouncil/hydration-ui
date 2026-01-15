@@ -1,7 +1,4 @@
-import {
-  accountNetWorthHistoricalDataQuery,
-  latestAccountBalanceQuery,
-} from "@galacticcouncil/indexer/squid"
+import { accountNetWorthHistoricalDataQuery } from "@galacticcouncil/indexer/squid"
 import { TimeSeriesBucketTimeRange } from "@galacticcouncil/indexer/squid"
 import { TIME_FRAME_MS } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -17,12 +14,13 @@ export type NetWorthData = {
   readonly time: Date
 }
 
-export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
+export const useNetWorthData = (
+  timeFrame: NetWorthTimeFrameType | null,
+  currentNetWorth: string,
+  isCurrentLoading: boolean,
+) => {
   const squidClient = useSquidClient()
   const { account } = useAccount()
-
-  const { data: latestBalanceData, isLoading: isLatestBalanceLoading } =
-    useQuery(latestAccountBalanceQuery(squidClient, account?.publicKey ?? ""))
 
   const [startTimestamp, endTimestamp] = useMemo(() => {
     if (!timeFrame) {
@@ -35,7 +33,7 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
     return [(now - ms).toString(), now.toString()]
     // refetch net worth data on latest balance change to keep it consistent
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeFrame, latestBalanceData])
+  }, [timeFrame, currentNetWorth])
 
   const bucketSize = timeFrame
     ? bucketSizes[timeFrame]
@@ -53,7 +51,7 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
   })
 
   const balances = useMemo(() => {
-    if (isLoading || isLatestBalanceLoading) {
+    if (isLoading || isCurrentLoading) {
       return []
     }
 
@@ -62,23 +60,20 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
         (node) => node?.buckets ?? [],
       ) ?? []
 
-    const latestNetWorth = Number(
-      latestBalanceData?.accountTotalBalanceHistoricalData?.nodes[0]
-        ?.totalTransferableNorm,
-    )
+    const currentNetWorthNum = Number(currentNetWorth)
 
     if (!buckets.length) {
-      if (!latestNetWorth) {
+      if (!currentNetWorthNum) {
         return []
       }
 
       return [
         {
-          netWorth: latestNetWorth,
+          netWorth: currentNetWorthNum,
           time: new Date(),
         },
         {
-          netWorth: latestNetWorth,
+          netWorth: currentNetWorthNum,
           time: new Date(Date.now() + 1000),
         },
       ]
@@ -91,10 +86,10 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
 
     const firstBalance = balances[0]
 
-    const withCurrentBalance = latestNetWorth
+    const withCurrentBalance = currentNetWorthNum
       ? balances.concat([
           {
-            netWorth: latestNetWorth,
+            netWorth: currentNetWorthNum,
             time: new Date(),
           },
         ])
@@ -115,13 +110,13 @@ export const useNetWorthData = (timeFrame: NetWorthTimeFrameType | null) => {
         }),
       )
       .concat()
-  }, [data, isLoading, latestBalanceData, isLatestBalanceLoading])
+  }, [data, isLoading, currentNetWorth, isCurrentLoading])
 
   return {
     balances,
     assetId: data?.accountTotalBalancesByPeriod.nodes[0]?.referenceAssetId,
     isError,
-    isLoading: isLoading || isLatestBalanceLoading,
+    isLoading: isLoading || isCurrentLoading,
     isSuccess,
   }
 }
