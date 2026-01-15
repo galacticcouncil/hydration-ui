@@ -13,10 +13,12 @@ type Props<TFormValues extends FieldValues> = Omit<
   "timeFrame" | "onChange" | "isError"
 > & {
   readonly fieldName: FieldPathByValue<TFormValues, TimeFrameModel>
+  readonly onChange?: (value: TimeFrameModel) => void
 }
 
 export const TimeFrameFormField = <TFormValues extends FieldValues>({
   fieldName,
+  onChange,
   ...props
 }: Props<TFormValues>) => {
   const { control } = useFormContext<TFormValues>()
@@ -30,7 +32,10 @@ export const TimeFrameFormField = <TFormValues extends FieldValues>({
     <TimeFrame
       timeFrame={field.value}
       isError={!!fieldState.error}
-      onChange={field.onChange}
+      onChange={(value) => {
+        field.onChange(value)
+        onChange?.(value)
+      }}
       {...props}
     />
   )

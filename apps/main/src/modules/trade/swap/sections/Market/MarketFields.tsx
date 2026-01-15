@@ -1,5 +1,5 @@
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -25,7 +25,6 @@ export const MarketFields: FC<Props> = ({ swap }) => {
   const { tradable } = useAssets()
 
   const navigate = useNavigate()
-  const search = useSearch({ from: "/trade/_history" })
 
   const { reset, getValues, setValue, trigger } =
     useFormContext<MarketFormValues>()
@@ -183,11 +182,11 @@ export const MarketFields: FC<Props> = ({ swap }) => {
 
             navigate({
               to: ".",
-              search: {
+              search: (search) => ({
                 ...search,
                 assetIn: sellAsset.id,
                 assetOut: buyAsset?.id,
-              },
+              }),
               resetScroll: false,
             })
           }
@@ -217,11 +216,11 @@ export const MarketFields: FC<Props> = ({ swap }) => {
 
             navigate({
               to: ".",
-              search: {
+              search: (search) => ({
                 ...search,
                 assetIn: sellAsset?.id,
                 assetOut: buyAsset.id,
-              },
+              }),
               resetScroll: false,
             })
           }

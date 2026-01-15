@@ -35,7 +35,7 @@ export const TimeFrame: FC<TimeFrameProps> = ({
   const { t } = useTranslation(["common"])
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  const formatTimeFrame = (type: TimeFrameType) =>
+  const formatTimeFrame = (type: TimeFrameType): string =>
     t(`timeFrame.${type}`, { count: timeFrame.value ?? 0 })
 
   const timeFrameOptions = (
@@ -45,7 +45,7 @@ export const TimeFrame: FC<TimeFrameProps> = ({
   ).map(
     (type): SelectItem<TimeFrameType> => ({
       key: type,
-      label: formatTimeFrame(type),
+      label: formatTimeFrame(type).toUpperCase(),
     }),
   )
 
@@ -75,6 +75,7 @@ export const TimeFrame: FC<TimeFrameProps> = ({
                 fw={500}
                 fs={11}
                 lh={px(15)}
+                transform="uppercase"
                 color={getToken("buttons.secondary.low.onRest")}
               >
                 {formatTimeFrame(timeFrame.type)}
