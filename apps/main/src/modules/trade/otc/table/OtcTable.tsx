@@ -9,8 +9,6 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { prop } from "remeda"
-import { useShallow } from "zustand/react/shallow"
 
 import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import {
@@ -24,8 +22,8 @@ import {
   getOtcOfferFilter,
   mapOtcOffersToTableData,
 } from "@/modules/trade/otc/table/OtcTable.utils"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
-import { useAssetsPrice, useDisplayAssetStore } from "@/states/displayAsset"
+import { TAsset } from "@/providers/assetsProvider"
+import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
   readonly searchPhrase: string
@@ -42,10 +40,8 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
 
   const [isDetailOpen, setIsDetailOpen] = useState<OtcOfferTabular | null>(null)
 
-  const { getAsset } = useAssets()
   const { data, isLoading } = useOtcOffers()
   const columns = useOtcTableColums()
-  const stableCoinId = useDisplayAssetStore(useShallow(prop("stableCoinId")))
 
   const { account } = useAccount()
   const userAddress = account?.address ?? ""
@@ -70,18 +66,12 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
 
   const { isLoading: isPriceLoading, prices } = useAssetsPrice(assetIds)
 
-  const referenceAsset = getAsset(stableCoinId ?? "")
-
   const isTableLoading = isLoading || isPriceLoading
 
   const offersWithPrices = useMemo(
     () =>
-      isTableLoading
-        ? []
-        : filteredOffers.map(
-            mapOtcOffersToTableData(prices, referenceAsset?.decimals ?? null),
-          ),
-    [filteredOffers, prices, referenceAsset?.decimals, isTableLoading],
+      isTableLoading ? [] : filteredOffers.map(mapOtcOffersToTableData(prices)),
+    [filteredOffers, prices, isTableLoading],
   )
 
   return (
