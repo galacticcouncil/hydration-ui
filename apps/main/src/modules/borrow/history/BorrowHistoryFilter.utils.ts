@@ -29,10 +29,10 @@ export const useBorrowHistoryFilters = () => {
     filters: ReadonlyArray<BorrowHistoryFilterType> | undefined,
   ) => {
     navigate({
-      search: {
+      search: (search) => ({
         ...search,
         type: filters,
-      },
+      }),
     })
   }
 

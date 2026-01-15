@@ -60,7 +60,7 @@ const ordersSchema = z.discriminatedUnion("type", [
 export type DcaOrders = z.infer<typeof ordersSchema>
 
 export const dcaTimeFrameTypes = timeFrameTypes.filter(
-  (type) => type !== "month",
+  (type) => type !== "minute" && type !== "month",
 )
 
 const schemaBase = z.object({
@@ -158,7 +158,7 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
     duration: {
-      type: "hour",
+      type: "day",
       value: 1,
     },
     orders: {

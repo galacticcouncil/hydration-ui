@@ -1,12 +1,11 @@
 import { useMutation } from "@tanstack/react-query"
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { useFormContext } from "react-hook-form"
 
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 
 export const useSwitchAssets = () => {
   const navigate = useNavigate()
-  const search = useSearch({ from: "/trade/_history/swap/dca" })
 
   const { reset, getValues, trigger } = useFormContext<DcaFormValues>()
 
@@ -24,11 +23,11 @@ export const useSwitchAssets = () => {
 
       navigate({
         to: ".",
-        search: {
+        search: (search) => ({
           ...search,
           assetIn: values.buyAsset?.id,
           assetOut: values.sellAsset?.id,
-        },
+        }),
         resetScroll: false,
       })
     },

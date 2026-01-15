@@ -1,7 +1,7 @@
 import { Box } from "@galacticcouncil/ui/components"
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
-import { useNavigate, useSearch } from "@tanstack/react-router"
-import { FC, useMemo } from "react"
+import { useNavigate } from "@tanstack/react-router"
+import { FC, useEffect, useMemo } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -13,24 +13,51 @@ import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { isErc20AToken, TAsset, useAssets } from "@/providers/assetsProvider"
+import {
+  DEFAULT_TRADE_ASSET_IN_ID,
+  DEFAULT_TRADE_ASSET_OUT_ID,
+} from "@/routes/trade/_history/route"
 
 export const DcaForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { control, getValues, setValue } = useFormContext<DcaFormValues>()
+  const { control, getValues, setValue, reset } =
+    useFormContext<DcaFormValues>()
 
-  const { tradable } = useAssets()
+  const { tradable, getAsset } = useAssets()
   const switchAssets = useSwitchAssets()
 
   const navigate = useNavigate()
-  const search = useSearch({ from: "/trade/_history" })
 
   const buyableAssets = useMemo(
     () =>
       tradable
         .filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id))
-        .filter(noATokens),
+        .filter(isValid),
     [tradable],
   )
+
+  useEffect(() => {
+    const { sellAsset, buyAsset, ...values } = getValues()
+
+    // RESET if aToken present
+    if (!sellAsset || !buyAsset || !isValid(sellAsset) || !isValid(buyAsset)) {
+      reset({
+        ...values,
+        sellAsset: getAsset(DEFAULT_TRADE_ASSET_IN_ID),
+        buyAsset: getAsset(DEFAULT_TRADE_ASSET_OUT_ID),
+      })
+
+      navigate({
+        to: ".",
+        search: (search) => ({
+          ...search,
+          assetIn: DEFAULT_TRADE_ASSET_IN_ID,
+          assetOut: DEFAULT_TRADE_ASSET_OUT_ID,
+        }),
+        resetScroll: false,
+      })
+    }
+  }, [getValues, reset, getAsset, navigate])
 
   const handlesellAssetChange = (
     sellAsset: TAsset,
@@ -41,11 +68,11 @@ export const DcaForm: FC = () => {
     if (sellAsset.id !== buyAsset?.id) {
       navigate({
         to: ".",
-        search: {
+        search: (search) => ({
           ...search,
           assetIn: sellAsset.id,
           assetOut: buyAsset?.id,
-        },
+        }),
         resetScroll: false,
       })
 
@@ -65,7 +92,11 @@ export const DcaForm: FC = () => {
     if (buyAsset.id !== sellAsset?.id) {
       navigate({
         to: ".",
-        search: { ...search, assetIn: sellAsset?.id, assetOut: buyAsset.id },
+        search: (search) => ({
+          ...search,
+          assetIn: sellAsset?.id,
+          assetOut: buyAsset.id,
+        }),
         resetScroll: false,
       })
 
@@ -81,7 +112,7 @@ export const DcaForm: FC = () => {
       <AssetSelectFormField<DcaFormValues>
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
-        assets={useMemo(() => tradable.filter(noATokens), [tradable])}
+        assets={useMemo(() => tradable.filter(isValid), [tradable])}
         label={t("trade:dca.assetIn.title")}
         maxBalanceFallback="0"
         onAssetChange={handlesellAssetChange}
@@ -112,4 +143,4 @@ export const DcaForm: FC = () => {
 }
 
 // TODO remove filter once runtime is fixed
-const noATokens = (asset: TAsset): boolean => !isErc20AToken(asset)
+const isValid = (asset: TAsset): boolean => !isErc20AToken(asset)
