@@ -1,6 +1,7 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { isObjectType } from "remeda"
 import {
   Address,
   BaseError,
@@ -143,57 +144,67 @@ export class EthereumSigner {
   }
 
   getPermit = async (
-    data: string,
+    call: string | ExtendedEvmCall,
     options: EthereumSignerOptions,
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
-      await this.switchChain(options)
-
-      const weight = options.weight ?? 0n
-
-      const tx = {
-        from: this.address as Address,
-        to: EVM_DISPATCH_ADDRESS as Hex,
-        data: data as Hex,
-      }
-
-      const [latestBlock, chainId, estimatedGas, nonce] = await Promise.all([
-        this.publicClient.getBlock(),
-        this.publicClient.getChainId(),
-        this.estimateGas(tx, weight),
-        this.getPermitNonce(),
-      ])
-
-      const createPermitMessageData = () => {
-        const message: PermitMessage = {
-          ...tx,
-          value: 0,
-          gaslimit: Number(estimatedGas.gasLimit),
-          nonce: Number(nonce),
-          deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
-        }
-
-        const typedData = JSON.stringify({
-          types: EVM_CALL_PERMIT_TYPES,
-          primaryType: "CallPermit",
-          domain: {
-            name: "Call Permit Precompile",
-            version: "1",
-            chainId,
-            verifyingContract: EVM_CALL_PERMIT_ADDRESS,
-          },
-          message: message,
-        })
-
-        return {
-          typedData,
-          message,
-        }
-      }
-
-      const { message, typedData } = createPermitMessageData()
-
       try {
+        await this.switchChain(options)
+
+        const weight = options.weight ?? 0n
+
+        const tx =
+          typeof call === "string"
+            ? {
+                from: this.address as Address,
+                to: EVM_DISPATCH_ADDRESS as Hex,
+                data: call as Hex,
+              }
+            : {
+                from: call.from as Address,
+                to: call.to as Hex,
+                data: call.data as Hex,
+              }
+
+        const [latestBlock, chainId, estimatedGas, nonce] = await Promise.all([
+          this.publicClient.getBlock(),
+          this.publicClient.getChainId(),
+          this.estimateGas(tx, weight),
+          this.getPermitNonce(),
+        ])
+
+        const createPermitMessageData = () => {
+          const message: PermitMessage = {
+            ...tx,
+            value: 0,
+            gaslimit:
+              isObjectType(call) && call.gasLimit
+                ? Number(call.gasLimit)
+                : Number(estimatedGas.gasLimit),
+            nonce: Number(nonce),
+            deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
+          }
+
+          const typedData = JSON.stringify({
+            types: EVM_CALL_PERMIT_TYPES,
+            primaryType: "CallPermit",
+            domain: {
+              name: "Call Permit Precompile",
+              version: "1",
+              chainId,
+              verifyingContract: EVM_CALL_PERMIT_ADDRESS,
+            },
+            message: message,
+          })
+
+          return {
+            typedData,
+            message,
+          }
+        }
+
+        const { message, typedData } = createPermitMessageData()
+
         const result = await this.walletClient.request({
           method: "eth_signTypedData_v4",
           params: [this.address as Address, typedData],

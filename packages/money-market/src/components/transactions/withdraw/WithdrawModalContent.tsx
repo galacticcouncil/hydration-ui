@@ -46,7 +46,6 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
     poolReserve,
   )
   const underlyingBalance = Big(userReserve?.underlyingBalance || "0")
-  const unborrowedLiquidity = Big(poolReserve.unborrowedLiquidity)
   const withdrawAmount = isMaxSelected
     ? maxAmountToWithdraw.toString()
     : _amount
@@ -101,9 +100,9 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
   return (
     <>
       <AssetInput
-        name="withdraw-amount"
         value={withdrawAmount}
         onChange={handleChange}
+        displayValue={usdValue.toString()}
         symbol={symbol}
         assets={[
           {
@@ -113,17 +112,9 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
             address: poolReserve.underlyingAsset,
           },
         ]}
-        usdValue={usdValue.toString()}
-        isMaxSelected={isMaxSelected}
         disabled={withdrawTxState.loading}
-        maxValue={maxAmountToWithdraw.toString()}
-        balanceText={
-          unborrowedLiquidity.lt(underlyingBalance) ? (
-            <span>Available</span>
-          ) : (
-            <span>Supply balance</span>
-          )
-        }
+        maxButtonBalance={maxAmountToWithdraw.toString()}
+        balanceLabel="Withdrawable balance"
         amountError={
           isMaxExceeded ? "Insufficient balance on your account." : errorText
         }
