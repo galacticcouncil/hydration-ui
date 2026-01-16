@@ -16,6 +16,7 @@ import { defaultAssetValueFormatter } from "./AssetInput.utils"
 
 export type AssetInputProps = {
   label?: string
+  balanceLabel?: string
   symbol?: string
   value?: string
   displayValue?: string
@@ -45,6 +46,7 @@ export const AssetInput = ({
   displayValue,
   displayValueLoading,
   label,
+  balanceLabel,
   maxBalance,
   maxButtonBalance,
   ignoreBalance,
@@ -104,7 +106,7 @@ export const AssetInput = ({
                 whiteSpace: "nowrap",
               }}
             >
-              <span>Balance: </span>
+              <span>{balanceLabel ?? "Balance"}: </span>
               {loading ? (
                 <span sx={{ height: 12, lineHeight: 1 }}>
                   <Skeleton width={48} height={12} />

@@ -21,7 +21,6 @@ import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWar
 import { useAssetCaps } from "@/hooks"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
-import { CapType } from "@/types"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
 import { getGhoBorrowApyRange } from "@/utils"
 import { getMaxGhoMintAmount } from "@/utils/getMaxAmountAvailableToBorrow"
@@ -73,8 +72,6 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
       setAmount(decimalTruncatedValue)
     }
   }
-
-  const isMaxSelected = amount === maxAmountToBorrow
 
   // health factor calculations
   const amountToBorrowInUsd = bigShift(
@@ -129,10 +126,9 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   return (
     <>
       <AssetInput
-        name="borrow-amount"
         value={amount}
         onChange={handleChange}
-        usdValue={usdValue.toString(10)}
+        displayValue={usdValue.toString()}
         assets={[
           {
             balance: maxAmountToBorrow,
@@ -142,10 +138,8 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
           },
         ]}
         symbol={symbol}
-        capType={CapType.borrowCap}
-        isMaxSelected={isMaxSelected}
-        maxValue={maxAmountToBorrow}
-        balanceText="Available"
+        maxButtonBalance={maxAmountToBorrow}
+        balanceLabel="Available"
         {...handleBlocked()}
       />
 

@@ -16,13 +16,14 @@ export const DcaAssetSwitcher: FC = () => {
   const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
-    spotPriceQuery(rpc, buyAsset?.id ?? "", sellAsset?.id ?? ""),
+    spotPriceQuery(rpc, sellAsset?.id ?? "", buyAsset?.id ?? ""),
   )
 
   const switchAssets = useSwitchAssets()
 
   return (
     <AssetSwitcher
+      defaultView="reversed"
       assetInId={sellAsset?.id ?? ""}
       assetOutId={buyAsset?.id ?? ""}
       onSwitchAssets={() => switchAssets.mutate()}

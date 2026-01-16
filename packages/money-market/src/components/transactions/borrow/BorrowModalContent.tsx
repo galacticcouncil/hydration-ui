@@ -31,7 +31,6 @@ import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWar
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
-import { CapType } from "@/types"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
 import { getMaxAmountAvailableToBorrow } from "@/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "@/utils/utils"
@@ -140,8 +139,6 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     }
   }
 
-  const isMaxSelected = amount === maxAmountToBorrow
-
   // health factor calculations
   const amountToBorrowInUsd = bigShift(
     Big(amount || 0)
@@ -245,10 +242,9 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
       )}
 
       <AssetInput
-        name="borrow-amount"
         value={amount}
         onChange={handleChange}
-        usdValue={usdValue.toString()}
+        displayValue={usdValue.toString()}
         assets={[
           {
             balance: maxAmountToBorrow,
@@ -258,10 +254,8 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
           },
         ]}
         symbol={symbol}
-        capType={CapType.borrowCap}
-        isMaxSelected={isMaxSelected}
-        maxValue={maxAmountToBorrow}
-        balanceText="Available"
+        maxButtonBalance={maxAmountToBorrow}
+        balanceLabel="Available"
         {...handleBlocked()}
       />
 

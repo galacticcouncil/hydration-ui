@@ -14,6 +14,7 @@ import {
   convertXYKSharesToValues,
   useLiquidityMinLimit,
 } from "@/modules/liquidity/Liquidity.utils"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances, useAccountData } from "@/states/account"
@@ -121,10 +122,10 @@ export const useRemoveMultipleXYKPositions = ({
 }) => {
   const { papi } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const createTransaction = useTransactionsStore(prop("createTransaction"))
   const submitToasts = useSubmitToasts()
   const getLiquidityMinLimit = useLiquidityMinLimit()
   const { account } = useAccount()
+  const createBatch = useCreateBatchTx()
 
   const { tokens, totalLiquidity } = pool
   const removeSharesAmount = positions
@@ -190,18 +191,14 @@ export const useRemoveMultipleXYKPositions = ({
         shareTokenMeta.symbol,
       )
 
-      await createTransaction(
-        {
-          tx: papi.tx.Utility.batch_all({
-            calls: [...exitingFarmsTxs, ...liquidityTxs].map(
-              (t) => t.decodedCall,
-            ),
-          }),
+      await createBatch({
+        txs: [...exitingFarmsTxs, ...liquidityTxs],
+        transaction: {
           toasts,
           invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
         },
-        { onSubmitted },
-      )
+        options: { onSubmitted },
+      })
     },
   })
 
@@ -249,8 +246,8 @@ export const useRemoveSingleXYKPosition = ({
   const { account } = useAccount()
   const { papi } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const createTransaction = useTransactionsStore(prop("createTransaction"))
   const getLiquidityMinLimit = useLiquidityMinLimit()
+  const createBatch = useCreateBatchTx()
 
   const { tokens, totalLiquidity } = pool
 
@@ -296,18 +293,14 @@ export const useRemoveSingleXYKPosition = ({
         min_amount_b: BigInt(minAssetB.value),
       })
 
-      await createTransaction(
-        {
-          tx: papi.tx.Utility.batch_all({
-            calls: [...exitFarmsTxs, removeLiquidityTx].map(
-              (t) => t.decodedCall,
-            ),
-          }),
+      await createBatch({
+        txs: [...exitFarmsTxs, removeLiquidityTx],
+        transaction: {
           toasts,
           invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
         },
-        { onSubmitted },
-      )
+        options: { onSubmitted },
+      })
     },
   })
 

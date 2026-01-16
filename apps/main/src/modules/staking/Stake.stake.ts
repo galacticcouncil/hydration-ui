@@ -1,12 +1,12 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { TAccountVote } from "@/api/democracy"
 import { HDXSupplyQueryKey, useInvalidateStakeData } from "@/api/staking"
 import { useProcessedVotes } from "@/modules/staking/Stake.data"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
 import { toBigInt } from "@/utils/formatting"
 
 export const useStake = (
@@ -16,13 +16,12 @@ export const useStake = (
   onSuccess: () => void,
 ) => {
   const { t } = useTranslation(["common", "staking"])
-  const queryClient = useQueryClient()
 
   const rpc = useRpcProvider()
   const { papi } = rpc
 
   const { native } = useAssets()
-  const { createTransaction } = useTransactionsStore()
+  const createBatch = useCreateBatchTx()
 
   const { newProcessedVotesIds, oldProcessedVotesIds } = useProcessedVotes(
     votes,
@@ -50,9 +49,9 @@ export const useStake = (
 
       const rawAmount = toBigInt(amount, native.decimals)
 
-      const tx = (() => {
+      const txs = (() => {
         if (!isStakePosition) {
-          return papi.tx.Staking.stake({ amount: rawAmount })
+          return [papi.tx.Staking.stake({ amount: rawAmount })]
         }
 
         const increaseStakeTx = papi.tx.Staking.increase_stake({
@@ -61,40 +60,34 @@ export const useStake = (
         })
 
         if (!newProcessedVotesIds.length && !oldProcessedVotesIds.length) {
-          return increaseStakeTx
+          return [increaseStakeTx]
         }
 
-        return papi.tx.Utility.batch_all({
-          calls: [
-            ...oldProcessedVotesIds.map(
-              (id) => papi.tx.Democracy.remove_vote({ index: id }).decodedCall,
-            ),
-            ...newProcessedVotesIds.map(
-              ({ classId, id }) =>
-                papi.tx.ConvictionVoting.remove_vote({
-                  class: classId,
-                  index: id,
-                }).decodedCall,
-            ),
-            increaseStakeTx.decodedCall,
-          ],
-        })
+        return [
+          ...oldProcessedVotesIds.map((id) =>
+            papi.tx.Democracy.remove_vote({ index: id }),
+          ),
+          ...newProcessedVotesIds.map(({ classId, id }) =>
+            papi.tx.ConvictionVoting.remove_vote({ class: classId, index: id }),
+          ),
+          increaseStakeTx,
+        ]
       })()
-
-      await createTransaction({
-        tx,
-        toasts: {
-          submitted: getMessage(formattedAmount, "onLoading"),
-          success: getMessage(formattedAmount, "onSuccess"),
+      await createBatch({
+        txs,
+        transaction: {
+          toasts: {
+            submitted: getMessage(formattedAmount, "onLoading"),
+            success: getMessage(formattedAmount, "onSuccess"),
+          },
+          invalidateQueries: [HDXSupplyQueryKey],
+        },
+        options: {
+          onSuccess,
         },
       })
 
-      onSuccess()
-
-      await Promise.all([
-        invalidateStakeData.mutateAsync(),
-        queryClient.invalidateQueries({ queryKey: HDXSupplyQueryKey }),
-      ])
+      await invalidateStakeData.mutateAsync()
     },
   })
 }

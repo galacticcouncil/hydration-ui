@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { useFormContext } from "react-hook-form"
 
 import { TradeType } from "@/api/trade"
@@ -9,7 +9,6 @@ import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMa
 
 export const useSwitchAssets = () => {
   const navigate = useNavigate()
-  const search = useSearch({ from: "/trade/_history" })
 
   const { getValues, reset, trigger } = useFormContext<MarketFormValues>()
 
@@ -75,11 +74,11 @@ export const useSwitchAssets = () => {
 
       navigate({
         to: ".",
-        search: {
+        search: (search) => ({
           ...search,
           assetIn: newSellAsset?.id,
           assetOut: newBuyAsset?.id,
-        },
+        }),
         resetScroll: false,
       })
     },

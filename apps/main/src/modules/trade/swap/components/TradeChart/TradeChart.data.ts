@@ -32,6 +32,16 @@ export const useTradeChartData = ({
   const rpc = useRpcProvider()
   const squidClient = useSquidClient()
 
+  // To prevent refetching on asset switch
+  const isAssetInFirst = Number(assetOutId) >= Number(assetOutId)
+  const sortedAssets = isAssetInFirst
+    ? ([assetInId, assetOutId] as const)
+    : ([assetOutId, assetInId] as const)
+
+  const { data: spotPriceData, isLoading: isSpotPriceLoading } = useQuery(
+    spotPriceQuery(rpc, assetInId, assetOutId),
+  )
+
   const [startTimestamp, endTimestamp] = useMemo(() => {
     if (!timeFrame) {
       return []
@@ -41,17 +51,13 @@ export const useTradeChartData = ({
     const ms = TIME_FRAME_MS[timeFrame]
 
     return [(now - ms).toString(), now.toString()]
-  }, [timeFrame])
+    // refetch chart data on spot price change to keep it consistent
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeFrame, spotPriceData])
 
   const bucketSize = timeFrame
     ? bucketSizes[timeFrame]
     : TimeSeriesBucketTimeRange["4H"]
-
-  // To prevent refetching on asset switch
-  const isAssetInFirst = Number(assetOutId) >= Number(assetOutId)
-  const sortedAssets = isAssetInFirst
-    ? ([assetInId, assetOutId] as const)
-    : ([assetOutId, assetInId] as const)
 
   const { data, isError, isLoading, isSuccess } = useQuery(
     tradePricesQuery(
@@ -64,16 +70,10 @@ export const useTradeChartData = ({
     ),
   )
 
-  const { data: spotPriceData, isLoading: isSpotPriceLoading } = useQuery(
-    spotPriceQuery(rpc, sortedAssets[1], sortedAssets[0]),
-  )
-
   const prices = useMemo(() => {
     if (isLoading || !data || isSpotPriceLoading) {
       return []
     }
-
-    const currentPrice = spotPriceData?.spotPrice
 
     const prices = data.assetPairPricesAndVolumesByPeriod.nodes
       .flatMap((node) => node?.buckets ?? [])
@@ -86,11 +86,13 @@ export const useTradeChartData = ({
         volume: bucket.referenceAssetVolNorm,
       }))
 
-    const withCurrentPrice = currentPrice
+    const currentPrice = Big(spotPriceData?.spotPrice || "0")
+
+    const withCurrentPrice = currentPrice.gt(0)
       ? prices.concat([
           {
             timestamp: Date.now(),
-            amount: currentPrice,
+            amount: Big(1).div(currentPrice).toString(),
             volume: "0",
           },
         ])

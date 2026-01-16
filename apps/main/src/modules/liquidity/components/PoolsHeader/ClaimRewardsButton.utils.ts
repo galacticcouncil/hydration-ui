@@ -8,6 +8,7 @@ import { XykDeposit } from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { FarmRewards, useFarmRewards } from "@/api/farms"
 import { PoolBase, useXykPools } from "@/api/pools"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
@@ -16,7 +17,6 @@ import {
   useAccountPositions,
 } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
-import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useLiquidityMiningRewards = () => {
@@ -131,7 +131,7 @@ export const useClaimFarmRewardsMutation = ({
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
   const { data: pools } = useXykPools()
-  const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const createBatch = useCreateBatchTx()
 
   return useMutation({
     mutationFn: async ({ displayValue }: { displayValue: string }) => {
@@ -154,29 +154,11 @@ export const useClaimFarmRewardsMutation = ({
         onSuccess,
       }
 
-      if (allTxs.length > 1) {
-        return await createTransaction(
-          {
-            tx: papi.tx.Utility.batch_all({
-              calls: allTxs.map((t) => t.decodedCall),
-            }),
-            toasts,
-          },
-          options,
-        )
-      } else {
-        const tx = allTxs[0]
-
-        if (!tx) throw new Error("Tx not found")
-
-        return await createTransaction(
-          {
-            tx,
-            toasts,
-          },
-          options,
-        )
-      }
+      return await createBatch({
+        txs: allTxs,
+        transaction: { toasts },
+        options,
+      })
     },
   })
 }

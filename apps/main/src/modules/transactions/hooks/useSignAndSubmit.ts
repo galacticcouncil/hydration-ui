@@ -55,7 +55,7 @@ export const useSignAndSubmit = (
       const signer = wallet?.signer
 
       if (isValidEvmCallForPermit(tx, txOptions) && isEthereumSigner(signer)) {
-        const permit = await signer.getPermit(tx.data, txOptions)
+        const permit = await signer.getPermit(tx, txOptions)
         const permitTx = transformPermitToPapiTx(papi, permit)
         return submitUnsignedPolkadotTx(permitTx, papiClient, txOptions)
       }

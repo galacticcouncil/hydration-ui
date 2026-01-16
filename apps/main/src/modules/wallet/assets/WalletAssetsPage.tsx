@@ -1,22 +1,31 @@
-import { Search } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Grid, Icon, Input } from "@galacticcouncil/ui/components"
+import { Flex, Grid } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
-import { useEffect, useState } from "react"
-import { useTranslation } from "react-i18next"
+import { lazy, useState } from "react"
 
 import { HollarBanner } from "@/modules/borrow/hollar/HollarBanner"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
-import { WalletAssetsSubpageMenu } from "@/modules/wallet/assets/WalletAssetsSubpageMenu"
+import {} from "@/modules/wallet/assets/WalletAssetsFilters.desktop"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
 
+const WalletAssetFiltersDesktop = lazy(async () => ({
+  default: await import(
+    "@/modules/wallet/assets/WalletAssetsFilters.desktop"
+  ).then((m) => m.WalletAssetFiltersDesktop),
+}))
+
+const WalletAssetFiltersMobile = lazy(async () => ({
+  default: await import(
+    "@/modules/wallet/assets/WalletAssetsFilters.mobile"
+  ).then((m) => m.WalletAssetFiltersMobile),
+}))
+
 export const WalletAssetsPage = () => {
-  const { t } = useTranslation("common")
   const { account } = useAccount()
   const { isMobile } = useBreakpoints()
   const [searchPhrase, setSearchPhrase] = useState("")
@@ -24,10 +33,6 @@ export const WalletAssetsPage = () => {
   const { category } = useSearch({
     from: "/wallet/assets",
   })
-
-  useEffect(() => {
-    setSearchPhrase("")
-  }, [isMobile])
 
   if (!account) {
     return <WalletEmptyState />
@@ -48,28 +53,27 @@ export const WalletAssetsPage = () => {
           <WalletBalances />
           <WalletRewards />
         </Grid>
-        {!isMobile && (
-          <Flex
-            pt={getTokenPx("containers.paddings.tertiary")}
-            align="flex-end"
-            justify="space-between"
-          >
-            <WalletAssetsSubpageMenu />
-            <Input
-              placeholder={t("search.placeholder.assets")}
-              leadingElement={<Icon size={18} component={Search} mr={8} />}
-              onChange={(e) => setSearchPhrase(e.target.value)}
-            />
-          </Flex>
+        {isMobile ? (
+          <WalletAssetFiltersMobile
+            category={category}
+            searchPhrase={searchPhrase}
+            onSearchPhraseChange={setSearchPhrase}
+          />
+        ) : (
+          <WalletAssetFiltersDesktop
+            searchPhrase={searchPhrase}
+            onSearchPhraseChange={setSearchPhrase}
+          />
         )}
+
         <Flex direction="column">
-          {(isMobile || category === "all" || category === "assets") && (
+          {(category === "all" || category === "assets") && (
             <MyAssets
               key={account.address + "_assets"}
               searchPhrase={searchPhrase}
             />
           )}
-          {(isMobile || category === "all" || category === "liquidity") && (
+          {(category === "all" || category === "liquidity") && (
             <MyLiquidity
               key={account.address + "_liquidity"}
               searchPhrase={searchPhrase}

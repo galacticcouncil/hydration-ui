@@ -1,5 +1,6 @@
 import {
   AssetInput as BaseAssetInput,
+  AssetInputProps as BaseAssetInputProps,
   Flex,
   Modal,
   ModalBody,
@@ -8,11 +9,11 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { isValidBigSource } from "@galacticcouncil/utils"
 import { useState } from "react"
 
 import { ReserveLogo } from "@/components/primitives/ReserveLogo"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
-import { CapType } from "@/types"
 
 export interface Asset {
   balance?: string
@@ -24,26 +25,15 @@ export interface Asset {
   decimals?: number
 }
 
-export interface AssetInputProps<T extends Asset = Asset> {
-  name: string
-  value: string
-  usdValue: string
+export interface AssetInputOwnProps<T extends Asset = Asset> {
   symbol: string
   onChange?: (value: string) => void
-  disabled?: boolean
-  disableInput?: boolean
   onSelect?: (asset: T) => void
   assets: T[]
-  capType?: CapType
-  maxValue?: string
-  isMaxSelected?: boolean
-  inputTitle?: React.ReactNode
-  balanceText?: React.ReactNode
-  loading?: boolean
-  className?: string
-  assetError?: string
-  amountError?: string
 }
+
+export type AssetInputProps<T extends Asset = Asset> = AssetInputOwnProps<T> &
+  BaseAssetInputProps
 
 export const AssetInput = <T extends Asset = Asset>({
   value,
@@ -51,11 +41,14 @@ export const AssetInput = <T extends Asset = Asset>({
   onChange,
   onSelect,
   assets,
-  maxValue,
+  maxButtonBalance,
   loading = false,
   className,
   assetError,
   amountError,
+  disabled,
+  balanceLabel,
+  displayValue,
 }: AssetInputProps<T>) => {
   const { formatCurrency } = useAppFormatters()
   const [isAssetSelectOpen, setIsAssetSelectOpen] = useState(false)
@@ -74,7 +67,15 @@ export const AssetInput = <T extends Asset = Asset>({
         label="Amount"
         symbol={symbol}
         value={value}
-        maxBalance={maxValue}
+        displayValue={
+          isValidBigSource(displayValue)
+            ? formatCurrency(displayValue.toString())
+            : undefined
+        }
+        maxBalance={asset.balance}
+        maxButtonBalance={maxButtonBalance}
+        disabled={disabled}
+        balanceLabel={balanceLabel}
         selectedAssetIcon={<ReserveLogo address={asset.address} />}
         onAsssetBtnClick={
           hasMultipleAssets ? () => setIsAssetSelectOpen(true) : undefined

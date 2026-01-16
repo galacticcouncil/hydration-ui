@@ -277,6 +277,8 @@
   "transaction.jsonview.copy.json": "Copy JSON",
   "transaction.jsonview.copy.calldata": "Copy call data",
   "transaction.alert.insufficientFeeBalance": "Not enough fee payment asset balance.",
+  "transaction.batch.warning": "Your transaction would exhaust block limit, we need to split it into multiple transactions",
+  "transaction.batch.step.label": "Transaction {{ index }}",
   "transaction.error.unsupportedTransaction": "Unsupported transaction or signer type",
   "search.placeholder.any": "Search...",
   "search.placeholder.assets": "Search assets...",

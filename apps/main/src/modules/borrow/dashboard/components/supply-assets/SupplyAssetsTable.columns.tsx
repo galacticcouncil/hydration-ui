@@ -77,6 +77,10 @@ export const useSupplyAssetsTableColumns = (
       },
     })
 
+    const balancePlaceholderColumn = columnHelper.display({
+      id: "balancePlaceholder",
+    })
+
     const balanceColumn = columnHelper.accessor("walletBalanceUSD", {
       header: t("balance"),
       sortingFn: sortBy({
@@ -248,7 +252,7 @@ export const useSupplyAssetsTableColumns = (
 
     return [
       assetColumn,
-      balanceColumn,
+      isBaseAssetType ? balanceColumn : balancePlaceholderColumn,
       apyColumn,
       collateralColunn,
       isMobile ? actionsColumnMobile : actionsColumn,

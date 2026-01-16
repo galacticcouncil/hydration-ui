@@ -7,7 +7,6 @@ import {
   TextProps,
   Toggle,
   ToggleRoot,
-  Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
@@ -24,7 +23,7 @@ import {
 
 export const DcaDurationField: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { control, formState } = useFormContext<DcaFormValues>()
+  const { control, formState, trigger } = useFormContext<DcaFormValues>()
 
   const { field: ordersField } = useController({
     control,
@@ -51,7 +50,6 @@ export const DcaDurationField: FC = () => {
         gap={getTokenPx("scales.paddings.s")}
         align="center"
       >
-        <Tooltip text={t("trade:dca.orders.tooltip")} />
         <ToggleRoot>
           <Label>
             {t("trade:dca.orders.label")}:{" "}
@@ -81,6 +79,7 @@ export const DcaDurationField: FC = () => {
         }}
         fieldName="duration"
         allowedTypes={new Set(dcaTimeFrameTypes)}
+        onChange={() => trigger("orders.value")}
       />
       {!isAuto && (
         <Controller

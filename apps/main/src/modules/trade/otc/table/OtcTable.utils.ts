@@ -1,3 +1,4 @@
+import { RUNTIME_DECIMALS } from "@galacticcouncil/common"
 import { math } from "@galacticcouncil/sdk-next"
 import Big from "big.js"
 
@@ -6,20 +7,17 @@ import { OtcOffer } from "@/modules/trade/otc/table/OtcTable.query"
 import { OtcOffersType } from "@/routes/trade/otc"
 import { AssetPrice } from "@/states/displayAsset"
 import { Predicate } from "@/types/helpers"
-import { scale } from "@/utils/formatting"
+import { toBigInt } from "@/utils/formatting"
 
 export const mapOtcOffersToTableData =
-  (
-    assetPrices: Record<string, AssetPrice>,
-    referenceAssetDecimals: number | null,
-  ) =>
+  (assetPrices: Record<string, AssetPrice>) =>
   (offer: OtcOffer): OtcOfferTabular => {
     const { assetIn, assetOut, assetAmountIn, assetAmountOut } = offer
     const priceIn = assetPrices[assetIn.id]
     const priceOut = assetPrices[assetOut.id]
 
     const offerPrice =
-      priceIn?.isValid && Big(priceIn.price).gt(0)
+      priceIn?.isValid && priceOut?.isValid && Big(priceIn.price).gt(0)
         ? new Big(assetAmountIn)
             .mul(priceIn.price)
             .div(assetAmountOut)
@@ -27,13 +25,10 @@ export const mapOtcOffersToTableData =
         : null
 
     const marketPricePercentage =
-      offerPrice &&
-      typeof referenceAssetDecimals === "number" &&
-      priceOut?.isValid &&
-      Big(priceOut.price).gt(0)
+      offerPrice && priceOut && Big(priceOut.price).gt(0)
         ? math.calculateDiffToRef(
-            BigInt(scale(offerPrice, referenceAssetDecimals)),
-            BigInt(scale(priceOut.price, referenceAssetDecimals)),
+            toBigInt(offerPrice, RUNTIME_DECIMALS),
+            toBigInt(priceOut.price, RUNTIME_DECIMALS),
           )
         : null
 

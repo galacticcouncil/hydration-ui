@@ -45,7 +45,7 @@ export const PastExecutionsList: FC<Props> = ({
               }
             : { status: execution.status }
 
-        const error = getDcaError(execution.errorState)
+        const errorMessage = getDcaErrorMessage(execution.errorState)
 
         return (
           <Fragment key={execution.id}>
@@ -59,8 +59,7 @@ export const PastExecutionsList: FC<Props> = ({
               sx={{ px: 0 }}
               timestamp={execution.timestamp}
               link={execution.link}
-              errorTitle={error?.title}
-              errorMessage={error?.message}
+              message={errorMessage}
               {...statusProps}
             />
           </Fragment>
@@ -70,33 +69,20 @@ export const PastExecutionsList: FC<Props> = ({
   )
 }
 
-const getDcaError = (errorState: IndexerErrorState | null | undefined) => {
+const getDcaErrorMessage = (
+  errorState: IndexerErrorState | null | undefined,
+): string | undefined => {
   if (!errorState) {
     return undefined
   }
 
   switch (errorState.error) {
     case "0x0d000000":
-      return {
-        title: "SlippageLimitReached",
-        message:
-          "Slippage limit calculated from oracle is reached, leading to retry",
-      }
-
+      return "Slippage limit reached"
     case "0x04000000":
-      return {
-        title: "PriceUnstable",
-        message:
-          "Price is unstable as price change from oracle data is bigger than max allowed",
-      }
-
-    case "0x0c000000": {
-      return {
-        title: "TradeLimitReached",
-        message: "Absolutely trade limit reached, leading to retry",
-      }
-    }
-
+      return "Price unstable"
+    case "0x0c000000":
+      return "Trade limit reached"
     default:
       return undefined
   }

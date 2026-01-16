@@ -106,6 +106,7 @@ export const CreateIsolatedPool: FC<Props> = ({
           />
 
           <AssetSwitcher
+            defaultView="reversed"
             assetInId={assetA?.id ?? ""}
             assetOutId={assetB?.id ?? ""}
             priceIn={amountA}

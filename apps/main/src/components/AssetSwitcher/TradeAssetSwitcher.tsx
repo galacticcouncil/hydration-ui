@@ -24,12 +24,13 @@ export const TradeAssetSwitcher: FC<Props> = ({
 }) => {
   const rpc = useRpcProvider()
   const { data: spotPriceData, isPending: isSpotPricePending } = useQuery(
-    spotPriceQuery(rpc, assetOutId, assetInId),
+    spotPriceQuery(rpc, assetInId, assetOutId),
   )
   const spotPrice = price ?? spotPriceData?.spotPrice ?? undefined
 
   return (
     <AssetSwitcher
+      defaultView="reversed"
       assetInId={assetInId}
       assetOutId={assetOutId}
       fallbackPrice={spotPrice}

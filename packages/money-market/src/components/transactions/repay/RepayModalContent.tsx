@@ -99,13 +99,14 @@ export const RepayModalContent: React.FC<
     maxAmountToRepay = BigNumber.min(normalizedWalletBalance, debt)
   }
 
-  const isMaxSelected = _amount === "-1"
+  const isMaxSelected =
+    !!_amount && Big(_amount).gte(maxAmountToRepay.toString())
   const amount = isMaxSelected ? maxAmountToRepay.toString() : _amount
   const isMaxExceeded =
     !!amount && BigNumber(amount).gt(maxAmountToRepay.toString())
 
   const handleChange = (value: string) => {
-    const maxSelected = value === "-1"
+    const maxSelected = !!value && Big(value).gte(maxAmountToRepay.toString())
     amountRef.current = maxSelected ? maxAmountToRepay.toString() : value
     setAmount(value)
     if (maxSelected && (repayWithATokens || maxAmountToRepay.eq(debt))) {
@@ -246,15 +247,13 @@ export const RepayModalContent: React.FC<
   return (
     <>
       <AssetInput
-        name="repay-amount"
         value={amount}
         onChange={handleChange}
-        usdValue={usdValue.toString()}
+        displayValue={usdValue.toString()}
         symbol={tokenToRepayWith.symbol}
         assets={assets}
         onSelect={setTokenToRepayWith}
-        isMaxSelected={isMaxSelected}
-        maxValue={maxAmountToRepay.toString()}
+        maxButtonBalance={maxAmountToRepay.toString()}
         amountError={isMaxExceeded ? "Remaining debt exceeded" : undefined}
       />
 

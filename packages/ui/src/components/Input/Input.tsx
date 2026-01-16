@@ -1,8 +1,8 @@
 import React, { FC, ReactNode, Ref, useId } from "react"
 
+import { Label } from "@/components/Label"
 import { getToken, px } from "@/utils"
 
-import { Text } from "../Text"
 import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
 
 type LeadingElementProps =
@@ -62,16 +62,16 @@ export const Input: FC<InputProps> = ({
       {IconStart && <IconStart />}
       <SInput ref={ref} id={usedInputId} {...props} />
       {unit && (
-        <Text
+        <Label
+          sx={{ cursor: "text" }}
+          htmlFor={usedInputId}
           fw={500}
           fs={11}
           lh={px(15)}
           color={getToken("buttons.secondary.low.onRest")}
-          as="label"
-          {...{ htmlFor: usedInputId }}
         >
           {unit}
-        </Text>
+        </Label>
       )}
       {IconEnd && <IconEnd />}
       {trailingElement}

@@ -5,7 +5,6 @@ import { wrap } from "comlink"
 import { subSeconds } from "date-fns"
 import { useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { prop } from "remeda"
 
 import {
   OmnipoolDepositFull,
@@ -18,6 +17,7 @@ import { useRelayChainBlockNumber } from "@/api/chain"
 import { Farm, FarmEntry } from "@/api/farms"
 import { useXykPool } from "@/api/pools"
 import { getCurrentLoyaltyFactor } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -25,7 +25,6 @@ import {
   isDepositPosition,
   isXykDepositPosition,
 } from "@/states/account"
-import { useTransactionsStore } from "@/states/transactions"
 import { QUINTILL, RELAY_BLOCK_TIME } from "@/utils/consts"
 
 import type { worker as WorkerType } from "./LoyaltyGraph.worker"
@@ -218,9 +217,9 @@ export const useExitDepositFarmsMutation = (
   const { account } = useAccount()
   const { t } = useTranslation("liquidity")
   const { papi } = useRpcProvider()
-  const createTransaction = useTransactionsStore(prop("createTransaction"))
   const isXYK = isXykDepositPosition(deposit)
   const { data: pool } = useXykPool(isXYK ? deposit.amm_pool_id : "")
+  const createBatch = useCreateBatchTx()
 
   return useMutation({
     mutationFn: async () => {
@@ -264,24 +263,11 @@ export const useExitDepositFarmsMutation = (
         success: t("liquidity.exitFarms.toast.success"),
       }
 
-      if (txs.length > 1) {
-        const tx = papi.tx.Utility.batch_all({
-          calls: txs.map((t) => t.decodedCall),
-        })
-        return await createTransaction(
-          { tx, toasts, invalidateQueries },
-          { onSubmitted },
-        )
-      }
-
-      const tx = txs[0]
-
-      if (!tx) throw new Error("Tx not found")
-
-      return await createTransaction(
-        { tx, toasts, invalidateQueries },
-        { onSubmitted },
-      )
+      return await createBatch({
+        txs,
+        transaction: { toasts, invalidateQueries },
+        options: { onSubmitted },
+      })
     },
   })
 }
