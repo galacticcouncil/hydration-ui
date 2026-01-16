@@ -36,7 +36,8 @@ export const useCreateBatchTx = () => {
       const address = account?.address
       const blockWeightsData = blockWeights?.per_class.normal.max_extrinsic
 
-      if (!txs.length || !address || !blockWeightsData) return
+      if (!txs.length || !address || !blockWeightsData)
+        throw new Error("Missing required parameters for batch transaction")
 
       if (txs.length === 1) {
         const tx = txs[0]
@@ -46,55 +47,51 @@ export const useCreateBatchTx = () => {
         }
       }
 
-      try {
-        const { ref_time, proof_size } = blockWeightsData
+      const { ref_time, proof_size } = blockWeightsData
 
-        const batchTx = papi.tx.Utility.batch_all({
-          calls: txs.map((t) => t.decodedCall),
-        })
+      const batchTx = papi.tx.Utility.batch_all({
+        calls: txs.map((t) => t.decodedCall),
+      })
 
-        const paymentInfo = await batchTx.getPaymentInfo(address)
+      const paymentInfo = await batchTx.getPaymentInfo(address)
 
-        const { ref_time: refTimeTx, proof_size: proofSizeTx } =
-          paymentInfo.weight
+      const { ref_time: refTimeTx, proof_size: proofSizeTx } =
+        paymentInfo.weight
 
-        const isFitBlock = proof_size > proofSizeTx && ref_time > refTimeTx
+      const isFitBlock = proof_size > proofSizeTx && ref_time > refTimeTx
 
-        if (isFitBlock) {
-          return createTransaction({ ...transaction, tx: batchTx }, options)
-        }
+      if (isFitBlock) {
+        return createTransaction({ ...transaction, tx: batchTx }, options)
+      }
 
-        const index = Math.ceil(
-          Math.max(
-            Big(proofSizeTx.toString()).div(proof_size.toString()).toNumber(),
-            Big(refTimeTx.toString()).div(ref_time.toString()).toNumber(),
-          ),
-        )
+      const index = Math.ceil(
+        Big.max(
+          Big(proofSizeTx.toString()).div(proof_size.toString()),
+          Big(refTimeTx.toString()).div(ref_time.toString()),
+        ).toNumber(),
+      )
 
-        const chunkSize = Math.ceil(txs.length / index)
-        const chunks: Array<AnyPapiTx[]> = []
-
-        for (let i = 0; i < index; i++) {
+      const chunkSize = Math.ceil(txs.length / index)
+      const chunks: Array<AnyPapiTx[]> = Array.from(
+        { length: index },
+        (_, i) => {
           const start = i * chunkSize
           const end = start + chunkSize
-          chunks.push(txs.slice(start, end))
-        }
+          return txs.slice(start, end)
+        },
+      )
 
-        const warning = t("transaction.batch.warning")
+      const warning = t("transaction.batch.warning")
 
-        await createTransaction({
-          tx: chunks.map((chunk, i) => ({
-            stepTitle: t("transaction.batch.step.label", { index: i + 1 }),
-            description: warning,
-            tx: papi.tx.Utility.batch_all({
-              calls: chunk.map((t) => t.decodedCall),
-            }),
-          })),
-        })
-      } catch (error) {
-        console.error(error)
-        throw new Error("Failed to create batch transaction")
-      }
+      return createTransaction({
+        tx: chunks.map((chunk, i) => ({
+          stepTitle: t("transaction.batch.step.label", { index: i + 1 }),
+          description: warning,
+          tx: papi.tx.Utility.batch_all({
+            calls: chunk.map((t) => t.decodedCall),
+          }),
+        })),
+      })
     },
     [account?.address, papi, blockWeights, createTransaction, t],
   )
