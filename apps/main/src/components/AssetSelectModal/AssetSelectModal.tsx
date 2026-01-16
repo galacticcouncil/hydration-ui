@@ -41,6 +41,8 @@ export type AssetSelectModalProps = AssetSelectProps & {
   onOpenChange: (value: boolean) => void
 }
 
+const emptyAssets: TAssetData[] = []
+
 export const AssetSelectModalContent = ({
   assets,
   sortedAssets: customSortedAssets,
@@ -59,7 +61,7 @@ export const AssetSelectModalContent = ({
   const isProvidedSortedAssets =
     customSortedAssets && customSortedAssets.length > 0
   const { sortedAssets, isLoading } = useAssetSelectModalAssets(
-    isProvidedSortedAssets ? [] : assets,
+    isProvidedSortedAssets ? emptyAssets : assets,
     search,
     selectedAssetId,
   )

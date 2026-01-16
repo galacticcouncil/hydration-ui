@@ -1,6 +1,6 @@
 import { Logo, LogoProps } from "@galacticcouncil/ui/components"
 import { getChainId } from "@galacticcouncil/utils"
-import { AnyChain, ChainEcosystem } from "@galacticcouncil/xcm-core"
+import { AnyChain, ChainEcosystem } from "@galacticcouncil/xc-core"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 

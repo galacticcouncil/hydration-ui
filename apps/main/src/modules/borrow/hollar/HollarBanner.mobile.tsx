@@ -41,7 +41,7 @@ export const HollarBannerMobile: FC<Props> = ({ reserve }) => {
         </SText>
       </SContent>
       <img
-        sx={{ mr: 8, mt: -6, zIndex: 10 }}
+        sx={{ mr: 8, mt: -6, zIndex: 1 }}
         src={HollarCans}
         width={92}
         height={93}

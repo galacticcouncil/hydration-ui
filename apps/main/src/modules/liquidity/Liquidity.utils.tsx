@@ -11,7 +11,7 @@ import {
   is_remove_liquidity_allowed,
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
-import { OmniMath } from "@galacticcouncil/sdk"
+import { pool } from "@galacticcouncil/sdk-next"
 import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
@@ -642,7 +642,7 @@ export const useOmnipoolCapacity = (id: string) => {
     const assetCap = asset.cap.toString()
     const totalHubReserve = hubToken.balance.toString()
 
-    const capDifference = OmniMath.calculateCapDifference(
+    const capDifference = pool.omni.OmniMath.calculateCapDifference(
       assetReserve,
       assetHubReserve,
       assetCap,

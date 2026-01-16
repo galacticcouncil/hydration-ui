@@ -12,6 +12,7 @@ import { isArray } from "remeda"
 
 import {
   AssetInput,
+  AssetInputProps,
   HealthFactorChange,
   HealthFactorRiskWarning,
 } from "@/components/primitives"
@@ -20,7 +21,6 @@ import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWar
 import { useAssetCaps } from "@/hooks"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
-import { CapType } from "@/types"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
 import { getGhoBorrowApyRange } from "@/utils"
 import { getMaxGhoMintAmount } from "@/utils/getMaxAmountAvailableToBorrow"
@@ -73,8 +73,6 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     }
   }
 
-  const isMaxSelected = amount === maxAmountToBorrow
-
   // health factor calculations
   const amountToBorrowInUsd = bigShift(
     Big(amount || 0)
@@ -111,13 +109,15 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     blockingError = ErrorType.BORROWING_NOT_AVAILABLE
   }
 
-  const handleBlocked = () => {
+  const handleBlocked = (): Partial<AssetInputProps> => {
     switch (blockingError) {
       case ErrorType.BORROWING_NOT_AVAILABLE:
-        return `Borrowing is currently unavailable for ${poolReserve.symbol}.`
+        return {
+          assetError: `Borrowing is currently unavailable for ${poolReserve.symbol}.`,
+        }
 
       default:
-        return
+        return {}
     }
   }
 
@@ -126,10 +126,9 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   return (
     <>
       <AssetInput
-        name="borrow-amount"
         value={amount}
         onChange={handleChange}
-        usdValue={usdValue.toString(10)}
+        displayValue={usdValue.toString()}
         assets={[
           {
             balance: maxAmountToBorrow,
@@ -139,11 +138,9 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
           },
         ]}
         symbol={symbol}
-        capType={CapType.borrowCap}
-        isMaxSelected={isMaxSelected}
-        maxValue={maxAmountToBorrow}
-        balanceText="Available"
-        error={handleBlocked()}
+        maxButtonBalance={maxAmountToBorrow}
+        balanceLabel="Available"
+        {...handleBlocked()}
       />
 
       <Separator mx="var(--modal-content-inset)" />

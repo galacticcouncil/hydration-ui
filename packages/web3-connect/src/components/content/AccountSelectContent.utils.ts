@@ -1,6 +1,9 @@
 import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
-import { isEvmAccount } from "@galacticcouncil/sdk"
-import { arraySearch, isSS58Address } from "@galacticcouncil/utils"
+import {
+  arraySearch,
+  isEvmParachainAccount,
+  isSS58Address,
+} from "@galacticcouncil/utils"
 import { QueriesResults, useQueries } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo } from "react"
 import { useLocalStorage } from "react-use"
@@ -40,19 +43,22 @@ export const searchAccounts = (phrase: string) => (accounts: Account[]) => {
 
 export const filterAccounts = (mode: WalletMode) => (accounts: Account[]) => {
   return accounts.filter((account) => {
-    if (account.provider !== WalletProviderType.ExternalWallet) {
-      return PROVIDERS_BY_WALLET_MODE[mode].includes(account.provider)
+    if (
+      account.provider === WalletProviderType.ExternalWallet &&
+      [WalletMode.Default, WalletMode.EVM, WalletMode.Substrate].includes(mode)
+    ) {
+      const isEvmAddress = isEvmParachainAccount(account.address)
+      switch (mode) {
+        case WalletMode.EVM:
+          return isEvmAddress
+        case WalletMode.Substrate:
+          return !isEvmAddress && isSS58Address(account.address)
+        default:
+          return true
+      }
     }
 
-    const isEvmAddress = isEvmAccount(account.address)
-    switch (mode) {
-      case WalletMode.EVM:
-        return isEvmAddress
-      case WalletMode.Substrate:
-        return !isEvmAddress && isSS58Address(account.address)
-      default:
-        return true
-    }
+    return PROVIDERS_BY_WALLET_MODE[mode].includes(account.provider)
   })
 }
 

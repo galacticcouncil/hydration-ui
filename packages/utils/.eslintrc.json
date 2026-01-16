@@ -3,5 +3,8 @@
   "extends": ["@galacticcouncil/eslint-config/index.js"],
   "parserOptions": {
     "project": "./tsconfig.json"
+  },
+  "rules": {
+    "no-restricted-imports": "off"
   }
 }

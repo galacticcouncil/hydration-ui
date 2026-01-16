@@ -1,14 +1,27 @@
 import { useEffect, useState } from "react"
 
 import { Web3ConnectModalPage } from "@/config/modal"
-import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
-import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
+import {
+  useWeb3Connect,
+  WalletMode,
+  WalletProviderStatus,
+} from "@/hooks/useWeb3Connect"
 
-export const useWeb3ConnectInit = () => {
-  useWeb3EagerEnable()
+const getInitialPage = (mode: WalletMode) => {
+  const { getConnectedProviders } = useWeb3Connect.getState()
 
-  const [page, setPage] = useState<Web3ConnectModalPage>(
-    Web3ConnectModalPage.ProviderSelect,
+  const connectedProviders = getConnectedProviders(mode)
+
+  if (connectedProviders.length > 0) {
+    return Web3ConnectModalPage.AccountSelect
+  }
+
+  return Web3ConnectModalPage.ProviderSelect
+}
+
+export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
+  const [page, setPage] = useState<Web3ConnectModalPage>(() =>
+    getInitialPage(mode),
   )
 
   useEffect(() => {

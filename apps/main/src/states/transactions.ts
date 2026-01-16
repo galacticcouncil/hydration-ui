@@ -1,11 +1,14 @@
 import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
-import { tags } from "@galacticcouncil/xcm-cfg"
+import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
+import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
+import { tags } from "@galacticcouncil/xc-cfg"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
 
 import {
   AnyTransaction,
   TxBestBlocksStateResult,
+  TxFinalizedResult,
 } from "@/modules/transactions/types"
 
 export const XcmTag = tags.Tag
@@ -16,6 +19,7 @@ export const XCM_BRIDGE_TAGS: XcmTags = [XcmTag.Wormhole, XcmTag.Snowbridge]
 export enum TransactionType {
   Onchain = "Onchain",
   Xcm = "Xcm",
+  EvmApprove = "EvmApprove",
 }
 
 export type TransactionCommon = {
@@ -79,15 +83,34 @@ export type TransactionOnchainMeta = TransactionMetaCommon & {
 
 export type TransactionXcmMeta = TransactionMetaCommon & {
   type: TransactionType.Xcm
+  srcChainFee: string
+  srcChainFeeSymbol: string
   dstChainKey: string
   dstChainFee?: string
   dstChainFeeSymbol?: string
   tags: XcmTags
 }
 
-export type TransactionMeta = TransactionOnchainMeta | TransactionXcmMeta
+export type TransactionErc20ApproveMeta = TransactionMetaCommon & {
+  type: TransactionType.EvmApprove
+}
 
-export type TSuccessResult = TxBestBlocksStateResult | TransactionReceipt
+export type TransactionMeta =
+  | TransactionOnchainMeta
+  | TransactionXcmMeta
+  | TransactionErc20ApproveMeta
+
+export type TSuccessResult =
+  | TxBestBlocksStateResult
+  | TransactionReceipt
+  | SolanaTxStatus
+  | SuiTxStatus
+
+export type TFinalizedResult =
+  | TxFinalizedResult
+  | TransactionReceipt
+  | SolanaTxStatus
+  | SuiTxStatus
 
 export interface TransactionActions {
   onSuccess?: (event: TSuccessResult) => void

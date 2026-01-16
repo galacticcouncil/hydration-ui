@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
 
 import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
 
 import {
@@ -15,6 +16,7 @@ import { defaultAssetValueFormatter } from "./AssetInput.utils"
 
 export type AssetInputProps = {
   label?: string
+  balanceLabel?: string
   symbol?: string
   value?: string
   displayValue?: string
@@ -24,7 +26,8 @@ export type AssetInputProps = {
   ignoreBalance?: boolean
   ignoreDisplayValue?: boolean
   hideMaxBalanceAction?: boolean
-  error?: string
+  assetError?: string
+  amountError?: string
   disabled?: boolean
   disabledInput?: boolean
   hideInput?: boolean
@@ -43,13 +46,15 @@ export const AssetInput = ({
   displayValue,
   displayValueLoading,
   label,
+  balanceLabel,
   maxBalance,
   maxButtonBalance,
   ignoreBalance,
   ignoreDisplayValue,
   hideMaxBalanceAction,
   onChange,
-  error,
+  assetError,
+  amountError,
   disabled,
   disabledInput,
   hideInput,
@@ -63,6 +68,8 @@ export const AssetInput = ({
   const onMaxButtonClick = () => {
     if (usedMaxBalance) onChange?.(usedMaxBalance)
   }
+
+  const errorMessage = assetError ?? amountError
 
   return (
     <Flex
@@ -99,7 +106,7 @@ export const AssetInput = ({
                 whiteSpace: "nowrap",
               }}
             >
-              <span>Balance: </span>
+              <span>{balanceLabel ?? "Balance"}: </span>
               {loading ? (
                 <span sx={{ height: 12, lineHeight: 1 }}>
                   <Skeleton width={48} height={12} />
@@ -132,7 +139,7 @@ export const AssetInput = ({
             symbol={symbol}
             icon={selectedAssetIcon}
             loading={loading}
-            error={!!error}
+            error={!!assetError}
             onAsssetBtnClick={onAsssetBtnClick}
             disabled={!!modalDisabled || !!disabled}
           />
@@ -145,7 +152,7 @@ export const AssetInput = ({
               flex={1}
             >
               <SAssetInput
-                isError={!!error}
+                isError={!!amountError}
                 placeholder="0"
                 variant="embedded"
                 disabled={disabled || loading || !onChange || disabledInput}
@@ -176,16 +183,10 @@ export const AssetInput = ({
             </Flex>
           )}
         </Flex>
-        {error && (
-          <Text
-            fs={12}
-            font="secondary"
-            fw={400}
-            color={getToken("accents.danger.secondary")}
-            sx={{ marginLeft: "auto", lineHeight: 1 }}
-          >
-            {error}
-          </Text>
+        {errorMessage && (
+          <FormError lh={1} ml="auto">
+            {errorMessage}
+          </FormError>
         )}
       </Flex>
     </Flex>

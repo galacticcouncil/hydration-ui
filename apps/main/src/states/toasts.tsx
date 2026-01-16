@@ -5,7 +5,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { uuid } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { CallType } from "@galacticcouncil/xcm-core"
+import { CallType } from "@galacticcouncil/xc-core"
 import { useCallback } from "react"
 import { toast as toastSonner } from "sonner"
 import { create } from "zustand"

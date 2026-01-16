@@ -68,7 +68,9 @@ export const userSwapsQuery = (
             },
           }),
         ...(assetIds.length && {
-          allInvolvedAssetRegistryIds: { contains: assetIds },
+          orFilter: assetIds.map((assetId) => ({
+            allInvolvedAssetRegistryIds: { contains: [assetId] },
+          })),
         }),
         offset: (page - 1) * pageSize,
         pageSize,

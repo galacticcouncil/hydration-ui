@@ -51,7 +51,7 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
   return (
     <SContainer>
       <img
-        sx={{ mt: -12, ml: 15, zIndex: 10 }}
+        sx={{ mt: -12, ml: 15, zIndex: 1 }}
         src={HollarCans}
         width={105}
         height={106}

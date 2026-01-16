@@ -4,13 +4,15 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import {
-  ALTERNATIVE_PROVIDERS,
   EVM_PROVIDERS,
   SOLANA_PROVIDERS,
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
+  SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
+import { getWallet } from "@/wallets"
+import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
 export enum WalletProviderStatus {
   Connected = "connected",
@@ -26,6 +28,7 @@ export enum WalletMode {
   SubstrateEVM = "substrate-evm",
   SubstrateH160 = "substrate-h160",
   Solana = "solana",
+  Sui = "sui",
   Unknown = "unknown",
 }
 
@@ -38,15 +41,13 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   WalletMode,
   WalletProviderType[]
 > = {
-  [WalletMode.Default]: [
-    ...COMPATIBLE_WALLET_PROVIDERS,
-    ...ALTERNATIVE_PROVIDERS,
-  ],
+  [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
   [WalletMode.EVM]: EVM_PROVIDERS,
   [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
   [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
   [WalletMode.Solana]: SOLANA_PROVIDERS,
+  [WalletMode.Sui]: SUI_PROVIDERS,
   [WalletMode.Unknown]: [],
 }
 
@@ -54,6 +55,7 @@ export type StoredAccount = {
   name: string
   publicKey: string
   address: string
+  rawAddress: string
   provider: WalletProviderType
   delegate?: string
   balance?: number
@@ -64,8 +66,7 @@ export type Account = StoredAccount & {
   isIncompatible?: boolean
 }
 
-type WalletProviderMeta = {
-  chain?: string
+type Web3ConnectModalMeta = {
   title?: string
   description?: string
 }
@@ -83,11 +84,11 @@ export type WalletProviderState = {
   accounts: StoredAccount[]
   mode: WalletMode
   error?: string
-  meta?: WalletProviderMeta | null
+  meta?: Web3ConnectModalMeta | null
 }
 
 export type WalletProviderStore = WalletProviderState & {
-  toggle: (mode?: WalletMode, meta?: WalletProviderMeta) => void
+  toggle: (mode?: WalletMode, meta?: Web3ConnectModalMeta) => void
   setAccount: (account: StoredAccount | null) => void
   setAccounts: (accounts: StoredAccount[]) => void
   setBalances: (balances: ReadonlyMap<string, number>) => void
@@ -96,7 +97,7 @@ export type WalletProviderStore = WalletProviderState & {
     status: WalletProviderStatus,
   ) => void
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
-  getConnectedProviders: () => WalletProviderEntry[]
+  getConnectedProviders: (mode: WalletMode) => WalletProviderEntry[]
   setError: (error: string) => void
   disconnect: (provider?: WalletProviderType) => void
 }
@@ -121,7 +122,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           const isValidMode = mode && Object.values(WalletMode).includes(mode)
           return {
             ...state,
-            mode: isValidMode ? mode : getDefaultWalletMode(),
+            mode: isValidMode ? mode : WalletMode.Default,
             open: !state.open,
             meta: meta ?? null,
           }
@@ -134,7 +135,15 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             prop("publicKey"),
           ),
         })),
-      setAccount: (account) => set((state) => ({ ...state, account })),
+      setAccount: (account) => {
+        if (account) {
+          const wallet = getWallet(account.provider)
+          if (wallet instanceof BaseSubstrateWallet) {
+            wallet.setSigner(account.address)
+          }
+        }
+        return set((state) => ({ ...state, account }))
+      },
       setBalances: (balances) => {
         return set((state) =>
           produce(state, ({ accounts }) => {
@@ -167,8 +176,8 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         const foundProvider = get().providers.find((p) => p.type === provider)
         return foundProvider?.status ?? WalletProviderStatus.Disconnected
       },
-      getConnectedProviders: () => {
-        const { mode, providers } = get()
+      getConnectedProviders: (mode: WalletMode) => {
+        const { providers } = get()
 
         if (mode === WalletMode.Default) {
           return providers
@@ -212,24 +221,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
     {
       name: "web3-connect",
       partialize: omit(["open", "error", "accounts"]),
-      version: 9,
+      version: 10,
     },
   ),
 )
-
-const getDefaultWalletMode = () => {
-  const params = new URLSearchParams(window.location.search)
-  if (params.get("srcChain") === "solana") {
-    return WalletMode.Solana
-  }
-
-  if (params.get("srcChain") === "mythos") {
-    return WalletMode.SubstrateH160
-  }
-
-  if (params.get("srcChain") === "ethereum") {
-    return WalletMode.EVM
-  }
-
-  return WalletMode.Default
-}

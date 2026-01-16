@@ -1,4 +1,5 @@
 import { Web3Provider } from "@ethersproject/providers"
+import { h160 } from "@galacticcouncil/common"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
 import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
 import {
@@ -14,7 +15,6 @@ import {
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
-import { H160 } from "@galacticcouncil/sdk"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   QueryClient,
@@ -32,6 +32,8 @@ import {
 } from "@/api/borrow/contracts"
 import { useBlockTimestamp } from "@/api/chain"
 import { useRpcProvider } from "@/providers/rpcProvider"
+
+const { H160 } = h160
 
 const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER

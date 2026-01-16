@@ -10,8 +10,8 @@ type Props = {
 }
 
 export const TokensConversion: FC<Props> = ({ offer }) => {
-  const price = new Big(offer.assetAmountIn)
-    .div(offer.assetAmountOut)
+  const price = new Big(offer.assetAmountOut)
+    .div(offer.assetAmountIn)
     .toString()
 
   return (

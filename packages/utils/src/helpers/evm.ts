@@ -1,8 +1,7 @@
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
-import { ChainEcosystem } from "@galacticcouncil/xcm-core"
-import { u8aToHex } from "@polkadot/util"
-import { decodeAddress, encodeAddress } from "@polkadot/util-crypto"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { toHex } from "@polkadot-api/utils"
 import { Buffer } from "buffer"
+import { AccountId } from "polkadot-api"
 import { Address, checksumAddress, isAddress } from "viem"
 
 import { createQueryString, stripTrailingSlash } from "./helpers"
@@ -23,7 +22,7 @@ export function isEvmParachainAccount(address?: string) {
   if (!address) return false
 
   try {
-    const pub = decodeAddress(address, true)
+    const pub = AccountId().enc(address)
     return Buffer.from(pub.subarray(0, H160_PREFIX_BYTES.length)).equals(
       H160_PREFIX_BYTES,
     )
@@ -42,15 +41,14 @@ export const safeConvertAddressH160 = (value: Address | string): string => {
   }
 }
 
-export const safeConvertH160toSS58 = (address: string) => {
+export const safeConvertH160toSS58 = (address: string, ss58prefix = 0) => {
   if (!isH160Address(address)) return ""
   try {
     const addressBytes = Buffer.from(address.slice(2), "hex")
-    return encodeAddress(
+    return AccountId(ss58prefix).dec(
       new Uint8Array(
         Buffer.concat([H160_PREFIX_BYTES, addressBytes, Buffer.alloc(8)]),
       ),
-      0,
     )
   } catch {
     return ""
@@ -60,15 +58,15 @@ export const safeConvertH160toSS58 = (address: string) => {
 export const safeConvertSS58toH160 = (address: string) => {
   try {
     if (isEvmParachainAccount(address)) {
-      const decodedBytes = decodeAddress(address)
+      const decodedBytes = AccountId().enc(address)
       const addressBytes = decodedBytes.slice(H160_PREFIX_BYTES.length, -8)
       return (
         safeConvertAddressH160(Buffer.from(addressBytes).toString("hex")) ?? ""
       )
     } else {
-      const decodedBytes = decodeAddress(address)
+      const decodedBytes = AccountId().enc(address)
       const slicedBytes = decodedBytes.slice(0, 20)
-      return u8aToHex(slicedBytes)
+      return toHex(slicedBytes)
     }
   } catch {
     return ""
@@ -113,9 +111,7 @@ export const etherscan = {
     query: Record<string, string | number> = {},
   ): string => {
     const chain = chainsMap.get(chainKey)
-    if (!chain?.explorer || chain.ecosystem !== ChainEcosystem.Ethereum) {
-      return ""
-    }
+    if (!chain?.explorer) return ""
     return `${stripTrailingSlash(chain.explorer)}/${path}/${data}${createQueryString(query)}`
   },
   tx: (chainKey: string, txHash: string) => {

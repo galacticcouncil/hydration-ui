@@ -1,3 +1,4 @@
+import { log } from "@galacticcouncil/common"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import {
   getSnowbridgeSdk,
@@ -71,12 +72,26 @@ export const providerQuery = (rpcUrlList: string[]) => {
   })
 }
 
-const getProviderData = async (rpcUrlList: string[] = []) => {
+const getProviderData = async (
+  rpcUrlList: string[] = [],
+): Promise<TProviderData> => {
   let endpoint = ""
   const ws = api.getWs(rpcUrlList, {
     onStatusChanged: (status) => {
-      if (status.type === WsEvent.CONNECTED) {
-        endpoint = status.uri
+      switch (status.type) {
+        case WsEvent.CONNECTING:
+          log.logger.debug("[WS] CONNECTING", status.uri)
+          break
+        case WsEvent.CONNECTED:
+          endpoint = status.uri
+          log.logger.debug("[WS] CONNECTED", status.uri)
+          break
+        case WsEvent.CLOSE:
+          log.logger.debug("[WS] CLOSED", status.event)
+          break
+        case WsEvent.ERROR:
+          log.logger.error("[WS] ERROR", status)
+          break
       }
     },
   })
@@ -116,7 +131,7 @@ const getProviderData = async (rpcUrlList: string[] = []) => {
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
-  } satisfies TProviderData
+  }
 }
 
 export const useSquidUrl = (): string => {

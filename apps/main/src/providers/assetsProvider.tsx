@@ -1,4 +1,4 @@
-import { ChainEcosystem } from "@galacticcouncil/xcm-core"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import {
   createContext,
   ReactNode,

@@ -21,6 +21,7 @@ import { useState } from "react"
 
 import {
   AssetInput,
+  AssetInputProps,
   HealthFactorChange,
   IncentivesButton,
 } from "@/components/primitives"
@@ -30,7 +31,6 @@ import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWar
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
-import { CapType } from "@/types"
 import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
 import { getMaxAmountAvailableToBorrow } from "@/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "@/utils/utils"
@@ -139,8 +139,6 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     }
   }
 
-  const isMaxSelected = amount === maxAmountToBorrow
-
   // health factor calculations
   const amountToBorrowInUsd = bigShift(
     Big(amount || 0)
@@ -181,20 +179,30 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
     blockingError = ErrorType.BORROWING_NOT_AVAILABLE
   }
 
-  const handleBlocked = () => {
+  const handleBlocked = (): Partial<AssetInputProps> => {
     switch (blockingError) {
       case ErrorType.MAX_EXCEEDED:
-        return "Maximum available amount exceeded"
+        return { amountError: "Maximum available amount exceeded" }
       case ErrorType.BORROWING_NOT_AVAILABLE:
-        return `Borrowing is currently unavailable for ${poolReserve.symbol}.`
+        return {
+          assetError: `Borrowing is currently unavailable for ${poolReserve.symbol}.`,
+        }
       case ErrorType.NOT_ENOUGH_BORROWED:
-        return "You can borrow this asset with a stable rate only if you borrow more than the amount you are supplying as collateral."
+        return {
+          assetError:
+            "You can borrow this asset with a stable rate only if you borrow more than the amount you are supplying as collateral.",
+        }
       case ErrorType.NOT_ENOUGH_LIQUIDITY:
-        return "There are not enough funds in the {poolReserve.symbol} reserve to borrow"
+        return {
+          amountError:
+            "There are not enough funds in the {poolReserve.symbol} reserve to borrow",
+        }
       case ErrorType.STABLE_RATE_NOT_ENABLED:
-        return "The Stable Rate is not enabled for this currency"
+        return {
+          assetError: "The Stable Rate is not enabled for this currency",
+        }
       default:
-        return
+        return {}
     }
   }
 
@@ -234,10 +242,9 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
       )}
 
       <AssetInput
-        name="borrow-amount"
         value={amount}
         onChange={handleChange}
-        usdValue={usdValue.toString()}
+        displayValue={usdValue.toString()}
         assets={[
           {
             balance: maxAmountToBorrow,
@@ -247,11 +254,9 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
           },
         ]}
         symbol={symbol}
-        capType={CapType.borrowCap}
-        isMaxSelected={isMaxSelected}
-        maxValue={maxAmountToBorrow}
-        balanceText="Available"
-        error={handleBlocked()}
+        maxButtonBalance={maxAmountToBorrow}
+        balanceLabel="Available"
+        {...handleBlocked()}
       />
 
       <Separator mx="var(--modal-content-inset)" />

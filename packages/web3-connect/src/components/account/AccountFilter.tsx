@@ -1,11 +1,14 @@
 import { Button, Flex } from "@galacticcouncil/ui/components"
 
 import { WalletMode } from "@/hooks/useWeb3Connect"
+import { getWalletModeIcon } from "@/utils/wallet"
 
 export const allAccountFilterOptions = [
   WalletMode.Substrate,
+  WalletMode.SubstrateH160,
   WalletMode.EVM,
   WalletMode.Solana,
+  WalletMode.Sui,
 ] as const satisfies Array<WalletMode>
 
 export type AccountFilterOptionOverride =
@@ -19,22 +22,20 @@ const modeData: Record<
   AccountFilterOptionOverride,
   [name: string, icon: string]
 > = {
-  [WalletMode.Substrate]: [
-    "Polkadot",
-    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/5/icon.svg",
-  ],
-  [WalletMode.EVM]: [
-    "EVM",
-    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/ethereum/1/icon.svg",
-  ],
-  [WalletMode.Solana]: [
-    "Solana",
-    "https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/solana/101/icon.svg",
+  [WalletMode.Substrate]: ["Polkadot", getWalletModeIcon(WalletMode.Substrate)],
+  [WalletMode.EVM]: ["EVM", getWalletModeIcon(WalletMode.EVM)],
+  [WalletMode.Solana]: ["Solana", getWalletModeIcon(WalletMode.Solana)],
+  [WalletMode.Sui]: ["Sui", getWalletModeIcon(WalletMode.Sui)],
+  [WalletMode.SubstrateH160]: [
+    "Substrate H160",
+    getWalletModeIcon(WalletMode.Substrate),
   ],
 }
 
 const defaultBlacklist: ReadonlyArray<AccountFilterOptionOverride> = [
   WalletMode.Solana,
+  WalletMode.Sui,
+  WalletMode.SubstrateH160,
 ]
 
 export type AccountFilterProps = {

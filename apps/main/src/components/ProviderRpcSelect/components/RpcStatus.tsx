@@ -4,6 +4,7 @@ import {
 } from "@galacticcouncil/indexer/squid"
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
 import { Box, Flex, Stack, Text, Tooltip } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { PingResponse } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
@@ -112,6 +113,7 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
   squidUrl,
 }) => {
   const { t } = useTranslation()
+  const { isMobile } = useBreakpoints()
 
   const status = useElapsedTimeStatus(timestamp ?? 0)
   const statusText = status ? t(rpcStatusTextMap[status]) : ""
@@ -119,43 +121,50 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 
   const currentSquidIndexer = SQUID_URLS.find((squid) => squid.url === squidUrl)
 
+  const statusContent = (
+    <Flex align="center" gap={4} color={getToken(statusColor)}>
+      {blockNumber && (
+        <Text fs={12}>
+          {t("number", {
+            value: blockNumber,
+          })}
+        </Text>
+      )}
+      {status === "online" && <RpcStatusSuccess key={timestamp} />}
+      {status === "slow" && <RpcStatusSlow />}
+      {status === "offline" && <RpcStatusOffline />}
+    </Flex>
+  )
+
+  const statusTooltip = !isMobile ? (
+    <Stack gap={10}>
+      {(name || url) && (
+        <Text fs={14} lh={1.4} fw={600}>
+          {name || url}
+        </Text>
+      )}
+      <Text>{statusText}</Text>
+
+      {currentSquidIndexer && isNumber(blockNumber) && (
+        <SquidStatus
+          name={currentSquidIndexer.name}
+          url={currentSquidIndexer.url}
+          blockNumber={blockNumber}
+        />
+      )}
+    </Stack>
+  ) : null
+
   return (
     <Box>
-      <Tooltip
-        text={
-          <Stack gap={10}>
-            {(name || url) && (
-              <Text fs={14} lh={1.4} fw={600}>
-                {name || url}
-              </Text>
-            )}
-            <Text>{statusText}</Text>
+      {statusTooltip ? (
+        <Tooltip text={statusTooltip} side="left">
+          {statusContent}
+        </Tooltip>
+      ) : (
+        statusContent
+      )}
 
-            {currentSquidIndexer && isNumber(blockNumber) && (
-              <SquidStatus
-                name={currentSquidIndexer.name}
-                url={currentSquidIndexer.url}
-                blockNumber={blockNumber}
-              />
-            )}
-          </Stack>
-        }
-        side="left"
-        asChild
-      >
-        <Flex align="center" gap={4} color={getToken(statusColor)}>
-          {blockNumber && (
-            <Text fs={12}>
-              {t("number", {
-                value: blockNumber,
-              })}
-            </Text>
-          )}
-          {status === "online" && <RpcStatusSuccess key={timestamp} />}
-          {status === "slow" && <RpcStatusSlow />}
-          {status === "offline" && <RpcStatusOffline />}
-        </Flex>
-      </Tooltip>
       {ping && ping < Infinity && <RpcPing ping={ping} />}
     </Box>
   )

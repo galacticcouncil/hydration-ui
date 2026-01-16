@@ -13,7 +13,10 @@ import {
   SSwitchContainer,
 } from "./AssetSwitcher.styled"
 
+type ViewType = "default" | "reversed"
+
 type AssetSwitcherProps = {
+  readonly defaultView?: ViewType
   readonly assetInId: string
   readonly priceIn?: string | undefined | null
   readonly assetOutId: string
@@ -26,6 +29,7 @@ type AssetSwitcherProps = {
 }
 
 export const AssetSwitcher = ({
+  defaultView = "default",
   assetInId,
   assetOutId,
   priceIn,
@@ -37,7 +41,7 @@ export const AssetSwitcher = ({
   onSwitchAssets,
 }: AssetSwitcherProps) => {
   const { t } = useTranslation()
-  const [isReversed, setIsReversed] = useState(false)
+  const [view, setView] = useState(defaultView)
 
   const { getAssetWithFallback } = useAssets()
   const assetIn = getAssetWithFallback(assetInId)
@@ -50,15 +54,16 @@ export const AssetSwitcher = ({
       return Big(fallbackPrice || "0")
     }
 
-    return Big(priceOut).gt(0) ? Big(priceIn).div(priceOut) : Big(0)
+    return Big(priceIn).gt(0) ? Big(priceOut).div(priceIn) : Big(0)
   })()
 
-  const [shownAssetIn, shownAssetOut, shownPrice] = isReversed
-    ? [assetOut, assetIn, price.gt(0) ? Big(1).div(price) : Big(0)]
-    : [assetIn, assetOut, price]
+  const [shownAssetIn, shownAssetOut, shownPrice] =
+    view === "reversed"
+      ? [assetOut, assetIn, price.gt(0) ? Big(1).div(price) : Big(0)]
+      : [assetIn, assetOut, price]
 
   const switchAssets = (): void => {
-    setIsReversed(false)
+    setView(defaultView)
     onSwitchAssets?.()
   }
 
@@ -83,16 +88,18 @@ export const AssetSwitcher = ({
         <Separator />
         <SPriceContainer
           disabled={isPriceDisabled}
-          onClick={() => setIsReversed((isReversed) => !isReversed)}
+          onClick={() =>
+            setView((view) => (view === "default" ? "reversed" : "default"))
+          }
         >
           <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
             {!isPriceReady && <Skeleton width={120} />}
             {isPriceReady &&
               (isPriceDisabled
                 ? t("unknownExchangeRate")
-                : `1 ${shownAssetOut.symbol} = ${t("currency", {
+                : `1 ${shownAssetIn.symbol} = ${t("currency", {
                     value: shownPrice,
-                    symbol: shownAssetIn.symbol,
+                    symbol: shownAssetOut.symbol,
                   })}`)}
           </Text>
         </SPriceContainer>

@@ -19,6 +19,7 @@ import Big from "big.js"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { HealthFactorRisk } from "@/modules/borrow/healthfactor/HealthFactorRisk"
 
 export const MIN_CLAIMABLE_INCENTIVES_USDT = 0.01
@@ -27,6 +28,7 @@ export const DashboardHeader = () => {
   const { t } = useTranslation(["common", "borrow"])
   const { user, isConnected, loading } = useMoneyMarketData()
   const { openClaimRewards } = useModalContext()
+  const { isLoading: isApyLoading } = useApyContext()
 
   const [riskModalOpen, setRiskModalOpen] = useState(false)
 
@@ -61,7 +63,7 @@ export const DashboardHeader = () => {
           }
         />
         <ValueStats
-          isLoading={loading}
+          isLoading={loading || isApyLoading}
           label={t("borrow:netApy")}
           wrap={[false, false, true]}
           value={

@@ -33,7 +33,7 @@ export const ClaimStakingRemainder: FC<Props> = ({
           t={t}
           i18nKey="staking:dashboard.remainder2.mobile"
           values={{
-            amount: t("number", { value: unclaimable }),
+            amount: unclaimable,
             symbol: native.symbol,
           }}
         >
@@ -42,13 +42,7 @@ export const ClaimStakingRemainder: FC<Props> = ({
       ) : (
         <>
           <div>
-            <Trans
-              t={t}
-              i18nKey="staking:dashboard.remainder2"
-              values={{
-                amount: t("number", { value: unclaimable }),
-              }}
-            >
+            <Trans t={t} i18nKey="staking:dashboard.remainder2">
               <span sx={{ color: amountColor }} />
             </Trans>
           </div>
@@ -56,6 +50,7 @@ export const ClaimStakingRemainder: FC<Props> = ({
             t={t}
             i18nKey="staking:dashboard.remainder3"
             values={{
+              amount: unclaimable,
               symbol: native.symbol,
             }}
           >

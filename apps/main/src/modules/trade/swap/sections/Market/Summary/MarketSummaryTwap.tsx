@@ -88,6 +88,28 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
     return null
   }
 
+  const [twapPrice, swapPrice, twapPriceHuman, twapPriceAsset] = (() => {
+    if (twap.type === TradeOrderType.TwapBuy) {
+      const twapPrice =
+        twap.amountIn + calculateSlippage(twap.amountIn, twapSlippage)
+      const twapPriceHuman = scaleHuman(twapPrice, sellAsset.decimals)
+
+      const swapPrice =
+        swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage)
+
+      return [twapPrice, swapPrice, twapPriceHuman, sellAsset]
+    }
+
+    const twapPrice =
+      twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage)
+    const twapPriceHuman = scaleHuman(twapPrice, buyAsset.decimals)
+
+    const swapPrice =
+      swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage)
+
+    return [twapPrice, swapPrice, twapPriceHuman, buyAsset]
+  })()
+
   const tradeAmount = isBuy ? twap.amountIn : twap.amountOut
 
   const tradeFeePct = Big(twap.tradeFee.toString())
@@ -101,28 +123,6 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
     mediumHigh = Number.MAX_SAFE_INTEGER,
   ] = getTradeFeeIntervals(0, 0)
 
-  const [twapPrice, swapPrice, twapPriceHuman] = (() => {
-    if (twap.type === TradeOrderType.TwapBuy) {
-      const twapPrice =
-        twap.amountIn + calculateSlippage(twap.amountIn, twapSlippage)
-      const twapPriceHuman = scaleHuman(twapPrice, sellAsset.decimals)
-
-      const swapPrice =
-        swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage)
-
-      return [twapPrice, swapPrice, twapPriceHuman]
-    }
-
-    const twapPrice =
-      twap.amountOut - calculateSlippage(twap.amountOut, twapSlippage)
-    const twapPriceHuman = scaleHuman(twapPrice, buyAsset.decimals)
-
-    const swapPrice =
-      swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage)
-
-    return [twapPrice, swapPrice, twapPriceHuman]
-  })()
-
   const twapDiff = math.calculateDiffToRef(BigInt(twapPrice), BigInt(swapPrice))
   const twapDiffAbs = Math.abs(twapDiff)
   const twapSymbol = twapDiff >= 0 ? "+" : "-"
@@ -132,49 +132,33 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
       open={isSummaryExpanded}
       onOpenChange={changeSummaryExpanded}
     >
-      {isBuy ? (
-        <CalculatedAmountSummaryRow
-          label={t("trade:market.summary.maxSent")}
-          tooltip={t("trade:market.summary.maxSent.tooltip")}
-          amount={
-            <SummaryRowValue>
-              <span>
-                {t("currency", {
-                  value: twapPriceHuman,
-                  symbol: sellAsset.symbol,
-                })}
-              </span>{" "}
-              <span sx={{ color: getToken("colors.skyBlue.500") }}>
-                ({twapSymbol}
-                {t("percent", { value: twapDiffAbs })})
-              </span>
-            </SummaryRowValue>
-          }
-          isExpanded={!isSummaryExpanded}
-          onIsExpandedChange={changeSummaryExpanded}
-        />
-      ) : (
-        <CalculatedAmountSummaryRow
-          label={t("trade:market.summary.minReceived")}
-          tooltip={t("trade:market.summary.minReceived.tooltip")}
-          amount={
-            <SummaryRowValue>
-              <span>
-                {t("currency", {
-                  value: twapPriceHuman,
-                  symbol: buyAsset.symbol,
-                })}
-              </span>{" "}
-              <span sx={{ color: getToken("colors.skyBlue.500") }}>
-                ({twapSymbol}
-                {t("percent", { value: twapDiffAbs })})
-              </span>
-            </SummaryRowValue>
-          }
-          isExpanded={!isSummaryExpanded}
-          onIsExpandedChange={changeSummaryExpanded}
-        />
-      )}
+      <CalculatedAmountSummaryRow
+        label={
+          isBuy
+            ? t("trade:market.summary.maxSent")
+            : t("trade:market.summary.minReceived")
+        }
+        tooltip={
+          isBuy
+            ? t("trade:market.summary.maxSent.tooltip")
+            : t("trade:market.summary.minReceived.tooltip")
+        }
+        amount={
+          <SummaryRowValue>
+            <span>
+              {t("currency", {
+                value: twapPriceHuman,
+                symbol: twapPriceAsset.symbol,
+              })}
+            </span>
+            <span sx={{ color: getToken("colors.skyBlue.500") }}>
+              {` (${twapSymbol}${t("percent", { value: twapDiffAbs })})`}
+            </span>
+          </SummaryRowValue>
+        }
+        isExpanded={isSummaryExpanded}
+        onIsExpandedChange={changeSummaryExpanded}
+      />
       <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
           <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />

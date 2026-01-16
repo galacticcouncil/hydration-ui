@@ -1,4 +1,4 @@
-import { polkadotIcon } from "@polkadot/ui-shared"
+import { polkadotIcon } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
 import { Flex, FlexProps } from "@/components/Flex"

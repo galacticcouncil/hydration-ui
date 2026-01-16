@@ -1,5 +1,5 @@
 import { ReserveDataHumanized } from "@aave/contract-helpers"
-import { EvmCall } from "@galacticcouncil/xcm-sdk"
+import { EvmCall } from "@galacticcouncil/xc-sdk"
 
 export type { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 

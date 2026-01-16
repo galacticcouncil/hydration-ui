@@ -1,6 +1,7 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { isAnyEvmChain } from "@galacticcouncil/utils"
-import { chainsMap } from "@galacticcouncil/xcm-cfg"
+import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { isObjectType } from "remeda"
 import {
   Address,
   BaseError,
@@ -105,6 +106,21 @@ export class EthereumSigner {
     }
   }
 
+  switchChain = async (options: EthereumSignerOptions) => {
+    const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
+    const chain = chainsMap.get(chainKey)
+
+    const isEvmChain = !!chain && isAnyEvmChain(chain)
+
+    if (!isEvmChain) throw new Error(`Chain ${chainKey} is not an EVM chain`)
+
+    const { evmClient } = chain
+
+    await this.walletClient.switchChain({ id: evmClient.chain.id })
+
+    return chain
+  }
+
   async signAndSubmitDispatch(
     call: Omit<TransactionCall, "to">,
     options: EthereumSignerOptions,
@@ -128,66 +144,67 @@ export class EthereumSigner {
   }
 
   getPermit = async (
-    data: string,
+    call: string | ExtendedEvmCall,
     options: EthereumSignerOptions,
   ): Promise<PermitResult> => {
     if (this.provider && this.address) {
-      const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
-      const chain = chainsMap.get(chainKey)
-
-      const isEvmChain = !!chain && isAnyEvmChain(chain)
-
-      if (!isEvmChain) throw new Error(`Chain ${chainKey} is not an EVM chain`)
-
-      const { client } = chain
-
-      await this.walletClient.switchChain({ id: client.chain.id })
-
-      const weight = options.weight ?? 0n
-
-      const tx = {
-        from: this.address as Address,
-        to: EVM_DISPATCH_ADDRESS as Hex,
-        data: data as Hex,
-      }
-
-      const [latestBlock, chainId, estimatedGas, nonce] = await Promise.all([
-        this.publicClient.getBlock(),
-        this.publicClient.getChainId(),
-        this.estimateGas(tx, weight),
-        this.getPermitNonce(),
-      ])
-
-      const createPermitMessageData = () => {
-        const message: PermitMessage = {
-          ...tx,
-          value: 0,
-          gaslimit: Number(estimatedGas.gasLimit),
-          nonce: Number(nonce),
-          deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
-        }
-
-        const typedData = JSON.stringify({
-          types: EVM_CALL_PERMIT_TYPES,
-          primaryType: "CallPermit",
-          domain: {
-            name: "Call Permit Precompile",
-            version: "1",
-            chainId,
-            verifyingContract: EVM_CALL_PERMIT_ADDRESS,
-          },
-          message: message,
-        })
-
-        return {
-          typedData,
-          message,
-        }
-      }
-
-      const { message, typedData } = createPermitMessageData()
-
       try {
+        await this.switchChain(options)
+
+        const weight = options.weight ?? 0n
+
+        const tx =
+          typeof call === "string"
+            ? {
+                from: this.address as Address,
+                to: EVM_DISPATCH_ADDRESS as Hex,
+                data: call as Hex,
+              }
+            : {
+                from: call.from as Address,
+                to: call.to as Hex,
+                data: call.data as Hex,
+              }
+
+        const [latestBlock, chainId, estimatedGas, nonce] = await Promise.all([
+          this.publicClient.getBlock(),
+          this.publicClient.getChainId(),
+          this.estimateGas(tx, weight),
+          this.getPermitNonce(),
+        ])
+
+        const createPermitMessageData = () => {
+          const message: PermitMessage = {
+            ...tx,
+            value: 0,
+            gaslimit:
+              isObjectType(call) && call.gasLimit
+                ? Number(call.gasLimit)
+                : Number(estimatedGas.gasLimit),
+            nonce: Number(nonce),
+            deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
+          }
+
+          const typedData = JSON.stringify({
+            types: EVM_CALL_PERMIT_TYPES,
+            primaryType: "CallPermit",
+            domain: {
+              name: "Call Permit Precompile",
+              version: "1",
+              chainId,
+              verifyingContract: EVM_CALL_PERMIT_ADDRESS,
+            },
+            message: message,
+          })
+
+          return {
+            typedData,
+            message,
+          }
+        }
+
+        const { message, typedData } = createPermitMessageData()
+
         const result = await this.walletClient.request({
           method: "eth_signTypedData_v4",
           params: [this.address as Address, typedData],
@@ -206,19 +223,12 @@ export class EthereumSigner {
     throw new Error("Error signing transaction. Provider not found")
   }
 
-  async signAndSubmit(call: TransactionCall, options: EthereumSignerOptions) {
+  async signAndSubmitHydration(
+    call: TransactionCall,
+    options: EthereumSignerOptions,
+    chain: Chain,
+  ) {
     try {
-      const chainKey = options.chainKey ?? EVM_DEFAULT_CHAIN_KEY
-      const chain = chainsMap.get(chainKey)
-
-      const isEvmChain = !!chain && isAnyEvmChain(chain)
-
-      if (!isEvmChain) throw new Error(`Chain ${chainKey} is not an EVM chain`)
-
-      const { client } = chain
-
-      await this.walletClient.switchChain({ id: client.chain.id })
-
       const [gas, nonce] = await Promise.all([
         this.estimateGas(
           {
@@ -237,11 +247,12 @@ export class EthereumSigner {
         data: call.data as Hex,
         to: call.to,
         nonce,
-        chain: client.chain as Chain,
+        chain,
         maxFeePerGas: call?.maxFeePerGas || gas.maxFeePerGas,
         maxPriorityFeePerGas:
           call?.maxPriorityFeePerGas || gas.maxPriorityFeePerGas,
         gas: call?.gasLimit || gas.gasLimit,
+        value: call?.value,
       })
 
       options.onSubmitted(txHash)
@@ -262,5 +273,53 @@ export class EthereumSigner {
     } catch (err) {
       options.onError(this.formatError(err))
     }
+  }
+
+  async signAndSubmitNative(
+    call: TransactionCall,
+    options: EthereumSignerOptions,
+    chain: Chain,
+  ) {
+    try {
+      const nonce = await this.publicClient.getTransactionCount({
+        address: this.address as Hex,
+      })
+      const txHash = await this.walletClient.sendTransaction({
+        account: this.address as Hex,
+        data: call.data as Hex,
+        to: call.to,
+        nonce,
+        chain,
+        value: call?.value,
+      })
+
+      options.onSubmitted(txHash)
+      const receipt = await this.publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      })
+      if (receipt.status === "reverted") {
+        options.onError(this.formatError(new ExecutionRevertedError()))
+      } else {
+        options.onSuccess(receipt)
+      }
+
+      options.onFinalized(receipt)
+
+      return receipt
+    } catch (err) {
+      options.onError(this.formatError(err))
+    }
+  }
+
+  async signAndSubmit(call: TransactionCall, options: EthereumSignerOptions) {
+    const chain = await this.switchChain(options)
+
+    const { evmClient } = chain
+
+    if (chain.key === HYDRATION_CHAIN_KEY) {
+      return this.signAndSubmitHydration(call, options, evmClient.chain)
+    }
+
+    return this.signAndSubmitNative(call, options, evmClient.chain)
   }
 }

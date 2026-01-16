@@ -83,7 +83,7 @@ export const StakeForm: FC<Props> = ({
               maxBalance={balance}
               value={field.value}
               onChange={field.onChange}
-              error={fieldState.error?.message}
+              amountError={fieldState.error?.message}
             />
           )}
         />
@@ -138,7 +138,7 @@ export const StakeForm: FC<Props> = ({
                 {t("staking:stake.stake.cta")}
               </Button>
             ) : (
-              <Web3ConnectButton variant="sliderTabActive" size="large" />
+              <Web3ConnectButton variant="secondary" size="large" />
             )}
           </Grid>
         }

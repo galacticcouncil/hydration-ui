@@ -1,7 +1,7 @@
 import { Flex, ModalBody } from "@galacticcouncil/ui/components"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import {
-  getWalletModeFromAddress,
+  getWalletModeByAddress,
   PROVIDERS_BY_WALLET_MODE,
   WalletMode,
   Web3ConnectAccount,
@@ -71,7 +71,7 @@ export const AddressBookModal: FC<Props> = ({
       address.publicKey.toLowerCase().includes(searchPhrase.toLowerCase()),
   )
 
-  const addressProvider = getWalletModeFromAddress(searchPhrase)
+  const addressProvider = getWalletModeByAddress(searchPhrase)
   const addressPublicKey = safeConvertSS58toPublicKey(searchPhrase)
   const canAdd =
     !searchedAddresses.length &&
@@ -144,6 +144,7 @@ export const AddressBookModal: FC<Props> = ({
             {searchedAddresses.map((address) => (
               <Web3ConnectAccount
                 key={address.publicKey}
+                rawAddress={address.address}
                 publicKey={address.publicKey}
                 name={address.name}
                 address={address.address}

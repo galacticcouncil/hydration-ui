@@ -1,16 +1,19 @@
-import { SELL_ONLY_ASSETS, USDT_ASSET_ID } from "@galacticcouncil/utils"
+import { HOLLAR_ASSET_ID, SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { createFileRoute } from "@tanstack/react-router"
 import * as z from "zod/v4"
 
 import { tradeOrderTabs } from "@/modules/trade/orders/TradeOrdersHeader"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
+export const DEFAULT_TRADE_ASSET_IN_ID = HOLLAR_ASSET_ID
+export const DEFAULT_TRADE_ASSET_OUT_ID = NATIVE_ASSET_ID
+
 const searchSchema = z
   .object({
     tab: z.enum(tradeOrderTabs).default("myActivity"),
-    assetIn: z.string().default(USDT_ASSET_ID),
+    assetIn: z.string().default(HOLLAR_ASSET_ID),
     assetOut: z.string().default(NATIVE_ASSET_ID),
-    allPairs: z.boolean().default(false),
+    allPairs: z.boolean().default(true),
   })
   .overwrite((search) => {
     if (
@@ -19,8 +22,8 @@ const searchSchema = z
     ) {
       return {
         ...search,
-        assetIn: USDT_ASSET_ID,
-        assetOut: NATIVE_ASSET_ID,
+        assetIn: DEFAULT_TRADE_ASSET_IN_ID,
+        assetOut: DEFAULT_TRADE_ASSET_OUT_ID,
       }
     }
 

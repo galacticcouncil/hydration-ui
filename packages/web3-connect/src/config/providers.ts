@@ -1,6 +1,7 @@
 export enum WalletProviderType {
   AlephZero = "aleph-zero",
   BraveWallet = "bravewallet",
+  BraveWalletSol = "bravewallet-sol",
   Enkrypt = "enkrypt",
   ExternalWallet = "external",
   FearlessWallet = "fearless-wallet",
@@ -13,10 +14,15 @@ export enum WalletProviderType {
   RabbyWallet = "rabby-wallet",
   Solflare = "solflare",
   SubwalletEvm = "subwallet-evm",
+  SubwalletH160 = "subwallet-h160",
   Subwallet = "subwallet",
   Talisman = "talisman",
   TalismanEvm = "talisman-evm",
+  TalismanH160 = "talisman-h160",
   TrustWallet = "trustwallet",
+  Slush = "slush",
+  Suiet = "suiet",
+  PhantomSui = "phantom-sui",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
 }
@@ -58,13 +64,20 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
 ]
 
 export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
-  WalletProviderType.Subwallet,
-  WalletProviderType.Talisman,
+  WalletProviderType.TalismanH160,
+  WalletProviderType.SubwalletH160,
 ]
 
 export const SOLANA_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.Phantom,
   WalletProviderType.Solflare,
+  WalletProviderType.BraveWalletSol,
+]
+
+export const SUI_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.Suiet,
+  WalletProviderType.Slush,
+  WalletProviderType.PhantomSui,
 ]
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [

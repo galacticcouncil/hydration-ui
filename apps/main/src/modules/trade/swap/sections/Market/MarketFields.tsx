@@ -1,11 +1,11 @@
 import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
-import { useNavigate, useSearch } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { useDebouncedCallback } from "use-debounce"
 
-import { TradeType } from "@/api/trade"
+import { Trade, TradeType } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { useCalculateBuyAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateBuyAmount"
 import { useCalculateSellAmount } from "@/modules/trade/swap/sections/Market/lib/useCalculateSellAmount"
@@ -17,15 +17,14 @@ import { TAsset, useAssets } from "@/providers/assetsProvider"
 const RECALCULATE_DEBOUNCE_MS = 250
 
 type Props = {
-  readonly price: string | null
+  readonly swap: Trade | undefined
 }
 
-export const MarketFields: FC<Props> = ({ price }) => {
+export const MarketFields: FC<Props> = ({ swap }) => {
   const { t } = useTranslation(["common", "trade"])
   const { tradable } = useAssets()
 
   const navigate = useNavigate()
-  const search = useSearch({ from: "/trade/_history" })
 
   const { reset, getValues, setValue, trigger } =
     useFormContext<MarketFormValues>()
@@ -183,11 +182,11 @@ export const MarketFields: FC<Props> = ({ price }) => {
 
             navigate({
               to: ".",
-              search: {
+              search: (search) => ({
                 ...search,
                 assetIn: sellAsset.id,
                 assetOut: buyAsset?.id,
-              },
+              }),
               resetScroll: false,
             })
           }
@@ -197,7 +196,7 @@ export const MarketFields: FC<Props> = ({ price }) => {
           handleSellChange(sellAmount)
         }}
       />
-      <MarketSwitcher price={price} />
+      <MarketSwitcher swap={swap} />
       <AssetSelectFormField<MarketFormValues>
         assetFieldName="buyAsset"
         amountFieldName="buyAmount"
@@ -217,11 +216,11 @@ export const MarketFields: FC<Props> = ({ price }) => {
 
             navigate({
               to: ".",
-              search: {
+              search: (search) => ({
                 ...search,
                 assetIn: sellAsset?.id,
                 assetOut: buyAsset.id,
-              },
+              }),
               resetScroll: false,
             })
           }
