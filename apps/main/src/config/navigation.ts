@@ -45,6 +45,8 @@ export const LINKS = {
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
   // memepad: "/memepad",
   // submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -249,6 +251,14 @@ export const getMenuTranslations = (t: TFunction) =>
     borrowHistory: {
       title: t("navigation.borrowHistory.title"),
       description: t("navigation.borrowHistory.description"),
+    },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
     },
     // memepad: {
     //   title: t("navigation.memepad.title"),
