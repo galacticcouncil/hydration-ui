@@ -77,10 +77,13 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
   return {
     srcChain,
     srcAsset,
-    srcAmount: "",
+
     destChain,
     destAsset: srcAsset,
+
+    srcAmount: "",
     destAmount: "",
+
     destAddress: destAccount?.rawAddress ?? "",
     destAccount: destAccount,
   }

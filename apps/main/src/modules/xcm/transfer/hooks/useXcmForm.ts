@@ -3,30 +3,35 @@ import { Transfer } from "@galacticcouncil/xc-sdk"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useForm } from "react-hook-form"
 
-import { useXcmFormSchema } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import {
+  useXcmFormSchema,
+  XcmFormValues,
+} from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { getXcmFormDefaults } from "@/modules/xcm/transfer/utils/chain"
 
-export const useXcmForm = (transfer: Transfer | null) => {
+export const useXcmForm = (
+  transfer: Transfer | null,
+  defaultValues?: Partial<XcmFormValues>,
+) => {
   const { account } = useAccount()
 
-  const address = account?.address ?? ""
-  const defaults = getXcmFormDefaults(account)
+  const defaults = defaultValues || getXcmFormDefaults(account)
 
   return useForm({
     resolver: standardSchemaResolver(useXcmFormSchema(transfer)),
     mode: "onChange",
     defaultValues: {
-      srcChain: defaults.srcChain,
-      srcAsset: defaults.srcAsset,
+      srcChain: defaults.srcChain ?? null,
+      srcAsset: defaults.srcAsset ?? null,
 
-      destChain: defaults.destChain,
-      destAsset: defaults.destAsset,
+      destChain: defaults.destChain ?? null,
+      destAsset: defaults.destAsset ?? null,
 
-      srcAmount: "",
-      destAmount: "",
+      srcAmount: defaults.srcAmount ?? "",
+      destAmount: defaults.destAmount ?? "",
 
-      destAddress: address,
-      destAccount: account ?? null,
+      destAddress: defaults.destAddress ?? "",
+      destAccount: defaults.destAccount ?? null,
     },
   })
 }

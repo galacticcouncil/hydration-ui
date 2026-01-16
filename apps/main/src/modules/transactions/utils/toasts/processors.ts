@@ -22,7 +22,7 @@ import { first } from "remeda"
 import { PublicClient } from "viem"
 
 import { getWormholeHashByExtrinsicIndex } from "@/modules/transactions/utils/wormhole"
-import { ToastData } from "@/states/toasts"
+import { TransactionToastData } from "@/states/toasts"
 
 type ToastStatus = {
   processed: boolean
@@ -31,7 +31,9 @@ type ToastStatus = {
   link?: string
 }
 
-export type ToastProcessorFn = (toast: ToastData) => Promise<ToastStatus>
+export type ToastProcessorFn = (
+  toast: TransactionToastData,
+) => Promise<ToastStatus>
 
 const invalid = (): ToastProcessorFn => async (toast) =>
   Promise.resolve({
