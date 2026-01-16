@@ -17,15 +17,25 @@ const formatFractionDigits = (
   value: number | bigint,
   maximumFractionDigits: number,
   parts: Intl.NumberFormatPart[],
+  decimalSeparator: string,
 ) => {
   const minValue = Math.pow(10, -maximumFractionDigits)
 
   if (value < minValue) {
     const newParts = parts.filter(({ type }) => type !== "fraction")
+
     newParts.unshift({
       type: "literal",
       value: "<",
     })
+
+    if (!newParts.some(({ type }) => type === "decimal")) {
+      newParts.push({
+        type: "decimal",
+        value: decimalSeparator,
+      })
+    }
+
     newParts.push({
       type: "fraction",
       value: minValue.toString().split(".")[1],
@@ -156,6 +166,7 @@ export const formatCurrency = (
       numericValue,
       Number(options.maximumFractionDigits),
       parts,
+      getDecimalSeparator(lng),
     )
   }
 
@@ -164,6 +175,12 @@ export const formatCurrency = (
 
 const FORMAT_ASSET_AMOUNT_REGEXP =
   /^(?<integer>[^.,]*)(?<separator>[.,])(?<decimals>.*)$/
+
+export const getDecimalSeparator = (lng: string): string => {
+  const parts = new Intl.NumberFormat(lng).formatToParts(1.1)
+  const decimalPart = parts.find(({ type }) => type === "decimal")
+  return decimalPart?.value || "."
+}
 
 export const formatAssetAmount = (
   amount: string,
