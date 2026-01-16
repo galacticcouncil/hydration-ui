@@ -5,6 +5,7 @@ import { interpolationFormat } from "@/i18n/interpolation"
 import borrow from "@/i18n/locales/en/borrow.json"
 import common from "@/i18n/locales/en/common.json"
 import liquidity from "@/i18n/locales/en/liquidity.json"
+import onramp from "@/i18n/locales/en/onramp.json"
 import staking from "@/i18n/locales/en/staking.json"
 import trade from "@/i18n/locales/en/trade.json"
 import wallet from "@/i18n/locales/en/wallet.json"
@@ -12,7 +13,7 @@ import xcm from "@/i18n/locales/en/xcm.json"
 
 export const defaultNS = "common"
 export const resources = {
-  en: { common, liquidity, trade, wallet, borrow, staking, xcm },
+  en: { common, onramp, liquidity, trade, wallet, borrow, staking, xcm },
 } as const
 
 i18n.use(initReactI18next).init({

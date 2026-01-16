@@ -17,6 +17,7 @@ type Props = {
   readonly label?: string
   readonly className?: string
   readonly walletLogoSrc?: string
+  readonly shortenAddress?: boolean
   readonly onClick?: () => void
 } & FlexProps
 
@@ -29,6 +30,7 @@ export const AccountTile: FC<Props> = ({
   className,
   walletLogoSrc,
   onClick,
+  shortenAddress = true,
   ...props
 }) => {
   return (
@@ -50,7 +52,7 @@ export const AccountTile: FC<Props> = ({
         isInteractive={!!onClick}
       >
         <AccountAvatar address={address} />
-        <Flex direction="column" gap={4}>
+        <Flex direction="column" gap={4} sx={{ minWidth: 0 }}>
           <Flex gap={4} align="center">
             {walletLogoSrc && <Logo size="extra-small" src={walletLogoSrc} />}
             <Text
@@ -64,8 +66,8 @@ export const AccountTile: FC<Props> = ({
             </Text>
           </Flex>
           <Flex gap={2}>
-            <Text fs="p5" lh={px(15)} color={getToken("text.medium")}>
-              {shortenAccountAddress(address)}
+            <Text fs="p5" lh={px(15)} truncate color={getToken("text.medium")}>
+              {shortenAddress ? shortenAccountAddress(address) : address}
             </Text>
           </Flex>
         </Flex>

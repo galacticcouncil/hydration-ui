@@ -4,28 +4,28 @@ import { prop } from "remeda"
 
 import { useTransactionToastProcessorFn } from "@/modules/transactions/hooks/useTransactionToastProcessorFn"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { ToastData, useToasts } from "@/states/toasts"
+import { TransactionToastData, useToasts } from "@/states/toasts"
 import {
   isBridgeTransaction,
   TransactionType,
   useTransactionsStore,
 } from "@/states/transactions"
 
-const isPendingOnChainToast = (toast: ToastData) => {
+const isPendingOnChainToast = (toast: TransactionToastData) => {
   return (
     toast.variant === "pending" && toast.meta.type === TransactionType.Onchain
   )
 }
 
-const isSubmittedBridgeToast = (toast: ToastData) => {
+const isSubmittedBridgeToast = (toast: TransactionToastData) => {
   return toast.variant === "submitted" && isBridgeTransaction(toast.meta)
 }
 
-const isValidToastForProcessing = (toast: ToastData) => {
+const isValidToastForProcessing = (toast: TransactionToastData) => {
   return isPendingOnChainToast(toast) || isSubmittedBridgeToast(toast)
 }
 
-export const useProcessTransactionToasts = (toasts: ToastData[]) => {
+export const useProcessTransactionToasts = (toasts: TransactionToastData[]) => {
   const { isLoaded } = useRpcProvider()
   const { edit } = useToasts()
   const transactions = useTransactionsStore(prop("transactions"))
