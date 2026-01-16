@@ -1987,17 +1987,17 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.4.1.tgz#44bcf36c3fb7ce6a0c4659e790b27feb22de280b"
-  integrity sha512-Me2DiS+N6IGXK7v9iKmN9lvj5PsFxoq8goYSQUGEIYwGh3lzab5ZLOj2QivW/jgIfmP1c+JeSBsTWVO6KUeuwg==
+"@galacticcouncil/xc-cfg@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.6.1.tgz#e52dba148908f0684bb5b5aa9bbaf12c9ee8aaed"
+  integrity sha512-aDxV2Ya/IhobGTpRDIxNJ46XHI6IBImYeSRzMkDpaAmZc2jm3nfRdWXt4C8DtmyIdnh/b2LEvsp3CRwIyxnSTQ==
   dependencies:
-    "@galacticcouncil/xc-core" "^0.4.0"
+    "@galacticcouncil/xc-core" "^0.6.0"
 
-"@galacticcouncil/xc-core@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.4.0.tgz#91dcf73804fe16f9c03a160f76c3d09cda6e8175"
-  integrity sha512-QnmXrt4F2Cf5yodKIA+WBt7IR24m51mP/fyLg98l/j0UE8A6D2M/6eGOaHSTzWsp0VIjKGY5sdHISydGKVB7Og==
+"@galacticcouncil/xc-core@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.6.0.tgz#7b56574fe0b432f2b1c5019b88a349164a2790f9"
+  integrity sha512-CpzEO2VjxwBWf8efjfGh2u6O2gB4xRFlkhmFZQ5cd6foxP2Uzn5ikenO6EaV6phGNQkIzXYYGK6/fOmagesi9Q==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -2014,12 +2014,12 @@
     buffer "^6.0.3"
     lru-cache "^11.2.2"
 
-"@galacticcouncil/xc-sdk@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.4.0.tgz#5a564d6a4a21a19e8c565bbd110edaff939cfe4b"
-  integrity sha512-B+6qNdcIk7XTKeUmZ/tuR+CDojhapEBxRDyXpLEhbF3wqvBkgQWWgeptsLRhAhzT6OqkWxG3gAPwO4SiYkV3jg==
+"@galacticcouncil/xc-sdk@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.4.2.tgz#3280406b0faa76165219ca71cdb1787e38f91a94"
+  integrity sha512-cBO7QU/dE7hmIb6aVv/EVNzXjIBF/3/n4ohhY3tnIBTIW1StkQDoW9HRQCEmKTpE0su+xx8xCtjQSUcvi8ISvg==
   dependencies:
-    "@galacticcouncil/xc-core" "^0.4.0"
+    "@galacticcouncil/xc-core" "^0.6.0"
 
 "@galacticcouncil/xc@^0.4.0":
   version "0.4.0"
