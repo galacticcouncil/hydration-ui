@@ -9,7 +9,6 @@ import Big from "big.js"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
-import { prop } from "remeda"
 import z, { ZodType } from "zod/v4"
 
 import {
@@ -24,6 +23,7 @@ import {
   useOraclePrice,
 } from "@/api/omnipool"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -33,7 +33,6 @@ import {
 } from "@/states/account"
 import { useOmnipoolPositionData } from "@/states/liquidity"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
@@ -166,7 +165,7 @@ export const useRemoveSingleOmnipoolPosition = ({
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
 
-  const createTransaction = useTransactionsStore(prop("createTransaction"))
+  const createBatch = useCreateBatchTx()
 
   const totalPositionShifted = position.data.currentTotalValueHuman
 
@@ -231,25 +230,19 @@ export const useRemoveSingleOmnipoolPosition = ({
           )
         : []
 
-      const tx = isMiningPosition
-        ? papi.tx.Utility.batch_all({
-            calls: [...exitFarmsTxs, removeLiquidityTx].map(
-              (t) => t.decodedCall,
-            ),
-          })
-        : removeLiquidityTx
-
-      await createTransaction(
-        {
-          tx,
+      await createBatch({
+        txs: isMiningPosition
+          ? [...exitFarmsTxs, removeLiquidityTx]
+          : [removeLiquidityTx],
+        transaction: {
           toasts,
           invalidateQueries: [
             omnipoolPositionsKey(account?.address ?? ""),
             omnipoolMiningPositionsKey(account?.address ?? ""),
           ],
         },
-        { onSubmitted },
-      )
+        options: { onSubmitted },
+      })
     },
   })
 
@@ -303,8 +296,8 @@ export const useRemoveMultipleOmnipoolPositions = ({
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
   const { account } = useAccount()
-  const createTransaction = useTransactionsStore(prop("createTransaction"))
 
+  const createBatch = useCreateBatchTx()
   const form = useRemoveLiquidityForm({
     asset: meta,
   })
@@ -412,36 +405,17 @@ export const useRemoveMultipleOmnipoolPositions = ({
         error: t("liquidity.remove.modal.all.toast.submitted"),
       }
 
-      if (txs.length > 1) {
-        await createTransaction(
-          {
-            tx: papi.tx.Utility.batch_all({
-              calls: txs.map((t) => t.decodedCall),
-            }),
-            toasts,
-            invalidateQueries: [
-              omnipoolPositionsKey(account?.address ?? ""),
-              omnipoolMiningPositionsKey(account?.address ?? ""),
-            ],
-          },
-          { onSubmitted },
-        )
-      } else {
-        const tx = txs[0]
-
-        if (!tx) return
-        await createTransaction(
-          {
-            tx,
-            toasts,
-            invalidateQueries: [
-              omnipoolPositionsKey(account?.address ?? ""),
-              omnipoolMiningPositionsKey(account?.address ?? ""),
-            ],
-          },
-          { onSubmitted },
-        )
-      }
+      await createBatch({
+        txs,
+        transaction: {
+          toasts,
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
+        },
+        options: { onSubmitted },
+      })
     },
   })
 

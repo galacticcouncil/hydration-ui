@@ -41,8 +41,8 @@
     "stake.unstake": "Unstake",
     "stake.unstake.amount": "Amount to unstake",
     "stake.unstake.cta": "Unstake",
-    "stake.unstake.toasts.onLoading": "Unstaking {{ amount }}.",
-    "stake.unstake.toasts.onSuccess": "Unstaked {{ amount }}.", 
+    "stake.unstake.toasts.onLoading": "Unstaking {{ value, currency }}.",
+    "stake.unstake.toasts.onSuccess": "Unstaked {{ value, currency }}.", 
 
     "referenda.title_zero": "Ongoing referenda",
     "referenda.title_one": "Ongoing referenda ({{ count }})",
@@ -65,6 +65,6 @@
 
     "claim.header": "Are you sure you want to claim rewards?",
     "claim.cta": "Sign Transaction",
-    "claim.toasts.onLoading": "Claiming {{ amount }}.",
-    "claim.toasts.onSuccess": "Claimed {{ amount }}."
+    "claim.toasts.onLoading": "Claiming {{ value, currency }}.",
+    "claim.toasts.onSuccess": "Claimed {{ value, currency }}."
 }

@@ -114,3 +114,14 @@ export const chainSpecDataQuery = (context: TProviderContext) => {
 export const useChainSpecData = () => {
   return useQuery(chainSpecDataQuery(useRpcProvider()))
 }
+
+export const blockWeightsQuery = (context: TProviderContext) => {
+  const { isApiLoaded, papi } = context
+
+  return queryOptions({
+    enabled: isApiLoaded,
+    queryKey: ["blockWeights"],
+    queryFn: () => papi.constants.System.BlockWeights(),
+    staleTime: Infinity,
+  })
+}

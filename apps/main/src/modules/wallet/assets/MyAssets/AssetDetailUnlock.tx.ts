@@ -1,12 +1,12 @@
 import { safeConvertAddressSS58 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useTransactionsStore } from "@/states/transactions"
 
 export const useUnlockNativeLocks = (
   ids: ReadonlyArray<number>,
@@ -16,8 +16,8 @@ export const useUnlockNativeLocks = (
   const rpcProvider = useRpcProvider()
   const { papi } = rpcProvider
   const { account } = useAccount()
-  const { createTransaction } = useTransactionsStore()
-  const queryClient = useQueryClient()
+
+  const createBatch = useCreateBatchTx()
 
   return useMutation({
     mutationFn: async () => {
@@ -39,30 +39,26 @@ export const useUnlockNativeLocks = (
       const type = new Big(value).eq(0) ? "clear" : "unlock"
       const amount = ids.length
 
-      return createTransaction({
-        tx: papi.tx.Utility.batch_all({
-          calls: batchTx.map((tx) => tx.decodedCall),
+      const toasts = {
+        submitted: t(`myAssets.expandedNative.${type}.onLoading`, {
+          amount,
+          value,
         }),
-        toasts: {
-          submitted: t(`myAssets.expandedNative.${type}.onLoading`, {
-            amount,
-            value,
-          }),
-          success: t(`myAssets.expandedNative.${type}.onSuccess`, {
-            amount,
-            value,
-          }),
-          error: t(`myAssets.expandedNative.${type}.onError`, {
-            amount,
-            value,
-          }),
+        success: t(`myAssets.expandedNative.${type}.onSuccess`, {
+          amount,
+          value,
+        }),
+      }
+
+      return await createBatch({
+        txs: batchTx,
+        transaction: {
+          toasts,
+          invalidateQueries: [
+            nativeTokenLocksQuery(rpcProvider, account?.address ?? ""),
+          ],
         },
       })
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(
-        nativeTokenLocksQuery(rpcProvider, account?.address ?? ""),
-      )
     },
   })
 }

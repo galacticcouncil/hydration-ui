@@ -23,6 +23,7 @@ import { useOraclePrice } from "@/api/omnipool"
 import { PoolToken, useXykPool } from "@/api/pools"
 import { useShareTokenPrices } from "@/api/spotPrice"
 import { XYKPoolWithLiquidity } from "@/api/xyk"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { TShareToken, useAssets, XYKPoolMeta } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -288,6 +289,7 @@ const useJoinOmnipoolFarmsMutation = ({
   const { account } = useAccount()
   const { papi } = useRpcProvider()
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const createBatch = useCreateBatchTx()
 
   return useMutation({
     mutationFn: async ({
@@ -309,21 +311,16 @@ const useJoinOmnipoolFarmsMutation = ({
           }),
         )
 
-        await createTransaction(
-          {
-            tx:
-              txs.length > 1
-                ? papi.tx.Utility.batch_all({
-                    calls: txs.map((t) => t.decodedCall),
-                  })
-                : txs[0]!,
+        await createBatch({
+          txs,
+          transaction: {
             invalidateQueries: [
               omnipoolPositionsKey(account?.address ?? ""),
               omnipoolMiningPositionsKey(account?.address ?? ""),
             ],
           },
           options,
-        )
+        })
       }
 
       if (!depositId) {
@@ -379,6 +376,7 @@ const useJoinIsolatedPoolFarmsMutation = ({
   const { papi } = useRpcProvider()
   const { t } = useTranslation("liquidity")
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
+  const createBatch = useCreateBatchTx()
 
   return useMutation({
     mutationFn: async ({
@@ -404,18 +402,13 @@ const useJoinIsolatedPoolFarmsMutation = ({
           }),
         )
 
-        await createTransaction(
-          {
-            tx:
-              txs.length > 1
-                ? papi.tx.Utility.batch_all({
-                    calls: txs.map((t) => t.decodedCall),
-                  })
-                : txs[0]!,
+        await createBatch({
+          txs,
+          transaction: {
             invalidateQueries: [xykMiningPositionsKey(account?.address ?? "")],
           },
           options,
-        )
+        })
       }
 
       if (!depositId) {
