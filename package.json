@@ -41,9 +41,9 @@
     "@galacticcouncil/math-staking": "^1.2.0",
     "@galacticcouncil/sdk": "^10.4.0",
     "@galacticcouncil/ui": "^5.7.0",
-    "@galacticcouncil/xcm-cfg": "^10.18.0",
-    "@galacticcouncil/xcm-core": "^8.8.0",
-    "@galacticcouncil/xcm-sdk": "^10.9.0",
+    "@galacticcouncil/xcm-cfg": "^10.19.1",
+    "@galacticcouncil/xcm-core": "^8.9.0",
+    "@galacticcouncil/xcm-sdk": "^10.10.0",
     "@hookform/resolvers": "^3.3.4",
     "@lit-labs/react": "^1.1.0",
     "@mysten/wallet-standard": "^0.16.9",
@@ -190,5 +190,6 @@
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^1.6.0"
-  }
+  },
+   "packageManager": "yarn@1.22.22"
 }

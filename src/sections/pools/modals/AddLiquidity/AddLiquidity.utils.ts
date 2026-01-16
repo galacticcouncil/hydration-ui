@@ -19,7 +19,14 @@ import { z, ZodTypeAny } from "zod"
 import { maxBalance, positive, required } from "utils/validators"
 import { scale, scaleHuman } from "utils/balance"
 import { TFarmAprData, useOraclePrice } from "api/farms"
-import { BN_0, BN_100, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
+import {
+  aDOT_ASSET_ID,
+  BN_0,
+  BN_100,
+  BN_NAN,
+  DOT_ASSET_ID,
+  GETH_ERC20_ASSET_ID,
+} from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
 import { useXYKConsts, useXYKSDKPools } from "api/xyk"
@@ -27,6 +34,7 @@ import { useEstimatedFees } from "api/transaction"
 import { TAsset } from "providers/assets"
 import { useAccountBalances } from "api/deposits"
 import { useAssets } from "providers/assets"
+import { TAnyPool } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -72,12 +80,16 @@ export const getSharesToGet = (
   return BN_NAN
 }
 
-export const useAddLiquidity = (assetId: string, assetValue?: string) => {
+export const useAddLiquidity = (
+  poolId: string,
+  assetId: string,
+  assetValue?: string,
+) => {
   const omnipoolAssets = useOmnipoolDataObserver()
   const { getAssetWithFallback } = useAssets()
 
-  const meta = getAssetWithFallback(assetId)
-  const ommipoolAsset = omnipoolAssets.dataMap?.get(assetId)
+  const poolMeta = getAssetWithFallback(poolId)
+  const ommipoolAsset = omnipoolAssets.dataMap?.get(poolId)
   const { data: omnipoolFee } = useOmnipoolFee()
 
   const { data: accountAssets } = useAccountBalances()
@@ -87,7 +99,7 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     if (ommipoolAsset && assetValue) {
       const sharesToGet = getSharesToGet(
         ommipoolAsset,
-        scale(assetValue, meta.decimals).toString(),
+        scale(assetValue, poolMeta.decimals).toString(),
       )
 
       const totalShares = BigNumber(ommipoolAsset.shares).plus(sharesToGet)
@@ -97,32 +109,33 @@ export const useAddLiquidity = (assetId: string, assetValue?: string) => {
     }
 
     return { poolShare: BN_0, sharesToGet: BN_0, totalShares: BN_0 }
-  }, [assetValue, ommipoolAsset, meta.decimals])
+  }, [assetValue, ommipoolAsset, poolMeta.decimals])
 
   return {
     totalShares,
     poolShare,
     sharesToGet,
     omnipoolFee,
-    assetMeta: meta,
     assetBalance,
     ommipoolAsset,
-    isGETH: meta.id === GETH_ERC20_ASSET_ID,
+    isGETH: poolMeta.id === GETH_ERC20_ASSET_ID,
   }
 }
 
 export const useAddToOmnipoolZod = (
-  asset: TAsset,
+  poolAsset: TAsset,
+  selectedAssetId: string,
   farms: TFarmAprData[],
   stablepoolRules?: ZodTypeAny,
 ) => {
   const { t } = useTranslation()
-  const { id: assetId, symbol, decimals } = asset
+  const { id: assetId, symbol, decimals } = poolAsset
 
   const { data: minPoolLiquidity } = useOmnipoolMinLiquidity()
 
   const { data: accountAssets } = useAccountBalances()
-  const assetBalance = accountAssets?.accountAssetsMap.get(assetId)?.balance
+  const assetBalance =
+    accountAssets?.accountAssetsMap.get(selectedAssetId)?.balance
 
   const omnipoolAssets = useOmnipoolDataObserver()
   const omnipoolAsset = omnipoolAssets.dataMap?.get(assetId)
@@ -453,4 +466,23 @@ export const calculateLimitShares = (sharesToGet: string, limit: string) => {
   return BigNumber(sharesToGet)
     .times(BN_100.minus(limit).div(BN_100))
     .toFixed(0)
+}
+
+export const useInitialAssetId = (pool: TAnyPool) => {
+  const { data: accountBalances } = useAccountBalances()
+
+  const isADot = pool.id === aDOT_ASSET_ID
+
+  if (!isADot) return pool.id
+
+  const isADotBalance = isADot && !!pool.balance?.transferable
+
+  if (isADotBalance) return aDOT_ASSET_ID
+
+  const isDOTBalance =
+    !!accountBalances?.accountAssetsMap.get(DOT_ASSET_ID)?.balance?.transferable
+
+  if (isDOTBalance) return DOT_ASSET_ID
+
+  return pool.id
 }
