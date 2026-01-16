@@ -30,8 +30,8 @@ type StatusProps =
     }
 
 type Props = StatusProps & {
-  readonly timestamp: string | null
-  readonly message?: string
+  readonly timestamp: Date | null
+  readonly message?: string | null
   readonly link?: string | null
   readonly className?: string
 }
@@ -63,7 +63,7 @@ export const TransactionItemMobile: FC<Props> = ({
         </Text>
         {timestamp && (
           <Text fw={500} fs="p6" lh={1.4} color={getToken("text.low")}>
-            {t("date.datetime", { value: new Date(timestamp) })}
+            {t("date.datetime", { value: timestamp })}
           </Text>
         )}
       </Flex>

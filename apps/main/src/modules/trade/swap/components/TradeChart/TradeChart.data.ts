@@ -112,8 +112,16 @@ export const useTradeChartData = ({
       }))
   }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPriceData])
 
+  const pricePoints = prices.map((price) => price.close)
+  const min = Math.min(...pricePoints)
+  const max = Math.max(...pricePoints)
+  const mid = (min + max) / 2
+
   return {
     prices,
+    min,
+    max,
+    mid,
     isError,
     isLoading,
     isSuccess,

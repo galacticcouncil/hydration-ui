@@ -1898,10 +1898,10 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.9.tgz#50dea3616bc8191fb8e112283b49eaff03e78429"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
-"@galacticcouncil/common@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.3.0.tgz#a4f16765269c193dae6fbcc4ca31146812816f49"
-  integrity sha512-ZeEGm+Tli4ZiG8Vfd3D8raw0vM7mvSpWf9dYFrhkplJ45tW89FTOOva0wz8ZCYBNkOInKvv9SPdLfnDYNoe1RQ==
+"@galacticcouncil/common@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.4.0.tgz#5a3a073124d22dd8e6b52920fd8b1832912500f3"
+  integrity sha512-XY04RyqzPScICcjzCLfbGZBOJdnL08sPKFWIXzMnDORgsXNbNgD4Z33S5sBPqzG/2T9EPpwALIqg4dPxFH3aeA==
   dependencies:
     big.js "^6.2.1"
 
