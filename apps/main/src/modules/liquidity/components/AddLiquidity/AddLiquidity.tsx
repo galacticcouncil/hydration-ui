@@ -68,7 +68,7 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
         onBack={onBack}
       />
       <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
-        <ModalBody>
+        <ModalBody sx={{ pb: 0 }}>
           <AssetSelectFormField<TAddLiquidityFormValues>
             label={t("liquidity.add.modal.selectAsset")}
             assetFieldName="asset"
@@ -112,10 +112,8 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
               sx={{ my: getTokenPx("containers.paddings.primary") }}
             />
           )}
-
-          <ModalContentDivider />
         </ModalBody>
-        <ModalFooter sx={{ pt: 0 }}>
+        <ModalFooter>
           <Button
             type="submit"
             size="large"

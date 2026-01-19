@@ -272,7 +272,7 @@ export const AddStablepoolLiquidityForm = ({
         }
       />
 
-      <ModalBody sx={{ pt: 0 }}>
+      <ModalBody sx={{ py: 0 }}>
         <Controller
           control={form.control}
           name="split"
@@ -390,10 +390,8 @@ export const AddStablepoolLiquidityForm = ({
             sx={{ my: getTokenPx("containers.paddings.primary") }}
           />
         ) : null}
-
-        <ModalContentDivider />
       </ModalBody>
-      <ModalFooter sx={{ pt: 0 }}>
+      <ModalFooter>
         <Button
           type="submit"
           size="large"

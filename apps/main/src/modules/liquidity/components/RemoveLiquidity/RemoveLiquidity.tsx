@@ -3,6 +3,7 @@ import {
   Flex,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -57,8 +58,6 @@ export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
     )
   } else if (isIsolatedPool) {
     return <RemoveIsolatedPoolsLiquidity {...props} />
-  } else if (props.positionId) {
-    return <RemoveOmnipoolLiquidity {...props} />
   } else if (props.erc20Id && props.stableswapId) {
     return (
       <RemoveMoneyMarketLiquidity
@@ -69,6 +68,8 @@ export const RemoveLiquidity = (props: RemoveLiquidityProps) => {
     )
   } else if (props.stableswapId) {
     return <RemoveStablepoolLiquidity {...props} />
+  } else if (props.positionId) {
+    return <RemoveOmnipoolLiquidity {...props} />
   }
 
   return null
@@ -117,84 +118,79 @@ export const RemoveLiquidityForm = ({
       : undefined
 
   return (
-    <>
+    <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
       <ModalHeader
         title={t("removeLiquidity")}
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.secondary")}
-          asChild
-        >
-          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-            {!editable ? (
-              <Flex
-                align="center"
-                gap={getTokenPx("containers.paddings.quart")}
-              >
-                <AssetLogo
-                  id={isShareToken(meta) ? meta.iconId : meta.id}
-                  size="large"
-                />
-                <Text
-                  fs="h5"
-                  fw={500}
-                  color={getToken("text.high")}
-                  font="primary"
-                >
-                  {t("common:currency", {
-                    value: totalPositionShifted,
-                    symbol: meta.symbol,
-                  })}
-                </Text>
-              </Flex>
-            ) : (
-              <AssetSelectFormField<TRemoveLiquidityFormValues>
-                assetFieldName="asset"
-                amountFieldName="amount"
-                maxBalance={totalPositionShifted}
-                ignoreDisplayValue={isIsolatedPool}
-                assets={[]}
-                disabledAssetSelector
-                sx={{ pt: 0 }}
+      <Flex
+        direction="column"
+        gap={getTokenPx("containers.paddings.secondary")}
+        pb={0}
+        asChild
+      >
+        <ModalBody>
+          {!editable ? (
+            <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+              <AssetLogo
+                id={isShareToken(meta) ? meta.iconId : meta.id}
+                size="large"
               />
-            )}
+              <Text
+                fs="h5"
+                fw={500}
+                color={getToken("text.high")}
+                font="primary"
+              >
+                {t("common:currency", {
+                  value: totalPositionShifted,
+                  symbol: meta.symbol,
+                })}
+              </Text>
+            </Flex>
+          ) : (
+            <AssetSelectFormField<TRemoveLiquidityFormValues>
+              assetFieldName="asset"
+              amountFieldName="amount"
+              maxBalance={totalPositionShifted}
+              ignoreDisplayValue={isIsolatedPool}
+              assets={[]}
+              disabledAssetSelector
+              sx={{ pt: 0 }}
+            />
+          )}
 
-            <ModalContentDivider />
+          <ModalContentDivider />
 
-            <ReceiveAssets assets={receiveAssets} positions={deposits} />
+          <ReceiveAssets assets={receiveAssets} positions={deposits} />
 
-            {!isIsolatedPool && (
-              <div>
-                <TradeLimitRow type={TradeLimitType.Liquidity} />
+          {!isIsolatedPool && (
+            <div>
+              <TradeLimitRow type={TradeLimitType.Liquidity} />
 
-                <ModalContentDivider />
+              <ModalContentDivider />
 
-                {fee && feesBreakdown && (
-                  <ExpandableDynamicFee
-                    label={t("liquidity.remove.modal.withdrawalFees")}
-                    rangeLow={0.34}
-                    rangeHigh={0.66}
-                    value={Number(fee)}
-                    valueDisplay={feeDisplay}
-                    range={[0.01, 0.34, 0.66, 1]}
-                    feesBreakdown={feesBreakdown}
-                  />
-                )}
-              </div>
-            )}
-
-            <ModalContentDivider />
-
-            <Button type="submit" size="large" width="100%" disabled={!isValid}>
-              {t("removeLiquidity")}
-            </Button>
-          </form>
-        </Flex>
-      </ModalBody>
-    </>
+              {fee && feesBreakdown && (
+                <ExpandableDynamicFee
+                  label={t("liquidity.remove.modal.withdrawalFees")}
+                  rangeLow={0.34}
+                  rangeHigh={0.66}
+                  value={Number(fee)}
+                  valueDisplay={feeDisplay}
+                  range={[0.01, 0.34, 0.66, 1]}
+                  feesBreakdown={feesBreakdown}
+                />
+              )}
+            </div>
+          )}
+        </ModalBody>
+      </Flex>
+      <ModalFooter>
+        <Button type="submit" size="large" width="100%" disabled={!isValid}>
+          {t("removeLiquidity")}
+        </Button>
+      </ModalFooter>
+    </form>
   )
 }

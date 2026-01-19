@@ -307,7 +307,9 @@ export const useOmnipoolPositionsTableColumns = () => {
                               id: original.poolId,
                             }}
                             search={{
-                              positionId: isOmnipool ? original.positionId : "",
+                              positionId: isOmnipool
+                                ? original.positionId
+                                : undefined,
                               stableswapId: original.stableswapId,
                             }}
                             sx={{ textDecoration: "none" }}

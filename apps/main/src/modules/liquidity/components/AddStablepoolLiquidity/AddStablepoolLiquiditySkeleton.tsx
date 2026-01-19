@@ -9,6 +9,7 @@ import { Flex } from "@galacticcouncil/ui/components/Flex"
 import {
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components/Modal"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
@@ -55,7 +56,7 @@ export const AddStablepoolLiquiditySkeleton = (
           </Flex>
         }
       />
-      <ModalBody sx={{ pt: 0 }}>
+      <ModalBody sx={{ py: 0 }}>
         <Flex
           align="center"
           justify="space-between"
@@ -106,9 +107,8 @@ export const AddStablepoolLiquiditySkeleton = (
             },
           ]}
         />
-
-        <ModalContentDivider />
-
+      </ModalBody>
+      <ModalFooter>
         <Button
           type="submit"
           size="large"
@@ -118,7 +118,7 @@ export const AddStablepoolLiquiditySkeleton = (
         >
           {t("liquidity.add.modal.submit")}
         </Button>
-      </ModalBody>
+      </ModalFooter>
     </>
   )
 }
