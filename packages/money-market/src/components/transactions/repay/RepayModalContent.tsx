@@ -153,7 +153,8 @@ export const RepayModalContent: React.FC<
       balance: maxReserveTokenForRepay.toString(),
     })
     // push reserve aToken
-    if (
+    // RT currently does not support repaying with aTokens
+    /* if (
       currentMarketData.v3 &&
       !displayGho({ symbol: poolReserve.symbol, currentMarket })
     ) {
@@ -169,7 +170,7 @@ export const RepayModalContent: React.FC<
         aToken: true,
         balance: maxBalance.toString(),
       })
-    }
+    } */
     setAssets(repayTokens)
     setTokenToRepayWith(repayTokens[0])
   }, [
@@ -299,7 +300,9 @@ export const RepayModalContent: React.FC<
       <RepayActions
         maxApproveNeeded={safeAmountToRepayAll.toString()}
         poolReserve={poolReserve}
-        amountToRepay={isMaxSelected ? repayMax : amount}
+        amountToRepay={amount}
+        amountToRepayMax={repayMax}
+        isMaxSelected={isMaxSelected}
         poolAddress={
           repayWithATokens
             ? poolReserve.underlyingAsset
