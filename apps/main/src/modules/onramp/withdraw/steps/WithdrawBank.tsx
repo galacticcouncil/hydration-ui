@@ -1,10 +1,7 @@
 import { ModalBody, ModalHeader, Stack } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { BankTransferBox } from "@/modules/onramp/components/BankTransferBox"
-
-// Import Vortex logo when available
-const VortexLogo = "/assets/vortex-logo.svg"
+import { StepButton } from "@/modules/onramp/components/StepButton"
 
 export type WithdrawBankProps = {
   onBack: () => void
@@ -23,11 +20,12 @@ export const WithdrawBank: React.FC<WithdrawBankProps> = ({ onBack }) => {
       />
       <ModalBody>
         <Stack gap={12}>
-          <BankTransferBox
-            href="https://app.vortexfinance.co"
+          <StepButton
+            onClick={() =>
+              window.open("https://app.vortexfinance.co", "_blank")
+            }
+            title="Vortex"
             description={t("withdraw.bank.vortex.description")}
-            cta={t("withdraw.bank.vortex.cta")}
-            icon={VortexLogo}
           />
         </Stack>
       </ModalBody>
