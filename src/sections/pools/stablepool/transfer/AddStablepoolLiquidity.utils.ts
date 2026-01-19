@@ -18,7 +18,10 @@ import { useRpcProvider } from "providers/rpcProvider"
 import { useStore } from "state/store"
 import { useAccountBalances, useRefetchAccountAssets } from "api/deposits"
 import { useLiquidityLimit } from "state/liquidityLimit"
-import { calculateLimitShares } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
+import {
+  calculateLimitShares,
+  getSharesToGet,
+} from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
 import { useEstimatedFees } from "api/transaction"
 import { createToastMessages } from "state/toasts"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -40,6 +43,8 @@ import { useHealthFactorChange } from "api/borrow"
 import { ProtocolAction } from "@aave/contract-helpers"
 import { TFarmAprData } from "api/farms"
 import { useSwapLimit } from "sections/pools/modals/AddLiquidity/components/LimitModal/LimitModal.utils"
+import { useMinSharesToGet } from "sections/pools/modals/RemoveLiquidity/RemoveLiquidity.utils"
+import { useOmnipoolDataObserver } from "api/omnipool"
 
 export type TStablepoolFormValue = {
   assetId: string
@@ -319,6 +324,10 @@ export const useStablepoolExtimationTx = (props: AddStablepoolProps) => {
     amount: "1",
   }))
 
+  const argumentAmount =
+    api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms
+      .meta.args.length
+
   return isStablepoolOnly
     ? api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
     : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
@@ -330,6 +339,8 @@ export const useStablepoolExtimationTx = (props: AddStablepoolProps) => {
               farm.yieldFarmId,
             ])
           : null,
+        //@ts-ignore
+        ...(argumentAmount === 4 ? ["1"] : []),
       )
 }
 
@@ -339,15 +350,30 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
   const { getAssetWithFallback } = useAssets()
   const refetchPositions = useRefetchAccountAssets()
   const { addLiquidityLimit } = useLiquidityLimit()
+  const getMinSharesToGet = useMinSharesToGet()
 
   const { isJoinFarms, isStablepoolOnly, poolId, farms, onClose } = props
 
+  const omnipoolAssets = useOmnipoolDataObserver()
+  const ommipoolAsset = omnipoolAssets.dataMap?.get(poolId)
+
   const onSubmit = async (values: TAddStablepoolFormValues) => {
-    const shiftedShares = scale(
+    if (!ommipoolAsset) throw new Error("test")
+
+    const stablepoolShares = scale(
       values.amount,
       STABLEPOOL_TOKEN_DECIMALS,
     ).toString()
-    const limitShares = calculateLimitShares(shiftedShares, addLiquidityLimit)
+    const limitStablepoolShares = calculateLimitShares(
+      stablepoolShares,
+      addLiquidityLimit,
+    )
+    const omnipoolShares = getSharesToGet(ommipoolAsset, stablepoolShares)
+    const minOmnipoolShares = getMinSharesToGet(omnipoolShares)
+
+    const argumentAmount =
+      api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms
+        .meta.args.length
 
     const assets = values.reserves
       .filter(({ amount }) => BigNumber(amount).isPositive())
@@ -357,7 +383,11 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
       }))
 
     const tx = isStablepoolOnly
-      ? api.tx.stableswap.addAssetsLiquidity(poolId, assets, limitShares)
+      ? api.tx.stableswap.addAssetsLiquidity(
+          poolId,
+          assets,
+          limitStablepoolShares,
+        )
       : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
           poolId,
           assets,
@@ -367,6 +397,10 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
                 farm.yieldFarmId,
               ])
             : null,
+
+          // needs it for smooth runtime release to prevent breaking
+          //@ts-ignore
+          ...(argumentAmount === 4 ? [minOmnipoolShares] : []),
         )
 
     await createTransaction(
