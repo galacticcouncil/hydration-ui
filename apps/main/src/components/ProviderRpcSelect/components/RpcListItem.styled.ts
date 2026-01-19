@@ -1,9 +1,12 @@
+import isPropValid from "@emotion/is-prop-valid"
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Box } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 
-export const SRpcListItem = styled(Box)<{ isInteractive?: boolean }>(
+export const SRpcListItem = styled(Box, {
+  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "isInteractive",
+})<{ isInteractive?: boolean }>(
   ({ theme, isInteractive }) => css`
     display: grid;
     grid-template-columns: 3fr 2fr 1fr;

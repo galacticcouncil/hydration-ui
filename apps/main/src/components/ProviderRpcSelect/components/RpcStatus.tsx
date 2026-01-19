@@ -1,24 +1,17 @@
-import {
-  getSquidSdk,
-  latestBlockHeightQuery,
-} from "@galacticcouncil/indexer/squid"
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
-import { Box, Flex, Stack, Text, Tooltip } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { PingResponse } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { isNumber } from "remeda"
 
 import {
   SStatusOffline,
   SStatusSuccess,
 } from "@/components/ProviderRpcSelect/components/RpcStatus.styled"
-import { useElapsedTimeStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
-import { SQUID_URLS } from "@/config/rpc"
-import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
+import {
+  useElapsedTimeStatus,
+  usePingStatus,
+} from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
 
 export type RpcStatusProps = Partial<PingResponse> & {
   url: string
@@ -49,121 +42,29 @@ export const RpcStatusSlow = () => (
 
 export const RpcStatusOffline = () => <SStatusOffline />
 
-const SquidStatus: React.FC<{
-  name: string
-  url: string
-  blockNumber: number
-}> = ({ name, url, blockNumber }) => {
-  const { t } = useTranslation(["common"])
-
-  const squidSdk = useMemo(() => getSquidSdk(url), [url])
-  const { data: blockHeight } = useQuery(
-    latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2),
-  )
-
-  const blockHeightDifference =
-    isNumber(blockNumber) && isNumber(blockHeight)
-      ? blockNumber - blockHeight
-      : null
-
-  const isIndexerBehind =
-    isNumber(blockHeightDifference) && blockHeightDifference > 50
-
-  return (
-    <Box>
-      <Text fs={14} lh={1.4} fw={600}>
-        {name}
-      </Text>
-      <Text
-        color={
-          isIndexerBehind
-            ? getToken("accents.danger.emphasis")
-            : getToken("accents.success.emphasis")
-        }
-      >
-        {t("rpc.status.blockHeightDiff", {
-          value: blockHeightDifference,
-        })}
-      </Text>
-    </Box>
-  )
-}
-
-const rpcStatusTextMap = {
-  // t("rpc.status.online")
-  online: "rpc.status.online",
-  // t("rpc.status.slow")
-  slow: "rpc.status.slow",
-  // t("rpc.status.offline")
-  offline: "rpc.status.offline",
-} as const
-
-const statusColorMap = {
-  online: "accents.success.emphasis",
-  slow: "accents.alert.primary",
-  offline: "accents.danger.emphasis",
-} as const
-
 export const RpcStatus: React.FC<RpcStatusProps> = ({
-  url,
-  name,
   timestamp,
   blockNumber,
   ping = Infinity,
-  squidUrl,
 }) => {
   const { t } = useTranslation()
-  const { isMobile } = useBreakpoints()
 
-  const status = useElapsedTimeStatus(timestamp ?? 0)
-  const statusText = status ? t(rpcStatusTextMap[status]) : ""
-  const statusColor = statusColorMap[status]
-
-  const currentSquidIndexer = SQUID_URLS.find((squid) => squid.url === squidUrl)
-
-  const statusContent = (
-    <Flex align="center" gap={4} color={getToken(statusColor)}>
-      {blockNumber && (
-        <Text fs={12}>
-          {t("number", {
-            value: blockNumber,
-          })}
-        </Text>
-      )}
-      {status === "online" && <RpcStatusSuccess key={timestamp} />}
-      {status === "slow" && <RpcStatusSlow />}
-      {status === "offline" && <RpcStatusOffline />}
-    </Flex>
-  )
-
-  const statusTooltip = !isMobile ? (
-    <Stack gap={10}>
-      {(name || url) && (
-        <Text fs={14} lh={1.4} fw={600}>
-          {name || url}
-        </Text>
-      )}
-      <Text>{statusText}</Text>
-
-      {currentSquidIndexer && isNumber(blockNumber) && (
-        <SquidStatus
-          name={currentSquidIndexer.name}
-          url={currentSquidIndexer.url}
-          blockNumber={blockNumber}
-        />
-      )}
-    </Stack>
-  ) : null
+  const { status, color } = useElapsedTimeStatus(timestamp ?? 0)
 
   return (
     <Box>
-      {statusTooltip ? (
-        <Tooltip text={statusTooltip} side="left">
-          {statusContent}
-        </Tooltip>
-      ) : (
-        statusContent
-      )}
+      <Flex align="center" gap={4} color={getToken(color)}>
+        {blockNumber && (
+          <Text fs={12}>
+            {t("number", {
+              value: blockNumber,
+            })}
+          </Text>
+        )}
+        {status === "online" && <RpcStatusSuccess key={timestamp} />}
+        {status === "slow" && <RpcStatusSlow />}
+        {status === "offline" && <RpcStatusOffline />}
+      </Flex>
 
       {ping && ping < Infinity && <RpcPing ping={ping} />}
     </Box>
@@ -173,15 +74,10 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 const RpcPing: React.FC<{ ping: number }> = ({ ping }) => {
   const { t } = useTranslation()
 
-  const pingColor =
-    ping < 250
-      ? statusColorMap.online
-      : ping < 500
-        ? statusColorMap.slow
-        : statusColorMap.offline
+  const { color } = usePingStatus(ping)
 
   return (
-    <Text fs={10} mt={2} color={getToken(pingColor)}>
+    <Text fs={10} mt={2} color={getToken(color)}>
       {t("rpc.status.ping", { value: Math.round(ping) })}
     </Text>
   )

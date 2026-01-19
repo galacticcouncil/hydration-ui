@@ -87,11 +87,12 @@ const RpcListItemEdit: React.FC<RpcListItemEditProps> = ({
 
   const onSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!customName) {
+    const newName = customName.trim()
+    if (!newName) {
       setError(t("error.required"))
       return
     }
-    renameRpc(url, customName)
+    renameRpc(url, newName)
     onCancel()
   }
 
