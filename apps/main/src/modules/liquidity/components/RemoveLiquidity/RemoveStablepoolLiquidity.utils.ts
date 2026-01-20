@@ -160,7 +160,6 @@ export const useRemoveOmnipoolLiquidity = (
 
   const { omnipoolPositionsOutValues, onSubmitted, omnipoolPositionsOutTotal } =
     props
-
   const { hubToGet, minTokensToGet } = omnipoolPositionsOutTotal
 
   const mutation = useMutation({
@@ -262,7 +261,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
   const {
     liquidity: { slippage },
   } = useTradeSettings()
-
+  const { account } = useAccount()
   const { watch, setValue, getValues } =
     useFormContext<TRemoveStablepoolLiquidityFormValues>()
   const [poolMeta, receiveAsset, split] = watch([
@@ -342,8 +341,8 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
-      const txs = omnipoolPositionsOutValues.map(({ position, valuesOut }) => {
-        return papi.tx.OmnipoolLiquidityMining.remove_liquidity_stableswap_omnipool_and_exit_farms(
+      const txs = omnipoolPositionsOutValues.map(({ position, valuesOut }) =>
+        papi.tx.OmnipoolLiquidityMining.remove_liquidity_stableswap_omnipool_and_exit_farms(
           {
             position_id: BigInt(position.positionId),
             deposit_id: isOmnipoolDepositPosition(position)
@@ -367,8 +366,8 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
                   },
                 ],
           },
-        )
-      })
+        ),
+      )
 
       const hubValue =
         hubToGet !== "0"
@@ -392,6 +391,10 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
         txs,
         transaction: {
           toasts,
+          invalidateQueries: [
+            omnipoolPositionsKey(account?.address ?? ""),
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+          ],
         },
       })
     },
@@ -414,7 +417,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
     .plus(!split ? stablepoolFee : 0)
     .toString()
 
-  const breakdown = split
+  const feesBreakdown = split
     ? [...props.feesBreakdown]
     : props.feesBreakdown.map((fee) => {
         if (fee.id === hub.id) {
@@ -431,7 +434,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
     ...props,
     onSubmit,
     fee,
-    breakdown,
+    feesBreakdown,
     editable: false,
     isFullRemove: true,
     receiveAssets,

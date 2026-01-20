@@ -55,7 +55,7 @@ export type RemoveOmnipoolResult = {
   minWithdrawalFee: string
 }
 
-export const defaultRemoveOmnipoolLiquidityValues: RemoveOmnipoolResult = {
+const defaultRemoveOmnipoolLiquidityValues: RemoveOmnipoolResult = {
   tokensToGet: "0",
   tokensToGetShifted: "0",
   minTokensToGet: "0",

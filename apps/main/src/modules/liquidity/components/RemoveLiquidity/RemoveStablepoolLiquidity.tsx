@@ -248,8 +248,6 @@ const RemoveStablepoolLiquidityForm = (
           px: getTokenPx("containers.paddings.primary"),
           pt: getTokenPx("containers.paddings.primary"),
           pb: getTokenPx("scales.paddings.base"),
-          borderBottom: "1px solid",
-          borderColor: getToken("details.separators"),
         }}
         customHeader={
           isRemoveShares ? null : (
@@ -275,11 +273,13 @@ const RemoveStablepoolLiquidityForm = (
           )
         }
       />
-      <ModalBody>
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.tertiary")}
-        >
+      <Flex
+        direction="column"
+        gap={getTokenPx("containers.paddings.tertiary")}
+        pb={0}
+        asChild
+      >
+        <ModalBody>
           {!editable ? (
             <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
               <AssetLogo id={asset.iconId ?? asset.id} size="large" />
@@ -350,7 +350,6 @@ const RemoveStablepoolLiquidityForm = (
             />
           </Flex>
 
-          <ModalContentDivider />
           <Box>
             <TradeLimitRow type={TradeLimitType.Liquidity} />
 
@@ -361,10 +360,9 @@ const RemoveStablepoolLiquidityForm = (
               </>
             )}
           </Box>
-          <ModalContentDivider />
-        </Flex>
-      </ModalBody>
-      <ModalFooter sx={{ pt: 0 }}>
+        </ModalBody>
+      </Flex>
+      <ModalFooter>
         <Button type="submit" size="large" width="100%" disabled={!isValid}>
           {t("removeLiquidity")}
         </Button>
