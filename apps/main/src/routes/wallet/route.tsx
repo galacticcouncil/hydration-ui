@@ -21,6 +21,7 @@ const WalletSubpageLayout: FC = () => {
 
   return (
     <SubpageLayout
+      alwasShowSubNav
       actions={
         (isAssetsPage || isTransactionsPage) &&
         account && <WalletAssetsSubpageLayoutActions />
