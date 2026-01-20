@@ -16,13 +16,14 @@ import { useSquidClient } from "@/api/provider"
 import { TransactionStatusVariant } from "@/components/TransactionItem/TransactionStatus.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
+import { chronologicallyDesc, sortBy } from "@/utils/sort"
 
 export type PastExecutionData = {
   readonly id: string
   readonly status: TransactionStatusVariant
   readonly amountIn: string
   readonly amountOut: string
-  readonly timestamp: string | null
+  readonly timestamp: Date | null
   readonly link: string | null
   readonly errorState: IndexerErrorState | null
 }
@@ -84,12 +85,18 @@ export const usePastExecutionsData = (scheduleId: number) => {
             status,
             amountIn,
             amountOut,
-            timestamp,
+            timestamp: timestamp ? new Date(timestamp) : null,
             link,
             errorState: parseIndexerErrorState(executionEvent?.errorState),
           }
         })
-        .filter((execution) => execution !== null) ?? []
+        .filter((execution) => execution !== null)
+        .sort(
+          sortBy({
+            select: (execution) => execution.timestamp ?? new Date(0),
+            compare: chronologicallyDesc,
+          }),
+        ) ?? []
     )
   }, [data, assetIn.decimals, assetOut.decimals])
 

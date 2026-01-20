@@ -63,13 +63,14 @@ const slideUp = keyframes`
 
 export const SCollapsibleContent = styled(Content)(
   ({ theme }) => css`
-    overflow: hidden;
+    overflow: visible;
 
     &[data-state="open"] {
       animation: ${slideDown} 0.2s ${theme.easings.outExpo};
     }
 
     &[data-state="closed"] {
+      overflow: hidden;
       animation: ${slideUp} 0.2s ${theme.easings.outExpo};
     }
   `,

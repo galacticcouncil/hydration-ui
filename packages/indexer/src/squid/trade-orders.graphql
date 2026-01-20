@@ -122,7 +122,6 @@ query DcaScheduleExecutions($scheduleId: String!) {
     }
     dcaScheduleExecutionsByScheduleId(
       filter: { status: { in: ["Executed", "Failed"] } }
-      orderBy: ID_DESC
     ) {
       nodes {
         id

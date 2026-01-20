@@ -88,20 +88,23 @@ export const MarketSummarySwap: FC<Props> = ({
     transactionCosts,
   )
 
-  if (!sellAsset || !buyAsset || !tradeFeeAsset) {
-    return null
-  }
-
   const minSummaryAsset = isBuy ? sellAsset : buyAsset
   const minSummaryValue = isBuy
     ? scaleHuman(
         swap.amountIn + calculateSlippage(swap.amountIn, swapSlippage),
-        sellAsset.decimals,
+        sellAsset?.decimals ?? 0,
       )
     : scaleHuman(
         swap.amountOut - calculateSlippage(swap.amountOut, swapSlippage),
-        buyAsset.decimals,
+        buyAsset?.decimals ?? 0,
       )
+
+  const [minSummaryValueDisplay, { isLoading: minSummaryValueDisplayLoading }] =
+    useDisplayAssetPrice(minSummaryAsset?.id ?? "", minSummaryValue)
+
+  if (!sellAsset || !buyAsset || !tradeFeeAsset || !minSummaryAsset) {
+    return null
+  }
 
   const tradeFeePct = swap.tradeFeePct
   const tradeFeeRange = swap.tradeFeeRange ?? [0, 0]
@@ -148,6 +151,8 @@ export const MarketSummarySwap: FC<Props> = ({
             value: minSummaryValue,
             symbol: minSummaryAsset.symbol,
           })}
+          amountDisplay={minSummaryValueDisplay}
+          isLoading={minSummaryValueDisplayLoading}
           isExpanded={isSummaryExpanded}
           onIsExpandedChange={changeSummaryExpanded}
         />
