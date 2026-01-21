@@ -65,6 +65,7 @@ export const App = () => {
  * Vite Preload Error Handling
  * @see https://vitejs.dev/guide/build#load-error-handling
  */
-window.addEventListener("vite:preloadError", () => {
-  window.location.reload()
+window.addEventListener("vite:preloadError", (e) => {
+  console.log("preloadError", e)
+  //window.location.reload()
 })
