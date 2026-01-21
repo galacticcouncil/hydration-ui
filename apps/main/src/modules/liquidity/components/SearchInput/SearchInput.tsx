@@ -3,20 +3,23 @@ import { Input } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 type SearchInputProps = {
-  onChange: (value: string) => void
+  search: string
   isFocused: boolean
+  onChange: (value: string) => void
   onFocus: (value: boolean) => void
 }
 
 export const SearchInput = ({
-  onChange,
+  search,
   isFocused,
+  onChange,
   onFocus,
 }: SearchInputProps) => {
   const { t } = useTranslation("common")
 
   return (
     <Input
+      value={search}
       onFocus={() => onFocus(true)}
       onBlur={() => onFocus(false)}
       placeholder={t("search.placeholder.any")}

@@ -17,6 +17,7 @@ const searchSchema = z.object({
   liquiditySort: dataTableSortSchema.default([
     { id: MyLiquidityTableColumnId.CurrentValue, desc: true },
   ]),
+  search: z.string().optional(),
 })
 
 export type WalletAssetsCategory = z.infer<typeof searchSchema>["category"]

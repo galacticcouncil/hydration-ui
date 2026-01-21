@@ -24,14 +24,14 @@ export type SortingProps = ReturnType<typeof useDataTableUrlSorting>
 
 export const useDataTableUrlSorting = <TRouteId extends RouteId>(
   url: TRouteId,
-  pageParam: SortingKeys<SearchParams<TRouteId>> & string,
+  sortingParam: SortingKeys<SearchParams<TRouteId>> & string,
   columnPriority?: ReadonlyArray<string>,
 ) => {
   const navigate = useNavigate()
 
   const sorting = useSearch({
     from: url,
-    select: (params) => params[pageParam] as SortingState,
+    select: (params) => params[sortingParam] as SortingState,
   })
 
   const onSortingChange = useMemo(
@@ -45,11 +45,12 @@ export const useDataTableUrlSorting = <TRouteId extends RouteId>(
 
       navigate({
         to: ".",
-        search: (search) => ({ ...search, [pageParam]: sortWithPriority }),
+        search: (search) => ({ ...search, [sortingParam]: sortWithPriority }),
         resetScroll: false,
+        replace: true,
       })
     },
-    [pageParam, columnPriority, sorting, navigate],
+    [sortingParam, columnPriority, sorting, navigate],
   )
 
   return { sorting, onSortingChange }

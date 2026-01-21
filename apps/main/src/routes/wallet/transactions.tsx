@@ -13,6 +13,7 @@ const typeSchema = z.object({
   sort: dataTableSortSchema.default([
     { id: WalletTransactionsTableColumnId.Asset, desc: true },
   ]),
+  search: z.string().optional(),
 })
 
 // TODO transactions page

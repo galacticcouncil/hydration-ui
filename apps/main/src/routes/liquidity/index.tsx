@@ -10,6 +10,7 @@ const searchSchema = z.object({
   omniSort: dataTableSortSchema.default([{ id: "id", desc: true }]),
   isolatedPage: z.number().optional(),
   isolatedSort: dataTableSortSchema.default([{ id: "tvlDisplay", desc: true }]),
+  search: z.string().optional(),
 })
 
 export const Route = createFileRoute("/liquidity/")({

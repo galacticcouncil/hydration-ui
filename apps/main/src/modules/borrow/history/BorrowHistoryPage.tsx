@@ -1,9 +1,9 @@
 import { Flex, SectionHeader } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { BorrowHistoryPlaceholder } from "@/modules/borrow/history/BorrowHistoryPlaceholder"
 import { BorrowHistorySearch } from "@/modules/borrow/history/BorrowHistorySearch"
 import { BorrowHistoryTable } from "@/modules/borrow/history/BorrowHistoryTable"
@@ -12,7 +12,10 @@ export const BorrowHistoryPage = () => {
   const { t } = useTranslation(["borrow"])
   const { account } = useAccount()
 
-  const [searchPhrase, setSearchPhrase] = useState("")
+  const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
+    "/borrow/history",
+    "search",
+  )
 
   const paginationProps = useDataTableUrlPagination(
     "/borrow/history",
@@ -33,6 +36,7 @@ export const BorrowHistoryPage = () => {
       >
         <SectionHeader title={t("borrow:history.table.title")} />
         <BorrowHistorySearch
+          searchPhrase={searchPhrase}
           onChange={(searchPhrase) => {
             setSearchPhrase(searchPhrase)
             paginationProps.onPageClick(1)

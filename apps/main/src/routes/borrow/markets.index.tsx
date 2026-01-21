@@ -7,6 +7,7 @@ import { BorrowMarketsPage } from "@/modules/borrow/markets/BorrowMarketsPage"
 
 const searchSchema = z.object({
   sort: dataTableSortSchema,
+  search: z.string().optional(),
 })
 
 export const Route = createFileRoute("/borrow/markets/")({

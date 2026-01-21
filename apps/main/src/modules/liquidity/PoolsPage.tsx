@@ -11,10 +11,11 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useRouter, useSearch } from "@tanstack/react-router"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
@@ -24,7 +25,7 @@ import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
 import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
-  const [search, setSearch] = useState("")
+  const [search, setSearch] = useDataTableUrlSearch("/liquidity/", "search")
 
   const { type, myLiquidity } = useSearch({
     from: "/liquidity/",
@@ -33,7 +34,7 @@ export const PoolsPage = () => {
   return (
     <>
       <PoolsHeader />
-      <PoolsFilters onChange={setSearch} />
+      <PoolsFilters search={search} onChange={setSearch} />
 
       {(type === "omnipoolStablepool" || type === "all") && (
         <OmnipoolAndStablepoolTable

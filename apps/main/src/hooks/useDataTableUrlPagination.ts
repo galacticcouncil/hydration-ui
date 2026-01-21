@@ -48,6 +48,7 @@ export const useDataTableUrlPagination = <TRouteId extends RouteId>(
         to: ".",
         search: (search) => ({ ...search, [pageParam]: page }),
         resetScroll: false,
+        replace: true,
       }),
     [navigate, pageParam],
   )

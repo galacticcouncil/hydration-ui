@@ -10,10 +10,12 @@ const filterTypeSchema = z
   .array(z.enum(borrowHistoryFilters))
   .readonly()
   .optional()
+
 const searchSchema = z.object({
   type: filterTypeSchema,
   page: z.number().optional(),
   sort: dataTableSortSchema,
+  search: z.string().optional(),
 })
 
 export const Route = createFileRoute("/borrow/history")({

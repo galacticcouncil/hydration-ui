@@ -13,6 +13,7 @@ const searchSchema = z.object({
   sort: dataTableSortSchema.default([
     { id: OtcColumn.MarketPrice, desc: false },
   ]),
+  search: z.string().optional(),
 })
 
 export type OtcOffersType = z.infer<typeof offerSchema>
