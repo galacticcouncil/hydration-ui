@@ -116,6 +116,7 @@ export const createIndexedDBStorage = (
   return {
     getItem: async () => {
       const db = await IndexedDBManager.getInstance()
+      console.log(db)
       if (!db) return null
 
       try {
