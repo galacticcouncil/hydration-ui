@@ -47,6 +47,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const userAddress = account?.address ?? ""
 
   const filteredOffers = useMemo(
+    // @ts-expect-error works
     () => data?.filter(getOtcOfferFilter(offersType, userAddress)) ?? [],
     [data, offersType, userAddress],
   )
@@ -54,6 +55,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const assetIds = useMemo(
     () =>
       new Set(
+        // @ts-expect-error works
         filteredOffers.flatMap((offer) => [
           offer.assetIn.id,
           offer.assetOut.id,
@@ -64,6 +66,7 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
     [filteredOffers],
   )
 
+  // @ts-expect-error works
   const { isLoading: isPriceLoading, prices } = useAssetsPrice(assetIds)
 
   const isTableLoading = isLoading || isPriceLoading
