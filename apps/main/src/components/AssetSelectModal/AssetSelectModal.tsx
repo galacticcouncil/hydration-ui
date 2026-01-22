@@ -14,6 +14,7 @@ import {
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useDebounce } from "use-debounce"
 
 import { TAssetData } from "@/api/assets"
 import { AssetLabelFull } from "@/components/AssetLabelFull"
@@ -57,18 +58,19 @@ export const AssetSelectModalContent = ({
 
   const [search, setSearch] = useState("")
   const [highlighted, setHighlighted] = useState(0)
+  const [debouncedSearch] = useDebounce(search, 300)
 
   const isProvidedSortedAssets =
     customSortedAssets && customSortedAssets.length > 0
   const { sortedAssets, isLoading } = useAssetSelectModalAssets(
     isProvidedSortedAssets ? emptyAssets : assets,
-    search,
+    debouncedSearch,
     selectedAssetId,
   )
 
   const filteredCustomAssets = useFilteredSearchAssets(
     customSortedAssets ?? [],
-    search,
+    debouncedSearch,
   )
 
   const assetsToDisplay = isProvidedSortedAssets

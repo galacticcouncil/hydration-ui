@@ -80,6 +80,7 @@ type SortAssetsOptions = {
   tickerOrder?: string[]
   lowPriorityAssetIds?: string[]
   highPriorityAssetIds?: string[]
+  search?: string
 }
 
 const SORT_ASSETS_TICKER_ORDER = [
@@ -93,6 +94,45 @@ const SORT_ASSETS_TICKER_ORDER = [
   "WBTC",
 ]
 
+const MATCH_SCORE_MAX = 100
+
+const getMatchScore = (text: string, searchTerm: string): number => {
+  if (!searchTerm) return 0
+  const lowerText = text.toLowerCase()
+  const lowerSearch = searchTerm.toLowerCase()
+
+  // Exact match - no difference
+  if (lowerText === lowerSearch) {
+    return MATCH_SCORE_MAX
+  }
+
+  // Text starts with search term - difference is extra characters after the match
+  if (lowerText.startsWith(lowerSearch)) {
+    const diffChar = lowerText.length - lowerSearch.length
+    return Math.max(0, MATCH_SCORE_MAX - diffChar)
+  }
+
+  // Search term starts with text (e.g., "ethe" starts with "eth") - difference is extra characters in search
+  if (lowerSearch.startsWith(lowerText)) {
+    const diffChar = lowerSearch.length - lowerText.length
+    return Math.max(0, MATCH_SCORE_MAX - diffChar)
+  }
+
+  // Text contains search term - difference is total extra characters
+  if (lowerText.includes(lowerSearch)) {
+    const diffChar = lowerText.length - lowerSearch.length
+    return Math.max(0, MATCH_SCORE_MAX - diffChar)
+  }
+
+  // Search term contains text (e.g., "ethe" contains "eth") - difference is extra characters in search
+  if (lowerSearch.includes(lowerText)) {
+    const diffChar = lowerSearch.length - lowerText.length
+    return Math.max(0, MATCH_SCORE_MAX - diffChar)
+  }
+
+  return 0
+}
+
 export const sortAssets = <T extends TAssetData>(
   assets: Array<T>,
   balanceKey: Extract<KeyOfType<T, string>, string>,
@@ -103,6 +143,7 @@ export const sortAssets = <T extends TAssetData>(
     lowPriorityAssetIds = [],
     highPriorityAssetIds = [],
     tickerOrder = SORT_ASSETS_TICKER_ORDER,
+    search,
   } = options ?? {}
 
   const getTickerIndex = (ticker: string) => {
@@ -116,6 +157,33 @@ export const sortAssets = <T extends TAssetData>(
   const isHighPriority = (id: string) => highPriorityAssetIds.includes(id)
 
   return [...assets].sort((a, b) => {
+    if (search?.length) {
+      // Get individual scores for proper comparison
+      const symbolScoreA = getMatchScore(a.symbol, search)
+      const symbolScoreB = getMatchScore(b.symbol, search)
+
+      // If both have symbol matches, compare symbol scores
+      if (symbolScoreA > 0 && symbolScoreB > 0) {
+        if (symbolScoreA !== symbolScoreB) {
+          return symbolScoreB - symbolScoreA // Higher score first
+        }
+      }
+      // If one has symbol match and the other doesn't, symbol match wins
+      else if (symbolScoreA > 0 && symbolScoreB === 0) {
+        return -1
+      } else if (symbolScoreA === 0 && symbolScoreB > 0) {
+        return 1
+      }
+      // If neither has symbol matches, compare name scores
+      else if (symbolScoreA === 0 && symbolScoreB === 0) {
+        const nameScoreA = getMatchScore(a.name, search)
+        const nameScoreB = getMatchScore(b.name, search)
+
+        if (nameScoreA !== nameScoreB) {
+          return nameScoreB - nameScoreA
+        }
+      }
+    }
     // 1. Prioritize first asset if provided
     if (a.id === firstAssetId) return -1
     if (b.id === firstAssetId) return 1
