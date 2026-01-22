@@ -5,6 +5,8 @@ import { PROVIDER_URLS } from "@/api/provider"
 import { useRpcListStore } from "@/states/provider"
 import { required, validWebsocketUrl } from "@/utils/validators"
 
+export type RpcFormValues = z.infer<ReturnType<typeof useRpcFormSchema>>
+
 export const useRpcFormSchema = () => {
   const { t } = useTranslation()
 

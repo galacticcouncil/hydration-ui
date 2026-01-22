@@ -1,10 +1,8 @@
-import { Edit, Save, Trash } from "@galacticcouncil/ui/assets/icons"
+import { Edit, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
-  ButtonTransparent,
   Flex,
   Icon,
-  Input,
   Spinner,
   Text,
   TextButton,
@@ -13,12 +11,12 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { PingResponse } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
-import { FormEvent, useRef, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useClickAway, useMount } from "react-use"
 
 import { bestNumberQuery } from "@/api/chain"
 import { useRpcStatus } from "@/api/rpc"
+import { ListItemEditForm } from "@/components/ProviderRpcSelect/components/ListItemEditForm"
 import { RpcRemoveModal } from "@/components/ProviderRpcSelect/components/RpcRemoveModal"
 import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -61,83 +59,6 @@ export const RpcListHeader: React.FC = () => {
   )
 }
 
-type RpcListItemEditProps = Pick<RpcListItemProps, "url" | "name"> & {
-  onCancel: () => void
-}
-
-const RpcListItemEdit: React.FC<RpcListItemEditProps> = ({
-  name,
-  url,
-  onCancel,
-}) => {
-  const { t } = useTranslation()
-  const [customName, setCustomName] = useState(name)
-  const [error, setError] = useState("")
-  const { renameRpc } = useRpcListStore()
-
-  const formRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useClickAway(formRef, () => onCancel())
-
-  useMount(() => {
-    inputRef.current?.focus()
-    inputRef.current?.select()
-  })
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const newName = customName.trim()
-    if (!newName) {
-      setError(t("error.required"))
-      return
-    }
-    renameRpc(url, newName)
-    onCancel()
-  }
-
-  const setName = (name: string) => {
-    setCustomName(name)
-    setError("")
-  }
-
-  return (
-    <SRpcListItem as="form" data-edit="true" ref={formRef} onSubmit={onSubmit}>
-      <Input
-        variant="embedded"
-        sx={{ px: 0, fontSize: 16, fontWeight: 400 }}
-        value={customName}
-        onChange={(e) => setName(e.target.value)}
-        ref={inputRef}
-      />
-      {error && (
-        <Text
-          fs={12}
-          color={getToken("accents.danger.secondary")}
-          sx={{ position: "absolute", pointerEvents: "none" }}
-        >
-          {error}
-        </Text>
-      )}
-      <Flex
-        align="center"
-        justify="end"
-        gap={12}
-        color={getToken("text.medium")}
-      >
-        <Text>{new URL(url).hostname}</Text>
-        <ButtonTransparent
-          type="submit"
-          sx={{ lineHeight: 1, color: getToken("text.tint.primary"), gap: 8 }}
-        >
-          {t("save")}
-          <Icon size={16} component={Save} />
-        </ButtonTransparent>
-      </Flex>
-    </SRpcListItem>
-  )
-}
-
 const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
   name,
   url,
@@ -152,14 +73,17 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
 }) => {
   const { t } = useTranslation()
   const [isEdit, setIsEdit] = useState(false)
+  const { renameRpc } = useRpcListStore()
 
   if (isEdit) {
     return (
-      <RpcListItemEdit
-        url={url}
-        name={name}
-        onCancel={() => setIsEdit(false)}
-      />
+      <SRpcListItem data-edit="true">
+        <ListItemEditForm
+          name={name}
+          onClose={() => setIsEdit(false)}
+          onSubmit={(newName) => renameRpc(url, newName)}
+        />
+      </SRpcListItem>
     )
   }
 

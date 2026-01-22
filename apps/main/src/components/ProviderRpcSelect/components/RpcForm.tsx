@@ -11,12 +11,11 @@ import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { useRpcFormSchema } from "@/components/ProviderRpcSelect/components/RpcForm.utils"
+import {
+  RpcFormValues,
+  useRpcFormSchema,
+} from "@/components/ProviderRpcSelect/components/RpcForm.utils"
 import { useRpcListStore } from "@/states/provider"
-
-type FormValues = {
-  address: string
-}
 
 const PING_TIMEOUT = 10000
 
@@ -24,14 +23,14 @@ export const RpcForm = () => {
   const { t } = useTranslation()
   const { addRpc } = useRpcListStore()
 
-  const form = useForm<FormValues>({
+  const form = useForm<RpcFormValues>({
     defaultValues: { address: "wss://" },
     mode: "onChange",
     resolver: standardSchemaResolver(useRpcFormSchema()),
   })
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async ({ address }: FormValues) => {
+    mutationFn: async ({ address }: RpcFormValues) => {
       const status = await pingRpc(address, PING_TIMEOUT)
 
       if (status.ping === Infinity) {
@@ -41,17 +40,16 @@ export const RpcForm = () => {
       addRpc(address)
       form.reset()
     },
+    onMutate: () => {
+      form.clearErrors("address")
+    },
     onError: (error) => {
       form.setError("address", { message: error.message })
     },
   })
 
-  const handleSubmit = (values: FormValues) => {
-    mutate(values)
-  }
-
   return (
-    <form onSubmit={form.handleSubmit(handleSubmit)}>
+    <form onSubmit={form.handleSubmit((values) => mutate(values))}>
       <Controller
         name="address"
         control={form.control}

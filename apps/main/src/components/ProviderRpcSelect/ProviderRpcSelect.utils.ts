@@ -1,22 +1,28 @@
+import { ThemeToken } from "@galacticcouncil/ui/theme"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useInterval } from "react-use"
-import { prop, uniqueBy } from "remeda"
+import { isNumber, prop, uniqueBy } from "remeda"
 
+import { useBestNumber } from "@/api/chain"
 import { SQUID_URLS } from "@/config/rpc"
 import { useSquidListStore } from "@/states/provider"
 
-const rpcStatusTextMap = {
-  online: "rpc.status.online",
-  slow: "rpc.status.slow",
-  offline: "rpc.status.offline",
-} as const
+type ServiceStatus = "online" | "degraded" | "offline"
 
-const statusColorMap = {
+const statusColorMap: Record<ServiceStatus, ThemeToken> = {
   online: "accents.success.emphasis",
-  slow: "accents.alert.primary",
+  degraded: "accents.alert.primary",
   offline: "accents.danger.emphasis",
-} as const
+}
+
+const ELAPSED_TIME_ONLINE_THRESHOLD_MS = 32_000
+const ELAPSED_TIME_DEGRADED_THRESHOLD_MS = 120_000
+
+const PING_NORMAL_THRESHOLD_MS = 250
+const PING_DEGRADED_THRESHOLD_MS = 500
+
+const DEGRADED_BLOCK_HEIGHT_DIFF = 50
 
 export const useElapsedTimeStatus = (timestamp: number | null) => {
   const { t } = useTranslation()
@@ -26,21 +32,18 @@ export const useElapsedTimeStatus = (timestamp: number | null) => {
     setNow(Date.now())
   }, 1000)
 
-  if (timestamp === null) {
-    return {
-      status: "offline",
-      color: statusColorMap.offline,
-      text: t(rpcStatusTextMap.offline),
-    }
-  }
-
-  const diff = now - timestamp
-  const status = diff < 32_000 ? "online" : diff < 120_000 ? "slow" : "offline"
+  const diff = timestamp === null ? Infinity : now - timestamp
+  const status: ServiceStatus =
+    diff < ELAPSED_TIME_ONLINE_THRESHOLD_MS
+      ? "online"
+      : diff < ELAPSED_TIME_DEGRADED_THRESHOLD_MS
+        ? "degraded"
+        : "offline"
 
   return {
     status,
     color: statusColorMap[status],
-    text: t(rpcStatusTextMap[status]),
+    text: t(`rpc.status.${status}`),
   }
 }
 
@@ -53,11 +56,35 @@ export const usePingStatus = (ping: number | null) => {
 
   return {
     color:
-      ping < 250
+      ping < PING_NORMAL_THRESHOLD_MS
         ? statusColorMap.online
-        : ping < 500
-          ? statusColorMap.slow
+        : ping < PING_DEGRADED_THRESHOLD_MS
+          ? statusColorMap.degraded
           : statusColorMap.offline,
+  }
+}
+
+export const useBlockHeightStatus = (blockHeight: number) => {
+  const { t } = useTranslation()
+  const { data: bestNumber } = useBestNumber()
+  const blockHeightDifference =
+    isNumber(bestNumber?.parachainBlockNumber) && isNumber(blockHeight)
+      ? bestNumber?.parachainBlockNumber - blockHeight
+      : null
+
+  const status: ServiceStatus =
+    isNumber(blockHeightDifference) &&
+    blockHeightDifference > DEGRADED_BLOCK_HEIGHT_DIFF
+      ? "degraded"
+      : "online"
+
+  return {
+    status,
+    color: statusColorMap[status],
+    text: t("rpc.status.blockHeightDiff", {
+      value: blockHeightDifference,
+    }),
+    blockHeightDifference,
   }
 }
 

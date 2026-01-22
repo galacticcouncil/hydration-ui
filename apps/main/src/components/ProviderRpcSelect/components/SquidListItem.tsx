@@ -2,13 +2,11 @@ import {
   getSquidSdk,
   latestBlockHeightQuery,
 } from "@galacticcouncil/indexer/squid"
-import { Edit, Save, Trash } from "@galacticcouncil/ui/assets/icons"
+import { Edit, Trash } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
-  ButtonTransparent,
   Flex,
   Icon,
-  Input,
   Spinner,
   Text,
   TextButton,
@@ -16,12 +14,11 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { FormEvent, useMemo, useRef, useState } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { useClickAway, useMount } from "react-use"
-import { isNumber } from "remeda"
 
-import { useBestNumber } from "@/api/chain"
+import { ListItemEditForm } from "@/components/ProviderRpcSelect/components/ListItemEditForm"
+import { useBlockHeightStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
 import { useSquidListStore } from "@/states/provider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
@@ -62,87 +59,6 @@ export const SquidListHeader: React.FC = () => {
   )
 }
 
-type SquidListItemEditProps = Pick<SquidListItemProps, "url" | "name"> & {
-  onCancel: () => void
-}
-
-const SquidListItemEdit: React.FC<SquidListItemEditProps> = ({
-  name,
-  url,
-  onCancel,
-}) => {
-  const { t } = useTranslation()
-  const [customName, setCustomName] = useState(name)
-  const [error, setError] = useState("")
-  const { renameSquid } = useSquidListStore()
-
-  const formRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-
-  useClickAway(formRef, () => onCancel())
-
-  useMount(() => {
-    inputRef.current?.focus()
-    inputRef.current?.select()
-  })
-
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const newName = customName.trim()
-    if (!newName) {
-      setError(t("error.required"))
-      return
-    }
-    renameSquid(url, newName)
-    onCancel()
-  }
-
-  const setName = (name: string) => {
-    setCustomName(name)
-    setError("")
-  }
-
-  return (
-    <SSquidListItem
-      as="form"
-      data-edit="true"
-      ref={formRef}
-      onSubmit={onSubmit}
-    >
-      <Input
-        variant="embedded"
-        sx={{ px: 0, fontSize: 16, fontWeight: 400 }}
-        value={customName}
-        onChange={(e) => setName(e.target.value)}
-        ref={inputRef}
-      />
-      {error && (
-        <Text
-          fs={12}
-          color={getToken("accents.danger.secondary")}
-          sx={{ position: "absolute", pointerEvents: "none" }}
-        >
-          {error}
-        </Text>
-      )}
-      <Flex
-        align="center"
-        justify="end"
-        gap={12}
-        color={getToken("text.medium")}
-      >
-        <ButtonTransparent
-          type="submit"
-          sx={{ lineHeight: 1, color: getToken("text.tint.primary"), gap: 8 }}
-        >
-          {t("save")}
-          <Icon size={16} component={Save} />
-        </ButtonTransparent>
-      </Flex>
-    </SSquidListItem>
-  )
-}
-
 export const SquidListItem: React.FC<SquidListItemProps> = ({
   name,
   url,
@@ -153,28 +69,28 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
 }) => {
   const { t } = useTranslation()
   const [isEdit, setIsEdit] = useState(false)
-  const { data: bestNumber, isLoading: isBestNumberLoading } = useBestNumber()
 
-  const squidSdk = useMemo(() => getSquidSdk(url), [url])
+  const squidSdk = getSquidSdk(url)
 
   const { data: blockHeight, isLoading: isBlockHeightLoading } = useQuery(
     latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2),
   )
 
-  const isLoading = isBestNumberLoading || isBlockHeightLoading
+  const isLoading = isBlockHeightLoading
 
-  const blockHeightDifference =
-    isNumber(bestNumber?.parachainBlockNumber) && isNumber(blockHeight)
-      ? bestNumber.parachainBlockNumber - blockHeight
-      : null
+  const status = useBlockHeightStatus(blockHeight ?? 0)
+
+  const { renameSquid } = useSquidListStore()
 
   if (isEdit) {
     return (
-      <SquidListItemEdit
-        url={url}
-        name={name}
-        onCancel={() => setIsEdit(false)}
-      />
+      <SSquidListItem data-edit="true">
+        <ListItemEditForm
+          name={name}
+          onClose={() => setIsEdit(false)}
+          onSubmit={(newName) => renameSquid(url, newName)}
+        />
+      </SSquidListItem>
     )
   }
 
@@ -215,21 +131,9 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
         justify="end"
         align="center"
       >
-        {isNumber(blockHeightDifference) && (
-          <Text
-            fs={12}
-            align="right"
-            color={
-              blockHeightDifference < 50
-                ? getToken("accents.success.emphasis")
-                : getToken("accents.danger.emphasis")
-            }
-          >
-            {t("rpc.status.blockHeightDiff", {
-              value: blockHeightDifference,
-            })}
-          </Text>
-        )}
+        <Text fs={12} align="right" color={getToken(status.color)}>
+          {status.text}
+        </Text>
         {isCustom && !!onRemove && (
           <>
             <Tooltip text={t("remove")} asChild side="top">

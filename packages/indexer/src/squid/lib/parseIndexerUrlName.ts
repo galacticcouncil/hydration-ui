@@ -1,15 +1,15 @@
-export const parseIndexerUrlName = (url: string) => {
-  const match = url.match(/:([^:]+)\/api\/graphql/)
+import { capitalize } from "remeda"
 
-  if (!match || !match[1]) {
+export const parseIndexerUrlName = (url: string) => {
+  const { rawName } = /:(?<rawName>[^:]+)\/api\/graphql/.exec(url)?.groups ?? {}
+
+  if (!rawName) {
     return ""
   }
 
-  const rawName = match[1]
-
   const formatted = rawName
     .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => capitalize(word))
     .join(" ")
 
   return formatted

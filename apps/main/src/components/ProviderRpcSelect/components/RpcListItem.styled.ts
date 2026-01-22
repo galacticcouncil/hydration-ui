@@ -17,7 +17,7 @@ export const SRpcListItem = styled(Box, {
     height: 56px;
 
     &[data-edit="true"] {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       background: ${theme.surfaces.containers.dim.dimOnBg};
     }
 

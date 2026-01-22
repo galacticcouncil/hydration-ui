@@ -62,7 +62,7 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
           </Text>
         )}
         {status === "online" && <RpcStatusSuccess key={timestamp} />}
-        {status === "slow" && <RpcStatusSlow />}
+        {status === "degraded" && <RpcStatusSlow />}
         {status === "offline" && <RpcStatusOffline />}
       </Flex>
 
