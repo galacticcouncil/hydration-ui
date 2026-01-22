@@ -101,7 +101,6 @@ const getMatchScore = (text: string, searchTerm: string): number => {
   const lowerText = text.toLowerCase()
   const lowerSearch = searchTerm.toLowerCase()
 
-  // Exact match - no difference
   if (lowerText === lowerSearch) {
     return MATCH_SCORE_MAX
   }
@@ -158,18 +157,14 @@ export const sortAssets = <T extends TAssetData>(
 
   return [...assets].sort((a, b) => {
     if (search?.length) {
-      // Get individual scores for proper comparison
       const symbolScoreA = getMatchScore(a.symbol, search)
       const symbolScoreB = getMatchScore(b.symbol, search)
 
-      // If both have symbol matches, compare symbol scores
       if (symbolScoreA > 0 && symbolScoreB > 0) {
         if (symbolScoreA !== symbolScoreB) {
-          return symbolScoreB - symbolScoreA // Higher score first
+          return symbolScoreB - symbolScoreA
         }
-      }
-      // If one has symbol match and the other doesn't, symbol match wins
-      else if (symbolScoreA > 0 && symbolScoreB === 0) {
+      } else if (symbolScoreA > 0 && symbolScoreB === 0) {
         return -1
       } else if (symbolScoreA === 0 && symbolScoreB > 0) {
         return 1
