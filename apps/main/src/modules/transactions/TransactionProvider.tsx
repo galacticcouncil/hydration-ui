@@ -11,6 +11,7 @@ import { useTransactionEcosystem } from "@/modules/transactions/hooks/useTransac
 import { useTransactionPaymentInfo } from "@/modules/transactions/hooks/useTransactionPaymentInfo"
 import { useTransactionTip } from "@/modules/transactions/hooks/useTransactionTip"
 import { useTransactionToasts } from "@/modules/transactions/hooks/useTransactionToasts"
+import { useWrapTransaction } from "@/modules/transactions/hooks/useWrapTransaction"
 import {
   doClose,
   doReset,
@@ -66,10 +67,12 @@ export type TransactionProviderProps = {
 
 export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   children,
-  transaction,
+  transaction: config,
 }) => {
   const queryClient = useQueryClient()
   const { cancelTransaction } = useTransactionsStore()
+
+  const transaction = useWrapTransaction(config)
 
   const [state, dispatch] = useReducer(transactionStatusReducer, INITIAL_STATUS)
   const ecosystem = useTransactionEcosystem(transaction)
