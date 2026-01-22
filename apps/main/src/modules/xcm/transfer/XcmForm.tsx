@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Flex,
   Paper,
@@ -29,7 +30,9 @@ import { useSubmitXcmTransfer } from "@/modules/xcm/transfer/hooks/useSubmitXcmT
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmProvider } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
+import { XcmTransferStatus } from "@/modules/xcm/transfer/utils/transfer"
 import { XcmSummary } from "@/modules/xcm/transfer/XcmSummary"
+import { useAssetPrice } from "@/states/displayAsset"
 
 export const XcmForm = () => {
   const { t } = useTranslation(["common", "xcm"])
@@ -44,6 +47,7 @@ export const XcmForm = () => {
     destChainAssetPairs,
     isLoading,
     isConnectedAccountValid,
+    registryChain,
   } = useXcmProvider()
 
   const { watch, formState, handleSubmit, reset, setValue } =
@@ -68,7 +72,7 @@ export const XcmForm = () => {
   const { data: destBalances } = useCrossChainBalance(destAddress, destChainKey)
 
   const submit = useSubmitXcmTransfer({
-    onSuccess: resetAmounts,
+    onSubmitted: resetAmounts,
   })
 
   function onConnect() {
@@ -128,24 +132,35 @@ export const XcmForm = () => {
 
   const hasValidAccounts = isConnectedAccountValid && !!destAddress
 
+  const isTranferValid =
+    status === XcmTransferStatus.TransferValid ||
+    status === XcmTransferStatus.ApproveAndTransferValid
+  const isSubmitReady = formState.isValid && isTranferValid
+
+  const spotPriceId = srcAsset
+    ? registryChain.getBalanceAssetId(srcAsset).toString()
+    : undefined
+
+  const { price } = useAssetPrice(spotPriceId)
+
   return (
     <form
       onSubmit={handleSubmit(
         (values) => transfer && submit.mutate([values, transfer]),
       )}
     >
-      <Stack gap={4} maxWidth={500} mx="auto" pt={20}>
+      <Stack gap="s" maxWidth={500} mx="auto" pt="xl">
         <Paper>
-          <Box p={20}>
+          <Box p="xl">
             <Text fs="h7" fw={500} align="center" font="primary">
               {t("xcm:form.title")}
             </Text>
           </Box>
           <Separator />
-          <Stack p={20} gap={10}>
+          <Stack p="xl" gap="base">
             <Flex justify="space-between">
-              <Flex gap={10} direction="column">
-                <Flex gap={4} align="center">
+              <Flex gap="base" direction="column">
+                <Flex gap="s" align="center">
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("from")}
                   </Text>
@@ -185,6 +200,7 @@ export const XcmForm = () => {
                 withMaxButton
                 disabled={!srcAsset || !hasValidAccounts || isLoading}
                 isLoading={isLoading}
+                assetPrice={price}
               />
             </Flex>
           </Stack>
@@ -193,10 +209,10 @@ export const XcmForm = () => {
         <ChainSwitch onClick={handleChainSwitch} />
 
         <Paper>
-          <Stack p={20} gap={10}>
+          <Stack p="xl" gap="base">
             <Flex justify="space-between">
-              <Flex gap={10} direction="column">
-                <Flex gap={4} align="center">
+              <Flex gap="base" direction="column">
+                <Flex gap="s" align="center">
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("to")}
                   </Text>
@@ -228,21 +244,27 @@ export const XcmForm = () => {
                 balance={destBalances?.get(destAsset?.key ?? "")}
                 disabled
                 isLoading={isLoading}
+                assetPrice={price}
               />
             </Flex>
           </Stack>
           <XcmSummary />
           <Separator />
-          <Box p={20}>
+          <Box p="xl">
             <SubmitButton
               status={status}
-              disabled={isLoading || submit.isPending || !formState.isValid}
+              disabled={isLoading || submit.isPending || !isSubmitReady}
               isLoading={isLoading || submit.isPending}
-              variant={formState.isValid ? "primary" : "muted"}
+              variant={isSubmitReady ? "primary" : "muted"}
               loadingVariant="muted"
             />
           </Box>
         </Paper>
+        <Alert
+          sx={{ mt: "xl" }}
+          title={t("xcm:beta.title")}
+          description={t("xcm:beta.description")}
+        />
       </Stack>
     </form>
   )

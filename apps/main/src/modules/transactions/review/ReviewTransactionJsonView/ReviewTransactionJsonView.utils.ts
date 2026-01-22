@@ -1,10 +1,11 @@
-import { isBinary, safeParse, safeStringify } from "@galacticcouncil/utils"
+import { safeParse, safeStringify } from "@galacticcouncil/utils"
 import { CompatibilityToken } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
 import { AnyTransaction } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import { getPapiTransactionCallData } from "@/modules/transactions/utils/tx"
 import {
   isEvmCall,
   isSolanaCall,
@@ -73,8 +74,7 @@ export const getTxCallHash = (
   papiCompatibilityToken: CompatibilityToken,
 ): string => {
   if (isPapiTransaction(tx)) {
-    const binary = tx.getEncodedData(papiCompatibilityToken)
-    return isBinary(binary) ? binary.asHex() : ""
+    return getPapiTransactionCallData(tx, papiCompatibilityToken)
   }
 
   if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {

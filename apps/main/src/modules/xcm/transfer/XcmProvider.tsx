@@ -6,20 +6,24 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { ConfigBuilder, EvmParachain } from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useShallowCompareEffect } from "react-use"
-import { first, prop, unique } from "remeda"
+import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
 
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
+  xcmTransferCallQuery,
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
+import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
+  getChainPriority,
   getXcmFormDefaults,
   isAccountValidOnChain,
   XCM_CHAINS,
@@ -35,6 +39,7 @@ type XcmProviderProps = {
 
 export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { account } = useAccount()
+  const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
 
   const form = useXcmForm(transfer)
@@ -96,7 +101,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   }, [config, srcAsset, srcChain, configService])
 
   useEffect(() => {
-    const validRoutes = destChainAssetPairs.flatMap((c) => c.routes)
+    const validRoutes = pipe(
+      destChainAssetPairs,
+      flatMap((c) => c.routes),
+      sortBy((r) => getChainPriority(r.destination.chain.key)),
+    )
 
     const bestRoute =
       validRoutes.find(
@@ -136,15 +145,13 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     useXcmTransfer(form)
 
   useEffect(() => {
-    if (xcmTransfer) {
-      setTransfer(xcmTransfer)
-      if (srcAsset && srcAmount) {
-        form.setValue(
-          "destAmount",
-          calculateTransferDestAmount(srcAsset, srcAmount, xcmTransfer),
-        )
-      }
-    }
+    setTransfer(xcmTransfer ?? null)
+    form.setValue(
+      "destAmount",
+      srcAsset && srcAmount && xcmTransfer
+        ? calculateTransferDestAmount(srcAsset, srcAmount, xcmTransfer)
+        : "",
+    )
   }, [form, srcAmount, srcAsset, xcmTransfer])
 
   useShallowCompareEffect(() => {
@@ -155,6 +162,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const { isLoading: isLoadingSrcBalances } = useCrossChainBalanceSubscription(
     srcAddress,
     srcChainKey,
+    () => {
+      queryClient.invalidateQueries({ queryKey: ["xcm", "transfer"] })
+    },
   )
   const { isLoading: isLoadingDestBalances } = useCrossChainBalanceSubscription(
     destAddress,
@@ -164,6 +174,10 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const isLoading =
     isLoadingTransfer || isLoadingSrcBalances || isLoadingDestBalances
 
+  const alerts = useXcmTransferAlerts(form.formState.isValid ? transfer : null)
+  const transferCall = useQuery(xcmTransferCallQuery(transfer, srcAmount))
+  const call = transferCall.data ?? null
+
   return (
     <XcmContext.Provider
       value={{
@@ -171,9 +185,11 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
+        alerts,
         transfer,
+        call,
         registryChain: chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain,
-        status: getTransferStatus(form.getValues(), transfer),
+        status: getTransferStatus(form.getValues(), transfer, call, alerts),
       }}
     >
       <FormProvider {...form}>{children}</FormProvider>

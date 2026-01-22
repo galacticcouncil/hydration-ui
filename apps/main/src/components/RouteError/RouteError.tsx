@@ -37,7 +37,7 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
               copy(
                 stringifyErrorContext({
                   message: error?.message ?? "",
-                  address: account?.address ?? "",
+                  address: account?.rawAddress ?? "",
                   wallet: account?.provider ?? "",
                   feePaymentAsset: isNumber(feeAssetId)
                     ? `${getAssetWithFallback(feeAssetId).symbol} (${feeAssetId})`

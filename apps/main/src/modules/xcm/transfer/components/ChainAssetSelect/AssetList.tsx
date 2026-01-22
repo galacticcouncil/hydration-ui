@@ -2,11 +2,9 @@ import {
   ModalCloseTrigger,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
-import {
-  formatSourceChainAddress,
-  isAddressValidOnChain,
-} from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
+import Big from "big.js"
+import { useMemo } from "react"
 
 import {
   useCrossChainBalance,
@@ -14,6 +12,9 @@ import {
 } from "@/api/xcm"
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
+import { useAssetsPrice } from "@/states/displayAsset"
+import { toDecimal } from "@/utils/formatting"
+import { numericallyStrDesc } from "@/utils/sort"
 
 const ASSET_ITEM_HEIGHT = 50
 const MAX_VISIBLE_ASSET_ITEMS = 8
@@ -37,6 +38,16 @@ export const AssetList: React.FC<AssetListProps> = ({
   selectedChain,
   setSelectedAsset,
 }) => {
+  const priceIds = useMemo(() => {
+    return items.map((item) => {
+      const registryId = registryChain.getBalanceAssetId(item.asset)
+      return registryId.toString()
+    })
+  }, [items, registryChain])
+
+  const { getAssetPrice, isLoading: isAssetPriceLoading } =
+    useAssetsPrice(priceIds)
+
   const { isLoading: isLoadingBalances } = useCrossChainBalanceSubscription(
     address,
     selectedChain?.key ?? "",
@@ -51,24 +62,62 @@ export const AssetList: React.FC<AssetListProps> = ({
     ? ASSET_ITEM_HEIGHT * 1.4
     : ASSET_ITEM_HEIGHT
 
-  const formattedAddress = selectedChain
-    ? formatSourceChainAddress(address, selectedChain)
-    : ""
+  const assetList = useMemo(() => {
+    if (isLoadingBalances || isAssetPriceLoading) return items
 
-  const isAddressValid =
-    !!selectedChain && isAddressValidOnChain(formattedAddress, selectedChain)
+    const assetsWithBalances = items.map((item) => {
+      const registryId = registryChain.getBalanceAssetId(item.asset)
+      const balance = balances?.get(item.asset.key)
+      const { price } = getAssetPrice(registryId.toString())
+      return {
+        ...item,
+        balance,
+        balanceDisplay:
+          balance && price
+            ? Big(toDecimal(balance.amount, balance.decimals))
+                .times(price)
+                .toString()
+            : undefined,
+      }
+    })
+
+    return assetsWithBalances.sort((a, b) => {
+      const byDisplay = numericallyStrDesc(
+        a.balanceDisplay ?? "0",
+        b.balanceDisplay ?? "0",
+      )
+      if (byDisplay !== 0) return byDisplay
+
+      if (a.balance && a.balance.amount > 0n) return -1
+      if (b.balance && b.balance.amount > 0n) return 1
+
+      return 0
+    })
+  }, [
+    balances,
+    getAssetPrice,
+    isAssetPriceLoading,
+    isLoadingBalances,
+    items,
+    registryChain,
+  ])
+
+  const assetIndex = selectedAsset
+    ? assetList.findIndex(({ asset }) => asset === selectedAsset)
+    : 0
+
+  const initialScrollIndex =
+    assetIndex >= MAX_VISIBLE_ASSET_ITEMS ? assetIndex : 0
 
   return (
     <VirtualizedList
-      items={items}
+      items={assetList}
       itemSize={itemSize}
       maxVisibleItems={MAX_VISIBLE_ASSET_ITEMS}
-      initialScrollIndex={items.findIndex(
-        ({ asset }) => asset === selectedAsset,
-      )}
+      initialScrollIndex={initialScrollIndex}
       renderItem={(item) => {
         const balance = balances?.get(item.asset.key)
-        const isLoading = isAddressValid && isLoadingBalances && !balances
+        const isLoading = isLoadingBalances || isAssetPriceLoading
         const isSelectedAsset = selectedAsset?.key === item.asset.key
 
         return (

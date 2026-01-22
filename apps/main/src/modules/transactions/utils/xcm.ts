@@ -9,7 +9,7 @@ import { AnyTransaction } from "@/modules/transactions/types"
 
 const APPROVE_LEADING_BYTES = "0x095ea7b3"
 
-export function isEvmApproveCall(call: Call): boolean {
+export function isEvmApproveCall(call: Call): call is ExtendedEvmCall {
   if (!isEvmCall(call)) return false
 
   const { abi, data } = call

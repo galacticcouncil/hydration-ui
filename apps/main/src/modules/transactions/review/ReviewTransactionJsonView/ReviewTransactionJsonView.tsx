@@ -14,29 +14,38 @@ import { decodeTx, getTxCallHash } from "./ReviewTransactionJsonView.utils"
 
 export const ReviewTransactionJsonView = () => {
   const { papiCompatibilityToken } = useRpcProvider()
-  const { tx } = useTransaction()
+  const { tx, meta } = useTransaction()
 
   const txJson = decodeTx(tx)
   const txCallHash = getTxCallHash(tx, papiCompatibilityToken)
-  const txUrl = usePolkadotJSExtrinsicUrl(tx)
+  const txUrl = usePolkadotJSExtrinsicUrl(tx, meta.srcChainKey)
+
+  const isValidTxCallHash = !!txCallHash
 
   return (
     <JsonViewContainer>
       <ScrollArea>
         <CopyMenu txUrl={txUrl} txCallHash={txCallHash} txJson={txJson} />
-        <ExpandableSection title={t("transaction.jsonview.decoded")}>
+        <ExpandableSection
+          title={t("transaction.jsonview.decoded")}
+          maxContentHeight={isValidTxCallHash ? 120 : 200}
+        >
           <JsonView fs={13} src={txJson} />
         </ExpandableSection>
-        <Separator
-          my={getTokenPx("scales.paddings.base")}
-          sx={{ background: getToken("details.borders") }}
-        />
-        <ExpandableSection
-          title={t("transaction.jsonview.calldata")}
-          maxContentHeight="100%"
-        >
-          <CallHashText hash={txCallHash} />
-        </ExpandableSection>
+        {isValidTxCallHash && (
+          <>
+            <Separator
+              my={getTokenPx("scales.paddings.base")}
+              sx={{ background: getToken("details.borders") }}
+            />
+            <ExpandableSection
+              title={t("transaction.jsonview.calldata")}
+              maxContentHeight="100%"
+            >
+              <CallHashText hash={txCallHash} />
+            </ExpandableSection>
+          </>
+        )}
       </ScrollArea>
     </JsonViewContainer>
   )

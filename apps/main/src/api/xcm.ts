@@ -1,9 +1,10 @@
-import { formatSourceChainAddress } from "@galacticcouncil/utils"
+import { formatSourceChainAddress, safeStringify } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
+  keepPreviousData,
   queryOptions,
   useQuery,
   useQueryClient,
@@ -88,7 +89,9 @@ export const useCrossChainBalanceSubscription = (
 
     async function subscribeBalance(formattedAddress: string, chain: AnyChain) {
       try {
-        setIsLoading(true)
+        const cachedData = queryClient.getQueryData(queryKey)
+        setIsLoading(!cachedData)
+
         setIsError(false)
 
         subscription = await wallet.subscribeBalance(
@@ -149,6 +152,7 @@ export const xcmTransferQuery = (
   return queryOptions({
     refetchInterval: secondsToMilliseconds(30),
     refetchOnWindowFocus: false,
+    retry: false,
     queryKey: [
       "xcm",
       "transfer",
@@ -179,3 +183,28 @@ export const xcmTransferQuery = (
     ...options,
   })
 }
+
+export const xcmTransferReportQuery = (transfer: Transfer | null) =>
+  queryOptions({
+    enabled: !!transfer,
+    placeholderData: keepPreviousData,
+    queryKey: ["xcm", "report", safeStringify(transfer)],
+    queryFn: async () => {
+      if (!transfer) return []
+      return transfer.validate()
+    },
+  })
+
+export const xcmTransferCallQuery = (
+  transfer: Transfer | null,
+  amount: string,
+) =>
+  queryOptions({
+    enabled: !!transfer && !!amount,
+    placeholderData: keepPreviousData,
+    queryKey: ["xcm", "call", safeStringify(transfer)],
+    queryFn: async () => {
+      if (!transfer) throw new Error("Invalid transfer")
+      return transfer.buildCall(amount)
+    },
+  })

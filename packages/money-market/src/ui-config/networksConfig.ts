@@ -1,6 +1,3 @@
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { EvmParachain } from "@galacticcouncil/xc-core"
-
 export enum ChainId {
   hydration = 222222,
   // Mock Hydration testnet chain ID so we can differentiate between mainnet and testnet
@@ -22,16 +19,9 @@ export type NetworkConfig = {
   name: string
   displayName?: string
   baseAssetSymbol: string
-  // needed for configuring the chain on metemask when it doesn't exist yet
   baseAssetDecimals: number
-  // usdMarket?: boolean;
-  // function returning a link to etherscan et al
-  explorerLink: string
-  explorerLinkBuilder: (props: ExplorerLinkBuilderProps) => string
-  // set this to show faucets and similar
   isTestnet?: boolean
   networkLogoPath: string
-  // contains the forked off chainId
   underlyingChainId?: number
   bridge?: {
     icon: string
@@ -40,16 +30,11 @@ export type NetworkConfig = {
   }
 }
 
-const hydration = (chainsMap.get("hydration") as EvmParachain).evmClient.chain
-
-export type BaseNetworkConfig = Omit<NetworkConfig, "explorerLinkBuilder">
-
-export const networkConfigs: Record<string, BaseNetworkConfig> = {
+export const networkConfigs: Record<string, NetworkConfig> = {
   [ChainId.hydration]: {
     name: "Hydration",
     baseAssetSymbol: "",
     baseAssetDecimals: 18,
-    explorerLink: hydration.blockExplorers?.default?.url ?? "",
     isTestnet: false,
     networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },
@@ -57,7 +42,6 @@ export const networkConfigs: Record<string, BaseNetworkConfig> = {
     name: "Hydration Testnet",
     baseAssetSymbol: "",
     baseAssetDecimals: 18,
-    explorerLink: "https://explorer.nice.hydration.cloud",
     isTestnet: true,
     networkLogoPath: "https://app.hydration.net/favicon/apple-touch-icon.png",
   },

@@ -106,12 +106,12 @@ export const RecipientCustomAddressForm: React.FC<
         name="customAddress"
         control={form.control}
         render={({ field, fieldState: { error } }) => (
-          <Box position="relative" py={20}>
+          <Box position="relative" py="xl">
             <Label
               htmlFor={field.name}
               fs="p5"
               color={getToken("text.medium")}
-              pb={10}
+              pb="base"
               display="block"
             >
               {t("recipient.input.customWallet")}
@@ -128,7 +128,7 @@ export const RecipientCustomAddressForm: React.FC<
               }}
             />
             {error && !isSearchMode && (
-              <FormError mt={10}>{error.message}</FormError>
+              <FormError mt="base">{error.message}</FormError>
             )}
           </Box>
         )}

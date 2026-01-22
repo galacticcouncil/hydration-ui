@@ -28,8 +28,10 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
         return t("form.recipientMissing")
       case XcmTransferStatus.InsufficientBalance:
         return t("form.insufficientBalance")
+      case XcmTransferStatus.ApproveAndTransferValid:
+        return t("form.submit.approve")
       default:
-        return t("form.confirmSend")
+        return t("form.submit.transfer")
     }
   }
 
