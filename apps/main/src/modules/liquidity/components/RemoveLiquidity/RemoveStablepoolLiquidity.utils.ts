@@ -122,7 +122,7 @@ export const useStablepoolRemoveLiquidity = ({
   useEffect(() => {
     if (!split && liquidityOutOneAsset) {
       const receiveAmount = toBig(liquidityOutOneAsset, receiveAsset.decimals)
-      form.setValue("receiveAmount", receiveAmount.toFixed(0))
+      form.setValue("receiveAmount", receiveAmount.toString())
     }
   }, [form, split, liquidityOutOneAsset, receiveAsset.decimals, slippage])
 
@@ -145,7 +145,9 @@ export const useStablepoolRemoveLiquidity = ({
             share_amount: BigInt(removeAmount),
             asset_id: Number(receiveAsset.id),
             min_amount_out: BigInt(
-              scale(form.watch("receiveAmount"), receiveAsset.decimals),
+              toBig(form.watch("receiveAmount"), receiveAsset.decimals).toFixed(
+                0,
+              ),
             ),
           })
 

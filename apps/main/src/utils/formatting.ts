@@ -100,8 +100,5 @@ export const toBig = (
   decimals: number,
 ) =>
   Big(
-    big.toDecimal(
-      typeof amount === "bigint" ? amount : BigInt(amount.toString()),
-      decimals,
-    ),
+    big.toDecimal(amount instanceof Big ? amount.toString() : amount, decimals),
   )

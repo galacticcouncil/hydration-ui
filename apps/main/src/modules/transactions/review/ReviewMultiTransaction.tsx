@@ -51,7 +51,7 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
   const isFirstTransaction = currentIndex === 0
   const isLastTransaction = currentIndex === txArray.length - 1
 
-  useRouteBlock({ when: (currentIndex > 0 && !isLastSubmitted) || isLoading })
+  useRouteBlock({ when: (currentIndex > 0 || isLoading) && !isLastSubmitted })
 
   useEffect(() => {
     if (!currentBaseConfig) {

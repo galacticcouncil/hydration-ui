@@ -127,7 +127,8 @@ export const useStablepoolAddLiquidity = ({
   const enabledSplit = reserveIds.length > 1
 
   const form = useStablepoolAddLiquidityForm({
-    poolId: stableswapId,
+    stablepoolId: stableswapId,
+    omnipoolId: stableswapId,
     accountBalances,
     activeFieldIds: reserveIds,
     selectedAssetId: initialAssetIdToAdd ?? "",
@@ -304,14 +305,16 @@ export const getStablepoolShares = (
 }
 
 const useStablepoolAddLiquidityFormResolver = (
-  poolId: string,
+  omnipoolId: string,
+  stablepoolId: string,
   accountReserveBalances: Map<string, string>,
 ) => {
-  const omnipoolZodSchema = useAddToOmnipoolZod(poolId)
+  const omnipoolZodSchema = useAddToOmnipoolZod(omnipoolId)
   const { data: reserves } = useBorrowReserves()
 
   const assetReserve = reserves?.formattedReserves.find(
-    ({ underlyingAsset }) => underlyingAsset === getAddressFromAssetId(poolId),
+    ({ underlyingAsset }) =>
+      underlyingAsset === getAddressFromAssetId(stablepoolId),
   )
 
   const maxCapToAdd = assetReserve
@@ -375,14 +378,16 @@ const useStablepoolAddLiquidityFormResolver = (
 }
 
 export const useStablepoolAddLiquidityForm = ({
-  poolId,
+  omnipoolId,
+  stablepoolId,
   accountBalances,
   option = "omnipool",
   activeFieldIds,
   selectedAssetId,
   split = true,
 }: {
-  poolId: string
+  omnipoolId: string
+  stablepoolId: string
   option?: TAddStablepoolLiquidityOption
   accountBalances: Map<string, string>
   activeFieldIds: string[]
@@ -390,7 +395,8 @@ export const useStablepoolAddLiquidityForm = ({
   split?: boolean
 }) => {
   const resolver = useStablepoolAddLiquidityFormResolver(
-    poolId,
+    omnipoolId,
+    stablepoolId,
     accountBalances,
   )
 
