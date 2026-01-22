@@ -197,7 +197,7 @@ export const useRemoveStablepoolLiquidityForm = ({
   return useForm<TRemoveStablepoolLiquidityFormValues>({
     mode: "onChange",
     defaultValues: {
-      amount: balance,
+      amount: "",
       asset,
       split: true,
       receiveAsset,
