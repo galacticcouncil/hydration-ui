@@ -4,7 +4,6 @@ import {
   MIGRATION_LS_KEYS,
   MIGRATION_QUERY_PARAM,
   MIGRATION_TARGET_DOMAIN,
-  MIGRATION_TRIGGER_DOMAIN,
   serializeLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
 import { MigrationExportModal } from "./components/MigrationExportModal"
@@ -18,7 +17,7 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const paramKey = `?${MIGRATION_QUERY_PARAM}=`
   const data = search?.replace(paramKey, "") ?? ""
 
-  const shouldExport = MIGRATION_TRIGGER_DOMAIN === host
+  const shouldExport = false
   const shouldImport =
     MIGRATION_TARGET_DOMAIN === host && search?.startsWith(paramKey)
 
