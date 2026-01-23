@@ -1,5 +1,5 @@
 import { produce } from "immer"
-import { omit, prop, uniqueBy } from "remeda"
+import { omit, uniqueBy } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -11,6 +11,7 @@ import {
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
+import { getUniqueAccountKey } from "@/utils"
 import { getWallet } from "@/wallets"
 import { BaseSubstrateWallet } from "@/wallets/BaseSubstrateWallet"
 
@@ -71,7 +72,7 @@ type Web3ConnectModalMeta = {
   description?: string
 }
 
-type WalletProviderEntry = {
+export type WalletProviderEntry = {
   type: WalletProviderType
   status: WalletProviderStatus
 }
@@ -90,13 +91,14 @@ export type WalletProviderState = {
 export type WalletProviderStore = WalletProviderState & {
   toggle: (mode?: WalletMode, meta?: Web3ConnectModalMeta) => void
   setAccount: (account: StoredAccount | null) => void
-  setAccounts: (accounts: StoredAccount[]) => void
+  setAccounts: (accounts: StoredAccount[], type: WalletProviderType) => void
   setBalances: (balances: ReadonlyMap<string, number>) => void
   setStatus: (
     provider: WalletProviderType | null,
     status: WalletProviderStatus,
   ) => void
   getStatus: (provider: WalletProviderType | null) => WalletProviderStatus
+  getProviders: (mode: WalletMode) => WalletProviderEntry[]
   getConnectedProviders: (mode: WalletMode) => WalletProviderEntry[]
   setError: (error: string) => void
   disconnect: (provider?: WalletProviderType) => void
@@ -127,14 +129,22 @@ export const useWeb3Connect = create<WalletProviderStore>()(
             meta: meta ?? null,
           }
         }),
-      setAccounts: (accounts) =>
-        set((state) => ({
-          ...state,
-          accounts: uniqueBy(
-            [...state.accounts, ...accounts],
-            prop("publicKey"),
-          ),
-        })),
+      setAccounts: (accounts, type) =>
+        set((state) => {
+          const otherAccounts = state.accounts.filter(
+            (a) => a.provider !== type,
+          )
+
+          const newAccounts = uniqueBy(
+            [...otherAccounts, ...accounts],
+            getUniqueAccountKey,
+          )
+
+          return {
+            ...state,
+            accounts: newAccounts,
+          }
+        }),
       setAccount: (account) => {
         if (account) {
           const wallet = getWallet(account.provider)
@@ -176,7 +186,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         const foundProvider = get().providers.find((p) => p.type === provider)
         return foundProvider?.status ?? WalletProviderStatus.Disconnected
       },
-      getConnectedProviders: (mode: WalletMode) => {
+      getProviders: (mode: WalletMode) => {
         const { providers } = get()
 
         if (mode === WalletMode.Default) {
@@ -192,6 +202,13 @@ export const useWeb3Connect = create<WalletProviderStore>()(
 
           return true
         })
+      },
+      getConnectedProviders: (mode: WalletMode) => {
+        const { getProviders } = get()
+        const providers = getProviders(mode)
+        return providers.filter(
+          ({ status }) => status === WalletProviderStatus.Connected,
+        )
       },
       setError: (error) => set((state) => ({ ...state, error })),
       disconnect: (givenProvider) => {

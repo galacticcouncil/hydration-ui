@@ -10,8 +10,11 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
 import { FC, Ref } from "react"
+import { pick } from "remeda"
+import { useShallow } from "zustand/shallow"
 
 import { SConnectedButton } from "@/components/Web3ConnectButton.styled"
+import { useWeb3Connect, WalletProviderStatus } from "@/hooks"
 import { useAccount } from "@/hooks/useAccount"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { getAccountAvatarTheme } from "@/utils"
@@ -25,8 +28,16 @@ export const Web3ConnectButton: FC<
 > = ({ ref, allowIncompatibleAccounts = false, ...props }) => {
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
+  const { providers } = useWeb3Connect(useShallow(pick(["providers"])))
 
-  if (!allowIncompatibleAccounts && account?.isIncompatible) {
+  const connectedProviders = providers.filter(
+    (provider) => provider.status === WalletProviderStatus.Connected,
+  )
+
+  const isIncompatible = !allowIncompatibleAccounts && !!account?.isIncompatible
+  const isConnectedWithoutAccount = connectedProviders.length > 0 && !account
+
+  if (isIncompatible || isConnectedWithoutAccount) {
     return (
       <Button
         ref={ref}

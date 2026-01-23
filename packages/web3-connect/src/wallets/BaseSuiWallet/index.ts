@@ -8,7 +8,7 @@ import { Wallet as StandardWallet } from "@mysten/wallet-standard"
 import { WalletProviderType } from "@/config/providers"
 import { SuiSigner } from "@/signers/SuiSigner"
 import { SubscriptionFn, Wallet, WalletAccount } from "@/types/wallet"
-import { NotInstalledError } from "@/utils/errors"
+import { AuthError, NotInstalledError } from "@/utils/errors"
 
 export class BaseSuiWallet implements Wallet {
   provider = "" as WalletProviderType
@@ -55,21 +55,20 @@ export class BaseSuiWallet implements Wallet {
       !this.rawExtension ||
       !isWalletWithRequiredFeatureSet(this.rawExtension)
     ) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     const wallet = this.rawExtension
 
     try {
-      await wallet.features["standard:connect"].connect()
+      await wallet.features["standard:connect"].connect().catch(() => {
+        throw new AuthError(this)
+      })
 
       const { accounts } = wallet
 
       if (!accounts.length) {
-        throw new Error("No accounts returned from wallet")
+        throw new AuthError(this)
       }
 
       const account = accounts[0]
@@ -102,10 +101,7 @@ export class BaseSuiWallet implements Wallet {
   subscribeAccounts = (callback: SubscriptionFn) => {
     const extension = this._extension
     if (!extension) {
-      throw new NotInstalledError(
-        `The 'Wallet.enable()' function should be called first.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     const eventsFeature = extension.features["standard:events"]
