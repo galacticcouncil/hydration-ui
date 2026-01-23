@@ -3,7 +3,6 @@ import {
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
-import Big from "big.js"
 import { useMemo } from "react"
 
 import {
@@ -13,7 +12,7 @@ import {
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
 import { useAssetsPrice } from "@/states/displayAsset"
-import { toDecimal } from "@/utils/formatting"
+import { toBig } from "@/utils/formatting"
 import { numericallyStrDesc } from "@/utils/sort"
 
 const ASSET_ITEM_HEIGHT = 50
@@ -74,9 +73,7 @@ export const AssetList: React.FC<AssetListProps> = ({
         balance,
         balanceDisplay:
           balance && price
-            ? Big(toDecimal(balance.amount, balance.decimals))
-                .times(price)
-                .toString()
+            ? toBig(balance.amount, balance.decimals).times(price).toString()
             : undefined,
       }
     })

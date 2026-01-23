@@ -1,6 +1,6 @@
 {
   "beta.title": "Beta version",
-  "beta.description": "For production transfers, please use battle tested xcm in original app",
+  "beta.description": "For production transfers, please use battle tested XCM in original app",
   "approve": "Approve",
   "approve.description": "Approve {{ amount, number }} {{ symbol }} spending cap on {{ srcChain }}",
   "approve.title": "Approve spending cap",
@@ -19,7 +19,6 @@
   "error.maxAmount": "Maximum transferable amount is {{ amount, number }} {{ symbol }}",
   "error.minAmount": "Minimum transferable amount is {{ amount, number }} {{ symbol }}",
   "form.amountMissing": "Enter an amount",
-  "form.submit.transfer": "Transfer",
   "form.submit.approve": "Approve & Transfer",
   "form.insufficientBalance": "Insufficient balance",
   "form.processing": "Processing...",
@@ -40,7 +39,6 @@
   "summary.relayerFee": "Relayer fee",
   "summary.sourceFee": "Source chain fee",
   "summary.feeEstimationNotAvailable": "Estimation not available",
-  "transfer": "Transfer",
   "transfer.error.generic": "An unexpected error occurred while preparing the transfer.",
   "tx.description": "Transfer {{ amount, number }} {{ symbol }} to {{ destChain }}",
   "tx.toast.submitted": "Sending {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}...",

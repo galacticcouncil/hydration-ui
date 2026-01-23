@@ -1,9 +1,7 @@
-import { Transfer } from "@galacticcouncil/xc-sdk"
-import { useQuery } from "@tanstack/react-query"
+import { TransferValidationReport } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { xcmTransferReportQuery } from "@/api/xcm"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 
 const REPORT_ERROR_KEYS = [
@@ -19,9 +17,10 @@ const isReportErrorKey = (error: string): error is ReportErrorKey => {
   return REPORT_ERROR_KEYS.includes(error as ReportErrorKey)
 }
 
-export const useXcmTransferAlerts = (transfer: Transfer | null): XcmAlert[] => {
+export const useXcmTransferAlerts = (
+  transferReport: TransferValidationReport[] | null,
+): XcmAlert[] => {
   const { t } = useTranslation(["xcm"])
-  const { data: transferReport } = useQuery(xcmTransferReportQuery(transfer))
   return useMemo(() => {
     if (!transferReport) return []
     const alerts: XcmAlert[] = []

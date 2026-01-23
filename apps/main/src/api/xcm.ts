@@ -1,4 +1,4 @@
-import { formatSourceChainAddress, safeStringify } from "@galacticcouncil/utils"
+import { formatSourceChainAddress } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
@@ -128,7 +128,7 @@ export const useCrossChainBalanceSubscription = (
   return { isLoading, isError }
 }
 
-type XcmTransferArgs = {
+export type XcmTransferArgs = {
   readonly srcAddress: string
   readonly srcAsset: string
   readonly srcChain: string
@@ -184,11 +184,14 @@ export const xcmTransferQuery = (
   })
 }
 
-export const xcmTransferReportQuery = (transfer: Transfer | null) =>
+export const xcmTransferReportQuery = (
+  transfer: Transfer | null,
+  transferArgs: XcmTransferArgs,
+) =>
   queryOptions({
     enabled: !!transfer,
     placeholderData: keepPreviousData,
-    queryKey: ["xcm", "report", safeStringify(transfer)],
+    queryKey: ["xcm", "report", transferArgs],
     queryFn: async () => {
       if (!transfer) return []
       return transfer.validate()
@@ -198,11 +201,12 @@ export const xcmTransferReportQuery = (transfer: Transfer | null) =>
 export const xcmTransferCallQuery = (
   transfer: Transfer | null,
   amount: string,
+  transferArgs: XcmTransferArgs,
 ) =>
   queryOptions({
     enabled: !!transfer && !!amount,
     placeholderData: keepPreviousData,
-    queryKey: ["xcm", "call", safeStringify(transfer)],
+    queryKey: ["xcm", "call", amount, transferArgs],
     queryFn: async () => {
       if (!transfer) throw new Error("Invalid transfer")
       return transfer.buildCall(amount)

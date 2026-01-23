@@ -1,7 +1,13 @@
+import {
+  formatDestChainAddress,
+  formatSourceChainAddress,
+} from "@galacticcouncil/utils"
+import { Account } from "@galacticcouncil/web3-connect"
 import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 
+import { XcmTransferArgs } from "@/api/xcm"
 import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
@@ -61,4 +67,31 @@ export const calculateTransferDestAmount = (
 export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
   const tags = (route?.tags ?? []) as XcmTags
   return tags.some((tag) => XCM_BRIDGE_TAGS.includes(tag))
+}
+
+export const getXcmTransferArgs = (
+  account: Account | null,
+  values: XcmFormValues,
+): XcmTransferArgs => {
+  const { srcChain, srcAsset, destChain, destAsset, destAddress } = values
+  const isValidPair =
+    srcChain && srcAsset
+      ? srcChain.assetsData.values().some((a) => a.asset.key === srcAsset.key)
+      : false
+
+  const isValidAsset = !!srcAsset && !!destAsset && isValidPair
+
+  return {
+    srcAddress:
+      account && srcChain
+        ? formatSourceChainAddress(account.address, srcChain)
+        : "",
+    srcAsset: isValidAsset ? srcAsset.key : "",
+    srcChain: srcChain?.key ?? "",
+    destAddress: destChain
+      ? formatDestChainAddress(destAddress, destChain)
+      : "",
+    destAsset: isValidAsset ? destAsset.key : "",
+    destChain: destChain?.key ?? "",
+  }
 }

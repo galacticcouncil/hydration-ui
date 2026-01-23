@@ -6,7 +6,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { ConfigBuilder, EvmParachain } from "@galacticcouncil/xc-core"
 import { Transfer } from "@galacticcouncil/xc-sdk"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useShallowCompareEffect } from "react-use"
@@ -15,7 +15,6 @@ import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
 import {
   useCrossChainBalanceSubscription,
   useCrossChainConfigService,
-  xcmTransferCallQuery,
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
@@ -141,11 +140,17 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const srcChainKey = srcChain?.key ?? ""
   const destChainKey = destChain?.key ?? ""
 
-  const { data: xcmTransfer, isLoading: isLoadingTransfer } =
-    useXcmTransfer(form)
+  const {
+    transfer: xcmTransfer,
+    isLoadingTransfer,
+    call,
+    report,
+  } = useXcmTransfer(form)
+
+  const alerts = useXcmTransferAlerts(report)
 
   useEffect(() => {
-    setTransfer(xcmTransfer ?? null)
+    setTransfer(xcmTransfer)
     form.setValue(
       "destAmount",
       srcAsset && srcAmount && xcmTransfer
@@ -173,10 +178,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const isLoading =
     isLoadingTransfer || isLoadingSrcBalances || isLoadingDestBalances
-
-  const alerts = useXcmTransferAlerts(form.formState.isValid ? transfer : null)
-  const transferCall = useQuery(xcmTransferCallQuery(transfer, srcAmount))
-  const call = transferCall.data ?? null
 
   return (
     <XcmContext.Provider
