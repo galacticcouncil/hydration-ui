@@ -217,7 +217,7 @@ export const useOmnipoolPositions = (pool: OmnipoolAssetTable) => {
     lpFeeOmnipool,
     lpFeeStablepool,
   } = pool
-  //
+
   const getDepositAprs = useDepositAprs()
   const minJoinAmount = useMinOmnipoolFarmJoin(farms, meta)
 
