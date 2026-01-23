@@ -13,7 +13,7 @@ import z from "zod"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
 import { AssetType, TAssetData } from "@/api/assets"
 import { useBorrowReserves } from "@/api/borrow"
-import { StableSwapBase } from "@/api/pools"
+import { StableSwapBase, useOmnipoolIds } from "@/api/pools"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
 import {
   useAddToOmnipoolZod,
@@ -94,7 +94,9 @@ export const useStablepoolAddLiquidity = ({
   const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { account } = useAccount()
   const meta = getAssetWithFallback(stableswapId)
+  const { data: omnipoolIds } = useOmnipoolIds()
 
+  const isAddableToOmnipool = omnipoolIds?.includes(pool.id.toString())
   const { stablepoolAssets, accountBalances } = useMemo(() => {
     const stablepoolAssets: { asset: TAssetData; balance: string }[] = []
     const accountBalances: Map<string, string> = new Map()
@@ -124,12 +126,15 @@ export const useStablepoolAddLiquidity = ({
     reserves: addebleReserves,
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
+  const enabledSplit = reserveIds.length > 1
 
   const form = useStablepoolAddLiquidityForm({
     poolId: stableswapId,
     accountBalances,
     activeFieldIds: reserveIds,
     selectedAssetId: initialAssetIdToAdd ?? "",
+    split: enabledSplit,
+    option: isAddableToOmnipool ? "omnipool" : "stablepool",
   })
   const [option, activeFields, selectedAssetId] = form.watch([
     "option",
@@ -262,6 +267,8 @@ export const useStablepoolAddLiquidity = ({
     reserveIds,
     displayOption: true,
     poolShare: undefined,
+    enabledSplit,
+    isAddableToOmnipool,
   }
 }
 

@@ -143,6 +143,7 @@ const RemoveStablepoolLiquidityJSX = ({
               <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
                 assetFieldName="asset"
                 amountFieldName="amount"
+                label={t("common:withdraw")}
                 maxBalance={balance}
                 assets={[]}
                 sx={{ py: 0 }}

@@ -41,7 +41,7 @@ export default defineConfig({
             return "icons"
           }
         },
-        experimentalMinChunkSize: 100_000,
+        experimentalMinChunkSize: 20_000,
       },
     },
   },

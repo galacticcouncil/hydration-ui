@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import { Box } from "@/components"
 import { Crosshair } from "@/components/TradingViewChart/components/Crosshair"
 import { PriceIndicator } from "@/components/TradingViewChart/components/PriceIndicator"
+import { PriceMarkers } from "@/components/TradingViewChart/components/PriceMarkers"
 import {
   crosshair,
   grid,
@@ -19,6 +20,7 @@ import {
   OhlcData,
   renderSeries,
   subscribeCrosshairMove,
+  TradingViewChartSeries,
 } from "@/components/TradingViewChart/utils"
 import { useTheme } from "@/theme"
 
@@ -36,6 +38,7 @@ export type TradingViewChartProps = ChartTypeProps & {
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
+  priceLines?: Array<number>
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
@@ -44,10 +47,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   height = 400,
   hidePriceIndicator,
   onCrosshairMove,
+  priceLines = [],
 }) => {
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
+  const [seriesApi, setSeriesApi] = useState<TradingViewChartSeries | null>(
+    null,
+  )
 
   const onCrosshairMoveRef = useRef(onCrosshairMove)
   useEffect(() => {
@@ -90,6 +97,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     chart.timeScale().fitContent()
 
+    setSeriesApi(series)
+
     if (
       crosshairRef.current &&
       (hidePriceIndicator || !!priceIndicatorRef.current)
@@ -117,6 +126,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       <div ref={chartContainerRef} />
       <Crosshair ref={crosshairRef} {...crosshairData} />
       {!hidePriceIndicator && <PriceIndicator ref={priceIndicatorRef} />}
+      {seriesApi && priceLines.length > 0 && (
+        <PriceMarkers priceLines={priceLines} seriesApi={seriesApi} />
+      )}
     </Box>
   )
 }

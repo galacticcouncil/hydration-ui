@@ -1,3 +1,4 @@
+import { getSquidSdk } from "@galacticcouncil/indexer/squid"
 import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
@@ -5,39 +6,36 @@ import {
   Input,
   Spinner,
 } from "@galacticcouncil/ui/components"
-import { pingRpc } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import {
-  RpcFormValues,
-  useRpcFormSchema,
-} from "@/components/ProviderRpcSelect/components/RpcForm.utils"
-import { useRpcListStore } from "@/states/provider"
+  SquidFormValues,
+  useSquidFormSchema,
+} from "@/components/ProviderRpcSelect/components/SquidForm.utils"
+import { useSquidListStore } from "@/states/provider"
 
-const PING_TIMEOUT = 10000
-
-export const RpcForm = () => {
+export const SquidForm = () => {
   const { t } = useTranslation()
-  const { addRpc } = useRpcListStore()
+  const { addSquid } = useSquidListStore()
 
-  const form = useForm<RpcFormValues>({
-    defaultValues: { address: "wss://" },
+  const form = useForm<SquidFormValues>({
+    defaultValues: { address: "" },
     mode: "onChange",
-    resolver: standardSchemaResolver(useRpcFormSchema()),
+    resolver: standardSchemaResolver(useSquidFormSchema()),
   })
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async ({ address }: RpcFormValues) => {
-      const status = await pingRpc(address, PING_TIMEOUT)
-
-      if (status.ping === Infinity) {
-        throw new Error(t("rpc.change.modal.errors.rpcInvalid"))
+    mutationFn: async ({ address }: SquidFormValues) => {
+      try {
+        await getSquidSdk(address).LatestBlockHeightQuery()
+      } catch (error) {
+        throw new Error(t("rpc.change.modal.errors.indexerInvalid"))
       }
 
-      addRpc(address)
+      addSquid(address)
       form.reset()
     },
     onMutate: () => {
@@ -58,7 +56,7 @@ export const RpcForm = () => {
             <Input
               {...field}
               customSize="large"
-              placeholder="wss://"
+              placeholder="https://"
               autoComplete="off"
               readOnly={isPending}
               iconStart={Plus}
@@ -69,9 +67,9 @@ export const RpcForm = () => {
                 ) : (
                   <Button
                     variant="secondary"
-                    type="submit"
-                    {...props}
                     sx={{ px: 12 }}
+                    {...props}
+                    type="submit"
                   >
                     {t("add")}
                   </Button>

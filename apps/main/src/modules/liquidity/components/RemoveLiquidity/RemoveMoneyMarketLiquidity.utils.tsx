@@ -95,7 +95,7 @@ export const useRemoveMoneyMarketLiquidity = ({
     const fee = calculatePoolFee(pool.fee)
     const minReceive = Big(tradeMinReceive)
 
-    if (minReceive.gt(0) && fee) {
+    if (fee) {
       return reserves.map((reserve) => {
         const maxValue = minReceive
           .div(totalIssuance)

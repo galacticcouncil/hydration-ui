@@ -17,6 +17,8 @@ import { queryKeysFactory } from "@/ui-config/queries"
 
 export interface RepayActionProps {
   amountToRepay: string
+  amountToRepayMax: string
+  isMaxSelected: boolean
   poolReserve: ComputedReserveData
   customGasPrice?: string
   poolAddress: string
@@ -30,6 +32,8 @@ export interface RepayActionProps {
 
 export const RepayActions = ({
   amountToRepay,
+  amountToRepayMax,
+  isMaxSelected,
   poolReserve,
   poolAddress,
   symbol,
@@ -92,10 +96,9 @@ export const RepayActions = ({
       setMainTxState({ ...mainTxState, loading: true })
 
       const repayParams = {
-        amountToRepay:
-          amountToRepay === "-1"
-            ? amountToRepay
-            : parseUnits(amountToRepay, poolReserve.decimals).toString(),
+        amountToRepay: isMaxSelected
+          ? amountToRepayMax
+          : parseUnits(amountToRepay, poolReserve.decimals).toString(),
         poolAddress,
         repayWithATokens,
         debtType,

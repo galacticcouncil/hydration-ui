@@ -12,6 +12,7 @@ import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/
 import { LiquidityPositionModals } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionModals"
 import { LiquidityPositionAction } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
 import {
+  isIsolatedPoolLiquidity,
   XYKPosition,
   XYKPositionDeposit,
 } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
@@ -25,6 +26,7 @@ import {
   StableswapPosition,
 } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.data"
 import { StableSwapPositionModals } from "@/modules/wallet/assets/MyLiquidity/StableSwapPositionModals"
+import { XYKLiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/XYKLiquidityDetailExpanded"
 import { XYKSharesPositionModals } from "@/modules/wallet/assets/MyLiquidity/XYKSharesPositionModals"
 import { AddLiquidityModalContent } from "@/routes/liquidity/$id.add"
 import { AccountOmnipoolPosition } from "@/states/account"
@@ -101,37 +103,53 @@ export const MyLiquidityTable: FC<Props> = ({
         }
         expandable={isMobile ? false : "single"}
         getIsExpandable={({ positions }) => positions.length >= 1}
-        renderSubComponent={(detail) => (
-          <LiquidityDetailExpanded
-            asset={detail.meta}
-            positions={detail.positions}
-            onLiquidityAction={(action, position, assetId) =>
-              setIsDetailOpen({
-                type: "liquidity-position",
-                detail,
-                position,
-                assetId,
-                action,
-              })
-            }
-            onXykSharesAction={(action, position) =>
-              setIsDetailOpen({
-                type: "xyk-shares-position",
-                detail,
-                position,
-                action,
-              })
-            }
-            onStableSwapAction={(action, position) =>
-              setIsDetailOpen({
-                type: "stableswap-position",
-                detail,
-                position,
-                action,
-              })
-            }
-          />
-        )}
+        renderSubComponent={(detail) =>
+          isIsolatedPoolLiquidity(detail) ? (
+            <XYKLiquidityDetailExpanded
+              asset={detail.meta}
+              positions={detail.positions}
+              onLiquidityAction={(action, position, assetId) =>
+                setIsDetailOpen({
+                  type: "liquidity-position",
+                  detail,
+                  position,
+                  assetId,
+                  action,
+                })
+              }
+              onXykSharesAction={(action, position) =>
+                setIsDetailOpen({
+                  type: "xyk-shares-position",
+                  detail,
+                  position,
+                  action,
+                })
+              }
+            />
+          ) : (
+            <LiquidityDetailExpanded
+              asset={detail.meta}
+              positions={detail.positions}
+              onLiquidityAction={(action, position, assetId) =>
+                setIsDetailOpen({
+                  type: "liquidity-position",
+                  detail,
+                  position,
+                  assetId,
+                  action,
+                })
+              }
+              onStableSwapAction={(action, position) =>
+                setIsDetailOpen({
+                  type: "stableswap-position",
+                  detail,
+                  position,
+                  action,
+                })
+              }
+            />
+          )
+        }
         emptyState={<MyLiquidityEmptyState />}
         onRowClick={(detail) =>
           setIsDetailOpen({ type: "mobile-modal-default", detail })

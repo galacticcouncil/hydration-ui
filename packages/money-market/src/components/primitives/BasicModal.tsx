@@ -19,7 +19,7 @@ export const BasicModal = ({
   return (
     <Modal open={open} onOpenChange={handleClose} disableInteractOutside>
       <ModalHeader title={title} />
-      <ModalBody>{children}</ModalBody>
+      <ModalBody scrollable={false}>{children}</ModalBody>
     </Modal>
   )
 }

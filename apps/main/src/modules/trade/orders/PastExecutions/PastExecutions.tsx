@@ -1,9 +1,13 @@
 import { Box, Flex, Separator, Skeleton } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import {
+  getMinusTokenPx,
+  getToken,
+  getTokenPx,
+} from "@galacticcouncil/ui/utils"
+import { FC, Fragment } from "react"
 
+import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
 import { PastExecutionsHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsHeader"
-import { PastExecutionsList } from "@/modules/trade/orders/PastExecutions/PastExecutionsList"
 import { PastExecutionsListHeader } from "@/modules/trade/orders/PastExecutions/PastExecutionsListHeader"
 import { usePastExecutionsData } from "@/modules/trade/orders/PastExecutions/usePastExecutionsData"
 
@@ -30,11 +34,28 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
         {isLoading ? (
           <Skeleton height={100} />
         ) : (
-          <PastExecutionsList
-            assetIn={assetIn}
-            assetOut={assetOut}
-            executions={executions}
-          />
+          <Flex
+            direction="column"
+            gap={2}
+            px={getTokenPx("containers.paddings.primary")}
+            sx={{ overflowY: "auto" }}
+          >
+            {executions.map((execution, index) => (
+              <Fragment key={execution.id}>
+                {index > 0 && (
+                  <Separator
+                    sx={{ flexShrink: 0 }}
+                    mx={getMinusTokenPx("containers.paddings.primary")}
+                  />
+                )}
+                <PastExecutionItem
+                  assetIn={assetIn}
+                  assetOut={assetOut}
+                  execution={execution}
+                />
+              </Fragment>
+            ))}
+          </Flex>
         )}
       </Flex>
     </Box>

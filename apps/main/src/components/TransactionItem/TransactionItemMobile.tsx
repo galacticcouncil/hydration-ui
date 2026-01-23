@@ -1,5 +1,6 @@
 import { SubScan } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   ButtonIcon,
   ExternalLink,
   Flex,
@@ -7,7 +8,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -30,8 +31,8 @@ type StatusProps =
     }
 
 type Props = StatusProps & {
-  readonly timestamp: string | null
-  readonly message?: string
+  readonly timestamp: Date | null
+  readonly message?: string | null
   readonly link?: string | null
   readonly className?: string
 }
@@ -51,23 +52,24 @@ export const TransactionItemMobile: FC<Props> = ({
       : [null, null]
 
   return (
-    <Flex
-      width="100%"
-      justify="space-between"
-      p={getTokenPx("containers.paddings.secondary")}
-      className={className}
-    >
-      <Flex direction="column" gap={getTokenPx("containers.paddings.senary")}>
-        <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
-          {sent ?? "⎯"}
-        </Text>
-        {timestamp && (
-          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.low")}>
-            {t("date.datetime", { value: new Date(timestamp) })}
+    <TransactionItemMobileContainer>
+      <Flex
+        justify="space-between"
+        flex={1}
+        p={getTokenPx("containers.paddings.secondary")}
+        className={className}
+      >
+        <Flex direction="column" gap={getTokenPx("containers.paddings.senary")}>
+          <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+            {sent ?? "⎯"}
           </Text>
-        )}
-      </Flex>
-      <Flex align="center" gap={getTokenPx("containers.paddings.primary")}>
+          {timestamp && (
+            <Text fw={500} fs="p6" lh={1.4} color={getToken("text.low")}>
+              {t("date.datetime", { value: timestamp })}
+            </Text>
+          )}
+        </Flex>
+
         <Flex
           direction="column"
           align="end"
@@ -86,6 +88,8 @@ export const TransactionItemMobile: FC<Props> = ({
             </TransactionStatusMessage>
           )}
         </Flex>
+      </Flex>
+      <TransactionItemMobileAction>
         {link && (
           <ButtonIcon asChild>
             <ExternalLink href={link}>
@@ -93,7 +97,27 @@ export const TransactionItemMobile: FC<Props> = ({
             </ExternalLink>
           </ButtonIcon>
         )}
-      </Flex>
+      </TransactionItemMobileAction>
+    </TransactionItemMobileContainer>
+  )
+}
+
+export const TransactionItemMobileContainer = ({
+  children,
+}: {
+  readonly children: ReactNode
+}) => {
+  return (
+    <Flex align="center" gap={getTokenPx("containers.paddings.primary")}>
+      {children}
     </Flex>
   )
+}
+
+export const TransactionItemMobileAction = ({
+  children,
+}: {
+  readonly children?: ReactNode
+}) => {
+  return <Box size={34}>{children}</Box>
 }

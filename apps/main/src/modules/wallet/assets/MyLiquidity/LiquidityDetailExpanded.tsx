@@ -1,37 +1,28 @@
 import { FC } from "react"
 
+import { TAssetData } from "@/api/assets"
+import { useOmnipoolActiveFarm } from "@/api/farms"
+import { useMinOmnipoolFarmJoin } from "@/modules/liquidity/components/JoinFarms/JoinFarms.utils"
 import { SLiquidityDetailExpandedContainer } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded.styled"
 import { LiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition"
 import { LiquidityPositionAction } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
-import { TAsset } from "@/providers/assetsProvider"
 import { AccountOmnipoolPosition } from "@/states/account"
 
-import {
-  isXYKPositionDeposit,
-  XYKPosition,
-  XYKPositionDeposit,
-} from "./MyIsolatedPoolsLiquidity.data"
+import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
 import {
   isStableswapPosition,
-  isXYKPosition,
-  MyLiquidityPosition,
+  OmnipoolLiquidityByAsset,
   StableswapPosition,
 } from "./MyLiquidityTable.data"
 import { StableswapLiquidityPosition } from "./StableswapPosition"
-import { XYKDeposit } from "./XYKDeposit"
-import { XYKSharesPositions } from "./XYKSharesPositions"
 
 type Props = {
-  readonly asset: TAsset
-  readonly positions: ReadonlyArray<MyLiquidityPosition>
+  readonly asset: TAssetData
+  readonly positions: OmnipoolLiquidityByAsset["positions"]
   readonly onLiquidityAction: (
     action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
     position: AccountOmnipoolPosition | XYKPositionDeposit,
     assetId: string,
-  ) => void
-  readonly onXykSharesAction: (
-    action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
-    position: XYKPosition,
   ) => void
   readonly onStableSwapAction: (
     action: LiquidityPositionAction.Remove | LiquidityPositionAction.Add,
@@ -43,33 +34,15 @@ export const LiquidityDetailExpanded: FC<Props> = ({
   asset,
   positions,
   onLiquidityAction,
-  onXykSharesAction,
   onStableSwapAction,
-}) => (
-  <SLiquidityDetailExpandedContainer>
-    {positions.map((position, index) => {
-      if (isXYKPosition(position)) {
-        if (isXYKPositionDeposit(position)) {
-          return (
-            <XYKDeposit
-              key={index}
-              number={index + 1}
-              position={position}
-              onAction={(action) =>
-                onLiquidityAction(action, position, position.meta.id)
-              }
-            />
-          )
-        } else {
-          return (
-            <XYKSharesPositions
-              key={index}
-              position={position}
-              onAction={(action) => onXykSharesAction(action, position)}
-            />
-          )
-        }
-      } else {
+}) => {
+  const { data: activeFarms = [] } = useOmnipoolActiveFarm(asset.id)
+  const farms = activeFarms.filter((farm) => farm.apr !== "0")
+  const minJoinAmount = useMinOmnipoolFarmJoin(farms, asset)
+
+  return (
+    <SLiquidityDetailExpandedContainer>
+      {positions.map((position, index) => {
         if (isStableswapPosition(position)) {
           return (
             <StableswapLiquidityPosition
@@ -85,13 +58,15 @@ export const LiquidityDetailExpanded: FC<Props> = ({
               asset={asset}
               number={index + 1}
               position={position}
+              farms={farms}
+              minJoinAmount={minJoinAmount}
               onAction={(action) =>
                 onLiquidityAction(action, position, asset.id)
               }
             />
           )
         }
-      }
-    })}
-  </SLiquidityDetailExpandedContainer>
-)
+      })}
+    </SLiquidityDetailExpandedContainer>
+  )
+}

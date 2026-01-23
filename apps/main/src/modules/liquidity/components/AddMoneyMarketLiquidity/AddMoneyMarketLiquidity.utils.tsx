@@ -87,6 +87,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     },
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
+  const enabledSplit = reserveIds.length > 1
 
   const form = useStablepoolAddLiquidityForm({
     poolId: stableswapId,
@@ -94,7 +95,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     accountBalances,
     option: defaultOption,
     activeFieldIds: reserveIds,
-    split: initialSplit,
+    split: !enabledSplit ? false : initialSplit,
   })
 
   const [split, selectedAssetId, activeFields] = form.watch([
@@ -131,6 +132,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
     stablepoolAssets,
     erc20Id,
     defaultOption,
+    enabledSplit,
   }
 }
 
@@ -633,6 +635,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     minReceiveAmount,
     healthFactor,
     poolShare: omnipoolShares?.poolShare,
+    isAddableToOmnipool: true,
     ...formData,
     meta,
   }
@@ -906,6 +909,7 @@ export const useAddMoneyMarketLiquidity = ({
     poolShare: "",
     minReceiveAmount,
     healthFactor: Big(debouncedAmountIn).gt(0) ? healthFactor : undefined,
+    isAddableToOmnipool: false,
     ...formData,
   }
 }

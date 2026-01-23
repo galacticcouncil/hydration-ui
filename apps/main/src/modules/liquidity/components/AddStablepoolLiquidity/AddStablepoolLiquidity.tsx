@@ -159,6 +159,8 @@ export const AddStablepoolLiquidityForm = ({
   healthFactor,
   reserveIds,
   poolShare,
+  enabledSplit,
+  isAddableToOmnipool,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -247,7 +249,8 @@ export const AddStablepoolLiquidityForm = ({
           borderColor: getToken("details.separators"),
         }}
         customHeader={
-          !erc20Id && (
+          !erc20Id &&
+          isAddableToOmnipool && (
             <Flex
               align="center"
               mt={getTokenPx("containers.paddings.primary")}
@@ -261,8 +264,8 @@ export const AddStablepoolLiquidityForm = ({
                     options={addStablepoolOptions}
                     selected={value}
                     onSelect={(option) => onChange(option.id)}
-                    disabled={disabled}
                     sx={{ flex: 1 }}
+                    disabled={disabled}
                   />
                 )}
               />
@@ -287,6 +290,7 @@ export const AddStablepoolLiquidityForm = ({
                 size="large"
                 checked={field.value}
                 onCheckedChange={onToggleClick}
+                disabled={!enabledSplit}
               />
             </Flex>
           )}
@@ -500,7 +504,6 @@ const AddStablepoolLiquiditySummary = ({
               },
             ]
           : []),
-
         ...(erc20Id && healthFactor?.isSignificantChange
           ? [
               {

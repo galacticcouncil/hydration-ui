@@ -1,3 +1,4 @@
+import isPropValid from "@emotion/is-prop-valid"
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Overlay } from "@radix-ui/react-dialog"
@@ -12,7 +13,15 @@ import { mq } from "@/theme"
 
 const DEFAULT_ANIMATION_DURATION = 200
 
-export const SModalOverlay = styled(Overlay)<{ animationDurationMs?: number }>(
+const shouldForwardProp = (prop: string) =>
+  isPropValid(prop) &&
+  prop !== "animationDurationMs" &&
+  prop !== "hasTopContent" &&
+  prop !== "noPadding"
+
+export const SModalOverlay = styled(Overlay, {
+  shouldForwardProp,
+})<{ animationDurationMs?: number }>(
   ({ theme, animationDurationMs = DEFAULT_ANIMATION_DURATION }) => css`
     position: fixed;
     inset: 0;
@@ -36,7 +45,9 @@ export const SModalOverlay = styled(Overlay)<{ animationDurationMs?: number }>(
   `,
 )
 
-export const SModalWrapper = styled(Overlay)<{ animationDurationMs?: number }>`
+export const SModalWrapper = styled(Overlay, { shouldForwardProp })<{
+  animationDurationMs?: number
+}>`
   --modal-block-offset: 10vh;
   --modal-animation-duration: ${({
     animationDurationMs = DEFAULT_ANIMATION_DURATION,
@@ -60,7 +71,9 @@ export const SModalWrapper = styled(Overlay)<{ animationDurationMs?: number }>`
   }
 `
 
-export const SModalContent = styled(Content)<{
+export const SModalContent = styled(Content, {
+  shouldForwardProp,
+})<{
   hasTopContent?: boolean
 }>(
   ({ theme, hasTopContent }) => css`
@@ -162,7 +175,9 @@ export const SModalTitleContainer = styled(Flex)`
   min-height: var(--modal-header-button-size);
 `
 
-export const SModalBody = styled(Box)<{ noPadding?: boolean }>`
+export const SModalBody = styled(Box, { shouldForwardProp })<{
+  noPadding?: boolean
+}>`
   padding: ${({ noPadding }) =>
     noPadding ? 0 : "var(--modal-content-padding)"};
 
