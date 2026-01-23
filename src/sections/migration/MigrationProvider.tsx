@@ -9,7 +9,7 @@ import { MigrationExportModal } from "./components/MigrationExportModal"
 import { MigrationImportModal } from "./components/MigrationImportModal"
 
 export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
-  const { search, host } = useLocation()
+  const { search } = useLocation()
 
   const [migrationCanceled, setMigrationCanceled] = useState(false)
 
