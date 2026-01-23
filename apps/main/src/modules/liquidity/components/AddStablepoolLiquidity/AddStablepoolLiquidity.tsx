@@ -160,6 +160,7 @@ export const AddStablepoolLiquidityForm = ({
   reserveIds,
   poolShare,
   enabledSplit,
+  isAddableToOmnipool,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -248,7 +249,8 @@ export const AddStablepoolLiquidityForm = ({
           borderColor: getToken("details.separators"),
         }}
         customHeader={
-          !erc20Id && (
+          !erc20Id &&
+          isAddableToOmnipool && (
             <Flex
               align="center"
               mt={getTokenPx("containers.paddings.primary")}
