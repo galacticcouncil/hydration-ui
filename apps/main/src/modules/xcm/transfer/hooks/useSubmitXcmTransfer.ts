@@ -20,7 +20,7 @@ import {
 import { toDecimal } from "@/utils/formatting"
 
 export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
-  const { t } = useTranslation("xcm")
+  const { t } = useTranslation(["xcm", "common"])
   const { createTransaction } = useTransactionsStore()
   const configService = useCrossChainConfigService()
   const { account } = useAccount()
@@ -110,7 +110,7 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
                 },
               },
               {
-                stepTitle: t("transfer"),
+                stepTitle: t("common:transfer"),
                 tx: buildTransferTransaction,
               },
             ],
