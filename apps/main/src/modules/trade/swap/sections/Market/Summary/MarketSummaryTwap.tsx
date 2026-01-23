@@ -84,11 +84,11 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
     transactionCosts,
   )
 
-  if (!sellAsset || !buyAsset || !tradeFeeAsset) {
-    return null
-  }
-
   const [twapPrice, swapPrice, twapPriceHuman, twapPriceAsset] = (() => {
+    if (!sellAsset || !buyAsset) {
+      return [0n, 0n, "0", null]
+    }
+
     if (twap.type === TradeOrderType.TwapBuy) {
       const twapPrice =
         twap.amountIn + calculateSlippage(twap.amountIn, twapSlippage)
@@ -109,6 +109,13 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
 
     return [twapPrice, swapPrice, twapPriceHuman, buyAsset]
   })()
+
+  const [twapPriceDisplay, { isLoading: twapPriceDisplayLoading }] =
+    useDisplayAssetPrice(twapPriceAsset?.id ?? "", twapPriceHuman)
+
+  if (!sellAsset || !buyAsset || !tradeFeeAsset || !twapPriceAsset) {
+    return null
+  }
 
   const tradeAmount = isBuy ? twap.amountIn : twap.amountOut
 
@@ -156,6 +163,8 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
             </span>
           </SummaryRowValue>
         }
+        amountDisplay={twapPriceDisplay}
+        isLoading={twapPriceDisplayLoading}
         isExpanded={isSummaryExpanded}
         onIsExpandedChange={changeSummaryExpanded}
       />

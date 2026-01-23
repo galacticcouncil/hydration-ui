@@ -91,3 +91,11 @@ export const durationInDaysAndHoursFromNow = (
 
   return customFormatDuration({ end: milliseconds }).duration
 }
+
+// `SlippageLimitReached` -> `Slippage limit reached`
+export const formatPascalCaseToSentence = (text: string): string =>
+  text
+    .replace(/([A-Z])/g, " $1")
+    .trim()
+    .toLowerCase()
+    .replace(/^\w/, (c) => c.toUpperCase())

@@ -18,7 +18,7 @@ type Props = {
   readonly subpageMenu?: ReactNode
   readonly crumbs?: BreadcrumbItem[]
   readonly ignoreCurrentSearch?: boolean
-  readonly subpageMenuHidden?: boolean
+  readonly alwasShowSubNav?: boolean
 }
 
 export const SubpageLayout: FC<Props> = ({
@@ -26,6 +26,7 @@ export const SubpageLayout: FC<Props> = ({
   subpageMenu,
   crumbs = [],
   ignoreCurrentSearch,
+  alwasShowSubNav,
 }) => {
   const translations = useMenuTranslations()
   const pathname = useLocation({
@@ -46,7 +47,8 @@ export const SubpageLayout: FC<Props> = ({
   )
 
   const hasCrumbs = crumbs.length > 0
-  const hasSubpageMenu = !hasCrumbs && (subpageMenu || subNav.length >= 2)
+  const hasSubpageMenu =
+    !hasCrumbs && (alwasShowSubNav || subpageMenu || subNav.length >= 2)
 
   return (
     <Container>

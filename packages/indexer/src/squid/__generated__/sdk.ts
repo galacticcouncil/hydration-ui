@@ -319,7 +319,6 @@ export const DcaScheduleExecutionsDocument = `
     }
     dcaScheduleExecutionsByScheduleId(
       filter: {status: {in: ["Executed", "Failed"]}}
-      orderBy: ID_DESC
     ) {
       nodes {
         id

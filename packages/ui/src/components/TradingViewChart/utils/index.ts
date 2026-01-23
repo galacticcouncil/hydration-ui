@@ -176,6 +176,8 @@ export const renderSeries = (
   return [series]
 }
 
+export type TradingViewChartSeries = ReturnType<typeof renderSeries>[0]
+
 export type CrosshairCallbackData = ChartDataExtended | null
 
 export const subscribeCrosshairMove = (

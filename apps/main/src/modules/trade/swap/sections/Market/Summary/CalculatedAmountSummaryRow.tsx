@@ -3,6 +3,7 @@ import {
   Box,
   Flex,
   Icon,
+  SummaryRowDisplayValue,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -16,7 +17,9 @@ type Props = {
   readonly label: string
   readonly tooltip: string
   readonly amount: ReactNode
+  readonly amountDisplay: ReactNode
   readonly isExpanded: boolean
+  readonly isLoading: boolean
   readonly onIsExpandedChange: (isExpanded: boolean) => void
 }
 
@@ -24,7 +27,9 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
   label,
   tooltip,
   amount,
+  amountDisplay,
   isExpanded,
+  isLoading,
   onIsExpandedChange,
 }) => {
   const { t } = useTranslation(["common", "trade"])
@@ -38,14 +43,23 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
 
   return (
     <SwapSummaryRow
+      sx={{ alignItems: "flex-start" }}
       label={label}
+      loading={isLoading}
       content={
         <Flex align="center" gap={10}>
-          {typeof amount === "string" ? (
-            <SummaryRowValue>{amount}</SummaryRowValue>
-          ) : (
-            amount
-          )}
+          <Flex direction="column" align="flex-end">
+            {typeof amount === "string" ? (
+              <SummaryRowValue>{amount}</SummaryRowValue>
+            ) : (
+              amount
+            )}
+            {typeof amountDisplay === "string" ? (
+              <SummaryRowDisplayValue>{amountDisplay}</SummaryRowDisplayValue>
+            ) : (
+              amountDisplay
+            )}
+          </Flex>
           <Icon
             component={isExpanded ? ChevronUp : ChevronDown}
             size={20}

@@ -44,6 +44,7 @@ import { TRemoveStablepoolLiquidityFormValues } from "./RemoveStablepoolLiquidit
 export type TRemoveMoneyMarketLiquidityProps = RemoveLiquidityProps & {
   erc20Id: string
   stableswapId: string
+  title?: string
 }
 
 export const RemoveMoneyMarketLiquidity = (
@@ -90,7 +91,7 @@ export const RemoveMoneyMarketLiquidityForm = (
     mutation,
     healthFactor,
   } = useRemoveMoneyMarketLiquidity({ ...props, ...props.pool })
-  const { closable, onBack, receiveAssets } = props
+  const { closable, onBack, receiveAssets, title } = props
 
   const {
     formState: { isValid },
@@ -108,7 +109,7 @@ export const RemoveMoneyMarketLiquidityForm = (
     <FormProvider {...form}>
       <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
         <ModalHeader
-          title={t("removeLiquidity")}
+          title={title ?? t("removeLiquidity")}
           closable={closable}
           onBack={onBack}
         />
@@ -123,6 +124,7 @@ export const RemoveMoneyMarketLiquidityForm = (
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
+              label={t("common:withdraw")}
               maxBalance={balance}
               assets={[]}
               sx={{ py: 0 }}
@@ -152,7 +154,7 @@ export const RemoveMoneyMarketLiquidityForm = (
 
             {!split ? (
               <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-                label={t("common:minimumReceive")}
+                label={t("common:get")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
                 maxBalance={balance}

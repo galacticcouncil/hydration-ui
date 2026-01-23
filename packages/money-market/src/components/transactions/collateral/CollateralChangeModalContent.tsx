@@ -1,4 +1,3 @@
-import { calculateHealthFactorFromBalancesBigUnits } from "@aave/math-utils"
 import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
@@ -19,6 +18,10 @@ import { IsolationModeWarning } from "@/components/warnings/IsolationModeWarning
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
+import {
+  calculateHFAfterSupply,
+  calculateHFAfterWithdraw,
+} from "@/utils/hfUtils"
 import { zeroLTVBlockingWithdraw } from "@/utils/transactions"
 
 import { CollateralChangeActions } from "./CollateralChangeActions"
@@ -44,9 +47,6 @@ export const CollateralChangeModalContent: React.FC<
   // Health factor calculations
   const isCollateralEnabled = userReserve.usageAsCollateralEnabledOnUser
   const usageAsCollateralModeAfterSwitch = !isCollateralEnabled
-  const currenttotalCollateralMarketReferenceCurrency = Big(
-    user.totalCollateralMarketReferenceCurrency,
-  )
 
   // Messages
   const showEnableIsolationModeMsg =
@@ -58,18 +58,18 @@ export const CollateralChangeModalContent: React.FC<
   const showExitIsolationModeMsg =
     poolReserve.isIsolated && !usageAsCollateralModeAfterSwitch
 
-  const totalCollateralAfterSwitchETH =
-    currenttotalCollateralMarketReferenceCurrency[
-      usageAsCollateralModeAfterSwitch ? "plus" : "minus"
-    ](userReserve.underlyingBalanceMarketReferenceCurrency)
-
-  const healthFactorAfterSwitch = calculateHealthFactorFromBalancesBigUnits({
-    collateralBalanceMarketReferenceCurrency:
-      totalCollateralAfterSwitchETH.toString(),
-    borrowBalanceMarketReferenceCurrency:
-      user.totalBorrowsMarketReferenceCurrency,
-    currentLiquidationThreshold: user.currentLiquidationThreshold,
-  })
+  const healthFactorAfterSwitch = usageAsCollateralModeAfterSwitch
+    ? calculateHFAfterSupply({
+        user,
+        poolReserve,
+        supplyAmount: userReserve.underlyingBalance.toString(),
+      })
+    : calculateHFAfterWithdraw({
+        user,
+        userReserve,
+        poolReserve,
+        withdrawAmount: userReserve.underlyingBalance.toString(),
+      })
 
   const assetsBlockingWithdraw: string[] = zeroLTVBlockingWithdraw(user)
 

@@ -127,12 +127,14 @@ export const useStablepoolAddLiquidity = ({
     reserves: addebleReserves,
   })
   const initialAssetIdToAdd = assetsToSelect[0]?.id
+  const enabledSplit = reserveIds.length > 1
 
   const form = useStablepoolAddLiquidityForm({
     poolId: stableswapId,
     accountBalances,
     activeFieldIds: reserveIds,
     selectedAssetId: initialAssetIdToAdd ?? "",
+    split: enabledSplit,
   })
   const [option, activeFields, selectedAssetId] = form.watch([
     "option",
@@ -274,6 +276,7 @@ export const useStablepoolAddLiquidity = ({
     reserveIds,
     displayOption: true,
     poolShare: undefined,
+    enabledSplit,
   }
 }
 

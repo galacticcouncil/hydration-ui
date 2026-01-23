@@ -18,7 +18,7 @@ type Props = {
 export const useSubmitTransferPosition = ({ onClose }: Props) => {
   const { t } = useTranslation("wallet")
   const { createTransaction } = useTransactionsStore()
-  const { native } = useAssets()
+  const { isErc20 } = useAssets()
 
   const rpc = useRpcProvider()
   const { papi } = rpc
@@ -37,18 +37,12 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       const normalizedDest = normalizeSS58Address(address)
 
       return createTransaction({
-        tx:
-          asset.id === native.id
-            ? papi.tx.Currencies.transfer({
-                currency_id: Number(native.id),
-                dest: normalizedDest,
-                amount: BigInt(amountScaled),
-              })
-            : papi.tx.Tokens.transfer({
-                currency_id: Number(asset.id),
-                dest: normalizedDest,
-                amount: BigInt(amountScaled),
-              }),
+        withExtraGas: isErc20(asset),
+        tx: papi.tx.Currencies.transfer({
+          currency_id: Number(asset.id),
+          dest: normalizedDest,
+          amount: BigInt(amountScaled),
+        }),
         // TODO insufficient fee check
         // overrides: insufficientFee
         //   ? {
