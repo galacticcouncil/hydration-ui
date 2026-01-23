@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { useMarketAssetsTableColumns } from "@/modules/borrow/markets/components/MarketAssetsTable.columns"
 
 type MarketAssetsTableProps = {
@@ -32,6 +33,7 @@ export const MarketAssetsTable: React.FC<MarketAssetsTableProps> = ({
         }
         data={data}
         columns={columns}
+        {...useDataTableUrlSorting("/borrow/markets/", "sort")}
       />
     </TableContainer>
   )

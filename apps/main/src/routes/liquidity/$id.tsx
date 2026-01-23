@@ -10,6 +10,8 @@ import { PoolDetails } from "@/modules/liquidity/PoolDetails"
 
 const searchSchema = z.object({
   expanded: z.boolean().optional(),
+  omnipoolPage: z.number().optional(),
+  isolatedPage: z.number().optional(),
 })
 
 const Component = () => {

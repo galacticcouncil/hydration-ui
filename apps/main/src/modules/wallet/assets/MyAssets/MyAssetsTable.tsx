@@ -8,6 +8,8 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, Ref, useState } from "react"
 
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
 import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal"
@@ -50,7 +52,8 @@ export const MyAssetsTable: FC<Props> = ({
         ref={ref}
         isLoading={isLoading}
         paginated
-        pageSize={10}
+        {...useDataTableUrlPagination("/wallet/assets", "assetsPage", 10)}
+        {...useDataTableUrlSorting("/wallet/assets", "assetsSort")}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
           row.original.symbol

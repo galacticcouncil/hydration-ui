@@ -3,16 +3,16 @@ import {
   Modal,
   Paper,
   TableContainer,
-  usePriorityTableSort,
 } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import {
-  OtcColumn,
   otcColumnSortPriority,
   OtcOfferTabular,
   useOtcTableColums,
@@ -32,11 +32,6 @@ type Props = {
 export const OtcTable: FC<Props> = ({ searchPhrase }) => {
   const { t } = useTranslation("trade")
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
-
-  const [sortState, setSortState] = usePriorityTableSort(
-    otcColumnSortPriority,
-    [{ id: OtcColumn.MarketPrice, desc: false }],
-  )
 
   const [isDetailOpen, setIsDetailOpen] = useState<OtcOfferTabular | null>(null)
 
@@ -79,7 +74,12 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
       <TableContainer as={Paper}>
         <DataTable
           paginated
-          pageSize={10}
+          {...useDataTableUrlPagination("/trade/otc", "page", 10)}
+          {...useDataTableUrlSorting(
+            "/trade/otc",
+            "sort",
+            otcColumnSortPriority,
+          )}
           globalFilter={searchPhrase}
           globalFilterFn={(row) =>
             matchAsset(row.original.assetIn, searchPhrase) ||
@@ -90,8 +90,6 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
           isLoading={isTableLoading}
           emptyState={t("otc.noOrders")}
           isMultiSort
-          sorting={sortState}
-          onSortingChange={setSortState}
           onRowClick={account ? setIsDetailOpen : undefined}
         />
       </TableContainer>
