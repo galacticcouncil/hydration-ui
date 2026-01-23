@@ -9,9 +9,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { useIsolatedPoolFarms } from "@/api/farms"
+import { Farm } from "@/api/farms"
 import { toBig } from "@/utils/formatting"
 
 import { SLiquidityPosition } from "./LiquidityPosition.styled"
@@ -24,16 +25,20 @@ import { ShareTokenBalance } from "./MyIsolatedPoolsLiquidity.data"
 export const XYKSharesPositions = ({
   position,
   onAction,
+  farms,
+  minJoinAmount,
 }: {
   position: ShareTokenBalance
   onAction: (
     action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
   ) => void
+  farms: Farm[]
+  minJoinAmount?: string
 }) => {
   const { t } = useTranslation(["wallet", "common", "liquidity"])
-  const { data: activeFarms } = useIsolatedPoolFarms(position.amm_pool_id)
 
   const sharesHuman = toBig(position.shares, position.meta.decimals)
+  const canJoinFarms = Big(position.shares.toString()).gt(minJoinAmount ?? 0)
 
   return (
     <SLiquidityPosition sx={{ backgroundColor: "inherit" }}>
@@ -65,7 +70,7 @@ export const XYKSharesPositions = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <XYKSharesPositionMoreActions
-            farmsToJoin={activeFarms?.filter((farm) => farm.apr !== "0") ?? []}
+            farmsToJoin={canJoinFarms ? farms : []}
             onAction={onAction}
           />
         </DropdownMenuContent>
