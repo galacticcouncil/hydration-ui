@@ -46,7 +46,7 @@ export const userSwapsQuery = (
   squidSdk: SquidSdk,
   address: SwapsQueryAddress,
   assetIds: Array<string>,
-  page: number,
+  pageIndex: number,
   pageSize: number,
 ) =>
   queryOptions({
@@ -56,7 +56,7 @@ export const userSwapsQuery = (
       "orders",
       address,
       assetIds,
-      page,
+      pageIndex,
       pageSize,
     ],
     queryFn: () =>
@@ -72,7 +72,7 @@ export const userSwapsQuery = (
             allInvolvedAssetRegistryIds: { contains: [assetId] },
           })),
         }),
-        offset: (page - 1) * pageSize,
+        offset: pageIndex * pageSize,
         pageSize,
       }),
     enabled: !!address,
@@ -83,7 +83,7 @@ export const userOrdersQuery = (
   address: string,
   status: Array<DcaScheduleStatus>,
   assetIds: Array<string>,
-  page: number,
+  pageIndex: number,
   pageSize: number,
 ) =>
   queryOptions({
@@ -95,7 +95,7 @@ export const userOrdersQuery = (
       address,
       status,
       assetIds,
-      page,
+      pageIndex,
       pageSize,
     ],
     queryFn: () =>
@@ -106,7 +106,7 @@ export const userOrdersQuery = (
           assetOutId: { in: assetIds },
         }),
         status,
-        offset: (page - 1) * pageSize,
+        offset: pageIndex * pageSize,
         pageSize,
       }),
     enabled: !!address,
@@ -162,7 +162,7 @@ export const useRoutedTradesQuery = (
   squidSdk: SquidSdk,
   address: string,
   assetIds: Array<string>,
-  page: number,
+  pageIndex: number,
   pageSize: number,
 ) =>
   queryOptions({
@@ -172,7 +172,7 @@ export const useRoutedTradesQuery = (
       "routedTrades",
       address,
       assetIds,
-      page,
+      pageIndex,
       pageSize,
     ],
     queryFn: () =>
@@ -182,7 +182,7 @@ export const useRoutedTradesQuery = (
           inputAssetRegistryIds: { containedBy: assetIds },
           outputAssetRegistryIds: { containedBy: assetIds },
         }),
-        offset: (page - 1) * pageSize,
+        offset: pageIndex * pageSize,
         pageSize,
       }),
     enabled: !!address,

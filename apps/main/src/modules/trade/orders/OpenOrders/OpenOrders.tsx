@@ -3,6 +3,7 @@ import { DataTable, Modal } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
 import {
   OrderData,
@@ -12,13 +13,12 @@ import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrde
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
-const PAGE_SIZE = 10
-
 type Props = {
   readonly allPairs: boolean
+  readonly paginationProps: PaginationProps
 }
 
-export const OpenOrders: FC<Props> = ({ allPairs }) => {
+export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
   const { assetIn, assetOut } = useSearch({
     from: "/trade/_history",
   })
@@ -28,12 +28,11 @@ export const OpenOrders: FC<Props> = ({ allPairs }) => {
     readonly isTermination: boolean
   } | null>(null)
 
-  const [page, setPage] = useState(1)
   const { orders, totalCount, isLoading } = useOrdersData(
     [DcaScheduleStatus.Created],
     allPairs ? [] : [assetIn, assetOut],
-    page,
-    PAGE_SIZE,
+    paginationProps.pagination.pageIndex,
+    paginationProps.pagination.pageSize,
   )
 
   const columns = useOpenOrdersColumns()
@@ -45,9 +44,8 @@ export const OpenOrders: FC<Props> = ({ allPairs }) => {
         columns={columns}
         isLoading={isLoading}
         paginated
-        pageSize={PAGE_SIZE}
+        {...paginationProps}
         rowCount={totalCount}
-        onPageClick={setPage}
         onRowClick={(detail) =>
           setIsDetailOpen({ detail, isTermination: false })
         }

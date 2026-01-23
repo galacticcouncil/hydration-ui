@@ -2,8 +2,9 @@ import { Flex, Grid } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
-import { lazy, useState } from "react"
+import { lazy } from "react"
 
+import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
 import { HollarBanner } from "@/modules/borrow/hollar/HollarBanner"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
@@ -27,7 +28,10 @@ const WalletAssetFiltersMobile = lazy(async () => ({
 export const WalletAssetsPage = () => {
   const { account } = useAccount()
   const { isMobile } = useBreakpoints()
-  const [searchPhrase, setSearchPhrase] = useState("")
+  const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
+    "/wallet/assets",
+    "search",
+  )
 
   const { category } = useSearch({
     from: "/wallet/assets",

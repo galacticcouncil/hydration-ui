@@ -14,6 +14,7 @@ const searchSchema = z
     assetIn: z.string().default(HOLLAR_ASSET_ID),
     assetOut: z.string().default(NATIVE_ASSET_ID),
     allPairs: z.boolean().default(true),
+    page: z.number().optional(),
   })
   .overwrite((search) => {
     if (

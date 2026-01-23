@@ -6,10 +6,11 @@ import { PoolTypeTabs } from "@/modules/liquidity/components/PoolsTypeTabs"
 import { SearchInput } from "@/modules/liquidity/components/SearchInput"
 
 type PoolsFiltersProps = {
+  search: string
   onChange: (value: string) => void
 }
 
-export const PoolsFilters = ({ onChange }: PoolsFiltersProps) => {
+export const PoolsFilters = ({ search, onChange }: PoolsFiltersProps) => {
   const [isFocused, setIsFocused] = useState(false)
   const { isMobile } = useBreakpoints()
 
@@ -24,8 +25,9 @@ export const PoolsFilters = ({ onChange }: PoolsFiltersProps) => {
     >
       {!isHiddenTabs && <PoolTypeTabs />}
       <SearchInput
-        onChange={onChange}
+        search={search}
         isFocused={isFocused}
+        onChange={onChange}
         onFocus={setIsFocused}
       />
     </Flex>

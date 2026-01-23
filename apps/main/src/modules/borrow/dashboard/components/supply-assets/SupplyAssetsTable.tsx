@@ -14,6 +14,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { sortBy } from "remeda"
 
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { useSupplyAssetsTableColumns } from "@/modules/borrow/dashboard/components/supply-assets/SupplyAssetsTable.columns"
@@ -54,6 +55,9 @@ export const SupplyAssetsTable = () => {
     }
   }, [data])
 
+  const gSorting = useDataTableUrlSorting("/borrow/dashboard", "supplyGSort")
+  const sorting = useDataTableUrlSorting("/borrow/dashboard", "supplySort")
+
   return (
     <>
       {isMobile ? (
@@ -84,6 +88,7 @@ export const SupplyAssetsTable = () => {
             fixedLayout
             data={strategyAssets}
             columns={strategyColumns}
+            {...gSorting}
           />
           <DataTable
             skeletonRowCount={4}
@@ -96,6 +101,7 @@ export const SupplyAssetsTable = () => {
             fixedLayout
             data={baseAssets}
             columns={baseColumns}
+            {...sorting}
           />
         </TableContainer>
       )}
