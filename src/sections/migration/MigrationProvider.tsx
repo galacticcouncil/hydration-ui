@@ -3,7 +3,6 @@ import { useLocation } from "react-use"
 import {
   MIGRATION_LS_KEYS,
   MIGRATION_QUERY_PARAM,
-  MIGRATION_TARGET_DOMAIN,
   serializeLocalStorage,
 } from "sections/migration/MigrationProvider.utils"
 import { MigrationExportModal } from "./components/MigrationExportModal"
@@ -18,8 +17,7 @@ export const MigrationProvider: FC<PropsWithChildren> = ({ children }) => {
   const data = search?.replace(paramKey, "") ?? ""
 
   const shouldExport = false
-  const shouldImport =
-    MIGRATION_TARGET_DOMAIN === host && search?.startsWith(paramKey)
+  const shouldImport = false
 
   if (shouldImport) {
     return <MigrationImportModal data={data} />
