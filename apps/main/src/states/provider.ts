@@ -1,3 +1,4 @@
+import { parseIndexerUrlName } from "@galacticcouncil/indexer/squid/lib/parseIndexerUrlName"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -33,6 +34,46 @@ export const useRpcListStore = create<RpcListStore>()(
     }),
     {
       name: "rpcList",
+    },
+  ),
+)
+
+type SquidListStore = {
+  squidList: Array<{
+    name?: string
+    url: string
+  }>
+  addSquid: (url: string) => void
+  removeSquid: (url: string) => void
+  renameSquid: (url: string, newName: string) => void
+}
+
+export const useSquidListStore = create<SquidListStore>()(
+  persist(
+    (set) => ({
+      squidList: [],
+      addSquid: (url) =>
+        set((store) => ({
+          squidList: [
+            ...store.squidList,
+            { url, name: parseIndexerUrlName(url) },
+          ],
+        })),
+      removeSquid: (urlToRemove) =>
+        set((store) => ({
+          squidList: store.squidList.filter(
+            (squid) => squid.url !== urlToRemove,
+          ),
+        })),
+      renameSquid: (urlToRename, name) =>
+        set((store) => ({
+          squidList: store.squidList.map((squid) =>
+            squid.url === urlToRename ? { ...squid, name } : squid,
+          ),
+        })),
+    }),
+    {
+      name: "squidList",
     },
   ),
 )

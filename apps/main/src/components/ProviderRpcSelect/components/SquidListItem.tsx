@@ -2,14 +2,24 @@ import {
   getSquidSdk,
   latestBlockHeightQuery,
 } from "@galacticcouncil/indexer/squid"
-import { Box, Flex, Spinner, Text } from "@galacticcouncil/ui/components"
+import { Edit, Trash } from "@galacticcouncil/ui/assets/icons"
+import {
+  Box,
+  Flex,
+  Icon,
+  Spinner,
+  Text,
+  TextButton,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { isNumber } from "remeda"
 
-import { useBestNumber } from "@/api/chain"
+import { ListItemEditForm } from "@/components/ProviderRpcSelect/components/ListItemEditForm"
+import { useBlockHeightStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
+import { useSquidListStore } from "@/states/provider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 import { SRpcRadio, SRpcRadioThumb } from "./RpcListItem.styled"
@@ -19,7 +29,9 @@ export type SquidListItemProps = {
   name: string
   url: string
   isActive?: boolean
+  isCustom?: boolean
   onClick?: (url: string) => void
+  onRemove?: (url: string) => void
 }
 
 export const SquidListHeader: React.FC = () => {
@@ -51,33 +63,46 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
   name,
   url,
   isActive,
+  isCustom,
   onClick,
+  onRemove,
 }) => {
   const { t } = useTranslation()
-  const { data: bestNumber, isLoading: isBestNumberLoading } = useBestNumber()
+  const [isEdit, setIsEdit] = useState(false)
 
-  const squidSdk = useMemo(() => getSquidSdk(url), [url])
+  const squidSdk = getSquidSdk(url)
 
   const { data: blockHeight, isLoading: isBlockHeightLoading } = useQuery(
     latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2),
   )
 
-  const isLoading = isBestNumberLoading || isBlockHeightLoading
+  const isLoading = isBlockHeightLoading
 
-  const blockHeightDifference =
-    isNumber(bestNumber?.parachainBlockNumber) && isNumber(blockHeight)
-      ? bestNumber.parachainBlockNumber - blockHeight
-      : null
+  const status = useBlockHeightStatus(blockHeight ?? 0)
+
+  const { renameSquid } = useSquidListStore()
+
+  if (isEdit) {
+    return (
+      <SSquidListItem data-edit="true">
+        <ListItemEditForm
+          name={name}
+          onClose={() => setIsEdit(false)}
+          onSubmit={(newName) => renameSquid(url, newName)}
+        />
+      </SSquidListItem>
+    )
+  }
 
   return (
     <SSquidListItem
       data-loading={isLoading}
       onClick={() => onClick?.(url)}
-      isInteractive={!!onClick}
+      isInteractive={!!onClick || !!onRemove}
     >
       <Box>
         <Text
-          fs={[14, 16]}
+          fs="p3"
           color={getToken(isActive ? "colors.coral.700" : "text.high")}
         >
           {name}
@@ -93,7 +118,7 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
         {isLoading ? (
           <Spinner size={14} />
         ) : (
-          <Text fs={12} fw={600} color={getToken("text.high")} align="right">
+          <Text fs="p5" fw={600} color={getToken("text.high")} align="right">
             {t("number", {
               value: blockHeight,
             })}
@@ -106,24 +131,35 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
         justify="end"
         align="center"
       >
-        {isLoading ? (
-          <Spinner size={14} />
-        ) : (
-          <Text
-            fs={12}
-            align="right"
-            color={
-              isNumber(blockHeightDifference) && blockHeightDifference < 50
-                ? getToken("accents.success.emphasis")
-                : getToken("accents.danger.emphasis")
-            }
-          >
-            {t("rpc.status.blockHeightDiff", {
-              value: blockHeightDifference,
-            })}
-          </Text>
+        <Text fs={12} align="right" color={getToken(status.color)}>
+          {status.text}
+        </Text>
+        {isCustom && !!onRemove && (
+          <>
+            <Tooltip text={t("remove")} asChild side="top">
+              <TextButton
+                sx={{ p: 4 }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemove(url)
+                }}
+              >
+                <Icon size={16} component={Trash} />
+              </TextButton>
+            </Tooltip>
+            <Tooltip text={t("edit")} asChild side="top">
+              <TextButton
+                sx={{ p: 4 }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setIsEdit(true)
+                }}
+              >
+                <Icon size={16} component={Edit} />
+              </TextButton>
+            </Tooltip>
+          </>
         )}
-
         {!!onClick && (
           <Box sx={{ ml: 8 }}>
             <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>

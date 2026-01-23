@@ -46,6 +46,10 @@ export const Tooltip = ({
   const [open, setOpen] = useState(false)
   const { isMobile } = useBreakpoints()
 
+  if (!text) {
+    return children
+  }
+
   if (isMobile) {
     return (
       <>
