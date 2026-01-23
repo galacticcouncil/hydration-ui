@@ -1,7 +1,7 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, isBinary } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
-import { Binary } from "polkadot-api"
+import { Binary, CompatibilityToken } from "polkadot-api"
 
 import {
   AnyPapiTx,
@@ -76,3 +76,17 @@ export const isValidPapiTxForPermit = (
   txOptions: TxOptions,
 ): tx is AnyPapiTx =>
   isPapiTransaction(tx) && isValidTxOptionsForPermit(txOptions)
+
+export const getPapiTransactionCallData = (
+  tx: AnyTransaction,
+  papiCompatibilityToken: CompatibilityToken,
+): string => {
+  if (!isPapiTransaction(tx)) return ""
+
+  try {
+    const binary = tx.getEncodedData(papiCompatibilityToken)
+    return isBinary(binary) ? binary.asHex() : ""
+  } catch {
+    return ""
+  }
+}

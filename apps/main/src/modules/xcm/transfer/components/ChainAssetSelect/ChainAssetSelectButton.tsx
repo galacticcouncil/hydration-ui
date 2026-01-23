@@ -29,7 +29,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
       {...props}
     >
       {currentSelection ? (
-        <Flex align="center" gap={6}>
+        <Flex align="center" gap="base">
           <ChainLogo chain={currentSelection.chain} />
           <XAssetLogo
             asset={currentSelection.asset}

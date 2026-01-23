@@ -16,7 +16,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
   status,
   ...props
 }) => {
-  const { t } = useTranslation("xcm")
+  const { t } = useTranslation(["xcm", "common"])
 
   const getSubmitButtonText = () => {
     switch (status) {
@@ -28,8 +28,10 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
         return t("form.recipientMissing")
       case XcmTransferStatus.InsufficientBalance:
         return t("form.insufficientBalance")
+      case XcmTransferStatus.ApproveAndTransferValid:
+        return t("form.submit.approve")
       default:
-        return t("form.confirmSend")
+        return t("common:transfer")
     }
   }
 

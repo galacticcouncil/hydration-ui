@@ -15,12 +15,12 @@ export const RecipientCustomInput: React.FC<RecipientCustomInputProps> = ({
   const { t } = useTranslation("xcm")
   const id = useId()
   return (
-    <Box position="relative" py={20}>
+    <Box position="relative" py="xl">
       <Label
         htmlFor={id}
         fs="p5"
         color={getToken("text.medium")}
-        pb={10}
+        pb="base"
         display="block"
       >
         {t("recipient.input.customWallet")}

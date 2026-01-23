@@ -1,4 +1,4 @@
-import { FormError, NumberInput } from "@galacticcouncil/ui/components"
+import { NumberInput } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SNumberInput = styled(NumberInput)(({ theme }) => [
@@ -12,7 +12,7 @@ export const SNumberInput = styled(NumberInput)(({ theme }) => [
   `,
 ])
 
-export const SFormError = styled(FormError)`
+export const SNumberInputAddon = styled.div`
   text-align: right;
   margin-left: auto;
   position: absolute;

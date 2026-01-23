@@ -13,6 +13,7 @@ import {
   AssetAmount,
   AssetRoute,
 } from "@galacticcouncil/xc-core"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 import { isBigInt } from "remeda"
 
@@ -20,7 +21,7 @@ import { AssetBridgeTags } from "@/modules/xcm/transfer/components/ChainAssetSel
 import { XAssetLogo } from "@/modules/xcm/transfer/components/XAssetLogo"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
 import { useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 
 import { SAssetListItem } from "./AssetListItem.styled"
 
@@ -28,6 +29,7 @@ export type AssetListItemProps = {
   asset: Asset
   route: AssetRoute | null
   balance?: AssetAmount
+  balanceDisplay?: string
   isLoading: boolean
   isSelected: boolean
   chain?: AnyChain
@@ -39,6 +41,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
   asset,
   route,
   balance,
+  balanceDisplay,
   chain,
   isLoading,
   isSelected,
@@ -53,7 +56,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
 
   return (
     <SAssetListItem isSelected={isSelected} onClick={onClick} as="button">
-      <Flex align="start" gap={8}>
+      <Flex align="start" gap="base">
         {chain && <XAssetLogo asset={asset} chain={chain} />}
 
         <Text truncate as="div">
@@ -78,10 +81,21 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
         {isLoading ? (
           <Skeleton width={60} />
         ) : balance ? (
-          t("currency", {
-            value: scaleHuman(balance.amount, balance.decimals),
-            symbol: asset?.originSymbol,
-          })
+          <Flex direction="column" align="flex-end">
+            <Text fs="p5" lh={1} fw={600}>
+              {t("number", {
+                value: toDecimal(balance.amount, balance.decimals),
+                symbol: asset?.originSymbol,
+              })}
+            </Text>
+            {Big(balanceDisplay ?? "0").gt(0) && (
+              <Text fs="p6" color={getToken("text.low")}>
+                {t("currency", {
+                  value: balanceDisplay,
+                })}
+              </Text>
+            )}
+          </Flex>
         ) : (
           <Icon
             as="span"

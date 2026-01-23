@@ -24,16 +24,21 @@ export const ChainList: React.FC<ChainListProps> = ({
   selectedChain,
   setSelectedChain,
 }) => {
+  const chainIndex = selectedChain
+    ? items.findIndex(({ chain }) => chain.key === selectedChain.key)
+    : 0
+
+  const initialScrollIndex =
+    chainIndex >= MAX_VISIBLE_CHAIN_ITEMS ? chainIndex : 0
+
   return (
     <VirtualizedList
       items={items}
       itemSize={CHAIN_ITEM_HEIGHT}
       maxVisibleItems={MAX_VISIBLE_CHAIN_ITEMS}
-      initialScrollIndex={items.findIndex(
-        ({ chain }) => chain.key === selectedChain?.key,
-      )}
+      initialScrollIndex={initialScrollIndex}
       sx={{
-        px: 10,
+        px: "base",
         minHeight: CHAIN_ITEM_HEIGHT * MAX_VISIBLE_CHAIN_ITEMS,
       }}
       renderItem={({ chain }) => {
@@ -47,9 +52,9 @@ export const ChainList: React.FC<ChainListProps> = ({
               sx={{
                 width: [42, "100%"],
                 justifyContent: "flex-start",
-                px: 10,
+                px: "base",
               }}
-              gap={4}
+              gap="s"
               onClick={() => setSelectedChain(chain)}
             >
               <ChainLogo chain={chain} size="small" />

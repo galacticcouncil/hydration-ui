@@ -140,7 +140,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   return (
     <Grid columnTemplate={["64px 1fr", "180px 1fr"]}>
       <Box>
-        <Box p={10} visibility={["hidden", "visible"]}>
+        <Box p="base" visibility={["hidden", "visible"]}>
           <Input
             placeholder={t("xcm:chainAssetSelect.search.chains")}
             iconStart={Search}
@@ -157,7 +157,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
         />
       </Box>
       <Flex direction="column">
-        <Box p={10}>
+        <Box p="base">
           <Input
             placeholder={t("xcm:chainAssetSelect.search.assets")}
             iconStart={Search}
@@ -182,7 +182,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
 
         {pendingChain && !isCompatibleWalletMode && (
           <ConnectChainTile
-            p={10}
+            p="base"
             chain={pendingChain}
             onConnect={() =>
               toggle(getWalletModeByChain(pendingChain), {
