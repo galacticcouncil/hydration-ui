@@ -13,6 +13,7 @@ import {
 import { Flex } from "@galacticcouncil/ui/components/Flex"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
+import { t } from "i18next"
 import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -53,12 +54,16 @@ import {
 export const options = [
   {
     id: "stablepool",
-    label: "Remove full",
+    label: t(
+      "liquidity:liquidity.remove.stablepool.modal.position.option.stablepool",
+    ),
     value: "stablepool",
   },
   {
     id: "omnipool",
-    label: "Remove to shares",
+    label: t(
+      "liquidity:liquidity.remove.stablepool.modal.position.option.omnipool",
+    ),
     value: "omnipool",
   },
 ]
@@ -389,7 +394,7 @@ const FeeColumn = ({
   )
 
   const feeDisplay =
-    fee && isValidPrice
+    fee && isValidPrice && amountToRemove
       ? Big(amountToRemove).times(fee).div(100).times(price).toString()
       : undefined
 

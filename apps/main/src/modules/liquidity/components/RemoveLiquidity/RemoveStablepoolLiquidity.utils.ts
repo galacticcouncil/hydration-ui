@@ -104,6 +104,7 @@ export const useRemoveStablepoolLiquidity = ({
     receiveAsset: initialReceiveAsset,
     balance,
     asset: meta,
+    initialAmount: balance,
   })
 
   const { watch, setValue } = form
@@ -600,16 +601,18 @@ export const useRemoveStableswapSharesLiquidity = (
 export const useRemoveStablepoolLiquidityForm = ({
   asset,
   balance,
+  initialAmount,
   receiveAsset,
 }: {
   asset?: TSelectedAsset
   receiveAsset: TAssetData
   balance: string
+  initialAmount?: string
 }) => {
   return useForm<TRemoveStablepoolLiquidityFormValues>({
     mode: "onChange",
     defaultValues: {
-      amount: "",
+      amount: initialAmount ?? "",
       asset,
       split: true,
       receiveAsset,
