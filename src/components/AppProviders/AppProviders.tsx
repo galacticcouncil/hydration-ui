@@ -8,7 +8,6 @@ import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { ProviderResolver } from "sections/provider/ProviderResolver"
-import { MigrationProvider } from "sections/migration/MigrationProvider"
 import { AssetsProvider } from "providers/assets"
 import { BlastCampaignManager } from "sections/blast/BlastCampaignManager"
 
