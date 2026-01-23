@@ -102,6 +102,7 @@ export const ExpandableDynamicFee = ({
                     <Text fs="p5" fw={500} color={getToken("text.high")}>
                       {t("currency", {
                         value: valueDisplay,
+                        maximumFractionDigits: null,
                       })}
                     </Text>
                   )}

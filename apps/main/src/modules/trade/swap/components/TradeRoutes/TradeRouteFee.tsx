@@ -15,6 +15,7 @@ export const TradeRouteFee: FC<Props> = ({ feePct, fees }) => {
   const { t } = useTranslation(["common"])
   const [tradeFeeDisplay] = useDisplayAssetsPrice(
     fees.map((fee) => [fee.asset.id, fee.value] as const),
+    { maximumFractionDigits: null },
   )
 
   return (

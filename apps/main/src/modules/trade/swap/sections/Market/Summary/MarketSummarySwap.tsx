@@ -77,6 +77,7 @@ export const MarketSummarySwap: FC<Props> = ({
   const [tradeFeeDisplay] = useDisplayAssetPrice(
     tradeFeeAsset?.id ?? "",
     tradeFee,
+    { maximumFractionDigits: null },
   )
 
   const transactionFeeAsset = getAssetWithFallback(
@@ -86,6 +87,7 @@ export const MarketSummarySwap: FC<Props> = ({
   const [transactionCostsDisplay] = useDisplayAssetPrice(
     transactionFee?.feeAssetId ?? "",
     transactionCosts,
+    { maximumFractionDigits: null },
   )
 
   const minSummaryAsset = isBuy ? sellAsset : buyAsset
