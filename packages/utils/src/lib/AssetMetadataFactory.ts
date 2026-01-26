@@ -63,7 +63,11 @@ export class AssetMetadataFactory {
     assetId: string | number,
     ecosystem: ChainEcosystem = ChainEcosystem.Polkadot,
   ): string {
-    const key = [ecosystem.toLowerCase(), chainId, "assets", assetId].join("/")
+    const id =
+      ecosystem === ChainEcosystem.Ethereum
+        ? assetId.toString().toLowerCase()
+        : assetId.toString()
+    const key = [ecosystem.toLowerCase(), chainId, "assets", id].join("/")
     return this.assets.find((path) => path.includes(key + "/icon")) ?? ""
   }
 

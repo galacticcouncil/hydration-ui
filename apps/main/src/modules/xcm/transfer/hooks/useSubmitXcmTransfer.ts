@@ -1,12 +1,13 @@
 import { HYDRATION_CHAIN_KEY, isParachain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { ConfigBuilder } from "@galacticcouncil/xc-core"
-import { Transfer } from "@galacticcouncil/xc-sdk"
+import { AnyChain, ConfigBuilder } from "@galacticcouncil/xc-core"
+import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
 import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainConfigService } from "@/api/xcm"
+import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -19,7 +20,7 @@ import {
 import { toDecimal } from "@/utils/formatting"
 
 export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
-  const { t } = useTranslation("xcm")
+  const { t } = useTranslation(["xcm", "common"])
   const { createTransaction } = useTransactionsStore()
   const configService = useCrossChainConfigService()
   const { account } = useAccount()
@@ -53,42 +54,40 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
 
       const call = await transfer.buildCall(srcAmount)
 
-      const tx =
-        srcChain.key === HYDRATION_CHAIN_KEY
-          ? await papi.txFromCallData(Binary.fromHex(call.data))
-          : isParachain(srcChain)
-            ? await srcChain.client
-                .getUnsafeApi()
-                .txFromCallData(Binary.fromHex(call.data))
-            : call
-
-      const buildTransferTransaction = async () => ({
-        title: t("form.title"),
-        description: t("tx.description", i18nVars),
-        invalidateQueries: [["xcm", "transfer"]],
-        tx,
-        toasts: {
-          submitted: t("tx.toast.submitted", i18nVars),
-          success: t("tx.toast.success", i18nVars),
-        },
-        fee: {
-          feeAmount: toDecimal(source.fee.amount, source.fee.decimals),
-          feeSymbol: source.fee.symbol,
-        },
-        meta: {
-          type: TransactionType.Xcm,
-          srcChainKey: srcChain.key,
-          srcChainFee: toDecimal(source.fee.amount, source.fee.decimals),
-          srcChainFeeSymbol: source.fee.symbol,
-          dstChainKey: destChain.key,
-          dstChainFee: toDecimal(
-            destination.fee.amount,
-            destination.fee.decimals,
-          ),
-          dstChainFeeSymbol: destination.fee.symbol,
-          tags: (origin.route.tags as XcmTags) || [],
-        },
-      })
+      const buildTransferTransaction = async () => {
+        const call = await transfer.buildCall(srcAmount)
+        const tx =
+          srcChain.key === HYDRATION_CHAIN_KEY
+            ? await papi.txFromCallData(Binary.fromHex(call.data))
+            : await getExternalChainTx(srcChain, call)
+        return {
+          title: t("form.title"),
+          description: t("tx.description", i18nVars),
+          invalidateQueries: [["xcm", "transfer"]],
+          tx,
+          toasts: {
+            submitted: t("tx.toast.submitted", i18nVars),
+            success: t("tx.toast.success", i18nVars),
+          },
+          fee: {
+            feeAmount: toDecimal(source.fee.amount, source.fee.decimals),
+            feeSymbol: source.fee.symbol,
+          },
+          meta: {
+            type: TransactionType.Xcm,
+            srcChainKey: srcChain.key,
+            srcChainFee: toDecimal(source.fee.amount, source.fee.decimals),
+            srcChainFeeSymbol: source.fee.symbol,
+            dstChainKey: destChain.key,
+            dstChainFee: toDecimal(
+              destination.fee.amount,
+              destination.fee.decimals,
+            ),
+            dstChainFeeSymbol: destination.fee.symbol,
+            tags: (origin.route.tags as XcmTags) || [],
+          },
+        }
+      }
 
       const isApprove = isEvmApproveCall(call)
 
@@ -111,7 +110,7 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
                 },
               },
               {
-                stepTitle: t("transfer"),
+                stepTitle: t("common:transfer"),
                 tx: buildTransferTransaction,
               },
             ],
@@ -123,4 +122,14 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
       return createTransaction(await buildTransferTransaction(), options)
     },
   })
+}
+
+async function getExternalChainTx(
+  chain: AnyChain,
+  call: Call,
+): Promise<AnyPapiTx | Call> {
+  if (!isParachain(chain)) {
+    return call
+  }
+  return chain.client.getUnsafeApi().txFromCallData(Binary.fromHex(call.data))
 }

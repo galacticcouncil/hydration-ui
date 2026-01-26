@@ -28,12 +28,12 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
         justify="space-between"
         align="center"
         direction="row"
-        gap={10}
+        gap="base"
         color={getToken("text.medium")}
       >
         {chain ? (
           <>
-            <Flex gap={10} align="center">
+            <Flex gap="base" align="center">
               <ChainLogo chain={chain} size="large" />
               <Text fs="p3" fw={500}>
                 {t("xcm:chainNotConnected", {

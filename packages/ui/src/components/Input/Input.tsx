@@ -47,6 +47,7 @@ export const Input: FC<InputProps> = ({
   className,
   ref,
   id,
+  autoComplete = "off",
   ...props
 }) => {
   const inputId = useId()
@@ -60,7 +61,12 @@ export const Input: FC<InputProps> = ({
     >
       {leadingElement}
       {IconStart && <IconStart />}
-      <SInput ref={ref} id={usedInputId} {...props} />
+      <SInput
+        ref={ref}
+        id={usedInputId}
+        autoComplete={autoComplete}
+        {...props}
+      />
       {unit && (
         <Label
           sx={{ cursor: "text" }}
