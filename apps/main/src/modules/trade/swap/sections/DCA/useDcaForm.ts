@@ -151,7 +151,7 @@ type Args = {
 export const useDcaForm = ({ assetIn, assetOut }: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { isBalanceLoading } = useAccountBalances()
+  const { isBalanceLoaded } = useAccountBalances()
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -172,12 +172,19 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     resolver: standardSchemaResolver(useSchema(account)),
   })
 
-  const { trigger } = form
+  const { trigger, getValues } = form
+
   useEffect(() => {
-    if (account && !isBalanceLoading) {
+    const { sellAsset, buyAsset } = getValues()
+
+    if (!account || !sellAsset || !buyAsset) {
+      return
+    }
+
+    if (isBalanceLoaded(buyAsset.id) && isBalanceLoaded(sellAsset.id)) {
       trigger()
     }
-  }, [account, isBalanceLoading, trigger])
+  }, [account, trigger, getValues, isBalanceLoaded])
 
   return form
 }
