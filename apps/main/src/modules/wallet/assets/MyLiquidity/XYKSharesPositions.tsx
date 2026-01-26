@@ -9,10 +9,10 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { useIsolatedPoolFarms } from "@/api/farms"
-import { toBig } from "@/utils/formatting"
 
 import { SLiquidityPosition } from "./LiquidityPosition.styled"
 import {
@@ -33,7 +33,10 @@ export const XYKSharesPositions = ({
   const { t } = useTranslation(["wallet", "common", "liquidity"])
   const { data: activeFarms } = useIsolatedPoolFarms(position.amm_pool_id)
 
-  const sharesHuman = toBig(position.shares, position.meta.decimals)
+  const sharesHuman = bigShift(
+    position.shares.toString(),
+    -position.meta.decimals,
+  )
 
   return (
     <SLiquidityPosition sx={{ backgroundColor: "inherit" }}>

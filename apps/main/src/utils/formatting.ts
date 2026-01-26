@@ -94,11 +94,3 @@ export const toBigInt = (
       : amount,
     decimals,
   )
-
-export const toBig = (
-  amount: string | number | bigint | Big,
-  decimals: number,
-) =>
-  Big(
-    big.toDecimal(amount instanceof Big ? amount.toString() : amount, decimals),
-  )

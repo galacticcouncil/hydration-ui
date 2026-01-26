@@ -1,3 +1,4 @@
+import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
 import { pick, prop } from "remeda"
@@ -7,7 +8,6 @@ import { XykDeposit } from "@/api/account"
 import { useShareTokenPrices } from "@/api/spotPrice"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
-import { toBig } from "@/utils/formatting"
 
 import { LiquidityPositionByAsset } from "./MyLiquidityTable.data"
 
@@ -92,7 +92,7 @@ export const useMyIsolatedPoolsLiquidity = () => {
         Big(0),
       )
 
-      const totalHuman = toBig(total, meta.decimals)
+      const totalHuman = bigShift(total.toString(), -meta.decimals)
       const totalDisplay = totalHuman.times(price).toString()
 
       xykEntries.push({

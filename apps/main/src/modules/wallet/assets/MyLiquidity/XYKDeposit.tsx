@@ -1,5 +1,6 @@
 import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -9,7 +10,6 @@ import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils
 import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
 import { LiquidityPositionActions } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionActions"
 import { LiquidityPositionAction } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionMoreActions"
-import { toBig } from "@/utils/formatting"
 
 import { XYKPositionDeposit } from "./MyIsolatedPoolsLiquidity.data"
 
@@ -31,7 +31,10 @@ export const XYKDeposit: FC<Props> = ({ number, position, onAction }) => {
     activeFarms ?? [],
   )
 
-  const sharesHuman = toBig(position.shares, position.meta.decimals)
+  const sharesHuman = bigShift(
+    position.shares.toString(),
+    -position.meta.decimals,
+  )
 
   return (
     <SLiquidityPosition>
