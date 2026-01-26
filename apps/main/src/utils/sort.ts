@@ -160,22 +160,19 @@ export const sortAssets = <T extends TAssetData>(
       const symbolScoreA = getMatchScore(a.symbol, search)
       const symbolScoreB = getMatchScore(b.symbol, search)
 
-      if (symbolScoreA > 0 && symbolScoreB > 0) {
-        if (symbolScoreA !== symbolScoreB) {
-          return symbolScoreB - symbolScoreA
-        }
-      } else if (symbolScoreA > 0 && symbolScoreB === 0) {
-        return -1
-      } else if (symbolScoreA === 0 && symbolScoreB > 0) {
-        return 1
-      }
-      // If neither has symbol matches, compare name scores
-      else if (symbolScoreA === 0 && symbolScoreB === 0) {
+      if (symbolScoreA === 0 && symbolScoreB === 0) {
         const nameScoreA = getMatchScore(a.name, search)
         const nameScoreB = getMatchScore(b.name, search)
 
-        if (nameScoreA !== nameScoreB) {
-          return nameScoreB - nameScoreA
+        const nameScoreDiff = nameScoreB - nameScoreA
+        if (nameScoreDiff !== 0) {
+          return nameScoreDiff
+        }
+      } else {
+        const symbolScoreDiff = symbolScoreB - symbolScoreA
+
+        if (symbolScoreDiff !== 0) {
+          return symbolScoreDiff
         }
       }
     }
