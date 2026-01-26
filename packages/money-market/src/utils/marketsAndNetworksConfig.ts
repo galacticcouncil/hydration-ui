@@ -6,10 +6,7 @@ import {
   marketsData as _marketsData,
 } from "@/ui-config/marketsConfig"
 import {
-  BaseNetworkConfig,
   ChainId,
-  ExplorerLinkBuilderConfig,
-  ExplorerLinkBuilderProps,
   NetworkConfig,
   networkConfigs as _networkConfigs,
 } from "@/ui-config/networksConfig"
@@ -23,7 +20,7 @@ export const networkConfigs = Object.keys(_networkConfigs).reduce(
     acc[value] = _networkConfigs[value]
     return acc
   },
-  {} as { [key: string]: BaseNetworkConfig },
+  {} as { [key: string]: NetworkConfig },
 )
 
 export const marketsData = Object.keys(_marketsData).reduce(
@@ -54,22 +51,6 @@ export const availableMarkets = Object.keys(marketsData).filter((key) =>
   ),
 ) as CustomMarket[]
 
-const linkBuilder =
-  ({
-    baseUrl,
-    addressPrefix = "address",
-    txPrefix = "tx",
-  }: ExplorerLinkBuilderConfig) =>
-  ({ tx, address }: ExplorerLinkBuilderProps): string => {
-    if (tx) {
-      return `${baseUrl}/${txPrefix}/${tx}`
-    }
-    if (address) {
-      return `${baseUrl}/${addressPrefix}/${address}`
-    }
-    return baseUrl
-  }
-
 export function getNetworkConfig(chainId: ChainId): NetworkConfig {
   const config = networkConfigs[chainId]
   if (!config) {
@@ -79,10 +60,7 @@ export function getNetworkConfig(chainId: ChainId): NetworkConfig {
       name: name || `unknown chainId: ${chainId}`,
     } as unknown as NetworkConfig
   }
-  return {
-    ...config,
-    explorerLinkBuilder: linkBuilder({ baseUrl: config.explorerLink }),
-  }
+  return config
 }
 
 export const isFeatureEnabled = {

@@ -12,18 +12,18 @@ import { useTranslation } from "react-i18next"
 
 const XcmSectionSkeleton = () => {
   return (
-    <Stack p={20} gap={10} height={106}>
+    <Stack p="xl" gap="base" height={106}>
       <Flex justify="space-between">
-        <Flex gap={10} direction="column">
+        <Flex gap="base" direction="column">
           <Text fs="p5">
             <Skeleton width={100} />
           </Text>
-          <Flex>
+          <Flex gap="s">
             <Skeleton width={35} height={35} sx={{ borderRadius: "full" }} />
             <Skeleton width={35} height={35} sx={{ borderRadius: "full" }} />
           </Flex>
         </Flex>
-        <Flex gap={10} direction="column" align="end">
+        <Flex gap="base" direction="column" align="end">
           <Text fs="p6">
             <Skeleton width={80} />
           </Text>
@@ -40,14 +40,14 @@ export const XcmTransferSkeleton = () => {
   const { t } = useTranslation("xcm")
   return (
     <Stack
-      gap={4}
+      gap="s"
       maxWidth={500}
       mx="auto"
-      pt={20}
+      pt="xl"
       sx={{ pointerEvents: "none" }}
     >
       <Paper>
-        <Box p={20}>
+        <Box p="xl">
           <Text fs="h7" fw={500} align="center" font="primary">
             {t("form.title")}
           </Text>
@@ -67,7 +67,7 @@ export const XcmTransferSkeleton = () => {
       <Paper>
         <XcmSectionSkeleton />
         <Separator />
-        <Box p={20}>
+        <Box p="xl">
           <LoadingButton
             isLoading
             size="large"

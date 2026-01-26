@@ -16,7 +16,7 @@ export const AssetBridgeTags: React.FC<AssetBridgeTagsProps> = ({ route }) => {
   if (!tags.length) return null
 
   return (
-    <Flex align="center" gap={4} mt={2}>
+    <Flex align="center" gap="s" mt="xs">
       {tags.includes(XcmTag.Wormhole) && (
         <Chip variant="info" size="small">
           {t("xcm:bridge.wormhole")}

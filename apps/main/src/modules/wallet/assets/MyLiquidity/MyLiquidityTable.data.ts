@@ -2,13 +2,16 @@ import Big from "big.js"
 import { useMemo } from "react"
 
 import { TAssetData, TStableswap } from "@/api/assets"
-import { TShareToken, useAssets } from "@/providers/assetsProvider"
+import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
 
-import { XYKPosition } from "./MyIsolatedPoolsLiquidity.data"
+import {
+  IsolatedPoolsLiquidityByPool,
+  XYKPosition,
+} from "./MyIsolatedPoolsLiquidity.data"
 import { useMyStableswapLiquidity } from "./MyStableswapLiquidity.data"
 
 export type StableswapPosition = {
@@ -36,12 +39,18 @@ export const isXYKPosition = (
   position: MyLiquidityPosition,
 ): position is XYKPosition => "amm_pool_id" in position
 
-export type LiquidityPositionByAsset = {
-  readonly meta: TAssetData | TShareToken
+export type LiquidityPositionByAsset =
+  | OmnipoolLiquidityByAsset
+  | IsolatedPoolsLiquidityByPool
+
+export type OmnipoolLiquidityByAsset = {
+  readonly meta: TAssetData
   readonly currentValueHuman: string
   readonly currentHubValueHuman: string
   readonly currentTotalDisplay: string
-  readonly positions: ReadonlyArray<MyLiquidityPosition>
+  readonly positions: ReadonlyArray<
+    AccountOmnipoolPosition | StableswapPosition
+  >
 }
 
 export const useMyLiquidityTableData = () => {
@@ -53,7 +62,7 @@ export const useMyLiquidityTableData = () => {
 
   const isLoading = isLoadingOmnipoolPositions || isLoadingStableswapLiquidity
 
-  const groupedData = useMemo<Array<LiquidityPositionByAsset>>(() => {
+  const groupedData = useMemo<Array<OmnipoolLiquidityByAsset>>(() => {
     if (isLoading) return []
 
     const groupedByAssetId = Object.groupBy(

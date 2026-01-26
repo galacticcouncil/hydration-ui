@@ -29,6 +29,7 @@ export type TransactionCommon = {
   toasts?: TransactionToasts
   meta?: TransactionMeta
   invalidateQueries?: string[][]
+  withExtraGas?: boolean | bigint
 }
 
 interface SingleTransactionInput extends TransactionCommon {
