@@ -1,6 +1,13 @@
 import { hexToRgba } from "@galacticcouncil/utils"
-import { createChart, LineType, SeriesType } from "lightweight-charts"
+import {
+  createChart,
+  IChartApi,
+  ISeriesApi,
+  LineType,
+  SeriesType,
+} from "lightweight-charts"
 import { useEffect, useRef, useState } from "react"
+import { isNumber, last } from "remeda"
 
 import { Box } from "@/components"
 import { Crosshair } from "@/components/TradingViewChart/components/Crosshair"
@@ -17,6 +24,8 @@ import {
 import {
   BaselineChartData,
   CrosshairCallbackData,
+  getMainSeriesData,
+  getVolumeData,
   OhlcData,
   renderSeries,
   subscribeCrosshairMove,
@@ -52,6 +61,11 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+  const seriesRef = useRef<TradingViewChartSeries | null>(null)
+  const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
+  const isInitialDataRef = useRef(true)
+
   const [seriesApi, setSeriesApi] = useState<TradingViewChartSeries | null>(
     null,
   )
@@ -66,6 +80,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
   const { themeProps } = useTheme()
 
+  // Create chart and series (only on mount or when chart config changes)
   useEffect(() => {
     if (!chartContainerRef.current) return
 
@@ -79,6 +94,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       timeScale,
       crosshair: crosshair(themeProps),
     })
+
+    chartRef.current = chart
 
     const [series, volumeSeries] = renderSeries(
       chart,
@@ -94,6 +111,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
         lineType: LineType.Curved,
       },
     )
+
+    seriesRef.current = series
+    volumeSeriesRef.current = volumeSeries ?? null
 
     chart.timeScale().fitContent()
 
@@ -116,10 +136,47 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       )
     }
 
+    isInitialDataRef.current = false
+
     return () => {
       chart.remove()
+      chartRef.current = null
+      seriesRef.current = null
+      volumeSeriesRef.current = null
+      isInitialDataRef.current = true
     }
-  }, [data, height, themeProps, type, hidePriceIndicator])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [height, themeProps, type, hidePriceIndicator])
+
+  // Update data without recreating chart (preserves zoom and scroll position)
+  useEffect(() => {
+    const chart = chartRef.current
+    const series = seriesRef.current
+    const volumeSeries = volumeSeriesRef.current
+
+    // Skip if chart not initialized yet or this is the initial render
+    if (!chart || !series || isInitialDataRef.current) return
+
+    // Save current visible time range before updating data
+    const visibleRange = chart.timeScale().getVisibleRange()
+
+    // Update main series data
+    const seriesData = getMainSeriesData(type, data)
+    series.setData(seriesData)
+
+    // Update volume series if it exists
+    const sample = last(data)
+    const hasVolume = isNumber(sample?.volume)
+    if (volumeSeries && hasVolume) {
+      const volumeData = getVolumeData(data)
+      volumeSeries.setData(volumeData)
+    }
+
+    // Restore visible time range after data update
+    if (visibleRange) {
+      chart.timeScale().setVisibleRange(visibleRange)
+    }
+  }, [data, type])
 
   return (
     <Box sx={{ position: "relative" }}>
