@@ -18,11 +18,25 @@ import {
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
-import { filter, first, pipe, prop, sortBy } from "remeda"
+import { filter, first, pipe, sortBy } from "remeda"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 
+const CHAINS_PRIORITY = [
+  HYDRATION_CHAIN_KEY,
+  "ethereum",
+  "solana",
+  "sui",
+  "assethub",
+  "moonbeam",
+  "assethub_kusama",
+]
 const CHAINS_BLACKLIST = ["polkadot"]
+
+export const getChainPriority = (key: string) => {
+  const idx = CHAINS_PRIORITY.indexOf(key)
+  return idx === -1 ? Number.POSITIVE_INFINITY : idx
+}
 
 export const XCM_CHAINS = pipe(
   [...chainsMap.values()],
@@ -37,7 +51,7 @@ export const XCM_CHAINS = pipe(
       c.ecosystem === ChainEcosystem.Ethereum
     )
   }),
-  sortBy(prop("name")),
+  sortBy((c) => [getChainPriority(c.key), c.name]),
 )
 
 export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {

@@ -1,10 +1,11 @@
 import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAssetData } from "@/api/assets"
-import { useOmnipoolActiveFarm } from "@/api/farms"
+import { Farm } from "@/api/farms"
 import { AssetLogo } from "@/components/AssetLogo"
 import { useDepositAprs } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { SLiquidityPosition } from "@/modules/wallet/assets/MyLiquidity/LiquidityPosition.styled"
@@ -20,22 +21,28 @@ type Props = {
   readonly onAction: (
     action: LiquidityPositionAction.Remove | LiquidityPositionAction.Join,
   ) => void
+  readonly farms: Farm[]
+  readonly minJoinAmount?: string
 }
 
 export const LiquidityPosition: FC<Props> = ({
-  asset,
+  farms,
   number,
   position,
   onAction,
+  minJoinAmount,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
   const format = useFormatOmnipoolPositionData()
-  const { data: activeFarms } = useOmnipoolActiveFarm(asset.id)
   const getDepositAprs = useDepositAprs()
 
   const { aprsByRewardAsset, joinedFarms, farmsToJoin } = getDepositAprs(
     position,
-    activeFarms ?? [],
+    farms,
+  )
+
+  const canJoinFarms = Big(position.data.currentTotalValueHuman).gt(
+    minJoinAmount ?? 0,
   )
 
   return (
@@ -79,7 +86,7 @@ export const LiquidityPosition: FC<Props> = ({
       )}
       <LiquidityPositionActions
         position={position}
-        farmsToJoin={farmsToJoin}
+        farmsToJoin={canJoinFarms ? farmsToJoin : []}
         onAction={onAction}
       />
     </SLiquidityPosition>

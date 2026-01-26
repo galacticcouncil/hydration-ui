@@ -66,7 +66,7 @@ export function useAccountBalanceSubscription() {
     console.log("Subscribe to balances")
 
     const subscribeSystemBalance = () =>
-      balance.subscribeSystemBalance(accountAddress).subscribe({
+      balance.watchSystemBalance(accountAddress).subscribe({
         next: ({ balance }) => {
           setBalance([
             {
@@ -80,7 +80,7 @@ export function useAccountBalanceSubscription() {
       })
 
     const subscribeTokensBalance = () =>
-      balance.subscribeTokensBalance(accountAddress).subscribe({
+      balance.watchTokensBalance(accountAddress).subscribe({
         next: (balances) => {
           const validBalances = new Map<number, Balance>()
 
@@ -101,7 +101,7 @@ export function useAccountBalanceSubscription() {
     const snapABalances = new Map<number, Balance>([])
 
     const subscribeErc20Balance = () =>
-      balance.subscribeErc20Balance(accountAddress, erc20AssetIds).subscribe({
+      balance.watchErc20Balance(accountAddress, erc20AssetIds).subscribe({
         next: async (balances) => {
           const validBalances = new Map<number, Balance>([])
 

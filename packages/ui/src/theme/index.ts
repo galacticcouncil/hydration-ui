@@ -1,4 +1,5 @@
 import { makeTheme } from "@theme-ui/css/utils"
+import { mapValues } from "remeda"
 
 import { animations } from "@/styles/animations"
 import { easings } from "@/styles/easings"
@@ -17,9 +18,11 @@ export type ThemeColor = Join<Paths<ThemeProps["colors"]>, ".">
 export type ThemeToken = Join<Paths<ThemeProps>, ".">
 export type ThemeFont = "mono" | keyof ThemeProps["fontFamilies1"]
 
+const spacing = mapValues(lightJSON.scales.paddings, Number)
+
 const base = makeTheme({
   breakpoints: BREAKPOINTS_VALUES,
-  space: [],
+  space: spacing,
   fonts: {},
   fontSizes: [],
   fontWeights: {},

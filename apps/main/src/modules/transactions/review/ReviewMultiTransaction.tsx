@@ -147,10 +147,12 @@ export const ReviewMultiTransaction: React.FC<ReviewMultiTransactionProps> = ({
         }
         open={isModalOpen}
         onOpenChange={(open) => {
-          if (!open) {
-            if (!isLoading) cancelTransaction(currentConfig.id)
-            setHasUserClosedModal(true)
+          if (open) return
+          if (!isLoading) {
+            cancelTransaction(transaction.id)
+            transaction.onClose?.()
           }
+          setHasUserClosedModal(true)
         }}
         variant="popup"
         disableInteractOutside

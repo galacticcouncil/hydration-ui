@@ -6,10 +6,17 @@ import { useShallow } from "zustand/shallow"
 
 import { XykDeposit } from "@/api/account"
 import { useShareTokenPrices } from "@/api/spotPrice"
-import { TShareToken, useAssets } from "@/providers/assetsProvider"
+import {
+  isShareToken,
+  TShareToken,
+  useAssets,
+} from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
 
-import { LiquidityPositionByAsset } from "./MyLiquidityTable.data"
+import {
+  LiquidityPositionByAsset,
+  OmnipoolLiquidityByAsset,
+} from "./MyLiquidityTable.data"
 
 export type ShareTokenBalance = {
   shares: bigint
@@ -25,13 +32,17 @@ export type XYKPositionDeposit = XykDeposit & {
 
 export type XYKPosition = XYKPositionDeposit | ShareTokenBalance
 
-type IsolatedPoolsLiquidityByPool = Omit<
-  LiquidityPositionByAsset,
+export type IsolatedPoolsLiquidityByPool = Omit<
+  OmnipoolLiquidityByAsset,
   "meta" | "positions"
 > & {
   positions: Array<XYKPosition>
   meta: TShareToken
 }
+
+export const isIsolatedPoolLiquidity = (
+  pool: LiquidityPositionByAsset | IsolatedPoolsLiquidityByPool,
+): pool is IsolatedPoolsLiquidityByPool => isShareToken(pool.meta)
 
 export const isXYKPositionDeposit = (
   position: XYKPosition,

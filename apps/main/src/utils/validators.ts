@@ -30,6 +30,13 @@ export const validWebsocketUrl = z
   .string()
   .refine((value) => WSS_REGEX.test(value), i18n.t("error.invalidWebsocketUrl"))
 
+export const HTTP_REGEX =
+  /^https?:\/\/(localhost|[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)(:[0-9]+)?(\/.*)?$/i
+
+export const validHttpUrl = z
+  .string()
+  .refine((value) => HTTP_REGEX.test(value), i18n.t("error.invalidHttpUrl"))
+
 const _validNumberBig = (optional?: boolean) =>
   z.string().refine(
     (value) => {

@@ -58,7 +58,7 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
         <ModalBody sx={{ py: 0 }} scrollable={false}>
           <CollapsibleRoot open={!isUsingCustomAddress}>
             <CollapsibleContent>
-              <Stack gap={10} py={20}>
+              <Stack gap="base" py="xl">
                 <Text fs="p5" color={getToken("text.medium")}>
                   {t("recipient.modal.destinationWallet")}
                 </Text>

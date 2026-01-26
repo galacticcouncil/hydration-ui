@@ -635,6 +635,7 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
     minReceiveAmount,
     healthFactor,
     poolShare: omnipoolShares?.poolShare,
+    isAddableToOmnipool: true,
     ...formData,
     meta,
   }
@@ -908,6 +909,7 @@ export const useAddMoneyMarketLiquidity = ({
     poolShare: "",
     minReceiveAmount,
     healthFactor: Big(debouncedAmountIn).gt(0) ? healthFactor : undefined,
+    isAddableToOmnipool: false,
     ...formData,
   }
 }

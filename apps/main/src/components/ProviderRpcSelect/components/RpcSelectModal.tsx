@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next"
 import { RpcAutoModeToggle } from "@/components/ProviderRpcSelect/components/RpcAutoModeToggle"
 import { RpcForm } from "@/components/ProviderRpcSelect/components/RpcForm"
 import { RpcListModalContent } from "@/components/ProviderRpcSelect/components/RpcListModalContent"
+import { SquidForm } from "@/components/ProviderRpcSelect/components/SquidForm"
 import { SquidListModalContent } from "@/components/ProviderRpcSelect/components/SquidListModalContent"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -63,6 +64,7 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
               />
             )}
             {view === "rpc" && !autoMode && <RpcForm />}
+            {view === "squid" && <SquidForm />}
           </Stack>
         }
       />

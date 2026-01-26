@@ -1,4 +1,6 @@
 {
+  "beta.title": "Beta version",
+  "beta.description": "For production transfers, please use battle tested XCM in original app",
   "approve": "Approve",
   "approve.description": "Approve {{ amount, number }} {{ symbol }} spending cap on {{ srcChain }}",
   "approve.title": "Approve spending cap",
@@ -17,7 +19,7 @@
   "error.maxAmount": "Maximum transferable amount is {{ amount, number }} {{ symbol }}",
   "error.minAmount": "Minimum transferable amount is {{ amount, number }} {{ symbol }}",
   "form.amountMissing": "Enter an amount",
-  "form.confirmSend": "Confirm & send",
+  "form.submit.approve": "Approve & Transfer",
   "form.insufficientBalance": "Insufficient balance",
   "form.processing": "Processing...",
   "form.recipientMissing": "Select a recipient",
@@ -30,13 +32,19 @@
   "recipient.modal.destinationWallet": "Destination wallet",
   "recipient.modal.empty.description": "All of accounts you've used before will appear here",
   "recipient.modal.title": "Change receiving address",
+  "summary.approvalFee": "Approval fee",
   "summary.bridgeFee": "Bridge fee",
   "summary.destinationFee.free": "FREE",
   "summary.destinationFee": "Destination chain fee",
   "summary.relayerFee": "Relayer fee",
   "summary.sourceFee": "Source chain fee",
-  "transfer": "Transfer",
+  "summary.feeEstimationNotAvailable": "Estimation not available",
+  "transfer.error.generic": "An unexpected error occurred while preparing the transfer.",
   "tx.description": "Transfer {{ amount, number }} {{ symbol }} to {{ destChain }}",
   "tx.toast.submitted": "Sending {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}...",
-  "tx.toast.success": "Sent {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}."
+  "tx.toast.success": "Sent {{ amount, number }} {{ symbol }} from {{ srcChain }} to {{ destChain }}.",
+  "report.fee.insufficientBalance": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for fees",
+  "report.destFee.insufficientBalance": "You need to have at least {{ amount, number }} {{ symbol }} on {{ chain }}",
+  "report.asset.frozen": "Your account on {{ chain }} has frozen balance for {{ symbol }}",
+  "report.account.insufficientDeposit": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for existential deposit"
 }

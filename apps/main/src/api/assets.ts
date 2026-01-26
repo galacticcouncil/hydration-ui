@@ -104,7 +104,7 @@ export const assetsQuery = (
       const [tradeAssets, pools, assets] = await Promise.all([
         sdk.api.router.getTradeableAssets(),
         queryClient.ensureQueryData(allPools(sdk)),
-        sdk.client.asset.getOnChainAssets(true),
+        sdk.client.asset.getSupported(true),
       ])
 
       const xykPoolsAddress = pools.xykPools.map<[string]>((p) => [p.address])

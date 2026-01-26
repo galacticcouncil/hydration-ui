@@ -29,7 +29,7 @@ export const RecipientAddressBook: FC<RecipientAddressBookProps> = ({
             onClick={() => onSelectAddress(address.address)}
             key={address.publicKey}
           >
-            <Flex align="center" gap={10}>
+            <Flex align="center" gap="base">
               <AccountAvatar
                 address={address.address}
                 sx={{ flexShrink: 0 }}
