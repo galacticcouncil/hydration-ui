@@ -345,18 +345,21 @@ const RemoveStablepoolLiquidityForm = (
             />
           )}
 
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.quint")}
-          >
-            <ReceiveAssets
-              title={split ? undefined : ""}
-              assets={receiveAssets}
-              positions={deposits}
-            />
-          </Flex>
+          {!!receiveAssets.length && (
+            <Flex
+              direction="column"
+              gap={getTokenPx("containers.paddings.quint")}
+            >
+              <ReceiveAssets
+                title={split ? undefined : ""}
+                assets={receiveAssets}
+                positions={deposits}
+              />
+            </Flex>
+          )}
 
           <Box>
+            <ModalContentDivider />
             <TradeLimitRow type={TradeLimitType.Liquidity} />
 
             {fee && (

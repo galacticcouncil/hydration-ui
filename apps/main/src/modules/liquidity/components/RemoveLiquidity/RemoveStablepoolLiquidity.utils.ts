@@ -38,7 +38,13 @@ import { isOmnipoolDepositPosition, useAccountBalances } from "@/states/account"
 import { AccountOmnipoolPosition } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman, toBig, toBigInt } from "@/utils/formatting"
+import {
+  scale,
+  scaleHuman,
+  toBig,
+  toBigInt,
+  toDecimal,
+} from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 export type TRemoveStablepoolLiquidityFormValues =
@@ -275,6 +281,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
     stablepoolData: { pool, reserves },
     omnipoolPositionsOutTotal,
     omnipoolPositionsOutValues,
+    onSubmitted,
   } = props
   const { tokensToGet, minTokensToGetShifted, hubToGet } =
     omnipoolPositionsOutTotal
@@ -335,8 +342,10 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
 
   useEffect(() => {
     if (!split && minOneAssetToReceive) {
-      const receiveAmount = toBig(minOneAssetToReceive, receiveAsset.decimals)
-      setValue("receiveAmount", receiveAmount.toFixed(0))
+      setValue(
+        "receiveAmount",
+        toDecimal(minOneAssetToReceive, receiveAsset.decimals),
+      )
     }
   }, [setValue, split, minOneAssetToReceive, receiveAsset.decimals, slippage])
 
@@ -397,6 +406,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
             omnipoolMiningPositionsKey(account?.address ?? ""),
           ],
         },
+        options: { onSubmitted },
       })
     },
   })
