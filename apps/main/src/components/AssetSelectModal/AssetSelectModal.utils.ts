@@ -59,6 +59,7 @@ export const useAssetSelectModalAssets = (
 
   const sortedAssets = sortAssets(assetsWithBalances, "balanceDisplay", {
     firstAssetId: selectedAssetId,
+    search,
   })
 
   return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }
