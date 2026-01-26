@@ -3,7 +3,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { isNonNullish, prop } from "remeda"
@@ -325,20 +325,23 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
     totalIssuance,
   ])
 
-  const minReservesToReceive = useMemo(() => {
-    return reserves.map((reserve) => {
-      const maxValue = Big(stablepoolSharesToGet)
-        .div(totalIssuance)
-        .times(reserve.amount)
-        .toFixed(0)
+  const getMinReservesToReceive = useCallback(
+    (amount: string) => {
+      return reserves.map((reserve) => {
+        const maxValue = Big(amount)
+          .div(totalIssuance)
+          .times(reserve.amount)
+          .toString()
 
-      const value = Big(maxValue)
-        .minus(Big(slippage).times(maxValue).div(100))
-        .toFixed(0)
+        const value = Big(maxValue)
+          .minus(Big(slippage).times(maxValue).div(100))
+          .toFixed(0)
 
-      return { value, asset: reserve.meta }
-    })
-  }, [totalIssuance, stablepoolSharesToGet, reserves, slippage])
+        return { value, asset: reserve.meta }
+      })
+    },
+    [totalIssuance, reserves, slippage],
+  )
 
   useEffect(() => {
     if (!split && minOneAssetToReceive) {
@@ -362,7 +365,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
               Big(valuesOut.minTokensToGet).toFixed(0),
             ),
             stableswap_min_amounts_out: split
-              ? minReservesToReceive.map((asset) => ({
+              ? getMinReservesToReceive(valuesOut.tokensToGet).map((asset) => ({
                   amount: BigInt(asset.value),
                   asset_id: Number(asset.asset.id),
                 }))
@@ -415,7 +418,9 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
     mutation.mutate()
   }
 
-  const receiveAssets: TReceiveAsset[] = split ? [...minReservesToReceive] : []
+  const receiveAssets: TReceiveAsset[] = split
+    ? [...getMinReservesToReceive(stablepoolSharesToGet)]
+    : []
 
   if (Big(hubToGet).gt(0)) {
     receiveAssets.push({
