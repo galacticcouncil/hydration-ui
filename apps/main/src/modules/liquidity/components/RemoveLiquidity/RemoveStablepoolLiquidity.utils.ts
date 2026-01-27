@@ -38,13 +38,7 @@ import { isOmnipoolDepositPosition, useAccountBalances } from "@/states/account"
 import { AccountOmnipoolPosition } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import {
-  scale,
-  scaleHuman,
-  toBig,
-  toBigInt,
-  toDecimal,
-} from "@/utils/formatting"
+import { scale, scaleHuman, toBig, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 export type TRemoveStablepoolLiquidityFormValues =
@@ -269,7 +263,7 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
     liquidity: { slippage },
   } = useTradeSettings()
   const { account } = useAccount()
-  const { watch, setValue, getValues } =
+  const { watch, setValue } =
     useFormContext<TRemoveStablepoolLiquidityFormValues>()
   const [poolMeta, receiveAsset, split] = watch([
     "asset",
@@ -290,40 +284,42 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
   const amplification = pool.amplification.toString()
   const stablepoolSharesToGet = tokensToGet
 
-  const minOneAssetToReceive = useMemo(() => {
-    if (!stablepoolFee) return undefined
+  const getMinOneAssetToReceive = useCallback(
+    (amount: string) => {
+      if (!stablepoolFee) return undefined
 
-    const maxValue = calculate_liquidity_out_one_asset(
-      JSON.stringify(
-        reserves.map((reserve) => ({
-          amount: reserve.amount,
-          decimals: reserve.meta.decimals,
-          asset_id: reserve.asset_id,
-        })),
-      ),
-      stablepoolSharesToGet,
-      Number(receiveAsset.id),
+      const maxValue = calculate_liquidity_out_one_asset(
+        JSON.stringify(
+          reserves.map((reserve) => ({
+            amount: reserve.amount,
+            decimals: reserve.meta.decimals,
+            asset_id: reserve.asset_id,
+          })),
+        ),
+        amount,
+        Number(receiveAsset.id),
+        amplification,
+        totalIssuance,
+        scaleHuman(stablepoolFee, 2),
+        JSON.stringify(pool.pegs),
+      )
+
+      const value = Big(maxValue)
+        .minus(Big(slippage).times(maxValue).div(100))
+        .toFixed(0)
+
+      return value
+    },
+    [
+      stablepoolFee,
       amplification,
+      pool.pegs,
+      receiveAsset.id,
+      reserves,
+      slippage,
       totalIssuance,
-      scaleHuman(stablepoolFee, 2),
-      JSON.stringify(pool.pegs),
-    )
-
-    const value = Big(maxValue)
-      .minus(Big(slippage).times(maxValue).div(100))
-      .toFixed(0)
-
-    return value
-  }, [
-    stablepoolFee,
-    amplification,
-    pool.pegs,
-    receiveAsset.id,
-    stablepoolSharesToGet,
-    reserves,
-    slippage,
-    totalIssuance,
-  ])
+    ],
+  )
 
   const getMinReservesToReceive = useCallback(
     (amount: string) => {
@@ -344,13 +340,25 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
   )
 
   useEffect(() => {
-    if (!split && minOneAssetToReceive) {
-      setValue(
-        "receiveAmount",
-        toDecimal(minOneAssetToReceive, receiveAsset.decimals),
+    if (!split) {
+      const minOneAssetToReceive = getMinOneAssetToReceive(
+        stablepoolSharesToGet,
       )
+
+      if (minOneAssetToReceive) {
+        setValue(
+          "receiveAmount",
+          toDecimal(minOneAssetToReceive, receiveAsset.decimals),
+        )
+      }
     }
-  }, [setValue, split, minOneAssetToReceive, receiveAsset.decimals, slippage])
+  }, [
+    setValue,
+    split,
+    getMinOneAssetToReceive,
+    receiveAsset.decimals,
+    stablepoolSharesToGet,
+  ])
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
@@ -371,9 +379,8 @@ export const useRemoveStablepoolOmnipoolLiquidity = (
                 }))
               : [
                   {
-                    amount: toBigInt(
-                      getValues("receiveAmount"),
-                      receiveAsset.decimals,
+                    amount: BigInt(
+                      getMinOneAssetToReceive(valuesOut.tokensToGet) ?? "0",
                     ),
                     asset_id: Number(receiveAsset.id),
                   },
