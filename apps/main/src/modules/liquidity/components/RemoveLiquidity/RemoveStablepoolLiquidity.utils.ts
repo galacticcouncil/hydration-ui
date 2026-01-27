@@ -27,10 +27,7 @@ import {
   RemoveStablepoolPositionsProps,
   RemoveStablepoolSharesProps,
 } from "@/modules/liquidity/components/RemoveLiquidity/RemoveStablepoolLiquidity"
-import {
-  calculatePoolFee,
-  TStablepoolDetails,
-} from "@/modules/liquidity/Liquidity.utils"
+import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useAssets } from "@/providers/assetsProvider"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
@@ -54,20 +51,18 @@ export type TRemoveStablepoolLiquidityProps =
   | ReturnType<typeof useRemoveStableswapSharesLiquidity>
 
 export const useRemoveStablepoolLiquidity = ({
-  poolDetails,
   initialReceiveAsset,
   positions,
+  omnipoolId,
 }: {
-  poolDetails: TStablepoolDetails
   initialReceiveAsset: TAssetWithBalance
   positions: AccountOmnipoolPosition[]
+  omnipoolId: string
 }) => {
-  const poolId = poolDetails.pool.id.toString()
-
   const { getAssetWithFallback, hub } = useAssets()
-  const meta = getAssetWithFallback(poolId)
+  const meta = getAssetWithFallback(omnipoolId)
 
-  const calculateLiquidityValues = useRemoveOmnipoolLiquidityOut(poolId)
+  const calculateLiquidityValues = useRemoveOmnipoolLiquidityOut(omnipoolId)
   const omnipoolPositionsOutValues = positions
     .map((position) => {
       const valuesOut = calculateLiquidityValues(

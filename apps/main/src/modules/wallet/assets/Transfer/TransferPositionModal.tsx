@@ -153,7 +153,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
               />
             </Summary>
           )}
-          <ModalContentDivider />
         </ModalBody>
         <ModalFooter
           display="grid"

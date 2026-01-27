@@ -33,6 +33,7 @@ import {
   TStablepoolDetails,
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
+import { useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   useAccountBalances,
@@ -96,8 +97,10 @@ export const RemoveSelectableStablepoolPositions = (
 }
 
 export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
-  const poolId = props.stableswapId ?? props.poolId
-  const { data: stablepoolData } = useStablepoolReserves(poolId)
+  const { getRelatedAToken } = useAssets()
+  const stableswapId = props.stableswapId ?? props.poolId
+  const omnipoolId = getRelatedAToken(stableswapId)?.id ?? stableswapId
+  const { data: stablepoolData } = useStablepoolReserves(stableswapId)
   const { isBalanceLoading } = useAccountBalances()
   const { getAssetPositions } = useAccountOmnipoolPositionsData()
 
@@ -111,7 +114,7 @@ export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
     return <RemoveLiquiditySkeleton />
 
   if (positionId) {
-    const { all: omnipoolPositions } = getAssetPositions(poolId)
+    const { all: omnipoolPositions } = getAssetPositions(omnipoolId)
 
     const position = positionId
       ? omnipoolPositions.find((position) => position.positionId === positionId)
@@ -179,13 +182,13 @@ const RemoveStablepoolShares = (props: RemoveStablepoolSharesProps) => {
 const RemoveStablepoolPositionsWrapper = (
   props: RemoveStablepoolPositionsWrapperProps,
 ) => {
-  const { positions, initialReceiveAsset, stablepoolData } = props
+  const { positions, initialReceiveAsset, poolId } = props
 
   const { form, isFullRemove, ...removeLiquidityProps } =
     useRemoveStablepoolLiquidity({
-      poolDetails: stablepoolData,
       initialReceiveAsset,
       positions,
+      omnipoolId: poolId,
     })
 
   return (
