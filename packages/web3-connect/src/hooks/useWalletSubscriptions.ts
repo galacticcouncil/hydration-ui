@@ -27,7 +27,7 @@ const getConnectedTypes = (providers: WalletProviderEntry[]) =>
 
 export const useWalletSubscriptions = () => {
   useEffect(() => {
-    return useWeb3Connect.subscribe((state, prevState) => {
+    const unsub = useWeb3Connect.subscribe((state, prevState) => {
       const { providers, setAccounts, setAccount, disconnect } = state
       const { providers: prevProviders } = prevState
 
@@ -68,10 +68,9 @@ export const useWalletSubscriptions = () => {
         unsubscribeProvider(type)
       }
     })
-  }, [])
 
-  useEffect(() => {
     return () => {
+      unsub()
       subscriptions.forEach((unsubscribe) => unsubscribe())
       subscriptions.clear()
     }
