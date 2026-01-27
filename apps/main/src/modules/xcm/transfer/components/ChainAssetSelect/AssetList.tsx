@@ -2,6 +2,7 @@ import {
   ModalCloseTrigger,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
+import { bigShift } from "@galacticcouncil/utils"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 
@@ -12,7 +13,6 @@ import {
 import { AssetListItem } from "@/modules/xcm/transfer/components/ChainAssetSelect/AssetListItem"
 import { isBridgeAssetRoute } from "@/modules/xcm/transfer/utils/transfer"
 import { useAssetsPrice } from "@/states/displayAsset"
-import { toBig } from "@/utils/formatting"
 import { numericallyStrDesc } from "@/utils/sort"
 
 const ASSET_ITEM_HEIGHT = 50
@@ -73,7 +73,9 @@ export const AssetList: React.FC<AssetListProps> = ({
         balance,
         balanceDisplay:
           balance && price
-            ? toBig(balance.amount, balance.decimals).times(price).toString()
+            ? bigShift(balance.amount.toString(), -balance.decimals)
+                .times(price)
+                .toString()
             : undefined,
       }
     })

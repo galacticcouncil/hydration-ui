@@ -19,7 +19,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman, toBig } from "@/utils/formatting"
+import { scale, scaleHuman, toBigInt, toDecimal } from "@/utils/formatting"
 import { positive, required, validateFieldMaxBalance } from "@/utils/validators"
 
 export type TRemoveStablepoolLiquidityFormValues =
@@ -121,8 +121,11 @@ export const useStablepoolRemoveLiquidity = ({
 
   useEffect(() => {
     if (!split && liquidityOutOneAsset) {
-      const receiveAmount = toBig(liquidityOutOneAsset, receiveAsset.decimals)
-      form.setValue("receiveAmount", receiveAmount.toFixed(0))
+      const receiveAmount = toDecimal(
+        liquidityOutOneAsset,
+        receiveAsset.decimals,
+      )
+      form.setValue("receiveAmount", receiveAmount)
     }
   }, [form, split, liquidityOutOneAsset, receiveAsset.decimals, slippage])
 
@@ -144,8 +147,9 @@ export const useStablepoolRemoveLiquidity = ({
             pool_id: Number(pool.id),
             share_amount: BigInt(removeAmount),
             asset_id: Number(receiveAsset.id),
-            min_amount_out: BigInt(
-              scale(form.watch("receiveAmount"), receiveAsset.decimals),
+            min_amount_out: toBigInt(
+              form.watch("receiveAmount"),
+              receiveAsset.decimals,
             ),
           })
 

@@ -9,11 +9,11 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { Farm } from "@/api/farms"
-import { toBig } from "@/utils/formatting"
 
 import { SLiquidityPosition } from "./LiquidityPosition.styled"
 import {
@@ -37,7 +37,10 @@ export const XYKSharesPositions = ({
 }) => {
   const { t } = useTranslation(["wallet", "common", "liquidity"])
 
-  const sharesHuman = toBig(position.shares, position.meta.decimals)
+  const sharesHuman = bigShift(
+    position.shares.toString(),
+    -position.meta.decimals,
+  )
   const canJoinFarms = Big(position.shares.toString()).gt(minJoinAmount ?? 0)
 
   return (

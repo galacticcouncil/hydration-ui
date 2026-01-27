@@ -1,4 +1,5 @@
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { bigShift } from "@galacticcouncil/utils"
 import { useMemo } from "react"
 import { uniqueBy } from "remeda"
 
@@ -14,7 +15,6 @@ import {
   useAccountBalancesWithPriceByAssetType,
 } from "@/states/account"
 import { getAssetOrigin } from "@/utils/externalAssets"
-import { toBig } from "@/utils/formatting"
 
 export const useMyAssetsTableData = (showAllAssets: boolean) => {
   const { isMobile } = useBreakpoints()
@@ -56,9 +56,15 @@ export const useMyAssetsTableData = (showAllAssets: boolean) => {
 
     return assetsToDisplay
       .map<MyAsset>(({ meta, balance, price }) => {
-        const total = toBig(balance?.total ?? 0n, meta.decimals)
-        const transferable = toBig(balance?.transferable ?? 0n, meta.decimals)
-        const reserved = toBig(balance?.reserved ?? 0n, meta.decimals)
+        const total = bigShift(balance?.total.toString() ?? "0", -meta.decimals)
+        const transferable = bigShift(
+          balance?.transferable.toString() ?? "0",
+          -meta.decimals,
+        )
+        const reserved = bigShift(
+          balance?.reserved.toString() ?? "0",
+          -meta.decimals,
+        )
 
         const totalDisplay = price ? total.times(price).toString() : "0"
         const transferableDisplay = price

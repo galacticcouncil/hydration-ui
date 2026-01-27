@@ -1,3 +1,4 @@
+import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
 import { pick, prop } from "remeda"
@@ -11,7 +12,6 @@ import {
   useAssets,
 } from "@/providers/assetsProvider"
 import { useAccountData } from "@/states/account"
-import { toBig } from "@/utils/formatting"
 
 import {
   LiquidityPositionByAsset,
@@ -103,7 +103,7 @@ export const useMyIsolatedPoolsLiquidity = () => {
         Big(0),
       )
 
-      const totalHuman = toBig(total, meta.decimals)
+      const totalHuman = bigShift(total.toString(), -meta.decimals)
       const totalDisplay = totalHuman.times(price).toString()
 
       xykEntries.push({

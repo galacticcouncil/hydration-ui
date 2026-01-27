@@ -1,3 +1,4 @@
+import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { useMemo } from "react"
 
@@ -8,7 +9,6 @@ import {
   useAccountBalancesWithPriceByAssetType,
   useAccountOmnipoolPositionsData,
 } from "@/states/account"
-import { toBig } from "@/utils/formatting"
 
 export const useMyLiquidityTotals = () => {
   const { data: positions, isLoading: isLoadingPositions } =
@@ -55,9 +55,9 @@ export const useMyLiquidityTotals = () => {
         acc.liquidity = acc.liquidity.plus(asset.currentTotalDisplay ?? 0)
         acc.farming = acc.farming.plus(
           asset.positions.reduce((acc, position) => {
-            const displayValue = toBig(
-              position.shares,
-              position.meta.decimals,
+            const displayValue = bigShift(
+              position.shares.toString(),
+              -position.meta.decimals,
             ).times(position.price)
 
             return acc.plus(displayValue)
@@ -70,7 +70,10 @@ export const useMyLiquidityTotals = () => {
 
     const stableSwapTotal = (stableSwapBalances ?? []).reduce(
       (acc, { balance, meta, price }) => {
-        const balanceShifted = toBig(balance.total, meta.decimals)
+        const balanceShifted = bigShift(
+          balance.total.toString(),
+          -meta.decimals,
+        )
 
         const displayValue = price ? balanceShifted.times(price) : "0"
 
