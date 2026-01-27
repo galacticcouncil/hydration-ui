@@ -7,6 +7,7 @@ import {
   HistogramSeries,
   type IChartApi,
   type ISeriesApi,
+  type PriceFormat,
   type SingleValueData,
   type Time,
   type UTCTimestamp,
@@ -90,6 +91,7 @@ const getBaselineSeries = (
     topFillColor2: hexToRgba(color.lineColor, 0),
     lineWidth: 2,
     priceLineVisible: false,
+    lastValueVisible: true,
     ...baseline,
   })
 }
@@ -148,6 +150,23 @@ const getVolumeData = (data: ReadonlyArray<OhlcData>): SingleValueData[] => {
   }))
 }
 
+const getPriceFormatFromSample = (
+  sample: OhlcData,
+): Partial<PriceFormat> | undefined => {
+  const value = sample.close
+  if (value <= 0 || !isFinite(value)) return
+
+  if (value >= 1) {
+    return { precision: 2, minMove: 0.01 }
+  }
+
+  const leadingZeros = Math.floor(Math.abs(Math.log10(value)))
+  const precision = leadingZeros + 2
+  const minMove = Math.pow(10, -(leadingZeros + 2))
+
+  return { precision, minMove }
+}
+
 export const renderSeries = (
   chart: IChartApi,
   type: SeriesType,
@@ -164,6 +183,12 @@ export const renderSeries = (
 
   const sample = last(data)
   const hasVolume = isNumber(sample?.volume)
+
+  if (sample) {
+    series.applyOptions({
+      priceFormat: getPriceFormatFromSample(sample),
+    })
+  }
 
   if (hasVolume) {
     const volumeSeries = getVolumeSeries(chart, color)
