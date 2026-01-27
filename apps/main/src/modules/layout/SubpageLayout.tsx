@@ -4,7 +4,7 @@ import { FC, ReactNode, useMemo } from "react"
 
 import { Breadcrumb, BreadcrumbItem } from "@/components/Breadcrumb"
 import { TabItem, TabMenu } from "@/components/TabMenu"
-import { NAVIGATION } from "@/config/navigation"
+import { LINKS, NAVIGATION } from "@/config/navigation"
 import {
   Container,
   Content,
@@ -34,7 +34,7 @@ export const SubpageLayout: FC<Props> = ({
     select: (state) => state.pathname,
   })
   const isMatch = useMatchRoute()
-  const isLiquidityPage = !!isMatch({ to: "/liquidity" })
+  const isLiquidityPage = !!isMatch({ to: LINKS.liquidity })
 
   const subNav = useMemo(
     () =>

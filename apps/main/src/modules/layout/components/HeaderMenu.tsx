@@ -9,7 +9,7 @@ import {
 import { Link } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
-import { NAVIGATION, NavigationItem } from "@/config/navigation"
+import { LINKS, NAVIGATION, NavigationItem } from "@/config/navigation"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
 import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
@@ -24,7 +24,7 @@ export const HeaderMenu: React.FC<
         {NAVIGATION.map(({ key, children, to, search, defaultChild }) => {
           const linkTo = defaultChild ?? to
 
-          const isLiquidityPage = to === "/liquidity"
+          const isLiquidityPage = to === LINKS.liquidity
 
           return (
             <NavigationMenuItem key={key} data-intersect={key}>
