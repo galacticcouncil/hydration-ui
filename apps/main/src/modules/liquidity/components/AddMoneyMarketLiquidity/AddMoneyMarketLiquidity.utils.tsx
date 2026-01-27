@@ -74,9 +74,8 @@ export const useAddMoneyMarketLiquidityWrapper = ({
       ),
     ]),
   )
-
-  const defaultOption =
-    initialOption || (erc20Id === GETH_ERC20_ID ? "omnipool" : "stablepool")
+  const isGeth = erc20Id === GETH_ERC20_ID
+  const defaultOption = initialOption || (isGeth ? "omnipool" : "stablepool")
 
   const assetsToSelect = useAssetsToAddToMoneyMarket({
     stableswapId,
@@ -90,7 +89,8 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   const enabledSplit = reserveIds.length > 1
 
   const form = useStablepoolAddLiquidityForm({
-    poolId: stableswapId,
+    stablepoolId: stableswapId,
+    omnipoolId: isGeth ? GETH_ERC20_ID : stableswapId,
     selectedAssetId: initialAssetIdToAdd ?? "",
     accountBalances,
     option: defaultOption,

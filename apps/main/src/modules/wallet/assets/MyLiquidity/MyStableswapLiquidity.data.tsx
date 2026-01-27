@@ -1,6 +1,7 @@
+import { bigShift } from "@galacticcouncil/utils"
+
 import { AssetType } from "@/api/assets"
 import { useAccountBalancesWithPriceByAssetType } from "@/states/account"
-import { toBig } from "@/utils/formatting"
 
 export const useMyStableswapLiquidity = () => {
   const { data: balancesWithPrice, isLoading: isBalanceLoading } =
@@ -9,7 +10,7 @@ export const useMyStableswapLiquidity = () => {
   return {
     data:
       balancesWithPrice?.stableSwapBalances.map(({ balance, meta, price }) => {
-        const total = toBig(balance.transferable, meta.decimals)
+        const total = bigShift(balance.transferable.toString(), -meta.decimals)
         const totalDisplay = price ? total.times(price).toString() : "0"
 
         return {

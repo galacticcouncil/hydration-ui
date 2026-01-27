@@ -10,6 +10,8 @@ import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { LINKS } from "@/config/navigation"
+
 type Points = ReadonlyArray<readonly [title: string, description: string]>
 
 export const HowToStake: FC = () => {
@@ -41,7 +43,7 @@ export const HowToStake: FC = () => {
               <Trans
                 t={t}
                 i18nKey={description}
-                components={[<Link key="trade-link" to="/trade/swap" />]}
+                components={[<Link key="trade-link" to={LINKS.swapMarket} />]}
               />
             }
           />

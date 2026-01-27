@@ -133,7 +133,7 @@ const getMainSeries = (
   }
 }
 
-const getMainSeriesData = (
+export const getMainSeriesData = (
   type: SeriesType,
   data: Array<OhlcData>,
 ): Array<OhlcData> | Array<SingleValueData> => {
@@ -141,7 +141,9 @@ const getMainSeriesData = (
   return data.map((item) => ({ time: item.time, value: item.close }))
 }
 
-const getVolumeData = (data: ReadonlyArray<OhlcData>): SingleValueData[] => {
+export const getVolumeData = (
+  data: ReadonlyArray<OhlcData>,
+): SingleValueData[] => {
   return data.map((item) => ({
     time: item.time,
     value: item.volume ?? 0,

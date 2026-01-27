@@ -1,11 +1,12 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { Amount } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
+import { bigShift } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useFormatOmnipoolPositionData } from "@/states/liquidity"
-import { toBig, toDecimal } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 
 import {
   isStableswapPosition,
@@ -31,7 +32,7 @@ export const LiquidityPositionMobileValues: FC<Props> = ({ position }) => {
             symbol: "Shares",
           })}
           displayValue={t("currency", {
-            value: toBig(position.shares, position.meta.decimals)
+            value: bigShift(position.shares.toString(), -position.meta.decimals)
               .times(position.price)
               .toString(),
           })}

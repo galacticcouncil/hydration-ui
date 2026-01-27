@@ -152,11 +152,17 @@ export const useAccountBalances = () => {
     [balances],
   )
 
+  const isBalanceLoaded = useCallback(
+    (id: string) => id in balances,
+    [balances],
+  )
+
   return {
     balances,
+    isBalanceLoading,
     getBalance,
     getTransferableBalance,
-    isBalanceLoading,
+    isBalanceLoaded,
   }
 }
 

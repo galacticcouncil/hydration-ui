@@ -1,4 +1,4 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+import { bigShift, QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import {
   QueryClient,
   queryOptions,
@@ -17,7 +17,7 @@ import {
   useDisplayAssetStore,
   useDisplaySpotPriceStore,
 } from "@/states/displayAsset"
-import { toBig, toDecimal } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 
 import { TradeRouter } from "./trade"
 import { xykPoolWithLiquidityQuery } from "./xyk"
@@ -198,9 +198,9 @@ const shareTokenPriceQuery = (
         )
 
         if (spotPriceAsset) {
-          const tvl = toBig(
+          const tvl = bigShift(
             Big(balance.toString()).times(2).toString(),
-            asset.decimals,
+            -asset.decimals,
           )
 
           shareTokenPrice = tvl
