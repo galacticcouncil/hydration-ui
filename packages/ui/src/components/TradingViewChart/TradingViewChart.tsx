@@ -3,6 +3,7 @@ import {
   createChart,
   IChartApi,
   ISeriesApi,
+  LineStyle,
   LineType,
   SeriesType,
 } from "lightweight-charts"
@@ -12,7 +13,6 @@ import { isNumber, last } from "remeda"
 import { Box } from "@/components"
 import { Crosshair } from "@/components/TradingViewChart/components/Crosshair"
 import { PriceIndicator } from "@/components/TradingViewChart/components/PriceIndicator"
-import { PriceMarkers } from "@/components/TradingViewChart/components/PriceMarkers"
 import {
   crosshair,
   grid,
@@ -43,11 +43,19 @@ type ChartTypeProps =
       onCrosshairMove?: (data: BaselineChartData | null) => void
     }
 
+export type PriceLine = { value: number; formatted: string }
+
+export type PriceLines = {
+  min: PriceLine
+  max: PriceLine
+  mid: PriceLine
+}
+
 export type TradingViewChartProps = ChartTypeProps & {
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
-  priceLines?: Array<number>
+  priceLines?: PriceLines
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
@@ -56,7 +64,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   height = 400,
   hidePriceIndicator,
   onCrosshairMove,
-  priceLines = [],
+  priceLines,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
   const crosshairRef = useRef<HTMLDivElement | null>(null)
@@ -65,10 +73,6 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const seriesRef = useRef<TradingViewChartSeries | null>(null)
   const volumeSeriesRef = useRef<ISeriesApi<"Histogram"> | null>(null)
   const isInitialDataRef = useRef(true)
-
-  const [seriesApi, setSeriesApi] = useState<TradingViewChartSeries | null>(
-    null,
-  )
 
   const onCrosshairMoveRef = useRef(onCrosshairMove)
   useEffect(() => {
@@ -115,9 +119,36 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     seriesRef.current = series
     volumeSeriesRef.current = volumeSeries ?? null
 
-    chart.timeScale().fitContent()
+    if (priceLines) {
+      series.createPriceLine({
+        price: priceLines.min.value,
+        color: themeProps.text.high,
+        lineWidth: 1,
+        lineStyle: LineStyle.LargeDashed,
+        axisLabelVisible: true,
+        title: priceLines.min.formatted,
+      })
 
-    setSeriesApi(series)
+      series.createPriceLine({
+        price: priceLines.max.value,
+        color: themeProps.text.high,
+        lineWidth: 1,
+        lineStyle: LineStyle.LargeDashed,
+        axisLabelVisible: true,
+        title: priceLines.max.formatted,
+      })
+
+      series.createPriceLine({
+        price: priceLines.mid.value,
+        color: themeProps.text.high,
+        lineWidth: 1,
+        lineStyle: LineStyle.LargeDashed,
+        axisLabelVisible: true,
+        title: priceLines.mid.formatted,
+      })
+    }
+
+    chart.timeScale().fitContent()
 
     if (
       crosshairRef.current &&
@@ -183,9 +214,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       <div ref={chartContainerRef} />
       <Crosshair ref={crosshairRef} {...crosshairData} />
       {!hidePriceIndicator && <PriceIndicator ref={priceIndicatorRef} />}
-      {seriesApi && priceLines.length > 0 && (
+      {/* {seriesApi && priceLines.length > 0 && (
         <PriceMarkers priceLines={priceLines} seriesApi={seriesApi} />
-      )}
+      )} */}
     </Box>
   )
 }

@@ -4,6 +4,7 @@ import {
   ChartValues,
   Flex,
   Paper,
+  PriceLines,
   TradingViewChart,
 } from "@galacticcouncil/ui/components"
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
@@ -57,7 +58,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const isEmpty = isSuccess && !prices.length
 
-  const priceLines = useMemo(() => {
+  const priceLines = useMemo((): PriceLines | undefined => {
     if (
       isEmpty ||
       isError ||
@@ -65,11 +66,15 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
       !isFinite(max) ||
       !isFinite(mid)
     ) {
-      return []
+      return undefined
     }
 
-    return [max, mid, min]
-  }, [isEmpty, isError, min, max, mid])
+    return {
+      min: { value: min, formatted: t("number", { value: min }) },
+      max: { value: max, formatted: t("number", { value: max }) },
+      mid: { value: mid, formatted: t("number", { value: mid }) },
+    }
+  }, [isEmpty, isError, min, max, mid, t])
 
   const lastDataPoint = last(prices)
   const value = crosshair?.value ?? lastDataPoint?.close ?? 0

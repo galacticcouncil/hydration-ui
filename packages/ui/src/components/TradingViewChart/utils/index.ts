@@ -76,6 +76,7 @@ const getCandlestickSeries = (
     wickDownColor: options.downColor,
     borderVisible: false,
     priceLineVisible: false,
+    lastValueVisible: false,
   })
 }
 
@@ -90,6 +91,7 @@ const getBaselineSeries = (
     topFillColor2: hexToRgba(color.lineColor, 0),
     lineWidth: 2,
     priceLineVisible: false,
+    lastValueVisible: false,
     ...baseline,
   })
 }

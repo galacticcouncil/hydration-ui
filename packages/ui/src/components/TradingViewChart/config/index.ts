@@ -25,7 +25,14 @@ export const layout = (theme: ThemeProps): Partial<LayoutOptions> => ({
 })
 
 export const rightPriceScale: Partial<PriceScaleOptions> = {
-  visible: false,
+  visible: true,
+  scaleMargins: {
+    top: 0.2,
+    bottom: 0.2,
+  },
+  borderVisible: false,
+  ticksVisible: false,
+  autoScale: true,
 }
 
 export const leftPriceScale: Partial<PriceScaleOptions> = {
