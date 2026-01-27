@@ -1,5 +1,5 @@
 import { Box, Grid } from "@galacticcouncil/ui/components"
-import { Outlet, useLocation } from "@tanstack/react-router"
+import { Outlet, useLocation, useMatchRoute } from "@tanstack/react-router"
 import { FC, ReactNode, useMemo } from "react"
 
 import { Breadcrumb, BreadcrumbItem } from "@/components/Breadcrumb"
@@ -12,6 +12,7 @@ import {
   MainContent,
 } from "@/modules/layout/components/Content"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 type Props = {
   readonly actions?: ReactNode
@@ -32,6 +33,8 @@ export const SubpageLayout: FC<Props> = ({
   const pathname = useLocation({
     select: (state) => state.pathname,
   })
+  const isMatch = useMatchRoute()
+  const isLiquidityPage = !!isMatch({ to: "/liquidity" })
 
   const subNav = useMemo(
     () =>
@@ -64,14 +67,20 @@ export const SubpageLayout: FC<Props> = ({
         <ContentContainer>
           <Content>
             <Grid columnTemplate="1fr auto" align="center">
-              {hasSubpageMenu && (
-                <TabMenu
-                  items={subNav}
-                  size="medium"
-                  variant="transparent"
-                  ignoreCurrentSearch={ignoreCurrentSearch}
-                />
-              )}
+              {hasSubpageMenu &&
+                (isLiquidityPage ? (
+                  <LiquidityTabMenu
+                    items={subNav}
+                    ignoreCurrentSearch={ignoreCurrentSearch}
+                  />
+                ) : (
+                  <TabMenu
+                    items={subNav}
+                    size="medium"
+                    variant="transparent"
+                    ignoreCurrentSearch={ignoreCurrentSearch}
+                  />
+                ))}
               <Box sx={{ gridColumn: 2 }}>{actions}</Box>
             </Grid>
           </Content>
@@ -82,5 +91,29 @@ export const SubpageLayout: FC<Props> = ({
         <Outlet />
       </MainContent>
     </Container>
+  )
+}
+
+const LiquidityTabMenu = ({
+  ignoreCurrentSearch,
+  items,
+}: Pick<Props, "ignoreCurrentSearch"> & { items: TabItem[] }) => {
+  const isLiquidityProvided = useIsLiquidityProvided()
+
+  const filteredItems = useMemo(
+    () =>
+      isLiquidityProvided
+        ? items
+        : items.filter((tab) => tab.search?.myLiquidity === false),
+    [items, isLiquidityProvided],
+  )
+
+  return (
+    <TabMenu
+      items={filteredItems}
+      size="medium"
+      variant="transparent"
+      ignoreCurrentSearch={ignoreCurrentSearch}
+    />
   )
 }

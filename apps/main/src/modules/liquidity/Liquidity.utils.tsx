@@ -42,6 +42,7 @@ import { TShareToken, useAssets } from "@/providers/assetsProvider"
 import {
   AccountOmnipoolPosition,
   useAccountBalances,
+  useAccountData,
   useAccountOmnipoolPositionsData,
   useAccountPositions,
 } from "@/states/account"
@@ -858,4 +859,28 @@ export const convertXYKSharesToValues = (
     { token: tokenA, value: cb ? cb(valueA) : valueA },
     { token: tokenB, value: cb ? cb(valueB) : valueB },
   ]
+}
+
+export const useIsLiquidityProvided = () => {
+  const { getAsset, getShareToken } = useAssets()
+  const balances = useAccountData(useShallow(prop("balances")))
+  const { positionsAmount } = useAccountPositions()
+
+  return useMemo(() => {
+    if (positionsAmount > 0) return true
+
+    return Object.values(balances).some((balance) => {
+      const asset = getAsset(balance.assetId)
+
+      if (asset) {
+        return (
+          asset.type === AssetType.STABLESWAP || asset.type === AssetType.ERC20
+        )
+      }
+
+      const shareToken = getShareToken(balance.assetId)
+
+      return !!shareToken
+    })
+  }, [balances, getAsset, getShareToken, positionsAmount])
 }

@@ -106,6 +106,7 @@ export const assetsQuery = (
         queryClient.ensureQueryData(allPools(sdk)),
         sdk.client.asset.getSupported(true),
       ])
+      const tradeAssetsMap = new Set(tradeAssets)
 
       const xykPoolsAddress = pools.xykPools.map<[string]>((p) => [p.address])
       const xykPoolsShareTokens =
@@ -142,7 +143,7 @@ export const assetsQuery = (
       syncATokenPairs(aTokenPairs)
 
       const assetsData = assets.map((asset): TAssetData => {
-        const isTradable = tradeAssets.some((id) => id === asset.id)
+        const isTradable = tradeAssetsMap.has(asset.id)
 
         const commonAssetData: TCommonAssetData = {
           id: asset.id.toString(),
