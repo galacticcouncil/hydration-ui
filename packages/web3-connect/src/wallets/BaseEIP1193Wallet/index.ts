@@ -5,7 +5,7 @@ import { WalletProviderType } from "@/config/providers"
 import { EthereumSigner } from "@/signers/EthereumSigner"
 import { EIP6963AnnounceProviderEvent } from "@/types/evm"
 import { SubscriptionFn, Wallet, WalletAccount } from "@/types/wallet"
-import { NotInstalledError } from "@/utils/errors"
+import { AuthError, NotInstalledError } from "@/utils/errors"
 
 export class BaseEIP1193Wallet implements Wallet {
   provider = "" as WalletProviderType
@@ -57,18 +57,19 @@ export class BaseEIP1193Wallet implements Wallet {
 
   enable = async () => {
     if (!this.installed || !this.rawExtension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     try {
       const extension = this.rawExtension
 
-      const addresses = await extension.request({
-        method: "eth_requestAccounts",
-      })
+      const addresses = await extension
+        .request({
+          method: "eth_requestAccounts",
+        })
+        .catch(() => {
+          throw new AuthError(this)
+        })
 
       const address =
         Array.isArray(addresses) && addresses.length > 0 ? addresses[0] : ""
@@ -81,10 +82,7 @@ export class BaseEIP1193Wallet implements Wallet {
     } catch (err: unknown) {
       //@ts-expect-error unknown error type
       if (err.code === -32002) {
-        throw new NotInstalledError(
-          `Already processing request from ${this.title}. Check your wallet.`,
-          this,
-        )
+        throw new NotInstalledError(this)
       }
       throw this.transformError(err as Error)
     }
@@ -92,10 +90,7 @@ export class BaseEIP1193Wallet implements Wallet {
 
   getAccounts = async (): Promise<WalletAccount[]> => {
     if (!this._extension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     const accounts = (await this._extension.request({
@@ -119,10 +114,7 @@ export class BaseEIP1193Wallet implements Wallet {
   subscribeAccounts = (callback: SubscriptionFn) => {
     const extension = this._extension
     if (!extension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     const handler = (payload: unknown) => {

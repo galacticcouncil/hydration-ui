@@ -17,7 +17,7 @@ import { useAccount, useWeb3Connect, useWeb3ConnectModal } from "@/hooks"
 export const AccountActionsFooter = () => {
   const { mode, setPage, isControlled } = useWeb3ConnectContext()
   const { toggle } = useWeb3ConnectModal()
-  const { account, disconnect } = useAccount()
+  const { disconnect } = useAccount()
 
   const getConnectedProviders = useWeb3Connect(
     (state) => state.getConnectedProviders,
@@ -25,6 +25,7 @@ export const AccountActionsFooter = () => {
 
   const connectedProviders = getConnectedProviders(mode)
   const connected = connectedProviders.map(prop("type"))
+  const isConnected = connected.length > 0
 
   const onLogout = () => {
     disconnect()
@@ -41,7 +42,7 @@ export const AccountActionsFooter = () => {
         </Flex>
       )}
       <Flex gap={8} justify="space-between" ml="auto">
-        {account && !isControlled && (
+        {isConnected && !isControlled && (
           <Button variant="tertiary" onClick={onLogout}>
             Log out
             <Icon size={14} component={LogOut} ml={4} mr={-4} />

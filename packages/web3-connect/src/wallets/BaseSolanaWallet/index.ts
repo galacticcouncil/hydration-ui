@@ -5,7 +5,7 @@ import { WalletProviderType } from "@/config/providers"
 import { SolanaSigner } from "@/signers/SolanaSigner"
 import { SolanaInjectedWindowProvider } from "@/types/solana"
 import { Wallet, WalletAccount } from "@/types/wallet"
-import { NotInstalledError } from "@/utils/errors"
+import { AuthError, NotInstalledError } from "@/utils/errors"
 
 export class BaseSolanaWallet implements Wallet {
   provider = "" as WalletProviderType
@@ -55,16 +55,15 @@ export class BaseSolanaWallet implements Wallet {
 
   enable = async () => {
     if (!this.installed || !this.rawExtension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     const wallet = this.rawExtension
 
     try {
-      const connection = await wallet.connect()
+      const connection = await wallet.connect().catch(() => {
+        throw new AuthError(this)
+      })
       const publicKey = connection?.publicKey || wallet.publicKey
 
       if (!publicKey) return

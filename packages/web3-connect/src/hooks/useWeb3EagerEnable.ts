@@ -10,7 +10,7 @@ import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { WalletProviderType } from "@/config/providers"
-import { useWeb3Connect } from "@/hooks/useWeb3Connect"
+import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { toStoredAccount } from "@/utils"
 import { ExternalWallet, getWallet } from "@/wallets"
@@ -50,9 +50,12 @@ export const useWeb3EagerEnable = (enabled = true) => {
     async function eagerEnable() {
       if (hasTriedEagerEnable.current) return
 
-      for (const { type } of providers) {
+      for (const { type, status } of providers) {
         const wallet = getWallet(type)
-        if (!wallet) continue
+        if (!wallet || status !== WalletProviderStatus.Connected) {
+          disconnect(type)
+          continue
+        }
 
         const isExternal = wallet instanceof ExternalWallet
         const isSubstrate = wallet instanceof BaseSubstrateWallet

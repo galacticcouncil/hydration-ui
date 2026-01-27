@@ -14,6 +14,7 @@ import {
   Web3ConnectContextType,
   Web3ConnectProvider,
 } from "@/context/Web3ConnectContext"
+import { useWalletSubscriptions } from "@/hooks/useWalletSubscriptions"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
 import { useWeb3ConnectInit } from "@/hooks/useWeb3ConnectInit"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
@@ -84,6 +85,7 @@ export const Web3ConnectModal: FC<Props> = (props) => {
     "open" in props && "onOpenChange" in props && "onAccountSelect" in props
 
   useWeb3EagerEnable(!isControlled)
+  useWalletSubscriptions()
 
   const modalState = useWeb3ConnectModal()
 
