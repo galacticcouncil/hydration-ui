@@ -29,7 +29,7 @@
     "@galacticcouncil/math-xyk": "^1.0.0",
     "@galacticcouncil/sdk-next": "^0.29.0",
     "@galacticcouncil/xc": "^0.4.0",
-    "@galacticcouncil/xc-cfg": "^0.9.0",
+    "@galacticcouncil/xc-cfg": "^0.10.0",
     "@galacticcouncil/xc-core": "^0.9.0",
     "@galacticcouncil/xc-sdk": "^0.4.5",
     "@polkadot-api/descriptors": "file:.papi/descriptors",
