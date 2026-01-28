@@ -11,6 +11,7 @@ import { usePrevious } from "react-use"
 
 import { OmnipoolPosition } from "@/api/account"
 import { Farm } from "@/api/farms"
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { TJoinedFarm } from "@/modules/liquidity/components/Farms/Farms.utils"
 import { JoinFarmsWrapper } from "@/modules/liquidity/components/JoinFarms"
 import { OmnipoolAssetTable } from "@/modules/liquidity/Liquidity.utils"
@@ -96,7 +97,7 @@ export const OmnipoolPositions = ({
         }}
         getIsClickable={(row) => isOmnipoolPosition(row) && row.canJoinFarms}
         paginated
-        pageSize={10}
+        {...useDataTableUrlPagination("/liquidity/$id", "omnipoolPage", 10)}
         columnPinning={{
           left: ["position"],
         }}

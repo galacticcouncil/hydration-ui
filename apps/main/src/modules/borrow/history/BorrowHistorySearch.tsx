@@ -5,13 +5,14 @@ import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 
 type Props = {
+  readonly searchPhrase: string
   readonly onChange: (value: string) => void
 }
 
-export const BorrowHistorySearch: FC<Props> = ({ onChange }) => {
+export const BorrowHistorySearch: FC<Props> = ({ searchPhrase, onChange }) => {
   const { t } = useTranslation("common")
 
-  const [input, setInput] = useState("")
+  const [input, setInput] = useState(searchPhrase)
   useDebounce(
     () => {
       if (!input) {

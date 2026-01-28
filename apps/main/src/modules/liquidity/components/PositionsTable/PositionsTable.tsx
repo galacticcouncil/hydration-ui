@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next"
 
 import { XykDeposit } from "@/api/account"
 import { Farm } from "@/api/farms"
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { TJoinedFarm } from "@/modules/liquidity/components/Farms/Farms.utils"
 import {
   isIsolatedPool,
@@ -74,6 +75,12 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
     Big(totalInFarms).gt(0) || pool.isFarms,
   )
 
+  const paginationProps = useDataTableUrlPagination(
+    "/liquidity/$id",
+    "isolatedPage",
+    10,
+  )
+
   if (Big(totalBalanceDisplay).eq(0)) return null
 
   return (
@@ -115,7 +122,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
         data={positions}
         columns={columns}
         paginated
-        pageSize={10}
+        {...paginationProps}
         columnVisibility={getIsolatedPositionsTableColumns(
           isMobile,
           pool.isFarms || !!pool.positions.length,

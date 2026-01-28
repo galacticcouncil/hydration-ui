@@ -6,9 +6,10 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useQuery } from "@tanstack/react-query"
 import { useSearch } from "@tanstack/react-router"
-import { SortingState } from "@tanstack/react-table"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import {
   useWalletTransactionsColumns,
   WalletTransactionsTableColumnId,
@@ -42,12 +43,10 @@ export const WalletTransactionsTable = ({ searchPhrase }: Props) => {
   const columns = useWalletTransactionsColumns()
   const { data = [], isLoading } = useQuery(walletTransactionsQuery(type))
 
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: WalletTransactionsTableColumnId.Asset, desc: true },
-  ])
+  const sortingProps = useDataTableUrlSorting("/wallet/transactions", "sort")
 
   const sortedTransactions = useMemo(() => {
-    const { id, desc } = sorting[0] ?? {}
+    const { id, desc } = sortingProps.sorting[0] ?? {}
 
     const sortFn = ((): Compare<TransactionMock> | undefined => {
       switch (id) {
@@ -95,14 +94,14 @@ export const WalletTransactionsTable = ({ searchPhrase }: Props) => {
     })()
 
     return data.toSorted(sortFn)
-  }, [data, sorting, getAssetWithFallback])
+  }, [data, sortingProps.sorting, getAssetWithFallback])
 
   const groupedTransactions = useMemo(() => {
-    return !sorting[0] ||
-      sorting[0]?.id === WalletTransactionsTableColumnId.Asset
+    return !sortingProps.sorting[0] ||
+      sortingProps.sorting[0]?.id === WalletTransactionsTableColumnId.Asset
       ? groupTransactionsByDate(sortedTransactions)
       : sortedTransactions
-  }, [sortedTransactions, sorting])
+  }, [sortedTransactions, sortingProps.sorting])
 
   return (
     <TableContainer as={Paper}>
@@ -110,14 +109,14 @@ export const WalletTransactionsTable = ({ searchPhrase }: Props) => {
       <Separator />
       <DataTable
         paginated
+        {...useDataTableUrlPagination("/wallet/transactions", "page")}
+        {...sortingProps}
         data={groupedTransactions}
         columns={columns}
         isLoading={isLoading}
         globalFilter={searchPhrase}
-        sorting={sorting}
         manualSorting
         enableSortingRemoval={false}
-        onSortingChange={setSorting}
       />
     </TableContainer>
   )

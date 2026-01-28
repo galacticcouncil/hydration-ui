@@ -11,7 +11,8 @@ import { useShallow } from "zustand/shallow"
 
 import { usePermitNonce } from "@/api/evm"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
-import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
+import { usePapiEntries } from "@/hooks/usePapiEntries"
+import { usePapiValue } from "@/hooks/usePapiValue"
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
 import {
@@ -60,13 +61,12 @@ export type AccountUniquesValues = Awaited<
 >
 
 export type AccountUniquesEntries = AccountUniquesObservedValue["entries"]
-type AccountUniquesUpdater = (data: AccountUniquesObservedValue) => void
 
 export const useAccountInfo = (options?: UseBaseObservableQueryOptions) => {
   const { isConnected, account } = useAccount()
   const address = isConnected ? account.address : ""
 
-  return usePapiObservableQuery("System.Account", [address, "best"], options)
+  return usePapiValue("System.Account", [address, "best"], options)
 }
 
 export const omnipoolPositionsKey = (address: string) => [
@@ -165,9 +165,7 @@ export const xykMiningPositionsQuery = (
   })
 }
 
-export const useAccountOmnipoolPositions = (
-  onUpdate?: AccountUniquesUpdater,
-) => {
+export const useAccountOmnipoolPositions = () => {
   const { account } = useAccount()
   const provider = useRpcProvider()
   const { data: nftIds } = useQuery(uniquesIds(provider))
@@ -175,20 +173,12 @@ export const useAccountOmnipoolPositions = (
   const address = account?.address ?? ""
   const omnipoolNftId = nftIds?.omnipoolNftId ?? 0n
 
-  return usePapiObservableQuery(
-    "Uniques.Account",
-    [address, omnipoolNftId, { at: "best" }],
-    {
-      enabled: !!address && omnipoolNftId > 0n,
-      watchType: "entries",
-      onUpdate,
-    },
-  )
+  return usePapiEntries("Uniques.Account", [address, omnipoolNftId], {
+    enabled: !!address && omnipoolNftId > 0n,
+  })
 }
 
-export const useAccountOmnipoolMiningPositions = (
-  onUpdate?: AccountUniquesUpdater,
-) => {
+export const useAccountOmnipoolMiningPositions = () => {
   const { account } = useAccount()
   const provider = useRpcProvider()
   const { data: nftIds } = useQuery(uniquesIds(provider))
@@ -196,20 +186,12 @@ export const useAccountOmnipoolMiningPositions = (
   const address = account?.address ?? ""
   const miningNftId = nftIds?.miningNftId ?? 0n
 
-  return usePapiObservableQuery(
-    "Uniques.Account",
-    [address, miningNftId, { at: "best" }],
-    {
-      enabled: !!address && miningNftId > 0n,
-      watchType: "entries",
-      onUpdate,
-    },
-  )
+  return usePapiEntries("Uniques.Account", [address, miningNftId], {
+    enabled: !!address && miningNftId > 0n,
+  })
 }
 
-export const useAccountXykMiningPositions = (
-  onUpdate?: AccountUniquesUpdater,
-) => {
+export const useAccountXykMiningPositions = () => {
   const { account } = useAccount()
   const provider = useRpcProvider()
 
@@ -218,13 +200,11 @@ export const useAccountXykMiningPositions = (
   const address = account?.address ?? ""
   const xykMiningNftId = nftIds?.xykMiningNftId ?? 0n
 
-  return usePapiObservableQuery(
+  return usePapiEntries(
     "Uniques.Account",
     [address, xykMiningNftId, { at: "best" }],
     {
       enabled: !!address && xykMiningNftId > 0n,
-      watchType: "entries",
-      onUpdate,
     },
   )
 }

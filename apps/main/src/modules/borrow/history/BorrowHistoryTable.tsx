@@ -7,9 +7,9 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
-import { OnChangeFn, PaginationState } from "@tanstack/react-table"
 import { FC, useMemo } from "react"
 
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { BorrowHistoryFilter } from "@/modules/borrow/history/BorrowHistoryFilter"
 import { useBorrowHistoryColumns } from "@/modules/borrow/history/BorrowHistoryTable.columns"
 import { useMoneyMarketEvents } from "@/modules/borrow/history/BorrowHistoryTable.query"
@@ -20,14 +20,12 @@ import {
 
 type Props = {
   readonly searchPhrase: string
-  readonly pagination: PaginationState
-  readonly onPaginationChange: OnChangeFn<PaginationState>
+  readonly paginationProps: PaginationProps
 }
 
 export const BorrowHistoryTable: FC<Props> = ({
   searchPhrase,
-  pagination,
-  onPaginationChange,
+  paginationProps,
 }) => {
   const { type } = useSearch({
     from: "/borrow/history",
@@ -36,7 +34,7 @@ export const BorrowHistoryTable: FC<Props> = ({
   const { data, isLoading, isFetching } = useMoneyMarketEvents(
     type,
     searchPhrase,
-    pagination,
+    paginationProps.pagination,
   )
 
   const eventsWithDays = useMemo(() => mapMoneyMarketEvents(data), [data])
@@ -51,19 +49,13 @@ export const BorrowHistoryTable: FC<Props> = ({
         justify="space-between"
         align="center"
       >
-        <BorrowHistoryFilter
-          onChange={() =>
-            onPaginationChange((prev) => ({ ...prev, pageIndex: 0 }))
-          }
-        />
+        <BorrowHistoryFilter onChange={() => paginationProps.onPageClick(1)} />
       </Flex>
       <Separator />
       <DataTable
         sx={getOnUpdatePendingStyles(isUpdatePending)}
         paginated
-        onPageClick={(pageIndex) =>
-          onPaginationChange((prev) => ({ ...prev, pageIndex }))
-        }
+        {...paginationProps}
         rowCount={data?.moneyMarketEvents?.totalCount ?? 0}
         data={eventsWithDays}
         columns={columns}

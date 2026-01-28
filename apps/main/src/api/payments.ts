@@ -7,7 +7,7 @@ import { isBigInt, isNumber, pick, prop, unique, zip } from "remeda"
 import { useShallow } from "zustand/shallow"
 
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
-import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
+import { usePapiValue } from "@/hooks/usePapiValue"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
@@ -81,7 +81,7 @@ export const useAccountFeePaymentAssetId = (
   const { isConnected, account } = useAccount()
   const address = isConnected ? account.address : ""
 
-  return usePapiObservableQuery(
+  return usePapiValue(
     "MultiTransactionPayment.AccountCurrencyMap",
     [address, "best"],
     {
