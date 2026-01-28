@@ -45,7 +45,7 @@ const DefaultCollapsibleTrigger: React.FC<DefaultCollapsibleTriggerProps> = ({
   ...props
 }) => (
   <SCollapsibleTrigger {...props}>
-    <Flex justify="space-between" align="center" py={8}>
+    <Flex justify="space-between" align="center" py="base">
       {isValidElement(label) ? (
         label
       ) : (
@@ -53,7 +53,7 @@ const DefaultCollapsibleTrigger: React.FC<DefaultCollapsibleTriggerProps> = ({
           {label}
         </Text>
       )}
-      <Flex gap={2} align="center">
+      <Flex gap="xs" align="center">
         <Text fs="p5" fw={500} color={getToken("text.low")}>
           <SActionLabel>{actionLabel}</SActionLabel>
           <SActionLabelWhenOpen>

@@ -11,7 +11,7 @@ import {
   Text,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
@@ -167,13 +167,7 @@ export const AssetSelectModalContent = ({
           onKeyDown={handleKeyDown}
           sx={{ outline: "none" }}
         >
-          <Flex
-            pt={getTokenPx("scales.paddings.m")}
-            pb={getTokenPx("scales.paddings.s")}
-            px={getTokenPx("containers.paddings.primary")}
-            justify="space-between"
-            align="center"
-          >
+          <Flex pt="m" pb="s" px="xxl" justify="space-between" align="center">
             <Text fs="p5" fw={400} color={getToken("text.medium")}>
               {t("asset")}
             </Text>
@@ -183,7 +177,7 @@ export const AssetSelectModalContent = ({
           </Flex>
 
           {isLoading ? (
-            <Flex direction="column" gap={10}>
+            <Flex direction="column" gap="base">
               {[...Array(10)].map((_, index) => (
                 <Flex
                   key={index}
@@ -191,7 +185,7 @@ export const AssetSelectModalContent = ({
                   align="center"
                   width="100%"
                   height={VIRTUALIZED_ITEM_HEIGHT}
-                  px={getTokenPx("containers.paddings.primary")}
+                  px="xxl"
                 >
                   <AssetLabelFull loading />
                   <Text align="right">

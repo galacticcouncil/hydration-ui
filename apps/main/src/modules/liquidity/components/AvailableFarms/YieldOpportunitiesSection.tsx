@@ -1,5 +1,4 @@
 import { Flex, SectionHeader } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import {
@@ -25,20 +24,12 @@ export const YieldOpportunitiesSection = ({
   return (
     <>
       <SectionHeader
-        sx={{
-          mt: getTokenPx([
-            "containers.paddings.mobileContent",
-            "containers.paddings.primary",
-          ]),
-        }}
+        sx={{ mt: ["0", "xl"] }}
         title={t("details.section.yieldOpportunities")}
       />
       <Flex
         width="100%"
-        gap={getTokenPx([
-          "containers.paddings.secondary",
-          "containers.paddings.primary",
-        ])}
+        gap={["secondary", "primary"]}
         sx={{ flexWrap: "wrap" }}
       >
         {isOmnipool && data.borrowApyData && (

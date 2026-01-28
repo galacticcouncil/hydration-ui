@@ -6,7 +6,7 @@ export const JsonViewContainer = styled.div(
 
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: ${theme.space.m};
 
     margin-bottom: var(--modal-content-inset);
 

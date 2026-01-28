@@ -29,7 +29,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
 
   return (
     <>
-      <Flex gap={12} align="center" justify="flex-end">
+      <Flex gap="m" align="center" justify="flex-end">
         <TableRowAction
           variant="primary"
           outline={false}

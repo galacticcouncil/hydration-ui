@@ -7,7 +7,7 @@ import {
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 export const JoinFarmsSkeleton = ({ closable }: { closable?: boolean }) => {
@@ -19,19 +19,13 @@ export const JoinFarmsSkeleton = ({ closable }: { closable?: boolean }) => {
       <ModalBody>
         <Skeleton height={150} width="100%" />
 
-        <ModalContentDivider
-          sx={{ mt: getTokenPx("containers.paddings.primary") }}
-        />
+        <ModalContentDivider sx={{ mt: "xxl" }} />
 
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.quart")}
-          py={getTokenPx("containers.paddings.secondary")}
-        >
-          <Text fs={14} fw={500} font="primary" color={getToken("text.high")}>
+        <Flex direction="column" gap="base" py="l">
+          <Text fs="p3" fw={500} font="primary" color={getToken("text.high")}>
             {t("liquidity.joinFarms.modal.currentPositionValue")}
           </Text>
-          <Flex align="center" justify="space-between" gap={8}>
+          <Flex align="center" justify="space-between" gap="base">
             <Text color={getToken("text.medium")} fs="p5" fw={400} width={220}>
               {t("liquidity.joinFarms.modal.description")}
             </Text>
@@ -40,12 +34,7 @@ export const JoinFarmsSkeleton = ({ closable }: { closable?: boolean }) => {
 
         <ModalContentDivider />
 
-        <Button
-          size="large"
-          width="100%"
-          mt={getTokenPx("containers.paddings.primary")}
-          disabled
-        >
+        <Button size="large" width="100%" mt="xxl" disabled>
           {t("joinFarms")}
         </Button>
       </ModalBody>

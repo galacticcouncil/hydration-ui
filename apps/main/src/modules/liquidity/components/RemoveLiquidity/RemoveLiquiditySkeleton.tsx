@@ -7,7 +7,7 @@ import {
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -27,12 +27,7 @@ export const RemoveLiquiditySkeleton = ({
         onBack={onBack}
       />
       <ModalBody>
-        <Flex
-          align="center"
-          justify="space-between"
-          gap={getTokenPx("containers.paddings.quart")}
-          pb={getTokenPx("containers.paddings.primary")}
-        >
+        <Flex align="center" justify="space-between" gap="base" pb="xxl">
           <AssetLogo id={""} size="large" isLoading />
           <Text fs="h5" fw={500} color={getToken("text.high")} font="primary">
             <Skeleton width={50} height="100%" />
@@ -41,13 +36,7 @@ export const RemoveLiquiditySkeleton = ({
 
         <ModalContentDivider />
 
-        <Button
-          type="button"
-          size="large"
-          width="100%"
-          mt={getTokenPx("containers.paddings.primary")}
-          disabled
-        >
+        <Button type="button" size="large" width="100%" mt="xxl" disabled>
           {t("removeLiquidity")}
         </Button>
       </ModalBody>

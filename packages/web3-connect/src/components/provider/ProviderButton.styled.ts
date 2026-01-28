@@ -19,14 +19,14 @@ export const SProviderButton = styled(ButtonTransparent)(
     align-items: center;
     justify-content: center;
 
-    padding-block: ${theme.scales.paddings.xl}px;
-    padding-inline: ${theme.scales.paddings.s}px;
+    padding-block: ${theme.space.xl};
+    padding-inline: ${theme.space.s};
 
     cursor: pointer;
 
     transition: ${theme.transitions.colors};
 
-    border-radius: ${theme.radii.lg}px;
+    border-radius: ${theme.radii.m};
     border: 1px solid var(--border-color);
     background: var(--background-color);
   `,
@@ -47,7 +47,7 @@ export const SAccountIndicator = styled.div`
   font-size: 11px;
   color: ${({ theme }) => theme.text.high};
 
-  border-radius: ${({ theme }) => theme.radii.md}px;
+  border-radius: ${({ theme }) => theme.radii.base};
 
   position: absolute;
   top: 4px;

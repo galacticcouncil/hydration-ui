@@ -8,11 +8,11 @@ export const SLiquidityPosition = styled.div(
 
     grid-column: 1 / -1;
 
-    padding-block: ${theme.containers.paddings.tertiary}px;
-    padding-inline: ${theme.containers.paddings.primary}px;
+    padding-block: ${theme.containers.paddings.tertiary};
+    padding-inline: ${theme.containers.paddings.primary};
 
     background: ${theme.controls.dim.base};
     border: 1px solid ${theme.details.borders};
-    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
   `,
 )

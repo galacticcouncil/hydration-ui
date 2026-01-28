@@ -1,5 +1,5 @@
 import { Flex, ProgressBar, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -29,25 +29,20 @@ export const AvailableAmount: FC<Props> = ({
   return (
     <Flex
       direction="column"
-      gap={8}
-      p={getTokenPx("containers.paddings.primary")}
+      gap="base"
+      p="xxl"
       bg={getToken("details.separatorsOnDim")}
     >
       <Flex justify="space-between" align="center">
         {isPartiallyFillable && (
-          <Text
-            fw={400}
-            fs={14}
-            sx={{ lineHeight: getTokenPx("lineHeight.m") }}
-            color={getToken("text.medium")}
-          >
+          <Text fw={400} lh="m" fs="p3" color={getToken("text.medium")}>
             {t("availableAmount")}:
           </Text>
         )}
         <Text
           fw={600}
-          fs={18}
-          lh={px(21)}
+          fs="p1"
+          lh="l"
           color={getToken("buttons.primary.medium.rest")}
         >
           {t("currency", { value: assetInAmount, symbol: assetIn?.symbol })}

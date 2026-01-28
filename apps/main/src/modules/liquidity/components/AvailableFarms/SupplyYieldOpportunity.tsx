@@ -5,7 +5,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -34,20 +34,17 @@ export const SupplyYieldOpportunity = ({
     <SYieldOpportunityContainer
       as={Paper}
       direction="column"
-      gap={10}
+      gap="base"
       sx={{
-        p: getTokenPx([
-          "containers.paddings.secondary",
-          "containers.paddings.primary",
-        ]),
+        p: ["secondary", "primary"],
       }}
     >
-      <Flex align="center" gap={10}>
+      <Flex align="center" gap="base">
         <Text color={getToken("text.high")} fs="p2" fw={600}>
           {t("apy")}
         </Text>
         <Chip variant="green" size="small">
-          <Flex align="center" gap={4}></Flex>
+          <Flex align="center" gap="s"></Flex>
           {t("percent", {
             value,
           })}

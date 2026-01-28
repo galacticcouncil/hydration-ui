@@ -18,17 +18,17 @@ export const LiquidationCallDescription: FC<Props> = ({ assetId, amount }) => {
 
   return (
     <Flex
-      gap={8}
+      gap="base"
       align="center"
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap", whiteSpace: "collapse" }}
     >
-      <Text fs={14} sx={{ textAlign: ["right", "left"] }}>
+      <Text fs="p3" sx={{ textAlign: ["right", "left"] }}>
         {t("borrow:history.table.liquidatedCollateral")}
       </Text>
-      <Flex align="center" gap={8}>
+      <Flex align="center" gap="base">
         {assetId && <AssetLogo size="small" id={assetId} />}
-        <Text fs={14}>
+        <Text fs="p3">
           {t("currency", {
             value: scaleHuman(amount, asset.decimals),
             symbol: asset.symbol,

@@ -170,7 +170,7 @@ export const useSupplyAssetsTableColumns = (
         const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
-          <Flex justify="flex-end" align="center" gap={4}>
+          <Flex justify="flex-end" align="center" gap="s">
             <Button
               disabled={isDisabled}
               variant="tertiary"

@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   Grid,
+  SectionHeader,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
@@ -43,13 +44,13 @@ export const BorrowDashboardPage = () => {
   const shouldRenderBorrow = mode === "borrow" || !shouldRenderFilter
 
   return (
-    <Stack gap={30}>
+    <Stack gap="xxl">
+      <HollarBanner />
       <DashboardHeader />
       <AccountBindingBanner />
-      <HollarBanner />
       <Box>
         {shouldRenderFilter && (
-          <Grid columns={2} gap={10} mb={10}>
+          <Grid columns={2} gap="base" mb="base">
             <Button
               variant={mode === "supply" ? "secondary" : "tertiary"}
               onClick={() => setMode("supply")}
@@ -64,44 +65,54 @@ export const BorrowDashboardPage = () => {
             </Button>
           </Grid>
         )}
-        <Grid columnTemplate={["1fr", null, null, "1fr 1fr"]} gap={20}>
+        <Grid columnTemplate={["1fr", null, null, "1fr 1fr"]} gap="xl">
           {shouldRenderSupply && (
             <Box>
-              <Text as="h2" font="primary" fw={500} fs="h7" mb={6}>
-                {t("supplied.table.title")}
-              </Text>
+              <SectionHeader
+                title={t("supplied.table.title")}
+                as="h2"
+                noTopPadding
+              />
               <SuppliedAssetsTable />
             </Box>
           )}
           {shouldRenderBorrow && (
             <Box>
-              <Flex justify="space-between" align="center" mb={6}>
-                <Text as="h2" font="primary" fw={500} fs="h7">
-                  {t("borrowed.table.title")}
-                </Text>
-                {isConnected && isBound && (
-                  <Flex align="center" gap={4}>
-                    <Text fw={500}>{t("emode.label")}</Text>
-                    <ManageEmodeButton />
-                  </Flex>
-                )}
-              </Flex>
+              <SectionHeader
+                title={t("borrowed.table.title")}
+                as="h2"
+                noTopPadding
+                actions={
+                  isConnected &&
+                  isBound && (
+                    <Flex align="center" gap="s">
+                      <Text fw={500}>{t("emode.label")}</Text>
+                      <ManageEmodeButton />
+                    </Flex>
+                  )
+                }
+              />
               <BorrowedAssetsTable />
             </Box>
           )}
           {shouldRenderSupply && (
             <Box>
-              <Text as="h2" font="primary" fw={500} fs="h7" mb={6}>
-                {t("supply.table.title")}
-              </Text>
+              <SectionHeader
+                title={t("supply.table.title")}
+                as="h2"
+                noTopPadding
+              />
+
               <SupplyAssetsTable />
             </Box>
           )}
           {shouldRenderBorrow && (
             <Box>
-              <Text as="h2" font="primary" fw={500} fs="h7" mb={6}>
-                {t("borrow.table.title")}
-              </Text>
+              <SectionHeader
+                title={t("borrow.table.title")}
+                as="h2"
+                noTopPadding
+              />
               <BorrowAssetsTable />
             </Box>
           )}

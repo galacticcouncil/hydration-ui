@@ -49,19 +49,19 @@ const variants = createVariants(({ buttons, accents }) => ({
 
 const sizes = createVariants((theme) => ({
   small: css`
-    font-size: ${theme.paragraphSize.p6};
-    padding: ${theme.scales.paddings.base}px;
-    height: 18px;
+    font-size: ${theme.fontSizes.p6};
+    padding: ${theme.space.base};
+    height: 1.125rem;
   `,
   medium: css`
-    font-size: ${theme.paragraphSize.p6};
-    padding: ${theme.scales.paddings.base}px;
-    height: 22px;
+    font-size: ${theme.fontSizes.p6};
+    padding: ${theme.space.base};
+    height: 1.375rem;
   `,
   large: css`
-    font-size: ${theme.paragraphSize.p5};
-    padding: ${theme.scales.paddings.base}px ${theme.scales.paddings.m}px;
-    height: 26px;
+    font-size: ${theme.fontSizes.p5};
+    padding: ${theme.space.base} ${theme.space.m};
+    height: 1.625rem;
   `,
 }))
 
@@ -74,13 +74,13 @@ export const SChip = styled(Box, {
     css`
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: ${theme.space.s};
       flex-shrink: 0;
 
       font-weight: 500;
       line-height: 1;
 
-      border-radius: ${rounded ? theme.radii.full : theme.radii.lg}px;
+      border-radius: ${rounded ? theme.radii.full : theme.radii.m};
     `,
   ],
 )

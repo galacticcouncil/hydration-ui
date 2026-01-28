@@ -28,6 +28,7 @@ type ValueStatsProps = {
   readonly customValue?: ReactNode
   readonly bottomLabel?: string
   readonly customBottomLabel?: ReactNode
+  readonly floatingBottomLabel?: boolean
   readonly isLoading?: boolean
   readonly className?: string
   readonly containerClassName?: string
@@ -43,6 +44,7 @@ export const ValueStats: FC<ValueStatsProps> = ({
   customValue,
   bottomLabel,
   customBottomLabel,
+  floatingBottomLabel,
   isLoading,
   className,
   containerClassName,
@@ -66,12 +68,14 @@ export const ValueStats: FC<ValueStatsProps> = ({
         )}
 
         {isLoading && (bottomLabel || customBottomLabel) ? (
-          <SValueStatsBottomValue>
+          <SValueStatsBottomValue isFloating={floatingBottomLabel}>
             <Skeleton width={120} height="100%" />
           </SValueStatsBottomValue>
         ) : (
           (customBottomLabel ?? (
-            <SValueStatsBottomValue>{bottomLabel}</SValueStatsBottomValue>
+            <SValueStatsBottomValue isFloating={floatingBottomLabel}>
+              {bottomLabel}
+            </SValueStatsBottomValue>
           ))
         )}
       </SValueStatsValueContainer>

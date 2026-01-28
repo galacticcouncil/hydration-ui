@@ -18,7 +18,7 @@ export const MarketSubmit: FC<Props> = ({
   const { t } = useTranslation("trade")
 
   return (
-    <Grid py={20}>
+    <Grid py="xl">
       <AuthorizedAction size="large">
         <LoadingButton
           type="submit"

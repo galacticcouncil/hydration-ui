@@ -17,7 +17,7 @@ export const ReviewTransactionTip = () => {
   }
 
   return (
-    <Stack gap={4} align="end">
+    <Stack gap="s" align="end">
       <Toggle checked={isTipEnabled} onCheckedChange={onToggle} />
       {isTipEnabled && <TipForm assetId={tipAssetId} onAmountChange={setTip} />}
     </Stack>

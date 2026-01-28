@@ -15,23 +15,25 @@ export type TableProps = {
 
 const columnSizeStyles = createVariants<TableSize>((theme) => ({
   small: css`
-    --table-column-padding-x: 16px;
+    --table-column-padding-x: ${theme.space.l};
 
-    padding: var(--table-column-padding-x);
-    font-size: ${theme.paragraphSize.p5};
+    height: 3.75rem;
+    padding-inline: var(--table-column-padding-x);
+    font-size: ${theme.fontSizes.p5};
   `,
   medium: css`
-    --table-column-padding-x: 18px;
+    --table-column-padding-x: ${theme.space.l};
 
-    padding: var(--table-column-padding-x);
-    font-size: ${theme.paragraphSize.p4};
+    height: 4.375rem;
+    padding-inline: var(--table-column-padding-x);
+    font-size: ${theme.fontSizes.p4};
   `,
   large: css`
-    --table-column-padding-x: 20px;
+    --table-column-padding-x: ${theme.space.xl};
 
-    height: 84px;
-    padding: var(--table-column-padding-x);
-    font-size: ${theme.paragraphSize.p3};
+    height: 5.25rem;
+    padding-inline: var(--table-column-padding-x);
+    font-size: ${theme.fontSizes.p3};
   `,
 }))
 
@@ -50,19 +52,19 @@ export const SExpandedTableRowHorizontalSeparator = styled(Separator)`
 
 const headSizeStyles = createVariants<TableSize>((theme) => ({
   small: css`
-    height: 44px;
-    padding: 0 16px;
-    font-size: ${theme.paragraphSize.p6};
+    height: 2.75rem;
+    padding: 0 ${theme.space.l};
+    font-size: ${theme.fontSizes.p6};
   `,
   medium: css`
-    height: 50px;
-    padding: 0 18px;
-    font-size: ${theme.paragraphSize.p5};
+    height: 3.125rem;
+    padding: 0 ${theme.space.l};
+    font-size: ${theme.fontSizes.p5};
   `,
   large: css`
-    height: 50px;
-    padding: 0 20px;
-    font-size: ${theme.paragraphSize.p5};
+    height: 3.125rem;
+    padding: 0 ${theme.space.xl};
+    font-size: ${theme.fontSizes.p5};
   `,
 }))
 
@@ -202,27 +204,33 @@ export const TableHead = styled.th<{
   `,
 )
 
-export const TableHeadSortIndicator = styled.div`
-  display: inline-block;
-  position: relative;
-  width: 8px;
-  height: 8px;
-  margin-left: 6px;
+export const TableHeadSortIndicator = styled.div(
+  ({ theme }) => css`
+    display: inline-block;
+    position: relative;
+    width: ${theme.sizes.xs};
+    height: ${theme.sizes.xs};
+    margin-left: ${theme.space.s};
+    vertical-align: middle;
 
-  & > svg {
-    position: absolute;
-    left: 0;
+    & > svg {
+      position: absolute;
+      left: 0;
 
-    &:first-of-type {
-      bottom: -2px;
+      width: 0.45rem;
+      height: 0.45rem;
+
+      &:first-of-type {
+        bottom: -1px;
+      }
+
+      &:last-of-type {
+        top: -1px;
+        transform: rotate(180deg);
+      }
     }
-
-    &:last-of-type {
-      top: -2px;
-      transform: rotate(180deg);
-    }
-  }
-`
+  `,
+)
 
 export const TableRowOverride = styled(TableCell)`
   position: absolute;

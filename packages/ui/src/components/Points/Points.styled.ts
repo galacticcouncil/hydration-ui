@@ -1,21 +1,21 @@
 import styled from "@emotion/styled"
 
-import { createVariants, css } from "@/utils"
+import { createVariants, css, pxToRem } from "@/utils"
 
 export type PointsSize = "m" | "l"
 
 const pointsSizes = createVariants<PointsSize>((theme) => ({
   m: css`
     display: flex;
-    gap: ${theme.scales.paddings.m}px;
+    gap: ${theme.space.m};
 
-    padding-block: ${theme.containers.paddings.quart}px;
+    padding-block: ${theme.containers.paddings.quart};
   `,
   l: css`
     display: flex;
-    gap: 19px;
+    gap: ${theme.space.xl};
 
-    padding-block: ${theme.containers.paddings.secondary}px;
+    padding-block: ${theme.containers.paddings.secondary};
   `,
 }))
 
@@ -25,12 +25,12 @@ export const SPointsContainer = styled.div<{ readonly size: PointsSize }>(
 
 const pointsNumberContainerSizes = createVariants<PointsSize>(() => ({
   m: css`
-    width: 25px;
-    height: 25px;
+    width: ${pxToRem(25)};
+    height: ${pxToRem(25)};
   `,
   l: css`
-    width: 33px;
-    height: 33px;
+    width: ${pxToRem(33)};
+    height: ${pxToRem(33)};
   `,
 }))
 
@@ -43,8 +43,8 @@ export const SPointsNumberContainer = styled.div<{ readonly size: PointsSize }>(
       flex-shrink: 0;
 
       color: ${theme.details.separatorsOnDim};
-      border: 0.85px solid ${theme.text.tint.secondary};
-      border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+      border: 1px solid ${theme.text.tint.secondary};
+      border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
     `,
     pointsNumberContainerSizes(size),
   ],
@@ -54,14 +54,14 @@ const pointsNumberSizes = createVariants<PointsSize>((theme) => ({
   m: css`
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 700;
-    font-size: 12px;
+    font-size: ${theme.fontSizes.p5};
     line-height: 1.3;
     color: ${theme.text.high};
   `,
   l: css`
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 700;
-    font-size: 14px;
+    font-size: ${theme.fontSizes.base};
     line-height: 1.3;
     color: ${theme.text.high};
   `,
@@ -75,12 +75,12 @@ const pointsTextContentSizes = createVariants<PointsSize>((theme) => ({
   m: css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.scales.paddings.xs}px;
+    gap: ${theme.space.xs};
   `,
   l: css`
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: ${theme.space.s};
   `,
 }))
 
@@ -92,14 +92,14 @@ const pointsTitleSizes = createVariants<PointsSize>((theme) => ({
   m: css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 600;
-    font-size: 14px;
-    line-height: 18px;
+    font-size: ${theme.fontSizes.base};
+    line-height: 1.3;
     color: ${theme.text.high};
   `,
   l: css`
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 700;
-    font-size: 14px;
+    font-size: ${theme.fontSizes.base};
     line-height: 1.3;
     color: ${theme.text.high};
   `,
@@ -113,14 +113,14 @@ const pointsDescriptionSizes = createVariants<PointsSize>((theme) => ({
   m: css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
-    font-size: 13px;
+    font-size: ${theme.fontSizes.p4};
     line-height: 15px;
     color: ${theme.text.medium};
   `,
   l: css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
-    font-size: ${theme.paragraphSize.p3};
+    font-size: ${theme.fontSizes.p3};
     line-height: 1.4;
     color: ${theme.text.medium};
   `,

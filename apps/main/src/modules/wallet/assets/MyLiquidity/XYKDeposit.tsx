@@ -1,5 +1,5 @@
 import { Amount, Flex, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { bigShift } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { FC } from "react"
@@ -62,7 +62,7 @@ export const XYKDeposit: FC<Props> = ({
       />
 
       {joinedFarms.length ? (
-        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+        <Flex align="center" gap="s">
           <AssetLogo
             id={joinedFarms.map(({ farm }) => farm.rewardCurrency.toString())}
           />

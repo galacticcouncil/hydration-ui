@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next"
 import { SChainContainer } from "@/components/Chain/Chain.styled"
 import { Icon } from "@/components/Icon"
 import { Text } from "@/components/Text"
-import { getToken, px } from "@/utils"
+import { getToken } from "@/utils"
 
 type Props = {
   readonly icon: ComponentType
@@ -35,10 +35,10 @@ export const Chain: FC<Props> = ({
     >
       <Icon component={icon} />
       <div>
-        <Text fw={500} fs={12} lh={1.1} color={getToken("text.high")}>
+        <Text fw={500} fs="p5" lh={1.1} color={getToken("text.high")}>
           {name}
         </Text>
-        <Text fw={500} fs={10} lh={px(12)} color={getToken("text.medium")}>
+        <Text fw={500} fs="p6" lh="xs" color={getToken("text.medium")}>
           {isActive ? t("connected") : t("connect")}
         </Text>
       </div>

@@ -139,7 +139,7 @@ export const CollateralChangeModalContent: React.FC<
         <SummaryRow
           label="Collateral"
           content={
-            <Flex align="center" gap={4}>
+            <Flex align="center" gap="s">
               {isCollateralEnabled ? (
                 <>
                   <Text color={getToken("accents.success.emphasis")} fw={500}>
@@ -175,7 +175,7 @@ export const CollateralChangeModalContent: React.FC<
             }
           />
         )}
-        <Stack gap={14} py={14}>
+        <Stack gap="m" py="m">
           {showExitIsolationModeMsg && (
             <Alert
               variant="info"

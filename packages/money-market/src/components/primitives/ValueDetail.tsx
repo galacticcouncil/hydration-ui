@@ -15,7 +15,7 @@ export const ValueDetail: React.FC<ValueDetailProps> = ({
     <Flex direction="column" {...props}>
       <Text fw={500}>{value}</Text>
       {subValue && (
-        <Text fs={12} lh={1} color={getToken("text.low")}>
+        <Text fs="p5" lh={1} color={getToken("text.low")}>
           {subValue}
         </Text>
       )}

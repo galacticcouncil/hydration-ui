@@ -18,7 +18,7 @@ export const EModeInfo: React.FC<EModeInfoProps> = ({ reserve }) => {
         value={reserve.eModeLabel}
       />
 
-      <Stack direction="row" gap={40} sx={{ mt: 20 }}>
+      <Stack direction="row" gap="xxxl" sx={{ mt: 20 }}>
         <ValueStats
           size="small"
           wrap

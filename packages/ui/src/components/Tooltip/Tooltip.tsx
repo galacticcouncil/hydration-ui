@@ -115,7 +115,7 @@ export const Tooltip = ({
           collisionPadding={12}
         >
           {typeof text === "string" ? (
-            <Text fw={500} fs={12}>
+            <Text fw={500} fs="p5">
               {text}
             </Text>
           ) : (

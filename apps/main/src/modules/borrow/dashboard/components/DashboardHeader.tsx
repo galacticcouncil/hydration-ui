@@ -46,10 +46,11 @@ export const DashboardHeader = () => {
       <Stack
         direction={["column", null, "row"]}
         justify="flex-start"
-        gap={[10, null, 40, 60]}
+        gap={["base", null, "xxxl", "3.75rem"]}
         separated
       >
         <ValueStats
+          size="large"
           isLoading={loading}
           label={t("borrow:netWorth")}
           wrap={[false, false, true]}
@@ -63,6 +64,7 @@ export const DashboardHeader = () => {
           }
         />
         <ValueStats
+          size="large"
           isLoading={loading || isApyLoading}
           label={t("borrow:netApy")}
           wrap={[false, false, true]}
@@ -73,13 +75,13 @@ export const DashboardHeader = () => {
                 })
               : "-"
           }
-          size="large"
         />
         <ValueStats
+          size="large"
           label={t("borrow:healthFactor")}
           wrap={[false, false, true]}
           customValue={
-            <Flex align="center" gap={10}>
+            <Flex align="center" gap="base">
               <SValueStatsValue size="large" sx={{ color: healthFactorColor }}>
                 {loading ? (
                   <Skeleton width={50} />
@@ -105,7 +107,6 @@ export const DashboardHeader = () => {
               )}
             </Flex>
           }
-          size="large"
         />
 
         {Big(claimableRewardsUsd).gte(MIN_CLAIMABLE_INCENTIVES_USDT) && (
@@ -117,7 +118,7 @@ export const DashboardHeader = () => {
                 {loading ? (
                   <Skeleton width={100} />
                 ) : (
-                  <Flex align="center" gap={10}>
+                  <Flex align="center" gap="base">
                     {t("currency", {
                       value: claimableRewardsUsd,
                     })}
@@ -133,7 +134,7 @@ export const DashboardHeader = () => {
       </Stack>
       <Modal open={riskModalOpen} onOpenChange={setRiskModalOpen}>
         <ModalHeader align="center" title={t("borrow:risk.title")} />
-        <ModalBody>
+        <ModalBody scrollable={false}>
           <HealthFactorRisk />
         </ModalBody>
       </Modal>

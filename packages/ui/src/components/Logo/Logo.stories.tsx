@@ -18,7 +18,7 @@ const VALID_IMAGE_URL =
 const INVALID_IMAGE_URL = "https://invalid-url-that-will-fail.com/image.jpg"
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof Logo>) => (
-  <Stack gap={20}>
+  <Stack gap="xl">
     {keys(LOGO_SIZES).map((size) => (
       <Logo key={size} {...args} size={size} />
     ))}

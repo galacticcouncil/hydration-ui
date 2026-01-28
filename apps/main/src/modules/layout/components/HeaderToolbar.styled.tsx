@@ -7,12 +7,10 @@ export const SHeaderToolbar = styled.div(
   ({ theme }) => css`
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 6px 0px;
+    gap: ${theme.space.s};
 
     ${mq(TOP_NAVBAR_BREAKPOINT)} {
-      gap: ${theme.containers.paddings.quint}px;
-      padding: 6px 14px;
+      gap: ${theme.space.base};
     }
   `,
 )

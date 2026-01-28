@@ -6,7 +6,7 @@ import {
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
 import { UseMutationResult } from "@tanstack/react-query"
 import Big from "big.js"
@@ -124,17 +124,10 @@ export const RemoveLiquidityForm = ({
         onBack={onBack}
       />
       <ModalBody>
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.secondary")}
-          asChild
-        >
+        <Flex direction="column" gap="l" asChild>
           <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
             {!editable ? (
-              <Flex
-                align="center"
-                gap={getTokenPx("containers.paddings.quart")}
-              >
+              <Flex align="center" gap="base">
                 <AssetLogo
                   id={isShareToken(meta) ? meta.iconId : meta.id}
                   size="large"

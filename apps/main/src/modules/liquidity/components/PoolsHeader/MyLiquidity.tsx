@@ -28,6 +28,7 @@ export const MyLiquidity = () => {
         bottomLabel={t("header.myLiquidity.value", {
           value: farmingTotal,
         })}
+        floatingBottomLabel
         size="medium"
         isLoading={isLiquidityLoading}
         wrap

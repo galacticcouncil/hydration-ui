@@ -33,17 +33,17 @@ export const Alert: FC<AlertProps> = ({
       {displayIcon && (
         <SAlertIcon
           variant={variant}
-          size={16}
+          size="s"
           component={alertIcons[variant]}
         />
       )}
 
-      <Flex direction="column" gap={8} align="baseline">
+      <Flex direction="column" gap="base" align="baseline">
         {title && <SAlertTitle variant={variant}>{title}</SAlertTitle>}
         {typeof description === "string" ? (
           <Text
             fw={title ? 400 : 500}
-            fs={13}
+            fs="p4"
             lh={1.3}
             color={getToken("text.high")}
           >

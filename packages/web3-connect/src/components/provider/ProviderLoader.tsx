@@ -24,11 +24,11 @@ export const ProviderLoader: FC<ProviderLoaderProps> = ({ providers }) => {
         <Spinner size={140} strokeWidth={1} />
         <ProviderIcons providers={wallets.map(({ provider }) => provider)} />
       </SpinnerContainer>
-      <Box my={20}>
-        <Text fs={19} fw={500} align="center" transform="uppercase">
+      <Box my="xl">
+        <Text fs="p1" fw={500} align="center" transform="uppercase">
           Waiting for authorization
         </Text>
-        <Text align="center" fs={16} color={getToken("text.medium")} fw={400}>
+        <Text align="center" fs="p2" color={getToken("text.medium")} fw={400}>
           Please authorize your wallet extension to connect to Hydration.
         </Text>
       </Box>

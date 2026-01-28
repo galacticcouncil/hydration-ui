@@ -15,13 +15,13 @@ export const STextButton = styled.button<CustomTextButtonProps>(
     display: inline-flex;
     ${direction === "external" &&
     css`
-      gap: 4px;
+      gap: ${theme.space.s};
     `}
     align-items: center;
 
     transition: ${theme.transitions.colors};
 
-    font-size: ${theme.paragraphSize.p5};
+    font-size: ${theme.fontSizes.p5};
     font-family: ${theme.fontFamilies1.secondary};
     border-bottom: ${variant === "underline"
       ? `1px solid ${theme.textButtons.small.rest}`

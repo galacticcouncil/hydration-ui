@@ -13,7 +13,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { Minus } from "lucide-react"
@@ -85,7 +85,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
       <STableHeader sx={{ justifyContent: "space-between" }}>
         <Flex
           align="center"
-          gap={getTokenPx("scales.paddings.s")}
+          gap="s"
           color={getToken("buttons.primary.high.hover")}
         >
           <Icon component={LiquidityIcon} size={12} />
@@ -239,10 +239,7 @@ const PositionsTableBody = ({
 
   return (
     <CollapsibleRoot open={expanded}>
-      <TableContainer
-        as={Paper}
-        sx={{ mt: getTokenPx("containers.paddings.primary") }}
-      >
+      <TableContainer as={Paper} sx={{ mt: "xxl" }}>
         <PositionsHeader
           onClick={onClick}
           showMore={expanded}

@@ -47,7 +47,7 @@ export const TradeOption = ({
       disabled={disabled}
     >
       <Flex direction="column">
-        <Text fs={14} lh={1} color={getToken("text.high")}>
+        <Text fs="p3" lh={1} color={getToken("text.high")}>
           {label}
         </Text>
         <Text fs="p5" color={getToken("text.medium")}>
@@ -55,13 +55,13 @@ export const TradeOption = ({
         </Text>
       </Flex>
       <Flex direction="column" align="end">
-        <Text fs={14} lh={1} fw={600} color={getToken("text.high")}>
+        <Text fs="p3" lh={1} fw={600} color={getToken("text.high")}>
           {t("currency", {
             value: value,
             symbol: asset.symbol,
           })}
         </Text>
-        <Flex gap={4} align="center">
+        <Flex gap="s" align="center">
           <Text fs="p6" fw={400} color={getToken("text.medium")}>
             {displayValue}
           </Text>

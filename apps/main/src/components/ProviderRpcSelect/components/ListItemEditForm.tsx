@@ -74,7 +74,7 @@ export const ListItemEditForm: React.FC<ListItemEditFormProps> = ({
         <Flex
           align="center"
           justify="end"
-          gap={12}
+          gap="m"
           color={getToken("text.medium")}
         >
           <ButtonTransparent

@@ -5,7 +5,7 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -41,11 +41,7 @@ export const PoolDetailsValues = ({
     )
   } else if (data.stablepoolData) {
     return (
-      <Flex
-        direction="column"
-        justify="space-between"
-        gap={getTokenPx("containers.paddings.primary")}
-      >
+      <Flex direction="column" justify="space-between" gap="xxl">
         <PoolDetailsValuesContainer>
           <OmnipoolValues data={data} />
           <Separator mx={-20} />
@@ -156,13 +152,9 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
           <ValueStats
             wrap
             customValue={
-              <Flex gap={4} align="self-start">
+              <Flex gap="s" align="self-start">
                 <AssetLogo id={assetAIconId} sx={{ mt: [0, 2] }} />
-                <Flex
-                  direction="column"
-                  gap={getTokenPx("scales.paddings.s")}
-                  width="100%"
-                >
+                <Flex direction="column" gap="s" width="100%">
                   <Text
                     fs="h7"
                     fw={500}
@@ -181,7 +173,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
               </Flex>
             }
           />
-          <Separator mx={-20} />
+          <Separator mx="-xl" />
         </>
       )}
 
@@ -190,13 +182,9 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
           <ValueStats
             wrap
             customValue={
-              <Flex gap={4} align="self-start">
+              <Flex gap="s" align="self-start">
                 <AssetLogo id={assetBIconId} sx={{ mt: [0, 2] }} />
-                <Flex
-                  direction="column"
-                  gap={getTokenPx("scales.paddings.s")}
-                  width="100%"
-                >
+                <Flex direction="column" gap="s" width="100%">
                   <Text
                     fs="h7"
                     fw={500}
@@ -215,7 +203,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
               </Flex>
             }
           />
-          <Separator mx={-20} />
+          <Separator mx="-xl" />
         </>
       )}
 
@@ -225,7 +213,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
         value={t("currency", { value: data.tvlDisplay })}
       />
 
-      <Separator mx={-20} />
+      <Separator mx="-xl" />
 
       <ValueStats
         wrap
@@ -233,7 +221,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
         value={t("currency", { value: data.volumeDisplay })}
       />
 
-      <Separator mx={-20} />
+      <Separator mx="-xl" />
 
       <ValueStats
         wrap
@@ -246,7 +234,7 @@ const IsolatedPoolValues = ({ data }: { data: IsolatedPoolTable }) => {
         })}
       />
 
-      <Separator mx={-20} />
+      <Separator mx="-xl" />
     </>
   )
 }
@@ -274,9 +262,9 @@ const PoolDetailsValuesContainer = ({
   return (
     <Flex
       direction="column"
-      minWidth={260}
-      maxWidth={["auto", "auto", 360]}
-      gap={getTokenPx("containers.paddings.primary")}
+      minWidth="16.25rem"
+      maxWidth={["none", "none", "22.5rem"]}
+      gap="xl"
     >
       {children}
     </Flex>

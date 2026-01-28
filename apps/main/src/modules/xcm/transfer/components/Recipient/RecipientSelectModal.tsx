@@ -71,7 +71,7 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
                   />
                 ) : (
                   <ConnectChainTile
-                    p={20}
+                    p="xl"
                     sx={{ bg: getToken("controls.dim.base") }}
                     chain={destChain}
                     onConnect={() => setIsConnectModalOpen(true)}

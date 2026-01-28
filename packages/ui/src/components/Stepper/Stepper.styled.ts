@@ -11,7 +11,7 @@ export const SStepperContainer = styled(Box)`
   margin: 0 auto;
   width: 100%;
   ${mq("sm")} {
-    padding-bottom: 20px;
+    padding-bottom: ${({ theme }) => theme.space.xl};
   }
 `
 
@@ -19,12 +19,12 @@ export const SStepContainer = styled(Box)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: ${({ theme }) => theme.space.xs};
 `
 
 export const SStepLabel = styled(Text)(
   ({ theme }) => css`
-    font-size: ${theme.paragraphSize.p6};
+    font-size: ${theme.fontSizes.p6};
     font-weight: 500;
 
     display: none;
@@ -71,11 +71,11 @@ export const SCircle = styled(Box)<{ state: StepState }>(
     width: 24px;
     height: 24px;
 
-    font-size: ${theme.paragraphSize.p4};
+    font-size: ${theme.fontSizes.p4};
     font-family: ${theme.fontFamilies1.primary};
     font-weight: 600;
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
     border: 1px solid
       ${state === StepState.Todo
         ? theme.buttons.primary.medium.rest

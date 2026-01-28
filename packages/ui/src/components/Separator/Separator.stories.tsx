@@ -12,7 +12,7 @@ export default {
 
 export const Horizontal: Story = {
   render: () => (
-    <Flex direction="column" gap={20}>
+    <Flex direction="column" gap="xl">
       Lorem ipsum dolor sit amet consectetur adipisicing elit.
       <Separator />
       Culpa, deleniti ad optio sunt eum soluta aspernatur libero error a dolor
@@ -25,7 +25,7 @@ export const Horizontal: Story = {
 
 export const Vertical: Story = {
   render: () => (
-    <Flex gap={20} width={800} height={100} align="center">
+    <Flex gap="xl" width={800} height={100} align="center">
       Lorem ipsum dolor sit amet consectetur adipisicing elit.
       <Separator orientation="vertical" sx={{ height: 50 }} />
       Culpa, deleniti ad optio sunt eum soluta aspernatur libero error a dolor

@@ -57,7 +57,7 @@ export const DcaWarnings: FC<Props> = ({
   return (
     <>
       <SwapSectionSeparator />
-      <Flex direction="column" my={8} gap={6}>
+      <Flex direction="column" my="base" gap="s">
         {warnings.map((warning) =>
           warning === DcaValidationWarning.PriceImpact ? (
             <DcaPriceImpactWarning

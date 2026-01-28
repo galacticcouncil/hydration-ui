@@ -1,5 +1,5 @@
 import { JsonView, ScrollArea, Separator } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { t } from "i18next"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
@@ -30,12 +30,12 @@ export const ReviewTransactionJsonView = () => {
           title={t("transaction.jsonview.decoded")}
           maxContentHeight={isValidTxCallHash ? 120 : 200}
         >
-          <JsonView fs={13} src={txJson} />
+          <JsonView fs="p5" src={txJson} />
         </ExpandableSection>
         {isValidTxCallHash && (
           <>
             <Separator
-              my={getTokenPx("scales.paddings.base")}
+              my="base"
               sx={{ background: getToken("details.borders") }}
             />
             <ExpandableSection

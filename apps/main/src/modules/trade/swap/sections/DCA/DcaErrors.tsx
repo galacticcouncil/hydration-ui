@@ -27,7 +27,7 @@ export const DcaErrors: FC<Props> = ({ priceImpact, errors }) => {
   return (
     <>
       <SwapSectionSeparator />
-      <Flex direction="column" my={8} gap={6}>
+      <Flex direction="column" my="base" gap="s">
         {errors.map((error) => (
           <Alert
             key={error}

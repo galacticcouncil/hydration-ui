@@ -40,10 +40,10 @@ const ReferenceLineLabel = (props: {
       <Box
         bg={getToken("accents.info.primary")}
         color={getToken("accents.info.onPrimary")}
-        py={4}
-        borderRadius="md"
+        py="s"
+        borderRadius="base"
       >
-        <Text fs={12} fw={500} lh={1} whiteSpace="nowrap" align="center">
+        <Text fs="p5" fw={500} lh={1} whiteSpace="nowrap" align="center">
           {props.title} {t("percent", { value: props.value })}
         </Text>
       </Box>

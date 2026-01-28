@@ -4,8 +4,8 @@ export const SPositionToRemove = styled.div<{ selected: boolean }>`
   ${({ theme, selected }) => css`
     display: flex;
     justify-content: space-between;
-    padding: ${theme.containers.paddings.quart}px
-      ${theme.containers.paddings.primary}px;
+    padding: ${theme.containers.paddings.quart}
+      ${theme.containers.paddings.primary};
 
     ${selected && `background: ${theme.controls.dim.base}`};
 

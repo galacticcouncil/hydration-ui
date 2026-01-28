@@ -7,7 +7,6 @@ import {
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -59,10 +58,10 @@ export const TradeOrdersHeader = () => {
       sx={{ overflowX: "auto" }}
       columnTemplate="1fr auto"
       columnGap={8}
-      px={20}
+      px="xl"
     >
       <TabMenu
-        gap={8}
+        gap="base"
         items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(`trade.orders.${tab}`),
@@ -75,13 +74,8 @@ export const TradeOrdersHeader = () => {
           resetScroll: false,
         }))}
         renderItem={(item) => (
-          <Box position="relative" my={getTokenPx("scales.paddings.l")}>
-            <TabMenuItem
-              size="small"
-              item={item}
-              variant="muted"
-              sx={{ px: 10 }}
-            />
+          <Box position="relative" my="l">
+            <TabMenuItem size="small" item={item} variant="muted" />
             {item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
               openOrdersCount > 0 && (
                 <OpenOrdersBadge
@@ -98,7 +92,7 @@ export const TradeOrdersHeader = () => {
           </Box>
         )}
       />
-      <Flex gap={12} align="center">
+      <Flex gap="m" align="center">
         <ToggleRoot>
           <ToggleLabel>
             {allPairs

@@ -12,7 +12,7 @@ export const SContainer = styled.div(
     line-height: 1;
 
     border: 1px solid ${theme.details.borders};
-    border-radius: ${theme.radii.md}px;
+    border-radius: ${theme.radii.base};
     background-color: ${theme.surfaces.containers.high.primary};
 
     cursor: pointer;

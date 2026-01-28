@@ -47,7 +47,7 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
       label={label}
       loading={isLoading}
       content={
-        <Flex align="center" gap={10}>
+        <Flex align="center" gap="base">
           <Flex direction="column" align="flex-end">
             {typeof amount === "string" ? (
               <SummaryRowValue>{amount}</SummaryRowValue>
@@ -72,7 +72,7 @@ export const CalculatedAmountSummaryRow: FC<Props> = ({
         onIsExpandedChange(!isExpanded)
       }}
       tooltip={
-        <Flex direction="column" gap={8}>
+        <Flex direction="column" gap="base">
           <Box>{tooltip}</Box>
           <Box>
             <Flex justify="space-between">

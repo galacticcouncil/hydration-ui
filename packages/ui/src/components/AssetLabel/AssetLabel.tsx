@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react"
 
 import { LogoSize } from "@/components/Logo"
-import { getToken, px } from "@/utils"
+import { getToken } from "@/utils"
 
 import { Flex } from "../Flex"
 import { Skeleton } from "../Skeleton"
@@ -35,7 +35,7 @@ export const AssetLabel = ({
 
   return (
     <Flex direction="column" gap={size === "primary" ? 0 : 2} minWidth={0}>
-      <Flex gap={4} align="center">
+      <Flex gap="s" align="center">
         <Symbol size={size}>{symbol}</Symbol>
         {badge}
       </Flex>
@@ -52,9 +52,9 @@ const Symbol: FC<TextProps & { size: AssetLabelSize }> = ({
     return (
       <Text
         font="primary"
-        fs={22}
+        fs="h6"
         fw={500}
-        lh={px(24)}
+        lh="xl"
         whiteSpace="nowrap"
         {...props}
       />

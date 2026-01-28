@@ -16,10 +16,10 @@ const tags = Array.from({ length: 50 }).map(
 )
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof ScrollArea>) => (
-  <Paper p={10} height={400} width={400}>
+  <Paper p="base" height={400} width={400}>
     <ScrollArea {...args}>
       <Flex
-        gap={6}
+        gap="s"
         direction={args.orientation === "horizontal" ? "row" : "column"}
       >
         {tags.map((tag) => (

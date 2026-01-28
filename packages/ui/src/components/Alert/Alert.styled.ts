@@ -21,10 +21,10 @@ export const SAlertContainer = styled.div<{
   css`
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 8px;
+    gap: ${theme.space.base};
 
-    padding: ${theme.containers.paddings.quart}px;
-    border-radius: 8px;
+    padding: ${theme.containers.paddings.quart};
+    border-radius: ${theme.space.base};
   `,
   containerVariants(variant),
 ])
@@ -47,7 +47,7 @@ export const SAlertTitle = styled.span<{
   css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 500;
-    font-size: ${theme.paragraphSize.p4};
+    font-size: ${theme.fontSizes.p4};
     line-height: 1;
   `,
   textColorVariants(variant),

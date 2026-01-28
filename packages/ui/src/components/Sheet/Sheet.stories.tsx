@@ -21,7 +21,7 @@ const DefaultTemplate = (args: Story["args"]) => {
     <>
       <Button onClick={() => setOpen(true)}>Open Sheet</Button>
       <Sheet title="Notifications" {...args} open={open} onOpenChange={setOpen}>
-        <Flex direction="column" gap={10}>
+        <Flex direction="column" gap="base">
           {Array.from({ length: 10 }).map((_, i) => (
             <Fragment key={i}>
               <Notification

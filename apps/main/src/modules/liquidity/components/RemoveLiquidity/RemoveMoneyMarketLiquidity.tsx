@@ -11,7 +11,6 @@ import {
   Text,
   Toggle,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -112,11 +111,7 @@ export const RemoveMoneyMarketLiquidityForm = (
         onBack={onBack}
       />
       <ModalBody>
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.tertiary")}
-          asChild
-        >
+        <Flex direction="column" gap="m" asChild>
           <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
@@ -162,10 +157,7 @@ export const RemoveMoneyMarketLiquidityForm = (
                 sx={{ p: 0 }}
               />
             ) : (
-              <Flex
-                direction="column"
-                gap={getTokenPx("containers.paddings.quint")}
-              >
+              <Flex direction="column" gap="s">
                 <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
               </Flex>
             )}

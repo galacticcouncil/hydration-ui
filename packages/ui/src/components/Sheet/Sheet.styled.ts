@@ -86,6 +86,6 @@ export const SSheetBody = SModalBody
 export const SSheetTitle = styled(Text)`
   color: ${({ theme }) => theme.text.high};
   font-weight: 500;
-  font-size: ${({ theme }) => theme.headlineSize.h7};
+  font-size: ${({ theme }) => theme.fontSizes.h7};
   font-family: ${({ theme }) => theme.fontFamilies1.primary};
 `

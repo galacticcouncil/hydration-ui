@@ -32,7 +32,7 @@ export const DebtCeilingStatus = ({
     <div className={className}>
       <div sx={{ flex: "row", justify: "space-between", align: "center" }}>
         <div sx={{ flex: "row", align: "center" }}>
-          <Text fs={13} color="basic400">
+          <Text fs="p4" color="basic400">
             <span>Isolated Debt Ceiling</span>
           </Text>
           <Tooltip
@@ -49,7 +49,7 @@ export const DebtCeilingStatus = ({
             <CircleInfo />
           </Tooltip>
         </div>
-        <Text fs={14}>
+        <Text fs="p3">
           {formatCurrency(Number(debt))}
           <span sx={{ display: "inline-block", mx: 4 }}>of</span>
           {formatCurrency(Number(ceiling))}

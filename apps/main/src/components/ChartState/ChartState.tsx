@@ -13,7 +13,7 @@ export type ChartStateProps = {
   isLoading?: boolean
   isError?: boolean
   isEmpty: boolean
-  children: React.ReactNode
+  children?: React.ReactNode
   className?: string
 }
 

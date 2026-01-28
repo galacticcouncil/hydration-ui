@@ -50,7 +50,7 @@ export const MarketTradeOptions: FC<Props> = ({
 
   if (isSwapLoading || !swap) {
     return (
-      <Flex direction="column" gap={8}>
+      <Flex direction="column" gap="base">
         <TradeOptionSkeleton />
         <TradeOptionSkeleton />
       </Flex>
@@ -106,7 +106,7 @@ export const MarketTradeOptions: FC<Props> = ({
       control={control}
       name="isSingleTrade"
       render={({ field }) => (
-        <Flex sx={{ flexDirection: "column", gap: 8 }}>
+        <Flex sx={{ flexDirection: "column", gap: "base" }}>
           <TradeOption
             asset={asset}
             value={price}

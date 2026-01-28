@@ -21,7 +21,7 @@ export const AmountMobile: FC<Props> = ({ fromAmount, from, status }) => {
   const { t } = useTranslation()
 
   return (
-    <Flex direction="column" gap={2} align="end">
+    <Flex direction="column" gap="xs" align="end">
       <Text fw={600} fs="p5" lh={1} color={getToken("text.high")}>
         {t("currency", { value: fromAmount, symbol: from.symbol })}
       </Text>

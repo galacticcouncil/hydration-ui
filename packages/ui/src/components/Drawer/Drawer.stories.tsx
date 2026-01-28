@@ -107,12 +107,12 @@ const WithCustomHeaderTemplate = (
             {Array.from({ length: 100 }).map((_, i) => (
               <Flex
                 key={i}
-                py={10}
+                py="base"
                 px="var(--modal-content-padding)"
                 justify="space-between"
                 align="center"
               >
-                <Flex align="center" gap={8}>
+                <Flex align="center" gap="base">
                   <AssetLogo src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg" />
                   <Text fw={600}>HDX</Text>
                 </Flex>

@@ -85,7 +85,7 @@ export const Stepper: React.FC<StepperProps> = ({
         <Text color={getToken("text.high")} fs="p5" fw={500} truncate>
           {currentLabel}
         </Text>
-        <Flex gap={4}>
+        <Flex gap="s">
           {steps.map((label, index) => (
             <Step
               key={index}

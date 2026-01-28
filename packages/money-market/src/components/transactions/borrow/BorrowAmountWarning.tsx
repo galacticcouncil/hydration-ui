@@ -19,7 +19,7 @@ export const BorrowAmountWarning = ({
         description="Borrowing this amount will reduce your health factor and increase risk
         of liquidation."
       />
-      <Flex align="center" as="label" gap={10}>
+      <Flex align="center" as="label" gap="base">
         <Toggle
           size="large"
           checked={riskCheckboxAccepted}

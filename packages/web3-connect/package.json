@@ -8,7 +8,8 @@
     "build": "tsc --build",
     "lint": "yarn lint:eslint && yarn lint:ts",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
-    "lint:eslint": "eslint src"
+    "lint:eslint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@galacticcouncil/ui": "*",

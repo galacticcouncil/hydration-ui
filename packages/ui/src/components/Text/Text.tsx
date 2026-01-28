@@ -2,15 +2,13 @@ import { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/core"
 import { FC, Ref } from "react"
 
 import { Box, BoxProps } from "@/components"
-import { ThemeFont, ThemeProps } from "@/theme"
+import { ThemeFont } from "@/theme"
 import { getToken } from "@/utils"
-
-export type TextSize = keyof ThemeProps["typography"]["text"]["size"]
 
 export type TextProps = BoxProps & {
   fw?: ResponsiveStyleValue<400 | 500 | 600 | 700>
-  lh?: ResponsiveStyleValue<number | string>
-  fs?: TextSize | ResponsiveStyleValue<number>
+  lh?: ThemeUICSSProperties["lineHeight"]
+  fs?: ThemeUICSSProperties["fontSize"]
   font?: ThemeFont
   align?: ThemeUICSSProperties["textAlign"]
   transform?: ThemeUICSSProperties["textTransform"]
@@ -19,13 +17,6 @@ export type TextProps = BoxProps & {
   wordBreak?: ThemeUICSSProperties["wordBreak"]
   truncate?: true | ResponsiveStyleValue<number | string>
   ref?: Ref<HTMLParagraphElement>
-}
-
-export const getFontSizeProps = (fs: TextProps["fs"]) => {
-  if (typeof fs === "string") {
-    return { variant: `typography.text.size.${fs}` }
-  }
-  return { fontSize: fs }
 }
 
 const getTruncateProps = (truncate: TextProps["truncate"]) => ({
@@ -58,13 +49,13 @@ export const Text: FC<TextProps> = ({
         fontFamily:
           font === "mono" ? "GeistMono" : getToken(`fontFamilies1.${font}`),
         fontWeight: fw,
+        fontSize: fs,
         textAlign: align,
         textTransform: transform,
         textDecoration: decoration,
         lineHeight: lh,
         whiteSpace,
         wordBreak,
-        ...getFontSizeProps(fs),
         ...(truncate && getTruncateProps(truncate)),
       }}
       {...props}

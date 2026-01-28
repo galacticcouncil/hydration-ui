@@ -42,7 +42,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
   return (
     <DropdownMenu>
       <CopyMenuTrigger>
-        <Icon size={14} component={CopyIcon} />
+        <Icon size="s" component={CopyIcon} />
         {t("transaction.jsonview.copy.title")}
       </CopyMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={0}>
@@ -53,7 +53,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
                 {({ copied }) => (
                   <>
                     <MenuItemIcon
-                      size={20}
+                      size="m"
                       component={copied ? CheckIcon : BracesIcon}
                     />
                     <MenuItemLabel>
@@ -72,7 +72,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
                 {({ copied }) => (
                   <>
                     <MenuItemIcon
-                      size={20}
+                      size="m"
                       component={copied ? CheckIcon : BinaryIcon}
                     />
                     <MenuItemLabel>
@@ -88,7 +88,7 @@ export const CopyMenu: React.FC<CopyMenuProps> = ({
           <DropdownMenuItem asChild>
             <MenuSelectionItem asChild variant="filterLink">
               <ExternalLink href={txUrl}>
-                <MenuItemIcon size={20} component={ExternalLinkIcon} />
+                <MenuItemIcon size="m" component={ExternalLinkIcon} />
                 <MenuItemLabel>{t("transaction.sign.openInPjs")}</MenuItemLabel>
               </ExternalLink>
             </MenuSelectionItem>

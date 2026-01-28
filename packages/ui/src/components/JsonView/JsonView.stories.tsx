@@ -26,7 +26,7 @@ const EXAMPLE_JSON = {
 
 const Template = (args: Story["args"]) => {
   return (
-    <Paper p={20}>
+    <Paper p="xl">
       <JsonView src={EXAMPLE_JSON} {...args} />
     </Paper>
   )

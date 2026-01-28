@@ -35,7 +35,7 @@ export const LiquidityPositionActions: FC<Props> = ({
   const { t } = useTranslation(["common", "wallet"])
 
   return (
-    <Flex align="center" gap={6} justify="flex-end">
+    <Flex align="center" gap="s" justify="flex-end">
       {!!farmsToJoin.length && (
         <Button
           variant="sliderTabActive"

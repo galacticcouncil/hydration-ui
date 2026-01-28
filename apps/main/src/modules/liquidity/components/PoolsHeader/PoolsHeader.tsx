@@ -14,9 +14,9 @@ export const PoolsHeader = () => {
 
   return (
     <Flex
-      gap={[15, isIsolated ? 90 : 20]}
+      gap={["l", isIsolated ? "5.625rem" : "xl"]}
       justify={isIsolated ? "flex-start" : "space-between"}
-      sx={{ py: 20, overflowX: "auto", height: 85 }}
+      sx={{ pb: "xxl", overflowX: "auto" }}
     >
       {myLiquidity ? (
         <MyLiquidity />

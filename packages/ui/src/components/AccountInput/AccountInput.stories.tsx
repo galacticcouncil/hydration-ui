@@ -17,7 +17,7 @@ const Template = (
 ) => {
   const [value, setValue] = useState(args.value || "")
   return (
-    <Paper p={20} maxWidth={500}>
+    <Paper p="xl" maxWidth={500}>
       <AccountInput {...args} value={value} onChange={setValue} />
     </Paper>
   )

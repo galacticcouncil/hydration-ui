@@ -7,13 +7,13 @@ export type ValueStatsFont = Exclude<ThemeFont, "mono">
 
 const containerSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   small: css`
-    gap: 2px;
+    gap: ${theme.space.xs};
   `,
   medium: css`
-    gap: ${theme.scales.paddings.xs}px;
+    gap: ${theme.space.xs};
   `,
   large: css`
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
   `,
 }))
 
@@ -21,6 +21,7 @@ export const SValueStatsValueContainer = styled.div<{
   readonly size?: ValueStatsSize
 }>(({ size = "large" }) => [
   css`
+    position: relative;
     display: flex;
     flex-direction: column;
   `,
@@ -48,15 +49,13 @@ export const SValueStatsLabel = styled.div(
   ({ theme }) => css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
-
-    font-size: 11px;
-    line-height: 15px;
+    font-size: ${theme.fontSizes.p6};
+    line-height: ${theme.lineHeights.s};
     color: ${theme.text.low};
 
     white-space: nowrap;
 
     ${mq("sm")} {
-      font-size: ${theme.paragraphSize.p6};
       line-height: 1.4;
       color: ${theme.text.medium};
     }
@@ -65,29 +64,29 @@ export const SValueStatsLabel = styled.div(
 
 const valueSizeVariants = createVariants<ValueStatsSize>((theme) => ({
   small: css`
-    font-size: ${theme.headlineSize.base};
+    font-size: ${theme.fontSizes.base};
     line-height: 1;
 
     ${mq("sm")} {
-      font-size: ${theme.headlineSize.h7};
+      font-size: ${theme.fontSizes.h7};
     }
   `,
   medium: css`
-    font-size: ${theme.headlineSize.h7};
+    font-size: ${theme.fontSizes.h7};
     line-height: 1;
 
     ${mq("sm")} {
-      font-size: ${theme.headlineSize.h6};
-      line-height: ${theme.lineHeight.xl}px;
+      font-size: ${theme.fontSizes.h6};
+      line-height: ${theme.lineHeights.xl};
     }
   `,
   large: css`
-    font-size: ${theme.headlineSize.h7};
+    font-size: ${theme.fontSizes.h7};
     line-height: 1;
 
     ${mq("sm")} {
-      font-size: ${theme.headlineSize.h5};
-      line-height: ${theme.lineHeight["2xl"]}px;
+      font-size: ${theme.fontSizes.h5};
+      line-height: ${theme.lineHeights["2xl"]};
     }
   `,
 }))
@@ -107,15 +106,23 @@ export const SValueStatsValue = styled.div<{
   valueSizeVariants(size),
 ])
 
-export const SValueStatsBottomValue = styled.div(
-  ({ theme }) => css`
+export const SValueStatsBottomValue = styled.div<{
+  isFloating?: boolean
+}>(({ theme, isFloating = false }) => [
+  css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
-    font-size: 10px;
+    font-size: ${theme.fontSizes.p6};
     line-height: 1;
 
     color: ${theme.text.low};
 
     white-space: nowrap;
   `,
-)
+  isFloating &&
+    css`
+      position: absolute;
+      top: calc(100% + ${theme.space.xs});
+      left: 0;
+    `,
+])

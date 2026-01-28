@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content, Trigger } from "@radix-ui/react-tooltip"
 
@@ -7,18 +8,20 @@ export const STrigger = styled(Trigger)`
   height: fit-content;
 `
 
-export const SContent = styled(Content)`
-  z-index: ${({ theme }) => theme.zIndices.tooltip};
+export const SContent = styled(Content)(
+  ({ theme }) => css`
+    z-index: ${theme.zIndices.tooltip};
 
-  max-width: calc(100vw - 12px * 2);
-  max-width: 280px;
+    max-width: calc(100vw - ${theme.space.m} * 2);
+    max-width: 17.5rem;
 
-  font-size: 12px;
-  line-height: 16px;
+    font-size: ${theme.fontSizes.p5};
+    line-height: ${theme.lineHeights.m};
 
-  padding: 12px 16px;
+    padding: ${theme.space.m} ${theme.space.l};
 
-  background: ${({ theme }) => theme.details.tooltips};
-  box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
-  border-radius: 8px;
-`
+    background: ${theme.details.tooltips};
+    box-shadow: 0px 8px 30px 0px rgba(41, 41, 60, 0.41);
+    border-radius: ${theme.radii.m};
+  `,
+)

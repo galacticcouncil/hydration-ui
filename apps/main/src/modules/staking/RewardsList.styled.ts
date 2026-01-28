@@ -5,14 +5,14 @@ export const SRewardsListChartContainer = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: ${theme.space.xl};
 
-    padding-inline: ${theme.containers.paddings.primary}px;
-    padding-block: ${theme.containers.paddings.primary}px;
+    padding-inline: ${theme.containers.paddings.primary};
+    padding-block: ${theme.containers.paddings.primary};
     background: ${theme.surfaces.containers.mid.primary};
 
     border: solid 1px ${theme.buttons.secondary.low.onOutline};
-    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
     border-bottom: none;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
@@ -31,11 +31,11 @@ export const SRemainderContainer = styled.div(
     align-items: center;
     justify-content: space-between;
 
-    padding: ${theme.containers.paddings.primary}px;
+    padding: ${theme.containers.paddings.primary};
     background: ${theme.surfaces.containers.dim.dimOnBg};
 
     border: 1px solid ${theme.buttons.secondary.low.onOutline};
-    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
     border-top: none;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
