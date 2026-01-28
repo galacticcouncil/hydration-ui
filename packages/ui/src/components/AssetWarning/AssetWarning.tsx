@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react"
 import { MoveRight, Warning } from "@/assets/icons"
 import { Flex } from "@/components/Flex"
 import { Text } from "@/components/Text"
-import { getToken, px } from "@/utils"
+import { getToken } from "@/utils"
 
 type AssetWarningProps = {
   readonly title: string
@@ -17,10 +17,10 @@ export const AssetWarning: FC<AssetWarningProps> = ({
   titleInfo,
 }) => {
   return (
-    <Flex direction="column" gap={8}>
+    <Flex direction="column" gap="base">
       <Flex justify="space-between" align="center">
         <Flex
-          gap={2}
+          gap="xs"
           align="center"
           color={getToken("accents.danger.secondary")}
         >
@@ -31,7 +31,7 @@ export const AssetWarning: FC<AssetWarningProps> = ({
         </Flex>
         {titleInfo}
       </Flex>
-      <Text fw={400} fs={11} lh={px(15)} color={getToken("text.medium")}>
+      <Text fw={400} fs="p6" lh="s" color={getToken("text.medium")}>
         {description}
       </Text>
     </Flex>
@@ -48,7 +48,7 @@ export const AssetPropertyChanged: FC<AssetPropertyChangedProps> = ({
   current,
 }) => {
   return (
-    <Flex gap={6} align="center">
+    <Flex gap="s" align="center">
       <Text fw={600} fs="p5" color={getToken("text.high")}>
         {typeof previous === "bigint" ? previous.toString() : previous}
       </Text>

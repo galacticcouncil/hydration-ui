@@ -1,6 +1,5 @@
 import { Flex, Grid } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { lazy, useState } from "react"
@@ -39,48 +38,46 @@ export const WalletAssetsPage = () => {
   }
 
   return (
-    <>
+    <Flex direction="column">
+      <HollarBanner />
+      <Grid
+        sx={{
+          overflowX: "auto",
+        }}
+        columnGap={["base", "xl"]}
+        columnTemplate="1fr minmax(0, 25rem)"
+        pb={isMobile ? "base" : "xxl"}
+      >
+        <WalletBalances />
+        <WalletRewards />
+      </Grid>
+      {isMobile ? (
+        <WalletAssetFiltersMobile
+          category={category}
+          searchPhrase={searchPhrase}
+          onSearchPhraseChange={setSearchPhrase}
+        />
+      ) : (
+        <WalletAssetFiltersDesktop
+          searchPhrase={searchPhrase}
+          onSearchPhraseChange={setSearchPhrase}
+        />
+      )}
+
       <Flex direction="column">
-        <HollarBanner />
-        <Grid
-          sx={{
-            overflowX: "auto",
-          }}
-          columnGap={[10, 20]}
-          columnTemplate="1fr minmax(0, 400px)"
-          pb={isMobile ? 8 : getTokenPx("containers.paddings.primary")}
-        >
-          <WalletBalances />
-          <WalletRewards />
-        </Grid>
-        {isMobile ? (
-          <WalletAssetFiltersMobile
-            category={category}
+        {(category === "all" || category === "assets") && (
+          <MyAssets
+            key={account.address + "_assets"}
             searchPhrase={searchPhrase}
-            onSearchPhraseChange={setSearchPhrase}
-          />
-        ) : (
-          <WalletAssetFiltersDesktop
-            searchPhrase={searchPhrase}
-            onSearchPhraseChange={setSearchPhrase}
           />
         )}
-
-        <Flex direction="column">
-          {(category === "all" || category === "assets") && (
-            <MyAssets
-              key={account.address + "_assets"}
-              searchPhrase={searchPhrase}
-            />
-          )}
-          {(category === "all" || category === "liquidity") && (
-            <MyLiquidity
-              key={account.address + "_liquidity"}
-              searchPhrase={searchPhrase}
-            />
-          )}
-        </Flex>
+        {(category === "all" || category === "liquidity") && (
+          <MyLiquidity
+            key={account.address + "_liquidity"}
+            searchPhrase={searchPhrase}
+          />
+        )}
       </Flex>
-    </>
+    </Flex>
   )
 }

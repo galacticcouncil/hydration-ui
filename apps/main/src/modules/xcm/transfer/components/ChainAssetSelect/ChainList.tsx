@@ -45,20 +45,24 @@ export const ChainList: React.FC<ChainListProps> = ({
         const isActive = chain.key === selectedChain?.key
 
         return (
-          <Box pb={4}>
+          <Box pb="s">
             <Button
               variant={isActive ? "accent" : "transparent"}
               outline={isActive}
               sx={{
-                width: [42, "100%"],
-                justifyContent: "flex-start",
+                width: ["2.625rem", "100%"],
+                justifyContent: ["center", "flex-start"],
                 px: "base",
               }}
-              gap="s"
               onClick={() => setSelectedChain(chain)}
             >
               <ChainLogo chain={chain} size="small" />
-              <Text display={["none", "block"]} color={getToken("text.medium")}>
+              <Text
+                display={["none", "block"]}
+                color={
+                  isActive ? getToken("text.high") : getToken("text.medium")
+                }
+              >
                 {chain.name}
               </Text>
             </Button>

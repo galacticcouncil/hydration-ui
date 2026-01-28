@@ -5,9 +5,8 @@ import {
   Icon,
   Skeleton,
   Text,
-  TextSize,
 } from "@galacticcouncil/ui/components"
-import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
+import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 
@@ -18,7 +17,7 @@ export type HealthFactorChangeProps = FlexProps & {
   healthFactor: string
   futureHealthFactor: string
   loading?: boolean
-  fontSize?: TextSize | ResponsiveStyleValue<number>
+  fontSize?: ThemeUICSSProperties["fontSize"]
 }
 
 export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
@@ -40,7 +39,7 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
 
   return (
     <Flex direction="column" align="flex-end" {...props}>
-      <Flex gap={4} direction="row" align="center" justify="flex-end">
+      <Flex gap="s" direction="row" align="center" justify="flex-end">
         {loading ? (
           <Skeleton height="1em" width={80} />
         ) : (
@@ -48,7 +47,7 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
             <HealthFactorNumber value={healthFactor} fontSize={fontSize} />
             {visibleChange && (
               <>
-                <Icon size={14} component={ArrowRight} />
+                <Icon size="xs" component={ArrowRight} />
                 <HealthFactorNumber
                   fontSize={fontSize}
                   value={
@@ -63,7 +62,7 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
         )}
       </Flex>
       {isBelowRiskThreshold && (
-        <Text fs={11} lh={1} color={getToken("text.low")} mt={-2}>
+        <Text fs="p6" lh={1} color={getToken("text.low")} mt={-2}>
           Liquidation at &lt;1.0
         </Text>
       )}

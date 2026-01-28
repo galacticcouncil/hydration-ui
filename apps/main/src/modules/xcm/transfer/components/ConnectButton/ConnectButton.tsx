@@ -32,14 +32,14 @@ export const ConnectButton: React.FC<ConnectButtonProps> = ({
       sx={!address ? { textTransform: "uppercase" } : undefined}
       {...props}
     >
-      {!address && <Icon size={12} component={WalletIcon} sx={{ ml: 4 }} />}
+      {!address && <Icon size="xs" component={WalletIcon} sx={{ ml: 4 }} />}
       {wallet ? (
         <Logo src={wallet.logo} size="extra-small" />
       ) : address ? (
         <AccountAvatar address={address} size={12} />
       ) : null}
       {address ? shortenAccountAddress(address) : placeholder}
-      {address && <Icon size={12} component={ChevronDown} />}
+      {address && <Icon size="xs" component={ChevronDown} />}
     </SConnectButton>
   )
 }

@@ -6,7 +6,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { Plus, Repeat } from "lucide-react"
 import { useTranslation } from "react-i18next"
@@ -33,24 +33,19 @@ export const PoolDetailsHeader = ({
   const { isMobile } = useBreakpoints()
 
   return (
-    <Flex
-      justify="space-between"
-      sx={{
-        pb: getTokenPx("scales.paddings.m"),
-      }}
-    >
-      <Flex gap={8} align="flex-start" wrap>
+    <Flex justify="space-between" pb="m">
+      <Flex gap="base" align="flex-start" wrap>
         <AssetLogo
           id={isOmnipool ? data.meta.id : data.meta.iconId}
           size="large"
         />
 
         <Flex direction="column">
-          <Text font="primary" fw={700} fs={18} lh="130%">
+          <Text font="primary" fw={700} fs="p1" lh="130%">
             {data.meta.name}
           </Text>
 
-          <Text fw={600} fs={11} color={getToken("text.medium")}>
+          <Text fw={600} fs="p6" color={getToken("text.medium")}>
             {data.meta.symbol}
           </Text>
         </Flex>
@@ -62,10 +57,7 @@ export const PoolDetailsHeader = ({
         )}
       </Flex>
 
-      <SPoolDetailsActionsContainer
-        align="center"
-        gap={getTokenPx("containers.paddings.tertiary")}
-      >
+      <SPoolDetailsActionsContainer align="center" gap="m">
         <Button
           size={isMobile ? "medium" : "small"}
           width="100%"
@@ -87,7 +79,7 @@ export const PoolDetailsHeader = ({
             }
             resetScroll={false}
           >
-            <Icon size={14} component={Plus} />
+            <Icon size="s" component={Plus} />
             {t("addLiquidity")}
           </Link>
         </Button>
@@ -106,7 +98,7 @@ export const PoolDetailsHeader = ({
                   : data.id,
               }}
             >
-              <Icon size={14} component={Repeat} />
+              <Icon size="s" component={Repeat} />
               {t("details.header.swap")}
             </Link>
           </Button>

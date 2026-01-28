@@ -1,4 +1,5 @@
 import { Box, Flex, Tooltip } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -35,32 +36,32 @@ export const ReferendaStatus: FC<Props> = ({
   voted,
 }) => {
   const { t } = useTranslation(["common", "staking"])
-
+  const { isMobile } = useBreakpoints()
   return (
-    <Flex direction="column" gap={16}>
-      <Flex direction="column" gap={7}>
+    <Flex direction="column" gap="l">
+      <Flex direction="column" gap="s">
         <SReferendaProgress size="large">
-          <Flex position="relative" gap={7}>
+          <Flex position="relative" gap="s">
             <Box
-              height={5}
+              height="2xs"
               bg="#6FC272"
               width={`${ayePercent}%`}
-              borderRadius={7}
+              borderRadius="m"
             />
             <Box
-              height={5}
+              height="2xs"
               bg="#FF5757"
               width={`${nayPercent}%`}
-              borderRadius={7}
+              borderRadius="m"
             />
             <ReferendaThresholdLine
-              sx={{ top: -12 }}
+              sx={{ top: "-m" }}
               percentage={thresholdPercent}
               voted={voted}
             />
           </Flex>
         </SReferendaProgress>
-        <Flex pb={7} justify="space-between">
+        <Flex pb="base" justify="space-between">
           <AyeDetails
             label={t("staking:referenda.item.aye")}
             labelProps={{
@@ -100,22 +101,26 @@ export const ReferendaStatus: FC<Props> = ({
           />
         </Flex>
       </Flex>
-      <Flex py={7} direction="column" gap={7}>
+      <Flex py="base" direction="column" gap="s">
         <Tooltip
-          text={t("staking:referenda.item.supportTooltip", {
-            percentage: t("percent", { value: supportTooltipPercent }),
-          })}
+          text={
+            !isMobile
+              ? t("staking:referenda.item.supportTooltip", {
+                  percentage: t("percent", { value: supportTooltipPercent }),
+                })
+              : null
+          }
         >
           <SReferendaProgress size="small">
             <Box position="relative">
               <Box
-                height={5}
+                height="2xs"
                 bg={getToken("text.tint.secondary")}
-                borderRadius={7}
+                borderRadius="m"
                 width={`${supportPercent}%`}
               />
               <ReferendaThresholdLine
-                sx={{ top: -10 }}
+                sx={{ top: "-base" }}
                 percentage={supportMarkPercentage}
                 voted={voted}
               />

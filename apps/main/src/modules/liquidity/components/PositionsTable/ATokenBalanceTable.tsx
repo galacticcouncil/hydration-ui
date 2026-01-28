@@ -92,7 +92,7 @@ export const ATokenBalanceTable = ({
       <STableHeader sx={{ bg }}>
         <Icon
           component={SuppliedLiquidityIcon}
-          size={12}
+          size="xs"
           color={getToken("text.tint.secondary")}
         />
         <Text fw={500} font="primary" color={getToken("text.tint.secondary")}>

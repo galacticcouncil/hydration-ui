@@ -7,22 +7,24 @@ export const SSettingsContent = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
 
-    padding: ${theme.buttons.paddings.tertiary}px
-      ${theme.containers.paddings.quart}px;
+    padding: ${theme.buttons.paddings.tertiary}
+      ${theme.containers.paddings.quart};
 
     ${mq(TOP_NAVBAR_BREAKPOINT)} {
-      gap: 4px;
+      gap: ${theme.space.s};
 
-      padding: ${theme.containers.paddings.quart}px
-        ${theme.containers.paddings.tertiary}px;
+      padding: ${theme.containers.paddings.quart}
+        ${theme.containers.paddings.tertiary};
     }
   `,
 )
 
-export const SSettingsSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`
+export const SSettingsSection = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.space.base};
+  `,
+)

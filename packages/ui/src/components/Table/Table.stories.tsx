@@ -87,7 +87,7 @@ const Template = (args: Story["args"]) => (
         {TABLE_DATA.map(({ id, symbol, price, marketCap, changeIn24h }) => (
           <TableRow key={id}>
             <TableCell>
-              <Flex align="center" gap={8}>
+              <Flex align="center" gap="base">
                 <AssetLogo
                   src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${id}.png`}
                 />

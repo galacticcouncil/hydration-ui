@@ -104,7 +104,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     ) : undefined
 
   return (
-    <Paper p={20}>
+    <Paper p="xl">
       <Flex align="center" justify="space-between">
         <ChartValues
           value={chartValue}

@@ -25,14 +25,14 @@ export const HealthFactorRiskWarning: React.FC<
   ...props
 }) => {
   return (
-    <Flex direction="column" gap={10} {...props}>
+    <Flex direction="column" gap="base" {...props}>
       <Alert
         variant="warning"
         description={message}
         action={
           canContinue !== false &&
           isUserConsentRequired && (
-            <Flex align="center" as="label" gap={10}>
+            <Flex align="center" as="label" gap="base">
               <Toggle
                 size="large"
                 checked={accepted}

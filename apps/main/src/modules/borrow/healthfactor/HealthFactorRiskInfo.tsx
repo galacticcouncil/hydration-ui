@@ -21,12 +21,12 @@ export const HealthFactorRiskInfo: FC<HealthFactorRiskInfoProps> = ({
 }) => {
   return (
     <Box
-      p={20}
+      p="xl"
       borderRadius="xl"
       bg={getToken("surfaces.containers.dim.dimOnBg")}
     >
       <Flex justify="space-between">
-        <Stack justify="flex-start" gap={4} width="60%">
+        <Stack justify="flex-start" gap="s" width="60%">
           <Text fs="p3">{title}</Text>
           <Text fs="p5" color={getToken("text.medium")}>
             {description}

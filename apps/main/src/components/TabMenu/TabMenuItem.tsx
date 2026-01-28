@@ -57,6 +57,7 @@ export const TabMenuItem: FC<Props> = ({
       variant={isActive(to, search) ? activeVariant : variant}
       size={size}
       asChild
+      sx={{ minWidth: "2xl" }}
     >
       <Link
         to={to}

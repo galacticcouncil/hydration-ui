@@ -1,5 +1,4 @@
-import { CrosshairDot } from "@galacticcouncil/ui/assets/icons"
-import { Ellipse } from "@galacticcouncil/ui/assets/icons"
+import { CrosshairDot, Ellipse } from "@galacticcouncil/ui/assets/icons"
 import {
   AreaChart,
   AxisLabelCssProps,
@@ -10,7 +9,7 @@ import {
   TooltipIcon,
 } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { Legend } from "recharts"
@@ -120,13 +119,9 @@ export const RewardsCurve: FC = () => {
               align="left"
               layout="horizontal"
               content={(props) => (
-                <Flex
-                  gap={getTokenPx("scales.paddings.m")}
-                  align="center"
-                  style={props.style}
-                >
+                <Flex gap="m" align="center" style={props.style}>
                   {isGraphIncreasePoint && (
-                    <Flex align="center" gap={4}>
+                    <Flex align="center" gap="s">
                       <Ellipse
                         sx={{
                           color: getToken("buttons.secondary.emphasis.onRest"),
@@ -143,7 +138,7 @@ export const RewardsCurve: FC = () => {
                     </Flex>
                   )}
                   {isGraphSecondaryPoint && (
-                    <Flex align="center" gap={4}>
+                    <Flex align="center" gap="s">
                       <Ellipse
                         sx={{ color: getToken("accents.success.emphasis") }}
                       />
@@ -170,7 +165,7 @@ export const RewardsCurve: FC = () => {
                       </Tooltip>
                     </Flex>
                   )}
-                  <Flex align="center" gap={4}>
+                  <Flex align="center" gap="s">
                     <Ellipse sx={{ color: getToken("icons.Contrast-") }} />
                     <Text
                       fs="p6"

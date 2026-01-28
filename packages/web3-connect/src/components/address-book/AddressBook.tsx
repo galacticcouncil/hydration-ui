@@ -1,5 +1,5 @@
 import { AccountInput, Flex, Label, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useId } from "react"
 
 import { useAddressStore } from "@/components/address-book/AddressBook.store"
@@ -25,17 +25,13 @@ export const AddressBook: FC<AddressBookProps> = ({
   const isTalisman = !!provider && TALISMAN_PROVIDERS.includes(provider)
 
   return (
-    <Flex
-      py={getTokenPx("containers.paddings.primary")}
-      direction="column"
-      justify="flex-end"
-    >
-      <Flex direction="column" gap={getTokenPx("scales.paddings.m")}>
+    <Flex py="xxl" direction="column" justify="flex-end">
+      <Flex direction="column" gap="m">
         <Flex justify="space-between" align="center">
           <Label
             fw={500}
-            fs={12}
-            lh={px(15)}
+            fs="p5"
+            lh="s"
             color={getToken("text.medium")}
             htmlFor={id}
           >
@@ -56,7 +52,7 @@ export const AddressBook: FC<AddressBookProps> = ({
         <Text
           font="secondary"
           fw={400}
-          fs={12}
+          fs="p5"
           lh={1}
           color={getToken("accents.danger.secondary")}
           ml="auto"

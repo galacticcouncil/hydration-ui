@@ -6,7 +6,7 @@ export const AssetDetailMobileModalBalancesHeader = () => {
   const { t } = useTranslation()
 
   return (
-    <Flex py={6} justify="space-between" align="center">
+    <Flex py="base" justify="space-between" align="center">
       <Text fw={500} fs="p5" lh={1.2} color={getToken("text.low")}>
         {t("balances")}
       </Text>

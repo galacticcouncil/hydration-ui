@@ -10,7 +10,6 @@ import {
   Summary,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -95,21 +94,21 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
             <Alert
               variant="warning"
               description={customErrors.cap.message}
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
+              sx={{ my: "xxl" }}
             />
           ) : null}
           {customErrors?.circuitBreaker ? (
             <Alert
               variant="warning"
               description={customErrors.circuitBreaker.message}
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
+              sx={{ my: "xxl" }}
             />
           ) : null}
           {joinFarmErrorMessage && (
             <Alert
               variant="warning"
               description={joinFarmErrorMessage}
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
+              sx={{ my: "xxl" }}
             />
           )}
 

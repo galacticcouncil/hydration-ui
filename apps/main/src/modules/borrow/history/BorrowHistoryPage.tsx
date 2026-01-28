@@ -1,4 +1,4 @@
-import { Flex, SectionHeader } from "@galacticcouncil/ui/components"
+import { SectionHeader } from "@galacticcouncil/ui/components"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -22,25 +22,24 @@ export const BorrowHistoryPage = () => {
   }
 
   return (
-    <Flex direction="column" gap={10}>
-      <Flex
-        direction={["column", "row"]}
-        justify="space-between"
-        align={["flex-start", "center"]}
-      >
-        <SectionHeader title={t("borrow:history.table.title")} />
-        <BorrowHistorySearch
-          onChange={(searchPhrase) => {
-            setSearchPhrase(searchPhrase)
-            setPagination((prev) => ({ ...prev, pageIndex: 0 }))
-          }}
-        />
-      </Flex>
+    <>
+      <SectionHeader
+        noTopPadding
+        title={t("borrow:history.table.title")}
+        actions={
+          <BorrowHistorySearch
+            onChange={(searchPhrase) => {
+              setSearchPhrase(searchPhrase)
+              setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+            }}
+          />
+        }
+      />
       <BorrowHistoryTable
         searchPhrase={searchPhrase}
         pagination={pagination}
         onPaginationChange={setPagination}
       />
-    </Flex>
+    </>
   )
 }

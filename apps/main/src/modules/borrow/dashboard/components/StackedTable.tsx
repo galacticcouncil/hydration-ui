@@ -5,7 +5,7 @@ import {
   Text,
   useDataTable,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { ColumnDef, flexRender, RowData } from "@tanstack/react-table"
 
 export type StackedTableProps<TData extends RowData> = TableProps & {
@@ -44,12 +44,7 @@ const StackedTable = <TData,>({
             const shouldRenderHeader = !!header?.column.columnDef.header
 
             return (
-              <Flex
-                key={cell.id}
-                p={getTokenPx("scales.paddings.m")}
-                align="center"
-                justify="space-between"
-              >
+              <Flex key={cell.id} p="m" align="center" justify="space-between">
                 {shouldRenderHeader && (
                   <Text fs="p4" color={getToken("text.low")}>
                     {flexRender(

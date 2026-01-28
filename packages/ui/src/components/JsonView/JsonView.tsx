@@ -1,7 +1,7 @@
 import "react18-json-view/src/style.css"
 
 import { safeStringify } from "@galacticcouncil/utils"
-import { ResponsiveStyleValue } from "@theme-ui/css"
+import { ThemeUICSSProperties } from "@theme-ui/css"
 import React, { FC, lazy, Ref, Suspense } from "react"
 import { type JsonViewProps as ReactJsonViewProps } from "react18-json-view"
 
@@ -13,7 +13,7 @@ const ReactJsonView = lazy(() => import("react18-json-view"))
 
 export type JsonViewProps = ReactJsonViewProps & {
   className?: string
-  fs?: ResponsiveStyleValue<number>
+  fs?: ThemeUICSSProperties["fontSize"]
 }
 
 export const JsonView: FC<JsonViewProps & { ref?: Ref<HTMLDivElement> }> = ({

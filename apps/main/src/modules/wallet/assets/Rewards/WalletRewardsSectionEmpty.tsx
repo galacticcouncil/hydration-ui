@@ -1,6 +1,6 @@
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { FC, ReactNode } from "react"
 
@@ -16,8 +16,8 @@ export const WalletRewardsSectionEmpty: FC<Props> = ({ link, children }) => {
     <Flex align="center">
       <Text
         fw={500}
-        fs={12}
-        lh={px(15)}
+        fs="p5"
+        lh="s"
         sx={{ color: getToken("text.medium"), textDecoration: "none" }}
         asChild
       >

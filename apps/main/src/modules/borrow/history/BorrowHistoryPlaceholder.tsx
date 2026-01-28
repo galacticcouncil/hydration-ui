@@ -10,9 +10,9 @@ export const BorrowHistoryPlaceholder: FC = () => {
   const { t } = useTranslation(["borrow"])
 
   return (
-    <Flex direction="column" gap={10}>
+    <Flex direction="column" gap="base">
       <SectionHeader title={t("history.table.title")} />
-      <Paper py={93}>
+      <Paper py="5.625rem">
         <EmptyState
           image={NoFunds}
           header={t("emptyState.title")}

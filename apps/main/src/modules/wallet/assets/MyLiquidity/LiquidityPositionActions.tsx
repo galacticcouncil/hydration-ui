@@ -35,7 +35,7 @@ export const LiquidityPositionActions: FC<Props> = ({
   const { t } = useTranslation(["common", "wallet"])
 
   return (
-    <Flex align="center" gap={6} justify="flex-end">
+    <Flex align="center" gap="s" justify="flex-end">
       {!!farmsToJoin.length && (
         <Button
           variant="sliderTabActive"
@@ -50,7 +50,7 @@ export const LiquidityPositionActions: FC<Props> = ({
         <DropdownMenuTrigger asChild>
           <Button variant="tertiary" outline>
             {t("actions")}
-            <Icon component={Ellipsis} size={16} />
+            <Icon component={Ellipsis} size="m" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

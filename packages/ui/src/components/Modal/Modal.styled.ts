@@ -58,7 +58,7 @@ export const SModalWrapper = styled(Overlay, { shouldForwardProp })<{
   padding-block: var(--modal-block-offset);
 
   display: grid;
-  gap: 4px;
+  gap: ${({ theme }) => theme.space.s};
   justify-items: center;
 
   overflow-y: auto;
@@ -77,9 +77,9 @@ export const SModalContent = styled(Content, {
   hasTopContent?: boolean
 }>(
   ({ theme, hasTopContent }) => css`
-    --modal-content-padding: 20px;
+    --modal-content-padding: ${theme.space.xl};
     --modal-content-inset: calc(var(--modal-content-padding) * -1);
-    --modal-top-content-height: ${hasTopContent ? "50px" : "0px"};
+    --modal-top-content-height: ${hasTopContent ? theme.sizes.xl : 0};
 
     position: fixed;
     inset: 0;
@@ -107,7 +107,7 @@ export const SModalContent = styled(Content, {
       position: relative;
       inset: auto;
 
-      max-width: 520px;
+      max-width: ${theme.sizes["6xl"]};
       height: auto;
 
       &[data-state="open"] {
@@ -127,7 +127,7 @@ export const SModalPaper = styled(Paper)`
   display: flex;
   flex-direction: column;
 
-  max-width: 520px;
+  max-width: ${({ theme }) => theme.sizes["6xl"]};
   padding-bottom: env(safe-area-inset-bottom);
 
   ${mq("max-xs")} {
@@ -142,12 +142,12 @@ export const SModalHeader = styled(Flex)`
   flex-direction: column;
 
   padding: var(--modal-content-padding);
-  --modal-header-button-size: 34px;
+  --modal-header-button-size: 2.215rem;
 
   & > div:first-of-type {
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: ${({ theme }) => theme.space.base};
 
     & > :not(button) {
       flex-grow: 1;
@@ -184,37 +184,39 @@ export const SModalBody = styled(Box, { shouldForwardProp })<{
   flex: 1;
 
   &:last-of-type {
-    border-bottom-right-radius: ${({ theme }) => theme.radii.xl}px;
-    border-bottom-left-radius: ${({ theme }) => theme.radii.xl}px;
+    border-bottom-right-radius: ${({ theme }) => theme.radii.xl};
+    border-bottom-left-radius: ${({ theme }) => theme.radii.xl};
   }
 `
 
-export const SModalFooter = styled(Flex)`
-  flex-direction: column-reverse;
-  gap: 10px;
+export const SModalFooter = styled(Flex)(
+  ({ theme }) => css`
+    flex-direction: column-reverse;
+    gap: ${theme.space.base};
 
-  padding: 20px;
+    padding: ${theme.space.xl};
 
-  &:last-of-type {
-    border-bottom-right-radius: ${({ theme }) => theme.radii.xl}px;
-    border-bottom-left-radius: ${({ theme }) => theme.radii.xl}px;
-  }
+    &:last-of-type {
+      border-bottom-right-radius: ${theme.radii.xl};
+      border-bottom-left-radius: ${theme.radii.xl};
+    }
 
-  ${mq("md")} {
-    flex-direction: row;
-  }
-`
+    ${mq("md")} {
+      flex-direction: row;
+    }
+  `,
+)
 
 export const SModalTitle = styled(Text)`
   color: ${({ theme }) => theme.text.high};
   font-weight: 500;
-  font-size: ${({ theme }) => theme.headlineSize.h7};
+  font-size: ${({ theme }) => theme.fontSizes.h7};
   font-family: ${({ theme }) => theme.fontFamilies1.primary};
 `
 
 export const SModalDescription = styled(Text)`
   color: ${({ theme }) => theme.text.medium};
-  font-size: ${({ theme }) => theme.paragraphSize.p5};
+  font-size: ${({ theme }) => theme.fontSizes.p5};
 `
 
 export const SModalContentDivider = styled(Separator)`

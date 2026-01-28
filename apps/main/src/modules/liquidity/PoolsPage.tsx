@@ -2,14 +2,12 @@ import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
   DataTable,
-  Flex,
   Icon,
   Paper,
   SectionHeader,
   TableContainer,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Link, useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -121,25 +119,21 @@ export const IsolatedPoolsTable = ({
 
   return (
     <>
-      <Flex
-        justify="space-between"
-        align="end"
-        gap={20}
-        pb={getTokenPx("scales.paddings.m")}
-        sx={{ minHeight: [54, 62] }}
-      >
-        <SectionHeader title={t("section.isolatedPools")} />
-        <Button asChild>
-          <Link to="/liquidity/create">
-            <Icon component={Plus} size={14} />
-            {t(
-              isMobile
-                ? "section.isolatedPools.btn.short"
-                : "section.isolatedPools.btn",
-            )}
-          </Link>
-        </Button>
-      </Flex>
+      <SectionHeader
+        title={t("section.isolatedPools")}
+        actions={
+          <Button asChild>
+            <Link to="/liquidity/create">
+              <Icon component={Plus} size="s" />
+              {t(
+                isMobile
+                  ? "section.isolatedPools.btn.short"
+                  : "section.isolatedPools.btn",
+              )}
+            </Link>
+          </Button>
+        }
+      />
       <TableContainer as={Paper}>
         <DataTable
           size={isMobile ? "small" : "large"}

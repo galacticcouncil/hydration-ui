@@ -20,6 +20,7 @@ import {
   renderSeries,
   subscribeCrosshairMove,
 } from "@/components/TradingViewChart/utils"
+import { useUiScale } from "@/styles/media"
 import { useTheme } from "@/theme"
 
 type ChartTypeProps =
@@ -59,6 +60,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     useState<CrosshairCallbackData>(null)
 
   const { themeProps } = useTheme()
+  const uiScale = useUiScale()
 
   useEffect(() => {
     if (!chartContainerRef.current) return
@@ -66,7 +68,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     const chart = createChart(chartContainerRef.current, {
       autoSize: true,
       height,
-      layout: layout(themeProps),
+      layout: layout(themeProps, uiScale),
       rightPriceScale,
       leftPriceScale,
       grid,
@@ -111,7 +113,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     return () => {
       chart.remove()
     }
-  }, [data, height, themeProps, type, hidePriceIndicator])
+  }, [data, height, themeProps, type, hidePriceIndicator, uiScale])
 
   return (
     <Box sx={{ position: "relative" }}>

@@ -55,10 +55,10 @@ export const useMarketTransactionsColumns = () => {
         sx: { textAlign: "center" },
       },
       header: () => (
-        <Flex gap={4} align="center" justify="center">
+        <Flex gap="s" align="center" justify="center">
           {t("trade:trade.orders.marketTransactions.fillPrice")}
           <Icon
-            size={12}
+            size="xs"
             component={ArrowRightLeft}
             color={getToken("textButtons.small.hover")}
           />
@@ -81,7 +81,7 @@ export const useMarketTransactionsColumns = () => {
         sx: { textAlign: "right", "tbody &": { pr: "0 !important" } },
       },
       cell: ({ row }) => (
-        <Flex align="center" justify="end" gap={6}>
+        <Flex align="center" justify="end" gap="s">
           <AccountDate
             align="center"
             address={row.original.address}
@@ -93,7 +93,7 @@ export const useMarketTransactionsColumns = () => {
                 href={row.original.link}
                 onClick={(e) => e.stopPropagation()}
               >
-                <Icon component={SubScan} size={16} />
+                <Icon component={SubScan} size="m" />
               </ExternalLink>
             </ButtonIcon>
           )}

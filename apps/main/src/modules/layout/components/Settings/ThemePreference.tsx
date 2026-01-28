@@ -15,6 +15,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import {
   ThemePreference as ThemePreferenceType,
+  useBreakpoints,
   useTheme,
 } from "@galacticcouncil/ui/theme"
 import { createElement } from "react"
@@ -37,6 +38,7 @@ const themeOptions: ThemePreferenceType[] = ["light", "dark", "system"]
 export const ThemePreference: FC = () => {
   const { t } = useTranslation()
   const { themePreference, setThemePreference } = useTheme()
+  const { isMobile } = useBreakpoints()
 
   return (
     <MenuItem>
@@ -57,7 +59,7 @@ export const ThemePreference: FC = () => {
           {themeOptions.map((theme) => (
             <ToggleGroupItem key={theme} value={theme}>
               <Tooltip
-                text={t(`theme.${theme}`)}
+                text={isMobile ? undefined : t(`theme.${theme}`)}
                 side="top"
                 sideOffset={10}
                 asChild

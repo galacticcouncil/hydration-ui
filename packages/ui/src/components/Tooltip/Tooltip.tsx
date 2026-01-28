@@ -115,7 +115,7 @@ export const Tooltip = ({
           collisionPadding={12}
         >
           {typeof text === "string" ? (
-            <Text fw={500} fs={12}>
+            <Text fw={500} fs="p5">
               {text}
             </Text>
           ) : (
@@ -131,7 +131,7 @@ export const TooltipIcon: FC<BoxProps> = (props) => (
   <Icon
     sx={{ cursor: "pointer" }}
     component={CircleInfo}
-    size={14}
+    size="s"
     color={getToken("icons.onContainer")}
     {...props}
   />

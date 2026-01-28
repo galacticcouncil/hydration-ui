@@ -13,7 +13,7 @@ export const TradeOtcPage = () => {
   return (
     <>
       <OtcHeader />
-      <Flex direction="column" gap={20}>
+      <Flex direction="column" gap="xl">
         <OtcSearch
           searchPhrase={searchPhrase}
           onSearchPhraseChange={setSearchPhrase}

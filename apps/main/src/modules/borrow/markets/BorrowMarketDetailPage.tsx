@@ -60,7 +60,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
 
   return (
     <AssetCapsProvider asset={reserve}>
-      <Stack gap={30}>
+      <Stack gap="xxl">
         <ReserveLabel reserve={reserve} withName size="large" />
         {isGhoReserve ? (
           <HollarReserveHeader reserve={reserve} />
@@ -69,11 +69,11 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
         )}
         <AccountBindingBanner />
         <Box>
-          <Text fs="h7" fw={600} font="primary" sx={{ mb: 10 }}>
+          <Text fs="h7" fw={600} font="primary" sx={{ mb: "base" }}>
             {t("borrow:reserve.configuration")}
           </Text>
           {filterVisible && (
-            <Grid columns={2} gap={10} mb={10}>
+            <Grid columns={2} gap="base" mb="base">
               <Button
                 variant={mode === "overview" ? "secondary" : "tertiary"}
                 onClick={() => setMode("overview")}
@@ -89,18 +89,18 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
             </Grid>
           )}
           <Grid
-            columnTemplate={["1fr", null, null, "1fr 380px"]}
-            gap={20}
+            columnTemplate={["1fr", null, null, "1fr 24rem"]}
+            gap="xl"
             alignItems="start"
           >
-            <Paper p={20} hidden={!overviewVisible}>
+            <Paper p="xl" hidden={!overviewVisible}>
               {isGhoReserve ? (
                 <HollarReserveConfiguration reserve={reserve} />
               ) : (
                 <ReserveConfiguration reserve={reserve} />
               )}
             </Paper>
-            <Paper p={20} hidden={!actionsVisible}>
+            <Paper p="xl" hidden={!actionsVisible}>
               <ReserveActions reserve={reserve} />
             </Paper>
           </Grid>

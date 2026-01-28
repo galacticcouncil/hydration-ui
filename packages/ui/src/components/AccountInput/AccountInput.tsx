@@ -10,7 +10,6 @@ import {
   Icon,
   Input,
 } from "@/components"
-import { getTokenPx } from "@/utils"
 
 export type AccountInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -52,7 +51,7 @@ export const AccountInput: React.FC<AccountInputProps> = ({
       columnGap={10}
       className={className}
     >
-      <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+      <Flex align="center" gap="base">
         <AccountAvatar address={value} theme={avatarTheme} />
         <Input
           ref={ref}
@@ -65,11 +64,11 @@ export const AccountInput: React.FC<AccountInputProps> = ({
       </Flex>
       {!value ? (
         <ButtonIcon onClick={handlePaste}>
-          <Icon component={ArrowDownToLine} size={18} />
+          <Icon component={ArrowDownToLine} size="m" />
         </ButtonIcon>
       ) : (
         <ButtonIcon onClick={handleClear}>
-          <Icon component={Close} size={18} />
+          <Icon component={Close} size="m" />
         </ButtonIcon>
       )}
     </Grid>

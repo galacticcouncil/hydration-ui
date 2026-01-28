@@ -1,6 +1,6 @@
 import { CircleInfo } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
 
 type Props = {
@@ -12,23 +12,18 @@ export const LockExpiration: FC<Props> = ({ children, className }) => {
   return (
     <Flex
       className={className}
-      px={2}
-      gap={4}
+      px="xs"
+      gap="s"
       align="center"
       borderRadius={12}
       bg="rgba(255,255,255,0.06)"
     >
-      <Text
-        fw={500}
-        fs={11}
-        lh={px(15)}
-        color={getToken("colors.darkBlue.200")}
-      >
+      <Text fw={500} fs="p6" lh="s" color={getToken("colors.darkBlue.200")}>
         {children}
       </Text>
       <Icon
         component={CircleInfo}
-        size={14}
+        size="s"
         color={getToken("icons.onContainer")}
       />
     </Flex>

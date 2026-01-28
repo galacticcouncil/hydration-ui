@@ -2,7 +2,7 @@ import { LiquidityIcon } from "@galacticcouncil/ui/assets/icons"
 import { Button, Flex, Icon, Modal, Text } from "@galacticcouncil/ui/components"
 import { DataTable } from "@galacticcouncil/ui/components/DataTable"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { Minus } from "lucide-react"
 import { useState } from "react"
@@ -56,10 +56,10 @@ export const OmnipoolPositions = ({
       <STableHeader sx={{ justifyContent: "space-between" }}>
         <Flex
           align="center"
-          gap={getTokenPx("scales.paddings.s")}
+          gap="s"
           color={getToken("buttons.primary.high.hover")}
         >
-          <Icon component={LiquidityIcon} size={12} />
+          <Icon component={LiquidityIcon} size="xs" />
           <Text fw={500} font="primary">
             {t("common:liquidity")}
           </Text>

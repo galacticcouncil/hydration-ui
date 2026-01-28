@@ -9,11 +9,13 @@
   },
   "scripts": {
     "dev": "yarn theme && tsc --build && storybook dev --no-open -p 6006",
+    "dev:production": "yarn theme && tsc --build",
     "build": "yarn theme && tsc --build && storybook build",
     "preview": "http-server ./storybook-static -p 6007 -s",
     "lint": "yarn lint:eslint && yarn lint:ts",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
     "lint:eslint": "eslint src",
+    "lint:fix": "eslint src --fix",
     "theme": "node ./style-dictionary/build.mjs"
   },
   "dependencies": {

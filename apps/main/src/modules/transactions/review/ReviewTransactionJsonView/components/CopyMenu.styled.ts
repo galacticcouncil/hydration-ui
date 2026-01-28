@@ -1,26 +1,28 @@
 import { DropdownMenuTrigger } from "@galacticcouncil/ui/components"
-import { styled } from "@galacticcouncil/ui/utils"
+import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const CopyMenuTrigger = styled(DropdownMenuTrigger)`
-  position: absolute;
+export const CopyMenuTrigger = styled(DropdownMenuTrigger)(
+  ({ theme }) => css`
+    position: absolute;
 
-  cursor: pointer;
+    cursor: pointer;
 
-  font-size: 12px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text.medium};
+    font-size: ${theme.fontSizes.p4};
+    font-weight: 500;
+    color: ${theme.text.medium};
 
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  padding: 8px;
+    display: flex;
+    gap: ${theme.space.s};
+    align-items: center;
+    padding: ${theme.space.base};
 
-  top: 2px;
-  right: 4px;
+    top: 0;
+    right: ${theme.space.s};
 
-  z-index: 1;
+    z-index: 1;
 
-  &:hover {
-    color: ${({ theme }) => theme.buttons.primary.medium.hover};
-  }
-`
+    &:hover {
+      color: ${theme.buttons.primary.medium.hover};
+    }
+  `,
+)

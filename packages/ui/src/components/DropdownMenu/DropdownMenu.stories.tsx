@@ -26,7 +26,7 @@ export const DropdownMenuStory: StoryFn = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <SettingsIcon size={21} />
+        <SettingsIcon size="l" />
       </DropdownMenuTrigger>
       <DropdownMenuContent fullWidth>
         <DropdownMenuItem asChild>

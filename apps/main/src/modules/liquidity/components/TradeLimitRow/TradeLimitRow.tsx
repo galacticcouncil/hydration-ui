@@ -7,7 +7,7 @@ import {
   SummaryRow,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { preventDefault } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useState } from "react"
@@ -58,7 +58,7 @@ export const TradeLimit = ({ type, disabled }: TradeLimitRowProps) => {
 
   return (
     <>
-      <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+      <Flex align="center" gap="s">
         <Text fs="p5" fw={500} color={getToken("text.high")}>
           {t("percent", { value })}
         </Text>
@@ -74,10 +74,7 @@ export const TradeLimit = ({ type, disabled }: TradeLimitRowProps) => {
       <Modal open={isEditing} onOpenChange={setIsEditing}>
         <ModalHeader title={t("liquidity:liquidity.tradeLimit.title")} />
         <ModalBody sx={{ minHeight: ["auto", 400], pt: 0 }}>
-          <form
-            onSubmit={preventDefault}
-            sx={{ mt: getTokenPx("containers.paddings.primary") }}
-          >
+          <form onSubmit={preventDefault} sx={{ mt: "xxl" }}>
             <Controller
               control={form.control}
               name="slippage"

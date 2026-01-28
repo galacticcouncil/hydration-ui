@@ -45,7 +45,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
           {t("chainAssetSelect.button.selectAssetChain")}
         </Text>
       )}
-      <Icon size={16} component={ChevronDown} sx={{ flexShrink: 0 }} />
+      <Icon size="m" component={ChevronDown} sx={{ flexShrink: 0 }} />
     </SButton>
   )
 }

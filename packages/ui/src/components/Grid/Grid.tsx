@@ -6,12 +6,12 @@ import type {
 import { FC, Ref } from "react"
 
 import { Box, BoxProps } from "@/components/Box"
-import { px } from "@/utils"
+import { pxToRem } from "@/utils"
 
 const singleWidthToColumns = (
   width: string | number | ThemeUIEmpty,
   repeat: "fit" | "fill",
-) => (width ? `repeat(auto-${repeat}, minmax(${px(width)}, 1fr))` : null)
+) => (width ? `repeat(auto-${repeat}, minmax(${pxToRem(width)}, 1fr))` : null)
 
 const widthToColumns = (
   width: GridProps["columnWidth"],

@@ -10,7 +10,7 @@ export const SMobileTabBar = styled.nav(
     z-index: ${theme.zIndices.header};
 
     width: 100%;
-    height: 60px;
+    height: 3.75rem;
 
     display: flex;
     justify-content: space-between;
@@ -21,27 +21,30 @@ export const SMobileTabBar = styled.nav(
   `,
 )
 
-export const STabBarItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
+export const STabBarItem = styled.div(
+  ({ theme }) => css`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: ${theme.space.s};
 
-  height: 50px;
-  padding: 7px 17px 5px 17px;
+    height: 3.125rem;
+    padding-inline: ${theme.space.m};
+    padding-block: ${theme.space.base};
 
-  text-decoration: none;
+    text-decoration: none;
 
-  &:focus {
-    outline: none;
-  }
-`
+    &:focus {
+      outline: none;
+    }
+  `,
+)
 
 export const STabBarIcon = styled(Icon)(
   ({ theme }) => css`
     color: ${theme.icons.onSurface};
-    width: 20px;
-    height: 20px;
+    width: 1.25rem;
+    height: 1.25rem;
 
     *[data-status="active"] &,
     ${STabBarItem}[data-state="open"] & {
@@ -54,8 +57,8 @@ export const STabBarLabel = styled.span(
   ({ theme }) => css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 500;
-    font-size: 12px;
-    line-height: 15px;
+    font-size: ${theme.fontSizes.p5};
+    line-height: ${theme.lineHeights.m};
 
     color: ${theme.text.low};
 
@@ -73,16 +76,15 @@ export const STabBarMenuAction = styled.div(
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 9px;
+    gap: ${theme.space.base};
 
-    padding: ${theme.scales.paddings.m}px
-      ${theme.containers.paddings.tertiary}px;
+    padding: ${theme.space.m} ${theme.containers.paddings.tertiary};
 
     cursor: pointer;
 
     & svg {
-      height: 20px;
-      width: 20px;
+      height: 1.25rem;
+      width: 1.25rem;
 
       color: ${theme.icons.onSurface};
     }
