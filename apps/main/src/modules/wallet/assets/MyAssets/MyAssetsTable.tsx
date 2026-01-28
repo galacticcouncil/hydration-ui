@@ -37,7 +37,7 @@ export const MyAssetsTable: FC<Props> = ({
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
 
-  const columns = useMyAssetsColumns()
+  const columns = useMyAssetsColumns(!isLoading && data.length === 0)
 
   const [isDetailOpen, setIsDetailOpen] = useState<{
     type: AssetDetailModal | null

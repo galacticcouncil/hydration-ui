@@ -46,7 +46,7 @@ const columnHelper = createColumnHelper<MyAsset>()
 
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
-export const useMyAssetsColumns = () => {
+export const useMyAssetsColumns = (isEmpty: boolean) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
 
@@ -124,7 +124,7 @@ export const useMyAssetsColumns = () => {
       meta: {
         sx: {
           textAlign: "right",
-          pr: "0 !important",
+          ...(isEmpty && { pr: "0 !important" }),
         },
       },
       cell: function Cell({ row }) {
@@ -220,5 +220,5 @@ export const useMyAssetsColumns = () => {
           stakingColumn,
           actionsColumn,
         ] as Array<ColumnDef<MyAsset>>)
-  }, [isMobile, t])
+  }, [isMobile, isEmpty, t])
 }
