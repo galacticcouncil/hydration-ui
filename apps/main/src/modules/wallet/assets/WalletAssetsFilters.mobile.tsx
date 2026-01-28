@@ -7,7 +7,6 @@ import {
   Select,
   SelectItem,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { FC, useId, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -40,10 +39,7 @@ export const WalletAssetFiltersMobile: FC<Props> = ({
   )
 
   return (
-    <Flex
-      pt={getTokenPx("containers.paddings.tertiary")}
-      justify="space-between"
-    >
+    <Flex pt="m" justify="space-between">
       {!isSearchExpanded && (
         <Select
           items={selectItems}

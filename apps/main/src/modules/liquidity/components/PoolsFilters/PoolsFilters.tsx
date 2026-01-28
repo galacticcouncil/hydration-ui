@@ -1,6 +1,5 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 
 import { PoolTypeTabs } from "@/modules/liquidity/components/PoolsTypeTabs"
@@ -20,8 +19,8 @@ export const PoolsFilters = ({ onChange }: PoolsFiltersProps) => {
     <Flex
       justify={isHiddenTabs ? "flex-end" : "space-between"}
       align="center"
-      gap={20}
-      sx={{ pt: [10, 30], pb: getTokenPx("containers.paddings.secondary") }}
+      gap="xl"
+      pt="s"
     >
       {!isHiddenTabs && <PoolTypeTabs />}
       <SearchInput

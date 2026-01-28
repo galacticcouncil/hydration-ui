@@ -7,7 +7,7 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 export const PoolDetailsValuesSkeleton = () => {
@@ -23,16 +23,16 @@ export const PoolDetailsValuesSkeleton = () => {
         flexBasis: 360,
         flexDirection: "column",
       }}
-      gap={getTokenPx("containers.paddings.primary")}
+      gap="xl"
     >
       <Flex direction="column">
         <Text
           font="primary"
           fw={700}
-          fs={14}
+          fs="p3"
           lh="130%"
           color={getToken("text.tint.secondary")}
-          sx={{ pb: getTokenPx("containers.paddings.primary") }}
+          sx={{ pb: "xl" }}
         >
           {t("details.values.liquidityLimit")}
         </Text>

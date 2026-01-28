@@ -35,9 +35,9 @@ export const SDrawerContent = styled(Content)`
   background: var(--modal-background);
 
   border-top-left-radius: ${({ theme }) =>
-    theme.containers.cornerRadius.containersPrimary}px;
+    theme.containers.cornerRadius.containersPrimary};
   border-top-right-radius: ${({ theme }) =>
-    theme.containers.cornerRadius.containersPrimary}px;
+    theme.containers.cornerRadius.containersPrimary};
 
   border: 1px solid ${({ theme }) => theme.details.borders};
 
@@ -92,7 +92,7 @@ export const SDrawerTitle = styled(Text)`
   text-align: center;
 
   font-weight: 500;
-  font-size: ${({ theme }) => theme.headlineSize.h7};
+  font-size: ${({ theme }) => theme.fontSizes.h7};
   font-family: ${({ theme }) => theme.fontFamilies1.primary};
 `
 
@@ -102,5 +102,5 @@ export const SDrawerDescription = styled(Text)`
   color: ${({ theme }) => theme.text.medium};
   text-align: center;
 
-  font-size: ${({ theme }) => theme.paragraphSize.p5};
+  font-size: ${({ theme }) => theme.fontSizes.p5};
 `

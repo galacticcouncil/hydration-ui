@@ -14,7 +14,7 @@ export const WalletAssetsSubpageLayoutActions = () => {
   const [modal, setModal] = useState<Modal | null>(null)
 
   return (
-    <Flex gap={12}>
+    <Flex gap="m">
       <Button
         css={{ paddingBlock: 14, paddingInline: 18 }}
         variant="accent"

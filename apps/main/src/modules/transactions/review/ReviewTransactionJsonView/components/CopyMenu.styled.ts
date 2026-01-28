@@ -6,14 +6,14 @@ export const CopyMenuTrigger = styled(DropdownMenuTrigger)`
 
   cursor: pointer;
 
-  font-size: 12px;
+  font-size: ${({ theme }) => theme.fontSizes.p3};
   font-weight: 500;
   color: ${({ theme }) => theme.text.medium};
 
   display: flex;
-  gap: 4px;
+  gap: ${({ theme }) => theme.space.s};
   align-items: center;
-  padding: 8px;
+  padding: ${({ theme }) => theme.space.base};
 
   top: 2px;
   right: 4px;

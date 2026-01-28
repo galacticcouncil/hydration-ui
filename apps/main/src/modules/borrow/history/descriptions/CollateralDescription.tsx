@@ -18,7 +18,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
 
   return (
     <Flex
-      gap={4}
+      gap="s"
       align="center"
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap" }}
@@ -37,7 +37,7 @@ export const CollateralDescription: FC<Props> = ({ assetId, enabled }) => {
           />
         </Trans>
       </Text>
-      <Flex align="center" gap={4}>
+      <Flex align="center" gap="s">
         {assetId && <AssetLogo size="small" id={assetId} />} {asset.symbol}
       </Flex>
     </Flex>

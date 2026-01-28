@@ -10,7 +10,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -65,12 +65,8 @@ const RewardsHoverCard = () => {
     .join(" + ")
 
   return (
-    <HoverCardContent
-      borderRadius="xl"
-      asChild
-      p={getTokenPx("containers.paddings.primary")}
-    >
-      <Flex direction="column" gap={getTokenPx("scales.paddings.m")}>
+    <HoverCardContent borderRadius="xl" asChild p="xxl">
+      <Flex direction="column" gap="m">
         <Text fs="p5" color={getToken("text.medium")} fw={400}>
           {t("header.claim.claimableFromAllPositions")}
         </Text>
@@ -83,7 +79,7 @@ const RewardsHoverCard = () => {
 
               return (
                 <Text
-                  fs={16}
+                  fs="p2"
                   color={getToken("text.high")}
                   fw={500}
                   key={assetId}

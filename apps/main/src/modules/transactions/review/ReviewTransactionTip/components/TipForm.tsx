@@ -46,7 +46,7 @@ export const TipForm: React.FC<TipFormProps> = ({
         name="amount"
         control={control}
         render={({ field, fieldState: { error } }) => (
-          <Stack gap={2} align="end">
+          <Stack gap="xs" align="end">
             <TipInput
               value={field.value}
               unit={asset?.symbol}
@@ -55,7 +55,7 @@ export const TipForm: React.FC<TipFormProps> = ({
             />
             <Text
               align="end"
-              fs={11}
+              fs="p6"
               color={getToken(
                 error ? "accents.danger.secondary" : "text.medium",
               )}

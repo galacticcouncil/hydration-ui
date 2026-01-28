@@ -1,6 +1,6 @@
 import { TradeOperation } from "@galacticcouncil/indexer/squid"
 import { Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -19,8 +19,8 @@ export const TransactionType: FC<Props> = ({ type }) => {
   return (
     <Text
       fw={500}
-      fs={12}
-      lh={px(15)}
+      fs="p5"
+      lh="s"
       color={
         type === TradeOperation.ExactOut
           ? getToken("accents.success.emphasis")

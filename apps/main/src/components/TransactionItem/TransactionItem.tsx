@@ -17,7 +17,7 @@ export const TransactionItemLabel: FC<ComponentProps<typeof Text>> = ({
       lh={1.4}
       color={getToken("text.medium")}
       display="flex"
-      sx={{ gap: 2, alignItems: "center", ...sx }}
+      sx={{ gap: "xs", alignItems: "center", ...sx }}
       {...props}
     />
   )
@@ -50,7 +50,7 @@ export const TransactionItemValue: FC<TransactionItemValueProps> = ({
       lh={1.2}
       color={color}
       display="flex"
-      sx={{ gap: 7, alignItems: "center", ...sx }}
+      sx={{ gap: "s", alignItems: "center", ...sx }}
       {...props}
     />
   )

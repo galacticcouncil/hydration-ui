@@ -4,22 +4,21 @@ import { css, styled } from "@/utils"
 
 export const SSectionHeaderContainer = styled.div<{
   readonly hasDescription?: boolean
+  readonly noTopPadding?: boolean
 }>(
-  ({ theme, hasDescription }) => css`
+  ({ theme, hasDescription, noTopPadding }) => css`
     display: flex;
     justify-content: space-between;
     align-items: end;
-    padding-top: ${theme.containers.paddings.primary}px;
-    padding-bottom: ${hasDescription
-      ? 0
-      : theme.containers.paddings.secondary}px;
+    padding-top: ${noTopPadding ? 0 : theme.space.xl};
+    padding-bottom: ${hasDescription ? 0 : theme.containers.paddings.secondary};
 
     ${mq("sm")} {
       align-items: center;
-      padding-top: ${theme.scales.paddings.xxl};
+      padding-top: ${noTopPadding ? 0 : theme.space.xxl};
       padding-bottom: ${hasDescription
         ? 0
-        : theme.containers.paddings.tertiary}px;
+        : theme.containers.paddings.tertiary};
     }
   `,
 )
@@ -29,15 +28,15 @@ export const SSectionHeaderTitle = styled(Box)<{
 }>(
   ({ theme }) => css`
     font-family: ${theme.fontFamilies1.primary};
-    font-size: 14px;
+    font-size: ${theme.fontSizes.base};
     font-weight: 500;
-    line-height: 15px;
+    line-height: ${theme.lineHeights.xl};
 
     color: ${theme.text.high};
 
     ${mq("sm")} {
-      font-size: 17.5px;
-      line-height: 21px;
+      font-size: ${theme.fontSizes.h7};
+      line-height: ${theme.lineHeights["2xl"]};
     }
   `,
 )

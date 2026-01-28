@@ -6,30 +6,30 @@ const variants = createVariants<ChainVariant>((theme) => ({
   desktop: css`
     display: flex;
     align-items: center;
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
 
-    padding: ${theme.scales.paddings.base}px;
-    border-radius: 8px;
+    padding: ${theme.space.base};
+    border-radius: ${theme.space.base};
 
     & > svg {
-      width: 20px;
-      height: 20px;
+      width: ${theme.space.xl};
+      height: ${theme.space.xl};
     }
   `,
   mobile: css`
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: ${theme.space.base};
 
-    padding: ${theme.scales.paddings.s}px;
-    border-radius: 4px;
+    padding: ${theme.space.s};
+    border-radius: ${theme.space.s};
 
     background: ${theme.colors.darkBlue.alpha[500]};
     border: 1px solid ${theme.colors.darkBlue.alpha[500]};
 
     & > svg {
-      width: 24px;
-      height: 24px;
+      width: ${theme.space.m};
+      height: ${theme.space.m};
     }
   `,
 }))

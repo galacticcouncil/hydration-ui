@@ -22,7 +22,7 @@ export const AssetDetailExpanded: FC<Props> = ({ asset }) => {
   const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
 
   return (
-    <Flex direction="column" gap={20}>
+    <Flex direction="column" gap="xl">
       {asset.origin?.name && (
         <>
           <AssetOrigin origin={asset.origin} />

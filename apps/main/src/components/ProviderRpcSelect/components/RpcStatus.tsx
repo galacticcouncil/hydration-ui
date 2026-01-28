@@ -24,8 +24,7 @@ export const RpcStatusSuccess = () => {
     <SStatusSuccess>
       <span />
       <svg
-        width="7"
-        height="7"
+        sx={{ size: "2xs" }}
         viewBox="0 0 11 11"
         fill="none"
         xmlns="http://www.w3.org/2000.svg?react"
@@ -37,7 +36,7 @@ export const RpcStatusSuccess = () => {
 }
 
 export const RpcStatusSlow = () => (
-  <CaretDown sx={{ size: 7, transform: "rotate(180deg)", scale: 1.3 }} />
+  <CaretDown sx={{ size: "2xs", transform: "rotate(180deg)", scale: 1.3 }} />
 )
 
 export const RpcStatusOffline = () => <SStatusOffline />
@@ -53,9 +52,9 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 
   return (
     <Box>
-      <Flex align="center" gap={4} color={getToken(color)}>
+      <Flex align="center" gap="s" color={getToken(color)}>
         {blockNumber && (
-          <Text fs={12}>
+          <Text fs="p5" fw={600}>
             {t("number", {
               value: blockNumber,
             })}
@@ -77,7 +76,7 @@ const RpcPing: React.FC<{ ping: number }> = ({ ping }) => {
   const { color } = usePingStatus(ping)
 
   return (
-    <Text fs={10} mt={2} color={getToken(color)}>
+    <Text fs="p6" mt="xs" color={getToken(color)}>
       {t("rpc.status.ping", { value: Math.round(ping) })}
     </Text>
   )

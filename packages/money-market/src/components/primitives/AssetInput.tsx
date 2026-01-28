@@ -95,7 +95,7 @@ export const AssetInput = <T extends Asset = Asset>({
                 align="center"
                 justify="space-between"
                 key={asset.address}
-                py={12}
+                py="m"
                 px="var(--modal-content-padding)"
                 sx={{ cursor: "pointer" }}
                 onClick={() => {
@@ -104,7 +104,7 @@ export const AssetInput = <T extends Asset = Asset>({
                   setIsAssetSelectOpen(false)
                 }}
               >
-                <Flex align="center" gap={8}>
+                <Flex align="center" gap="base">
                   <ReserveLogo address={asset.address} />
                   <Text color={getToken("text.high")} fs="p5" fw={600} lh={1}>
                     {asset.symbol}

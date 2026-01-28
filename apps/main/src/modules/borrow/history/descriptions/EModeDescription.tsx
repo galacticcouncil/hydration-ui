@@ -19,11 +19,11 @@ export const EModeDescription: FC<UserEModeFragment> = ({ categoryId }) => {
   return (
     <Flex
       align="center"
-      gap={4}
+      gap="s"
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap" }}
     >
-      <Text fs={14}>
+      <Text fs="p3">
         <Trans
           t={t}
           i18nKey={

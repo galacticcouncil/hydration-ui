@@ -30,13 +30,13 @@ export const EmptyState: FC<Props> = ({
     <Flex
       direction="column"
       align="center"
-      gap={6}
+      gap="s"
       m="auto"
-      pb={50}
-      maxWidth={230}
+      pb="3rem"
+      maxWidth="4xl"
       className={className}
     >
-      {icon || <Image src={image} alt="Empty state" width={96} height={96} />}
+      {icon || <Image src={image} alt="Empty state" sx={{ size: "3xl" }} />}
       <Text
         font="primary"
         color={getToken("text.high")}
@@ -46,7 +46,7 @@ export const EmptyState: FC<Props> = ({
       >
         {header}
       </Text>
-      <Flex direction="column" gap={20} align="center">
+      <Flex direction="column" gap="xl" align="center">
         <Text
           key={description}
           color={getToken("text.medium")}

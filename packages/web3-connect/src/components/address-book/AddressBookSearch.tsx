@@ -16,7 +16,7 @@ export const AddressBookSearch: FC<Props> = ({
   onAdd,
 }) => {
   return (
-    <Flex align="center" gap={10} position="relative">
+    <Flex align="center" gap="base" position="relative">
       <Input
         sx={{ flex: 1 }}
         customSize="large"

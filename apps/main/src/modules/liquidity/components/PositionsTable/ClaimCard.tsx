@@ -58,7 +58,7 @@ export const ClaimCard = ({
 
   return (
     <SClaimCard sx={{ maxWidth: ["100%", "100%", 454] }} className={className}>
-      <Flex direction="column" gap={1}>
+      <Flex direction="column" gap="xs">
         <Text fs="p6" fw={400} color={getToken("text.high")} sx={{ mb: 4 }}>
           {t("liquidity.claimCard.totalClaimableValue")}
         </Text>

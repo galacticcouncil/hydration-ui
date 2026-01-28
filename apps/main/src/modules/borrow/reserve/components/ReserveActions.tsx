@@ -37,8 +37,8 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
   const isGhoReserve = isGho(reserve)
 
   return (
-    <Stack separated gap={20} separator={<Separator mx={-20} />}>
-      <Flex gap={20} align="center">
+    <Stack separated gap="xl" separator={<Separator mx={-20} />}>
+      <Flex gap="xl" align="center">
         <Icon component={Wallet} sx={{ color: getToken("text.low") }} />
         <ValueStats
           size="small"
@@ -56,7 +56,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
         />
       </Flex>
       {!isGhoReserve && (
-        <Flex gap={20} justify="space-between" align="center">
+        <Flex gap="xl" justify="space-between" align="center">
           <ValueStats
             size="small"
             font="secondary"
@@ -80,7 +80,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
         </Flex>
       )}
       {reserve.borrowingEnabled && (
-        <Flex gap={20} justify="space-between" align="center">
+        <Flex gap="xl" justify="space-between" align="center">
           <ValueStats
             size="small"
             font="secondary"
@@ -103,7 +103,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
           </Button>
         </Flex>
       )}
-      {alerts.length > 0 && <Stack gap={10}>{alerts}</Stack>}
+      {alerts.length > 0 && <Stack gap="base">{alerts}</Stack>}
     </Stack>
   )
 }

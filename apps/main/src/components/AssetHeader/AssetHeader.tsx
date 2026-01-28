@@ -9,7 +9,7 @@ type AssetHeaderProps = {
 }
 
 export const AssetHeader: React.FC<AssetHeaderProps> = ({ asset }) => (
-  <Flex gap={8}>
+  <Flex gap="base">
     <AssetLogo id={asset.id} size="large" />
     <Stack>
       <Text fs="h7" lh={1} fw={600} font="primary">

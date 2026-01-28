@@ -30,8 +30,8 @@ export const TradeRoutes = ({
 
   return (
     <>
-      <Flex align="center" gap={4}>
-        <Flex gap={1} align="center">
+      <Flex align="center" gap="s">
+        <Flex gap="xs" align="center">
           {t("market.summary.routes.count", { count: mappedRoutes.length })}
           <Icon
             height={24}

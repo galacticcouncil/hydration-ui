@@ -1,6 +1,5 @@
 import { BookOpen } from "@galacticcouncil/ui/assets/icons"
 import { Button, ButtonProps, Icon } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 
 export const AddressBookButton: React.FC<ButtonProps> = (props) => {
   return (
@@ -9,13 +8,15 @@ export const AddressBookButton: React.FC<ButtonProps> = (props) => {
       outline
       size="small"
       sx={{
-        py: 2,
-        px: getTokenPx("scales.paddings.base"),
+        gap: "s",
+        py: "s",
+        px: "m",
+        height: "auto",
         textTransform: "uppercase",
       }}
       {...props}
     >
-      <Icon size={10} component={BookOpen} />
+      <Icon size="xs" component={BookOpen} />
       My contacts
     </Button>
   )

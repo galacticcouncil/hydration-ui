@@ -12,7 +12,7 @@ import { useTranslation } from "react-i18next"
 
 const XcmSectionSkeleton = () => {
   return (
-    <Stack p="xl" gap="base" height={106}>
+    <Stack p="xl" gap="base" height="6.625rem">
       <Flex justify="space-between">
         <Flex gap="base" direction="column">
           <Text fs="p5">
@@ -39,13 +39,7 @@ const XcmSectionSkeleton = () => {
 export const XcmTransferSkeleton = () => {
   const { t } = useTranslation("xcm")
   return (
-    <Stack
-      gap="s"
-      maxWidth={500}
-      mx="auto"
-      pt="xl"
-      sx={{ pointerEvents: "none" }}
-    >
+    <Stack gap="s" maxWidth="32rem" mx="auto" sx={{ pointerEvents: "none" }}>
       <Paper>
         <Box p="xl">
           <Text fs="h7" fw={500} align="center" font="primary">

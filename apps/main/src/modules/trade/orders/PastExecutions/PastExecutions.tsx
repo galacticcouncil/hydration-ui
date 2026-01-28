@@ -1,9 +1,5 @@
 import { Box, Flex, Separator, Skeleton } from "@galacticcouncil/ui/components"
-import {
-  getMinusTokenPx,
-  getToken,
-  getTokenPx,
-} from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, Fragment } from "react"
 
 import { PastExecutionItem } from "@/modules/trade/orders/PastExecutions/PastExecutionItem"
@@ -26,7 +22,7 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
       <Flex
         sx={{ overflowY: "hidden" }}
         direction="column"
-        gap={4}
+        gap="s"
         maxHeight={300}
       >
         <PastExecutionsListHeader />
@@ -34,20 +30,10 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
         {isLoading ? (
           <Skeleton height={100} />
         ) : (
-          <Flex
-            direction="column"
-            gap={2}
-            px={getTokenPx("containers.paddings.primary")}
-            sx={{ overflowY: "auto" }}
-          >
+          <Flex direction="column" gap="xs" px="xxl" sx={{ overflowY: "auto" }}>
             {executions.map((execution, index) => (
               <Fragment key={execution.id}>
-                {index > 0 && (
-                  <Separator
-                    sx={{ flexShrink: 0 }}
-                    mx={getMinusTokenPx("containers.paddings.primary")}
-                  />
-                )}
+                {index > 0 && <Separator sx={{ flexShrink: 0 }} mx="-xl" />}
                 <PastExecutionItem
                   assetIn={assetIn}
                   assetOut={assetOut}

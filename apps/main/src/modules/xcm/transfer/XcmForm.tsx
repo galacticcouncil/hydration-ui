@@ -149,7 +149,7 @@ export const XcmForm = () => {
         (values) => transfer && submit.mutate([values, transfer]),
       )}
     >
-      <Stack gap="s" maxWidth={500} mx="auto" pt="xl">
+      <Stack gap="s" maxWidth="6xl" mx="auto">
         <Paper>
           <Box p="xl">
             <Text fs="h7" fw={500} align="center" font="primary">

@@ -1,5 +1,4 @@
 import { Button, Grid, Separator } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -41,7 +40,7 @@ export const UnstakeForm: FC<Props> = ({
   return (
     <>
       <AssetSelect
-        sx={{ px: getTokenPx("containers.paddings.primary") }}
+        sx={{ px: "xl" }}
         label={t("staking:stake.unstake.amount")}
         assets={[]}
         selectedAsset={native}
@@ -51,10 +50,7 @@ export const UnstakeForm: FC<Props> = ({
       />
       <Separator />
       {
-        <Grid
-          px={getTokenPx("containers.paddings.primary")}
-          py={getTokenPx("containers.paddings.primary")}
-        >
+        <Grid px="xl" py="xl">
           {account ? (
             <Button
               variant="secondary"

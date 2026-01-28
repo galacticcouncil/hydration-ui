@@ -20,10 +20,10 @@ export const ReferendaSkeleton: FC = () => {
 
   return (
     <SReferenda>
-      <Skeleton sx={{ mb: 5 }} height={22} width={200} />
+      <Skeleton sx={{ mb: 5 }} height="m" width="12.5rem" />
       <ReferendaSeparator />
-      <Skeleton height={22} width="100%" />
-      <Flex pt={10} pb={6} direction="column" gap={21}>
+      <Skeleton height="m" width="100%" />
+      <Flex pt="base" pb="s" direction="column" gap="xl">
         <SReferendaProgress size="large">
           <Grid flex={1}>
             <Skeleton sx={{ lineHeight: "5px" }} />
@@ -41,7 +41,7 @@ export const ReferendaSkeleton: FC = () => {
       <ReferendaSeparator />
       <Flex justify="flex-end">
         <Button size="large" disabled width="min-content">
-          <Icon component={SubSquare} size={14} color="white" />
+          <Icon component={SubSquare} size="s" color="white" />
           {t("staking:referenda.item.cta")}
         </Button>
       </Flex>

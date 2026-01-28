@@ -5,15 +5,15 @@ export const SOtcHeader = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.containers.paddings.tertiary}px;
+    gap: ${theme.containers.paddings.tertiary};
 
-    padding-block: 20px;
+    padding-bottom: ${theme.space.xl};
 
     ${mq("sm")} {
       flex-direction: row;
       justify-content: space-between;
       gap: 0;
-      padding-block: 32px;
+      padding-bottom: ${theme.space.xxl};
     }
   `,
 )

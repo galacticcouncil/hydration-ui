@@ -9,9 +9,9 @@ export const SButton = styled(Button)<{
   ({ theme, hasSelection, disabled }) => css`
     width: fit-content;
     display: inline-flex;
-    padding-inline: ${theme.scales.paddings.base}px;
-    padding-block: ${theme.scales.paddings.s}px;
-    height: 38px;
+    padding-inline: ${theme.space.base};
+    padding-block: ${theme.space.s};
+    height: 2.375rem;
 
     ${hasSelection &&
     css`

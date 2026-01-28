@@ -131,7 +131,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
 
         return (
-          <Flex gap={8} justify="flex-end">
+          <Flex gap="base" justify="flex-end">
             {row.original.id === NATIVE_ASSET_ID && (
               <DataTableExpandTrigger>
                 <TableRowAction variant="accent">

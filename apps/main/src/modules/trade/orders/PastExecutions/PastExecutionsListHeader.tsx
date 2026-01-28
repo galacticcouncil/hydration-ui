@@ -1,5 +1,5 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -13,13 +13,7 @@ export const PastExecutionsListHeader: FC = () => {
 
   return (
     <TransactionItemMobileContainer>
-      <Flex
-        justify="space-between"
-        align="center"
-        flex={1}
-        py={getTokenPx("containers.paddings.quint")}
-        px={getTokenPx("containers.paddings.secondary")}
-      >
+      <Flex justify="space-between" align="center" flex={1} py="s" px="l">
         <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
           {t("price")}/{t("date")}
         </Text>

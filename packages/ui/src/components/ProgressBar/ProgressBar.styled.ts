@@ -5,41 +5,43 @@ import {
   ProgressBarSize,
 } from "@/components/ProgressBar/ProgressBar"
 import { createVariants, css } from "@/utils"
-const containerSizes = createVariants<ProgressBarSize>(({ containers }) => ({
-  small: css`
-    gap: 12px;
+const containerSizes = createVariants<ProgressBarSize>(
+  ({ containers, space, lineHeights }) => ({
+    small: css`
+      gap: ${space.m};
 
-    padding-block: 4px;
-  `,
-  medium: css`
-    gap: 10px;
+      padding-block: ${space.s};
+    `,
+    medium: css`
+      gap: ${space.base};
 
-    padding-block: 6px;
+      padding-block: ${space.s};
 
-    & ${SProgressBar} {
-      height: 6px;
-    }
+      & ${SProgressBar} {
+        height: 0.375rem;
+      }
 
-    & ${SProgressBarLabel} {
-      font-weight: 400;
-      line-height: 1;
-    }
-  `,
-  large: css`
-    gap: ${containers.paddings.quart}px;
+      & ${SProgressBarLabel} {
+        font-weight: 400;
+        line-height: 1;
+      }
+    `,
+    large: css`
+      gap: ${containers.paddings.quart};
 
-    padding-block: ${containers.paddings.quart}px;
+      padding-block: ${containers.paddings.quart};
 
-    & ${SProgressBar} {
-      height: 8px;
-    }
+      & ${SProgressBar} {
+        height: 0.5rem;
+      }
 
-    & ${SProgressBarLabel} {
-      font-weight: 400;
-      line-height: 16.9px;
-    }
-  `,
-}))
+      & ${SProgressBarLabel} {
+        font-weight: 400;
+        line-height: ${lineHeights.m};
+      }
+    `,
+  }),
+)
 
 export const SContainer = styled.div<{
   readonly size: ProgressBarSize
@@ -59,8 +61,8 @@ export const SProgressBar = styled.div(
   ({ theme }) => css`
     position: relative;
 
-    height: 4px;
-    border-radius: 16px;
+    height: ${theme.sizes["3xs"]};
+    border-radius: ${theme.radii.xl};
     background: ${theme.controls.dim.base};
 
     overflow: hidden;
@@ -91,8 +93,8 @@ export const SProgressBarLabel = styled.span(
   ({ theme }) => css`
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 500;
-    font-size: ${theme.paragraphSize.p4};
-    line-height: 13px;
+    font-size: ${theme.fontSizes.p4};
+    line-height: 1;
 
     color: ${theme.text.tint.secondary};
   `,

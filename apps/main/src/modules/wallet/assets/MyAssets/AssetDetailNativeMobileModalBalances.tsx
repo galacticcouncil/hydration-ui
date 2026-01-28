@@ -6,7 +6,6 @@ import {
   Vote,
 } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { FC } from "react"
@@ -129,7 +128,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
         }
       />
       <SAssetDetailMobileSeparator />
-      <Flex direction="column" gap={getTokenPx("scales.paddings.m")}>
+      <Flex direction="column" gap="m">
         <Amount
           variant="horizontalLabel"
           color="tint"

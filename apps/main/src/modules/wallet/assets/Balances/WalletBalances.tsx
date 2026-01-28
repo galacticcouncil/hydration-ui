@@ -38,11 +38,11 @@ export const WalletBalances: FC = () => {
           }
         />
         <Separator
-          mt={8}
+          mt="base"
           orientation="vertical"
           display={["none", null, "initial"]}
         />
-        <Separator mt={8} display={["initial", null, "none"]} />
+        <Separator mt="base" display={["initial", null, "none"]} />
         <Flex direction="column" gap={[20, 10]}>
           <ValueStats
             size="small"

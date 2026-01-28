@@ -10,8 +10,8 @@ export const SAccountTileContainer = styled.div<{
 
     background: ${active ? theme.controls.dim.active : theme.controls.dim.base};
     border: 1px solid ${active ? theme.controls.dim.active : "transparent"};
-    border-radius: ${theme.scales.cornerRadius.m}px;
-    padding: ${theme.containers.paddings.secondary}px;
+    border-radius: ${theme.radii.m};
+    padding: ${theme.containers.paddings.secondary};
   `,
   isInteractive &&
     css`

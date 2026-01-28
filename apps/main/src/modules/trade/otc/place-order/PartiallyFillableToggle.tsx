@@ -1,6 +1,6 @@
 import { PartialFill } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Text, Toggle } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -12,11 +12,11 @@ export const PartiallyFillableToggle: FC = () => {
   const { control } = useFormContext<PlaceOrderFormValues>()
 
   return (
-    <Flex py={16} px={20} direction="column">
+    <Flex py="l" px="xl" direction="column">
       <Flex justify="space-between" align="center">
-        <Flex gap={4} align="center">
+        <Flex gap="s" align="center">
           <PartialFill sx={{ color: getToken("icons.primary") }} />
-          <Text fw={500} fs={14} lh={px(22)} color={getToken("text.high")}>
+          <Text fw={500} fs="p3" lh="l" color={getToken("text.high")}>
             {t("otc.fillOrder.partiallyFillable.title")}
           </Text>
         </Flex>
@@ -32,7 +32,7 @@ export const PartiallyFillableToggle: FC = () => {
           )}
         />
       </Flex>
-      <Text fs={12} lh={px(15.6)} color={getToken("text.medium")}>
+      <Text fs="p5" lh="s" color={getToken("text.medium")}>
         {t("otc.fillOrder.partiallyFillable.description")}
       </Text>
     </Flex>

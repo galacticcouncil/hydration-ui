@@ -5,10 +5,10 @@ export const SRecipientAddressBookItem = styled(Flex)(
   ({ theme }) => css`
     align-items: center;
     justify-content: space-between;
-    gap: ${theme.scales.paddings.base}px;
+    gap: ${theme.space.base};
 
-    padding-inline: ${theme.scales.paddings.m}px;
-    padding-block: ${theme.scales.paddings.m}px;
+    padding-inline: ${theme.space.m};
+    padding-block: ${theme.space.m};
 
     cursor: pointer;
 

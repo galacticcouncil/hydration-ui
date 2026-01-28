@@ -4,19 +4,19 @@ import { Content, Item, Trigger, Viewport } from "@radix-ui/react-select"
 
 export const SelectTrigger = styled(Trigger)(
   ({ theme }) => css`
-    padding: ${theme.buttons.paddings.tertiary}px
-      ${theme.buttons.paddings.primary}px;
+    padding: ${theme.buttons.paddings.tertiary}
+      ${theme.buttons.paddings.primary};
 
     cursor: pointer;
 
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 4px;
+    gap: ${theme.space.s};
 
     font-size: 12px;
 
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
     background: ${theme.surfaces.themeBasePalette.surfaceHigh};
 
@@ -47,7 +47,7 @@ export const SItem = styled(Item)(
   ({ theme }) => css`
     all: unset;
 
-    font-size: ${theme.paragraphSize.p3};
+    font-size: ${theme.fontSizes.p3};
     line-height: 140%;
 
     cursor: pointer;
@@ -59,10 +59,9 @@ export const SItem = styled(Item)(
     gap: 6px;
     flex: 1 0 0;
 
-    padding: ${theme.buttons.paddings.quart}px
-      ${theme.buttons.paddings.secondary}px;
+    padding: ${theme.buttons.paddings.quart} ${theme.buttons.paddings.secondary};
 
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
 
     transition: all 0.3s ease-in-out;
 
@@ -82,7 +81,7 @@ export const SViewport = styled(Viewport)(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: ${theme.space.s};
     z-index: ${theme.zIndices.popover};
   `,
 )

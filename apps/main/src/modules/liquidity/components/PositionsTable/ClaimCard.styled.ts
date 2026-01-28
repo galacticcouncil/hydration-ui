@@ -10,8 +10,8 @@ export const SClaimCard = styled.div`
     flex-grow: 1;
 
     background: ${theme.accents.success.dim};
-    border-radius: ${theme.containers.cornerRadius.internalPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.internalPrimary};
 
-    padding: ${theme.containers.paddings.tertiary}px;
+    padding: ${theme.containers.paddings.tertiary};
   `}
 `

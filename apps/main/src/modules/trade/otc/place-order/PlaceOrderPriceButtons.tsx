@@ -55,7 +55,7 @@ export const PlaceOrderPriceButtons: FC<Props> = ({
   }
 
   return (
-    <Flex align="center" gap={4}>
+    <Flex align="center" gap="s">
       {optionsWithFlags.map(([option, { isDefault, isSelected }]) => {
         const isOmnipoolPrice = isDefault && !hasCustomOption
         const isCustom = isDefault && hasCustomOption

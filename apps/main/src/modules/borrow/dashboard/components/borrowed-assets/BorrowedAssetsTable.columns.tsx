@@ -96,7 +96,7 @@ export const useBorrowedAssetsTableColumns = () => {
 
         const isDisabled = !reserve.isActive || reserve.isPaused
         return (
-          <Flex justify="flex-end" align="center" gap={4}>
+          <Flex justify="flex-end" align="center" gap="s">
             <Button
               variant="tertiary"
               size="small"

@@ -95,14 +95,14 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
     >
       <Box>
         <Text
-          fs={[14, 16]}
+          fs="p3"
           color={getToken(isActive ? "colors.coral.700" : "text.high")}
         >
           {name}
         </Text>
         <Text
-          fs={10}
-          mt={2}
+          fs="p6"
+          mt="xs"
           display={["block", "none"]}
           color={getToken("text.medium")}
         >
@@ -111,7 +111,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
       </Box>
       <Box>
         {isLoading ? (
-          <Spinner size={14} />
+          <Spinner size="xs" />
         ) : (
           <RpcStatus
             url={url}
@@ -124,43 +124,45 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
       </Box>
       <Flex
         color={getToken("text.medium")}
-        gap={4}
+        gap="s"
         justify="end"
         align="center"
       >
-        <Text display={["none", "block"]}>{new URL(url).hostname}</Text>
+        <Text fs="p4" display={["none", "block"]}>
+          {new URL(url).hostname}
+        </Text>
         {isCustom && !!onRemove && (
           <>
             <RpcRemoveModal
               onRemove={() => onRemove(url)}
               trigger={
                 <TextButton
-                  sx={{ p: 4 }}
+                  sx={{ p: "xs" }}
                   onClick={(e) => {
                     e.stopPropagation()
                   }}
                 >
-                  <Icon size={16} component={Trash} />
+                  <Icon size="s" component={Trash} />
                 </TextButton>
               }
             />
             <Tooltip text={t("edit")} asChild side="top">
               <TextButton
-                sx={{ p: 4 }}
+                sx={{ p: "xs" }}
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsEdit(true)
                 }}
               >
-                <Icon size={16} component={Edit} />
+                <Icon size="s" component={Edit} />
               </TextButton>
             </Tooltip>
           </>
         )}
         {!!onClick && (
-          <Box sx={{ ml: 8 }}>
+          <Box sx={{ ml: "base" }}>
             {isLoading ? (
-              <Spinner size={14} />
+              <Spinner size="xs" />
             ) : (
               <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
             )}

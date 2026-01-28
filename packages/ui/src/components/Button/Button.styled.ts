@@ -32,7 +32,7 @@ const defaulStyles = createStyles(
     position: relative;
     display: grid;
     grid-auto-flow: column;
-    column-gap: 4px;
+    column-gap: ${theme.space.base};
     align-items: center;
     place-content: center;
 
@@ -41,11 +41,11 @@ const defaulStyles = createStyles(
     font-weight: 500;
     white-space: nowrap;
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
 
     cursor: pointer;
 
-    transition: ${theme.transitions.colors};
+    transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
 
     & > svg {
       width: 1em;
@@ -263,21 +263,21 @@ const outlineVariants = createVariants<ButtonVariant>((theme) => ({
 const sizes = createVariants<ButtonSize>((theme) => ({
   small: css`
     line-height: 1.2;
-    height: 30px;
-    font-size: ${theme.paragraphSize.p6};
-    padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
+    height: 1.875rem;
+    font-size: ${theme.fontSizes.p6};
+    padding: ${theme.space.base} ${theme.buttons.paddings.primary};
   `,
   medium: css`
     line-height: 1.2;
-    height: 40px;
-    font-size: ${theme.paragraphSize.p5};
-    padding: ${theme.scales.paddings.base}px ${theme.buttons.paddings.primary}px;
+    height: 2.5rem;
+    font-size: ${theme.fontSizes.p5};
+    padding: ${theme.space.base} ${theme.buttons.paddings.primary};
   `,
   large: css`
     line-height: 1;
-    height: 50px;
-    font-size: ${theme.paragraphSize.p3};
-    padding: ${theme.buttons.paddings.primary}px ${theme.scales.paddings.xl}px;
+    height: 3.125rem;
+    font-size: ${theme.fontSizes.p3};
+    padding: ${theme.buttons.paddings.primary} ${theme.space.xl};
   `,
 }))
 
@@ -317,18 +317,18 @@ export const SMicroButton = styled(Box)<{ variant?: MicroButtonVariant }>(
 
       cursor: pointer;
 
-      padding: 0 8px;
+      padding: ${theme.space.xs} ${theme.space.base};
 
       font-family: ${theme.fontFamilies1.secondary};
-      font-size: 10px;
+      font-size: ${theme.fontSizes.p6};
       font-weight: 500;
-      line-height: 140%;
+      line-height: 1;
       text-transform: uppercase;
 
-      transition: ${theme.transitions.colors};
+      transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
 
       border: 1px solid;
-      border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+      border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
 
       &:disabled {
         cursor: not-allowed;
@@ -344,16 +344,17 @@ export const SButtonIcon = styled(Box)(
   ({ theme }) => css`
     position: relative;
 
-    width: 34px;
-    height: 34px;
+    padding: ${theme.space.base};
 
     display: flex;
     justify-content: center;
     align-items: center;
 
     color: ${theme.icons.onContainer};
-    border-radius: 32px;
+    border-radius: ${theme.radii.full};
     cursor: pointer;
+
+    transition: ${theme.transitions.colors}, ${theme.transitions.opacity};
 
     &:hover {
       background: ${theme.controls.dim.hover};

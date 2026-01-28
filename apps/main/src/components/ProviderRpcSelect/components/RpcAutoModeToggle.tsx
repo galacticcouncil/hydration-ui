@@ -11,7 +11,7 @@ export const RpcAutoModeToggle: React.FC<
       <Box>
         <Text>{t("rpc.change.modal.autoMode.title")}</Text>
         <Text
-          fs={12}
+          fs="p5"
           color={getToken("text.medium")}
           maxWidth={["100%", "75%"]}
         >

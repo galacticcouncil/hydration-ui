@@ -12,6 +12,7 @@ type Props = {
   readonly containerClassName?: string
   readonly hasDescription?: boolean
   readonly actions?: ReactNode
+  readonly noTopPadding?: boolean
 }
 
 export const SectionHeader: FC<Props> = ({
@@ -21,11 +22,13 @@ export const SectionHeader: FC<Props> = ({
   containerClassName,
   hasDescription,
   actions,
+  noTopPadding,
 }) => {
   return (
     <SSectionHeaderContainer
       hasDescription={hasDescription}
       className={containerClassName}
+      noTopPadding={noTopPadding}
     >
       <SSectionHeaderTitle as={as} className={className}>
         {title}

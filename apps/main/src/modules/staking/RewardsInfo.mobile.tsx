@@ -7,7 +7,7 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,7 +33,7 @@ export const RewardsInfoMobile: FC<Props> = ({
 
   return (
     <Flex align="center" justify="space-between">
-      <Flex align="center" gap={8}>
+      <Flex align="center" gap="base">
         <Icon component={HydrationLogo} size={18} />
         <Box>
           {(
@@ -41,13 +41,7 @@ export const RewardsInfoMobile: FC<Props> = ({
               returnObjects: true,
             }) as string[]
           ).map((line, i) => (
-            <Text
-              key={i}
-              fs={13}
-              fw={500}
-              lh={px(15)}
-              color={getToken("text.high")}
-            >
+            <Text key={i} fs="p4" fw={500} lh="s" color={getToken("text.high")}>
               {line}
             </Text>
           ))}

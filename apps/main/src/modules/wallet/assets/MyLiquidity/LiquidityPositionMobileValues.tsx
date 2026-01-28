@@ -1,6 +1,5 @@
 import { Flex } from "@galacticcouncil/ui/components"
 import { Amount } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { bigShift } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -23,7 +22,7 @@ export const LiquidityPositionMobileValues: FC<Props> = ({ position }) => {
   const format = useFormatOmnipoolPositionData()
 
   return (
-    <Flex px={getTokenPx("containers.paddings.primary")} gap={54}>
+    <Flex px="xxl" gap="xxxl">
       {isXYKPosition(position) ? (
         <Amount
           label={t("currentValue")}

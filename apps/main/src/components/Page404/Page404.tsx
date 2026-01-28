@@ -9,7 +9,7 @@ export const Page404 = () => {
   return (
     <Flex direction="column" align="center" justify="center" py="10vh">
       <Image src={Casette} alt="Page not found" width={150} height={150} />
-      <Text as="h1" font="primary" fs={[30, null, 40]} align="center" mb={20}>
+      <Text as="h1" font="primary" fs={[30, null, 40]} align="center" mb="xl">
         {t("page404.title")}
       </Text>
       <Button variant="secondary" asChild>

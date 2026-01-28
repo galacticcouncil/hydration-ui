@@ -11,6 +11,7 @@
     "dev:production": "turbo dev:production",
     "preview": "turbo preview",
     "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
     "i18n": "turbo i18n",
     "postinstall": "papi"
   },

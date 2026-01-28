@@ -54,7 +54,7 @@ export const SToggle = styled(Switch, {
 
     flex-shrink: 0;
 
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
     border: 1px solid ${theme.colors.darkBlue.alpha[100]};
 
     background: ${theme.controls.dim.base};
@@ -96,7 +96,7 @@ export const SThumb = styled(SwitchThumb)<Partial<ToggleProps>>(
       top: 2px;
       left: 2px;
 
-      border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+      border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
       border: 1px solid transparent;
 
       background: ${theme.controls.solid.base};

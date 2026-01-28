@@ -51,17 +51,20 @@ export const HollarBannerDesktop: FC<HollarBannerProps> = ({
   return (
     <SContainer>
       <img
-        sx={{ mt: -12, ml: 15, zIndex: 1 }}
+        sx={{
+          mt: "-m",
+          ml: "l",
+          zIndex: 1,
+          size: ["6.1rem", null, null, "6.5rem"],
+        }}
         src={HollarCans}
-        width={105}
-        height={106}
       />
       <SContent>
         <SText>
-          <Text fs={14} lh={1.3} fw={700} color="#242C23" font="primary">
+          <Text fs="p3" lh={1.3} fw={700} color="#242C23" font="primary">
             {t("hollar.banner.title.desktop")}
           </Text>
-          <Text color="#1B1E1B" fs={12} lh={1.3}>
+          <Text color="#1B1E1B" fs="p4" lh={1.3}>
             {t("hollar.banner.description")}
           </Text>
         </SText>

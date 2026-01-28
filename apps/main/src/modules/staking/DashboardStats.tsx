@@ -1,16 +1,18 @@
 import ProjectedAPR from "@galacticcouncil/ui/assets/images/ProjectedAPR.webp"
 import StakedBalance from "@galacticcouncil/ui/assets/images/StakedBalance.webp"
-import { Pie, PieChart, Skeleton } from "@galacticcouncil/ui/components"
 import {
   Box,
   Flex,
   Image,
+  Pie,
+  PieChart,
   Separator,
+  Skeleton,
   Text,
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -55,15 +57,11 @@ export const DashboardStats: FC<Props> = ({
       {isSupplyLoading ? (
         <Skeleton height={130} width="90%" />
       ) : (
-        <Flex
-          py={7}
-          gap={getTokenPx("containers.paddings.tertiary")}
-          align="center"
-        >
+        <Flex py="base" gap="m" align="center">
           <Flex
             height={115}
             width={115}
-            p={12}
+            p="m"
             bg={getToken("details.separatorsOnDim")}
             borderRadius="full"
             justify="center"
@@ -81,15 +79,11 @@ export const DashboardStats: FC<Props> = ({
               />
             </PieChart>
           </Flex>
-          <Flex
-            direction="column"
-            gap={getTokenPx("scales.paddings.m")}
-            maxWidth="min-content"
-          >
+          <Flex direction="column" gap="m" maxWidth="min-content">
             <Text
               fw={500}
-              fs={10}
-              lh={px(12)}
+              fs="p6"
+              lh="xs"
               color={getToken("text.high")}
               whiteSpace="nowrap"
             >
@@ -97,25 +91,25 @@ export const DashboardStats: FC<Props> = ({
                 symbol: native.symbol,
               })}
             </Text>
-            <Flex direction="column" gap={getTokenPx("scales.paddings.base")}>
+            <Flex direction="column" gap="base">
               <Flex direction="column">
                 <Text
                   font="primary"
                   fw={500}
-                  fs={28}
+                  fs="h5"
                   lh={0.9}
                   color={getToken("text.high")}
                 >
                   {t("percent", { value: supplyStakedPercent })}
                 </Text>
-                <Text fw={500} fs={10} lh={1.2} color={getToken("text.high")}>
+                <Text fw={500} fs="p6" lh={1.2} color={getToken("text.high")}>
                   {t("currency", {
                     value: supplyStaked,
                     symbol: native.symbol,
                   })}
                 </Text>
               </Flex>
-              <Text fs={11} lh={px(12)} color={getToken("text.medium")}>
+              <Text fs="p6" lh="xs" color={getToken("text.medium")}>
                 <Trans
                   t={t}
                   i18nKey="staking:dashboard.supplyStaked.ofSupply"
@@ -130,12 +124,12 @@ export const DashboardStats: FC<Props> = ({
           </Flex>
         </Flex>
       )}
-      <Flex direction="column" gap={getTokenPx("containers.paddings.tertiary")}>
+      <Flex direction="column" gap="m">
         {isMobile && <Separator />}
-        <Flex gap={9} align="center">
+        <Flex gap="base" align="center">
           <Image src={ProjectedAPR} width={50} height={50} />
-          <Flex direction="column" gap={3}>
-            <Flex gap={4} align="center">
+          <Flex direction="column" gap="xs">
+            <Flex gap="s" align="center">
               <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
                 {t("staking:dashboard.projectedAPR")}
               </Text>
@@ -167,9 +161,9 @@ export const DashboardStats: FC<Props> = ({
         {!!positionId && (
           <>
             <Separator />
-            <Flex gap={10} align="center">
+            <Flex gap="base" align="center">
               <Image src={StakedBalance} width={50} height={50} />
-              <Flex direction="column" gap={10}>
+              <Flex direction="column" gap="base">
                 <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
                   {t("staking:dashboard.balance")}
                 </Text>
@@ -193,7 +187,7 @@ export const DashboardStats: FC<Props> = ({
                   {isStakeLoading ? (
                     <Skeleton height={12} />
                   ) : (
-                    <Text fs={12} lh={1} color={getToken("text.medium")}>
+                    <Text fs="p5" lh={1} color={getToken("text.medium")}>
                       ≈{stakedBalanceDisplay}
                     </Text>
                   )}

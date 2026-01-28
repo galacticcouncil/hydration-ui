@@ -1,6 +1,6 @@
 import { Amount, Checkbox, Text } from "@galacticcouncil/ui/components"
 import { Flex } from "@galacticcouncil/ui/components/Flex"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -37,7 +37,7 @@ export const PositionToRemove = ({
 
   return (
     <SPositionToRemove selected={selected} onClick={() => onClick(position)}>
-      <Flex align="center" gap={8}>
+      <Flex align="center" gap="base">
         <Checkbox checked={selected} onChange={() => onClick(position)} />
         <Amount
           value={value}
@@ -48,7 +48,7 @@ export const PositionToRemove = ({
       </Flex>
 
       {!!aprsByRewardAsset.length && (
-        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+        <Flex align="center" gap="s">
           <AssetLogo
             size="small"
             id={joinedFarms.map(({ farm }) => farm.rewardCurrency.toString())}

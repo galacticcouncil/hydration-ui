@@ -1,6 +1,6 @@
 import { Flex, Separator, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -17,7 +17,7 @@ export const CurrencyReserves = ({
   const { reserves, totalDisplayAmount } = stablepoolData
 
   return (
-    <Flex direction="column" gap={10}>
+    <Flex direction="column" gap="base">
       <Text
         fw={500}
         fs="h7"
@@ -62,12 +62,12 @@ export const CurrencyReservesRow = ({
   return (
     <>
       <Flex justify="space-between">
-        <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+        <Flex align="center" gap="base">
           <AssetLogo id={reserve.asset_id.toString()} size="small" />
           <Text color={getToken("text.high")} fs="p3" fw={600}>
             {reserve.meta.symbol}
           </Text>
-          <Text color={getToken("text.low")} fw={500} fs={12}>
+          <Text color={getToken("text.low")} fw={500} fs="p5">
             (
             {t("percent", {
               value: reserve.displayAmount
@@ -82,10 +82,10 @@ export const CurrencyReservesRow = ({
         </Flex>
 
         <Flex direction="column" align="end">
-          <Text color={getToken("text.high")} fw={500} fs={12}>
+          <Text color={getToken("text.high")} fw={500} fs="p5">
             {t("number", { value: reserve.amountHuman })}
           </Text>
-          <Text color={getToken("text.medium")} fw={500} fs={11}>
+          <Text color={getToken("text.medium")} fw={500} fs="p6">
             {t("currency", { value: reserve.displayAmount })}
           </Text>
         </Flex>
@@ -98,7 +98,7 @@ export const CurrencyReservesRow = ({
 export const CurrencyReservesRowSkeleton = () => {
   return (
     <Flex justify="space-between">
-      <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+      <Flex align="center" gap="base">
         <AssetLogo id={"0"} size="small" isLoading />
         <Skeleton width={50} height={14} />
       </Flex>

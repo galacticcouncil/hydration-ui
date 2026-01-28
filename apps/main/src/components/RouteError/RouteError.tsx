@@ -21,15 +21,15 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
   const { data: feeAssetId } = useAccountFeePaymentAssetId()
 
   return (
-    <Flex width="100vw" height="100vh" justify="center" align="center" p={20}>
-      <Flex direction="column" gap={20} align="center">
+    <Flex width="100vw" height="100vh" justify="center" align="center" p="xl">
+      <Flex direction="column" gap="xl" align="center">
         <Text as="h1" font="primary" fs={[30, null, 40]} align="center">
           {t("routeError.title")}
         </Text>
         {error instanceof Error && (
           <Alert variant="error" description={error.toString()} />
         )}
-        <Flex gap={10}>
+        <Flex gap="base">
           <Button
             variant="muted"
             outline

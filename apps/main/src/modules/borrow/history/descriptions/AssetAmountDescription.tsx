@@ -18,13 +18,13 @@ export const AssetAmountDescription: FC<Props> = ({ assetId, amount }) => {
 
   return (
     <Flex
-      gap={8}
+      gap="base"
       align="center"
       justify={["end", "start"]}
       sx={{ flexWrap: "wrap" }}
     >
       {assetId && <AssetLogo size="small" id={assetId} />}
-      <Text fs={14} css={{ whiteSpace: "nowrap" }}>
+      <Text fs="p3" css={{ whiteSpace: "nowrap" }}>
         {t("currency", {
           value: scaleHuman(amount, asset.decimals),
           symbol: asset.symbol,

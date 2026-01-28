@@ -7,7 +7,7 @@ export const DashboardStatsSkeleton: FC = () => {
   return (
     <SDashboardStats sx={{ width: "100%" }}>
       <Skeleton height={130} width="90%" />
-      <Flex direction="column" width="70%" gap={10}>
+      <Flex direction="column" width="70%" gap="base">
         <Skeleton sx={{ height: 100 }} />
         <Skeleton sx={{ height: 100 }} />
       </Flex>

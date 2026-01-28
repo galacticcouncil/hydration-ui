@@ -21,7 +21,7 @@ export const InvalidAssetDataPreviewList: FC<Props> = ({ assetId }) => {
   const asset = getAsset(assetId)
 
   return (
-    <Flex gap={2} direction="column" justify="space-between">
+    <Flex gap="xs" direction="column" justify="space-between">
       <TransactionItem
         label={t("invalidAsset.modal.symbol")}
         value={asset?.symbol}

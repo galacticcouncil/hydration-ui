@@ -74,11 +74,11 @@ export const AssetInput = ({
   return (
     <Flex
       direction="column"
-      gap={12}
+      gap="m"
       sx={{ position: "relative", py: 20, overflow: "hidden" }}
       className={className}
     >
-      <Flex align="center" gap={4} justify="space-between">
+      <Flex align="center" gap="s" justify="space-between">
         {label && (
           <Text
             color={getToken("text.medium")}
@@ -94,7 +94,7 @@ export const AssetInput = ({
           </Text>
         )}
         {!ignoreBalance && (
-          <Flex align="center" gap={6} sx={{ marginLeft: "auto" }}>
+          <Flex align="center" gap="s" sx={{ marginLeft: "auto" }}>
             <Text
               as="div"
               color={getToken("text.low")}
@@ -133,7 +133,7 @@ export const AssetInput = ({
         )}
       </Flex>
       <Flex direction="column">
-        <Flex align="center" justify="space-between" gap={12}>
+        <Flex align="center" justify="space-between" gap="m">
           <AssetButton
             sx={{ ...(hideInput && { flex: 1 }) }}
             symbol={symbol}
@@ -146,7 +146,7 @@ export const AssetInput = ({
           {!hideInput && (
             <Flex
               direction="column"
-              height={38}
+              height="2.375rem"
               justify="space-evenly"
               align="end"
               flex={1}
@@ -174,7 +174,7 @@ export const AssetInput = ({
               {!ignoreDisplayValue && (
                 <Text
                   color={getToken("text.low")}
-                  fs={10}
+                  fs="p6"
                   fw={400}
                   sx={{ width: "fit-content" }}
                 >
@@ -215,16 +215,16 @@ export const AssetButton = ({
     return (
       <Flex
         direction="column"
-        height={38}
-        gap={2}
+        height="2.375rem"
+        gap="xs"
         justify="center"
         className={className}
       >
-        <div sx={{ height: 12, lineHeight: 1 }}>
-          <Skeleton width={24} height={12} />
+        <div sx={{ height: "xs", lineHeight: 1 }}>
+          <Skeleton sx={{ width: "m", height: "xs" }} />
         </div>
-        <div sx={{ height: 12, lineHeight: 1 }}>
-          <Skeleton sx={{ minWidth: 48 }} width="100%" height={12} />
+        <div sx={{ height: "xs", lineHeight: 1 }}>
+          <Skeleton sx={{ width: "100%", minWidth: "xl", height: "xs" }} />
         </div>
       </Flex>
     )
@@ -239,7 +239,7 @@ export const AssetButton = ({
         onClick={onAsssetBtnClick}
       >
         {icon}
-        <Flex flex={1} align="center" gap={4} justify="space-between">
+        <Flex flex={1} align="center" gap="s" justify="space-between">
           <Text
             color={getToken("text.high")}
             fw={600}
@@ -250,8 +250,8 @@ export const AssetButton = ({
           </Text>
           {onAsssetBtnClick && (
             <Icon
-              size={20}
-              mr={-8}
+              size="s"
+              mr="-base"
               component={ChevronDown}
               color={getToken("icons.onContainer")}
             />
@@ -270,7 +270,7 @@ export const AssetButton = ({
       <Text fw={600} fs="p3" whiteSpace="nowrap">
         Select asset
       </Text>
-      {!disabled && <Icon size={20} component={ChevronDown} />}
+      {!disabled && <Icon size="s" component={ChevronDown} />}
     </SAssetButtonEmpty>
   )
 }

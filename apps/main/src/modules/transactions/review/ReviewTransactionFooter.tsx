@@ -22,14 +22,14 @@ export const ReviewTransactionFooter: React.FC<
 
   if (isIdle) {
     return (
-      <Stack width="100%" gap={10}>
+      <Stack width="100%" gap="base">
         {alerts.map(({ key, ...alert }) => (
           <Alert key={key} {...alert} />
         ))}
         <Flex
           direction={["column-reverse", "row"]}
           justify="space-between"
-          gap={10}
+          gap="base"
         >
           <Button
             size="large"

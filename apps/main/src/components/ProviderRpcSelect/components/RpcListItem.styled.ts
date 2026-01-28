@@ -10,11 +10,11 @@ export const SRpcListItem = styled(Box, {
   ({ theme, isInteractive }) => css`
     display: grid;
     grid-template-columns: 3fr 2fr 1fr;
-    gap: 10px;
+    gap: ${theme.space.base};
 
     align-items: center;
-    padding: 10px var(--modal-content-padding);
-    height: 56px;
+    padding: ${theme.space.base} var(--modal-content-padding);
+    height: 100%;
 
     &[data-edit="true"] {
       grid-template-columns: 1fr;
@@ -62,10 +62,10 @@ export const SRpcRadio = styled.div(
 
     flex-shrink: 0;
 
-    width: 14px;
-    height: 14px;
+    width: ${theme.sizes.xs};
+    height: ${theme.sizes.xs};
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
     background: ${theme.controls.dim.base};
     border: 1px solid ${theme.controls.outline.base};
 
@@ -76,11 +76,11 @@ export const SRpcRadio = styled.div(
 
 export const SRpcRadioThumb = styled.div(
   ({ theme }) => css`
-    width: 10px;
-    height: 10px;
+    width: ${theme.sizes["2xs"]};
+    height: ${theme.sizes["2xs"]};
 
     background: ${theme.controls.solid.active};
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
 
     animation: ${theme.animations.scaleInCenter} 0.2s;
   `,

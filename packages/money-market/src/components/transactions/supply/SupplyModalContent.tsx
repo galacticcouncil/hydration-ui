@@ -283,7 +283,7 @@ export const SupplyModalContent = React.memo(
           )}
 
           {shouldRenderWarnings && (
-            <Stack gap={14} py={14}>
+            <Stack gap="m" py="m">
               {showIsolationWarning && (
                 <IsolationModeWarning asset={poolReserve.symbol} />
               )}

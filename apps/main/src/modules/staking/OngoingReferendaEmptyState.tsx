@@ -6,7 +6,6 @@ import {
   Image,
   Paper,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { REFERENDA_HISTORY_URL } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,8 +16,8 @@ export const OngoingReferendaEmptyState: FC = () => {
   const { t } = useTranslation("staking")
 
   return (
-    <Paper py={getTokenPx("containers.paddings.primary")} px={30}>
-      <Flex direction="column" gap={20} align="center">
+    <Paper py="xxl" px="xxl">
+      <Flex direction="column" gap="xl" align="center">
         <EmptyState
           sx={{ maxWidth: "100%", pb: 0 }}
           icon={<Image src={ReferendaEmptyState} width={100} height={100} />}

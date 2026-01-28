@@ -63,16 +63,16 @@ const BorrowModeSwitch: React.FC<BoxProps & BorrowModeSwitchProps> = ({
   return (
     <Box {...props}>
       <Text
-        fs={14}
-        mb={6}
-        sx={{ display: "flex", alignItems: "center", gap: 4 }}
+        fs="p3"
+        mb="s"
+        sx={{ display: "flex", alignItems: "center", gap: "s" }}
       >
         Borrow APY Rate
         <Tooltip text="Allows you to switch between variable and stable interest rates, where variable rate can increase and decrease depending on the amount of liquidity in the reserve, and stable rate will stay the same for the duration of your loan.">
           <CircleInfo />
         </Tooltip>
       </Text>
-      <Flex gap={10}>
+      <Flex gap="base">
         <Button
           width="100%"
           variant={
@@ -80,7 +80,7 @@ const BorrowModeSwitch: React.FC<BoxProps & BorrowModeSwitchProps> = ({
           }
           onClick={() => setInterestRateMode(InterestRate.Variable)}
         >
-          <Text mr={4} as="span">
+          <Text mr="s" as="span">
             Variable
           </Text>
           {formatPercent(Number(variableRate) * 100)}
@@ -92,7 +92,7 @@ const BorrowModeSwitch: React.FC<BoxProps & BorrowModeSwitchProps> = ({
           }
           onClick={() => setInterestRateMode(InterestRate.Stable)}
         >
-          <Text mr={4} as="span">
+          <Text mr="s" as="span">
             Stable
           </Text>
           {formatPercent(Number(stableRate) * 100)}
@@ -231,7 +231,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
       {poolReserve.stableBorrowRateEnabled && (
         <>
           <BorrowModeSwitch
-            pb={14}
+            pb="m"
             interestRateMode={interestRateMode}
             setInterestRateMode={setInterestRateMode}
             variableRate={poolReserve.variableBorrowAPY}
@@ -288,7 +288,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
             }
           />
         )}
-        <Stack gap={14} py={14}>
+        <Stack gap="m" py="m">
           <ParameterChangeWarning />
           {borrowCap.determineWarningDisplay({ borrowCap })}
           {displayHealthFactorRiskCheckbox && (

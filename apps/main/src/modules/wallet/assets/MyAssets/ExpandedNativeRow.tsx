@@ -6,7 +6,6 @@ import {
   Vote,
 } from "@galacticcouncil/ui/assets/icons"
 import { Amount, Flex } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -39,7 +38,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
 
   return (
-    <Flex direction="column" gap={20}>
+    <Flex direction="column" gap="xl">
       <Amount
         variant="horizontalLabel"
         label={t("myAssets.expandedNative.lockedInDCA")}
@@ -95,7 +94,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
         }
       />
       <ExpandedRowSeparator />
-      <Flex align="center" gap={getTokenPx("scales.paddings.m")}>
+      <Flex align="center" gap="m">
         <Amount
           css={{ flex: 1 }}
           variant="horizontalLabel"

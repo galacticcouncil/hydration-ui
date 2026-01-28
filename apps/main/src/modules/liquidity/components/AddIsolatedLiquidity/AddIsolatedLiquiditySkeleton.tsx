@@ -5,7 +5,6 @@ import {
   ModalHeader,
   Summary,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -73,13 +72,7 @@ export const AddIsolatedLiquiditySkeleton: FC<Props> = ({ closable }) => {
 
         <ModalContentDivider />
 
-        <Button
-          type="submit"
-          size="large"
-          width="100%"
-          mt={getTokenPx("containers.paddings.primary")}
-          disabled
-        >
+        <Button type="submit" size="large" width="100%" mt="xxl" disabled>
           {t("liquidity.add.modal.submit")}
         </Button>
       </ModalBody>

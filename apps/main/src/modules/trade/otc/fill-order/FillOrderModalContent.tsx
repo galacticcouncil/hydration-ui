@@ -110,7 +110,7 @@ export const FillOrderModalContent: FC<Props> = ({
               userSellAmount={sellAmount}
             />
             <Separator />
-            <Box px={20}>
+            <Box px="xl">
               <Controller
                 control={form.control}
                 name="sellAmount"

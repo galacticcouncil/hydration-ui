@@ -25,7 +25,7 @@ export const DcaOrderInfo: FC<Props> = ({ order, healthFactor, isLoading }) => {
   return (
     <>
       <SwapSectionSeparator />
-      <Box pb={20}>
+      <Box pb="xl">
         <Summary separator={<SwapSectionSeparator />}>
           {healthFactor?.isSignificantChange && (
             <SwapSummaryRow

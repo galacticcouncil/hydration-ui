@@ -7,7 +7,7 @@ import {
   Flex,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -67,7 +67,7 @@ export const LiquidityPositionMobileHeader: FC<Props> = ({
     <SLiquidityPositionMobileHeader>
       <AssetLabelFull asset={asset} withName={false} />
       {joinedFarms.length ? (
-        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+        <Flex align="center" gap="s">
           <AssetLogo
             id={joinedFarms.map(({ farm }) => farm.rewardCurrency.toString())}
           />
@@ -129,7 +129,7 @@ export const XYKLiquidityPositionMobileHeader = ({
     <SLiquidityPositionMobileHeader>
       <AssetLabelXYK iconIds={asset.iconId} symbol={asset.symbol} />
       {joinedFarms.length ? (
-        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+        <Flex align="center" gap="s">
           <AssetLogo
             id={joinedFarms.map(({ farm }) => farm.rewardCurrency.toString())}
           />

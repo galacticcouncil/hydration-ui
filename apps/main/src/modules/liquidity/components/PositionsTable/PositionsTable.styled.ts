@@ -5,12 +5,12 @@ export const STableHeader = styled.div`
   ${({ theme }) => css`
     display: flex;
     align-items: center;
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
 
     position: sticky;
 
     left: 0;
-    padding: ${theme.containers.paddings.tertiary}px
-      ${theme.containers.paddings.tertiary}px 0px;
+    padding: ${theme.containers.paddings.tertiary}
+      ${theme.containers.paddings.tertiary} 0px;
   `}
 `

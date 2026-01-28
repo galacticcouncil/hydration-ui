@@ -11,7 +11,7 @@ export const SuppliedAssetsHeader = () => {
   const { isLoading: isApyLoading } = useApyContext()
 
   return (
-    <Flex gap={40} p={20}>
+    <Flex gap="xxxl" p="xl">
       <ValueStats
         wrap
         size="small"

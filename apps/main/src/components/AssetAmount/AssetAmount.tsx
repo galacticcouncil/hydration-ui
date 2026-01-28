@@ -1,5 +1,5 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -17,14 +17,14 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
   const { isBond } = useAssets()
 
   return (
-    <Flex align="center" p={4}>
+    <Flex align="center" p="s">
       <AssetLogo id={asset.id} />
       <Text
         fw={500}
         fs="p4"
-        lh={px(13)}
-        py={5}
-        pl={4}
+        lh="xs"
+        py="s"
+        pl="s"
         color={getToken("text.high")}
       >
         {t("currency", {

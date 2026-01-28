@@ -7,7 +7,6 @@ import {
   SectionHeader,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -89,9 +88,9 @@ export const StakingDashboard: FC = () => {
 
   if (isMobile || isTablet) {
     return (
-      <Flex direction="column" gap={10}>
+      <Flex direction="column" gap="base">
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
-        <Flex direction="column" gap={20}>
+        <Flex direction="column" gap="xl">
           <Box>
             <SectionHeader title={t("dashboard.title")} />
             <Stake
@@ -106,7 +105,7 @@ export const StakingDashboard: FC = () => {
               }
             />
           </Box>
-          <Paper px={12} py={getTokenPx("containers.paddings.primary")}>
+          <Paper px="m" py="xxl">
             {isLoading ? (
               <>
                 <ActiveDashboardSkeleton />
@@ -137,20 +136,21 @@ export const StakingDashboard: FC = () => {
   }
 
   return (
-    <Flex direction="column" gap={28}>
+    <Flex direction="column" gap="xl">
       <Grid
         columnTemplate={[
           null,
           null,
-          "minmax(390px, 1fr) minmax(0, 400px)",
-          "minmax(470px, 1fr) minmax(0, 440px)",
+          "minmax(24rem, 1fr) minmax(0, 25rem)",
+          "minmax(30rem, 1fr) minmax(0, 27rem)",
         ]}
-        columnGap={20}
+        columnGap="xl"
         align="start"
       >
         <ClassNames>
           {({ css }) => (
             <SectionHeader
+              noTopPadding
               containerClassName={css({ gridColumn: "1/-1" })}
               title={t("dashboard.title")}
             />

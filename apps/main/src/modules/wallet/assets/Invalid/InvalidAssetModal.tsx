@@ -27,7 +27,7 @@ export const InvalidAssetModal: FC<Props> = ({ assetId, origin }) => {
         title={t("invalidAsset.modal.title")}
         customHeader={
           <>
-            <Box pt={20} />
+            <Box pt="xl" />
             <InvalidAssetModalHeader assetId={assetId} origin={origin} />
           </>
         }

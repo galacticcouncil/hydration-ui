@@ -126,15 +126,15 @@ export const BorrowInfo = ({
         </Stack>
       </Flex>
 
-      <Flex direction="column" gap={20}>
+      <Flex direction="column" gap="xl">
         <BorrowApyChart assetId={assetId} />
 
         {currentMarketData.addresses.COLLECTOR && (
           <Box>
-            <Text fs={14} mb={10} fw={500} transform="uppercase">
+            <Text fs="p3" mb="base" fw={500} transform="uppercase">
               {t("borrow:collector.info")}
             </Text>
-            <Stack direction="row" gap={10} mt={20}>
+            <Stack direction="row" gap="base" mt="xl">
               <ValueStats
                 size="small"
                 font="secondary"

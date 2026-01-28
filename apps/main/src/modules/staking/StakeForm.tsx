@@ -7,7 +7,7 @@ import {
   SummaryRowLabel,
   SummaryRowValue,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { Controller, FormProvider } from "react-hook-form"
@@ -75,7 +75,7 @@ export const StakeForm: FC<Props> = ({
           name="amount"
           render={({ field, fieldState }) => (
             <AssetSelect
-              sx={{ px: getTokenPx("containers.paddings.primary") }}
+              sx={{ px: "xl" }}
               label={t("staking:stake.stake.amount")}
               assets={[]}
               selectedAsset={native}
@@ -88,12 +88,8 @@ export const StakeForm: FC<Props> = ({
           )}
         />
         <Separator />
-        <Summary
-          px={getTokenPx("containers.paddings.primary")}
-          separator={<Separator mx={-20} />}
-        >
+        <Summary px="xl" separator={<Separator mx="-xl" />}>
           <SummaryRow
-            sx={{ my: getTokenPx("scales.paddings.s") }}
             label={t("staking:stake.stake.minimum")}
             content={t("currency", {
               value: minStake,
@@ -102,7 +98,6 @@ export const StakeForm: FC<Props> = ({
           />
           {diffDays && diffDays !== "0" && (
             <SummaryRow
-              sx={{ my: getTokenPx("scales.paddings.s") }}
               label={
                 <SummaryRowLabel color={getToken("colors.azureBlue.400")}>
                   {t("staking:stake.stake.increasedBy")}
@@ -121,10 +116,7 @@ export const StakeForm: FC<Props> = ({
         </Summary>
         <Separator />
         {
-          <Grid
-            px={getTokenPx("containers.paddings.primary")}
-            py={getTokenPx("containers.paddings.primary")}
-          >
+          <Grid px="xl" py="xl">
             {account ? (
               <Button
                 type="submit"

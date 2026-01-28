@@ -10,17 +10,17 @@ import { SSwapFormContainer } from "./SwapPage.styled"
 
 export const SwapPageDesktop = () => {
   return (
-    <Stack gap={20}>
+    <Stack gap="xl">
       <PageHeader />
       <Grid
         columnTemplate={[
           null,
           null,
-          "minmax(390px, 1fr) minmax(0, 400px)",
-          "minmax(470px, 1fr) minmax(0, 440px)",
+          "minmax(24rem, 1fr) minmax(0, 25rem)",
+          "minmax(30rem, 1fr) minmax(0, 27rem)",
         ]}
         rowTemplate="auto auto"
-        gap={20}
+        gap="xl"
         align="start"
       >
         <TradeChart height={456} />

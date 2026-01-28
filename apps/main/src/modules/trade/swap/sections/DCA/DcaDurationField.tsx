@@ -8,7 +8,7 @@ import {
   Toggle,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { Controller, useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -38,18 +38,14 @@ export const DcaDurationField: FC = () => {
 
   return (
     <Grid
-      pt={getTokenPx("scales.paddings.l")}
-      pb={getTokenPx("scales.paddings.xxl")}
+      pt="l"
+      pb="xxl"
       columnTemplate="minmax(0,1fr) minmax(0,1fr)"
-      rowGap={8}
-      columnGap={getTokenPx("containers.paddings.primary")}
+      rowGap="base"
+      columnGap="xxl"
     >
       <Label>{t("trade:dca.duration.label")}</Label>
-      <Flex
-        sx={{ justifySelf: "end" }}
-        gap={getTokenPx("scales.paddings.s")}
-        align="center"
-      >
+      <Flex sx={{ justifySelf: "end" }} gap="s" align="center">
         <ToggleRoot>
           <Label>
             {t("trade:dca.orders.label")}:{" "}
@@ -103,7 +99,7 @@ export const DcaDurationField: FC = () => {
           sx={{ gridColumn: "1/-1" }}
           font="secondary"
           fw={400}
-          fs={12}
+          fs="p5"
           lh={1}
           color={getToken("accents.danger.secondary")}
           ml="auto"

@@ -35,7 +35,7 @@ export const DynamicFee = ({
   })()
 
   return (
-    <Flex gap={8} align="center">
+    <Flex gap="base" align="center">
       {amount ? (
         <Text fs="p5" fw={500} lh={1.2}>
           <span sx={{ color: getToken("text.high") }}>{amount}</span>{" "}
@@ -48,7 +48,7 @@ export const DynamicFee = ({
           {t("percent", { value })}
         </Text>
       )}
-      <Flex p="1px 2px" gap={1} height="min-content">
+      <Flex p="1px 2px" gap="xs" height="min-content">
         {dynamicFeeRangeTypes.map((rangeType) => {
           const isActive = rangeType === currentKey
 

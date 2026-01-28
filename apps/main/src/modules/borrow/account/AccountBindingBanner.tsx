@@ -34,7 +34,7 @@ export const AccountBindingBanner = () => {
         <Text
           font="primary"
           fw={700}
-          mb={4}
+          mb="s"
           color={getToken("text.tint.primary")}
         >
           {t("binding.banner.title")}

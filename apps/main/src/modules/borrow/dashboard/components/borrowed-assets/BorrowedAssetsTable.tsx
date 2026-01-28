@@ -25,7 +25,7 @@ export const BorrowedAssetsTable = () => {
 
   if (!isLoading && data.length === 0) {
     return (
-      <Paper p={20}>
+      <Paper p="xl">
         <Text fw={500} color={getToken("text.low")}>
           {t("borrowed.table.empty")}
         </Text>

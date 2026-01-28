@@ -41,8 +41,8 @@ export const TooltipAPR = ({
       preventDefault
       {...props}
       text={
-        <Flex direction="column" gap={8}>
-          <Text fs="p6" fw={500} mb={6}>
+        <Flex direction="column" gap="base">
+          <Text fs="p6" fw={500} mb="s">
             {description ?? t("liquidity:liquidity.tooltip.fee.apr.title")}
           </Text>
 
@@ -80,7 +80,7 @@ export const TooltipAPR = ({
                 <Row
                   key={`${farm.rewardCurrency}-${index}`}
                   label={
-                    <Flex align="center" gap={4}>
+                    <Flex align="center" gap="s">
                       <AssetLogo
                         id={farm.rewardCurrency.toString()}
                         size="small"
@@ -118,7 +118,7 @@ const BorrowApyBreakdown = ({
   })
 
   return (
-    <Flex direction="column" gap={4}>
+    <Flex direction="column" gap="s">
       {apyBreakdownItems.map((props, index) => (
         <ApyRow key={`${props.label}-${index}`} {...props} />
       ))}
@@ -138,7 +138,7 @@ const Row = ({
       {typeof label === "string" ? (
         <Text
           transform="uppercase"
-          fs={8}
+          fs="p6"
           fw={600}
           color={getToken("text.medium")}
         >
