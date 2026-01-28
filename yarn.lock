@@ -1987,10 +1987,10 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.9.0.tgz#630937038b332f859e3b1eeccd3d3ae99c98a51c"
-  integrity sha512-N5WGlGCXvNGB8CeaSLtJeV5rIDDnBrd+QJlB7I2+2BINnodCuSx7Uan26eNEr5c20JrXtEUmJB+1Rj0F85kLzQ==
+"@galacticcouncil/xc-cfg@^0.10.0":
+  version "0.10.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.10.0.tgz#ac5c1225fc1ebf6d3009c418c89fe0985cea691b"
+  integrity sha512-9c8ceuvTVD1nU5l51lk+ENUlzh8f3hOWSeL6/0Yl0j2sFBRoAYdIa6l1PDWZO6zk8cq/GhCugOzy80Zfs4+HFA==
   dependencies:
     "@galacticcouncil/xc-core" "^0.9.0"
 
