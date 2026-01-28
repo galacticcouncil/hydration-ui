@@ -20,7 +20,7 @@ import {
 
 export const DcaForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { control, getValues, setValue, reset } =
+  const { control, getValues, setValue, reset, trigger } =
     useFormContext<DcaFormValues>()
 
   const { tradable, getAsset } = useAssets()
@@ -59,13 +59,15 @@ export const DcaForm: FC = () => {
     }
   }, [getValues, reset, getAsset, navigate])
 
-  const handlesellAssetChange = (
+  const handleSellAssetChange = (
     sellAsset: TAsset,
     previousSellAsset: TAsset | null,
   ): void => {
     const { buyAsset } = getValues()
 
     if (sellAsset.id !== buyAsset?.id) {
+      trigger("sellAmount")
+
       navigate({
         to: ".",
         search: (search) => ({
@@ -115,7 +117,7 @@ export const DcaForm: FC = () => {
         assets={useMemo(() => tradable.filter(isValid), [tradable])}
         label={t("trade:dca.assetIn.title")}
         maxBalanceFallback="0"
-        onAssetChange={handlesellAssetChange}
+        onAssetChange={handleSellAssetChange}
       />
       <DcaAssetSwitcher />
       <Controller

@@ -66,14 +66,16 @@ export const useMarketForm = ({ assetIn, assetOut }: Args) => {
 
   const { trigger, getValues } = form
   useEffect(() => {
-    const { sellAsset, buyAsset } = getValues()
+    const { sellAsset, buyAsset, type } = getValues()
 
     if (!account || !sellAsset || !buyAsset) {
       return
     }
 
-    if (isBalanceLoaded(buyAsset.id) && isBalanceLoaded(sellAsset.id)) {
-      trigger()
+    if (type === TradeType.Buy && isBalanceLoaded(buyAsset.id)) {
+      trigger("buyAmount")
+    } else if (type === TradeType.Sell && isBalanceLoaded(sellAsset.id)) {
+      trigger("sellAmount")
     }
   }, [account, trigger, getValues, isBalanceLoaded])
 
