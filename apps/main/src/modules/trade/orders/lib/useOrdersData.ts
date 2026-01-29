@@ -15,6 +15,7 @@ import { scaleHuman } from "@/utils/formatting"
 
 export enum OrderKind {
   Dca = "dca",
+  DcaRolling = "dcaRolling",
 }
 
 export type OrderData = {
@@ -29,13 +30,14 @@ export type OrderData = {
   readonly toAmountExecuted: string | null
   readonly status: DcaScheduleStatus | null
   readonly blocksPeriod: number | null
+  readonly isOpenBudget: boolean
 }
 
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,
   assetIds: Array<string>,
-  page: number,
-  pageSize: number,
+  page: number | undefined,
+  pageSize: number | undefined,
 ) => {
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
@@ -53,7 +55,9 @@ export const useOrdersData = (
     () =>
       data?.dcaSchedules?.nodes
         .filter((schedule) => !!schedule)
-        .map((schedule) => {
+        .map<OrderData>((schedule) => {
+          const isOpenBudget = schedule.budgetAmountIn === "0"
+
           const from = getAssetWithFallback(
             schedule.assetIn?.assetRegistryId ?? "",
           )
@@ -84,7 +88,7 @@ export const useOrdersData = (
             : null
 
           return {
-            kind: OrderKind.Dca,
+            kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
             scheduleId: Number(schedule.id),
             from,
             fromAmountBudget,
@@ -97,6 +101,7 @@ export const useOrdersData = (
               ? schedule.status
               : null,
             blocksPeriod: schedule.period ?? null,
+            isOpenBudget,
           }
         }) ?? [],
     [data, getAssetWithFallback],

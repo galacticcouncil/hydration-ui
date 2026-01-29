@@ -25,7 +25,7 @@ export type MarketSwapStatus = {
 }
 
 export type MyActivityDcaOrderStatus = {
-  readonly kind: OrderKind.Dca
+  readonly kind: OrderKind.Dca | OrderKind.DcaRolling
   readonly status: DcaScheduleStatus | null
   readonly scheduleId: number
   readonly sold: string
@@ -44,7 +44,7 @@ export type SwapData = {
   readonly fillPrice: string
   readonly link: string | null
   readonly address: string | null
-  readonly date: Date
+  readonly date: Date | null
   readonly status: OrderStatus | null
 }
 
@@ -96,7 +96,7 @@ export const useSwapsData = (
             ? swap.operationType
             : null
           const address = safeConvertPublicKeyToSS58(swap.swapperId ?? "")
-          const date = new Date(swap.paraTimestamp)
+          const date = swap.paraTimestamp ? new Date(swap.paraTimestamp) : null
 
           return {
             from,
@@ -135,9 +135,10 @@ export const getOrderStatus = (
   }
 
   const asset = getAsset(schedule.assetInId ?? "")
+  const isOpenBudget = schedule.budgetAmountIn === "0"
 
   return {
-    kind: OrderKind.Dca,
+    kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
     scheduleId: Number(schedule.id),
     sold: scaleHuman(schedule.totalExecutedAmountIn || "0", asset.decimals),
     total: scaleHuman(schedule.budgetAmountIn || "0", asset.decimals),

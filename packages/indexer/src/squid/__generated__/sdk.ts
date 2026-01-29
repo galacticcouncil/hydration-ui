@@ -270,7 +270,7 @@ export const UserSwapsDocument = `
 }
     ${SwapFragmentDoc}`;
 export const UserOrdersDocument = `
-    query UserOrders($address: String!, $assetInId: StringFilter, $assetOutId: StringFilter, $offset: Int!, $pageSize: Int!, $status: [String!]!) {
+    query UserOrders($address: String!, $assetInId: StringFilter, $assetOutId: StringFilter, $offset: Int, $pageSize: Int, $status: [String!]!) {
   dcaSchedules(
     condition: {ownerId: $address}
     filter: {status: {in: $status}, assetInId: $assetInId, assetOutId: $assetOutId}
@@ -285,6 +285,7 @@ export const UserOrdersDocument = `
       orderType
       assetIn {
         assetRegistryId
+        underlyingAssetId
       }
       totalExecutedAmountIn
       budgetAmountIn: totalAmount

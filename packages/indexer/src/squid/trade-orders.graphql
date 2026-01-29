@@ -68,8 +68,8 @@ query UserOrders(
   $address: String!
   $assetInId: StringFilter
   $assetOutId: StringFilter
-  $offset: Int!
-  $pageSize: Int!
+  $offset: Int
+  $pageSize: Int
   $status: [String!]!
 ) {
   dcaSchedules(
@@ -90,6 +90,7 @@ query UserOrders(
       orderType
       assetIn {
         assetRegistryId
+        underlyingAssetId
       }
       totalExecutedAmountIn
       budgetAmountIn: totalAmount

@@ -40,6 +40,7 @@ export const getAbsoluteMaxDcaOrders = (duration: TimeFrame): number => {
 export enum DcaOrdersMode {
   Custom = "Custom",
   Auto = "Auto",
+  OpenBudget = "OpenBudget",
 }
 
 const ordersSchema = z.discriminatedUnion("type", [
@@ -54,6 +55,10 @@ const ordersSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal(DcaOrdersMode.Auto),
     value: z.never().optional(),
+  }),
+  z.object({
+    type: z.literal(DcaOrdersMode.OpenBudget),
+    useSplitTrade: z.boolean(),
   }),
 ])
 
@@ -72,9 +77,10 @@ const schemaBase = z.object({
 })
 
 export type DcaFormValues = z.infer<typeof schemaBase>
+export type DcaDuration = DcaFormValues["duration"]
 
 const schema = schemaBase.superRefine(({ duration, orders }, { addIssue }) => {
-  if (orders.type === DcaOrdersMode.Auto) {
+  if (orders.type !== DcaOrdersMode.Custom) {
     return
   }
 
@@ -157,10 +163,7 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAsset: getAsset(assetIn) ?? null,
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
-    duration: {
-      type: "day",
-      value: 1,
-    },
+    duration: DEFAULT_DCA_DURATION,
     orders: {
       type: DcaOrdersMode.Auto,
     },
@@ -187,4 +190,9 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
   }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
 
   return form
+}
+
+export const DEFAULT_DCA_DURATION: DcaDuration = {
+  type: "day",
+  value: 1,
 }
