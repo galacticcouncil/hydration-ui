@@ -29,7 +29,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     form.watch(["sellAsset", "buyAsset", "sellAmount", "duration", "orders"])
 
   const tradeCount =
-    orders.type === DcaOrdersMode.Auto ? null : (orders.value ?? 0)
+    orders.type === DcaOrdersMode.Custom ? (orders.value ?? 0) : null
 
   const duration = getTimeFrameMillis(durationTimeFrame)
 

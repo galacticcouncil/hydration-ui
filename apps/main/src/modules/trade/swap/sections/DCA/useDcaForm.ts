@@ -40,6 +40,7 @@ export const getAbsoluteMaxDcaOrders = (duration: TimeFrame): number => {
 export enum DcaOrdersMode {
   Custom = "Custom",
   Auto = "Auto",
+  OpenBudget = "OpenBudget",
 }
 
 const ordersSchema = z.discriminatedUnion("type", [
@@ -52,7 +53,7 @@ const ordersSchema = z.discriminatedUnion("type", [
       .nullable(),
   }),
   z.object({
-    type: z.literal(DcaOrdersMode.Auto),
+    type: z.literal([DcaOrdersMode.Auto, DcaOrdersMode.OpenBudget]),
     value: z.never().optional(),
   }),
 ])
