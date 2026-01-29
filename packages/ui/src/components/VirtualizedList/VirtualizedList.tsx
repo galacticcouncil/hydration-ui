@@ -27,6 +27,7 @@ type VirtualizedListProps<T> = VirtualizerProps &
     renderItem: (item: T, virtualItem: VirtualItem) => React.ReactNode
     initialScrollIndex?: number
     maxVisibleItems?: ResponsiveStyleValue<number>
+    separated?: boolean
   }
 
 function VirtualizedList<T>({
@@ -37,6 +38,7 @@ function VirtualizedList<T>({
   maxVisibleItems,
   getItemKey,
   initialScrollIndex,
+  separated = false,
   ...props
 }: VirtualizedListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
@@ -89,6 +91,7 @@ function VirtualizedList<T>({
             data-virtual-index={virtualItem.index}
             size={virtualItem.size}
             start={virtualItem.start}
+            bordered={separated}
           >
             {renderItem(items[virtualItem.index], virtualItem)}
           </SListItem>
