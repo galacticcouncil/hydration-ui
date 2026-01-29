@@ -85,7 +85,7 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
             onClick={() => onSetActive(mode as AccountFilterOption)}
             sx={{ position: "relative", pl: "s", py: "s", gap: "s" }}
           >
-            <img sx={{ size: "m" }} src={icon} alt={name} />
+            <img sx={{ size: "l" }} src={icon} alt={name} />
             {name}
           </Button>
         ))}
