@@ -33,7 +33,7 @@ export const ReceiveAssets = ({
   return (
     <>
       <Text color={getToken("text.tint.secondary")} font="primary" fw={700}>
-        {t("minimumReceive")}
+        {t("minimumReceived")}
       </Text>
       <Flex
         direction="column"
