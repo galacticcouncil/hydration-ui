@@ -128,7 +128,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
       >
         <ModalHeader align="center" title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
-          <ModalContentDivider />
           <AddressBookFormField<TransferPositionFormValues>
             fieldName="address"
             onOpenMyContacts={() => setIsMyContactsOpen(true)}
@@ -154,7 +153,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
               />
             </Summary>
           )}
-          <ModalContentDivider />
         </ModalBody>
         <ModalFooter
           display="grid"

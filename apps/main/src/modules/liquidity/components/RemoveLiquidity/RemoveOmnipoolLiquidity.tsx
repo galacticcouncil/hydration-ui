@@ -13,6 +13,7 @@ import { useState } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { RemoveSelectableStablepoolPositions } from "@/modules/liquidity/components/RemoveLiquidity/RemoveStablepoolLiquidity"
 import {
   AccountOmnipoolPosition,
   useAccountOmnipoolPositionsData,
@@ -59,13 +60,24 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
   }
 
   if (confirmedSelection) {
-    return (
-      <RemoveMultipleOmnipoolLiquidity
-        {...props}
-        positions={selectedPositions}
-        onBack={() => setConfirmedSelection(false)}
-      />
-    )
+    if (props.stableswapId) {
+      return (
+        <RemoveSelectableStablepoolPositions
+          {...props}
+          stableswapId={props.stableswapId}
+          positions={selectedPositions}
+          onBack={() => setConfirmedSelection(false)}
+        />
+      )
+    } else {
+      return (
+        <RemoveMultipleOmnipoolLiquidity
+          {...props}
+          positions={selectedPositions}
+          onBack={() => setConfirmedSelection(false)}
+        />
+      )
+    }
   }
 
   return (

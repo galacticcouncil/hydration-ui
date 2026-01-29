@@ -24,6 +24,7 @@ import {
 export type FeeBreakdown = {
   symbol: string
   value: string
+  id: string
 }
 
 type ExpandableDynamicFeeProps = {

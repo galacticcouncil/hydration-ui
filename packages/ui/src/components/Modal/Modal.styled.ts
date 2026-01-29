@@ -88,10 +88,6 @@ export const SModalContent = styled(Content, {
     width: 100%;
     height: 100dvh;
 
-    & > div > :not([hidden]) ~ :not([hidden]) {
-      border-top: 1px solid ${theme.details.separators};
-    }
-
     &[data-state="open"] {
       animation: ${theme.animations.fadeInBottom};
       animation-timing-function: ${theme.easings.outExpo};
@@ -144,6 +140,8 @@ export const SModalHeader = styled(Flex)`
   padding: var(--modal-content-padding);
   --modal-header-button-size: 34px;
 
+  border-bottom: 1px solid ${({ theme }) => theme.details.separators};
+
   & > div:first-of-type {
     justify-content: space-between;
     align-items: center;
@@ -194,6 +192,8 @@ export const SModalFooter = styled(Flex)`
   gap: 10px;
 
   padding: 20px;
+
+  border-top: 1px solid ${({ theme }) => theme.details.separators};
 
   &:last-of-type {
     border-bottom-right-radius: ${({ theme }) => theme.radii.xl}px;
