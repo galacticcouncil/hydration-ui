@@ -55,7 +55,7 @@ export const PlaceOrderPriceButtons: FC<Props> = ({
   }
 
   return (
-    <Flex align="center" gap={4}>
+    <Flex align="center" gap="s">
       {optionsWithFlags.map(([option, { isDefault, isSelected }]) => {
         const isOmnipoolPrice = isDefault && !hasCustomOption
         const isCustom = isDefault && hasCustomOption
@@ -85,7 +85,7 @@ export const PlaceOrderPriceButtons: FC<Props> = ({
                 {t("common:percent", {
                   value: Big(shownOption).toFixed(1, Big.roundDown),
                 })}
-                {isCustom && <Icon size={12} component={X} />}
+                {isCustom && <Icon size="xs" component={X} />}
               </Flex>
             )}
           </MicroButton>

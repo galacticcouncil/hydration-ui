@@ -4,7 +4,7 @@ import {
   ArrowUpRight,
 } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -44,23 +44,23 @@ export const useWalletTransactionsColumns = () => {
         }
 
         return (
-          <Flex gap={6} align="center">
+          <Flex gap="s" align="center">
             <Icon
               component={ArrowUpFromDot}
-              size={18}
+              size="m"
               color={getToken("icons.onContainer")}
             />
             <Flex direction="column">
               <Text
                 fw={500}
-                fs={12}
-                lh={px(15)}
+                fs="p5"
+                lh="s"
                 color={getToken("text.high")}
                 transform="capitalize"
               >
                 {row.original.type}
               </Text>
-              <Text fs={11} lh={px(15)} color={getToken("text.medium")}>
+              <Text fs="p6" lh="s" color={getToken("text.medium")}>
                 {t("common:date.time", { value: row.original.timestamp })}
               </Text>
             </Flex>
@@ -114,7 +114,7 @@ export const useWalletTransactionsColumns = () => {
         return (
           <Icon
             component={ArrowRight}
-            size={18}
+            size="m"
             color={getToken("icons.onContainer")}
           />
         )
@@ -157,7 +157,7 @@ export const useWalletTransactionsColumns = () => {
         return (
           <Icon
             component={ArrowUpRight}
-            size={18}
+            size="m"
             color={getToken("icons.onContainer")}
             sx={{ ml: "auto" }}
           />

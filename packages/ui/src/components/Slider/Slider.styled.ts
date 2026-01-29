@@ -25,7 +25,7 @@ export const SRange = styled.div(
 
     background: ${theme.text.tint.secondary};
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
   `,
 )
 
@@ -37,7 +37,7 @@ export const STrack = styled(Track)(
     flex-grow: 1;
 
     background-color: ${theme.controls.dim.accent};
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
   `,
 )
 

@@ -34,7 +34,7 @@ const Step: React.FC<StepProps> = ({ label, state, number }) => (
   <SStepContainer>
     <SCircle state={state}>
       {state === StepState.Done ? (
-        <Icon component={CheckIcon} size={14} />
+        <Icon component={CheckIcon} size="s" />
       ) : (
         number
       )}
@@ -85,7 +85,7 @@ export const Stepper: React.FC<StepperProps> = ({
         <Text color={getToken("text.high")} fs="p5" fw={500} truncate>
           {currentLabel}
         </Text>
-        <Flex gap={4}>
+        <Flex gap="s">
           {steps.map((label, index) => (
             <Step
               key={index}

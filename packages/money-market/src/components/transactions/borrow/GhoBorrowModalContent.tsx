@@ -169,7 +169,7 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
               : formatPercent(ghoBorrowApyRange)
           }
         />
-        <Stack gap={14} py={14}>
+        <Stack gap="m" py="m">
           <ParameterChangeWarning />
           {borrowCap.determineWarningDisplay({ borrowCap })}
           {displayHealthFactorRiskCheckbox && (

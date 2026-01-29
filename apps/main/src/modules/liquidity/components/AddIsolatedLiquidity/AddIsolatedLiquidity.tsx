@@ -7,7 +7,6 @@ import {
 } from "@galacticcouncil/ui/components/Modal"
 import { ModalHeader } from "@galacticcouncil/ui/components/Modal"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
@@ -207,7 +206,7 @@ export const AddIsolatedLiquidityForm = ({
               <Alert
                 variant="error"
                 description={sharesError.message}
-                sx={{ mb: getTokenPx("containers.paddings.secondary") }}
+                sx={{ mb: "l" }}
               />
             )}
 
@@ -215,7 +214,7 @@ export const AddIsolatedLiquidityForm = ({
               <Alert
                 variant="warning"
                 description={joinFarmErrorMessage}
-                sx={{ my: getTokenPx("containers.paddings.primary") }}
+                sx={{ my: "xxl" }}
               />
             )}
 

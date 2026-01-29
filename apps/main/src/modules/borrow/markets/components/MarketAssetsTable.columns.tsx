@@ -125,7 +125,7 @@ export const useMarketAssetsTableColumns = () => {
             display="inline-flex"
             component={ChevronRight}
             color={getToken("icons.onContainer")}
-            size={16}
+            size="m"
           />
         ),
       }),

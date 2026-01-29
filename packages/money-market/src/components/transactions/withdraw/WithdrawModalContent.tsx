@@ -154,7 +154,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
 
         {displayHealthFactorRiskCheckbox && (
           <HealthFactorRiskWarning
-            py={14}
+            py="m"
             message="Withdrawing this amount will reduce your health factor and increase risk of liquidation."
             accepted={healthFactorRiskCheckboxAccepted}
             onAcceptedChange={setHealthFactorRiskCheckboxAccepted}

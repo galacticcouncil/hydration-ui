@@ -8,7 +8,7 @@ import {
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -63,11 +63,7 @@ export const PositionDetails = ({
       <ModalHeader title={t("liquidity.position.modal.title")} />
       <ModalBody>
         {isXyk ? null : (
-          <Flex
-            justify="space-between"
-            m={getTokenPx("containers.paddings.tertiary")}
-            mt={0}
-          >
+          <Flex justify="space-between" m="m" mt={0}>
             <Amount
               label={t("common:initialValue")}
               value={t("common:currency", {
@@ -88,10 +84,7 @@ export const PositionDetails = ({
           </Flex>
         )}
 
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.primary")}
-        >
+        <Flex direction="column" gap="xxl">
           {joinedFarms.map((joinedFarm) => (
             <FarmDetails
               key={joinedFarm.farm.globalFarmId}
@@ -102,12 +95,7 @@ export const PositionDetails = ({
         </Flex>
 
         {!!farmsToJoin.length && (
-          <Flex
-            align="center"
-            gap={getTokenPx("containers.paddings.quint")}
-            justify="space-between"
-            my={getTokenPx("containers.paddings.quart")}
-          >
+          <Flex align="center" gap="s" justify="space-between" my="base">
             <Text
               fs="p3"
               fw={500}
@@ -130,7 +118,7 @@ export const PositionDetails = ({
           color={getToken("text.tint.primary")}
           sx={{
             textAlign: "center",
-            py: getTokenPx("containers.paddings.secondary"),
+            py: "l",
           }}
         >
           {t("liquidity.availableFarms.modal.graph.description")}

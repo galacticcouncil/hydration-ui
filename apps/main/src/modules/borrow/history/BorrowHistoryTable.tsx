@@ -5,7 +5,6 @@ import {
   Separator,
   TableContainer,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
 import { OnChangeFn, PaginationState } from "@tanstack/react-table"
 import { FC, useMemo } from "react"
@@ -46,11 +45,7 @@ export const BorrowHistoryTable: FC<Props> = ({
 
   return (
     <TableContainer as={Paper}>
-      <Flex
-        p={getTokenPx("scales.paddings.m")}
-        justify="space-between"
-        align="center"
-      >
+      <Flex p="m" justify="space-between" align="center">
         <BorrowHistoryFilter
           onChange={() =>
             onPaginationChange((prev) => ({ ...prev, pageIndex: 0 }))

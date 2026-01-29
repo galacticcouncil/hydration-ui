@@ -4,7 +4,7 @@ import { styled } from "@galacticcouncil/ui/utils"
 
 export const SRate = styled(ButtonTransparent)(
   ({ theme }) => css`
-    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
 
     transition: ${theme.transitions.colors};
 
@@ -12,7 +12,7 @@ export const SRate = styled(ButtonTransparent)(
 
     height: 28px;
 
-    font-size: ${theme.paragraphSize.p6};
+    font-size: ${theme.fontSizes.p6};
     color: ${theme.text.high};
 
     background: ${theme.details.separators};

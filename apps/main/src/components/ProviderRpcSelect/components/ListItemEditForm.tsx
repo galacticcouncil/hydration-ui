@@ -74,7 +74,7 @@ export const ListItemEditForm: React.FC<ListItemEditFormProps> = ({
         <Flex
           align="center"
           justify="end"
-          gap={12}
+          gap="m"
           color={getToken("text.medium")}
         >
           <ButtonTransparent
@@ -82,7 +82,7 @@ export const ListItemEditForm: React.FC<ListItemEditFormProps> = ({
             sx={{ lineHeight: 1, color: getToken("text.tint.primary"), gap: 8 }}
           >
             {t("save")}
-            <Icon size={16} component={Save} />
+            <Icon size="m" component={Save} />
           </ButtonTransparent>
         </Flex>
       </Flex>

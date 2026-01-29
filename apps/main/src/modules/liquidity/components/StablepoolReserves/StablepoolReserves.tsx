@@ -31,7 +31,7 @@ export const StablepoolReserves = ({
   const { reserves, totalDisplayAmount } = data ?? {}
 
   return (
-    <Flex direction="column" gap={8}>
+    <Flex direction="column" gap="base">
       <CollapsibleRoot open={expanded}>
         <CollapsibleTrigger
           onClick={() => setExpanded((prev) => !prev)}
@@ -43,11 +43,11 @@ export const StablepoolReserves = ({
             px: "var(--modal-content-padding)",
           }}
         >
-          <Flex align="center" justify="space-between" my={8}>
+          <Flex align="center" justify="space-between" my="base">
             <Text fs="p5" color={getToken("text.medium")}>
               {t("liquidity.add.modal.reserves")}
             </Text>
-            <Flex gap={8} align="center">
+            <Flex gap="base" align="center">
               {isLoading ? (
                 <Skeleton width={50} height={12} />
               ) : (
@@ -58,7 +58,7 @@ export const StablepoolReserves = ({
 
               <Icon
                 component={ChevronDown}
-                size={18}
+                size="m"
                 color={getToken("text.low")}
                 sx={{
                   transition: getToken("transitions.transform"),
@@ -72,7 +72,7 @@ export const StablepoolReserves = ({
         {expanded && separator}
 
         <CollapsibleContent>
-          <Flex direction="column" gap={8} my={8}>
+          <Flex direction="column" gap="base" my="base">
             {totalDisplayAmount &&
               reserves?.map((reserve, index) => (
                 <CurrencyReservesRow

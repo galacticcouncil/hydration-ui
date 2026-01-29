@@ -7,17 +7,17 @@ export const SContainer = styled.div(
     position: relative;
 
     display: flex;
-    height: 89px;
+    height: 5.25rem;
 
     border: 1px solid ${theme.details.separators};
-    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
 
     &:before {
       content: "";
       position: absolute;
       inset: -1px;
       overflow: hidden;
-      border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+      border-radius: ${theme.containers.cornerRadius.containersPrimary};
 
       background: linear-gradient(
         90deg,
@@ -40,18 +40,18 @@ export const SContent = styled.div(
   ({ theme }) => css`
     position: relative;
     width: 100%;
-    height: 89px;
+    height: 5.25rem;
 
-    padding-block: 18px;
-    padding-left: 21px;
+    padding-block: ${theme.space.l};
+    padding-left: ${theme.space.xl};
 
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
 
     ${mq("md")} {
-      gap: 8px;
+      gap: ${theme.space.base};
     }
   `,
 )
@@ -60,8 +60,8 @@ export const SValuesContainer = styled.div(
   ({ theme }) => css`
     display: flex;
     align-items: center;
-    gap: ${theme.scales.paddings.xxl}px;
-    padding-right: 30px;
+    gap: ${theme.space.xxl};
+    padding-right: ${theme.space.xxl};
   `,
 )
 
@@ -69,10 +69,10 @@ export const SText = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
 
     ${mq("md")} {
-      gap: 6px;
+      gap: ${theme.space.base};
     }
   `,
 )

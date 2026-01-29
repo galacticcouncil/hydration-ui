@@ -1,5 +1,4 @@
 import { Flex, ModalHeader } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 
 import { AssetLabelFull } from "@/components/AssetLabelFull"
@@ -33,7 +32,7 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
         }
       />
       <SAssetDetailModalBody>
-        <Flex direction="column" gap={getTokenPx("scales.paddings.base")}>
+        <Flex direction="column" gap="base">
           <SAssetDetailMobileSeparator />
           <AssetDetailTotal assetId={asset.id} total={asset.total} />
         </Flex>

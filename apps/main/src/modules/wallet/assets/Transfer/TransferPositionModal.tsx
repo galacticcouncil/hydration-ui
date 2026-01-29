@@ -129,16 +129,16 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
         <ModalHeader align="center" title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
           <ModalContentDivider />
-          <AddressBookFormField<TransferPositionFormValues>
-            fieldName="address"
-            onOpenMyContacts={() => setIsMyContactsOpen(true)}
-          />
-          <ModalContentDivider />
           <AssetSelectFormField<TransferPositionFormValues>
             label={t("transfer.modal.asset.label")}
             assetFieldName="asset"
             amountFieldName="amount"
             assets={tradable}
+          />
+          <ModalContentDivider />
+          <AddressBookFormField<TransferPositionFormValues>
+            fieldName="address"
+            onOpenMyContacts={() => setIsMyContactsOpen(true)}
           />
 
           {healthFactor?.isSignificantChange && (
@@ -178,7 +178,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
               description={t("transfer.modal.warning.nonNative")}
               action={
                 shouldShowCexDisclaimer && (
-                  <Flex as="label" gap={10} align="center">
+                  <Flex as="label" gap="base" align="center">
                     <Toggle
                       size="large"
                       checked={cexDisclaimerAccepted}

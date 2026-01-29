@@ -1,27 +1,45 @@
-import fs from "node:fs/promises"
-import path from "node:path"
+import fs from 'node:fs/promises'
+import path from 'node:path'
 
-import { permutateThemes, register } from "@tokens-studio/sd-transforms"
-import { dirname } from "path"
-import StyleDictionary from "style-dictionary"
-import { fileURLToPath } from "url"
+import {
+  permutateThemes,
+  register,
+  getTransforms,
+} from '@tokens-studio/sd-transforms'
+import { dirname } from 'path'
+import StyleDictionary from 'style-dictionary'
+import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 register(StyleDictionary)
 
+const ROOT_FONT_SIZE = 16
+
+StyleDictionary.registerTransform({
+  name: 'custom/number/rem',
+  type: 'value',
+  transitive: false,
+  filter: (token) => token.type === 'number',
+  transform: (token) => {
+    const val = parseFloat(token.original.value)
+    if (isNaN(val) || val === 0 || val === Infinity) return token.value
+    return `${Number((val / ROOT_FONT_SIZE).toFixed(4))}rem`
+  },
+})
+
 const fetchTokens = async () => {
   const res = await fetch(
-    "https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json",
+    'https://raw.githubusercontent.com/galacticcouncil/hydration-styles/refs/heads/tertiary/tokens.json',
   )
   const tokens = await res.text()
 
-  return JSON.parse(tokens.replace(/lch/g, "srgb"))
+  return JSON.parse(tokens.replace(/lch/g, 'srgb'))
 }
 
 const saveFile = async (path, content) => {
-  const directory = path.substring(0, path.lastIndexOf("/"))
+  const directory = path.substring(0, path.lastIndexOf('/'))
   await fs.mkdir(directory, { recursive: true })
   await fs.writeFile(path, JSON.stringify(content, null, 2))
 }
@@ -36,27 +54,32 @@ async function run() {
   await Promise.all(tokenFiles)
 
   const $themes = JSON.parse(
-    await fs.readFile(path.resolve(__dirname, "tokens/$themes.json")),
+    await fs.readFile(path.resolve(__dirname, 'tokens/$themes.json')),
   )
 
   const themes = permutateThemes($themes)
 
-  delete themes["Core-Light-Mobile"]
-  delete themes["Core-Dark-Mobile"]
+  delete themes['Core-Light-Mobile']
+  delete themes['Core-Dark-Mobile']
 
   const configs = Object.entries(themes).map(([theme, sets]) => ({
     source: sets.map((tokenset) =>
       path.resolve(__dirname, `tokens/${tokenset}.json`),
     ),
-    preprocessors: ["tokens-studio"],
+    preprocessors: ['tokens-studio'],
     platforms: {
       js: {
-        transformGroup: "tokens-studio",
-        buildPath: "./src/",
+        transforms: [
+          ...getTransforms({ platform: 'js' }).filter(
+            (t) => t !== 'ts/size/px',
+          ),
+          'custom/number/rem',
+        ],
+        buildPath: './src/',
         files: [
           {
-            format: "json/nested",
-            destination: `theme/tokens/${theme.split("-")[1].toLowerCase()}.json`,
+            format: 'json/nested',
+            destination: `theme/tokens/${theme.split('-')[1].toLowerCase()}.json`,
           },
         ],
       },

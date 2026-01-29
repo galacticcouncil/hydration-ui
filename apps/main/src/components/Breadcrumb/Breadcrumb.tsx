@@ -11,7 +11,7 @@ type BreadcrumbProps = {
 
 export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
   return (
-    <Flex gap={8} align="center">
+    <Flex gap="base" align="center">
       {crumbs.map((crumb, index) => (
         <React.Fragment key={index}>
           {index === crumbs.length - 1 ? (
@@ -19,14 +19,14 @@ export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
               color={getToken("text.high")}
               transform="uppercase"
               fw={500}
-              fs={11}
+              fs="p6"
             >
               {crumb.label}
             </Text>
           ) : (
             <Text
               color={getToken("text.low")}
-              fs={11}
+              fs="p6"
               fw={500}
               transform="uppercase"
               decoration="none"
@@ -39,7 +39,7 @@ export const Breadcrumb = ({ crumbs }: BreadcrumbProps) => {
             </Text>
           )}
           {index < crumbs.length - 1 && (
-            <Text fs={11} color={getToken("icons.soft")} fw={500}>
+            <Text fs="p6" color={getToken("icons.soft")} fw={500}>
               /
             </Text>
           )}

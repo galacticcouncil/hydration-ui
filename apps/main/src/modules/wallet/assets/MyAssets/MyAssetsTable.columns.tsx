@@ -131,11 +131,11 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
 
         return (
-          <Flex gap={8} justify="flex-end">
+          <Flex gap="base" justify="flex-end">
             {row.original.id === NATIVE_ASSET_ID && (
               <DataTableExpandTrigger>
                 <TableRowAction variant="accent">
-                  <Icon component={LockOpen} size={12} />
+                  <Icon component={LockOpen} size="xs" />
                   {t("myAssets.locks")}
                 </TableRowAction>
               </DataTableExpandTrigger>
@@ -195,7 +195,7 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
           <TableRowDetailsExpand>
             {row.original.id === NATIVE_ASSET_ID && (
               <TableRowAction variant="accent" allowPropagation>
-                <Icon component={LockOpen} size={12} />
+                <Icon component={LockOpen} size="xs" />
                 {t("myAssets.locks")}
               </TableRowAction>
             )}

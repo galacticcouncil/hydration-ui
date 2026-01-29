@@ -5,9 +5,9 @@ import {
   ExternalLink,
   Flex,
   Icon,
+  Text,
 } from "@galacticcouncil/ui/components"
-import { Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -53,14 +53,9 @@ export const TransactionItemMobile: FC<Props> = ({
 
   return (
     <TransactionItemMobileContainer>
-      <Flex
-        justify="space-between"
-        flex={1}
-        p={getTokenPx("containers.paddings.secondary")}
-        className={className}
-      >
-        <Flex direction="column" gap={getTokenPx("containers.paddings.senary")}>
-          <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+      <Flex justify="space-between" flex={1} p="l" className={className}>
+        <Flex direction="column" gap="xs">
+          <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
             {sent ?? "⎯"}
           </Text>
           {timestamp && (
@@ -70,12 +65,8 @@ export const TransactionItemMobile: FC<Props> = ({
           )}
         </Flex>
 
-        <Flex
-          direction="column"
-          align="end"
-          gap={getTokenPx("containers.paddings.quint")}
-        >
-          <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+        <Flex direction="column" align="end" gap="s">
+          <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
             {received ?? "⎯"}
           </Text>
           <TransactionStatus variant={statusProps.status} />
@@ -93,7 +84,7 @@ export const TransactionItemMobile: FC<Props> = ({
         {link && (
           <ButtonIcon asChild>
             <ExternalLink href={link}>
-              <Icon size={14} component={SubScan} color="#FEFEFE" />
+              <Icon size="s" component={SubScan} color="#FEFEFE" />
             </ExternalLink>
           </ButtonIcon>
         )}
@@ -108,7 +99,7 @@ export const TransactionItemMobileContainer = ({
   readonly children: ReactNode
 }) => {
   return (
-    <Flex align="center" gap={getTokenPx("containers.paddings.primary")}>
+    <Flex align="center" gap="xxl">
       {children}
     </Flex>
   )

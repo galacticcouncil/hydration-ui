@@ -48,7 +48,7 @@ export const SupplyInfo = ({
       <Flex
         direction={["column", "row"]}
         gap={[20, 40]}
-        mb={10}
+        mb="base"
         align={["start", "center"]}
       >
         {showSupplyCapStatus && (
@@ -114,14 +114,14 @@ export const SupplyInfo = ({
         </Stack>
       </Flex>
 
-      <Stack gap={20}>
+      <Stack gap="xl">
         {(reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
           <SupplyApyChart assetId={assetId} />
         )}
         <Box>
           {reserve.isIsolated ? (
             <Box>
-              <Text fs={14} mb={10} fw={500} transform="uppercase">
+              <Text fs="p3" mb="base" fw={500} transform="uppercase">
                 {t("borrow:collateralUsage")}
               </Text>
               <Alert
@@ -132,24 +132,24 @@ export const SupplyInfo = ({
             </Box>
           ) : reserve.reserveLiquidationThreshold !== "0" ? (
             <Flex justify="space-between" align="center">
-              <Text fs={14} mb={10} fw={500} transform="uppercase">
+              <Text fs="p3" mb="base" fw={500} transform="uppercase">
                 {t("borrow:collateralUsage")}
               </Text>
               <Text
-                fs={14}
+                fs="p3"
                 fw={600}
                 color={getToken("accents.success.emphasis")}
                 asChild
               >
-                <Flex align="center" gap={4}>
-                  <Icon component={Check} size={16} />
+                <Flex align="center" gap="s">
+                  <Icon component={Check} size="m" />
                   <Text as="span">{t("borrow:canBeCollateral")}</Text>
                 </Flex>
               </Text>
             </Flex>
           ) : (
             <Box>
-              <Text fs={14} mb={10} fw={500} transform="uppercase">
+              <Text fs="p3" mb="base" fw={500} transform="uppercase">
                 {t("borrow:collateralUsage")}
               </Text>
               <Alert
@@ -162,7 +162,7 @@ export const SupplyInfo = ({
 
         {reserve.reserveLiquidationThreshold !== "0" && (
           <>
-            <Stack direction="row" gap={40}>
+            <Stack direction="row" gap="xxxl">
               <ValueStats
                 size="small"
                 font="secondary"
@@ -200,18 +200,18 @@ export const SupplyInfo = ({
               <Box>
                 <Flex justify="space-between" align="center">
                   <Flex align="center">
-                    <Text fs={13} color={getToken("text.medium")}>
+                    <Text fs="p4" color={getToken("text.medium")}>
                       Isolated Debt Ceiling
                     </Text>
                     <Tooltip text={t("borrow:tooltip.debtCeilingLimits")}>
                       <CircleInfo />
                     </Tooltip>
                   </Flex>
-                  <Text fs={14}>
+                  <Text fs="p3">
                     {t("currency", {
                       value: Number(reserve.isolationModeTotalDebtUSD),
                     })}
-                    <Text as="span" display="inline-block" mx={4}>
+                    <Text as="span" display="inline-block" mx="s">
                       of
                     </Text>
                     {t("currency", {

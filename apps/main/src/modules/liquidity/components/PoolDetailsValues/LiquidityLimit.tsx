@@ -4,7 +4,7 @@ import {
   Skeleton,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { useOmnipoolCapacity } from "@/modules/liquidity/Liquidity.utils"
@@ -18,10 +18,10 @@ export const LiquidityLimit = ({ poolId }: { poolId: string }) => {
       <Text
         font="primary"
         fw={500}
-        fs={14}
+        fs="p3"
         lh="130%"
         color={getToken("text.high")}
-        sx={{ pb: getTokenPx("containers.paddings.quint") }}
+        sx={{ pb: "s" }}
       >
         {t("liquidity:details.values.liquidityLimit")}
       </Text>

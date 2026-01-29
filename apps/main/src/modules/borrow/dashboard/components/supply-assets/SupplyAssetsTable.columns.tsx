@@ -144,14 +144,14 @@ export const useSupplyAssetsTableColumns = (
         const { isIsolated, usageAsCollateralEnabledOnUser } = row.original
         const { debtCeiling } = getAssetCapData(row.original.reserve)
         if (debtCeiling.isMaxed) return
-        if (!usageAsCollateralEnabledOnUser) return <NoData size={16} />
+        if (!usageAsCollateralEnabledOnUser) return <NoData size="m" />
         if (usageAsCollateralEnabledOnUser && !isIsolated) {
           return (
             <Icon
               display="inline-flex"
               color={getToken("accents.success.emphasis")}
               component={Check}
-              size={16}
+              size="m"
             />
           )
         }
@@ -170,7 +170,7 @@ export const useSupplyAssetsTableColumns = (
         const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
-          <Flex justify="flex-end" align="center" gap={4}>
+          <Flex justify="flex-end" align="center" gap="s">
             <Button
               disabled={isDisabled}
               variant="tertiary"
@@ -203,7 +203,7 @@ export const useSupplyAssetsTableColumns = (
               sx={{ flexShrink: 0, mr: -10 }}
               component={ChevronRight}
               color={getToken("icons.onContainer")}
-              size={16}
+              size="m"
             />
           </Flex>
         )

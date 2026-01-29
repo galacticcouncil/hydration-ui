@@ -20,9 +20,9 @@ export const RewardsInfoDesktop: FC<Props> = ({
 
   return (
     <Flex align="center" justify="space-between">
-      <Flex align="center" gap={8}>
-        <Icon component={HydrationLogo} size={18} />
-        <Text fs={16} fw={500} lh={1.2} color={getToken("text.high")}>
+      <Flex align="center" gap="base">
+        <Icon component={HydrationLogo} size="m" />
+        <Text fs="p2" fw={500} lh={1.2} color={getToken("text.high")}>
           {t("staking:dashboard.allocated.desktop")}
         </Text>
       </Flex>
@@ -32,7 +32,7 @@ export const RewardsInfoDesktop: FC<Props> = ({
         <Text
           font="primary"
           fw={700}
-          fs={20}
+          fs="h6"
           lh={1}
           color={getToken("text.high")}
         >

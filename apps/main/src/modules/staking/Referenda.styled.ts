@@ -5,7 +5,7 @@ export const SReferendaList = styled.div(
   ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.containers.paddings.primary}px;
+    gap: ${theme.containers.paddings.primary};
 
     ${mq("md")} {
       display: grid;
@@ -27,12 +27,12 @@ export const SReferenda = styled.div<SReferendaProps>(
   ({ theme, voted }) => css`
     display: flex;
     flex-direction: column;
-    gap: 11px;
+    gap: ${theme.space.base};
 
-    min-width: 350px;
-    padding-inline: 16px;
-    padding-block: 20px;
-    border-radius: 16px;
+    min-width: 22rem;
+    padding-inline: ${theme.space.l};
+    padding-block: ${theme.space.xl};
+    border-radius: ${theme.radii.xl};
     background: ${voted
       ? theme.surfaces.containers.high.primary
       : theme.surfaces.containers.low.primary};
@@ -48,8 +48,8 @@ export const SReferendaProgress = styled.div<{
   ({ theme, size }) => css`
     display: grid;
 
-    padding-inline: ${theme.scales.paddings.base}px;
-    padding-block: ${size === "small" ? 4 : 7}px;
+    padding-inline: ${theme.space.base};
+    padding-block: ${size === "small" ? theme.space.s : theme.space.base};
 
     background: #4d525f1a;
     border: solid 1px #7c7f8a33;

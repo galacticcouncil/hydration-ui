@@ -5,8 +5,8 @@ export const SAssetListItem = styled(Flex)<{ isSelected: boolean }>(
   ({ theme, isSelected }) => css`
     justify-content: space-between;
     align-items: center;
-    padding-inline: ${theme.scales.paddings.m}px;
-    gap: ${theme.scales.paddings.base}px;
+    padding-inline: ${theme.space.m};
+    gap: ${theme.space.base};
     width: 100%;
     height: 100%;
     border-bottom: 1px solid ${theme.details.separators};

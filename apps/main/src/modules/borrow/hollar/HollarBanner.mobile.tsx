@@ -2,7 +2,6 @@ import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ArrowRightLong } from "@galacticcouncil/ui/assets/icons"
 import HollarCans from "@galacticcouncil/ui/assets/images/HollarCans.webp"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { px } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -26,25 +25,23 @@ export const HollarBannerMobile: FC<Props> = ({ reserve }) => {
             disabled={!reserve}
             params={{ address: reserve?.underlyingAsset ?? "" }}
           >
-            <Flex gap={4}>
-              <Text fs={14} lh={px(15)} fw={700} color="#242C23" font="primary">
+            <Flex gap="s" align="center">
+              <Text fs="p3" lh={1} fw={700} color="#242C23" font="primary">
                 {t("hollar.banner.title.mobile")}
               </Text>
               {reserve && (
-                <Icon component={ArrowRightLong} size={18} color="#030816" />
+                <Icon component={ArrowRightLong} size="m" color="#030816" />
               )}
             </Flex>
           </Link>
-          <Text color="#1B1E1B" fs={12} lh={px(15)}>
+          <Text color="#1B1E1B" fs="p5" lh={1.1}>
             {t("hollar.banner.description")}
           </Text>
         </SText>
       </SContent>
       <img
-        sx={{ mr: 8, mt: -6, zIndex: 1 }}
+        sx={{ size: "3xl", mr: "base", mt: "-base", zIndex: 1 }}
         src={HollarCans}
-        width={92}
-        height={93}
       />
     </SContainer>
   )

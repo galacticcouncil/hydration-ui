@@ -19,19 +19,19 @@ const disabledStyles = css`
 
 const sizes = createVariants((theme) => ({
   small: css`
-    height: 30px;
-    padding: 0px ${theme.containers.paddings.tertiary}px;
-    font-size: ${theme.paragraphSize.p6};
+    height: 1.875rem;
+    padding: 0px ${theme.containers.paddings.tertiary};
+    font-size: ${theme.fontSizes.p6};
   `,
   medium: css`
-    height: 36px;
-    padding: 0px ${theme.containers.paddings.tertiary}px;
-    font-size: ${theme.paragraphSize.p5};
+    height: 2.5rem;
+    padding: 0px ${theme.containers.paddings.tertiary};
+    font-size: ${theme.fontSizes.p5};
   `,
   large: css`
-    height: 54px;
-    padding: 0px ${theme.containers.paddings.primary}px;
-    font-size: ${theme.paragraphSize.p5};
+    height: 3.125rem;
+    padding: 0px ${theme.containers.paddings.primary};
+    font-size: ${theme.fontSizes.p5};
   `,
 }))
 
@@ -48,7 +48,7 @@ const variants = createVariants((theme) => ({
   standalone: css`
     background-color: ${theme.buttons.outlineDark.rest};
     border: 1px solid ${theme.buttons.outlineDark.rest};
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
 
     :has(:focus),
     :has(:focus-visible) {
@@ -71,7 +71,7 @@ export const SInputContainer = styled.div<
   variants(variant),
   css`
     display: flex;
-    gap: 4px;
+    gap: ${theme.space.s};
     align-items: center;
 
     transition: ${theme.transitions.colors};

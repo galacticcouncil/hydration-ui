@@ -11,7 +11,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
@@ -35,11 +35,7 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
         align="center"
       />
       <ModalBody sx={{ overflowY: "hidden" }}>
-        <Flex
-          justify="space-between"
-          align="center"
-          pb={getTokenPx("containers.paddings.primary")}
-        >
+        <Flex justify="space-between" align="center" pb="xxl">
           <SwapAmount
             fromAmount={details.fromAmountBudget}
             from={details.from}
@@ -49,18 +45,12 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
           {details.status && <DcaOrderStatus status={details.status} />}
         </Flex>
         <ModalContentDivider />
-        <Flex
-          justify="space-between"
-          py={getTokenPx("containers.paddings.primary")}
-        >
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.quint")}
-          >
-            <Text fs={13} lh={1} color={getToken("text.low")}>
+        <Flex justify="space-between" py="xxl">
+          <Flex direction="column" gap="s">
+            <Text fs="p4" lh={1} color={getToken("text.low")}>
               {t("remaining")} / {t("budget")}
             </Text>
-            <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
               {t("number", {
                 value:
                   details.status === DcaScheduleStatus.Created
@@ -75,15 +65,11 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
             </Text>
           </Flex>
           <Separator orientation="vertical" />
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.quint")}
-            sx={{ justifySelf: "end" }}
-          >
-            <Text fs={13} lh={1} color={getToken("text.low")}>
+          <Flex direction="column" gap="s" sx={{ justifySelf: "end" }}>
+            <Text fs="p4" lh={1} color={getToken("text.low")}>
               {t("received")}
             </Text>
-            <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
               {t("currency", {
                 value: details.toAmountExecuted ?? "0",
                 symbol: details.to.symbol,
@@ -92,10 +78,7 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
           </Flex>
         </Flex>
         <ModalContentDivider />
-        <Flex
-          justify="space-between"
-          py={getTokenPx("containers.paddings.primary")}
-        >
+        <Flex justify="space-between" py="xxl">
           {details.blocksPeriod && (
             <>
               <Amount
@@ -118,13 +101,9 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
         </Flex>
         <ModalContentDivider />
         {details.status === DcaScheduleStatus.Created && (
-          <Flex
-            justify="flex-end"
-            pt={getTokenPx("containers.paddings.secondary")}
-            pb={getTokenPx("containers.paddings.primary")}
-          >
+          <Flex justify="flex-end" pt="l" pb="xxl">
             <Button variant="danger" outline onClick={onTerminate}>
-              <Icon component={Trash} size={14} />
+              <Icon component={Trash} size="s" />
               {t("trade:trade.cancelOrder.cta")}
             </Button>
           </Flex>

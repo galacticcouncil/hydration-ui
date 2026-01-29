@@ -300,7 +300,7 @@ const DataTable = <TData,>({
                         <TableCell sx={{ pl: "0 !important" }}>
                           <Flex justify="end" align="center">
                             <Icon
-                              size={18}
+                              size="m"
                               color={getToken("icons.onSurface")}
                               component={
                                 isRowExpanded ? ChevronUp : ChevronDown
@@ -375,9 +375,9 @@ export const DataTablePagination = <T,>({
         outline
         disabled={!table.getCanPreviousPage()}
         onClick={() => table.previousPage()}
-        sx={{ px: 10 }}
+        sx={{ px: "l" }}
       >
-        <Icon size={16} component={ChevronLeft} display={["block", "none"]} />
+        <Icon size="s" component={ChevronLeft} display={["block", "none"]} />
         <Text as="span" display={["none", "inline"]}>
           Prev
         </Text>
@@ -386,8 +386,8 @@ export const DataTablePagination = <T,>({
         typeof pageNumber === "string" ? (
           <Text
             key={`${index}-dots`}
-            width={32}
-            fs={16}
+            width="l"
+            fs="p2"
             color={getToken("text.low")}
             sx={{ textAlign: "center" }}
           >
@@ -400,7 +400,7 @@ export const DataTablePagination = <T,>({
             variant={pageNumber === currentPage ? "secondary" : "tertiary"}
             outline={pageNumber !== currentPage}
             onClick={() => onPageClickHandler(pageNumber)}
-            sx={{ px: 10, minWidth: 28 }}
+            sx={{ px: "base", minWidth: "1.5rem" }}
           >
             {pageNumber}
           </Button>
@@ -412,12 +412,12 @@ export const DataTablePagination = <T,>({
         outline
         disabled={!table.getCanNextPage()}
         onClick={() => table.nextPage()}
-        sx={{ px: 10 }}
+        sx={{ px: "l" }}
       >
         <Text as="span" display={["none", "inline"]}>
           Next
         </Text>
-        <Icon size={16} component={ChevronRight} display={["block", "none"]} />
+        <Icon size="s" component={ChevronRight} display={["block", "none"]} />
       </Button>
     </SPagination>
   )

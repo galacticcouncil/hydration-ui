@@ -112,7 +112,12 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
   ...props
 }) => {
   return (
-    <Flex gap={8} align="center" justify="flex-end" sx={{ overflow: "hidden" }}>
+    <Flex
+      gap="base"
+      align="center"
+      justify="flex-end"
+      sx={{ overflow: "hidden" }}
+    >
       {children}
       <ButtonTransparent
         sx={{ flexShrink: 0, size: 16, ...sx }}
@@ -123,7 +128,7 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
         }}
         {...props}
       >
-        <ChevronRight size={16} />
+        <ChevronRight size="m" />
       </ButtonTransparent>
     </Flex>
   )

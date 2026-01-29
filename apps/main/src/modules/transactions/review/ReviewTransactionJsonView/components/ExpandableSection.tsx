@@ -6,7 +6,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,19 +33,15 @@ export const ExpandableSection: React.FC<ExpandableSectionProps> = ({
   const shouldRenderExpandButton = isSectionExpanded && !isContentExpanded
 
   return (
-    <Box
-      position="relative"
-      px={getTokenPx("scales.paddings.l")}
-      py={getTokenPx("scales.paddings.m")}
-    >
+    <Box position="relative" px="l" py="m">
       <ButtonTransparent onClick={() => setIsSectionExpanded((prev) => !prev)}>
         <Text
           as="span"
           color={getToken("buttons.primary.medium.rest")}
           fs="p5"
           fw={500}
-          mb={4}
-          sx={{ display: "flex", alignItems: "center", gap: 4 }}
+          mb="s"
+          sx={{ display: "flex", alignItems: "center", gap: "s" }}
         >
           <Icon
             size={10}

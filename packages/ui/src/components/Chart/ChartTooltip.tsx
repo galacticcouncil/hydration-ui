@@ -44,11 +44,11 @@ const ChartTooltipLegendLabel = ({
   return (
     <Flex justify="space-between">
       {config.seriesLabel && (
-        <Text fs={14} fw={500}>
+        <Text fs="p3" fw={500}>
           {config.seriesLabel}
         </Text>
       )}
-      <Text fs={14} fw={500} align="left">
+      <Text fs="p3" fw={500} align="left">
         {formattedValue}
       </Text>
     </Flex>
@@ -74,7 +74,7 @@ export const ChartTooltipLegendType = ({
         payload={payload}
         labelFormatter={labelFormatter}
       />
-      <Grid gap={4}>
+      <Grid gap="s">
         {payload.map((item, index) => {
           const key = `${item.name || item.dataKey || "value"}`
           const itemConfig = config.series.find((s) => s.key === key)
@@ -88,7 +88,7 @@ export const ChartTooltipLegendType = ({
 
           return (
             <Flex
-              gap={8}
+              gap="base"
               align="center"
               key={
                 typeof item.dataKey === "function"
@@ -104,15 +104,15 @@ export const ChartTooltipLegendType = ({
                   borderRadius: 2,
                 }}
               />
-              <Flex justify="space-between" gap={20} sx={{ flex: 1 }}>
+              <Flex justify="space-between" gap="xl" sx={{ flex: 1 }}>
                 {itemConfig?.label && (
-                  <Text color={getToken("text.medium")} fs={14} fw={500} lh={1}>
+                  <Text color={getToken("text.medium")} fs="p3" fw={500} lh={1}>
                     {itemConfig.label}
                   </Text>
                 )}
                 <Text
                   color={getToken("text.high")}
-                  fs={14}
+                  fs="p3"
                   fw={500}
                   lh={1}
                   align="end"

@@ -122,7 +122,7 @@ export const AddressBookModal: FC<Props> = ({
   return (
     <>
       {header}
-      <ModalBody sx={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <ModalBody sx={{ display: "flex", flexDirection: "column", gap: "xl" }}>
         <AddressBookSearch
           canAdd={canAdd}
           searchPhrase={searchPhrase}
@@ -140,7 +140,7 @@ export const AddressBookModal: FC<Props> = ({
         {searchedAddresses.length === 0 ? (
           <AddressBookEmptyState canAdd={canAdd} />
         ) : (
-          <Flex direction="column" gap={10}>
+          <Flex direction="column" gap="base">
             {searchedAddresses.map((address) => (
               <Web3ConnectAccount
                 key={address.publicKey}

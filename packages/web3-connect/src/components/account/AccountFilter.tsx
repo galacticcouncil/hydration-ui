@@ -56,12 +56,12 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
     : defaultBlacklist
 
   return (
-    <Flex gap={10}>
+    <Flex gap="base">
       <Button
         variant={active === WalletMode.Default ? "secondary" : "muted"}
         outline={active !== WalletMode.Default}
         onClick={() => onSetActive(WalletMode.Default)}
-        sx={{ py: 6 }}
+        sx={{ py: "s" }}
       >
         All
       </Button>
@@ -83,9 +83,9 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
             size="small"
             key={mode}
             onClick={() => onSetActive(mode as AccountFilterOption)}
-            sx={{ position: "relative", pl: 6, py: 6 }}
+            sx={{ position: "relative", pl: "s", py: "s", gap: "s" }}
           >
-            <img sx={{ size: 20 }} src={icon} alt={name} />
+            <img sx={{ size: "m" }} src={icon} alt={name} />
             {name}
           </Button>
         ))}

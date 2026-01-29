@@ -17,14 +17,14 @@ const WalletAssetsSkeleton = () => {
   const { isMobile } = useBreakpoints()
 
   return (
-    <Grid rowTemplate="3fr 5fr 3fr" gap={20} height="70vh">
-      <Grid columnTemplate="5fr 2fr" gap={20}>
-        <Grid columnTemplate="3fr 1fr" gap={20} as={Paper} p={20}>
-          <Grid rowTemplate="1fr 5fr" gap={20}>
+    <Grid rowTemplate="3fr 5fr 3fr" gap="xl" height="70vh" pt={["xl", "xxl"]}>
+      <Grid columnTemplate="5fr 2fr" gap="xl">
+        <Grid columnTemplate="3fr 1fr" gap="xl" as={Paper} p="xl">
+          <Grid rowTemplate="1fr 5fr" gap="xl">
             <Skeleton sx={{ height: "100%" }} />
             <Skeleton sx={{ height: "100%" }} />
           </Grid>
-          <Grid rowTemplate="1fr 1fr 1fr 1fr" gap={15}>
+          <Grid rowTemplate="1fr 1fr 1fr 1fr" gap="m">
             <Skeleton sx={{ height: "100%" }} />
             <Skeleton sx={{ height: "100%" }} />
             <Skeleton sx={{ height: "100%" }} />
@@ -33,8 +33,8 @@ const WalletAssetsSkeleton = () => {
         </Grid>
         <Grid
           rowTemplate="1fr 1fr 1fr"
-          gap={15}
-          p={20}
+          gap="m"
+          p="xl"
           sx={{
             borderWidth: 1,
             borderColor: getToken("details.separators"),
@@ -47,12 +47,12 @@ const WalletAssetsSkeleton = () => {
           <Skeleton sx={{ height: "100%" }} />
         </Grid>
       </Grid>
-      <Flex p={20} direction="column" gap={20} as={Paper}>
+      <Flex p="xl" direction="column" gap="xl" as={Paper}>
         {Array.from(new Array(4).keys()).map((_, index) => (
           <Grid
             key={index}
             columnTemplate={`repeat(${isMobile ? 2 : 6}, 1fr)`}
-            gap={10}
+            gap="base"
           >
             {Array.from(new Array(isMobile ? 2 : 6).keys()).map((_, index) => (
               <Skeleton key={index} sx={{ height: 25 }} />
@@ -60,12 +60,12 @@ const WalletAssetsSkeleton = () => {
           </Grid>
         ))}
       </Flex>
-      <Flex p={20} direction="column" gap={20} as={Paper}>
+      <Flex p="xl" direction="column" gap="xl" as={Paper}>
         {Array.from(new Array(2).keys()).map((_, index) => (
           <Grid
             key={index}
             columnTemplate={`repeat(${isMobile ? 3 : 5}, 1fr)`}
-            gap={10}
+            gap="base"
           >
             {Array.from(new Array(isMobile ? 3 : 5).keys()).map((_, index) => (
               <Skeleton key={index} sx={{ height: 25 }} />

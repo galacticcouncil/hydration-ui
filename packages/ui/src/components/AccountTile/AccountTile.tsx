@@ -5,7 +5,7 @@ import { AccountAvatar } from "@/components/AccountAvatar"
 import { Flex, FlexProps } from "@/components/Flex"
 import { Logo } from "@/components/Logo"
 import { Text } from "@/components/Text"
-import { getToken, getTokenPx, px } from "@/utils"
+import { getToken } from "@/utils"
 
 import { SAccountTileContainer } from "./AccountTile.styled"
 
@@ -34,7 +34,7 @@ export const AccountTile: FC<Props> = ({
   return (
     <Flex
       direction="column"
-      gap={getTokenPx("containers.paddings.quint")}
+      gap="s"
       onClick={onClick}
       as={onClick ? "button" : "div"}
       {...props}
@@ -50,8 +50,8 @@ export const AccountTile: FC<Props> = ({
         isInteractive={!!onClick}
       >
         <AccountAvatar address={address} />
-        <Flex direction="column" gap={4}>
-          <Flex gap={4} align="center">
+        <Flex direction="column" gap="s">
+          <Flex gap="s" align="center">
             {walletLogoSrc && <Logo size="extra-small" src={walletLogoSrc} />}
             <Text
               fw={500}
@@ -63,8 +63,8 @@ export const AccountTile: FC<Props> = ({
               {name}
             </Text>
           </Flex>
-          <Flex gap={2}>
-            <Text fs="p5" lh={px(15)} color={getToken("text.medium")}>
+          <Flex gap="xs">
+            <Text fs="p5" color={getToken("text.medium")}>
               {shortenAccountAddress(address)}
             </Text>
           </Flex>

@@ -21,7 +21,7 @@ export const RewardsAPR = ({ farms, fee }: { farms: Farm[]; fee?: string }) => {
     )
 
   return Object.entries(groupedFarms).map(([rewardCurrency, farms]) => (
-    <Flex key={rewardCurrency} align="center" gap={4}>
+    <Flex key={rewardCurrency} align="center" gap="s">
       <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
         {t("liquidity.availableFarms.apr.short", {
           value: farms

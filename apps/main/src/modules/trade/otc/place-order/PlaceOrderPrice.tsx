@@ -6,7 +6,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { getReversePrice } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useController, useFormContext } from "react-hook-form"
@@ -59,9 +59,9 @@ export const PlaceOrderPrice: FC<Props> = ({
   }
 
   return (
-    <Flex py={8} direction="column" gap={4}>
+    <Flex py="base" direction="column" gap="s">
       <Flex justify="space-between" height={18} align="center">
-        <Text fw={500} fs="p5" lh={px(14.4)} color={getToken("text.medium")}>
+        <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
           {t("otc.placeOrder.priceFor1", {
             symbol: isOfferView ? offerAsset.symbol : buyAsset.symbol,
           })}
@@ -77,7 +77,7 @@ export const PlaceOrderPrice: FC<Props> = ({
         )}
       </Flex>
       <Flex justify="space-between" align="center">
-        <Flex py={4} pl={4} gap={4} align="center">
+        <Flex py="s" pl="s" gap="s" align="center">
           <ButtonIcon
             onClick={() =>
               viewField.onChange(
@@ -89,7 +89,7 @@ export const PlaceOrderPrice: FC<Props> = ({
           >
             <AssetIcon />
           </ButtonIcon>
-          <Text fw={600} fs="p3" lh={px(14)} color={getToken("text.high")}>
+          <Text fw={600} fs="p3" lh="s" color={getToken("text.high")}>
             {isOfferView ? buyAsset.symbol : offerAsset.symbol}
           </Text>
         </Flex>

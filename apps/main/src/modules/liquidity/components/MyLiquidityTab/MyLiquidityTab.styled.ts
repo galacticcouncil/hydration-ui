@@ -4,7 +4,7 @@ export const SBadge = styled.p(
   ({ theme }) => css`
     background: ${theme.text.tint.primary};
 
-    border-radius: ${theme.containers.cornerRadius.buttonsPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
 
     padding: 1px 5px;
 

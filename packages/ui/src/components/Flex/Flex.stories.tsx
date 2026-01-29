@@ -10,7 +10,7 @@ export default {
 const Template = (args: Story["args"]) => {
   const hasAlign = !!args?.align
   return (
-    <Flex gap={20} {...args}>
+    <Flex gap="xl" {...args}>
       {Array.from({ length: 5 }).map((_, i) => (
         <Flex
           key={i}
@@ -19,7 +19,7 @@ const Template = (args: Story["args"]) => {
           justify="center"
           bg="skyBlue.600"
           color="white"
-          borderRadius="lg"
+          borderRadius="m"
         >
           {i + 1}
         </Flex>

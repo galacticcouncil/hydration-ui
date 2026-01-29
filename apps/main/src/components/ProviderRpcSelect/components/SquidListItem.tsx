@@ -110,13 +110,13 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
       </Box>
       <Flex
         color={getToken("text.medium")}
-        gap={4}
+        gap="s"
         justify="center"
         align="center"
         display={["none", "flex"]}
       >
         {isLoading ? (
-          <Spinner size={14} />
+          <Spinner size="xs" />
         ) : (
           <Text fs="p5" fw={600} color={getToken("text.high")} align="right">
             {t("number", {
@@ -127,41 +127,41 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
       </Flex>
       <Flex
         color={getToken("text.medium")}
-        gap={4}
+        gap="s"
         justify="end"
         align="center"
       >
-        <Text fs={12} align="right" color={getToken(status.color)}>
+        <Text fs="p5" align="right" color={getToken(status.color)}>
           {status.text}
         </Text>
         {isCustom && !!onRemove && (
           <>
             <Tooltip text={t("remove")} asChild side="top">
               <TextButton
-                sx={{ p: 4 }}
+                sx={{ p: "xs" }}
                 onClick={(e) => {
                   e.stopPropagation()
                   onRemove(url)
                 }}
               >
-                <Icon size={16} component={Trash} />
+                <Icon size="s" component={Trash} />
               </TextButton>
             </Tooltip>
             <Tooltip text={t("edit")} asChild side="top">
               <TextButton
-                sx={{ p: 4 }}
+                sx={{ p: "xs" }}
                 onClick={(e) => {
                   e.stopPropagation()
                   setIsEdit(true)
                 }}
               >
-                <Icon size={16} component={Edit} />
+                <Icon size="s" component={Edit} />
               </TextButton>
             </Tooltip>
           </>
         )}
         {!!onClick && (
-          <Box sx={{ ml: 8 }}>
+          <Box sx={{ ml: "base" }}>
             <SRpcRadio>{isActive && <SRpcRadioThumb />}</SRpcRadio>
           </Box>
         )}

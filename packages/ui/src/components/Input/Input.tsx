@@ -1,7 +1,7 @@
 import React, { FC, ReactNode, Ref, useId } from "react"
 
 import { Label } from "@/components/Label"
-import { getToken, px } from "@/utils"
+import { getToken } from "@/utils"
 
 import { CustomInputProps, SInput, SInputContainer } from "./Input.styled"
 
@@ -72,8 +72,8 @@ export const Input: FC<InputProps> = ({
           sx={{ cursor: "text" }}
           htmlFor={usedInputId}
           fw={500}
-          fs={11}
-          lh={px(15)}
+          fs="p6"
+          lh="s"
           color={getToken("buttons.secondary.low.onRest")}
         >
           {unit}

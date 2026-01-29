@@ -23,9 +23,9 @@ const Template = (args: React.ComponentPropsWithoutRef<typeof Stepper>) => {
   const totalSteps = args.steps.length + 1
 
   return (
-    <Flex direction="column" gap={20}>
+    <Flex direction="column" gap="xl">
       <Stepper {...args} activeStepIndex={activeStepIndex} />
-      <Flex gap={10} justify="space-between" mt={20}>
+      <Flex gap="base" justify="space-between" mt="xl">
         <Button
           size="small"
           variant="secondary"

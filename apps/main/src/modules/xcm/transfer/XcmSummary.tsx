@@ -7,7 +7,6 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { getMinusTokenPx } from "@galacticcouncil/ui/utils"
 import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -103,9 +102,7 @@ export const XcmSummary = () => {
         )}
         {isTransferValid && (
           <Summary
-            separator={
-              <Separator mx={getMinusTokenPx("containers.paddings.primary")} />
-            }
+            separator={<Separator mx="-xl" />}
             px="xl"
             withLeadingSeparator
           >

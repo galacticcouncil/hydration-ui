@@ -1,5 +1,4 @@
 import { Alert, Checkbox, Flex, Label } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useController, useFormContext } from "react-hook-form"
@@ -39,14 +38,7 @@ export const PriceGainWarning: FC<Props> = ({
   const isOfferView = view === "offerPrice"
 
   return (
-    <Flex
-      pt={getTokenPx("scales.paddings.m")}
-      pb={getTokenPx("scales.paddings.l")}
-      px={getTokenPx("containers.paddings.primary")}
-      direction="column"
-      align="center"
-      gap={getTokenPx("scales.paddings.l")}
-    >
+    <Flex pt="m" pb="l" px="xxl" direction="column" align="center" gap="l">
       <Alert
         variant="error"
         description={t(
@@ -62,7 +54,7 @@ export const PriceGainWarning: FC<Props> = ({
           cursor: "pointer",
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: "base",
         }}
       >
         <Checkbox

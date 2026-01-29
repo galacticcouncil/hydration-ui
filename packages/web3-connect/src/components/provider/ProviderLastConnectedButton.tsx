@@ -33,9 +33,9 @@ export const ProviderLastConnectedButton: React.FC<
       <Text fs={[12, 14]} sx={{ mt: 8 }} align="center">
         Last connected
       </Text>
-      <Flex color={getToken("text.tint.primary")} gap={4} align="center">
+      <Flex color={getToken("text.tint.primary")} gap="s" align="center">
         <Text fs={[12, 13]}>Continue</Text>
-        <Icon size={14} component={ChevronRight} />
+        <Icon size="s" component={ChevronRight} />
       </Flex>
     </SProviderButton>
   )

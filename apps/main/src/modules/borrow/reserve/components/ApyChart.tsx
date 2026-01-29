@@ -37,14 +37,14 @@ export const ApyChart: FC<Props> = ({
   const average = data.reduce((acc, item) => acc + item.rate, 0) / data.length
 
   return (
-    <Flex direction="column" gap={20}>
+    <Flex direction="column" gap="xl">
       <Flex justify="space-between" align="center">
-        <Flex align="center" gap={6}>
+        <Flex align="center" gap="s">
           <span
             css={{ borderRadius: "100%" }}
             sx={{ display: "block", width: 6, height: 6, bg: color }}
           />
-          <Text fs={14} fw={500} sx={{ color: getToken("text.medium") }}>
+          <Text fs="p3" fw={500} sx={{ color: getToken("text.medium") }}>
             {header}
           </Text>
         </Flex>
@@ -134,11 +134,11 @@ const ReferenceLineLabel = (props: {
       <Box
         bg={getToken("details.tooltips")}
         color={getToken("text.high")}
-        p={4}
-        borderRadius="md"
+        p="s"
+        borderRadius="base"
         width="min-content"
       >
-        <Text fs={12} fw={500} lh={1} whiteSpace="nowrap" align="center">
+        <Text fs="p5" fw={500} lh={1} whiteSpace="nowrap" align="center">
           {props.title} {t("percent", { value: props.value })}
         </Text>
       </Box>

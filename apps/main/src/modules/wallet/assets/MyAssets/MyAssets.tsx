@@ -1,8 +1,4 @@
-import {
-  Box,
-  DataTableRef,
-  SectionHeader,
-} from "@galacticcouncil/ui/components"
+import { DataTableRef, SectionHeader } from "@galacticcouncil/ui/components"
 import { FC, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -23,7 +19,7 @@ export const MyAssets: FC<Props> = ({ searchPhrase }) => {
   const { data, isLoading } = useMyAssetsTableData(showAllAssets)
 
   return (
-    <Box>
+    <>
       <SectionHeader
         title={t("myAssets.header.title")}
         actions={
@@ -42,6 +38,6 @@ export const MyAssets: FC<Props> = ({ searchPhrase }) => {
         isLoading={isLoading}
         searchPhrase={searchPhrase}
       />
-    </Box>
+    </>
   )
 }

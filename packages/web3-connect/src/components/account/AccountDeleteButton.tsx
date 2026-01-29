@@ -22,7 +22,7 @@ export const AccountDeleteButton: FC<
       }}
       {...props}
     >
-      <Icon size={14} component={Trash2} />
+      <Icon size="s" component={Trash2} />
     </button>
   )
 }

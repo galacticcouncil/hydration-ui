@@ -1,7 +1,6 @@
 import { SummaryRow, SummaryRowProps } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 
 export const SwapSummaryRow: FC<SummaryRowProps> = (props) => {
-  return <SummaryRow sx={{ my: getTokenPx("scales.paddings.s") }} {...props} />
+  return <SummaryRow sx={{ my: "s" }} {...props} />
 }

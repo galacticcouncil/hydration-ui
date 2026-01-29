@@ -73,13 +73,13 @@ export const Notification = ({
 }: CustomToastProps) => {
   return (
     <SNotification className={className}>
-      <Flex gap={8}>
+      <Flex gap="base">
         <SIconVariant
           component={notificationIcons[variant]}
           variant={variant}
-          size={16}
+          size="s"
         />
-        <Stack gap={2}>
+        <Stack gap="xs">
           <Text fw={500} fs="p5">
             {content}
           </Text>
@@ -93,14 +93,14 @@ export const Notification = ({
           {hint && (
             <Tooltip text={hint} asChild>
               <ButtonIcon>
-                <Icon component={QuestionCircleRegular} size={18} />
+                <Icon component={QuestionCircleRegular} size="s" />
               </ButtonIcon>
             </Tooltip>
           )}
           {link && (
             <ButtonIcon asChild>
               <ExternalLink href={link}>
-                <Icon component={MoveUpRight} size={18} />
+                <Icon component={MoveUpRight} size="s" />
               </ExternalLink>
             </ButtonIcon>
           )}
@@ -122,7 +122,7 @@ export const Notification = ({
           role="button"
           aria-label="Close Notification"
         >
-          <SCloseIcon component={CircleClose} size={18} />
+          <SCloseIcon component={CircleClose} size="s" />
         </ButtonTransparent>
       )}
     </SNotification>
