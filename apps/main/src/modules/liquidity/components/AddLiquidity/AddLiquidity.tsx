@@ -200,7 +200,7 @@ export const AddLiquiditySummary = ({
             })
           ),
         },
-        ...(healthFactor?.isSignificantChange
+        ...(healthFactor
           ? [
               {
                 label: t("common:healthFactor"),

@@ -35,7 +35,7 @@ export const AddStablepoolLiquiditySkeleton = (
   return (
     <>
       <ModalHeader
-        title={t("addLiquidity")}
+        title={props.title ?? t("addLiquidity")}
         closable={props.closable}
         onBack={props.onBack}
         customHeader={

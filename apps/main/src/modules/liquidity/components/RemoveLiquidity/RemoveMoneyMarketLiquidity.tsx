@@ -121,7 +121,7 @@ export const RemoveMoneyMarketLiquidityForm = (
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
-              label={t("common:withdraw")}
+              label={t("common:amount")}
               maxBalance={balance}
               assets={[]}
               sx={{ py: 0 }}
@@ -176,7 +176,7 @@ export const RemoveMoneyMarketLiquidityForm = (
               <div>
                 <TradeLimitRow type={TradeLimitType.Liquidity} />
 
-                {healthFactor?.isSignificantChange ? (
+                {healthFactor ? (
                   <>
                     <ModalContentDivider />
                     <SummaryRow
@@ -203,7 +203,7 @@ export const RemoveMoneyMarketLiquidityForm = (
             <ModalContentDivider />
 
             <Button type="submit" size="large" width="100%" disabled={!isValid}>
-              {t("removeLiquidity")}
+              {title ?? t("removeLiquidity")}
             </Button>
           </form>
         </Flex>
@@ -238,7 +238,7 @@ const TradeSummary = ({
         separator={<ModalContentDivider />}
         rows={[
           {
-            label: t("minimumReceive"),
+            label: t("minimumReceived"),
             content: t("currency", {
               value: minReceive,
               symbol: receiveAsset.symbol,
@@ -252,7 +252,7 @@ const TradeSummary = ({
               `${t("currency", { value: 1, symbol: receiveAsset.symbol })}≈${t("currency", { value: spotPriceData?.spotPrice, symbol: erc20.symbol })}`
             ),
           },
-          ...(healthFactor?.isSignificantChange
+          ...(healthFactor
             ? [
                 {
                   label: t("healthFactor"),

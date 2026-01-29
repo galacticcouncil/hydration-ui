@@ -143,7 +143,7 @@ const RemoveStablepoolLiquidityJSX = ({
               <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
                 assetFieldName="asset"
                 amountFieldName="amount"
-                label={t("common:withdraw")}
+                label={t("common:amount")}
                 maxBalance={balance}
                 assets={[]}
                 sx={{ py: 0 }}
@@ -174,7 +174,7 @@ const RemoveStablepoolLiquidityJSX = ({
 
             {!split ? (
               <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-                label={t("common:minimumReceive")}
+                label={t("common:minimumReceived")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
                 maxBalance={balance}

@@ -122,7 +122,7 @@ export const AccountSelectContent = () => {
           )
         }
       />
-      <ModalBody>
+      <ModalBody maxHeight="50vh">
         <Grid gap={10}>
           {isProvidersConnecting ? (
             <ProviderLoader providers={providers.map(prop("type"))} />
