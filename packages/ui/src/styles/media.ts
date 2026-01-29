@@ -23,11 +23,16 @@ const breakpointsEntries = Object.entries(breakpointsMap)
 type ExtendedBreakpoint = `${ScreenBreakpoint}` | `max-${ScreenBreakpoint}`
 
 export const mediaQueries = breakpointsEntries.reduce(
-  (acc, [bp, width]) => ({
-    ...acc,
-    [bp]: `@media (width >= ${width})`,
-    [`max-${bp}`]: `@media (width < ${width})`,
-  }),
+  (acc, [bp, width], index) => {
+    const next = breakpointsEntries[index + 1]?.[1]
+    return {
+      ...acc,
+      [bp]: `@media (width >= ${width})`,
+      [`max-${bp}`]: next
+        ? `@media (width < ${next})`
+        : `@media (width < 9999px)`,
+    }
+  },
   {} as { [key in ExtendedBreakpoint]: string },
 )
 

@@ -79,7 +79,7 @@ export const SModalContent = styled(Content, {
   ({ theme, hasTopContent }) => css`
     --modal-content-padding: ${theme.space.xl};
     --modal-content-inset: calc(var(--modal-content-padding) * -1);
-    --modal-top-content-height: ${hasTopContent ? theme.sizes["2xl"] : 0};
+    --modal-top-content-height: ${hasTopContent ? theme.sizes["2xl"] : "0px"};
 
     position: fixed;
     inset: 0;
@@ -230,4 +230,10 @@ export const SModalTopContent = styled(Box)`
 
   padding-inline: var(--modal-content-padding);
   height: var(--modal-top-content-height);
+
+  ${mq("max-xs")} {
+    border-bottom: 1px solid ${({ theme }) => theme.details.separators};
+    background-color: ${({ theme }) =>
+      theme.surfaces.themeBasePalette.surfaceHigh};
+  }
 `
