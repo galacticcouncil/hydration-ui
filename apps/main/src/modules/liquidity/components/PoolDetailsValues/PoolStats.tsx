@@ -34,12 +34,12 @@ export const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
   {
     id: "chart",
     label: i18n.t("chart"),
-    icon: <Icon size={14} component={ChartLine} />,
+    leadingElement: <Icon size={14} component={ChartLine} />,
   },
   {
     id: "stats",
     label: i18n.t("stats"),
-    icon: <Icon size={14} component={ChartPie} />,
+    leadingElement: <Icon size={14} component={ChartPie} />,
   },
 ]
 

@@ -3,8 +3,6 @@ import {
   Flex,
   Grid,
   NumberInput,
-  Text,
-  TextProps,
   Toggle,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
@@ -14,6 +12,8 @@ import { Controller, useController, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { TimeFrameFormField } from "@/form/TimeFrameFormField"
+import { DcaFieldError } from "@/modules/trade/swap/sections/DCA/DcaFieldError"
+import { DcaFieldLabel } from "@/modules/trade/swap/sections/DCA/DcaFieldLabel"
 import {
   DcaFormValues,
   DcaOrders,
@@ -21,7 +21,7 @@ import {
   dcaTimeFrameTypes,
 } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 
-export const DcaDurationField: FC = () => {
+export const DcaLimitedBudgetFields: FC = () => {
   const { t } = useTranslation(["common", "trade"])
   const { control, formState, trigger } = useFormContext<DcaFormValues>()
 
@@ -44,19 +44,19 @@ export const DcaDurationField: FC = () => {
       rowGap={8}
       columnGap={getTokenPx("containers.paddings.primary")}
     >
-      <Label>{t("trade:dca.duration.label")}</Label>
+      <DcaFieldLabel>{t("trade:dca.duration.label")}</DcaFieldLabel>
       <Flex
         sx={{ justifySelf: "end" }}
         gap={getTokenPx("scales.paddings.s")}
         align="center"
       >
-        <ToggleRoot>
-          <Label>
+        <ToggleRoot sx={{ maxHeight: getToken("paragraphSize.p5") }}>
+          <DcaFieldLabel>
             {t("trade:dca.orders.label")}:{" "}
             <Box as="span" color={getToken("text.tint.secondary")}>
               {isAuto ? t("auto") : t("custom")}
             </Box>
-          </Label>
+          </DcaFieldLabel>
           <Toggle
             checked={isAuto}
             onCheckedChange={(auto) =>
@@ -99,24 +99,8 @@ export const DcaDurationField: FC = () => {
         />
       )}
       {ordersError && (
-        <Text
-          sx={{ gridColumn: "1/-1" }}
-          font="secondary"
-          fw={400}
-          fs={12}
-          lh={1}
-          color={getToken("accents.danger.secondary")}
-          ml="auto"
-        >
-          {ordersError}
-        </Text>
+        <DcaFieldError sx={{ gridColumn: "1/-1" }}>{ordersError}</DcaFieldError>
       )}
     </Grid>
-  )
-}
-
-const Label: FC<TextProps> = (props) => {
-  return (
-    <Text fw={500} fs="p5" lh={1.2} color={getToken("text.low")} {...props} />
   )
 }
