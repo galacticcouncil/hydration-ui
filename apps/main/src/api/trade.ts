@@ -3,6 +3,11 @@ import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
+import {
+  DcaFormValues,
+  DcaOrdersMode,
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
@@ -227,11 +232,7 @@ export const bestBuyTwapQuery = (
   })
 
 type DcaTradeOrderArgs = {
-  readonly assetIn: string
-  readonly assetOut: string
-  readonly amountIn: string
-  readonly duration: number
-  readonly orders: number | null
+  readonly form: DcaFormValues
   readonly slippage: number
   readonly maxRetries: number
   readonly address: string
@@ -239,37 +240,47 @@ type DcaTradeOrderArgs = {
 
 export const dcaTradeOrderQuery = (
   { sdk, isLoaded }: TProviderContext,
-  {
-    assetIn,
-    assetOut,
-    amountIn,
-    duration,
-    orders,
-    slippage,
-    maxRetries,
-    address,
-  }: DcaTradeOrderArgs,
-) =>
-  queryOptions({
+  { form, slippage, maxRetries, address }: DcaTradeOrderArgs,
+) => {
+  const duration = getTimeFrameMillis(form.duration)
+
+  const orders =
+    form.orders.type === DcaOrdersMode.Custom
+      ? (form.orders.value ?? undefined)
+      : undefined
+
+  return queryOptions({
     queryKey: [
       QUERY_KEY_BLOCK_PREFIX,
       "trade",
       "dcaTradeOrder",
-      assetIn,
-      assetOut,
-      amountIn,
-      duration,
-      orders,
+      form.sellAsset?.id,
+      form.buyAsset?.id,
+      form.sellAmount,
+      form.duration,
+      form.orders,
       address,
     ],
     queryFn: async () => {
-      const order = await sdk.api.scheduler.getDcaOrder(
-        Number(assetIn),
-        Number(assetOut),
-        amountIn,
-        duration,
-        orders ?? undefined,
-      )
+      if (!form.sellAsset || !form.buyAsset) {
+        return { order: null, orderTx: null }
+      }
+
+      const order =
+        form.orders.type === DcaOrdersMode.OpenBudget
+          ? await sdk.api.scheduler.getOpenBudgetDcaOrder(
+              Number(form.sellAsset.id),
+              Number(form.buyAsset.id),
+              form.sellAmount,
+              duration,
+            )
+          : await sdk.api.scheduler.getDcaOrder(
+              Number(form.sellAsset.id),
+              Number(form.buyAsset.id),
+              form.sellAmount,
+              duration,
+              orders,
+            )
 
       const orderTx = address
         ? await sdk.tx
@@ -285,12 +296,13 @@ export const dcaTradeOrderQuery = (
     },
     enabled:
       isLoaded &&
-      !!assetIn &&
-      !!assetOut &&
-      Big(amountIn || "0").gt(0) &&
+      !!form.sellAsset &&
+      !!form.buyAsset &&
+      Big(form.sellAmount || "0").gt(0) &&
       duration > 0 &&
-      (orders === null || orders > 0),
+      (orders === undefined || orders > 0),
   })
+}
 
 export const minimumOrderBudgetQuery = (
   { isLoaded, sdk }: TProviderContext,

@@ -12,7 +12,7 @@ import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
   readonly isFormValid: boolean
-  readonly order: TradeDcaOrder | undefined
+  readonly order: TradeDcaOrder | undefined | null
   readonly warnings: ReadonlyArray<DcaValidationWarning>
   readonly priceImpactLossAccepted: boolean
   readonly healthFactor: HealthFactorResult | undefined
