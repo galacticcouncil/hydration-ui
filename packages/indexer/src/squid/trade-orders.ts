@@ -83,8 +83,9 @@ export const userOrdersQuery = (
   address: string,
   status: Array<DcaScheduleStatus>,
   assetIds: Array<string>,
-  pageIndex: number,
-  pageSize: number,
+  pageIndex: number | undefined,
+  pageSize: number | undefined,
+  enabled = true,
 ) =>
   queryOptions({
     queryKey: [
@@ -106,10 +107,11 @@ export const userOrdersQuery = (
           assetOutId: { in: assetIds },
         }),
         status,
-        offset: pageIndex * pageSize,
+        ...(pageIndex !== undefined &&
+          pageSize !== undefined && { offset: pageIndex * pageSize }),
         pageSize,
       }),
-    enabled: !!address,
+    enabled: enabled && !!address,
   })
 
 export const userOpenOrdersCountQuery = (

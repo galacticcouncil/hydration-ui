@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next"
 
 type Props = {
   readonly address: string | null
-  readonly date: Date
+  readonly date: Date | null
   readonly align: FlexProps["align"]
 }
 
