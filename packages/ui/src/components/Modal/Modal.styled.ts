@@ -79,7 +79,7 @@ export const SModalContent = styled(Content, {
   ({ theme, hasTopContent }) => css`
     --modal-content-padding: ${theme.space.xl};
     --modal-content-inset: calc(var(--modal-content-padding) * -1);
-    --modal-top-content-height: ${hasTopContent ? theme.sizes.xl : 0};
+    --modal-top-content-height: ${hasTopContent ? theme.sizes["2xl"] : 0};
 
     position: fixed;
     inset: 0;
