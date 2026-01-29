@@ -1,3 +1,7 @@
+import {
+  DcaScheduleStatus,
+  userOrdersQuery,
+} from "@galacticcouncil/indexer/squid"
 import { ArrowRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Alert,
@@ -7,8 +11,15 @@ import {
   Stack,
   SummaryRow,
   Text,
+  Toggle,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import {
+  getAssetIdFromAddress,
+  safeConvertSS58toPublicKey,
+} from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useState } from "react"
 
@@ -22,6 +33,7 @@ import { IsolationModeWarning } from "@/components/warnings/IsolationModeWarning
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
+import { useSharedDependencies } from "@/ui-config/SharedDependenciesProvider"
 import {
   calculateHFAfterSupply,
   calculateHFAfterWithdraw,
@@ -48,17 +60,42 @@ export const CollateralChangeModalContent: React.FC<
   const { user } = useAppDataContext()
   const { debtCeiling } = useAssetCaps()
   const { formatCurrency } = useAppFormatters()
+  const { squidClient } = useSharedDependencies()
 
-  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
-    useState(false)
+  const { account } = useAccount()
+  const address = safeConvertSS58toPublicKey(account?.address ?? "")
 
   // Health factor calculations
   const isCollateralEnabled = userReserve.usageAsCollateralEnabledOnUser
   const usageAsCollateralModeAfterSwitch = !isCollateralEnabled
 
+  const { data: openOrders } = useQuery(
+    userOrdersQuery(
+      squidClient,
+      address,
+      [DcaScheduleStatus.Created],
+      [],
+      undefined,
+      undefined,
+      usageAsCollateralModeAfterSwitch,
+    ),
+  )
+
+  const assetId = getAssetIdFromAddress(poolReserve.underlyingAsset)
+
+  const hasOpenBudgetDca = openOrders?.dcaSchedules?.nodes
+    .filter((node) => node?.budgetAmountIn === "0")
+    .some((node) => node?.assetIn?.underlyingAssetId === assetId)
+
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+  const [dcaRiskAccepted, setDcaRiskAccepted] = useState(false)
+
   // Messages
-  const showEnableIsolationModeMsg =
+  const showEnableIsolationModeInfo =
     !poolReserve.isIsolated && usageAsCollateralModeAfterSwitch
+  const showEnableIsolationModeWarning =
+    hasOpenBudgetDca && usageAsCollateralModeAfterSwitch
   const showEnterIsolationModeMsg =
     poolReserve.isIsolated && usageAsCollateralModeAfterSwitch
   const showExitIsolationModeMsg =
@@ -130,6 +167,9 @@ export const CollateralChangeModalContent: React.FC<
     ? healthFactorRiskAccepted
     : true
 
+  const isOpenBudgetDcaCheckSatisfies =
+    !isCollateralEnabled && hasOpenBudgetDca ? dcaRiskAccepted : true
+
   return (
     <>
       <Stack
@@ -188,11 +228,32 @@ export const CollateralChangeModalContent: React.FC<
             />
           )}
 
-          {showEnableIsolationModeMsg && (
+          {showEnableIsolationModeInfo && (
             <Alert
-              variant="warning"
+              variant="info"
               description="Enabling this asset as collateral increases your borrowing power and Health Factor. However, it can get liquidated if your health factor drops below 1."
             />
+          )}
+
+          {showEnableIsolationModeWarning && (
+            <Flex direction="column" gap="base">
+              <Alert
+                variant="warning"
+                description="Please be aware that you have running open budget DCA for this asset. The DCA will not be terminated automatically above a liquidation threshold. If you don't cancel it manually on time your positions might get liquidated."
+                action={
+                  <Flex align="center" as="label" gap="base">
+                    <Toggle
+                      size="large"
+                      checked={dcaRiskAccepted}
+                      onCheckedChange={setDcaRiskAccepted}
+                    />
+                    <Text fs="p4" lh={1.3} fw={600}>
+                      Understood & proceed
+                    </Text>
+                  </Flex>
+                }
+              />
+            </Flex>
           )}
 
           {showEnterIsolationModeMsg && (
@@ -221,7 +282,11 @@ export const CollateralChangeModalContent: React.FC<
         symbol={symbol}
         poolReserve={poolReserve}
         usageAsCollateral={usageAsCollateralModeAfterSwitch}
-        blocked={blockingError !== undefined || !isHealthFactorCheckSatisfied}
+        blocked={
+          blockingError !== undefined ||
+          !isHealthFactorCheckSatisfied ||
+          !isOpenBudgetDcaCheckSatisfies
+        }
       />
     </>
   )
