@@ -20,7 +20,7 @@ import {
 import { useTheme } from "@/theme"
 import { getToken } from "@/utils"
 
-type RechartsTooltipProps = React.ComponentProps<typeof Tooltip> &
+export type RechartsTooltipProps = React.ComponentProps<typeof Tooltip> &
   Omit<DefaultTooltipContentProps<ValueType, NameType>, "accessibilityLayer">
 
 type CoordinateProps = Pick<

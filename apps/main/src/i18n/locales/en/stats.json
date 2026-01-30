@@ -1,0 +1,15 @@
+{
+    "overview.header.totalValueLocked": "Total Value Locked",
+    "overview.header.volume": "24h Volume",
+    "overview.header.fees.apy": "Fee APY (7D)",
+    "overview.header.transactions": "Transactions (24h)",
+    "overview.header.protocolRevenue": "Protocol Revenue (24h)",
+    "fees.title": "Fees & Revenue",
+    "fees.config.asset": "Asset Fee",
+    "fees.config.protocol": "Protocol Fee",
+    "fees.config.liquidationPenalty": "Liquidation Penalty",
+    "fees.config.peplLiquidationProfit": "Pepl Liquidation Profit",
+    "fees.config.assetReserve": "Asset Reserve",
+    "fees.config.borrowApr": "Borrow APR",
+    "fees.config.hsmRevenue": "HSM Revenue"
+}
