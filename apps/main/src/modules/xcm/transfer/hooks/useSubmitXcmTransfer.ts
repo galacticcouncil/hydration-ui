@@ -91,6 +91,8 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
 
       const isApprove = isEvmApproveCall(call)
 
+      console.log({ isApprove, call })
+
       if (isApprove) {
         return createTransaction(
           {
