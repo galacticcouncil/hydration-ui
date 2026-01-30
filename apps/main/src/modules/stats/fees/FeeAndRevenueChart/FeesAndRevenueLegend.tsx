@@ -1,5 +1,6 @@
-import { Box, Button, Flex, Text } from "@galacticcouncil/ui/components"
+import { Box, Button, Flex, Select, Text } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -16,18 +17,19 @@ export const FeeAndRevenueLegend = ({
 }) => {
   const { t } = useTranslation("common")
   const { getToken } = useTheme()
+  const { isMobile } = useBreakpoints()
 
   const legendItems = useMemo(() => {
     const dataFields = Array.from(fields.entries()).map(([key, value]) => {
       const fieldConfig = feesAndRevenueConfig[key]
-      const name = fieldConfig?.label ?? "N/A"
+      const label = fieldConfig?.label ?? "N/A"
       const color = fieldConfig
         ? getToken(fieldConfig.color)
         : getToken("accents.info.accent")
 
       return {
         key,
-        name,
+        label,
         color,
         value,
       }
@@ -36,7 +38,7 @@ export const FeeAndRevenueLegend = ({
     return [
       {
         key: "all",
-        name: t("all"),
+        label: t("all"),
         color: undefined,
         value: undefined,
       },
@@ -44,9 +46,19 @@ export const FeeAndRevenueLegend = ({
     ]
   }, [fields, getToken, t])
 
+  if (isMobile) {
+    return (
+      <Select
+        value={activeFilter}
+        items={legendItems}
+        onValueChange={(val: string) => setActiveFilter(val)}
+      />
+    )
+  }
+
   return (
     <Flex gap="base" wrap>
-      {legendItems.map(({ key, name, color, value }) => {
+      {legendItems.map(({ key, label, color, value }) => {
         const isActive = activeFilter === key
 
         return (
@@ -59,7 +71,7 @@ export const FeeAndRevenueLegend = ({
           >
             {color && <Box width={8} height={8} borderRadius="m" bg={color} />}
             <Text fs={11} fw={500} color="text.high">
-              {name}
+              {label}
             </Text>
             {value !== undefined ? (
               <Text fs={11} fw={500} color="text.medium">

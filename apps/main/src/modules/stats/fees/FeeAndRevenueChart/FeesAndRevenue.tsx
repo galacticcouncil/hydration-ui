@@ -3,12 +3,13 @@ import {
   ChartTimeRange,
   Flex,
   Paper,
+  Select,
   Text,
   ToggleGroup,
   ToggleGroupItem,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { useTheme } from "@galacticcouncil/ui/theme"
+import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
 import Big from "big.js"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -81,6 +82,7 @@ const AnimatedValue = ({ value }: { value: number }) => {
 
 export const FeesAndRevenue = () => {
   const { t } = useTranslation(["common", "stats"])
+  const { gte } = useBreakpoints()
   const { themeProps: theme, getToken } = useTheme()
   const [timeRange, setTimeRange] = useState<TimeRange>("1M")
   const [viewMode, setViewMode] = useState<ViewMode>("protocol")
@@ -137,6 +139,8 @@ export const FeesAndRevenue = () => {
     [fields],
   )
 
+  const isBiggerScreen = gte("md")
+
   return (
     <Flex as={Paper} direction="column" gap="xl" height={600} p="xl">
       <Flex justify="space-between" align="center">
@@ -148,18 +152,21 @@ export const FeesAndRevenue = () => {
           }
           bottomLabel={getTotalValueLabel(timeRange)}
         />
+
         <Flex gap={16}>
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={setViewMode}
-          >
-            {VIEW_MODES.map((mode) => (
-              <ToggleGroupItem key={mode} value={mode}>
-                {t(`stats:fees.chart.mode.${mode}`)}
-              </ToggleGroupItem>
-            ))}
-          </ToggleGroup>
+          {isBiggerScreen && (
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={setViewMode}
+            >
+              {VIEW_MODES.map((mode) => (
+                <ToggleGroupItem key={mode} value={mode}>
+                  {t(`stats:fees.chart.mode.${mode}`)}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          )}
           <ChartTimeRange
             value={timeRange}
             items={TIME_RANGES}
@@ -167,6 +174,7 @@ export const FeesAndRevenue = () => {
           />
         </Flex>
       </Flex>
+
       <Box position="relative" flex={1}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
@@ -220,11 +228,29 @@ export const FeesAndRevenue = () => {
         </ResponsiveContainer>
       </Box>
 
-      <FeeAndRevenueLegend
-        fields={fields}
-        activeFilter={activeFilter}
-        setActiveFilter={setActiveFilter}
-      />
+      {isBiggerScreen ? (
+        <FeeAndRevenueLegend
+          fields={fields}
+          activeFilter={activeFilter}
+          setActiveFilter={setActiveFilter}
+        />
+      ) : (
+        <Flex gap="base" justify="space-between">
+          <Select
+            value={viewMode}
+            items={VIEW_MODES.map((mode) => ({
+              key: mode,
+              label: t(`stats:fees.chart.mode.${mode}`),
+            }))}
+            onValueChange={setViewMode}
+          />
+          <FeeAndRevenueLegend
+            fields={fields}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+          />
+        </Flex>
+      )}
     </Flex>
   )
 }
