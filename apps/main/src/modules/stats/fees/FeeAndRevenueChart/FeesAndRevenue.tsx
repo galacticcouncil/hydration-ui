@@ -29,13 +29,13 @@ import {
   VIEW_MODES,
   ViewMode,
 } from "@/api/stats"
-import { CustomTooltipContent } from "@/modules/stats/fees/components/CustomTooltipContent"
+import { CustomTooltipContent } from "@/modules/stats/fees/FeeAndRevenueChart/CustomTooltipContent"
 import {
   feesAndRevenueConfig,
   formatXAxisTick,
   getTotalValueLabel,
-} from "@/modules/stats/fees/components/FeeAndRevenue.utils"
-import { FeeAndRevenueLegend } from "@/modules/stats/fees/components/FeesAndRevenueLegend"
+} from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
+import { FeeAndRevenueLegend } from "@/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenueLegend"
 
 const AnimatedValue = ({ value }: { value: number }) => {
   const { t } = useTranslation("common")

@@ -3,7 +3,7 @@ import { useTheme } from "@galacticcouncil/ui/theme"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { feesAndRevenueConfig } from "@/modules/stats/fees/components/FeeAndRevenue.utils"
+import { feesAndRevenueConfig } from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
 
 export const FeeAndRevenueLegend = ({
   fields,

@@ -6,8 +6,8 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
-import { feesAndRevenueConfig } from "@/modules/stats/fees/components/FeeAndRevenue.utils"
-import { SChartTooltipContainer } from "@/modules/stats/fees/components/FeesAndRevenue.styled"
+import { feesAndRevenueConfig } from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
+import { SChartTooltipContainer } from "@/modules/stats/fees/FeeAndRevenueChart/FeesAndRevenue.styled"
 
 export const CustomTooltipContent = ({
   active,

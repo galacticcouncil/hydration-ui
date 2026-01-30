@@ -17,7 +17,7 @@ export const getTotalValueLabel = (timeRange: TimeRange) => {
   }
 }
 
-const feesAndRevenueColorConfig = {
+export const feesAndRevenueColorConfig = {
   networkFees: "colors.basePalette.lavender",
   tradingFees: "secondaryColors.blues.vibrantBlue",
   liquidityFees: "accents.success.primary",

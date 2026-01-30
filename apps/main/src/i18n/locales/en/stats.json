@@ -17,5 +17,19 @@
     "fees.chart.timeRange.description.1W": "Last 7 days",
     "fees.chart.timeRange.description.1M": "Last 30 days",
     "fees.chart.timeRange.description.1Y": "Last year",
-    "fees.chart.timeRange.description.ALL": "All time"
+    "fees.chart.timeRange.description.ALL": "All time",
+    "fees.sankey.tooltip.value": "{{ value, percent }} of fee",
+    "fees.sankey.title": "Fee Flow",
+    "fees.sankey.description": "Where fees go",
+    "fees.sankey.nodes.networkFees": "Network Fees",
+    "fees.sankey.nodes.omnipoolAssetFee": "Omnipool Asset Fee",
+    "fees.sankey.nodes.omnipoolProtocolFee": "Omnipool Protocol Fee",
+    "fees.sankey.nodes.withdrawalFee": "Withdrawal Fee",
+    "fees.sankey.nodes.xykTradeFee": "XYK Trade Fee",
+    "fees.sankey.nodes.hsmRevenue": "HSM Revenue",
+    "fees.sankey.nodes.treasury": "Treasury",
+    "fees.sankey.nodes.lps": "LPs",
+    "fees.sankey.nodes.referrersAndStakers": "Referrers & Stakers",
+    "fees.sankey.nodes.burned": "Burned",
+    "fees.sankey.nodes.protocol": "Protocol"
 }
