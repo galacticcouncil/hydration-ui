@@ -159,7 +159,7 @@ export const XcmForm = () => {
           <Separator />
           <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
-              <Flex gap="base" direction="column" flex={1} maxWidth="50%">
+              <Flex gap="base" direction="column" flex={1} maxWidth="40%">
                 <Flex gap="s" align="center">
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("from")}
@@ -201,7 +201,7 @@ export const XcmForm = () => {
                 disabled={!srcAsset || !hasValidAccounts || isLoading}
                 isLoading={isLoading}
                 assetPrice={price}
-                maxWidth="50%"
+                maxWidth="60%"
               />
             </Flex>
           </Stack>
@@ -212,7 +212,7 @@ export const XcmForm = () => {
         <Paper>
           <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
-              <Flex gap="base" direction="column" flex={1} maxWidth="50%">
+              <Flex gap="base" direction="column" flex={1} maxWidth="40%">
                 <Flex gap="s" align="center">
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("to")}
@@ -246,7 +246,7 @@ export const XcmForm = () => {
                 disabled
                 isLoading={isLoading}
                 assetPrice={price}
-                maxWidth="50%"
+                maxWidth="60%"
               />
             </Flex>
           </Stack>

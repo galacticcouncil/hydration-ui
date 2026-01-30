@@ -79,8 +79,7 @@ export const XcmSummary = () => {
     })
   })()
 
-  const isTransferValid =
-    !!transfer && call && formState.isValid && !alerts.length
+  const isTransferValid = !!transfer && formState.isValid && !alerts.length
   const isSummaryOpen = isTransferValid || alerts.length > 0
 
   return (
@@ -106,7 +105,7 @@ export const XcmSummary = () => {
             px="xl"
             withLeadingSeparator
           >
-            {isEvmSourceChain && isEvmApproveCall(call) && (
+            {call && isEvmSourceChain && isEvmApproveCall(call) && (
               <SummaryRow
                 label={t("xcm:summary.approvalFee")}
                 loading={isLoading || isLoadingApprovalFee}

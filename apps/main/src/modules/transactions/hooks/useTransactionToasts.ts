@@ -96,7 +96,10 @@ function getTransactionLink(
     return wormholescan.tx(txHash)
   }
 
-  if (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm) {
+  if (
+    meta.type === TransactionType.EvmApprove ||
+    (meta.type === TransactionType.Xcm && ecosystem === CallType.Evm)
+  ) {
     return etherscan.tx(meta.srcChainKey, txHash)
   }
 

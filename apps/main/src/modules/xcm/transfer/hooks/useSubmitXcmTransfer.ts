@@ -53,6 +53,7 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
       const { origin } = build(destAsset)
 
       const call = await transfer.buildCall(srcAmount)
+      const isApprove = isEvmApproveCall(call)
 
       const buildTransferTransaction = async () => {
         const call = await transfer.buildCall(srcAmount)
@@ -88,8 +89,6 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
           },
         }
       }
-
-      const isApprove = isEvmApproveCall(call)
 
       if (isApprove) {
         return createTransaction(
