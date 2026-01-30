@@ -1,9 +1,12 @@
+import { createRequire } from "node:module";
 import { join, dirname } from "path"
 import type { StorybookConfig } from "@storybook/react-vite"
 import react from "@vitejs/plugin-react"
 import tsconfigPaths from "vite-tsconfig-paths"
 import svgr from "vite-plugin-svgr"
 import wasm from "vite-plugin-wasm"
+
+const require = createRequire(import.meta.url);
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -19,10 +22,9 @@ const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
   addons: [
     getAbsolutePath("@storybook/addon-links"),
-    getAbsolutePath("@storybook/addon-essentials"),
     getAbsolutePath("@chromatic-com/storybook"),
-    getAbsolutePath("@storybook/addon-interactions"),
     getAbsolutePath("@storybook/addon-themes"),
+    getAbsolutePath("@storybook/addon-docs")
   ],
   framework: {
     name: getAbsolutePath("@storybook/react-vite"),

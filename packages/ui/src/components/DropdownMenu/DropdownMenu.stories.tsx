@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react"
+import { Meta, StoryFn } from "@storybook/react-vite"
 import { SettingsIcon } from "lucide-react"
 
 import { IconPlaceholder } from "@/assets/icons"
