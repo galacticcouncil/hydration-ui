@@ -17,7 +17,7 @@ export const FeeAndRevenueLegend = ({
 }) => {
   const { t } = useTranslation("common")
   const { getToken } = useTheme()
-  const { isMobile } = useBreakpoints()
+  const { gte } = useBreakpoints()
 
   const legendItems = useMemo(() => {
     const dataFields = Array.from(fields.entries()).map(([key, value]) => {
@@ -46,7 +46,7 @@ export const FeeAndRevenueLegend = ({
     ]
   }, [fields, getToken, t])
 
-  if (isMobile) {
+  if (!gte("md")) {
     return (
       <Select
         value={activeFilter}
