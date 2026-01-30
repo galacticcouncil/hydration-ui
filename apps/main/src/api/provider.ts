@@ -1,4 +1,5 @@
 import { log } from "@galacticcouncil/common"
+import { hydration } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import {
   getSnowbridgeSdk,
@@ -7,7 +8,6 @@ import {
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory, hasOwn } from "@galacticcouncil/utils"
-import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"

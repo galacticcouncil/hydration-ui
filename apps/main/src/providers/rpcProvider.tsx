@@ -1,5 +1,5 @@
+import { hydration } from "@galacticcouncil/descriptors"
 import { AssetMetadataFactory } from "@galacticcouncil/utils"
-import { hydration } from "@polkadot-api/descriptors"
 import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
 import {

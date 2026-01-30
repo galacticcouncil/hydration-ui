@@ -1,9 +1,9 @@
+import { HydrationQueries } from "@galacticcouncil/descriptors"
 import {
   isEthereumSigner,
   useAccount,
   useWallet,
 } from "@galacticcouncil/web3-connect"
-import { HydrationQueries } from "@polkadot-api/descriptors"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { ObservedValueOf } from "rxjs"
