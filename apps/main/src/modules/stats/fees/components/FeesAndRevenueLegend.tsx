@@ -61,11 +61,11 @@ export const FeeAndRevenueLegend = ({
             <Text fs={11} fw={500} color="text.high">
               {name}
             </Text>
-            {value && (
+            {value !== undefined ? (
               <Text fs={11} fw={500} color="text.medium">
-                {t("currency", { value: value })}
+                {t("currency", { value })}
               </Text>
-            )}
+            ) : null}
           </Button>
         )
       })}

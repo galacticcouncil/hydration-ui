@@ -17,37 +17,76 @@ export const getTotalValueLabel = (timeRange: TimeRange) => {
   }
 }
 
+const feesAndRevenueColorConfig = {
+  networkFees: "colors.basePalette.lavender",
+  tradingFees: "secondaryColors.blues.vibrantBlue",
+  liquidityFees: "accents.success.primary",
+  supplyBorrowFees: "accents.alertAlt.primary",
+  hollarFees: "secondaryColors.blues.blueViolet",
+
+  // Trading breakdown
+  omnipoolAssetFee: "secondaryColors.blues.vibrantBlue",
+  omnipoolProtocolFee: "text.tint.secondary",
+  stablepools: "accents.alertAlt.primary",
+  xykTradeFee: "accents.success.primary",
+
+  // Liquidity breakdown
+  omnipoolWithdrawFee: "secondaryColors.blues.lightBlue",
+  isolatedPoolTradeFee: "secondaryColors.blues.blueViolet",
+
+  // Supply & Borrow breakdown
+  liquidationPenalty: "accents.danger.emphasis",
+  pepl: "accents.alertAlt.primary",
+  assetReserve: "accents.success.primary",
+
+  // Stacked summary
+  swap: "secondaryColors.blues.vibrantBlue",
+  liquidations: "accents.danger.emphasis",
+  tips: "accents.alertAlt.primary",
+  txFees: "secondaryColors.blues.blueViolet",
+  hollar: "secondaryColors.greens.hollarGreen",
+
+  // Destinations
+  treasury: "secondaryColors.pink.coralPink",
+  lps: "secondaryColors.greens.brightGreen",
+  burned: "accents.danger.emphasis",
+  stakers: "secondaryColors.blues.blueViolet",
+  users: "text.tint.secondary",
+  protocol: "secondaryColors.blues.deepBlue",
+  referrersAndStakers: "accents.alertAlt.primary",
+} as const
+
 export const feesAndRevenueConfig: Record<
   string,
   { label: string; color: ThemeToken }
 > = {
   asset: {
     label: t("stats:fees.config.asset"),
-    color: "accents.alertAlt.primary",
+    color: feesAndRevenueColorConfig.omnipoolAssetFee,
   },
   protocol: {
     label: t("stats:fees.config.protocol"),
-    color: "accents.success.primary",
+    color: feesAndRevenueColorConfig.omnipoolProtocolFee,
   },
   liquidationPenalty: {
     label: t("stats:fees.config.liquidationPenalty"),
-    color: "text.tint.secondary",
+    color: feesAndRevenueColorConfig.liquidationPenalty,
   },
   peplLiquidationProfit: {
     label: t("stats:fees.config.peplLiquidationProfit"),
-    color: "secondaryColors.greens.hollarGreen",
+    color: feesAndRevenueColorConfig.pepl,
   },
   assetReserve: {
     label: t("stats:fees.config.assetReserve"),
-    color: "accents.info.primary",
+    color: feesAndRevenueColorConfig.assetReserve,
   },
   borrowApr: {
     label: t("stats:fees.config.borrowApr"),
-    color: "secondaryColors.blues.vibrantBlue",
+    color: feesAndRevenueColorConfig.hollar,
   },
   hsmRevenue: {
     label: t("stats:fees.config.hsmRevenue"),
-    color: "accents.alertAlt.primary",
+    color: feesAndRevenueColorConfig.hollarFees,
   },
 }
 
