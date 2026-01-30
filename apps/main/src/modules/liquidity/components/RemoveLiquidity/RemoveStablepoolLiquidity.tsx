@@ -193,7 +193,7 @@ const RemoveStablepoolLiquidityJSX = ({
                   <ModalContentDivider />
                   <SummaryRow
                     label={t("liquidity.remove.modal.withdrawalFees")}
-                    content={`${t("common:currency", { value: feeDisplay })} (${t("common:percent", { value: fee })})`}
+                    content={`${t("common:currency", { value: feeDisplay, maximumFractionDigits: null })} (${t("common:percent", { value: fee })})`}
                   />
                 </>
               )}

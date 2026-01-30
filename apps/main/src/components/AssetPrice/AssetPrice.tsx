@@ -10,17 +10,22 @@ import { useAssetsPrice, useDisplayAssetStore } from "@/states/displayAsset"
 type AssetPriceProps = {
   assetId: string
   value?: number
-  wrapper?: React.JSX.Element
+  maximumFractionDigits?: number | null
   compact?: boolean
+  wrapper?: React.JSX.Element
 }
 
 export const AssetPrice = ({
   assetId,
-  wrapper,
   value = 1,
+  maximumFractionDigits,
   compact,
+  wrapper,
 }: AssetPriceProps) => {
-  const [price, { isLoading }] = useDisplayAssetPrice(assetId, value, compact)
+  const [price, { isLoading }] = useDisplayAssetPrice(assetId, value, {
+    maximumFractionDigits,
+    compact,
+  })
 
   const Wrapper = wrapper ?? <Text />
   const Content = <>{isLoading ? <Skeleton /> : price}</>
@@ -28,17 +33,22 @@ export const AssetPrice = ({
   return React.cloneElement(Wrapper, {}, Content)
 }
 
+type HookOptions = {
+  maximumFractionDigits?: number | null
+  compact?: boolean
+}
+
 export const useDisplayAssetPrice = (
   assetId: string,
   value: string | number,
-  compact?: boolean,
+  options?: HookOptions,
 ) => {
-  return useDisplayAssetsPrice([[assetId, value]], compact)
+  return useDisplayAssetsPrice([[assetId, value]], options)
 }
 
 export const useDisplayAssetsPrice = (
   assets: ReadonlyArray<readonly [id: string, value: string | number]>,
-  compact?: boolean,
+  options?: HookOptions,
 ) => {
   const { t } = useTranslation()
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
@@ -66,10 +76,14 @@ export const useDisplayAssetsPrice = (
     [Big(0), true] as const,
   )
 
+  const maximumFractionDigits = options?.maximumFractionDigits
+
   const formattedPrice = isValid
-    ? t(compact ? "currency.compact" : "currency", {
+    ? t(options?.compact ? "currency.compact" : "currency", {
         value: price.toString(),
-        ...(!isDollar ? { currency: symbol } : {}),
+        ...(!isDollar
+          ? { currency: symbol, maximumFractionDigits }
+          : { maximumFractionDigits }),
       })
     : price.toString()
 

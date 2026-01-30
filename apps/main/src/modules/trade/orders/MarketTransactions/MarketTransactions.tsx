@@ -2,30 +2,32 @@ import { DataTable, Modal } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { SwapData, useSwapsData } from "@/modules/trade/orders/lib/useSwapsData"
 import { useMarketTransactionsColumns } from "@/modules/trade/orders/MarketTransactions/MarketTransactions.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { SwapDetailsModal } from "@/modules/trade/orders/SwapDetailsModal"
 
-const PAGE_SIZE = 10
-
 type Props = {
   readonly allPairs: boolean
+  readonly paginationProps: PaginationProps
 }
 
-export const MarketTransactions: FC<Props> = ({ allPairs }) => {
+export const MarketTransactions: FC<Props> = ({
+  allPairs,
+  paginationProps,
+}) => {
   const { assetIn, assetOut } = useSearch({
     from: "/trade/_history",
   })
 
   const [isDetailOpen, setIsDetailOpen] = useState<SwapData | null>(null)
 
-  const [page, setPage] = useState(1)
   const { swaps, totalCount, isLoading } = useSwapsData(
     true,
     allPairs ? [] : [assetIn, assetOut],
-    page,
-    PAGE_SIZE,
+    paginationProps.pagination.pageIndex,
+    paginationProps.pagination.pageSize,
   )
   const columns = useMarketTransactionsColumns()
 
@@ -36,9 +38,8 @@ export const MarketTransactions: FC<Props> = ({ allPairs }) => {
         data={swaps}
         isLoading={isLoading}
         paginated
-        pageSize={PAGE_SIZE}
+        {...paginationProps}
         rowCount={totalCount}
-        onPageClick={setPage}
         onRowClick={setIsDetailOpen}
         emptyState={<OrdersEmptyState />}
       />

@@ -12,11 +12,13 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useSearch } from "@tanstack/react-router"
 import { useLocation } from "@tanstack/react-router"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { OpenOrdersBadge } from "@/modules/trade/orders/OpenOrders/OpenOrdersBadge"
 import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
@@ -29,7 +31,11 @@ export const tradeOrderTabs = [
 
 export type TradeOrderTab = (typeof tradeOrderTabs)[number]
 
-export const TradeOrdersHeader = () => {
+type Props = {
+  readonly paginationProps: PaginationProps
+}
+
+export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
   const { tab, allPairs, assetIn, assetOut } = useSearch({
@@ -73,6 +79,7 @@ export const TradeOrdersHeader = () => {
           } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}
+        onClick={() => paginationProps.onPageClick(1)}
         renderItem={(item) => (
           <Box position="relative" my="l">
             <TabMenuItem size="small" item={item} variant="muted" />

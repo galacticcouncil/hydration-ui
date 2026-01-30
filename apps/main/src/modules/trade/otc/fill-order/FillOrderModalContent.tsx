@@ -71,7 +71,9 @@ export const FillOrderModalContent: FC<Props> = ({
       ? undefined
       : Big(sellAmount).times(feePct).toString()
 
-  const [feeDisplay] = useDisplayAssetPrice(feeAsset.id, fee || "0")
+  const [feeDisplay] = useDisplayAssetPrice(feeAsset.id, fee || "0", {
+    maximumFractionDigits: null,
+  })
 
   const isSubmitEnabled =
     isUsersOffer || (!!sellAmount && form.formState.isValid)

@@ -63,7 +63,9 @@ export const usePoolColumns = () => {
       }),
       columnHelper.accessor("price", {
         header: t("price"),
-        cell: ({ row }) => <AssetPrice assetId={row.original.id} />,
+        cell: ({ row }) => (
+          <AssetPrice assetId={row.original.id} maximumFractionDigits={null} />
+        ),
         sortingFn: (a, b) =>
           new Big(a.original.price ?? 0).gt(b.original.price ?? 0) ? 1 : -1,
       }),

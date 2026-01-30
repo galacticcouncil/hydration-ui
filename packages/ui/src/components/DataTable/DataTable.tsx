@@ -4,6 +4,7 @@ import {
   FilterFnOption,
   flexRender,
   OnChangeFn,
+  PaginationState,
   RowData,
   SortingState,
   Table as TableDef,
@@ -74,6 +75,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
     className?: string
     columnPinning?: ColumnPinningState | undefined
     columnVisibility?: VisibilityState
+    pagination?: PaginationState
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
     rowCount?: number
@@ -93,6 +95,8 @@ export type DataTableRef = {
   readonly onPaginationReset: () => void
 }
 
+export const DATA_TABLE_DEFAULT_PAGE_SIZE = 20
+
 const DataTable = <TData,>({
   data,
   columns,
@@ -101,7 +105,7 @@ const DataTable = <TData,>({
   fixedLayout = false,
   paginated = false,
   expandable = false,
-  pageSize = 20,
+  pageSize = DATA_TABLE_DEFAULT_PAGE_SIZE,
   pageNumber = 1,
   borderless,
   isLoading,
@@ -115,6 +119,7 @@ const DataTable = <TData,>({
   emptyState,
   columnPinning,
   columnVisibility,
+  pagination,
   rowCount,
   isMultiSort,
   getIsExpandable,
@@ -168,6 +173,7 @@ const DataTable = <TData,>({
       ...(columnVisibility && {
         columnVisibility,
       }),
+      ...(pagination && { pagination }),
     },
     ...(isControlledSorting && {
       onSortingChange,
@@ -374,7 +380,10 @@ export const DataTablePagination = <T,>({
         variant="tertiary"
         outline
         disabled={!table.getCanPreviousPage()}
-        onClick={() => table.previousPage()}
+        onClick={() => {
+          onPageClick?.(table.getState().pagination.pageIndex)
+          table.previousPage()
+        }}
         sx={{ px: "l" }}
       >
         <Icon size="s" component={ChevronLeft} display={["block", "none"]} />
@@ -411,7 +420,10 @@ export const DataTablePagination = <T,>({
         variant="tertiary"
         outline
         disabled={!table.getCanNextPage()}
-        onClick={() => table.nextPage()}
+        onClick={() => {
+          onPageClick?.(table.getState().pagination.pageIndex + 2)
+          table.nextPage()
+        }}
         sx={{ px: "l" }}
       >
         <Text as="span" display={["none", "inline"]}>
