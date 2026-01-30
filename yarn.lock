@@ -2673,17 +2673,17 @@
     lit "^3.1.4"
     ts-debounce "^4.0.0"
 
-"@galacticcouncil/xcm-cfg@^10.21.0":
-  version "10.21.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.21.0.tgz#84407d20857bbadc35d34dfea7692c71460a8c40"
-  integrity sha512-d9F9uXICPtfffzXV34hrJYOshvfM+vbUGHLuKLphQZ1/k6Ddcp7Orth5340n9lanP3oMlOErKtWNQG0RZFEt4g==
+"@galacticcouncil/xcm-cfg@^10.22.0":
+  version "10.22.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-cfg/-/xcm-cfg-10.22.0.tgz#8321fcd68c9e267500f4e69d8c47f9d35671275d"
+  integrity sha512-f4el1WzM4+oJ0V8gRxH1gcL1jZpk3DB6tsDGl5yStlu9GykjR50sr2Y7R3foRTYRAE5xyASr+LmhHJKEuqNYpw==
   dependencies:
-    "@galacticcouncil/xcm-core" "^8.9.0"
+    "@galacticcouncil/xcm-core" "^8.11.0"
 
-"@galacticcouncil/xcm-core@^8.10.0":
-  version "8.10.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.10.0.tgz#ce8de14434a407b262651c675f0652f8829fdf2e"
-  integrity sha512-v1iB8Na2MpIDguZ0H2cPe7lfeqZUi3KvBKnD42dXhnmOO8C5U6yYH6ij0+/z985Txq5C/uAEBa8lU4aBH4wpYQ==
+"@galacticcouncil/xcm-core@^8.11.0":
+  version "8.11.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.11.0.tgz#ea85e5375db77e8971b41eb13048226d3300b7eb"
+  integrity sha512-VWabQELVeQZT5hpQ5zIJxC7lI4izpWccrVZRT0LHI+7JIJDYCZJaDMw4U2ZSSLGFHfdUGEAOvhs5qbpKvLWOog==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -2700,32 +2700,12 @@
     buffer "^6.0.3"
     lru-cache "^11.0.0"
 
-"@galacticcouncil/xcm-core@^8.9.0":
-  version "8.9.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-core/-/xcm-core-8.9.0.tgz#79a6b165bfd8a579a450e8542235d6f7458c88e4"
-  integrity sha512-NNEYjlV+biHDa/0YLvUxivIPakWXQ+yeFBVs7lGQFm9oBdwLwG/9X/RzE3bPWoDlMLxLsxmnJFtkLmlK7+ZToQ==
+"@galacticcouncil/xcm-sdk@^10.11.0":
+  version "10.11.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-10.11.0.tgz#0e4135895dec88738e55e8c50af2939bc91670f7"
+  integrity sha512-pjyP4YEu1rpD319XASUzNgxTyHY5QhYecXHi4U0o7kekxgqDTmaMUkH/xJED7QvT/xvmG4///Ki0kMH96rkOuA==
   dependencies:
-    "@noble/hashes" "^1.6.1"
-    "@wormhole-foundation/sdk-base" "3.2.0"
-    "@wormhole-foundation/sdk-connect" "3.2.0"
-    "@wormhole-foundation/sdk-definitions" "3.2.0"
-    "@wormhole-foundation/sdk-solana" "3.2.0"
-    "@wormhole-foundation/sdk-solana-core" "3.2.0"
-    "@wormhole-foundation/sdk-solana-tokenbridge" "3.2.0"
-    "@wormhole-foundation/sdk-sui" "3.2.0"
-    "@wormhole-foundation/sdk-sui-tokenbridge" "3.2.0"
-    big.js "^6.2.1"
-    bigint-buffer "^1.1.5"
-    bs58 "^6.0.0"
-    buffer "^6.0.3"
-    lru-cache "^11.0.0"
-
-"@galacticcouncil/xcm-sdk@^10.10.0":
-  version "10.10.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xcm-sdk/-/xcm-sdk-10.10.0.tgz#c2f946e78f19b018fa72d5aa55ced6a2065007d6"
-  integrity sha512-rGeg+l9qW+vxLTFBS9vhLoYwZs9BPABKbhW6auOm/unzXDF/AMKUJU9GbC8G/r2ERs+sReqEGVd4ojv8CShjCA==
-  dependencies:
-    "@galacticcouncil/xcm-core" "^8.9.0"
+    "@galacticcouncil/xcm-core" "^8.11.0"
 
 "@gql.tada/cli-utils@1.7.1":
   version "1.7.1"
