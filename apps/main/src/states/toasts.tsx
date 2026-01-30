@@ -47,10 +47,11 @@ interface ToastStore {
   ) => void
 }
 
-const useToastsStore = create<ToastStore>()(
+export const useToastsStore = create<ToastStore>()(
   persist(
     (set) => ({
       toasts: {},
+
       update: (accountAddress, cb) =>
         set((state) => {
           const accountToasts = state.toasts[accountAddress] ?? []
