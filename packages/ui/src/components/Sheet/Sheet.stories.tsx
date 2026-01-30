@@ -1,6 +1,6 @@
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import { useState } from "@storybook/preview-api"
-import type { Meta, StoryObj } from "@storybook/react"
+import { useState } from "storybook/preview-api"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Button } from "@/components/Button"
 import { Flex } from "@/components/Flex"

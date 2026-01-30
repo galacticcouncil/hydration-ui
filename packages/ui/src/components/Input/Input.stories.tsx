@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-vite"
 import { Download, Search } from "lucide-react"
 import { useState } from "react"
 import { NumberFormatValues } from "react-number-format"
