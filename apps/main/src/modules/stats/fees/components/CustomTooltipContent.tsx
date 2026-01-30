@@ -30,7 +30,7 @@ export const CustomTooltipContent = ({
         </Text>
       </Flex>
 
-      {[...payload].reverse().map((entry, index) => {
+      {payload.map((entry, index) => {
         const dataKey = entry.dataKey
         const configKey = typeof dataKey === "string" ? dataKey : undefined
         const fieldConfig =
