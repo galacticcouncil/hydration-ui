@@ -11,5 +11,11 @@
     "fees.config.peplLiquidationProfit": "Pepl Liquidation Profit",
     "fees.config.assetReserve": "Asset Reserve",
     "fees.config.borrowApr": "Borrow APR",
-    "fees.config.hsmRevenue": "HSM Revenue"
+    "fees.config.hsmRevenue": "HSM Revenue",
+    "fees.chart.mode.protocol": "Protocol",
+    "fees.chart.mode.total": "Total",
+    "fees.chart.timeRange.description.1W": "Last 7 days",
+    "fees.chart.timeRange.description.1M": "Last 30 days",
+    "fees.chart.timeRange.description.1Y": "Last year",
+    "fees.chart.timeRange.description.ALL": "All time"
 }

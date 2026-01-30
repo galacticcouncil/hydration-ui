@@ -80,7 +80,7 @@ const AnimatedValue = ({ value }: { value: number }) => {
 }
 
 export const FeesAndRevenue = () => {
-  const { t } = useTranslation("common")
+  const { t } = useTranslation(["common", "stats"])
   const { themeProps: theme, getToken } = useTheme()
   const [timeRange, setTimeRange] = useState<TimeRange>("1M")
   const [viewMode, setViewMode] = useState<ViewMode>("protocol")
@@ -156,7 +156,7 @@ export const FeesAndRevenue = () => {
           >
             {VIEW_MODES.map((mode) => (
               <ToggleGroupItem key={mode} value={mode}>
-                {mode}
+                {t(`stats:fees.chart.mode.${mode}`)}
               </ToggleGroupItem>
             ))}
           </ToggleGroup>

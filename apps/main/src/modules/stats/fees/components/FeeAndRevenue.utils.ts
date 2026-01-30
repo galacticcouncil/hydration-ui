@@ -6,14 +6,14 @@ import { TimeRange } from "@/api/stats"
 export const getTotalValueLabel = (timeRange: TimeRange) => {
   switch (timeRange) {
     case "1W":
-      return "Last 7 days"
+      return t("stats:fees.chart.timeRange.description.1W")
     case "1M":
-      return "Last 30 days"
+      return t("stats:fees.chart.timeRange.description.1M")
     case "1Y":
-      return "Last year"
+      return t("stats:fees.chart.timeRange.description.1Y")
 
     default:
-      return "All time"
+      return t("stats:fees.chart.timeRange.description.ALL")
   }
 }
 
