@@ -25,7 +25,7 @@ enum FeeDestination {
 }
 
 const FEES_CHARTS_API_URL =
-  "https://hydration-aggregator-dev.kril.hydration.cloud/api/v1/charts/fees"
+  "https://hydration-aggregator-dev.orca.hydration.cloud/api/v1/charts/fees"
 
 const pT = (productType: ProductType) => `productType=${productType}`
 const fD = (feeDestination: FeeDestination) =>
