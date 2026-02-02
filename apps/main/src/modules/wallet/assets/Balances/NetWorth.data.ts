@@ -90,14 +90,16 @@ export const useNetWorthData = (
       ? balances.concat([
           {
             netWorth: currentNetWorthNum,
-            time: new Date(),
+            time: firstBalance
+              ? new Date(firstBalance.time.valueOf() + 1000)
+              : new Date(),
           },
         ])
       : balances.length === 1 && firstBalance
         ? balances.concat([
             {
               netWorth: firstBalance.netWorth,
-              time: new Date(firstBalance.time.valueOf() + 1),
+              time: new Date(firstBalance.time.valueOf() + 1000),
             },
           ])
         : balances
