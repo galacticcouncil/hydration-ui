@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Button,
@@ -14,7 +15,6 @@ import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"

@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Button,
   Flex,
@@ -15,7 +16,6 @@ import { useQuery } from "@tanstack/react-query"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
