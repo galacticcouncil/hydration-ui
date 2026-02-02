@@ -1,11 +1,11 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Alert, Flex } from "@galacticcouncil/ui/components"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { DcaPriceImpactWarning } from "@/modules/trade/swap/sections/DCA/DcaPriceImpactWarning"
 import { DcaValidationWarning } from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"

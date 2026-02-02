@@ -12,6 +12,7 @@ import {
 } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { sortBy } from "remeda"
 
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
@@ -24,6 +25,7 @@ import {
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
 
 export const SupplyAssetsTable = () => {
+  const { t } = useTranslation("borrow")
   const [modalProps, setModalProps] = useState<
     Omit<AddStablepoolLiquidityProps, "onSubmitted"> | undefined
   >()
@@ -111,6 +113,7 @@ export const SupplyAssetsTable = () => {
           <AddStablepoolLiquidityWrapper
             {...modalProps}
             initialOption="stablepool"
+            title={t("supply")}
             closable
             onSubmitted={() => setModalProps(undefined)}
           />

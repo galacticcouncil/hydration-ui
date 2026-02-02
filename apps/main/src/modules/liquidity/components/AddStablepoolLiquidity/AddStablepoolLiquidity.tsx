@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components/primitives"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Box,
@@ -26,7 +27,6 @@ import {
 } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useBorrowAssetsApy } from "@/api/borrow"
 import { Farm } from "@/api/farms"
@@ -69,6 +69,7 @@ import { AddStablepoolLiquiditySkeleton } from "./AddStablepoolLiquiditySkeleton
 
 export type AddStablepoolLiquidityProps = AddLiquidityProps & {
   stableswapId: string
+  title?: string
   initialOption?: TAddStablepoolLiquidityOption
 }
 
@@ -165,6 +166,7 @@ export const AddStablepoolLiquidityForm = ({
   poolShare,
   enabledSplit,
   isAddableToOmnipool,
+  title,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -242,7 +244,7 @@ export const AddStablepoolLiquidityForm = ({
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
       <ModalHeader
-        title={t("addLiquidity")}
+        title={title ?? t("addLiquidity")}
         onBack={onBack}
         closable={closable}
         sx={{
@@ -401,7 +403,7 @@ export const AddStablepoolLiquidityForm = ({
         >
           {isJoinFarms
             ? t("liquidity.add.modal.submitAndjoinFarms")
-            : t("liquidity.add.modal.submit")}
+            : (title ?? t("liquidity.add.modal.submit"))}
         </Button>
       </ModalFooter>
     </form>
@@ -499,7 +501,7 @@ const AddStablepoolLiquiditySummary = ({
               },
             ]
           : []),
-        ...(erc20Id && healthFactor?.isSignificantChange
+        ...(erc20Id && healthFactor
           ? [
               {
                 label: t("common:healthFactor"),

@@ -1,4 +1,5 @@
-import { HealthFactorResult } from "@/api/aave"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
+
 import { Trade, TradeOrder } from "@/api/trade"
 import { AnyTransaction } from "@/modules/transactions/types"
 

@@ -47,7 +47,7 @@
   "market.stats.totalBorrows": "Total borrows",
   "market.stats.totalSize": "Total market size",
   "market.table.borrowAprVariable": "Borrow APR, variable",
-  "market.table.borrowApyVariable": "Borrow APY, variable",
+  "market.table.borrowApyVariable": "Borrow APY",
   "market.table.title": "Available assets",
   "market.table.totalBorrowed": "Total borrowed",
   "market.table.totalSupplied": "Total supplied",
