@@ -1,12 +1,12 @@
-import { Asset } from "@galacticcouncil/sdk-next"
-import { isAnyParachain } from "@galacticcouncil/utils"
-import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xc-core"
 import {
   XcmV3Junction,
   XcmV3Junctions,
   XcmVersionedLocation,
-} from "@polkadot-api/descriptors"
+} from "@galacticcouncil/descriptors"
+import { Asset } from "@galacticcouncil/sdk-next"
+import { isAnyParachain } from "@galacticcouncil/utils"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xc-core"
 import { Buffer } from "buffer"
 import { FixedSizeBinary } from "polkadot-api"
 

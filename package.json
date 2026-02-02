@@ -12,8 +12,7 @@
     "preview": "turbo preview",
     "lint": "turbo lint",
     "lint:fix": "turbo lint:fix",
-    "i18n": "turbo i18n",
-    "postinstall": "papi"
+    "i18n": "turbo i18n"
   },
   "resolutions": {
     "polkadot-api": "1.23.3",
@@ -32,8 +31,8 @@
     "@galacticcouncil/xc": "^0.4.0",
     "@galacticcouncil/xc-cfg": "^0.11.1",
     "@galacticcouncil/xc-core": "^0.10.0",
+    "@galacticcouncil/xc-sdk": "^0.5.0",
     "@galacticcouncil/xc-sdk": "^0.5.1",
-    "@polkadot-api/descriptors": "file:.papi/descriptors",
     "big.js": "^6.2.2",
     "immer": "^10.0.3",
     "p-wait-for": "^6.0.0",
