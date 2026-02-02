@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Flex } from "@/components/Flex"
 import { Paper } from "@/components/Paper"
