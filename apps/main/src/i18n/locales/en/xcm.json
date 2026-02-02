@@ -46,5 +46,15 @@
   "report.fee.insufficientBalance": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for fees",
   "report.destFee.insufficientBalance": "You need to have at least {{ amount, number }} {{ symbol }} on {{ chain }}",
   "report.asset.frozen": "Your account on {{ chain }} has frozen balance for {{ symbol }}",
-  "report.account.insufficientDeposit": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for existential deposit"
+  "report.account.insufficientDeposit": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for existential deposit",
+  "journey.status.sent": "In Progress",
+  "journey.status.pending": "In Progress",
+  "journey.status.received": "Completed",
+  "journey.status.success": "Completed",
+  "journey.status.completed": "Completed",
+  "journey.status.confirmed": "Completed",
+  "journey.status.waiting": "Waiting",
+  "journey.status.fail": "Failed",
+  "journey.status.failed": "Failed",
+  "journey.status.timeout": "Timeout"
 }
