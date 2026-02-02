@@ -26,8 +26,8 @@ export const RpcListModalContent = () => {
         {isLoaded && activeProvider ? (
           <Box
             bg={getToken("surfaces.containers.dim.dimOnBg")}
-            borderRadius="lg"
-            p={4}
+            borderRadius="m"
+            p="s"
           >
             <RpcListItemActive
               url={activeProvider.url}
@@ -35,8 +35,8 @@ export const RpcListModalContent = () => {
             />
           </Box>
         ) : (
-          <Flex align="center" justify="center" gap={10} p={10} height={64}>
-            <Spinner size={14} />
+          <Flex align="center" justify="center" gap="base" p="base" height={64}>
+            <Spinner size="s" />
             <Text fs="p5" color={getToken("text.medium")}>
               {t("rpc.change.modal.autoMode.loading")}
             </Text>

@@ -18,7 +18,8 @@
     "preview": "vite preview",
     "lint": "yarn lint:eslint && yarn lint:ts",
     "lint:ts": "tsc --noEmit -p tsconfig.json",
-    "lint:eslint": "eslint src"
+    "lint:eslint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "dependencies": {
     "@emotion/babel-plugin": "^11.12.0",

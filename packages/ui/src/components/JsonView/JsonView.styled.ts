@@ -6,7 +6,7 @@ export const SRoot = styled.div(
 
     pre,
     code {
-      min-height: 20px;
+      min-height: 1.5rem
       font-family: GeistMono;
       font-size: inherit;
 

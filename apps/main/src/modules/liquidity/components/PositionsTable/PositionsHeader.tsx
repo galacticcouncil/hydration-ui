@@ -6,7 +6,7 @@ import {
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
@@ -38,11 +38,8 @@ export const PositionsHeader = ({
           align="center"
           justify="space-between"
           sx={{
-            px: getTokenPx([
-              "containers.paddings.secondary",
-              "containers.paddings.primary",
-            ]),
-            py: getTokenPx("containers.paddings.secondary"),
+            px: ["base", "l"],
+            py: "l",
             borderBottom: "1px solid",
             borderColor: getToken("details.separators"),
           }}
@@ -51,13 +48,13 @@ export const PositionsHeader = ({
             {t("myPositions")}
           </Text>
 
-          <Flex align="center" gap={getTokenPx("scales.paddings.s")}>
+          <Flex align="center" gap="s">
             <Text fs="p5" fw={500} color={getToken("text.low")}>
               {showMore ? t("showLess") : t("showMore")}
             </Text>
             <Icon
               component={ChevronDown}
-              size={18}
+              size="m"
               color={getToken("text.low")}
               sx={{
                 transition: getToken("transitions.transform"),
@@ -71,13 +68,10 @@ export const PositionsHeader = ({
         direction={["column-reverse", "column-reverse", "row"]}
         justify="space-between"
         align={[undefined, undefined, "center"]}
-        gap={24}
+        gap="xl"
         sx={{
-          px: getTokenPx([
-            "containers.paddings.secondary",
-            "containers.paddings.primary",
-          ]),
-          py: getTokenPx("containers.paddings.secondary"),
+          px: ["base", "l"],
+          py: "l",
           borderBottom: showMore ? "1px solid" : "none",
           borderColor: getToken("details.separators"),
         }}

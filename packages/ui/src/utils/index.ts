@@ -1,31 +1,30 @@
 import { css, SerializedStyles, Theme as EmotionTheme } from "@emotion/react"
 import { SxProp } from "@theme-ui/core"
 import { get, Theme as ThemeUI, ThemeUICSSObject } from "@theme-ui/css"
+import { isNumber, isString } from "remeda"
 
 import { ThemeToken } from "@/theme"
 
-export const px = (n: number | string) => (typeof n === "number" ? n + "px" : n)
+export const ROOT_FONT_SIZE = 16
+export const UI_SCALE_VAR = "--ui-scale"
+
+export const pxToRem = (n: number | string): string => {
+  if (isString(n) && n.endsWith("rem")) return n
+
+  const px = isNumber(n) ? n : parseFloat(n)
+
+  if (!isFinite(px)) return "0rem"
+
+  return `${px / ROOT_FONT_SIZE}rem`
+}
 
 declare const __brand: unique symbol
 export type Branded<T> = true & { [__brand]: T }
-
-export type MinusPx = Branded<"MinusPx">
-
-export const minusPx = true as MinusPx
 
 export const getToken =
   (token: ThemeToken | ThemeToken[]) =>
   (theme: ThemeUI): ThemeUICSSObject =>
     Array.isArray(token) ? token.map((t) => get(theme, t)) : get(theme, token)
-
-export const getTokenPx =
-  (token: ThemeToken | ThemeToken[], minus?: MinusPx) => (theme: ThemeUI) =>
-    Array.isArray(token)
-      ? token.map((t) => `${minus ? "-" : ""}${get(theme, t)}px`)
-      : `${minus ? "-" : ""}${get(theme, token)}px`
-
-export const getMinusTokenPx = (token: ThemeToken | ThemeToken[]) =>
-  getTokenPx(token, minusPx)
 
 export function createStyles<T extends SerializedStyles>(
   callback: (theme: EmotionTheme) => T,

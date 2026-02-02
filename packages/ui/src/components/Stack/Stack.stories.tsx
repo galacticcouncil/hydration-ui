@@ -13,11 +13,11 @@ export default {
 
 const Template = (args: Story["args"]) => (
   <Stack {...args}>
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
   </Stack>
 )
 

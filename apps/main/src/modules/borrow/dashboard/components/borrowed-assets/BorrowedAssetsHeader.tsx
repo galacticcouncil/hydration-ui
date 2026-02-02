@@ -20,7 +20,7 @@ export const BorrowedAssetsHeader = () => {
     : Big(user?.totalBorrowsMarketReferenceCurrency || "0").div(maxBorrowAmount)
 
   return (
-    <Flex gap={40} p={20}>
+    <Flex gap="xxxl" p="xl">
       <ValueStats
         wrap
         size="small"

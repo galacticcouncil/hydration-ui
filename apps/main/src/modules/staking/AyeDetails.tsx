@@ -26,9 +26,9 @@ export const AyeDetails: FC<Props> = ({
   const { native } = useAssets()
 
   return (
-    <Flex direction="column" gap={5}>
+    <Flex direction="column" gap="s">
       {label && (
-        <Text fw={500} fs={13} lh={1} {...labelProps}>
+        <Text fw={500} fs="p4" lh={1} {...labelProps}>
           {label}
         </Text>
       )}

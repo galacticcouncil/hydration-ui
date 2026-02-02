@@ -1,6 +1,7 @@
 import {
   Box,
   Flex,
+  FlexProps,
   FormError,
   FormLabel,
   MicroButton,
@@ -23,7 +24,7 @@ import { toDecimal } from "@/utils/formatting"
 
 import { SNumberInput, SNumberInputAddon } from "./AmountFormField.styled"
 
-type AmountFormFieldProps = {
+type AmountFormFieldProps = FlexProps & {
   fieldName: XcmFormFieldName
   balance?: AssetAmount
   balanceMax?: AssetAmount
@@ -43,6 +44,7 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
   isLoading = false,
   withMaxButton = false,
   assetPrice,
+  ...props
 }) => {
   const { t } = useTranslation(["common", "xcm"])
   const { control } = useFormContext<XcmFormValues>()
@@ -59,7 +61,13 @@ export const AmountFormField: React.FC<AmountFormFieldProps> = ({
       : undefined
 
   return (
-    <Flex className={className} flex={1} gap="base" direction="column">
+    <Flex
+      className={className}
+      flex={1}
+      gap="base"
+      direction="column"
+      {...props}
+    >
       <Flex ml="auto" align="center" gap="s">
         {isLoading ? (
           <Text fs="p6">

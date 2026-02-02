@@ -33,7 +33,7 @@ const SheetClose: FC<
   return (
     <SSheetClose asChild align="right">
       <DialogPrimitive.Close {...props}>
-        <Icon component={X} size={20} />
+        <Icon component={X} size="l" />
       </DialogPrimitive.Close>
     </SSheetClose>
   )

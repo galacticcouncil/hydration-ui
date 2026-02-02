@@ -143,11 +143,16 @@ export const formatCurrency = (
 
   const numericValue = typeof value === "string" ? Number(value) : value
 
+  const maxFractionDigits =
+    options.symbol || options.maximumFractionDigits === null
+      ? options.maximumFractionDigits
+      : (options.maximumFractionDigits ?? MAX_USD_FRACTION_DIGITS)
+
   let parts = Intl.NumberFormat(lng, {
     style: "currency",
     currency: "USD",
     maximumSignificantDigits:
-      options.maximumSignificantDigits || options.maximumFractionDigits
+      options.maximumSignificantDigits || maxFractionDigits
         ? undefined
         : getMaxSignificantDigits(value, options),
     ...options,
@@ -161,10 +166,10 @@ export const formatCurrency = (
     ]
   }
 
-  if (options.maximumFractionDigits && numericValue > 0) {
+  if (maxFractionDigits && numericValue > 0) {
     return formatFractionDigits(
       numericValue,
-      Number(options.maximumFractionDigits),
+      Number(maxFractionDigits),
       parts,
       getDecimalSeparator(lng),
     )
@@ -203,3 +208,5 @@ export const formatAssetAmount = (
 
   return trimmedDecimals ? `${integer}${separator}${trimmedDecimals}` : integer
 }
+
+export const MAX_USD_FRACTION_DIGITS = 2

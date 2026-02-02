@@ -41,11 +41,11 @@ export const SummaryRow = ({
       sx={{ ...(onClick && { cursor: "pointer" }) }}
       align="center"
       justify="space-between"
-      my={8}
+      my="base"
       className={className}
       onClick={onClick}
     >
-      <Flex direction="column" justify="space-between" gap={4}>
+      <Flex direction="column" justify="space-between" gap="s">
         {typeof label === "string" ? (
           <SummaryRowLabel>{label}:</SummaryRowLabel>
         ) : (

@@ -3,7 +3,7 @@ import { ComponentProps, ComponentType, FC, ReactNode, Ref } from "react"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
 import { Text } from "@/components/Text"
-import { getToken, getTokenPx, px } from "@/utils"
+import { getToken } from "@/utils"
 
 type AmountVariant = "default" | "horizontalLabel" | "primary"
 type AmountSize = "default" | "large"
@@ -42,14 +42,14 @@ export const Amount: FC<AmountProps> = ({
       align={
         variant === "horizontalLabel" && !!labelIcon ? "center" : undefined
       }
-      gap={2}
+      gap="xs"
     >
-      <Flex direction="column" gap={getTokenPx("scales.paddings.xs")}>
-        <Flex align="center" gap={getTokenPx("containers.paddings.quint")}>
+      <Flex direction="column" gap="xs">
+        <Flex align="center" gap="s">
           {labelIcon && (
             <Icon
               component={labelIcon}
-              size={16}
+              size="m"
               color={
                 color === "default"
                   ? getToken("icons.onContainer")
@@ -67,7 +67,7 @@ export const Amount: FC<AmountProps> = ({
           (description &&
             (Array.isArray(description) ? description : [description]).map(
               (line, i) => (
-                <Text key={i} fs={11} lh={px(12)} color={getToken("text.low")}>
+                <Text key={i} fs="p6" lh="xs" color={getToken("text.low")}>
                   {line}
                 </Text>
               ),
@@ -75,7 +75,7 @@ export const Amount: FC<AmountProps> = ({
       </Flex>
       <Flex
         direction="column"
-        gap={2}
+        gap="xs"
         align={variant === "horizontalLabel" ? "flex-end" : undefined}
       >
         <AmountValue variant={variant} size={size}>
@@ -106,8 +106,8 @@ const AmountLabel: FC<AmountMediumLabelProps> = ({
     case "horizontalLabel":
       return (
         <Text
-          fs={13}
-          lh={px(15)}
+          fs="p4"
+          lh="s"
           color={
             color === "default"
               ? getToken("text.low")
@@ -124,8 +124,8 @@ const AmountLabel: FC<AmountMediumLabelProps> = ({
     default:
       return (
         <Text
-          fs={12}
-          lh={px(15)}
+          fs="p5"
+          lh="s"
           color={
             color === "default"
               ? getToken("text.medium")
@@ -153,7 +153,7 @@ const AmountValue: FC<AmountValueProps> = ({
         <Text
           fw={600}
           fs={size === "large" ? "p2" : 12}
-          lh={px(15)}
+          lh="s"
           color={getToken("text.high")}
           {...props}
         />
@@ -194,13 +194,11 @@ const AmountDisplayValue: FC<AmountDisplayValueProps> = ({
 }) => {
   switch (variant) {
     case "horizontalLabel":
-      return (
-        <Text fs={11} lh={px(15)} color={getToken("text.low")} {...props} />
-      )
+      return <Text fs="p6" lh="s" color={getToken("text.low")} {...props} />
     case "primary":
-      return <Text fs={10} lh={1} color={getToken("text.low")} {...props} />
+      return <Text fs="p6" lh={1} color={getToken("text.low")} {...props} />
     case "default":
     default:
-      return <Text fs={10} lh={1} color={getToken("text.low")} {...props} />
+      return <Text fs="p6" lh={1} color={getToken("text.low")} {...props} />
   }
 }

@@ -26,7 +26,7 @@ const Template = (args: React.ComponentPropsWithoutRef<typeof AssetInput>) => {
       width={500}
       bg={getToken("surfaces.themeBasePalette.surfaceHigh")}
       height={500}
-      p={24}
+      p="xxl"
     >
       <AssetInput
         {...args}

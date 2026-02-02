@@ -69,13 +69,17 @@ export const AssetYields = ({
   }
 
   if (incentivesApr.gt(0) && apy.gt(0)) {
-    const borderRadius = 32
+    const borderRadius = "xl"
     return (
-      <Flex align="center" gap={1}>
+      <Flex align="center" gap="xs">
         <Chip
           variant="green"
           size="small"
-          sx={{ borderRadius: `${borderRadius}px 0 0 ${borderRadius}px` }}
+          sx={{
+            borderRadius: "none",
+            borderTopLeftRadius: borderRadius,
+            borderBottomLeftRadius: borderRadius,
+          }}
         >
           {t("percent.apr", {
             value: incentivesApr,
@@ -85,9 +89,13 @@ export const AssetYields = ({
         <Chip
           variant="green"
           size="small"
-          sx={{ borderRadius: `0 ${borderRadius}px ${borderRadius}px 0` }}
+          sx={{
+            borderRadius: "none",
+            borderTopRightRadius: borderRadius,
+            borderBottomRightRadius: borderRadius,
+          }}
         >
-          <Flex align="center" gap={4}>
+          <Flex align="center" gap="s">
             {t("percent.apy", {
               value: apy,
             })}

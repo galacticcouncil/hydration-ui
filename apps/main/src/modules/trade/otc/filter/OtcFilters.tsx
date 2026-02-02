@@ -10,7 +10,7 @@ export const OtcFilters: FC = () => {
   const { isConnected } = useAccount()
 
   return (
-    <Flex gap={12} align="center">
+    <Flex gap="m" align="center">
       {isConnected && (
         <>
           <OrderFilter offers="my">{t("otc.filters.offers.my")}</OrderFilter>

@@ -102,7 +102,7 @@ export const AssetListItem: React.FC<AssetListItemProps> = ({
             display="inline-flex"
             color={getToken("text.low")}
             component={Minus}
-            size={16}
+            size="m"
           />
         )}
       </Text>

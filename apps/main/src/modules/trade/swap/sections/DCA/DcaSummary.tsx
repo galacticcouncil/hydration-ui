@@ -13,7 +13,7 @@ import {
   SummaryRowValue,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -77,9 +77,9 @@ export const DcaSummary: FC<Props> = ({
     <>
       <SwapSectionSeparator />
       <div>
-        <Flex direction="column" gap={8} py={8}>
+        <Flex direction="column" gap="base" py="base">
           <SummaryRowLabel>{t("summary")}</SummaryRowLabel>
-          <Text fw={500} fs="p2" lh={px(21)} color={getToken("text.high")}>
+          <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
             <Trans
               t={t}
               i18nKey="trade:dca.summary.description"
@@ -119,6 +119,7 @@ export const DcaSummary: FC<Props> = ({
             label={t("trade:dca.summary.priceImpact")}
             content={
               <SummaryRowValue
+                as="div"
                 color={(() => {
                   switch (priceImpactLevel) {
                     case "error":
@@ -130,14 +131,14 @@ export const DcaSummary: FC<Props> = ({
                   }
                 })()}
               >
-                <Flex align="center" gap={6}>
+                <Flex align="center" gap="s">
                   {t("percent", { value: order.tradeImpactPct })}
                   {(() => {
                     switch (priceImpactLevel) {
                       case "error":
-                        return <Icon size={14} component={ExclamationMark} />
+                        return <Icon size="s" component={ExclamationMark} />
                       case "warning":
-                        return <Icon size={14} component={TriangleAlert} />
+                        return <Icon size="s" component={TriangleAlert} />
                       default:
                         return null
                     }

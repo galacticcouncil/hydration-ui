@@ -1,10 +1,12 @@
-import { styled } from "@galacticcouncil/ui/utils"
+import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SLiquidityPositionsMobile = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  column-gap: 40px;
-  row-gap: 12px;
+export const SLiquidityPositionsMobile = styled.div(
+  ({ theme }) => css`
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    column-gap: ${theme.space.xxxl};
+    row-gap: ${theme.space.m};
 
-  overflow-y: auto;
-`
+    overflow-y: auto;
+  `,
+)

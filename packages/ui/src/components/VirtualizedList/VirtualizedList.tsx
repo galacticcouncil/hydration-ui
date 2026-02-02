@@ -11,7 +11,7 @@ import {
   SList,
   SListItem,
 } from "@/components/VirtualizedList/VirtualizedList.styled"
-import { useResponsiveValue } from "@/styles/media"
+import { useResponsiveValue, useUiScale } from "@/styles/media"
 
 import { ScrollArea, ScrollAreaProps } from "../ScrollArea"
 
@@ -33,7 +33,7 @@ function VirtualizedList<T>({
   items,
   renderItem,
   overscan = 5,
-  itemSize,
+  itemSize: baseItemSize,
   maxVisibleItems,
   getItemKey,
   initialScrollIndex,
@@ -41,6 +41,10 @@ function VirtualizedList<T>({
 }: VirtualizedListProps<T>) {
   const parentRef = useRef<HTMLDivElement>(null)
   const hasScrolledToInitial = useRef(false)
+
+  const uiScale = useUiScale()
+
+  const itemSize = baseItemSize * uiScale
 
   const maxVisible = useResponsiveValue(maxVisibleItems, 0)
 

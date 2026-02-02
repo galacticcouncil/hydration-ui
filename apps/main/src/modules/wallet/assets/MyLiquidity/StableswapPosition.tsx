@@ -40,10 +40,10 @@ export const StableswapLiquidityPosition = ({
 
   return (
     <SLiquidityPosition sx={{ backgroundColor: "inherit" }}>
-      <Flex align="center" gap={2}>
+      <Flex align="center" gap="xs">
         <Icon
           component={SuppliedLiquidityIcon}
-          size={12}
+          size="xs"
           color={getToken("text.tint.secondary")}
         />
         <Text fs="p4" fw={500} color={getToken("text.tint.secondary")}>
@@ -63,7 +63,7 @@ export const StableswapLiquidityPosition = ({
 
       <div />
 
-      <Flex align="center" gap={8}>
+      <Flex align="center" gap="base">
         <Button
           variant="secondary"
           onClick={() => onAction(LiquidityPositionAction.Add)}
@@ -77,7 +77,7 @@ export const StableswapLiquidityPosition = ({
           >
             <Button variant="tertiary" outline>
               {t("common:actions")}
-              <Icon component={Ellipsis} size={16} />
+              <Icon component={Ellipsis} size="m" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>

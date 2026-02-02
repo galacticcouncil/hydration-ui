@@ -59,7 +59,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
             disabled: true,
           })}
     >
-      <Flex align="center" gap={12}>
+      <Flex align="center" gap="m">
         <Box sx={{ flexShrink: 0 }}>
           <AccountAvatar
             address={account.displayAddress}
@@ -78,9 +78,9 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
                 onCancel={() => setIsEditing(false)}
               />
             ) : (
-              <Flex align="center" gap={4} sx={{ minWidth: 0 }}>
+              <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
                 {onDelete && <AccountDeleteButton onClick={onDelete} />}
-                {wallet && <ProviderLogo size={12} wallet={wallet} />}
+                {wallet && <ProviderLogo size="xs" wallet={wallet} />}
                 <Text fs="p3" truncate={200}>
                   {account.name}
                 </Text>
@@ -95,7 +95,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
             )}
             {onEdit && <AccountEditButton onClick={() => setIsEditing(true)} />}
           </Flex>
-          <Flex align="center" justify="space-between" gap={4}>
+          <Flex align="center" justify="space-between" gap="s">
             <Text fs="p4" color={getToken("text.medium")} sx={{ minWidth: 0 }}>
               <Text as="span" truncate display={["none", "block"]}>
                 {account.displayAddress}

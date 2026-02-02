@@ -138,7 +138,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
       : true
 
   return (
-    <Grid columnTemplate={["64px 1fr", "180px 1fr"]}>
+    <Grid columnTemplate={["4rem 1fr", "11.25rem 1fr"]}>
       <Box>
         <Box p="base" visibility={["hidden", "visible"]}>
           <Input

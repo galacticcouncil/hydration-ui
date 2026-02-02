@@ -3,19 +3,13 @@ import styled from "@emotion/styled"
 import { linearScale } from "@galacticcouncil/utils"
 
 import { Logo, LogoSize } from "@/components/Logo"
+import { LOGO_SIZES } from "@/components/Logo/Logo.styled"
 import { ThemeProps } from "@/theme"
-import { createVariants } from "@/utils"
+import { createVariants, ROOT_FONT_SIZE } from "@/utils"
 
 import { Icon } from "../Icon"
 import { Image } from "../Image"
 import { AssetLogoDecoration } from "./AssetLogo"
-
-export const LOGO_DIAMETER = {
-  "extra-small": 12,
-  small: 18,
-  medium: 24,
-  large: 36,
-} as const
 
 const LOGO_OVERLAP = {
   "extra-small": 2,
@@ -137,7 +131,7 @@ export const SAssetChainLogo = styled(Image)<{ size: LogoSize }>(({
     width: 50%;
     height: 50%;
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
     border: var(--border-size) solid ${backdropColor};
     background: ${backdropColor};
   `
@@ -181,7 +175,7 @@ export const SDecorationContainer = styled.div<{
   const overlap = LOGO_OVERLAP[size]
   const thickness = DECOR_THICKNESS[size]
   const padding = DECOR_PADDING[size]
-  const diameter = LOGO_DIAMETER[size]
+  const diameter = LOGO_SIZES[size]
   return [
     css`
       font-size: ${diameter}px;
@@ -200,7 +194,7 @@ export const SDecorationContainer = styled.div<{
         &::before {
           mask-image: ${generateATokenMask(
             count,
-            diameter,
+            parseFloat(diameter) * ROOT_FONT_SIZE,
             overlap,
             thickness,
           )};

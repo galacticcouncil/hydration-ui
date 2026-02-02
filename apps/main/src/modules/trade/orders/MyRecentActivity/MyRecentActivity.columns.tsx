@@ -51,10 +51,10 @@ export const useMyRecentActivityColumns = () => {
         sx: { textAlign: "center" },
       },
       header: () => (
-        <Flex gap={4} align="center" justify="center">
+        <Flex gap="s" align="center" justify="center">
           {t("trade:trade.orders.myActivity.fillPrice")}
           <Icon
-            size={12}
+            size="xs"
             component={ArrowRightLeft}
             color={getToken("textButtons.small.hover")}
           />
@@ -110,7 +110,7 @@ export const useMyRecentActivityColumns = () => {
         const [modal, setModal] = useState<"none" | "dcaTermination">("none")
 
         return (
-          <Flex gap={8} align="center" justify="flex-end" height={28}>
+          <Flex gap="base" align="center" justify="flex-end" height={28}>
             {status?.kind === "dca" &&
               status.status === DcaScheduleStatus.Created && (
                 <>
@@ -124,7 +124,7 @@ export const useMyRecentActivityColumns = () => {
                       setModal("dcaTermination")
                     }}
                   >
-                    <Icon component={Trash} size={14} />
+                    <Icon component={Trash} size="s" />
                   </Button>
                   <Modal
                     open={modal === "dcaTermination"}

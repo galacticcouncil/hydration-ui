@@ -5,15 +5,17 @@ import { Box } from "@/components/Box"
 
 import { LabelPosition } from "./ProgressCircle"
 
-export const SContainer = styled(Box)`
-  display: inline-flex;
-  overflow: hidden;
-  position: relative;
-  gap: 10px;
+export const SContainer = styled(Box)(
+  ({ theme }) => css`
+    display: inline-flex;
+    overflow: hidden;
+    position: relative;
+    gap: ${theme.space.base};
 
-  width: fit-content;
-  height: fit-content;
-`
+    width: fit-content;
+    height: fit-content;
+  `,
+)
 
 export const SText = styled.span<{ position: LabelPosition }>(
   ({ theme, position }) => {

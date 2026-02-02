@@ -1,15 +1,17 @@
 import { ResponsiveStyleValue } from "@theme-ui/css"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useMedia } from "react-use"
+
+import { pxToRem } from "@/utils"
 
 export type ScreenBreakpoint = "xs" | "sm" | "md" | "lg" | "xl"
 export type ScreenType = "mobile" | "tablet" | "laptop" | "desktop"
 
 export const BREAKPOINTS_TYPES = ["xs", "sm", "md", "lg", "xl"]
-export const BREAKPOINTS_VALUES = ["480px", "768px", "1024px", "1280px"]
+export const BREAKPOINTS_VALUES = [480, 768, 1024, 1280].map(pxToRem)
 
 export const breakpointsMap = {
-  xs: "0px",
+  xs: "0rem",
   sm: BREAKPOINTS_VALUES[0],
   md: BREAKPOINTS_VALUES[1],
   lg: BREAKPOINTS_VALUES[2],
@@ -21,11 +23,14 @@ const breakpointsEntries = Object.entries(breakpointsMap)
 type ExtendedBreakpoint = `${ScreenBreakpoint}` | `max-${ScreenBreakpoint}`
 
 export const mediaQueries = breakpointsEntries.reduce(
-  (acc, [bp, width], i, arr) => {
+  (acc, [bp, width], index) => {
+    const next = breakpointsEntries[index + 1]?.[1]
     return {
       ...acc,
-      [bp]: `@media (min-width: ${parseInt(width, 10)}px)`,
-      [`max-${bp}`]: `@media (max-width: ${parseInt(arr[i + 1]?.[1] ?? "9999px", 10) - 1}px)`,
+      [bp]: `@media (width >= ${width})`,
+      [`max-${bp}`]: next
+        ? `@media (width < ${next})`
+        : `@media (width < 9999px)`,
     }
   },
   {} as { [key in ExtendedBreakpoint]: string },
@@ -122,4 +127,41 @@ export function normalizeResponsiveProp<T>(
     acc[i] = val ? val : prev
     return acc
   }, [])
+}
+
+const getUiScale = () => {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(
+    "--ui-scale",
+  )
+
+  return value ? parseFloat(value) : 1
+}
+
+export function useUiScale() {
+  const [value, setValue] = useState(getUiScale)
+
+  useEffect(() => {
+    const update = () => {
+      const next = getUiScale()
+      setValue((prev) => (prev === next ? prev : next))
+    }
+
+    update()
+
+    const resizeObserver = new ResizeObserver(update)
+    resizeObserver.observe(document.documentElement)
+
+    const mutationObserver = new MutationObserver(update)
+    mutationObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["style", "class"],
+    })
+
+    return () => {
+      resizeObserver.disconnect()
+      mutationObserver.disconnect()
+    }
+  }, [])
+
+  return value
 }

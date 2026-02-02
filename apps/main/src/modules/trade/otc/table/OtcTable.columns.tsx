@@ -140,7 +140,7 @@ export const useOtcTableColums = () => {
         return (
           <Flex justify="center">
             <Icon
-              size={18}
+              size="m"
               component={
                 row.original.isPartiallyFillable ? CircleCheckBig : CircleOff
               }

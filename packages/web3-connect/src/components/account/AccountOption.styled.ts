@@ -3,26 +3,26 @@ import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SAccountOption = styled.div<{
   disabled?: boolean
-}>`
-  position: relative;
-  width: 100%;
-  min-height: 65px;
-  min-width: 0;
+}>(
+  ({ theme, disabled }) => css`
+    position: relative;
+    width: 100%;
+    min-height: 4rem;
+    min-width: 0;
 
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 
-  padding: 4px 16px;
-  transition: ${({ theme }) => theme.transitions.colors};
+    padding: ${theme.space.s} ${theme.space.l};
+    transition: ${theme.transitions.colors};
 
-  background: ${({ theme }) => theme.surfaces.containers.dim.dimOnBg};
-  border-radius: ${({ theme }) => theme.radii.lg}px;
-  border: 1px solid ${({ theme }) => theme.details.borders};
+    background: ${theme.surfaces.containers.dim.dimOnBg};
+    border-radius: ${theme.radii.m};
+    border: 1px solid ${theme.details.borders};
 
-  ${({ theme, disabled }) =>
-    !disabled &&
+    ${!disabled &&
     css`
       cursor: pointer;
 
@@ -38,7 +38,8 @@ export const SAccountOption = styled.div<{
         background-color: ${theme.details.borders};
       }
     `}
-`
+  `,
+)
 
 export const SCopyButton = styled(CopyButton)(
   ({ theme }) => css`
@@ -60,7 +61,7 @@ export const SChangeAccountButton = styled(Button)<{ isActive?: boolean }>(
     text-transform: uppercase;
     border: 1px solid ${theme.details.borders};
     border-top: none;
-    border-radius: ${theme.radii.lg}px;
+    border-radius: ${theme.radii.m};
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 

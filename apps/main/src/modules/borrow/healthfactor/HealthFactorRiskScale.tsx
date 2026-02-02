@@ -43,11 +43,11 @@ export const HealthFactorRiskScale: React.FC<HealthFactorRiskScaleProps> = ({
       </SCurrentValueWrapper>
       <SLiquidationMarker>
         <Stack pl="calc(10% - 10px)">
-          <Text fs={13} lh={1} color={getToken("details.values.negative")}>
+          <Text fs="p4" lh={1} color={getToken("details.values.negative")}>
             1.00
           </Text>
           <Text
-            fs={13}
+            fs="p4"
             color={getToken("details.values.negative")}
             sx={{ whiteSpace: "nowrap" }}
           >

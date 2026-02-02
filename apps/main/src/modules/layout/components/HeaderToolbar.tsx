@@ -22,7 +22,7 @@ export const HeaderToolbar: FC = () => {
       {hasTopNavbar && (
         <ButtonIcon asChild>
           <ExternalLink href={HYDRATION_DOCS_LINK}>
-            <Icon component={QuestionCircleRegular} size={20} />
+            <Icon component={QuestionCircleRegular} size="l" />
           </ExternalLink>
         </ButtonIcon>
       )}

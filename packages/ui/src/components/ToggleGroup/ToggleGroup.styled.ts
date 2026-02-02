@@ -13,27 +13,27 @@ export type ToggleGroupProps = {
 
 const sizes = createVariants<ToggleGroupSize>((theme) => ({
   small: css`
-    padding: ${theme.scales.paddings.s}px;
-    font-size: ${theme.paragraphSize.p6};
+    padding: ${theme.space.s};
+    font-size: ${theme.fontSizes.p6};
     svg {
-      width: 16px;
-      height: 16px;
+      width: ${theme.space.l};
+      height: ${theme.space.l};
     }
   `,
   medium: css`
-    padding: ${theme.scales.paddings.base}px;
-    font-size: ${theme.paragraphSize.p4};
+    padding: ${theme.space.base};
+    font-size: ${theme.fontSizes.p4};
     svg {
-      width: 20px;
-      height: 20px;
+      width: ${theme.space.xl};
+      height: ${theme.space.xl};
     }
   `,
   large: css`
-    padding: ${theme.scales.paddings.m}px;
-    font-size: ${theme.paragraphSize.p4};
+    padding: ${theme.space.m};
+    font-size: ${theme.fontSizes.p4};
     svg {
-      width: 24px;
-      height: 24px;
+      width: ${theme.space.m};
+      height: ${theme.space.m};
     }
   `,
 }))
@@ -51,14 +51,10 @@ export const SToggleGroup = styled(ToggleGroupPrimitive.Root, {
   css`
     display: flex;
     align-items: center;
-    gap: ${size === "small"
-      ? theme.scales.paddings.xs
-      : theme.scales.paddings.s}px;
-    padding: ${size === "small"
-      ? theme.scales.paddings.xs
-      : theme.scales.paddings.s}px;
+    gap: ${size === "small" ? theme.space.xs : theme.space.s};
+    padding: ${size === "small" ? theme.space.xs : theme.space.s};
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
     border: 1px solid ${theme.buttons.secondary.low.borderRest};
   `,
 ])
@@ -73,7 +69,7 @@ export const SToggleGroupItem = styled(ToggleGroupPrimitive.Item, {
     flex: 1;
     align-items: center;
     justify-content: center;
-    gap: ${theme.scales.paddings.base}px;
+    gap: ${theme.space.base};
 
     cursor: pointer;
 
@@ -81,7 +77,7 @@ export const SToggleGroupItem = styled(ToggleGroupPrimitive.Item, {
     white-space: nowrap;
 
     border: 0;
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
 
     transition: ${theme.transitions.colors};
 

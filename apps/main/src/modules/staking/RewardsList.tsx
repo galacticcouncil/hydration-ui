@@ -50,11 +50,11 @@ export const RewardsList: FC<Props> = ({
   return (
     <Box>
       <SRewardsListChartContainer>
-        <Flex direction="column" gap={20}>
+        <Flex direction="column" gap="xl">
           <Text
             sx={{ whiteSpace: "nowrap" }}
             fw={500}
-            fs={16}
+            fs="p2"
             lh={1.2}
             color={getToken("text.high")}
           >
@@ -65,14 +65,14 @@ export const RewardsList: FC<Props> = ({
             justify={["space-between", "flex-start"]}
             gap={[0, 22]}
           >
-            <Flex direction="column" gap={2}>
+            <Flex direction="column" gap="xs">
               {isLoading ? (
                 <Skeleton height={24} />
               ) : (
                 <Text
                   font="primary"
                   fw={500}
-                  fs={24}
+                  fs="h6"
                   lh={1}
                   color={getToken("text.high")}
                 >
@@ -85,16 +85,16 @@ export const RewardsList: FC<Props> = ({
               {isLoading ? (
                 <Skeleton height={20} />
               ) : (
-                <Text fs={14} lh={1.4} color={getToken("text.onTint")}>
+                <Text fs="p3" lh={1.4} color={getToken("text.onTint")}>
                   ≈{claimableDisplay}
                 </Text>
               )}
             </Flex>
-            <Flex direction="column" gap={2}>
+            <Flex direction="column" gap="xs">
               <Text
                 font="primary"
                 fw={500}
-                fs={24}
+                fs="h6"
                 lh={1}
                 color={getToken("text.high")}
               >
@@ -103,7 +103,7 @@ export const RewardsList: FC<Props> = ({
               {isLoading ? (
                 <Skeleton height={20} />
               ) : (
-                <Text fs={14} lh={1.4} color={getToken("text.onTint")}>
+                <Text fs="p3" lh={1.4} color={getToken("text.onTint")}>
                   {t("staking:dashboard.ofAllocated")}
                 </Text>
               )}

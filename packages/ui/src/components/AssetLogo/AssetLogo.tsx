@@ -1,10 +1,10 @@
 import { Children, cloneElement, isValidElement } from "react"
 
 import { TriangleAlert } from "@/assets/icons"
-import { LogoProps, LogoSize, Skeleton, Tooltip } from "@/components"
+import { LogoProps, LogoSize, Tooltip } from "@/components"
+import { LogoSkeleton } from "@/components/Logo/LogoSkeleton"
 
 import {
-  LOGO_DIAMETER,
   SAssetBadge,
   SAssetChainLogo,
   SAssetLogo,
@@ -35,9 +35,7 @@ export const AssetLogo = ({
   className,
 }: AssetLogoProps) => {
   if (isLoading) {
-    const skeletonSize = LOGO_DIAMETER[size]
-
-    return <Skeleton width={skeletonSize} height={skeletonSize} circle />
+    return <LogoSkeleton size={size} />
   }
 
   return (

@@ -18,8 +18,8 @@ export const ApyRow: React.FC<ApyRowProps> = ({ assetId, value, label }) => {
   const asset = assetId ? getAsset(assetId) : null
 
   return (
-    <Flex align="center" justify="space-between" gap={4}>
-      <Flex gap={4} align="center">
+    <Flex align="center" justify="space-between" gap="s">
+      <Flex gap="s" align="center">
         {asset && (
           <>
             <AssetLogo id={asset.id} size="extra-small" />
@@ -57,7 +57,7 @@ export const DetailedApy: React.FC<DetailedApyProps> = ({
   ...props
 }) => {
   return (
-    <Flex gap={4} align="center" {...props}>
+    <Flex gap="s" align="center" {...props}>
       {children}
       <TooltipAPR
         farms={[]}

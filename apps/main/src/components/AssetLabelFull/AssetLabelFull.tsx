@@ -4,7 +4,6 @@ import {
   Flex,
   Skeleton,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC, ReactNode } from "react"
 
 import { TAssetData } from "@/api/assets"
@@ -106,18 +105,14 @@ export const AssetLabelFullContainer: FC<{
 }> = ({ children, variant = "horizontal" }) => {
   if (variant === "horizontal") {
     return (
-      <Flex
-        gap={getTokenPx("scales.paddings.base")}
-        align="center"
-        minWidth={0}
-      >
+      <Flex gap="base" align="center" minWidth={0}>
         {children}
       </Flex>
     )
   }
 
   return (
-    <Flex gap={getTokenPx("scales.paddings.base")} direction="column">
+    <Flex gap="base" direction="column">
       {children}
     </Flex>
   )

@@ -27,7 +27,7 @@ export const ChartTimeRange = <
   onSelect,
 }: Props<TKey, TOption>) => {
   return (
-    <Flex py={2} px={8} align="center" gap={2} className={className}>
+    <Flex py="xs" px="base" align="center" gap="xs" className={className}>
       {options.map((option) => {
         const isKeyOption = typeof option === "string"
         const key = isKeyOption ? option : option.key

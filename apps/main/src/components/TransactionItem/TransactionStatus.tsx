@@ -35,7 +35,7 @@ export const TransactionStatus: FC<Props> = ({ variant }) => {
       <Text fw={500} fs="p4" lh={1}>
         {status}
       </Text>
-      <Icon size={14} component={icon} />
+      <Icon size="s" component={icon} />
     </STransactionStatus>
   )
 }

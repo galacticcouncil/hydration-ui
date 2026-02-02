@@ -9,6 +9,9 @@
     "lint": {
       "cache": false
     },
+    "lint:fix": {
+      "cache": false
+    },
     "i18n": {
       "cache": false
     },

@@ -1,5 +1,5 @@
 import { Flex, Text } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
@@ -15,13 +15,13 @@ export const TradeFee: FC<Props> = ({ fee, feeDisplay, feePct, feeSymbol }) => {
   const { t } = useTranslation(["common", "trade"])
 
   return (
-    <Flex justify="space-between" align="center" my={4.5} px={20}>
-      <Text fw={400} fs="p5" lh={px(16.8)} color={getToken("text.medium")}>
+    <Flex justify="space-between" align="center" my="s" px="xl">
+      <Text fw={400} fs="p5" lh="m" color={getToken("text.medium")}>
         {t("trade:otc.fillOrder.tradeFee", {
           percentage: Big(feePct).times(100).toNumber(),
         })}
       </Text>
-      <Text fw={500} fs="p5" lh={px(14.4)} color={getToken("text.high")}>
+      <Text fw={500} fs="p5" lh="s" color={getToken("text.high")}>
         {t("currency", {
           value: fee,
           symbol: feeSymbol,

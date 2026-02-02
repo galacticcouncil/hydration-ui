@@ -78,7 +78,7 @@ export const AssetSwitcher = ({
       {onSwitchAssets && (
         <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
           <Icon
-            size={16}
+            size="m"
             component={ArrowDown}
             color={getToken("icons.primary")}
           />

@@ -45,7 +45,7 @@ export const Web3ConnectButton: FC<
         variant="accent"
         outline
       >
-        <Icon size={16} component={Wallet} mr={4} />
+        <Icon size="m" component={Wallet} mr="s" />
         <Text fs="p3">Select Account</Text>
       </Button>
     )
@@ -60,7 +60,7 @@ export const Web3ConnectButton: FC<
         onClick={() => toggle()}
         {...props}
         variant="tertiary"
-        sx={{ px: 10, gap: 8 }}
+        sx={{ px: 10, gap: "base" }}
       >
         <AccountAvatar
           size={24}
@@ -84,7 +84,7 @@ export const Web3ConnectButton: FC<
 
   return (
     <Button ref={ref} onClick={() => toggle()} {...props}>
-      <Icon size={16} component={Wallet} mr={4} />
+      <Icon size="m" component={Wallet} mr="s" />
       <Text fs="p3">Connect Wallet</Text>
     </Button>
   )

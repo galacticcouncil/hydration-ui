@@ -2,6 +2,7 @@ import { Paper, PaperProps, Separator } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { MarketTransactions } from "@/modules/trade/orders/MarketTransactions/MarketTransactions"
 import { MyRecentActivity } from "@/modules/trade/orders/MyRecentActivity/MyRecentActivity"
 import { OpenOrders } from "@/modules/trade/orders/OpenOrders/OpenOrders"
@@ -15,21 +16,47 @@ export const TradeOrders: FC<Props> = (props) => {
     from: "/trade/_history",
   })
 
+  const paginationProps = useDataTableUrlPagination(
+    "/trade/_history",
+    "page",
+    10,
+  )
+
   return (
     <Paper sx={{ overflow: "hidden" }} {...props}>
-      <TradeOrdersHeader />
+      <TradeOrdersHeader paginationProps={paginationProps} />
       <Separator />
       <div sx={{ overflowX: "auto" }}>
         {(() => {
           switch (tab) {
             case "myActivity":
-              return <MyRecentActivity allPairs={allPairs} />
+              return (
+                <MyRecentActivity
+                  allPairs={allPairs}
+                  paginationProps={paginationProps}
+                />
+              )
             case "openOrders":
-              return <OpenOrders allPairs={allPairs} />
+              return (
+                <OpenOrders
+                  allPairs={allPairs}
+                  paginationProps={paginationProps}
+                />
+              )
             case "orderHistory":
-              return <OrderHistory allPairs={allPairs} />
+              return (
+                <OrderHistory
+                  allPairs={allPairs}
+                  paginationProps={paginationProps}
+                />
+              )
             case "marketTransactions":
-              return <MarketTransactions allPairs={allPairs} />
+              return (
+                <MarketTransactions
+                  allPairs={allPairs}
+                  paginationProps={paginationProps}
+                />
+              )
           }
         })()}
       </div>

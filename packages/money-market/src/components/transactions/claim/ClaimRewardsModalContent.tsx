@@ -141,7 +141,7 @@ export const ClaimRewardsModalContent = () => {
             justify="space-between"
             align="center"
             direction={["column", "row"]}
-            gap={10}
+            gap="base"
             mb="var(--modal-content-padding)"
           >
             <Text fs="p2" fw={700} lh={1}>
@@ -168,7 +168,7 @@ export const ClaimRewardsModalContent = () => {
             borderStyle="solid"
             borderWidth={1}
             borderColor={getToken("details.separators")}
-            borderRadius="lg"
+            borderRadius="m"
           >
             <Table size="small">
               <TableHeader>
@@ -182,19 +182,19 @@ export const ClaimRewardsModalContent = () => {
                   ({ balance, balanceUsd, symbol, rewardTokenAddress }) => (
                     <TableRow key={`claim-${rewardTokenAddress}`}>
                       <TableCell>
-                        <Flex align="center" gap={6}>
+                        <Flex align="center" gap="s">
                           <ReserveLogo address={rewardTokenAddress} />
-                          <Text fs={14} fw={600}>
+                          <Text fs="p3" fw={600}>
                             {symbol}
                           </Text>
                         </Flex>
                       </TableCell>
                       <TableCell>
                         <Flex direction="column" align="flex-end">
-                          <Text fs={13} fw={500}>
+                          <Text fs="p4" fw={500}>
                             {formatCurrency(balance, { symbol })}
                           </Text>
-                          <Text fs={12} lh={1} color={getToken("text.medium")}>
+                          <Text fs="p5" lh={1} color={getToken("text.medium")}>
                             {formatCurrency(balanceUsd, {
                               maximumFractionDigits: 2,
                             })}
@@ -207,19 +207,19 @@ export const ClaimRewardsModalContent = () => {
                 {filteredRewards.length > 1 && (
                   <TableRow>
                     <TableCell>
-                      <Flex align="center" gap={6}>
+                      <Flex align="center" gap="s">
                         <Icon
-                          size={24}
+                          size="xl"
                           component={DollarSign}
                           sx={{ scale: 0.75 }}
                         />
-                        <Text fs={14} fw={600}>
+                        <Text fs="p3" fw={600}>
                           Total worth
                         </Text>
                       </Flex>
                     </TableCell>
                     <TableCell>
-                      <Text fs={15} fw={600} align="right">
+                      <Text fs="p3" fw={600} align="right">
                         {formatCurrency(claimableUsd, {
                           maximumFractionDigits: 2,
                         })}

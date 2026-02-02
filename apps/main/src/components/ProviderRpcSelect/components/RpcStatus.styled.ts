@@ -22,16 +22,16 @@ const animateCircle = keyframes`
 
 export const SStatusSuccess = styled.span`
   position: relative;
-  width: 7px;
-  height: 7px;
+  width: ${({ theme }) => theme.sizes["2xs"]};
+  height: ${({ theme }) => theme.sizes["2xs"]};
 
   & > span {
     position: absolute;
-    width: 7px;
-    height: 7px;
+    width: ${({ theme }) => theme.sizes["2xs"]};
+    height: ${({ theme }) => theme.sizes["2xs"]};
     display: block;
     background: currentColor;
-    border-radius: ${({ theme }) => theme.radii.full}px;
+    border-radius: ${({ theme }) => theme.radii.full};
   }
 
   & > svg {
