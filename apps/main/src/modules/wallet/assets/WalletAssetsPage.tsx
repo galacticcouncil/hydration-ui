@@ -10,7 +10,6 @@ import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
 import { MyLiquidity } from "@/modules/wallet/assets/MyLiquidity/MyLiquidity"
 import { WalletRewards } from "@/modules/wallet/assets/Rewards/WalletRewards"
-import {} from "@/modules/wallet/assets/WalletAssetsFilters.desktop"
 import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
 
 const WalletAssetFiltersDesktop = lazy(async () => ({
