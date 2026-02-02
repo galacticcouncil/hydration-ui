@@ -1,6 +1,6 @@
 {
   "version": 0,
-  "descriptorPath": "../node_modules/@galacticcouncil/descriptors",
+  "descriptorPath": ".papi/descriptors",
   "entries": {
     "hydration": {
       "wsUrl": "wss://hydration-rpc.n.dwellir.com",

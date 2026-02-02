@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-imports */
 import fs from "node:fs"
+import { resolve } from "node:path"
 
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite"
 import react from "@vitejs/plugin-react"
@@ -42,6 +43,14 @@ export default defineConfig({
         },
         experimentalMinChunkSize: 20_000,
       },
+    },
+  },
+  resolve: {
+    alias: {
+      "@polkadot-api/descriptors": resolve(
+        __dirname,
+        "../../.papi/descriptors/dist/index.mjs",
+      ),
     },
   },
   plugins: [

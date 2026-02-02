@@ -1,6 +1,6 @@
 import { meta } from "@galacticcouncil/common"
+import { hydration } from "@galacticcouncil/descriptors"
 import { IndexerErrorState } from "@galacticcouncil/indexer/squid/lib/parseIndexerErrorState"
-import { hydration } from "@polkadot-api/descriptors"
 import { queryOptions } from "@tanstack/react-query"
 
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
