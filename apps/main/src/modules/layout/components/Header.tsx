@@ -42,7 +42,7 @@ export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
         asChild
       >
         <Link to={LINKS.swap} disabled={hasTopNavbar}>
-          <Logo height="100%" width="auto" />
+          <Logo sx={{ width: "auto", height: "100%" }} />
         </Link>
       </Flex>
       {hasTopNavbar && <HeaderMenu />}

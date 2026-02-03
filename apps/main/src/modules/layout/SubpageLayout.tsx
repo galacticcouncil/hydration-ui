@@ -77,6 +77,7 @@ export const SubpageLayout: FC<Props> = ({
                     size="medium"
                     variant="transparent"
                     ignoreCurrentSearch={ignoreCurrentSearch}
+                    horizontalEdgeOffset="var(--layout-gutter)"
                   />
                 ))}
               <Box sx={{ gridColumn: 2 }}>{actions}</Box>
