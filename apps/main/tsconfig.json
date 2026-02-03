@@ -16,7 +16,6 @@
       "@/*": [
         "./src/*"
       ],
-      "@polkadot-api/descriptors": ["../../.papi/descriptors"]
     },
     "declaration": false,
     "declarationMap": false,

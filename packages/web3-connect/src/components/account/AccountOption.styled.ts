@@ -7,7 +7,7 @@ export const SAccountOption = styled.div<{
   ({ theme, disabled }) => css`
     position: relative;
     width: 100%;
-    min-height: ${theme.sizes["2xl"]};
+    min-height: 4rem;
     min-width: 0;
 
     flex-grow: 1;

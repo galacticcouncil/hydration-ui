@@ -13,6 +13,7 @@ import { useNavigate } from "@tanstack/react-router"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { StackedTable } from "@/modules/borrow/dashboard/components/StackedTable"
 import { SuppliedAssetsHeader } from "@/modules/borrow/dashboard/components/supplied-assets/SuppliedAssetsHeader"
@@ -31,6 +32,8 @@ export const SuppliedAssetsTable = () => {
   const { data, isLoading } = useSuppliedAssetsData()
   const navigate = useNavigate()
   const { isMobile } = useBreakpoints()
+
+  const sort = useDataTableUrlSorting("/borrow/dashboard", "suppliedSort")
 
   if (!isLoading && data.length === 0) {
     return (
@@ -67,6 +70,7 @@ export const SuppliedAssetsTable = () => {
               fixedLayout
               data={data}
               columns={columns}
+              {...sort}
             />
           </TableContainer>
         )}

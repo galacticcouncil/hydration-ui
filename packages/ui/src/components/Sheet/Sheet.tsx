@@ -96,9 +96,7 @@ const SheetBody = ({
   if (scrollable) {
     return (
       <ScrollArea sx={{ flex: 1, height: "auto", minHeight: 0 }}>
-        <Box
-          maxHeight={maxHeight ?? "calc(75vh - var(--modal-block-offset) * 2)"}
-        >
+        <Box maxHeight={maxHeight ?? "calc(75vh - var(--modal-block-offset))"}>
           <SSheetBody {...props}>{children}</SSheetBody>
         </Box>
       </ScrollArea>

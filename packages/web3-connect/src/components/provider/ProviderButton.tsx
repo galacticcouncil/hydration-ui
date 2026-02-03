@@ -48,7 +48,7 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
   return (
     <SProviderButton type="button" onClick={onClick}>
       <Box sx={{ position: "relative" }}>
-        <img sx={{ size: "l" }} src={logo} alt={title} />
+        <img sx={{ size: "xl" }} src={logo} alt={title} />
         {modes.filter(hasModeIcon).map((mode) => (
           <Box
             sx={{ position: "absolute", bottom: -4, right: -4 }}
@@ -56,11 +56,11 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
             bg={getToken("surfaces.themeBasePalette.background")}
             key={mode}
           >
-            <img width={16} height={16} src={getWalletModeIcon(mode)} />
+            <img sx={{ size: "xs" }} src={getWalletModeIcon(mode)} />
           </Box>
         ))}
       </Box>
-      <Text fs="p3" align="center" mt="base">
+      <Text fs={["p5", "p4"]} align="center" mt="base">
         {title}
       </Text>
       <Flex
@@ -68,7 +68,7 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
         gap="s"
         align="center"
       >
-        <Text fs={[12, 13]}>{actionLabel}</Text>
+        <Text fs="p5">{actionLabel}</Text>
         <Icon
           size="s"
           component={isConnected ? LogOut : installed ? ChevronRight : Download}

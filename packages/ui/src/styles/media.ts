@@ -2,13 +2,16 @@ import { ResponsiveStyleValue } from "@theme-ui/css"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useMedia } from "react-use"
 
-import { pxToRem } from "@/utils"
-
 export type ScreenBreakpoint = "xs" | "sm" | "md" | "lg" | "xl"
 export type ScreenType = "mobile" | "tablet" | "laptop" | "desktop"
 
 export const BREAKPOINTS_TYPES = ["xs", "sm", "md", "lg", "xl"]
-export const BREAKPOINTS_VALUES = [480, 768, 1024, 1280].map(pxToRem)
+export const BREAKPOINTS_VALUES = [
+  "30rem", // 480px
+  "48rem", // 768px
+  "64rem", // 1024px
+  "80rem", // 1280px
+]
 
 export const breakpointsMap = {
   xs: "0rem",
@@ -23,11 +26,16 @@ const breakpointsEntries = Object.entries(breakpointsMap)
 type ExtendedBreakpoint = `${ScreenBreakpoint}` | `max-${ScreenBreakpoint}`
 
 export const mediaQueries = breakpointsEntries.reduce(
-  (acc, [bp, width]) => ({
-    ...acc,
-    [bp]: `@media (width >= ${width})`,
-    [`max-${bp}`]: `@media (width < ${width})`,
-  }),
+  (acc, [bp, width], index) => {
+    const next = breakpointsEntries[index + 1]?.[1]
+    return {
+      ...acc,
+      [bp]: `@media (width >= ${width})`,
+      [`max-${bp}`]: next
+        ? `@media (width < ${next})`
+        : `@media (width < 9999px)`,
+    }
+  },
   {} as { [key in ExtendedBreakpoint]: string },
 )
 

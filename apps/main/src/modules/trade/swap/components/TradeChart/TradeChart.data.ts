@@ -88,10 +88,14 @@ export const useTradeChartData = ({
 
     const currentPrice = Big(spotPriceData?.spotPrice || "0")
 
+    const lastPricePoint = prices.at(prices.length - 1)
+
     const withCurrentPrice = currentPrice.gt(0)
       ? prices.concat([
           {
-            timestamp: Date.now(),
+            timestamp: lastPricePoint
+              ? lastPricePoint.timestamp + 1000
+              : Date.now(),
             amount: Big(1).div(currentPrice).toString(),
             volume: "0",
           },
@@ -99,7 +103,7 @@ export const useTradeChartData = ({
       : prices
 
     return withCurrentPrice
-      .sort(
+      .toSorted(
         sortBy({
           select: (bucket) => bucket.timestamp,
           compare: numerically,

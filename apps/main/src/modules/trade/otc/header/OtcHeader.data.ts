@@ -10,7 +10,7 @@ export const useOtcHeaderData = () => {
   )
 
   return {
-    otcValue: otcValue,
+    otcValue,
     isLoading: isLoading || isPriceLoading,
   }
 }

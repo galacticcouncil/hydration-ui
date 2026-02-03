@@ -119,6 +119,7 @@ export const DcaSummary: FC<Props> = ({
             label={t("trade:dca.summary.priceImpact")}
             content={
               <SummaryRowValue
+                as="div"
                 color={(() => {
                   switch (priceImpactLevel) {
                     case "error":

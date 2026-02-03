@@ -1,5 +1,10 @@
 import { hexToRgba } from "@galacticcouncil/utils"
-import { createChart, LineType, SeriesType } from "lightweight-charts"
+import {
+  createChart,
+  IChartApi,
+  LineType,
+  SeriesType,
+} from "lightweight-charts"
 import { useEffect, useRef, useState } from "react"
 
 import { Box } from "@/components"
@@ -50,6 +55,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
+  const chartRef = useRef<IChartApi | null>(null)
 
   const onCrosshairMoveRef = useRef(onCrosshairMove)
   useEffect(() => {
@@ -92,6 +98,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     )
 
     chart.timeScale().fitContent()
+
+    const previousVisibleRange = chartRef.current?.timeScale().getVisibleRange()
+
+    if (previousVisibleRange) {
+      chart.timeScale().setVisibleRange(previousVisibleRange)
+    }
+
+    chartRef.current = chart
 
     if (
       crosshairRef.current &&

@@ -30,11 +30,11 @@ export const ProviderLastConnectedButton: React.FC<
   return (
     <SProviderButton type="button" onClick={onClick}>
       <ProviderIcons providers={connected} />
-      <Text fs={[12, 14]} sx={{ mt: 8 }} align="center">
+      <Text fs={["p5", "p4"]} sx={{ mt: 8 }} align="center">
         Last connected
       </Text>
       <Flex color={getToken("text.tint.primary")} gap="s" align="center">
-        <Text fs={[12, 13]}>Continue</Text>
+        <Text fs="p5">Continue</Text>
         <Icon size="s" component={ChevronRight} />
       </Flex>
     </SProviderButton>

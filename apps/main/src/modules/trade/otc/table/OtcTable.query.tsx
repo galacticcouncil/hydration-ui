@@ -1,4 +1,4 @@
-import { usePapiObservableQuery } from "@/hooks/usePapiObservableQuery"
+import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 
@@ -17,43 +17,40 @@ export type OtcOffer = {
 export const useOtcOffers = () => {
   const { getAsset, isExternal } = useAssets()
 
-  return usePapiObservableQuery("OTC.Orders", [{ at: "best" }], {
-    watchType: "entries",
-    select({ entries }) {
-      return entries
-        .map<OtcOffer | null>(({ args, value: offer }) => {
-          const assetIn = getAsset(offer.asset_in.toString())
-          const assetOut = getAsset(offer.asset_out.toString())
+  return usePapiEntries("OTC.Orders", [], (entries) =>
+    entries
+      .map<OtcOffer | null>(({ keyArgs, value: offer }) => {
+        const assetIn = getAsset(offer.asset_in)
+        const assetOut = getAsset(offer.asset_out)
 
-          const isAssetInValid =
-            !!assetIn && (!isExternal(assetIn) || !!assetIn.name)
+        const isAssetInValid =
+          !!assetIn && (!isExternal(assetIn) || !!assetIn.name)
 
-          const isAssetOutValid =
-            !!assetOut && (!isExternal(assetOut) || !!assetOut.name)
+        const isAssetOutValid =
+          !!assetOut && (!isExternal(assetOut) || !!assetOut.name)
 
-          if (!isAssetInValid || !isAssetOutValid) {
-            return null
-          }
+        if (!isAssetInValid || !isAssetOutValid) {
+          return null
+        }
 
-          const amountIn = offer.amount_in.toString()
-          const amountOut = offer.amount_out.toString()
+        const amountIn = offer.amount_in.toString()
+        const amountOut = offer.amount_out.toString()
 
-          const assetAmountIn = scaleHuman(amountIn, assetIn.decimals)
-          const assetAmountOut = scaleHuman(amountOut, assetOut.decimals)
+        const assetAmountIn = scaleHuman(amountIn, assetIn.decimals)
+        const assetAmountOut = scaleHuman(amountOut, assetOut.decimals)
 
-          return {
-            id: args[0].toString(),
-            owner: offer.owner.toString(),
-            assetIn: assetIn,
-            assetOut: assetOut,
-            amountIn,
-            amountOut,
-            assetAmountIn,
-            assetAmountOut,
-            isPartiallyFillable: offer.partially_fillable,
-          }
-        })
-        .filter((offer) => !!offer)
-    },
-  })
+        return {
+          id: keyArgs[0].toString(),
+          owner: offer.owner.toString(),
+          assetIn: assetIn,
+          assetOut: assetOut,
+          amountIn,
+          amountOut,
+          assetAmountIn,
+          assetAmountOut,
+          isPartiallyFillable: offer.partially_fillable,
+        }
+      })
+      .filter((offer) => !!offer),
+  )
 }

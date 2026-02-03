@@ -1,6 +1,6 @@
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { useFormContext } from "react-hook-form"
 
-import { HealthFactorResult } from "@/api/aave"
 import { Trade, TradeOrder, TradeType } from "@/api/trade"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { MarketSummarySkeleton } from "@/modules/trade/swap/sections/Market/Summary/MarketSummarySkeleton"

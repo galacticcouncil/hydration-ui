@@ -221,7 +221,6 @@
   "avg": "Avg",
   "save": "Save",
   "date": "Date",
-  "minimumReceive": "Minimum receive",
   "date.relative.now": "Now",
   "date.relative.past": "{{ value }} ago",
   "date.relative.future": "In {{ value }}",

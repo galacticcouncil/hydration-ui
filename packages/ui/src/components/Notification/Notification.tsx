@@ -89,7 +89,7 @@ export const Notification = ({
             </Text>
           )}
         </Stack>
-        <Flex ml="auto">
+        <Flex ml="auto" mb="auto">
           {hint && (
             <Tooltip text={hint} asChild>
               <ButtonIcon>
