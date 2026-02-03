@@ -5,7 +5,13 @@ import {
   LineType,
   SeriesType,
 } from "lightweight-charts"
-import { useEffect, useRef, useState } from "react"
+import {
+  RefObject,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react"
 
 import { Box } from "@/components"
 import { Crosshair } from "@/components/TradingViewChart/components/Crosshair"
@@ -28,6 +34,10 @@ import {
 import { useUiScale } from "@/styles/media"
 import { useTheme } from "@/theme"
 
+export type TradingViewChartRef = {
+  resetZoom: () => void
+}
+
 type ChartTypeProps =
   | {
       type: Extract<SeriesType, "Candlestick">
@@ -39,6 +49,7 @@ type ChartTypeProps =
     }
 
 export type TradingViewChartProps = ChartTypeProps & {
+  ref?: RefObject<TradingViewChartRef | null>
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
@@ -46,6 +57,7 @@ export type TradingViewChartProps = ChartTypeProps & {
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
+  ref,
   data,
   type = "Baseline",
   height = 400,
@@ -56,6 +68,12 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    resetZoom: () => {
+      chartRef.current = null
+    },
+  }))
 
   const onCrosshairMoveRef = useRef(onCrosshairMove)
   useEffect(() => {
