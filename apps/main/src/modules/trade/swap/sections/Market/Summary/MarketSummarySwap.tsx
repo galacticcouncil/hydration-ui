@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { Trade } from "@galacticcouncil/sdk-next/build/types/sor"
 import {
   Box,
@@ -12,7 +13,6 @@ import { FC } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TradeType } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
@@ -77,6 +77,7 @@ export const MarketSummarySwap: FC<Props> = ({
   const [tradeFeeDisplay] = useDisplayAssetPrice(
     tradeFeeAsset?.id ?? "",
     tradeFee,
+    { maximumFractionDigits: null },
   )
 
   const transactionFeeAsset = getAssetWithFallback(
@@ -86,6 +87,7 @@ export const MarketSummarySwap: FC<Props> = ({
   const [transactionCostsDisplay] = useDisplayAssetPrice(
     transactionFee?.feeAssetId ?? "",
     transactionCosts,
+    { maximumFractionDigits: null },
   )
 
   const minSummaryAsset = isBuy ? sellAsset : buyAsset

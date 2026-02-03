@@ -1,10 +1,10 @@
 import { Box, Grid } from "@galacticcouncil/ui/components"
-import { Outlet, useLocation } from "@tanstack/react-router"
+import { Outlet, useLocation, useMatchRoute } from "@tanstack/react-router"
 import { FC, ReactNode, useMemo } from "react"
 
 import { Breadcrumb, BreadcrumbItem } from "@/components/Breadcrumb"
 import { TabItem, TabMenu } from "@/components/TabMenu"
-import { NAVIGATION } from "@/config/navigation"
+import { LINKS, NAVIGATION } from "@/config/navigation"
 import {
   Container,
   Content,
@@ -12,13 +12,13 @@ import {
   MainContent,
 } from "@/modules/layout/components/Content"
 import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 type Props = {
   readonly actions?: ReactNode
   readonly subpageMenu?: ReactNode
   readonly crumbs?: BreadcrumbItem[]
   readonly ignoreCurrentSearch?: boolean
-  readonly alwasShowSubNav?: boolean
 }
 
 export const SubpageLayout: FC<Props> = ({
@@ -26,12 +26,13 @@ export const SubpageLayout: FC<Props> = ({
   subpageMenu,
   crumbs = [],
   ignoreCurrentSearch,
-  alwasShowSubNav,
 }) => {
   const translations = useMenuTranslations()
   const pathname = useLocation({
     select: (state) => state.pathname,
   })
+  const isMatch = useMatchRoute()
+  const isLiquidityPage = !!isMatch({ to: LINKS.liquidity })
 
   const subNav = useMemo(
     () =>
@@ -48,7 +49,7 @@ export const SubpageLayout: FC<Props> = ({
 
   const hasCrumbs = crumbs.length > 0
   const hasSubpageMenu =
-    !hasCrumbs && (alwasShowSubNav || subpageMenu || subNav.length >= 2)
+    !hasCrumbs && (subpageMenu || subNav.length >= (actions ? 1 : 2))
 
   return (
     <Container>
@@ -64,14 +65,20 @@ export const SubpageLayout: FC<Props> = ({
         <ContentContainer>
           <Content>
             <Grid columnTemplate="1fr auto" align="center">
-              {hasSubpageMenu && (
-                <TabMenu
-                  items={subNav}
-                  size="medium"
-                  variant="transparent"
-                  ignoreCurrentSearch={ignoreCurrentSearch}
-                />
-              )}
+              {hasSubpageMenu &&
+                (isLiquidityPage ? (
+                  <LiquidityTabMenu
+                    items={subNav}
+                    ignoreCurrentSearch={ignoreCurrentSearch}
+                  />
+                ) : (
+                  <TabMenu
+                    items={subNav}
+                    size="medium"
+                    variant="transparent"
+                    ignoreCurrentSearch={ignoreCurrentSearch}
+                  />
+                ))}
               <Box sx={{ gridColumn: 2 }}>{actions}</Box>
             </Grid>
           </Content>
@@ -82,5 +89,29 @@ export const SubpageLayout: FC<Props> = ({
         <Outlet />
       </MainContent>
     </Container>
+  )
+}
+
+const LiquidityTabMenu = ({
+  ignoreCurrentSearch,
+  items,
+}: Pick<Props, "ignoreCurrentSearch"> & { items: TabItem[] }) => {
+  const isLiquidityProvided = useIsLiquidityProvided()
+
+  const filteredItems = useMemo(
+    () =>
+      isLiquidityProvided
+        ? items
+        : items.filter((tab) => tab.search?.myLiquidity === false),
+    [items, isLiquidityProvided],
+  )
+
+  return (
+    <TabMenu
+      items={filteredItems}
+      size="medium"
+      variant="transparent"
+      ignoreCurrentSearch={ignoreCurrentSearch}
+    />
   )
 }

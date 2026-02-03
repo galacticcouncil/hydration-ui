@@ -12,6 +12,7 @@ import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
 import { FC, Ref } from "react"
 
 import { SConnectedButton } from "@/components/Web3ConnectButton.styled"
+import { useWeb3Connect, WalletProviderStatus } from "@/hooks"
 import { useAccount } from "@/hooks/useAccount"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { getAccountAvatarTheme } from "@/utils"
@@ -26,7 +27,16 @@ export const Web3ConnectButton: FC<
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
 
-  if (!allowIncompatibleAccounts && account?.isIncompatible) {
+  const isConnectedWithoutAccount = useWeb3Connect((state) => {
+    const hasConnectedProvider = state.providers.some(
+      (p) => p.status === WalletProviderStatus.Connected,
+    )
+    return hasConnectedProvider && !state.account
+  })
+
+  const isIncompatible = !allowIncompatibleAccounts && !!account?.isIncompatible
+
+  if (isIncompatible || isConnectedWithoutAccount) {
     return (
       <Button
         ref={ref}
@@ -35,7 +45,7 @@ export const Web3ConnectButton: FC<
         variant="accent"
         outline
       >
-        <Icon size={16} component={Wallet} mr={4} />
+        <Icon size="m" component={Wallet} mr="s" />
         <Text fs="p3">Select Account</Text>
       </Button>
     )
@@ -50,7 +60,7 @@ export const Web3ConnectButton: FC<
         onClick={() => toggle()}
         {...props}
         variant="tertiary"
-        sx={{ px: 10, gap: 8 }}
+        sx={{ px: 10, gap: "base" }}
       >
         <AccountAvatar
           size={24}
@@ -74,7 +84,7 @@ export const Web3ConnectButton: FC<
 
   return (
     <Button ref={ref} onClick={() => toggle()} {...props}>
-      <Icon size={16} component={Wallet} mr={4} />
+      <Icon size="m" component={Wallet} mr="s" />
       <Text fs="p3">Connect Wallet</Text>
     </Button>
   )

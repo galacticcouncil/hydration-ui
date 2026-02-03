@@ -11,17 +11,17 @@ export const SNotification = styled.div(
     display: flex;
 
     flex-direction: column;
-    padding-block: ${theme.scales.paddings.l}px;
-    padding-inline: ${theme.scales.paddings.m}px;
+    padding-block: ${theme.space.l};
+    padding-inline: ${theme.space.m};
 
     position: relative;
 
-    width: 310px;
+    width: 19.375rem;
 
     position: relative;
     overflow: hidden;
 
-    border-radius: 16px;
+    border-radius: ${theme.radii.xl};
     border: 1px solid ${theme.details.borders};
     background: ${theme.surfaces.containers.high.primary};
   `,
@@ -29,7 +29,7 @@ export const SNotification = styled.div(
 
 export const SProgressContainer = styled.div(
   ({ theme }) => css`
-    height: 2px;
+    height: ${theme.sizes["4xs"]};
     width: 100%;
 
     background: ${theme.buttons.secondary.outline.fill};
@@ -64,7 +64,7 @@ const getColor = (cssKey: "color" | "background") =>
 export const SProgress = styled.div<{
   closeTime: number
   variant: ToastVariant
-}>(({ closeTime, variant }) => [
+}>(({ theme, closeTime, variant }) => [
   css`
     @keyframes shrink {
       from {
@@ -78,9 +78,9 @@ export const SProgress = styled.div<{
     animation: shrink ${closeTime}ms linear forwards;
 
     width: 100%;
-    height: 2px;
+    height: ${theme.sizes["4xs"]};
 
-    border-radius: 9999px;
+    border-radius: ${theme.radii.full};
 
     position: relative;
     float: right;

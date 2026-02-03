@@ -68,7 +68,7 @@ export const XYKSharesPositions = ({
         >
           <Button variant="tertiary" outline>
             {t("common:actions")}
-            <Icon component={Ellipsis} size={16} />
+            <Icon component={Ellipsis} size="m" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

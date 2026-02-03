@@ -1,7 +1,7 @@
 import { Flex, Paper, SliderTabs } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 
+import { ChartState } from "@/components/ChartState"
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
 import {
   intervalOptions,
@@ -21,8 +21,8 @@ export const PoolDetailsSkeleton = () => {
   if (isTablet || isMobile) {
     return (
       <Paper
-        p={[16, 20]}
-        sx={{ flex: 1, gap: 12, flexDirection: "column" }}
+        p={["secondary", "primary"]}
+        sx={{ flex: 1, gap: "m", flexDirection: "column" }}
         as={Flex}
       >
         <PoolChart
@@ -31,8 +31,9 @@ export const PoolDetailsSkeleton = () => {
           interval="all"
           setInterval={() => null}
         />
-        <Flex gap={8} justify="space-between">
-          <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+        <ChartState sx={{ height: 350 }} isLoading isEmpty />
+        <Flex gap="base" justify="space-between">
+          <Flex align="center" gap="base">
             <SliderTabs
               options={chartTypes}
               selected="price"
@@ -60,15 +61,16 @@ export const PoolDetailsSkeleton = () => {
     <Flex direction="column" sx={{ position: "relative" }}>
       <PoolDetailsHeaderSkeleton />
 
-      <Flex gap={20}>
-        <Paper p={[16, 20]} sx={{ flex: 1, flexBasis: 500 }}>
-          <PoolChart
-            assetId=""
-            height={420}
-            interval="all"
-            setInterval={() => null}
-          />
-        </Paper>
+      <Flex gap="xl">
+        <Flex
+          as={Paper}
+          p={["secondary", "primary"]}
+          align="center"
+          flex={1}
+          sx={{ flexBasis: "31.25rem" }}
+        >
+          <ChartState sx={{ height: 420 }} isLoading isEmpty />
+        </Flex>
         <PoolDetailsValuesSkeleton />
       </Flex>
     </Flex>

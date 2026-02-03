@@ -5,7 +5,7 @@ import { hexToRgba } from "@galacticcouncil/utils"
 
 export const SBanner = styled(Flex)(
   ({ theme }) => css`
-    gap: 10px;
+    gap: ${theme.space.base};
     flex-direction: column;
 
     overflow: hidden;
@@ -14,7 +14,7 @@ export const SBanner = styled(Flex)(
     position: relative;
 
     border: 1px solid ${theme.details.tooltips};
-    border-radius: ${theme.radii.xl}px;
+    border-radius: ${theme.radii.xl};
 
     ${mq("md")} {
       padding-block: 18px;

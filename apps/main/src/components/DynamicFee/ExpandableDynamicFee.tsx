@@ -69,7 +69,7 @@ export const ExpandableDynamicFee = ({
   })()
 
   return (
-    <Flex direction="column" gap={8} className={className}>
+    <Flex direction="column" gap="base" className={className}>
       <CollapsibleRoot open={expanded}>
         <CollapsibleTrigger
           onClick={() => setExpanded((prev) => !prev)}
@@ -81,8 +81,8 @@ export const ExpandableDynamicFee = ({
             px: "var(--modal-content-padding)",
           }}
         >
-          <Flex align="center" justify="space-between" my={8}>
-            <Flex direction="column" justify="space-between" gap={4}>
+          <Flex align="center" justify="space-between" my="base">
+            <Flex direction="column" justify="space-between" gap="s">
               <Text fs="p5" color={getToken("text.medium")}>
                 {label}
               </Text>
@@ -97,12 +97,13 @@ export const ExpandableDynamicFee = ({
             {loading ? (
               <Skeleton width={50} height={12} />
             ) : (
-              <Flex gap={8} align="center">
-                <Flex gap={2}>
+              <Flex gap="base" align="center">
+                <Flex gap="xs">
                   {valueDisplay && (
                     <Text fs="p5" fw={500} color={getToken("text.high")}>
                       {t("currency", {
                         value: valueDisplay,
+                        maximumFractionDigits: null,
                       })}
                     </Text>
                   )}
@@ -111,7 +112,7 @@ export const ExpandableDynamicFee = ({
                   </Text>
                 </Flex>
 
-                <Flex p="1px 2px" gap={1} height="min-content">
+                <Flex p="1px 2px" gap="xs" height="min-content">
                   {dynamicFeeRangeTypes.map((rangeType) => {
                     const isActive = rangeType === currentKey
 
@@ -131,7 +132,7 @@ export const ExpandableDynamicFee = ({
 
                 <Icon
                   component={ChevronDown}
-                  size={18}
+                  size="m"
                   color={getToken("text.low")}
                   sx={{
                     transition: getToken("transitions.transform"),
@@ -144,12 +145,12 @@ export const ExpandableDynamicFee = ({
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <Flex direction="column" gap={8}>
+          <Flex direction="column" gap="base">
             <Flex justify="space-between" align="start">
               <Text fs="p5" color={getToken("text.medium")}>
                 {t("liquidity:liquidity.remove.modal.fee.breakdown")}
               </Text>
-              <Flex direction="column" gap={4} align="end">
+              <Flex direction="column" gap="s" align="end">
                 {feesBreakdown.map((fee) => (
                   <Text
                     key={fee.symbol}
@@ -166,7 +167,7 @@ export const ExpandableDynamicFee = ({
               </Flex>
             </Flex>
             <Flex
-              gap={2}
+              gap="xs"
               sx={{
                 borderRadius: 50,
                 overflow: "hidden",
@@ -199,7 +200,7 @@ export const ExpandableDynamicFee = ({
                   <Text
                     key={number.toString()}
                     color={getToken("text.low")}
-                    fs={11}
+                    fs="p6"
                     sx={
                       isFirstOrLastEl
                         ? {

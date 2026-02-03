@@ -66,7 +66,7 @@ export const HealthFactorLtvScale = ({
             <Text fs="p4" fw={600}>
               {(Number(loanToValue) * 100).toFixed(2)}%
             </Text>
-            <Flex inline gap={4} color={getToken("text.medium")}>
+            <Flex inline gap="s" color={getToken("text.medium")}>
               <Text fs="p6">MAX</Text>
               <Text fs="p6">
                 {(Number(currentLoanToValue) * 100).toFixed(2)}%

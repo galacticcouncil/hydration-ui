@@ -171,7 +171,7 @@ export const useSuppliedAssetsTableColumns = ({
         const isDisabled = !isActive || isPaused
 
         return (
-          <Flex justify="flex-end" align="center" gap={4}>
+          <Flex justify="flex-end" align="center" gap="s">
             <Button
               disabled={isDisabled}
               variant="tertiary"
@@ -203,7 +203,7 @@ export const useSuppliedAssetsTableColumns = ({
               sx={{ flexShrink: 0, mr: -10 }}
               component={ChevronRight}
               color={getToken("icons.onContainer")}
-              size={16}
+              size="m"
             />
           </Flex>
         )

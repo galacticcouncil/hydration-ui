@@ -20,7 +20,7 @@ const buttonStyles = createStyles(
 export const SSwitchContainer = styled(ButtonTransparent)(({ theme }) => [
   buttonStyles,
   css`
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
     padding: 8px;
 
     transition: ${theme.transitions.transform};
@@ -34,7 +34,7 @@ export const SSwitchContainer = styled(ButtonTransparent)(({ theme }) => [
 export const SPriceContainer = styled(ButtonTransparent)(({ theme }) => [
   buttonStyles,
   css`
-    border-radius: ${theme.containers.cornerRadius.containersPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.containersPrimary};
 
     transition: ${theme.transitions.colors};
 

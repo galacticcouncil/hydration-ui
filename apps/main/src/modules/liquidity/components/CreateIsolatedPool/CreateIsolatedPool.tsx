@@ -4,7 +4,6 @@ import {
   ModalContentDivider,
   ModalHeader,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC, useMemo } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -94,7 +93,7 @@ export const CreateIsolatedPool: FC<Props> = ({
         closable={closable}
         onBack={onBack}
       />
-      <ModalBody>
+      <ModalBody scrollable={false}>
         <form autoComplete="off" onSubmit={form.handleSubmit(onSubmit)}>
           <AssetSelectFormField<CreateIsolatedPoolFormData>
             assetFieldName="assetA"
@@ -129,7 +128,7 @@ export const CreateIsolatedPool: FC<Props> = ({
             type="submit"
             size="large"
             width="100%"
-            mt={getTokenPx("containers.paddings.primary")}
+            mt="xxl"
             disabled={!form.formState.isValid}
           >
             {t("liquidity.createPool.modal.title")}

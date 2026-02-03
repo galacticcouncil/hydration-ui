@@ -54,13 +54,13 @@ export const IncentivesButton = ({
   const incentivesButtonValue = () => {
     if (incentivesNetAPR !== "Infinity") {
       return (
-        <Text color={getToken("text.medium")} fs={11}>
+        <Text color={getToken("text.medium")} fs="p6">
           {formatPercent(incentivesNetAPR * 100)}
         </Text>
       )
     } else {
       return (
-        <Text fs={11} color={getToken("text.medium")}>
+        <Text fs="p6" color={getToken("text.medium")}>
           ∞
         </Text>
       )
@@ -119,7 +119,7 @@ export const IncentivesTooltipContent: React.FC<
     incentiveAPR: "Infinity" | number | string
   }) => {
     return (
-      <Flex align="center" gap={4}>
+      <Flex align="center" gap="s">
         {incentiveAPR !== "Infinity" ? (
           <>
             <Text>{formatPercent(Number(incentiveAPR) * 100)}</Text>
@@ -137,17 +137,17 @@ export const IncentivesTooltipContent: React.FC<
 
   return (
     <Flex direction="column">
-      <Text mb={8}>
+      <Text mb="base">
         Participating in this {symbol} reserve gives annualized rewards.
       </Text>
-      <Stack gap={6}>
+      <Stack gap="s">
         {incentives.map((incentive) => (
           <Flex
             key={incentive.rewardTokenAddress}
             align="center"
             justify="space-between"
           >
-            <Flex align="center" gap={6}>
+            <Flex align="center" gap="s">
               <ReserveLogo
                 address={incentive.rewardTokenAddress}
                 size="small"

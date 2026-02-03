@@ -7,7 +7,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { addSeconds } from "date-fns"
 import { ChevronRight } from "lucide-react"
 import { useTranslation } from "react-i18next"
@@ -52,22 +52,19 @@ export const AvailableFarm = ({
       isSelectable={isSelectable}
       direction={isLongVariant ? "row" : "column"}
       sx={{
-        p: getTokenPx([
-          "containers.paddings.secondary",
-          "containers.paddings.primary",
-        ]),
+        p: ["secondary", "primary"],
       }}
       className={className}
     >
-      <Flex justify="space-between" gap={8} align="center">
-        <Flex align="center" gap={10}>
+      <Flex justify="space-between" gap="base" align="center">
+        <Flex align="center" gap="base">
           <AssetLogo id={meta.id} />
           <Text color={getToken("text.high")} fs="p2" fw={600}>
             {meta.symbol}
           </Text>
         </Flex>
 
-        <Flex align="center" gap={10}>
+        <Flex align="center" gap="base">
           <Chip variant="green" size="small">
             {t("liquidity.availableFarms.apr", {
               value: farm.apr,
@@ -75,7 +72,7 @@ export const AvailableFarm = ({
           </Chip>
           {isSelectable && !isLongVariant ? (
             <Icon
-              size={16}
+              size="m"
               component={ChevronRight}
               sx={{ justifySelf: "flex-end" }}
             />
@@ -85,13 +82,13 @@ export const AvailableFarm = ({
 
       {!isLongVariant && <Separator />}
 
-      <Flex align="center" gap={8}>
+      <Flex align="center" gap="base">
         <Icon
           component={Distribution}
           color={getToken("text.medium")}
-          size={20}
+          size="l"
         />
-        <Text fs={14} fw={500} color={getToken("text.high")}>
+        <Text fs="p3" fw={500} color={getToken("text.high")}>
           {t("liquidity.availableFarms.expectedEnd")}
         </Text>
         <Text
@@ -109,7 +106,7 @@ export const AvailableFarm = ({
         </Text>
         {isSelectable && isLongVariant ? (
           <Icon
-            size={16}
+            size="m"
             component={ChevronRight}
             sx={{ justifySelf: "flex-end" }}
           />

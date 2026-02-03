@@ -20,8 +20,8 @@ const menuItemVariants = createVariants<MenuItemVariant>((theme) => ({
   filterLink: css`
     & ${MenuItemIcon} {
       color: ${theme.icons.onSurfaceHover};
-      height: 16px;
-      width: 16px;
+      height: ${theme.sizes.s};
+      width: ${theme.sizes.s};
     }
 
     & ${MenuItemLabel} {
@@ -37,12 +37,11 @@ export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
       display: grid;
       grid-template-columns: auto 1fr auto;
       grid-template-rows: 1fr 1fr;
-      column-gap: 9px;
+      column-gap: ${theme.space.base};
       align-items: center;
       justify-items: start;
 
-      padding: ${theme.scales.paddings.m}px
-        ${theme.containers.paddings.tertiary}px;
+      padding: ${theme.space.m} ${theme.containers.paddings.tertiary};
 
       text-decoration: none;
 
@@ -71,12 +70,12 @@ export const MenuItemLabel = styled.span(
 
     display: flex;
     align-items: center;
-    gap: ${theme.scales.paddings.s}px;
+    gap: ${theme.space.s};
 
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 600;
-    font-size: ${theme.paragraphSize.p3}px;
-    line-height: ${theme.lineHeight.m}px;
+    font-size: ${theme.fontSizes.p3};
+    line-height: ${theme.lineHeights.m};
     letter-spacing: 0%;
     text-align: center;
   `,
@@ -89,8 +88,8 @@ export const MenuItemDescription = styled.span(
 
     font-family: ${theme.fontFamilies1.secondary};
     font-weight: 400;
-    font-size: ${theme.paragraphSize.p5}px;
-    line-height: ${theme.lineHeight.s}px;
+    font-size: ${theme.fontSizes.p5};
+    line-height: ${theme.lineHeights.s};
     letter-spacing: 0%;
 
     color: ${theme.text.low};
@@ -107,7 +106,7 @@ export const MenuSelectionItem = styled(MenuItem)<{
   disabled?: boolean
 }>(({ theme, variant = "default" }) => [
   css`
-    border-radius: ${theme.containers.cornerRadius.internalPrimary}px;
+    border-radius: ${theme.containers.cornerRadius.internalPrimary};
     cursor: pointer;
 
     &:hover:not([disabled]),
@@ -127,8 +126,8 @@ export const MenuSelectionItemArrow = styled(ArrowRight)(
   ({ theme }) => css`
     ${MenuItemAction.__emotion_styles}
 
-    width: 18px;
-    height: 18px;
+    width: ${theme.sizes.s};
+    height: ${theme.sizes.s};
 
     color: ${theme.icons.onSurface};
 

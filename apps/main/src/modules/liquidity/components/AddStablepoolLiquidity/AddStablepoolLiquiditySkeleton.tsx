@@ -12,7 +12,6 @@ import {
   ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components/Modal"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 import { doNothing } from "remeda"
 
@@ -36,15 +35,11 @@ export const AddStablepoolLiquiditySkeleton = (
   return (
     <>
       <ModalHeader
-        title={t("addLiquidity")}
+        title={props.title ?? t("addLiquidity")}
         closable={props.closable}
         onBack={props.onBack}
         customHeader={
-          <Flex
-            align="center"
-            mt={getTokenPx("containers.paddings.primary")}
-            gap={getTokenPx("containers.paddings.tertiary")}
-          >
+          <Flex align="center" mt="xxl" gap="m">
             <SliderTabs
               options={addStablepoolOptions}
               selected={addStablepoolOptions[0]?.id}
@@ -57,12 +52,10 @@ export const AddStablepoolLiquiditySkeleton = (
         }
       />
       <ModalBody sx={{ py: 0 }}>
-        <Flex
-          align="center"
-          justify="space-between"
-          my={getTokenPx("containers.paddings.tertiary")}
-        >
-          <Text>{t("liquidity.add.stablepool.modal.proportionally")}</Text>
+        <Flex align="center" justify="space-between" my="m">
+          <Text fs="p3">
+            {t("liquidity.add.stablepool.modal.proportionally")}
+          </Text>
           <Toggle
             size="large"
             checked={true}
@@ -109,13 +102,7 @@ export const AddStablepoolLiquiditySkeleton = (
         />
       </ModalBody>
       <ModalFooter>
-        <Button
-          type="submit"
-          size="large"
-          width="100%"
-          mt={getTokenPx("containers.paddings.primary")}
-          disabled
-        >
+        <Button type="submit" size="large" width="100%" mt="xxl" disabled>
           {t("liquidity.add.modal.submit")}
         </Button>
       </ModalFooter>

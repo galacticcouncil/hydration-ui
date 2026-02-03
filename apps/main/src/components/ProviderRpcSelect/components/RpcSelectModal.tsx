@@ -10,7 +10,6 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -36,7 +35,7 @@ export const RpcSelectModal: React.FC<RpcSelectModalProps> = (props) => {
         customHeader={
           <Stack
             separated
-            pt={getTokenPx("scales.paddings.m")}
+            pt="m"
             separator={
               <Separator
                 my="var(--modal-content-padding)"

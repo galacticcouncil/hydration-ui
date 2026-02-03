@@ -128,7 +128,7 @@ const ModalClose: FC<ModalCloseProps> = (props) => {
   return (
     <SModalHeaderButton asChild align="right">
       <DialogPrimitive.Close {...props}>
-        <Icon component={X} size={20} />
+        <Icon component={X} size="l" />
       </DialogPrimitive.Close>
     </SModalHeaderButton>
   )
@@ -164,7 +164,7 @@ const ModalHeader: FC<ModalHeaderProps> = ({
       <SModalTitleContainer>
         {onBack && (
           <SModalHeaderButton onClick={onBack} align="left">
-            <Icon component={ArrowLeft} size={18} />
+            <Icon component={ArrowLeft} size="m" />
           </SModalHeaderButton>
         )}
 
@@ -227,10 +227,7 @@ const ModalBody = ({
   if (scrollable) {
     return (
       <ScrollArea sx={{ flex: 1, height: "auto", minHeight: 0 }}>
-        <Box
-          maxHeight={maxHeight ?? "calc(75vh - var(--modal-block-offset) * 2)"}
-          asChild
-        >
+        <Box maxHeight={maxHeight ?? "calc(75vh - var(--modal-block-offset))"}>
           <SModalBody {...props}>{children}</SModalBody>
         </Box>
       </ScrollArea>

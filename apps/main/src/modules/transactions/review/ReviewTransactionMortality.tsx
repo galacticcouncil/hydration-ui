@@ -13,7 +13,7 @@ export const ReviewTransactionMortality = () => {
   const expirationDate = useEstimateFutureBlockTimestamp(mortalityPeriod)
 
   return (
-    <Flex gap={2} align="center">
+    <Flex gap="xs" align="center">
       <Text fs="p5" fw={500} color={getToken("text.high")}>
         {t("approx.short")}{" "}
         {t("date.relative", {
@@ -23,7 +23,7 @@ export const ReviewTransactionMortality = () => {
       <Tooltip
         text={
           <>
-            <Text fw={600} mb={6}>
+            <Text fw={600} mb="s">
               {t("approx.short")}{" "}
               {t("date.datetime", {
                 value: expirationDate,

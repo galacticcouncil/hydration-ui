@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Box } from "@/components/Box"
 import { Separator } from "@/components/Separator"
@@ -13,11 +13,11 @@ export default {
 
 const Template = (args: Story["args"]) => (
   <Stack {...args}>
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
-    <Box size={20} bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
+    <Box size="l" bg="hotpink" />
   </Stack>
 )
 

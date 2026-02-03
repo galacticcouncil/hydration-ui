@@ -16,9 +16,9 @@ export const RpcStatusTooltipContent = () => {
   const { name, url } = providerProps
 
   return (
-    <Stack gap={10}>
+    <Stack gap="base">
       <Box>
-        <Text fs={14} lh={1.4} fw={600}>
+        <Text fs="p3" lh={1.4} fw={600}>
           {name || url}
         </Text>
         <Text>{statusText}</Text>

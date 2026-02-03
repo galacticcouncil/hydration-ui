@@ -8,9 +8,9 @@ export const SPagination = styled(Flex)(
   ({ theme }) => css`
     position: sticky;
     left: 0;
-    gap: 6px;
+    gap: ${theme.space.s};
     justify-content: center;
-    padding: 10px;
+    padding: ${theme.space.base};
     border-top: 1px solid ${theme.details.separators};
   `,
 )

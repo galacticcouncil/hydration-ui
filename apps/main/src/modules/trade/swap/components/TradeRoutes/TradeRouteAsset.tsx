@@ -19,7 +19,7 @@ export const TradeRouteAsset: FC<Props> = ({
   const { t } = useTranslation(["common"])
 
   return (
-    <Flex align="center" gap={4}>
+    <Flex align="center" gap="s">
       <AssetLogo id={assetId} size="medium" />
       <Flex direction="column">
         <Text

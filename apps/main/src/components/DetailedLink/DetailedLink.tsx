@@ -31,23 +31,23 @@ export const DetailedLink: React.FC<DetailedLinkProps> = ({
     <Link to={to} search={search}>
       {IconComponent && (
         <Icon
-          size={20}
+          size="m"
           component={IconComponent}
           color={getToken("icons.onContainer")}
         />
       )}
       <Box>
-        <Text fw={600} fs={13} lh={1.4}>
+        <Text fw={600} fs="p4" lh={1.4}>
           {title}
         </Text>
         {description && (
-          <Text fs={12} lh={1.25} color={getToken("text.low")}>
+          <Text fs="p5" lh={1.25} color={getToken("text.low")}>
             {description}
           </Text>
         )}
       </Box>
       <Icon
-        size={20}
+        size="m"
         component={ArrowRight}
         ml="auto"
         color={getToken("icons.onSurface")}

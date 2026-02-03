@@ -87,10 +87,10 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
         closable={props.closable}
         onBack={props.onBack}
       />
-      <ModalBody sx={{ gap: 12 }}>
-        <Flex direction="column" gap={12}>
+      <ModalBody sx={{ gap: "m" }}>
+        <Flex direction="column" gap="m">
           <Flex align="center" justify="space-between">
-            <Flex align="center" gap={8}>
+            <Flex align="center" gap="base">
               <Checkbox
                 checked={
                   !!positions.length &&
@@ -106,12 +106,12 @@ export const RemoveSelectablePositions = (props: RemoveLiquidityProps) => {
                   }
                 }}
               />
-              <Text fs={12} color={getToken("text.medium")}>
+              <Text fs="p5" color={getToken("text.medium")}>
                 {t("common:currentValue")}
               </Text>
             </Flex>
 
-            <Text fs={12} color={getToken("text.medium")}>
+            <Text fs="p5" color={getToken("text.medium")}>
               {t("common:currentApr")}
             </Text>
           </Flex>

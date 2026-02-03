@@ -7,6 +7,7 @@ import {
   HistogramSeries,
   type IChartApi,
   type ISeriesApi,
+  type PriceFormat,
   type SingleValueData,
   type Time,
   type UTCTimestamp,
@@ -90,6 +91,7 @@ const getBaselineSeries = (
     topFillColor2: hexToRgba(color.lineColor, 0),
     lineWidth: 2,
     priceLineVisible: false,
+    lastValueVisible: true,
     ...baseline,
   })
 }
@@ -133,7 +135,7 @@ const getMainSeries = (
   }
 }
 
-export const getMainSeriesData = (
+const getMainSeriesData = (
   type: SeriesType,
   data: Array<OhlcData>,
 ): Array<OhlcData> | Array<SingleValueData> => {
@@ -141,13 +143,28 @@ export const getMainSeriesData = (
   return data.map((item) => ({ time: item.time, value: item.close }))
 }
 
-export const getVolumeData = (
-  data: ReadonlyArray<OhlcData>,
-): SingleValueData[] => {
+const getVolumeData = (data: ReadonlyArray<OhlcData>): SingleValueData[] => {
   return data.map((item) => ({
     time: item.time,
     value: item.volume ?? 0,
   }))
+}
+
+const getPriceFormatFromSample = (
+  sample: OhlcData,
+): Partial<PriceFormat> | undefined => {
+  const value = sample.close
+  if (value <= 0 || !isFinite(value)) return
+
+  if (value >= 1) {
+    return { precision: 2, minMove: 0.01 }
+  }
+
+  const leadingZeros = Math.floor(Math.abs(Math.log10(value)))
+  const precision = leadingZeros + 2
+  const minMove = Math.pow(10, -(leadingZeros + 2))
+
+  return { precision, minMove }
 }
 
 export const renderSeries = (
@@ -166,6 +183,12 @@ export const renderSeries = (
 
   const sample = last(data)
   const hasVolume = isNumber(sample?.volume)
+
+  if (sample) {
+    series.applyOptions({
+      priceFormat: getPriceFormatFromSample(sample),
+    })
+  }
 
   if (hasVolume) {
     const volumeSeries = getVolumeSeries(chart, color)

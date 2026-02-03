@@ -48,7 +48,7 @@ export const ReviewTransactionFee = () => {
 
   return (
     <Text fs="p5" fw={500} color={getToken("text.high")}>
-      <Flex as="span" gap={4}>
+      <Flex as="span" gap="s">
         {t("approx.short")}{" "}
         {t("currency", {
           symbol: feeAsset?.symbol,

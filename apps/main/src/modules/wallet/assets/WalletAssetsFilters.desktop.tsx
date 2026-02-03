@@ -1,6 +1,5 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Input, Label } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC, useId } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -20,12 +19,8 @@ export const WalletAssetFiltersDesktop: FC<Props> = ({
   const { t } = useTranslation()
 
   return (
-    <Flex
-      pt={getTokenPx("containers.paddings.tertiary")}
-      align="flex-end"
-      justify="space-between"
-    >
-      <TabMenu items={walletAssetFiltersItems} />
+    <Flex align="flex-end" justify="space-between">
+      <TabMenu items={walletAssetFiltersItems} size="medium" />
       <Input
         id={inputId}
         value={searchPhrase}
@@ -35,9 +30,9 @@ export const WalletAssetFiltersDesktop: FC<Props> = ({
             <Icon
               as="label"
               sx={{ cursor: "text" }}
-              size={18}
+              size="m"
               component={Search}
-              mr={8}
+              mr="base"
             />
           </Label>
         }

@@ -78,7 +78,7 @@ const toStoredDefaultAccount = ({
   return {
     publicKey,
     address: ss58Format,
-    rawAddress: address,
+    rawAddress: isEvm ? address : ss58Format,
     name: name ?? "",
     provider: provider,
   }
@@ -205,4 +205,8 @@ export function getWalletModesByProviderType(
   return Object.entries(PROVIDERS_BY_WALLET_MODE)
     .filter(([_, providers]) => providers.includes(walletType))
     .map(([mode, _]) => mode as WalletMode)
+}
+
+export function getUniqueAccountKey(account: StoredAccount) {
+  return `${account.provider}-${account.publicKey}`
 }

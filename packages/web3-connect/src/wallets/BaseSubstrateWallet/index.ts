@@ -46,7 +46,7 @@ export class BaseSubstrateWallet implements Wallet {
 
   transformError = (err: Error): WalletError | Error => {
     if (err.message.includes("pending authorization request")) {
-      return new AuthError(err.message, this)
+      return new AuthError(this)
     }
     return err
   }
@@ -64,31 +64,24 @@ export class BaseSubstrateWallet implements Wallet {
 
   enable = async () => {
     if (!this.installed || !this.rawExtension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
     try {
       const rawExtension = await connectInjectedExtension(
         this.accessor,
         WALLET_DAPP_NAME,
-      )
+      ).catch(() => {
+        throw new AuthError(this)
+      })
 
       if (!rawExtension) {
-        throw new NotInstalledError(
-          `${this.title} is installed but could not be enabled. Refresh the browser and try again.`,
-          this,
-        )
+        throw new NotInstalledError(this)
       }
 
       const accounts = rawExtension.getAccounts().filter(this.accountFilter)
 
       if (!accounts.length) {
-        throw new AuthError(
-          `${this.title} is installed but no accounts are available. Please check your wallet.`,
-          this,
-        )
+        throw new AuthError(this)
       }
 
       const defaultSigner = accounts[0].polkadotSigner
@@ -103,10 +96,7 @@ export class BaseSubstrateWallet implements Wallet {
 
   getInjectedAccounts = () => {
     if (!this._extension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
 
     return this._extension.getAccounts()
@@ -134,10 +124,7 @@ export class BaseSubstrateWallet implements Wallet {
 
   subscribeAccounts = (callback: SubscriptionFn) => {
     if (!this._extension) {
-      throw new NotInstalledError(
-        `Refresh the browser if ${this.title} is already installed.`,
-        this,
-      )
+      throw new NotInstalledError(this)
     }
     const unsubscribe = this._extension.subscribe((accounts) => {
       const accountsWithWallet = accounts

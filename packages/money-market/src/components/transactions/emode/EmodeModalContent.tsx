@@ -177,11 +177,11 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
             as="label"
             justify="space-between"
             align="center"
-            gap={4}
+            gap="s"
             bg={getToken("surfaces.containers.dim.dimOnBg")}
-            p={20}
+            p="xl"
             mb="var(--modal-content-padding)"
-            borderRadius="lg"
+            borderRadius="m"
           >
             <Text fs="p2" fw={700} lh={1}>
               Disable E-Mode
@@ -208,7 +208,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
             <SummaryRow
               label="E-Mode category"
               content={
-                <Flex gap={4} justify="flex-end" align="center">
+                <Flex gap="s" justify="flex-end" align="center">
                   <Flex align="center" justify="flex-end">
                     {user.userEmodeCategoryId !== 0 ? (
                       <Text fw={500}>
@@ -222,7 +222,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                   </Flex>
                   {selectedEmode && (
                     <>
-                      <Icon size={14} component={ArrowRight} />
+                      <Icon size="s" component={ArrowRight} />
                       <Flex align="center" justify="flex-end">
                         {selectedEmode.id !== 0 ? (
                           <Text
@@ -262,15 +262,15 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           <SummaryRow
             label="Available assets"
             content={
-              <Flex gap={6} justify="flex-end" align="center" maxWidth="50%">
+              <Flex gap="s" justify="flex-end" align="center" maxWidth="50%">
                 {eModes[user.userEmodeCategoryId] && (
                   <Flex align="center" justify="flex-end">
                     {user.userEmodeCategoryId !== 0 ? (
-                      <Text fw={500} align="right">
+                      <Text fs="p6" fw={500} align="right">
                         {eModes[user.userEmodeCategoryId].assets.join(", ")}
                       </Text>
                     ) : (
-                      <Text align="right" fw={500} whiteSpace="nowrap">
+                      <Text fs="p6" align="right" fw={500} whiteSpace="nowrap">
                         All Assets
                       </Text>
                     )}
@@ -279,13 +279,14 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                 {selectedEmode && (
                   <>
                     <Icon
-                      size={14}
+                      size="xs"
                       component={ArrowRight}
                       sx={{ flexShrink: 0 }}
                     />
                     <Flex align="center" justify="flex-end">
                       {selectedEmode?.id !== 0 ? (
                         <Text
+                          fs="p6"
                           fw={500}
                           align="right"
                           color={getToken("accents.success.emphasis")}
@@ -294,6 +295,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                         </Text>
                       ) : (
                         <Text
+                          fs="p6"
                           fw={500}
                           align="right"
                           color={getToken("accents.success.emphasis")}
@@ -322,14 +324,14 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
             <SummaryRow
               label="Maximum loan to value"
               content={
-                <Flex align="center" justify="flex-end" gap={4}>
-                  <Text fw={500}>
+                <Flex align="center" justify="flex-end" gap="s">
+                  <Text fs="p6" fw={500}>
                     {formatPercent(Number(user.currentLoanToValue) * 100)}
                   </Text>
                   {selectedEmode !== undefined && (
                     <>
-                      <Icon size={14} component={ArrowRight} />
-                      <Text fw={500}>
+                      <Icon size="xs" component={ArrowRight} />
+                      <Text fs="p6" fw={500}>
                         {formatPercent(
                           Number(newSummary.currentLoanToValue) * 100,
                         )}
@@ -343,7 +345,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         </Stack>
       )}
 
-      <Stack gap={14} py={14}>
+      <Stack gap="m" py="m">
         {(blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING ||
           blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING) && (
           <BlockingError />

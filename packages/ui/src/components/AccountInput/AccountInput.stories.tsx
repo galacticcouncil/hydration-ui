@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
 import { Paper } from "@/components"
@@ -17,7 +17,7 @@ const Template = (
 ) => {
   const [value, setValue] = useState(args.value || "")
   return (
-    <Paper p={20} maxWidth={500}>
+    <Paper p="xl" maxWidth={500}>
       <AccountInput {...args} value={value} onChange={setValue} />
     </Paper>
   )

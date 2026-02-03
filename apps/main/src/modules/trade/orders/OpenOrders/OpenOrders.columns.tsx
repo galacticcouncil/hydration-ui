@@ -48,10 +48,10 @@ export const useOpenOrdersColumns = () => {
         sx: { textAlign: "center" },
       },
       header: () => (
-        <Flex gap={4} align="center" justify="center">
+        <Flex gap="s" align="center" justify="center">
           {t("trade:trade.orders.openOrders.averagePrice")}
           <Icon
-            size={12}
+            size="xs"
             component={ArrowRightLeft}
             color={getToken("textButtons.small.hover")}
           />
@@ -97,7 +97,7 @@ export const useOpenOrdersColumns = () => {
         const [modal, setModal] = useState<"confirmation" | "none">("none")
 
         return (
-          <Flex align="center" gap={8}>
+          <Flex align="center" gap="base">
             <Button
               variant="danger"
               outline
@@ -108,7 +108,7 @@ export const useOpenOrdersColumns = () => {
                 setModal("confirmation")
               }}
             >
-              <Icon component={Trash} size={14} />
+              <Icon component={Trash} size="s" />
             </Button>
             <TableRowDetailsExpand />
             <Modal

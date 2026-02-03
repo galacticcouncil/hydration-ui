@@ -15,7 +15,7 @@ export const OfferMarketPriceColumn: FC<Props> = ({ percentage }) => {
   return (
     <Text
       fw={500}
-      fs={13}
+      fs="p4"
       lh={1}
       color={
         percentageNum < 0

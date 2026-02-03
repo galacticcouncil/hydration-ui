@@ -104,10 +104,16 @@ export const useMarketAssetsTableColumns = () => {
           },
         },
         cell: ({ row }) => {
+          const { borrowingEnabled, underlyingAsset } = row.original
+
+          if (!borrowingEnabled) {
+            return <NoData />
+          }
+
           return (
             <ApyColumn
               type="borrow"
-              assetId={getAssetIdFromAddress(row.original.underlyingAsset)}
+              assetId={getAssetIdFromAddress(underlyingAsset)}
               reserve={row.original}
             />
           )
@@ -125,7 +131,7 @@ export const useMarketAssetsTableColumns = () => {
             display="inline-flex"
             component={ChevronRight}
             color={getToken("icons.onContainer")}
-            size={16}
+            size="m"
           />
         ),
       }),

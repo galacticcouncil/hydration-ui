@@ -13,7 +13,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link, useNavigate, useSearch } from "@tanstack/react-router"
 import Big from "big.js"
 import { Minus } from "lucide-react"
@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next"
 
 import { XykDeposit } from "@/api/account"
 import { Farm } from "@/api/farms"
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { TJoinedFarm } from "@/modules/liquidity/components/Farms/Farms.utils"
 import {
   isIsolatedPool,
@@ -74,6 +75,12 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
     Big(totalInFarms).gt(0) || pool.isFarms,
   )
 
+  const paginationProps = useDataTableUrlPagination(
+    "/liquidity/$id",
+    "isolatedPage",
+    10,
+  )
+
   if (Big(totalBalanceDisplay).eq(0)) return null
 
   return (
@@ -85,10 +92,10 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
       <STableHeader sx={{ justifyContent: "space-between" }}>
         <Flex
           align="center"
-          gap={getTokenPx("scales.paddings.s")}
+          gap="s"
           color={getToken("buttons.primary.high.hover")}
         >
-          <Icon component={LiquidityIcon} size={12} />
+          <Icon component={LiquidityIcon} size="xs" />
           <Text fw={500} font="primary">
             {t("liquidity.positions.label.isolated")}
           </Text>
@@ -115,7 +122,7 @@ const IsolatedPoolPositions = ({ pool }: { pool: IsolatedPoolTable }) => {
         data={positions}
         columns={columns}
         paginated
-        pageSize={10}
+        {...paginationProps}
         columnVisibility={getIsolatedPositionsTableColumns(
           isMobile,
           pool.isFarms || !!pool.positions.length,
@@ -239,10 +246,7 @@ const PositionsTableBody = ({
 
   return (
     <CollapsibleRoot open={expanded}>
-      <TableContainer
-        as={Paper}
-        sx={{ mt: getTokenPx("containers.paddings.primary") }}
-      >
+      <TableContainer as={Paper} sx={{ mt: "xxl" }}>
         <PositionsHeader
           onClick={onClick}
           showMore={expanded}

@@ -32,8 +32,8 @@ export const HealthFactorRisk = () => {
   )
 
   return (
-    <Stack gap={20}>
-      <Text fs={14}>{t("borrow:risk.description")}</Text>
+    <Stack gap="xl">
+      <Text fs="p3">{t("borrow:risk.description")}</Text>
       <HealthFactorRiskInfo
         title={t("borrow:healthFactor")}
         description={t("borrow:risk.hf.description")}

@@ -32,9 +32,9 @@ export const ReferendaHeader: FC<Props> = ({
   const { t } = useTranslation(["staking"])
 
   return (
-    <Flex direction="column" gap={16}>
+    <Flex direction="column" gap="l">
       <Flex justify="space-between" align="center">
-        <Flex py={4} align="center" gap={4} wrap>
+        <Flex py="s" align="center" gap="s" wrap>
           {track && (
             <Chip
               sx={{ textTransform: "uppercase" }}
@@ -48,10 +48,10 @@ export const ReferendaHeader: FC<Props> = ({
             {state}
           </Chip>
         </Flex>
-        <Flex align="center" gap={4}>
+        <Flex align="center" gap="s">
           <Text
             font="primary"
-            fs={14}
+            fs="p3"
             lh={1.3}
             color={
               voted ? getToken("text.medium") : getToken("text.tint.primary")
@@ -61,7 +61,7 @@ export const ReferendaHeader: FC<Props> = ({
           </Text>
           {voted && (
             <Chip sx={{ textTransform: "uppercase" }} rounded variant="green">
-              <Icon size={12} component={Check} />
+              <Icon size="xs" component={Check} />
               {t("staking:referenda.item.voted")}
             </Chip>
           )}
@@ -72,7 +72,7 @@ export const ReferendaHeader: FC<Props> = ({
         <Skeleton height={23} width="100%" />
       ) : (
         <Text
-          py={4}
+          py="s"
           fw={500}
           fs="p2"
           lh={1.3}

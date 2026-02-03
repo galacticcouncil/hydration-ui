@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Paper } from "@/components/Paper"
 
@@ -26,7 +26,7 @@ const EXAMPLE_JSON = {
 
 const Template = (args: Story["args"]) => {
   return (
-    <Paper p={20}>
+    <Paper p="xl">
       <JsonView src={EXAMPLE_JSON} {...args} />
     </Paper>
   )

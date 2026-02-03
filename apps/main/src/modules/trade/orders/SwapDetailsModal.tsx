@@ -13,7 +13,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
@@ -36,11 +36,7 @@ export const SwapDetailsModal = ({ details }: Props) => {
         align="center"
       />
       <ModalBody>
-        <Flex
-          justify="space-between"
-          align="center"
-          pb={getTokenPx("containers.paddings.primary")}
-        >
+        <Flex justify="space-between" align="center" pb="xxl">
           <SwapAmount
             fromAmount={details.fromAmount}
             from={details.from}
@@ -57,18 +53,12 @@ export const SwapDetailsModal = ({ details }: Props) => {
           )}
         </Flex>
         <ModalContentDivider />
-        <Grid
-          columnTemplate="1fr auto 1fr"
-          py={getTokenPx("containers.paddings.primary")}
-        >
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.quint")}
-          >
-            <Text fs={13} lh={1} color={getToken("text.low")}>
+        <Grid columnTemplate="1fr auto 1fr" py="xxl">
+          <Flex direction="column" gap="s">
+            <Text fs="p4" lh={1} color={getToken("text.low")}>
               {t("received")}
             </Text>
-            <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
               {t("currency", {
                 value: details.toAmount,
                 symbol: details.to.symbol,
@@ -76,15 +66,11 @@ export const SwapDetailsModal = ({ details }: Props) => {
             </Text>
           </Flex>
           <Separator orientation="vertical" />
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.quint")}
-            sx={{ justifySelf: "end" }}
-          >
-            <Text fs={13} lh={1} color={getToken("text.low")}>
+          <Flex direction="column" gap="s" sx={{ justifySelf: "end" }}>
+            <Text fs="p4" lh={1} color={getToken("text.low")}>
               {t("price")}
             </Text>
-            <Text fw={500} fs={13} lh={1} color={getToken("text.high")}>
+            <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
               {t("currency", {
                 value: details.fillPrice,
                 symbol: `${details.from.symbol} / ${details.to.symbol}`,
@@ -93,7 +79,7 @@ export const SwapDetailsModal = ({ details }: Props) => {
           </Flex>
         </Grid>
         <ModalContentDivider />
-        <Box py={getTokenPx("containers.paddings.primary")}>
+        <Box py="xxl">
           <Amount
             label={t("date")}
             value={t("date.datetime", {
@@ -104,14 +90,10 @@ export const SwapDetailsModal = ({ details }: Props) => {
         {"link" in details && details.link && (
           <>
             <ModalContentDivider />
-            <Flex
-              justify="flex-end"
-              pt={getTokenPx("containers.paddings.secondary")}
-              pb={getTokenPx("containers.paddings.primary")}
-            >
+            <Flex justify="flex-end" pt="l" pb="xxl">
               <Button variant="tertiary" outline asChild>
                 <ExternalLink href={details.link}>
-                  <Icon component={SubScan} size={12} />
+                  <Icon component={SubScan} size="xs" />
                   <Text fw={500} fs="p6" lh={1.4}>
                     {t("trade:trade.orders.swapDetail.openOnSubscan")}
                   </Text>

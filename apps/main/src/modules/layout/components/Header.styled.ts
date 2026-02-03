@@ -14,18 +14,22 @@ export const SHeader = styled.header(
     grid-template-columns: 1fr auto;
 
     align-items: center;
-    gap: 40px;
+    gap: ${theme.space.xxxl};
+
+    height: 3.375rem;
 
     width: 100%;
-    padding: 0 ${theme.scales.paddings.base}px;
+    padding: 0 var(--layout-gutter);
+    margin-bottom: ${theme.space.m};
     border-bottom: 1px solid;
     border-color: ${theme.details.separators};
     background: ${theme.surfaces.themeBasePalette.background};
 
     ${mq(TOP_NAVBAR_BREAKPOINT)} {
       grid-template-columns: auto 1fr auto;
-      padding: 0px 30px;
-      padding-right: 15px;
+      padding-left: var(--layout-gutter);
+      padding-right: ${theme.space.m};
+      margin-bottom: ${theme.space.xxl};
     }
   `,
 )

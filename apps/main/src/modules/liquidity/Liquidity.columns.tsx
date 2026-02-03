@@ -7,7 +7,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
@@ -63,7 +63,9 @@ export const usePoolColumns = () => {
       }),
       columnHelper.accessor("price", {
         header: t("price"),
-        cell: ({ row }) => <AssetPrice assetId={row.original.id} />,
+        cell: ({ row }) => (
+          <AssetPrice assetId={row.original.id} maximumFractionDigits={null} />
+        ),
         sortingFn: (a, b) =>
           new Big(a.original.price ?? 0).gt(b.original.price ?? 0) ? 1 : -1,
       }),
@@ -79,11 +81,11 @@ export const usePoolColumns = () => {
           return row.original.isVolumeLoading ? (
             <Skeleton width={60} height="1em" />
           ) : isMobile ? (
-            <Flex align="center" gap={4} justify="flex-end">
+            <Flex align="center" gap="s" justify="flex-end">
               {volume}
               <Icon
                 component={ChevronRight}
-                size={18}
+                size="m"
                 color={getToken("text.low")}
               />
             </Flex>
@@ -151,7 +153,7 @@ export const usePoolColumns = () => {
               stablepoolFee={original.lpFeeStablepool}
               borrowApyData={original.borrowApyData}
             >
-              <Flex align="center" gap={4}>
+              <Flex align="center" gap="s">
                 {!!incentivesIcons.length && (
                   <AssetLogo id={incentivesIcons} size="extra-small" />
                 )}
@@ -197,7 +199,7 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
   return (
     <>
       <Flex
-        gap={getTokenPx("containers.paddings.quint")}
+        gap="s"
         justify="end"
         onClick={(e) => e.stopPropagation()}
         sx={{ position: "relative" }}
@@ -232,10 +234,10 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
           <Text
             color={getToken("text.tint.secondary")}
             fw={500}
-            fs={10}
+            fs="p6"
             sx={{
               position: "absolute",
-              bottom: -20,
+              bottom: "-xl",
             }}
           >
             {t("liquidity:liquidity.pool.positions.total", {

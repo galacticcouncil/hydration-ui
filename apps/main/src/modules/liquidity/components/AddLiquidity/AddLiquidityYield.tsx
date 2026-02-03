@@ -82,7 +82,7 @@ export const AddLiquidityYield = ({
       stablepoolFee={stablepoolFee}
       borrowApyData={borrowApyData}
     >
-      <Flex align="center" gap={4}>
+      <Flex align="center" gap="s">
         <Text fs="p5" color={getToken("accents.success.emphasis")} fw={500}>
           {t("percent", {
             value: totalApr,

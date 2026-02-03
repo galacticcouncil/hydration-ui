@@ -1,5 +1,5 @@
 import { Box, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 
 type Props = {
@@ -22,11 +22,11 @@ export const ChartTimeRangeOption: FC<Props> = ({
         },
       }}
       role="button"
-      py={2}
-      px={6}
+      py="xs"
+      px="base"
       onClick={onClick}
       bg={isSelected ? getToken("buttons.primary.low.rest") : "transparent"}
-      borderRadius={getTokenPx("containers.cornerRadius.containersPrimary")}
+      borderRadius="xl"
     >
       <Text
         fs="p6"

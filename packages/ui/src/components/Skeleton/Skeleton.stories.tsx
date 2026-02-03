@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Box, Flex, Text } from "@/components"
 
@@ -18,7 +18,7 @@ const Template = () => (
     <Text>
       <Skeleton count={2} />
     </Text>
-    <Flex gap={10} align="center" my={10}>
+    <Flex gap="base" align="center" my="base">
       <Skeleton circle width={50} height={50} />
       <Box sx={{ flex: 1 }}>
         <Text>

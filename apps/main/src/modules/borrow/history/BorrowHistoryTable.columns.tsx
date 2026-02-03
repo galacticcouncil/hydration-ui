@@ -35,7 +35,7 @@ export const useBorrowHistoryColumns = () => {
       cell({ row }) {
         if (row.original instanceof Date) {
           return (
-            <Text fs={12} fw={500} color={getToken("text.medium")}>
+            <Text fs="p5" fw={500} color={getToken("text.medium")}>
               {t("date.long", {
                 value: row.original,
               })}
@@ -45,10 +45,10 @@ export const useBorrowHistoryColumns = () => {
 
         return (
           <div>
-            <Text fs={14} fw={500}>
+            <Text fs="p3" fw={500}>
               {formatEventName(row.original.eventName as MoneyMarketEventName)}
             </Text>
-            <Text color={getToken("text.medium")} fs={12}>
+            <Text color={getToken("text.medium")} fs="p5">
               <span
                 title={t("date.long", {
                   value: row.original.date,

@@ -76,7 +76,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
   const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(assetIn, value)
+    useDisplayAssetPrice(assetIn, value, { maximumFractionDigits: null })
 
   const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
     useDisplayAssetPrice(USDT_ASSET_ID, volume)
@@ -104,7 +104,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     ) : undefined
 
   return (
-    <Paper p={20}>
+    <Paper p="xl">
       <Flex align="center" justify="space-between">
         <ChartValues
           value={chartValue}

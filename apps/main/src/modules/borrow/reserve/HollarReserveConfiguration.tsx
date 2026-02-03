@@ -36,7 +36,7 @@ export const HollarReserveConfiguration: React.FC<
 
   return (
     <>
-      <Text fs="p3" fw={500} mb={20}>
+      <Text fs="p3" fw={500} mb="xl">
         {t("reserve.hollar.title")}
       </Text>
       <Text fs="p4" color={getToken("text.medium")}>

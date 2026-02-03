@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Flex } from "@/components"
 
@@ -13,8 +13,8 @@ export default {
 const Template = (args: Story["args"]) => <Button {...args}>Button</Button>
 
 const VariantTemplate = (args: Story["args"]) => (
-  <Flex direction="column" gap={20}>
-    <Flex align="center" gap={20}>
+  <Flex direction="column" gap="xl">
+    <Flex align="center" gap="xl">
       <Button {...args} size="large">
         Button
       </Button>
@@ -25,7 +25,7 @@ const VariantTemplate = (args: Story["args"]) => (
         Button
       </Button>
     </Flex>
-    <Flex align="center" gap={20}>
+    <Flex align="center" gap="xl">
       <Button {...args} outline size="large">
         Button
       </Button>

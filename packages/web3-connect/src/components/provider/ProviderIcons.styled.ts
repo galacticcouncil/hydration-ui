@@ -3,7 +3,7 @@ import { css, styled } from "@galacticcouncil/ui/utils"
 
 export const SWalletBox = styled(Box)(
   ({ theme }) => css`
-    font-size: 11px;
+    font-size: ${theme.fontSizes.p6};
 
     display: inline-flex;
     justify-content: center;
@@ -20,6 +20,6 @@ export const SContainer = styled.div`
   align-items: center;
 
   > div:not(:first-of-type) {
-    margin-left: -8px;
+    margin-left: -${({ theme }) => theme.space.base};
   }
 `

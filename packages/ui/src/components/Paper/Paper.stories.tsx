@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Paper } from "./Paper"
 
@@ -9,7 +9,7 @@ export default {
 } satisfies Meta<typeof Paper>
 
 const Template = (args: Story["args"]) => (
-  <Paper {...args} width={500} p={20}>
+  <Paper {...args} width={500} p="xl">
     Lorem ipsum dolor sit amet consectetur adipisicing elit. Quam a natus itaque
     corrupti perferendis fuga eligendi provident dolore fugiat, vitae
     laboriosam. Quasi culpa maxime eaque ipsum porro neque a fugit.

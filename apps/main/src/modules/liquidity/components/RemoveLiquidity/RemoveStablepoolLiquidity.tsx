@@ -11,7 +11,7 @@ import {
   Toggle,
 } from "@galacticcouncil/ui/components"
 import { Flex } from "@galacticcouncil/ui/components/Flex"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { t } from "i18next"
 import { Controller, FormProvider, useFormContext } from "react-hook-form"
@@ -253,17 +253,13 @@ const RemoveStablepoolLiquidityForm = (
         closable={closable}
         onBack={onBack}
         sx={{
-          px: getTokenPx("containers.paddings.primary"),
-          pt: getTokenPx("containers.paddings.primary"),
-          pb: getTokenPx("scales.paddings.base"),
+          px: "m",
+          pt: "m",
+          pb: "base",
         }}
         customHeader={
           isRemoveShares ? null : (
-            <Flex
-              align="center"
-              mt={getTokenPx("containers.paddings.primary")}
-              gap={getTokenPx("containers.paddings.tertiary")}
-            >
+            <Flex align="center" mt="m" gap="s">
               <Controller
                 control={control}
                 name="option"
@@ -281,15 +277,10 @@ const RemoveStablepoolLiquidityForm = (
           )
         }
       />
-      <Flex
-        direction="column"
-        gap={getTokenPx("containers.paddings.tertiary")}
-        pb={0}
-        asChild
-      >
+      <Flex direction="column" gap="m" pb="0" asChild>
         <ModalBody>
           {!editable ? (
-            <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+            <Flex align="center" gap="base">
               <AssetLogo id={asset.iconId ?? asset.id} size="large" />
               <Text
                 fs="h5"
@@ -336,7 +327,7 @@ const RemoveStablepoolLiquidityForm = (
           <ModalContentDivider />
           {!split && (
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-              label={t("common:minimumReceive")}
+              label={t("common:minimumReceived")}
               assetFieldName="receiveAsset"
               amountFieldName="receiveAmount"
               maxBalance={balance}
@@ -349,10 +340,7 @@ const RemoveStablepoolLiquidityForm = (
           )}
 
           {!!receiveAssets.length && (
-            <Flex
-              direction="column"
-              gap={getTokenPx("containers.paddings.quint")}
-            >
+            <Flex direction="column" gap="s">
               <ReceiveAssets
                 title={split ? undefined : ""}
                 assets={receiveAssets}

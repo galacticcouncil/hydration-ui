@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
 import { getToken } from "@/utils"
@@ -26,7 +26,7 @@ const Template = (args: React.ComponentPropsWithoutRef<typeof AssetInput>) => {
       width={500}
       bg={getToken("surfaces.themeBasePalette.surfaceHigh")}
       height={500}
-      p={24}
+      p="xxl"
     >
       <AssetInput
         {...args}

@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components/primitives"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Box,
@@ -16,13 +17,16 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
-import { Controller, useFieldArray, useFormContext } from "react-hook-form"
-import { FormProvider } from "react-hook-form"
+import {
+  Controller,
+  FormProvider,
+  useFieldArray,
+  useFormContext,
+} from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { useBorrowAssetsApy } from "@/api/borrow"
 import { Farm } from "@/api/farms"
@@ -65,6 +69,7 @@ import { AddStablepoolLiquiditySkeleton } from "./AddStablepoolLiquiditySkeleton
 
 export type AddStablepoolLiquidityProps = AddLiquidityProps & {
   stableswapId: string
+  title?: string
   initialOption?: TAddStablepoolLiquidityOption
 }
 
@@ -161,6 +166,7 @@ export const AddStablepoolLiquidityForm = ({
   poolShare,
   enabledSplit,
   isAddableToOmnipool,
+  title,
   ...props
 }: AddStablepoolLiquidityFormProps) => {
   const { getAssetWithFallback } = useAssets()
@@ -238,24 +244,17 @@ export const AddStablepoolLiquidityForm = ({
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
       <ModalHeader
-        title={t("addLiquidity")}
+        title={title ?? t("addLiquidity")}
         onBack={onBack}
         closable={closable}
         sx={{
-          px: getTokenPx("containers.paddings.primary"),
-          pt: getTokenPx("containers.paddings.primary"),
-          pb: getTokenPx("scales.paddings.base"),
           borderBottom: "1px solid",
           borderColor: getToken("details.separators"),
         }}
         customHeader={
           !erc20Id &&
           isAddableToOmnipool && (
-            <Flex
-              align="center"
-              mt={getTokenPx("containers.paddings.primary")}
-              gap={getTokenPx("containers.paddings.tertiary")}
-            >
+            <Flex align="center" mt="xxl" gap="m">
               <Controller
                 control={form.control}
                 name="option"
@@ -280,12 +279,10 @@ export const AddStablepoolLiquidityForm = ({
           control={form.control}
           name="split"
           render={({ field }) => (
-            <Flex
-              align="center"
-              justify="space-between"
-              my={getTokenPx("containers.paddings.tertiary")}
-            >
-              <Text>{t("liquidity.add.stablepool.modal.proportionally")}</Text>
+            <Flex align="center" justify="space-between" my="m">
+              <Text fs="p3">
+                {t("liquidity.add.stablepool.modal.proportionally")}
+              </Text>
               <Toggle
                 size="large"
                 checked={field.value}
@@ -366,21 +363,21 @@ export const AddStablepoolLiquidityForm = ({
           <Alert
             variant="warning"
             description={customErrors.cap.message}
-            sx={{ my: getTokenPx("containers.paddings.primary") }}
+            sx={{ my: "xxl" }}
           />
         ) : null}
         {customErrors?.circuitBreaker ? (
           <Alert
             variant="warning"
             description={customErrors.circuitBreaker.message}
-            sx={{ my: getTokenPx("containers.paddings.primary") }}
+            sx={{ my: "xxl" }}
           />
         ) : null}
         {joinFarmErrorMessage && (
           <Alert
             variant="warning"
             description={joinFarmErrorMessage}
-            sx={{ my: getTokenPx("containers.paddings.primary") }}
+            sx={{ my: "xxl" }}
           />
         )}
 
@@ -391,7 +388,7 @@ export const AddStablepoolLiquidityForm = ({
               value: customErrors.supplyCap.message,
               symbol: getAssetWithFallback(erc20Id).symbol,
             })}
-            sx={{ my: getTokenPx("containers.paddings.primary") }}
+            sx={{ my: "xxl" }}
           />
         ) : null}
       </ModalBody>
@@ -404,7 +401,7 @@ export const AddStablepoolLiquidityForm = ({
         >
           {isJoinFarms
             ? t("liquidity.add.modal.submitAndjoinFarms")
-            : t("liquidity.add.modal.submit")}
+            : (title ?? t("liquidity.add.modal.submit"))}
         </Button>
       </ModalFooter>
     </form>
@@ -502,7 +499,7 @@ const AddStablepoolLiquiditySummary = ({
               },
             ]
           : []),
-        ...(erc20Id && healthFactor?.isSignificantChange
+        ...(erc20Id && healthFactor
           ? [
               {
                 label: t("common:healthFactor"),
@@ -527,14 +524,14 @@ export const AddStablepoolLiquidityTooltip = () => {
   return (
     <Tooltip
       text={
-        <Flex direction="column" gap={14}>
+        <Flex direction="column" gap="m">
           <Text fs="p6" fw={500} color={getToken("text.high")}>
             {t("liquidity.add.modal.stablepool.tooltip.desc")}
           </Text>
           <Box>
             <Text
               transform="uppercase"
-              fs={8}
+              fs="p6"
               fw={600}
               color={getToken("text.tint.primary")}
             >
@@ -548,7 +545,7 @@ export const AddStablepoolLiquidityTooltip = () => {
           <Box>
             <Text
               transform="uppercase"
-              fs={8}
+              fs="p6"
               fw={600}
               color={getToken("text.tint.secondary")}
             >

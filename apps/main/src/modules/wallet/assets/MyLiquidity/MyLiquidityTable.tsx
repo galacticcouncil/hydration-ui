@@ -7,6 +7,8 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useState } from "react"
 
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { LiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { LiquidityPositionModals } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionModals"
@@ -17,10 +19,7 @@ import {
   XYKPositionDeposit,
 } from "@/modules/wallet/assets/MyLiquidity/MyIsolatedPoolsLiquidity.data"
 import { MyLiquidityEmptyState } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityEmptyState"
-import {
-  MyLiquidityTableColumnId,
-  useMyLiquidityColumns,
-} from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
+import { useMyLiquidityColumns } from "@/modules/wallet/assets/MyLiquidity/MyLiquidityTable.columns"
 import {
   LiquidityPositionByAsset,
   StableswapPosition,
@@ -77,7 +76,7 @@ export const MyLiquidityTable: FC<Props> = ({
   isLoading,
 }) => {
   const { isMobile } = useBreakpoints()
-  const columns = useMyLiquidityColumns()
+  const columns = useMyLiquidityColumns(!isLoading && data.length === 0)
 
   const [isDetailOpen, setIsDetailOpen] = useState<ModalType | null>(null)
 
@@ -87,11 +86,9 @@ export const MyLiquidityTable: FC<Props> = ({
         data={data}
         columns={columns}
         paginated
-        pageSize={10}
+        {...useDataTableUrlPagination("/wallet/assets", "liquidityPage", 10)}
+        {...useDataTableUrlSorting("/wallet/assets", "liquiditySort")}
         isLoading={isLoading}
-        initialSorting={[
-          { id: MyLiquidityTableColumnId.CurrentValue, desc: true },
-        ]}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
           row.original.meta.symbol

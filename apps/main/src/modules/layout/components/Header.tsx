@@ -1,3 +1,4 @@
+import { Flex } from "@galacticcouncil/ui/components"
 import { FC, forwardRef, lazy, LazyExoticComponent, SVGProps } from "react"
 
 import { SHeader } from "@/modules/layout/components/Header.styled"
@@ -31,7 +32,14 @@ export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
 
   return (
     <SHeader ref={ref}>
-      <Logo />
+      <Flex
+        height="l"
+        width={["l", null, null, "auto"]}
+        align="center"
+        justify="start"
+      >
+        <Logo height="100%" width="auto" />
+      </Flex>
       {hasTopNavbar && <HeaderMenu />}
       <HeaderToolbar />
     </SHeader>

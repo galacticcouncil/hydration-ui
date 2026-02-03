@@ -1,5 +1,4 @@
 import { Flex, Paper, Separator } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,12 +32,7 @@ export const Stake: FC<Props> = ({
 
   return (
     <Paper>
-      <Flex
-        px={getTokenPx("containers.paddings.primary")}
-        py={getTokenPx("containers.paddings.tertiary")}
-        align="center"
-        gap={getTokenPx("scales.paddings.m")}
-      >
+      <Flex px="xl" py="m" align="center" gap="m">
         {stakeOptions.map((option) => (
           <SHeaderTab
             key={option}

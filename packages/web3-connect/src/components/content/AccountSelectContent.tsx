@@ -41,8 +41,8 @@ const getAccountOptionComponent = (account: Account) => {
 export const AccountSelectContent = () => {
   const { account: currentAccount } = useAccount()
   const { onAccountSelect, isControlled, mode } = useWeb3ConnectContext()
-  const { accounts, toggle, getConnectedProviders } = useWeb3Connect(
-    useShallow(pick(["accounts", "toggle", "getConnectedProviders"])),
+  const { accounts, toggle, getProviders } = useWeb3Connect(
+    useShallow(pick(["accounts", "toggle", "getProviders"])),
   )
 
   const isDefaultMode = mode === WalletMode.Default
@@ -60,7 +60,7 @@ export const AccountSelectContent = () => {
     [searchVal],
   )
 
-  const providers = getConnectedProviders(mode)
+  const providers = getProviders(mode)
   const isProvidersConnecting = providers.some(
     ({ status }) => status === "pending",
   )
@@ -102,7 +102,7 @@ export const AccountSelectContent = () => {
         align="center"
         customHeader={
           shouldRenderHeader && (
-            <Flex direction="column" gap={20} mt={10}>
+            <Flex direction="column" gap="xl" mt="base">
               {shouldRenderSearch && (
                 <Input
                   value={searchVal}
@@ -122,8 +122,8 @@ export const AccountSelectContent = () => {
           )
         }
       />
-      <ModalBody>
-        <Grid gap={10}>
+      <ModalBody maxHeight="50vh">
+        <Grid gap="base">
           {isProvidersConnecting ? (
             <ProviderLoader providers={providers.map(prop("type"))} />
           ) : (

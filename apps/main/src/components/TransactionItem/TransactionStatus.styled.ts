@@ -25,11 +25,11 @@ const colorVariants = createVariants<TransactionStatusVariant>((theme) => ({
 
 export const STransactionStatus = styled.span<{
   readonly variant: TransactionStatusVariant
-}>(({ variant }) => [
+}>(({ variant, theme }) => [
   css`
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: ${theme.space.s};
   `,
   colorVariants(variant),
 ])

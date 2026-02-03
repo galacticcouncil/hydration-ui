@@ -1,4 +1,4 @@
-import { HEALTH_FACTOR_RISK_THRESHOLD } from "@galacticcouncil/money-market/ui-config"
+import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { aave } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { keepPreviousData, queryOptions } from "@tanstack/react-query"
@@ -34,39 +34,7 @@ type HealthFactorQueryArgs = Pick<
   toAsset: TAssetData | null
 }
 
-export type HealthFactorResult = {
-  readonly current: string
-  readonly future: string
-  readonly isBelowRiskThreshold: boolean
-  readonly isSignificantChange: boolean
-  readonly isUserConsentRequired: boolean
-}
-
 export const AAVE_GAS_LIMIT = aave.AAVE_GAS_LIMIT
-
-const formatHealthFactorResult = ({
-  currentHF,
-  futureHF,
-}: {
-  currentHF: number
-  futureHF: number
-}): HealthFactorResult => {
-  const current = Big(currentHF)
-  const future = Big(futureHF)
-
-  const isBelowRiskThreshold = future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
-  const isSignificantChange = !future
-    .round(2, Big.roundDown)
-    .eq(current.round(2, Big.roundDown))
-
-  return {
-    current: current.toString(),
-    future: future.toString(),
-    isBelowRiskThreshold,
-    isSignificantChange,
-    isUserConsentRequired: isSignificantChange && isBelowRiskThreshold,
-  }
-}
 
 export const healthFactorAfterWithdrawQuery = (
   { sdk, isLoaded }: TProviderContext,

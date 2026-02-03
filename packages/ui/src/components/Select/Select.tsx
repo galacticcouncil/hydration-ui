@@ -75,7 +75,7 @@ type SelectLabelProps = {
 }
 
 export const SelectLabel = ({ children }: SelectLabelProps) => (
-  <Text fs={12} fw={600} color={getToken("text.medium")}>
+  <Text fs="p5" fw={600} color={getToken("text.medium")}>
     {children}
   </Text>
 )

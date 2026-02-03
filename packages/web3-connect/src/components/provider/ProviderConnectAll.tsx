@@ -9,7 +9,7 @@ type Props = {
 }
 
 export const ProviderConnectAll: React.FC<Props> = ({ installed }) => {
-  const { enable } = useWeb3Enable()
+  const { enable } = useWeb3Enable({ disconnectOnError: true })
   const installedCompatible = installed.filter(({ provider }) =>
     COMPATIBLE_WALLET_PROVIDERS.includes(provider),
   )
@@ -17,9 +17,14 @@ export const ProviderConnectAll: React.FC<Props> = ({ installed }) => {
   const disabledCompatible = installedCompatible.filter(isNot(prop("enabled")))
 
   const enableCompatible = async () => {
-    await Promise.all(
-      disabledCompatible.map(({ provider }) => enable(provider)),
-    )
+    for (const { provider } of disabledCompatible) {
+      try {
+        await enable(provider)
+      } catch (error) {
+        console.error(error)
+        continue
+      }
+    }
   }
 
   if (disabledCompatible.length === 0) return null

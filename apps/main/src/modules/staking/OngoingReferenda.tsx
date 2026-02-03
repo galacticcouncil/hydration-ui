@@ -6,11 +6,12 @@ import {
   CollapsibleTrigger,
   Flex,
   Icon,
+  MicroButton,
   SectionHeader,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import { FC, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -58,10 +59,11 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
 
   return (
     <CollapsibleRoot open={!isCollapsed}>
-      <Flex direction="column" gap={getTokenPx("scales.paddings.m")}>
+      <Flex direction="column" gap="m">
         <Box>
           <Flex
-            align={isMobile ? "center" : "flex-start"}
+            align={isMobile ? "center" : "flex-end"}
+            pt={[null, null, "xl"]}
             justify="space-between"
           >
             <SectionHeader
@@ -69,20 +71,12 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                 count: referenda.length,
               })}
               hasDescription
+              noTopPadding
             />
             {!isLoading && referenda.length > 0 && (
-              <Flex
-                px={getTokenPx("scales.paddings.base")}
-                height={22}
-                py={8}
-                bg={getToken("buttons.secondary.low.rest")}
-                borderRadius={20}
-                borderWidth={1}
-                borderStyle="solid"
-                borderColor={getToken("buttons.secondary.low.borderRest")}
-                align="center"
-                gap={getTokenPx("containers.paddings.quint")}
+              <MicroButton
                 asChild
+                sx={{ display: "flex", alignItems: "center", gap: "s" }}
               >
                 <CollapsibleTrigger
                   sx={{ cursor: "pointer" }}
@@ -98,7 +92,7 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                 >
                   <Text
                     fw={500}
-                    fs={10}
+                    fs="p6"
                     lh={1.4}
                     color={getToken("text.medium")}
                     transform="uppercase"
@@ -106,15 +100,15 @@ export const OngoingReferenda: FC<Props> = ({ votes, isVotesLoading }) => {
                     {isCollapsed ? t("show") : t("hide")}
                   </Text>
                   <Icon
-                    size={12}
+                    size="xs"
                     component={isCollapsed ? ChevronDown : ChevronUp}
                     color={getToken("icons.onContainer")}
                   />
                 </CollapsibleTrigger>
-              </Flex>
+              </MicroButton>
             )}
           </Flex>
-          <Text fs={11} lh={px(15)} color={getToken("text.medium")}>
+          <Text fs="p6" lh="s" color={getToken("text.medium")}>
             {t("staking:referenda.participate")}
           </Text>
         </Box>

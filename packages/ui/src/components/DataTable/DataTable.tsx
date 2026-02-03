@@ -4,6 +4,7 @@ import {
   FilterFnOption,
   flexRender,
   OnChangeFn,
+  PaginationState,
   RowData,
   SortingState,
   Table as TableDef,
@@ -74,6 +75,7 @@ export type DataTableProps<TData extends RowData> = TableProps &
     className?: string
     columnPinning?: ColumnPinningState | undefined
     columnVisibility?: VisibilityState
+    pagination?: PaginationState
     globalFilterFn?: FilterFnOption<TData>
     multiExpandable?: boolean
     rowCount?: number
@@ -93,6 +95,8 @@ export type DataTableRef = {
   readonly onPaginationReset: () => void
 }
 
+export const DATA_TABLE_DEFAULT_PAGE_SIZE = 20
+
 const DataTable = <TData,>({
   data,
   columns,
@@ -101,7 +105,7 @@ const DataTable = <TData,>({
   fixedLayout = false,
   paginated = false,
   expandable = false,
-  pageSize = 20,
+  pageSize = DATA_TABLE_DEFAULT_PAGE_SIZE,
   pageNumber = 1,
   borderless,
   isLoading,
@@ -115,6 +119,7 @@ const DataTable = <TData,>({
   emptyState,
   columnPinning,
   columnVisibility,
+  pagination,
   rowCount,
   isMultiSort,
   getIsExpandable,
@@ -168,6 +173,7 @@ const DataTable = <TData,>({
       ...(columnVisibility && {
         columnVisibility,
       }),
+      ...(pagination && { pagination }),
     },
     ...(isControlledSorting && {
       onSortingChange,
@@ -300,7 +306,7 @@ const DataTable = <TData,>({
                         <TableCell sx={{ pl: "0 !important" }}>
                           <Flex justify="end" align="center">
                             <Icon
-                              size={18}
+                              size="m"
                               color={getToken("icons.onSurface")}
                               component={
                                 isRowExpanded ? ChevronUp : ChevronDown
@@ -374,10 +380,13 @@ export const DataTablePagination = <T,>({
         variant="tertiary"
         outline
         disabled={!table.getCanPreviousPage()}
-        onClick={() => table.previousPage()}
-        sx={{ px: 10 }}
+        onClick={() => {
+          onPageClick?.(table.getState().pagination.pageIndex)
+          table.previousPage()
+        }}
+        sx={{ px: "l" }}
       >
-        <Icon size={16} component={ChevronLeft} display={["block", "none"]} />
+        <Icon size="s" component={ChevronLeft} display={["block", "none"]} />
         <Text as="span" display={["none", "inline"]}>
           Prev
         </Text>
@@ -386,8 +395,8 @@ export const DataTablePagination = <T,>({
         typeof pageNumber === "string" ? (
           <Text
             key={`${index}-dots`}
-            width={32}
-            fs={16}
+            width="l"
+            fs="p2"
             color={getToken("text.low")}
             sx={{ textAlign: "center" }}
           >
@@ -400,7 +409,7 @@ export const DataTablePagination = <T,>({
             variant={pageNumber === currentPage ? "secondary" : "tertiary"}
             outline={pageNumber !== currentPage}
             onClick={() => onPageClickHandler(pageNumber)}
-            sx={{ px: 10, minWidth: 28 }}
+            sx={{ px: "base", minWidth: "1.5rem" }}
           >
             {pageNumber}
           </Button>
@@ -411,13 +420,16 @@ export const DataTablePagination = <T,>({
         variant="tertiary"
         outline
         disabled={!table.getCanNextPage()}
-        onClick={() => table.nextPage()}
-        sx={{ px: 10 }}
+        onClick={() => {
+          onPageClick?.(table.getState().pagination.pageIndex + 2)
+          table.nextPage()
+        }}
+        sx={{ px: "l" }}
       >
         <Text as="span" display={["none", "inline"]}>
           Next
         </Text>
-        <Icon size={16} component={ChevronRight} display={["block", "none"]} />
+        <Icon size="s" component={ChevronRight} display={["block", "none"]} />
       </Button>
     </SPagination>
   )

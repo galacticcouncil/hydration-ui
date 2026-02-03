@@ -149,17 +149,17 @@ export const XcmForm = () => {
         (values) => transfer && submit.mutate([values, transfer]),
       )}
     >
-      <Stack gap="s" maxWidth={500} mx="auto" pt="xl">
+      <Stack gap="s" maxWidth="6xl" mx="auto">
         <Paper>
-          <Box p="xl">
+          <Box p={["l", "xl"]}>
             <Text fs="h7" fw={500} align="center" font="primary">
               {t("xcm:form.title")}
             </Text>
           </Box>
           <Separator />
-          <Stack p="xl" gap="base">
+          <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
-              <Flex gap="base" direction="column">
+              <Flex gap="base" direction="column" flex={1} maxWidth="40%">
                 <Flex gap="s" align="center">
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("from")}
@@ -201,6 +201,7 @@ export const XcmForm = () => {
                 disabled={!srcAsset || !hasValidAccounts || isLoading}
                 isLoading={isLoading}
                 assetPrice={price}
+                maxWidth="60%"
               />
             </Flex>
           </Stack>
@@ -209,9 +210,9 @@ export const XcmForm = () => {
         <ChainSwitch onClick={handleChainSwitch} />
 
         <Paper>
-          <Stack p="xl" gap="base">
+          <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
-              <Flex gap="base" direction="column">
+              <Flex gap="base" direction="column" flex={1} maxWidth="40%">
                 <Flex gap="s" align="center">
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("to")}
@@ -245,12 +246,13 @@ export const XcmForm = () => {
                 disabled
                 isLoading={isLoading}
                 assetPrice={price}
+                maxWidth="60%"
               />
             </Flex>
           </Stack>
           <XcmSummary />
           <Separator />
-          <Box p="xl">
+          <Box p={["l", "xl"]}>
             <SubmitButton
               status={status}
               disabled={isLoading || submit.isPending || !isSubmitReady}

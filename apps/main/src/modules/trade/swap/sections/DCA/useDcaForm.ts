@@ -181,8 +181,8 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
       return
     }
 
-    if (isBalanceLoaded(buyAsset.id) && isBalanceLoaded(sellAsset.id)) {
-      trigger()
+    if (isBalanceLoaded(sellAsset.id)) {
+      trigger("sellAmount")
     }
   }, [account, trigger, getValues, isBalanceLoaded])
 

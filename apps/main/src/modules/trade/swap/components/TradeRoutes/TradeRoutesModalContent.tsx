@@ -9,7 +9,7 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, Fragment } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -31,13 +31,8 @@ export const TradeRoutesModalContent: FC<Props> = ({
     <>
       <ModalHeader title={t("trade:market.summary.routes.header")} />
       <ModalBody sx={{ p: 0 }}>
-        <Flex
-          justify="space-between"
-          align="center"
-          py={getTokenPx("scales.paddings.m")}
-          px={16}
-        >
-          <Flex align="center" gap={10}>
+        <Flex justify="space-between" align="center" py="m" px="l">
+          <Flex align="center" gap="base">
             <Icon
               component={Routes}
               color={getToken("buttons.primary.high.rest")}
@@ -53,11 +48,7 @@ export const TradeRoutesModalContent: FC<Props> = ({
           </Text>
         </Flex>
         <Separator />
-        <Grid
-          columnTemplate="auto 1fr 1fr auto"
-          rowGap={getTokenPx("scales.paddings.base")}
-          p={getTokenPx("scales.paddings.xl")}
-        >
+        <Grid columnTemplate="auto 1fr 1fr auto" rowGap="base" p="xl">
           {routes.map((route, index) => (
             <Fragment key={route.assetIn.id}>
               {index > 0 && (
@@ -85,7 +76,7 @@ export const TradeRoutesModalContent: FC<Props> = ({
                 />
                 <Icon
                   sx={{ justifySelf: "center" }}
-                  size={18}
+                  size="m"
                   component={ArrowRightLong}
                   color={getToken("icons.onContainer")}
                 />

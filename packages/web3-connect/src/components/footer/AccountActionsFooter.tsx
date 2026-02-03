@@ -17,7 +17,7 @@ import { useAccount, useWeb3Connect, useWeb3ConnectModal } from "@/hooks"
 export const AccountActionsFooter = () => {
   const { mode, setPage, isControlled } = useWeb3ConnectContext()
   const { toggle } = useWeb3ConnectModal()
-  const { account, disconnect } = useAccount()
+  const { disconnect } = useAccount()
 
   const getConnectedProviders = useWeb3Connect(
     (state) => state.getConnectedProviders,
@@ -25,6 +25,7 @@ export const AccountActionsFooter = () => {
 
   const connectedProviders = getConnectedProviders(mode)
   const connected = connectedProviders.map(prop("type"))
+  const isConnected = connected.length > 0
 
   const onLogout = () => {
     disconnect()
@@ -33,18 +34,18 @@ export const AccountActionsFooter = () => {
   return (
     <ModalFooter justify="space-between">
       {connected.length > 0 && (
-        <Flex gap={8} align="center" display={["none", null, "flex"]}>
+        <Flex gap="base" align="center" display={["none", null, "flex"]}>
           <ProviderIcons providers={connected} />
           <Text fs="p4" color={getToken("text.medium")}>
             {connected.length} connected
           </Text>
         </Flex>
       )}
-      <Flex gap={8} justify="space-between" ml="auto">
-        {account && !isControlled && (
+      <Flex gap="base" justify="space-between" ml="auto">
+        {isConnected && !isControlled && (
           <Button variant="tertiary" onClick={onLogout}>
             Log out
-            <Icon size={14} component={LogOut} ml={4} mr={-4} />
+            <Icon size="s" component={LogOut} ml="s" mr={-4} />
           </Button>
         )}
         <Button
@@ -54,7 +55,7 @@ export const AccountActionsFooter = () => {
           onClick={() => setPage(Web3ConnectModalPage.ProviderSelect)}
         >
           Manage wallets
-          <Icon size={14} component={ChevronRight} ml={4} mr={-4} />
+          <Icon size="s" component={ChevronRight} ml="s" mr={-4} />
         </Button>
       </Flex>
     </ModalFooter>

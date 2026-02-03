@@ -22,7 +22,7 @@ export const AccountEditButton: FC<
       }}
       {...props}
     >
-      <Icon size={14} component={EditIcon} />
+      <Icon size="s" component={EditIcon} />
     </button>
   )
 }

@@ -35,7 +35,7 @@ export const NotificationCenter: FC = () => {
     <SheetRoot>
       <SheetTrigger asChild>
         <ButtonIcon>
-          <Icon component={BellIcon} size={20} />
+          <Icon component={BellIcon} size="l" />
           {pending.length > 0 && (
             <Spinner
               sx={{
@@ -51,11 +51,11 @@ export const NotificationCenter: FC = () => {
       <SheetContent>
         <SheetHeader title={t("notifications")} />
         <SheetBody sx={{ pt: 10 }}>
-          <Stack gap={20}>
+          <Stack gap="xl">
             {pending.length > 0 && (
               <Collapsible
                 label={
-                  <Text as="h3" fs={14} fw={600}>
+                  <Text as="h3" fs="p3" fw={600}>
                     {t("pending")}
                   </Text>
                 }
@@ -63,7 +63,7 @@ export const NotificationCenter: FC = () => {
                 actionLabelWhenOpen={t("hide")}
                 defaultOpen
               >
-                <Stack gap={12}>
+                <Stack gap="m">
                   {pending.map((props) => (
                     <NotificationToast key={props.id} {...props} />
                   ))}
@@ -74,7 +74,7 @@ export const NotificationCenter: FC = () => {
             {completed.length > 0 && (
               <Collapsible
                 label={
-                  <Text as="h3" fs={14} fw={600}>
+                  <Text as="h3" fs="p3" fw={600}>
                     {t("completed")}
                   </Text>
                 }
@@ -82,7 +82,7 @@ export const NotificationCenter: FC = () => {
                 actionLabelWhenOpen={t("hide")}
                 defaultOpen
               >
-                <Stack gap={12}>
+                <Stack gap="m">
                   {completed.map((props) => (
                     <NotificationToast key={props.id} {...props} />
                   ))}

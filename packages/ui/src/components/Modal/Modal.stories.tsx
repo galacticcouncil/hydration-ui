@@ -1,5 +1,5 @@
-import { useState } from "@storybook/preview-api"
-import type { Meta, StoryObj } from "@storybook/react"
+import { useState } from "storybook/preview-api"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Search } from "lucide-react"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -97,12 +97,12 @@ const WithCustomHeaderTemplate = (args: Story["args"]) => {
             {Array.from({ length: 100 }).map((_, i) => (
               <Flex
                 key={i}
-                py={10}
+                py="base"
                 px="var(--modal-content-padding)"
                 justify="space-between"
                 align="center"
               >
-                <Flex align="center" gap={8}>
+                <Flex align="center" gap="base">
                   <AssetLogo
                     alt="0"
                     src="https://cdn.jsdelivr.net/gh/galacticcouncil/intergalactic-asset-metadata@latest/v2/polkadot/2034/assets/0/icon.svg"

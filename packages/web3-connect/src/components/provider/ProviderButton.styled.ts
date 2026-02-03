@@ -19,46 +19,50 @@ export const SProviderButton = styled(ButtonTransparent)(
     align-items: center;
     justify-content: center;
 
-    padding-block: ${theme.scales.paddings.xl}px;
-    padding-inline: ${theme.scales.paddings.s}px;
+    padding-block: ${theme.space.xl};
+    padding-inline: ${theme.space.s};
 
     cursor: pointer;
 
     transition: ${theme.transitions.colors};
 
-    border-radius: ${theme.radii.lg}px;
+    border-radius: ${theme.radii.m};
     border: 1px solid var(--border-color);
     background: var(--background-color);
   `,
 )
 
-export const SConnectionIndicator = styled.div`
-  width: 4px;
-  height: 4px;
-  background: ${({ theme }) => theme.colors.successGreen[400]};
+export const SConnectionIndicator = styled.div(
+  ({ theme }) => css`
+    width: ${theme.sizes["3xs"]};
+    height: ${theme.sizes["3xs"]};
+    background: ${theme.colors.successGreen[400]};
 
-  border-radius: 50%;
-  position: absolute;
-  top: 8px;
-  left: 8px;
-`
+    border-radius: 50%;
+    position: absolute;
+    top: ${theme.space.base};
+    left: ${theme.space.base};
+  `,
+)
 
-export const SAccountIndicator = styled.div`
-  font-size: 11px;
-  color: ${({ theme }) => theme.text.high};
+export const SAccountIndicator = styled.div(
+  ({ theme }) => css`
+    font-size: ${theme.fontSizes.p6};
+    color: ${theme.text.high};
 
-  border-radius: ${({ theme }) => theme.radii.md}px;
+    border-radius: ${theme.radii.base};
 
-  position: absolute;
-  top: 4px;
-  right: 4px;
+    position: absolute;
+    top: ${theme.space.xs};
+    right: ${theme.space.xs};
 
-  padding: 3px 5px;
+    padding: ${theme.space.xs} ${theme.space.s};
 
-  opacity: 0.8;
+    opacity: 0.8;
 
-  transition: ${({ theme }) => theme.transitions.colors};
+    transition: ${theme.transitions.colors};
 
-  background: ${({ theme }) => theme.surfaces.containers.dim.dimOnBg};
-  border: 1px solid var(--border-color);
-`
+    background: ${theme.surfaces.containers.dim.dimOnBg};
+    border: 1px solid var(--border-color);
+  `,
+)
