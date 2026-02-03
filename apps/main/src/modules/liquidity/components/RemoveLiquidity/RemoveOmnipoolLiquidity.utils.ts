@@ -67,6 +67,12 @@ const defaultRemoveOmnipoolLiquidityValues: RemoveOmnipoolResult = {
   minWithdrawalFee: "0",
 }
 
+export const WITHDRAW_FEE_RANGE = {
+  low: 0.34,
+  high: 0.66,
+  full: [0.01, 0.34, 0.66, 1] as const,
+}
+
 export const useRemoveOmnipoolLiquidityOut = (poolId: string) => {
   const { hub, getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(poolId)

@@ -96,7 +96,7 @@ export const useStablepoolAddLiquidity = ({
   const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { account } = useAccount()
   const meta = getAssetWithFallback(stableswapId)
-  const getOmnipoolGetShares = useLiquidityOmnipoolShares(stableswapId)
+  const getOmnipoolShares = useLiquidityOmnipoolShares(stableswapId)
   const { data: omnipoolIds } = useOmnipoolIds()
 
   const isAddableToOmnipool = omnipoolIds?.includes(pool.id.toString())
@@ -210,7 +210,7 @@ export const useStablepoolAddLiquidity = ({
           min_shares: BigInt(minStablepoolShares),
         })
       } else {
-        const liquidityShares = getOmnipoolGetShares(stablepoolSharesHuman)
+        const liquidityShares = getOmnipoolShares(stablepoolSharesHuman)
 
         if (!liquidityShares) throw new Error("Liquidity shares are not found")
 

@@ -558,8 +558,6 @@ export const useRemoveStableswapSharesLiquidity = (
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
-      if (!receiveAssets) throw new Error("Receive assets not found")
-
       const tx = split
         ? papi.tx.Stableswap.remove_liquidity({
             pool_id: Number(pool.id),

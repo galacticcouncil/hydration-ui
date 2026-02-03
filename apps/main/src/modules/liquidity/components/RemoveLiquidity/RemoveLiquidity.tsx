@@ -19,6 +19,7 @@ import { TAssetData } from "@/api/assets"
 import { AssetLogo } from "@/components/AssetLogo"
 import { ExpandableDynamicFee, FeeBreakdown } from "@/components/DynamicFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
+import { WITHDRAW_FEE_RANGE } from "@/modules/liquidity/components/RemoveLiquidity/RemoveOmnipoolLiquidity.utils"
 import {
   TradeLimitRow,
   TradeLimitType,
@@ -169,11 +170,11 @@ export const RemoveLiquidityForm = ({
               {fee && feesBreakdown && (
                 <ExpandableDynamicFee
                   label={t("liquidity.remove.modal.withdrawalFees")}
-                  rangeLow={0.34}
-                  rangeHigh={0.66}
+                  rangeLow={WITHDRAW_FEE_RANGE.low}
+                  rangeHigh={WITHDRAW_FEE_RANGE.high}
                   value={Number(fee)}
                   valueDisplay={feeDisplay}
-                  range={[0.01, 0.34, 0.66, 1]}
+                  range={WITHDRAW_FEE_RANGE.full}
                   feesBreakdown={feesBreakdown}
                 />
               )}

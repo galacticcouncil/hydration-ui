@@ -24,7 +24,10 @@ import { ExpandableDynamicFee, FeeBreakdown } from "@/components/DynamicFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { ReceiveAssets } from "@/modules/liquidity/components/RemoveLiquidity/ReceiveAssets"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
-import { RemoveOmnipoolResult } from "@/modules/liquidity/components/RemoveLiquidity/RemoveOmnipoolLiquidity.utils"
+import {
+  RemoveOmnipoolResult,
+  WITHDRAW_FEE_RANGE,
+} from "@/modules/liquidity/components/RemoveLiquidity/RemoveOmnipoolLiquidity.utils"
 import {
   TradeLimitRow,
   TradeLimitType,
@@ -116,9 +119,9 @@ export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
   if (positionId) {
     const { all: omnipoolPositions } = getAssetPositions(omnipoolId)
 
-    const position = positionId
-      ? omnipoolPositions.find((position) => position.positionId === positionId)
-      : undefined
+    const position = omnipoolPositions.find(
+      (position) => position.positionId === positionId,
+    )
 
     if (!position) return null
 
@@ -395,11 +398,11 @@ const FeeColumn = ({
   return feesBreakdown ? (
     <ExpandableDynamicFee
       label={t("liquidity.remove.modal.withdrawalFees")}
-      rangeLow={0.34}
-      rangeHigh={0.66}
+      rangeLow={WITHDRAW_FEE_RANGE.low}
+      rangeHigh={WITHDRAW_FEE_RANGE.high}
       value={Number(fee)}
       valueDisplay={feeDisplay}
-      range={[0.01, 0.34, 0.66, 1]}
+      range={WITHDRAW_FEE_RANGE.full}
       feesBreakdown={feesBreakdown}
     />
   ) : (
