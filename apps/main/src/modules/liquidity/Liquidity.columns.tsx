@@ -30,14 +30,18 @@ import { OmnipoolAssetTable } from "./Liquidity.utils"
 
 const columnHelper = createColumnHelper<OmnipoolAssetTable>()
 
-export const getPoolColumnsVisibility = (isMobile: boolean) => ({
+export const getPoolColumnsVisibility = (
+  isMobile: boolean,
+  isMyLiquidity: boolean,
+) => ({
   ["meta.name"]: !isMobile,
   price: !isMobile,
-  volumeDisplay: true,
+  volumeDisplay: !isMobile || !isMyLiquidity,
   tvlDisplay: !isMobile,
   totalFee: !isMobile,
   id: false,
   actions: !isMobile,
+  positions: isMobile && isMyLiquidity,
 })
 
 export const usePoolColumns = () => {
@@ -180,6 +184,11 @@ export const usePoolColumns = () => {
         },
       }),
       columnHelper.display({
+        id: "positions",
+        header: t("liquidity:yourLiquidity"),
+        cell: ({ row }) => <PositionsTotal pool={row.original} />,
+      }),
+      columnHelper.display({
         id: "actions",
         size: 170,
         cell: ({ row }) => <Actions pool={row.original} />,
@@ -187,6 +196,25 @@ export const usePoolColumns = () => {
     ],
 
     [t, isMobile],
+  )
+}
+
+const PositionsTotal = ({ pool }: { pool: OmnipoolAssetTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+
+  const total = useUserPositionsTotal(pool)
+
+  return (
+    <Flex align="center" gap="s" justify="flex-end">
+      {total !== "0" && (
+        <>
+          {t("currency", {
+            value: total,
+          })}
+        </>
+      )}
+      <Icon component={ChevronRight} size="m" color={getToken("text.low")} />
+    </Flex>
   )
 }
 

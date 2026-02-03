@@ -254,7 +254,7 @@ export const AddStablepoolLiquidityForm = ({
         customHeader={
           !erc20Id &&
           isAddableToOmnipool && (
-            <Flex align="center" mt="xxl" gap="m">
+            <Flex align="center" mt="l" gap="m">
               <Controller
                 control={form.control}
                 name="option"

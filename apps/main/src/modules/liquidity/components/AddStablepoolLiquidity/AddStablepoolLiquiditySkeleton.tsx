@@ -38,7 +38,7 @@ export const AddStablepoolLiquiditySkeleton = (
         closable={props.closable}
         onBack={props.onBack}
         customHeader={
-          <Flex align="center" mt="xxl" gap="m">
+          <Flex align="center" mt="l" gap="m">
             <SliderTabs
               options={addStablepoolOptions}
               selected={addStablepoolOptions[0]?.id}

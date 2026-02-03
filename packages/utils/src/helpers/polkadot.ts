@@ -9,7 +9,7 @@ export const isBinary = (value: unknown): value is Binary =>
 
 export const safeConvertAddressSS58 = (address: string, ss58prefix = 0) => {
   try {
-    return AccountId(ss58prefix).dec(AccountId().enc(address))
+    return AccountId(ss58prefix).dec(address)
   } catch {
     return ""
   }
