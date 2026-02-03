@@ -1,5 +1,5 @@
 import { css } from "@emotion/react"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Grid } from "@/components/Grid"
 import { Paper } from "@/components/Paper"

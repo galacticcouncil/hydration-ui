@@ -18,10 +18,10 @@ export const SContentContainer = styled.div(
     border-color: ${theme.details.separators};
 
     padding-block: ${theme.space.base};
-    margin-top: ${theme.space["-xl"]};
+    margin-top: ${theme.space["-m"]};
     margin-bottom: ${theme.space.xl};
 
-    ${mq("sm")} {
+    ${mq("lg")} {
       margin-top: ${theme.space["-xxl"]};
       margin-bottom: ${theme.space.xxl};
     }
