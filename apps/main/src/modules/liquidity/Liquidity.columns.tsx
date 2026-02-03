@@ -226,7 +226,11 @@ const Actions = ({ pool }: { pool: OmnipoolAssetTable }) => {
           </Link>
         </Button>
         <Button variant="tertiary" outline asChild>
-          <Link to="/liquidity/$id" params={{ id: pool.id }}>
+          <Link
+            to="/liquidity/$id"
+            params={{ id: pool.id }}
+            search={{ expanded: true }}
+          >
             {isPositions ? t("manage") : t("details")}
           </Link>
         </Button>

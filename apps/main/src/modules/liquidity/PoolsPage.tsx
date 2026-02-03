@@ -91,7 +91,7 @@ export const OmnipoolAndStablepoolTable = ({
             router.navigate({
               to: "/liquidity/$id",
               params: { id: asset.id },
-              search: { expanded: false },
+              search: { expanded: true },
             })
           }}
         />
@@ -163,7 +163,7 @@ export const IsolatedPoolsTable = ({
             router.navigate({
               to: "/liquidity/$id",
               params: { id: asset.id },
-              search: { expanded: false },
+              search: { expanded: true },
             })
           }
         />
