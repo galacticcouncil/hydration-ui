@@ -1,6 +1,10 @@
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
-import { ThemeUICSSProperties } from "@theme-ui/css"
+import { ResponsiveStyleValue, ThemeUICSSProperties } from "@theme-ui/css"
 import { FC, Ref } from "react"
+
+import { useResponsiveValue } from "@/styles/media"
+import { ThemeBaseProps } from "@/theme"
+import { getSpacingValue } from "@/utils"
 
 import { SRoot, SScrollbar, SThumb, SViewport } from "./ScrollArea.styled"
 
@@ -15,6 +19,9 @@ export type ScrollAreaProps = React.ComponentPropsWithoutRef<
   width?: ThemeUICSSProperties["width"]
   orientation?: ScrollbarOrientation
   viewportRef?: React.Ref<HTMLDivElement>
+  horizontalEdgeOffset?: ResponsiveStyleValue<
+    number | string | keyof ThemeBaseProps["space"]
+  >
   ref?: Ref<React.ElementRef<typeof ScrollAreaPrimitive.Root>>
 }
 
@@ -25,14 +32,25 @@ const ScrollArea: FC<ScrollAreaProps> = ({
   viewportRef,
   orientation = "vertical",
   ref,
+  horizontalEdgeOffset,
   ...props
-}) => (
-  <SRoot {...props} ref={ref} sx={{ height, width }}>
-    <SViewport ref={viewportRef}>{children}</SViewport>
-    <ScrollBar orientation={orientation} />
-    <ScrollAreaPrimitive.Corner />
-  </SRoot>
-)
+}) => {
+  const offset = useResponsiveValue(horizontalEdgeOffset, 0)
+
+  return (
+    <SRoot
+      {...props}
+      ref={ref}
+      sx={{ height, width }}
+      data-orientation={orientation}
+      horizontalEdgeOffset={getSpacingValue(offset)}
+    >
+      <SViewport ref={viewportRef}>{children}</SViewport>
+      <ScrollBar orientation={orientation} />
+      <ScrollAreaPrimitive.Corner />
+    </SRoot>
+  )
+}
 
 function ScrollBar({
   orientation = "vertical",

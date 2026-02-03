@@ -1,14 +1,9 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
+import { isPropValid } from "storybook/theming"
 
 import { animations } from "@/styles/animations"
-
-export const SRoot = styled(ScrollAreaPrimitive.Root)`
-  height: 100%;
-  width: 100%;
-  position: relative;
-`
 
 export const SViewport = styled(ScrollAreaPrimitive.Viewport)`
   outline: none;
@@ -17,6 +12,28 @@ export const SViewport = styled(ScrollAreaPrimitive.Viewport)`
   border-radius: inherit;
   -webkit-overflow-scrolling: touch;
 `
+
+export const SRoot = styled(ScrollAreaPrimitive.Root, {
+  shouldForwardProp: (prop) =>
+    isPropValid(prop) && prop !== "horizontalEdgeOffset",
+})<{
+  horizontalEdgeOffset?: number | string
+}>(
+  ({ horizontalEdgeOffset }) => css`
+    height: 100%;
+    width: 100%;
+    position: relative;
+
+    &[data-orientation="horizontal"] {
+      width: auto;
+      overflow-x: auto;
+      margin-inline: calc(${horizontalEdgeOffset} * -1);
+      ${SViewport} {
+        padding-inline: ${horizontalEdgeOffset};
+      }
+    }
+  `,
+)
 
 export const SScrollbar = styled(ScrollAreaPrimitive.ScrollAreaScrollbar)(
   ({ theme }) => css`
