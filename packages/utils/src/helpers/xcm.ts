@@ -4,6 +4,7 @@ import {
   AnyParachain,
   Asset,
   ChainType,
+  EvmChain,
   EvmParachain,
   Parachain,
 } from "@galacticcouncil/xc-core"
@@ -70,6 +71,10 @@ export function isAnyParachain(chain: AnyChain): chain is AnyParachain {
     chain.getType() === ChainType.Parachain ||
     chain.getType() === ChainType.EvmParachain
   )
+}
+
+export function isEvmChain(chain: AnyChain): chain is EvmChain {
+  return chain.getType() === ChainType.EvmChain
 }
 
 export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {

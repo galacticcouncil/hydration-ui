@@ -46,6 +46,8 @@ export const XcmForm = () => {
     sourceChainAssetPairs,
     destChainAssetPairs,
     isLoading,
+    isLoadingCall,
+    isLoadingTransfer,
     isConnectedAccountValid,
     registryChain,
   } = useXcmProvider()
@@ -142,6 +144,8 @@ export const XcmForm = () => {
     : undefined
 
   const { price } = useAssetPrice(spotPriceId)
+
+  const isLoadingCallOrTransfer = isLoadingCall || isLoadingTransfer
 
   return (
     <form
@@ -255,8 +259,15 @@ export const XcmForm = () => {
           <Box p={["l", "xl"]}>
             <SubmitButton
               status={status}
-              disabled={isLoading || submit.isPending || !isSubmitReady}
-              isLoading={isLoading || submit.isPending}
+              disabled={
+                isLoading ||
+                isLoadingCallOrTransfer ||
+                submit.isPending ||
+                !isSubmitReady
+              }
+              isLoading={
+                isLoading || isLoadingCallOrTransfer || submit.isPending
+              }
               variant={isSubmitReady ? "primary" : "muted"}
               loadingVariant="muted"
               chain={srcChain}

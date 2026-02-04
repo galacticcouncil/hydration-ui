@@ -144,6 +144,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const {
     transfer: xcmTransfer,
     isLoadingTransfer,
+    isLoadingCall,
     call,
     report,
   } = useXcmTransfer(form)
@@ -179,6 +180,8 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     <XcmContext.Provider
       value={{
         isLoading,
+        isLoadingCall,
+        isLoadingTransfer,
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
