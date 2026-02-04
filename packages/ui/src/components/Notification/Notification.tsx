@@ -49,6 +49,7 @@ type CustomToastProps = {
   dateString?: string
   link?: string
   hint?: string
+  fullWidth?: boolean
 }
 
 const notificationIcons: Record<ToastVariant, React.ComponentType> = {
@@ -70,9 +71,10 @@ export const Notification = ({
   dateString,
   link,
   hint,
+  fullWidth = false,
 }: CustomToastProps) => {
   return (
-    <SNotification className={className}>
+    <SNotification className={className} fullWidth={fullWidth}>
       <Flex gap="base">
         <SIconVariant
           component={notificationIcons[variant]}

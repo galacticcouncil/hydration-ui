@@ -10,7 +10,7 @@ export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
 > = async (
   tx,
   signer,
-  { onError, onSubmitted, onSuccess, onFinalized, weight },
+  { onError, onSubmitted, onSuccess, onFinalized, weight, priorityRpcUrl },
 ) => {
   const data = (await tx.getEncodedData()).asHex()
   return signer.signAndSubmitDispatch(
@@ -19,6 +19,7 @@ export const signAndSubmitEvmDispatchTx: TxSignAndSubmitFn<
     },
     {
       chainKey: HYDRATION_CHAIN_KEY,
+      priorityRpcUrl,
       weight,
       onError,
       onSuccess,
@@ -34,10 +35,11 @@ export const signAndSubmitEvmTx: TxSignAndSubmitFn<
 > = async (
   tx,
   signer,
-  { onError, onSubmitted, onSuccess, onFinalized, chainKey },
+  { onError, onSubmitted, onSuccess, onFinalized, chainKey, priorityRpcUrl },
 ) => {
   return signer.signAndSubmit(tx, {
     chainKey,
+    priorityRpcUrl,
     onError,
     onSuccess,
     onSubmitted,

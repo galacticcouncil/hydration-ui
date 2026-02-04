@@ -1,11 +1,11 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { EvmClient } from "@galacticcouncil/xc-core"
 import { isObjectType } from "remeda"
 import {
   Address,
   BaseError,
-  Chain,
   createPublicClient,
   createWalletClient,
   custom,
@@ -28,6 +28,7 @@ import {
   EVM_DISPATCH_ADDRESS,
   EVM_GAS_TO_WEIGHT,
 } from "@/config/evm"
+import { requestNetworkSwitch } from "@/utils"
 
 type PermitMessage = {
   from: string
@@ -49,6 +50,7 @@ type TransactionCall = Omit<ExtendedEvmCall, "from" | "type" | "dryRun">
 type EthereumSignerOptions = {
   chainKey?: string
   weight?: bigint
+  priorityRpcUrl?: string
   onSubmitted: (txHash: string) => void
   onSuccess: (receipt: TransactionReceipt) => void
   onError: (error: string) => void
@@ -116,6 +118,10 @@ export class EthereumSigner {
 
     const { evmClient } = chain
 
+    await requestNetworkSwitch(this.provider, {
+      chain: chainKey,
+      priorityRpcUrl: options.priorityRpcUrl,
+    })
     await this.walletClient.switchChain({ id: evmClient.chain.id })
 
     return chain
@@ -226,9 +232,10 @@ export class EthereumSigner {
   async signAndSubmitHydration(
     call: TransactionCall,
     options: EthereumSignerOptions,
-    chain: Chain,
+    client: EvmClient,
   ) {
     try {
+      const publicClient = client.getProvider()
       const [gas, nonce] = await Promise.all([
         this.estimateGas(
           {
@@ -237,7 +244,7 @@ export class EthereumSigner {
           },
           options.weight,
         ),
-        this.publicClient.getTransactionCount({
+        publicClient.getTransactionCount({
           address: this.address as Hex,
         }),
       ])
@@ -247,7 +254,7 @@ export class EthereumSigner {
         data: call.data as Hex,
         to: call.to,
         nonce,
-        chain,
+        chain: client.chain,
         maxFeePerGas: call?.maxFeePerGas || gas.maxFeePerGas,
         maxPriorityFeePerGas:
           call?.maxPriorityFeePerGas || gas.maxPriorityFeePerGas,
@@ -257,7 +264,7 @@ export class EthereumSigner {
 
       options.onSubmitted(txHash)
 
-      const receipt = await this.publicClient.waitForTransactionReceipt({
+      const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash,
       })
 
@@ -278,10 +285,11 @@ export class EthereumSigner {
   async signAndSubmitNative(
     call: TransactionCall,
     options: EthereumSignerOptions,
-    chain: Chain,
+    client: EvmClient,
   ) {
     try {
-      const nonce = await this.publicClient.getTransactionCount({
+      const publicClient = client.getProvider()
+      const nonce = await publicClient.getTransactionCount({
         address: this.address as Hex,
       })
       const txHash = await this.walletClient.sendTransaction({
@@ -289,12 +297,12 @@ export class EthereumSigner {
         data: call.data as Hex,
         to: call.to,
         nonce,
-        chain,
+        chain: client.chain,
         value: call?.value,
       })
 
       options.onSubmitted(txHash)
-      const receipt = await this.publicClient.waitForTransactionReceipt({
+      const receipt = await publicClient.waitForTransactionReceipt({
         hash: txHash,
       })
       if (receipt.status === "reverted") {
@@ -317,9 +325,9 @@ export class EthereumSigner {
     const { evmClient } = chain
 
     if (chain.key === HYDRATION_CHAIN_KEY) {
-      return this.signAndSubmitHydration(call, options, evmClient.chain)
+      return this.signAndSubmitHydration(call, options, evmClient)
     }
 
-    return this.signAndSubmitNative(call, options, evmClient.chain)
+    return this.signAndSubmitNative(call, options, evmClient)
   }
 }

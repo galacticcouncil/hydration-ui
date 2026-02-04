@@ -24,6 +24,7 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { useProviderRpcUrlStore } from "@/states/provider"
 import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
@@ -71,6 +72,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 }) => {
   const queryClient = useQueryClient()
   const { cancelTransaction } = useTransactionsStore()
+  const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
 
   const transaction = useWrapTransaction(config)
 
@@ -139,6 +141,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       tip,
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
+      priorityRpcUrl:
+        transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+          ? rpcUrl
+          : undefined,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
