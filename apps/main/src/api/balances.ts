@@ -122,6 +122,13 @@ export const tokenBalanceQuery = (
   })
 }
 
+export const HDXStakingBalanceQuery = (
+  rpc: TProviderContext,
+): ReturnType<typeof tokenBalanceQuery> => ({
+  ...tokenBalanceQuery(rpc, NATIVE_ASSET_ID, import.meta.env.VITE_TRSRY_ADDR),
+  staleTime: Infinity,
+})
+
 export const HDXIssuanceQuery = ({ papi, isApiLoaded }: TProviderContext) => {
   return queryOptions({
     queryKey: ["hdxIssuance"],

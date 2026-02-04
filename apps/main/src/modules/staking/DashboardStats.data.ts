@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 
+import { HDXStakingBalanceQuery } from "@/api/balances"
 import { bestNumberQuery } from "@/api/chain"
 import { stakingConstsQuery } from "@/api/constants"
 import { useIndexerClient } from "@/api/provider"
@@ -30,8 +31,11 @@ export const useStakingSupply = () => {
   const { data: hdxSupply, isLoading: hdxSupplyLoading } = useQuery(
     subscanHDXSupplyQuery,
   )
+  const { data: treasuryData } = useQuery(HDXStakingBalanceQuery(rpc))
 
-  const circulatingSupply = Big(hdxSupply?.available_balance || "0")
+  const circulatingSupply = Big(hdxSupply?.available_balance || "0").minus(
+    treasuryData?.balance || "0",
+  )
 
   const supplyStaked = toDecimal(
     stakeData?.total_stake.toString() ?? "0",
