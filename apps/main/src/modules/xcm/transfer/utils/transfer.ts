@@ -8,6 +8,7 @@ import { Account } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
+import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
 
 import { XcmTransferArgs } from "@/api/xcm"
@@ -128,8 +129,8 @@ export const buildTransferCall = async (
       return false
     },
     {
-      interval: 2500,
-      timeout: 60000,
+      interval: 1000,
+      timeout: minutesToMilliseconds(3),
     },
   )
 }
