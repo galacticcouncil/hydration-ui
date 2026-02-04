@@ -50,6 +50,7 @@ export class SuiSigner {
       const { digest: txHash } = await chain.client.executeTransactionBlock({
         transactionBlock: bytes,
         signature,
+        requestType: "WaitForLocalExecution",
         options: {
           showEffects: true,
           showEvents: true,

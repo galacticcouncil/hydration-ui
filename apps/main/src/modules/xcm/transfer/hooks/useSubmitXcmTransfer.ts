@@ -1,4 +1,9 @@
-import { HYDRATION_CHAIN_KEY, isParachain } from "@galacticcouncil/utils"
+import {
+  HexString,
+  HYDRATION_CHAIN_KEY,
+  isEvmChain,
+  isParachain,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { AnyChain, ConfigBuilder } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
@@ -8,8 +13,10 @@ import { useTranslation } from "react-i18next"
 
 import { useCrossChainConfigService } from "@/api/xcm"
 import { AnyPapiTx } from "@/modules/transactions/types"
-import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
+import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
+import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   TransactionActions,
@@ -25,6 +32,9 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
   const configService = useCrossChainConfigService()
   const { account } = useAccount()
   const { papi } = useRpcProvider()
+
+  const { addPendingApproval } = useApprovalTrackingStore()
+
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
       const { srcAmount, srcChain, destChain, srcAsset, destAsset } = values
@@ -57,10 +67,17 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
 
       const buildTransferTransaction = async () => {
         const call = await transfer.buildCall(srcAmount)
+        const transferCall = await buildTransferCall(
+          call,
+          transfer,
+          srcChain,
+          srcAmount,
+        )
+
         const tx =
           srcChain.key === HYDRATION_CHAIN_KEY
-            ? await papi.txFromCallData(Binary.fromHex(call.data))
-            : await getExternalChainTx(srcChain, call)
+            ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
+            : await getExternalChainTx(srcChain, transferCall)
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
@@ -106,6 +123,24 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
                 meta: {
                   type: TransactionType.EvmApprove,
                   srcChainKey: srcChain.key,
+                },
+                onSubmitted: async (txHash) => {
+                  const isEvmCallOnEvmChain =
+                    !!srcChain && isEvmChain(srcChain) && isEvmCall(call)
+
+                  if (!isEvmCallOnEvmChain) return
+
+                  const provider = srcChain.evmClient.getProvider()
+                  const nonce = await provider.getTransactionCount({
+                    address: call.from as HexString,
+                  })
+
+                  addPendingApproval({
+                    chainKey: srcChain.key,
+                    to: call.to,
+                    nonce,
+                    txHash,
+                  })
                 },
               },
               {
