@@ -8,7 +8,7 @@ import {
   TradeOperation,
   userSwapsQuery,
 } from "@galacticcouncil/indexer/squid"
-import { safeConvertAddressSS58, subscan } from "@galacticcouncil/utils"
+import { safeConvertPublicKeyToSS58, subscan } from "@galacticcouncil/utils"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -95,7 +95,7 @@ export const useSwapsData = (
           const type = isTradeOperation(swap.operationType)
             ? swap.operationType
             : null
-          const address = safeConvertAddressSS58(swap.swapperId ?? "")
+          const address = safeConvertPublicKeyToSS58(swap.swapperId ?? "")
           const date = new Date(swap.paraTimestamp)
 
           return {
