@@ -29,7 +29,8 @@ export const ProviderExternalButton = () => {
 
   return (
     <ProviderButton
-      {...walletData}
+      walletData={walletData}
+      as="button"
       onClick={() => {
         if (isConnected) {
           disconnect(provider)

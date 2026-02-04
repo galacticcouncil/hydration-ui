@@ -1,4 +1,4 @@
-import { Button, Flex } from "@galacticcouncil/ui/components"
+import { Button, Flex, Logo } from "@galacticcouncil/ui/components"
 
 import { WalletMode } from "@/hooks/useWeb3Connect"
 import { getWalletModeIcon } from "@/utils/wallet"
@@ -85,7 +85,7 @@ export const AccountFilter: React.FC<AccountFilterProps> = ({
             onClick={() => onSetActive(mode as AccountFilterOption)}
             sx={{ position: "relative", pl: "s", py: "s", gap: "s" }}
           >
-            <img sx={{ size: "l" }} src={icon} alt={name} />
+            <Logo size="medium" src={icon} alt={name} />
             {name}
           </Button>
         ))}

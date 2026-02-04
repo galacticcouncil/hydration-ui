@@ -39,6 +39,7 @@ export type TxOptions = TxStatusCallbacks & {
   mortalityPeriod: TxMortalityPeriod
   chainKey: string
   feeAssetId: string
+  priorityRpcUrl?: string
 }
 
 export type TxEventOrError =

@@ -28,6 +28,7 @@ const OnchainSummary = () => {
 
   const isPolkadotEcosystem = srcChain?.ecosystem === ChainEcosystem.Polkadot
   const isHydration = srcChain?.key === HYDRATION_CHAIN_KEY
+
   return (
     <Stack
       separated
