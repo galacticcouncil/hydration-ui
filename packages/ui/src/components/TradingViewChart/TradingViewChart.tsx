@@ -31,7 +31,7 @@ import {
   renderSeries,
   subscribeCrosshairMove,
 } from "@/components/TradingViewChart/utils"
-import { useUiScale } from "@/styles/media"
+import { useBreakpoints, useUiScale } from "@/styles/media"
 import { useTheme } from "@/theme"
 
 export type TradingViewChartRef = {
@@ -85,6 +85,7 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
   const { themeProps } = useTheme()
   const uiScale = useUiScale()
+  const { isMobile } = useBreakpoints()
 
   useEffect(() => {
     if (!chartContainerRef.current) return
@@ -98,6 +99,19 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       grid,
       timeScale,
       crosshair: crosshair(themeProps),
+      handleScroll: isMobile
+        ? {
+            horzTouchDrag: true,
+            vertTouchDrag: false,
+          }
+        : undefined,
+      handleScale: isMobile
+        ? {
+            axisPressedMouseMove: true,
+            mouseWheel: true,
+            pinch: true,
+          }
+        : undefined,
     })
 
     const [series, volumeSeries] = renderSeries(
@@ -145,10 +159,15 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     return () => {
       chart.remove()
     }
-  }, [data, height, themeProps, type, hidePriceIndicator, uiScale])
+  }, [data, height, themeProps, type, hidePriceIndicator, uiScale, isMobile])
 
   return (
-    <Box sx={{ position: "relative" }}>
+    <Box
+      sx={{
+        position: "relative",
+        touchAction: isMobile ? "pan-y pinch-zoom" : undefined,
+      }}
+    >
       <div ref={chartContainerRef} />
       <Crosshair ref={crosshairRef} {...crosshairData} />
       {!hidePriceIndicator && <PriceIndicator ref={priceIndicatorRef} />}
