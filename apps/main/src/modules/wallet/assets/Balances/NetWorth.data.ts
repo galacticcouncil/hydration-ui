@@ -84,22 +84,22 @@ export const useNetWorthData = (
       time: new Date(Number(bucket.timestamp)),
     }))
 
-    const firstBalance = balances[0]
+    const lastBalance = balances[balances.length - 1]
 
     const withCurrentBalance = currentNetWorthNum
       ? balances.concat([
           {
             netWorth: currentNetWorthNum,
-            time: firstBalance
-              ? new Date(firstBalance.time.valueOf() + 1000)
+            time: lastBalance
+              ? new Date(lastBalance.time.valueOf() + 1000)
               : new Date(),
           },
         ])
-      : balances.length === 1 && firstBalance
+      : balances.length === 1 && lastBalance
         ? balances.concat([
             {
-              netWorth: firstBalance.netWorth,
-              time: new Date(firstBalance.time.valueOf() + 1000),
+              netWorth: lastBalance.netWorth,
+              time: new Date(lastBalance.time.valueOf() + 1000),
             },
           ])
         : balances
