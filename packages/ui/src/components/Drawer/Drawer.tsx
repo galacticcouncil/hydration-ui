@@ -137,7 +137,7 @@ const Drawer = ({
   ...props
 }: DrawerProps) => {
   return (
-    <DrawerRoot {...props}>
+    <DrawerRoot repositionInputs={false} {...props}>
       <DrawerContent
         onOverlayClick={(e) => {
           e.stopPropagation()
