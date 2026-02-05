@@ -1,6 +1,5 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
-  Box,
   Flex,
   Grid,
   Input,
@@ -11,6 +10,7 @@ import {
   ModalTrigger,
   Text,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -89,6 +89,7 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
   onAssetSelect,
 }) => {
   const { t } = useTranslation(["common", "xcm"])
+  const { isMobile } = useBreakpoints()
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
   const { registryChain } = useXcmProvider()
@@ -131,73 +132,75 @@ export const ChainAssetSelectContent: React.FC<ChainAssetSelectModalProps> = ({
       : true
 
   return (
-    <Grid columnTemplate={["4rem 1fr", "11.25rem 1fr"]}>
-      <Box>
-        <Box p="base" visibility={["hidden", "visible"]}>
-          <Input
-            placeholder={t("xcm:chainAssetSelect.search.chains")}
-            iconStart={Search}
-            value={chainSearch}
-            onChange={(e) => setChainSearch(e.target.value)}
-            customSize="large"
-            autoComplete="off"
-          />
-        </Box>
+    <>
+      <Grid
+        columnTemplate={["9rem 1fr", "10.25rem 1fr"]}
+        gap={["base", "l"]}
+        p="base"
+      >
+        <Input
+          placeholder={t("xcm:chainAssetSelect.search.chains")}
+          iconStart={Search}
+          value={chainSearch}
+          onChange={(e) => setChainSearch(e.target.value)}
+          customSize={isMobile ? "medium" : "large"}
+          autoComplete="off"
+        />
+        <Input
+          placeholder={t("xcm:chainAssetSelect.search.assets")}
+          iconStart={Search}
+          value={assetSearch}
+          onChange={(e) => setAssetSearch(e.target.value)}
+          customSize={isMobile ? "medium" : "large"}
+          autoComplete="off"
+        />
+      </Grid>
+      <Grid columnTemplate={["3.75rem 1fr", "11.25rem 1fr"]}>
         <ChainList
           items={filteredChains}
           selectedChain={pendingChain}
           setSelectedChain={setPendingChain}
         />
-      </Box>
-      <Flex direction="column">
-        <Box p="base">
-          <Input
-            placeholder={t("xcm:chainAssetSelect.search.assets")}
-            iconStart={Search}
-            value={assetSearch}
-            onChange={(e) => setAssetSearch(e.target.value)}
-            customSize="large"
-            autoComplete="off"
-          />
-        </Box>
-        {pendingChain && isCompatibleWalletMode && (
-          <AssetList
-            registryChain={registryChain}
-            items={filteredAssetsWithRoutes}
-            address={address}
-            selectedAsset={currentSelection?.asset}
-            selectedChain={pendingChain}
-            setSelectedAsset={(asset) => {
-              onAssetSelect({ chain: pendingChain, asset })
-            }}
-          />
-        )}
+        <Flex direction="column">
+          {pendingChain && isCompatibleWalletMode && (
+            <AssetList
+              registryChain={registryChain}
+              items={filteredAssetsWithRoutes}
+              address={address}
+              selectedAsset={currentSelection?.asset}
+              selectedChain={pendingChain}
+              setSelectedAsset={(asset) => {
+                onAssetSelect({ chain: pendingChain, asset })
+              }}
+            />
+          )}
 
-        {pendingChain && !isCompatibleWalletMode && (
-          <ConnectChainTile
-            p="base"
-            chain={pendingChain}
-            onConnect={() =>
-              toggle(getWalletModeByChain(pendingChain), {
-                title: t("xcm:connect.modal.title", {
-                  chain: pendingChain.name,
-                }),
-                description: t("xcm:connect.modal.description", {
-                  chain: pendingChain.name,
-                }),
-              })
-            }
-          />
-        )}
+          {pendingChain && !isCompatibleWalletMode && (
+            <ConnectChainTile
+              p="base"
+              chain={pendingChain}
+              onConnect={() =>
+                toggle(getWalletModeByChain(pendingChain), {
+                  title: t("xcm:connect.modal.title", {
+                    chain: pendingChain.name,
+                  }),
+                  description: t("xcm:connect.modal.description", {
+                    chain: pendingChain.name,
+                  }),
+                })
+              }
+            />
+          )}
 
-        {!filteredAssetsWithRoutes.length && (
-          <Flex flex={1} align="center" justify="center" asChild>
-            <Text align="center" fs="p5" color={getToken("text.medium")}>
-              {t("xcm:chainAssetSelect.emptyState.noAssets")}
-            </Text>
-          </Flex>
-        )}
-      </Flex>
-    </Grid>
+          {!filteredAssetsWithRoutes.length && (
+            <Flex flex={1} align="center" justify="center" asChild>
+              <Text align="center" fs="p5" color={getToken("text.medium")}>
+                {t("xcm:chainAssetSelect.emptyState.noAssets")}
+              </Text>
+            </Flex>
+          )}
+        </Flex>
+      </Grid>
+    </>
   )
 }
