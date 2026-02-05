@@ -60,7 +60,7 @@ const FEES_API_PARAMS = {
 } as const
 
 export const TIME_RANGES = ["1W", "1M", "1Y", "ALL"] as const
-export const VIEW_MODES = ["protocol"] as const
+export const VIEW_MODES = ["protocol", "total"] as const
 
 export type TimeRange = (typeof TIME_RANGES)[number]
 export type ViewMode = (typeof VIEW_MODES)[number]
@@ -70,12 +70,9 @@ export enum BucketSize {
   SixHour = "6hour",
   TwentyFourHour = "24hour",
 }
-
-function getTimeRangeParams(
-  timeRange: TimeRange,
-  endTime: Date,
-): { startDate: Date; bucketSize: BucketSize } {
-  const start = new Date(endTime)
+const LATEST_START_DATE = new Date("2023-12-09T14:00:00.000Z")
+const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
+  let start = new Date(endTime)
   let bucketSize: BucketSize = BucketSize.TwentyFourHour
   switch (timeRange) {
     case "1W":
@@ -84,15 +81,15 @@ function getTimeRangeParams(
       break
     case "1M":
       start.setMonth(start.getMonth() - 1)
-      bucketSize = BucketSize.TwentyFourHour
+      bucketSize = BucketSize.SixHour
       break
     case "1Y":
       start.setFullYear(start.getFullYear() - 1)
-      bucketSize = BucketSize.TwentyFourHour
+      bucketSize = BucketSize.SixHour
       break
     case "ALL":
-      start.setFullYear(start.getFullYear() - 1) // TODO: add ALL range later
-      bucketSize = BucketSize.TwentyFourHour
+      start = LATEST_START_DATE
+      bucketSize = BucketSize.SixHour
       break
   }
   return { startDate: start, bucketSize }
@@ -101,6 +98,24 @@ function getTimeRangeParams(
 type FeesChartsDataProps = {
   viewMode: ViewMode
   timeRange: TimeRange
+}
+
+const getFeesQueries = (viewMode: ViewMode) => {
+  if (viewMode === "total") {
+    return {
+      asset: FEES_API_PARAMS.omnipool.total.asset,
+      protocol: FEES_API_PARAMS.omnipool.total.protocol,
+      ...FEES_API_PARAMS.moneyMarket.protocol,
+      ...FEES_API_PARAMS.hollar.protocol,
+    }
+  } else {
+    return {
+      asset: FEES_API_PARAMS.omnipool.protocol.asset,
+      protocol: FEES_API_PARAMS.omnipool.protocol.protocol,
+      ...FEES_API_PARAMS.moneyMarket.protocol,
+      ...FEES_API_PARAMS.hollar.protocol,
+    }
+  }
 }
 
 const chartDataSchema = z.object({
@@ -129,20 +144,18 @@ export const useFeesChartsData = (props: FeesChartsDataProps) => {
       const { startDate, bucketSize } = getTimeRangeParams(timeRange, endDate)
       const startTime = startDate.toISOString()
 
-      const queries = Object.entries({
-        ...FEES_API_PARAMS.omnipool[viewMode],
-        ...FEES_API_PARAMS.moneyMarket[viewMode],
-        ...FEES_API_PARAMS.hollar[viewMode],
-      }).map(async ([key, value]) => {
-        const url = `${FEES_CHARTS_API_URL}?${value}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&bucketSize=${encodeURIComponent(bucketSize)}`
+      const queries = Object.entries(getFeesQueries(viewMode)).map(
+        async ([key, value]) => {
+          const url = `${FEES_CHARTS_API_URL}?${value}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&bucketSize=${encodeURIComponent(bucketSize)}`
 
-        const res = await fetch(url)
-        const json = await res.json()
+          const res = await fetch(url)
+          const json = await res.json()
 
-        const data = chartDataSchema.parse(json)
+          const data = chartDataSchema.parse(json)
 
-        return { key, data }
-      })
+          return { key, data }
+        },
+      )
 
       const results = await Promise.all(queries)
 
