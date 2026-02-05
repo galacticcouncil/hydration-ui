@@ -1,3 +1,4 @@
+import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { Content } from "@radix-ui/react-dialog"
 
@@ -18,41 +19,43 @@ export const SSheetOverlay = SModalOverlay
 export const SSheetClose = SModalHeaderButton
 
 export const SSheetWrapper = styled(SModalWrapper)`
-  inset: 8px;
+  inset: ${({ theme }) => theme.space.base};
   justify-items: end;
 `
 
-export const SSheetContent = styled(Content)`
-  --modal-content-padding: 20px;
+export const SSheetContent = styled(Content)(
+  ({ theme }) => css`
+    --modal-content-padding: ${theme.space.xl};
 
-  position: fixed;
-  inset: 0;
+    position: fixed;
+    inset: 0;
 
-  width: 100%;
+    width: 100%;
 
-  & > div > :not([hidden]) ~ :not([hidden]) {
-    border-top: 1px solid ${({ theme }) => theme.details.borders};
-  }
-
-  &[data-state="open"] {
-    animation: ${({ theme }) => theme.animations.fadeInBottom} 0.3s;
-    animation-timing-function: ${({ theme }) => theme.easings.outExpo};
-  }
-
-  &[data-state="closed"] {
-    animation: ${({ theme }) => theme.animations.fadeOut} 0.1s;
-  }
-
-  ${mq("sm")} {
-    inset: 8px;
-    left: auto;
-    max-width: 400px;
+    & > div > :not([hidden]) ~ :not([hidden]) {
+      border-top: 1px solid ${theme.details.borders};
+    }
 
     &[data-state="open"] {
-      animation: ${({ theme }) => theme.animations.fadeInRight} 0.2s;
+      animation: ${theme.animations.fadeInBottom} 0.3s;
+      animation-timing-function: ${theme.easings.outExpo};
     }
-  }
-`
+
+    &[data-state="closed"] {
+      animation: ${theme.animations.fadeOut} 0.1s;
+    }
+
+    ${mq("sm")} {
+      inset: 8px;
+      left: auto;
+      max-width: ${theme.sizes["5xl"]};
+
+      &[data-state="open"] {
+        animation: ${theme.animations.fadeInRight} 0.2s;
+      }
+    }
+  `,
+)
 
 export const SSheetPaper = styled(Paper)`
   display: flex;
@@ -69,7 +72,8 @@ export const SSheetPaper = styled(Paper)`
 `
 
 export const SSheetHeader = styled(SModalHeader)`
-  padding: 15px var(--modal-content-padding);
+  padding-block: ${({ theme }) => theme.space.l};
+  padding-inline: var(--modal-content-padding);
 `
 
 export const SSheetTitleContainer = styled(Box)`
