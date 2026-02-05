@@ -39,13 +39,14 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
     setHealthFactorRiskCheckboxAccepted,
   ] = useState(false)
   const amountRef = useRef<string>("")
-  const isMaxSelected = _amount === "-1"
   const maxAmountToWithdraw = calculateMaxWithdrawAmount(
     user,
     userReserve,
     poolReserve,
   )
   const underlyingBalance = Big(userReserve?.underlyingBalance || "0")
+  const isMaxSelected =
+    !!_amount && Big(_amount).gte(maxAmountToWithdraw.toString())
   const withdrawAmount = isMaxSelected
     ? maxAmountToWithdraw.toString()
     : _amount
@@ -54,7 +55,8 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
     !!withdrawAmount && Big(withdrawAmount).gt(maxAmountToWithdraw)
 
   const handleChange = (value: string) => {
-    const maxSelected = value === "-1"
+    const maxSelected =
+      !!value && Big(value).gte(maxAmountToWithdraw.toString())
     amountRef.current = maxSelected ? maxAmountToWithdraw.toString() : value
     setAmount(value)
     if (maxSelected && maxAmountToWithdraw.eq(underlyingBalance)) {
