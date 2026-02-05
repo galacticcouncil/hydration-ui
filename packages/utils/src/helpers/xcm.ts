@@ -8,6 +8,7 @@ import {
   EvmParachain,
   Parachain,
   SolanaChain,
+  SuiChain,
 } from "@galacticcouncil/xc-core"
 
 import { HYDRATION_CHAIN_KEY } from "../constants"
@@ -80,6 +81,10 @@ export function isEvmChain(chain: AnyChain): chain is EvmChain {
 
 export function isSolanaChain(chain: AnyChain): chain is SolanaChain {
   return chain.getType() === ChainType.SolanaChain
+}
+
+export function isSuiChain(chain: AnyChain): chain is SuiChain {
+  return chain.getType() === ChainType.SuiChain
 }
 
 export function isAnyEvmChain(chain: AnyChain): chain is AnyEvmChain {
