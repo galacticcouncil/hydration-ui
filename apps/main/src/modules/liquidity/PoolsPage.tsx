@@ -12,9 +12,15 @@ import { Link, useRouter, useSearch } from "@tanstack/react-router"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
+import {
+  PaginationProps,
+  useDataTableUrlPagination,
+} from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
-import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import {
+  SortingProps,
+  useDataTableUrlSorting,
+} from "@/hooks/useDataTableUrlSorting"
 import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
@@ -23,7 +29,23 @@ import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
 import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
-  const [search, setSearch] = useDataTableUrlSearch("/liquidity/", "search")
+  const isolatedPagination = useDataTableUrlPagination(
+    "/liquidity/",
+    "isolatedPage",
+    10,
+  )
+
+  const [search, setSearch] = useDataTableUrlSearch("/liquidity/", "search", {
+    onChange: () => isolatedPagination.onPageClick(1),
+  })
+
+  const isolatedSorting = useDataTableUrlSorting(
+    "/liquidity/",
+    "isolatedSort",
+    {
+      onChange: () => isolatedPagination.onPageClick(1),
+    },
+  )
 
   const { type, myLiquidity } = useSearch({
     from: "/liquidity/",
@@ -41,7 +63,12 @@ export const PoolsPage = () => {
         />
       )}
       {(type === "isolated" || type === "all") && (
-        <IsolatedPoolsTable search={search} withPositions={myLiquidity} />
+        <IsolatedPoolsTable
+          search={search}
+          withPositions={myLiquidity}
+          paginationProps={isolatedPagination}
+          sortingProps={isolatedSorting}
+        />
       )}
     </>
   )
@@ -102,9 +129,13 @@ export const OmnipoolAndStablepoolTable = ({
 
 export const IsolatedPoolsTable = ({
   search,
+  paginationProps,
+  sortingProps,
   withPositions,
 }: {
   search: string
+  paginationProps: PaginationProps
+  sortingProps: SortingProps
   withPositions?: boolean
 }) => {
   const { t } = useTranslation("liquidity")
@@ -145,8 +176,8 @@ export const IsolatedPoolsTable = ({
           columns={columns}
           isLoading={isLoading}
           paginated
-          {...useDataTableUrlPagination("/liquidity/", "isolatedPage", 10)}
-          {...useDataTableUrlSorting("/liquidity/", "isolatedSort")}
+          {...paginationProps}
+          {...sortingProps}
           columnVisibility={getPoolColumnsVisibility(isMobile)}
           columnPinning={{
             left: ["meta_name"],

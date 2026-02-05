@@ -9,11 +9,10 @@ import { useSearch } from "@tanstack/react-router"
 import { FC, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
-import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
+import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { FillOrderModalContent } from "@/modules/trade/otc/fill-order/FillOrderModalContent"
 import {
-  otcColumnSortPriority,
   OtcOfferTabular,
   useOtcTableColums,
 } from "@/modules/trade/otc/table/OtcTable.columns"
@@ -27,9 +26,15 @@ import { useAssetsPrice } from "@/states/displayAsset"
 
 type Props = {
   readonly searchPhrase: string
+  readonly paginationProps: PaginationProps
+  readonly sortingProps: SortingProps
 }
 
-export const OtcTable: FC<Props> = ({ searchPhrase }) => {
+export const OtcTable: FC<Props> = ({
+  searchPhrase,
+  paginationProps,
+  sortingProps,
+}) => {
   const { t } = useTranslation("trade")
   const { offers: offersType } = useSearch({ from: "/trade/otc" })
 
@@ -74,12 +79,8 @@ export const OtcTable: FC<Props> = ({ searchPhrase }) => {
       <TableContainer as={Paper}>
         <DataTable
           paginated
-          {...useDataTableUrlPagination("/trade/otc", "page", 10)}
-          {...useDataTableUrlSorting(
-            "/trade/otc",
-            "sort",
-            otcColumnSortPriority,
-          )}
+          {...paginationProps}
+          {...sortingProps}
           globalFilter={searchPhrase}
           globalFilterFn={(row) =>
             matchAsset(row.original.assetIn, searchPhrase) ||

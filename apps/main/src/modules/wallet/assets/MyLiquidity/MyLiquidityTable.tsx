@@ -7,8 +7,8 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, useState } from "react"
 
-import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
-import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
+import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { LiquidityDetailExpanded } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailExpanded"
 import { LiquidityDetailMobileModal } from "@/modules/wallet/assets/MyLiquidity/LiquidityDetailMobileModal"
 import { LiquidityPositionModals } from "@/modules/wallet/assets/MyLiquidity/LiquidityPositionModals"
@@ -32,6 +32,8 @@ import { AccountOmnipoolPosition } from "@/states/account"
 
 type Props = {
   readonly searchPhrase: string
+  readonly paginationProps: PaginationProps
+  readonly sortingProps: SortingProps
   readonly data: Array<LiquidityPositionByAsset>
   readonly isLoading: boolean
 }
@@ -72,6 +74,8 @@ type ModalType = {
 
 export const MyLiquidityTable: FC<Props> = ({
   searchPhrase,
+  paginationProps,
+  sortingProps,
   data,
   isLoading,
 }) => {
@@ -86,8 +90,8 @@ export const MyLiquidityTable: FC<Props> = ({
         data={data}
         columns={columns}
         paginated
-        {...useDataTableUrlPagination("/wallet/assets", "liquidityPage", 10)}
-        {...useDataTableUrlSorting("/wallet/assets", "liquiditySort")}
+        {...paginationProps}
+        {...sortingProps}
         isLoading={isLoading}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>

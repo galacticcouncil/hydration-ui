@@ -43,7 +43,14 @@ export const WalletTransactionsTable = ({ searchPhrase }: Props) => {
   const columns = useWalletTransactionsColumns()
   const { data = [], isLoading } = useQuery(walletTransactionsQuery(type))
 
-  const sortingProps = useDataTableUrlSorting("/wallet/transactions", "sort")
+  const paginationProps = useDataTableUrlPagination(
+    "/wallet/transactions",
+    "page",
+  )
+
+  const sortingProps = useDataTableUrlSorting("/wallet/transactions", "sort", {
+    onChange: () => paginationProps.onPageClick(1),
+  })
 
   const sortedTransactions = useMemo(() => {
     const { id, desc } = sortingProps.sorting[0] ?? {}
@@ -109,7 +116,7 @@ export const WalletTransactionsTable = ({ searchPhrase }: Props) => {
       <Separator />
       <DataTable
         paginated
-        {...useDataTableUrlPagination("/wallet/transactions", "page")}
+        {...paginationProps}
         {...sortingProps}
         data={groupedTransactions}
         columns={columns}
