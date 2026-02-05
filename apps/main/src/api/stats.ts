@@ -151,7 +151,14 @@ export const useFeesChartsData = (props: FeesChartsDataProps) => {
           const res = await fetch(url)
           const json = await res.json()
 
-          const data = chartDataSchema.parse(json)
+          const parsed = chartDataSchema.parse(json)
+          const data = {
+            ...parsed,
+            data: parsed.data.map(({ timestamp, value }) => ({
+              timestamp,
+              value: value < 0 ? 0 : value,
+            })),
+          }
 
           return { key, data }
         },
