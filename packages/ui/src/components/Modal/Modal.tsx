@@ -265,7 +265,7 @@ const Modal = ({
   if (isDrawer) {
     return (
       <ModalContext.Provider value={context}>
-        <DrawerRoot repositionInputs={false} {...props}>
+        <DrawerRoot {...props}>
           <DrawerContent
             onInteractOutside={
               disableInteractOutside ? (e) => e.preventDefault() : undefined
