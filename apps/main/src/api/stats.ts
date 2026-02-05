@@ -69,8 +69,9 @@ export enum BucketSize {
   OneHour = "1hour",
   SixHour = "6hour",
   TwentyFourHour = "24hour",
+  SevenDay = "7day",
 }
-const LATEST_START_DATE = new Date("2023-12-09T14:00:00.000Z")
+const LATEST_START_DATE = new Date("2025-01-22")
 const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
   let start = new Date(endTime)
   let bucketSize: BucketSize = BucketSize.TwentyFourHour
@@ -81,15 +82,15 @@ const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
       break
     case "1M":
       start.setMonth(start.getMonth() - 1)
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.TwentyFourHour
       break
     case "1Y":
       start.setFullYear(start.getFullYear() - 1)
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.SevenDay
       break
     case "ALL":
       start = LATEST_START_DATE
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.SevenDay
       break
   }
   return { startDate: start, bucketSize }
