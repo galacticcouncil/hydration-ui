@@ -478,7 +478,7 @@ export const useIsolatedPools = () => {
   )
   const { data: isolatedPoolsFarms } = useIsolatedPoolsFarms()
   const { getTransferableBalance } = useAccountBalances()
-  console.log(xykVolumes)
+
   const { pricesIds, poolsData } = useMemo(() => {
     const priceIds = new Set<string>()
     const poolsDataArray: {
