@@ -95,7 +95,12 @@ export const Web3ConnectModal: FC<Props> = (props) => {
     : () => modalState.toggle()
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} disableInteractOutside>
+    <Modal
+      variant="popup"
+      open={open}
+      onOpenChange={onOpenChange}
+      disableInteractOutside
+    >
       <Web3ConnectModalContent {...props} />
     </Modal>
   )

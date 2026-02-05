@@ -268,7 +268,7 @@ const DataTable = <TData,>({
                           }
 
                           row.toggleExpanded()
-                        } else {
+                        } else if (!isLoading) {
                           onRowClick?.(row.original)
                         }
                       }}

@@ -110,5 +110,6 @@ export const WithSpinner: StoryObj<typeof LoadingButton> = {
   render: (args) => <LoadingButton {...args}>Loading</LoadingButton>,
   args: {
     isLoading: true,
+    size: "large",
   },
 }

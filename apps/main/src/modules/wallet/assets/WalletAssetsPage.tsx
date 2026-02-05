@@ -4,7 +4,9 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { lazy } from "react"
 
+import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSearch } from "@/hooks/useDataTableUrlSearch"
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { HollarBanner } from "@/modules/borrow/hollar/HollarBanner"
 import { WalletBalances } from "@/modules/wallet/assets/Balances/WalletBalances"
 import { MyAssets } from "@/modules/wallet/assets/MyAssets/MyAssets"
@@ -27,10 +29,45 @@ const WalletAssetFiltersMobile = lazy(async () => ({
 export const WalletAssetsPage = () => {
   const { account } = useAccount()
   const { isMobile } = useBreakpoints()
+
+  const assetsPagination = useDataTableUrlPagination(
+    "/wallet/assets",
+    "assetsPage",
+    10,
+  )
+
+  const liquidityPagination = useDataTableUrlPagination(
+    "/wallet/assets",
+    "liquidityPage",
+    10,
+  )
+
   const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
     "/wallet/assets",
     "search",
+    {
+      onChange: () => {
+        assetsPagination.onPageClick(1)
+        liquidityPagination.onPageClick(1)
+      },
+    },
   )
+
+  const assetsSorting = useDataTableUrlSorting("/wallet/assets", "assetsSort", {
+    onChange: () => assetsPagination.onPageClick(1),
+  })
+
+  const liquiditySorting = useDataTableUrlSorting(
+    "/wallet/assets",
+    "liquiditySort",
+    { onChange: () => liquidityPagination.onPageClick(1) },
+  )
+
+  const changeSearch = (phrase: string): void => {
+    setSearchPhrase(phrase)
+    assetsPagination.onPageClick(1)
+    liquidityPagination.onPageClick(1)
+  }
 
   const { category } = useSearch({
     from: "/wallet/assets",
@@ -58,12 +95,12 @@ export const WalletAssetsPage = () => {
         <WalletAssetFiltersMobile
           category={category}
           searchPhrase={searchPhrase}
-          onSearchPhraseChange={setSearchPhrase}
+          onSearchPhraseChange={changeSearch}
         />
       ) : (
         <WalletAssetFiltersDesktop
           searchPhrase={searchPhrase}
-          onSearchPhraseChange={setSearchPhrase}
+          onSearchPhraseChange={changeSearch}
         />
       )}
 
@@ -72,12 +109,16 @@ export const WalletAssetsPage = () => {
           <MyAssets
             key={account.address + "_assets"}
             searchPhrase={searchPhrase}
+            paginationProps={assetsPagination}
+            sortingProps={assetsSorting}
           />
         )}
         {(category === "all" || category === "liquidity") && (
           <MyLiquidity
             key={account.address + "_liquidity"}
             searchPhrase={searchPhrase}
+            paginationProps={liquidityPagination}
+            sortingProps={liquiditySorting}
           />
         )}
       </Flex>

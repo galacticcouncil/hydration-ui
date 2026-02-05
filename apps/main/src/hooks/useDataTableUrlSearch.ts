@@ -5,7 +5,7 @@ import {
   useNavigate,
   useSearch,
 } from "@tanstack/react-router"
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef } from "react"
 
 type RouteId = RouteIds<RegisteredRouter["routeTree"]>
 
@@ -20,9 +20,14 @@ type SearchKeys<T> = {
 
 export type SearchProps = ReturnType<typeof useDataTableUrlSearch>
 
+type Options = {
+  readonly onChange?: (searchPhrase: string) => void
+}
+
 export const useDataTableUrlSearch = <TRouteId extends RouteId>(
   url: TRouteId,
   searchParam: SearchKeys<SearchParams<TRouteId>> & string,
+  options?: Options,
 ) => {
   const navigate = useNavigate()
 
@@ -31,14 +36,22 @@ export const useDataTableUrlSearch = <TRouteId extends RouteId>(
     select: (params) => params[searchParam] as string | undefined,
   })
 
+  const onChangeRef = useRef(options?.onChange)
+  useEffect(() => {
+    onChangeRef.current = options?.onChange
+  }, [options?.onChange])
+
   const onSearchChange = useCallback(
-    (searchPhrase: string) =>
+    (searchPhrase: string) => {
+      onChangeRef.current?.(searchPhrase)
+
       navigate({
         to: ".",
         search: (search) => ({ ...search, [searchParam]: searchPhrase }),
         resetScroll: false,
         replace: true,
-      }),
+      })
+    },
     [searchParam, navigate],
   )
 

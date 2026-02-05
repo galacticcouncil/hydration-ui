@@ -12,7 +12,7 @@ import {
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { ReactNode, useEffect, useRef, useState } from "react"
+import { ReactNode, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useDebounce } from "use-debounce"
 
@@ -76,10 +76,6 @@ export const AssetSelectModalContent = ({
   const assetsToDisplay = isProvidedSortedAssets
     ? filteredCustomAssets
     : sortedAssets
-
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
 
   const onSelectOption = (asset: TAssetData) => {
     onSelect?.(asset)
@@ -235,7 +231,7 @@ export const AssetSelectModal = ({
   ...props
 }: AssetSelectModalProps) => {
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
+    <Modal variant="popup" open={open} onOpenChange={onOpenChange}>
       <AssetSelectModalContent
         {...props}
         onSelect={(asset) => {

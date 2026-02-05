@@ -1,9 +1,14 @@
+import { isPropValid } from "storybook/theming"
 import { Content, Overlay } from "vaul"
 
 import { Box } from "@/components/Box"
 import { Flex } from "@/components/Flex"
+import { SModalBody } from "@/components/Modal/Modal.styled"
 import { Text } from "@/components/Text"
 import { styled } from "@/utils"
+
+const shouldForwardProp = (prop: string) =>
+  isPropValid(prop) && prop !== "noPadding"
 
 export const SDrawerOverlay = styled(Overlay)`
   position: fixed;
@@ -18,9 +23,9 @@ export const SDrawerOverlay = styled(Overlay)`
 `
 
 export const SDrawerContent = styled(Content)`
-  --modal-content-padding: 12px;
+  --modal-content-padding: ${({ theme }) => theme.space.m};
   --modal-content-inset: calc(-1 * var(--modal-content-padding));
-  --modal-block-offset: 30px;
+  --modal-block-offset: ${({ theme }) => theme.space.xxl};
   --modal-background: ${({ theme }) =>
     theme.surfaces.themeBasePalette.surfaceHigh};
 
@@ -48,6 +53,10 @@ export const SDrawerContent = styled(Content)`
   height: auto;
 
   z-index: ${({ theme }) => theme.zIndices.modal};
+
+  ${SModalBody} {
+    overflow-y: auto;
+  }
 `
 
 export const SDrawerHeader = styled(Flex)`
@@ -61,8 +70,12 @@ export const SDrawerHeader = styled(Flex)`
   border-bottom: 1px solid ${({ theme }) => theme.details.borders};
 `
 
-export const SDrawerBody = styled(Box)`
-  padding: var(--modal-content-padding);
+export const SDrawerBody = styled(Box, { shouldForwardProp })<{
+  noPadding?: boolean
+}>`
+  overflow-y: auto;
+  padding: ${({ noPadding }) =>
+    noPadding ? 0 : "var(--modal-content-padding)"};
 
   flex: 1;
 `

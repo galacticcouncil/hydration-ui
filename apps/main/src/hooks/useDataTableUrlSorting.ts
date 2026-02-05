@@ -7,7 +7,7 @@ import {
   useSearch,
 } from "@tanstack/react-router"
 import { OnChangeFn, SortingState } from "@tanstack/react-table"
-import { useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 
 type RouteId = RouteIds<RegisteredRouter["routeTree"]>
 
@@ -22,10 +22,15 @@ type SortingKeys<T> = {
 
 export type SortingProps = ReturnType<typeof useDataTableUrlSorting>
 
+type Options = {
+  readonly onChange?: (sorting: SortingState) => void
+  readonly columnPriority?: ReadonlyArray<string>
+}
+
 export const useDataTableUrlSorting = <TRouteId extends RouteId>(
   url: TRouteId,
   sortingParam: SortingKeys<SearchParams<TRouteId>> & string,
-  columnPriority?: ReadonlyArray<string>,
+  options?: Options,
 ) => {
   const navigate = useNavigate()
 
@@ -34,14 +39,21 @@ export const useDataTableUrlSorting = <TRouteId extends RouteId>(
     select: (params) => params[sortingParam] as SortingState,
   })
 
+  const onChangeRef = useRef(options?.onChange)
+  useEffect(() => {
+    onChangeRef.current = options?.onChange
+  }, [options?.onChange])
+
   const onSortingChange = useMemo(
     (): OnChangeFn<SortingState> => async (updater) => {
       const newState =
         typeof updater === "function" ? updater(sorting) : updater
 
-      const sortWithPriority = columnPriority
-        ? updateTableSortWithPriority(newState, columnPriority)
+      const sortWithPriority = options?.columnPriority
+        ? updateTableSortWithPriority(newState, options.columnPriority)
         : newState
+
+      onChangeRef.current?.(sortWithPriority)
 
       navigate({
         to: ".",
@@ -50,7 +62,7 @@ export const useDataTableUrlSorting = <TRouteId extends RouteId>(
         replace: true,
       })
     },
-    [sortingParam, columnPriority, sorting, navigate],
+    [sortingParam, options?.columnPriority, sorting, navigate],
   )
 
   return { sorting, onSortingChange }

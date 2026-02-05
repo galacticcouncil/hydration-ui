@@ -17,6 +17,7 @@ import { ComponentProps, FC } from "react"
 
 import { Button, ButtonTransparent } from "@/components/Button"
 import { Flex } from "@/components/Flex"
+import { Icon } from "@/components/Icon"
 import { getToken } from "@/utils"
 
 import {
@@ -120,7 +121,7 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
     >
       {children}
       <ButtonTransparent
-        sx={{ flexShrink: 0, size: 16, ...sx }}
+        sx={{ flexShrink: 0, size: "m", ...sx }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -128,7 +129,7 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
         }}
         {...props}
       >
-        <ChevronRight size="m" />
+        <Icon component={ChevronRight} size="m" />
       </ButtonTransparent>
     </Flex>
   )
