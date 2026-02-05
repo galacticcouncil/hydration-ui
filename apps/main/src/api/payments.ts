@@ -149,28 +149,32 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
   const { t } = useTranslation(["common"])
   const { papi } = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
-  const { getAssetWithFallback } = useAssets()
+  const { getAsset, isErc20 } = useAssets()
 
   return useMutation({
     mutationFn: async (assetId: string) => {
-      const { symbol } = getAssetWithFallback(assetId)
+      const asset = getAsset(assetId)
+
+      if (!asset) throw new Error(`Asset (${assetId}) not found`)
+
       return createTransaction(
         {
+          withExtraGas: isErc20(asset),
           tx: papi.tx.MultiTransactionPayment.set_currency({
-            currency: Number(assetId),
+            currency: Number(asset.id),
           }),
           fee: {
             feePaymentAssetId: assetId,
           },
           toasts: {
             submitted: t("payment.toast.onLoading", {
-              symbol,
+              symbol: asset.symbol,
             }),
             success: t("payment.toast.onSuccess", {
-              symbol,
+              symbol: asset.symbol,
             }),
             error: t("payment.toast.onLoading", {
-              symbol,
+              symbol: asset.symbol,
             }),
           },
         },
