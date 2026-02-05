@@ -10,7 +10,7 @@ enum ProductType {
 }
 
 enum StreamType {
-  Asset = "asset_omnipool",
+  Asset = "asset",
   Protocol = "protocol",
   LiquidationPenalty = "liquidation_penalty",
   PeplLiquidationProfit = "pepl_liquidation_profit",
@@ -26,7 +26,7 @@ enum FeeDestination {
 }
 
 const FEES_CHARTS_API_URL =
-  "https://hydration-aggregator-staging.orca.hydration.cloud/api/v1/fees/charts"
+  "https://hydration-aggregator-staging-v2.orca.hydration.cloud/api/v1/fees/charts"
 
 const pT = (productType: ProductType) => `productType=${productType}`
 const fD = (feeDestination: FeeDestination) =>
@@ -36,7 +36,7 @@ const sT = (streamType: StreamType) => `streamType=${streamType}`
 const FEES_API_PARAMS = {
   omnipool: {
     protocol: {
-      asset: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.LP)}&${sT(StreamType.Asset)}`,
+      asset: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.Asset)}`,
       protocol: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.Protocol)}`,
     },
     total: {
@@ -84,15 +84,15 @@ function getTimeRangeParams(
       break
     case "1M":
       start.setMonth(start.getMonth() - 1)
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.TwentyFourHour
       break
     case "1Y":
       start.setFullYear(start.getFullYear() - 1)
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.TwentyFourHour
       break
     case "ALL":
       start.setFullYear(start.getFullYear() - 1) // TODO: add ALL range later
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.TwentyFourHour
       break
   }
   return { startDate: start, bucketSize }
