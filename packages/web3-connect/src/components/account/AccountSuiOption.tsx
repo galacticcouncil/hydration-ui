@@ -2,10 +2,10 @@ import {
   AccountOption,
   AccountOptionProps,
 } from "@/components/account/AccountOption"
-import { useSolanaNativeBalance } from "@/hooks/useSolanaNativeBalance"
+import { useSuiNativeBalance } from "@/hooks/useSuiNativeBalance"
 
-export const AccountSolanaOption: React.FC<AccountOptionProps> = (props) => {
-  const { data, isLoading } = useSolanaNativeBalance(props.rawAddress)
+export const AccountSuiOption: React.FC<AccountOptionProps> = (props) => {
+  const { data, isLoading } = useSuiNativeBalance(props.rawAddress)
 
   return (
     <AccountOption

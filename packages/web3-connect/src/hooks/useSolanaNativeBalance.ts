@@ -1,9 +1,12 @@
 import { isSolanaChain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { AssetAmount } from "@galacticcouncil/xc-core"
 import { PublicKey } from "@solana/web3.js"
-import { useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 
-const fetchSolanaAccountBalance = async (address: string) => {
+const fetchSolanaNativeBalance = async (
+  address: string,
+): Promise<AssetAmount> => {
   const solana = chainsMap.get("solana")
 
   if (!solana || !isSolanaChain(solana) || !solana.connection) {
@@ -18,17 +21,18 @@ const fetchSolanaAccountBalance = async (address: string) => {
 
   const balance = await solana.connection.getBalance(new PublicKey(address))
 
-  return {
-    amount: balance.toString(),
+  return AssetAmount.fromAsset(nativeAsset.asset, {
+    amount: BigInt(balance),
     decimals: nativeAsset.decimals,
-    symbol: nativeAsset.asset.originSymbol,
-  }
-}
-
-export const useSolanaNativeBalance = (address: string) => {
-  return useQuery({
-    queryKey: ["solana", "native", "balance", address],
-    queryFn: () => fetchSolanaAccountBalance(address),
-    enabled: !!address,
   })
 }
+
+export const solanaNativeBalanceQueryOptions = (address: string) =>
+  queryOptions({
+    queryKey: ["solana", "native", "balance", address],
+    queryFn: () => fetchSolanaNativeBalance(address),
+    enabled: !!address,
+  })
+
+export const useSolanaNativeBalance = (address: string) =>
+  useQuery(solanaNativeBalanceQueryOptions(address))
