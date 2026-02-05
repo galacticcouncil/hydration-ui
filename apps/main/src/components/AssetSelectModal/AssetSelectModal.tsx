@@ -235,7 +235,7 @@ export const AssetSelectModal = ({
   ...props
 }: AssetSelectModalProps) => {
   return (
-    <Modal open={open} onOpenChange={onOpenChange} variant="popup">
+    <Modal open={open} onOpenChange={onOpenChange}>
       <AssetSelectModalContent
         {...props}
         onSelect={(asset) => {
