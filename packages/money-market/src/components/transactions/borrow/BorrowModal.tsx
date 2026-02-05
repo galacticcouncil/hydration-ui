@@ -18,7 +18,12 @@ export const BorrowModal = () => {
   const { currentMarket } = useProtocolDataContext()
 
   return (
-    <BasicModal open={type === ModalType.Borrow} setOpen={close} title="Borrow">
+    <BasicModal
+      variant="popup"
+      open={type === ModalType.Borrow}
+      setOpen={close}
+      title="Borrow"
+    >
       <TxModalWrapper
         action="borrow"
         underlyingAsset={args.underlyingAsset}

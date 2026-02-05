@@ -32,7 +32,11 @@ export const WalletAssetsSubpageLayoutActions = () => {
         <Icon width={16} height={9} component={Plus} />
         {t("deposit")}
       </Button> */}
-      <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
+      <Modal
+        variant="popup"
+        open={modal !== null}
+        onOpenChange={() => setModal(null)}
+      >
         {modal === "send" && (
           <TransferPositionModal onClose={() => setModal(null)} />
         )}

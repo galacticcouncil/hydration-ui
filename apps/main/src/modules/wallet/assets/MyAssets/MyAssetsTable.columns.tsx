@@ -152,7 +152,11 @@ export const useMyAssetsColumns = (isEmpty: boolean) => {
                 {t("common:trade")}
               </Link>
             </TableRowAction>
-            <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
+            <Modal
+              variant="popup"
+              open={modal !== null}
+              onOpenChange={() => setModal(null)}
+            >
               {modal === "transfer" && (
                 <TransferPositionModal
                   assetId={row.original.id}

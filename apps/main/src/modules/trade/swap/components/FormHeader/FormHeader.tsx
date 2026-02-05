@@ -46,7 +46,11 @@ export const FormHeader = () => {
             <Icon size="s" component={Settings} />
           </ButtonIcon>
 
-          <Modal open={openSettings} onOpenChange={setOpenSettings}>
+          <Modal
+            variant="popup"
+            open={openSettings}
+            onOpenChange={setOpenSettings}
+          >
             <SettingsModal />
           </Modal>
         </>
