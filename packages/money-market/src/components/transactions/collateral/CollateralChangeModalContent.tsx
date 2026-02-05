@@ -10,8 +10,12 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
+import { useState } from "react"
 
-import { HealthFactorChange } from "@/components/primitives"
+import {
+  HealthFactorChange,
+  HealthFactorRiskWarning,
+} from "@/components/primitives"
 import { ValueDetail } from "@/components/primitives/ValueDetail"
 import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrapper"
 import { IsolationModeWarning } from "@/components/warnings/IsolationModeWarning"
@@ -21,6 +25,7 @@ import { useAssetCaps } from "@/hooks/useAssetCaps"
 import {
   calculateHFAfterSupply,
   calculateHFAfterWithdraw,
+  formatHealthFactorResult,
 } from "@/utils/hfUtils"
 import { zeroLTVBlockingWithdraw } from "@/utils/transactions"
 
@@ -44,6 +49,9 @@ export const CollateralChangeModalContent: React.FC<
   const { debtCeiling } = useAssetCaps()
   const { formatCurrency } = useAppFormatters()
 
+  const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
+    useState(false)
+
   // Health factor calculations
   const isCollateralEnabled = userReserve.usageAsCollateralEnabledOnUser
   const usageAsCollateralModeAfterSwitch = !isCollateralEnabled
@@ -51,8 +59,6 @@ export const CollateralChangeModalContent: React.FC<
   // Messages
   const showEnableIsolationModeMsg =
     !poolReserve.isIsolated && usageAsCollateralModeAfterSwitch
-  const showDisableIsolationModeMsg =
-    !poolReserve.isIsolated && !usageAsCollateralModeAfterSwitch
   const showEnterIsolationModeMsg =
     poolReserve.isIsolated && usageAsCollateralModeAfterSwitch
   const showExitIsolationModeMsg =
@@ -118,6 +124,20 @@ export const CollateralChangeModalContent: React.FC<
   const shouldRenderHealthFactor =
     healthFactor !== "-1" && futureHealthFactor !== "-1"
 
+  const healthFactorResult = formatHealthFactorResult({
+    currentHF: Number(healthFactor),
+    futureHF: Number(futureHealthFactor),
+  })
+
+  const shouldRenderHealthFactorWarning =
+    !!healthFactor &&
+    Big(futureHealthFactor).gt(1) &&
+    healthFactorResult.isUserConsentRequired
+
+  const isHealthFactorCheckSatisfied = healthFactorResult.isUserConsentRequired
+    ? healthFactorRiskAccepted
+    : true
+
   return (
     <>
       <Stack
@@ -139,13 +159,13 @@ export const CollateralChangeModalContent: React.FC<
         <SummaryRow
           label="Collateral"
           content={
-            <Flex align="center" gap={4}>
+            <Flex align="center" gap="s">
               {isCollateralEnabled ? (
                 <>
                   <Text color={getToken("accents.success.emphasis")} fw={500}>
                     Enabled
                   </Text>
-                  <Icon size={14} component={ArrowRight} />
+                  <Icon size="s" component={ArrowRight} />
                   <Text color={getToken("accents.danger.emphasis")} fw={500}>
                     Disabled
                   </Text>
@@ -155,7 +175,7 @@ export const CollateralChangeModalContent: React.FC<
                   <Text color={getToken("accents.danger.emphasis")} fw={500}>
                     Disabled
                   </Text>
-                  <Icon size={14} component={ArrowRight} />
+                  <Icon size="s" component={ArrowRight} />
                   <Text color={getToken("accents.success.emphasis")} fw={500}>
                     Enabled
                   </Text>
@@ -175,7 +195,7 @@ export const CollateralChangeModalContent: React.FC<
             }
           />
         )}
-        <Stack gap={14} py={14}>
+        <Stack gap="m" py="m">
           {showExitIsolationModeMsg && (
             <Alert
               variant="info"
@@ -190,13 +210,6 @@ export const CollateralChangeModalContent: React.FC<
             />
           )}
 
-          {showDisableIsolationModeMsg && (
-            <Alert
-              variant="warning"
-              description="Disabling this asset as collateral affects your borrowing power and Health Factor."
-            />
-          )}
-
           {showEnterIsolationModeMsg && (
             <IsolationModeWarning asset={poolReserve.symbol} />
           )}
@@ -207,6 +220,15 @@ export const CollateralChangeModalContent: React.FC<
 
           {poolReserve.isIsolated &&
             debtCeiling.determineWarningDisplay({ debtCeiling })}
+
+          {shouldRenderHealthFactorWarning && (
+            <HealthFactorRiskWarning
+              message="Disabling this asset as collateral affects your borrowing power and Health Factor."
+              accepted={healthFactorRiskAccepted}
+              isUserConsentRequired={healthFactorResult.isUserConsentRequired}
+              onAcceptedChange={setHealthFactorRiskAccepted}
+            />
+          )}
         </Stack>
       </Stack>
 
@@ -214,7 +236,7 @@ export const CollateralChangeModalContent: React.FC<
         symbol={symbol}
         poolReserve={poolReserve}
         usageAsCollateral={usageAsCollateralModeAfterSwitch}
-        blocked={blockingError !== undefined}
+        blocked={blockingError !== undefined || !isHealthFactorCheckSatisfied}
       />
     </>
   )

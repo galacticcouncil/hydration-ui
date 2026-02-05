@@ -17,6 +17,7 @@ import { ComponentProps, FC } from "react"
 
 import { Button, ButtonTransparent } from "@/components/Button"
 import { Flex } from "@/components/Flex"
+import { Icon } from "@/components/Icon"
 import { getToken } from "@/utils"
 
 import {
@@ -112,10 +113,15 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
   ...props
 }) => {
   return (
-    <Flex gap={8} align="center" justify="flex-end" sx={{ overflow: "hidden" }}>
+    <Flex
+      gap="base"
+      align="center"
+      justify="flex-end"
+      sx={{ overflow: "hidden" }}
+    >
       {children}
       <ButtonTransparent
-        sx={{ flexShrink: 0, size: 16, ...sx }}
+        sx={{ flexShrink: 0, size: "m", ...sx }}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -123,7 +129,7 @@ export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
         }}
         {...props}
       >
-        <ChevronRight size={16} />
+        <Icon component={ChevronRight} size="m" />
       </ButtonTransparent>
     </Flex>
   )

@@ -15,10 +15,11 @@ export const TradeRouteFee: FC<Props> = ({ feePct, fees }) => {
   const { t } = useTranslation(["common"])
   const [tradeFeeDisplay] = useDisplayAssetsPrice(
     fees.map((fee) => [fee.asset.id, fee.value] as const),
+    { maximumFractionDigits: null },
   )
 
   return (
-    <Flex direction="column" gap={2} align="flex-end">
+    <Flex direction="column" gap="xs" align="flex-end">
       <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
         {tradeFeeDisplay}
       </Text>

@@ -60,8 +60,7 @@ const SDropdownMenuContent = styled(DropdownMenuPrimitive.Content, {
   readonly animation?: DropdownMenuAnimation
 }>(({ theme, animation = "scale-top", fullWidth }) => [
   css`
-    --dropdown-menu-content-horizontal-padding: ${theme.containers.paddings
-      .quart}px;
+    --dropdown-menu-content-horizontal-padding: ${theme.space.base};
 
     display: flex;
     flex-direction: column;
@@ -73,11 +72,11 @@ const SDropdownMenuContent = styled(DropdownMenuPrimitive.Content, {
       margin: 0 13.5px;
     `}
 
-    padding: ${theme.buttons.paddings.tertiary}px
+    padding: ${theme.buttons.paddings.tertiary}
       var(--dropdown-menu-content-horizontal-padding);
     background-color: ${theme.surfaces.containers.high.primary};
     border: 1px solid ${theme.details.borders};
-    border-radius: ${theme.scales.cornerRadius.xl}px;
+    border-radius: ${theme.radii.xl};
 
     box-shadow: 0px 38px 187px 0px #00000066;
     box-shadow: 0px 3px 9px 0px #0000001a;
@@ -114,7 +113,7 @@ export const DropdownMenuContentDivider = styled(Separator)(
       100% + calc(2 * var(--dropdown-menu-content-horizontal-padding))
     );
 
-    margin: ${theme.scales.paddings.s}px
+    margin: ${theme.space.s}
       calc(0px - var(--dropdown-menu-content-horizontal-padding));
   `,
 )

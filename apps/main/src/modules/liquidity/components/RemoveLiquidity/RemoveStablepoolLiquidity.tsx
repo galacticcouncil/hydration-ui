@@ -8,7 +8,7 @@ import {
   Toggle,
 } from "@galacticcouncil/ui/components"
 import { Flex } from "@galacticcouncil/ui/components/Flex"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -115,17 +115,10 @@ const RemoveStablepoolLiquidityJSX = ({
         onBack={onBack}
       />
       <ModalBody>
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.tertiary")}
-          asChild
-        >
+        <Flex direction="column" gap="m" asChild>
           <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
             {editable ? (
-              <Flex
-                align="center"
-                gap={getTokenPx("containers.paddings.quart")}
-              >
+              <Flex align="center" gap="base">
                 <AssetLogo id={asset.iconId ?? asset.id} size="large" />
                 <Text
                   fs="h5"
@@ -143,7 +136,7 @@ const RemoveStablepoolLiquidityJSX = ({
               <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
                 assetFieldName="asset"
                 amountFieldName="amount"
-                label={t("common:withdraw")}
+                label={t("common:amount")}
                 maxBalance={balance}
                 assets={[]}
                 sx={{ py: 0 }}
@@ -174,7 +167,7 @@ const RemoveStablepoolLiquidityJSX = ({
 
             {!split ? (
               <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-                label={t("common:minimumReceive")}
+                label={t("common:minimumReceived")}
                 assetFieldName="receiveAsset"
                 amountFieldName="receiveAmount"
                 maxBalance={balance}
@@ -185,10 +178,7 @@ const RemoveStablepoolLiquidityJSX = ({
                 sx={{ p: 0 }}
               />
             ) : (
-              <Flex
-                direction="column"
-                gap={getTokenPx("containers.paddings.quint")}
-              >
+              <Flex direction="column" gap="s">
                 <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
               </Flex>
             )}
@@ -203,7 +193,7 @@ const RemoveStablepoolLiquidityJSX = ({
                   <ModalContentDivider />
                   <SummaryRow
                     label={t("liquidity.remove.modal.withdrawalFees")}
-                    content={`${t("common:currency", { value: feeDisplay })} (${t("common:percent", { value: fee })})`}
+                    content={`${t("common:currency", { value: feeDisplay, maximumFractionDigits: null })} (${t("common:percent", { value: fee })})`}
                   />
                 </>
               )}

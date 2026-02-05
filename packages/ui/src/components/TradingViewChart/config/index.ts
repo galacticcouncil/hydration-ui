@@ -17,10 +17,13 @@ import {
 import { parseTradingViewTime } from "@/components/TradingViewChart/utils"
 import { ThemeProps } from "@/theme"
 
-export const layout = (theme: ThemeProps): Partial<LayoutOptions> => ({
+export const layout = (
+  theme: ThemeProps,
+  uiScale: number,
+): Partial<LayoutOptions> => ({
   background: { type: ColorType.Solid, color: "transparent" },
   textColor: theme.text.low,
-  fontSize: 12,
+  fontSize: 12 * uiScale,
   attributionLogo: false,
 })
 

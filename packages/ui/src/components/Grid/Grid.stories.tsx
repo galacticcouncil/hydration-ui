@@ -1,4 +1,4 @@
-import { Meta, StoryObj } from "@storybook/react"
+import { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Flex } from "@/components/Flex"
 
@@ -11,16 +11,16 @@ export default {
 } satisfies Meta<typeof Grid>
 const Template = (args: Story["args"]) => {
   return (
-    <Grid gap={20} {...args}>
+    <Grid gap="xl" {...args}>
       {Array.from({ length: 12 }).map((_, i) => (
         <Flex
           key={i}
-          p={30}
+          p="xxxl"
           align="center"
           justify="center"
           bg="skyBlue.600"
           color="white"
-          borderRadius="lg"
+          borderRadius="m"
         >
           {i + 1}
         </Flex>

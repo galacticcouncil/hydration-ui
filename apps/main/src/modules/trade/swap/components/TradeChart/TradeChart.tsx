@@ -5,11 +5,12 @@ import {
   Flex,
   Paper,
   TradingViewChart,
+  TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
@@ -43,6 +44,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
+  const chartRef = useRef<TradingViewChartRef>(null)
   const [interval, setInterval] = useState<TradeChartTimeFrameType | "all">(
     "week",
   )
@@ -76,7 +78,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
   const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(assetIn, value)
+    useDisplayAssetPrice(assetIn, value, { maximumFractionDigits: null })
 
   const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
     useDisplayAssetPrice(USDT_ASSET_ID, volume)
@@ -104,7 +106,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     ) : undefined
 
   return (
-    <Paper p={20}>
+    <Paper p="xl">
       <Flex align="center" justify="space-between">
         <ChartValues
           value={chartValue}
@@ -114,7 +116,10 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
         <ChartTimeRange
           options={intervalOptions}
           selectedOption={interval}
-          onSelect={(option) => setInterval(option.key)}
+          onSelect={(option) => {
+            setInterval(option.key)
+            chartRef.current?.resetZoom()
+          }}
         />
       </Flex>
       <ChartState
@@ -124,6 +129,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
         isEmpty={isEmpty}
       >
         <TradingViewChart
+          ref={chartRef}
           height={height}
           data={prices}
           hidePriceIndicator

@@ -1,5 +1,5 @@
 import { Flex, Separator, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import React from "react"
 import { useTranslation } from "react-i18next"
 
@@ -33,14 +33,14 @@ export const ReceiveAssets = ({
   return (
     <>
       <Text color={getToken("text.tint.secondary")} font="primary" fw={700}>
-        {t("minimumReceive")}
+        {t("minimumReceived")}
       </Text>
       <Flex
         direction="column"
-        gap={12}
-        p={getTokenPx("containers.paddings.tertiary")}
+        gap="m"
+        p="m"
         sx={{
-          borderRadius: getTokenPx("containers.cornerRadius.internalPrimary"),
+          borderRadius: "m",
           backgroundColor: getToken("surfaces.containers.dim.dimOnHigh"),
         }}
       >
@@ -54,7 +54,7 @@ export const ReceiveAssets = ({
           <>
             <Separator />
             <Flex align="center" justify="space-between">
-              <Text fs={12}>
+              <Text fs="p5">
                 {t("liquidity:liquidity.remove.modal.rewardsToReceive")}
               </Text>
               <Text fs="p4" color={getToken("accents.success.emphasis")}>
@@ -72,7 +72,7 @@ const RecieveAsset = ({ asset }: { asset: TReceiveAsset }) => {
   const { t } = useTranslation("common")
 
   return (
-    <Flex gap={12} justify="space-between" align="center">
+    <Flex gap="m" justify="space-between" align="center">
       <AssetLabelFull asset={asset.asset} withName={false} />
 
       <Flex direction="column" align="flex-end">

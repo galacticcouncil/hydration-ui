@@ -4,6 +4,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import {
   RoutedTradeData,
   useRoutedTradesData,
@@ -12,13 +13,12 @@ import { useMyRecentActivityColumns } from "@/modules/trade/orders/MyRecentActiv
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { SwapDetailsModal } from "@/modules/trade/orders/SwapDetailsModal"
 
-const PAGE_SIZE = 10
-
 type Props = {
   readonly allPairs: boolean
+  readonly paginationProps: PaginationProps
 }
 
-export const MyRecentActivity: FC<Props> = ({ allPairs }) => {
+export const MyRecentActivity: FC<Props> = ({ allPairs, paginationProps }) => {
   const { assetIn, assetOut } = useSearch({
     from: "/trade/_history",
   })
@@ -29,13 +29,12 @@ export const MyRecentActivity: FC<Props> = ({ allPairs }) => {
   const accountAddress = account?.address ?? ""
   const address = safeConvertSS58toPublicKey(accountAddress)
 
-  const [page, setPage] = useState(1)
   const columns = useMyRecentActivityColumns()
   const { swaps, totalCount, isLoading } = useRoutedTradesData(
     address,
     allPairs ? [] : [assetIn, assetOut],
-    page,
-    PAGE_SIZE,
+    paginationProps.pagination.pageIndex,
+    paginationProps.pagination.pageSize,
   )
 
   return (
@@ -45,9 +44,8 @@ export const MyRecentActivity: FC<Props> = ({ allPairs }) => {
         data={swaps}
         isLoading={isLoading}
         paginated
-        pageSize={PAGE_SIZE}
+        {...paginationProps}
         rowCount={totalCount}
-        onPageClick={setPage}
         onRowClick={setIsDetailOpen}
         emptyState={<OrdersEmptyState />}
       />

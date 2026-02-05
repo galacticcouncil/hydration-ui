@@ -8,6 +8,8 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { FC, Ref, useState } from "react"
 
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
+import { SortingProps } from "@/hooks/useDataTableUrlSorting"
 import { AssetDetailExpanded } from "@/modules/wallet/assets/MyAssets/AssetDetailExpanded"
 import { AssetDetailMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailMobileModal"
 import { AssetDetailNativeMobileModal } from "@/modules/wallet/assets/MyAssets/AssetDetailNativeMobileModal"
@@ -25,6 +27,8 @@ type Props = {
   readonly data: Array<MyAsset>
   readonly isLoading: boolean
   readonly searchPhrase: string
+  readonly paginationProps: PaginationProps
+  readonly sortingProps: SortingProps
   readonly ref?: Ref<DataTableRef>
 }
 
@@ -32,12 +36,14 @@ export const MyAssetsTable: FC<Props> = ({
   data,
   isLoading,
   searchPhrase,
+  paginationProps,
+  sortingProps,
   ref,
 }) => {
   const { isMobile } = useBreakpoints()
   const { native } = useAssets()
 
-  const columns = useMyAssetsColumns()
+  const columns = useMyAssetsColumns(!isLoading && data.length === 0)
 
   const [isDetailOpen, setIsDetailOpen] = useState<{
     type: AssetDetailModal | null
@@ -50,7 +56,8 @@ export const MyAssetsTable: FC<Props> = ({
         ref={ref}
         isLoading={isLoading}
         paginated
-        pageSize={10}
+        {...paginationProps}
+        {...sortingProps}
         globalFilter={searchPhrase}
         globalFilterFn={(row) =>
           row.original.symbol

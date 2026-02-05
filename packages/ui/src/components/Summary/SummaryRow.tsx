@@ -1,4 +1,5 @@
 import {
+  Box,
   Flex,
   Skeleton,
   Text,
@@ -7,6 +8,8 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { MouseEventHandler, ReactNode } from "react"
+
+import { useBreakpoints } from "@/theme"
 
 export type SummaryRowProps = {
   label: ReactNode
@@ -27,6 +30,8 @@ export const SummaryRow = ({
   loading,
   onClick,
 }: SummaryRowProps) => {
+  const { isMobile } = useBreakpoints()
+
   const renderTooltip = (body: ReactNode) =>
     tooltip ? (
       <Tooltip text={tooltip} side="left" asChild>
@@ -36,21 +41,32 @@ export const SummaryRow = ({
       body
     )
 
-  return renderTooltip(
+  const renderLabel = () => {
+    const labelContent =
+      typeof label === "string" ? (
+        <SummaryRowLabel>{label}:</SummaryRowLabel>
+      ) : (
+        label
+      )
+
+    return isMobile
+      ? renderTooltip(
+          <Box onClick={(e) => e.stopPropagation()}>{labelContent}</Box>,
+        )
+      : labelContent
+  }
+
+  const row = (
     <Flex
       sx={{ ...(onClick && { cursor: "pointer" }) }}
       align="center"
       justify="space-between"
-      my={8}
+      my="base"
       className={className}
       onClick={onClick}
     >
-      <Flex direction="column" justify="space-between" gap={4}>
-        {typeof label === "string" ? (
-          <SummaryRowLabel>{label}:</SummaryRowLabel>
-        ) : (
-          label
-        )}
+      <Flex direction="column" justify="space-between" gap="s">
+        {renderLabel()}
 
         {description && (
           <Text fs="p6" fw={400} color={getToken("text.low")}>
@@ -68,8 +84,10 @@ export const SummaryRow = ({
       ) : (
         content
       )}
-    </Flex>,
+    </Flex>
   )
+
+  return isMobile ? row : renderTooltip(row)
 }
 
 export const SummaryRowValue = (props: TextProps) => (

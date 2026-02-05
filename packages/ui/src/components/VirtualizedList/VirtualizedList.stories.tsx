@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { CheckIcon, XIcon } from "@/assets/icons"
 import { Flex } from "@/components/Flex"
@@ -20,14 +20,14 @@ const items = Array.from({ length: 1000 }).map((_, i) => ({
 const Template = (
   args: React.ComponentPropsWithoutRef<typeof VirtualizedList>,
 ) => (
-  <Paper width={400} p={10}>
+  <Paper width={400} p="base">
     <VirtualizedList
       {...args}
       items={items}
       height={400}
       itemSize={36}
       renderItem={(item) => (
-        <Flex align="center" gap={10} p={6}>
+        <Flex align="center" gap="base" p="base">
           {item.checked ? (
             <CheckIcon sx={{ color: "lime" }} />
           ) : (

@@ -70,7 +70,7 @@ export const Combobox = <TKey extends string>({
                     }}
                   >
                     {item.label}
-                    {isSelected && <Icon size={12} component={Check} />}
+                    {isSelected && <Icon size="xs" component={Check} />}
                   </ComboboxItem>
                 )
               })}

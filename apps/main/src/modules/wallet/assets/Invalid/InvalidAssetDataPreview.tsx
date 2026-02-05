@@ -20,7 +20,7 @@ export const InvalidAssetDataPreview: FC<Props> = ({ assetId }) => {
   const asset = getAsset(assetId)
 
   return (
-    <Flex direction="column" gap={8} pb={8}>
+    <Flex direction="column" gap="base" pb="base">
       <AssetWarning
         title={t("invalidAsset.modal.symbolChanged")}
         description={t("invalidAsset.modal.symbolChanged.description")}

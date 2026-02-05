@@ -102,7 +102,7 @@ export const AccountSelectContent = () => {
         align="center"
         customHeader={
           shouldRenderHeader && (
-            <Flex direction="column" gap={20} mt={10}>
+            <Flex direction="column" gap="xl" mt="base">
               {shouldRenderSearch && (
                 <Input
                   value={searchVal}
@@ -122,8 +122,8 @@ export const AccountSelectContent = () => {
           )
         }
       />
-      <ModalBody>
-        <Grid gap={10}>
+      <ModalBody maxHeight="50vh">
+        <Grid gap="base">
           {isProvidersConnecting ? (
             <ProviderLoader providers={providers.map(prop("type"))} />
           ) : (

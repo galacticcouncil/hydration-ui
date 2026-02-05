@@ -2,22 +2,21 @@ import { userOpenOrdersCountQuery } from "@galacticcouncil/indexer/squid"
 import {
   Box,
   Flex,
-  Grid,
   Toggle,
   ToggleLabel,
   ToggleRoot,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { useNavigate, useSearch } from "@tanstack/react-router"
-import { useLocation } from "@tanstack/react-router"
+import { useLocation, useNavigate, useSearch } from "@tanstack/react-router"
+import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
+import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { OpenOrdersBadge } from "@/modules/trade/orders/OpenOrders/OpenOrdersBadge"
 import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
@@ -30,7 +29,11 @@ export const tradeOrderTabs = [
 
 export type TradeOrderTab = (typeof tradeOrderTabs)[number]
 
-export const TradeOrdersHeader = () => {
+type Props = {
+  readonly paginationProps: PaginationProps
+}
+
+export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
   const { t } = useTranslation("trade")
   const { pathname } = useLocation()
   const { tab, allPairs, assetIn, assetOut } = useSearch({
@@ -55,14 +58,10 @@ export const TradeOrdersHeader = () => {
   const navigate = useNavigate()
 
   return (
-    <Grid
-      sx={{ overflowX: "auto" }}
-      columnTemplate="1fr auto"
-      columnGap={8}
-      px={20}
-    >
+    <Flex gap="m" align="center" px="xl">
       <TabMenu
-        gap={8}
+        gap="base"
+        horizontalEdgeOffset="xl"
         items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(`trade.orders.${tab}`),
@@ -74,14 +73,10 @@ export const TradeOrdersHeader = () => {
           } satisfies TradeHistorySearchParams,
           resetScroll: false,
         }))}
+        onClick={() => paginationProps.onPageClick(1)}
         renderItem={(item) => (
-          <Box position="relative" my={getTokenPx("scales.paddings.l")}>
-            <TabMenuItem
-              size="small"
-              item={item}
-              variant="muted"
-              sx={{ px: 10 }}
-            />
+          <Box position="relative" my="l">
+            <TabMenuItem size="small" item={item} variant="muted" />
             {item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
               openOrdersCount > 0 && (
                 <OpenOrdersBadge
@@ -98,25 +93,24 @@ export const TradeOrdersHeader = () => {
           </Box>
         )}
       />
-      <Flex gap={12} align="center">
-        <ToggleRoot>
-          <ToggleLabel>
-            {allPairs
-              ? t("trade.orders.allPairs.on")
-              : t("trade.orders.allPairs.off")}
-          </ToggleLabel>
-          <Toggle
-            checked={allPairs}
-            onCheckedChange={(checked) => {
-              navigate({
-                to: ".",
-                search: { tab, allPairs: checked, assetIn, assetOut },
-                resetScroll: false,
-              })
-            }}
-          />
-        </ToggleRoot>
-      </Flex>
-    </Grid>
+
+      <ToggleRoot ml="auto" pl="xl">
+        <ToggleLabel>
+          {allPairs
+            ? t("trade.orders.allPairs.on")
+            : t("trade.orders.allPairs.off")}
+        </ToggleLabel>
+        <Toggle
+          checked={allPairs}
+          onCheckedChange={(checked) => {
+            navigate({
+              to: ".",
+              search: { tab, allPairs: checked, assetIn, assetOut },
+              resetScroll: false,
+            })
+          }}
+        />
+      </ToggleRoot>
+    </Flex>
   )
 }

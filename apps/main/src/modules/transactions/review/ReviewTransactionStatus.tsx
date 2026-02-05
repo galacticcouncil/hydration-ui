@@ -72,7 +72,7 @@ const StatusText: React.FC<StatusBoxProps> = ({ title, description }) => {
       direction="column"
       justify="center"
       align="center"
-      gap={8}
+      gap="base"
       maxWidth={400}
     >
       <Text as="h2" align="center" fs="h7" fw={500} font="primary">
@@ -116,8 +116,8 @@ const ErrorCopyButton = () => {
         )
       }
     >
-      <Flex gap={4} color={copied && getToken("accents.success.emphasis")}>
-        {copied && <Icon size={12} component={Check} />}
+      <Flex gap="s" color={copied && getToken("accents.success.emphasis")}>
+        {copied && <Icon size="xs" component={Check} />}
         <Text>{copied ? t("copied") : t("copyError")}</Text>
       </Flex>
     </MicroButton>
@@ -134,7 +134,7 @@ export const ReviewTransactionStatus = () => {
   }
 
   return (
-    <Flex direction="column" justify="center" align="center" gap={10} p={20}>
+    <Flex direction="column" justify="center" align="center" gap="base" p="xl">
       <StatusIcon status={status} />
       {isSubmitted && (
         <StatusText
@@ -155,7 +155,7 @@ export const ReviewTransactionStatus = () => {
             title={t("transaction.status.error.title")}
             description={t("transaction.status.error.description")}
           />
-          <Flex gap={10} mt={10}>
+          <Flex gap="base" mt="base">
             <MicroButton onClick={reset}>
               {t("transaction.status.error.tryAgain")}
             </MicroButton>

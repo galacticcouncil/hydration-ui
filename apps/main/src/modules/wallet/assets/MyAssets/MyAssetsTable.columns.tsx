@@ -46,7 +46,7 @@ const columnHelper = createColumnHelper<MyAsset>()
 
 export type AssetDetailModal = "deposit" | "withdraw" | "transfer"
 
-export const useMyAssetsColumns = () => {
+export const useMyAssetsColumns = (isEmpty: boolean) => {
   const { t } = useTranslation(["wallet", "common"])
   const { isMobile } = useBreakpoints()
 
@@ -124,18 +124,18 @@ export const useMyAssetsColumns = () => {
       meta: {
         sx: {
           textAlign: "right",
-          pr: "0 !important",
+          ...(isEmpty && { pr: "0 !important" }),
         },
       },
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<AssetDetailModal | null>(null)
 
         return (
-          <Flex gap={8} justify="flex-end">
+          <Flex gap="base" justify="flex-end">
             {row.original.id === NATIVE_ASSET_ID && (
               <DataTableExpandTrigger>
                 <TableRowAction variant="accent">
-                  <Icon component={LockOpen} size={12} />
+                  <Icon component={LockOpen} size="xs" />
                   {t("myAssets.locks")}
                 </TableRowAction>
               </DataTableExpandTrigger>
@@ -152,7 +152,11 @@ export const useMyAssetsColumns = () => {
                 {t("common:trade")}
               </Link>
             </TableRowAction>
-            <Modal open={modal !== null} onOpenChange={() => setModal(null)}>
+            <Modal
+              variant="popup"
+              open={modal !== null}
+              onOpenChange={() => setModal(null)}
+            >
               {modal === "transfer" && (
                 <TransferPositionModal
                   assetId={row.original.id}
@@ -195,7 +199,7 @@ export const useMyAssetsColumns = () => {
           <TableRowDetailsExpand>
             {row.original.id === NATIVE_ASSET_ID && (
               <TableRowAction variant="accent" allowPropagation>
-                <Icon component={LockOpen} size={12} />
+                <Icon component={LockOpen} size="xs" />
                 {t("myAssets.locks")}
               </TableRowAction>
             )}
@@ -220,5 +224,5 @@ export const useMyAssetsColumns = () => {
           stakingColumn,
           actionsColumn,
         ] as Array<ColumnDef<MyAsset>>)
-  }, [isMobile, t])
+  }, [isMobile, isEmpty, t])
 }

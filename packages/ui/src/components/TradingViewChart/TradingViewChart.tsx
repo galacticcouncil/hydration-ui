@@ -1,6 +1,17 @@
 import { hexToRgba } from "@galacticcouncil/utils"
-import { createChart, LineType, SeriesType } from "lightweight-charts"
-import { useEffect, useRef, useState } from "react"
+import {
+  createChart,
+  IChartApi,
+  LineType,
+  SeriesType,
+} from "lightweight-charts"
+import {
+  RefObject,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react"
 
 import { Box } from "@/components"
 import { Crosshair } from "@/components/TradingViewChart/components/Crosshair"
@@ -20,7 +31,12 @@ import {
   renderSeries,
   subscribeCrosshairMove,
 } from "@/components/TradingViewChart/utils"
+import { useBreakpoints, useUiScale } from "@/styles/media"
 import { useTheme } from "@/theme"
+
+export type TradingViewChartRef = {
+  resetZoom: () => void
+}
 
 type ChartTypeProps =
   | {
@@ -33,6 +49,7 @@ type ChartTypeProps =
     }
 
 export type TradingViewChartProps = ChartTypeProps & {
+  ref?: RefObject<TradingViewChartRef | null>
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
@@ -40,6 +57,7 @@ export type TradingViewChartProps = ChartTypeProps & {
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
+  ref,
   data,
   type = "Baseline",
   height = 400,
@@ -49,6 +67,13 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    resetZoom: () => {
+      chartRef.current = null
+    },
+  }))
 
   const onCrosshairMoveRef = useRef(onCrosshairMove)
   useEffect(() => {
@@ -59,6 +84,8 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     useState<CrosshairCallbackData>(null)
 
   const { themeProps } = useTheme()
+  const uiScale = useUiScale()
+  const { isMobile } = useBreakpoints()
 
   useEffect(() => {
     if (!chartContainerRef.current) return
@@ -66,12 +93,25 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     const chart = createChart(chartContainerRef.current, {
       autoSize: true,
       height,
-      layout: layout(themeProps),
+      layout: layout(themeProps, uiScale),
       rightPriceScale,
       leftPriceScale,
       grid,
       timeScale,
       crosshair: crosshair(themeProps),
+      handleScroll: isMobile
+        ? {
+            horzTouchDrag: true,
+            vertTouchDrag: false,
+          }
+        : undefined,
+      handleScale: isMobile
+        ? {
+            axisPressedMouseMove: true,
+            mouseWheel: true,
+            pinch: true,
+          }
+        : undefined,
     })
 
     const [series, volumeSeries] = renderSeries(
@@ -90,6 +130,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     )
 
     chart.timeScale().fitContent()
+
+    const previousVisibleRange = chartRef.current?.timeScale().getVisibleRange()
+
+    if (previousVisibleRange) {
+      chart.timeScale().setVisibleRange(previousVisibleRange)
+    }
+
+    chartRef.current = chart
 
     if (
       crosshairRef.current &&
@@ -111,10 +159,15 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
     return () => {
       chart.remove()
     }
-  }, [data, height, themeProps, type, hidePriceIndicator])
+  }, [data, height, themeProps, type, hidePriceIndicator, uiScale, isMobile])
 
   return (
-    <Box sx={{ position: "relative" }}>
+    <Box
+      sx={{
+        position: "relative",
+        touchAction: isMobile ? "pan-y pinch-zoom" : undefined,
+      }}
+    >
       <div ref={chartContainerRef} />
       <Crosshair ref={crosshairRef} {...crosshairData} />
       {!hidePriceIndicator && <PriceIndicator ref={priceIndicatorRef} />}

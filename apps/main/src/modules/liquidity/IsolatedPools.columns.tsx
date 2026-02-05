@@ -9,7 +9,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
 import Big from "big.js"
@@ -25,11 +25,15 @@ import { IsolatedPoolTable } from "./Liquidity.utils"
 
 const isolatedColumnHelper = createColumnHelper<IsolatedPoolTable>()
 
-export const getIsolatedPoolsColumnsVisibility = (isMobile: boolean) => ({
+export const getIsolatedPoolsColumnsVisibility = (
+  isMobile: boolean,
+  isMyLiquidity: boolean,
+) => ({
   ["meta.name"]: !isMobile,
-  volumeDisplay: true,
-  tvlDisplay: true,
+  volumeDisplay: !isMobile || !isMyLiquidity,
+  tvlDisplay: !isMobile,
   actions: !isMobile,
+  positions: isMobile && isMyLiquidity,
 })
 
 export const useIsolatedPoolsColumns = () => {
@@ -39,6 +43,7 @@ export const useIsolatedPoolsColumns = () => {
   return useMemo(
     () => [
       isolatedColumnHelper.accessor("meta.name", {
+        size: 250,
         header: t("liquidity:liquidity.pool.poolAsset"),
         cell: ({ row: { original } }) => (
           <AssetLabelWithFarmApr pool={original} />
@@ -57,11 +62,11 @@ export const useIsolatedPoolsColumns = () => {
           return row.original.isVolumeLoading ? (
             <Skeleton width={60} height="1em" />
           ) : isMobile ? (
-            <Flex align="center" gap={4} justify="flex-end">
+            <Flex align="center" gap="s" justify="flex-end">
               {volume}
               <Icon
                 component={ChevronRight}
-                size={18}
+                size="m"
                 color={getToken("text.low")}
               />
             </Flex>
@@ -86,6 +91,11 @@ export const useIsolatedPoolsColumns = () => {
           new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
       }),
       isolatedColumnHelper.display({
+        id: "positions",
+        header: t("liquidity:yourLiquidity"),
+        cell: ({ row }) => <PositionsTotal pool={row.original} />,
+      }),
+      isolatedColumnHelper.display({
         id: "actions",
         size: 170,
         cell: ({ row }) => {
@@ -97,6 +107,25 @@ export const useIsolatedPoolsColumns = () => {
   )
 }
 
+const PositionsTotal = ({ pool }: { pool: IsolatedPoolTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+
+  const total = useUserIsolatedPositionsTotal(pool)
+
+  return (
+    <Flex align="center" gap="s" justify="flex-end">
+      {total !== "0" && (
+        <>
+          {t("currency", {
+            value: total,
+          })}
+        </>
+      )}
+      <Icon component={ChevronRight} size="m" color={getToken("text.low")} />
+    </Flex>
+  )
+}
+
 const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
   const { isPositions } = pool
@@ -104,7 +133,7 @@ const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
 
   return (
     <Flex
-      gap={getTokenPx("containers.paddings.quint")}
+      gap="s"
       justify="end"
       onClick={(e) => e.stopPropagation()}
       sx={{ position: "relative" }}
@@ -123,10 +152,10 @@ const Actions = ({ pool }: { pool: IsolatedPoolTable }) => {
         <Text
           color={getToken("text.tint.secondary")}
           fw={500}
-          fs={10}
+          fs="p6"
           sx={{
             position: "absolute",
-            bottom: -20,
+            bottom: "-xl",
           }}
         >
           {t("liquidity:liquidity.pool.positions.total", {
@@ -151,7 +180,7 @@ export const AssetLabelWithFarmApr = ({
       {pool.isFarms ? (
         <Box>
           <AssetLabel symbol={pool.meta.symbol} />
-          <Flex align="center" gap={4}>
+          <Flex align="center" gap="s">
             <AssetLogo
               id={pool.farms.map((farm) => farm.rewardCurrency.toString())}
               size="extra-small"

@@ -43,6 +43,7 @@ export const WithdrawModal = () => {
 
   return (
     <BasicModal
+      variant="popup"
       open={type === ModalType.Withdraw}
       setOpen={close}
       title="Withdraw"

@@ -7,7 +7,6 @@ import {
   Separator,
   Stack,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { Controller, useFormContext } from "react-hook-form"
 import { first, pick } from "remeda"
 import { useShallow } from "zustand/shallow"
@@ -59,7 +58,7 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
           name="address"
           control={form.control}
           render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <Stack gap={getTokenPx("scales.paddings.m")}>
+            <Stack gap="m">
               <Flex justify="space-between" align="center">
                 <FormLabel>Account address</FormLabel>
                 <AddressBookButton onClick={onAddressBookOpen} />

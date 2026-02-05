@@ -12,7 +12,7 @@ import {
   SelectItem,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, px } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { produce } from "immer"
 import { FC, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -70,11 +70,11 @@ export const TimeFrame: FC<TimeFrameProps> = ({
           items={timeFrameOptions}
           value={timeFrame.type}
           renderTrigger={() => (
-            <Flex gap={2} align="center">
+            <Flex gap="xs" align="center">
               <Text
                 fw={500}
-                fs={11}
-                lh={px(15)}
+                fs="p6"
+                lh="s"
                 transform="uppercase"
                 color={getToken("buttons.secondary.low.onRest")}
               >
@@ -82,7 +82,7 @@ export const TimeFrame: FC<TimeFrameProps> = ({
               </Text>
               <Icon
                 component={ChevronDown}
-                size={18}
+                size="m"
                 color={getToken("icons.onContainer")}
               />
             </Flex>

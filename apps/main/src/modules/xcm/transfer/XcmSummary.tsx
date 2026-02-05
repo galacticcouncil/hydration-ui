@@ -7,7 +7,6 @@ import {
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { getMinusTokenPx } from "@galacticcouncil/ui/utils"
 import { isAnyEvmChain } from "@galacticcouncil/utils"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -80,8 +79,7 @@ export const XcmSummary = () => {
     })
   })()
 
-  const isTransferValid =
-    !!transfer && call && formState.isValid && !alerts.length
+  const isTransferValid = !!transfer && formState.isValid && !alerts.length
   const isSummaryOpen = isTransferValid || alerts.length > 0
 
   return (
@@ -103,13 +101,11 @@ export const XcmSummary = () => {
         )}
         {isTransferValid && (
           <Summary
-            separator={
-              <Separator mx={getMinusTokenPx("containers.paddings.primary")} />
-            }
+            separator={<Separator mx="-xl" />}
             px="xl"
             withLeadingSeparator
           >
-            {isEvmSourceChain && isEvmApproveCall(call) && (
+            {call && isEvmSourceChain && isEvmApproveCall(call) && (
               <SummaryRow
                 label={t("xcm:summary.approvalFee")}
                 loading={isLoading || isLoadingApprovalFee}

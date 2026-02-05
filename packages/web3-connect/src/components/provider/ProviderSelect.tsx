@@ -36,7 +36,7 @@ export const ProviderSelect = () => {
   const { installed, other } = useWalletProviders(isDefaultMode ? filter : mode)
 
   return (
-    <Stack gap={10}>
+    <Stack gap="base">
       {isDefaultMode && (
         <AccountFilter active={filter} onSetActive={setFilter} />
       )}
@@ -46,7 +46,7 @@ export const ProviderSelect = () => {
         actionLabelWhenOpen="Hide"
         defaultOpen
       >
-        <Grid columns={[2, 4]} gap={10}>
+        <Grid columns={[2, 4]} gap="base">
           {isDefaultMode && (
             <ProviderLastConnectedButton
               onClick={() => setPage(Web3ConnectModalPage.AccountSelect)}
@@ -69,7 +69,7 @@ export const ProviderSelect = () => {
             actionLabelWhenOpen="Hide"
             defaultOpen={installed.length === 0}
           >
-            <Grid columns={[2, 4]} gap={10}>
+            <Grid columns={[2, 4]} gap="base">
               {other.map((wallet) => {
                 const props = getWalletData(wallet)
                 return (

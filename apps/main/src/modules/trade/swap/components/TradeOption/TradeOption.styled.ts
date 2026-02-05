@@ -16,7 +16,7 @@ export const STradeOptionContainer = styled.button<{ active: boolean }>(
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: ${theme.space.base};
 
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
     border-radius: 8px;

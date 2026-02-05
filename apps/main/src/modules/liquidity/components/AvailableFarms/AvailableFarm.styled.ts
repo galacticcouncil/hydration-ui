@@ -8,10 +8,10 @@ export const SYieldOpportunityContainer = styled(Flex, { shouldForwardProp })<{
   isSelectable?: boolean
 }>(
   ({ theme, isSelectable }) => css`
-    padding: ${theme.containers.paddings.primary}px;
+    padding: ${theme.containers.paddings.primary};
 
     justify-content: space-between;
-    gap: 10px;
+    gap: ${theme.space.base};
     flex-grow: 1;
 
     ${isSelectable &&

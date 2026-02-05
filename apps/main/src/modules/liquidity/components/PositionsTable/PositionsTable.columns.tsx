@@ -21,7 +21,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/table-core"
@@ -107,8 +107,8 @@ export const useOmnipoolPositionsTableColumns = () => {
           ) : (
             <Box
               height={66}
-              py={24}
-              px={18}
+              py="xxl"
+              px="l"
               sx={{
                 borderLeft: `2px solid`,
                 borderColor: getToken("buttons.primary.high.rest"),
@@ -193,7 +193,7 @@ export const useOmnipoolPositionsTableColumns = () => {
               stablepoolFee={original.apr.lpFeeStablepool}
               borrowApyData={original.apr.borrowApyData}
             >
-              <Flex align="center" gap={4}>
+              <Flex align="center" gap="s">
                 {isFarms && (
                   <AssetLogo
                     size="small"
@@ -228,7 +228,7 @@ export const useOmnipoolPositionsTableColumns = () => {
 
           if (isMobile) {
             return (
-              <Flex align="center" gap={4} justify="flex-end">
+              <Flex align="center" gap="s" justify="flex-end">
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger
                     asChild
@@ -238,7 +238,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                     }}
                   >
                     <Button variant="tertiary" outline>
-                      <Icon component={Ellipsis} size={16} />
+                      <Icon component={Ellipsis} size="m" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -322,7 +322,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                 {(canJoinFarms || isJoinedFarms) && (
                   <Icon
                     component={ChevronRight}
-                    size={18}
+                    size="m"
                     color={getToken("text.low")}
                   />
                 )}
@@ -331,11 +331,7 @@ export const useOmnipoolPositionsTableColumns = () => {
           }
 
           return (
-            <Flex
-              gap={getTokenPx("containers.paddings.tertiary")}
-              justify="end"
-              align="center"
-            >
+            <Flex gap="m" justify="end" align="center">
               {canJoinFarms && (
                 <Button variant="secondary" asChild>
                   <Link
@@ -393,7 +389,7 @@ export const useOmnipoolPositionsTableColumns = () => {
 
               {(canJoinFarms || isJoinedFarms) && (
                 <Icon
-                  size={16}
+                  size="m"
                   component={ChevronRight}
                   sx={{ justifySelf: "flex-end" }}
                 />
@@ -456,7 +452,7 @@ export const useBalanceTableColumns = () => {
               stablepoolFee={apr.lpFeeStablepool}
               borrowApyData={apr.borrowApyData}
             >
-              <Flex align="center" gap={4}>
+              <Flex align="center" gap="s">
                 {!!incentives.length && (
                   <AssetLogo
                     size="small"
@@ -491,7 +487,7 @@ export const useBalanceTableColumns = () => {
         }) => {
           if (isMobile) {
             return (
-              <Flex align="center" gap={4} justify="flex-end">
+              <Flex align="center" gap="s" justify="flex-end">
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger
                     asChild
@@ -501,7 +497,7 @@ export const useBalanceTableColumns = () => {
                     }}
                   >
                     <Button variant="tertiary" outline>
-                      <Icon component={Ellipsis} size={16} />
+                      <Icon component={Ellipsis} size="m" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -566,7 +562,7 @@ export const useBalanceTableColumns = () => {
           }
 
           return (
-            <Flex gap={12} align="center" justify="end">
+            <Flex gap="m" align="center" justify="end">
               {isStablepoolInOmnipool && (
                 <Button variant="secondary" asChild>
                   <Link
@@ -637,8 +633,8 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
           ) : (
             <Box
               height={66}
-              py={20}
-              px={18}
+              py="xl"
+              px="l"
               sx={{
                 borderLeft: `2px solid`,
                 borderColor: getToken("buttons.primary.high.rest"),
@@ -679,11 +675,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
             original: { joinedFarms, totalApr },
           },
         }) => (
-          <Flex
-            direction={isMobile ? "column" : "row"}
-            align="center"
-            gap={getTokenPx("containers.paddings.quint")}
-          >
+          <Flex direction={isMobile ? "column" : "row"} align="center" gap="s">
             {!!joinedFarms.length && (
               <AssetLogo
                 size="small"
@@ -722,7 +714,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
         }) => {
           if (isMobile) {
             return (
-              <Flex align="center" gap={4} justify="flex-end">
+              <Flex align="center" gap="s" justify="flex-end">
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger
                     asChild
@@ -732,7 +724,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
                     }}
                   >
                     <Button variant="tertiary" outline>
-                      <Icon component={Ellipsis} size={16} />
+                      <Icon component={Ellipsis} size="m" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -794,7 +786,7 @@ export const useIsolatedPositionsTableColumns = (isFarms: boolean) => {
           }
 
           return (
-            <Flex gap={12} align="center" justify="end">
+            <Flex gap="m" align="center" justify="end">
               {!!farmsToJoin.length && !positionId && canJoinFarms && (
                 <Button variant="secondary" asChild>
                   <Link

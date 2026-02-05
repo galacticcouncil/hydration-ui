@@ -1,5 +1,4 @@
 import { Box } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
 import { FormProvider } from "react-hook-form"
@@ -81,7 +80,7 @@ export const Market: FC = () => {
   return (
     <FormProvider {...form}>
       <form
-        sx={{ pb: isExpanded ? getTokenPx("containers.paddings.primary") : 0 }}
+        sx={{ pb: isExpanded ? "xxl" : 0 }}
         onSubmit={form.handleSubmit((values) =>
           isSingleTrade
             ? swap && swapTx && submitSwap.mutate([values, swap, swapTx])
@@ -90,7 +89,7 @@ export const Market: FC = () => {
       >
         <MarketFields swap={swap} />
         {isExpanded && (
-          <Box pt={8} pb={getTokenPx("scales.paddings.m")}>
+          <Box pt="base" pb="m">
             <MarketTradeOptions
               swap={swap}
               twap={twap}

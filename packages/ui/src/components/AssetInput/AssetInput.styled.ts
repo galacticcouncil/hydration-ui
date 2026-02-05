@@ -15,8 +15,8 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
 
     transition: ${theme.transitions.colors};
 
-    padding: ${theme.scales.paddings.s}px;
-    padding-right: ${theme.scales.paddings.m}px;
+    padding: ${theme.space.s};
+    padding-right: ${theme.space.m};
     min-width: fit-content;
 
     border-radius: 30px;
@@ -36,16 +36,21 @@ export const SAssetButton = styled.button<{ isError: boolean }>(
   `,
 )
 
-export const SAssetButtonEmpty = styled(Button)`
-  padding: 4px 8px 4px 12px;
-  height: 38px;
-  box-sizing: border-box;
-`
+export const SAssetButtonEmpty = styled(Button)(
+  ({ theme }) => css`
+    padding-block: ${theme.space.s};
+    padding-inline: ${theme.space.l};
+    height: 2.375rem;
+    box-sizing: border-box;
+  `,
+)
 
-export const SAssetInput = styled(Input)`
-  text-align: right;
-  font-size: 16px;
-  height: auto;
-  width: 100%;
-  padding: 0px;
-`
+export const SAssetInput = styled(Input)(
+  ({ theme }) => css`
+    text-align: right;
+    font-size: ${theme.fontSizes.p2};
+    height: auto;
+    width: 100%;
+    padding: 0;
+  `,
+)

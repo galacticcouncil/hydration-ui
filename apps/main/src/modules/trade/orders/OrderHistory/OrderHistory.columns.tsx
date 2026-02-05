@@ -46,10 +46,10 @@ export const useOrderHistoryColumns = () => {
         sx: { textAlign: "center" },
       },
       header: () => (
-        <Flex gap={4} align="center" justify="center">
+        <Flex gap="s" align="center" justify="center">
           {t("trade:trade.orders.orderHistory.averagePrice")}
           <Icon
-            size={12}
+            size="xs"
             component={ArrowRightLeft}
             color={getToken("textButtons.small.hover")}
           />

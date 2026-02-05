@@ -17,7 +17,7 @@ export const MobileTabBarActions: FC<Props> = ({ onOpenDrawer }) => {
   const { t } = useTranslation()
 
   return (
-    <Grid gap={4} sx={{ gridTemplateColumns: "1fr auto 1fr" }}>
+    <Grid gap="s" sx={{ gridTemplateColumns: "1fr auto 1fr" }}>
       <MobileTabBarAction
         icon={Settings}
         label={t("settings")}

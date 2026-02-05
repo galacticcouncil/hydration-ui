@@ -1,4 +1,4 @@
-import { Meta, StoryFn } from "@storybook/react"
+import { Meta, StoryFn } from "@storybook/react-vite"
 import { SettingsIcon } from "lucide-react"
 
 import { IconPlaceholder } from "@/assets/icons"
@@ -26,7 +26,7 @@ export const DropdownMenuStory: StoryFn = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
-        <SettingsIcon size={21} />
+        <SettingsIcon size="l" />
       </DropdownMenuTrigger>
       <DropdownMenuContent fullWidth>
         <DropdownMenuItem asChild>

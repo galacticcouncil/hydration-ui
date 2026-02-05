@@ -1,7 +1,7 @@
-import { useState } from "@storybook/preview-api"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import { createColumnHelper } from "@tanstack/react-table"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState } from "storybook/preview-api"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { Box } from "@/components/Box"
@@ -110,7 +110,7 @@ const TABLE_COLUMNS = [
     header: "Symbol",
     cell: ({ row, getValue }) => {
       return (
-        <Flex align="center" gap={8}>
+        <Flex align="center" gap="base">
           <AssetLogo
             src={`https://s2.coinmarketcap.com/static/img/coins/64x64/${row.original.id}.png`}
           />
@@ -180,7 +180,7 @@ const TABLE_COLUMNS = [
       },
     },
     cell: ({ row }) => (
-      <Flex gap={8} inline>
+      <Flex gap="base" inline>
         <Button
           size="small"
           onClick={() => alert("SWAP")}
@@ -215,7 +215,7 @@ const MockTable = (args: Story["args"]) => {
   return (
     <TableContainer as={Paper}>
       {typeof args?.globalFilter === "string" && (
-        <Box p={10}>
+        <Box p="base">
           <Input
             variant="standalone"
             customSize="small"
@@ -231,7 +231,7 @@ const MockTable = (args: Story["args"]) => {
         data={(args?.data as TData[]) || LARGE_TABLE_DATA.slice(0, 6)}
         columns={TABLE_COLUMNS}
         renderSubComponent={(coin) => (
-          <Grid columns={[1, 2, 3]} gap={10} py={20}>
+          <Grid columns={[1, 2, 3]} gap="base" py="xl">
             <Box>
               <Text color={getToken("text.low")}>Volume</Text>
               <Text fw={600} fs="p1">

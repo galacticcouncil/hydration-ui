@@ -68,8 +68,10 @@ export const useBlockHeightStatus = (blockHeight: number) => {
   const { t } = useTranslation()
   const { data: bestNumber } = useBestNumber()
   const blockHeightDifference =
-    isNumber(bestNumber?.parachainBlockNumber) && isNumber(blockHeight)
-      ? bestNumber?.parachainBlockNumber - blockHeight
+    isNumber(bestNumber?.parachainBlockNumber) &&
+    isNumber(blockHeight) &&
+    bestNumber.parachainBlockNumber >= blockHeight
+      ? bestNumber.parachainBlockNumber - blockHeight
       : null
 
   const status: ServiceStatus =

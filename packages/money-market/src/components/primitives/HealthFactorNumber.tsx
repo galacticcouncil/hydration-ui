@@ -1,17 +1,17 @@
-import { Flex, Text, TextSize } from "@galacticcouncil/ui/components"
-import { ResponsiveStyleValue } from "@galacticcouncil/ui/types"
+import { Flex, Text } from "@galacticcouncil/ui/components"
+import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
 
 import { useFormattedHealthFactor } from "@/hooks"
 
 export type HealthFactorNumberProps = {
   value: string
-  fontSize?: TextSize | ResponsiveStyleValue<number>
+  fontSize?: ThemeUICSSProperties["fontSize"]
 }
 
 export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   value,
-  fontSize = 14,
+  fontSize = "p3",
 }) => {
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(value)
 

@@ -30,11 +30,11 @@ export const PoolDetails: FC<Props> = ({ id }) => {
     <Flex direction="column" sx={{ position: "relative" }}>
       <PoolDetailsHeader data={data} />
 
+      <PositionsTable pool={data} />
+
       <PoolStats data={data} />
 
       <YieldOpportunitiesSection data={data} />
-
-      <PositionsTable pool={data} />
 
       <Outlet />
     </Flex>

@@ -1,5 +1,5 @@
 import {
-  safeConvertAddressSS58,
+  safeConvertPublicKeyToSS58,
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
@@ -68,7 +68,7 @@ export const xykVolumeQuery = (squidSdk: SquidSdk, addresses: string[]) =>
           const assetIdB = node.assetBAssetRegistryId ?? node.assetBId
 
           return {
-            poolId: safeConvertAddressSS58(node.poolId),
+            poolId: safeConvertPublicKeyToSS58(node.poolId),
             assetId,
             assetIdB,
             poolVolume: Number(node.assetAVolNorm).toFixed(2),

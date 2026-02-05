@@ -1,5 +1,9 @@
 import { css, Global, Theme, useTheme } from "@emotion/react"
 
+import { uiScale } from "@/styles/scale"
+import { mq } from "@/theme"
+import { ROOT_FONT_SIZE, UI_SCALE_VAR } from "@/utils"
+
 const normalize = css`
   *,
   *::before,
@@ -103,10 +107,30 @@ const scrollbar = (theme: Theme) => css`
 
 const globalStyles = (theme: Theme) => css`
   ${normalize}
+  ${uiScale}
   ${scrollbar(theme)}
+
+  :root {
+    --layout-gutter: ${theme.space.m};
+    --layout-bottom-safe-area: ${theme.space.base};
+
+    ${mq("sm")} {
+      --layout-gutter: ${theme.space.xl};
+      --layout-bottom-safe-area: ${theme.space.xxl};
+    }
+
+    ${mq("lg")} {
+      --layout-gutter: ${theme.space.xxl};
+      --layout-bottom-safe-area: ${theme.space.xxxl};
+    }
+  }
+
+  html {
+    font-size: calc(${ROOT_FONT_SIZE}px * var(${UI_SCALE_VAR}));
+  }
+
   body {
     font-family: ${theme.fontFamilies1.secondary};
-    font-size: 14px;
     font-weight: 400;
 
     background-color: ${theme.surfaces.themeBasePalette.background};

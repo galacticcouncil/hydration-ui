@@ -73,6 +73,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
   const [tradeFeeDisplay] = useDisplayAssetPrice(
     tradeFeeAsset?.id ?? "",
     tradeFee,
+    { maximumFractionDigits: null },
   )
 
   const transactionFeeAsset = getAssetWithFallback(

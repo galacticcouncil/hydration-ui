@@ -7,7 +7,7 @@ import {
   ModalHeader,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { isSS58Address } from "@galacticcouncil/utils"
 import { useEffect } from "react"
 import { Controller } from "react-hook-form"
@@ -144,18 +144,12 @@ const JoinFarmsForm = ({
           autoComplete="off"
           onSubmit={handleSubmit((data) => onSubmit(data.amount))}
         >
-          <ModalContentDivider
-            sx={{ mt: getTokenPx("containers.paddings.primary") }}
-          />
+          <ModalContentDivider sx={{ mt: "xxl" }} />
 
-          <Flex
-            direction="column"
-            gap={getTokenPx("containers.paddings.quart")}
-            py={getTokenPx("containers.paddings.secondary")}
-          >
+          <Flex direction="column" gap="base" py="l">
             {!isEditable && (
               <Text
-                fs={14}
+                fs="p3"
                 fw={500}
                 font="primary"
                 color={getToken("text.high")}
@@ -184,7 +178,7 @@ const JoinFarmsForm = ({
                   />
                 ) : (
                   <Flex direction="column">
-                    <Flex align="center" justify="space-between" gap={8}>
+                    <Flex align="center" justify="space-between" gap="base">
                       <Text
                         color={getToken("text.medium")}
                         fs="p5"
@@ -211,10 +205,10 @@ const JoinFarmsForm = ({
                     </Flex>
                     {error && (
                       <Text
-                        fs={12}
+                        fs="p5"
                         font="secondary"
                         color={getToken("accents.danger.secondary")}
-                        pt={4}
+                        pt="s"
                       >
                         {error.message}
                       </Text>
@@ -231,7 +225,7 @@ const JoinFarmsForm = ({
             type="submit"
             size="large"
             width="100%"
-            mt={getTokenPx("containers.paddings.primary")}
+            mt="xxl"
             disabled={!isValid}
           >
             {t("liquidity.joinFarms.modal.submit.btn", {

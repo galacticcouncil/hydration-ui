@@ -341,6 +341,7 @@ export const useRemoveXYKShares = ({
   shareTokenMeta: TShareToken
   onSubmitted: () => void
 }) => {
+  const { t } = useTranslation("common")
   const submitToasts = useSubmitToasts()
   const { papi } = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
@@ -353,6 +354,12 @@ export const useRemoveXYKShares = ({
 
   const { tokens, totalLiquidity } = pool
 
+  const { data: shareTokenPrice } = useShareTokenPrices([
+    shareTokenMeta.poolAddress,
+  ])
+
+  const price = shareTokenPrice?.get(shareTokenMeta.poolAddress)
+
   const form = useRemoveLiquidityForm({
     asset: shareTokenMeta,
     initialAmount: balanceShifted,
@@ -361,10 +368,14 @@ export const useRemoveXYKShares = ({
       .check(validateFieldMaxBalance(balanceShifted)),
   })
 
-  const removeSharesAmount = scale(
-    form.watch("amount") || "0",
-    shareTokenMeta.decimals,
-  )
+  const amountShifted = form.watch("amount") || "0"
+  const removeSharesAmount = scale(amountShifted, shareTokenMeta.decimals)
+
+  const displayValue = price
+    ? t("currency", {
+        value: Big(amountShifted).times(price).toString(),
+      })
+    : undefined
 
   const receiveAssets = tokens.map((token) => {
     const tokenTotalBalance = token.balance
@@ -422,5 +433,6 @@ export const useRemoveXYKShares = ({
     receiveAssets,
     totalPositionShifted: balanceShifted,
     editable: true,
+    displayValue,
   }
 }

@@ -29,7 +29,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
 
   return (
     <>
-      <Flex gap={12} align="center" justify="flex-end">
+      <Flex gap="m" align="center" justify="flex-end">
         <TableRowAction
           variant="primary"
           outline={false}
@@ -45,7 +45,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
         <DropdownMenu modal={false}>
           <TableRowAction asChild>
             <DropdownMenuTrigger>
-              <Icon component={Ellipsis} size={16} />
+              <Icon component={Ellipsis} size="m" />
             </DropdownMenuTrigger>
           </TableRowAction>
           <DropdownMenuContent>
@@ -75,7 +75,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
           onSubmitted={() => setIsRemoveAllModalOpen(false)}
         />
       </Modal>
-      <Modal open={isAddOpen} onOpenChange={setIsAddOpen}>
+      <Modal variant="popup" open={isAddOpen} onOpenChange={setIsAddOpen}>
         <AddLiquidityModalContent
           id={assetId}
           closable

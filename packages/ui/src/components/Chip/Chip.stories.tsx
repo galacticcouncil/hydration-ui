@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 import React from "react"
 
 import { Flex } from "@/components"
@@ -12,7 +12,7 @@ export default {
 } satisfies Meta<typeof Chip>
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof Chip>) => (
-  <Flex gap={20} align="center">
+  <Flex gap="xl" align="center">
     <Chip {...args} size="large">
       Voted
     </Chip>

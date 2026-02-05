@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Button,
   Flex,
@@ -11,12 +12,10 @@ import {
   Text,
   Toggle,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useQuery } from "@tanstack/react-query"
 import { Controller, FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { TSelectedAsset } from "@/components/AssetSelect/AssetSelect"
@@ -112,16 +111,12 @@ export const RemoveMoneyMarketLiquidityForm = (
         onBack={onBack}
       />
       <ModalBody>
-        <Flex
-          direction="column"
-          gap={getTokenPx("containers.paddings.tertiary")}
-          asChild
-        >
+        <Flex direction="column" gap="m" asChild>
           <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
-              label={t("common:withdraw")}
+              label={t("common:amount")}
               maxBalance={balance}
               assets={[]}
               sx={{ py: 0 }}
@@ -162,10 +157,7 @@ export const RemoveMoneyMarketLiquidityForm = (
                 sx={{ p: 0 }}
               />
             ) : (
-              <Flex
-                direction="column"
-                gap={getTokenPx("containers.paddings.quint")}
-              >
+              <Flex direction="column" gap="s">
                 <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
               </Flex>
             )}
@@ -176,7 +168,7 @@ export const RemoveMoneyMarketLiquidityForm = (
               <div>
                 <TradeLimitRow type={TradeLimitType.Liquidity} />
 
-                {healthFactor?.isSignificantChange ? (
+                {healthFactor ? (
                   <>
                     <ModalContentDivider />
                     <SummaryRow
@@ -203,7 +195,7 @@ export const RemoveMoneyMarketLiquidityForm = (
             <ModalContentDivider />
 
             <Button type="submit" size="large" width="100%" disabled={!isValid}>
-              {t("removeLiquidity")}
+              {title ?? t("removeLiquidity")}
             </Button>
           </form>
         </Flex>
@@ -238,7 +230,7 @@ const TradeSummary = ({
         separator={<ModalContentDivider />}
         rows={[
           {
-            label: t("minimumReceive"),
+            label: t("minimumReceived"),
             content: t("currency", {
               value: minReceive,
               symbol: receiveAsset.symbol,
@@ -252,7 +244,7 @@ const TradeSummary = ({
               `${t("currency", { value: 1, symbol: receiveAsset.symbol })}≈${t("currency", { value: spotPriceData?.spotPrice, symbol: erc20.symbol })}`
             ),
           },
-          ...(healthFactor?.isSignificantChange
+          ...(healthFactor
             ? [
                 {
                   label: t("healthFactor"),

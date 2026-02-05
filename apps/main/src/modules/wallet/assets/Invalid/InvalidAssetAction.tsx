@@ -6,7 +6,7 @@ export const InvalidAssetAction: FC = () => {
   const { t } = useTranslation("wallet")
 
   return (
-    <Box py={20}>
+    <Box py="xl">
       <Button size="large" sx={{ width: "100%" }}>
         {t("invalidAsset.cta")}
       </Button>

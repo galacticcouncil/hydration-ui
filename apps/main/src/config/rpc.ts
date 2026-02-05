@@ -34,8 +34,8 @@ export const SQUID_URLS = [
     url: "https://galacticcouncil.squids.live/hydration-pools:whale-prod-pool-01/api/graphql",
   },
   {
-    name: "Whale Prod Pool 02",
-    url: "https://galacticcouncil.squids.live/hydration-pools:whale-prod-pool-02/api/graphql",
+    name: "Orca Prod",
+    url: "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/graphql",
   },
 ]
 

@@ -29,13 +29,13 @@ export const SFeeSection = styled.div<{
 
     padding: 1px;
 
-    border-radius: ${theme.radii.full}px;
+    border-radius: ${theme.radii.full};
 
     & > div {
       width: 100%;
       height: 100%;
 
-      border-radius: ${theme.radii.full}px;
+      border-radius: ${theme.radii.full};
     }
   `,
   isActive
@@ -61,7 +61,7 @@ export const SFullFeeRangeItem = styled.div<{
       width: 100%;
       height: 1px;
 
-      border-radius: ${theme.radii.full}px;
+      border-radius: ${theme.radii.full};
 
       margin-left: 8px;
       margin-right: 8px;

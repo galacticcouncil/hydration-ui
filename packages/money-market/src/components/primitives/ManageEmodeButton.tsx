@@ -34,7 +34,7 @@ export const ManageEmodeButton: React.FC<EmodeButtonProps> = ({
       {isEModeDisabled
         ? "Disabled"
         : getEmodeMessage(eModes[user.userEmodeCategoryId]?.label)}
-      <Icon mr={-4} size={14} component={Settings} />
+      <Icon mr={-4} size="s" component={Settings} />
     </Button>
   )
 }

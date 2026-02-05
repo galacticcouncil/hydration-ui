@@ -8,13 +8,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import {
-  OnChangeFn,
-  RowData,
-  SortingState,
-  TableOptions,
-} from "@tanstack/table-core"
-import { useMemo, useState } from "react"
+import { RowData, SortingState, TableOptions } from "@tanstack/table-core"
+import { useMemo } from "react"
 import { range } from "remeda"
 
 import { Skeleton } from "@/components/Skeleton"
@@ -177,43 +172,27 @@ export function getPaginationRange(
   return pagination
 }
 
-export const usePriorityTableSort = <TColumn extends string>(
+export const updateTableSortWithPriority = <TColumn extends string>(
+  state: SortingState,
   columnSortPriority: ReadonlyArray<TColumn>,
-  defaultSortState: SortingState = [],
 ) => {
-  const [sortState, setSortState] = useState<SortingState>(defaultSortState)
+  // Sort the columns based on priority order
+  return state.toSorted((a, b) => {
+    const aPriority = columnSortPriority.indexOf(a.id as TColumn)
+    const bPriority = columnSortPriority.indexOf(b.id as TColumn)
 
-  const changeSort = useMemo(
-    (): OnChangeFn<SortingState> => (updater) => {
-      setSortState((prevState) => {
-        const newState =
-          typeof updater === "function" ? updater(prevState) : updater
+    // If both columns are in the priority list, sort by priority
+    if (aPriority !== -1 && bPriority !== -1) {
+      return aPriority - bPriority
+    }
 
-        // Sort the columns based on priority order
-        const sortedState = [...newState].sort((a, b) => {
-          const aPriority = columnSortPriority.indexOf(a.id as TColumn)
-          const bPriority = columnSortPriority.indexOf(b.id as TColumn)
+    // If only one column is in the priority list, it comes first
+    if (aPriority !== -1) return -1
+    if (bPriority !== -1) return 1
 
-          // If both columns are in the priority list, sort by priority
-          if (aPriority !== -1 && bPriority !== -1) {
-            return aPriority - bPriority
-          }
-
-          // If only one column is in the priority list, it comes first
-          if (aPriority !== -1) return -1
-          if (bPriority !== -1) return 1
-
-          // If neither is in the priority list, maintain stable order
-          const aIndex = newState.indexOf(a)
-          const bIndex = newState.indexOf(b)
-          return aIndex - bIndex
-        })
-
-        return sortedState
-      })
-    },
-    [columnSortPriority],
-  )
-
-  return [sortState, changeSort] as const
+    // If neither is in the priority list, maintain stable order
+    const aIndex = state.indexOf(a)
+    const bIndex = state.indexOf(b)
+    return aIndex - bIndex
+  })
 }

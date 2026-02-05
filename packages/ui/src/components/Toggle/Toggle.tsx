@@ -2,13 +2,13 @@ import { FC, Ref } from "react"
 
 import { Flex, FlexProps } from "@/components/Flex"
 import { Text, TextProps } from "@/components/Text"
-import { getToken, px } from "@/utils"
+import { getToken } from "@/utils"
 
 import { SThumb, SToggle, ToggleProps } from "./Toggle.styled"
 
 export const ToggleRoot: FC<FlexProps> = ({ children, ...props }) => {
   return (
-    <Flex gap={10} align="center" {...props}>
+    <Flex gap="base" align="center" {...props}>
       {children}
     </Flex>
   )
@@ -47,7 +47,7 @@ export const ToggleLabel: FC<
       ref={ref}
       fw={500}
       fs="p5"
-      lh={px(14.4)}
+      lh="s"
       color={getToken("text.high")}
       whiteSpace="nowrap"
       {...props}

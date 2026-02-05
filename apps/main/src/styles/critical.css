@@ -21,8 +21,8 @@ html.light body {
 }
 
 .loader {
-  width: 145px;
-  height: 145px;
+  width: 8.75rem;
+  height: 8.75rem;
   mask-image: linear-gradient(
     120deg,
     #000 25%,

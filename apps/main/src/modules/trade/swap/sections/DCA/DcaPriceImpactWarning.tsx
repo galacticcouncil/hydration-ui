@@ -18,13 +18,13 @@ export const DcaPriceImpactWarning: FC<Props> = ({
   const { t } = useTranslation(["trade"])
 
   return (
-    <Flex direction="column" gap={10}>
+    <Flex direction="column" gap="base">
       <Alert
         variant="warning"
         description={message}
         action={
           canContinue && (
-            <Flex align="center" as="label" gap={10}>
+            <Flex align="center" as="label" gap="base">
               <Toggle
                 size="large"
                 checked={accepted}

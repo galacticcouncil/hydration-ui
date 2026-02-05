@@ -10,6 +10,7 @@ import {
   ComputedUserReserveData,
   ExtendedFormattedUser,
 } from "@/hooks/commonTypes"
+import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
 
 interface CalculateHFAfterSwapProps {
   fromAmount: BigSource
@@ -281,4 +282,36 @@ export const calculateHFAfterSupply = ({
   }
 
   return healthFactorAfterDeposit
+}
+
+export type HealthFactorResult = {
+  readonly current: string
+  readonly future: string
+  readonly isBelowRiskThreshold: boolean
+  readonly isSignificantChange: boolean
+  readonly isUserConsentRequired: boolean
+}
+
+export const formatHealthFactorResult = ({
+  currentHF,
+  futureHF,
+}: {
+  currentHF: number
+  futureHF: number
+}): HealthFactorResult => {
+  const current = Big(currentHF)
+  const future = Big(futureHF)
+
+  const isBelowRiskThreshold = future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
+  const isSignificantChange = !future
+    .round(2, Big.roundDown)
+    .eq(current.round(2, Big.roundDown))
+
+  return {
+    current: current.toString(),
+    future: future.toString(),
+    isBelowRiskThreshold,
+    isSignificantChange,
+    isUserConsentRequired: isSignificantChange && isBelowRiskThreshold,
+  }
 }

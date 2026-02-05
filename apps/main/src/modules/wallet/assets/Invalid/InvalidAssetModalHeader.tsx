@@ -20,7 +20,7 @@ export const InvalidAssetModalHeader: FC<Props> = ({ assetId, origin }) => {
   const asset = getAsset(assetId)
 
   return (
-    <Flex direction="column" gap={12}>
+    <Flex direction="column" gap="m">
       <SInvalidAssetHeader>
         {asset && <AssetLabelFull size="large" asset={asset} />}
         {/* TODO add link for asset */}
@@ -30,7 +30,7 @@ export const InvalidAssetModalHeader: FC<Props> = ({ assetId, origin }) => {
           })}
         </LinkTextButton>
       </SInvalidAssetHeader>
-      <Text fs={12} lh={1.2} fw={500} color={getToken("text.medium")}>
+      <Text fs="p5" lh={1.2} fw={500} color={getToken("text.medium")}>
         {t("invalidAsset.modal.dataPreview")}
       </Text>
     </Flex>

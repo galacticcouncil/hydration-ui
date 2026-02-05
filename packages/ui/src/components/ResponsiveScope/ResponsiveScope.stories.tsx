@@ -1,5 +1,5 @@
 import { css } from "@emotion/react"
-import type { Meta, StoryObj } from "@storybook/react"
+import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Grid } from "@/components/Grid"
 import { Paper } from "@/components/Paper"
@@ -47,7 +47,7 @@ const ResponsiveCard = ({ colSpan }: { colSpan: number }) => (
 
 export const Example: Story = {
   render: () => (
-    <Grid gap={20} columnTemplate="repeat(4, minmax(0, 1fr))">
+    <Grid gap="xl" columnTemplate="repeat(4, minmax(0, 1fr))">
       <ResponsiveCard colSpan={4} />
       <ResponsiveCard colSpan={2} />
       <ResponsiveCard colSpan={2} />

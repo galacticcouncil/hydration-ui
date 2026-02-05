@@ -1,23 +1,11 @@
 import { ThemeUICSSProperties } from "@theme-ui/css"
-import { LoaderCircle } from "lucide-react"
 
-import { getToken } from "@/utils"
+import { SpinnerCircle } from "@/assets/icons"
 
-export type SpinnerProps = React.ComponentProps<"svg"> & {
+export type SpinnerProps = Omit<React.ComponentProps<"svg">, "size"> & {
   size?: ThemeUICSSProperties["size"]
 }
 
-export const Spinner: React.FC<SpinnerProps> = ({ size, ...props }) => {
-  return (
-    <LoaderCircle
-      {...props}
-      sx={{
-        size,
-        animationName: getToken("animations.rotate"),
-        animationDuration: "0.8s",
-        animationIterationCount: "infinite",
-        animationTimingFunction: "linear",
-      }}
-    />
-  )
+export const Spinner: React.FC<SpinnerProps> = ({ size = "l", ...props }) => {
+  return <SpinnerCircle sx={{ size }} {...props} />
 }

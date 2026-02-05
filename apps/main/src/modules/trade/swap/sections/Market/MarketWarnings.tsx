@@ -1,4 +1,5 @@
 import { HealthFactorRiskWarning } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Alert, Flex, Modal, TextButton } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
@@ -6,7 +7,6 @@ import Big from "big.js"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
 import { useTradeSettings } from "@/states/tradeSettings"
 
@@ -59,7 +59,7 @@ export const MarketWarnings: FC<Props> = ({
   }
 
   return (
-    <Flex direction="column" gap={6} mt={8}>
+    <Flex direction="column" gap="s" mt="base">
       {shouldRenderSlippageWarning && (
         <Alert
           variant="warning"
@@ -97,6 +97,7 @@ export const MarketWarnings: FC<Props> = ({
         />
       )}
       <Modal
+        variant="popup"
         open={isSettingsOpen}
         onOpenChange={() => setIsSettingsOpen(false)}
       >

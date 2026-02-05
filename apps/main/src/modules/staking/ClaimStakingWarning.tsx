@@ -8,7 +8,7 @@ import {
   ModalFooter,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -45,7 +45,7 @@ export const ClaimStakingWarning: FC<Props> = ({
         <Flex justify="end">
           <ModalClose />
         </Flex>
-        <Flex pt={10} pb={20} direction="column" gap={20} align="center">
+        <Flex pt="base" pb="xl" direction="column" gap="xl" align="center">
           <Flex
             bg={getToken("accents.alertAlt.dimBg")}
             borderRadius="full"
@@ -55,11 +55,7 @@ export const ClaimStakingWarning: FC<Props> = ({
           >
             <Image src={Warning3D} width={45} height={45} />
           </Flex>
-          <Flex
-            direction="column"
-            align="center"
-            gap={getTokenPx("containers.paddings.tertiary")}
-          >
+          <Flex direction="column" align="center" gap="m">
             <Text
               font="primary"
               fs="h7"

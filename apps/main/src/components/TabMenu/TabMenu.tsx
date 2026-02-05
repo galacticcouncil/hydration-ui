@@ -1,4 +1,9 @@
-import { Flex, FlexProps, ScrollArea } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  FlexProps,
+  ScrollArea,
+  ScrollAreaProps,
+} from "@galacticcouncil/ui/components"
 import { FC, Fragment } from "react"
 
 import {
@@ -20,20 +25,25 @@ type Props = FlexProps &
     readonly className?: string
     readonly ignoreCurrentSearch?: boolean
     readonly renderItem?: (item: TabItem) => React.ReactNode
+    readonly horizontalEdgeOffset?: ScrollAreaProps["horizontalEdgeOffset"]
   }
 
 export const TabMenu: FC<Props> = ({
   items,
   renderItem,
-  gap = 12,
+  gap = "m",
   size,
   variant,
   activeVariant,
   ignoreCurrentSearch,
+  horizontalEdgeOffset,
   ...props
 }) => {
   return (
-    <ScrollArea orientation="horizontal" sx={{ overflowX: "auto" }}>
+    <ScrollArea
+      orientation="horizontal"
+      horizontalEdgeOffset={horizontalEdgeOffset}
+    >
       <Flex gap={gap} {...props}>
         {items.map((item, index) =>
           renderItem ? (

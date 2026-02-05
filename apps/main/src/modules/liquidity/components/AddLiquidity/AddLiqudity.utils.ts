@@ -276,6 +276,7 @@ export const useAddLiquidity = ({
 
   const amount = Big(form.watch("amount") || "0")
   const selectedAsset = form.watch("asset")
+  const isErc20SelectedAsset = isErc20AToken(selectedAsset)
 
   const { isJoinFarms, joinFarmErrorMessage, activeFarms } =
     useCheckJoinOmnipoolFarm({
@@ -289,7 +290,7 @@ export const useAddLiquidity = ({
   const { data: healthFactor } = useQuery(
     healthFactorAfterWithdrawQuery(rpc, {
       address: account?.address ?? "",
-      fromAssetId: isErc20AToken(poolMeta) ? poolMeta.underlyingAssetId : "",
+      fromAssetId: isErc20SelectedAsset ? selectedAsset.underlyingAssetId : "",
       fromAmount: amount.toString(),
     }),
   )
@@ -388,7 +389,7 @@ export const useAddLiquidity = ({
     isJoinFarms,
     canAddLiquidity,
     onSubmit,
-    healthFactor,
+    healthFactor: isErc20SelectedAsset ? healthFactor : undefined,
     underlyingAssetMeta: underlyingAssetId
       ? getAssetWithFallback(underlyingAssetId)
       : undefined,

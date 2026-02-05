@@ -11,6 +11,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { useNavigate } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
+import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
 import { TablePaper } from "@/modules/borrow/components/TablePaper"
 import { BorrowedAssetsHeader } from "@/modules/borrow/dashboard/components/borrowed-assets/BorrowedAssetsHeader"
 import { useBorrowedAssetsTableColumns } from "@/modules/borrow/dashboard/components/borrowed-assets/BorrowedAssetsTable.columns"
@@ -23,9 +24,11 @@ export const BorrowedAssetsTable = () => {
   const navigate = useNavigate()
   const { isMobile } = useBreakpoints()
 
+  const sort = useDataTableUrlSorting("/borrow/dashboard", "borrowedSort")
+
   if (!isLoading && data.length === 0) {
     return (
-      <Paper p={20}>
+      <Paper p="xl">
         <Text fw={500} color={getToken("text.low")}>
           {t("borrowed.table.empty")}
         </Text>
@@ -57,6 +60,7 @@ export const BorrowedAssetsTable = () => {
             fixedLayout
             data={data}
             columns={columns}
+            {...sort}
           />
         </TableContainer>
       )}

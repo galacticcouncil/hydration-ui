@@ -1,4 +1,5 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Alert,
   Button,
@@ -10,12 +11,10 @@ import {
   Summary,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import { BorrowAssetApyData } from "@/api/borrow"
 import { Farm } from "@/api/farms"
@@ -95,21 +94,21 @@ export const AddLiquidity: FC<AddLiquidityProps> = ({
             <Alert
               variant="warning"
               description={customErrors.cap.message}
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
+              sx={{ my: "xxl" }}
             />
           ) : null}
           {customErrors?.circuitBreaker ? (
             <Alert
               variant="warning"
               description={customErrors.circuitBreaker.message}
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
+              sx={{ my: "xxl" }}
             />
           ) : null}
           {joinFarmErrorMessage && (
             <Alert
               variant="warning"
               description={joinFarmErrorMessage}
-              sx={{ my: getTokenPx("containers.paddings.primary") }}
+              sx={{ my: "xxl" }}
             />
           )}
 
@@ -200,7 +199,7 @@ export const AddLiquiditySummary = ({
             })
           ),
         },
-        ...(healthFactor?.isSignificantChange
+        ...(healthFactor
           ? [
               {
                 label: t("common:healthFactor"),

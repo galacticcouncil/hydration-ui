@@ -7,7 +7,6 @@ import {
   SliderTabsOption,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { useRef, useState } from "react"
 
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
@@ -34,12 +33,12 @@ export const types: ReadonlyArray<SliderTabsOption<"chart" | "stats">> = [
   {
     id: "chart",
     label: i18n.t("chart"),
-    icon: <Icon size={14} component={ChartLine} />,
+    icon: <Icon size="s" component={ChartLine} />,
   },
   {
     id: "stats",
     label: i18n.t("stats"),
-    icon: <Icon size={14} component={ChartPie} />,
+    icon: <Icon size="s" component={ChartPie} />,
   },
 ]
 
@@ -66,8 +65,11 @@ export const PoolStats = ({
   }
 
   return (
-    <Flex gap={20}>
-      <Paper p={[16, 20]} sx={{ flex: 1, flexBasis: 500 }}>
+    <Flex gap="xl">
+      <Paper
+        p={["secondary", "primary"]}
+        sx={{ flex: 1, flexBasis: "31.25rem" }}
+      >
         <PoolChart
           assetId={data.id}
           height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
@@ -78,10 +80,10 @@ export const PoolStats = ({
       </Paper>
 
       <Paper
-        p={[16, 20]}
+        p={["secondary", "primary"]}
         sx={{
           flex: 0,
-          flexBasis: 360,
+          flexBasis: "22.5rem",
         }}
       >
         <PoolDetailsValues data={data} />
@@ -108,7 +110,7 @@ const PoolStatsMobile = ({
   return (
     <Paper
       p={[16, 20]}
-      sx={{ flex: 1, gap: 12, flexDirection: "column" }}
+      sx={{ flex: 1, gap: "m", flexDirection: "column" }}
       as={Flex}
     >
       {type === "chart" ? (
@@ -122,8 +124,8 @@ const PoolStatsMobile = ({
       ) : (
         <PoolDetailsValues data={data} />
       )}
-      <Flex gap={8} justify="space-between">
-        <Flex align="center" gap={getTokenPx("containers.paddings.quart")}>
+      <Flex gap="base" justify="space-between">
+        <Flex align="center" gap="base">
           {/* TODO: Enable when new charts are added*/}
           {/* <SliderTabs
             options={chartTypes}
@@ -141,12 +143,13 @@ const PoolStatsMobile = ({
             ref={ref}
           />
         </Flex>
-        <ChartTimeRangeDropdown
-          options={intervalOptions}
-          selectedOption={interval}
-          onSelect={(key) => setInterval(key)}
-          disabled={type === "stats"}
-        />
+        {type === "chart" && (
+          <ChartTimeRangeDropdown
+            options={intervalOptions}
+            selectedOption={interval}
+            onSelect={(key) => setInterval(key)}
+          />
+        )}
       </Flex>
     </Paper>
   )

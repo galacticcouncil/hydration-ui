@@ -1,5 +1,4 @@
 import { ModalContainer } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { createFileRoute } from "@tanstack/react-router"
 
 import { CreateIsolatedPool } from "@/modules/liquidity/components/CreateIsolatedPool/CreateIsolatedPool"
@@ -17,7 +16,7 @@ function RouteComponent() {
       open
       sx={{
         m: "auto",
-        mt: getTokenPx(["scales.border.null", "containers.paddings.primary"]),
+        mt: [0, "xl"],
       }}
     >
       <CreateIsolatedPool

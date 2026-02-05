@@ -17,10 +17,7 @@ export type TSelectedAsset = {
   iconId?: string | string[]
 }
 
-export type AssetSelectProps = Omit<
-  AssetInputProps,
-  "displayValue" | "displayValueLoading"
-> & {
+export type AssetSelectProps = AssetInputProps & {
   assets: TAssetData[]
   sortedAssets?: TAssetWithBalance[]
   selectedAsset: TSelectedAsset | undefined | null
@@ -39,11 +36,16 @@ export const AssetSelect = ({
 }: AssetSelectProps) => {
   const [openModal, setOpeModal] = useState(false)
 
-  const [displayValue, { isLoading: displayValueLoading }] =
+  const [displayValue_, { isLoading: displayValueLoading_ }] =
     useDisplayAssetPrice(
-      props.ignoreDisplayValue ? "" : (selectedAsset?.id ?? ""),
+      props.ignoreDisplayValue || props.displayValue
+        ? ""
+        : (selectedAsset?.id ?? ""),
       props.value || "0",
     )
+
+  const displayValue = props.displayValue ?? displayValue_
+  const displayValueLoading = props.displayValueLoading ?? displayValueLoading_
 
   const { getTransferableBalance } = useAccountBalances()
   const maxBalance = ((): string | undefined => {

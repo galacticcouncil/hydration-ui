@@ -36,9 +36,9 @@ type TSuppliedAssetsRow = TSuppliedAssetsTableData["data"][number]
 const columnHelper = createColumnHelper<TSuppliedAssetsRow>()
 
 export const useSuppliedAssetsTableColumns = ({
-  omRemove,
+  onRemove,
 }: {
-  omRemove: (
+  onRemove: (
     props: Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted">,
   ) => void
 }) => {
@@ -171,30 +171,19 @@ export const useSuppliedAssetsTableColumns = ({
         const isDisabled = !isActive || isPaused
 
         return (
-          <Flex justify="flex-end" align="center" gap={4}>
+          <Flex justify="flex-end" align="center" gap="s">
             <Button
               disabled={isDisabled}
               variant="tertiary"
               size="small"
               onClick={(e) => {
-                const assetId = getAssetIdFromAddress(underlyingAsset)
-                const aTokenId = getRelatedAToken(assetId)?.id
-
                 e.stopPropagation()
-
-                if (
-                  assetId &&
-                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
-                  aTokenId
-                ) {
-                  omRemove({
-                    poolId: assetId,
-                    erc20Id: aTokenId!,
-                    stableswapId: assetId,
-                  })
-                } else {
-                  openWithdraw(underlyingAsset)
-                }
+                handleWithdrawClick(
+                  underlyingAsset,
+                  getRelatedAToken,
+                  onRemove,
+                  openWithdraw,
+                )
               }}
             >
               {t("borrow:withdraw")}
@@ -203,7 +192,7 @@ export const useSuppliedAssetsTableColumns = ({
               sx={{ flexShrink: 0, mr: -10 }}
               component={ChevronRight}
               color={getToken("icons.onContainer")}
-              size={16}
+              size="m"
             />
           </Flex>
         )
@@ -227,7 +216,12 @@ export const useSuppliedAssetsTableColumns = ({
             width="100%"
             onClick={(e) => {
               e.stopPropagation()
-              openWithdraw(underlyingAsset)
+              handleWithdrawClick(
+                underlyingAsset,
+                getRelatedAToken,
+                onRemove,
+                openWithdraw,
+              )
             }}
           >
             {t("borrow:withdraw")}
@@ -252,6 +246,28 @@ export const useSuppliedAssetsTableColumns = ({
     user.isolatedReserve?.underlyingAsset,
     user.totalCollateralMarketReferenceCurrency,
     getRelatedAToken,
-    omRemove,
+    onRemove,
   ])
+}
+
+const handleWithdrawClick = (
+  underlyingAsset: string,
+  getRelatedAToken: ReturnType<typeof useAssets>["getRelatedAToken"],
+  onRemove: (
+    props: Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted">,
+  ) => void,
+  openWithdraw: ReturnType<typeof useModalContext>["openWithdraw"],
+) => {
+  const assetId = getAssetIdFromAddress(underlyingAsset)
+  const aTokenId = getRelatedAToken(assetId)?.id
+
+  if (assetId && MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) && aTokenId) {
+    onRemove({
+      poolId: assetId,
+      erc20Id: aTokenId,
+      stableswapId: assetId,
+    })
+  } else {
+    openWithdraw(underlyingAsset)
+  }
 }

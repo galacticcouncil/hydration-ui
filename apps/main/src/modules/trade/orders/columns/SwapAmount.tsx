@@ -1,6 +1,6 @@
 import { ArrowRightLong } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { AssetLogo } from "@/components/AssetLogo"
@@ -24,15 +24,15 @@ export const SwapAmount = ({
   const { t } = useTranslation()
 
   return (
-    <Flex gap={12} align="center">
+    <Flex gap="m" align="center">
       {showLogo && <AssetLogo id={from.id} size="small" />}
-      <Flex gap={getTokenPx("scales.paddings.s")} align="center">
-        <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
+      <Flex gap="s" align="center">
+        <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
           {t("number", { value: fromAmount })}
         </Text>
         <Text
           fw={500}
-          fs={11}
+          fs="p6"
           lh={1.4}
           color={getToken("text.medium")}
           whiteSpace="nowrap"
@@ -41,18 +41,18 @@ export const SwapAmount = ({
         </Text>
       </Flex>
       <Icon
-        size={16}
+        size="m"
         component={ArrowRightLong}
         color={getToken("icons.onContainer")}
       />
-      <Flex gap={getTokenPx("scales.paddings.s")} align="center">
+      <Flex gap="s" align="center">
         {showLogo && <AssetLogo id={to.id} size="small" />}
         {toAmount && (
-          <Text fw={500} fs={11} lh={1.4} color={getToken("text.high")}>
+          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
             {t("number", { value: toAmount })}
           </Text>
         )}
-        <Text fw={500} fs={11} lh={1.4} color={getToken("text.medium")}>
+        <Text fw={500} fs="p6" lh={1.4} color={getToken("text.medium")}>
           {to.symbol}
         </Text>
       </Flex>

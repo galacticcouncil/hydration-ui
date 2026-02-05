@@ -5,7 +5,6 @@ import {
   Separator,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getTokenPx } from "@galacticcouncil/ui/utils"
 import { getToken } from "@galacticcouncil/ui/utils"
 import React from "react"
 import { useTranslation } from "react-i18next"
@@ -46,17 +45,17 @@ export const AmountToRemove = ({
 
       <Flex
         direction="column"
-        gap={12}
-        p={getTokenPx("containers.paddings.tertiary")}
+        gap="m"
+        p="m"
         sx={{
-          borderRadius: getTokenPx("containers.cornerRadius.internalPrimary"),
+          borderRadius: "m",
           backgroundColor: getToken("surfaces.containers.dim.dimOnHigh"),
         }}
       >
         {assets.map(({ asset, value, displayValue }, index) => (
           <React.Fragment key={asset.id}>
             <Flex align="center" justify="space-between">
-              <Flex align="center" gap={4}>
+              <Flex align="center" gap="s">
                 <AssetLogo
                   id={isXYKPoolMeta(asset) ? asset.iconId : asset.id}
                 />
@@ -78,7 +77,7 @@ export const AmountToRemove = ({
           <>
             <Separator />
             <Flex align="center" justify="space-between">
-              <Text fs={12}>
+              <Text fs="p5">
                 {t("liquidity:liquidity.remove.modal.rewardsToReceive")}
               </Text>
               <Text fs="p4" color={getToken("accents.success.emphasis")}>

@@ -1,5 +1,5 @@
 import { ModalBody, ModalHeader, Text } from "@galacticcouncil/ui/components"
-import { getToken, getTokenPx } from "@galacticcouncil/ui/utils"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { Farm } from "@/api/farms"
@@ -35,7 +35,7 @@ export const AvailableFarmModalBody = ({
           color={getToken("text.tint.primary")}
           sx={{
             textAlign: "center",
-            py: getTokenPx("containers.paddings.secondary"),
+            py: "l",
           }}
         >
           {t("liquidity.availableFarms.modal.graph.description")}

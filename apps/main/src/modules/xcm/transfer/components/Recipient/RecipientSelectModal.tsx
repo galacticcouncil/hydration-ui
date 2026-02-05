@@ -53,7 +53,7 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
 
   return (
     <>
-      <Modal open={open} onOpenChange={onClose}>
+      <Modal variant="popup" open={open} onOpenChange={onClose}>
         <ModalHeader title={t("recipient.modal.title")} align="center" />
         <ModalBody sx={{ py: 0 }} scrollable={false}>
           <CollapsibleRoot open={!isUsingCustomAddress}>
@@ -71,7 +71,7 @@ export const RecipientSelectModal: React.FC<RecipientSelectModalProps> = ({
                   />
                 ) : (
                   <ConnectChainTile
-                    p={20}
+                    p="xl"
                     sx={{ bg: getToken("controls.dim.base") }}
                     chain={destChain}
                     onConnect={() => setIsConnectModalOpen(true)}

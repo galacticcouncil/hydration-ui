@@ -41,7 +41,7 @@ const ClaimRewardsSelectItem: React.FC<ClaimRewardsSelectItemProps> = ({
   >
     {icon}
     <MenuItemLabel>{label}</MenuItemLabel>
-    {isTrigger && <Icon size={18} component={ChevronDown} />}
+    {isTrigger && <Icon size="m" component={ChevronDown} />}
   </MenuSelectionItem>
 )
 
@@ -59,7 +59,7 @@ export const ClaimRewardsSelect: React.FC<ClaimRewardsSelectProps> = ({
         label: "Claim all rewards",
         icon: (
           <Icon
-            size={24}
+            size="xl"
             color={getToken("accents.info.onPrimary")}
             component={BadgeDollarSign}
           />

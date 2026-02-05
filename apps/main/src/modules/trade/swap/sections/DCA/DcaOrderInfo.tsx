@@ -1,10 +1,10 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
 import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
 import { Box, Summary } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { HealthFactorResult } from "@/api/aave"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
@@ -25,7 +25,7 @@ export const DcaOrderInfo: FC<Props> = ({ order, healthFactor, isLoading }) => {
   return (
     <>
       <SwapSectionSeparator />
-      <Box pb={20}>
+      <Box pb="xl">
         <Summary separator={<SwapSectionSeparator />}>
           {healthFactor?.isSignificantChange && (
             <SwapSummaryRow

@@ -1,4 +1,4 @@
-import { Flex, Modal } from "@galacticcouncil/ui/components"
+import { ButtonIcon, Flex, Icon, Modal } from "@galacticcouncil/ui/components"
 import { Link, useMatchRoute, useSearch } from "@tanstack/react-router"
 import { Settings } from "lucide-react"
 import { useState } from "react"
@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import { LINKS, NAVIGATION } from "@/config/navigation"
 import { SettingsModal } from "@/modules/trade/swap/components/SettingsModal/SettingsModal"
 
-import { SFormHeader, SHeaderTab, SSettingsIcon } from "./FormHeader.styled"
+import { SFormHeader, SHeaderTab } from "./FormHeader.styled"
 
 const swapRouteItems =
   NAVIGATION.find((item) => item.key === "trade")?.children?.find(
@@ -38,16 +38,19 @@ export const FormHeader = () => {
 
       {hasSettings && (
         <>
-          <SSettingsIcon
-            m={8}
-            as="button"
-            aria-label="Settings"
-            size={18}
-            component={Settings}
+          <ButtonIcon
             onClick={() => setOpenSettings(true)}
-          />
+            aria-label="Settings"
+            mr="-s"
+          >
+            <Icon size="s" component={Settings} />
+          </ButtonIcon>
 
-          <Modal open={openSettings} onOpenChange={setOpenSettings}>
+          <Modal
+            variant="popup"
+            open={openSettings}
+            onOpenChange={setOpenSettings}
+          >
             <SettingsModal />
           </Modal>
         </>
