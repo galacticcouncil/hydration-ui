@@ -4,9 +4,10 @@ import {
   ChartValues,
   Flex,
   TradingViewChart,
+  TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last, prop } from "remeda"
 
@@ -45,6 +46,7 @@ export const PoolChart = ({
 }) => {
   const { t } = useTranslation()
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
+  const chartRef = useRef<TradingViewChartRef>(null)
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
@@ -82,7 +84,10 @@ export const PoolChart = ({
         <ChartTimeRange
           options={intervalOptions}
           selectedOption={interval}
-          onSelect={(option) => setInterval(option.key)}
+          onSelect={(option) => {
+            setInterval(option.key)
+            chartRef.current?.resetZoom()
+          }}
           sx={{ display: ["none", "flex"] }}
         />
       </Flex>
@@ -93,6 +98,7 @@ export const PoolChart = ({
         isEmpty={isEmptyData ? true : isEmpty}
       >
         <TradingViewChart
+          ref={chartRef}
           height={height}
           data={prices}
           hidePriceIndicator

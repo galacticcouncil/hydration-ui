@@ -93,14 +93,14 @@ export const Notification = ({
           {hint && (
             <Tooltip text={hint} asChild>
               <ButtonIcon>
-                <Icon component={QuestionCircleRegular} size="s" />
+                <Icon component={QuestionCircleRegular} size="m" />
               </ButtonIcon>
             </Tooltip>
           )}
           {link && (
             <ButtonIcon asChild>
               <ExternalLink href={link}>
-                <Icon component={MoveUpRight} size="s" />
+                <Icon component={MoveUpRight} size="m" />
               </ExternalLink>
             </ButtonIcon>
           )}
@@ -122,7 +122,7 @@ export const Notification = ({
           role="button"
           aria-label="Close Notification"
         >
-          <SCloseIcon component={CircleClose} size="s" />
+          <SCloseIcon component={CircleClose} size="m" />
         </ButtonTransparent>
       )}
     </SNotification>

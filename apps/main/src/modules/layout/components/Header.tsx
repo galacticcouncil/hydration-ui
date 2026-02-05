@@ -1,6 +1,8 @@
 import { Flex } from "@galacticcouncil/ui/components"
+import { Link } from "@tanstack/react-router"
 import { FC, forwardRef, lazy, LazyExoticComponent, SVGProps } from "react"
 
+import { LINKS } from "@/config/navigation"
 import { SHeader } from "@/modules/layout/components/Header.styled"
 import { HeaderToolbar } from "@/modules/layout/components/HeaderToolbar"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
@@ -37,8 +39,11 @@ export const Header = forwardRef<HTMLDivElement, unknown>((_props, ref) => {
         width={["l", null, null, "auto"]}
         align="center"
         justify="start"
+        asChild
       >
-        <Logo height="100%" width="auto" />
+        <Link to={LINKS.swap} disabled={hasTopNavbar}>
+          <Logo sx={{ width: "auto", height: "100%" }} />
+        </Link>
       </Flex>
       {hasTopNavbar && <HeaderMenu />}
       <HeaderToolbar />

@@ -2,6 +2,7 @@ import {
   Button,
   ButtonSize,
   ButtonVariant,
+  Icon,
 } from "@galacticcouncil/ui/components"
 import { Link } from "@tanstack/react-router"
 import { useLocation } from "@tanstack/react-router"
@@ -64,7 +65,7 @@ export const TabMenuItem: FC<Props> = ({
         search={{ ...(ignoreCurrentSearch ? {} : currentSearch), ...search }}
         resetScroll={resetScroll}
       >
-        {IconComponent && <IconComponent />}
+        {IconComponent && <Icon size="s" component={IconComponent} />}
         {title}
       </Link>
     </Button>

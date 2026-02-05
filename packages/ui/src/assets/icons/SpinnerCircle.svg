@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 56">
+  <defs>
+    <linearGradient id="spinner-circle-gradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="56" y2="0">
+      <stop offset="0%" stop-color="currentColor"/>
+      <stop offset="70%" stop-color="currentColor" stop-opacity=".35"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <circle
+    cx="28"
+    cy="28"
+    r="24"
+    fill="none"
+    stroke="url(#spinner-circle-gradient)"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-dasharray="70 100"
+  >
+    <animateTransform
+      attributeName="transform"
+      type="rotate"
+      from="0 28 28"
+      to="360 28 28"
+      dur="0.8s"
+      repeatCount="indefinite"
+    />
+  </circle>
+</svg>

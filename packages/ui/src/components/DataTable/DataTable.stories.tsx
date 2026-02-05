@@ -1,7 +1,7 @@
-import { useState } from "storybook/preview-api"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { createColumnHelper } from "@tanstack/react-table"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState } from "storybook/preview-api"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { Box } from "@/components/Box"

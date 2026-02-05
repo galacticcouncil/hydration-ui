@@ -2,7 +2,6 @@ import { userOpenOrdersCountQuery } from "@galacticcouncil/indexer/squid"
 import {
   Box,
   Flex,
-  Grid,
   Toggle,
   ToggleLabel,
   ToggleRoot,
@@ -10,8 +9,7 @@ import {
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { useNavigate, useSearch } from "@tanstack/react-router"
-import { useLocation } from "@tanstack/react-router"
+import { useLocation, useNavigate, useSearch } from "@tanstack/react-router"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -60,14 +58,10 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
   const navigate = useNavigate()
 
   return (
-    <Grid
-      sx={{ overflowX: "auto" }}
-      columnTemplate="1fr auto"
-      columnGap={8}
-      px="xl"
-    >
+    <Flex gap="m" align="center" px="xl">
       <TabMenu
         gap="base"
+        horizontalEdgeOffset="xl"
         items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
           title: t(`trade.orders.${tab}`),
@@ -99,25 +93,24 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
           </Box>
         )}
       />
-      <Flex gap="m" align="center">
-        <ToggleRoot>
-          <ToggleLabel>
-            {allPairs
-              ? t("trade.orders.allPairs.on")
-              : t("trade.orders.allPairs.off")}
-          </ToggleLabel>
-          <Toggle
-            checked={allPairs}
-            onCheckedChange={(checked) => {
-              navigate({
-                to: ".",
-                search: { tab, allPairs: checked, assetIn, assetOut },
-                resetScroll: false,
-              })
-            }}
-          />
-        </ToggleRoot>
-      </Flex>
-    </Grid>
+
+      <ToggleRoot ml="auto" pl="xl">
+        <ToggleLabel>
+          {allPairs
+            ? t("trade.orders.allPairs.on")
+            : t("trade.orders.allPairs.off")}
+        </ToggleLabel>
+        <Toggle
+          checked={allPairs}
+          onCheckedChange={(checked) => {
+            navigate({
+              to: ".",
+              search: { tab, allPairs: checked, assetIn, assetOut },
+              resetScroll: false,
+            })
+          }}
+        />
+      </ToggleRoot>
+    </Flex>
   )
 }

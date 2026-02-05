@@ -1,6 +1,6 @@
-import { useState } from "storybook/preview-api"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { Search } from "lucide-react"
+import { useState } from "storybook/preview-api"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { Box } from "@/components/Box"
