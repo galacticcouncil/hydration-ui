@@ -11,7 +11,6 @@ import {
   Text,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ReactNode, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -54,7 +53,6 @@ export const AssetSelectModalContent = ({
   searchInputVariant = "embedded",
 }: AssetSelectProps) => {
   const { t } = useTranslation()
-  const { isMobile } = useBreakpoints()
   const inputRef = useRef<HTMLInputElement>(null)
   const divRef = useRef<HTMLDivElement>(null)
 
@@ -80,10 +78,8 @@ export const AssetSelectModalContent = ({
     : sortedAssets
 
   useEffect(() => {
-    if (!isMobile) {
-      inputRef.current?.focus()
-    }
-  }, [isMobile])
+    inputRef.current?.focus()
+  }, [])
 
   const onSelectOption = (asset: TAssetData) => {
     onSelect?.(asset)
