@@ -1,10 +1,6 @@
 import { Search } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerRoot,
   Flex,
   Grid,
   Input,
@@ -15,7 +11,6 @@ import {
   ModalTrigger,
   Text,
 } from "@galacticcouncil/ui/components"
-import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -63,27 +58,25 @@ export const ChainAssetSelectModal: React.FC<ChainAssetSelectModalProps> = (
   props,
 ) => {
   const { t } = useTranslation(["common", "xcm"])
-  const { isMobile } = useBreakpoints()
-  const Root = isMobile ? DrawerRoot : ModalRoot
-  const Header = isMobile ? DrawerHeader : ModalHeader
-  const Content = isMobile ? DrawerContent : ModalContent
-  const Body = isMobile ? DrawerBody : ModalBody
 
   return (
-    <Root>
+    <ModalRoot>
       <ModalTrigger asChild>
         <ChainAssetSelectButton
           currentSelection={props.currentSelection}
           disabled={props.disabled}
         />
       </ModalTrigger>
-      <Content onInteractOutside={(e) => e.preventDefault()}>
-        <Header align="center" title={t("xcm:chainAssetSelect.modal.title")} />
-        <Body scrollable={false} noPadding>
+      <ModalContent onInteractOutside={(e) => e.preventDefault()}>
+        <ModalHeader
+          align="center"
+          title={t("xcm:chainAssetSelect.modal.title")}
+        />
+        <ModalBody scrollable={false} noPadding>
           <ChainAssetSelectContent {...props} />
-        </Body>
-      </Content>
-    </Root>
+        </ModalBody>
+      </ModalContent>
+    </ModalRoot>
   )
 }
 
