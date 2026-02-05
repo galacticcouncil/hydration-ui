@@ -9,6 +9,7 @@ import { Flex } from "@galacticcouncil/ui/components/Flex"
 import {
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
 } from "@galacticcouncil/ui/components/Modal"
 import { useTranslation } from "react-i18next"
@@ -50,7 +51,7 @@ export const AddStablepoolLiquiditySkeleton = (
           </Flex>
         }
       />
-      <ModalBody sx={{ pt: 0 }}>
+      <ModalBody sx={{ py: 0 }}>
         <Flex align="center" justify="space-between" my="m">
           <Text fs="p3">
             {t("liquidity.add.stablepool.modal.proportionally")}
@@ -99,13 +100,12 @@ export const AddStablepoolLiquiditySkeleton = (
             },
           ]}
         />
-
-        <ModalContentDivider />
-
+      </ModalBody>
+      <ModalFooter>
         <Button type="submit" size="large" width="100%" mt="xxl" disabled>
           {t("liquidity.add.modal.submit")}
         </Button>
-      </ModalBody>
+      </ModalFooter>
     </>
   )
 }

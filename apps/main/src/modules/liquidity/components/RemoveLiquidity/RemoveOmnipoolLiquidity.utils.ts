@@ -43,9 +43,11 @@ export type TRemoveLiquidityFormValues = {
   asset: TSelectedAsset
 }
 
-type RemoveLiquidityValues = {
+export type RemoveOmnipoolResult = {
   tokensToGet: string
   tokensToGetShifted: string
+  minTokensToGet: string
+  minTokensToGetShifted: string
   hubToGet: string
   hubPayWith: string
   tokensPayWith: string
@@ -53,9 +55,11 @@ type RemoveLiquidityValues = {
   minWithdrawalFee: string
 }
 
-const defaultValues: RemoveLiquidityValues = {
+const defaultRemoveOmnipoolLiquidityValues: RemoveOmnipoolResult = {
   tokensToGet: "0",
   tokensToGetShifted: "0",
+  minTokensToGet: "0",
+  minTokensToGetShifted: "0",
   hubToGet: "0",
   hubPayWith: "0",
   tokensPayWith: "0",
@@ -63,7 +67,13 @@ const defaultValues: RemoveLiquidityValues = {
   minWithdrawalFee: "0",
 }
 
-const useRemoveLiquidityOut = (poolId: string) => {
+export const WITHDRAW_FEE_RANGE = {
+  low: 0.34,
+  high: 0.66,
+  full: [0.01, 0.34, 0.66, 1] as const,
+}
+
+export const useRemoveOmnipoolLiquidityOut = (poolId: string) => {
   const { hub, getAssetWithFallback } = useAssets()
   const meta = getAssetWithFallback(poolId)
   const { data: oraclePriceData } = useOraclePrice(
@@ -85,69 +95,121 @@ const useRemoveLiquidityOut = (poolId: string) => {
     (
       position: OmnipoolPosition | OmnipoolDepositFull,
       removeSharesValue: string,
-    ) => {
-      if (omnipoolAssetData && oraclePrice && minWithdrawalFee) {
-        const lrnaSpotPrice = calculate_lrna_spot_price(
-          omnipoolAssetData.balance.toString(),
-          omnipoolAssetData.hubReserves.toString(),
-        )
+    ): RemoveOmnipoolResult | undefined => {
+      if (!omnipoolAssetData || !oraclePrice || !minWithdrawalFee)
+        return undefined
 
-        const withdrawalFee = calculate_withdrawal_fee(
-          lrnaSpotPrice,
-          oraclePrice.toString(),
-          minWithdrawalFee.toString(),
-        )
+      const lrnaSpotPrice = calculate_lrna_spot_price(
+        omnipoolAssetData.balance.toString(),
+        omnipoolAssetData.hubReserves.toString(),
+      )
 
-        if (!removeSharesValue) {
-          return {
-            ...defaultValues,
-            withdrawalFee: Big(scaleHuman(withdrawalFee, "q"))
-              .times(100)
-              .toString(),
-            minWithdrawalFee: minWithdrawalFee.toString(),
-          }
-        }
+      const withdrawalFee = calculate_withdrawal_fee(
+        lrnaSpotPrice,
+        oraclePrice.toString(),
+        minWithdrawalFee.toString(),
+      )
 
-        const valueWithFee = getData(position, {
-          fee: withdrawalFee,
-          sharesValue: removeSharesValue,
-        })
-
-        const valueWithoutFee = getData(position, {
-          sharesValue: removeSharesValue,
-        })
-
-        if (!valueWithFee || !valueWithoutFee) return undefined
-
-        const tokensToGet = Big(valueWithFee.currentValue)
-          .times(100 - slippage)
-          .div(100)
-          .toString()
-
-        const tokensToGetShifted = Big(valueWithFee.currentValueHuman)
-          .times(100 - slippage)
-          .div(100)
-          .toString()
-
+      if (!removeSharesValue) {
         return {
-          tokensToGet,
-          tokensToGetShifted,
-          hubToGet: valueWithFee.currentHubValue,
-          hubPayWith: Big(valueWithoutFee.currentHubValueHuman)
-            .minus(valueWithFee.currentHubValueHuman)
-            .toString(),
-          tokensPayWith: Big(valueWithoutFee.currentValueHuman)
-            .minus(valueWithFee.currentValueHuman)
-            .toString(),
+          ...defaultRemoveOmnipoolLiquidityValues,
           withdrawalFee: Big(scaleHuman(withdrawalFee, "q"))
             .times(100)
             .toString(),
           minWithdrawalFee: minWithdrawalFee.toString(),
         }
       }
+
+      const valueWithFee = getData(position, {
+        fee: withdrawalFee,
+        sharesValue: removeSharesValue,
+      })
+
+      const valueWithoutFee = getData(position, {
+        sharesValue: removeSharesValue,
+      })
+
+      if (!valueWithFee || !valueWithoutFee) return undefined
+
+      const tokensToGet = valueWithFee.currentValue
+      const tokensToGetShifted = valueWithFee.currentValueHuman
+
+      const minTokensToGet = Big(tokensToGet)
+        .times(100 - slippage)
+        .div(100)
+        .toString()
+
+      const minTokensToGetShifted = Big(tokensToGetShifted)
+        .times(100 - slippage)
+        .div(100)
+        .toString()
+
+      return {
+        tokensToGet,
+        tokensToGetShifted,
+        minTokensToGet,
+        minTokensToGetShifted,
+        hubToGet: valueWithFee.currentHubValue,
+        hubPayWith: Big(valueWithoutFee.currentHubValueHuman)
+          .minus(valueWithFee.currentHubValueHuman)
+          .toString(),
+        tokensPayWith: Big(valueWithoutFee.currentValueHuman)
+          .minus(valueWithFee.currentValueHuman)
+          .toString(),
+        withdrawalFee: Big(scaleHuman(withdrawalFee, "q"))
+          .times(100)
+          .toString(),
+        minWithdrawalFee: minWithdrawalFee.toString(),
+      }
     },
     [getData, minWithdrawalFee, omnipoolAssetData, oraclePrice, slippage],
   )
+}
+
+const sumBigStrings = (a: string, b: string): string =>
+  Big(a).plus(b).toString()
+
+export const getOmnipoolLiquidityOutTotal = (
+  positionsOut: Array<{
+    valuesOut?: RemoveOmnipoolResult
+    position: AccountOmnipoolPosition
+  }>,
+) => {
+  const total = positionsOut.reduce((acc, { valuesOut }) => {
+    if (!valuesOut) return acc
+
+    const {
+      tokensToGet,
+      tokensToGetShifted,
+      minTokensToGet,
+      minTokensToGetShifted,
+      hubToGet,
+      hubPayWith,
+      tokensPayWith,
+      withdrawalFee,
+      minWithdrawalFee,
+    } = valuesOut
+
+    return {
+      tokensToGet: sumBigStrings(acc.tokensToGet, tokensToGet),
+      tokensToGetShifted: sumBigStrings(
+        acc.tokensToGetShifted,
+        tokensToGetShifted,
+      ),
+      minTokensToGet: sumBigStrings(acc.minTokensToGet, minTokensToGet),
+      minTokensToGetShifted: sumBigStrings(
+        acc.minTokensToGetShifted,
+        minTokensToGetShifted,
+      ),
+      hubToGet: sumBigStrings(acc.hubToGet, hubToGet),
+      hubPayWith: sumBigStrings(acc.hubPayWith, hubPayWith),
+      tokensPayWith: sumBigStrings(acc.tokensPayWith, tokensPayWith),
+      withdrawalFee: sumBigStrings(acc.withdrawalFee, withdrawalFee),
+      minWithdrawalFee: sumBigStrings(acc.minWithdrawalFee, minWithdrawalFee),
+    }
+  }, defaultRemoveOmnipoolLiquidityValues)
+
+  return total
 }
 
 export const useRemoveSingleOmnipoolPosition = ({
@@ -179,7 +241,7 @@ export const useRemoveSingleOmnipoolPosition = ({
 
   const amount = form.watch("amount") || "0"
 
-  const calculateLiquidityValues = useRemoveLiquidityOut(poolId)
+  const calculateLiquidityValues = useRemoveOmnipoolLiquidityOut(poolId)
 
   const removeShares = Big(amount)
     .div(totalPositionShifted)
@@ -187,9 +249,10 @@ export const useRemoveSingleOmnipoolPosition = ({
     .toFixed(0)
 
   const values =
-    calculateLiquidityValues(position, removeShares) ?? defaultValues
+    calculateLiquidityValues(position, removeShares) ??
+    defaultRemoveOmnipoolLiquidityValues
 
-  const minAmountOut = values?.tokensToGet
+  const minAmountOut = values?.minTokensToGet
 
   const mutation = useMutation({
     mutationFn: async (): Promise<void> => {
@@ -205,7 +268,7 @@ export const useRemoveSingleOmnipoolPosition = ({
           : undefined
 
       const tOptions = {
-        value: values?.tokensToGetShifted,
+        value: values?.minTokensToGetShifted,
         symbol: meta.symbol,
         hub: hubValue,
       }
@@ -260,10 +323,16 @@ export const useRemoveSingleOmnipoolPosition = ({
     })
   }
 
-  const feesBreakdown = [{ symbol: meta.symbol, value: values.tokensPayWith }]
+  const feesBreakdown = [
+    { symbol: meta.symbol, value: values.tokensPayWith, id: meta.id },
+  ]
 
   if (Big(values.hubPayWith).gt(0)) {
-    feesBreakdown.push({ symbol: hub.symbol, value: values.hubPayWith })
+    feesBreakdown.push({
+      symbol: hub.symbol,
+      value: values.hubPayWith,
+      id: hub.id,
+    })
   }
 
   const isDeposit = isDepositPosition(position)
@@ -302,7 +371,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
     asset: meta,
   })
 
-  const calculateLiquidityValues = useRemoveLiquidityOut(poolId)
+  const calculateLiquidityValues = useRemoveOmnipoolLiquidityOut(poolId)
 
   let removeShares = Big(0)
   let totalPositionShifted = Big(0)
@@ -317,37 +386,16 @@ export const useRemoveMultipleOmnipoolPositions = ({
   const liquidityOutValues = positions.map((position) => {
     return {
       position,
-      values: calculateLiquidityValues(position, position.shares.toString()),
+      valuesOut: calculateLiquidityValues(position, position.shares.toString()),
     }
   })
 
-  const values = liquidityOutValues.reduce<RemoveLiquidityValues>(
-    (acc, { values }) => {
-      if (values) {
-        return {
-          tokensToGet: Big(acc.tokensToGet).plus(values.tokensToGet).toString(),
-          tokensToGetShifted: Big(acc.tokensToGetShifted)
-            .plus(values.tokensToGetShifted)
-            .toString(),
-          hubToGet: Big(acc.hubToGet).plus(values.hubToGet).toString(),
-          hubPayWith: Big(acc.hubPayWith).plus(values.hubPayWith).toString(),
-          tokensPayWith: Big(acc.tokensPayWith)
-            .plus(values.tokensPayWith)
-            .toString(),
-          withdrawalFee: values.withdrawalFee,
-          minWithdrawalFee: values.minWithdrawalFee,
-        }
-      }
-
-      return acc
-    },
-    defaultValues,
-  )
+  const values = getOmnipoolLiquidityOutTotal(liquidityOutValues)
 
   const receiveAssets: TReceiveAsset[] = [
     {
       asset: meta,
-      value: values.tokensToGet,
+      value: values.minTokensToGet,
     },
   ]
 
@@ -368,8 +416,8 @@ export const useRemoveMultipleOmnipoolPositions = ({
           Papi["tx"]["OmnipoolLiquidityMining"]["withdraw_shares"]
         >[]
       }>(
-        (acc, { position, values }) => {
-          if (!values) return acc
+        (acc, { position, valuesOut }) => {
+          if (!valuesOut) return acc
 
           if (isOmnipoolDepositPosition(position)) {
             position.yield_farm_entries.forEach((entry) => {
@@ -382,7 +430,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
             })
           }
 
-          const minAmountOut = values.tokensToGet
+          const minAmountOut = valuesOut.minTokensToGet
 
           acc.liquidityTxs.push(
             papi.tx.Omnipool.remove_liquidity_with_limit({
@@ -421,10 +469,16 @@ export const useRemoveMultipleOmnipoolPositions = ({
 
   if (!receiveAssets.length) return undefined
 
-  const feesBreakdown = [{ symbol: meta.symbol, value: values.tokensPayWith }]
+  const feesBreakdown = [
+    { symbol: meta.symbol, value: values.tokensPayWith, id: meta.id },
+  ]
 
   if (Big(values.hubPayWith).gt(0)) {
-    feesBreakdown.push({ symbol: hub.symbol, value: values.hubPayWith })
+    feesBreakdown.push({
+      symbol: hub.symbol,
+      value: values.hubPayWith,
+      id: hub.id,
+    })
   }
 
   return {

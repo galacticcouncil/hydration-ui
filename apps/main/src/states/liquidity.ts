@@ -129,7 +129,7 @@ export const useOmnipoolPositionData = (
 ) => {
   const { hub, getAssetWithFallback } = useAssets()
 
-  const { data: omnipoolTokensData = [], isLoading: isOmnipoolTokensLoading } =
+  const { dataMap: omnipoolTokensData, isLoading: isOmnipoolTokensLoading } =
     useOmnipoolAssetsData()
   const { data: ids } = useOmnipoolIds()
 
@@ -146,75 +146,68 @@ export const useOmnipoolPositionData = (
     ): OmnipoolPositionData | undefined => {
       const price = getAssetPrice(position.assetId).price
       const meta = getAssetWithFallback(position.assetId)
-      const omnipoolData = omnipoolTokensData.find(
-        (omnipoolTokenData) =>
-          omnipoolTokenData.id.toString() === position.assetId,
+      const omnipoolData = omnipoolTokensData?.get(Number(position.assetId))
+
+      if (!omnipoolData || !price) return undefined
+
+      const { liquidity, hubLiquidity } = calculateLiquidityOut(
+        getLiquidityOutParams(omnipoolData, position, options),
       )
 
-      if (omnipoolData && price) {
-        const { liquidity, hubLiquidity } = calculateLiquidityOut(
-          getLiquidityOutParams(omnipoolData, position, options),
-        )
+      const initialValue = position.amount.toString()
+      const initialValueHuman = scaleHuman(initialValue, meta.decimals)
+      const initialDisplay = Big(initialValueHuman).times(price).toString()
 
-        const initialValue = position.amount.toString()
-        const initialValueHuman = scaleHuman(initialValue, meta.decimals)
-        const initialDisplay = Big(initialValueHuman).times(price).toString()
+      const currentValue = liquidity
+      const currentValueHuman = scaleHuman(currentValue, meta.decimals)
+      const currentDisplay = Big(currentValueHuman).times(price).toString()
 
-        const currentValue = liquidity
-        const currentValueHuman = scaleHuman(currentValue, meta.decimals)
-        const currentDisplay = Big(currentValueHuman).times(price).toString()
+      let currentHubValue = "0"
+      let currentHubValueHuman = "0"
+      let currentHubDisplay = "0"
 
-        let currentHubValue = "0"
-        let currentHubValueHuman = "0"
-        let currentHubDisplay = "0"
+      // total value (with hub amount) displayed in position asset
+      let currentTotalValue = currentValue
+      let currentTotalValueHuman = currentValueHuman
+      let currentTotalDisplay = currentDisplay
 
-        // total value (with hub amount) displayed in position asset
-        let currentTotalValue = currentValue
-        let currentTotalValueHuman = currentValueHuman
-        let currentTotalDisplay = currentDisplay
+      if (Big(hubLiquidity).gt(0)) {
+        const hubPrice = getAssetPrice(hub.id).price
 
-        if (Big(hubLiquidity).gt(0)) {
-          const hubPrice = getAssetPrice(hub.id).price
+        currentHubValue = hubLiquidity
+        currentHubValueHuman = scaleHuman(currentHubValue, hub.decimals)
 
-          currentHubValue = hubLiquidity
-          currentHubValueHuman = scaleHuman(currentHubValue, hub.decimals)
+        currentHubDisplay = Big(currentHubValueHuman).times(hubPrice).toString()
 
-          currentHubDisplay = Big(currentHubValueHuman)
-            .times(hubPrice)
-            .toString()
+        currentTotalDisplay = Big(currentTotalDisplay)
+          .plus(currentHubDisplay)
+          .toString()
 
-          currentTotalDisplay = Big(currentTotalDisplay)
-            .plus(currentHubDisplay)
-            .toString()
+        currentTotalValueHuman = Big(currentTotalDisplay).div(price).toString()
 
-          currentTotalValueHuman = Big(currentTotalDisplay)
-            .div(price)
-            .toString()
+        currentTotalValue = Big(
+          scale(currentTotalValueHuman, meta.decimals),
+        ).toFixed(0)
+      }
 
-          currentTotalValue = Big(
-            scale(currentTotalValueHuman, meta.decimals),
-          ).toFixed(0)
-        }
+      return {
+        currentValue,
+        currentValueHuman,
+        currentDisplay,
 
-        return {
-          currentValue,
-          currentValueHuman,
-          currentDisplay,
+        currentHubValue,
+        currentHubValueHuman,
+        currentHubDisplay,
 
-          currentHubValue,
-          currentHubValueHuman,
-          currentHubDisplay,
+        currentTotalValue,
+        currentTotalValueHuman,
+        currentTotalDisplay,
 
-          currentTotalValue,
-          currentTotalValueHuman,
-          currentTotalDisplay,
+        initialValue,
+        initialValueHuman,
+        initialDisplay,
 
-          initialValue,
-          initialValueHuman,
-          initialDisplay,
-
-          meta,
-        }
+        meta,
       }
     },
     [getAssetPrice, getAssetWithFallback, hub, omnipoolTokensData],

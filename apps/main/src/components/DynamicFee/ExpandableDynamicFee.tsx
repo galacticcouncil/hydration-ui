@@ -24,6 +24,7 @@ import {
 export type FeeBreakdown = {
   symbol: string
   value: string
+  id: string
 }
 
 type ExpandableDynamicFeeProps = {
@@ -32,7 +33,7 @@ type ExpandableDynamicFeeProps = {
   readonly rangeLow: number
   readonly rangeHigh: number
   readonly tooltip?: string
-  readonly range: number[]
+  readonly range: readonly number[]
   readonly feesBreakdown: FeeBreakdown[]
   readonly label: string
   readonly description?: string

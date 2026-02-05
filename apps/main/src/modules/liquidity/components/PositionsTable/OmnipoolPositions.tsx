@@ -75,6 +75,7 @@ export const OmnipoolPositions = ({
               }}
               search={{
                 selectable: true,
+                stableswapId: pool.stablepoolData?.id.toString(),
               }}
             >
               <Minus />

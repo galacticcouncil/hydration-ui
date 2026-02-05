@@ -1,8 +1,11 @@
 import {
+  Box,
   Button,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
+  SliderTabs,
   SummaryRow,
   Text,
   Toggle,
@@ -10,14 +13,21 @@ import {
 import { Flex } from "@galacticcouncil/ui/components/Flex"
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import { Controller, FormProvider } from "react-hook-form"
+import { t } from "i18next"
+import { Controller, FormProvider, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
+import { OmnipoolDepositFull } from "@/api/account"
 import { AssetLogo } from "@/components/AssetLogo"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import { ExpandableDynamicFee, FeeBreakdown } from "@/components/DynamicFee"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { ReceiveAssets } from "@/modules/liquidity/components/RemoveLiquidity/ReceiveAssets"
 import { RemoveLiquiditySkeleton } from "@/modules/liquidity/components/RemoveLiquidity/RemoveLiquiditySkeleton"
+import {
+  RemoveOmnipoolResult,
+  WITHDRAW_FEE_RANGE,
+} from "@/modules/liquidity/components/RemoveLiquidity/RemoveOmnipoolLiquidity.utils"
 import {
   TradeLimitRow,
   TradeLimitType,
@@ -26,187 +36,379 @@ import {
   TStablepoolDetails,
   useStablepoolReserves,
 } from "@/modules/liquidity/Liquidity.utils"
-import { useAccountBalances } from "@/states/account"
+import { useAssets } from "@/providers/assetsProvider"
+import {
+  AccountOmnipoolPosition,
+  useAccountBalances,
+  useAccountOmnipoolPositionsData,
+} from "@/states/account"
 import { useAssetPrice } from "@/states/displayAsset"
 
 import { RemoveLiquidityProps } from "./RemoveLiquidity"
 import { useAssetsToRemoveFromStablepool } from "./RemoveLiquidity.utils"
 import {
   TRemoveStablepoolLiquidityFormValues,
-  useStablepoolRemoveLiquidity,
+  TRemoveStablepoolLiquidityProps,
+  useRemoveOmnipoolLiquidity,
+  useRemoveStablepoolLiquidity,
+  useRemoveStablepoolOmnipoolLiquidity,
+  useRemoveStableswapSharesLiquidity,
 } from "./RemoveStablepoolLiquidity.utils"
 
-export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
-  const { data: stablepoolData } = useStablepoolReserves(
-    props.stableswapId ?? props.poolId,
-  )
+export const options = [
+  {
+    id: "stablepool",
+    label: t(
+      "liquidity:liquidity.remove.stablepool.modal.position.option.stablepool",
+    ),
+    value: "stablepool",
+  },
+  {
+    id: "omnipool",
+    label: t(
+      "liquidity:liquidity.remove.stablepool.modal.position.option.omnipool",
+    ),
+    value: "omnipool",
+  },
+]
+
+export const RemoveSelectableStablepoolPositions = (
+  props: RemoveLiquidityProps & {
+    positions: AccountOmnipoolPosition[]
+    stableswapId: string
+  },
+) => {
+  const { data: stablepoolData } = useStablepoolReserves(props.stableswapId)
   const { isBalanceLoading } = useAccountBalances()
 
-  const receiveAssets = useAssetsToRemoveFromStablepool({
+  const reservesToRemove = useAssetsToRemoveFromStablepool({
     reserves: stablepoolData?.reserves ?? [],
   })
-  const initialReceiveAsset = receiveAssets[0]
+  const initialReceiveAsset = reservesToRemove[0]
 
   if (!stablepoolData || isBalanceLoading || !initialReceiveAsset)
     return <RemoveLiquiditySkeleton />
 
   return (
-    <RemoveStablepoolLiquidityJSX
-      pool={stablepoolData}
+    <RemoveStablepoolPositionsWrapper
+      {...props}
       initialReceiveAsset={initialReceiveAsset}
-      receiveAssets={receiveAssets}
+      stablepoolData={stablepoolData}
+      reservesToRemove={reservesToRemove}
+    />
+  )
+}
+
+export const RemoveStablepoolLiquidity = (props: RemoveLiquidityProps) => {
+  const { getRelatedAToken } = useAssets()
+  const stableswapId = props.stableswapId ?? props.poolId
+  const omnipoolId = getRelatedAToken(stableswapId)?.id ?? stableswapId
+  const { data: stablepoolData } = useStablepoolReserves(stableswapId)
+  const { isBalanceLoading } = useAccountBalances()
+  const { getAssetPositions } = useAccountOmnipoolPositionsData()
+
+  const reservesToRemove = useAssetsToRemoveFromStablepool({
+    reserves: stablepoolData?.reserves ?? [],
+  })
+  const initialReceiveAsset = reservesToRemove[0]
+  const positionId = props.positionId
+
+  if (!stablepoolData || isBalanceLoading || !initialReceiveAsset)
+    return <RemoveLiquiditySkeleton />
+
+  if (positionId) {
+    const { all: omnipoolPositions } = getAssetPositions(omnipoolId)
+
+    const position = omnipoolPositions.find(
+      (position) => position.positionId === positionId,
+    )
+
+    if (!position) return null
+
+    return (
+      <RemoveStablepoolPositionsWrapper
+        {...props}
+        positions={[position]}
+        initialReceiveAsset={initialReceiveAsset}
+        stablepoolData={stablepoolData}
+        reservesToRemove={reservesToRemove}
+      />
+    )
+  }
+
+  return (
+    <RemoveStablepoolShares
+      stablepoolData={stablepoolData}
+      initialReceiveAsset={initialReceiveAsset}
+      reservesToRemove={reservesToRemove}
       {...props}
     />
   )
 }
 
-const RemoveStablepoolLiquidityJSX = ({
-  pool,
-  onBack,
-  onSubmitted,
-  closable,
-  initialReceiveAsset,
-  editable,
-  receiveAssets,
-}: RemoveLiquidityProps & {
-  editable?: boolean
-  pool: TStablepoolDetails
+type RemoveStablepoolPositionsWrapperProps = RemoveLiquidityProps & {
+  positions: AccountOmnipoolPosition[]
   initialReceiveAsset: TAssetWithBalance
-  receiveAssets: TAssetWithBalance[]
-}) => {
+  stablepoolData: TStablepoolDetails
+  reservesToRemove: TAssetWithBalance[]
+}
+
+export type RemoveStablepoolSharesProps = Omit<
+  RemoveStablepoolPositionsWrapperProps,
+  "positions"
+>
+
+export type RemoveStablepoolPositionsProps =
+  RemoveStablepoolPositionsWrapperProps & {
+    fee: string
+    feesBreakdown: FeeBreakdown[]
+    omnipoolPositionsOutTotal: RemoveOmnipoolResult
+    balance: string
+    omnipoolPositionsOutValues: {
+      position: AccountOmnipoolPosition
+      valuesOut: RemoveOmnipoolResult
+    }[]
+    deposits: OmnipoolDepositFull[]
+  }
+
+const RemoveStablepoolShares = (props: RemoveStablepoolSharesProps) => {
+  const { form, ...removeLiquidityProps } =
+    useRemoveStableswapSharesLiquidity(props)
+
+  return (
+    <FormProvider {...form}>
+      <RemoveStablepoolLiquidityForm {...props} {...removeLiquidityProps} />
+    </FormProvider>
+  )
+}
+
+const RemoveStablepoolPositionsWrapper = (
+  props: RemoveStablepoolPositionsWrapperProps,
+) => {
+  const { positions, initialReceiveAsset, poolId } = props
+
+  const { form, isFullRemove, ...removeLiquidityProps } =
+    useRemoveStablepoolLiquidity({
+      initialReceiveAsset,
+      positions,
+      omnipoolId: poolId,
+    })
+
+  return (
+    <FormProvider {...form}>
+      {isFullRemove ? (
+        <RemoveOmnipoolStablepoolPositions
+          {...props}
+          {...removeLiquidityProps}
+        />
+      ) : (
+        <RemoveOmnipoolPositions {...props} {...removeLiquidityProps} />
+      )}
+    </FormProvider>
+  )
+}
+
+const RemoveOmnipoolStablepoolPositions = (
+  props: RemoveStablepoolPositionsProps,
+) => {
+  const removeLiquidityProps = useRemoveStablepoolOmnipoolLiquidity(props)
+  return <RemoveStablepoolLiquidityForm {...removeLiquidityProps} />
+}
+
+const RemoveOmnipoolPositions = (props: RemoveStablepoolPositionsProps) => {
+  const removeLiquidityProps = useRemoveOmnipoolLiquidity(props)
+  return <RemoveStablepoolLiquidityForm {...removeLiquidityProps} />
+}
+
+const RemoveStablepoolLiquidityForm = (
+  props: RemoveLiquidityProps &
+    Omit<TRemoveStablepoolLiquidityProps, "form" | "positions">,
+) => {
   const { t } = useTranslation(["liquidity", "common"])
-  const { pool: poolData } = pool
-
-  const {
-    form,
-    balance,
-    receiveAssetsProportionally,
-    fee,
-    removeAmountShifted,
-    onSubmit,
-  } = useStablepoolRemoveLiquidity({
-    ...pool,
-    initialReceiveAsset,
-    onSubmitted,
-  })
-
   const {
     formState: { isValid },
     handleSubmit,
     watch,
-  } = form
+    control,
+  } = useFormContext<TRemoveStablepoolLiquidityFormValues>()
 
-  const [asset, split] = watch(["asset", "split"])
+  const {
+    receiveAssets,
+    closable,
+    onBack,
+    fee,
+    onSubmit,
+    balance,
+    editable,
+    isFullRemove,
+    feesBreakdown,
+    reservesToRemove,
+    isRemoveShares,
+    deposits,
+  } = props
 
-  const { isValid: isValidPrice, price } = useAssetPrice(
-    fee ? poolData.id.toString() : undefined,
-  )
-
-  const feeDisplay =
-    fee && isValidPrice
-      ? Big(removeAmountShifted).times(fee).div(100).times(price).toString()
-      : undefined
+  const [asset, split, amountToRemove] = watch(["asset", "split", "amount"])
 
   return (
-    <FormProvider {...form}>
+    <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
       <ModalHeader
         title={t("removeLiquidity")}
         closable={closable}
         onBack={onBack}
+        sx={{
+          px: "m",
+          pt: "m",
+          pb: "base",
+        }}
+        customHeader={
+          isRemoveShares ? null : (
+            <Flex align="center" mt="m" gap="s">
+              <Controller
+                control={control}
+                name="option"
+                render={({ field: { value, onChange, disabled } }) => (
+                  <SliderTabs
+                    options={options}
+                    selected={value}
+                    onSelect={(option) => onChange(option.id)}
+                    disabled={disabled}
+                    sx={{ flex: 1 }}
+                  />
+                )}
+              />
+            </Flex>
+          )
+        }
       />
-      <ModalBody>
-        <Flex direction="column" gap="m" asChild>
-          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-            {editable ? (
-              <Flex align="center" gap="base">
-                <AssetLogo id={asset.iconId ?? asset.id} size="large" />
-                <Text
-                  fs="h5"
-                  fw={500}
-                  color={getToken("text.high")}
-                  font="primary"
-                >
-                  {t("common:currency", {
-                    value: balance,
-                    symbol: asset.symbol,
-                  })}
-                </Text>
-              </Flex>
-            ) : (
-              <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-                assetFieldName="asset"
-                amountFieldName="amount"
-                label={t("common:amount")}
-                maxBalance={balance}
-                assets={[]}
-                sx={{ py: 0 }}
-                disabledAssetSelector
-              />
-            )}
-
-            <ModalContentDivider />
-
-            <Controller
-              control={form.control}
-              name="split"
-              render={({ field: { value, onChange } }) => (
-                <Flex align="center" justify="space-between">
-                  <Text>
-                    {t("liquidity.remove.stablepool.modal.proportionally")}
-                  </Text>
-                  <Toggle
-                    size="large"
-                    checked={value}
-                    onCheckedChange={onChange}
-                  />
-                </Flex>
-              )}
+      <Flex direction="column" gap="m" pb="0" asChild>
+        <ModalBody>
+          {!editable ? (
+            <Flex align="center" gap="base">
+              <AssetLogo id={asset.iconId ?? asset.id} size="large" />
+              <Text
+                fs="h5"
+                fw={500}
+                color={getToken("text.high")}
+                font="primary"
+              >
+                {/*Probably display hhub token as well*/}
+                {t("common:currency", {
+                  value: amountToRemove,
+                  symbol: asset.symbol,
+                })}
+              </Text>
+            </Flex>
+          ) : (
+            <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
+              assetFieldName="asset"
+              amountFieldName="amount"
+              label={t("common:withdraw")}
+              maxBalance={balance}
+              assets={[]}
+              sx={{ py: 0 }}
+              disabledAssetSelector
             />
-
-            <ModalContentDivider />
-
-            {!split ? (
-              <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
-                label={t("common:minimumReceived")}
-                assetFieldName="receiveAsset"
-                amountFieldName="receiveAmount"
-                maxBalance={balance}
-                assets={[]}
-                sortedAssets={receiveAssets}
-                ignoreBalance
-                disabledInput
-                sx={{ p: 0 }}
-              />
-            ) : (
-              <Flex direction="column" gap="s">
-                <ReceiveAssets assets={receiveAssetsProportionally ?? []} />
+          )}
+          <ModalContentDivider />
+          <Controller
+            control={control}
+            name="split"
+            render={({ field: { value, onChange } }) => (
+              <Flex align="center" justify="space-between">
+                <Text>
+                  {t("liquidity.remove.stablepool.modal.proportionally")}
+                </Text>
+                <Toggle
+                  size="large"
+                  checked={value}
+                  onCheckedChange={onChange}
+                  disabled={!isFullRemove}
+                />
               </Flex>
             )}
+          />
+          <ModalContentDivider />
+          {!split && (
+            <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
+              label={t("common:minimumReceived")}
+              assetFieldName="receiveAsset"
+              amountFieldName="receiveAmount"
+              maxBalance={balance}
+              assets={[]}
+              sortedAssets={reservesToRemove}
+              ignoreBalance
+              disabledInput
+              sx={{ p: 0 }}
+            />
+          )}
 
+          {!!receiveAssets.length && (
+            <Flex direction="column" gap="s">
+              <ReceiveAssets
+                title={split ? undefined : ""}
+                assets={receiveAssets}
+                positions={deposits}
+              />
+            </Flex>
+          )}
+
+          <Box>
             <ModalContentDivider />
+            <TradeLimitRow type={TradeLimitType.Liquidity} />
 
-            <div>
-              <TradeLimitRow type={TradeLimitType.Liquidity} />
+            {fee && (
+              <>
+                <ModalContentDivider />
+                <FeeColumn fee={fee} feesBreakdown={feesBreakdown} />
+              </>
+            )}
+          </Box>
+        </ModalBody>
+      </Flex>
+      <ModalFooter>
+        <Button type="submit" size="large" width="100%" disabled={!isValid}>
+          {t("removeLiquidity")}
+        </Button>
+      </ModalFooter>
+    </form>
+  )
+}
 
-              {!split && (
-                <>
-                  <ModalContentDivider />
-                  <SummaryRow
-                    label={t("liquidity.remove.modal.withdrawalFees")}
-                    content={`${t("common:currency", { value: feeDisplay, maximumFractionDigits: null })} (${t("common:percent", { value: fee })})`}
-                  />
-                </>
-              )}
-            </div>
+const FeeColumn = ({
+  fee,
+  feesBreakdown,
+}: {
+  fee: string
+  feesBreakdown?: FeeBreakdown[]
+}) => {
+  const { t } = useTranslation(["liquidity", "common"])
+  const { watch } = useFormContext<TRemoveStablepoolLiquidityFormValues>()
 
-            <ModalContentDivider />
+  const [amountToRemove, asset] = watch(["amount", "asset"])
 
-            <Button type="submit" size="large" width="100%" disabled={!isValid}>
-              {t("removeLiquidity")}
-            </Button>
-          </form>
-        </Flex>
-      </ModalBody>
-    </FormProvider>
+  const { isValid: isValidPrice, price } = useAssetPrice(
+    fee ? asset.id : undefined,
+  )
+
+  const feeDisplay =
+    fee && isValidPrice && amountToRemove
+      ? Big(amountToRemove).times(fee).div(100).times(price).toString()
+      : undefined
+
+  return feesBreakdown ? (
+    <ExpandableDynamicFee
+      label={t("liquidity.remove.modal.withdrawalFees")}
+      rangeLow={WITHDRAW_FEE_RANGE.low}
+      rangeHigh={WITHDRAW_FEE_RANGE.high}
+      value={Number(fee)}
+      valueDisplay={feeDisplay}
+      range={WITHDRAW_FEE_RANGE.full}
+      feesBreakdown={feesBreakdown}
+    />
+  ) : (
+    <SummaryRow
+      label={t("liquidity.remove.modal.withdrawalFees")}
+      content={`${t("common:currency", { value: feeDisplay })} (${t("common:percent", { value: fee })})`}
+    />
   )
 }

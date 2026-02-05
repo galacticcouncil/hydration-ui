@@ -132,6 +132,8 @@
   "liquidity.remove.modal.multiple.button": "Continue to summary",
   "liquidity.joinFarms.modal.submit.btn_one": "Join {{count, number}} Farm",
   "liquidity.joinFarms.modal.submit.btn_other": "Join {{count, number}} Farms",
+  "liquidity.remove.stablepool.modal.position.option.omnipool": "Remove to shares",
+  "liquidity.remove.stablepool.modal.position.option.stablepool": "Remove full",
   "liquidity.remove.stablepool.modal.proportionally": "Remove proportionally",
   "liquidity.remove.stablepool.modal.price": "1 {{poolSymbol}} = {{value, currency}}",
   "liquidity.remove.stablepool.modal.toast.submitted": "Withdrawing {{ value, number }} {{symbol}} from Stablepool...",

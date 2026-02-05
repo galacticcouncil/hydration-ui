@@ -18,6 +18,7 @@ import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModa
 import {
   useAddToOmnipoolZod,
   useCheckJoinOmnipoolFarm,
+  useLiquidityOmnipoolShares,
 } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import {
   calculatePoolFee,
@@ -25,6 +26,7 @@ import {
   TStablepoolDetails,
   useAddableStablepoolTokens,
 } from "@/modules/liquidity/Liquidity.utils"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -94,6 +96,7 @@ export const useStablepoolAddLiquidity = ({
   const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { account } = useAccount()
   const meta = getAssetWithFallback(stableswapId)
+  const getOmnipoolShares = useLiquidityOmnipoolShares(stableswapId)
   const { data: omnipoolIds } = useOmnipoolIds()
 
   const isAddableToOmnipool = omnipoolIds?.includes(pool.id.toString())
@@ -198,25 +201,34 @@ export const useStablepoolAddLiquidity = ({
         }),
       )
 
-      const tx =
-        option === "stablepool"
-          ? papi.tx.Stableswap.add_assets_liquidity({
-              pool_id: pool.id,
-              assets: assetsToProvideFormatted,
-              min_shares: BigInt(minStablepoolShares),
-            })
-          : papi.tx.OmnipoolLiquidityMining.add_liquidity_stableswap_omnipool_and_join_farms(
-              {
-                stable_pool_id: pool.id,
-                stable_asset_amounts: assetsToProvideFormatted,
-                farm_entries: isJoinFarms
-                  ? activeFarms.map((farm) => [
-                      farm.globalFarmId,
-                      farm.yieldFarmId,
-                    ])
-                  : undefined,
-              },
-            )
+      let tx: AnyTransaction
+
+      if (option === "stablepool") {
+        tx = papi.tx.Stableswap.add_assets_liquidity({
+          pool_id: pool.id,
+          assets: assetsToProvideFormatted,
+          min_shares: BigInt(minStablepoolShares),
+        })
+      } else {
+        const liquidityShares = getOmnipoolShares(stablepoolSharesHuman)
+
+        if (!liquidityShares) throw new Error("Liquidity shares are not found")
+
+        tx =
+          papi.tx.OmnipoolLiquidityMining.add_liquidity_stableswap_omnipool_and_join_farms(
+            {
+              stable_pool_id: pool.id,
+              stable_asset_amounts: assetsToProvideFormatted,
+              farm_entries: isJoinFarms
+                ? activeFarms.map((farm) => [
+                    farm.globalFarmId,
+                    farm.yieldFarmId,
+                  ])
+                : undefined,
+              min_shares_limit: BigInt(liquidityShares.minSharesToGet),
+            },
+          )
+      }
 
       const toastValue = assetsToProvide
         .map(({ asset, amount }) =>

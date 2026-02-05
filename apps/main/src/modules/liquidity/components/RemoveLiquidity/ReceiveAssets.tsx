@@ -21,9 +21,11 @@ export type TReceiveAsset = {
 
 export const ReceiveAssets = ({
   assets,
+  title,
   positions,
 }: {
   assets: TReceiveAsset[]
+  title?: string
   positions?: Array<XykDeposit | OmnipoolDepositFull>
 }) => {
   const { t } = useTranslation(["common", "liquidity"])
@@ -33,7 +35,7 @@ export const ReceiveAssets = ({
   return (
     <>
       <Text color={getToken("text.tint.secondary")} font="primary" fw={700}>
-        {t("minimumReceived")}
+        {title ?? t("minimumReceived")}
       </Text>
       <Flex
         direction="column"
@@ -50,7 +52,7 @@ export const ReceiveAssets = ({
             {index < assets.length - 1 && <Separator />}
           </React.Fragment>
         ))}
-        {!!positions?.length && (
+        {!!positions?.length && formattedRewards !== "0" && (
           <>
             <Separator />
             <Flex align="center" justify="space-between">

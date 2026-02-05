@@ -128,7 +128,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
       >
         <ModalHeader align="center" title={t("transfer.modal.title")} />
         <ModalBody sx={{ py: 0 }}>
-          <ModalContentDivider />
           <AssetSelectFormField<TransferPositionFormValues>
             label={t("transfer.modal.asset.label")}
             assetFieldName="asset"
@@ -154,7 +153,6 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
               />
             </Summary>
           )}
-          <ModalContentDivider />
         </ModalBody>
         <ModalFooter
           display="grid"

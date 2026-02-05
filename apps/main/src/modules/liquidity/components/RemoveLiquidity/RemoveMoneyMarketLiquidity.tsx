@@ -5,6 +5,7 @@ import {
   Flex,
   ModalBody,
   ModalContentDivider,
+  ModalFooter,
   ModalHeader,
   Skeleton,
   Summary,
@@ -105,14 +106,15 @@ export const RemoveMoneyMarketLiquidityForm = (
 
   return (
     <FormProvider {...form}>
-      <ModalHeader
-        title={title ?? t("removeLiquidity")}
-        closable={closable}
-        onBack={onBack}
-      />
-      <ModalBody>
-        <Flex direction="column" gap="m" asChild>
-          <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+      <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+        <ModalHeader
+          title={title ?? t("removeLiquidity")}
+          closable={closable}
+          onBack={onBack}
+        />
+
+        <Flex direction="column" gap="m" pb="0" asChild>
+          <ModalBody>
             <AssetSelectFormField<TRemoveStablepoolLiquidityFormValues>
               assetFieldName="asset"
               amountFieldName="amount"
@@ -191,15 +193,15 @@ export const RemoveMoneyMarketLiquidityForm = (
                 healthFactor={healthFactor}
               />
             )}
-
-            <ModalContentDivider />
-
-            <Button type="submit" size="large" width="100%" disabled={!isValid}>
-              {title ?? t("removeLiquidity")}
-            </Button>
-          </form>
+          </ModalBody>
         </Flex>
-      </ModalBody>
+
+        <ModalFooter>
+          <Button type="submit" size="large" width="100%" disabled={!isValid}>
+            {t("removeLiquidity")}
+          </Button>
+        </ModalFooter>
+      </form>
     </FormProvider>
   )
 }
