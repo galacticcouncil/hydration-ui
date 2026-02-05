@@ -97,6 +97,7 @@ export const MarketWarnings: FC<Props> = ({
         />
       )}
       <Modal
+        variant="popup"
         open={isSettingsOpen}
         onOpenChange={() => setIsSettingsOpen(false)}
       >

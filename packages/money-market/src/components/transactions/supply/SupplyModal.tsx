@@ -20,7 +20,12 @@ export const SupplyModal = () => {
   )
 
   return (
-    <BasicModal open={type === ModalType.Supply} setOpen={close} title="Supply">
+    <BasicModal
+      variant="popup"
+      open={type === ModalType.Supply}
+      setOpen={close}
+      title="Supply"
+    >
       <TxModalWrapper
         action="supply"
         underlyingAsset={args.underlyingAsset}

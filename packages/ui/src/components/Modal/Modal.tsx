@@ -245,6 +245,7 @@ const ModalFooter = (props: FlexProps) => <SModalFooter {...props} />
 export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   variant?: ModalVariant
   disableInteractOutside?: boolean
+  disableAutoFocus?: boolean
   topContent?: ReactNode
   animationDurationMs?: number
 }
@@ -253,6 +254,7 @@ const Modal = ({
   children,
   variant = "auto",
   disableInteractOutside = false,
+  disableAutoFocus = false,
   topContent,
   animationDurationMs,
   ...props
@@ -287,6 +289,9 @@ const Modal = ({
           topContent={topContent}
           onInteractOutside={
             disableInteractOutside ? (e) => e.preventDefault() : undefined
+          }
+          onOpenAutoFocus={
+            disableAutoFocus ? (e) => e.preventDefault() : undefined
           }
         >
           {children}

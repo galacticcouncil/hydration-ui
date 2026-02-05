@@ -14,7 +14,12 @@ export const RepayModal = () => {
   }>
 
   return (
-    <BasicModal open={type === ModalType.Repay} setOpen={close} title="Repay">
+    <BasicModal
+      variant="popup"
+      open={type === ModalType.Repay}
+      setOpen={close}
+      title="Repay"
+    >
       <TxModalWrapper
         underlyingAsset={args.underlyingAsset}
         requiredPermission={PERMISSION.BORROWER}
