@@ -5,7 +5,10 @@ import { FC } from "react"
 
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
 
-type Props = Web3ConnectButtonProps & {
+type Props = Omit<
+  Web3ConnectButtonProps,
+  "mode" | "allowIncompatibleAccounts"
+> & {
   chain: AnyChain | null
 }
 

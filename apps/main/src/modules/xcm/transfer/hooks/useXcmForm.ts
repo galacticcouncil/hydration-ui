@@ -1,7 +1,7 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { Transfer } from "@galacticcouncil/xc-sdk"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 
 import { useXcmFormSchema } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
@@ -12,13 +12,10 @@ export const useXcmForm = (transfer: Transfer | null) => {
   const { account } = useAccount()
 
   const { parsedQueryParams, updateQueryParams } = useXcmQueryParams()
-  const defaults = useMemo(
-    () => ({
-      ...getXcmFormDefaults(account),
-      ...parsedQueryParams,
-    }),
-    [account, parsedQueryParams],
-  )
+  const defaults = {
+    ...getXcmFormDefaults(account),
+    ...parsedQueryParams,
+  }
 
   const form = useForm({
     resolver: standardSchemaResolver(useXcmFormSchema(transfer)),

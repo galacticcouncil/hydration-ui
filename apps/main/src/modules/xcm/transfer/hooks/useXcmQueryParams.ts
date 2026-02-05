@@ -58,19 +58,9 @@ export const useXcmQueryParams = () => {
 
   const updateQueryParams = useCallback(
     (values: XcmQueryParams) => {
-      const { srcChain, srcAsset, destChain, destAsset } = values
-
       navigate({
         to: ".",
-        search:
-          srcChain && srcAsset && destChain && destAsset
-            ? {
-                srcChain,
-                srcAsset,
-                destChain,
-                destAsset,
-              }
-            : {},
+        search: values,
         resetScroll: false,
         replace: true,
       })
