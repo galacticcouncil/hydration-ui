@@ -28,7 +28,7 @@ export const SuppliedAssetsTable = () => {
   const [modalProps, setModalProps] = useState<
     Omit<TRemoveMoneyMarketLiquidityProps, "onSubmitted"> | undefined
   >()
-  const columns = useSuppliedAssetsTableColumns({ omRemove: setModalProps })
+  const columns = useSuppliedAssetsTableColumns({ onRemove: setModalProps })
   const { data, isLoading } = useSuppliedAssetsData()
   const navigate = useNavigate()
   const { isMobile } = useBreakpoints()

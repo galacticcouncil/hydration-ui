@@ -12,15 +12,18 @@ export const BorrowHistoryPage = () => {
   const { t } = useTranslation(["borrow"])
   const { account } = useAccount()
 
-  const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
-    "/borrow/history",
-    "search",
-  )
-
   const paginationProps = useDataTableUrlPagination(
     "/borrow/history",
     "page",
     10,
+  )
+
+  const [searchPhrase, setSearchPhrase] = useDataTableUrlSearch(
+    "/borrow/history",
+    "search",
+    {
+      onChange: () => paginationProps.onPageClick(1),
+    },
   )
 
   if (!account) {
@@ -35,10 +38,7 @@ export const BorrowHistoryPage = () => {
         actions={
           <BorrowHistorySearch
             searchPhrase={searchPhrase}
-            onChange={(searchPhrase) => {
-              setSearchPhrase(searchPhrase)
-              paginationProps.onPageClick(1)
-            }}
+            onChange={setSearchPhrase}
           />
         }
       />

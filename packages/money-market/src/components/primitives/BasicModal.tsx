@@ -1,8 +1,14 @@
-import { Modal, ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
+import {
+  Modal,
+  ModalBody,
+  ModalHeader,
+  ModalVariant,
+} from "@galacticcouncil/ui/components"
 import React from "react"
 
 export interface BasicModalProps {
   title: string
+  variant?: ModalVariant
   open: boolean
   children: React.ReactNode
   setOpen: (value: boolean) => void
@@ -10,6 +16,7 @@ export interface BasicModalProps {
 
 export const BasicModal = ({
   title,
+  variant,
   open,
   setOpen,
   children,
@@ -17,7 +24,12 @@ export const BasicModal = ({
   const handleClose = () => setOpen(false)
 
   return (
-    <Modal open={open} onOpenChange={handleClose} disableInteractOutside>
+    <Modal
+      variant={variant}
+      open={open}
+      onOpenChange={handleClose}
+      disableInteractOutside
+    >
       <ModalHeader title={title} />
       <ModalBody scrollable={false}>{children}</ModalBody>
     </Modal>

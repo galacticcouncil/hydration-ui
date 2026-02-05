@@ -15,6 +15,17 @@ export const safeConvertAddressSS58 = (address: string, ss58prefix = 0) => {
   }
 }
 
+export const safeConvertPublicKeyToSS58 = (
+  publicKey: string,
+  ss58prefix = 0,
+) => {
+  try {
+    return AccountId(ss58prefix).dec(publicKey)
+  } catch {
+    return ""
+  }
+}
+
 export const isSS58Address = (address?: string): address is string =>
   !!address && !!safeConvertAddressSS58(address)
 

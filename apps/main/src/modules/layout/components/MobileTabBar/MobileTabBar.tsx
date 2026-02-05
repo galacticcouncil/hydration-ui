@@ -82,6 +82,7 @@ export const MobileTabBar: FC = () => {
         </DropdownMenu>
       )}
       <Modal
+        variant="popup"
         open={drawer === MobileTabBarDrawer.Settings}
         onOpenChange={closeDrawer}
       >

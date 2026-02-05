@@ -86,6 +86,7 @@ export const RemoveLiquidityForm = ({
   onBack,
   deposits,
   feesBreakdown,
+  displayValue,
 }: RemoveLiquidityProps & {
   fee?: string
   totalPositionShifted: string
@@ -96,6 +97,7 @@ export const RemoveLiquidityForm = ({
   meta: TAssetData | TShareToken
   deposits?: Array<XykDeposit | OmnipoolDepositFull>
   feesBreakdown?: FeeBreakdown[]
+  displayValue?: string
 }) => {
   const { t } = useTranslation(["liquidity", "common"])
   const {
@@ -149,7 +151,7 @@ export const RemoveLiquidityForm = ({
                 assetFieldName="asset"
                 amountFieldName="amount"
                 maxBalance={totalPositionShifted}
-                ignoreDisplayValue={isIsolatedPool}
+                displayValue={displayValue}
                 assets={[]}
                 disabledAssetSelector
                 sx={{ pt: 0 }}

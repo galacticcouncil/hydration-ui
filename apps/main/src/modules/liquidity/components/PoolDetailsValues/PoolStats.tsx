@@ -143,12 +143,13 @@ const PoolStatsMobile = ({
             ref={ref}
           />
         </Flex>
-        <ChartTimeRangeDropdown
-          options={intervalOptions}
-          selectedOption={interval}
-          onSelect={(key) => setInterval(key)}
-          disabled={type === "stats"}
-        />
+        {type === "chart" && (
+          <ChartTimeRangeDropdown
+            options={intervalOptions}
+            selectedOption={interval}
+            onSelect={(key) => setInterval(key)}
+          />
+        )}
       </Flex>
     </Paper>
   )
