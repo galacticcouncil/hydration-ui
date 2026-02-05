@@ -40,6 +40,7 @@ export const NumberInput: FC<NumberInputProps> = ({
       getInputRef={ref}
       customInput={Input}
       allowedDecimalSeparators={[".", ","]}
+      inputMode="decimal"
       {...props}
     />
   )

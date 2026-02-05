@@ -156,6 +156,7 @@ export const AssetInput = ({
                 placeholder="0"
                 variant="embedded"
                 autoComplete="off"
+                inputMode="decimal"
                 disabled={disabled || loading || !onChange || disabledInput}
                 value={defaultAssetValueFormatter(value ?? "")}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
