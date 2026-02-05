@@ -57,7 +57,11 @@ export const ModalWrapper: React.FC<{
     useIsWrongNetwork(_requiredChainId) */
 
   if (txError && txError.blocking) {
-    return <TxErrorView txError={txError} />
+    return (
+      <div sx={{ p: 20 }}>
+        <TxErrorView txError={txError} />
+      </div>
+    )
   }
 
   if (
