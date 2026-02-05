@@ -39,6 +39,7 @@
   "joinPool": "Join pool",
   "24hVolume": "24h volume",
   "shares": "shares",
+  "yourLiquidity": "Your liquidity",
   "positionDetails": "Position details",
   "stablepoolShares": "Stablepool shares",
   "liquidity.supplyYieldOpportunity.apy.description": "Supply APY yield adds value to your supplied amount.",

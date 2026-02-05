@@ -25,7 +25,10 @@ import { PoolsFilters } from "@/modules/liquidity/components/PoolsFilters"
 import { PoolsHeader } from "@/modules/liquidity/components/PoolsHeader"
 import { useOmnipoolStablepoolAssets, useXYKPools } from "@/states/liquidity"
 
-import { useIsolatedPoolsColumns } from "./IsolatedPools.columns"
+import {
+  getIsolatedPoolsColumnsVisibility,
+  useIsolatedPoolsColumns,
+} from "./IsolatedPools.columns"
 import { getPoolColumnsVisibility, usePoolColumns } from "./Liquidity.columns"
 
 export const PoolsPage = () => {
@@ -102,7 +105,7 @@ export const OmnipoolAndStablepoolTable = ({
           data={filteredData ?? []}
           columns={columns}
           {...useDataTableUrlSorting("/liquidity/", "omniSort")}
-          columnVisibility={getPoolColumnsVisibility(isMobile)}
+          columnVisibility={getPoolColumnsVisibility(isMobile, !!withPositions)}
           columnPinning={{
             left: ["meta_name"],
           }}
@@ -118,7 +121,7 @@ export const OmnipoolAndStablepoolTable = ({
             router.navigate({
               to: "/liquidity/$id",
               params: { id: asset.id },
-              search: { expanded: false },
+              search: { expanded: true },
             })
           }}
         />
@@ -178,7 +181,10 @@ export const IsolatedPoolsTable = ({
           paginated
           {...paginationProps}
           {...sortingProps}
-          columnVisibility={getPoolColumnsVisibility(isMobile)}
+          columnVisibility={getIsolatedPoolsColumnsVisibility(
+            isMobile,
+            !!withPositions,
+          )}
           columnPinning={{
             left: ["meta_name"],
           }}
@@ -194,7 +200,7 @@ export const IsolatedPoolsTable = ({
             router.navigate({
               to: "/liquidity/$id",
               params: { id: asset.id },
-              search: { expanded: false },
+              search: { expanded: true },
             })
           }
         />

@@ -1,10 +1,15 @@
 import { FarmDepositReward } from "@galacticcouncil/sdk-next/build/types/farm"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { XykDeposit } from "@/api/account"
+import {
+  omnipoolMiningPositionsKey,
+  XykDeposit,
+  xykMiningPositionsKey,
+} from "@/api/account"
 import { useRelayChainBlockNumber } from "@/api/chain"
 import { FarmRewards, useFarmRewards } from "@/api/farms"
 import { PoolBase, useXykPools } from "@/api/pools"
@@ -132,7 +137,7 @@ export const useClaimFarmRewardsMutation = ({
   const { papi } = useRpcProvider()
   const { data: pools } = useXykPools()
   const createBatch = useCreateBatchTx()
-
+  const { account } = useAccount()
   return useMutation({
     mutationFn: async ({ displayValue }: { displayValue: string }) => {
       if (!pools) throw new Error("Pools not found")
@@ -156,7 +161,14 @@ export const useClaimFarmRewardsMutation = ({
 
       return await createBatch({
         txs: allTxs,
-        transaction: { toasts },
+        transaction: {
+          toasts,
+          invalidateQueries: [
+            omnipoolMiningPositionsKey(account?.address ?? ""),
+            xykMiningPositionsKey(account?.address ?? ""),
+          ],
+        },
+
         options,
       })
     },

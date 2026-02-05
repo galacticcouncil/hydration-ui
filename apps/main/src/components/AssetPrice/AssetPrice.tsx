@@ -50,7 +50,7 @@ export const useDisplayAssetsPrice = (
   assets: ReadonlyArray<readonly [id: string, value: string | number]>,
   options?: HookOptions,
 ) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
   const { isRealUSD, isStableCoin, symbol } = useDisplayAssetStore(
     useShallow(pick(["isRealUSD", "isStableCoin", "symbol"])),
   )

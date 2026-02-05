@@ -107,7 +107,7 @@ export const useStablepoolRemoveLiquidity = ({
       .minus(Big(slippage).times(maxValue).div(100))
       .toFixed(0)
 
-    return value
+    return Big.max(value, 0).toString()
   }, [
     fee,
     pool.amplification,

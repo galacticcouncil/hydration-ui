@@ -246,7 +246,7 @@ const PositionsTableBody = ({
 
   return (
     <CollapsibleRoot open={expanded}>
-      <TableContainer as={Paper} sx={{ mt: "xxl" }}>
+      <TableContainer as={Paper} sx={{ mb: "xl" }}>
         <PositionsHeader
           onClick={onClick}
           showMore={expanded}

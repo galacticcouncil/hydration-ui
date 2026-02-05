@@ -25,11 +25,15 @@ import { IsolatedPoolTable } from "./Liquidity.utils"
 
 const isolatedColumnHelper = createColumnHelper<IsolatedPoolTable>()
 
-export const getIsolatedPoolsColumnsVisibility = (isMobile: boolean) => ({
+export const getIsolatedPoolsColumnsVisibility = (
+  isMobile: boolean,
+  isMyLiquidity: boolean,
+) => ({
   ["meta.name"]: !isMobile,
-  volumeDisplay: true,
-  tvlDisplay: true,
+  volumeDisplay: !isMobile || !isMyLiquidity,
+  tvlDisplay: !isMobile,
   actions: !isMobile,
+  positions: isMobile && isMyLiquidity,
 })
 
 export const useIsolatedPoolsColumns = () => {
@@ -39,6 +43,7 @@ export const useIsolatedPoolsColumns = () => {
   return useMemo(
     () => [
       isolatedColumnHelper.accessor("meta.name", {
+        size: 250,
         header: t("liquidity:liquidity.pool.poolAsset"),
         cell: ({ row: { original } }) => (
           <AssetLabelWithFarmApr pool={original} />
@@ -86,6 +91,11 @@ export const useIsolatedPoolsColumns = () => {
           new Big(a.original.tvlDisplay).gt(b.original.tvlDisplay) ? 1 : -1,
       }),
       isolatedColumnHelper.display({
+        id: "positions",
+        header: t("liquidity:yourLiquidity"),
+        cell: ({ row }) => <PositionsTotal pool={row.original} />,
+      }),
+      isolatedColumnHelper.display({
         id: "actions",
         size: 170,
         cell: ({ row }) => {
@@ -94,6 +104,25 @@ export const useIsolatedPoolsColumns = () => {
       }),
     ],
     [t, isMobile],
+  )
+}
+
+const PositionsTotal = ({ pool }: { pool: IsolatedPoolTable }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+
+  const total = useUserIsolatedPositionsTotal(pool)
+
+  return (
+    <Flex align="center" gap="s" justify="flex-end">
+      {total !== "0" && (
+        <>
+          {t("currency", {
+            value: total,
+          })}
+        </>
+      )}
+      <Icon component={ChevronRight} size="m" color={getToken("text.low")} />
+    </Flex>
   )
 }
 
