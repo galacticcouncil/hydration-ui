@@ -324,13 +324,17 @@ export const useStablepoolExtimationTx = (props: AddStablepoolProps) => {
     amount: "1",
   }))
 
-  const argumentAmount =
-    api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms
-      .meta.args.length
+  let tx: SubmittableExtrinsic | undefined
 
-  return isStablepoolOnly
-    ? api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
-    : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
+  if (isStablepoolOnly) {
+    tx = api.tx.stableswap.addAssetsLiquidity(poolId, amounts, "1")
+  } else {
+    const argumentAmount =
+      api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms
+        .meta.args.length
+
+    tx =
+      api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
         poolId,
         amounts,
         isJoinFarms
@@ -342,6 +346,9 @@ export const useStablepoolExtimationTx = (props: AddStablepoolProps) => {
         //@ts-ignore
         ...(argumentAmount === 4 ? ["1"] : []),
       )
+  }
+
+  return tx
 }
 
 export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
@@ -358,8 +365,6 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
   const ommipoolAsset = omnipoolAssets.dataMap?.get(poolId)
 
   const onSubmit = async (values: TAddStablepoolFormValues) => {
-    if (!ommipoolAsset) throw new Error("test")
-
     const stablepoolShares = scale(
       values.amount,
       STABLEPOOL_TOKEN_DECIMALS,
@@ -368,12 +373,6 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
       stablepoolShares,
       addLiquidityLimit,
     )
-    const omnipoolShares = getSharesToGet(ommipoolAsset, stablepoolShares)
-    const minOmnipoolShares = getMinSharesToGet(omnipoolShares)
-
-    const argumentAmount =
-      api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms
-        .meta.args.length
 
     const assets = values.reserves
       .filter(({ amount }) => BigNumber(amount).isPositive())
@@ -382,13 +381,26 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
         amount: scale(v.amount, v.decimals).toString(),
       }))
 
-    const tx = isStablepoolOnly
-      ? api.tx.stableswap.addAssetsLiquidity(
-          poolId,
-          assets,
-          limitStablepoolShares,
-        )
-      : api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
+    let tx: SubmittableExtrinsic | undefined
+
+    if (isStablepoolOnly) {
+      tx = api.tx.stableswap.addAssetsLiquidity(
+        poolId,
+        assets,
+        limitStablepoolShares,
+      )
+    } else {
+      if (!ommipoolAsset) throw new Error("Omnipool asset not found")
+
+      const omnipoolShares = getSharesToGet(ommipoolAsset, stablepoolShares)
+      const minOmnipoolShares = getMinSharesToGet(omnipoolShares)
+
+      const argumentAmount =
+        api.tx.omnipoolLiquidityMining
+          .addLiquidityStableswapOmnipoolAndJoinFarms.meta.args.length
+
+      tx =
+        api.tx.omnipoolLiquidityMining.addLiquidityStableswapOmnipoolAndJoinFarms(
           poolId,
           assets,
           isJoinFarms
@@ -397,11 +409,10 @@ export const useStablepoolSubmitHandler = (props: AddStablepoolProps) => {
                 farm.yieldFarmId,
               ])
             : null,
-
-          // needs it for smooth runtime release to prevent breaking
           //@ts-ignore
           ...(argumentAmount === 4 ? [minOmnipoolShares] : []),
         )
+    }
 
     await createTransaction(
       {
