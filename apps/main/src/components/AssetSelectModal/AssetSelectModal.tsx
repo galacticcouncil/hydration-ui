@@ -194,7 +194,7 @@ export const AssetSelectModalContent = ({
           ) : assetsToDisplay.length ? (
             <VirtualizedList
               items={assetsToDisplay}
-              maxVisibleItems={[8, null, null, 10]}
+              maxVisibleItems={[null, null, null, 10]}
               itemSize={VIRTUALIZED_ITEM_HEIGHT}
               renderItem={(item, { key, index }) => (
                 <SOption
