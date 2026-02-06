@@ -2,6 +2,7 @@ import {
   calculate_lrna_spot_price,
   calculate_withdrawal_fee,
 } from "@galacticcouncil/math-omnipool"
+import { bigShift } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
@@ -291,7 +292,7 @@ export const useRemoveMultipleOmnipoolPositions = ({
   positions: AccountOmnipoolPosition[]
   onSubmitted: () => void
 }) => {
-  const { t } = useTranslation("liquidity")
+  const { t } = useTranslation(["liquidity", "common"])
   const { papi } = useRpcProvider()
   const { getAssetWithFallback, hub } = useAssets()
   const meta = getAssetWithFallback(poolId)
@@ -399,10 +400,18 @@ export const useRemoveMultipleOmnipoolPositions = ({
 
       const txs = [...exitingFarmsTxs, ...liquidityTxs]
 
+      const value = receiveAssets
+        .map((asset) =>
+          t("common:currency", {
+            value: bigShift(asset.value, -asset.asset.decimals),
+            symbol: asset.asset.symbol,
+          }),
+        )
+        .join(" and ")
+
       const toasts = {
-        submitted: t("liquidity.remove.modal.all.toast.submitted"),
-        success: t("liquidity.remove.modal.all.toast.success"),
-        error: t("liquidity.remove.modal.all.toast.submitted"),
+        submitted: t("liquidity.remove.modal.all.toast.submitted", { value }),
+        success: t("liquidity.remove.modal.all.toast.success", { value }),
       }
 
       await createBatch({

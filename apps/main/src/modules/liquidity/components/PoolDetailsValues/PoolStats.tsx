@@ -7,7 +7,7 @@ import {
   SliderTabsOption,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useRef, useState } from "react"
+import { useState } from "react"
 
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
 import i18n from "@/i18n"
@@ -103,7 +103,6 @@ const PoolStatsMobile = ({
   setInterval: (interval: PoolChartTimeFrameType | "all") => void
   isEmptyData?: boolean
 }) => {
-  const ref = useRef<HTMLDivElement>(null)
   //const [chartType, setChartType] = useState<"price" | "volume">("price")
   const [type, setType] = useState<"chart" | "stats">("chart")
 
@@ -113,17 +112,6 @@ const PoolStatsMobile = ({
       sx={{ flex: 1, gap: "m", flexDirection: "column" }}
       as={Flex}
     >
-      {type === "chart" ? (
-        <PoolChart
-          assetId={data.id}
-          height={350}
-          interval={interval}
-          setInterval={setInterval}
-          isEmptyData={isEmptyData}
-        />
-      ) : (
-        <PoolDetailsValues data={data} />
-      )}
       <Flex gap="base" justify="space-between">
         <Flex align="center" gap="base">
           {/* TODO: Enable when new charts are added*/}
@@ -138,9 +126,7 @@ const PoolStatsMobile = ({
             selected={types.find((option) => option.id === type)?.id}
             onSelect={(option) => {
               setType(option.id)
-              ref.current?.scrollIntoView()
             }}
-            ref={ref}
           />
         </Flex>
         {type === "chart" && (
@@ -151,6 +137,17 @@ const PoolStatsMobile = ({
           />
         )}
       </Flex>
+      {type === "chart" ? (
+        <PoolChart
+          assetId={data.id}
+          height={350}
+          interval={interval}
+          setInterval={setInterval}
+          isEmptyData={isEmptyData}
+        />
+      ) : (
+        <PoolDetailsValues data={data} />
+      )}
     </Paper>
   )
 }
