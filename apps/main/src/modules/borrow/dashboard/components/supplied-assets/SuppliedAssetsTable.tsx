@@ -76,7 +76,11 @@ export const SuppliedAssetsTable = () => {
         )}
       </TablePaper>
 
-      <Modal open={!!modalProps} onOpenChange={() => setModalProps(undefined)}>
+      <Modal
+        open={!!modalProps}
+        onOpenChange={() => setModalProps(undefined)}
+        variant="popup"
+      >
         {!!modalProps && (
           <RemoveMoneyMarketLiquidity
             {...modalProps}
