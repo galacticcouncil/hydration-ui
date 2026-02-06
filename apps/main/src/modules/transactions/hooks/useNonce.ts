@@ -6,7 +6,7 @@ import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 export const useNonce = (feeAssetId: string) => {
   const wallet = useWallet()
 
-  const shouldUsePermit =
+  const isUsingPermit =
     isEthereumSigner(wallet?.signer) && feeAssetId !== NATIVE_EVM_ASSET_ID
 
   const { data: permitNonce, isLoading: isLoadingPermitNonce } =
@@ -15,7 +15,9 @@ export const useNonce = (feeAssetId: string) => {
     useAccountInfo()
 
   return {
-    nonce: shouldUsePermit && permitNonce ? permitNonce : accountInfo?.nonce,
+    isUsingPermit,
+    nonce:
+      isUsingPermit && permitNonce ? permitNonce : (accountInfo?.nonce ?? 0),
     isLoading: isLoadingPermitNonce || isLoadingAccountInfo,
   }
 }

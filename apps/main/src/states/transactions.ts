@@ -163,17 +163,31 @@ export const isBridgeTransaction = (meta: TransactionMeta) => {
   )
 }
 
+export type PendingTransaction = {
+  id: string
+  meta: TransactionMeta
+  nonce: number
+}
+
 interface TransactionsStore {
   transactions: Transaction[]
+  pendingTransactions: PendingTransaction[]
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
   ) => Promise<TSuccessResult>
   cancelTransaction: (id: string) => void
+  addPendingTransaction: (
+    id: string,
+    nonce: number,
+    meta: TransactionMeta,
+  ) => void
+  removePendingTransaction: (id: string) => void
 }
 
 export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
+  pendingTransactions: [],
   createTransaction: (transaction, options) => {
     return new Promise<TSuccessResult>((resolve, reject) => {
       set((state) => {
@@ -213,6 +227,16 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
       transactions: store.transactions.filter(
         (transaction) => transaction.id !== id,
       ),
+    }))
+  },
+  addPendingTransaction: (id, nonce, meta) => {
+    set((state) => ({
+      pendingTransactions: [...state.pendingTransactions, { id, meta, nonce }],
+    }))
+  },
+  removePendingTransaction: (id) => {
+    set((state) => ({
+      pendingTransactions: state.pendingTransactions.filter((p) => p.id !== id),
     }))
   },
 }))

@@ -1,15 +1,11 @@
 import { HydrationQueries } from "@galacticcouncil/descriptors"
-import {
-  isEthereumSigner,
-  useAccount,
-  useWallet,
-} from "@galacticcouncil/web3-connect"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQuery } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { ObservedValueOf } from "rxjs"
 import { useShallow } from "zustand/shallow"
 
-import { usePermitNonce } from "@/api/evm"
+import { usePendingPermit, usePermitNonce } from "@/api/evm"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiEntries } from "@/hooks/usePapiEntries"
 import { usePapiValue } from "@/hooks/usePapiValue"
@@ -258,8 +254,10 @@ export const useAccountUniques = () => {
 
 export const useAccountPermitNonce = () => {
   const { account } = useAccount()
-  const wallet = useWallet()
-  const isEvmSigner = isEthereumSigner(wallet?.signer)
-  const address = isEvmSigner && account ? account.address : ""
-  return usePermitNonce(address)
+  return usePermitNonce(account?.address ?? "")
+}
+
+export const useAccountPendingPermit = () => {
+  const { account } = useAccount()
+  return usePendingPermit(account?.address ?? "")
 }

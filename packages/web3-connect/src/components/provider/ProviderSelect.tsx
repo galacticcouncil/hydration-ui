@@ -32,8 +32,6 @@ export const ProviderSelect = () => {
     getDefaultAccountFilterByMode(mode),
   )
 
-  console.log({ isMobileDevice })
-
   const isDefaultMode = mode === WalletMode.Default
 
   const { installed, deeplinked, other } = useWalletProviders(
