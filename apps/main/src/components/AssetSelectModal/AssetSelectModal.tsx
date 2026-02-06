@@ -14,6 +14,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { ReactNode, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useMeasure } from "react-use"
 import { useDebounce } from "use-debounce"
 
 import { TAssetData } from "@/api/assets"
@@ -35,6 +36,7 @@ export type AssetSelectProps = {
   onSelect?: (asset: TAssetData) => void
   emptyState?: ReactNode
   searchInputVariant?: InputProps["variant"]
+  height?: number
 }
 
 export type AssetSelectModalProps = AssetSelectProps & {
@@ -51,6 +53,7 @@ export const AssetSelectModalContent = ({
   emptyState,
   selectedAssetId,
   searchInputVariant = "embedded",
+  height = 0,
 }: AssetSelectProps) => {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -143,6 +146,8 @@ export const AssetSelectModalContent = ({
     />
   )
 
+  const maxVisibleItems = Math.floor((height * 0.85) / VIRTUALIZED_ITEM_HEIGHT)
+
   return (
     <>
       {searchInputVariant === "embedded" && (
@@ -194,7 +199,7 @@ export const AssetSelectModalContent = ({
           ) : assetsToDisplay.length ? (
             <VirtualizedList
               items={assetsToDisplay}
-              maxVisibleItems={[null, null, null, 10]}
+              maxVisibleItems={[maxVisibleItems, 10]}
               itemSize={VIRTUALIZED_ITEM_HEIGHT}
               renderItem={(item, { key, index }) => (
                 <SOption
@@ -230,14 +235,17 @@ export const AssetSelectModal = ({
   onOpenChange,
   ...props
 }: AssetSelectModalProps) => {
+  const [ref, { height }] = useMeasure<HTMLDivElement>()
+
   return (
-    <Modal variant="popup" open={open} onOpenChange={onOpenChange}>
+    <Modal ref={ref} variant="popup" open={open} onOpenChange={onOpenChange}>
       <AssetSelectModalContent
         {...props}
         onSelect={(asset) => {
           props.onSelect?.(asset)
           onOpenChange(false)
         }}
+        height={height}
       />
     </Modal>
   )
