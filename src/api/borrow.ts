@@ -643,11 +643,14 @@ const calculateAssetApyTotals = (
         100 / assetCount
 
       const proportion = percentage / 100
-
+      //TODO: Update it later, it's quick fix
       return {
         id,
         isStaked: false,
-        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
+        supplyApy: (supplyAPY.isZero() ? BN(0.08) : supplyAPY)
+          .times(100)
+          .times(proportion)
+          .toNumber(),
         borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
       }
     },

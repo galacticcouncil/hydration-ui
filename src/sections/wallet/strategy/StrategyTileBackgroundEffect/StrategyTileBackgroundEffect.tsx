@@ -73,6 +73,8 @@ export const StrategyTileBackgroundEffect: FC<Props> = ({ variant }) => {
         return <GETHEffect />
       case StrategyTileVariant.Hollar:
         return <HollarEffect />
+      case StrategyTileVariant.Prime:
+        return null
       default:
         neverGuard(variant)
     }
@@ -90,6 +92,8 @@ export const StrategyTileBackgroundEffect: FC<Props> = ({ variant }) => {
       return <GETHEffect />
     case StrategyTileVariant.Hollar:
       return <HollarEffect />
+    case StrategyTileVariant.Prime:
+      return null
     default:
       neverGuard(variant)
   }
