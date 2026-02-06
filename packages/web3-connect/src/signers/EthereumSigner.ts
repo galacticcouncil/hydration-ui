@@ -28,6 +28,7 @@ import {
   EVM_DISPATCH_ADDRESS,
   EVM_GAS_TO_WEIGHT,
 } from "@/config/evm"
+import { requestNetworkSwitch } from "@/utils"
 
 type PermitMessage = {
   from: string
@@ -49,6 +50,7 @@ type TransactionCall = Omit<ExtendedEvmCall, "from" | "type" | "dryRun">
 type EthereumSignerOptions = {
   chainKey?: string
   weight?: bigint
+  priorityRpcUrl?: string
   onSubmitted: (txHash: string) => void
   onSuccess: (receipt: TransactionReceipt) => void
   onError: (error: string) => void
@@ -118,6 +120,14 @@ export class EthereumSigner {
 
     await this.walletClient.switchChain({ id: evmClient.chain.id })
 
+    await requestNetworkSwitch(this.provider, {
+      chain: chainKey,
+      priorityRpcUrl: options.priorityRpcUrl,
+      onSwitch: () => {
+        this.publicClient = chain.evmClient.getProvider()
+      },
+    })
+
     return chain
   }
 
@@ -140,6 +150,7 @@ export class EthereumSigner {
       abi: EVM_CALL_PERMIT_ABI,
       client: this.publicClient,
     })
+
     return callPermitContract.read.nonces([this.address as Hex])
   }
 

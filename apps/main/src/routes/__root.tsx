@@ -4,7 +4,7 @@ import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
 import { lazy } from "react"
 
-import { useAccountUniques } from "@/api/account"
+import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
 import {
@@ -51,6 +51,8 @@ const Subscriptions = () => {
   useAccountUniques()
   usePriceSubscriber()
   useQuery(assetsQuery(rpcProvider, queryClient))
+
+  useAccountPermitNonce()
 
   return null
 }

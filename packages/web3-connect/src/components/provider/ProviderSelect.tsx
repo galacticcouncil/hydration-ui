@@ -1,11 +1,11 @@
 import {
   Collapsible,
   Grid,
-  Separator,
+  ModalContentDivider,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { openUrl } from "@galacticcouncil/utils"
+import { useDevice } from "@galacticcouncil/utils"
 import { useState } from "react"
 
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/account/AccountFilter"
 import { ProviderButton } from "@/components/provider/ProviderButton"
 import { ProviderConnectAll } from "@/components/provider/ProviderConnectAll"
+import { ProviderDeeplinkedButton } from "@/components/provider/ProviderDeeplinkedButton"
 import { ProviderExternalButton } from "@/components/provider/ProviderExternalButton"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
 import { ProviderLastConnectedButton } from "@/components/provider/ProviderLastConnectedButton"
@@ -26,14 +27,16 @@ import { getWalletData } from "@/wallets"
 
 export const ProviderSelect = () => {
   const { setPage, mode } = useWeb3ConnectContext()
-
+  const { isMobileDevice } = useDevice()
   const [filter, setFilter] = useState<AccountFilterOption>(
     getDefaultAccountFilterByMode(mode),
   )
 
   const isDefaultMode = mode === WalletMode.Default
 
-  const { installed, other } = useWalletProviders(isDefaultMode ? filter : mode)
+  const { installed, deeplinked, other } = useWalletProviders(
+    isDefaultMode ? filter : mode,
+  )
 
   return (
     <Stack gap="base">
@@ -41,7 +44,11 @@ export const ProviderSelect = () => {
         <AccountFilter active={filter} onSetActive={setFilter} />
       )}
       <Collapsible
-        label={<Text fs="p3">Installed & recently used</Text>}
+        label={
+          <Text fs="p3">
+            {isMobileDevice ? "Available wallets" : "Installed & recently used"}
+          </Text>
+        }
         actionLabel="Show"
         actionLabelWhenOpen="Hide"
         defaultOpen
@@ -53,30 +60,42 @@ export const ProviderSelect = () => {
             />
           )}
           {installed.map((wallet) => {
-            const props = getWalletData(wallet)
-            return <ProviderInstalledButton key={props.provider} {...props} />
+            const data = getWalletData(wallet)
+            return (
+              <ProviderInstalledButton key={data.provider} walletData={data} />
+            )
+          })}
+          {deeplinked.map((wallet) => {
+            const data = getWalletData(wallet)
+            return (
+              <ProviderDeeplinkedButton key={data.provider} walletData={data} />
+            )
           })}
           {isDefaultMode && <ProviderExternalButton />}
         </Grid>
-        {isDefaultMode && <ProviderConnectAll installed={installed} />}
+        {isDefaultMode && !isMobileDevice && (
+          <ProviderConnectAll installed={installed} />
+        )}
       </Collapsible>
-      {other.length > 0 && (
+      {!isMobileDevice && other.length > 0 && (
         <>
-          <Separator />
+          <ModalContentDivider mt="m" />
           <Collapsible
             label={<Text fs="p3">Other Wallets</Text>}
             actionLabel="Show"
             actionLabelWhenOpen="Hide"
-            defaultOpen={installed.length === 0}
+            defaultOpen={installed.length === 0 && deeplinked.length === 0}
           >
             <Grid columns={[2, 4]} gap="base">
               {other.map((wallet) => {
-                const props = getWalletData(wallet)
+                const data = getWalletData(wallet)
                 return (
                   <ProviderButton
-                    key={props.provider}
-                    {...props}
-                    onClick={() => openUrl(props.installUrl)}
+                    as="a"
+                    href={data.installUrl}
+                    target="_blank"
+                    key={data.provider}
+                    walletData={data}
                     actionLabel="Download"
                   />
                 )

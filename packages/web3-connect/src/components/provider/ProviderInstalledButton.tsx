@@ -1,17 +1,20 @@
 import { countBy, pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
-import { ProviderButton } from "@/components/provider/ProviderButton"
+import {
+  ProviderButton,
+  ProviderButtonOwnProps,
+} from "@/components/provider/ProviderButton"
 import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
 import { useWeb3Enable } from "@/hooks/useWeb3Enable"
-import { WalletData } from "@/types/wallet"
 
-export const ProviderInstalledButton: React.FC<
-  React.ButtonHTMLAttributes<HTMLButtonElement> & WalletData
-> = (props) => {
-  const { provider } = props
+export const ProviderInstalledButton: React.FC<ProviderButtonOwnProps> = ({
+  walletData,
+  ...props
+}) => {
+  const { provider } = walletData
   const { isControlled, setPage } = useWeb3ConnectContext()
   const { enable, disconnect } = useWeb3Enable()
 
@@ -46,10 +49,12 @@ export const ProviderInstalledButton: React.FC<
 
   return (
     <ProviderButton
-      {...props}
-      {...actionProps}
+      as="button"
+      walletData={walletData}
       isConnected={isConnected}
       accountCount={accountCount}
+      {...actionProps}
+      {...props}
     />
   )
 }

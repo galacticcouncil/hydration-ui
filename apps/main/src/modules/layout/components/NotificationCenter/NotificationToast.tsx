@@ -28,7 +28,7 @@ export const NotificationToast: React.FC<ToastData> = ({
 
   return (
     <Notification
-      sx={{ width: "100%" }}
+      fullWidth
       autoClose={false}
       variant={variant}
       content={title}
