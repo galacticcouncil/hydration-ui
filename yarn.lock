@@ -2113,10 +2113,10 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.12.0":
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.12.0.tgz#e7f9d518745c4173b28dcbfe487af44232c60791"
-  integrity sha512-G63qQnIm7w3IGfGs++1G8Vwa7o0/HY47rtycZEcv8vad15smIGFeoVY9hyHcdJQNFm4l255cB5AAAtenv776pg==
+"@galacticcouncil/xc-cfg@^0.12.1":
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.12.1.tgz#9b2bc4815df489188706957c07f7a44234283752"
+  integrity sha512-i4l8zw0D4861/nBtEUh72zwmHYIwhFxQbtKhLU6UU8mhnJQidjEsqPkfoleOdPsdUZGvwPCapxLnRAb/iRkwFw==
   dependencies:
     "@galacticcouncil/xc-core" "^0.11.0"
 
