@@ -18,21 +18,31 @@ import {
 } from "@/components/account/AccountFilter"
 import { AccountMetaMaskOption } from "@/components/account/AccountMetaMaskOption"
 import { AccountOption } from "@/components/account/AccountOption"
+import { AccountSolanaOption } from "@/components/account/AccountSolanaOption"
+import { AccountSuiOption } from "@/components/account/AccountSuiOption"
 import {
   getFilteredAccounts,
   useAccountsWithBalance,
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
-import { WalletProviderType } from "@/config/providers"
+import {
+  SOLANA_PROVIDERS,
+  SUI_PROVIDERS,
+  WalletProviderType,
+} from "@/config/providers"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
 import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
 const getAccountOptionComponent = (account: Account) => {
-  switch (account.provider) {
-    case WalletProviderType.MetaMask:
+  switch (true) {
+    case account.provider === WalletProviderType.MetaMask:
       return AccountMetaMaskOption
+    case SOLANA_PROVIDERS.includes(account.provider):
+      return AccountSolanaOption
+    case SUI_PROVIDERS.includes(account.provider):
+      return AccountSuiOption
     default:
       return AccountOption
   }

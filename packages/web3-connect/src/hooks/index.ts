@@ -1,4 +1,6 @@
 export * from "./useAccount"
+export * from "./useSolanaNativeBalance"
+export * from "./useSuiNativeBalance"
 export * from "./useWallet"
 export * from "./useWeb3Connect"
 export * from "./useWeb3ConnectInit"

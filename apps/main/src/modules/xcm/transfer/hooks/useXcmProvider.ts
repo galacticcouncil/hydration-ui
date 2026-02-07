@@ -12,6 +12,8 @@ export type XcmAlert = {
 
 type XcmContextValue = {
   readonly isLoading: boolean
+  readonly isLoadingCall: boolean
+  readonly isLoadingTransfer: boolean
   readonly isConnectedAccountValid: boolean
   readonly transfer: Transfer | null
   readonly call: Call | null
@@ -24,6 +26,8 @@ type XcmContextValue = {
 
 export const XcmContext = createContext<XcmContextValue>({
   isLoading: false,
+  isLoadingCall: false,
+  isLoadingTransfer: false,
   isConnectedAccountValid: false,
   transfer: null,
   call: null,
