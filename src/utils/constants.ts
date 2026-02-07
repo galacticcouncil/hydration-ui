@@ -44,6 +44,7 @@ export const TRILL = 12
 export const QUINTILL = 18
 
 export const DOC_LINK = "https://docs.hydration.net"
+export const NEXT_APP_URL = "https://next-app.hydration.net"
 
 export const HYDRATION_PARACHAIN_ID = 2034
 export const HYDRATION_CHAIN_KEY = "hydration"
