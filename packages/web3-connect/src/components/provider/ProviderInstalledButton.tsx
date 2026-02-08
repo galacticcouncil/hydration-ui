@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { countBy, pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -14,6 +15,7 @@ export const ProviderInstalledButton: React.FC<ProviderButtonOwnProps> = ({
   walletData,
   ...props
 }) => {
+  const { t } = useTranslation()
   const { provider } = walletData
   const { isControlled, setPage } = useWeb3ConnectContext()
   const { enable, disconnect } = useWeb3Enable()
@@ -28,7 +30,7 @@ export const ProviderInstalledButton: React.FC<ProviderButtonOwnProps> = ({
   const actionProps = (() => {
     if (isControlled) {
       return {
-        actionLabel: "Continue",
+        actionLabel: t("provider.continue"),
         onClick: () =>
           isConnected
             ? setPage(Web3ConnectModalPage.AccountSelect)
@@ -37,12 +39,12 @@ export const ProviderInstalledButton: React.FC<ProviderButtonOwnProps> = ({
     }
     if (isConnected) {
       return {
-        actionLabel: "Disconnect",
+        actionLabel: t("provider.disconnect"),
         onClick: () => disconnect(provider),
       }
     }
     return {
-      actionLabel: "Continue",
+      actionLabel: t("provider.continue"),
       onClick: () => enable(provider),
     }
   })()

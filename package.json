@@ -34,6 +34,7 @@
     "@galacticcouncil/xc-scan": "^0.1.0",
     "@galacticcouncil/xc-sdk": "^0.5.2",
     "big.js": "^6.2.2",
+    "date-fns": "^4.1.0",
     "immer": "^10.0.3",
     "p-wait-for": "^6.0.0",
     "polkadot-api": "1.23.3",

@@ -8,6 +8,7 @@ import {
   Stack,
 } from "@galacticcouncil/ui/components"
 import { Controller, useFormContext } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { first, pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -25,6 +26,7 @@ type ExternalWalletFormProps = {
 export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
   onAddressBookOpen,
 }) => {
+  const { t } = useTranslation()
   const { enable } = useWeb3Enable()
   const { setAccount, toggle } = useWeb3Connect(
     useShallow(pick(["setAccount", "toggle"])),
@@ -60,13 +62,13 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <Stack gap="m">
               <Flex justify="space-between" align="center">
-                <FormLabel>Account address</FormLabel>
+                <FormLabel>{t("external.addressLabel")}</FormLabel>
                 <AddressBookButton onClick={onAddressBookOpen} />
               </Flex>
               <AccountInput
                 value={value}
                 onChange={onChange}
-                placeholder="Paste account address here..."
+                placeholder={t("external.addressPlaceholder")}
                 isError={!!error}
               />
               {error && <FormError>{error.message}</FormError>}
@@ -75,7 +77,7 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
         />
         <Separator mx="var(--modal-content-inset)" />
         <Button type="submit" size="large" width="100%">
-          Confirm
+          {t("external.confirm")}
         </Button>
       </Stack>
     </form>

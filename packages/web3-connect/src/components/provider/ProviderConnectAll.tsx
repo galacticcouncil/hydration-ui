@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { isNot, prop } from "remeda"
 
 import { SProviderButton } from "@/components/provider/ProviderButton.styled"
@@ -9,6 +10,7 @@ type Props = {
 }
 
 export const ProviderConnectAll: React.FC<Props> = ({ installed }) => {
+  const { t } = useTranslation()
   const { enable } = useWeb3Enable({ disconnectOnError: true })
   const installedCompatible = installed.filter(({ provider }) =>
     COMPATIBLE_WALLET_PROVIDERS.includes(provider),
@@ -34,7 +36,7 @@ export const ProviderConnectAll: React.FC<Props> = ({ installed }) => {
       sx={{ width: "100%", mt: 8, py: 10 }}
       onClick={enableCompatible}
     >
-      Connect all
+      {t("provider.connectAll")}
     </SProviderButton>
   )
 }

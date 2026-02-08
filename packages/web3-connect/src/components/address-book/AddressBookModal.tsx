@@ -7,6 +7,7 @@ import {
   Web3ConnectAccount,
 } from "@galacticcouncil/web3-connect"
 import { FC, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   AccountFilter,
@@ -37,6 +38,7 @@ export const AddressBookModal: FC<Props> = ({
   blacklist,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const [publicKeyToRemove, setPublicKeyToRemove] = useState("")
   const [searchPhrase, setSearchPhrase] = useState("")
 
@@ -106,7 +108,7 @@ export const AddressBookModal: FC<Props> = ({
 
     add({
       address: searchPhrase,
-      name: "My Account",
+      name: t("addressBook.defaultName"),
       provider: PROVIDERS_BY_WALLET_MODE[addressProvider][0],
       publicKey: addressPublicKey,
       isCustom: true,

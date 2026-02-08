@@ -1,6 +1,7 @@
 import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { Modal } from "@galacticcouncil/ui/components"
 import { FC, useMemo } from "react"
+import { I18nextProvider } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -19,6 +20,7 @@ import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
 import { useWeb3ConnectInit } from "@/hooks/useWeb3ConnectInit"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
 import { useWeb3EagerEnable } from "@/hooks/useWeb3EagerEnable"
+import i18n from "@/i18n"
 
 const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
   [Web3ConnectModalPage.ProviderSelect]: <ProviderSelectContent />,
@@ -95,13 +97,15 @@ export const Web3ConnectModal: FC<Props> = (props) => {
     : () => modalState.toggle()
 
   return (
-    <Modal
-      variant="popup"
-      open={open}
-      onOpenChange={onOpenChange}
-      disableInteractOutside
-    >
-      <Web3ConnectModalContent {...props} />
-    </Modal>
+    <I18nextProvider i18n={i18n}>
+      <Modal
+        variant="popup"
+        open={open}
+        onOpenChange={onOpenChange}
+        disableInteractOutside
+      >
+        <Web3ConnectModalContent {...props} />
+      </Modal>
+    </I18nextProvider>
   )
 }

@@ -1,12 +1,14 @@
 import { NotebookTabs } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useTranslation } from "react-i18next"
 
 type Props = {
   readonly canAdd: boolean
 }
 
 export const AddressBookEmptyState = ({ canAdd }: Props) => {
+  const { t } = useTranslation()
   return (
     <Flex
       direction="column"
@@ -15,8 +17,8 @@ export const AddressBookEmptyState = ({ canAdd }: Props) => {
       py={56}
     >
       <Icon component={NotebookTabs} size={40} mb={16} />
-      <Text fw={500}>This address is not on your list.</Text>
-      {canAdd && <Text fw={500}>Click Add to add it to your contacts.</Text>}
+      <Text fw={500}>{t("addressBook.emptyState")}</Text>
+      {canAdd && <Text fw={500}>{t("addressBook.emptyStateAdd")}</Text>}
     </Flex>
   )
 }

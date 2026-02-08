@@ -8,6 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
@@ -49,6 +50,7 @@ const getAccountOptionComponent = (account: Account) => {
 }
 
 export const AccountSelectContent = () => {
+  const { t } = useTranslation()
   const { account: currentAccount } = useAccount()
   const { onAccountSelect, isControlled, mode } = useWeb3ConnectContext()
   const { accounts, toggle, getProviders } = useWeb3Connect(
@@ -108,7 +110,7 @@ export const AccountSelectContent = () => {
   return (
     <>
       <ModalHeader
-        title="Select account"
+        title={t("account.select")}
         align="center"
         customHeader={
           shouldRenderHeader && (
@@ -119,7 +121,7 @@ export const AccountSelectContent = () => {
                   onChange={(e) => setSearchVal(e.target.value)}
                   customSize="large"
                   iconStart={Search}
-                  placeholder="Search by name or paste address"
+                  placeholder={t("account.searchPlaceholder")}
                 />
               )}
               {isDefaultMode && (
@@ -138,7 +140,7 @@ export const AccountSelectContent = () => {
             <ProviderLoader providers={providers.map(prop("type"))} />
           ) : (
             <>
-              {hasNoResults && <Text>No accounts found</Text>}
+              {hasNoResults && <Text>{t("account.noResults")}</Text>}
               {accountsWithBalances.map((account) => {
                 const Component = getAccountOptionComponent(account)
                 return (

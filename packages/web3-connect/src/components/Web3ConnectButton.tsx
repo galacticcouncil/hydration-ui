@@ -10,11 +10,13 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, stringEquals } from "@galacticcouncil/utils"
 import { FC, Ref } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SConnectedButton } from "@/components/Web3ConnectButton.styled"
 import { useWeb3Connect, WalletMode, WalletProviderStatus } from "@/hooks"
 import { useAccount } from "@/hooks/useAccount"
 import { useWeb3ConnectModal } from "@/hooks/useWeb3ConnectModal"
+import i18n from "@/i18n"
 import { getAccountAvatarTheme } from "@/utils"
 
 export type Web3ConnectButtonProps = ButtonProps & {
@@ -25,6 +27,7 @@ export type Web3ConnectButtonProps = ButtonProps & {
 export const Web3ConnectButton: FC<
   Web3ConnectButtonProps & { ref?: Ref<HTMLButtonElement> }
 > = ({ ref, allowIncompatibleAccounts = false, mode, ...props }) => {
+  const { t } = useTranslation("translations", { i18n })
   const { account } = useAccount()
   const { toggle } = useWeb3ConnectModal()
 
@@ -47,7 +50,7 @@ export const Web3ConnectButton: FC<
         outline
       >
         <Icon size="m" component={Wallet} mr="s" />
-        <Text fs="p3">Select Account</Text>
+        <Text fs="p3">{t("button.selectAccount")}</Text>
       </Button>
     )
   }
@@ -86,7 +89,7 @@ export const Web3ConnectButton: FC<
   return (
     <Button ref={ref} onClick={() => toggle(mode)} {...props}>
       <Icon size="m" component={Wallet} mr="s" />
-      <Text fs="p3">Connect Wallet</Text>
+      <Text fs="p3">{t("button.connect")}</Text>
     </Button>
   )
 }

@@ -1,6 +1,6 @@
 {
   "extends": "@galacticcouncil/typescript-config/base.json",
-  "include": ["src"],
+  "include": ["src", "src/**/*.json"],
   "references": [
     { "path": "../ui" },
     { "path": "../utils" },
@@ -12,6 +12,7 @@
     "baseUrl": ".",
     "jsxImportSource": "@galacticcouncil/ui/jsx",
     "jsx": "react-jsx",
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]
     },

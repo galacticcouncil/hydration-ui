@@ -1,5 +1,28 @@
-import Big from "big.js"
-import { isNullish } from "remeda"
+import Big, { BigSource } from "big.js"
+import {
+  differenceInSeconds,
+  format as formatDateFns,
+  formatDuration,
+  intervalToDuration,
+  isBefore,
+  toDate,
+} from "date-fns"
+import {
+  HumanizeDuration,
+  HumanizeDurationLanguage,
+} from "humanize-duration-ts"
+import { isDate, isNumber, isString } from "remeda"
+
+import { isValidBigSource } from "./big"
+
+export type FormatValue =
+  | number
+  | bigint
+  | string
+  | Big
+  | Date
+  | null
+  | undefined
 
 const DEFAULT_LOCALE = "en-US"
 const NB_SPACE = String.fromCharCode(160) // non-breaking space
@@ -11,6 +34,19 @@ const formatNumberParts = (part: Intl.NumberFormatPart) => {
     return NB_SPACE
   }
   return part.value
+}
+
+const bigSourceToNumber = (value: BigSource): number => {
+  if (value instanceof Big) {
+    return value.toNumber()
+  }
+  return isNumber(value) ? value : Number(value)
+}
+
+const isValidDateValue = (
+  value: FormatValue,
+): value is Date | string | number => {
+  return isDate(value) || isString(value) || isNumber(value)
 }
 
 const formatFractionDigits = (
@@ -47,21 +83,18 @@ const formatFractionDigits = (
   return parts.map(formatNumberParts).join("")
 }
 
-const isValidNumber = (
-  value: number | bigint | string | null | undefined,
-): value is number | bigint | string => {
-  return !isNullish(value) && !Number.isNaN(Number(value)) && value !== ""
-}
-
 export const getMaxSignificantDigits = (
-  value: number | bigint | string,
+  value: number | bigint | string | Big,
   options: Intl.NumberFormatOptions,
 ) => {
   if (options.notation === "compact") {
     return 2
   }
 
-  const numberBig = Big(typeof value === "bigint" ? value.toString() : value)
+  const numberBig =
+    value instanceof Big
+      ? value
+      : Big(typeof value === "bigint" ? value.toString() : value)
 
   if (numberBig.lte(1)) {
     return 4
@@ -77,15 +110,15 @@ export const getMaxSignificantDigits = (
 }
 
 export const formatNumber = (
-  value: number | bigint | string | null | undefined,
+  value: FormatValue,
   lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
-  if (!isValidNumber(value)) {
+  if (!isValidBigSource(value)) {
     return NA_VALUE
   }
 
-  const numericValue = typeof value === "string" ? Number(value) : value
+  const numericValue = bigSourceToNumber(value)
 
   return new Intl.NumberFormat(lng, {
     maximumSignificantDigits:
@@ -100,15 +133,15 @@ export const formatNumber = (
 }
 
 export const formatPercent = (
-  value: number | bigint | null | undefined,
+  value: FormatValue,
   lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
-  if (!isValidNumber(value)) {
+  if (!isValidBigSource(value)) {
     return NA_VALUE
   }
 
-  const percentage = Big(value.toString())
+  const percentage = Big(value)
   const isBelowThreshold =
     percentage.gt(0) && percentage.lt(MIN_PERCENTAGE_THRESHOLD)
 
@@ -131,17 +164,15 @@ export const formatPercent = (
 }
 
 export const formatCurrency = (
-  _value: number | bigint | string | Big | null | undefined,
+  value: FormatValue,
   lng = DEFAULT_LOCALE,
   options: Record<string, unknown> = {},
 ) => {
-  const value = typeof _value === "object" ? _value?.toNumber() : _value
-
-  if (!isValidNumber(value)) {
+  if (!isValidBigSource(value)) {
     return NA_VALUE
   }
 
-  const numericValue = typeof value === "string" ? Number(value) : value
+  const numericValue = bigSourceToNumber(value)
 
   const maxFractionDigits =
     options.symbol || options.maximumFractionDigits === null
@@ -210,3 +241,82 @@ export const formatAssetAmount = (
 }
 
 export const MAX_USD_FRACTION_DIGITS = 2
+
+const langService = new HumanizeDurationLanguage()
+langService.addLanguage("shortEn", {
+  y: () => "y",
+  mo: () => "mo",
+  w: () => "w",
+  d: () => "d",
+  h: () => "h",
+  m: () => "m",
+  s: () => "s",
+  ms: () => "ms",
+  decimal: "2",
+})
+
+const humanizer = new HumanizeDuration(langService)
+
+export const formatDate = (
+  value: FormatValue,
+  options: Record<string, unknown> = {},
+) => {
+  if (!isValidDateValue(value)) return ""
+  const date = toDate(value)
+
+  try {
+    const fmt =
+      typeof options.format === "string" ? options.format : "yyyy-MM-dd"
+    return formatDateFns(date, fmt)
+  } catch (error) {
+    console.error(error)
+  }
+
+  return ""
+}
+
+export const formatRelativeTime = (
+  value: FormatValue,
+  targetDate: Date = new Date(),
+) => {
+  if (!isValidDateValue(value)) return ""
+  const date = toDate(value)
+
+  const isPast = isBefore(date, targetDate)
+  const duration = intervalToDuration({
+    start: isPast ? date : targetDate,
+    end: isPast ? targetDate : date,
+  })
+
+  const diffInSec = Math.abs(differenceInSeconds(date, targetDate))
+
+  if (diffInSec < 1) {
+    return "Now"
+  }
+
+  const formatted = formatDuration(duration, {
+    format:
+      diffInSec < 60
+        ? ["seconds"]
+        : ["years", "months", "days", "hours", "minutes"],
+  })
+
+  return isPast ? `${formatted} ago` : `In ${formatted}`
+}
+
+export const formatInterval = (
+  value: FormatValue,
+  options: Record<string, unknown> = {},
+) => {
+  if (typeof value !== "number") {
+    return ""
+  }
+
+  const isShort = options.format === "short"
+
+  return humanizer.humanize(value, {
+    round: true,
+    largest: 2,
+    ...(isShort && { language: "shortEn", conjunction: " ", spacer: "" }),
+  })
+}

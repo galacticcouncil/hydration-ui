@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useDevice } from "@galacticcouncil/utils"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   AccountFilter,
@@ -26,6 +27,7 @@ import { getDefaultAccountFilterByMode } from "@/utils"
 import { getWalletData } from "@/wallets"
 
 export const ProviderSelect = () => {
+  const { t } = useTranslation()
   const { setPage, mode } = useWeb3ConnectContext()
   const { isMobileDevice } = useDevice()
   const [filter, setFilter] = useState<AccountFilterOption>(
@@ -46,11 +48,13 @@ export const ProviderSelect = () => {
       <Collapsible
         label={
           <Text fs="p3">
-            {isMobileDevice ? "Available wallets" : "Installed & recently used"}
+            {isMobileDevice
+              ? t("provider.availableWallets")
+              : t("provider.installedAndRecent")}
           </Text>
         }
-        actionLabel="Show"
-        actionLabelWhenOpen="Hide"
+        actionLabel={t("provider.show")}
+        actionLabelWhenOpen={t("provider.hide")}
         defaultOpen
       >
         <Grid columns={[2, 4]} gap="base">
@@ -81,9 +85,9 @@ export const ProviderSelect = () => {
         <>
           <ModalContentDivider mt="m" />
           <Collapsible
-            label={<Text fs="p3">Other Wallets</Text>}
-            actionLabel="Show"
-            actionLabelWhenOpen="Hide"
+            label={<Text fs="p3">{t("provider.otherWallets")}</Text>}
+            actionLabel={t("provider.show")}
+            actionLabelWhenOpen={t("provider.hide")}
             defaultOpen={installed.length === 0 && deeplinked.length === 0}
           >
             <Grid columns={[2, 4]} gap="base">
@@ -96,7 +100,7 @@ export const ProviderSelect = () => {
                     target="_blank"
                     key={data.provider}
                     walletData={data}
-                    actionLabel="Download"
+                    actionLabel={t("provider.download")}
                   />
                 )
               })}
