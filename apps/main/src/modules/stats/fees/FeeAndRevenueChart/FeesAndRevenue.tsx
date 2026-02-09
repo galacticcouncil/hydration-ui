@@ -93,8 +93,11 @@ export const FeesAndRevenue = () => {
   }, [activeFilter, fields])
 
   const totalRevenue = useMemo(
-    () => Array.from(fields.values()).reduce((acc, value) => acc + value, 0),
-    [fields],
+    () =>
+      activeFilter === "all"
+        ? Array.from(fields.values()).reduce((acc, value = 0) => acc + value, 0)
+        : (fields.get(activeFilter) ?? 0),
+    [fields, activeFilter],
   )
 
   const isBiggerScreen = gte("md")
