@@ -47,7 +47,7 @@ export const StrategyTile: FC<StrategyTileProps> = ({
       <div sx={{ flex: "column", gap: [20, 20, 35] }}>
         <AssetOverview
           assetId={moneyMarketAssetId}
-          metaAssetId={aTokenId}
+          underlyingAssetId={aTokenId}
           riskLevel="low"
           riskTooltip={riskTooltip}
         />

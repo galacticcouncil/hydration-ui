@@ -13,14 +13,14 @@ import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives
 
 export type AssetOverviewProps = {
   readonly assetId: string
-  readonly metaAssetId: string
+  readonly underlyingAssetId: string
   readonly riskLevel: StrategyRiskLevel
   readonly riskTooltip: string
 }
 
 export const AssetOverview: FC<AssetOverviewProps> = ({
   assetId,
-  metaAssetId,
+  underlyingAssetId,
   riskLevel,
   riskTooltip,
 }) => {
@@ -32,7 +32,7 @@ export const AssetOverview: FC<AssetOverviewProps> = ({
   return (
     <div sx={{ flex: "column", gap: [20, 30] }}>
       <AssetOverviewLogo
-        assetId={metaAssetId}
+        assetId={underlyingAssetId}
         sx={{ display: ["flex", "none"] }}
       />
       <div
@@ -44,7 +44,7 @@ export const AssetOverview: FC<AssetOverviewProps> = ({
         }}
       >
         <div sx={{ display: ["none", "contents"] }}>
-          <AssetOverviewLogo assetId={metaAssetId} />
+          <AssetOverviewLogo assetId={underlyingAssetId} />
           <AssetOverviewSeparator />
         </div>
         <AssetOverviewTile
