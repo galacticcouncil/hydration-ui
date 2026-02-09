@@ -13,8 +13,9 @@ export const MONEY_MARKET_GIGA_RESERVES = [
   USDT_POOL_ASSET_ID,
   ...HOLLAR_ASSETS,
   ...GIGA_ASSETS,
-  PRIME_ASSET_ID,
 ].map(getAddressFromAssetId)
+
+export const PRIME_ASSET_IDS = [PRIME_ASSET_ID].map(getAddressFromAssetId)
 
 export const EXTERNAL_APY_ENABLED_ASSET_IDS = [
   USDT_POOL_ASSET_ID,

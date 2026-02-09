@@ -4,6 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
+import { PRIME_ASSET_IDS } from "sections/lending/ui-config/misc"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { getSupplyGigaRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigaAssetTable.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -15,7 +16,7 @@ export const SupplyGigaAssetMobileRow: FC<Row<ComputedReserveData>> = ({
   const { t } = useTranslation()
   const { account } = useAccount()
   const { name, symbol, iconSymbol, underlyingAsset } = original
-  const { openGigaSupply } = useModalContext()
+  const { openGigaSupply, openSupply } = useModalContext()
 
   const cells = getVisibleCells()
 
@@ -30,7 +31,13 @@ export const SupplyGigaAssetMobileRow: FC<Row<ComputedReserveData>> = ({
       cellIds={["supplyAPY", "usageAsCollateralEnabled"]}
       footer={
         <Button
-          onClick={() => openGigaSupply(underlyingAsset)}
+          onClick={() => {
+            if (PRIME_ASSET_IDS.includes(underlyingAsset)) {
+              openSupply(underlyingAsset)
+            } else {
+              openGigaSupply(underlyingAsset)
+            }
+          }}
           fullWidth
           size="small"
           disabled={!account}

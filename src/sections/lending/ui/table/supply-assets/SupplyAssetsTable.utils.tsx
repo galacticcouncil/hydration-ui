@@ -21,13 +21,15 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
-import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import {
+  MONEY_MARKET_GIGA_RESERVES,
+  PRIME_ASSET_IDS,
+} from "sections/lending/ui-config/misc"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAssets } from "providers/assets"
-import { PRIME_ASSET_ID } from "utils/constants"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -237,12 +239,14 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
           if (MONEY_MARKET_GIGA_RESERVES.includes(reserve.underlyingAsset)) {
             acc.gigaReserves.push(reserve)
 
-            if (
-              availableToDeposit.isNaN() ||
-              availableToDeposit.isZero() ||
-              getAssetIdFromAddress(reserve.underlyingAsset) === PRIME_ASSET_ID
-            )
+            if (availableToDeposit.isNaN() || availableToDeposit.isZero())
               return acc
+          }
+
+          if (PRIME_ASSET_IDS.includes(reserve.underlyingAsset)) {
+            acc.gigaReserves.push(reserve)
+
+            return acc
           }
 
           if (reserve.supplyCap !== "0") {
