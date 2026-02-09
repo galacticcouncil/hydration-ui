@@ -6,11 +6,18 @@ import { useState } from "react"
 import ChevronRightIcon from "assets/icons/ChevronRightIcon.svg?react"
 import { ProviderSelectModal } from "sections/provider/ProviderSelectModal"
 import { ProviderStatus } from "sections/provider/ProviderStatus"
-import { SButton, SName, SContainer } from "./ProviderSelectButton.styled"
+import {
+  SButton,
+  SName,
+  SContainer,
+  SPreview,
+} from "./ProviderSelectButton.styled"
 import { useRpcProvider } from "providers/rpcProvider"
 import { theme } from "theme"
 import { LazyMotion, domAnimation } from "framer-motion"
 import { Spinner } from "components/Spinner/Spinner"
+import { ExternalLink } from "components/Link/ExternalLink"
+import { NEXT_APP_URL } from "utils/constants"
 
 export const ProviderSelectButton = () => {
   const [open, setOpen] = useState(false)
@@ -27,6 +34,11 @@ export const ProviderSelectButton = () => {
   return (
     <LazyMotion features={domAnimation}>
       <SContainer>
+        <ExternalLink css={{ textDecoration: "none" }} href={NEXT_APP_URL}>
+          <SPreview font="GeistMedium" fw={500} fs={11} lh={15.4}>
+            New UI preview
+          </SPreview>
+        </ExternalLink>
         <SButton
           tabIndex={0}
           onClick={() => setOpen(true)}
