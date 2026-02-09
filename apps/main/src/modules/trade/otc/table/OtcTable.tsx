@@ -94,7 +94,11 @@ export const OtcTable: FC<Props> = ({
           onRowClick={account ? setIsDetailOpen : undefined}
         />
       </TableContainer>
-      <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>
+      <Modal
+        variant="popup"
+        open={!!isDetailOpen}
+        onOpenChange={() => setIsDetailOpen(null)}
+      >
         {isDetailOpen && (
           <FillOrderModalContent
             otcOffer={isDetailOpen}

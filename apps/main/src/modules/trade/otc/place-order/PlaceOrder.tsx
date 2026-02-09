@@ -23,7 +23,7 @@ export const PlaceOrder: FC = () => {
         <Plus />
         {t("otc.placeOrder.cta")}
       </Button>
-      <Modal open={isOpen} onOpenChange={setIsOpen}>
+      <Modal variant="popup" open={isOpen} onOpenChange={setIsOpen}>
         <PlaceOrderModalContent onClose={() => setIsOpen(false)} />
       </Modal>
     </>
