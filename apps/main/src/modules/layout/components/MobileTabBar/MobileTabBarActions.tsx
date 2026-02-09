@@ -6,6 +6,7 @@ import { Grid, Separator } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import { HYDRATION_DOCS_LINK } from "@/config/links"
 import { MobileTabBarDrawer } from "@/modules/layout/components/MobileTabBar/MobileTabBar"
 import { MobileTabBarAction } from "@/modules/layout/components/MobileTabBar/MobileTabBarAction"
 
@@ -24,7 +25,11 @@ export const MobileTabBarActions: FC<Props> = ({ onOpenDrawer }) => {
         onClick={() => onOpenDrawer(MobileTabBarDrawer.Settings)}
       />
       <Separator orientation="vertical" />
-      <MobileTabBarAction icon={QuestionCircleRegular} label={t("docs")} />
+      <MobileTabBarAction
+        icon={QuestionCircleRegular}
+        label={t("docs")}
+        link={HYDRATION_DOCS_LINK}
+      />
     </Grid>
   )
 }
