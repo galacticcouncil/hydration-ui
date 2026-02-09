@@ -259,6 +259,7 @@ export const XcmForm = () => {
               isLoading={isLoading || submit.isPending}
               variant={isSubmitReady ? "primary" : "muted"}
               loadingVariant="muted"
+              chain={srcChain}
             />
           </Box>
         </Paper>

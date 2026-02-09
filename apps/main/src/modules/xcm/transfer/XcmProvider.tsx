@@ -9,7 +9,6 @@ import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { FormProvider } from "react-hook-form"
-import { useShallowCompareEffect } from "react-use"
 import { first, flatMap, pipe, prop, sortBy, unique } from "remeda"
 
 import {
@@ -23,7 +22,6 @@ import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
 import {
   getChainPriority,
-  getXcmFormDefaults,
   isAccountValidOnChain,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
@@ -45,13 +43,15 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const configService = useCrossChainConfigService()
 
-  const [srcChain, srcAsset, destChain, srcAmount, destAddress] = form.watch([
-    "srcChain",
-    "srcAsset",
-    "destChain",
-    "srcAmount",
-    "destAddress",
-  ])
+  const [srcChain, srcAsset, destChain, destAsset, srcAmount, destAddress] =
+    form.watch([
+      "srcChain",
+      "srcAsset",
+      "destChain",
+      "destAsset",
+      "srcAmount",
+      "destAddress",
+    ])
 
   const config = useMemo(
     () => ConfigBuilder(configService).assets(),
@@ -106,12 +106,13 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       sortBy((r) => getChainPriority(r.destination.chain.key)),
     )
 
-    const bestRoute =
-      validRoutes.find(
-        (r) =>
-          r.destination.chain.key === destChain?.key &&
-          r.destination.asset.key === srcAsset?.key,
-      ) || first(validRoutes)
+    const foundRoute = validRoutes.find(
+      (r) =>
+        r.destination.chain.key === destChain?.key &&
+        r.destination.asset.key === destAsset?.key,
+    )
+
+    const bestRoute = foundRoute || first(validRoutes)
 
     if (!bestRoute) {
       form.setValue("destChain", null)
@@ -131,7 +132,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     form.setValue("destChain", bestChain)
     form.setValue("destAsset", bestAsset)
-  }, [destChainAssetPairs, form, destChain?.key, srcAsset?.key])
+  }, [destAsset?.key, destChain?.key, destChainAssetPairs, form, srcAsset?.key])
 
   const isConnectedAccountValid =
     !!srcChain && isAccountValidOnChain(account, srcChain)
@@ -158,11 +159,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         : "",
     )
   }, [form, srcAmount, srcAsset, xcmTransfer])
-
-  useShallowCompareEffect(() => {
-    form.reset(getXcmFormDefaults(account))
-    form.trigger().then(() => form.clearErrors())
-  }, [account, form])
 
   const { isLoading: isLoadingSrcBalances } = useCrossChainBalanceSubscription(
     srcAddress,

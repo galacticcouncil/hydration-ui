@@ -46,7 +46,10 @@ export class BaseEIP1193Wallet implements Wallet {
   }
 
   handleAnnounceProvider = (e: EIP6963AnnounceProviderEvent) => {
-    if (e.detail.info.rdns === this.accessor) {
+    if (
+      e.detail.info.rdns === this.accessor ||
+      e.detail.info.rdns === `${this.accessor}.mobile`
+    ) {
       this._rawExtension = e.detail.provider
     }
   }

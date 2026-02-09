@@ -102,7 +102,9 @@ export const useToasts = () => {
       }
 
       toastSonner.custom(
-        () => <Notification variant={variant} content={toast.title} />,
+        () => (
+          <Notification variant={variant} content={toast.title} fullWidth />
+        ),
         { id, duration: DEFAULT_AUTO_CLOSE_TIME },
       )
 
@@ -136,7 +138,7 @@ export const useToasts = () => {
 
       if (variant && title) {
         toastSonner.custom(
-          () => <Notification variant={variant} content={title} />,
+          () => <Notification variant={variant} content={title} fullWidth />,
           {
             id,
             duration: DEFAULT_AUTO_CLOSE_TIME,

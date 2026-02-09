@@ -279,6 +279,7 @@
   "transaction.jsonview.copy.json": "Copy JSON",
   "transaction.jsonview.copy.calldata": "Copy call data",
   "transaction.alert.insufficientFeeBalance": "Not enough fee payment asset balance.",
+  "transaction.alert.pendingDispatchPermit": "Permit transaction is pending. Please wait.",
   "transaction.batch.warning": "Your transaction would exhaust block limit, we need to split it into multiple transactions",
   "transaction.batch.step.label": "Transaction {{ index }}",
   "transaction.error.unsupportedTransaction": "Unsupported transaction or signer type",
