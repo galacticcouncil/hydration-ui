@@ -6,6 +6,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 
 import { ChainLogo } from "@/components/ChainLogo"
@@ -59,7 +60,11 @@ export const ChainList: React.FC<ChainListProps> = ({
               }}
               onClick={() => setSelectedChain(chain)}
             >
-              <ChainLogo chain={chain} size={isMobile ? "medium" : "small"} />
+              <ChainLogo
+                ecosystem={chain.ecosystem}
+                chainId={getChainId(chain)}
+                size={isMobile ? "medium" : "small"}
+              />
               <Text
                 display={["none", "block"]}
                 color={

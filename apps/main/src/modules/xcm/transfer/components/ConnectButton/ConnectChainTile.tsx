@@ -6,6 +6,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import { useTranslation } from "react-i18next"
 
@@ -34,7 +35,11 @@ export const ConnectChainTile: React.FC<ConnectChainTileProps> = ({
         {chain ? (
           <>
             <Flex gap="base" align="center">
-              <ChainLogo chain={chain} size="large" />
+              <ChainLogo
+                ecosystem={chain.ecosystem}
+                chainId={getChainId(chain)}
+                size="large"
+              />
               <Text fs="p3" fw={500}>
                 {t("xcm:chainNotConnected", {
                   chainName: chain.name,

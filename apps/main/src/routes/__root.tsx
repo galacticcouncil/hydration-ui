@@ -1,8 +1,9 @@
+import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { createRootRouteWithContext, HeadContent } from "@tanstack/react-router"
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools"
-import { lazy } from "react"
+import { FC, lazy } from "react"
 
 import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
@@ -20,6 +21,7 @@ import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSel
 import { RouteError } from "@/components/RouteError"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
+import { useXcScanSubscription } from "@/modules/xcm/history"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -53,6 +55,12 @@ const Subscriptions = () => {
   useQuery(assetsQuery(rpcProvider, queryClient))
 
   useAccountPermitNonce()
+
+  return null
+}
+
+const AccountSubscriptions: FC<{ account: Account }> = ({ account }) => {
+  useXcScanSubscription(account.address)
 
   return null
 }
@@ -104,6 +112,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootComponent() {
   const { isApiLoaded } = useRpcProvider()
   const hasTopNavbar = useHasTopNavbar()
+  const { isConnected, account } = useAccount()
 
   return (
     <>
@@ -112,6 +121,7 @@ function RootComponent() {
       {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
       {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
       {isApiLoaded && <Subscriptions />}
+      {isConnected && <AccountSubscriptions account={account} />}
       {!hasTopNavbar && <MobileTabBar />}
       <ProviderRpcSelect />
       <TransactionManager />
