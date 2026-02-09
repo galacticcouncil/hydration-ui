@@ -54,6 +54,9 @@ import { Pool } from "@aave/contract-helpers"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PopulatedTransaction, BigNumber as ethersBN } from "ethers"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
+import { PRIME_ASSET_ID } from "utils/constants"
+
+const PRIME_APY = BN(0.08)
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -647,7 +650,7 @@ const calculateAssetApyTotals = (
       return {
         id,
         isStaked: false,
-        supplyApy: (supplyAPY.isZero() ? BN(0.08) : supplyAPY)
+        supplyApy: (id === PRIME_ASSET_ID ? PRIME_APY : supplyAPY)
           .times(100)
           .times(proportion)
           .toNumber(),

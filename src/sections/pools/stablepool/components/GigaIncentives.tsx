@@ -16,7 +16,10 @@ import { getAddressFromAssetId, getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
-import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import {
+  MONEY_MARKET_GIGA_RESERVES,
+  PRIME_ASSET_IDS,
+} from "sections/lending/ui-config/misc"
 
 export const GigaIncentives = ({
   pool: { moneyMarketApy },
@@ -290,7 +293,7 @@ type OverrideApyProps = APYProps & {
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (true) {
-    case MONEY_MARKET_GIGA_RESERVES.includes(
+    case [...MONEY_MARKET_GIGA_RESERVES, ...PRIME_ASSET_IDS].includes(
       getAddressFromAssetId(props.assetId),
     ):
       return props.type === "supply" ? (
