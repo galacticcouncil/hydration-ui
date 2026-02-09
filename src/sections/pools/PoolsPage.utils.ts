@@ -13,6 +13,7 @@ import {
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
   HOLLAR_ASSETS,
+  PRIME_STABLESWAP_ASSET_ID,
 } from "utils/constants"
 import { useDisplayShareTokenPrice } from "utils/displayAsset"
 import { useStablepoolFees, useStableSDKPools } from "api/stableswap"
@@ -866,7 +867,11 @@ export const useStablepoolsData = (disabled?: boolean) => {
   const moneyMarketAssetsIds = useMemo(
     () =>
       stablePoolData
-        ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+        ?.filter(
+          (stablepool) =>
+            !!getRelatedAToken(stablepool.poolId) ||
+            stablepool.poolId === PRIME_STABLESWAP_ASSET_ID,
+        )
         .map((stablepool) => stablepool.poolId) ?? [],
     [stablePoolData, getRelatedAToken],
   )
