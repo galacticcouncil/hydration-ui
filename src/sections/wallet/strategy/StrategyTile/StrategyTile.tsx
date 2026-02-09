@@ -24,7 +24,7 @@ export type StrategyTileProps = {
   readonly variant: StrategyTileVariant
   withdrawAssetId?: string
   moneyMarketAssetId: string
-  metaAssetId?: string
+  defaultAssetIdToDeposit?: string
 }
 
 export const StrategyTile: FC<StrategyTileProps> = ({
@@ -34,11 +34,12 @@ export const StrategyTile: FC<StrategyTileProps> = ({
   riskTooltip,
   variant,
   moneyMarketAssetId,
-  metaAssetId,
+  defaultAssetIdToDeposit,
 }) => {
   const { account } = useAccount()
-  const { data: defaultAssetId, isLoading } =
-    useNewDepositDefaultAssetId(stableswapId)
+  const { data: defaultAssetId, isLoading } = useNewDepositDefaultAssetId(
+    defaultAssetIdToDeposit ?? stableswapId,
+  )
 
   return (
     <SStrategyTile variant={variant}>

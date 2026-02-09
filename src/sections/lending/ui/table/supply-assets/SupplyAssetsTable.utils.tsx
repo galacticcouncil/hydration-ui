@@ -27,7 +27,6 @@ import { getAssetIdFromAddress } from "utils/evm"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { NoData } from "sections/lending/components/primitives/NoData"
 import { useAssets } from "providers/assets"
-import { PRIME_ASSET_ID } from "utils/constants"
 
 export type TSupplyAssetsTable = typeof useSupplyAssetsTableData
 export type TSupplyAssetsTableData = ReturnType<TSupplyAssetsTable>
@@ -237,11 +236,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
           if (MONEY_MARKET_GIGA_RESERVES.includes(reserve.underlyingAsset)) {
             acc.gigaReserves.push(reserve)
 
-            if (
-              availableToDeposit.isNaN() ||
-              availableToDeposit.isZero() ||
-              getAssetIdFromAddress(reserve.underlyingAsset) === PRIME_ASSET_ID
-            )
+            if (availableToDeposit.isNaN() || availableToDeposit.isZero())
               return acc
           }
 
