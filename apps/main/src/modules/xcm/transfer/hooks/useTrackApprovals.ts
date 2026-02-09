@@ -10,16 +10,16 @@ import { useEffect } from "react"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 
 export const useTrackApprovals = (chainKey: string) => {
-  const { pendingApprovals, removePendingApproval } = useApprovalTrackingStore()
   const { account } = useAccount()
+  const { getPendingApprovals, removePendingApproval } =
+    useApprovalTrackingStore()
 
   useEffect(() => {
     const chain = chainsMap.get(chainKey)
     const h160Addr = account ? safeConvertSS58toH160(account.address) : ""
-    const approvals = pendingApprovals.filter((tx) => tx.chainKey === chainKey)
     const isValidEvmChain = !!chain && isEvmChain(chain)
 
-    if (approvals.length === 0 || !h160Addr || !isValidEvmChain) {
+    if (!h160Addr || !isValidEvmChain) {
       return
     }
 
@@ -31,10 +31,12 @@ export const useTrackApprovals = (chainKey: string) => {
           blockNumber,
         })
 
-        const approvedTxs = approvals.filter((tx) => tx.nonce < nonce)
+        const approvals = getPendingApprovals(chainKey, nonce)
 
-        approvedTxs.forEach((tx) => {
-          removePendingApproval(tx.chainKey, tx.nonce)
+        approvals.forEach((tx) => {
+          if (tx.nonce < nonce) {
+            removePendingApproval(tx.chainKey, tx.nonce)
+          }
         })
       },
     })
@@ -42,5 +44,5 @@ export const useTrackApprovals = (chainKey: string) => {
     return () => {
       unsub()
     }
-  }, [account, chainKey, pendingApprovals, removePendingApproval])
+  }, [account, chainKey, getPendingApprovals, removePendingApproval])
 }
