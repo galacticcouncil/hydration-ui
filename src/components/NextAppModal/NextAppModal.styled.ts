@@ -2,6 +2,7 @@ import styled from "@emotion/styled"
 
 import heroImage from "assets/images/next-ui-banner.webp"
 import selectImage from "assets/images/next-ui-select.webp"
+import { theme } from "theme"
 
 export const SHeroImage = styled.div`
   aspect-ratio: 462 / 288;
@@ -12,12 +13,16 @@ export const SHeroImage = styled.div`
 
 export const SSelectImage = styled.div`
   aspect-ratio: 276 / 54;
-  width: 60%;
+  width: 100%;
 
   background-image: url(${selectImage});
   background-size: cover;
   background-repeat: no-repeat;
   margin: 0 auto;
+
+  @media ${theme.viewport.gte.sm} {
+    width: 75%;
+  }
 `
 
 export const SContent = styled.div`

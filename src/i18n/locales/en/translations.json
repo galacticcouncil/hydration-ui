@@ -67,6 +67,7 @@
   "toast.sidebar.referendums.voted": "Voted",
   "toast.sidebar.important.title": "Important",
   "rpc.change.modal.title": "Change RPC",
+  "rpc.change.modal.newUI.title": "New UI preview",
   "rpc.change.modal.column.name": "Name",
   "rpc.change.modal.column.status": "Status",
   "rpc.change.modal.column.rpc": "RPC Address",

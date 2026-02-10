@@ -18,8 +18,10 @@ import { LazyMotion, domAnimation } from "framer-motion"
 import { Spinner } from "components/Spinner/Spinner"
 import { ExternalLink } from "components/Link/ExternalLink"
 import { NEXT_APP_URL } from "utils/constants"
+import { useTranslation } from "react-i18next"
 
 export const ProviderSelectButton = () => {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
 
   const activeProvider = useActiveProvider()
@@ -36,7 +38,7 @@ export const ProviderSelectButton = () => {
       <SContainer>
         <ExternalLink css={{ textDecoration: "none" }} href={NEXT_APP_URL}>
           <SPreview font="Geist" fw={500} fs={11} lh={15.4}>
-            New UI preview
+            {t("rpc.change.modal.newUI.title")}
           </SPreview>
         </ExternalLink>
         <SButton
