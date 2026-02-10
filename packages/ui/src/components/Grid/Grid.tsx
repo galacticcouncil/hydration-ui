@@ -34,6 +34,7 @@ type GridOwnProps = {
   repeat?: "fit" | "fill"
   justify?: ThemeUICSSProperties["justifyContent"]
   justifyItems?: ThemeUICSSProperties["justifyItems"]
+  justifyContent?: ThemeUICSSProperties["justifyContent"]
   align?: ThemeUICSSProperties["alignItems"]
   columns?: ResponsiveStyleValue<string | number>
   columnWidth?: ResponsiveStyleValue<string | number>
@@ -54,6 +55,7 @@ export const Grid: FC<GridProps & { ref?: Ref<HTMLElement> }> = ({
   repeat = "fit",
   justify,
   justifyItems,
+  justifyContent,
   align,
   sx,
   ref,
@@ -75,6 +77,7 @@ export const Grid: FC<GridProps & { ref?: Ref<HTMLElement> }> = ({
         gridTemplateColumns,
         gridTemplateRows: rowTemplate,
         justify,
+        justifyContent,
         justifyItems,
         alignItems: align,
         ...gapProps,

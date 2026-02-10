@@ -79,14 +79,17 @@ const formatters = {
       : i18n.t("date.relative.future", { value: formatted })
   },
 
-  interval: (intervalMs: number) => {
+  interval: (intervalMs: number, options: Record<string, string>) => {
     if (typeof intervalMs !== "number") {
       return ""
     }
 
+    const isShort = options.format === "short"
+
     return humanizer.humanize(intervalMs, {
       round: true,
       largest: 2,
+      ...(isShort && { language: "shortEn", conjunction: " ", spacer: "" }),
     })
   },
 }
@@ -142,7 +145,7 @@ export const interpolationFormat: FormatFunction = (
       return formatters.date(value, options)
 
     case "interval":
-      return formatters.interval(value)
+      return formatters.interval(value, options)
 
     case "relative":
       return formatters.relativeTime(value, options.targetDate ?? new Date())

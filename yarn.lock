@@ -2140,6 +2140,11 @@
     buffer "^6.0.3"
     lru-cache "^11.2.2"
 
+"@galacticcouncil/xc-scan@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.1.0.tgz#553148932d0b3135da6f0aef6954459f5485c437"
+  integrity sha512-gxPpIeOojJ5dt7r2X4DqQcItGREPebidfhpeAtRqeQuGZx80+2gZcFcvlwT5QLySgb7pwKfgUMIrYcDwb4jHjA==
+
 "@galacticcouncil/xc-sdk@^0.5.2":
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.5.2.tgz#b5f5e7dda3710a3d8ece16eba85c33635c785a0e"

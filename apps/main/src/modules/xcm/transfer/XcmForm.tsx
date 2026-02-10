@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Flex,
   Paper,
@@ -274,11 +273,6 @@ export const XcmForm = () => {
             />
           </Box>
         </Paper>
-        <Alert
-          sx={{ mt: "xl" }}
-          title={t("xcm:beta.title")}
-          description={t("xcm:beta.description")}
-        />
       </Stack>
     </form>
   )
