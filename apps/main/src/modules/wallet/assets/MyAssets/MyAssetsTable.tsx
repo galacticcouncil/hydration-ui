@@ -79,6 +79,7 @@ export const MyAssetsTable: FC<Props> = ({
         onRowClick={(asset) => setIsDetailOpen({ type: null, detail: asset })}
       />
       <Modal
+        variant="popup"
         open={!!isDetailOpen}
         onOpenChange={() =>
           setIsDetailOpen(
