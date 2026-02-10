@@ -12,7 +12,6 @@ const KEY_PATH = "key" as const
 
 export enum IndexedDBStores {
   AssetRegistry = "asset-registry",
-  ApiMetadata = "api-metadata",
 }
 
 export type IndexedDBConfig = {

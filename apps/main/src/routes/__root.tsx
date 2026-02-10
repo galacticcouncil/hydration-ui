@@ -7,11 +7,7 @@ import { lazy } from "react"
 import { useAccountPermitNonce, useAccountUniques } from "@/api/account"
 import { assetsQuery } from "@/api/assets"
 import { useInvalidateOnBlock } from "@/api/chain"
-import {
-  providerQuery,
-  useProviderMetadata,
-  useSquidClient,
-} from "@/api/provider"
+import { providerQuery, useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
@@ -45,7 +41,6 @@ const Subscriptions = () => {
   const rpcProvider = useRpcProvider()
   const queryClient = useQueryClient()
 
-  useProviderMetadata()
   useInvalidateOnBlock()
   useAccountBalanceSubscription()
   useAccountUniques()
