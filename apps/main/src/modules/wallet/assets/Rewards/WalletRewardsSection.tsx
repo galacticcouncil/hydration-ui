@@ -1,4 +1,5 @@
-import { Button, Flex, ValueStats } from "@galacticcouncil/ui/components"
+import { Button, Flex, Text, ValueStats } from "@galacticcouncil/ui/components"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -89,13 +90,20 @@ export const WalletRewardsSection: FC = () => {
           </WalletRewardsSectionEmpty>
         )}
       </Flex>
-      <Button
-        width="max-content"
-        disabled={isEmpty}
-        onClick={() => claimAll.mutate()}
-      >
-        {isEmpty && !isLoading ? t("rewards.claim.empty") : t("rewards.claim")}
-      </Button>
+      <Flex justify="space-between" align="center">
+        <Button
+          width="max-content"
+          disabled={isEmpty}
+          onClick={() => claimAll.mutate()}
+        >
+          {isEmpty && !isLoading
+            ? t("rewards.claim.empty")
+            : t("rewards.claim")}
+        </Button>
+        <Text fs={pxToRem(9)} lh={1} color={getToken("text.low")}>
+          {t("rewards.claim.description")}
+        </Text>
+      </Flex>
     </SWalletRewardsSection>
   )
 }
