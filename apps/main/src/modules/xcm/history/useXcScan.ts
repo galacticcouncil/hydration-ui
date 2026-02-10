@@ -28,50 +28,40 @@ export const useXcScanSubscription = (address: string) => {
       return
     }
 
-    async function subscribeJourneys() {
-      try {
-        const queryKey = createXcScanQueryKey(address)
-        const cachedData = queryClient.getQueryData<XcJourney[]>(queryKey)
-        setIsLoading(!cachedData)
-        setIsError(false)
+    function subscribeJourneys() {
+      const queryKey = createXcScanQueryKey(address)
+      const cachedData = queryClient.getQueryData<XcJourney[]>(queryKey)
 
-        xcStore.subscribe(address, {
-          onLoad(journeys) {
-            queryClient.setQueryData(queryKey, journeys)
-            setIsLoading(false)
-          },
-          onNew(journey) {
-            queryClient.setQueryData<XcJourney[] | undefined>(
-              queryKey,
-              (old) => {
-                if (!old) {
-                  return [journey]
-                }
-                return [journey, ...old]
-              },
+      setIsLoading(!cachedData)
+      setIsError(false)
+
+      xcStore.subscribe(address, {
+        onLoad(journeys) {
+          queryClient.setQueryData(queryKey, journeys)
+          setIsLoading(false)
+          setIsError(false)
+        },
+        onNew(journey) {
+          queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
+            if (!old) {
+              return [journey]
+            }
+            return [journey, ...old]
+          })
+        },
+        onUpdate(journey, prev) {
+          queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
+            if (!old) return old
+            return old.map((item) =>
+              item.correlationId === prev.correlationId ? journey : item,
             )
-          },
-          onUpdate(journey, prev) {
-            queryClient.setQueryData<XcJourney[] | undefined>(
-              queryKey,
-              (old) => {
-                if (!old) return old
-                return old.map((item) =>
-                  item.correlationId === prev.correlationId ? journey : item,
-                )
-              },
-            )
-          },
-          onError() {
-            setIsError(true)
-            setIsLoading(false)
-          },
-        })
-      } catch (err) {
-        console.error(err)
-        setIsError(true)
-        setIsLoading(false)
-      }
+          })
+        },
+        onError() {
+          setIsError(true)
+          setIsLoading(false)
+        },
+      })
     }
 
     subscribeJourneys()

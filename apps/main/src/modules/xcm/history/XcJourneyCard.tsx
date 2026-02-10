@@ -17,14 +17,11 @@ import { shortenAccountAddress, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useTranslation } from "react-i18next"
 
-import { ChainLogo } from "@/components/ChainLogo"
-import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
+import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
+import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
-import {
-  resolveAssetIcon,
-  resolveNetwork,
-} from "@/modules/xcm/history/utils/assets"
+import { resolveNetwork } from "@/modules/xcm/history/utils/assets"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = ({
@@ -50,8 +47,6 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
   const transferAsset =
     assetsArray.find((a) => a.role === "transfer") || assetsArray[0]
 
-  const iconData = transferAsset ? resolveAssetIcon(transferAsset.asset) : null
-
   const link = xcscan.tx(correlationId)
 
   const isValidAsset =
@@ -63,20 +58,14 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
         <Flex py="m" align="center">
           {originNetwork && destinationNetwork ? (
             <>
-              <ChainLogo
-                ecosystem={originNetwork.ecosystem}
-                chainId={originNetwork.chainId}
-              />
+              <JourneyChainLogo networkUrn={origin} />
               <Icon
                 component={ArrowRight}
                 size="l"
                 mx="s"
                 color={getToken("icons.onSurface")}
               />
-              <ChainLogo
-                ecosystem={destinationNetwork.ecosystem}
-                chainId={destinationNetwork.chainId}
-              />
+              <JourneyChainLogo networkUrn={destination} />
             </>
           ) : (
             <Icon
@@ -114,15 +103,7 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
       <Flex align="center">
         {isValidAsset && (
           <Flex gap="base" py="m" align="center" mr={["l", "xl"]}>
-            {iconData && (
-              <ExternalAssetLogo
-                id={iconData.assetId}
-                ecosystem={iconData.ecosystem}
-                chainId={iconData.chainId}
-                size="small"
-              />
-            )}
-
+            <JourneyAssetLogo assetKey={transferAsset.asset} size="small" />
             <Stack>
               <Text fs="p5" lh={1} fw={600} color={getToken("text.high")}>
                 {t("currency", {

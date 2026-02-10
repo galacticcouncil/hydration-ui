@@ -1,54 +1,14 @@
-import {
-  CheckIcon,
-  ClockIcon,
-  TriangleAlert,
-} from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text, TextProps } from "@galacticcouncil/ui/components"
-import { ThemeToken } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { XcJourney } from "@galacticcouncil/xc-scan"
 import { useTranslation } from "react-i18next"
 
-type TJourneyStatus = XcJourney["status"]
+import {
+  getStatusProps,
+  TJourneyStatus,
+} from "@/modules/xcm/history/utils/journey"
 
 export type JourneyStatusProps = TextProps & {
   status: TJourneyStatus
-}
-
-const PENDING_STATUSES = ["sent", "pending", "waiting"]
-const SUCCESS_STATUSES = ["received", "success", "completed", "confirmed"]
-const FAILED_STATUSES = ["fail", "failed", "timeout"]
-
-const getStatusProps = (
-  status: TJourneyStatus,
-): {
-  color: ThemeToken
-  icon: React.ComponentType | null
-} => {
-  if (PENDING_STATUSES.includes(status)) {
-    return {
-      color: "controls.solid.accent",
-      icon: ClockIcon,
-    }
-  }
-  if (SUCCESS_STATUSES.includes(status)) {
-    return {
-      color: "accents.success.emphasis",
-      icon: CheckIcon,
-    }
-  }
-
-  if (FAILED_STATUSES.includes(status)) {
-    return {
-      color: "accents.danger.secondary",
-      icon: TriangleAlert,
-    }
-  }
-
-  return {
-    color: "text.medium",
-    icon: null,
-  }
 }
 
 export const JourneyStatus: React.FC<JourneyStatusProps> = ({

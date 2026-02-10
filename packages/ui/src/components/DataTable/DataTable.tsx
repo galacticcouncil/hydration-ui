@@ -362,24 +362,12 @@ export const DataTablePagination = <T,>({
     onPageClick?.(page)
   }
 
-  const handlePreviousPage = () => {
-    onPageClick?.(table.getState().pagination.pageIndex)
-    table.previousPage()
-  }
-
-  const handleNextPage = () => {
-    onPageClick?.(table.getState().pagination.pageIndex + 2)
-    table.nextPage()
-  }
-
   return (
     <SPagination>
       <Pagination
         totalPages={totalPages}
         currentPage={currentPage}
         onPageChange={handlePageChange}
-        onPreviousPage={handlePreviousPage}
-        onNextPage={handleNextPage}
       />
     </SPagination>
   )

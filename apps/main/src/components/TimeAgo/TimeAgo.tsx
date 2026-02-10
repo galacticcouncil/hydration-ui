@@ -12,13 +12,13 @@ export type TimeAgoProps = TextProps & {
 export const TimeAgo: React.FC<TimeAgoProps> = ({ date, ...props }) => {
   const { t } = useTranslation(["common"])
 
-  useHarmonicIntervalFn(() => {
-    setDateString(t("date.relative", { value: date }))
-  }, getUpdateInterval(date))
-
   const [dateString, setDateString] = useState(() =>
     t("date.relative", { value: date }),
   )
+
+  useHarmonicIntervalFn(() => {
+    setDateString(t("date.relative", { value: date }))
+  }, getUpdateInterval(date))
 
   return <Text {...props}>{dateString}</Text>
 }

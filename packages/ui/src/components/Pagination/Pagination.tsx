@@ -57,12 +57,12 @@ export const Pagination: FC<PaginationProps> = ({
       >
         Prev
       </PaginationNavButton>
-      {range.map((pageNumber, index) =>
+      {range.map((pageNumber) =>
         typeof pageNumber === "string" ? (
-          <PaginationDots key={`${index}-dots`} />
+          <PaginationDots key={pageNumber} />
         ) : (
           <PaginationPageButton
-            key={`${index}-page`}
+            key={pageNumber}
             pageNumber={pageNumber}
             isActive={pageNumber === currentPage}
             onClick={() => handlePageClick(pageNumber)}

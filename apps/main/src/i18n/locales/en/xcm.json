@@ -56,5 +56,8 @@
   "journey.status.waiting": "Waiting",
   "journey.status.fail": "Failed",
   "journey.status.failed": "Failed",
-  "journey.status.timeout": "Timeout"
+  "journey.status.timeout": "Timeout",
+  "history.emptyState.noTransfers": "No transfer history found",
+  "history.emptyState.connectWallet": "Please connect a wallet to view transfer history",
+  "history.emptyState.empty": "No transfers found for your account"
 }

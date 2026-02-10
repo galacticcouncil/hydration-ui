@@ -16,7 +16,7 @@ export const JourneyDate: React.FC<JourneyDateProps> = ({
   const { t } = useTranslation(["common"])
 
   const now = useRef(new Date()).current
-  const date = useRef(new Date(timestamp)).current
+  const date = new Date(timestamp)
   const hoursAgo = differenceInHours(now, date)
 
   const isWithin24Hours = hoursAgo < 24

@@ -17,15 +17,11 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ChainLogo } from "@/components/ChainLogo"
-import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
+import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
+import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
-import {
-  resolveAssetIcon,
-  resolveNetwork,
-} from "@/modules/xcm/history/utils/assets"
 import { toDecimal } from "@/utils/formatting"
 
 const columnHelper = createColumnHelper<XcJourney>()
@@ -52,15 +48,9 @@ export const useXcScanHistoryColumns = () => {
       cell: ({ row }) => {
         const from = row.original.fromFormatted || row.original.from
 
-        const network = resolveNetwork(row.original.origin)
         return (
           <Flex gap="base" align="center">
-            {network && (
-              <ChainLogo
-                ecosystem={network.ecosystem}
-                chainId={network.chainId}
-              />
-            )}
+            <JourneyChainLogo networkUrn={row.original.origin} />
             <Text fw={500} color={getToken("text.high")}>
               {shortenAccountAddress(from)}
             </Text>
@@ -74,15 +64,9 @@ export const useXcScanHistoryColumns = () => {
       header: t("to"),
       cell: ({ row }) => {
         const to = row.original.toFormatted || row.original.to
-        const network = resolveNetwork(row.original.destination)
         return (
           <Flex gap="base" align="center">
-            {network && (
-              <ChainLogo
-                ecosystem={network.ecosystem}
-                chainId={network.chainId}
-              />
-            )}
+            <JourneyChainLogo networkUrn={row.original.destination} />
             <Text fw={500} color={getToken("text.high")}>
               {shortenAccountAddress(to)}
             </Text>
@@ -107,20 +91,11 @@ export const useXcScanHistoryColumns = () => {
         const transferAsset =
           assetsArray.find((a) => a.role === "transfer") || assetsArray[0]
 
-        if (!transferAsset || !transferAsset?.symbol) return null
-
-        const iconData = resolveAssetIcon(transferAsset.asset)
+        if (!transferAsset?.symbol) return null
 
         return (
           <Flex gap="base" align="center">
-            {iconData && (
-              <ExternalAssetLogo
-                id={iconData.assetId}
-                ecosystem={iconData.ecosystem}
-                chainId={iconData.chainId}
-              />
-            )}
-
+            <JourneyAssetLogo assetKey={transferAsset.asset} />
             <Stack>
               <Text fw={600} color={getToken("text.high")}>
                 {transferAsset?.decimals

@@ -1,23 +1,23 @@
 import { range } from "remeda"
 
 const PAGINATION_DOTS = "..."
+const MAX_LENGTH = 5
 
 export function getPaginationRange(
   totalPages: number,
   currentPage: number,
 ): Array<number | string> {
-  const maxLength = 5
   const pagination = []
 
   pagination.push(1)
 
-  if (totalPages <= maxLength) {
+  if (totalPages <= MAX_LENGTH) {
     pagination.push(...range(2, totalPages + 1))
 
     return pagination
   }
 
-  const innerMaxLength = maxLength - 2
+  const innerMaxLength = MAX_LENGTH - 2
   const sideLength = Math.floor((innerMaxLength - 1) / 2)
 
   let startPage = currentPage - sideLength
