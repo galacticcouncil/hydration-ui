@@ -1,14 +1,19 @@
 import {
   formatDestChainAddress,
   formatSourceChainAddress,
+  HexString,
+  isEvmChain,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
-import { Asset, AssetRoute } from "@galacticcouncil/xc-core"
+import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
+import { minutesToMilliseconds } from "date-fns"
+import waitFor from "p-wait-for"
 
 import { XcmTransferArgs } from "@/api/xcm"
 import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
+import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { XCM_BRIDGE_TAGS, XcmTags } from "@/states/transactions"
@@ -94,4 +99,38 @@ export const getXcmTransferArgs = (
     destAsset: isValidAsset ? destAsset.key : "",
     destChain: destChain?.key ?? "",
   }
+}
+
+export const buildTransferCall = async (
+  call: Call,
+  transfer: Transfer,
+  srcChain: AnyChain,
+  srcAmount: string,
+): Promise<Call> => {
+  const isApprovalCall = isEvmChain(srcChain) && isEvmApproveCall(call)
+
+  if (!isApprovalCall) return call
+
+  const provider = srcChain.evmClient.getProvider()
+  const nonce = await provider.getTransactionCount({
+    address: call.from as HexString,
+  })
+
+  // wait for approvals to be cleared before building the transfer call
+  return waitFor(
+    async () => {
+      const pending = useApprovalTrackingStore
+        .getState()
+        .getPendingApprovals(srcChain.key, nonce)
+      if (pending.length === 0) {
+        const transferCall = await transfer.buildCall(srcAmount)
+        return waitFor.resolveWith(transferCall)
+      }
+      return false
+    },
+    {
+      interval: 1000,
+      timeout: minutesToMilliseconds(3),
+    },
+  )
 }

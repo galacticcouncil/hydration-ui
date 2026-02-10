@@ -16,6 +16,7 @@ import {
   useCrossChainConfigService,
 } from "@/api/xcm"
 import { ChainAssetPair } from "@/modules/xcm/transfer/components/ChainAssetSelect/ChainAssetSelect"
+import { useTrackApprovals } from "@/modules/xcm/transfer/hooks/useTrackApprovals"
 import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
@@ -144,6 +145,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
   const {
     transfer: xcmTransfer,
     isLoadingTransfer,
+    isLoadingCall,
     call,
     report,
   } = useXcmTransfer(form)
@@ -172,6 +174,8 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     destChainKey,
   )
 
+  useTrackApprovals(srcChainKey)
+
   const isLoading =
     isLoadingTransfer || isLoadingSrcBalances || isLoadingDestBalances
 
@@ -179,6 +183,8 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     <XcmContext.Provider
       value={{
         isLoading,
+        isLoadingCall,
+        isLoadingTransfer,
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
