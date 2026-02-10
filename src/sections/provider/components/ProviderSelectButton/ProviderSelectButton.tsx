@@ -35,7 +35,7 @@ export const ProviderSelectButton = () => {
     <LazyMotion features={domAnimation}>
       <SContainer>
         <ExternalLink css={{ textDecoration: "none" }} href={NEXT_APP_URL}>
-          <SPreview font="GeistMedium" fw={500} fs={11} lh={15.4}>
+          <SPreview font="Geist" fw={500} fs={11} lh={15.4}>
             New UI preview
           </SPreview>
         </ExternalLink>
