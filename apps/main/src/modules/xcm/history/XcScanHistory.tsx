@@ -22,8 +22,10 @@ export const XcScanHistory = ({ address }: Props) => {
 
   const { data } = useXcScan(address)
 
-  const sort = useDataTableUrlSorting("/cross-chain/history", "sort")
   const pagination = useDataTableUrlPagination("/cross-chain/history", "page")
+  const sort = useDataTableUrlSorting("/cross-chain/history", "sort", {
+    onChange: () => pagination.onPageClick(1),
+  })
 
   return (
     <TableContainer as={Paper}>
@@ -31,7 +33,6 @@ export const XcScanHistory = ({ address }: Props) => {
         paginated
         data={data}
         columns={columns}
-        pageSize={50}
         emptyState={
           <EmptyState
             header={t("history.emptyState.noTransfers")}
