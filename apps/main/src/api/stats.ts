@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { endOfDay, subDays } from "date-fns"
 import z from "zod/v4"
 
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
@@ -70,6 +71,7 @@ export enum BucketSize {
   SixHour = "6hour",
   TwentyFourHour = "24hour",
   SevenDay = "7day",
+  ThirtyDay = "30day",
 }
 const LATEST_START_DATE = new Date("2024-04-28")
 const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
@@ -78,7 +80,7 @@ const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
   switch (timeRange) {
     case "1W":
       start.setDate(start.getDate() - 7)
-      bucketSize = BucketSize.SixHour
+      bucketSize = BucketSize.TwentyFourHour
       break
     case "1M":
       start.setMonth(start.getMonth() - 1)
@@ -90,7 +92,7 @@ const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
       break
     case "ALL":
       start = LATEST_START_DATE
-      bucketSize = BucketSize.SevenDay
+      bucketSize = BucketSize.ThirtyDay
       break
   }
   return { startDate: start, bucketSize }
@@ -140,7 +142,7 @@ export const useFeesChartsData = (props: FeesChartsDataProps) => {
   const test = useQuery({
     queryKey: ["feesChartsData", viewMode, timeRange],
     queryFn: async () => {
-      const endDate = new Date()
+      const endDate = endOfDay(subDays(new Date(), 1))
       const endTime = endDate.toISOString()
       const { startDate, bucketSize } = getTimeRangeParams(timeRange, endDate)
       const startTime = startDate.toISOString()
