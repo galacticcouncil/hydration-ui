@@ -75,7 +75,7 @@ export const MyLiquidityTableActions: FC<Props> = ({ assetId }) => {
           onSubmitted={() => setIsRemoveAllModalOpen(false)}
         />
       </Modal>
-      <Modal variant="popup" open={isAddOpen} onOpenChange={setIsAddOpen}>
+      <Modal open={isAddOpen} onOpenChange={setIsAddOpen}>
         <AddLiquidityModalContent
           id={assetId}
           closable

@@ -157,6 +157,7 @@ export const MyLiquidityTable: FC<Props> = ({
         }
       />
       <Modal
+        variant="popup"
         open={!!isDetailOpen}
         onOpenChange={() =>
           setIsDetailOpen(
