@@ -1,5 +1,5 @@
 import { log } from "@galacticcouncil/common"
-import { hydration } from "@galacticcouncil/descriptors"
+import { getMetadata, hydration } from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import {
   getSnowbridgeSdk,
@@ -7,14 +7,13 @@ import {
 } from "@galacticcouncil/indexer/snowbridge"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
-import { AssetMetadataFactory, hasOwn } from "@galacticcouncil/utils"
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
+import { AssetMetadataFactory } from "@galacticcouncil/utils"
+import { queryOptions } from "@tanstack/react-query"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
 
-import { chainSpecDataQuery } from "@/api/chain"
 import {
   createProvider,
   ProviderProps,
@@ -22,7 +21,6 @@ import {
   TDataEnv,
 } from "@/config/rpc"
 import { Papi, useRpcProvider } from "@/providers/rpcProvider"
-import { ApiMetadata, useApiMetadataStore } from "@/states/metadata"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = object
@@ -96,7 +94,7 @@ const getProviderData = async (
     },
   })
 
-  const papiClient = createClient(ws)
+  const papiClient = createClient(ws, { getMetadata })
   const papi = papiClient.getTypedApi(hydration)
 
   const metadata = AssetMetadataFactory.getInstance()
@@ -163,43 +161,6 @@ export const useActiveProviderProps = (): ProviderProps | null => {
       )
     )
   }, [endpoint])
-}
-
-export const useProviderMetadata = () => {
-  const queryClient = useQueryClient()
-  const provider = useRpcProvider()
-  const { metadata: storedMetadata, setMetadata } = useApiMetadataStore()
-
-  return useQuery({
-    enabled: provider.isApiLoaded,
-    queryKey: ["providerMetadata"],
-    queryFn: async () => {
-      const { chainSpecData, lastRuntimeUpgrade } =
-        await queryClient.ensureQueryData(chainSpecDataQuery(provider))
-
-      const genesisHash = chainSpecData.genesisHash
-      const runtimeVersion = lastRuntimeUpgrade?.spec_version
-
-      const metadataKey = `${genesisHash}-${runtimeVersion}`
-      const isCurrentMetadataStored = hasOwn(storedMetadata, metadataKey)
-
-      if (isCurrentMetadataStored) {
-        return storedMetadata
-      }
-
-      const metadataBinary = await provider.papi.apis.Metadata.metadata()
-      const metadataHex = metadataBinary.asHex()
-      const metadata: ApiMetadata = {
-        [metadataKey]: metadataHex,
-      }
-
-      setMetadata(metadata)
-      return metadata
-    },
-
-    staleTime: Infinity,
-    notifyOnChangeProps: [],
-  })
 }
 
 export const useSquidClient = (): SquidSdk => {

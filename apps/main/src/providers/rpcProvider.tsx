@@ -103,9 +103,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
 
-  // @TODO enable when Papi supports cached metadata
-  // const { metadata } = useApiMetadataStore()
-
   const { data } = useQuery({
     enabled: !isInvalidating,
     ...providerQuery(rpcProviderUrls),
