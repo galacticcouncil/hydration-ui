@@ -10,7 +10,6 @@ import {
   SSelectImage,
 } from "./NextAppModal.styled"
 import { useNextAppModalStore } from "./NextAppModal.utils"
-import { openUrl } from "utils/helpers"
 import { useTranslation } from "react-i18next"
 import { NEXT_APP_URL } from "utils/constants"
 
@@ -48,10 +47,9 @@ export const NextAppModal = () => {
                   </Button>
                   <Button
                     variant="primary"
-                    onClick={() => {
-                      onClose()
-                      openUrl(NEXT_APP_URL, "_blank")
-                    }}
+                    as="a"
+                    onClick={onClose}
+                    {...{ href: NEXT_APP_URL, target: "_blank" }}
                   >
                     {t("next.banner.cta.preview")}
                   </Button>
