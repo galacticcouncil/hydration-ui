@@ -1,7 +1,11 @@
+import { ProtocolAction } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
 import { h160 } from "@galacticcouncil/common"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
-import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
+import {
+  AaveV3HydrationMainnet,
+  gasLimitRecommendations,
+} from "@galacticcouncil/money-market/ui-config"
 import {
   formatGhoReserveData,
   formatGhoUserData,
@@ -464,7 +468,10 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       target: Binary.fromHex(tx.to),
       input: Binary.fromHex(tx.data),
       value: [0n, 0n, 0n, 0n],
-      gas_limit: BigInt(tx.gasLimit.toString()),
+      gas_limit: BigInt(
+        gasLimitRecommendations[ProtocolAction.claimRewards]?.limit ||
+          tx.gasLimit.toString(),
+      ),
       max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
       max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
       access_list: [],
