@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 import { useAddressStore } from "@/components/address-book/AddressBook.store"
 import { AddressBookButton } from "@/components/address-book/AddressBookButton"
 import { TALISMAN_PROVIDERS } from "@/config/providers"
+import i18n from "@/i18n"
 
 export type AddressBookProps = {
   readonly address: string
@@ -20,7 +21,7 @@ export const AddressBook: FC<AddressBookProps> = ({
   onAddressChange,
   onOpenMyContacts,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("translations", { i18n })
   const id = useId()
   const { addresses } = useAddressStore()
   const provider = addresses.find((a) => a.address === address)?.provider
