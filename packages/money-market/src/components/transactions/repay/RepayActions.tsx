@@ -96,9 +96,12 @@ export const RepayActions = ({
       setMainTxState({ ...mainTxState, loading: true })
 
       const repayParams = {
-        amountToRepay: isMaxSelected
-          ? amountToRepayMax
-          : parseUnits(amountToRepay, poolReserve.decimals).toString(),
+        amountToRepay:
+          amountToRepayMax === "-1"
+            ? amountToRepayMax
+            : isMaxSelected
+              ? parseUnits(amountToRepayMax, poolReserve.decimals).toString()
+              : parseUnits(amountToRepay, poolReserve.decimals).toString(),
         poolAddress,
         repayWithATokens,
         debtType,
