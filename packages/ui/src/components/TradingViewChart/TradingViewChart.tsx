@@ -53,7 +53,6 @@ export type TradingViewChartProps = ChartTypeProps & {
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
-  priceLines?: Array<number>
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({

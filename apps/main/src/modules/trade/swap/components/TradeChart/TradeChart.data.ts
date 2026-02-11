@@ -33,7 +33,7 @@ export const useTradeChartData = ({
   const squidClient = useSquidClient()
 
   // To prevent refetching on asset switch
-  const isAssetInFirst = Number(assetOutId) >= Number(assetOutId)
+  const isAssetInFirst = Number(assetOutId) >= Number(assetInId)
   const sortedAssets = isAssetInFirst
     ? ([assetInId, assetOutId] as const)
     : ([assetOutId, assetInId] as const)
@@ -116,16 +116,8 @@ export const useTradeChartData = ({
       }))
   }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPriceData])
 
-  const pricePoints = prices.map((price) => price.close)
-  const min = Math.min(...pricePoints)
-  const max = Math.max(...pricePoints)
-  const mid = (min + max) / 2
-
   return {
     prices,
-    min,
-    max,
-    mid,
     isError,
     isLoading,
     isSuccess,
