@@ -1,7 +1,7 @@
-import i18n from "i18next"
+import { interpolationFormat } from "@galacticcouncil/utils"
+import i18next from "i18next"
 import { initReactI18next } from "react-i18next"
 
-import { interpolationFormat } from "@/i18n/interpolation"
 import borrow from "@/i18n/locales/en/borrow.json"
 import common from "@/i18n/locales/en/common.json"
 import liquidity from "@/i18n/locales/en/liquidity.json"
@@ -14,6 +14,8 @@ export const defaultNS = "common"
 export const resources = {
   en: { common, liquidity, trade, wallet, borrow, staking, xcm },
 } as const
+
+const i18n = i18next.createInstance()
 
 i18n.use(initReactI18next).init({
   defaultNS,

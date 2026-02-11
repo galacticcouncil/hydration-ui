@@ -4,6 +4,7 @@ import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
+import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
 import { Page404 } from "@/components/Page404"
@@ -44,20 +45,22 @@ declare module "@tanstack/react-router" {
 
 export const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <ProvideRpcResolver>
-          <AssetsProvider>
-            <RpcProvider>
-              <TooltipProvider delayDuration={0}>
-                <RouterProvider router={router} />
-                <Toaster />
-              </TooltipProvider>
-            </RpcProvider>
-          </AssetsProvider>
-        </ProvideRpcResolver>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <ProvideRpcResolver>
+            <AssetsProvider>
+              <RpcProvider>
+                <TooltipProvider delayDuration={0}>
+                  <RouterProvider router={router} />
+                  <Toaster />
+                </TooltipProvider>
+              </RpcProvider>
+            </AssetsProvider>
+          </ProvideRpcResolver>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </I18nextProvider>
   )
 }
 

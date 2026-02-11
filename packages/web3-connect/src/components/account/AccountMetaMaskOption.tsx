@@ -1,4 +1,5 @@
 import { Box } from "@galacticcouncil/ui/components"
+import { useTranslation } from "react-i18next"
 
 import {
   AccountOption,
@@ -9,6 +10,7 @@ import { isEip1193Provider, requestAccounts } from "@/utils"
 import { getWallet, MetaMask } from "@/wallets"
 
 export const AccountMetaMaskOption: React.FC<AccountOptionProps> = (props) => {
+  const { t } = useTranslation()
   const wallet = getWallet(props.provider)
 
   // Only MetaMask seems to support switching accounts
@@ -30,7 +32,7 @@ export const AccountMetaMaskOption: React.FC<AccountOptionProps> = (props) => {
           variant="muted"
           size="small"
         >
-          Change Account
+          {t("account.changeAccount")}
         </SChangeAccountButton>
       )}
     </Box>

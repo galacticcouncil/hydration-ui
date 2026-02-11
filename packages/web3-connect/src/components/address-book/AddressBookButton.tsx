@@ -1,7 +1,9 @@
 import { BookOpen } from "@galacticcouncil/ui/assets/icons"
 import { Button, ButtonProps, Icon } from "@galacticcouncil/ui/components"
+import { useTranslation } from "react-i18next"
 
 export const AddressBookButton: React.FC<ButtonProps> = (props) => {
+  const { t } = useTranslation()
   return (
     <Button
       variant="accent"
@@ -17,7 +19,7 @@ export const AddressBookButton: React.FC<ButtonProps> = (props) => {
       {...props}
     >
       <Icon size="xs" component={BookOpen} />
-      My contacts
+      {t("addressBook.myContacts")}
     </Button>
   )
 }

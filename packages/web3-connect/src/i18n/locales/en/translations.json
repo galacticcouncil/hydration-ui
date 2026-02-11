@@ -1,0 +1,51 @@
+{
+  "button.connect": "Connect Wallet",
+  "button.selectAccount": "Select Account",
+
+  "provider.installedAndRecent": "Installed & recently used",
+  "provider.availableWallets": "Available wallets",
+  "provider.otherWallets": "Other Wallets",
+  "provider.show": "Show",
+  "provider.hide": "Hide",
+  "provider.download": "Download",
+  "provider.lastConnected": "Last connected",
+  "provider.continue": "Continue",
+  "provider.disconnect": "Disconnect",
+  "provider.connectAll": "Connect all",
+  "provider.connectWallet": "Connect wallet",
+  "provider.waitingForAuth": "Waiting for authorization",
+  "provider.authorizeDescription": "Please authorize your wallet extension to connect to Hydration.",
+
+  "account.select": "Select account",
+  "account.searchPlaceholder": "Search by name or paste address",
+  "account.noResults": "No accounts found",
+  "account.changeAccount": "Change Account",
+  "account.connected": "{{count}} connected",
+  "account.logOut": "Log out",
+  "account.manageWallets": "Manage wallets",
+
+  "account.remove.title": "Remove address",
+  "account.remove.confirmation": "Are you sure you want to remove this account address?",
+  "account.remove.cancel": "Cancel",
+  "account.remove.confirm": "Yes, remove",
+
+  "external.selectAccount": "Select account to use",
+  "external.viewAccount": "View external account",
+  "external.description": "Paste account address you would like to monitor.",
+  "external.addressLabel": "Account address",
+  "external.addressPlaceholder": "Paste account address here...",
+  "external.confirm": "Confirm",
+
+  "addressBook.myContacts": "My contacts",
+  "addressBook.destinationAddress": "Destination address",
+  "addressBook.placeholder": "Paste address here...",
+  "addressBook.emptyState": "This address is not on your list.",
+  "addressBook.emptyStateAdd": "Click Add to add it to your contacts.",
+  "addressBook.searchPlaceholder": "Search or paste address to add",
+  "addressBook.add": "Add",
+  "addressBook.defaultName": "My Account",
+
+  "error.title": "Connection error",
+  "error.unknown": "Unknown error, please try again",
+  "error.retry": "Retry"
+}
