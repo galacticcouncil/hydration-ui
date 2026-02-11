@@ -108,7 +108,7 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.3,
+      version: 2.4,
     },
   ),
 )
