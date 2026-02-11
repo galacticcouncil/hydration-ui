@@ -32,7 +32,7 @@ export const XcmPage = () => {
         )}
       </Grid>
       <Alert
-        sx={{ mx: "auto", width: "6xl" }}
+        sx={{ mx: "auto", width: ["100%", null, "6xl"] }}
         title={t("xcm:beta.title")}
         description={t("xcm:beta.description")}
       />
