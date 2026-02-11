@@ -56,7 +56,7 @@ import { PopulatedTransaction, BigNumber as ethersBN } from "ethers"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 import { PRIME_ASSET_ID } from "utils/constants"
 
-const PRIME_APY = BN(0.08)
+export const PRIME_APY = BN(0.08)
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()

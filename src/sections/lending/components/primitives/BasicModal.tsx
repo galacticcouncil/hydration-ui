@@ -11,7 +11,7 @@ export const BasicModal = ({ open, setOpen, children }: BasicModalProps) => {
   const handleClose = () => setOpen(false)
 
   return (
-    <Modal open={open} onClose={handleClose}>
+    <Modal open={open} onClose={handleClose} disableCloseOutside>
       {children}
     </Modal>
   )
