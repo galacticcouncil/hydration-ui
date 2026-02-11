@@ -8,7 +8,6 @@ import * as React from "react"
 import * as Apps from "@galacticcouncil/apps"
 import { createComponent } from "@lit-labs/react"
 import { ProviderResolver } from "sections/provider/ProviderResolver"
-import { MigrationProvider } from "sections/migration/MigrationProvider"
 import { AssetsProvider } from "providers/assets"
 import { BlastCampaignManager } from "sections/blast/BlastCampaignManager"
 
@@ -41,26 +40,24 @@ const QuerySubscriptions = lazy(async () => ({
 
 export const AppProviders: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <MigrationProvider>
-      <TooltipProvider>
-        <ProviderResolver>
-          <AssetsProvider>
-            <RpcProvider>
-              <ToastProvider />
-              <SkeletonTheme
-                baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
-                highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
-                borderRadius={4}
-              >
-                <AppsContextProvider>
-                  {children} <Services />
-                </AppsContextProvider>
-              </SkeletonTheme>
-            </RpcProvider>
-          </AssetsProvider>
-        </ProviderResolver>
-      </TooltipProvider>
-    </MigrationProvider>
+    <TooltipProvider>
+      <ProviderResolver>
+        <AssetsProvider>
+          <RpcProvider>
+            <ToastProvider />
+            <SkeletonTheme
+              baseColor={`rgba(${theme.rgbColors.white}, 0.12)`}
+              highlightColor={`rgba(${theme.rgbColors.white}, 0.24)`}
+              borderRadius={4}
+            >
+              <AppsContextProvider>
+                {children} <Services />
+              </AppsContextProvider>
+            </SkeletonTheme>
+          </RpcProvider>
+        </AssetsProvider>
+      </ProviderResolver>
+    </TooltipProvider>
   )
 }
 
