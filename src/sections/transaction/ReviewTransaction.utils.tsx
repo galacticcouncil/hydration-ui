@@ -1319,6 +1319,10 @@ export const useCreateBatchTx = () => {
 
       if (!txs.length || !address || !blockWeight) return
 
+      if (txs.length === 1) {
+        return createTransaction({ ...transaction, tx: txs[0] }, options)
+      }
+
       const batchTx = api.tx.utility.batchAll(txs)
 
       const paymentInfo = await batchTx.paymentInfo(address)
