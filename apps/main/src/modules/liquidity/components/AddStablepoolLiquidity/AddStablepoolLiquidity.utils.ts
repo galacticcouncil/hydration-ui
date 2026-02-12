@@ -5,6 +5,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { t } from "i18next"
+import { Enum } from "polkadot-api"
 import { useEffect, useMemo } from "react"
 import { ResolverOptions, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -18,6 +19,7 @@ import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModa
 import {
   useAddToOmnipoolZod,
   useCheckJoinOmnipoolFarm,
+  useLiquidityOmnipoolShares,
 } from "@/modules/liquidity/components/AddLiquidity/AddLiqudity.utils"
 import {
   calculatePoolFee,
@@ -25,6 +27,7 @@ import {
   TStablepoolDetails,
   useAddableStablepoolTokens,
 } from "@/modules/liquidity/Liquidity.utils"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -94,6 +97,7 @@ export const useStablepoolAddLiquidity = ({
   const addebleReserves = useAddableStablepoolTokens(stableswapId, reserves)
   const { account } = useAccount()
   const meta = getAssetWithFallback(stableswapId)
+  const getOmnipoolShares = useLiquidityOmnipoolShares(stableswapId)
   const { data: omnipoolIds } = useOmnipoolIds()
 
   const isAddableToOmnipool = omnipoolIds?.includes(pool.id.toString())
@@ -198,25 +202,57 @@ export const useStablepoolAddLiquidity = ({
         }),
       )
 
-      const tx =
-        option === "stablepool"
-          ? papi.tx.Stableswap.add_assets_liquidity({
-              pool_id: pool.id,
-              assets: assetsToProvideFormatted,
-              min_shares: BigInt(minStablepoolShares),
-            })
-          : papi.tx.OmnipoolLiquidityMining.add_liquidity_stableswap_omnipool_and_join_farms(
-              {
-                stable_pool_id: pool.id,
-                stable_asset_amounts: assetsToProvideFormatted,
-                farm_entries: isJoinFarms
-                  ? activeFarms.map((farm) => [
-                      farm.globalFarmId,
-                      farm.yieldFarmId,
-                    ])
-                  : undefined,
-              },
-            )
+      let isValidTx = true
+
+      // check if tx will pass to ensure the amount of arguments is correct
+      try {
+        const rawOrigin = Enum("Signed", account?.address ?? "")
+        const origin = Enum("system", rawOrigin)
+
+        await papi.apis.DryRunApi.dry_run_call(
+          origin,
+          papi.tx.OmnipoolLiquidityMining.add_liquidity_stableswap_omnipool_and_join_farms(
+            {
+              stable_pool_id: pool.id,
+              stable_asset_amounts: assetsToProvideFormatted,
+              farm_entries: undefined,
+            },
+          ).decodedCall,
+        )
+      } catch (error) {
+        isValidTx = false
+      }
+
+      let tx: AnyTransaction
+
+      if (option === "stablepool") {
+        tx = papi.tx.Stableswap.add_assets_liquidity({
+          pool_id: pool.id,
+          assets: assetsToProvideFormatted,
+          min_shares: BigInt(minStablepoolShares),
+        })
+      } else {
+        const liquidityShares = getOmnipoolShares(stablepoolSharesHuman)
+
+        if (!liquidityShares) throw new Error("Liquidity shares are not found")
+
+        tx =
+          papi.tx.OmnipoolLiquidityMining.add_liquidity_stableswap_omnipool_and_join_farms(
+            {
+              stable_pool_id: pool.id,
+              stable_asset_amounts: assetsToProvideFormatted,
+              farm_entries: isJoinFarms
+                ? activeFarms.map((farm) => [
+                    farm.globalFarmId,
+                    farm.yieldFarmId,
+                  ])
+                : undefined,
+              ...(isValidTx
+                ? {}
+                : { min_shares_limit: BigInt(liquidityShares.minSharesToGet) }),
+            },
+          )
+      }
 
       const toastValue = assetsToProvide
         .map(({ asset, amount }) =>
