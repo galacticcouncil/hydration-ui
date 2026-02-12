@@ -5,9 +5,10 @@ import {
   Paper,
   SliderTabs,
   SliderTabsOption,
+  TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useState } from "react"
+import { RefObject, useRef, useState } from "react"
 
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
 import i18n from "@/i18n"
@@ -49,16 +50,23 @@ export const PoolStats = ({
 }) => {
   const { isTablet, isMobile } = useBreakpoints()
   const isOmnipool = !isIsolatedPool(data)
+  const chartRef = useRef<TradingViewChartRef>(null)
   const [interval, setInterval] = useState<PoolChartTimeFrameType | "all">(
-    "all",
+    "week",
   )
+
+  const changeInterval = (interval: PoolChartTimeFrameType | "all"): void => {
+    setInterval(interval)
+    chartRef.current?.resetZoom()
+  }
 
   if (isTablet || isMobile) {
     return (
       <PoolStatsMobile
+        chartRef={chartRef}
         data={data}
         interval={interval}
-        setInterval={setInterval}
+        setInterval={changeInterval}
         isEmptyData={!isOmnipool}
       />
     )
@@ -71,10 +79,11 @@ export const PoolStats = ({
         sx={{ flex: 1, flexBasis: "31.25rem" }}
       >
         <PoolChart
+          chartRef={chartRef}
           assetId={data.id}
           height={isOmnipool && data.isStablepoolInOmnipool ? 500 : 420}
           interval={interval}
-          setInterval={setInterval}
+          setInterval={changeInterval}
           isEmptyData={!isOmnipool}
         />
       </Paper>
@@ -93,11 +102,13 @@ export const PoolStats = ({
 }
 
 const PoolStatsMobile = ({
+  chartRef,
   data,
   interval,
   setInterval,
   isEmptyData = false,
 }: {
+  chartRef: RefObject<TradingViewChartRef | null>
   data: OmnipoolAssetTable | IsolatedPoolTable
   interval: PoolChartTimeFrameType | "all"
   setInterval: (interval: PoolChartTimeFrameType | "all") => void
@@ -124,21 +135,20 @@ const PoolStatsMobile = ({
           <SliderTabs
             options={types}
             selected={types.find((option) => option.id === type)?.id}
-            onSelect={(option) => {
-              setType(option.id)
-            }}
+            onSelect={(option) => setType(option.id)}
           />
         </Flex>
         {type === "chart" && (
           <ChartTimeRangeDropdown
             options={intervalOptions}
             selectedOption={interval}
-            onSelect={(key) => setInterval(key)}
+            onSelect={setInterval}
           />
         )}
       </Flex>
       {type === "chart" ? (
         <PoolChart
+          chartRef={chartRef}
           assetId={data.id}
           height={350}
           interval={interval}
