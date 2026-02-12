@@ -7,18 +7,19 @@ import { useDisplayAssetsPrice } from "@/components/AssetPrice"
 import { TradeRouteFee as TradeRouteFeeModel } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes.utils"
 
 type Props = {
+  readonly className?: string
   readonly feePct: string
   readonly fees: ReadonlyArray<TradeRouteFeeModel>
 }
 
-export const TradeRouteFee: FC<Props> = ({ feePct, fees }) => {
+export const TradeRouteFee: FC<Props> = ({ className, feePct, fees }) => {
   const { t } = useTranslation(["common"])
   const [tradeFeeDisplay] = useDisplayAssetsPrice(
     fees.map((fee) => [fee.asset.id, fee.value] as const),
   )
 
   return (
-    <Flex direction="column" gap="xs" align="flex-end">
+    <Flex direction="column" gap="xs" align="flex-end" className={className}>
       <Text fw={500} fs="p5" lh={1.2} color={getToken("text.high")}>
         {tradeFeeDisplay}
       </Text>
