@@ -62,11 +62,7 @@ export const PoolDetailsValues = ({
 const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
-  let displayOmnipoolShare = !data.isStablePool
-
-  if (data.isStablepoolInOmnipool) {
-    displayOmnipoolShare = true
-  }
+  const displayOmnipoolShare = !data.isStablePool || data.isStablepoolInOmnipool
 
   return (
     <>
