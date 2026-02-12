@@ -48,7 +48,12 @@ export const TradeRoutesModalContent: FC<Props> = ({
           </Text>
         </Flex>
         <Separator />
-        <Grid columnTemplate="auto 1fr 1fr auto" rowGap="base" p="xl">
+        <Grid
+          columnTemplate="auto 1fr auto min-content"
+          rowGap="base"
+          align="center"
+          p="xl"
+        >
           {routes.map((route, index) => (
             <Fragment key={route.assetIn.id}>
               {index > 0 && (
@@ -64,7 +69,7 @@ export const TradeRoutesModalContent: FC<Props> = ({
                 </Box>
               )}
               <Grid
-                sx={{ gridColumn: "1/-1" }}
+                sx={{ gridColumn: "1/4" }}
                 columnTemplate="subgrid"
                 align="center"
                 height={40}
@@ -85,11 +90,12 @@ export const TradeRoutesModalContent: FC<Props> = ({
                   assetSymbol={route.assetOut.symbol}
                   amount={route.amountOut}
                 />
-                <TradeRouteFee
-                  feePct={route.tradeFeePct}
-                  fees={route.tradeFees}
-                />
               </Grid>
+              <TradeRouteFee
+                sx={{ pl: ["base", "xxl"] }}
+                feePct={route.tradeFeePct}
+                fees={route.tradeFees}
+              />
             </Fragment>
           ))}
         </Grid>
