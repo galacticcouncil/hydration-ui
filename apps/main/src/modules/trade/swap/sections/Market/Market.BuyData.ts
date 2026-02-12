@@ -71,8 +71,10 @@ export const useMarketBuyData = (
   return {
     swap: swapData?.swap,
     swapTx: swapData?.tx ?? null,
+    swapDryRunError: swapData?.dryRunError ?? null,
     twap: twapData?.twap,
     twapTx: twapData?.tx ?? null,
+    twapDryRunError: twapData?.dryRunError ?? null,
     healthFactor: healthFactorData,
     isSwapLoading,
     isTwapLoading,
