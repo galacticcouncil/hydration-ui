@@ -1,6 +1,6 @@
 import { JsonView, ScrollArea, Separator } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { t } from "i18next"
+import { useTranslation } from "react-i18next"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
 import { CallHashText } from "@/modules/transactions/review/ReviewTransactionJsonView/components/CallHashText"
@@ -13,6 +13,7 @@ import { JsonViewContainer } from "./ReviewTransactionJsonView.styled"
 import { decodeTx, getTxCallHash } from "./ReviewTransactionJsonView.utils"
 
 export const ReviewTransactionJsonView = () => {
+  const { t } = useTranslation("common")
   const { papiCompatibilityToken } = useRpcProvider()
   const { tx, meta } = useTransaction()
 

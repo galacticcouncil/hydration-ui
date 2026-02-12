@@ -62,9 +62,11 @@ export const PoolDetailsValues = ({
 const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
   const { t } = useTranslation(["common", "liquidity"])
 
-  const { omnipoolShare, isLoading: isOmnipoolShareLoading } = useOmnipoolShare(
-    data.id,
-  )
+  let displayOmnipoolShare = !data.isStablePool
+
+  if (data.isStablepoolInOmnipool) {
+    displayOmnipoolShare = true
+  }
 
   return (
     <>
@@ -97,15 +99,28 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
         wrap
       />
 
-      <Separator mx={-20} />
-
-      <ValueStats
-        label={t("liquidity:details.values.omnipoolShare")}
-        value={t("percent", { value: omnipoolShare })}
-        isLoading={isOmnipoolShareLoading}
-        wrap
-      />
+      {displayOmnipoolShare && (
+        <>
+          <Separator mx={-20} />
+          <OmnipoolShare id={data.id} />
+        </>
+      )}
     </>
+  )
+}
+
+const OmnipoolShare = ({ id }: { id: string }) => {
+  const { t } = useTranslation(["common", "liquidity"])
+  const { omnipoolShare, isLoading: isOmnipoolShareLoading } =
+    useOmnipoolShare(id)
+
+  return (
+    <ValueStats
+      label={t("liquidity:details.values.omnipoolShare")}
+      value={t("percent", { value: omnipoolShare })}
+      isLoading={isOmnipoolShareLoading}
+      wrap
+    />
   )
 }
 

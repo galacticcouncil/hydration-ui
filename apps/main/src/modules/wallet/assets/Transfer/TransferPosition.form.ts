@@ -7,8 +7,8 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { t } from "i18next"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import * as z from "zod/v4"
 
 import { TAsset, useAssets } from "@/providers/assetsProvider"
@@ -20,6 +20,7 @@ import {
 } from "@/utils/validators"
 
 const useSchema = () => {
+  const { t } = useTranslation("wallet")
   const { account } = useAccount()
   const currentPublicKey = account?.publicKey
 
@@ -33,7 +34,7 @@ const useSchema = () => {
             !!safeConvertAddressSS58(value, 0) ||
             !!safeConvertAddressH160(value),
           {
-            error: t("wallet:transfer.error.validAddress"),
+            error: t("transfer.error.validAddress"),
           },
         )
         .refine(
@@ -51,7 +52,7 @@ const useSchema = () => {
             return publicKey !== currentPublicKey
           },
           {
-            error: t("wallet:transfer.error.notSame"),
+            error: t("transfer.error.notSame"),
           },
         ),
       asset: requiredObject<TAsset>(),

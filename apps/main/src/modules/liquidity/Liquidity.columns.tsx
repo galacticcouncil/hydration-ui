@@ -54,7 +54,7 @@ export const usePoolColumns = () => {
         header: t("liquidity:liquidity.pool.poolAsset"),
         size: 250,
         cell: ({ row }) =>
-          isStableSwap(row.original.meta) ? (
+          isStableSwap(row.original.meta) || row.original.isStablePool ? (
             <AssetLabelStablepool
               asset={row.original.meta}
               withName={!isMobile}

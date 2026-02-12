@@ -4,7 +4,6 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
-import { t } from "i18next"
 import { useEffect, useMemo } from "react"
 import { ResolverOptions, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -15,6 +14,7 @@ import { AssetType, TAssetData } from "@/api/assets"
 import { useBorrowReserves } from "@/api/borrow"
 import { StableSwapBase, useOmnipoolIds } from "@/api/pools"
 import { TAssetWithBalance } from "@/components/AssetSelectModal/AssetSelectModal.utils"
+import i18n from "@/i18n"
 import {
   useAddToOmnipoolZod,
   useCheckJoinOmnipoolFarm,
@@ -64,12 +64,12 @@ export type TAddStablepoolLiquidityFormValues = {
 export const addStablepoolOptions = [
   {
     id: "omnipool",
-    label: t("liquidity:liquidity.add.modal.option.omnipool"),
+    label: i18n.t("liquidity:liquidity.add.modal.option.omnipool"),
     value: "omnipool",
   },
   {
     id: "stablepool",
-    label: t("liquidity:liquidity.add.modal.option.stablepool"),
+    label: i18n.t("liquidity:liquidity.add.modal.option.stablepool"),
     value: "stablepool",
   },
 ]
