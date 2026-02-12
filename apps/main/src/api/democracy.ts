@@ -96,7 +96,7 @@ export const accountVotesQuery = (
             }
           }
 
-          const isFinished = referendum.type == "Finished"
+          const isFinished = referendum.type === "Finished"
           const endBlock = referendum.value.end
 
           const convictionBlock =
