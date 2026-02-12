@@ -28,6 +28,9 @@ import { useStore } from "state/store"
 import { useTransformEvmTxToExtrinsic } from "api/evm"
 import { BigNumber as ethersBN, PopulatedTransaction } from "ethers"
 import { useRpcProvider } from "providers/rpcProvider"
+import { AAVE_EXTRA_GAS } from "utils/constants"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAccount } from "utils/evm"
 
 export interface SupplyActionProps {
   amountToSupply: string
@@ -55,6 +58,8 @@ export const SupplyActions = React.memo(
     isIsolated,
   }: SupplyActionProps) => {
     const { api } = useRpcProvider()
+    const { account } = useAccount()
+
     const queryClient = useQueryClient()
     const [
       tryPermit,
@@ -170,6 +175,7 @@ export const SupplyActions = React.memo(
       action: ProtocolAction,
     ) => {
       if (isIsolated) {
+        const isEvm = isEvmAccount(account?.address)
         const enableCollateralTx = await setUsageAsCollateral({
           reserve: poolAddress,
           usageAsCollateral: true,
@@ -189,11 +195,15 @@ export const SupplyActions = React.memo(
           ProtocolAction.setUsageAsCollateral,
         )
 
+        const batchTx = api.tx.utility.batchAll([
+          transformTx(tx),
+          transformTx(estimatedTx),
+        ])
+
         await createTransaction({
-          tx: api.tx.utility.batchAll([
-            transformTx(tx),
-            transformTx(estimatedTx),
-          ]),
+          tx: isEvm
+            ? api.tx.dispatcher.dispatchWithExtraGas(batchTx, AAVE_EXTRA_GAS)
+            : batchTx,
         })
 
         return {} as TransactionResponse

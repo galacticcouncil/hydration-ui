@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next"
 import { createToastMessages } from "state/toasts"
 import { Alert } from "components/Alert/Alert"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { isEvmAccount } from "utils/evm"
 
 type DisableCollaterasProps = {
   activeCollaterals: ComputedUserReserveData[]
@@ -30,10 +32,13 @@ export const DisableCollaterasButton = ({
   const transformTx = useTransformEvmTxToExtrinsic()
   const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
     useBackgroundDataProvider()
+  const { account } = useAccount()
 
   if (!activeCollaterals.length) return null
 
   const onClick = async () => {
+    const isEvm = isEvmAccount(account?.address)
+
     const txs = await Promise.all(
       activeCollaterals.map(async (collateral) => {
         const collateralTxs = await setUsageAsCollateral({
@@ -71,6 +76,7 @@ export const DisableCollaterasButton = ({
       {
         toast,
       },
+      isEvm,
     )
 
     refetchPoolData && refetchPoolData()

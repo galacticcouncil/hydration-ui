@@ -58,7 +58,7 @@ import { isObservable, Observable } from "rxjs"
 import { useMountedState } from "react-use"
 import { XcmMetadata } from "@galacticcouncil/apps"
 import { SuiSignedTransaction } from "sections/web3-connect/signer/SuiSigner"
-import { HYDRATION_CHAIN_KEY } from "utils/constants"
+import { AAVE_EXTRA_GAS, HYDRATION_CHAIN_KEY } from "utils/constants"
 import { useBlockWeight } from "api/transaction"
 
 const EVM_PERMIT_BLOCKTIME = 20_000
@@ -1314,16 +1314,31 @@ export const useCreateBatchTx = () => {
       txs: SubmittableExtrinsic<"promise">[],
       transaction: Omit<TransactionInput, "tx">,
       options?: TransactionOptions,
+      withExtraGas?: boolean,
     ) => {
       const address = account?.address
 
       if (!txs.length || !address || !blockWeight) return
 
       if (txs.length === 1) {
-        return createTransaction({ ...transaction, tx: txs[0] }, options)
+        const tx = txs[0]
+        return createTransaction(
+          {
+            ...transaction,
+            tx: withExtraGas
+              ? api.tx.dispatcher.dispatchWithExtraGas(tx, AAVE_EXTRA_GAS)
+              : tx,
+          },
+          options,
+        )
       }
 
-      const batchTx = api.tx.utility.batchAll(txs)
+      const batchTx = withExtraGas
+        ? api.tx.dispatcher.dispatchWithExtraGas(
+            api.tx.utility.batchAll(txs),
+            AAVE_EXTRA_GAS,
+          )
+        : api.tx.utility.batchAll(txs)
 
       const paymentInfo = await batchTx.paymentInfo(address)
 
@@ -1348,7 +1363,12 @@ export const useCreateBatchTx = () => {
       await createTransaction(
         {
           ...transaction,
-          tx: api.tx.utility.batchAll(calls1),
+          tx: withExtraGas
+            ? api.tx.dispatcher.dispatchWithExtraGas(
+                api.tx.utility.batchAll(calls1),
+                AAVE_EXTRA_GAS,
+              )
+            : api.tx.utility.batchAll(calls1),
           description: warning,
         },
         {
@@ -1370,7 +1390,12 @@ export const useCreateBatchTx = () => {
       await createTransaction(
         {
           ...transaction,
-          tx: api.tx.utility.batchAll(calls2),
+          tx: withExtraGas
+            ? api.tx.dispatcher.dispatchWithExtraGas(
+                api.tx.utility.batchAll(calls2),
+                AAVE_EXTRA_GAS,
+              )
+            : api.tx.utility.batchAll(calls2),
           description: warning,
         },
         {
