@@ -646,7 +646,7 @@ const calculateAssetApyTotals = (
         100 / assetCount
 
       const proportion = percentage / 100
-      //TODO: Update it later, it's quick fix
+
       return {
         id,
         isStaked: false,
