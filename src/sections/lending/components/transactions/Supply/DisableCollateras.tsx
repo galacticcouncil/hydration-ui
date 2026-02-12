@@ -14,6 +14,8 @@ import { Alert } from "components/Alert/Alert"
 import { useBackgroundDataProvider } from "sections/lending/hooks/app-data-provider/BackgroundDataProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
+import { queryKeysFactory } from "sections/lending/ui-config/queries"
+import { useQueryClient } from "@tanstack/react-query"
 
 type DisableCollaterasProps = {
   activeCollaterals: ComputedUserReserveData[]
@@ -33,7 +35,7 @@ export const DisableCollaterasButton = ({
   const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
     useBackgroundDataProvider()
   const { account } = useAccount()
-
+  const queryClient = useQueryClient()
   if (!activeCollaterals.length) return null
 
   const onClick = async () => {
@@ -79,6 +81,7 @@ export const DisableCollaterasButton = ({
       isEvm,
     )
 
+    queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
     refetchPoolData && refetchPoolData()
     refetchGhoData && refetchGhoData()
     refetchIncentiveData && refetchIncentiveData()
