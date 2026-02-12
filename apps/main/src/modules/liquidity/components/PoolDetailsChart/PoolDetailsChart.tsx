@@ -7,7 +7,7 @@ import {
   TradingViewChartRef,
 } from "@galacticcouncil/ui/components"
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
-import { useRef, useState } from "react"
+import { RefObject, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last, prop } from "remeda"
 
@@ -24,7 +24,7 @@ const chartTimeFrameTypes = timeFrameTypes.filter((type) => type !== "minute")
 
 export type PoolChartTimeFrameType = (typeof chartTimeFrameTypes)[number]
 
-export const intervalOptions = (["all", ...chartTimeFrameTypes] as const).map<
+export const intervalOptions = ([...chartTimeFrameTypes, "all"] as const).map<
   ChartTimeRangeOptionType<PoolChartTimeFrameType | "all">
 >((option) => ({
   key: option,
@@ -32,12 +32,14 @@ export const intervalOptions = (["all", ...chartTimeFrameTypes] as const).map<
 }))
 
 export const PoolChart = ({
+  chartRef,
   assetId,
   height,
   interval,
   setInterval,
   isEmptyData = false,
 }: {
+  chartRef: RefObject<TradingViewChartRef | null>
   assetId: string
   height: number
   interval: PoolChartTimeFrameType | "all"
@@ -46,7 +48,6 @@ export const PoolChart = ({
 }) => {
   const { t } = useTranslation()
   const stableCoinId = useDisplayAssetStore(prop("stableCoinId"))
-  const chartRef = useRef<TradingViewChartRef>(null)
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
@@ -86,7 +87,6 @@ export const PoolChart = ({
           selectedOption={interval}
           onSelect={(option) => {
             setInterval(option.key)
-            chartRef.current?.resetZoom()
           }}
           sx={{ display: ["none", "flex"] }}
         />

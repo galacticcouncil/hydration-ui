@@ -1,5 +1,6 @@
 import { Flex, Paper, SliderTabs } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { useRef } from "react"
 
 import { ChartState } from "@/components/ChartState"
 import { ChartTimeRangeDropdown } from "@/components/ChartTimeRange/ChartTimeRangeDropdown"
@@ -17,6 +18,7 @@ import {
 
 export const PoolDetailsSkeleton = () => {
   const { isTablet, isMobile } = useBreakpoints()
+  const chartRef = useRef(null)
 
   if (isTablet || isMobile) {
     return (
@@ -26,6 +28,7 @@ export const PoolDetailsSkeleton = () => {
         as={Flex}
       >
         <PoolChart
+          chartRef={chartRef}
           assetId=""
           height={350}
           interval="all"
