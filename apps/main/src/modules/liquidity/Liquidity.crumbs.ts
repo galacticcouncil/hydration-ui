@@ -1,9 +1,9 @@
 import { useMatches } from "@tanstack/react-router"
-import { t } from "i18next"
 import { useTranslation } from "react-i18next"
 
 import { AssetType } from "@/api/assets"
 import { BreadcrumbItem } from "@/components/Breadcrumb"
+import i18n from "@/i18n"
 import { useAssets } from "@/providers/assetsProvider"
 import { FileRouteTypes } from "@/routeTree.gen"
 
@@ -56,15 +56,15 @@ export const useLiquidityCrumbs = (): BreadcrumbItem[] => {
 const getBreadcrumbLabel = (path: FileRouteTypes["fullPaths"]): string => {
   switch (path) {
     case "/liquidity":
-      return t("liquidity:pools")
+      return i18n.t("liquidity:pools")
     case "/liquidity/$id/add":
-      return t("liquidity:addLiquidity")
+      return i18n.t("liquidity:addLiquidity")
     case "/liquidity/$id/remove":
-      return t("liquidity:removeLiquidity")
+      return i18n.t("liquidity:removeLiquidity")
     case "/liquidity/$id/join":
-      return t("liquidity:joinFarms")
+      return i18n.t("liquidity:joinFarms")
     case "/liquidity/create":
-      return t("liquidity:createPool")
+      return i18n.t("liquidity:createPool")
     default:
       return "N/A"
   }
