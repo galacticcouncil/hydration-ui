@@ -1,4 +1,5 @@
-import { Flex } from "@galacticcouncil/ui/components"
+import { Alert, Flex } from "@galacticcouncil/ui/components"
+import { DryRunError, formatPascalCaseToSentence } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
@@ -23,14 +24,18 @@ import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly swap: Trade | undefined
+  readonly swapDryRunError: DryRunError | null
   readonly twap: TradeOrder | undefined
+  readonly twapDryRunError: DryRunError | null
   readonly isSwapLoading: boolean
   readonly isTwapLoading: boolean
 }
 
 export const MarketTradeOptions: FC<Props> = ({
   swap,
+  swapDryRunError,
   twap,
+  twapDryRunError,
   isSwapLoading,
   isTwapLoading,
 }) => {
@@ -138,6 +143,22 @@ export const MarketTradeOptions: FC<Props> = ({
                 ),
               })}
               disabled={!!twap.errors.length}
+            />
+          )}
+          {field.value && swapDryRunError && (
+            <Alert
+              sx={{ width: "100%" }}
+              variant="error"
+              title={formatPascalCaseToSentence(swapDryRunError.name)}
+              tooltip={swapDryRunError.description}
+            />
+          )}
+          {!field.value && twapDryRunError && (
+            <Alert
+              sx={{ width: "100%" }}
+              variant="error"
+              title={formatPascalCaseToSentence(twapDryRunError.name)}
+              tooltip={twapDryRunError.description}
             />
           )}
         </Flex>
