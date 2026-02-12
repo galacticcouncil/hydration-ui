@@ -3,6 +3,7 @@ import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { getPapiDryRunError } from "@/api/dryRun"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
@@ -27,7 +28,7 @@ type BestSellArgs = {
 }
 
 export const bestSellQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, papi, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountIn, slippage, address }: BestSellArgs,
   disableDebug = false,
 ) =>
@@ -63,16 +64,21 @@ export const bestSellQuery = (
             .then((tx) => tx.get())
         : null
 
+      const dryRunError = tx
+        ? await getPapiDryRunError(papi, address, tx)
+        : null
+
       return {
         swap,
         tx,
+        dryRunError,
       }
     },
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
   })
 
 export const bestSellTwapQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, papi, isLoaded }: TProviderContext,
   {
     assetIn,
     assetOut,
@@ -112,7 +118,10 @@ export const bestSellTwapQuery = (
             .then((tx) => tx.get())
         : null
 
-      return { twap, tx }
+      const dryRunError =
+        dryRun && tx ? await getPapiDryRunError(papi, address, tx) : null
+
+      return { twap, tx, dryRunError }
     },
     enabled:
       enabled &&
@@ -131,7 +140,7 @@ type BestBuyArgs = {
 }
 
 export const bestBuyQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, papi, isLoaded }: TProviderContext,
   { assetIn, assetOut, amountOut, slippage, address }: BestBuyArgs,
   disableDebug = false,
 ) =>
@@ -167,16 +176,21 @@ export const bestBuyQuery = (
             .then((tx) => tx.get())
         : null
 
+      const dryRunError = tx
+        ? await getPapiDryRunError(papi, address, tx)
+        : null
+
       return {
         swap,
         tx,
+        dryRunError,
       }
     },
     enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
   })
 
 export const bestBuyTwapQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, papi, isLoaded }: TProviderContext,
   {
     assetIn,
     assetOut,
@@ -216,7 +230,10 @@ export const bestBuyTwapQuery = (
             .then((tx) => tx.get())
         : null
 
-      return { twap, tx }
+      const dryRunError =
+        dryRun && tx ? await getPapiDryRunError(papi, address, tx) : null
+
+      return { twap, tx, dryRunError }
     },
     enabled:
       enabled &&

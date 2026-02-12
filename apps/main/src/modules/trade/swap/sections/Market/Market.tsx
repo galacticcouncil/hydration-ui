@@ -53,8 +53,10 @@ export const Market: FC = () => {
   const {
     swap,
     swapTx,
+    swapDryRunError,
     twap,
     twapTx,
+    twapDryRunError,
     healthFactor,
     isSwapLoading,
     isTwapLoading,
@@ -92,7 +94,9 @@ export const Market: FC = () => {
           <Box pt="base" pb="m">
             <MarketTradeOptions
               swap={swap}
+              swapDryRunError={swapDryRunError}
               twap={twap}
+              twapDryRunError={twapDryRunError}
               isSwapLoading={isSwapLoading}
               isTwapLoading={isTwapLoading}
             />
