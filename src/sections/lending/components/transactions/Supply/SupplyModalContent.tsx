@@ -196,12 +196,7 @@ export const SupplyModalContent = React.memo(
       (userReserve && userReserve.underlyingBalance !== "0"
         ? userReserve.usageAsCollateralEnabledOnUser
         : true)
-    console.log({
-      isInIsolationMode: user.isInIsolationMode,
-      isIsolated: poolReserve.isIsolated,
-      hasDifferentCollateral,
-      userReserve,
-    })
+
     // token info to add to wallet
     const addToken: ERC20TokenType = {
       address: poolReserve.aTokenAddress,
