@@ -24,13 +24,14 @@ import {
 } from "sections/lending/components/transactions/utils"
 import { useShallow } from "hooks/useShallow"
 
-import { useStore } from "state/store"
 import { useTransformEvmTxToExtrinsic } from "api/evm"
 import { BigNumber as ethersBN, PopulatedTransaction } from "ethers"
-import { useRpcProvider } from "providers/rpcProvider"
-import { AAVE_EXTRA_GAS } from "utils/constants"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
 import { isEvmAccount } from "utils/evm"
+import { ComputedUserReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
+import { createToastMessages } from "state/toasts"
+import { useCreateBatchTx } from "sections/transaction/ReviewTransaction.utils"
+import { useTranslation } from "react-i18next"
 
 export interface SupplyActionProps {
   amountToSupply: string
@@ -43,6 +44,7 @@ export interface SupplyActionProps {
   isWrappedBaseAsset: boolean
   className?: string
   isIsolated: boolean
+  activeCollaterals: ComputedUserReserveData[]
 }
 
 export const SupplyActions = React.memo(
@@ -56,9 +58,11 @@ export const SupplyActions = React.memo(
     isWrappedBaseAsset,
     className,
     isIsolated,
+    activeCollaterals,
   }: SupplyActionProps) => {
-    const { api } = useRpcProvider()
+    const { t } = useTranslation()
     const { account } = useAccount()
+    const { createBatch } = useCreateBatchTx()
 
     const queryClient = useQueryClient()
     const [
@@ -68,6 +72,7 @@ export const SupplyActions = React.memo(
       estimateGasLimit,
       addTransaction,
       setUsageAsCollateral,
+      setUsageAsCollateralTx,
       currentMarketData,
     ] = useRootStore(
       useShallow((state) => [
@@ -77,6 +82,7 @@ export const SupplyActions = React.memo(
         state.estimateGasLimit,
         state.addTransaction,
         state.setUsageAsCollateral,
+        state.setUsageAsCollateralTx,
         state.currentMarketData,
       ]),
     )
@@ -98,7 +104,6 @@ export const SupplyActions = React.memo(
       isWrappedBaseAsset: isWrappedBaseAsset,
     })
     const { sendTx } = useWeb3Context()
-    const { createTransaction } = useStore()
     const transformTx = useTransformEvmTxToExtrinsic()
 
     const [signatureParams, setSignatureParams] = useState<
@@ -170,46 +175,35 @@ export const SupplyActions = React.memo(
       setGasLimit(supplyGasLimit.toString())
     }, [requiresApproval, approvalTxState, usePermit, setGasLimit])
 
-    const getTxFn = async (
-      tx: PopulatedTransaction,
-      action: ProtocolAction,
+    const compoundCollateralTx = async (
+      collateral: ComputedUserReserveData[],
     ) => {
-      if (isIsolated) {
-        const isEvm = isEvmAccount(account?.address)
-        const enableCollateralTx = await setUsageAsCollateral({
-          reserve: poolAddress,
-          usageAsCollateral: true,
-        })
+      return await Promise.all(
+        collateral.map(async (collateral) => {
+          const collateralTxs = await setUsageAsCollateral({
+            reserve: collateral.underlyingAsset,
+            usageAsCollateral: false,
+          })
 
-        const params = await enableCollateralTx
-          .find((tx) => "DLP_ACTION" === tx.txType)
-          ?.tx()
+          const txRaw = await collateralTxs
+            .find((tx) => "DLP_ACTION" === tx.txType)
+            ?.tx()
 
-        if (!params) throw new Error("Enable collateral transaction not found")
+          if (!txRaw)
+            throw new Error(
+              `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
+            )
 
-        const estimatedTx = await estimateGasLimit(
-          {
-            ...params,
-            value: ethersBN.from("0"),
-          },
-          ProtocolAction.setUsageAsCollateral,
-        )
-
-        const batchTx = api.tx.utility.batchAll([
-          transformTx(tx),
-          transformTx(estimatedTx),
-        ])
-
-        await createTransaction({
-          tx: isEvm
-            ? api.tx.dispatcher.dispatchWithExtraGas(batchTx, AAVE_EXTRA_GAS)
-            : batchTx,
-        })
-
-        return {} as TransactionResponse
-      } else {
-        return await sendTx(tx, action)
-      }
+          const tx = await estimateGasLimit(
+            {
+              ...txRaw,
+              value: ethersBN.from("0"),
+            },
+            ProtocolAction.setUsageAsCollateral,
+          )
+          return transformTx(tx)
+        }),
+      )
     }
 
     const action = async () => {
@@ -218,6 +212,7 @@ export const SupplyActions = React.memo(
 
         let response: TransactionResponse
         let action = ProtocolAction.default
+        let suppplyTx: PopulatedTransaction
 
         // determine if approval is signature or transaction
         // checking user preference is not sufficient because permit may be available but the user has an existing approval
@@ -230,19 +225,66 @@ export const SupplyActions = React.memo(
             deadline: signatureParams.deadline,
           })
 
-          signedSupplyWithPermitTxData = await estimateGasLimit(
-            signedSupplyWithPermitTxData,
-          )
-          response = await getTxFn(signedSupplyWithPermitTxData, action)
+          suppplyTx = await estimateGasLimit(signedSupplyWithPermitTxData)
         } else {
           action = ProtocolAction.supply
           let supplyTxData = supply({
             amount: parseUnits(amountToSupply, decimals).toString(),
             reserve: poolAddress,
           })
-          supplyTxData = await estimateGasLimit(supplyTxData, action)
+          suppplyTx = await estimateGasLimit(supplyTxData, action)
+        }
 
-          response = await getTxFn(supplyTxData, action)
+        if (
+          isIsolated &&
+          !activeCollaterals.some(
+            (collateral) => collateral.underlyingAsset === poolAddress,
+          )
+        ) {
+          const isEvm = isEvmAccount(account?.address)
+          const disableCollateralsTxs =
+            await compoundCollateralTx(activeCollaterals)
+
+          const enableCollateralTxRaw = await setUsageAsCollateralTx({
+            reserve: poolAddress,
+            usageAsCollateral: true,
+          })
+          const enableCollateralTx = await estimateGasLimit(
+            {
+              ...enableCollateralTxRaw,
+              value: ethersBN.from("0"),
+            },
+            ProtocolAction.setUsageAsCollateral,
+          )
+
+          const toast = createToastMessages(
+            "lending.supplyAndEnableCollateral.toast",
+            {
+              t,
+              tOptions: {
+                value: amountToSupply,
+                symbol,
+              },
+              components: ["span.highlight"],
+            },
+          )
+
+          await createBatch(
+            [
+              ...disableCollateralsTxs,
+              transformTx(suppplyTx),
+              transformTx(enableCollateralTx),
+            ],
+            {},
+            {
+              toast,
+            },
+            isEvm,
+          )
+
+          response = {} as TransactionResponse
+        } else {
+          response = await sendTx(suppplyTx, action)
         }
 
         setMainTxState({

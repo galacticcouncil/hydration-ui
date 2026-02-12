@@ -32,7 +32,8 @@ import { SupplyActions } from "./SupplyActions"
 import { PRIME_APY } from "api/borrow"
 import { PRIME_ASSET_ID } from "utils/constants"
 import { getAssetIdFromAddress } from "utils/evm"
-import { DisableCollaterasButton } from "./DisableCollateras"
+import { Alert } from "components/Alert"
+import { useTranslation } from "react-i18next"
 
 export enum ErrorType {
   CAP_REACHED,
@@ -47,6 +48,7 @@ export const SupplyModalContent = React.memo(
     nativeBalance,
     tokenBalance,
   }: ModalWrapperProps) => {
+    const { t } = useTranslation()
     const { marketReferencePriceInUsd, user } = useAppDataContext()
     const { currentNetworkConfig } = useProtocolDataContext()
     const { mainTxState: supplyTxState, txError } = useModalContext()
@@ -106,20 +108,17 @@ export const SupplyModalContent = React.memo(
       ],
     )
 
-    const { activeCollaterals, isBorrowedAssets, isActiveCollaterals } =
-      useMemo(() => {
-        const activeCollaterals = isIsolated
-          ? user.userReservesData.filter(
-              (reserve) => reserve.usageAsCollateralEnabledOnUser,
-            )
-          : []
+    const { activeCollaterals, isBorrowedAssets } = useMemo(() => {
+      const activeCollaterals = isIsolated
+        ? user.userReservesData.filter(
+            (reserve) => reserve.usageAsCollateralEnabledOnUser,
+          )
+        : []
 
-        const isBorrowedAssets = user.debtAPY > 0
+      const isBorrowedAssets = user.debtAPY > 0
 
-        const isActiveCollaterals = activeCollaterals.length > 0
-
-        return { activeCollaterals, isBorrowedAssets, isActiveCollaterals }
-      }, [user.userReservesData, user.debtAPY, isIsolated])
+      return { activeCollaterals, isBorrowedAssets }
+    }, [user.userReservesData, user.debtAPY, isIsolated])
 
     const handleChange = (value: string) => {
       if (value === "-1") {
@@ -222,10 +221,11 @@ export const SupplyModalContent = React.memo(
       symbol: supplyUnWrapped
         ? currentNetworkConfig.baseAssetSymbol
         : poolReserve.symbol,
-      blocked: isMaxExceeded || isActiveCollaterals,
+      blocked: isMaxExceeded,
       decimals: poolReserve.decimals,
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
       isIsolated,
+      activeCollaterals,
     }
 
     if (supplyTxState.success)
@@ -310,12 +310,12 @@ export const SupplyModalContent = React.memo(
           debtCeiling: debtCeilingUsage,
         })}
 
-        {isIsolated && isActiveCollaterals && (
-          <DisableCollaterasButton
-            activeCollaterals={activeCollaterals}
-            isBorrowedAssets={isBorrowedAssets}
-          />
+        {isIsolated && isBorrowedAssets && (
+          <Alert variant="warning" sx={{ my: 16 }}>
+            {t("lending.supply.alert.borrowed")}
+          </Alert>
         )}
+
         <SupplyActions {...supplyActionsProps} />
       </>
     )

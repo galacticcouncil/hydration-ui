@@ -1344,10 +1344,9 @@
   "lending.claimRewards.cta": "Claim {{ symbol }}",
   "lending.claimRewards.toast.onLoading": "Claiming <0>{{ value, bignumber(type: token) }} {{ symbol }}</0>...",
   "lending.claimRewards.toast.onSuccess": "Claimed <0>{{ value, bignumber(type: token) }} {{ symbol }}</0>.",
-  "lending.collateral.disableAll.toast.onLoading": "Disabling all collaterals...",
-  "lending.collateral.disableAll.toast.onSuccess": "Disabled all collaterals.",
-  "lending.supply.alert.borrowed": "You have borrowed assets. Disable collaterals is not possible",
-  "lending.supply.alert.disable": "Disable all collaterals to be able to supply PRIME",
+  "lending.supplyAndEnableCollateral.toast.onLoading": "Supplying <0>{{ value, bignumber(type: token) }} {{ symbol }}</0> and entering isolated mode....",
+  "lending.supplyAndEnableCollateral.toast.onSuccess": "Supplied <0>{{ value, bignumber(type: token) }} {{ symbol }}</0> and entered isolated mode.",
+  "lending.supply.alert.borrowed": "You have borrowed assets. Supplying is not possible",
   "lending.supply.alert.cta": "Disable Collaterals",
   "submitTransaction": {
     "title": "Submit Transaction",
