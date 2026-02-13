@@ -29,6 +29,12 @@ import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { SupplyActions } from "./SupplyActions"
+import { PRIME_APY } from "api/borrow"
+import { PRIME_ASSET_ID } from "utils/constants"
+import { getAssetIdFromAddress } from "utils/evm"
+import { Alert } from "components/Alert"
+import { Trans, useTranslation } from "react-i18next"
+import { Text } from "components/Typography/Text/Text"
 
 export enum ErrorType {
   CAP_REACHED,
@@ -43,6 +49,7 @@ export const SupplyModalContent = React.memo(
     nativeBalance,
     tokenBalance,
   }: ModalWrapperProps) => {
+    const { t } = useTranslation()
     const { marketReferencePriceInUsd, user } = useAppDataContext()
     const { currentNetworkConfig } = useProtocolDataContext()
     const { mainTxState: supplyTxState, txError } = useModalContext()
@@ -60,6 +67,10 @@ export const SupplyModalContent = React.memo(
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance
 
     const supplyApy = poolReserve.supplyAPY
+    const isIsolated = poolReserve.isIsolated
+    const isPrimeAsset =
+      PRIME_ASSET_ID === getAssetIdFromAddress(poolReserve.underlyingAsset)
+
     const {
       supplyCap,
       totalLiquidity,
@@ -97,6 +108,38 @@ export const SupplyModalContent = React.memo(
         minRemainingBaseTokenBalance,
       ],
     )
+
+    const poolAddress = supplyUnWrapped
+      ? API_ETH_MOCK_ADDRESS
+      : poolReserve.underlyingAsset
+    const symbol = supplyUnWrapped
+      ? currentNetworkConfig.baseAssetSymbol
+      : poolReserve.symbol
+
+    const { activeCollaterals, isBlockedSupplying, isActiveCollaterals } =
+      useMemo(() => {
+        const activeCollaterals = isIsolated
+          ? user.userReservesData.filter(
+              (reserve) => reserve.usageAsCollateralEnabledOnUser,
+            )
+          : []
+
+        const isBorrowedAssets = user.debtAPY > 0
+        const isActiveCollaterals = activeCollaterals.length > 0
+
+        const isActiveCurrentCollateral = activeCollaterals.some(
+          (collateral) => collateral.underlyingAsset === poolAddress,
+        )
+
+        const isBlockedSupplying =
+          isIsolated && isBorrowedAssets && !isActiveCurrentCollateral
+
+        return {
+          activeCollaterals,
+          isBlockedSupplying,
+          isActiveCollaterals,
+        }
+      }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
 
     const handleChange = (value: string) => {
       if (value === "-1") {
@@ -193,15 +236,13 @@ export const SupplyModalContent = React.memo(
     const supplyActionsProps = {
       amountToSupply: amount,
       isWrongNetwork,
-      poolAddress: supplyUnWrapped
-        ? API_ETH_MOCK_ADDRESS
-        : poolReserve.underlyingAsset,
-      symbol: supplyUnWrapped
-        ? currentNetworkConfig.baseAssetSymbol
-        : poolReserve.symbol,
-      blocked: isMaxExceeded,
+      poolAddress,
+      symbol,
+      blocked: isMaxExceeded || isBlockedSupplying,
       decimals: poolReserve.decimals,
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
+      isIsolated,
+      activeCollaterals,
     }
 
     if (supplyTxState.success)
@@ -261,6 +302,13 @@ export const SupplyModalContent = React.memo(
             incentives={poolReserve.aIncentivesData}
             symbol={poolReserve.symbol}
           />
+          {isPrimeAsset && (
+            <DetailsNumberLine
+              description={<span>PRIME APY</span>}
+              value={PRIME_APY.toString()}
+              percent
+            />
+          )}
           <DetailsCollateralLine collateralType={collateralType} />
           <DetailsHFLine
             visibleHfChange={!!amount}
@@ -278,6 +326,24 @@ export const SupplyModalContent = React.memo(
         {debtCeilingUsage.determineWarningDisplay({
           debtCeiling: debtCeilingUsage,
         })}
+
+        {isBlockedSupplying && (
+          <Alert variant="warning" sx={{ my: 16 }}>
+            <Text fs={12} lh={16} fw={500}>
+              <Trans
+                t={t}
+                i18nKey="lending.supply.alert.borrowed"
+                tOptions={{ symbol }}
+              />
+            </Text>
+          </Alert>
+        )}
+
+        {isActiveCollaterals && !isBlockedSupplying && (
+          <Alert variant="warning" sx={{ my: 16 }}>
+            {t("lending.supply.alert.isolated", { symbol })}
+          </Alert>
+        )}
 
         <SupplyActions {...supplyActionsProps} />
       </>

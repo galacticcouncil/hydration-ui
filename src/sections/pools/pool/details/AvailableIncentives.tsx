@@ -4,12 +4,15 @@ import { MoneyMarketIncentives } from "./MoneyMarketIncentives"
 import { Text } from "components/Typography/Text/Text"
 import { useTranslation } from "react-i18next"
 import { Separator } from "components/Separator/Separator"
+import { PRIME_STABLESWAP_ASSET_ID } from "utils/constants"
 
 export const AvailableIncentives = ({ pool }: { pool: TAnyPool }) => {
   const { t } = useTranslation()
 
   const isFarms = !!pool.allFarms.length
-  const isMoneyMarketIncentives = isStablepoolType(pool) && !!pool.relatedAToken
+  const isMoneyMarketIncentives =
+    isStablepoolType(pool) &&
+    (!!pool.relatedAToken || pool.poolId === PRIME_STABLESWAP_ASSET_ID)
 
   if (!isFarms && !isMoneyMarketIncentives) return null
 

@@ -4,6 +4,7 @@ import {
   ApproveType,
   BaseDebtToken,
   DebtSwitchAdapterService,
+  DEFAULT_NULL_VALUE_ON_TX,
   ERC20_2612Service,
   ERC20Service,
   EthereumTransactionTypeExtended,
@@ -22,6 +23,7 @@ import {
   ProtocolAction,
   ReserveDataHumanized,
   ReservesIncentiveDataHumanized,
+  transactionType,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
   UserReserveDataHumanized,
@@ -104,6 +106,9 @@ export interface PoolSlice {
   setUsageAsCollateral: (
     args: Omit<LPSetUsageAsCollateral, "user">,
   ) => Promise<EthereumTransactionTypeExtended[]>
+  setUsageAsCollateralTx: (
+    args: Omit<LPSetUsageAsCollateral, "user">,
+  ) => Promise<transactionType>
   swapBorrowRateMode: (
     args: Omit<LPSwapBorrowRateMode, "user">,
   ) => Promise<EthereumTransactionTypeExtended[]>
@@ -433,6 +438,26 @@ export const createPoolSlice: StateCreator<
         user,
         useOptimizedPath: optimizedPath(get().currentChainId),
       })
+    },
+    setUsageAsCollateralTx: async (args) => {
+      const pool = get().getCorrectPool()
+      const user = get().account
+
+      const poolContract = pool.getContractInstance(pool.poolAddress)
+
+      const txRaw =
+        await poolContract.populateTransaction.setUserUseReserveAsCollateral(
+          args.reserve,
+          args.usageAsCollateral,
+        )
+
+      const tx: transactionType = {
+        ...txRaw,
+        from: user,
+        value: DEFAULT_NULL_VALUE_ON_TX,
+      }
+
+      return tx
     },
     setUsageAsCollateral: async (args) => {
       const pool = get().getCorrectPool()

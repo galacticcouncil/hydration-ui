@@ -91,6 +91,7 @@ export const useSubmitNewDepositForm = (assetId: string) => {
   return {
     minAmountOut,
     submit,
+    getSwapTx,
     healthFactorChange,
     underlyingReserve,
     supplyCapReached,

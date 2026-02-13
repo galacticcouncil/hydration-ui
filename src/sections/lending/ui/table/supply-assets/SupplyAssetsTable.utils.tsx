@@ -21,7 +21,10 @@ import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { IncentivesCard } from "sections/lending/components/incentives/IncentivesCard"
 import { DashboardReserve } from "sections/lending/utils/dashboard"
-import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import {
+  MONEY_MARKET_GIGA_RESERVES,
+  PRIME_ASSET_ADDRESS,
+} from "sections/lending/ui-config/misc"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -238,6 +241,12 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
 
             if (availableToDeposit.isNaN() || availableToDeposit.isZero())
               return acc
+          }
+
+          if (PRIME_ASSET_ADDRESS && reserve.underlyingAsset) {
+            acc.gigaReserves.push(reserve)
+
+            return acc
           }
 
           if (reserve.supplyCap !== "0") {
