@@ -1,5 +1,8 @@
 import { Flex, ModalBody } from "@galacticcouncil/ui/components"
-import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+import {
+  normalizeSS58Address,
+  safeConvertSS58toPublicKey,
+} from "@galacticcouncil/utils"
 import {
   getWalletModeByAddress,
   PROVIDERS_BY_WALLET_MODE,
@@ -22,6 +25,7 @@ import {
 } from "@/components/address-book/AddressBook.store"
 import { AddressBookEmptyState } from "@/components/address-book/AddressBookEmptyState"
 import { AddressBookSearch } from "@/components/address-book/AddressBookSearch"
+import i18n from "@/i18n"
 
 type Props = {
   readonly header?: React.ReactNode
@@ -38,7 +42,7 @@ export const AddressBookModal: FC<Props> = ({
   blacklist,
   onSelect,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("translations", { i18n })
   const [publicKeyToRemove, setPublicKeyToRemove] = useState("")
   const [searchPhrase, setSearchPhrase] = useState("")
 
@@ -74,7 +78,10 @@ export const AddressBookModal: FC<Props> = ({
   )
 
   const addressProvider = getWalletModeByAddress(searchPhrase)
-  const addressPublicKey = safeConvertSS58toPublicKey(searchPhrase)
+  const addressPublicKey = safeConvertSS58toPublicKey(
+    normalizeSS58Address(searchPhrase),
+  )
+
   const canAdd =
     !searchedAddresses.length &&
     !!addressProvider &&

@@ -7,6 +7,8 @@ import {
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import i18n from "@/i18n"
+
 type Props = {
   readonly align?: "default" | "center"
   readonly onDelete: () => void
@@ -20,7 +22,7 @@ export const AccountRemoveModal: FC<Props> = ({
   onCancel,
   onBack,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("translations", { i18n })
   return (
     <>
       <ModalHeader
