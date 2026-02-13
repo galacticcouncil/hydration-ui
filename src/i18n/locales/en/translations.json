@@ -1346,7 +1346,8 @@
   "lending.claimRewards.toast.onSuccess": "Claimed <0>{{ value, bignumber(type: token) }} {{ symbol }}</0>.",
   "lending.supplyAndEnableCollateral.toast.onLoading": "Supplying <0>{{ value, bignumber(type: token) }} {{ symbol }}</0> and entering isolated mode...",
   "lending.supplyAndEnableCollateral.toast.onSuccess": "Supplied <0>{{ value, bignumber(type: token) }} {{ symbol }}</0> and entered isolated mode.",
-  "lending.supply.alert.borrowed": "You have borrowed assets. Supplying is not possible",
+  "lending.supply.alert.borrowed": "To  borrow against PRIME collateral  your account must be in Isolated Mode.<br /> To continue, switch to an account with no active loans or repay all existing positions.",
+  "lending.supply.alert.isolated": "To supply {{symbol}} and enter Isolation mode all current collateral will be disabled",
   "lending.supply.alert.cta": "Disable Collaterals",
   "submitTransaction": {
     "title": "Submit Transaction",

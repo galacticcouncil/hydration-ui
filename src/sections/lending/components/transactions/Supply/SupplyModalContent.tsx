@@ -33,7 +33,8 @@ import { PRIME_APY } from "api/borrow"
 import { PRIME_ASSET_ID } from "utils/constants"
 import { getAssetIdFromAddress } from "utils/evm"
 import { Alert } from "components/Alert"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
+import { Text } from "components/Typography/Text/Text"
 
 export enum ErrorType {
   CAP_REACHED,
@@ -111,28 +112,34 @@ export const SupplyModalContent = React.memo(
     const poolAddress = supplyUnWrapped
       ? API_ETH_MOCK_ADDRESS
       : poolReserve.underlyingAsset
+    const symbol = supplyUnWrapped
+      ? currentNetworkConfig.baseAssetSymbol
+      : poolReserve.symbol
 
-    const { activeCollaterals, isBlockedSupplying } = useMemo(() => {
-      const activeCollaterals = isIsolated
-        ? user.userReservesData.filter(
-            (reserve) => reserve.usageAsCollateralEnabledOnUser,
-          )
-        : []
+    const { activeCollaterals, isBlockedSupplying, isActiveCollaterals } =
+      useMemo(() => {
+        const activeCollaterals = isIsolated
+          ? user.userReservesData.filter(
+              (reserve) => reserve.usageAsCollateralEnabledOnUser,
+            )
+          : []
 
-      const isBorrowedAssets = user.debtAPY > 0
+        const isBorrowedAssets = user.debtAPY > 0
+        const isActiveCollaterals = activeCollaterals.length > 0
 
-      const isActiveCurrentCollateral = activeCollaterals.some(
-        (collateral) => collateral.underlyingAsset === poolAddress,
-      )
+        const isActiveCurrentCollateral = activeCollaterals.some(
+          (collateral) => collateral.underlyingAsset === poolAddress,
+        )
 
-      const isBlockedSupplying =
-        isIsolated && isBorrowedAssets && !isActiveCurrentCollateral
+        const isBlockedSupplying =
+          isIsolated && isBorrowedAssets && !isActiveCurrentCollateral
 
-      return {
-        activeCollaterals,
-        isBlockedSupplying,
-      }
-    }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
+        return {
+          activeCollaterals,
+          isBlockedSupplying,
+          isActiveCollaterals,
+        }
+      }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
 
     const handleChange = (value: string) => {
       if (value === "-1") {
@@ -230,9 +237,7 @@ export const SupplyModalContent = React.memo(
       amountToSupply: amount,
       isWrongNetwork,
       poolAddress,
-      symbol: supplyUnWrapped
-        ? currentNetworkConfig.baseAssetSymbol
-        : poolReserve.symbol,
+      symbol,
       blocked: isMaxExceeded || isBlockedSupplying,
       decimals: poolReserve.decimals,
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
@@ -324,7 +329,19 @@ export const SupplyModalContent = React.memo(
 
         {isBlockedSupplying && (
           <Alert variant="warning" sx={{ my: 16 }}>
-            {t("lending.supply.alert.borrowed")}
+            <Text fs={12} lh={16} fw={500}>
+              <Trans
+                t={t}
+                i18nKey="lending.supply.alert.borrowed"
+                tOptions={{ symbol }}
+              />
+            </Text>
+          </Alert>
+        )}
+
+        {isActiveCollaterals && !isBlockedSupplying && (
+          <Alert variant="warning" sx={{ my: 16 }}>
+            {t("lending.supply.alert.isolated", { symbol })}
           </Alert>
         )}
 
