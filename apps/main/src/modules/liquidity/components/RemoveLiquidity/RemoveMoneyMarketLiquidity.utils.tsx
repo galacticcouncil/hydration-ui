@@ -8,7 +8,7 @@ import { useDebounce } from "use-debounce"
 
 import { AAVE_GAS_LIMIT, healthFactorQuery } from "@/api/aave"
 import { StableSwapBase } from "@/api/pools"
-import { bestSellQuery, Trade } from "@/api/trade"
+import { bestSellWithTxQuery, Trade } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { calculatePoolFee } from "@/modules/liquidity/Liquidity.utils"
 import { TReserve } from "@/modules/liquidity/Liquidity.utils"
@@ -68,17 +68,13 @@ export const useRemoveMoneyMarketLiquidity = ({
 
   const [debouncedAmount] = useDebounce(removeAmountShifted, 300)
   const { data: trade } = useQuery(
-    bestSellQuery(
-      rpc,
-      {
-        assetIn: erc20Id,
-        assetOut: split ? stableswapId : receiveAsset.id,
-        amountIn: debouncedAmount,
-        slippage: swapSlippage,
-        address: account?.address ?? "",
-      },
-      true,
-    ),
+    bestSellWithTxQuery(rpc, {
+      assetIn: erc20Id,
+      assetOut: split ? stableswapId : receiveAsset.id,
+      amountIn: debouncedAmount,
+      slippage: swapSlippage,
+      address: account?.address ?? "",
+    }),
   )
 
   const amountOut = trade?.swap?.amountOut.toString() ?? "0"

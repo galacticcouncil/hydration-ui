@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
 
     const rpcData = await context.queryClient.ensureQueryData(
-      providerQuery(rpcProviderUrls),
+      providerQuery(context.queryClient, rpcProviderUrls),
     )
 
     await context.queryClient.ensureQueryData(

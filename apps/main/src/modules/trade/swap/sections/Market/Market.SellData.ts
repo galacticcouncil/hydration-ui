@@ -3,7 +3,7 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
-import { bestSellQuery, bestSellTwapQuery } from "@/api/trade"
+import { bestSellTwapWithTxQuery, bestSellWithTxQuery } from "@/api/trade"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
@@ -36,12 +36,14 @@ export const useMarketSellData = (
     { data: healthFactorData, isLoading: isHealthFactorLoading },
   ] = useQueries({
     queries: [
-      bestSellQuery(rpc, {
+      bestSellWithTxQuery(rpc, {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountIn: sellAmount,
         slippage: swapSlippage,
         address,
+        dryRun: form.formState.isValid,
+        debug: true,
       }),
       healthFactorQuery(rpc, {
         fromAsset: sellAsset,
@@ -54,7 +56,7 @@ export const useMarketSellData = (
   })
 
   const { data: twapData, isLoading: isTwapLoading } = useQuery(
-    bestSellTwapQuery(
+    bestSellTwapWithTxQuery(
       rpc,
       {
         assetIn: sellAsset?.id ?? "",
