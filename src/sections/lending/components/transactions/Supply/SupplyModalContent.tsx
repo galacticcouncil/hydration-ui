@@ -112,26 +112,27 @@ export const SupplyModalContent = React.memo(
       ? API_ETH_MOCK_ADDRESS
       : poolReserve.underlyingAsset
 
-    const { activeCollaterals, isBorrowedAssets, isActiveCurrentCollateral } =
-      useMemo(() => {
-        const activeCollaterals = isIsolated
-          ? user.userReservesData.filter(
-              (reserve) => reserve.usageAsCollateralEnabledOnUser,
-            )
-          : []
+    const { activeCollaterals, isBlockedSupplying } = useMemo(() => {
+      const activeCollaterals = isIsolated
+        ? user.userReservesData.filter(
+            (reserve) => reserve.usageAsCollateralEnabledOnUser,
+          )
+        : []
 
-        const isBorrowedAssets = user.debtAPY > 0
+      const isBorrowedAssets = user.debtAPY > 0
 
-        const isActiveCurrentCollateral = activeCollaterals.some(
-          (collateral) => collateral.underlyingAsset === poolAddress,
-        )
+      const isActiveCurrentCollateral = activeCollaterals.some(
+        (collateral) => collateral.underlyingAsset === poolAddress,
+      )
 
-        return {
-          activeCollaterals,
-          isBorrowedAssets,
-          isActiveCurrentCollateral,
-        }
-      }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
+      const isBlockedSupplying =
+        isIsolated && isBorrowedAssets && !isActiveCurrentCollateral
+
+      return {
+        activeCollaterals,
+        isBlockedSupplying,
+      }
+    }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
 
     const handleChange = (value: string) => {
       if (value === "-1") {
@@ -232,7 +233,7 @@ export const SupplyModalContent = React.memo(
       symbol: supplyUnWrapped
         ? currentNetworkConfig.baseAssetSymbol
         : poolReserve.symbol,
-      blocked: isMaxExceeded,
+      blocked: isMaxExceeded || isBlockedSupplying,
       decimals: poolReserve.decimals,
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
       isIsolated,
@@ -321,7 +322,7 @@ export const SupplyModalContent = React.memo(
           debtCeiling: debtCeilingUsage,
         })}
 
-        {isIsolated && isBorrowedAssets && !isActiveCurrentCollateral && (
+        {isBlockedSupplying && (
           <Alert variant="warning" sx={{ my: 16 }}>
             {t("lending.supply.alert.borrowed")}
           </Alert>

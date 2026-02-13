@@ -23,7 +23,7 @@ import { IncentivesCard } from "sections/lending/components/incentives/Incentive
 import { DashboardReserve } from "sections/lending/utils/dashboard"
 import {
   MONEY_MARKET_GIGA_RESERVES,
-  PRIME_ASSET_IDS,
+  PRIME_ASSET_ADDRESS,
 } from "sections/lending/ui-config/misc"
 import { OverrideApy } from "sections/pools/stablepool/components/GigaIncentives"
 import { getAssetIdFromAddress } from "utils/evm"
@@ -243,7 +243,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
               return acc
           }
 
-          if (PRIME_ASSET_IDS.includes(reserve.underlyingAsset)) {
+          if (PRIME_ASSET_ADDRESS && reserve.underlyingAsset) {
             acc.gigaReserves.push(reserve)
 
             return acc

@@ -22,9 +22,8 @@ export type StrategyTileProps = {
   readonly emptyState: string
   readonly riskTooltip: string
   readonly variant: StrategyTileVariant
-  withdrawAssetId?: string
-  moneyMarketAssetId: string
-  defaultAssetIdToDeposit?: string
+  readonly moneyMarketAssetId: string
+  readonly defaultAssetIdToDeposit?: string
 }
 
 export const StrategyTile: FC<StrategyTileProps> = ({

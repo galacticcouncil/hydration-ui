@@ -18,7 +18,7 @@ import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
 import {
   MONEY_MARKET_GIGA_RESERVES,
-  PRIME_ASSET_IDS,
+  PRIME_ASSET_ADDRESS,
 } from "sections/lending/ui-config/misc"
 
 export const GigaIncentives = ({
@@ -293,7 +293,7 @@ type OverrideApyProps = APYProps & {
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (true) {
-    case [...MONEY_MARKET_GIGA_RESERVES, ...PRIME_ASSET_IDS].includes(
+    case [...MONEY_MARKET_GIGA_RESERVES, PRIME_ASSET_ADDRESS].includes(
       getAddressFromAssetId(props.assetId),
     ):
       return props.type === "supply" ? (

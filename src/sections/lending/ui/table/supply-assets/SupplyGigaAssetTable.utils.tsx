@@ -5,7 +5,7 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
-import { PRIME_ASSET_IDS } from "sections/lending/ui-config/misc"
+import { PRIME_ASSET_ADDRESS } from "sections/lending/ui-config/misc"
 import { AssetNameColumn } from "sections/lending/ui/columns/AssetNameColumn"
 import { CollateralColumn } from "sections/lending/ui/columns/CollateralColumn"
 import { MoneyMarketAPYWrapper } from "sections/pools/stablepool/components/GigaIncentives"
@@ -84,7 +84,7 @@ export const useSupplyGigaAssetsTableColumns = () => {
                 sx={{ py: 4 }}
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (PRIME_ASSET_IDS.includes(row.original.underlyingAsset)) {
+                  if (PRIME_ASSET_ADDRESS === row.original.underlyingAsset) {
                     openSupply(row.original.underlyingAsset)
                   } else {
                     openGigaSupply(row.original.underlyingAsset)

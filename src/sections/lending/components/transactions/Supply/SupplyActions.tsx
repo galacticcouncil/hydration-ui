@@ -212,7 +212,7 @@ export const SupplyActions = React.memo(
 
         let response: TransactionResponse
         let action = ProtocolAction.default
-        let suppplyTx: PopulatedTransaction
+        let supplyTx: PopulatedTransaction
 
         // determine if approval is signature or transaction
         // checking user preference is not sufficient because permit may be available but the user has an existing approval
@@ -225,14 +225,14 @@ export const SupplyActions = React.memo(
             deadline: signatureParams.deadline,
           })
 
-          suppplyTx = await estimateGasLimit(signedSupplyWithPermitTxData)
+          supplyTx = await estimateGasLimit(signedSupplyWithPermitTxData)
         } else {
           action = ProtocolAction.supply
           let supplyTxData = supply({
             amount: parseUnits(amountToSupply, decimals).toString(),
             reserve: poolAddress,
           })
-          suppplyTx = await estimateGasLimit(supplyTxData, action)
+          supplyTx = await estimateGasLimit(supplyTxData, action)
         }
 
         if (
@@ -272,7 +272,7 @@ export const SupplyActions = React.memo(
           await createBatch(
             [
               ...disableCollateralsTxs,
-              transformTx(suppplyTx),
+              transformTx(supplyTx),
               transformTx(enableCollateralTx),
             ],
             {},
@@ -284,7 +284,7 @@ export const SupplyActions = React.memo(
 
           response = {} as TransactionResponse
         } else {
-          response = await sendTx(suppplyTx, action)
+          response = await sendTx(supplyTx, action)
         }
 
         setMainTxState({

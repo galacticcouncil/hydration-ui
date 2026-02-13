@@ -4,7 +4,7 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 import { ComputedReserveData } from "sections/lending/hooks/app-data-provider/useAppDataProvider"
 import { useModalContext } from "sections/lending/hooks/useModal"
-import { PRIME_ASSET_IDS } from "sections/lending/ui-config/misc"
+import { PRIME_ASSET_ADDRESS } from "sections/lending/ui-config/misc"
 import { MobileRow } from "sections/lending/ui/table/components/MobileRow"
 import { getSupplyGigaRowGradient } from "sections/lending/ui/table/supply-assets/SupplyGigaAssetTable.styled"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
@@ -32,7 +32,7 @@ export const SupplyGigaAssetMobileRow: FC<Row<ComputedReserveData>> = ({
       footer={
         <Button
           onClick={() => {
-            if (PRIME_ASSET_IDS.includes(underlyingAsset)) {
+            if (PRIME_ASSET_ADDRESS === underlyingAsset) {
               openSupply(underlyingAsset)
             } else {
               openGigaSupply(underlyingAsset)
