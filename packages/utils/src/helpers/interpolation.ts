@@ -1,3 +1,5 @@
+import { isString } from "remeda"
+
 import {
   formatCurrency,
   formatDate,
@@ -12,7 +14,7 @@ function parseFormatStr(formatStr: string | undefined) {
   let formatName = formatStr
   const formatOptions: Record<string, unknown> = {}
 
-  if (formatStr != null && formatStr.indexOf("(") > -1) {
+  if (isString(formatStr) && formatStr.indexOf("(") > -1) {
     const [name, args] = formatStr.split("(")
     formatName = name
 

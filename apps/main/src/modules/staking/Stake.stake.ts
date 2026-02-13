@@ -40,7 +40,7 @@ export const useStake = (
 
   return useMutation({
     mutationFn: async (amount: string) => {
-      const isStakePosition = positionId != 0n
+      const isStakePosition = positionId !== 0n
 
       const formattedAmount = t("currency", {
         value: amount,
