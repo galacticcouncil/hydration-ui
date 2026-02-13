@@ -19,7 +19,7 @@ export enum DcaValidationWarning {
 }
 
 export const useDcaPriceImpactValidation = (
-  order: TradeDcaOrder | undefined,
+  order: TradeDcaOrder | undefined | null,
   duration: TimeFrame,
 ): {
   readonly warnings: ReadonlyArray<DcaValidationWarning>
@@ -47,7 +47,6 @@ export const useDcaPriceImpactValidation = (
   const maxOrders = getAbsoluteMaxDcaOrders(duration)
 
   if (
-    order &&
     order.tradeCount <= maxOrders &&
     order.tradeCount > Math.max(order.maxTradeCount, MIN_DCA_ORDERS)
   ) {
