@@ -7,6 +7,7 @@ const TARGET_URL = `${window.location.protocol}//${TARGET_HOSTNAME}`
 
 const ENCODED_TARGET_URL = encodeURIComponent(TARGET_URL)
 const ENCODED_SOLANA_TARGET_URL = encodeXcmTargetUrl("solana", "sol")
+const ENCODED_SUI_TARGET_URL = encodeXcmTargetUrl("sui", "sui")
 
 type DeepLinkConfig = { android?: string; universal: string }
 
@@ -22,6 +23,10 @@ export const WALLET_DEEPLINKS: Partial<
   [WalletProviderType.Phantom]: {
     android: `phantom://browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
     universal: `https://phantom.app/ul/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
+  },
+  [WalletProviderType.PhantomSui]: {
+    android: `phantom://browse/${ENCODED_SUI_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
+    universal: `https://phantom.app/ul/browse/${ENCODED_SUI_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,
   },
   [WalletProviderType.Solflare]: {
     android: `solflare://v1/browse/${ENCODED_SOLANA_TARGET_URL}?ref=${ENCODED_TARGET_URL}`,

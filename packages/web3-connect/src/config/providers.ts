@@ -11,6 +11,7 @@ export enum WalletProviderType {
   NovaWalletEvm = "nova-wallet-evm",
   NovaWalletH160 = "nova-wallet-h160",
   Phantom = "phantom",
+  PhantomSui = "phantom-sui",
   PolkadotJS = "polkadot-js",
   Polkagate = "polkagate",
   RabbyWallet = "rabby-wallet",
@@ -24,7 +25,6 @@ export enum WalletProviderType {
   TrustWallet = "trustwallet",
   Slush = "slush",
   Suiet = "suiet",
-  PhantomSui = "phantom-sui",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
 }
