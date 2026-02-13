@@ -17,8 +17,10 @@ import {
 import { useTranslation } from "react-i18next"
 import { StrategyTileVariant } from "sections/wallet/strategy/StrategyTile/StrategyTile.styled"
 import { HollarTile } from "./StrategyTile/HollarTile"
+import { useAssets } from "providers/assets"
 
 export const WalletStrategy: FC = () => {
+  const { getAsset } = useAssets()
   const { t } = useTranslation()
   const { gdotAssetId, underlyingGdotAssetId } = useGigadotAssetIds()
   const { isLoaded } = useRpcProvider()
@@ -51,15 +53,17 @@ export const WalletStrategy: FC = () => {
           riskTooltip={t("wallet.strategy.geth.risk.tooltip")}
           variant={StrategyTileVariant.Two}
         />
-        <StrategyTile
-          moneyMarketAssetId={PRIME_ASSET_ID}
-          stableswapId={PRIME_STABLESWAP_ASSET_ID}
-          aTokenId={PRIME_ERC20_ASSET_ID}
-          defaultAssetIdToDeposit={PRIME_ASSET_ID}
-          emptyState={t("wallet.strategy.gigadot.emptyState")}
-          riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
-          variant={StrategyTileVariant.Prime}
-        />
+        {getAsset(PRIME_ERC20_ASSET_ID) && (
+          <StrategyTile
+            moneyMarketAssetId={PRIME_ASSET_ID}
+            stableswapId={PRIME_STABLESWAP_ASSET_ID}
+            aTokenId={PRIME_ERC20_ASSET_ID}
+            defaultAssetIdToDeposit={PRIME_ASSET_ID}
+            emptyState={t("wallet.strategy.gigadot.emptyState")}
+            riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
+            variant={StrategyTileVariant.Prime}
+          />
+        )}
       </SWalletStrategy>
     </WalletStrategyProviders>
   )
