@@ -108,17 +108,30 @@ export const SupplyModalContent = React.memo(
       ],
     )
 
-    const { activeCollaterals, isBorrowedAssets } = useMemo(() => {
-      const activeCollaterals = isIsolated
-        ? user.userReservesData.filter(
-            (reserve) => reserve.usageAsCollateralEnabledOnUser,
-          )
-        : []
+    const poolAddress = supplyUnWrapped
+      ? API_ETH_MOCK_ADDRESS
+      : poolReserve.underlyingAsset
 
-      const isBorrowedAssets = user.debtAPY > 0
+    const { activeCollaterals, isBorrowedAssets, isActiveCurrentCollateral } =
+      useMemo(() => {
+        const activeCollaterals = isIsolated
+          ? user.userReservesData.filter(
+              (reserve) => reserve.usageAsCollateralEnabledOnUser,
+            )
+          : []
 
-      return { activeCollaterals, isBorrowedAssets }
-    }, [user.userReservesData, user.debtAPY, isIsolated])
+        const isBorrowedAssets = user.debtAPY > 0
+
+        const isActiveCurrentCollateral = activeCollaterals.some(
+          (collateral) => collateral.underlyingAsset === poolAddress,
+        )
+
+        return {
+          activeCollaterals,
+          isBorrowedAssets,
+          isActiveCurrentCollateral,
+        }
+      }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
 
     const handleChange = (value: string) => {
       if (value === "-1") {
@@ -215,9 +228,7 @@ export const SupplyModalContent = React.memo(
     const supplyActionsProps = {
       amountToSupply: amount,
       isWrongNetwork,
-      poolAddress: supplyUnWrapped
-        ? API_ETH_MOCK_ADDRESS
-        : poolReserve.underlyingAsset,
+      poolAddress,
       symbol: supplyUnWrapped
         ? currentNetworkConfig.baseAssetSymbol
         : poolReserve.symbol,
@@ -310,7 +321,7 @@ export const SupplyModalContent = React.memo(
           debtCeiling: debtCeilingUsage,
         })}
 
-        {isIsolated && isBorrowedAssets && (
+        {isIsolated && isBorrowedAssets && !isActiveCurrentCollateral && (
           <Alert variant="warning" sx={{ my: 16 }}>
             {t("lending.supply.alert.borrowed")}
           </Alert>
