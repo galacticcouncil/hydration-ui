@@ -3,6 +3,8 @@ import { Search } from "lucide-react"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
+import i18n from "@/i18n"
+
 type Props = {
   readonly canAdd: boolean
   readonly searchPhrase: string
@@ -16,7 +18,7 @@ export const AddressBookSearch: FC<Props> = ({
   onSearchPhraseChange,
   onAdd,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("translations", { i18n })
   return (
     <Flex align="center" gap="base" position="relative">
       <Input

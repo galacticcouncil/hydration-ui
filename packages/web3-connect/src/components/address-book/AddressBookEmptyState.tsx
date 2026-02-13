@@ -3,12 +3,14 @@ import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import i18n from "@/i18n"
+
 type Props = {
   readonly canAdd: boolean
 }
 
 export const AddressBookEmptyState = ({ canAdd }: Props) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("translations", { i18n })
   return (
     <Flex
       direction="column"
