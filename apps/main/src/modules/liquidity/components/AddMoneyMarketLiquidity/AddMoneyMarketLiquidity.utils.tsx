@@ -14,7 +14,7 @@ import {
   healthFactorQuery,
 } from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
-import { bestSellQuery } from "@/api/trade"
+import { bestSellWithTxQuery } from "@/api/trade"
 import {
   useCheckJoinOmnipoolFarm,
   useLiquidityOmnipoolShares,
@@ -215,17 +215,13 @@ export const useAddMoneyMarketOmnipoolLiquidity = ({
 
   const [debouncedAmountIn] = useDebounce(amounIn, 300)
   const { data: trade } = useQuery(
-    bestSellQuery(
-      rpc,
-      {
-        assetIn,
-        assetOut: erc20Id,
-        amountIn: debouncedAmountIn,
-        slippage: swapSlippage,
-        address: account?.address ?? "",
-      },
-      true,
-    ),
+    bestSellWithTxQuery(rpc, {
+      assetIn,
+      assetOut: erc20Id,
+      amountIn: debouncedAmountIn,
+      slippage: swapSlippage,
+      address: account?.address ?? "",
+    }),
   )
 
   const minERC20ToGet = (() => {
@@ -709,17 +705,13 @@ export const useAddMoneyMarketLiquidity = ({
 
   const [debouncedAmountIn] = useDebounce(amounIn, 300)
   const { data: trade } = useQuery(
-    bestSellQuery(
-      rpc,
-      {
-        assetIn,
-        assetOut: erc20Id,
-        amountIn: debouncedAmountIn,
-        slippage: swapSlippage,
-        address: account?.address ?? "",
-      },
-      true,
-    ),
+    bestSellWithTxQuery(rpc, {
+      assetIn,
+      assetOut: erc20Id,
+      amountIn: debouncedAmountIn,
+      slippage: swapSlippage,
+      address: account?.address ?? "",
+    }),
   )
 
   const tradeAmountOut = split
