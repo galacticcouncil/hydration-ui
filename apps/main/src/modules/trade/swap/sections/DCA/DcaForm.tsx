@@ -12,7 +12,7 @@ import { DcaDurationField } from "@/modules/trade/swap/sections/DCA/DcaDurationF
 import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { isErc20AToken, TAsset, useAssets } from "@/providers/assetsProvider"
+import { TAsset, useAssets } from "@/providers/assetsProvider"
 import {
   DEFAULT_TRADE_ASSET_IN_ID,
   DEFAULT_TRADE_ASSET_OUT_ID,
@@ -29,18 +29,14 @@ export const DcaForm: FC = () => {
   const navigate = useNavigate()
 
   const buyableAssets = useMemo(
-    () =>
-      tradable
-        .filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id))
-        .filter(isValid),
+    () => tradable.filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id)),
     [tradable],
   )
 
   useEffect(() => {
     const { sellAsset, buyAsset, ...values } = getValues()
 
-    // RESET if aToken present
-    if (!sellAsset || !buyAsset || !isValid(sellAsset) || !isValid(buyAsset)) {
+    if (!sellAsset || !buyAsset) {
       reset({
         ...values,
         sellAsset: getAsset(DEFAULT_TRADE_ASSET_IN_ID),
@@ -114,7 +110,7 @@ export const DcaForm: FC = () => {
       <AssetSelectFormField<DcaFormValues>
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
-        assets={useMemo(() => tradable.filter(isValid), [tradable])}
+        assets={tradable}
         label={t("trade:dca.assetIn.title")}
         maxBalanceFallback="0"
         onAssetChange={handleSellAssetChange}
@@ -143,6 +139,3 @@ export const DcaForm: FC = () => {
     </Box>
   )
 }
-
-// TODO remove filter once runtime is fixed
-const isValid = (asset: TAsset): boolean => !isErc20AToken(asset)
