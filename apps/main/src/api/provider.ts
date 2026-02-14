@@ -8,7 +8,7 @@ import {
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory } from "@galacticcouncil/utils"
-import { queryOptions } from "@tanstack/react-query"
+import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { createClient, PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
@@ -26,6 +26,7 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 export type TFeatureFlags = object
 
 export type TProviderData = {
+  queryClient: QueryClient
   papi: Papi
   sdk: SdkCtx
   papiClient: PolkadotClient
@@ -60,10 +61,13 @@ export const getProviderDataEnv = (rpcUrl: string) => {
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
-export const providerQuery = (rpcUrlList: string[]) => {
+export const providerQuery = (
+  queryClient: QueryClient,
+  rpcUrlList: string[],
+) => {
   return queryOptions({
     queryKey: ["provider"],
-    queryFn: () => getProviderData(rpcUrlList),
+    queryFn: () => getProviderData(queryClient, rpcUrlList),
     retry: false,
     refetchOnWindowFocus: false,
     gcTime: 0,
@@ -71,6 +75,7 @@ export const providerQuery = (rpcUrlList: string[]) => {
 }
 
 const getProviderData = async (
+  queryClient: QueryClient,
   rpcUrlList: string[] = [],
 ): Promise<TProviderData> => {
   let endpoint = ""
@@ -117,6 +122,7 @@ const getProviderData = async (
   })
 
   return {
+    queryClient,
     papi,
     papiClient,
     papiCompatibilityToken,
