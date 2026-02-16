@@ -243,7 +243,7 @@ export const useSupplyAssetsTableData = ({ showAll }: { showAll: boolean }) => {
               return acc
           }
 
-          if (PRIME_ASSET_ADDRESS && reserve.underlyingAsset) {
+          if (PRIME_ASSET_ADDRESS === reserve.underlyingAsset) {
             acc.gigaReserves.push(reserve)
 
             return acc
