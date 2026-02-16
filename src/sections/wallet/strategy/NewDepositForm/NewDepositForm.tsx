@@ -258,35 +258,7 @@ const PrimeDepositButton = ({
 
       if (!swapTx) throw new Error("Swap transaction not found")
 
-      const collateralTxs = await getActiveCollateralsTxs?.()
-
-      if (!collateralTxs) throw new Error("collateralTxs not found")
-
       const isEvm = isEvmAccount(account?.address)
-
-      const contractInstance = poolContract.getContractInstance(
-        poolContract.poolAddress,
-      )
-
-      const txRaw =
-        await contractInstance.populateTransaction.setUserUseReserveAsCollateral(
-          PRIME_ASSET_ADDRESS,
-          true,
-        )
-
-      const enableCollateralTxRaw: transactionType = {
-        ...txRaw,
-        from: evmAccount.address,
-        value: DEFAULT_NULL_VALUE_ON_TX,
-      }
-
-      const enableCollateralTx = await estimateGasLimit({
-        tx: {
-          ...enableCollateralTxRaw,
-          value: ethersBN.from("0"),
-        },
-        action: ProtocolAction.setUsageAsCollateral,
-      })
 
       const toast = createToastMessages(
         "lending.supplyAndEnableCollateral.toast",
@@ -303,10 +275,38 @@ const PrimeDepositButton = ({
       const txs = [swapTx]
 
       if (isActiveCollaterals && !isPrimeAssetCollateral) {
+        const collateralTxs = await getActiveCollateralsTxs?.()
+
+        if (!collateralTxs) throw new Error("collateralTxs not found")
+
         txs.push(...collateralTxs)
       }
 
       if (!isPrimeAssetCollateral) {
+        const contractInstance = poolContract.getContractInstance(
+          poolContract.poolAddress,
+        )
+
+        const txRaw =
+          await contractInstance.populateTransaction.setUserUseReserveAsCollateral(
+            PRIME_ASSET_ADDRESS,
+            true,
+          )
+
+        const enableCollateralTxRaw: transactionType = {
+          ...txRaw,
+          from: evmAccount.address,
+          value: DEFAULT_NULL_VALUE_ON_TX,
+        }
+
+        const enableCollateralTx = await estimateGasLimit({
+          tx: {
+            ...enableCollateralTxRaw,
+            value: ethersBN.from("0"),
+          },
+          action: ProtocolAction.setUsageAsCollateral,
+        })
+
         txs.push(transformTx(enableCollateralTx))
       }
 
