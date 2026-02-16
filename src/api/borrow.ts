@@ -919,7 +919,7 @@ export const useBorrowWithdraw = () => {
     [poolContract, evmAccount, estimateGasLimit],
   )
 }
-export const useBorrowDisableCollaterals = () => {
+export const useBorrowDisableCollateralTxs = () => {
   const { mutateAsync: estimateGasLimit } = useBorrowGasEstimation()
   const poolContract = useBorrowPoolContract()
   const { account: evmAccount } = useEvmAccount()
@@ -933,45 +933,34 @@ export const useBorrowDisableCollaterals = () => {
       (reserve) => reserve.usageAsCollateralEnabledOnUser,
     )
 
-    const isBorrowedAssets = userReserves.userReserves.some(
-      (reserve) => reserve.scaledVariableDebt !== "0",
+    return await Promise.all(
+      activeCollaterals.map(async (collateral) => {
+        const collateralTxs = await poolContract.setUsageAsCollateral({
+          reserve: collateral.underlyingAsset,
+          usageAsCollateral: false,
+          user: evmAccount.address,
+        })
+
+        const txRaw = await collateralTxs
+          .find((tx) => "DLP_ACTION" === tx.txType)
+          ?.tx()
+
+        if (!txRaw)
+          throw new Error(
+            `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
+          )
+
+        const tx = await estimateGasLimit({
+          tx: {
+            ...txRaw,
+            value: ethersBN.from("0"),
+          },
+          action: ProtocolAction.setUsageAsCollateral,
+        })
+
+        return transformTx(tx)
+      }),
     )
-
-    if (isBorrowedAssets) {
-      return { isBorrowedAssets, activeCollaterals: [] }
-    }
-
-    return {
-      isBorrowedAssets,
-      activeCollaterals: await Promise.all(
-        activeCollaterals.map(async (collateral) => {
-          const collateralTxs = await poolContract.setUsageAsCollateral({
-            reserve: collateral.underlyingAsset,
-            usageAsCollateral: false,
-            user: evmAccount.address,
-          })
-
-          const txRaw = await collateralTxs
-            .find((tx) => "DLP_ACTION" === tx.txType)
-            ?.tx()
-
-          if (!txRaw)
-            throw new Error(
-              `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
-            )
-
-          const tx = await estimateGasLimit({
-            tx: {
-              ...txRaw,
-              value: ethersBN.from("0"),
-            },
-            action: ProtocolAction.setUsageAsCollateral,
-          })
-
-          return transformTx(tx)
-        }),
-      ),
-    }
   }, [poolContract, evmAccount, estimateGasLimit, transformTx, userReserves])
 }
 

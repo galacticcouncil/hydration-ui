@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import { Trans, useTranslation } from "react-i18next"
 import { NewDepositFormValues } from "./NewDepositForm.form"
 import { useFormContext } from "react-hook-form"
@@ -29,10 +29,9 @@ import {
   transactionType,
 } from "@aave/contract-helpers"
 import {
-  useBorrowDisableCollaterals,
+  useBorrowDisableCollateralTxs,
   useBorrowGasEstimation,
   useBorrowPoolContract,
-  useBorrowReserves,
   useBorrowUserReserves,
 } from "api/borrow"
 
@@ -118,7 +117,12 @@ export const NewDepositForm: FC<Props> = ({ assetId }) => {
             initialAmount={form.watch("amount")}
           />
         )}
-        {isPrime && account && <PrimeDepositButton getSwapTx={getSwapTx} />}
+        {isPrime && account && (
+          <PrimeDepositButton
+            getSwapTx={getSwapTx}
+            initialAmount={form.watch("amount")}
+          />
+        )}
         {supplyCapReached ? (
           <Alert variant="warning">
             {t("lending.tooltip.supplyCapMaxed", {
@@ -196,58 +200,69 @@ export const GETHDepositButton = ({
 
 const PrimeDepositButton = ({
   getSwapTx,
+  initialAmount,
 }: {
   getSwapTx: () => Promise<
     SubmittableExtrinsic<"promise", ISubmittableResult> | undefined
   >
+  initialAmount?: string
 }) => {
   const { t } = useTranslation()
   const { account } = useAccount()
-  const getActiveCollaterals = useBorrowDisableCollaterals()
-  const { createBatch } = useCreateBatchTx()
-  const { mutateAsync: estimateGasLimit } = useBorrowGasEstimation()
-  const transformTx = useTransformEvmTxToExtrinsic()
-  const { data: reserves } = useBorrowReserves()
-  const { data: userReserves } = useBorrowUserReserves()
-
-  const poolContract = useBorrowPoolContract()
   const { account: evmAccount } = useEvmAccount()
+  const { createBatch } = useCreateBatchTx()
 
-  const borrowedAsset = userReserves?.userReserves.find(
-    (reserve) => reserve.scaledVariableDebt !== "0",
-  )
+  const getActiveCollateralsTxs = useBorrowDisableCollateralTxs()
+  const { mutateAsync: estimateGasLimit } = useBorrowGasEstimation()
+  const { data: userReserves } = useBorrowUserReserves()
+  const transformTx = useTransformEvmTxToExtrinsic()
+  const poolContract = useBorrowPoolContract()
 
-  const activeCollaterals = userReserves?.userReserves.some(
-    (reserve) => reserve.usageAsCollateralEnabledOnUser,
-  )
+  const {
+    isActiveCollaterals,
+    isBlockedByBorrowedAssets,
+    isPrimeAssetCollateral,
+  } = useMemo(() => {
+    const isBorrowedAsset = userReserves?.userReserves.some(
+      (reserve) => reserve.scaledVariableDebt !== "0",
+    )
 
-  const isBlockedByBorrowedAssets = borrowedAsset
-    ? borrowedAsset.underlyingAsset !== PRIME_ASSET_ADDRESS
-    : false
+    const activeCollaterals = userReserves?.userReserves.filter(
+      (reserve) => reserve.usageAsCollateralEnabledOnUser,
+    )
+
+    const isActiveCollaterals = !!activeCollaterals?.length
+
+    const isPrimeAssetCollateral = activeCollaterals?.some(
+      (reserve) => reserve.underlyingAsset === PRIME_ASSET_ADDRESS,
+    )
+
+    const isBlockedByBorrowedAssets = isBorrowedAsset
+      ? !isPrimeAssetCollateral
+      : false
+
+    return {
+      activeCollaterals,
+      isBlockedByBorrowedAssets,
+      isActiveCollaterals,
+      isPrimeAssetCollateral,
+    }
+  }, [userReserves?.userReserves])
 
   const { mutateAsync: createPrimeDepositTx } = useMutation({
     mutationFn: async () => {
       if (!poolContract) throw new Error("Pool contract not found")
       if (!evmAccount) throw new Error("EVM account not found")
 
-      const reserve = reserves?.formattedReserves.find(
-        (r) => r.underlyingAsset === PRIME_ASSET_ADDRESS,
-      )
-
-      if (!reserve) throw new Error("Prime reserve not found")
-
       const swapTx = await getSwapTx?.()
 
       if (!swapTx) throw new Error("Swap transaction not found")
 
-      const activeCollateralsData = await getActiveCollaterals?.()
+      const collateralTxs = await getActiveCollateralsTxs?.()
 
-      if (!activeCollateralsData)
-        throw new Error("Active collaterals data not found")
-      const collateralTxs = activeCollateralsData.activeCollaterals
+      if (!collateralTxs) throw new Error("collateralTxs not found")
+
       const isEvm = isEvmAccount(account?.address)
-
-      const isBorrowedAssets = !!borrowedAsset
 
       const contractInstance = poolContract.getContractInstance(
         poolContract.poolAddress,
@@ -255,7 +270,7 @@ const PrimeDepositButton = ({
 
       const txRaw =
         await contractInstance.populateTransaction.setUserUseReserveAsCollateral(
-          reserve.underlyingAsset,
+          PRIME_ASSET_ADDRESS,
           true,
         )
 
@@ -278,19 +293,24 @@ const PrimeDepositButton = ({
         {
           t,
           tOptions: {
-            value: "1000000000000000000",
+            value: initialAmount ?? "",
             symbol: "PRIME",
           },
           components: ["span.highlight"],
         },
       )
 
-      await createBatch(
-        [swapTx, ...collateralTxs, transformTx(enableCollateralTx)],
-        {},
-        { toast },
-        isEvm,
-      )
+      const txs = [swapTx]
+
+      if (isActiveCollaterals && !isPrimeAssetCollateral) {
+        txs.push(...collateralTxs)
+      }
+
+      if (!isPrimeAssetCollateral) {
+        txs.push(transformTx(enableCollateralTx))
+      }
+
+      await createBatch(txs, {}, { toast }, isEvm)
     },
   })
 
@@ -307,11 +327,14 @@ const PrimeDepositButton = ({
           </Text>
         </Alert>
       )}
-      {activeCollaterals && !isBlockedByBorrowedAssets && (
-        <Alert variant="warning" sx={{ my: 16 }}>
-          {t("lending.supply.alert.isolated", { symbol: "PRIME" })}
-        </Alert>
-      )}
+      {isActiveCollaterals &&
+        !isBlockedByBorrowedAssets &&
+        !isPrimeAssetCollateral && (
+          <Alert variant="warning" sx={{ my: 16 }}>
+            {t("lending.supply.alert.isolated", { symbol: "PRIME" })}
+          </Alert>
+        )}
+
       <Button
         type="button"
         variant="primary"
