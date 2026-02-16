@@ -19,6 +19,9 @@ export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"
 export const HUSDS_ASSET_ID = "112"
 export const HUSDE_ASSET_ID = "113"
+export const PRIME_ASSET_ID = "43"
+export const PRIME_ERC20_ID = "1043"
+export const PRIME_STABLESWAP_ASSET_ID = "143"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
@@ -35,6 +38,8 @@ export const MONEY_MARKET_STRATEGY_ASSETS = [
   USDT_POOL_ASSET_ID,
   ...HOLLAR_ASSETS,
 ]
+
+export const ISOLATED_MODE_ASSETS = [PRIME_ASSET_ID]
 
 export const SELL_ONLY_ASSETS = [
   H2O_ASSET_ID,

@@ -28,10 +28,12 @@ export const useCreateBatchTx = () => {
       txs,
       transaction,
       options,
+      withExtraGas,
     }: {
       txs: Array<AnyPapiTx>
       transaction?: Omit<TransactionInput, "tx">
       options?: TransactionOptions
+      withExtraGas?: boolean
     }) => {
       const address = account?.address
       const blockWeightsData = blockWeights?.per_class.normal.max_extrinsic
@@ -43,7 +45,10 @@ export const useCreateBatchTx = () => {
         const tx = txs[0]
 
         if (tx) {
-          return createTransaction({ ...transaction, tx }, options)
+          return createTransaction(
+            { ...transaction, tx, withExtraGas },
+            options,
+          )
         }
       }
 
@@ -61,7 +66,10 @@ export const useCreateBatchTx = () => {
       const isFitBlock = proof_size > proofSizeTx && ref_time > refTimeTx
 
       if (isFitBlock) {
-        return createTransaction({ ...transaction, tx: batchTx }, options)
+        return createTransaction(
+          { ...transaction, tx: batchTx, withExtraGas },
+          options,
+        )
       }
 
       const index = Math.ceil(
@@ -91,6 +99,7 @@ export const useCreateBatchTx = () => {
             calls: chunk.map((t) => t.decodedCall),
           }),
         })),
+        withExtraGas,
       })
     },
     [account?.address, papi, blockWeights, createTransaction, t],

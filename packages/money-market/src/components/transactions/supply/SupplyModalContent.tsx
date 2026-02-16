@@ -3,8 +3,13 @@ import {
   calculateHealthFactorFromBalancesBigUnits,
   USD_DECIMALS,
 } from "@aave/math-utils"
-import { Separator, Stack, SummaryRow } from "@galacticcouncil/ui/components"
-import { bigShift } from "@galacticcouncil/utils"
+import {
+  Alert,
+  Separator,
+  Stack,
+  SummaryRow,
+} from "@galacticcouncil/ui/components"
+import { bigShift, getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Big } from "big.js"
 import React, { useMemo, useState } from "react"
 
@@ -21,6 +26,7 @@ import { useAssetCaps } from "@/hooks/useAssetCaps"
 import { useModalContext } from "@/hooks/useModal"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
+import { PRIME_APY, PRIME_ASSET_ID } from "@/ui-config"
 import { getMaxAmountAvailableToSupply } from "@/utils/getMaxAmountAvailableToSupply"
 import { getAssetCollateralType } from "@/utils/transactions"
 import { roundToTokenDecimals } from "@/utils/utils"
@@ -56,6 +62,48 @@ export const SupplyModalContent = React.memo(
       underlyingAsset.toLowerCase() === API_ETH_MOCK_ADDRESS.toLowerCase()
 
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance
+
+    const isIsolated = poolReserve.isIsolated
+    const isPrimeAsset =
+      PRIME_ASSET_ID === getAssetIdFromAddress(poolReserve.underlyingAsset)
+    const poolAddress = supplyUnWrapped
+      ? API_ETH_MOCK_ADDRESS
+      : poolReserve.underlyingAsset
+
+    const {
+      activeCollaterals,
+      isBlockedSupplying,
+      showEnablingIsolatedModeWarning,
+      isJoiningIsolatedMode,
+    } = useMemo(() => {
+      const activeCollaterals = isIsolated
+        ? user.userReservesData.filter(
+            (reserve) => reserve.usageAsCollateralEnabledOnUser,
+          )
+        : []
+
+      const isBorrowedAssets = user.debtAPY > 0
+      const isActiveCollaterals = activeCollaterals.length > 0
+
+      const isActiveCurrentCollateral = activeCollaterals.some(
+        (collateral) => collateral.underlyingAsset === poolAddress,
+      )
+
+      const isBlockedSupplying =
+        isIsolated && isBorrowedAssets && !isActiveCurrentCollateral
+
+      const isJoiningIsolatedMode = isIsolated && !isActiveCurrentCollateral
+
+      const showEnablingIsolatedModeWarning =
+        isJoiningIsolatedMode && isActiveCollaterals && !isBlockedSupplying
+
+      return {
+        activeCollaterals,
+        isBlockedSupplying,
+        showEnablingIsolatedModeWarning,
+        isJoiningIsolatedMode,
+      }
+    }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
 
     const supplyApy = poolReserve.supplyAPY
     const {
@@ -180,15 +228,15 @@ export const SupplyModalContent = React.memo(
 
     const supplyActionsProps = {
       amountToSupply: amount,
-      poolAddress: supplyUnWrapped
-        ? API_ETH_MOCK_ADDRESS
-        : poolReserve.underlyingAsset,
+      poolAddress,
       symbol: supplyUnWrapped
         ? currentNetworkConfig.baseAssetSymbol
         : poolReserve.symbol,
-      blocked: isMaxExceeded,
+      blocked: isMaxExceeded || isBlockedSupplying,
       decimals: poolReserve.decimals,
       isWrappedBaseAsset: poolReserve.isWrappedBaseAsset,
+      isJoiningIsolatedMode,
+      activeCollaterals,
     }
 
     const healthFactor = user ? user.healthFactor : "-1"
@@ -210,7 +258,11 @@ export const SupplyModalContent = React.memo(
     })
 
     const shouldRenderWarnings =
-      showIsolationWarning || !!supplyCapWarning || !!debptCeilingWarning
+      showIsolationWarning ||
+      !!supplyCapWarning ||
+      !!debptCeilingWarning ||
+      isBlockedSupplying ||
+      showEnablingIsolatedModeWarning
 
     return (
       <>
@@ -249,12 +301,21 @@ export const SupplyModalContent = React.memo(
           separator={<Separator mx="var(--modal-content-inset)" />}
           withTrailingSeparator
         >
-          <SummaryRow
-            label="Supply APY"
-            content={
-              <ValueDetail value={formatPercent(Number(supplyApy) * 100)} />
-            }
-          />
+          {isPrimeAsset ? (
+            <SummaryRow
+              label="PRIME APY"
+              content={
+                <ValueDetail value={formatPercent(Number(PRIME_APY) * 100)} />
+              }
+            />
+          ) : (
+            <SummaryRow
+              label="Supply APY"
+              content={
+                <ValueDetail value={formatPercent(Number(supplyApy) * 100)} />
+              }
+            />
+          )}
           {shouldRenderIncentives && (
             <SummaryRow
               label="Incentives"
@@ -289,6 +350,18 @@ export const SupplyModalContent = React.memo(
               )}
               {supplyCapWarning}
               {debptCeilingWarning}
+              {isBlockedSupplying && (
+                <Alert
+                  variant="warning"
+                  description="To borrow against PRIME collateral your account must be in Isolated Mode. To continue, switch to an account with no active loans or repay all existing positions."
+                />
+              )}
+              {showEnablingIsolatedModeWarning && (
+                <Alert
+                  variant="warning"
+                  description={`To supply ${poolReserve.symbol} and enter Isolation mode all current collaterals will be disabled`}
+                />
+              )}
             </Stack>
           )}
         </Stack>

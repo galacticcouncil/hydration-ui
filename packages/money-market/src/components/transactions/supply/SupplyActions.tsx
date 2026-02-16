@@ -1,18 +1,18 @@
 import { gasLimitRecommendations, ProtocolAction } from "@aave/contract-helpers"
-import { useQueryClient } from "@tanstack/react-query"
+import { h160 } from "@galacticcouncil/common"
+import { PopulatedTransaction } from "ethers"
 import { parseUnits } from "ethers/lib/utils"
 import { memo, useEffect } from "react"
 
 import { TxActionsWrapper } from "@/components/transactions/TxActionsWrapper"
-import { useProtocolActionToasts } from "@/hooks"
-import { useBackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
+import { ComputedUserReserveData, useProtocolActionToasts } from "@/hooks"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { usePoolApprovedAmount } from "@/hooks/useApprovedAmount"
 import { useModalContext } from "@/hooks/useModal"
 import { useWeb3Context } from "@/libs/hooks/useWeb3Context"
 import { useRootStore } from "@/store/root"
 import { getErrorTextFromError, TxAction } from "@/ui-config/errorMapping"
-import { queryKeysFactory } from "@/ui-config/queries"
+import { CustomToastAction } from "@/ui-config/toasts"
 
 export interface SupplyActionProps {
   amountToSupply: string
@@ -23,7 +23,11 @@ export interface SupplyActionProps {
   decimals: number
   isWrappedBaseAsset: boolean
   className?: string
+  isJoiningIsolatedMode: boolean
+  activeCollaterals: ComputedUserReserveData[]
 }
+
+const { isEvmAccount } = h160
 
 export const SupplyActions = memo(
   ({
@@ -33,16 +37,24 @@ export const SupplyActions = memo(
     blocked,
     decimals,
     className,
+    isJoiningIsolatedMode,
+    activeCollaterals,
   }: SupplyActionProps) => {
     const { formatCurrency } = useAppFormatters()
-    const queryClient = useQueryClient()
-    const [supply, estimateGasLimit, currentMarketData] = useRootStore(
-      (state) => [
-        state.supply,
-        state.estimateGasLimit,
-        state.currentMarketData,
-      ],
-    )
+
+    const [
+      supply,
+      estimateGasLimit,
+      setUsageAsCollateral,
+      setUsageAsCollateralTx,
+      currentMarketData,
+    ] = useRootStore((state) => [
+      state.supply,
+      state.estimateGasLimit,
+      state.setUsageAsCollateral,
+      state.setUsageAsCollateralTx,
+      state.currentMarketData,
+    ])
     const {
       approvalTxState,
       mainTxState,
@@ -54,10 +66,8 @@ export const SupplyActions = memo(
       setTxError,
       close,
     } = useModalContext()
-    const { refetchPoolData, refetchIncentiveData, refetchGhoData } =
-      useBackgroundDataProvider()
 
-    const { sendTx } = useWeb3Context()
+    const { sendTx, sendTxs, currentAccount } = useWeb3Context()
 
     const {
       data: approvedAmount,
@@ -104,9 +114,41 @@ export const SupplyActions = memo(
     }, [approvalTxState, usePermit, setGasLimit])
 
     const protocolAction = ProtocolAction.supply
-    const toasts = useProtocolActionToasts(protocolAction, {
-      value: formatCurrency(amountToSupply || "0", { symbol }),
-    })
+    const toasts = useProtocolActionToasts(
+      isJoiningIsolatedMode ? CustomToastAction.supplyIsolated : protocolAction,
+      {
+        value: formatCurrency(amountToSupply || "0", { symbol }),
+      },
+    )
+
+    const compoundCollateralTx = async (
+      collateral: ComputedUserReserveData[],
+    ) => {
+      return await Promise.all(
+        collateral.map(async (collateral) => {
+          const collateralTxs = await setUsageAsCollateral({
+            reserve: collateral.underlyingAsset,
+            usageAsCollateral: false,
+          })
+
+          const txRaw = (await collateralTxs
+            .find((tx) => "DLP_ACTION" === tx.txType)
+            ?.tx()) as PopulatedTransaction
+
+          if (!txRaw)
+            throw new Error(
+              `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
+            )
+
+          const tx = await estimateGasLimit(
+            txRaw,
+            ProtocolAction.setUsageAsCollateral,
+          )
+
+          return { txData: tx, action: ProtocolAction.setUsageAsCollateral }
+        }),
+      )
+    }
 
     const action = async () => {
       try {
@@ -121,12 +163,37 @@ export const SupplyActions = memo(
         })
         supplyTxData = await estimateGasLimit(supplyTxData, protocolAction)
 
-        await sendTx(supplyTxData, toasts, protocolAction)
+        if (isJoiningIsolatedMode) {
+          const isEvm = isEvmAccount(currentAccount)
 
-        queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
-        refetchPoolData && refetchPoolData()
-        refetchIncentiveData && refetchIncentiveData()
-        refetchGhoData && refetchGhoData()
+          const disableCollateralsTxs =
+            await compoundCollateralTx(activeCollaterals)
+
+          const enableCollateralTxRaw = (await setUsageAsCollateralTx({
+            reserve: poolAddress,
+            usageAsCollateral: true,
+          })) as PopulatedTransaction
+
+          const enableCollateralTx = await estimateGasLimit(
+            enableCollateralTxRaw,
+            ProtocolAction.setUsageAsCollateral,
+          )
+
+          await sendTxs(
+            [
+              ...disableCollateralsTxs,
+              { txData: supplyTxData, action: protocolAction },
+              {
+                txData: enableCollateralTx,
+                action: ProtocolAction.setUsageAsCollateral,
+              },
+            ],
+            toasts,
+            isEvm,
+          )
+        } else {
+          await sendTx(supplyTxData, toasts, protocolAction)
+        }
       } catch (error) {
         console.log(error)
         const parsedError = getErrorTextFromError(
