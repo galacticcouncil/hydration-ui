@@ -17,12 +17,13 @@ export type ToastsConfig = {
 
 export type MoneyMarketTxFn = (
   data: {
-    tx: ExtendedEvmCall
+    tx: ExtendedEvmCall | ExtendedEvmCall[]
     toasts?: ToastsConfig
   },
   options: {
     onSuccess: () => void
   },
+  withExtraGas?: boolean,
 ) => void
 
 export interface ExtendedEvmCall extends EvmCall {

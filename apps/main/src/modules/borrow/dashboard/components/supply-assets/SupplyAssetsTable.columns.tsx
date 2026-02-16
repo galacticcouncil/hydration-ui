@@ -8,7 +8,14 @@ import {
   isGho,
 } from "@galacticcouncil/money-market/utils"
 import { Check, ChevronRight } from "@galacticcouncil/ui/assets/icons"
-import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
+import {
+  Amount,
+  Button,
+  Chip,
+  Flex,
+  Icon,
+  Tooltip,
+} from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -153,6 +160,15 @@ export const useSupplyAssetsTableColumns = (
               component={Check}
               size="m"
             />
+          )
+        }
+        if (isIsolated) {
+          return (
+            <Tooltip text={t("borrow:tooltip.isolatedAsset")}>
+              <Chip variant="warning" size="small">
+                {t("borrow:isolated")}
+              </Chip>
+            </Tooltip>
           )
         }
       },

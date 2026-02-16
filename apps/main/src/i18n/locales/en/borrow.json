@@ -87,6 +87,7 @@
   "supplied.table.empty": "Nothing supplied yet",
   "supplied.table.title": "Your supplies",
   "supply": "Supply",
+  "isolated": "Isolated",
   "supply.assetCannotBeCollateral": "Asset cannot be used as collateral.",
   "supply.available": "Available to supply",
   "supply.cap.tooltip": "Maximum amount available to supply is {{ value, number(notation: 'compact'; maximumFractionDigits: 2) }} {{ tokenSymbol }} ({{ usdValue, currency(notation: 'compact'; maximumFractionDigits: 2) }})",
