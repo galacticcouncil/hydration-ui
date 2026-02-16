@@ -20,8 +20,10 @@ export type StrategyTileProps = {
   readonly stableswapId: string
   readonly aTokenId: string
   readonly emptyState: string
-  readonly riskTooltip: string
+  readonly riskTooltip?: string
   readonly variant: StrategyTileVariant
+  readonly moneyMarketAssetId: string
+  readonly defaultAssetIdToDeposit?: string
 }
 
 export const StrategyTile: FC<StrategyTileProps> = ({
@@ -30,17 +32,20 @@ export const StrategyTile: FC<StrategyTileProps> = ({
   emptyState,
   riskTooltip,
   variant,
+  moneyMarketAssetId,
+  defaultAssetIdToDeposit,
 }) => {
   const { account } = useAccount()
-  const { data: defaultAssetId, isLoading } =
-    useNewDepositDefaultAssetId(stableswapId)
+  const { data: defaultAssetId, isLoading } = useNewDepositDefaultAssetId(
+    defaultAssetIdToDeposit ?? stableswapId,
+  )
 
   return (
     <SStrategyTile variant={variant}>
       <StrategyTileBackgroundEffect variant={variant} />
       <div sx={{ flex: "column", gap: [20, 20, 35] }}>
         <AssetOverview
-          assetId={stableswapId}
+          assetId={moneyMarketAssetId}
           underlyingAssetId={aTokenId}
           riskLevel="low"
           riskTooltip={riskTooltip}
