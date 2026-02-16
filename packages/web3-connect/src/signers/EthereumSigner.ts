@@ -89,7 +89,9 @@ export class EthereumSigner {
     const isPrecompileTx = tx.to === EVM_DISPATCH_ADDRESS
 
     if (isPrecompileTx && weight > 0n) {
-      return weight / EVM_GAS_TO_WEIGHT
+      const gasByWeight = weight / EVM_GAS_TO_WEIGHT
+      const gasLimitSurplus = (gasByWeight * 30n) / 100n // 30% surplus
+      return gasByWeight + gasLimitSurplus
     }
 
     return this.publicClient.estimateGas({
