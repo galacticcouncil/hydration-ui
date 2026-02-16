@@ -1,5 +1,9 @@
 import { log } from "@galacticcouncil/common"
-import { getMetadata, hydration } from "@galacticcouncil/descriptors"
+import {
+  getMetadata,
+  hydration,
+  hydrationNext,
+} from "@galacticcouncil/descriptors"
 import { getIndexerSdk, IndexerSdk } from "@galacticcouncil/indexer/indexer"
 import {
   getSnowbridgeSdk,
@@ -9,7 +13,7 @@ import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
 import { AssetMetadataFactory } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
-import { createClient, PolkadotClient } from "polkadot-api"
+import { CompatibilityLevel, createClient, PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -20,13 +24,15 @@ import {
   PROVIDERS,
   TDataEnv,
 } from "@/config/rpc"
-import { Papi, useRpcProvider } from "@/providers/rpcProvider"
+import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = object
 
 export type TProviderData = {
   papi: Papi
+  papiNext: PapiNext
+  isNext: boolean
   sdk: SdkCtx
   papiClient: PolkadotClient
   papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
@@ -96,6 +102,11 @@ const getProviderData = async (
 
   const papiClient = createClient(ws, { getMetadata })
   const papi = papiClient.getTypedApi(hydration)
+  const papiNext = papiClient.getTypedApi(hydrationNext)
+
+  const isNext = await papiNext.constants.System.Version.isCompatible(
+    CompatibilityLevel.Partial,
+  )
 
   const metadata = AssetMetadataFactory.getInstance()
 
@@ -118,7 +129,9 @@ const getProviderData = async (
 
   return {
     papi,
+    papiNext,
     papiClient,
+    isNext,
     papiCompatibilityToken,
     evm,
     endpoint,

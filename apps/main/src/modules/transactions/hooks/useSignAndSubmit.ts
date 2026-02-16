@@ -41,7 +41,7 @@ export const useSignAndSubmit = (
   options: MutationOptions<TxResult, Error, TxOptions>,
 ) => {
   const { t } = useTranslation("common")
-  const { papi, papiClient } = useRpcProvider()
+  const { papi, papiNext, papiClient, isNext } = useRpcProvider()
   const wallet = useWallet()
 
   const subscription = useRef<Subscription | null>(null)
@@ -81,7 +81,7 @@ export const useSignAndSubmit = (
 
       if (isEvmCall(tx) && isPolkadotSigner(signer)) {
         return signAndSubmitPolkadotTx(
-          transformEvmCallToPapiTx(papi, tx),
+          transformEvmCallToPapiTx(papi, papiNext, tx, isNext),
           signer,
           txOptions,
         )
