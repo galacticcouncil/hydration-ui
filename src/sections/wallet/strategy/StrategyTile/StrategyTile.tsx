@@ -20,7 +20,7 @@ export type StrategyTileProps = {
   readonly stableswapId: string
   readonly aTokenId: string
   readonly emptyState: string
-  readonly riskTooltip: string
+  readonly riskTooltip?: string
   readonly variant: StrategyTileVariant
   readonly moneyMarketAssetId: string
   readonly defaultAssetIdToDeposit?: string

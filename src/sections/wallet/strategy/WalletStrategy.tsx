@@ -59,8 +59,7 @@ export const WalletStrategy: FC = () => {
             stableswapId={PRIME_STABLESWAP_ASSET_ID}
             aTokenId={PRIME_ERC20_ASSET_ID}
             defaultAssetIdToDeposit={PRIME_ASSET_ID}
-            emptyState={t("wallet.strategy.gigadot.emptyState")}
-            riskTooltip={t("wallet.strategy.gigadot.risk.tooltip")}
+            emptyState={t("wallet.strategy.prime.emptyState")}
             variant={StrategyTileVariant.Prime}
           />
         )}
