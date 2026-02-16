@@ -82,14 +82,27 @@ export class EthereumSigner {
     return "Unknown error"
   }
 
-  async estimateGas(tx: EstimateGasParameters, weight: bigint = 0n) {
-    if (!this.publicClient) throw new Error("Client is not connected")
+  async getGas(
+    tx: EstimateGasParameters,
+    weight: bigint = 0n,
+  ): Promise<bigint> {
+    const isPrecompileTx = tx.to === EVM_DISPATCH_ADDRESS
 
+    if (isPrecompileTx && weight > 0n) {
+      const gasByWeight = weight / EVM_GAS_TO_WEIGHT
+      const gasLimitSurplus = (gasByWeight * 30n) / 100n // 30% surplus
+      return gasByWeight + gasLimitSurplus
+    }
+
+    return this.publicClient.estimateGas({
+      ...tx,
+      account: this.address as Address,
+    })
+  }
+
+  async estimateGas(tx: EstimateGasParameters, weight: bigint = 0n) {
     const [gas, gasPriceBase] = await Promise.all([
-      this.publicClient.estimateGas({
-        ...tx,
-        account: this.address as Address,
-      }),
+      this.getGas(tx, weight),
       this.publicClient.getGasPrice(),
     ])
 
@@ -172,24 +185,29 @@ export class EthereumSigner {
 
         const weight = options.weight ?? 0n
 
-        const tx =
-          typeof call === "string"
-            ? {
-                from: this.address as Address,
-                to: EVM_DISPATCH_ADDRESS as Hex,
-                data: call as Hex,
-              }
-            : {
-                from: call.from as Address,
-                to: call.to as Hex,
-                data: call.data as Hex,
-              }
+        const isExtendedEvmCall = isObjectType(call)
 
-        const [latestBlock, chainId, estimatedGas] = await Promise.all([
+        const tx = isExtendedEvmCall
+          ? {
+              from: call.from as Address,
+              to: call.to as Hex,
+              data: call.data as Hex,
+            }
+          : {
+              from: this.address as Address,
+              to: EVM_DISPATCH_ADDRESS as Hex,
+              data: call as Hex,
+            }
+
+        const [latestBlock, chainId] = await Promise.all([
           this.publicClient.getBlock(),
           this.publicClient.getChainId(),
-          this.estimateGas(tx, weight),
         ])
+
+        const gasLimit =
+          isExtendedEvmCall && call.gasLimit
+            ? call.gasLimit
+            : (await this.estimateGas(tx, weight)).gasLimit
 
         const nonce = options?.nonce ?? (await this.getPermitNonce())
 
@@ -197,10 +215,7 @@ export class EthereumSigner {
           const message: PermitMessage = {
             ...tx,
             value: 0,
-            gaslimit:
-              isObjectType(call) && call.gasLimit
-                ? Number(call.gasLimit)
-                : Number(estimatedGas.gasLimit),
+            gaslimit: Number(gasLimit),
             nonce,
             deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
           }
