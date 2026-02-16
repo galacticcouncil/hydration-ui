@@ -1,5 +1,6 @@
 import { gasLimitRecommendations, ProtocolAction } from "@aave/contract-helpers"
 import { h160 } from "@galacticcouncil/common"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { PopulatedTransaction } from "ethers"
 import { parseUnits } from "ethers/lib/utils"
 import { memo, useEffect } from "react"
@@ -41,7 +42,7 @@ export const SupplyActions = memo(
     activeCollaterals,
   }: SupplyActionProps) => {
     const { formatCurrency } = useAppFormatters()
-
+    const { account } = useAccount()
     const [
       supply,
       estimateGasLimit,
@@ -67,7 +68,7 @@ export const SupplyActions = memo(
       close,
     } = useModalContext()
 
-    const { sendTx, sendTxs, currentAccount } = useWeb3Context()
+    const { sendTx, sendTxs } = useWeb3Context()
 
     const {
       data: approvedAmount,
@@ -164,7 +165,7 @@ export const SupplyActions = memo(
         supplyTxData = await estimateGasLimit(supplyTxData, protocolAction)
 
         if (isJoiningIsolatedMode) {
-          const isEvm = isEvmAccount(currentAccount)
+          const isEvm = isEvmAccount(account?.address ?? "")
 
           const disableCollateralsTxs =
             await compoundCollateralTx(activeCollaterals)
