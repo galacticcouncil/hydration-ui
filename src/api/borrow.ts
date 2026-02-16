@@ -54,6 +54,10 @@ import { Pool } from "@aave/contract-helpers"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PopulatedTransaction, BigNumber as ethersBN } from "ethers"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
+import { PRIME_ASSET_ID } from "utils/constants"
+import { useTransformEvmTxToExtrinsic } from "./evm"
+
+export const PRIME_APY = BN(0.08)
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
@@ -647,7 +651,10 @@ const calculateAssetApyTotals = (
       return {
         id,
         isStaked: false,
-        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
+        supplyApy: (id === PRIME_ASSET_ID ? PRIME_APY : supplyAPY)
+          .times(100)
+          .times(proportion)
+          .toNumber(),
         borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
       }
     },
@@ -911,6 +918,50 @@ export const useBorrowWithdraw = () => {
     },
     [poolContract, evmAccount, estimateGasLimit],
   )
+}
+export const useBorrowDisableCollateralTxs = () => {
+  const { mutateAsync: estimateGasLimit } = useBorrowGasEstimation()
+  const poolContract = useBorrowPoolContract()
+  const { account: evmAccount } = useEvmAccount()
+  const { data: userReserves } = useBorrowUserReserves()
+  const transformTx = useTransformEvmTxToExtrinsic()
+
+  return useCallback(async () => {
+    if (!poolContract || !evmAccount || !userReserves) return null
+
+    const activeCollaterals = userReserves.userReserves.filter(
+      (reserve) => reserve.usageAsCollateralEnabledOnUser,
+    )
+
+    return await Promise.all(
+      activeCollaterals.map(async (collateral) => {
+        const collateralTxs = await poolContract.setUsageAsCollateral({
+          reserve: collateral.underlyingAsset,
+          usageAsCollateral: false,
+          user: evmAccount.address,
+        })
+
+        const txRaw = await collateralTxs
+          .find((tx) => "DLP_ACTION" === tx.txType)
+          ?.tx()
+
+        if (!txRaw)
+          throw new Error(
+            `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
+          )
+
+        const tx = await estimateGasLimit({
+          tx: {
+            ...txRaw,
+            value: ethersBN.from("0"),
+          },
+          action: ProtocolAction.setUsageAsCollateral,
+        })
+
+        return transformTx(tx)
+      }),
+    )
+  }, [poolContract, evmAccount, estimateGasLimit, transformTx, userReserves])
 }
 
 export const useGhoMarketConfig = () => {

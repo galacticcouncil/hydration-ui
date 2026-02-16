@@ -51,6 +51,9 @@ export const HYDRATION_CHAIN_KEY = "hydration"
 export const HYDRATION_PARACHAIN_ADDRESS =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
 
+export const PRIME_ASSET_ID = "43"
+export const PRIME_STABLESWAP_ASSET_ID = "143"
+export const PRIME_ERC20_ASSET_ID = "1043"
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
 export const GETH_STABLESWAP_ASSET_ID = "4200"

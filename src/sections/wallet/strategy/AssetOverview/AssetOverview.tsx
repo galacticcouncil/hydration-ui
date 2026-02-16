@@ -15,7 +15,7 @@ export type AssetOverviewProps = {
   readonly assetId: string
   readonly underlyingAssetId: string
   readonly riskLevel: StrategyRiskLevel
-  readonly riskTooltip: string
+  readonly riskTooltip?: string
 }
 
 export const AssetOverview: FC<AssetOverviewProps> = ({
@@ -51,7 +51,7 @@ export const AssetOverview: FC<AssetOverviewProps> = ({
           variant={`risk:${riskLevel}`}
           label={`${t("risk")}:`}
           value={riskLevel}
-          icon={<InfoTooltip text={riskTooltip} />}
+          icon={riskTooltip ? <InfoTooltip text={riskTooltip} /> : undefined}
         />
         <AssetOverviewSeparator />
         <AssetOverviewTile
