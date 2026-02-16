@@ -82,14 +82,25 @@ export class EthereumSigner {
     return "Unknown error"
   }
 
-  async estimateGas(tx: EstimateGasParameters, weight: bigint = 0n) {
-    if (!this.publicClient) throw new Error("Client is not connected")
+  async getGas(
+    tx: EstimateGasParameters,
+    weight: bigint = 0n,
+  ): Promise<bigint> {
+    const isPrecompileTx = tx.to === EVM_DISPATCH_ADDRESS
 
+    if (isPrecompileTx && weight > 0n) {
+      return weight / EVM_GAS_TO_WEIGHT
+    }
+
+    return this.publicClient.estimateGas({
+      ...tx,
+      account: this.address as Address,
+    })
+  }
+
+  async estimateGas(tx: EstimateGasParameters, weight: bigint = 0n) {
     const [gas, gasPriceBase] = await Promise.all([
-      this.publicClient.estimateGas({
-        ...tx,
-        account: this.address as Address,
-      }),
+      this.getGas(tx, weight),
       this.publicClient.getGasPrice(),
     ])
 
