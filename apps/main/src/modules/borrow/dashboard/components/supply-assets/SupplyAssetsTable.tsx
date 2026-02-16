@@ -8,6 +8,7 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import {
   getAssetIdFromAddress,
+  ISOLATED_MODE_ASSETS,
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
 import { useNavigate } from "@tanstack/react-router"
@@ -40,7 +41,8 @@ export const SupplyAssetsTable = () => {
     const group = Object.groupBy(data, (item) =>
       MONEY_MARKET_STRATEGY_ASSETS.includes(
         getAssetIdFromAddress(item.underlyingAsset),
-      )
+      ) ||
+      ISOLATED_MODE_ASSETS.includes(getAssetIdFromAddress(item.underlyingAsset))
         ? "strategyAssets"
         : "baseAssets",
     )
