@@ -32,8 +32,8 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
     ({ tx, toasts }, options, withExtraGas) => {
       if (Array.isArray(tx)) {
         createBatchTx({
-          txs: tx.map((t) =>
-            transformEvmCallToPapiTx(papi, papiNext, t, isNext),
+          txs: tx.map((evmTx) =>
+            transformEvmCallToPapiTx(papi, papiNext, evmTx, isNext),
           ),
           transaction: {
             toasts,

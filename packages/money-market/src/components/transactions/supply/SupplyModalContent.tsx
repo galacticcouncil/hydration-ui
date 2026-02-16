@@ -64,11 +64,8 @@ export const SupplyModalContent = React.memo(
     const walletBalance = supplyUnWrapped ? nativeBalance : tokenBalance
 
     const isIsolated = poolReserve.isIsolated
-    const isPrimeAsset =
-      PRIME_ASSET_ID === getAssetIdFromAddress(poolReserve.underlyingAsset)
-    const poolAddress = supplyUnWrapped
-      ? API_ETH_MOCK_ADDRESS
-      : poolReserve.underlyingAsset
+    const poolAddress = poolReserve.underlyingAsset
+    const isPrimeAsset = PRIME_ASSET_ID === getAssetIdFromAddress(poolAddress)
 
     const {
       activeCollaterals,
@@ -82,7 +79,9 @@ export const SupplyModalContent = React.memo(
           )
         : []
 
-      const isBorrowedAssets = user.debtAPY > 0
+      const isBorrowedAssets = Big(user.totalBorrowsMarketReferenceCurrency).gt(
+        0,
+      )
       const isActiveCollaterals = activeCollaterals.length > 0
 
       const isActiveCurrentCollateral = activeCollaterals.some(
@@ -103,7 +102,12 @@ export const SupplyModalContent = React.memo(
         showEnablingIsolatedModeWarning,
         isJoiningIsolatedMode,
       }
-    }, [user.userReservesData, user.debtAPY, isIsolated, poolAddress])
+    }, [
+      user.userReservesData,
+      user.totalBorrowsMarketReferenceCurrency,
+      isIsolated,
+      poolAddress,
+    ])
 
     const supplyApy = poolReserve.supplyAPY
     const {
