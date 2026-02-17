@@ -28,8 +28,7 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { useTransactionsStore } from "@/states/transactions"
-import { scale, scaleHuman } from "@/utils/formatting"
-import { toDecimal } from "@/utils/formatting"
+import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
 import { positive, required, validateMaxBalance } from "@/utils/validators"
 
 export type TAddLiquidityFormValues = { amount: string; asset: TAssetData }
@@ -311,7 +310,7 @@ export const useAddLiquidity = ({
         const swap = await sdk.api.router.getBestSell(
           Number(selectedAsset.id),
           Number(poolId),
-          toDecimal(shares, poolMeta.decimals),
+          amount,
         )
 
         return await sdk.tx
@@ -321,11 +320,11 @@ export const useAddLiquidity = ({
           .build()
           .then((tx) => tx.get())
       }
-
+      const shiftedAmount = scale(amount, poolMeta.decimals)
       const provideLiquidityTx = isJoinFarms
         ? papi.tx.OmnipoolLiquidityMining.add_liquidity_and_join_farms({
             asset: Number(poolId),
-            amount: BigInt(amount),
+            amount: BigInt(shiftedAmount),
             min_shares_limit: BigInt(shares),
             farm_entries: activeFarms.map((farm) => [
               farm.globalFarmId,
@@ -334,7 +333,7 @@ export const useAddLiquidity = ({
           })
         : papi.tx.Omnipool.add_liquidity_with_limit({
             asset: Number(poolId),
-            amount: BigInt(amount),
+            amount: BigInt(shiftedAmount),
             min_shares_limit: BigInt(shares),
           })
 
@@ -357,7 +356,7 @@ export const useAddLiquidity = ({
       await createTransaction(
         {
           tx,
-          toasts: getToasts(amount, poolMeta, isJoinFarms),
+          toasts: getToasts(shiftedAmount, poolMeta, isJoinFarms),
           invalidateQueries: [
             omnipoolPositionsKey(account?.address ?? ""),
             omnipoolMiningPositionsKey(account?.address ?? ""),
@@ -372,9 +371,8 @@ export const useAddLiquidity = ({
     if (!liquidityShares || !values.amount)
       throw new Error("Invalid input data")
 
-    const amount = scale(values.amount, poolMeta.decimals).toString()
     mutation.mutate({
-      amount,
+      amount: values.amount,
       shares: liquidityShares.minSharesToGet,
     })
   }
