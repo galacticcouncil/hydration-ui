@@ -139,7 +139,7 @@ const querySchema = z.object({
 export const useFeesChartsData = (props: FeesChartsDataProps) => {
   const { viewMode, timeRange } = props
 
-  const test = useQuery({
+  return useQuery({
     queryKey: ["feesChartsData", viewMode, timeRange],
     queryFn: async () => {
       const endDate = endOfDay(subDays(new Date(), 1))
@@ -149,7 +149,11 @@ export const useFeesChartsData = (props: FeesChartsDataProps) => {
 
       const queries = Object.entries(getFeesQueries(viewMode)).map(
         async ([key, value]) => {
-          const url = `${FEES_CHARTS_API_URL}?${value}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}&bucketSize=${encodeURIComponent(bucketSize)}`
+          const params = new URLSearchParams(value)
+          params.set("startTime", startTime)
+          params.set("endTime", endTime)
+          params.set("bucketSize", bucketSize)
+          const url = `${FEES_CHARTS_API_URL}?${params.toString()}`
 
           const res = await fetch(url)
           const json = await res.json()
@@ -186,6 +190,4 @@ export const useFeesChartsData = (props: FeesChartsDataProps) => {
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
   })
-
-  return test
 }

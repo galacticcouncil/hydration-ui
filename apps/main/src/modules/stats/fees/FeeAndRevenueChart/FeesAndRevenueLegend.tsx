@@ -1,7 +1,6 @@
 import { Box, Button, Flex, Select, Text } from "@galacticcouncil/ui/components"
 import { useTheme } from "@galacticcouncil/ui/theme"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { feesAndRevenueConfig } from "@/modules/stats/fees/FeeAndRevenueChart/FeeAndRevenue.utils"
@@ -19,7 +18,7 @@ export const FeeAndRevenueLegend = ({
   const { getToken } = useTheme()
   const { gte } = useBreakpoints()
 
-  const legendItems = useMemo(() => {
+  const legendItems = (() => {
     const dataFields = Array.from(fields.entries()).map(([key, value]) => {
       const fieldConfig = feesAndRevenueConfig[key]
       const label = fieldConfig?.label ?? "N/A"
@@ -44,7 +43,7 @@ export const FeeAndRevenueLegend = ({
       },
       ...dataFields,
     ]
-  }, [fields, getToken, t])
+  })()
 
   if (!gte("md")) {
     return (

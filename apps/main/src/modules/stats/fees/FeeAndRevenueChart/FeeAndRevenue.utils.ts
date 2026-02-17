@@ -1,19 +1,19 @@
 import { ThemeToken } from "@galacticcouncil/ui/theme"
-import { t } from "i18next"
 
 import { TimeRange } from "@/api/stats"
+import i18n from "@/i18n"
 
 export const getTotalValueLabel = (timeRange: TimeRange) => {
   switch (timeRange) {
     case "1W":
-      return t("stats:fees.chart.timeRange.description.1W")
+      return i18n.t("stats:fees.chart.timeRange.description.1W")
     case "1M":
-      return t("stats:fees.chart.timeRange.description.1M")
+      return i18n.t("stats:fees.chart.timeRange.description.1M")
     case "1Y":
-      return t("stats:fees.chart.timeRange.description.1Y")
+      return i18n.t("stats:fees.chart.timeRange.description.1Y")
 
     default:
-      return t("stats:fees.chart.timeRange.description.ALL")
+      return i18n.t("stats:fees.chart.timeRange.description.ALL")
   }
 }
 
@@ -61,31 +61,31 @@ export const feesAndRevenueConfig: Record<
   { label: string; color: ThemeToken }
 > = {
   asset: {
-    label: t("stats:fees.config.asset"),
+    label: i18n.t("stats:fees.config.asset"),
     color: feesAndRevenueColorConfig.omnipoolAssetFee,
   },
   protocol: {
-    label: t("stats:fees.config.protocol"),
+    label: i18n.t("stats:fees.config.protocol"),
     color: feesAndRevenueColorConfig.omnipoolProtocolFee,
   },
   liquidationPenalty: {
-    label: t("stats:fees.config.liquidationPenalty"),
+    label: i18n.t("stats:fees.config.liquidationPenalty"),
     color: feesAndRevenueColorConfig.liquidationPenalty,
   },
   peplLiquidationProfit: {
-    label: t("stats:fees.config.peplLiquidationProfit"),
+    label: i18n.t("stats:fees.config.peplLiquidationProfit"),
     color: feesAndRevenueColorConfig.pepl,
   },
   assetReserve: {
-    label: t("stats:fees.config.assetReserve"),
+    label: i18n.t("stats:fees.config.assetReserve"),
     color: feesAndRevenueColorConfig.assetReserve,
   },
   borrowApr: {
-    label: t("stats:fees.config.borrowApr"),
+    label: i18n.t("stats:fees.config.borrowApr"),
     color: feesAndRevenueColorConfig.hollar,
   },
   hsmRevenue: {
-    label: t("stats:fees.config.hsmRevenue"),
+    label: i18n.t("stats:fees.config.hsmRevenue"),
     color: feesAndRevenueColorConfig.hollarFees,
   },
 }
