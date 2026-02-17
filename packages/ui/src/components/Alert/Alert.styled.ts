@@ -17,7 +17,8 @@ const containerVariants = createVariants<AlertVariant>((theme) => ({
 
 export const SAlertContainer = styled.div<{
   readonly variant?: AlertVariant
-}>(({ theme, variant = "info" }) => [
+  readonly hasDescription?: boolean
+}>(({ theme, variant = "info", hasDescription }) => [
   css`
     display: grid;
     grid-template-columns: auto 1fr;
@@ -25,6 +26,11 @@ export const SAlertContainer = styled.div<{
 
     padding: ${theme.containers.paddings.quart};
     border-radius: ${theme.space.base};
+
+    ${!hasDescription &&
+    css`
+      align-items: center;
+    `}
   `,
   containerVariants(variant),
 ])

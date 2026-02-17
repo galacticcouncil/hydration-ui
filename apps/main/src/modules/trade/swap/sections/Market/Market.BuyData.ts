@@ -65,6 +65,7 @@ export const useMarketBuyData = (
         slippage: twapSlippage,
         maxRetries: twapMaxRetries,
         address,
+        dryRun: form.formState.isValid,
       },
       isTwapEnabled(swapData?.swap),
     ),

@@ -32,7 +32,11 @@ export const Alert: FC<AlertProps> = ({
   tooltip,
 }) => {
   return (
-    <SAlertContainer variant={variant} className={className}>
+    <SAlertContainer
+      variant={variant}
+      hasDescription={!!description}
+      className={className}
+    >
       {displayIcon && (
         <SAlertIcon
           variant={variant}
