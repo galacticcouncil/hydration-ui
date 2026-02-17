@@ -2,26 +2,32 @@ import { parseDryRunError } from "@galacticcouncil/utils/src/helpers/meta"
 
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import { AnyPapiTx } from "@/modules/transactions/types"
-import { Papi } from "@/providers/rpcProvider"
+import { PapiNext } from "@/providers/rpcProvider"
 
 export const getPapiDryRunError = async (
-  papi: Papi,
+  papi: PapiNext,
   address: string,
   tx: AnyPapiTx,
 ) => {
-  const result = await papi.apis.DryRunApi.dry_run_call(
-    {
-      type: "system",
-      value: {
-        type: "Signed",
-        value: address,
+  try {
+    const result = await papi.apis.DryRunApi.dry_run_call(
+      {
+        type: "system",
+        value: {
+          type: "Signed",
+          value: address,
+        },
       },
-    },
-    // @ts-expect-error contains structured call data
-    decodeTx(tx),
-  )
+      // @ts-expect-error contains structured call data
+      decodeTx(tx),
+      1,
+    )
 
-  return !result.success || result.value.execution_result.success
-    ? null
-    : await parseDryRunError(result.value.execution_result.value.error)
+    return !result.success || result.value.execution_result.success
+      ? null
+      : await parseDryRunError(result.value.execution_result.value.error)
+  } catch (error) {
+    console.error(error)
+    return null
+  }
 }
