@@ -1,5 +1,9 @@
 import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
-import { HYDRATION_CHAIN_KEY, isAnyEvmChain } from "@galacticcouncil/utils"
+import {
+  clampBigInt,
+  HYDRATION_CHAIN_KEY,
+  isAnyEvmChain,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { isObjectType } from "remeda"
 import {
@@ -26,6 +30,8 @@ import {
   EVM_DEFAULT_CHAIN_KEY,
   EVM_DISPATCH_ADDRESS,
   EVM_GAS_TO_WEIGHT,
+  EVM_MAX_GAS_LIMIT,
+  EVM_MIN_GAS_LIMIT,
 } from "@/config/evm"
 import { requestNetworkSwitch } from "@/utils"
 
@@ -89,7 +95,10 @@ export class EthereumSigner {
     const isPrecompileTx = tx.to === EVM_DISPATCH_ADDRESS
 
     if (isPrecompileTx && weight > 0n) {
-      const gasByWeight = weight / EVM_GAS_TO_WEIGHT
+      const gasByWeight = clampBigInt(weight / EVM_GAS_TO_WEIGHT, {
+        min: EVM_MIN_GAS_LIMIT,
+        max: EVM_MAX_GAS_LIMIT,
+      })
       const gasLimitSurplus = (gasByWeight * 30n) / 100n // 30% surplus
       return gasByWeight + gasLimitSurplus
     }
