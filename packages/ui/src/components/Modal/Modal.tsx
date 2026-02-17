@@ -248,6 +248,7 @@ export type ModalProps = React.ComponentProps<typeof ModalRoot> & {
   disableAutoFocus?: boolean
   topContent?: ReactNode
   animationDurationMs?: number
+  ref?: Ref<React.ElementRef<typeof DialogPrimitive.Content>>
 }
 
 const Modal = ({
@@ -257,6 +258,7 @@ const Modal = ({
   disableAutoFocus = false,
   topContent,
   animationDurationMs,
+  ref,
   ...props
 }: ModalProps) => {
   const { gte } = useBreakpoints()
@@ -272,6 +274,7 @@ const Modal = ({
             onInteractOutside={
               disableInteractOutside ? (e) => e.preventDefault() : undefined
             }
+            ref={ref}
           >
             {children}
           </DrawerContent>
@@ -293,6 +296,7 @@ const Modal = ({
           onOpenAutoFocus={
             disableAutoFocus ? (e) => e.preventDefault() : undefined
           }
+          ref={ref}
         >
           {children}
         </ModalContent>

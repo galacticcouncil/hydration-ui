@@ -24,6 +24,7 @@ import {
   transactionStatusReducer,
 } from "@/modules/transactions/TransactionProvider.utils"
 import { TxState, TxStatus } from "@/modules/transactions/types"
+import { useProviderRpcUrlStore } from "@/states/provider"
 import { SingleTransaction, useTransactionsStore } from "@/states/transactions"
 import { NATIVE_ASSET_ID } from "@/utils/consts"
 
@@ -36,7 +37,7 @@ export type TransactionContext = SingleTransaction &
 
     ecosystem: CallType
 
-    nonce?: number
+    nonce: number
     isLoadingNonce: boolean
 
     feeEstimateNative?: string
@@ -46,6 +47,7 @@ export type TransactionContext = SingleTransaction &
     isLoadingFeeEstimate: boolean
 
     isLoading: boolean
+    isUsingPermit: boolean
 
     setTip: (tip: string) => void
     setStatus: (status: TxStatus) => void
@@ -70,7 +72,9 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   transaction: config,
 }) => {
   const queryClient = useQueryClient()
-  const { cancelTransaction } = useTransactionsStore()
+  const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
+  const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
+    useTransactionsStore()
 
   const transaction = useWrapTransaction(config)
 
@@ -93,7 +97,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const feeAssetId = fee?.feeAssetId ?? NATIVE_ASSET_ID
   const feeAssetBalance = fee?.feeAssetBalance
 
-  const { nonce, isLoading: isLoadingNonce } = useNonce(feeAssetId)
+  const {
+    nonce,
+    isLoading: isLoadingNonce,
+    isUsingPermit,
+  } = useNonce(feeAssetId)
 
   const onClose = useCallback(() => {
     dispatch(doClose())
@@ -139,10 +147,16 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       tip,
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
+      nonce,
+      priorityRpcUrl:
+        transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+          ? rpcUrl
+          : undefined,
       onSubmitted: (txHash) => {
         dispatch(doSetStatus("submitted"))
         transaction.onSubmitted?.(txHash)
         toasts.onSubmitted?.(txHash)
+        addPendingTransaction(transaction.id, nonce, transaction.meta)
       },
       onSuccess: (event) => {
         dispatch(doSetStatus("success"))
@@ -151,9 +165,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
           queryClient.invalidateQueries({ queryKey }),
         )
         toasts.onSuccess?.(event)
+        removePendingTransaction(transaction.id)
       },
       onError: (message) => {
         dispatch(doSetError(message))
+        removePendingTransaction(transaction.id)
         transaction.onError?.(message)
 
         if (!openRef.current) {
@@ -162,6 +178,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       },
       onFinalized: () => {
         cancelTransaction(transaction.id)
+        removePendingTransaction(transaction.id)
       },
     })
   }
@@ -192,6 +209,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
         isLoadingFeeEstimate,
 
         isLoading,
+        isUsingPermit,
 
         setTip,
         setFeePaymentModalOpen,

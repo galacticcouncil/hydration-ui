@@ -38,7 +38,7 @@ export const useUnstake = (
 
   return useMutation({
     mutationFn: async (amount: string) => {
-      const isStakePosition = positionId != 0n
+      const isStakePosition = positionId !== 0n
 
       if (!isStakePosition) {
         return

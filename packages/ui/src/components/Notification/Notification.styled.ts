@@ -1,13 +1,17 @@
 import { css } from "@emotion/react"
 import styled from "@emotion/styled"
+import { isPropValid } from "storybook/theming"
 
 import { createVariants } from "@/utils"
 
 import { Icon } from "../Icon"
 import { ToastVariant } from "./Notification"
 
-export const SNotification = styled.div(
-  ({ theme }) => css`
+export const SNotification = styled("div", {
+  shouldForwardProp: (prop: string) =>
+    isPropValid(prop) && prop !== "fullWidth",
+})<{ fullWidth?: boolean }>(
+  ({ theme, fullWidth }) => css`
     display: flex;
 
     flex-direction: column;
@@ -16,7 +20,7 @@ export const SNotification = styled.div(
 
     position: relative;
 
-    width: 19.375rem;
+    width: ${fullWidth ? "100%" : "19.375rem"};
 
     position: relative;
     overflow: hidden;

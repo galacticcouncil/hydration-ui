@@ -7,6 +7,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
 import { ProviderIcons } from "@/components/provider/ProviderIcons"
@@ -15,6 +16,7 @@ import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount, useWeb3Connect, useWeb3ConnectModal } from "@/hooks"
 
 export const AccountActionsFooter = () => {
+  const { t } = useTranslation()
   const { mode, setPage, isControlled } = useWeb3ConnectContext()
   const { toggle } = useWeb3ConnectModal()
   const { disconnect } = useAccount()
@@ -37,15 +39,15 @@ export const AccountActionsFooter = () => {
         <Flex gap="base" align="center" display={["none", null, "flex"]}>
           <ProviderIcons providers={connected} />
           <Text fs="p4" color={getToken("text.medium")}>
-            {connected.length} connected
+            {t("account.connected", { count: connected.length })}
           </Text>
         </Flex>
       )}
       <Flex gap="base" justify="space-between" ml="auto">
         {isConnected && !isControlled && (
           <Button variant="tertiary" onClick={onLogout}>
-            Log out
-            <Icon size="s" component={LogOut} ml="s" mr={-4} />
+            {t("account.logOut")}
+            <Icon size="s" component={LogOut} mr="-s" />
           </Button>
         )}
         <Button
@@ -54,8 +56,8 @@ export const AccountActionsFooter = () => {
           outline
           onClick={() => setPage(Web3ConnectModalPage.ProviderSelect)}
         >
-          Manage wallets
-          <Icon size="s" component={ChevronRight} ml="s" mr={-4} />
+          {t("account.manageWallets")}
+          <Icon size="s" component={ChevronRight} mr="-s" />
         </Button>
       </Flex>
     </ModalFooter>

@@ -1,10 +1,12 @@
 import { AccountInput, Flex, Label, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, useId } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useAddressStore } from "@/components/address-book/AddressBook.store"
 import { AddressBookButton } from "@/components/address-book/AddressBookButton"
 import { TALISMAN_PROVIDERS } from "@/config/providers"
+import i18n from "@/i18n"
 
 export type AddressBookProps = {
   readonly address: string
@@ -19,6 +21,7 @@ export const AddressBook: FC<AddressBookProps> = ({
   onAddressChange,
   onOpenMyContacts,
 }) => {
+  const { t } = useTranslation("translations", { i18n })
   const id = useId()
   const { addresses } = useAddressStore()
   const provider = addresses.find((a) => a.address === address)?.provider
@@ -35,7 +38,7 @@ export const AddressBook: FC<AddressBookProps> = ({
             color={getToken("text.medium")}
             htmlFor={id}
           >
-            Destination address
+            {t("addressBook.destinationAddress")}
           </Label>
           <AddressBookButton onClick={onOpenMyContacts} />
         </Flex>
@@ -44,7 +47,7 @@ export const AddressBook: FC<AddressBookProps> = ({
           value={address}
           onChange={onAddressChange}
           avatarTheme={isTalisman ? "talisman" : "auto"}
-          placeholder="Paste address here..."
+          placeholder={t("addressBook.placeholder")}
           isError={!!error}
         />
       </Flex>

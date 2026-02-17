@@ -1,6 +1,7 @@
 import { ModalBody, ModalHeader } from "@galacticcouncil/ui/components"
 import { useState } from "react"
 import { FormProvider } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { AddressBookModal } from "@/components/address-book"
 import { ExternalWalletForm } from "@/components/external/ExternalWalletForm"
@@ -9,6 +10,7 @@ import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 
 export const ExternalWalletContent = () => {
+  const { t } = useTranslation()
   const [isAddressBookOpen, setIsAddressBookOpen] = useState(false)
   const form = useExternalWalletForm()
   const { setPage } = useWeb3ConnectContext()
@@ -18,7 +20,7 @@ export const ExternalWalletContent = () => {
       <AddressBookModal
         header={
           <ModalHeader
-            title="Select account to use"
+            title={t("external.selectAccount")}
             onBack={() => setIsAddressBookOpen(false)}
           />
         }
@@ -33,8 +35,8 @@ export const ExternalWalletContent = () => {
   return (
     <FormProvider {...form}>
       <ModalHeader
-        title="View external account"
-        description="Paste account address you would like to monitor."
+        title={t("external.viewAccount")}
+        description={t("external.description")}
         align="center"
         onBack={() => setPage(Web3ConnectModalPage.ProviderSelect)}
       />

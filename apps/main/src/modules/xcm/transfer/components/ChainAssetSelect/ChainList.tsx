@@ -4,7 +4,9 @@ import {
   Text,
   VirtualizedList,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { getChainId } from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 
 import { ChainLogo } from "@/components/ChainLogo"
@@ -24,6 +26,7 @@ export const ChainList: React.FC<ChainListProps> = ({
   selectedChain,
   setSelectedChain,
 }) => {
+  const { isMobile } = useBreakpoints()
   const chainIndex = selectedChain
     ? items.findIndex(({ chain }) => chain.key === selectedChain.key)
     : 0
@@ -50,13 +53,18 @@ export const ChainList: React.FC<ChainListProps> = ({
               variant={isActive ? "accent" : "transparent"}
               outline={isActive}
               sx={{
-                width: ["2.625rem", "100%"],
+                width: ["auto", "100%"],
                 justifyContent: ["center", "flex-start"],
+                height: "auto",
                 px: "base",
               }}
               onClick={() => setSelectedChain(chain)}
             >
-              <ChainLogo chain={chain} size="small" />
+              <ChainLogo
+                ecosystem={chain.ecosystem}
+                chainId={getChainId(chain)}
+                size={isMobile ? "medium" : "small"}
+              />
               <Text
                 display={["none", "block"]}
                 color={

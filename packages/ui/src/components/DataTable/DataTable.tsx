@@ -10,7 +10,7 @@ import {
   Table as TableDef,
   VisibilityState,
 } from "@tanstack/react-table"
-import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react"
+import { ChevronDown, ChevronUp } from "lucide-react"
 import {
   ComponentProps,
   FC,
@@ -19,12 +19,10 @@ import {
   Ref,
   useEffect,
   useImperativeHandle,
-  useMemo,
   useState,
 } from "react"
 
 import { Box } from "@/components/Box"
-import { Button } from "@/components/Button"
 import { CollapsibleContent, CollapsibleRoot } from "@/components/Collapsible"
 import {
   DataTableRowProvider,
@@ -37,6 +35,7 @@ import {
 import { ExternalLink } from "@/components/ExternalLink"
 import { Flex } from "@/components/Flex"
 import { Icon } from "@/components/Icon"
+import { Pagination } from "@/components/Pagination"
 import {
   Table,
   TableBody,
@@ -47,14 +46,9 @@ import {
   TableRow,
   TableRowOverride,
 } from "@/components/Table"
-import { Text } from "@/components/Text"
 import { getToken } from "@/utils"
 
-import {
-  getPaginationRange,
-  useDataTable,
-  UseDataTableOwnOptions,
-} from "./DataTable.utils"
+import { useDataTable, UseDataTableOwnOptions } from "./DataTable.utils"
 
 export type DataTableProps<TData extends RowData> = TableProps &
   UseDataTableOwnOptions & {
@@ -363,74 +357,18 @@ export const DataTablePagination = <T,>({
   const totalPages = table.getPageCount()
   const currentPage = table.getState().pagination.pageIndex + 1
 
-  const pagination = useMemo(
-    () => getPaginationRange(totalPages, currentPage),
-    [currentPage, totalPages],
-  )
-
-  const onPageClickHandler = (number: number) => {
-    table.setPageIndex(number - 1)
-    onPageClick?.(number)
+  const handlePageChange = (page: number) => {
+    table.setPageIndex(page - 1)
+    onPageClick?.(page)
   }
 
   return (
     <SPagination>
-      <Button
-        size="small"
-        variant="tertiary"
-        outline
-        disabled={!table.getCanPreviousPage()}
-        onClick={() => {
-          onPageClick?.(table.getState().pagination.pageIndex)
-          table.previousPage()
-        }}
-        sx={{ px: "l" }}
-      >
-        <Icon size="s" component={ChevronLeft} display={["block", "none"]} />
-        <Text as="span" display={["none", "inline"]}>
-          Prev
-        </Text>
-      </Button>
-      {pagination.map((pageNumber, index) =>
-        typeof pageNumber === "string" ? (
-          <Text
-            key={`${index}-dots`}
-            width="l"
-            fs="p2"
-            color={getToken("text.low")}
-            sx={{ textAlign: "center" }}
-          >
-            &#8230;
-          </Text>
-        ) : (
-          <Button
-            key={`${index}-page`}
-            size="small"
-            variant={pageNumber === currentPage ? "secondary" : "tertiary"}
-            outline={pageNumber !== currentPage}
-            onClick={() => onPageClickHandler(pageNumber)}
-            sx={{ px: "base", minWidth: "1.5rem" }}
-          >
-            {pageNumber}
-          </Button>
-        ),
-      )}
-      <Button
-        size="small"
-        variant="tertiary"
-        outline
-        disabled={!table.getCanNextPage()}
-        onClick={() => {
-          onPageClick?.(table.getState().pagination.pageIndex + 2)
-          table.nextPage()
-        }}
-        sx={{ px: "l" }}
-      >
-        <Text as="span" display={["none", "inline"]}>
-          Next
-        </Text>
-        <Icon size="s" component={ChevronRight} display={["block", "none"]} />
-      </Button>
+      <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        onPageChange={handlePageChange}
+      />
     </SPagination>
   )
 }
@@ -479,7 +417,10 @@ const DataTableCollapsibleRow: FC<DataTableCollapsibleRowProps> = ({
 
   return (
     <TableRow sx={{ display: isVisible ? "table-row" : "none" }}>
-      <TableCell colSpan={colSpan} sx={{ p: "0!important" }}>
+      <TableCell
+        colSpan={colSpan}
+        sx={{ p: "0!important", height: "auto!important" }}
+      >
         <CollapsibleRoot open={isExpanded}>
           <CollapsibleContent onAnimationEnd={handleAnimationEnd}>
             <SCollapsible>{children}</SCollapsible>

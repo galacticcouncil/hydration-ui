@@ -7,6 +7,10 @@ export type ToastFnParams = {
   state?: "on" | "off"
 }
 
+export enum CustomToastAction {
+  supplyIsolated = "supplyIsolated",
+}
+
 type CreateToastsFn = (params: ToastFnParams) => ToastsConfig
 
 const defaultToastFn: CreateToastsFn = () => ({
@@ -14,11 +18,18 @@ const defaultToastFn: CreateToastsFn = () => ({
   success: "Transaction successful.",
 })
 
-export const TOAST_MESSAGES: Record<ProtocolAction, CreateToastsFn> = {
+export const TOAST_MESSAGES: Record<
+  ProtocolAction | CustomToastAction,
+  CreateToastsFn
+> = {
   [ProtocolAction.default]: defaultToastFn,
   [ProtocolAction.supply]: ({ value }) => ({
     submitted: `Supplying ${value}...`,
     success: `Supplied ${value}.`,
+  }),
+  [CustomToastAction.supplyIsolated]: ({ value }) => ({
+    submitted: `Supplying ${value} and entering isolated mode...`,
+    success: `Supplied ${value} and entered isolated mode.`,
   }),
   [ProtocolAction.withdraw]: ({ value }) => ({
     submitted: `Withdrawing ${value}...`,
@@ -88,5 +99,6 @@ export const TOAST_MESSAGES: Record<ProtocolAction, CreateToastsFn> = {
   [ProtocolAction.updateRepresentatives]: defaultToastFn,
 }
 
-export const createProtocolToastFn = (action: ProtocolAction) =>
-  TOAST_MESSAGES[action] || defaultToastFn
+export const createProtocolToastFn = (
+  action: ProtocolAction | CustomToastAction,
+) => TOAST_MESSAGES[action] || defaultToastFn

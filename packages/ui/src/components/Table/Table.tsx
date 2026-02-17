@@ -106,18 +106,16 @@ export const TableRowAction: FC<
   )
 }
 
-export const TableRowDetailsExpand: FC<ComponentProps<typeof Button>> = ({
-  children,
-  sx,
-  onClick,
-  ...props
-}) => {
+export const TableRowDetailsExpand: FC<
+  ComponentProps<typeof Button> & { readonly containerClassName?: string }
+> = ({ children, sx, containerClassName, onClick, ...props }) => {
   return (
     <Flex
       gap="base"
       align="center"
       justify="flex-end"
       sx={{ overflow: "hidden" }}
+      className={containerClassName}
     >
       {children}
       <ButtonTransparent

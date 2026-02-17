@@ -10,17 +10,32 @@ import {
   SAccountIndicator,
   SConnectionIndicator,
   SProviderButton,
+  SProviderLink,
 } from "@/components/provider/ProviderButton.styled"
 import { WalletMode } from "@/hooks/useWeb3Connect"
 import { WalletData } from "@/types/wallet"
 import { getWalletModeIcon, getWalletModesByProviderType } from "@/utils/wallet"
 
-export type ProviderButtonProps = WalletData & {
-  onClick?: React.MouseEventHandler<HTMLButtonElement>
+export type ProviderButtonOwnProps = {
+  walletData: WalletData
   isConnected?: boolean
   accountCount?: number
   actionLabel?: string
 }
+
+type AsButtonProps = {
+  as: "button"
+  onClick: React.MouseEventHandler<HTMLButtonElement>
+}
+
+type AsLinkProps = {
+  as: "a"
+  href: string
+  target?: React.HTMLAttributeAnchorTarget
+}
+
+export type ProviderButtonProps = ProviderButtonOwnProps &
+  (AsButtonProps | AsLinkProps)
 
 const modesWithIconsConfig = {
   [WalletMode.EVM]: true,
@@ -35,18 +50,17 @@ function hasModeIcon(
 }
 
 export const ProviderButton: React.FC<ProviderButtonProps> = ({
-  title,
-  logo,
-  installed,
-  provider,
-  onClick,
+  walletData,
   isConnected,
   accountCount = 0,
   actionLabel,
+  ...props
 }) => {
+  const { logo, title, installed, provider } = walletData
   const modes = getWalletModesByProviderType(provider)
-  return (
-    <SProviderButton type="button" onClick={onClick}>
+
+  const content = (
+    <>
       <Box sx={{ position: "relative" }}>
         <img sx={{ size: "xl" }} src={logo} alt={title} />
         {modes.filter(hasModeIcon).map((mode) => (
@@ -78,6 +92,20 @@ export const ProviderButton: React.FC<ProviderButtonProps> = ({
       {accountCount > 0 && (
         <SAccountIndicator>+{accountCount}</SAccountIndicator>
       )}
+    </>
+  )
+
+  if (props.as === "a") {
+    return (
+      <SProviderLink href={props.href} target={props.target}>
+        {content}
+      </SProviderLink>
+    )
+  }
+
+  return (
+    <SProviderButton type="button" onClick={props.onClick}>
+      {content}
     </SProviderButton>
   )
 }

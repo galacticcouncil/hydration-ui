@@ -12,7 +12,11 @@ import {
   is_sell_allowed,
 } from "@galacticcouncil/math-omnipool"
 import { pool } from "@galacticcouncil/sdk-next"
-import { GIGA_ASSETS, HOLLAR_ASSETS } from "@galacticcouncil/utils"
+import {
+  GIGA_ASSETS,
+  HOLLAR_ASSETS,
+  PRIME_STABLESWAP_ASSET_ID,
+} from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import Big from "big.js"
@@ -192,7 +196,11 @@ export const useStablepools = () => {
 
   const { data: borrowAssetsApy } = useBorrowAssetsApy(
     stablePoolData
-      ?.filter((stablepool) => !!getRelatedAToken(stablepool.poolId))
+      ?.filter(
+        (stablepool) =>
+          !!getRelatedAToken(stablepool.poolId) ||
+          stablepool.poolId === Number(PRIME_STABLESWAP_ASSET_ID),
+      )
       .map((pool) => pool.poolId.toString()),
   )
 

@@ -32,7 +32,12 @@ export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
       >
         {t("withdraw")}
       </Button> */}
+      <Button size="large" onClick={() => onModalOpen("transfer")}>
+        <ArrowDownUp />
+        {t("send")}
+      </Button>
       <Button
+        variant="secondary"
         size="large"
         disabled={!asset.isTradable}
         onClick={() =>
@@ -43,15 +48,7 @@ export const AssetDetailMobileActions: FC<Props> = ({ asset, onModalOpen }) => {
         }
       >
         <Repeat />
-        {t("swap")}
-      </Button>
-      <Button
-        variant="secondary"
-        size="large"
-        onClick={() => onModalOpen("transfer")}
-      >
-        <ArrowDownUp />
-        {t("transfer")}
+        {t("trade")}
       </Button>
     </SAssetDetailMobileActions>
   )

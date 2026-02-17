@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { countBy, pick, prop } from "remeda"
 import { useShallow } from "zustand/shallow"
 
@@ -10,6 +11,7 @@ import { useWeb3Enable } from "@/hooks/useWeb3Enable"
 import { getWallet, getWalletData } from "@/wallets"
 
 export const ProviderExternalButton = () => {
+  const { t } = useTranslation()
   const { setPage } = useWeb3ConnectContext()
   const { disconnect } = useWeb3Enable()
 
@@ -29,7 +31,8 @@ export const ProviderExternalButton = () => {
 
   return (
     <ProviderButton
-      {...walletData}
+      walletData={walletData}
+      as="button"
       onClick={() => {
         if (isConnected) {
           disconnect(provider)
@@ -39,7 +42,9 @@ export const ProviderExternalButton = () => {
       }}
       isConnected={isConnected}
       accountCount={accountCount}
-      actionLabel={isConnected ? "Disconnect" : "Continue"}
+      actionLabel={
+        isConnected ? t("provider.disconnect") : t("provider.continue")
+      }
     />
   )
 }

@@ -16,7 +16,7 @@ export const useEstimateFee = (
   anyTx: AnyTransaction | null,
   feePaymentAssetIdOverride?: string,
 ) => {
-  const { papi, sdk, isLoaded } = useRpcProvider()
+  const { papi, papiNext, isNext, sdk, isLoaded } = useRpcProvider()
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
 
@@ -35,7 +35,7 @@ export const useEstimateFee = (
     feePaymentAssetIdOverride || accountFeePaymentAssetId?.toString()
   const feeAsset = getAsset(feeAssetId ?? "")
 
-  const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
+  const tx = anyTx ? transformAnyToPapiTx(papi, papiNext, anyTx, isNext) : null
 
   return useQuery({
     enabled:

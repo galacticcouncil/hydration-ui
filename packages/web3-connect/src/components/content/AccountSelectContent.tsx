@@ -8,6 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { pick, prop } from "remeda"
 import { useShallow } from "zustand/react/shallow"
@@ -18,27 +19,38 @@ import {
 } from "@/components/account/AccountFilter"
 import { AccountMetaMaskOption } from "@/components/account/AccountMetaMaskOption"
 import { AccountOption } from "@/components/account/AccountOption"
+import { AccountSolanaOption } from "@/components/account/AccountSolanaOption"
+import { AccountSuiOption } from "@/components/account/AccountSuiOption"
 import {
   getFilteredAccounts,
   useAccountsWithBalance,
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
-import { WalletProviderType } from "@/config/providers"
+import {
+  SOLANA_PROVIDERS,
+  SUI_PROVIDERS,
+  WalletProviderType,
+} from "@/config/providers"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { Account, useWeb3Connect, WalletMode } from "@/hooks/useWeb3Connect"
 import { getDefaultAccountFilterByMode, toAccount } from "@/utils"
 
 const getAccountOptionComponent = (account: Account) => {
-  switch (account.provider) {
-    case WalletProviderType.MetaMask:
+  switch (true) {
+    case account.provider === WalletProviderType.MetaMask:
       return AccountMetaMaskOption
+    case SOLANA_PROVIDERS.includes(account.provider):
+      return AccountSolanaOption
+    case SUI_PROVIDERS.includes(account.provider):
+      return AccountSuiOption
     default:
       return AccountOption
   }
 }
 
 export const AccountSelectContent = () => {
+  const { t } = useTranslation()
   const { account: currentAccount } = useAccount()
   const { onAccountSelect, isControlled, mode } = useWeb3ConnectContext()
   const { accounts, toggle, getProviders } = useWeb3Connect(
@@ -98,7 +110,7 @@ export const AccountSelectContent = () => {
   return (
     <>
       <ModalHeader
-        title="Select account"
+        title={t("account.select")}
         align="center"
         customHeader={
           shouldRenderHeader && (
@@ -109,7 +121,7 @@ export const AccountSelectContent = () => {
                   onChange={(e) => setSearchVal(e.target.value)}
                   customSize="large"
                   iconStart={Search}
-                  placeholder="Search by name or paste address"
+                  placeholder={t("account.searchPlaceholder")}
                 />
               )}
               {isDefaultMode && (
@@ -128,7 +140,7 @@ export const AccountSelectContent = () => {
             <ProviderLoader providers={providers.map(prop("type"))} />
           ) : (
             <>
-              {hasNoResults && <Text>No accounts found</Text>}
+              {hasNoResults && <Text>{t("account.noResults")}</Text>}
               {accountsWithBalances.map((account) => {
                 const Component = getAccountOptionComponent(account)
                 return (

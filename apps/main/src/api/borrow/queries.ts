@@ -1,7 +1,11 @@
+import { ProtocolAction } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
 import { h160 } from "@galacticcouncil/common"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
-import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
+import {
+  AaveV3HydrationMainnet,
+  gasLimitRecommendations,
+} from "@galacticcouncil/money-market/ui-config"
 import {
   formatGhoReserveData,
   formatGhoUserData,
@@ -403,7 +407,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 }
 
 export const useGetClaimAllBorrowRewardsTx = () => {
-  const { papi, evm } = useRpcProvider()
+  const { papi, papiNext, isNext, evm } = useRpcProvider()
   const { account } = useAccount()
   const { data: user } = useUserBorrowSummary()
 
@@ -459,12 +463,37 @@ export const useGetClaimAllBorrowRewardsTx = () => {
     const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
     const gasPrice = gasPriceBase + gasPriceSurplus
 
+    if (isNext) {
+      const evmCall = papiNext.tx.EVM.call({
+        source: Binary.fromHex(tx.from),
+        target: Binary.fromHex(tx.to),
+        input: Binary.fromHex(tx.data),
+        value: [0n, 0n, 0n, 0n],
+        gas_limit: BigInt(
+          gasLimitRecommendations[ProtocolAction.claimRewards]?.limit ||
+            tx.gasLimit.toString(),
+        ),
+        max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
+        max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
+        access_list: [],
+        authorization_list: [],
+        nonce: undefined,
+      })
+
+      return papiNext.tx.Dispatcher.dispatch_evm_call({
+        call: evmCall.decodedCall,
+      })
+    }
+
     const evmCall = papi.tx.EVM.call({
       source: Binary.fromHex(tx.from),
       target: Binary.fromHex(tx.to),
       input: Binary.fromHex(tx.data),
       value: [0n, 0n, 0n, 0n],
-      gas_limit: BigInt(tx.gasLimit.toString()),
+      gas_limit: BigInt(
+        gasLimitRecommendations[ProtocolAction.claimRewards]?.limit ||
+          tx.gasLimit.toString(),
+      ),
       max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
       max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
       access_list: [],
@@ -474,5 +503,5 @@ export const useGetClaimAllBorrowRewardsTx = () => {
     return papi.tx.Dispatcher.dispatch_evm_call({
       call: evmCall.decodedCall,
     })
-  }, [account?.address, evm, papi, user])
+  }, [account?.address, evm, papi, papiNext, isNext, user])
 }

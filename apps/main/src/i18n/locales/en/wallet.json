@@ -18,6 +18,7 @@
   "rewards.referrals.empty": "Invite people",
   "rewards.claim": "Claim all rewards",
   "rewards.claim.empty": "Nothing to claim",
+  "rewards.claim.description": "Staking rewards won’t be claimed*",
   "myAssets.emptyState.header": "No funds",
   "myAssets.emptyState.description": "Looks like you don’t have any assets on Hydration yet.",
   "myAssets.emptyState.cta": "Transfer to Hydration",

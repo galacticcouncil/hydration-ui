@@ -1,4 +1,5 @@
 import { shortenAccountAddress } from "@galacticcouncil/utils"
+import { isString } from "remeda"
 import { EIP1193Provider } from "viem"
 
 import { WalletProviderType } from "@/config/providers"
@@ -46,7 +47,10 @@ export class BaseEIP1193Wallet implements Wallet {
   }
 
   handleAnnounceProvider = (e: EIP6963AnnounceProviderEvent) => {
-    if (e.detail.info.rdns === this.accessor) {
+    if (
+      e.detail.info.rdns === this.accessor ||
+      e.detail.info.rdns === `${this.accessor}.mobile`
+    ) {
       this._rawExtension = e.detail.provider
     }
   }
@@ -119,11 +123,16 @@ export class BaseEIP1193Wallet implements Wallet {
 
     const handler = (payload: unknown) => {
       const addresses = Array.isArray(payload)
-        ? payload.map((item: string) => item)
+        ? payload.slice(0, 1).filter(isString)
         : []
 
-      const accounts = addresses.slice(0, 1).map(this.toWalletAccount)
-      callback?.(accounts)
+      const address = addresses[0]
+
+      this._signer = address
+        ? new EthereumSigner(address, extension)
+        : undefined
+
+      callback?.(addresses.map(this.toWalletAccount))
     }
 
     extension.on("accountsChanged", handler)

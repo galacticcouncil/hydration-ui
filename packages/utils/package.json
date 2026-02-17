@@ -12,6 +12,7 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
+    "humanize-duration-ts": "^2.1.1",
     "@noble/hashes": "^1.6.1",
     "@types/uuid": "^10.0.0",
     "buffer": "^6.0.3",

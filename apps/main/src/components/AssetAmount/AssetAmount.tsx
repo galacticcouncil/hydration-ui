@@ -9,7 +9,7 @@ import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
   readonly asset: TAsset
-  readonly amount: bigint | string | number
+  readonly amount?: bigint | string | number
 }
 
 export const AssetAmount: FC<Props> = ({ asset, amount }) => {
@@ -27,10 +27,12 @@ export const AssetAmount: FC<Props> = ({ asset, amount }) => {
         pl="s"
         color={getToken("text.high")}
       >
-        {t("currency", {
-          value: scaleHuman(amount, asset.decimals),
-          symbol: asset.symbol,
-        })}{" "}
+        {amount === undefined
+          ? asset.symbol
+          : t("currency", {
+              value: scaleHuman(amount, asset.decimals),
+              symbol: asset.symbol,
+            })}{" "}
         {isBond(asset) && asset.name.replace("HDX Bond ", "").slice(3)}
       </Text>
     </Flex>

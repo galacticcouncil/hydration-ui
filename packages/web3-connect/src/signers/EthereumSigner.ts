@@ -5,7 +5,6 @@ import { isObjectType } from "remeda"
 import {
   Address,
   BaseError,
-  Chain,
   createPublicClient,
   createWalletClient,
   custom,
@@ -28,6 +27,7 @@ import {
   EVM_DISPATCH_ADDRESS,
   EVM_GAS_TO_WEIGHT,
 } from "@/config/evm"
+import { requestNetworkSwitch } from "@/utils"
 
 type PermitMessage = {
   from: string
@@ -49,6 +49,8 @@ type TransactionCall = Omit<ExtendedEvmCall, "from" | "type" | "dryRun">
 type EthereumSignerOptions = {
   chainKey?: string
   weight?: bigint
+  priorityRpcUrl?: string
+  nonce?: number
   onSubmitted: (txHash: string) => void
   onSuccess: (receipt: TransactionReceipt) => void
   onError: (error: string) => void
@@ -80,12 +82,27 @@ export class EthereumSigner {
     return "Unknown error"
   }
 
+  async getGas(
+    tx: EstimateGasParameters,
+    weight: bigint = 0n,
+  ): Promise<bigint> {
+    const isPrecompileTx = tx.to === EVM_DISPATCH_ADDRESS
+
+    if (isPrecompileTx && weight > 0n) {
+      const gasByWeight = weight / EVM_GAS_TO_WEIGHT
+      const gasLimitSurplus = (gasByWeight * 30n) / 100n // 30% surplus
+      return gasByWeight + gasLimitSurplus
+    }
+
+    return this.publicClient.estimateGas({
+      ...tx,
+      account: this.address as Address,
+    })
+  }
+
   async estimateGas(tx: EstimateGasParameters, weight: bigint = 0n) {
     const [gas, gasPriceBase] = await Promise.all([
-      this.publicClient.estimateGas({
-        ...tx,
-        account: this.address as Address,
-      }),
+      this.getGas(tx, weight),
       this.publicClient.getGasPrice(),
     ])
 
@@ -116,6 +133,18 @@ export class EthereumSigner {
 
     const { evmClient } = chain
 
+    await requestNetworkSwitch(this.provider, {
+      chain: chainKey,
+      priorityRpcUrl: options.priorityRpcUrl,
+    })
+
+    const prevChainId = this.publicClient?.chain?.id
+    const newChainId = evmClient.chain.id
+
+    if (prevChainId !== newChainId) {
+      this.publicClient = evmClient.getProvider()
+    }
+
     await this.walletClient.switchChain({ id: evmClient.chain.id })
 
     return chain
@@ -134,13 +163,16 @@ export class EthereumSigner {
     )
   }
 
-  getPermitNonce = async (): Promise<bigint> => {
+  getPermitNonce = async (): Promise<number> => {
     const callPermitContract = getContract({
       address: EVM_CALL_PERMIT_ADDRESS,
       abi: EVM_CALL_PERMIT_ABI,
       client: this.publicClient,
     })
-    return callPermitContract.read.nonces([this.address as Hex])
+
+    const nonce = await callPermitContract.read.nonces([this.address as Hex])
+
+    return Number(nonce)
   }
 
   getPermit = async (
@@ -153,35 +185,38 @@ export class EthereumSigner {
 
         const weight = options.weight ?? 0n
 
-        const tx =
-          typeof call === "string"
-            ? {
-                from: this.address as Address,
-                to: EVM_DISPATCH_ADDRESS as Hex,
-                data: call as Hex,
-              }
-            : {
-                from: call.from as Address,
-                to: call.to as Hex,
-                data: call.data as Hex,
-              }
+        const isExtendedEvmCall = isObjectType(call)
 
-        const [latestBlock, chainId, estimatedGas, nonce] = await Promise.all([
+        const tx = isExtendedEvmCall
+          ? {
+              from: call.from as Address,
+              to: call.to as Hex,
+              data: call.data as Hex,
+            }
+          : {
+              from: this.address as Address,
+              to: EVM_DISPATCH_ADDRESS as Hex,
+              data: call as Hex,
+            }
+
+        const [latestBlock, chainId] = await Promise.all([
           this.publicClient.getBlock(),
           this.publicClient.getChainId(),
-          this.estimateGas(tx, weight),
-          this.getPermitNonce(),
         ])
+
+        const gasLimit =
+          isExtendedEvmCall && call.gasLimit
+            ? call.gasLimit
+            : (await this.estimateGas(tx, weight)).gasLimit
+
+        const nonce = options?.nonce ?? (await this.getPermitNonce())
 
         const createPermitMessageData = () => {
           const message: PermitMessage = {
             ...tx,
             value: 0,
-            gaslimit:
-              isObjectType(call) && call.gasLimit
-                ? Number(call.gasLimit)
-                : Number(estimatedGas.gasLimit),
-            nonce: Number(nonce),
+            gaslimit: Number(gasLimit),
+            nonce,
             deadline: Number(latestBlock.timestamp) + 3600, // 1 hour deadline,
           }
 
@@ -226,7 +261,6 @@ export class EthereumSigner {
   async signAndSubmitHydration(
     call: TransactionCall,
     options: EthereumSignerOptions,
-    chain: Chain,
   ) {
     try {
       const [gas, nonce] = await Promise.all([
@@ -246,8 +280,8 @@ export class EthereumSigner {
         account: this.address as Hex,
         data: call.data as Hex,
         to: call.to,
-        nonce,
-        chain,
+        nonce: options?.nonce ?? nonce,
+        chain: this.publicClient.chain,
         maxFeePerGas: call?.maxFeePerGas || gas.maxFeePerGas,
         maxPriorityFeePerGas:
           call?.maxPriorityFeePerGas || gas.maxPriorityFeePerGas,
@@ -278,7 +312,6 @@ export class EthereumSigner {
   async signAndSubmitNative(
     call: TransactionCall,
     options: EthereumSignerOptions,
-    chain: Chain,
   ) {
     try {
       const nonce = await this.publicClient.getTransactionCount({
@@ -289,7 +322,7 @@ export class EthereumSigner {
         data: call.data as Hex,
         to: call.to,
         nonce,
-        chain,
+        chain: this.publicClient.chain,
         value: call?.value,
       })
 
@@ -314,12 +347,10 @@ export class EthereumSigner {
   async signAndSubmit(call: TransactionCall, options: EthereumSignerOptions) {
     const chain = await this.switchChain(options)
 
-    const { evmClient } = chain
-
     if (chain.key === HYDRATION_CHAIN_KEY) {
-      return this.signAndSubmitHydration(call, options, evmClient.chain)
+      return this.signAndSubmitHydration(call, options)
     }
 
-    return this.signAndSubmitNative(call, options, evmClient.chain)
+    return this.signAndSubmitNative(call, options)
   }
 }

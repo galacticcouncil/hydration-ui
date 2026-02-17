@@ -10,6 +10,8 @@ import { useTranslation } from "react-i18next"
 import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
+import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
+import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 
@@ -23,11 +25,27 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
 }) => {
   const { t } = useTranslation(["common"])
   const { createTransaction } = useTransactionsStore()
-  const { evm, dataEnv } = useRpcProvider()
+  const createBatchTx = useCreateBatchTx()
+  const { evm, dataEnv, papi, isNext, papiNext } = useRpcProvider()
 
   const createTx = useCallback<MoneyMarketTxFn>(
-    (tx, options) => createTransaction(tx, options),
-    [createTransaction],
+    ({ tx, toasts }, options, withExtraGas) => {
+      if (Array.isArray(tx)) {
+        createBatchTx({
+          txs: tx.map((evmTx) =>
+            transformEvmCallToPapiTx(papi, papiNext, evmTx, isNext),
+          ),
+          transaction: {
+            toasts,
+            withExtraGas,
+          },
+          options,
+        })
+      } else {
+        createTransaction({ tx, toasts }, options)
+      }
+    },
+    [createTransaction, createBatchTx, papi, papiNext, isNext],
   )
 
   return (

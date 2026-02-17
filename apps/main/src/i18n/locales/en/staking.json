@@ -15,7 +15,7 @@
     "dashboard.remainder2.mobile": "Claiming resets your boost and forfeits <0>{{ amount, number }} unclaimable {{ symbol }}</0> rewards.",
     "dashboard.remainder.cta": "Claim rewards",
     "dashboard.supplyStaked.title": "{{ symbol }} Supply Staked",
-    "dashboard.supplyStaked.ofSupply": "<0>of {{ amount }}</0> circulating supply",
+    "dashboard.supplyStaked.ofSupply": "<0>of {{ amount }}</0> liquid supply",
     "dashboard.projectedAPR": "Projected APR",
     "dashboard.projectedAPR.tooltip": ["Estimated rewards based on your stakeable HDX balance.", "This is a rough estimate subject to continuous change.","It is determined by your share in the stake pool, as well as variable rewards streams."],
     "dashboard.balance": "Staked balance",

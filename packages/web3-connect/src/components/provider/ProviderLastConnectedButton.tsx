@@ -1,6 +1,7 @@
 import { ChevronRight } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 
 import { SProviderButton } from "@/components/provider/ProviderButton.styled"
@@ -15,6 +16,7 @@ export type ProviderLatestConnectedButtonProps = {
 export const ProviderLastConnectedButton: React.FC<
   ProviderLatestConnectedButtonProps
 > = ({ onClick }) => {
+  const { t } = useTranslation()
   const { mode } = useWeb3ConnectContext()
   const getConnectedProviders = useWeb3Connect(
     (state) => state.getConnectedProviders,
@@ -31,10 +33,10 @@ export const ProviderLastConnectedButton: React.FC<
     <SProviderButton type="button" onClick={onClick}>
       <ProviderIcons providers={connected} />
       <Text fs={["p5", "p4"]} sx={{ mt: 8 }} align="center">
-        Last connected
+        {t("provider.lastConnected")}
       </Text>
       <Flex color={getToken("text.tint.primary")} gap="s" align="center">
-        <Text fs="p5">Continue</Text>
+        <Text fs="p5">{t("provider.continue")}</Text>
         <Icon size="s" component={ChevronRight} />
       </Flex>
     </SProviderButton>

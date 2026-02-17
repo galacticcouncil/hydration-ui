@@ -29,9 +29,16 @@ type SendTxFn = (
   action?: ProtocolAction,
 ) => Promise<void>
 
+type SendTxsFn = (
+  txs: { txData: PopulatedTransaction; action?: ProtocolAction }[],
+  toasts: ToastsConfig,
+  withExtraGas?: boolean,
+) => Promise<void>
+
 export type Web3Data = {
   currentAccount: string
   sendTx: SendTxFn
+  sendTxs: SendTxsFn
 }
 
 const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
@@ -64,6 +71,26 @@ const getTransactionAbi = (action?: ProtocolAction) => {
   return abi ?? ""
 }
 
+const convertTx = (tx: PopulatedTransaction, action?: ProtocolAction) => {
+  const abi = getTransactionAbi(action)
+
+  const evmCall: ExtendedEvmCall = {
+    data: tx.data ?? "",
+    from: tx.from ?? "",
+    to: tx.to as HexString,
+    type: CallType.Evm,
+    abi,
+    gasLimit: tx.gasLimit ? BigInt(tx.gasLimit.toString()) : 0n,
+    maxFeePerGas: tx.maxFeePerGas ? BigInt(tx.maxFeePerGas.toString()) : 0n,
+    maxPriorityFeePerGas: tx.maxPriorityFeePerGas
+      ? BigInt(tx.maxPriorityFeePerGas.toString())
+      : 0n,
+    dryRun: (() => {}) as ExtendedEvmCall["dryRun"],
+  }
+
+  return evmCall
+}
+
 export const Web3ContextProvider: React.FC<{
   children: ReactElement
   onCreateTransaction: MoneyMarketTxFn
@@ -81,21 +108,7 @@ export const Web3ContextProvider: React.FC<{
 
   const sendTx = useCallback<SendTxFn>(
     async (tx, toasts, action) => {
-      const abi = getTransactionAbi(action)
-
-      const evmCall: ExtendedEvmCall = {
-        data: tx.data ?? "",
-        from: tx.from ?? "",
-        to: tx.to as HexString,
-        type: CallType.Evm,
-        abi,
-        gasLimit: tx.gasLimit ? BigInt(tx.gasLimit.toString()) : 0n,
-        maxFeePerGas: tx.maxFeePerGas ? BigInt(tx.maxFeePerGas.toString()) : 0n,
-        maxPriorityFeePerGas: tx.maxPriorityFeePerGas
-          ? BigInt(tx.maxPriorityFeePerGas.toString())
-          : 0n,
-        dryRun: (() => {}) as ExtendedEvmCall["dryRun"],
-      }
+      const evmCall: ExtendedEvmCall = convertTx(tx, action)
 
       onCreateTransaction(
         {
@@ -120,6 +133,36 @@ export const Web3ContextProvider: React.FC<{
       refetchPoolData,
     ],
   )
+  const sendTxs = useCallback<SendTxsFn>(
+    async (txs, toasts, withExtraGas) => {
+      const evmCalls: ExtendedEvmCall[] = txs.map((tx) =>
+        convertTx(tx.txData, tx.action),
+      )
+
+      onCreateTransaction(
+        {
+          tx: evmCalls,
+          toasts,
+        },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
+            refetchPoolData?.()
+            refetchIncentiveData?.()
+            refetchGhoData?.()
+          },
+        },
+        withExtraGas,
+      )
+    },
+    [
+      onCreateTransaction,
+      queryClient,
+      refetchGhoData,
+      refetchIncentiveData,
+      refetchPoolData,
+    ],
+  )
 
   useEffect(() => {
     setAccount(address?.toLowerCase() || "")
@@ -130,6 +173,7 @@ export const Web3ContextProvider: React.FC<{
       value={{
         web3ProviderData: {
           sendTx,
+          sendTxs,
           currentAccount: address?.toLowerCase() || "",
         },
       }}

@@ -5,6 +5,9 @@ import {
   ModalHeader,
 } from "@galacticcouncil/ui/components"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+import i18n from "@/i18n"
 
 type Props = {
   readonly align?: "default" | "center"
@@ -19,18 +22,23 @@ export const AccountRemoveModal: FC<Props> = ({
   onCancel,
   onBack,
 }) => {
+  const { t } = useTranslation("translations", { i18n })
   return (
     <>
-      <ModalHeader title="Remove address" onBack={onBack} align={align} />
+      <ModalHeader
+        title={t("account.remove.title")}
+        onBack={onBack}
+        align={align}
+      />
       <ModalBody sx={{ textAlign: align === "default" ? "left" : "center" }}>
-        Are you sure you want to remove this account address?
+        {t("account.remove.confirmation")}
       </ModalBody>
       <ModalFooter justify="space-between">
         <Button variant="secondary" onClick={onCancel}>
-          Cancel
+          {t("account.remove.cancel")}
         </Button>
         <Button variant="primary" onClick={() => onDelete?.()}>
-          Yes, remove
+          {t("account.remove.confirm")}
         </Button>
       </ModalFooter>
     </>

@@ -1,6 +1,9 @@
 import { Button, Flex, Input } from "@galacticcouncil/ui/components"
 import { Search } from "lucide-react"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
+
+import i18n from "@/i18n"
 
 type Props = {
   readonly canAdd: boolean
@@ -15,13 +18,14 @@ export const AddressBookSearch: FC<Props> = ({
   onSearchPhraseChange,
   onAdd,
 }) => {
+  const { t } = useTranslation("translations", { i18n })
   return (
     <Flex align="center" gap="base" position="relative">
       <Input
         sx={{ flex: 1 }}
         customSize="large"
         iconStart={Search}
-        placeholder="Search or paste address to add"
+        placeholder={t("addressBook.searchPlaceholder")}
         value={searchPhrase}
         onChange={(e) => onSearchPhraseChange(e.target.value)}
       />
@@ -35,7 +39,7 @@ export const AddressBookSearch: FC<Props> = ({
           size="small"
           onClick={onAdd}
         >
-          Add
+          {t("addressBook.add")}
         </Button>
       )}
     </Flex>

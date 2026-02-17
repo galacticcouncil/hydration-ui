@@ -1,4 +1,4 @@
-import { hydration } from "@galacticcouncil/descriptors"
+import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
 import { AssetMetadataFactory } from "@galacticcouncil/utils"
 import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
@@ -20,6 +20,7 @@ import { useAssetRegistry } from "@/states/assetRegistry"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type Papi = TypedApi<typeof hydration>
+export type PapiNext = TypedApi<typeof hydrationNext>
 
 export type TProviderContext = TProviderData & {
   isLoaded: boolean
@@ -34,6 +35,8 @@ const defaultData: TProviderContext = {
   dataEnv: "mainnet",
   slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
+  papiNext: {} as TProviderData["papiNext"],
+  isNext: false,
   papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
@@ -102,9 +105,6 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const { isInvalidating } = useInvalidateRpcProvider()
 
   const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
-
-  // @TODO enable when Papi supports cached metadata
-  // const { metadata } = useApiMetadataStore()
 
   const { data } = useQuery({
     enabled: !isInvalidating,

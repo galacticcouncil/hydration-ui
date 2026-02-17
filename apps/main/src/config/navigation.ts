@@ -31,6 +31,7 @@ export const LINKS = {
   walletAssets: "/wallet/assets",
   walletTransactions: "/wallet/transactions",
   crossChain: "/cross-chain",
+  crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
@@ -128,6 +129,13 @@ export const NAVIGATION: NavigationItem[] = [
     key: "crossChain",
     to: LINKS.crossChain,
     icon: ArrowRightLeftIcon,
+    children: [
+      {
+        key: "crossChainHistory",
+        to: LINKS.crossChainHistory,
+        icon: HistoryIcon,
+      },
+    ],
   },
   {
     key: "stats",
@@ -191,6 +199,10 @@ export const getMenuTranslations = (t: TFunction) =>
     crossChain: {
       title: t("navigation.crossChain.title"),
       description: "",
+    },
+    crossChainHistory: {
+      title: t("navigation.crossChainHistory.title"),
+      description: t("navigation.crossChainHistory.description"),
     },
     // bridge: {
     //   title: t("navigation.bridge.title"),

@@ -147,7 +147,7 @@ export const useSuppliedAssetsTableColumns = ({
             {isIsolated && (
               <Tooltip text={t("borrow:tooltip.isolatedAsset")}>
                 <Chip variant="warning" size="small">
-                  Isolated
+                  {t("borrow:isolated")}
                 </Chip>
               </Tooltip>
             )}

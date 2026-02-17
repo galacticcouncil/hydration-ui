@@ -65,10 +65,15 @@ export const useOtcTableColums = () => {
     const accepting = columnHelper.accessor("assetIn.name", {
       header: t("common:accepting"),
       enableSorting: false,
-      cell: ({ row }) => {
-        const { assetIn, amountIn } = row.original
+      cell: function Cell({ row }) {
+        const { isMobile } = useBreakpoints()
 
-        return <AssetAmount asset={assetIn} amount={amountIn} />
+        return (
+          <AssetAmount
+            asset={row.original.assetIn}
+            amount={isMobile ? undefined : row.original.amountIn}
+          />
+        )
       },
     })
 

@@ -72,8 +72,11 @@ export const DashboardStats: FC<Props> = ({
                 data={[{ value: 1 }]}
                 innerRadius={15}
                 outerRadius={45}
-                startAngle={180}
-                endAngle={180 - (360 * Number(supplyStakedPercent)) / 100}
+                cornerRadius={5}
+                startAngle={PIE_START_ANGLE}
+                endAngle={
+                  PIE_START_ANGLE - (360 * Number(supplyStakedPercent)) / 100
+                }
                 stroke="none"
                 fill={themeProps.controls.solid.activeHover}
               />
@@ -200,3 +203,5 @@ export const DashboardStats: FC<Props> = ({
     </SDashboardStats>
   )
 }
+
+const PIE_START_ANGLE = 90

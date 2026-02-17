@@ -1,6 +1,10 @@
 import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
+import {
+  PRIME_APY,
+  PRIME_ASSET_ID,
+} from "@galacticcouncil/money-market/ui-config"
 import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
@@ -273,7 +277,10 @@ const calculateAssetApyTotals = (
       return {
         id,
         isStaked: false,
-        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
+        supplyApy: (id === PRIME_ASSET_ID ? Big(PRIME_APY) : supplyAPY)
+          .times(100)
+          .times(proportion)
+          .toNumber(),
         borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
       }
     },

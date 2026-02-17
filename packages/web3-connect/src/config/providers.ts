@@ -8,7 +8,10 @@ export enum WalletProviderType {
   MantaWallet = "manta-wallet-js",
   MetaMask = "metamask",
   NovaWallet = "nova-wallet",
+  NovaWalletEvm = "nova-wallet-evm",
+  NovaWalletH160 = "nova-wallet-h160",
   Phantom = "phantom",
+  PhantomSui = "phantom-sui",
   PolkadotJS = "polkadot-js",
   Polkagate = "polkagate",
   RabbyWallet = "rabby-wallet",
@@ -22,7 +25,6 @@ export enum WalletProviderType {
   TrustWallet = "trustwallet",
   Slush = "slush",
   Suiet = "suiet",
-  PhantomSui = "phantom-sui",
   WalletConnect = "walletconnect",
   WalletConnectEvm = "walletconnect-evm",
 }
@@ -42,6 +44,7 @@ export const TALISMAN_PROVIDERS: WalletProviderType[] = [
 
 export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.MetaMask,
+  WalletProviderType.NovaWalletEvm,
   WalletProviderType.TalismanEvm,
   WalletProviderType.SubwalletEvm,
   WalletProviderType.TrustWallet,
@@ -66,6 +69,7 @@ export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
 export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TalismanH160,
   WalletProviderType.SubwalletH160,
+  WalletProviderType.NovaWalletH160,
 ]
 
 export const SOLANA_PROVIDERS: WalletProviderType[] = [
@@ -82,4 +86,8 @@ export const SUI_PROVIDERS: WalletProviderType[] = [
 
 export const ALTERNATIVE_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.ExternalWallet,
+]
+
+export const NOVA_WALLET_BLACKLISTED_PROVIDERS: WalletProviderType[] = [
+  WalletProviderType.MetaMask,
 ]

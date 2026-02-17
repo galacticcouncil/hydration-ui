@@ -4,6 +4,7 @@ import {
 } from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
 import { TransferPositionFormValues } from "@/modules/wallet/assets/Transfer/TransferPosition.form"
 import { useAssets } from "@/providers/assetsProvider"
@@ -29,7 +30,7 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       amount,
       address,
     }: TransferPositionFormValues) => {
-      if (asset?.decimals == null) {
+      if (!isNumber(asset?.decimals)) {
         throw new Error("Missing asset meta")
       }
 

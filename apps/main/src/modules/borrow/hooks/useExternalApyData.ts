@@ -1,4 +1,5 @@
 import { ExternalApyData } from "@galacticcouncil/money-market/types"
+import { PRIME_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import {
   GIGA_ASSETS,
   HOLLAR_ASSETS,
@@ -13,6 +14,7 @@ import { useBorrowAssetsApy } from "@/api/borrow"
 const EXTERNAL_APY_ASSET_IDS = [
   USDT_POOL_ASSET_ID,
   VDOT_ASSET_ID,
+  PRIME_ASSET_ID,
   ...HOLLAR_ASSETS,
   ...GIGA_ASSETS,
 ]

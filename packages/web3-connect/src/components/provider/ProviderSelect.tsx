@@ -1,12 +1,13 @@
 import {
   Collapsible,
   Grid,
-  Separator,
+  ModalContentDivider,
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { openUrl } from "@galacticcouncil/utils"
+import { useDevice } from "@galacticcouncil/utils"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import {
   AccountFilter,
@@ -14,6 +15,7 @@ import {
 } from "@/components/account/AccountFilter"
 import { ProviderButton } from "@/components/provider/ProviderButton"
 import { ProviderConnectAll } from "@/components/provider/ProviderConnectAll"
+import { ProviderDeeplinkedButton } from "@/components/provider/ProviderDeeplinkedButton"
 import { ProviderExternalButton } from "@/components/provider/ProviderExternalButton"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
 import { ProviderLastConnectedButton } from "@/components/provider/ProviderLastConnectedButton"
@@ -25,15 +27,18 @@ import { getDefaultAccountFilterByMode } from "@/utils"
 import { getWalletData } from "@/wallets"
 
 export const ProviderSelect = () => {
+  const { t } = useTranslation()
   const { setPage, mode } = useWeb3ConnectContext()
-
+  const { isMobileDevice } = useDevice()
   const [filter, setFilter] = useState<AccountFilterOption>(
     getDefaultAccountFilterByMode(mode),
   )
 
   const isDefaultMode = mode === WalletMode.Default
 
-  const { installed, other } = useWalletProviders(isDefaultMode ? filter : mode)
+  const { installed, deeplinked, other } = useWalletProviders(
+    isDefaultMode ? filter : mode,
+  )
 
   return (
     <Stack gap="base">
@@ -41,9 +46,15 @@ export const ProviderSelect = () => {
         <AccountFilter active={filter} onSetActive={setFilter} />
       )}
       <Collapsible
-        label={<Text fs="p3">Installed & recently used</Text>}
-        actionLabel="Show"
-        actionLabelWhenOpen="Hide"
+        label={
+          <Text fs="p3">
+            {isMobileDevice
+              ? t("provider.availableWallets")
+              : t("provider.installedAndRecent")}
+          </Text>
+        }
+        actionLabel={t("provider.show")}
+        actionLabelWhenOpen={t("provider.hide")}
         defaultOpen
       >
         <Grid columns={[2, 4]} gap="base">
@@ -53,31 +64,43 @@ export const ProviderSelect = () => {
             />
           )}
           {installed.map((wallet) => {
-            const props = getWalletData(wallet)
-            return <ProviderInstalledButton key={props.provider} {...props} />
+            const data = getWalletData(wallet)
+            return (
+              <ProviderInstalledButton key={data.provider} walletData={data} />
+            )
+          })}
+          {deeplinked.map((wallet) => {
+            const data = getWalletData(wallet)
+            return (
+              <ProviderDeeplinkedButton key={data.provider} walletData={data} />
+            )
           })}
           {isDefaultMode && <ProviderExternalButton />}
         </Grid>
-        {isDefaultMode && <ProviderConnectAll installed={installed} />}
+        {isDefaultMode && !isMobileDevice && (
+          <ProviderConnectAll installed={installed} />
+        )}
       </Collapsible>
-      {other.length > 0 && (
+      {!isMobileDevice && other.length > 0 && (
         <>
-          <Separator />
+          <ModalContentDivider mt="m" />
           <Collapsible
-            label={<Text fs="p3">Other Wallets</Text>}
-            actionLabel="Show"
-            actionLabelWhenOpen="Hide"
-            defaultOpen={installed.length === 0}
+            label={<Text fs="p3">{t("provider.otherWallets")}</Text>}
+            actionLabel={t("provider.show")}
+            actionLabelWhenOpen={t("provider.hide")}
+            defaultOpen={installed.length === 0 && deeplinked.length === 0}
           >
             <Grid columns={[2, 4]} gap="base">
               {other.map((wallet) => {
-                const props = getWalletData(wallet)
+                const data = getWalletData(wallet)
                 return (
                   <ProviderButton
-                    key={props.provider}
-                    {...props}
-                    onClick={() => openUrl(props.installUrl)}
-                    actionLabel="Download"
+                    as="a"
+                    href={data.installUrl}
+                    target="_blank"
+                    key={data.provider}
+                    walletData={data}
+                    actionLabel={t("provider.download")}
                   />
                 )
               })}

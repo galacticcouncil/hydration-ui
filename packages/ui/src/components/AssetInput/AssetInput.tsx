@@ -133,7 +133,12 @@ export const AssetInput = ({
         )}
       </Flex>
       <Flex direction="column">
-        <Flex align="center" justify="space-between" gap="m">
+        <Flex
+          sx={{ overflowX: "hidden" }}
+          align="center"
+          justify="space-between"
+          gap="m"
+        >
           <AssetButton
             sx={{ ...(hideInput && { flex: 1 }) }}
             symbol={symbol}
@@ -150,12 +155,14 @@ export const AssetInput = ({
               justify="space-evenly"
               align="end"
               flex={1}
+              sx={{ minWidth: 0, overflow: "hidden" }}
             >
               <SAssetInput
                 isError={!!amountError}
                 placeholder="0"
                 variant="embedded"
                 autoComplete="off"
+                inputMode="decimal"
                 disabled={disabled || loading || !onChange || disabledInput}
                 value={defaultAssetValueFormatter(value ?? "")}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,7 +183,9 @@ export const AssetInput = ({
                   color={getToken("text.low")}
                   fs="p6"
                   fw={400}
-                  sx={{ width: "fit-content" }}
+                  truncate
+                  width="100%"
+                  align="right"
                 >
                   {displayValueLoading ? <Skeleton width={48} /> : displayValue}
                 </Text>

@@ -5,6 +5,7 @@ import {
   Grid,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { FC, useState } from "react"
@@ -50,7 +51,7 @@ export const NetWorth: FC<Props> = ({
   isCurrentLoading,
 }) => {
   const { t } = useTranslation(["wallet", "common"])
-
+  const { isLaptop } = useBreakpoints()
   const [interval, setInterval] = useState<NetWorthTimeFrameType | "all">("all")
   const [crosshair, setCrosshair] = useState<NetWorthData | null>(null)
 
@@ -74,16 +75,9 @@ export const NetWorth: FC<Props> = ({
   const chartDisplayValue = !isEmpty && !isError ? netWorth : ""
 
   return (
-    <Grid
-      minWidth={320}
-      columnTemplate={["auto 1fr", null, "auto"]}
-      columnGap={8}
-      rowTemplate={["1fr auto", null, "auto 1fr"]}
-      align={["center"]}
-      justifyItems={["center", null, "start"]}
-    >
+    <Grid minWidth={320} rowTemplate="auto 1fr" align="center">
       <ValueStats
-        wrap
+        wrap={isLaptop}
         size="medium"
         label={t("balances.header.netWorth")}
         value={chartDisplayValue}
@@ -119,7 +113,7 @@ export const NetWorth: FC<Props> = ({
         </ChartState>
       </Flex>
       <ChartTimeRange
-        sx={{ gridColumn: "1/-1" }}
+        sx={{ gridColumn: "1/-1", justifySelf: "center" }}
         options={intervalOptions}
         selectedOption={interval}
         onSelect={(option) => setInterval(option.key)}

@@ -73,7 +73,7 @@ export const useRpcsStatus = (
         const sortedPings = [...newPingArr]
           .filter(
             (ping): ping is number =>
-              typeof ping == "number" && ping > 0 && ping < Infinity,
+              typeof ping === "number" && ping > 0 && ping < Infinity,
           )
           .sort((a, b) => a - b)
 

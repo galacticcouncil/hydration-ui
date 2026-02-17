@@ -10,7 +10,7 @@ import {
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useMemo, useRef, useState } from "react"
+import React, { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
@@ -50,28 +50,13 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
 
-  const { prices, min, max, mid, isLoading, isSuccess, isError } =
-    useTradeChartData({
-      assetInId: assetIn,
-      assetOutId: assetOut,
-      timeFrame: interval === "all" ? null : interval,
-    })
+  const { prices, isLoading, isSuccess, isError } = useTradeChartData({
+    assetInId: assetIn,
+    assetOutId: assetOut,
+    timeFrame: interval === "all" ? null : interval,
+  })
 
   const isEmpty = isSuccess && !prices.length
-
-  const priceLines = useMemo(() => {
-    if (
-      isEmpty ||
-      isError ||
-      !isFinite(min) ||
-      !isFinite(max) ||
-      !isFinite(mid)
-    ) {
-      return []
-    }
-
-    return [max, mid, min]
-  }, [isEmpty, isError, min, max, mid])
 
   const lastDataPoint = last(prices)
   const value = crosshair?.value ?? lastDataPoint?.close ?? 0
@@ -134,7 +119,6 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           data={prices}
           hidePriceIndicator
           onCrosshairMove={setCrosshair}
-          priceLines={priceLines}
         />
       </ChartState>
     </Paper>

@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isAnyEvmChain } from "@galacticcouncil/utils"
+import {
+  hasOwn,
+  HYDRATION_CHAIN_KEY,
+  isAnyEvmChain,
+  wsToHttp,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { isFunction } from "remeda"
 import { EIP1193Provider } from "viem"
@@ -7,6 +12,7 @@ import { EIP1193Provider } from "viem"
 type RequestNetworkSwitchOptions = {
   onSwitch?: () => void
   chain?: string
+  priorityRpcUrl?: string
 }
 
 export async function requestAccounts(provider: EIP1193Provider) {
@@ -23,9 +29,20 @@ export async function requestNetworkSwitch(
 ) {
   if (!isEip1193Provider(provider)) return
 
-  const params = getAddEvmChainParams(options.chain ?? "hydration")
+  const params = getAddEvmChainParams(
+    options.chain ?? HYDRATION_CHAIN_KEY,
+    options.priorityRpcUrl,
+  )
 
   try {
+    if (options.chain === HYDRATION_CHAIN_KEY) {
+      // request to add chain first, wallet will skip this if the chain and rpc combination already exists
+      await provider.request({
+        method: "wallet_addEthereumChain",
+        params: [params],
+      })
+    }
+
     await provider
       .request({
         method: "wallet_switchEthereumChain",
@@ -33,6 +50,19 @@ export async function requestNetworkSwitch(
       })
       .then(options?.onSwitch)
   } catch (error: unknown) {
+    /**
+     * MetaMask v12.14.2 introduced bug with switching networks.
+     * We catch this error and ignore it for now, other than that it seems to work.
+     * @see https://github.com/MetaMask/metamask-extension/issues/31464
+     */
+    if (
+      error instanceof Error &&
+      typeof error?.message === "string" &&
+      error.message.includes("is not a function")
+    ) {
+      return
+    }
+
     const errorType = normalizeChainSwitchError(provider, error)
 
     if (errorType === "CHAIN_NOT_FOUND") {
@@ -81,7 +111,10 @@ export type AddEvmChainParams = {
   blockExplorerUrls?: string[]
 }
 
-const getAddEvmChainParams = (chainKey: string): AddEvmChainParams => {
+const getAddEvmChainParams = (
+  chainKey: string,
+  priorityRpcUrl?: string,
+): AddEvmChainParams => {
   const chain = chainsMap.get(chainKey)
 
   if (!chain || !isAnyEvmChain(chain)) {
@@ -90,10 +123,16 @@ const getAddEvmChainParams = (chainKey: string): AddEvmChainParams => {
 
   const chainProps = chain.evmClient.chain
 
+  const rpcUrls = priorityRpcUrl
+    ? Array.from(
+        new Set([wsToHttp(priorityRpcUrl), ...chainProps.rpcUrls.default.http]),
+      )
+    : [...chainProps.rpcUrls.default.http]
+
   return {
     chainId: "0x" + Number(chainProps.id).toString(16),
     chainName: chainProps.name,
-    rpcUrls: chainProps.rpcUrls.default.http as string[],
+    rpcUrls: rpcUrls,
     iconUrls: [],
     nativeCurrency: chainProps.nativeCurrency,
     blockExplorerUrls: chainProps.blockExplorers?.default
@@ -125,6 +164,16 @@ function normalizeChainSwitchError(provider: EIP1193Provider, error: any) {
   if (errorCode === 4902) {
     return "CHAIN_NOT_FOUND"
   }
+}
+
+export function isMetaMask(
+  provider: EIP1193Provider | null | undefined,
+): provider is Required<EIP1193Provider> {
+  if (!isEip1193Provider(provider) || !hasOwn(provider, "isMetaMask")) {
+    return false
+  }
+  const eip1193 = provider as EIP1193Provider & { isMetaMask?: boolean }
+  return eip1193.isMetaMask === true
 }
 
 export function isEip1193Provider(

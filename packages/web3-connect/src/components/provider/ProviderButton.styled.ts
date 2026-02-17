@@ -1,7 +1,7 @@
-import { ButtonTransparent } from "@galacticcouncil/ui/components"
+import { Box } from "@galacticcouncil/ui/components"
 import { css, styled } from "@galacticcouncil/ui/utils"
 
-export const SProviderButton = styled(ButtonTransparent)(
+export const SProvider = styled(Box)(
   ({ theme }) => css`
     --border-color: ${theme.details.borders};
     --background-color: ${theme.surfaces.containers.dim.dimOnBg};
@@ -13,6 +13,8 @@ export const SProviderButton = styled(ButtonTransparent)(
     }
 
     position: relative;
+    font-size: ${theme.fontSizes.p4};
+    text-decoration: none;
 
     display: flex;
     flex-direction: column;
@@ -31,6 +33,9 @@ export const SProviderButton = styled(ButtonTransparent)(
     background: var(--background-color);
   `,
 )
+
+export const SProviderButton = SProvider.withComponent("button")
+export const SProviderLink = SProvider.withComponent("a")
 
 export const SConnectionIndicator = styled.div(
   ({ theme }) => css`
