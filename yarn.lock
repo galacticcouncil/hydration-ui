@@ -2024,12 +2024,13 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.9.tgz#50dea3616bc8191fb8e112283b49eaff03e78429"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
-"@galacticcouncil/common@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.4.1.tgz#906905512ccfd1418d3adc4a766aa6f5bc138a58"
-  integrity sha512-5/6pN5ARc+5njvvhh9GSyBxKZg6CsMTxCgF1QVp4nR85dEhIO7goQDspnoygkGU5C2XEuUmjCoKfMN7/rHEIdg==
+"@galacticcouncil/common@^0.5.0":
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.5.0.tgz#94dbc085c897c2d0453c1405634d8b685bd942cf"
+  integrity sha512-e8MVUtIiInuKXv15RLwxPBVtvnUQK1ceOseXPdHfcivMZ6iSPtZsJhXnGHkiOyJlahS92cvYFBhtYt5A+8zUGA==
   dependencies:
     big.js "^6.2.1"
+    lru-cache "^11.2.2"
 
 "@galacticcouncil/descriptors@^1.12.0":
   version "1.12.0"
@@ -2113,17 +2114,17 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.12.1":
-  version "0.12.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.12.1.tgz#9b2bc4815df489188706957c07f7a44234283752"
-  integrity sha512-i4l8zw0D4861/nBtEUh72zwmHYIwhFxQbtKhLU6UU8mhnJQidjEsqPkfoleOdPsdUZGvwPCapxLnRAb/iRkwFw==
+"@galacticcouncil/xc-cfg@^0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.14.0.tgz#b70e3a1d224ffe181e35a7146e092a4a922c65ab"
+  integrity sha512-SLfsXQNx/gsIL/iNfwtgveHV5RJ1wiVpibMy8ldR9fgC7cMQBFYOqac7XGWJwbE6ZJ+8b5SSwTjq9dCcPNfvGw==
   dependencies:
-    "@galacticcouncil/xc-core" "^0.11.0"
+    "@galacticcouncil/xc-core" "^0.12.0"
 
-"@galacticcouncil/xc-core@^0.11.0":
-  version "0.11.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.11.0.tgz#0e97e4bdc482495daab5a8fb1625bf54141d3e71"
-  integrity sha512-METbg5EopwgzqecgDLTwtpD3PMjw8vGZ2oIJIo7ADG/EOKOSSgAtrP0OY0qFJ74ABHcKoHKDwFByA/XB6W6emA==
+"@galacticcouncil/xc-core@^0.12.0":
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.12.0.tgz#91e19726f2bdf5469d1e87874173ce726aca6d2a"
+  integrity sha512-aGkTkGpHDYlzLVg29i4IwhC0ntmZkpf73+WsjiaY3h/iSjGSwRNMU48gbKoNjvni8a7pSBKD2bWMOO6Uu2vU9A==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -2138,19 +2139,18 @@
     bigint-buffer "^1.1.5"
     bs58 "^6.0.0"
     buffer "^6.0.3"
-    lru-cache "^11.2.2"
 
 "@galacticcouncil/xc-scan@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.1.0.tgz#553148932d0b3135da6f0aef6954459f5485c437"
   integrity sha512-gxPpIeOojJ5dt7r2X4DqQcItGREPebidfhpeAtRqeQuGZx80+2gZcFcvlwT5QLySgb7pwKfgUMIrYcDwb4jHjA==
 
-"@galacticcouncil/xc-sdk@^0.5.2":
-  version "0.5.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.5.2.tgz#b5f5e7dda3710a3d8ece16eba85c33635c785a0e"
-  integrity sha512-Pd6RGnxrboGkwvJtz3g8Ff7rsAMwB9eibOELnR1T/wQnUHWXUG7D0C8+ACDLLR+hXNdKxFpHB7mDj4sNAZcEjA==
+"@galacticcouncil/xc-sdk@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.6.0.tgz#db0c733d83d51553389b3c3148f0f8afd857c51f"
+  integrity sha512-0epA05RMeJiXrF7X5clXopIQMOmwWLj4jbLM8Q0jKs3CzzN+KgvM+8jfpxgtti5Bom/UdrNlhBWIva9xkuvMQQ==
   dependencies:
-    "@galacticcouncil/xc-core" "^0.11.0"
+    "@galacticcouncil/xc-core" "^0.12.0"
 
 "@galacticcouncil/xc@^0.4.0":
   version "0.4.0"
