@@ -30,8 +30,8 @@ export const createProvider = (
 
 export const SQUID_URLS = [
   {
-    name: "Whale Prod Pool 01",
-    url: "https://galacticcouncil.squids.live/hydration-pools:whale-prod-pool-01/api/graphql",
+    name: "Orca Prod Recent",
+    url: "https://galacticcouncil.squids.live/hydration-pools:orca-prod-pool-01/api/graphql",
   },
   {
     name: "Orca Prod",

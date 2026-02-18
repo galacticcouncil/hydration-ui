@@ -35,9 +35,6 @@ export const LINKS = {
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
-  // stats: "/stats",
-  // statsOverview: "/stats/overview",
-  // statsTreasury: "/stats/treasury",
   staking: "/staking",
   // stakingDashboard: "/staking/dashboard",
   // stakingGovernance: "/staking/governance",
@@ -46,6 +43,13 @@ export const LINKS = {
   borrowDashboard: "/borrow/dashboard",
   borrowMarkets: "/borrow/markets",
   borrowHistory: "/borrow/history",
+  stats: "/stats",
+  statsOverview: "/stats/overview",
+  statsTreasury: "/stats/treasury",
+  statsMoneyMarket: "/stats/money-market",
+  statsHollar: "/stats/hollar",
+  statsFees: "/stats/fees",
+  statsAmm: "/stats/amm",
   // memepad: "/memepad",
   // submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -133,14 +137,20 @@ export const NAVIGATION: NavigationItem[] = [
       },
     ],
   },
-  // {
-  //   key: "stats",
-  //   to: LINKS.stats,
-  //   children: [
-  //     { key: "statsOverview", to: LINKS.statsOverview },
-  //     { key: "statsTreasury", to: LINKS.statsTreasury },
-  //   ],
-  // },
+  {
+    key: "stats",
+    to: LINKS.stats,
+    defaultChild: LINKS.statsFees,
+    icon: ChartPieIcon,
+    children: [
+      // { key: "statsOverview", to: LINKS.statsOverview },
+      // { key: "statsTreasury", to: LINKS.statsTreasury },
+      // { key: "statsMoneyMarket", to: LINKS.statsMoneyMarket },
+      // { key: "statsHollar", to: LINKS.statsHollar },
+      // { key: "statsAmm", to: LINKS.statsAmm },
+      { key: "statsFees", to: LINKS.statsFees },
+    ],
+  },
   {
     key: "staking",
     to: LINKS.staking,
@@ -261,6 +271,34 @@ export const getMenuTranslations = (t: TFunction) =>
     borrowHistory: {
       title: t("navigation.borrowHistory.title"),
       description: t("navigation.borrowHistory.description"),
+    },
+    stats: {
+      title: t("navigation.stats.title"),
+      description: "",
+    },
+    statsOverview: {
+      title: t("navigation.statsOverview.title"),
+      description: "",
+    },
+    statsTreasury: {
+      title: t("navigation.statsTreasury.title"),
+      description: "",
+    },
+    statsMoneyMarket: {
+      title: t("navigation.statsMoneyMarket.title"),
+      description: "",
+    },
+    statsHollar: {
+      title: t("navigation.statsHollar.title"),
+      description: "",
+    },
+    statsAmm: {
+      title: t("navigation.statsAmm.title"),
+      description: "",
+    },
+    statsFees: {
+      title: t("navigation.statsFees.title"),
+      description: "",
     },
     // memepad: {
     //   title: t("navigation.memepad.title"),
