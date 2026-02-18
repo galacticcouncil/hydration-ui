@@ -1,6 +1,8 @@
 import {
   AnimatedValue,
+  BarChart,
   Box,
+  ChartConfig,
   ChartTimeRange,
   Flex,
   Paper,
@@ -13,15 +15,6 @@ import {
 import { useBreakpoints, useTheme } from "@galacticcouncil/ui/theme"
 import { useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts"
 
 import {
   TIME_RANGES,
@@ -157,56 +150,42 @@ export const FeesAndRevenue = () => {
         </Flex>
 
         <Box position="relative" flex={1}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 10, right: 0, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke={theme.details.separators}
-              />
-              <XAxis
-                dataKey="timestamp"
-                tick={{ fill: theme.text.low, fontSize: 11 }}
-                axisLine={{ stroke: theme.details.separators }}
-                tickFormatter={formatXAxisTick}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: theme.text.low, fontSize: 11 }}
-                axisLine={{ stroke: theme.details.separators }}
-                tickFormatter={(value) => t("number.compact", { value })}
-                tickLine={false}
-                width={45}
-              />
-              <Tooltip
-                content={CustomTooltipContent}
-                cursor={{ fill: theme.surfaces.containers.high.hover }}
-              />
-              {seriesKeys.map((key, index) => {
-                const fieldConfig = feesAndRevenueConfig[key]
-
-                return (
-                  <Bar
-                    key={key}
-                    dataKey={key}
-                    stackId="a"
-                    name={key}
-                    hide={hiddenSeries.has(key)}
-                    radius={
-                      index === seriesKeys.length - 1 ? [4, 4, 0, 0] : undefined
-                    }
-                    fill={
-                      fieldConfig
-                        ? getToken(fieldConfig.color)
-                        : getToken("accents.info.accent")
-                    }
-                  />
-                )
-              })}
-            </BarChart>
-          </ResponsiveContainer>
+          <BarChart
+            stacked
+            data={chartData}
+            height="100%"
+            horizontalGridHidden={false}
+            verticalGridHidden={false}
+            config={{
+              xAxisKey: "timestamp",
+              xAxisFormatter: (value) => formatXAxisTick(String(value)),
+              yAxisFormatter: (value) => t("number.compact", { value }),
+              series: seriesKeys
+                .filter((key) => !hiddenSeries.has(key))
+                .map((key) => {
+                  const fieldConfig = feesAndRevenueConfig[key]
+                  return {
+                    key,
+                    label: fieldConfig?.label ?? "N/A",
+                    color: fieldConfig
+                      ? getToken(fieldConfig.color)
+                      : getToken("accents.info.accent"),
+                  }
+                }) as never satisfies ChartConfig<ChartDataPoint>["series"],
+            }}
+            xAxisProps={{
+              tick: { fill: theme.text.low, fontSize: 11 },
+              axisLine: { stroke: theme.details.separators },
+              tickLine: false,
+            }}
+            yAxisProps={{
+              tick: { fill: theme.text.low, fontSize: 11 },
+              axisLine: { stroke: theme.details.separators },
+              tickLine: false,
+              width: 45,
+            }}
+            customTooltipContent={CustomTooltipContent}
+          />
         </Box>
 
         {isBiggerScreen ? (

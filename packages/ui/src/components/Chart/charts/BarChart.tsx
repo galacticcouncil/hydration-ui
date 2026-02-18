@@ -27,6 +27,7 @@ type BarChartOwnProps = {
   barGap?: number
   barCategoryGap?: number
   stacked?: boolean
+  customTooltipContent?: React.ComponentProps<typeof Tooltip>["content"]
 }
 
 export type BarChartProps<TData extends TChartData> = BarChartOwnProps &
@@ -51,6 +52,7 @@ export function BarChart<TData extends TChartData>({
   barGap,
   barCategoryGap,
   stacked = false,
+  customTooltipContent,
 }: BarChartProps<TData>) {
   const { series, xAxisKey } = getConfigWithDefaults(config)
 
@@ -88,9 +90,9 @@ export function BarChart<TData extends TChartData>({
           horizontal={!horizontalGridHidden}
           vertical={!verticalGridHidden}
           shapeRendering="crispEdges"
-          stroke={theme.text.low}
-          opacity={0.15}
+          stroke={theme.details.separators}
           strokeWidth={1}
+          strokeDasharray="3 3"
         />
         <XAxis
           dataKey={isVerticalLayout ? undefined : xAxisKey}
@@ -122,7 +124,7 @@ export function BarChart<TData extends TChartData>({
           )}
         />
         <Tooltip
-          content={ChartTooltip}
+          content={customTooltipContent ?? ChartTooltip}
           labelFormatter={labelFormatter}
           formatter={(value) => {
             if (valueFormatter && isNumber(value)) {

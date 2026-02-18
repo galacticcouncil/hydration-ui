@@ -33,8 +33,9 @@ export const CustomTooltipContent = ({
       {payload.map((entry, index) => {
         const dataKey = entry.dataKey
         const configKey = typeof dataKey === "string" ? dataKey : undefined
-        const fieldConfig =
-          configKey != null ? feesAndRevenueConfig[configKey] : undefined
+        const fieldConfig = configKey
+          ? feesAndRevenueConfig[configKey]
+          : undefined
 
         return (
           <Flex key={configKey ?? index} gap={8} align="center">

@@ -1,3 +1,4 @@
+import { createQueryString } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { endOfDay, subDays } from "date-fns"
 import z from "zod/v4"
@@ -29,33 +30,64 @@ enum FeeDestination {
 const FEES_CHARTS_API_URL =
   "https://hydration-aggregator-staging-v2.orca.hydration.cloud/api/v1/fees/charts"
 
-const pT = (productType: ProductType) => `productType=${productType}`
-const fD = (feeDestination: FeeDestination) =>
-  `feeDestination=${feeDestination}`
-const sT = (streamType: StreamType) => `streamType=${streamType}`
-
 const FEES_API_PARAMS = {
   omnipool: {
     protocol: {
-      asset: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.Asset)}`,
-      protocol: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.Protocol)}`,
+      asset: {
+        productType: ProductType.Omnipool,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.Asset,
+      },
+      protocol: {
+        productType: ProductType.Omnipool,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.Protocol,
+      },
     },
     total: {
-      asset: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.Total)}&${sT(StreamType.Asset)}`,
-      protocol: `${pT(ProductType.Omnipool)}&${fD(FeeDestination.Total)}&${sT(StreamType.Protocol)}`,
+      asset: {
+        productType: ProductType.Omnipool,
+        feeDestination: FeeDestination.Total,
+        streamType: StreamType.Asset,
+      },
+      protocol: {
+        productType: ProductType.Omnipool,
+        feeDestination: FeeDestination.Total,
+        streamType: StreamType.Protocol,
+      },
     },
   },
   moneyMarket: {
     protocol: {
-      liquidationPenalty: `${pT(ProductType.MoneyMarket)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.LiquidationPenalty)}`,
-      peplLiquidationProfit: `${pT(ProductType.MoneyMarket)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.PeplLiquidationProfit)}`,
-      assetReserve: `${pT(ProductType.MoneyMarket)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.AssetReserve)}`,
+      liquidationPenalty: {
+        productType: ProductType.MoneyMarket,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.LiquidationPenalty,
+      },
+      peplLiquidationProfit: {
+        productType: ProductType.MoneyMarket,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.PeplLiquidationProfit,
+      },
+      assetReserve: {
+        productType: ProductType.MoneyMarket,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.AssetReserve,
+      },
     },
   },
   hollar: {
     protocol: {
-      borrowApr: `${pT(ProductType.Hollar)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.BorrowApr)}`,
-      hsmRevenue: `${pT(ProductType.Hollar)}&${fD(FeeDestination.Protocol)}&${sT(StreamType.HsmRevenue)}`,
+      borrowApr: {
+        productType: ProductType.Hollar,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.BorrowApr,
+      },
+      hsmRevenue: {
+        productType: ProductType.Hollar,
+        feeDestination: FeeDestination.Protocol,
+        streamType: StreamType.HsmRevenue,
+      },
     },
   },
 } as const
@@ -149,11 +181,12 @@ export const useFeesChartsData = (props: FeesChartsDataProps) => {
 
       const queries = Object.entries(getFeesQueries(viewMode)).map(
         async ([key, value]) => {
-          const params = new URLSearchParams(value)
-          params.set("startTime", startTime)
-          params.set("endTime", endTime)
-          params.set("bucketSize", bucketSize)
-          const url = `${FEES_CHARTS_API_URL}?${params.toString()}`
+          const url = `${FEES_CHARTS_API_URL}${createQueryString({
+            ...value,
+            startTime,
+            endTime,
+            bucketSize,
+          })}`
 
           const res = await fetch(url)
           const json = await res.json()
