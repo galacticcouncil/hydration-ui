@@ -1,6 +1,5 @@
 import { userOpenOrdersCountQuery } from "@galacticcouncil/indexer/squid"
 import {
-  Box,
   Flex,
   Toggle,
   ToggleLabel,
@@ -17,7 +16,6 @@ import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
-import { OpenOrdersBadge } from "@/modules/trade/orders/OpenOrders/OpenOrdersBadge"
 import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
 export const tradeOrderTabs = [
@@ -61,6 +59,7 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
     <Flex gap="m" align="center" px="xl">
       <TabMenu
         gap="base"
+        my="l"
         horizontalEdgeOffset="xl"
         items={tradeOrderTabs.map<TabItem>((tab) => ({
           to: pathname,
@@ -75,22 +74,17 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
         }))}
         onClick={() => paginationProps.onPageClick(1)}
         renderItem={(item) => (
-          <Box position="relative" my="l">
-            <TabMenuItem size="small" item={item} variant="muted" />
-            {item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
-              openOrdersCount > 0 && (
-                <OpenOrdersBadge
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    transform: "translate(25%, -25%)",
-                  }}
-                >
-                  {openOrdersCount}
-                </OpenOrdersBadge>
-              )}
-          </Box>
+          <TabMenuItem
+            size="small"
+            item={item}
+            variant="muted"
+            badge={
+              item.search?.tab === ("openOrders" satisfies TradeOrderTab) &&
+              openOrdersCount > 0
+                ? openOrdersCount
+                : undefined
+            }
+          />
         )}
       />
 
