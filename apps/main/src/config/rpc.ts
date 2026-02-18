@@ -41,11 +41,11 @@ export const SQUID_URLS = [
 
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),
+  createProvider("Helikon", "wss://rpc.helikon.io/hydradx"),
+  createProvider("Dotters", "wss://hydration.dotters.network"),
+  createProvider("IBP", "wss://hydration.ibp.network"),
   createProvider("Roach", "wss://node.roach.hydration.cloud"),
   createProvider("Lait", "wss://node.lait.hydration.cloud"),
-  // createProvider("Helikon", "wss://rpc.helikon.io/hydradx"),
-  // createProvider("Dotters", "wss://hydration.dotters.network"),
-  // createProvider("IBP", "wss://hydration.ibp.network"),
   createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
   /* These RPCs don't work with Papi, disabled for now  */
   // createProvider("cay", "wss://rpc.cay.hydration.cloud"),
