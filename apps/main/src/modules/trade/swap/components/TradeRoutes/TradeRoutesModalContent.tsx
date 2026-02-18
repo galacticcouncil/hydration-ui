@@ -49,10 +49,12 @@ export const TradeRoutesModalContent: FC<Props> = ({
         </Flex>
         <Separator />
         <Grid
-          columnTemplate="auto 1fr auto min-content"
+          columnTemplate="auto auto auto auto"
+          columnGap="m"
           rowGap="base"
           align="center"
           p="xl"
+          sx={{ justifyContent: "space-between" }}
         >
           {routes.map((route, index) => (
             <Fragment key={route.assetIn.id}>
@@ -68,31 +70,22 @@ export const TradeRoutesModalContent: FC<Props> = ({
                   />
                 </Box>
               )}
-              <Grid
-                sx={{ gridColumn: "1/4" }}
-                columnTemplate="subgrid"
-                align="center"
-                height={40}
-              >
-                <TradeRouteAsset
-                  assetId={route.assetIn.id}
-                  assetSymbol={route.assetIn.symbol}
-                  amount={route.amountIn}
-                />
-                <Icon
-                  sx={{ justifySelf: "center" }}
-                  size="m"
-                  component={ArrowRightLong}
-                  color={getToken("icons.onContainer")}
-                />
-                <TradeRouteAsset
-                  assetId={route.assetOut.id}
-                  assetSymbol={route.assetOut.symbol}
-                  amount={route.amountOut}
-                />
-              </Grid>
+              <TradeRouteAsset
+                assetId={route.assetIn.id}
+                assetSymbol={route.assetIn.symbol}
+                amount={route.amountIn}
+              />
+              <Icon
+                size="m"
+                component={ArrowRightLong}
+                color={getToken("icons.onContainer")}
+              />
+              <TradeRouteAsset
+                assetId={route.assetOut.id}
+                assetSymbol={route.assetOut.symbol}
+                amount={route.amountOut}
+              />
               <TradeRouteFee
-                sx={{ pl: ["base", "xxl"] }}
                 feePct={route.tradeFeePct}
                 fees={route.tradeFees}
               />
