@@ -1,4 +1,7 @@
-import { formatSourceChainAddress } from "@galacticcouncil/utils"
+import {
+  formatSourceChainAddress,
+  parseDryRunError,
+} from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
@@ -202,13 +205,30 @@ export const xcmTransferCallQuery = (
   transfer: Transfer | null,
   amount: string,
   transferArgs: XcmTransferArgs,
+  dryRun?: boolean,
 ) =>
   queryOptions({
     enabled: !!transfer && !!amount,
     placeholderData: keepPreviousData,
-    queryKey: ["xcm", "call", amount, transferArgs],
+    queryKey: ["xcm", "call", amount, transferArgs, dryRun],
     queryFn: async () => {
       if (!transfer) throw new Error("Invalid transfer")
-      return transfer.buildCall(amount)
+      const call = await transfer.buildCall(amount)
+
+      const dryRunError = await (async () => {
+        if (!dryRun) {
+          return null
+        }
+
+        const result = await call?.dryRun()
+
+        if (result?.error) {
+          return await parseDryRunError(result.error)
+        }
+
+        return null
+      })()
+
+      return { call, dryRunError }
     },
   })
