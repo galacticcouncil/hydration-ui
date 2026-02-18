@@ -43,6 +43,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
       slippage,
       maxRetries,
       address,
+      dryRun: form.formState.isValid,
     }),
   )
 
@@ -64,6 +65,7 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
   return {
     order: orderData?.order,
     orderTx: orderData?.orderTx,
+    dryRunError: orderData?.dryRunError ?? null,
     healthFactor: healthFactorData,
     isLoading: isOrderLoading || isHealthFactorLoading,
   }

@@ -358,10 +358,11 @@ type DcaTradeOrderArgs = {
   readonly slippage: number
   readonly maxRetries: number
   readonly address: string
+  readonly dryRun?: boolean
 }
 
 export const dcaTradeOrderQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isLoaded, papiNext }: TProviderContext,
   {
     assetIn,
     assetOut,
@@ -371,6 +372,7 @@ export const dcaTradeOrderQuery = (
     slippage,
     maxRetries,
     address,
+    dryRun,
   }: DcaTradeOrderArgs,
 ) =>
   queryOptions({
@@ -384,6 +386,7 @@ export const dcaTradeOrderQuery = (
       duration,
       orders,
       address,
+      dryRun,
     ],
     queryFn: async () => {
       const order = await sdk.api.scheduler.getDcaOrder(
@@ -404,7 +407,12 @@ export const dcaTradeOrderQuery = (
             .then((tx) => tx.get())
         : null
 
-      return { order, orderTx }
+      const dryRunError =
+        dryRun && orderTx
+          ? await getPapiDryRunError(papiNext, address, orderTx)
+          : null
+
+      return { order, orderTx, dryRunError }
     },
     enabled:
       isLoaded &&

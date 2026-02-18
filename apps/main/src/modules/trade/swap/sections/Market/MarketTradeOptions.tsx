@@ -1,5 +1,5 @@
 import { Alert, Flex } from "@galacticcouncil/ui/components"
-import { DryRunError, formatPascalCaseToSentence } from "@galacticcouncil/utils"
+import { DryRunError } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { formatDistanceToNowStrict } from "date-fns"
@@ -149,7 +149,7 @@ export const MarketTradeOptions: FC<Props> = ({
             <Alert
               sx={{ width: "100%" }}
               variant="error"
-              title={formatPascalCaseToSentence(swapDryRunError.name)}
+              title={swapDryRunError.name}
               tooltip={swapDryRunError.description}
             />
           )}
@@ -157,7 +157,7 @@ export const MarketTradeOptions: FC<Props> = ({
             <Alert
               sx={{ width: "100%" }}
               variant="error"
-              title={formatPascalCaseToSentence(twapDryRunError.name)}
+              title={twapDryRunError.name}
               tooltip={twapDryRunError.description}
             />
           )}
