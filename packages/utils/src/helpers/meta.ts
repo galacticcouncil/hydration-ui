@@ -54,7 +54,7 @@ export const parseDryRunError = async (
 
   return (
     dryRunError && {
-      name: dryRunError.name,
+      name: dryRunError.docs[0],
       description: dryRunError.docs[2],
     }
   )
