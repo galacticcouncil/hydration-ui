@@ -3,6 +3,7 @@ import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
+import { getPapiDryRunError } from "@/api/dryRun"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
@@ -22,14 +23,12 @@ type BestSellArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
-  readonly slippage: number
-  readonly address: string
+  readonly debug?: boolean
 }
 
 export const bestSellQuery = (
-  { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn, slippage, address }: BestSellArgs,
-  disableDebug = false,
+  { sdk, isApiLoaded }: TProviderContext,
+  { assetIn, assetOut, amountIn, debug }: BestSellArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -39,8 +38,6 @@ export const bestSellQuery = (
       assetIn,
       assetOut,
       amountIn,
-      slippage,
-      address,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestSell(
@@ -49,10 +46,39 @@ export const bestSellQuery = (
         amountIn,
       )
 
-      // debug for experienced users
-      if (!disableDebug) {
+      if (debug) {
         console.log(swap.toHuman())
       }
+
+      return swap
+    },
+    enabled:
+      isApiLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+  })
+
+type BestSellWithTxArgs = BestSellArgs & {
+  readonly slippage: number
+  readonly address: string
+  readonly dryRun?: boolean
+}
+
+export const bestSellWithTxQuery = (
+  rpc: TProviderContext,
+  { slippage, address, dryRun, ...bestSellArgs }: BestSellWithTxArgs,
+) => {
+  const { queryClient, sdk, papiNext } = rpc
+  const bestSell = bestSellQuery(rpc, bestSellArgs)
+
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      bestSell.queryKey,
+      slippage,
+      address,
+      dryRun,
+    ],
+    queryFn: async () => {
+      const swap = await queryClient.ensureQueryData(bestSell)
 
       const tx = address
         ? await sdk.tx
@@ -63,24 +89,24 @@ export const bestSellQuery = (
             .then((tx) => tx.get())
         : null
 
+      const dryRunError =
+        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+
       return {
         swap,
         tx,
+        dryRunError,
       }
     },
-    enabled: isLoaded && !!assetIn && !!assetOut && Big(amountIn || "0").gt(0),
+    enabled: bestSell.enabled as boolean,
   })
+}
+
+type BestSellTwapArgs = Omit<BestSellArgs, "debug">
 
 export const bestSellTwapQuery = (
-  { sdk, isLoaded }: TProviderContext,
-  {
-    assetIn,
-    assetOut,
-    amountIn,
-    slippage,
-    maxRetries,
-    address,
-  }: BestSellArgs & { readonly maxRetries: number },
+  { sdk, isApiLoaded }: TProviderContext,
+  { assetIn, assetOut, amountIn }: BestSellTwapArgs,
   enabled = true,
 ) =>
   queryOptions({
@@ -91,16 +117,53 @@ export const bestSellTwapQuery = (
       assetIn,
       assetOut,
       amountIn,
-      slippage,
-      maxRetries,
-      address,
     ],
-    queryFn: async () => {
-      const twap = await sdk.api.scheduler.getTwapSellOrder(
+    queryFn: async () =>
+      sdk.api.scheduler.getTwapSellOrder(
         Number(assetIn),
         Number(assetOut),
         amountIn,
-      )
+      ),
+    enabled:
+      enabled &&
+      isApiLoaded &&
+      !!assetIn &&
+      !!assetOut &&
+      Big(amountIn || "0").gt(0),
+  })
+
+type BestSellTwapWithTxArgs = BestSellTwapArgs & {
+  readonly slippage: number
+  readonly address: string
+  readonly maxRetries: number
+  readonly dryRun?: boolean
+}
+
+export const bestSellTwapWithTxQuery = (
+  rpc: TProviderContext,
+  {
+    slippage,
+    maxRetries,
+    address,
+    dryRun,
+    ...bestSellTwapArgs
+  }: BestSellTwapWithTxArgs,
+  enabled = true,
+) => {
+  const { queryClient, sdk, papiNext } = rpc
+  const bestSellTwap = bestSellTwapQuery(rpc, bestSellTwapArgs)
+
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      bestSellTwap.queryKey,
+      slippage,
+      maxRetries,
+      address,
+      dryRun,
+    ],
+    queryFn: async () => {
+      const twap = await queryClient.ensureQueryData(bestSellTwap)
 
       const tx = address
         ? await sdk.tx
@@ -112,28 +175,25 @@ export const bestSellTwapQuery = (
             .then((tx) => tx.get())
         : null
 
-      return { twap, tx }
+      const dryRunError =
+        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+
+      return { twap, tx, dryRunError }
     },
-    enabled:
-      enabled &&
-      isLoaded &&
-      !!assetIn &&
-      !!assetOut &&
-      Big(amountIn || "0").gt(0),
+    enabled: enabled && (bestSellTwap.enabled as boolean),
   })
+}
 
 type BestBuyArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountOut: string
-  readonly slippage: number
-  readonly address: string
+  readonly debug?: boolean
 }
 
 export const bestBuyQuery = (
-  { sdk, isLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut, slippage, address }: BestBuyArgs,
-  disableDebug = false,
+  { sdk, isApiLoaded }: TProviderContext,
+  { assetIn, assetOut, amountOut, debug }: BestBuyArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -143,8 +203,6 @@ export const bestBuyQuery = (
       assetIn,
       assetOut,
       amountOut,
-      slippage,
-      address,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestBuy(
@@ -153,10 +211,39 @@ export const bestBuyQuery = (
         amountOut,
       )
 
-      // debug for experienced users
-      if (!disableDebug) {
+      if (debug) {
         console.log(swap.toHuman())
       }
+
+      return swap
+    },
+    enabled:
+      isApiLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+  })
+
+type BestBuyWithTxArgs = BestBuyArgs & {
+  readonly slippage: number
+  readonly address: string
+  readonly dryRun?: boolean
+}
+
+export const bestBuyWithTxQuery = (
+  rpc: TProviderContext,
+  { slippage, address, dryRun, ...bestBuyArgs }: BestBuyWithTxArgs,
+) => {
+  const { queryClient, sdk, papiNext } = rpc
+  const bestBuy = bestBuyQuery(rpc, bestBuyArgs)
+
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      bestBuy.queryKey,
+      slippage,
+      address,
+      dryRun,
+    ],
+    queryFn: async () => {
+      const swap = await queryClient.ensureQueryData(bestBuy)
 
       const tx = address
         ? await sdk.tx
@@ -167,24 +254,24 @@ export const bestBuyQuery = (
             .then((tx) => tx.get())
         : null
 
+      const dryRunError =
+        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+
       return {
         swap,
         tx,
+        dryRunError,
       }
     },
-    enabled: isLoaded && !!assetIn && !!assetOut && Big(amountOut || "0").gt(0),
+    enabled: bestBuy.enabled as boolean,
   })
+}
+
+type BestBuyTwapArgs = Omit<BestBuyArgs, "debug">
 
 export const bestBuyTwapQuery = (
-  { sdk, isLoaded }: TProviderContext,
-  {
-    assetIn,
-    assetOut,
-    amountOut,
-    slippage,
-    maxRetries,
-    address,
-  }: BestBuyArgs & { readonly maxRetries: number },
+  { sdk, isApiLoaded }: TProviderContext,
+  { assetIn, assetOut, amountOut }: BestBuyTwapArgs,
   enabled = true,
 ) =>
   queryOptions({
@@ -195,16 +282,53 @@ export const bestBuyTwapQuery = (
       assetIn,
       assetOut,
       amountOut,
-      slippage,
-      maxRetries,
-      address,
     ],
-    queryFn: async () => {
-      const twap = await sdk.api.scheduler.getTwapBuyOrder(
+    queryFn: async () =>
+      sdk.api.scheduler.getTwapBuyOrder(
         Number(assetIn),
         Number(assetOut),
         amountOut,
-      )
+      ),
+    enabled:
+      enabled &&
+      isApiLoaded &&
+      !!assetIn &&
+      !!assetOut &&
+      Big(amountOut || "0").gt(0),
+  })
+
+type BestBuyTwapWithTxArgs = BestBuyTwapArgs & {
+  readonly slippage: number
+  readonly address: string
+  readonly maxRetries: number
+  readonly dryRun?: boolean
+}
+
+export const bestBuyTwapWithTxQuery = (
+  rpc: TProviderContext,
+  {
+    slippage,
+    maxRetries,
+    address,
+    dryRun,
+    ...bestBuyTwapArgs
+  }: BestBuyTwapWithTxArgs,
+  enabled = true,
+) => {
+  const { queryClient, sdk, papiNext } = rpc
+  const bestBuyTwap = bestBuyTwapQuery(rpc, bestBuyTwapArgs)
+
+  return queryOptions({
+    queryKey: [
+      QUERY_KEY_BLOCK_PREFIX,
+      bestBuyTwap.queryKey,
+      slippage,
+      maxRetries,
+      address,
+      dryRun,
+    ],
+    queryFn: async () => {
+      const twap = await queryClient.ensureQueryData(bestBuyTwap)
 
       const tx = address
         ? await sdk.tx
@@ -216,15 +340,14 @@ export const bestBuyTwapQuery = (
             .then((tx) => tx.get())
         : null
 
-      return { twap, tx }
+      const dryRunError =
+        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+
+      return { twap, tx, dryRunError }
     },
-    enabled:
-      enabled &&
-      isLoaded &&
-      !!assetIn &&
-      !!assetOut &&
-      Big(amountOut || "0").gt(0),
+    enabled: enabled && (bestBuyTwap.enabled as boolean),
   })
+}
 
 type DcaTradeOrderArgs = {
   readonly assetIn: string
@@ -235,10 +358,11 @@ type DcaTradeOrderArgs = {
   readonly slippage: number
   readonly maxRetries: number
   readonly address: string
+  readonly dryRun?: boolean
 }
 
 export const dcaTradeOrderQuery = (
-  { sdk, isLoaded }: TProviderContext,
+  { sdk, isLoaded, papiNext }: TProviderContext,
   {
     assetIn,
     assetOut,
@@ -248,6 +372,7 @@ export const dcaTradeOrderQuery = (
     slippage,
     maxRetries,
     address,
+    dryRun,
   }: DcaTradeOrderArgs,
 ) =>
   queryOptions({
@@ -261,6 +386,7 @@ export const dcaTradeOrderQuery = (
       duration,
       orders,
       address,
+      dryRun,
     ],
     queryFn: async () => {
       const order = await sdk.api.scheduler.getDcaOrder(
@@ -281,7 +407,12 @@ export const dcaTradeOrderQuery = (
             .then((tx) => tx.get())
         : null
 
-      return { order, orderTx }
+      const dryRunError =
+        dryRun && orderTx
+          ? await getPapiDryRunError(papiNext, address, orderTx)
+          : null
+
+      return { order, orderTx, dryRunError }
     },
     enabled:
       isLoaded &&

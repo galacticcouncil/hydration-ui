@@ -37,6 +37,10 @@ export const SQUID_URLS = [
     name: "Orca Prod",
     url: "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/graphql",
   },
+  {
+    name: "Orca Prod 2",
+    url: "https://reaper-11340001-head-orca-p2.sparrow.shadow-senate.com/graphql",
+  },
 ]
 
 export const PROVIDERS: ProviderProps[] = [
@@ -44,6 +48,8 @@ export const PROVIDERS: ProviderProps[] = [
   createProvider("Helikon", "wss://rpc.helikon.io/hydradx"),
   createProvider("Dotters", "wss://hydration.dotters.network"),
   createProvider("IBP", "wss://hydration.ibp.network"),
+  createProvider("Roach", "wss://node.roach.hydration.cloud"),
+  createProvider("Lait", "wss://node.lait.hydration.cloud"),
   createProvider("LATAM", "wss://hydration.rpc.stkd.io"),
   /* These RPCs don't work with Papi, disabled for now  */
   // createProvider("cay", "wss://rpc.cay.hydration.cloud"),

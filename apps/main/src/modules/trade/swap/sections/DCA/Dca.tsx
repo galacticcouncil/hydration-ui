@@ -25,7 +25,8 @@ export const Dca: FC = () => {
 
   const form = useDcaForm({ assetIn, assetOut })
 
-  const { order, orderTx, healthFactor, isLoading } = useDcaTradeOrder(form)
+  const { order, orderTx, dryRunError, healthFactor, isLoading } =
+    useDcaTradeOrder(form)
   const duration = form.watch("duration")
   const { warnings, errors } = useDcaPriceImpactValidation(order, duration)
 
@@ -86,7 +87,11 @@ export const Dca: FC = () => {
           }
           isLoading={isLoading}
         />
-        <DcaErrors priceImpact={order?.tradeImpactPct ?? 0} errors={errors} />
+        <DcaErrors
+          priceImpact={order?.tradeImpactPct ?? 0}
+          errors={errors}
+          dryRunError={dryRunError}
+        />
         <DcaWarnings
           isFormValid={isFormValid}
           order={order}

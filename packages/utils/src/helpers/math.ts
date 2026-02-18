@@ -20,3 +20,17 @@ export const percentageDifference = (
 
 export const getReversePrice = (price: string): string =>
   Big(price || "0").gt(0) ? Big(1).div(price).toString() : price
+
+type BigIntLimits = {
+  min?: bigint
+  max?: bigint
+}
+
+export const clampBigInt = (
+  value: bigint,
+  { min, max }: BigIntLimits,
+): bigint => {
+  if (min !== undefined && value < min) return min
+  if (max !== undefined && value > max) return max
+  return value
+}

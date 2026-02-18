@@ -3,7 +3,7 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
-import { bestBuyQuery, bestBuyTwapQuery } from "@/api/trade"
+import { bestBuyTwapWithTxQuery, bestBuyWithTxQuery } from "@/api/trade"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
@@ -36,12 +36,14 @@ export const useMarketBuyData = (
     { data: healthFactorData, isLoading: isHealthFactorLoading },
   ] = useQueries({
     queries: [
-      bestBuyQuery(rpc, {
+      bestBuyWithTxQuery(rpc, {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountOut: buyAmount,
         slippage: swapSlippage,
         address,
+        dryRun: form.formState.isValid,
+        debug: true,
       }),
       healthFactorQuery(rpc, {
         fromAsset: sellAsset,
@@ -54,7 +56,7 @@ export const useMarketBuyData = (
   })
 
   const { data: twapData, isLoading: isTwapLoading } = useQuery(
-    bestBuyTwapQuery(
+    bestBuyTwapWithTxQuery(
       rpc,
       {
         assetIn: sellAsset?.id ?? "",
@@ -63,6 +65,7 @@ export const useMarketBuyData = (
         slippage: twapSlippage,
         maxRetries: twapMaxRetries,
         address,
+        dryRun: form.formState.isValid,
       },
       isTwapEnabled(swapData?.swap),
     ),
@@ -71,8 +74,10 @@ export const useMarketBuyData = (
   return {
     swap: swapData?.swap,
     swapTx: swapData?.tx ?? null,
+    swapDryRunError: swapData?.dryRunError ?? null,
     twap: twapData?.twap,
     twapTx: twapData?.tx ?? null,
+    twapDryRunError: twapData?.dryRunError ?? null,
     healthFactor: healthFactorData,
     isSwapLoading,
     isTwapLoading,

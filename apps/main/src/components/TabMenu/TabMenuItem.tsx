@@ -9,10 +9,12 @@ import { useLocation } from "@tanstack/react-router"
 import { FC } from "react"
 
 import { TabItem } from "@/components/TabMenu/TabMenu"
+import { TabMenuBadge } from "@/components/TabMenu/TabMenuBadge"
 
 export type Props = {
   readonly item: TabItem
   readonly size?: ButtonSize
+  readonly badge?: number | string
   readonly variant?: ButtonVariant
   readonly activeVariant?: ButtonVariant
   readonly className?: string
@@ -22,6 +24,7 @@ export type Props = {
 export const TabMenuItem: FC<Props> = ({
   item,
   size,
+  badge,
   activeVariant = "secondary",
   variant = "muted",
   className,
@@ -67,6 +70,7 @@ export const TabMenuItem: FC<Props> = ({
       >
         {IconComponent && <Icon size="s" component={IconComponent} />}
         {title}
+        {badge && <TabMenuBadge>{badge}</TabMenuBadge>}
       </Link>
     </Button>
   )
