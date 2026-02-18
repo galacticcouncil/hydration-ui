@@ -1,6 +1,11 @@
 import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
 import { AssetMetadataFactory } from "@galacticcouncil/utils"
-import { QueryFilters, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  QueryClient,
+  QueryFilters,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
 import {
   createContext,
@@ -28,6 +33,7 @@ export type TProviderContext = TProviderData & {
 }
 
 const defaultData: TProviderContext = {
+  queryClient: {} as QueryClient,
   isLoaded: false,
   isApiLoaded: false,
   rpcUrlList: [],
@@ -100,6 +106,7 @@ export const useInvalidateRpcProvider = () => {
 }
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
+  const queryClient = useQueryClient()
   const { assets } = useAssetRegistry()
   const { rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
   const { isInvalidating } = useInvalidateRpcProvider()
@@ -108,7 +115,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
 
   const { data } = useQuery({
     enabled: !isInvalidating,
-    ...providerQuery(rpcProviderUrls),
+    ...providerQuery(queryClient, rpcProviderUrls),
   })
 
   const value = useMemo(() => {

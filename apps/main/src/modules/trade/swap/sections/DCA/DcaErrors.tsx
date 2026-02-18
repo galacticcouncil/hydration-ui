@@ -1,4 +1,5 @@
 import { Alert, Flex } from "@galacticcouncil/ui/components"
+import { DryRunError } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -8,12 +9,13 @@ import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 type Props = {
   readonly priceImpact: number
   readonly errors: ReadonlyArray<DcaValidationError>
+  readonly dryRunError?: DryRunError | null
 }
 
-export const DcaErrors: FC<Props> = ({ priceImpact, errors }) => {
+export const DcaErrors: FC<Props> = ({ priceImpact, errors, dryRunError }) => {
   const { t } = useTranslation(["common", "trade"])
 
-  if (!errors.length) {
+  if (!errors.length && !dryRunError) {
     return null
   }
 
@@ -35,6 +37,13 @@ export const DcaErrors: FC<Props> = ({ priceImpact, errors }) => {
             description={errorDescriptions[error]}
           />
         ))}
+        {dryRunError && (
+          <Alert
+            variant="error"
+            title={dryRunError.name}
+            tooltip={dryRunError.description}
+          />
+        )}
       </Flex>
     </>
   )

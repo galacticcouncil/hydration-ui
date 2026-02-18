@@ -1,3 +1,4 @@
+import { DryRunError } from "@galacticcouncil/utils"
 import { EvmParachain } from "@galacticcouncil/xc-core"
 import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import { createContext, useContext } from "react"
@@ -17,6 +18,7 @@ type XcmContextValue = {
   readonly isConnectedAccountValid: boolean
   readonly transfer: Transfer | null
   readonly call: Call | null
+  readonly dryRunError: DryRunError | null
   readonly alerts: XcmAlert[]
   readonly sourceChainAssetPairs: ChainAssetPair[]
   readonly destChainAssetPairs: ChainAssetPair[]
@@ -31,6 +33,7 @@ export const XcmContext = createContext<XcmContextValue>({
   isConnectedAccountValid: false,
   transfer: null,
   call: null,
+  dryRunError: null,
   alerts: [],
   sourceChainAssetPairs: [],
   destChainAssetPairs: [],

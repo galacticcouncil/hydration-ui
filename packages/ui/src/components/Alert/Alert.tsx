@@ -9,15 +9,17 @@ import {
 } from "@/components/Alert/Alert.styled"
 import { Flex } from "@/components/Flex"
 import { Text } from "@/components/Text"
+import { Tooltip } from "@/components/Tooltip"
 import { getToken } from "@/utils"
 
 export type AlertProps = {
   readonly variant?: AlertVariant
   readonly title?: string
-  readonly description: ReactNode
+  readonly description?: ReactNode
   readonly action?: ReactNode
   readonly className?: string
   readonly displayIcon?: boolean
+  readonly tooltip?: string
 }
 
 export const Alert: FC<AlertProps> = ({
@@ -27,9 +29,14 @@ export const Alert: FC<AlertProps> = ({
   action,
   className,
   displayIcon = true,
+  tooltip,
 }) => {
   return (
-    <SAlertContainer variant={variant} className={className}>
+    <SAlertContainer
+      variant={variant}
+      hasDescription={!!description}
+      className={className}
+    >
       {displayIcon && (
         <SAlertIcon
           variant={variant}
@@ -39,19 +46,21 @@ export const Alert: FC<AlertProps> = ({
       )}
 
       <Flex direction="column" gap="base" align="baseline">
-        {title && <SAlertTitle variant={variant}>{title}</SAlertTitle>}
-        {typeof description === "string" ? (
-          <Text
-            fw={title ? 400 : 500}
-            fs="p4"
-            lh={1.3}
-            color={getToken("text.high")}
-          >
-            {description}
-          </Text>
-        ) : (
-          description
-        )}
+        <Tooltip text={tooltip}>
+          {title && <SAlertTitle variant={variant}>{title}</SAlertTitle>}
+          {typeof description === "string" ? (
+            <Text
+              fw={title ? 400 : 500}
+              fs="p4"
+              lh={1.3}
+              color={getToken("text.high")}
+            >
+              {description}
+            </Text>
+          ) : (
+            description
+          )}
+        </Tooltip>
         {action}
       </Flex>
     </SAlertContainer>
