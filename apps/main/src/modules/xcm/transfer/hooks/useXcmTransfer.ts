@@ -26,19 +26,25 @@ export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
   const [reportQuery, callQuery] = useQueries({
     queries: [
       xcmTransferReportQuery(transfer ?? null, transferArgs),
-      xcmTransferCallQuery(transfer ?? null, values.srcAmount, transferArgs),
+      xcmTransferCallQuery(
+        transfer ?? null,
+        values.srcAmount,
+        transferArgs,
+        form.formState.isValid,
+      ),
     ],
   })
 
   const { data: report, isLoading: isLoadingReport } = reportQuery
-  const { data: call, isLoading: isLoadingCall } = callQuery
+  const { data: callData, isLoading: isLoadingCall } = callQuery
 
   return {
     transfer: transfer ?? null,
     isLoadingTransfer,
     report: report ?? null,
     isLoadingReport,
-    call: call ?? null,
+    call: callData?.call ?? null,
+    dryRunError: callData?.dryRunError ?? null,
     isLoadingCall,
   }
 }

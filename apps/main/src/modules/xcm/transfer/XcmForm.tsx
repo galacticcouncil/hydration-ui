@@ -43,6 +43,7 @@ export const XcmForm = () => {
   const {
     status,
     transfer,
+    dryRunError,
     sourceChainAssetPairs,
     destChainAssetPairs,
     isLoading,
@@ -257,21 +258,30 @@ export const XcmForm = () => {
           <XcmSummary />
           <Separator />
           <Box p={["l", "xl"]}>
-            <SubmitButton
-              status={status}
-              disabled={
-                isLoading ||
-                isLoadingCallOrTransfer ||
-                submit.isPending ||
-                !isSubmitReady
-              }
-              isLoading={
-                isLoading || isLoadingCallOrTransfer || submit.isPending
-              }
-              variant={isSubmitReady ? "primary" : "muted"}
-              loadingVariant="muted"
-              chain={srcChain}
-            />
+            <Flex direction="column" gap="m">
+              {dryRunError && (
+                <Alert
+                  variant="error"
+                  title={dryRunError.name}
+                  tooltip={dryRunError.description}
+                />
+              )}
+              <SubmitButton
+                status={status}
+                disabled={
+                  isLoading ||
+                  isLoadingCallOrTransfer ||
+                  submit.isPending ||
+                  !isSubmitReady
+                }
+                isLoading={
+                  isLoading || isLoadingCallOrTransfer || submit.isPending
+                }
+                variant={isSubmitReady ? "primary" : "muted"}
+                loadingVariant="muted"
+                chain={srcChain}
+              />
+            </Flex>
           </Box>
         </Paper>
         <Alert

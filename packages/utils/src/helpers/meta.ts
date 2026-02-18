@@ -5,6 +5,8 @@ import {
 } from "@polkadot-api/substrate-bindings"
 import { TypedApi } from "polkadot-api"
 
+import { formatPascalCaseToSentence } from "./formatting"
+
 type DryRunExecutionError = Extract<
   Extract<
     Awaited<
@@ -19,16 +21,37 @@ type DryRunExecutionError = Extract<
 
 export type DryRunError = {
   readonly name: string
-  readonly description: string | undefined
+  readonly description?: string
 }
 
 export const parseDryRunError = async (
-  error: DryRunExecutionError,
+  error: DryRunExecutionError | string,
 ): Promise<DryRunError | undefined> => {
-  if (error.type !== "Module") {
-    return
+  if (typeof error === "string") {
+    const [type, name] = error.split(".")
+
+    if (!type || !name) {
+      return undefined
+    }
+
+    const parsedError = await getError(type, name)
+
+    if (!parsedError) {
+      return { name: formatPascalCaseToSentence(name) }
+    }
+
+    return parsedError
   }
 
+  if (error.type === "Module") {
+    return await getError(error.value.type, error.value.value?.type ?? "")
+  }
+}
+
+const getError = async (
+  type: string,
+  name: string,
+): Promise<DryRunError | undefined> => {
   const metadataBytes = await hydrationNext.getMetadata()
   const { metadata } = metadataCodec.dec(metadataBytes)
   const { pallets, lookup } = metadata.value as V15
@@ -36,7 +59,7 @@ export const parseDryRunError = async (
   const palletByName = new Map(pallets.map((p) => [p.name, p] as const))
   const lookupById = new Map(lookup.map((t) => [t.id, t] as const))
 
-  const pallet = palletByName.get(error.value.type)
+  const pallet = palletByName.get(type)
 
   if (!pallet?.errors) {
     return
@@ -48,9 +71,7 @@ export const parseDryRunError = async (
     return
   }
 
-  const dryRunError = errorType.def.value.find(
-    (v) => v.name === error.value.value?.type,
-  )
+  const dryRunError = errorType.def.value.find((v) => v.name === name)
 
   return (
     dryRunError && {
