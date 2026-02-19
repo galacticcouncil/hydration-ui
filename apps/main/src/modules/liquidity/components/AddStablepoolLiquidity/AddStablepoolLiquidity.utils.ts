@@ -215,6 +215,7 @@ export const useStablepoolAddLiquidity = ({
                       farm.yieldFarmId,
                     ])
                   : undefined,
+                min_shares_limit: 0n,
               },
             )
 

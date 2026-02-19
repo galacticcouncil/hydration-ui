@@ -26,15 +26,13 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const { t } = useTranslation(["common"])
   const { createTransaction } = useTransactionsStore()
   const createBatchTx = useCreateBatchTx()
-  const { evm, dataEnv, papi, isNext, papiNext } = useRpcProvider()
+  const { evm, dataEnv, papi } = useRpcProvider()
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts }, options, withExtraGas) => {
       if (Array.isArray(tx)) {
         createBatchTx({
-          txs: tx.map((evmTx) =>
-            transformEvmCallToPapiTx(papi, papiNext, evmTx, isNext),
-          ),
+          txs: tx.map((evmTx) => transformEvmCallToPapiTx(papi, evmTx)),
           transaction: {
             toasts,
             withExtraGas,
@@ -45,7 +43,7 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
         createTransaction({ tx, toasts }, options)
       }
     },
-    [createTransaction, createBatchTx, papi, papiNext, isNext],
+    [createTransaction, createBatchTx, papi],
   )
 
   return (

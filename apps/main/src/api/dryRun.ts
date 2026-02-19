@@ -2,10 +2,10 @@ import { parseDryRunError } from "@galacticcouncil/utils/src/helpers/meta"
 
 import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import { AnyPapiTx } from "@/modules/transactions/types"
-import { PapiNext } from "@/providers/rpcProvider"
+import { Papi } from "@/providers/rpcProvider"
 
 export const getPapiDryRunError = async (
-  papi: PapiNext,
+  papi: Papi,
   address: string,
   tx: AnyPapiTx,
 ) => {

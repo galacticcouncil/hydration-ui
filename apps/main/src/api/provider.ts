@@ -47,6 +47,8 @@ export type TProviderData = {
   metadata: AssetMetadataFactory
 }
 
+const isHsmEnabled = import.meta.env.VITE_HSM_ENABLED === "true"
+
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   provider.env.includes(import.meta.env.VITE_ENV),
 )
@@ -123,7 +125,10 @@ const getProviderData = async (
     metadata.fetchChains(),
   ])
 
-  const poolService = sdk.ctx.pool.withOmnipool().withStableswap().withXyk()
+  const poolService = (isHsmEnabled ? sdk.ctx.pool.withHsm() : sdk.ctx.pool)
+    .withOmnipool()
+    .withStableswap()
+    .withXyk()
 
   const evm = createPublicClient({
     transport: custom({

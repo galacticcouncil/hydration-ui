@@ -7,11 +7,11 @@ import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
 import { TProviderContext } from "@/providers/rpcProvider"
 
 export const paymentInfoQuery = (
-  { papi, papiNext, isNext, isApiLoaded }: TProviderContext,
+  { papi, isApiLoaded }: TProviderContext,
   from: string | undefined,
   anyTx: AnyTransaction,
 ) => {
-  const tx = anyTx ? transformAnyToPapiTx(papi, papiNext, anyTx, isNext) : null
+  const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
   return queryOptions({
     queryKey: [
       QUERY_KEY_BLOCK_PREFIX,

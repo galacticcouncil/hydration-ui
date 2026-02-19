@@ -1,4 +1,4 @@
-import { hydrationNext } from "@galacticcouncil/descriptors"
+import { hydration } from "@galacticcouncil/descriptors"
 import {
   metadata as metadataCodec,
   V15,
@@ -11,7 +11,7 @@ type DryRunExecutionError = Extract<
   Extract<
     Awaited<
       ReturnType<
-        TypedApi<typeof hydrationNext>["apis"]["DryRunApi"]["dry_run_call"]
+        TypedApi<typeof hydration>["apis"]["DryRunApi"]["dry_run_call"]
       >
     >,
     { success: true }
@@ -52,7 +52,7 @@ const getError = async (
   type: string,
   name: string,
 ): Promise<DryRunError | undefined> => {
-  const metadataBytes = await hydrationNext.getMetadata()
+  const metadataBytes = await hydration.getMetadata()
   const { metadata } = metadataCodec.dec(metadataBytes)
   const { pallets, lookup } = metadata.value as V15
 
