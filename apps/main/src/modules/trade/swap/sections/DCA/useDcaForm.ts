@@ -151,7 +151,7 @@ type Args = {
 export const useDcaForm = ({ assetIn, assetOut }: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { isBalanceLoaded } = useAccountBalances()
+  const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
 
   const defaultValues: DcaFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -181,10 +181,10 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
       return
     }
 
-    if (isBalanceLoaded(sellAsset.id)) {
+    if (isBalanceLoaded(sellAsset.id) || !isBalanceLoading) {
       trigger("sellAmount")
     }
-  }, [account, trigger, getValues, isBalanceLoaded])
+  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
 
   return form
 }

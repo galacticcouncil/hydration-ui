@@ -47,7 +47,7 @@ type Args = {
 export const useMarketForm = ({ assetIn, assetOut }: Args) => {
   const { account } = useAccount()
   const { getAsset } = useAssets()
-  const { isBalanceLoaded } = useAccountBalances()
+  const { isBalanceLoaded, isBalanceLoading } = useAccountBalances()
 
   const defaultValues: MarketFormValues = {
     sellAsset: getAsset(assetIn) ?? null,
@@ -72,12 +72,18 @@ export const useMarketForm = ({ assetIn, assetOut }: Args) => {
       return
     }
 
-    if (type === TradeType.Buy && isBalanceLoaded(buyAsset.id)) {
+    if (
+      type === TradeType.Buy &&
+      (isBalanceLoaded(buyAsset.id) || !isBalanceLoading)
+    ) {
       trigger("buyAmount")
-    } else if (type === TradeType.Sell && isBalanceLoaded(sellAsset.id)) {
+    } else if (
+      (type === TradeType.Sell && isBalanceLoaded(sellAsset.id)) ||
+      !isBalanceLoading
+    ) {
       trigger("sellAmount")
     }
-  }, [account, trigger, getValues, isBalanceLoaded])
+  }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
 
   return form
 }
