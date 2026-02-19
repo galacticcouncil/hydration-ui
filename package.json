@@ -27,7 +27,7 @@
     "@galacticcouncil/math-stableswap": "^2.0.0",
     "@galacticcouncil/math-staking": "^1.2.0",
     "@galacticcouncil/math-xyk": "^1.0.0",
-    "@galacticcouncil/sdk-next": "^0.33.0",
+    "@galacticcouncil/sdk-next": "^0.34.0",
     "@galacticcouncil/xc": "^0.4.0",
     "@galacticcouncil/xc-cfg": "^0.14.0",
     "@galacticcouncil/xc-core": "^0.12.0",
