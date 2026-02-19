@@ -124,12 +124,7 @@ export const MarketSummarySwap: FC<Props> = ({
         <>
           <SwapSummaryRow
             label={t("healthFactor")}
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor.current}
-                futureHealthFactor={healthFactor.future}
-              />
-            }
+            content={<HealthFactorChange {...healthFactor} />}
           />
           <SwapSectionSeparator />
         </>

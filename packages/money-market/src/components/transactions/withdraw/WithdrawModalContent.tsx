@@ -9,7 +9,7 @@ import { TxModalWrapperRenderProps } from "@/components/transactions/TxModalWrap
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useModalContext } from "@/hooks/useModal"
-import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
+import { formatHealthFactorResult } from "@/utils"
 import { calculateHFAfterWithdraw } from "@/utils/hfUtils"
 import { zeroLTVBlockingWithdraw } from "@/utils/transactions"
 
@@ -82,12 +82,6 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
     withdrawAmount,
   })
 
-  const displayHealthFactorRiskCheckbox =
-    !!withdrawAmount &&
-    !healthFactorAfterWithdraw.eq(-1) &&
-    healthFactorAfterWithdraw.lt(HEALTH_FACTOR_RISK_THRESHOLD) &&
-    userReserve.usageAsCollateralEnabledOnUser
-
   // calculating input usd value
   const usdValue = Big(withdrawAmount || "0").mul(
     userReserve?.reserve.priceInUSD || 0,
@@ -96,8 +90,13 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const healthFactor = user ? user.healthFactor : "-1"
   const futureHealthFactor = healthFactorAfterWithdraw.toString()
 
-  const shouldRenderHealthFactor =
-    healthFactor !== "-1" && futureHealthFactor !== "-1"
+  const hf = formatHealthFactorResult({
+    currentHF: healthFactor,
+    futureHF: futureHealthFactor,
+  })
+
+  const displayHealthFactorRiskCheckbox =
+    hf.isUserConsentRequired && userReserve.usageAsCollateralEnabledOnUser
 
   return (
     <>
@@ -142,17 +141,10 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
             />
           }
         />
-        {shouldRenderHealthFactor && (
-          <SummaryRow
-            label="Health Factor"
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor}
-                futureHealthFactor={futureHealthFactor}
-              />
-            }
-          />
-        )}
+        <SummaryRow
+          label="Health Factor"
+          content={<HealthFactorChange {...hf} />}
+        />
 
         {displayHealthFactorRiskCheckbox && (
           <HealthFactorRiskWarning

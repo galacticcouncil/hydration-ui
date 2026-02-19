@@ -296,13 +296,14 @@ export const formatHealthFactorResult = ({
   currentHF,
   futureHF,
 }: {
-  currentHF: number
-  futureHF: number
+  currentHF: BigSource
+  futureHF: BigSource
 }): HealthFactorResult => {
   const current = Big(currentHF)
   const future = Big(futureHF)
 
-  const isBelowRiskThreshold = future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
+  const isBelowRiskThreshold =
+    !future.eq(-1) && future.lt(HEALTH_FACTOR_RISK_THRESHOLD)
   const isSignificantChange = !future
     .round(2, Big.roundDown)
     .eq(current.round(2, Big.roundDown))

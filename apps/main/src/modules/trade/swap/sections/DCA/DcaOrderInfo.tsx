@@ -30,12 +30,7 @@ export const DcaOrderInfo: FC<Props> = ({ order, healthFactor, isLoading }) => {
           {healthFactor?.isSignificantChange && (
             <SwapSummaryRow
               label={t("healthFactor")}
-              content={
-                <HealthFactorChange
-                  healthFactor={healthFactor.current}
-                  futureHealthFactor={healthFactor.future}
-                />
-              }
+              content={<HealthFactorChange {...healthFactor} />}
             />
           )}
         </Summary>

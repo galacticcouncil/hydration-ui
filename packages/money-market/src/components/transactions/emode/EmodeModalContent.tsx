@@ -21,6 +21,7 @@ import {
 } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useCurrentTimestamp } from "@/hooks/useCurrentTimestamp"
+import { formatHealthFactorResult } from "@/utils"
 
 import { getEmodeMessage } from "./emode.utils"
 import { EmodeActions } from "./EmodeActions"
@@ -164,8 +165,10 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
   const healthFactor = user ? user.healthFactor : "-1"
   const futureHealthFactor = newSummary.healthFactor.toString()
 
-  const shouldRenderHealthFactor =
-    healthFactor !== "-1" && futureHealthFactor !== "-1"
+  const hf = formatHealthFactorResult({
+    currentHF: healthFactor,
+    futureHF: futureHealthFactor,
+  })
 
   const isUserEmodeCategorySet = user.userEmodeCategoryId !== 0
 
@@ -309,17 +312,10 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
               </Flex>
             }
           />
-          {shouldRenderHealthFactor && (
-            <SummaryRow
-              label="Health Factor"
-              content={
-                <HealthFactorChange
-                  healthFactor={healthFactor}
-                  futureHealthFactor={futureHealthFactor}
-                />
-              }
-            />
-          )}
+          <SummaryRow
+            label="Health Factor"
+            content={<HealthFactorChange {...hf} />}
+          />
           {showMaxLTVRow && (
             <SummaryRow
               label="Maximum loan to value"

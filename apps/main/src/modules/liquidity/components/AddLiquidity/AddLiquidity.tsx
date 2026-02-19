@@ -203,13 +203,7 @@ export const AddLiquiditySummary = ({
           ? [
               {
                 label: t("common:healthFactor"),
-                content: (
-                  <HealthFactorChange
-                    healthFactor={healthFactor.current}
-                    futureHealthFactor={healthFactor.future}
-                    fontSize="p5"
-                  />
-                ),
+                content: <HealthFactorChange {...healthFactor} fontSize="p5" />,
               },
             ]
           : []),

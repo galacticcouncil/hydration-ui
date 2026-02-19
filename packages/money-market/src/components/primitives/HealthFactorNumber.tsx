@@ -1,3 +1,4 @@
+import { InfinityIcon } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Text } from "@galacticcouncil/ui/components"
 import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
@@ -11,7 +12,7 @@ export type HealthFactorNumberProps = {
 
 export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
   value,
-  fontSize = "p3",
+  fontSize,
 }) => {
   const { healthFactor, healthFactorColor } = useFormattedHealthFactor(value)
 
@@ -21,13 +22,13 @@ export const HealthFactorNumber: React.FC<HealthFactorNumberProps> = ({
         <Text
           fw={500}
           fs={fontSize}
+          lh={1.5}
           color={getToken("accents.success.emphasis")}
-          sx={{ scale: "1.3" }}
         >
-          ∞
+          <InfinityIcon />
         </Text>
       ) : (
-        <Text fw={700} fs={fontSize} sx={{ color: healthFactorColor }}>
+        <Text fw={700} fs={fontSize} lh={1.5} sx={{ color: healthFactorColor }}>
           {healthFactor}
         </Text>
       )}

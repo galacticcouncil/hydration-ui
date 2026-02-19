@@ -82,13 +82,17 @@ export const SummaryRow = ({
       ) : typeof content === "string" ? (
         <SummaryRowValue>{content}</SummaryRowValue>
       ) : (
-        content
+        <SummaryRowContent>{content}</SummaryRowContent>
       )}
     </Flex>
   )
 
   return isMobile ? row : renderTooltip(row)
 }
+
+export const SummaryRowContent = (props: TextProps) => (
+  <Text fs="p5" fw={500} lh={1.2} as="div" {...props} />
+)
 
 export const SummaryRowValue = (props: TextProps) => (
   <Text fs="p5" fw={500} lh={1.2} color={getToken("text.high")} {...props} />

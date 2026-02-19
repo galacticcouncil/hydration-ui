@@ -8,35 +8,25 @@ import {
 } from "@galacticcouncil/ui/components"
 import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
-import Big from "big.js"
 
 import { HealthFactorNumber } from "@/components/primitives/HealthFactorNumber"
-import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
+import { HealthFactorResult } from "@/utils"
 
-export type HealthFactorChangeProps = FlexProps & {
-  healthFactor: string
-  futureHealthFactor: string
-  loading?: boolean
-  fontSize?: ThemeUICSSProperties["fontSize"]
-}
+export type HealthFactorChangeProps = FlexProps &
+  HealthFactorResult & {
+    loading?: boolean
+    fontSize?: ThemeUICSSProperties["fontSize"]
+  }
 
 export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
-  healthFactor,
-  futureHealthFactor,
+  current,
+  future,
+  isSignificantChange,
+  isBelowRiskThreshold,
   loading = false,
   fontSize,
   ...props
 }) => {
-  if (healthFactor === "-1" && futureHealthFactor === "-1") return null
-
-  const visibleChange =
-    Big(healthFactor).toFixed(2, Big.roundDown) !==
-    Big(futureHealthFactor).toFixed(2, Big.roundDown)
-
-  const isBelowRiskThreshold = Big(healthFactor).lt(
-    HEALTH_FACTOR_RISK_THRESHOLD,
-  )
-
   return (
     <Flex direction="column" align="flex-end" {...props}>
       <Flex gap="s" direction="row" align="center" justify="flex-end">
@@ -44,17 +34,13 @@ export const HealthFactorChange: React.FC<HealthFactorChangeProps> = ({
           <Skeleton height="1em" width={80} />
         ) : (
           <>
-            <HealthFactorNumber value={healthFactor} fontSize={fontSize} />
-            {visibleChange && (
+            <HealthFactorNumber value={current} fontSize={fontSize} />
+            {isSignificantChange && (
               <>
                 <Icon size="xs" component={ArrowRight} />
                 <HealthFactorNumber
                   fontSize={fontSize}
-                  value={
-                    isNaN(Number(futureHealthFactor))
-                      ? healthFactor
-                      : futureHealthFactor
-                  }
+                  value={isNaN(Number(future)) ? current : future}
                 />
               </>
             )}

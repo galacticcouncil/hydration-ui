@@ -21,8 +21,7 @@ import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWar
 import { useAssetCaps } from "@/hooks"
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
-import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
-import { getGhoBorrowApyRange } from "@/utils"
+import { formatHealthFactorResult, getGhoBorrowApyRange } from "@/utils"
 import { getMaxGhoMintAmount } from "@/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "@/utils/utils"
 
@@ -92,13 +91,10 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const healthFactor = user ? user.healthFactor : "-1"
   const futureHealthFactor = newHealthFactor.toString()
 
-  const shouldRenderHealthFactor =
-    healthFactor !== "-1" && futureHealthFactor !== "-1"
-
-  const displayHealthFactorRiskCheckbox =
-    !!amount &&
-    !newHealthFactor.eq(-1) &&
-    newHealthFactor.lt(HEALTH_FACTOR_RISK_THRESHOLD)
+  const hf = formatHealthFactorResult({
+    currentHF: healthFactor,
+    futureHF: futureHealthFactor,
+  })
 
   // calculating input usd value
   const usdValue = valueToBigNumber(amount).multipliedBy(poolReserve.priceInUSD)
@@ -150,17 +146,10 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         separator={<Separator mx="var(--modal-content-inset)" />}
         withTrailingSeparator
       >
-        {shouldRenderHealthFactor && (
-          <SummaryRow
-            label="Health Factor"
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor}
-                futureHealthFactor={futureHealthFactor}
-              />
-            }
-          />
-        )}
+        <SummaryRow
+          label="Health Factor"
+          content={<HealthFactorChange {...hf} />}
+        />
         <SummaryRow
           label="APY, borrow rate"
           content={
@@ -172,7 +161,7 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         <Stack gap="m" py="m">
           <ParameterChangeWarning />
           {borrowCap.determineWarningDisplay({ borrowCap })}
-          {displayHealthFactorRiskCheckbox && (
+          {hf.isUserConsentRequired && (
             <HealthFactorRiskWarning
               message="Borrowing this amount will reduce your health factor and increase risk of liquidation."
               accepted={healthFactorRiskCheckboxAccepted}
@@ -191,7 +180,7 @@ export const GhoBorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayHealthFactorRiskCheckbox && !healthFactorRiskCheckboxAccepted)
+          (hf.isUserConsentRequired && !healthFactorRiskCheckboxAccepted)
         }
       />
     </>

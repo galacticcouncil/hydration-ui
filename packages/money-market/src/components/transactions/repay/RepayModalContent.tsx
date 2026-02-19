@@ -25,6 +25,7 @@ import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
+import { formatHealthFactorResult } from "@/utils"
 import { getNetworkConfig } from "@/utils/marketsAndNetworksConfig"
 
 import { RepayActions } from "./RepayActions"
@@ -242,8 +243,10 @@ export const RepayModalContent: React.FC<
   const healthFactor = user ? user.healthFactor : "-1"
   const futureHealthFactor = newHF.toString()
 
-  const shouldRenderHealthFactor =
-    healthFactor !== "-1" && futureHealthFactor !== "-1"
+  const hf = formatHealthFactorResult({
+    currentHF: healthFactor,
+    futureHF: futureHealthFactor,
+  })
 
   return (
     <>
@@ -277,17 +280,10 @@ export const RepayModalContent: React.FC<
             />
           }
         />
-        {shouldRenderHealthFactor && (
-          <SummaryRow
-            label="Health Factor"
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor}
-                futureHealthFactor={futureHealthFactor}
-              />
-            }
-          />
-        )}
+        <SummaryRow
+          label="Health Factor"
+          content={<HealthFactorChange {...hf} />}
+        />
         {maxRepayWithDustRemaining && (
           <Alert
             sx={{ my: 14 }}
