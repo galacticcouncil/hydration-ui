@@ -17,14 +17,14 @@ import { useEffect, useRef, useState } from "react"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
-  const { poolService } = useRpcProvider()
+  const { sdk } = useRpcProvider()
   return useSuspenseQuery({
     staleTime: Infinity,
     gcTime: Infinity,
     queryKey: ["xcm", "context"],
     queryFn: () =>
       createXcContext({
-        poolCtx: poolService,
+        poolCtx: sdk.ctx.pool,
       }),
   })
 }

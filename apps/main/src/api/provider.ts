@@ -10,7 +10,7 @@ import {
   SnowbridgeSdk,
 } from "@galacticcouncil/indexer/snowbridge"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
-import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
+import { api, createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
@@ -43,7 +43,6 @@ export type TProviderData = {
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
-  poolService: pool.PoolContextProvider
   endpoint: string
   dataEnv: TDataEnv
   slotDurationMs: number
@@ -129,10 +128,9 @@ const getProviderData = async (
     metadata.fetchChains(),
   ])
 
-  const poolService = (isHsmEnabled ? sdk.ctx.pool.withHsm() : sdk.ctx.pool)
-    .withOmnipool()
-    .withStableswap()
-    .withXyk()
+  if (isHsmEnabled) {
+    sdk.ctx.pool.withHsm()
+  }
 
   const evm = createPublicClient({
     transport: custom({
@@ -150,7 +148,6 @@ const getProviderData = async (
     papiCompatibilityToken,
     evm,
     endpoint,
-    poolService,
     sdk,
     rpcUrlList,
     dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),

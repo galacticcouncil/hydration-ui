@@ -51,7 +51,6 @@ const defaultData: TProviderContext = {
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
   featureFlags: {} as TProviderData["featureFlags"],
-  poolService: {} as TProviderData["poolService"],
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
 }
