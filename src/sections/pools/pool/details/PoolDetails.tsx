@@ -53,9 +53,9 @@ export const PoolDetails = () => {
       return undefined
     }
 
-    const hasGethBalance = new BN(pool.balance?.transferable || "0").gt(0)
+    const hasBalance = new BN(pool.balance?.transferable || "0").gt(0)
 
-    return hasGethBalance ? pool.id : undefined
+    return hasBalance ? pool.id : undefined
   })()
 
   const isFarms = pool.farms?.length > 0
