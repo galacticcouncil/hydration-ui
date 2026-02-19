@@ -12,6 +12,8 @@ import {
   GDOT_STABLESWAP_ASSET_ID,
   GETH_ERC20_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
+  GSOL_ERC20_ASSET_ID,
+  GSOL_STABLESWAP_ASSET_ID,
   HOLLAR_ASSETS,
   PRIME_STABLESWAP_ASSET_ID,
 } from "utils/constants"
@@ -82,7 +84,18 @@ const isStablepoolData = (
 
 export type TAnyPool = TPool | TStablepool | TXYKPool
 
-const GASSETS = [GDOT_STABLESWAP_ASSET_ID, GETH_STABLESWAP_ASSET_ID]
+const GASSETS = [
+  GDOT_STABLESWAP_ASSET_ID,
+  GETH_STABLESWAP_ASSET_ID,
+  GSOL_STABLESWAP_ASSET_ID,
+]
+
+export const ERC20_IN_OMNIPOOL = new Map<string, string>([
+  [GETH_ERC20_ASSET_ID, GETH_STABLESWAP_ASSET_ID],
+  [GSOL_ERC20_ASSET_ID, GSOL_STABLESWAP_ASSET_ID],
+])
+
+const HIDDEN_STABLESWAP_ASSETS = Array.from(ERC20_IN_OMNIPOOL.values())
 const OVERRIDE_META = [...GASSETS, ...HOLLAR_ASSETS]
 
 const getTradeFee = (fee: string[]) => {
@@ -108,7 +121,7 @@ export const usePools = () => {
     () => omnipoolAssets?.map((a) => a.id) ?? [],
     [omnipoolAssets],
   )
-
+  console.log(omnipoolAssets, stablepoolData)
   const stablepoolAssetsId = useMemo(
     () => stablepoolData?.map((a) => a.id) ?? [],
     [stablepoolData],
@@ -149,7 +162,7 @@ export const usePools = () => {
 
       if (
         !omnipoolAssets?.find((pool) => pool.id === stablepoolData.id) &&
-        stablepoolData.id !== GETH_STABLESWAP_ASSET_ID
+        !HIDDEN_STABLESWAP_ASSETS.includes(stablepoolData.id)
       ) {
         onlyStablepool.push(stablepoolData)
       } else {
@@ -159,9 +172,8 @@ export const usePools = () => {
 
     const rows = [...omnipoolAssets, ...onlyStablepool]
       .map((asset) => {
-        const isGETH = asset.id === GETH_ERC20_ASSET_ID
-        const isGDOT = asset.id === GDOT_STABLESWAP_ASSET_ID
-        const poolId = isGETH ? GETH_STABLESWAP_ASSET_ID : asset.id
+        const erc20InOmnipool = ERC20_IN_OMNIPOOL.get(asset.id)
+        const poolId = erc20InOmnipool ?? asset.id
         const relatedAToken = getRelatedAToken(poolId)
 
         const isStablepoolOnly = isStablepoolData(asset)
@@ -308,13 +320,12 @@ export const usePools = () => {
           miningPositions: filteredMiningPositions,
           balance: accountAsset?.balance,
           isPositions,
-          isGDOT,
-          isGETH,
           isStablePool: isStablepoolOnly || !!isStableInOmnipool,
           isInOmnipool: !isStablepoolOnly,
           relatedAToken,
           aBalance: accountAAsset?.balance,
           moneyMarketApy,
+          isErc20InOmnipool: !!erc20InOmnipool,
         }
       })
       .sort((poolA, poolB) => {

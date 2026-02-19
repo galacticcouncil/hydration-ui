@@ -21,7 +21,7 @@ import { APY } from "sections/pools/farms/components/globalFarm/GlobalFarmRowMul
 import { Button, ButtonTransparent } from "components/Button/Button"
 import ChevronRightIcon from "assets/icons/ChevronRight.svg?react"
 import ManageIcon from "assets/icons/IconEdit.svg?react"
-import { BN_0, BN_NAN, GETH_ERC20_ASSET_ID } from "utils/constants"
+import { BN_0, BN_NAN } from "utils/constants"
 import Skeleton from "react-loading-skeleton"
 import BN from "bignumber.js"
 import { CellSkeleton } from "components/Skeleton/CellSkeleton"
@@ -226,13 +226,13 @@ const StablePoolModalWrapper = ({
   onClose: () => void
 }) => {
   const initialAssetId = (() => {
-    if (!pool.isGETH) {
+    if (!pool.isErc20InOmnipool) {
       return undefined
     }
 
     const hasGethBalance = new BN(pool.balance?.transferable || "0").gt(0)
 
-    return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
+    return hasGethBalance ? pool.id : undefined
   })()
 
   return (
