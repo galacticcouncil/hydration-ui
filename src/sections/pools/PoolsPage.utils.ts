@@ -121,7 +121,7 @@ export const usePools = () => {
     () => omnipoolAssets?.map((a) => a.id) ?? [],
     [omnipoolAssets],
   )
-  console.log(omnipoolAssets, stablepoolData)
+
   const stablepoolAssetsId = useMemo(
     () => stablepoolData?.map((a) => a.id) ?? [],
     [stablepoolData],
