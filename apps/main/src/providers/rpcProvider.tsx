@@ -1,5 +1,8 @@
 import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
-import { AssetMetadataFactory } from "@galacticcouncil/utils"
+import {
+  AssetMetadataFactory,
+  DryRunErrorDecoder,
+} from "@galacticcouncil/utils"
 import {
   QueryClient,
   QueryFilters,
@@ -50,6 +53,7 @@ const defaultData: TProviderContext = {
   featureFlags: {} as TProviderData["featureFlags"],
   poolService: {} as TProviderData["poolService"],
   metadata: AssetMetadataFactory.getInstance(),
+  dryRunErrorDecoder: {} as DryRunErrorDecoder,
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
