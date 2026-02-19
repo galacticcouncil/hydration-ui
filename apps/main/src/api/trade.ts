@@ -66,7 +66,7 @@ export const bestSellWithTxQuery = (
   rpc: TProviderContext,
   { slippage, address, dryRun, ...bestSellArgs }: BestSellWithTxArgs,
 ) => {
-  const { queryClient, sdk, papiNext } = rpc
+  const { queryClient, sdk, papi, dryRunErrorDecoder } = rpc
   const bestSell = bestSellQuery(rpc, bestSellArgs)
 
   return queryOptions({
@@ -90,7 +90,9 @@ export const bestSellWithTxQuery = (
         : null
 
       const dryRunError =
-        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+        dryRun && tx
+          ? await getPapiDryRunError(papi, dryRunErrorDecoder, address, tx)
+          : null
 
       return {
         swap,
@@ -150,7 +152,7 @@ export const bestSellTwapWithTxQuery = (
   }: BestSellTwapWithTxArgs,
   enabled = true,
 ) => {
-  const { queryClient, sdk, papiNext } = rpc
+  const { queryClient, sdk, papi, dryRunErrorDecoder } = rpc
   const bestSellTwap = bestSellTwapQuery(rpc, bestSellTwapArgs)
 
   return queryOptions({
@@ -176,7 +178,9 @@ export const bestSellTwapWithTxQuery = (
         : null
 
       const dryRunError =
-        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+        dryRun && tx
+          ? await getPapiDryRunError(papi, dryRunErrorDecoder, address, tx)
+          : null
 
       return { twap, tx, dryRunError }
     },
@@ -231,7 +235,7 @@ export const bestBuyWithTxQuery = (
   rpc: TProviderContext,
   { slippage, address, dryRun, ...bestBuyArgs }: BestBuyWithTxArgs,
 ) => {
-  const { queryClient, sdk, papiNext } = rpc
+  const { queryClient, sdk, papi, dryRunErrorDecoder } = rpc
   const bestBuy = bestBuyQuery(rpc, bestBuyArgs)
 
   return queryOptions({
@@ -255,7 +259,9 @@ export const bestBuyWithTxQuery = (
         : null
 
       const dryRunError =
-        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+        dryRun && tx
+          ? await getPapiDryRunError(papi, dryRunErrorDecoder, address, tx)
+          : null
 
       return {
         swap,
@@ -315,7 +321,7 @@ export const bestBuyTwapWithTxQuery = (
   }: BestBuyTwapWithTxArgs,
   enabled = true,
 ) => {
-  const { queryClient, sdk, papiNext } = rpc
+  const { queryClient, sdk, papi, dryRunErrorDecoder } = rpc
   const bestBuyTwap = bestBuyTwapQuery(rpc, bestBuyTwapArgs)
 
   return queryOptions({
@@ -341,7 +347,9 @@ export const bestBuyTwapWithTxQuery = (
         : null
 
       const dryRunError =
-        dryRun && tx ? await getPapiDryRunError(papiNext, address, tx) : null
+        dryRun && tx
+          ? await getPapiDryRunError(papi, dryRunErrorDecoder, address, tx)
+          : null
 
       return { twap, tx, dryRunError }
     },
@@ -362,7 +370,7 @@ type DcaTradeOrderArgs = {
 }
 
 export const dcaTradeOrderQuery = (
-  { sdk, isLoaded, papiNext }: TProviderContext,
+  { sdk, isLoaded, papi, dryRunErrorDecoder }: TProviderContext,
   {
     assetIn,
     assetOut,
@@ -409,7 +417,7 @@ export const dcaTradeOrderQuery = (
 
       const dryRunError =
         dryRun && orderTx
-          ? await getPapiDryRunError(papiNext, address, orderTx)
+          ? await getPapiDryRunError(papi, dryRunErrorDecoder, address, orderTx)
           : null
 
       return { order, orderTx, dryRunError }

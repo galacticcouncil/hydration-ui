@@ -11,7 +11,10 @@ import {
 } from "@galacticcouncil/indexer/snowbridge"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
 import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
-import { AssetMetadataFactory } from "@galacticcouncil/utils"
+import {
+  AssetMetadataFactory,
+  DryRunErrorDecoder,
+} from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { CompatibilityLevel, createClient, PolkadotClient } from "polkadot-api"
 import { WsEvent } from "polkadot-api/ws-provider"
@@ -45,7 +48,10 @@ export type TProviderData = {
   dataEnv: TDataEnv
   slotDurationMs: number
   metadata: AssetMetadataFactory
+  dryRunErrorDecoder: DryRunErrorDecoder
 }
+
+const isHsmEnabled = import.meta.env.VITE_HSM_ENABLED === "true"
 
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
   provider.env.includes(import.meta.env.VITE_ENV),
@@ -123,7 +129,10 @@ const getProviderData = async (
     metadata.fetchChains(),
   ])
 
-  const poolService = sdk.ctx.pool.withOmnipool().withStableswap().withXyk()
+  const poolService = (isHsmEnabled ? sdk.ctx.pool.withHsm() : sdk.ctx.pool)
+    .withOmnipool()
+    .withStableswap()
+    .withXyk()
 
   const evm = createPublicClient({
     transport: custom({
@@ -148,6 +157,7 @@ const getProviderData = async (
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
+    dryRunErrorDecoder: new DryRunErrorDecoder(papiClient),
   }
 }
 

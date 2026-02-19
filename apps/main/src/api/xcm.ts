@@ -1,7 +1,4 @@
-import {
-  formatSourceChainAddress,
-  parseDryRunError,
-} from "@galacticcouncil/utils"
+import { formatSourceChainAddress } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
@@ -17,7 +14,7 @@ import {
 import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
   const { poolService } = useRpcProvider()
@@ -202,6 +199,7 @@ export const xcmTransferReportQuery = (
   })
 
 export const xcmTransferCallQuery = (
+  { dryRunErrorDecoder }: TProviderContext,
   transfer: Transfer | null,
   amount: string,
   transferArgs: XcmTransferArgs,
@@ -223,7 +221,7 @@ export const xcmTransferCallQuery = (
         const result = await call?.dryRun()
 
         if (result?.error) {
-          return await parseDryRunError(result.error)
+          return await dryRunErrorDecoder.parseError(result.error)
         }
 
         return null

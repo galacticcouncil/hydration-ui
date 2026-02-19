@@ -10,8 +10,10 @@ import {
 } from "@/api/xcm"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { getXcmTransferArgs } from "@/modules/xcm/transfer/utils/transfer"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
+  const rpc = useRpcProvider()
   const wallet = useCrossChainWallet()
   const { account } = useAccount()
 
@@ -27,6 +29,7 @@ export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
     queries: [
       xcmTransferReportQuery(transfer ?? null, transferArgs),
       xcmTransferCallQuery(
+        rpc,
         transfer ?? null,
         values.srcAmount,
         transferArgs,

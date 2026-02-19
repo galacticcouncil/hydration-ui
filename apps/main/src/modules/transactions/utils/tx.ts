@@ -10,7 +10,7 @@ import {
 } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { Papi, PapiNext } from "@/providers/rpcProvider"
+import { Papi } from "@/providers/rpcProvider"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
@@ -32,24 +32,8 @@ export const transformPermitToPapiTx = (
 
 export const transformEvmCallToPapiTx = (
   papi: Papi,
-  papiNext: PapiNext,
   tx: ExtendedEvmCall,
-  isNext: boolean,
 ): AnyPapiTx => {
-  if (isNext) {
-    return papiNext.tx.EVM.call({
-      source: Binary.fromHex(tx.from),
-      target: Binary.fromHex(tx.to),
-      input: Binary.fromHex(tx.data),
-      value: [0n, 0n, 0n, 0n],
-      gas_limit: tx.gasLimit || 0n,
-      max_fee_per_gas: [tx.maxFeePerGas || 0n, 0n, 0n, 0n],
-      max_priority_fee_per_gas: [tx.maxPriorityFeePerGas || 0n, 0n, 0n, 0n],
-      access_list: [],
-      authorization_list: [],
-      nonce: undefined,
-    })
-  }
   return papi.tx.EVM.call({
     source: Binary.fromHex(tx.from),
     target: Binary.fromHex(tx.to),
@@ -59,22 +43,21 @@ export const transformEvmCallToPapiTx = (
     max_fee_per_gas: [tx.maxFeePerGas || 0n, 0n, 0n, 0n],
     max_priority_fee_per_gas: [tx.maxPriorityFeePerGas || 0n, 0n, 0n, 0n],
     access_list: [],
+    authorization_list: [],
     nonce: undefined,
   })
 }
 
 export const transformAnyToPapiTx = (
   papi: Papi,
-  papiNext: PapiNext,
   tx: AnyTransaction,
-  isNext: boolean,
 ): AnyPapiTx | null => {
   if (isPapiTransaction(tx)) {
     return tx
   }
 
   if (isEvmCall(tx)) {
-    return transformEvmCallToPapiTx(papi, papiNext, tx, isNext)
+    return transformEvmCallToPapiTx(papi, tx)
   }
 
   return null

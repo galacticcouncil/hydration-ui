@@ -407,7 +407,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
 }
 
 export const useGetClaimAllBorrowRewardsTx = () => {
-  const { papi, papiNext, isNext, evm } = useRpcProvider()
+  const { papi, evm } = useRpcProvider()
   const { account } = useAccount()
   const { data: user } = useUserBorrowSummary()
 
@@ -463,28 +463,6 @@ export const useGetClaimAllBorrowRewardsTx = () => {
     const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
     const gasPrice = gasPriceBase + gasPriceSurplus
 
-    if (isNext) {
-      const evmCall = papiNext.tx.EVM.call({
-        source: Binary.fromHex(tx.from),
-        target: Binary.fromHex(tx.to),
-        input: Binary.fromHex(tx.data),
-        value: [0n, 0n, 0n, 0n],
-        gas_limit: BigInt(
-          gasLimitRecommendations[ProtocolAction.claimRewards]?.limit ||
-            tx.gasLimit.toString(),
-        ),
-        max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
-        max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
-        access_list: [],
-        authorization_list: [],
-        nonce: undefined,
-      })
-
-      return papiNext.tx.Dispatcher.dispatch_evm_call({
-        call: evmCall.decodedCall,
-      })
-    }
-
     const evmCall = papi.tx.EVM.call({
       source: Binary.fromHex(tx.from),
       target: Binary.fromHex(tx.to),
@@ -497,11 +475,12 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
       max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
       access_list: [],
+      authorization_list: [],
       nonce: undefined,
     })
 
     return papi.tx.Dispatcher.dispatch_evm_call({
       call: evmCall.decodedCall,
     })
-  }, [account?.address, evm, papi, papiNext, isNext, user])
+  }, [account?.address, evm, papi, user])
 }
