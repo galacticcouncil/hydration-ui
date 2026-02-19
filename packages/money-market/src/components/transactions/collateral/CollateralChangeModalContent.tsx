@@ -121,20 +121,12 @@ export const CollateralChangeModalContent: React.FC<
   const healthFactor = user ? user.healthFactor : "-1"
   const futureHealthFactor = healthFactorAfterSwitch.toString()
 
-  const shouldRenderHealthFactor =
-    healthFactor !== "-1" && futureHealthFactor !== "-1"
-
-  const healthFactorResult = formatHealthFactorResult({
-    currentHF: Number(healthFactor),
-    futureHF: Number(futureHealthFactor),
+  const hf = formatHealthFactorResult({
+    currentHF: healthFactor,
+    futureHF: futureHealthFactor,
   })
 
-  const shouldRenderHealthFactorWarning =
-    !!healthFactor &&
-    Big(futureHealthFactor).gt(1) &&
-    healthFactorResult.isUserConsentRequired
-
-  const isHealthFactorCheckSatisfied = healthFactorResult.isUserConsentRequired
+  const isHealthFactorCheckSatisfied = hf.isUserConsentRequired
     ? healthFactorRiskAccepted
     : true
 
@@ -184,17 +176,10 @@ export const CollateralChangeModalContent: React.FC<
             </Flex>
           }
         />
-        {shouldRenderHealthFactor && (
-          <SummaryRow
-            label="Health Factor"
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor}
-                futureHealthFactor={futureHealthFactor}
-              />
-            }
-          />
-        )}
+        <SummaryRow
+          label="Health Factor"
+          content={<HealthFactorChange {...hf} />}
+        />
         <Stack gap="m" py="m">
           {showExitIsolationModeMsg && (
             <Alert
@@ -221,11 +206,11 @@ export const CollateralChangeModalContent: React.FC<
           {poolReserve.isIsolated &&
             debtCeiling.determineWarningDisplay({ debtCeiling })}
 
-          {shouldRenderHealthFactorWarning && (
+          {hf.isUserConsentRequired && (
             <HealthFactorRiskWarning
               message="Disabling this asset as collateral affects your borrowing power and Health Factor."
               accepted={healthFactorRiskAccepted}
-              isUserConsentRequired={healthFactorResult.isUserConsentRequired}
+              isUserConsentRequired={hf.isUserConsentRequired}
               onAcceptedChange={setHealthFactorRiskAccepted}
             />
           )}

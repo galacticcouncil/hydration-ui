@@ -31,7 +31,7 @@ import { ParameterChangeWarning } from "@/components/warnings/ParameterChangeWar
 import { useAppDataContext } from "@/hooks/app-data-provider/useAppDataProvider"
 import { useAppFormatters } from "@/hooks/app-data-provider/useAppFormatters"
 import { useAssetCaps } from "@/hooks/useAssetCaps"
-import { HEALTH_FACTOR_RISK_THRESHOLD } from "@/ui-config/misc"
+import { formatHealthFactorResult } from "@/utils"
 import { getMaxAmountAvailableToBorrow } from "@/utils/getMaxAmountAvailableToBorrow"
 import { roundToTokenDecimals } from "@/utils/utils"
 
@@ -218,13 +218,10 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
   const healthFactor = user ? user.healthFactor : "-1"
   const futureHealthFactor = newHealthFactor.toString()
 
-  const shouldRenderHealthFactor =
-    healthFactor !== "-1" && futureHealthFactor !== "-1"
-
-  const displayHealthFactorRiskCheckbox =
-    !!amount &&
-    !newHealthFactor.eq(-1) &&
-    newHealthFactor.lt(HEALTH_FACTOR_RISK_THRESHOLD)
+  const hf = formatHealthFactorResult({
+    currentHF: healthFactor,
+    futureHF: futureHealthFactor,
+  })
 
   return (
     <>
@@ -277,21 +274,14 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
             }
           />
         )}
-        {shouldRenderHealthFactor && (
-          <SummaryRow
-            label="Health Factor"
-            content={
-              <HealthFactorChange
-                healthFactor={healthFactor}
-                futureHealthFactor={futureHealthFactor}
-              />
-            }
-          />
-        )}
+        <SummaryRow
+          label="Health Factor"
+          content={<HealthFactorChange {...hf} />}
+        />
         <Stack gap="m" py="m">
           <ParameterChangeWarning />
           {borrowCap.determineWarningDisplay({ borrowCap })}
-          {displayHealthFactorRiskCheckbox && (
+          {hf.isUserConsentRequired && (
             <HealthFactorRiskWarning
               message="Borrowing this amount will reduce your health factor and increase risk of liquidation."
               accepted={healthFactorRiskCheckboxAccepted}
@@ -310,7 +300,7 @@ export const BorrowModalContent: React.FC<TxModalWrapperRenderProps> = ({
         symbol={symbol}
         blocked={
           blockingError !== undefined ||
-          (displayHealthFactorRiskCheckbox && !healthFactorRiskCheckboxAccepted)
+          (hf.isUserConsentRequired && !healthFactorRiskCheckboxAccepted)
         }
       />
     </>

@@ -27,6 +27,7 @@ import { useModalContext } from "@/hooks/useModal"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
 import { PRIME_APY, PRIME_ASSET_ID } from "@/ui-config"
+import { formatHealthFactorResult } from "@/utils"
 import { getMaxAmountAvailableToSupply } from "@/utils/getMaxAmountAvailableToSupply"
 import { getAssetCollateralType } from "@/utils/transactions"
 import { roundToTokenDecimals } from "@/utils/utils"
@@ -246,8 +247,10 @@ export const SupplyModalContent = React.memo(
     const healthFactor = user ? user.healthFactor : "-1"
     const futureHealthFactor = healthFactorAfterDeposit.toString()
 
-    const shouldRenderHealthFactor =
-      healthFactor !== "-1" && futureHealthFactor !== "-1"
+    const hf = formatHealthFactorResult({
+      currentHF: healthFactor,
+      futureHF: futureHealthFactor,
+    })
 
     const incentives = poolReserve.aIncentivesData
     const shouldRenderIncentives =
@@ -335,17 +338,10 @@ export const SupplyModalContent = React.memo(
             label="Collateral"
             content={<CollateralState collateralType={collateralType} />}
           />
-          {shouldRenderHealthFactor && (
-            <SummaryRow
-              label="Health Factor"
-              content={
-                <HealthFactorChange
-                  healthFactor={healthFactor}
-                  futureHealthFactor={futureHealthFactor}
-                />
-              }
-            />
-          )}
+          <SummaryRow
+            label="Health Factor"
+            content={<HealthFactorChange {...hf} />}
+          />
 
           {shouldRenderWarnings && (
             <Stack gap="m" py="m">

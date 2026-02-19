@@ -145,12 +145,7 @@ export const TransferPositionModal: FC<Props> = ({ assetId, onClose }) => {
             <Summary separator={<ModalContentDivider />} withLeadingSeparator>
               <SummaryRow
                 label={t("common:healthFactor")}
-                content={
-                  <HealthFactorChange
-                    healthFactor={healthFactor.current}
-                    futureHealthFactor={healthFactor.future}
-                  />
-                }
+                content={<HealthFactorChange {...healthFactor} />}
               />
             </Summary>
           )}
