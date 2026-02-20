@@ -105,7 +105,7 @@ export enum BucketSize {
   SevenDay = "7day",
   ThirtyDay = "30day",
 }
-const LATEST_START_DATE = new Date("2024-04-28")
+const LATEST_START_DATE = new Date("2025-02-17")
 const getTimeRangeParams = (timeRange: TimeRange, endTime: Date) => {
   let start = new Date(endTime)
   let bucketSize: BucketSize = BucketSize.TwentyFourHour
