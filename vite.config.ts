@@ -36,10 +36,18 @@ const commitHash = child
   .trim()
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, mode }) => {
+  // Set debug level based on environment
+  const debugLevel = mode === "development" ? "*" : "*"
+
   return {
     define: {
       "import.meta.env.VITE_COMMIT_HASH": JSON.stringify(commitHash),
+      // Add Polkadot JS API debug logging
+      "global.process.env.DEBUG": JSON.stringify(debugLevel),
+      "globalThis.process.env.DEBUG": JSON.stringify(debugLevel),
+      // Ensure global exists in browser environment
+      global: "globalThis",
     },
     build: {
       target: "esnext",
