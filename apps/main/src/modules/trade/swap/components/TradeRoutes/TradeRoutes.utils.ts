@@ -6,6 +6,7 @@ import {
 import {
   GDOT_ASSET_ID,
   GETH_ASSET_ID,
+  GSOL_ASSET_ID,
   HOLLAR_ASSETS,
 } from "@galacticcouncil/utils"
 import Big from "big.js"
@@ -86,7 +87,12 @@ export const mapRoutes = (
   }, [])
 }
 
-const HIDDEN_HOP_ASSET_IDS = [GDOT_ASSET_ID, GETH_ASSET_ID, ...HOLLAR_ASSETS]
+const HIDDEN_HOP_ASSET_IDS = [
+  GDOT_ASSET_ID,
+  GETH_ASSET_ID,
+  GSOL_ASSET_ID,
+  ...HOLLAR_ASSETS,
+]
 
 export type TradeRoute = ReturnType<typeof mapRoutes>[number]
 export type TradeRouteFee = TradeRoute["tradeFees"][number]
