@@ -1,6 +1,7 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useGetClaimAllBorrowRewardsTx } from "@/api/borrow"
 import { uniquesIds } from "@/api/constants"
@@ -55,8 +56,8 @@ const useGetClaimStakingTx = () => {
 }
 
 export const useClaimAllWalletRewards = () => {
-  const rpc = useRpcProvider()
-  const { papi } = rpc
+  const { t } = useTranslation("wallet")
+  const { papi } = useRpcProvider()
 
   const { data: pools = [] } = useXykPools()
 
@@ -66,13 +67,13 @@ export const useClaimAllWalletRewards = () => {
   const createBatch = useCreateBatchTx()
 
   const getClaimBorrowTx = useGetClaimAllBorrowRewardsTx()
-  const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
   const walletRewards = useWalletRewardsSectionData()
   const invalidateStakeData = useInvalidateStakeData()
   // const getClaimStakingTx = useGetClaimStakingTx()
 
   return useMutation({
     mutationFn: async () => {
+      const farmRewardsTx = getClaimFarmRewardsTx(papi, pools, miningRewards)
       const claimBorrow = await getClaimBorrowTx()
       // const claimStaking = getClaimStakingTx()
       const claimReferral = papi.tx.Referrals.claim_rewards()
@@ -84,8 +85,8 @@ export const useClaimAllWalletRewards = () => {
       ]
 
       const toasts = {
-        submitted: "TODO",
-        success: "TODO",
+        submitted: t("rewards.claim.toasts.submitted"),
+        success: t("rewards.claim.toasts.success"),
       }
 
       const result = await createBatch({

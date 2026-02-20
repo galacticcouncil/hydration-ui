@@ -19,6 +19,8 @@
   "rewards.claim": "Claim all rewards",
   "rewards.claim.empty": "Nothing to claim",
   "rewards.claim.description": "Staking rewards won’t be claimed*",
+  "rewards.claim.toasts.submitted": "Claiming all rewards...",
+  "rewards.claim.toasts.success": "All rewards have been claimed.",
   "myAssets.emptyState.header": "No funds",
   "myAssets.emptyState.description": "Looks like you don’t have any assets on Hydration yet.",
   "myAssets.emptyState.cta": "Transfer to Hydration",
