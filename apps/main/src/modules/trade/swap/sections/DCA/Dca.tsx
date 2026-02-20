@@ -59,7 +59,10 @@ export const Dca: FC = () => {
     priceImpactLossAccepted
 
   const isHealthFactorCheckSatisfied =
-    !healthFactor?.isUserConsentRequired || healthFactorRiskAccepted
+    healthFactor?.isUserConsentRequired &&
+    healthFactor.future < healthFactor.current
+      ? healthFactorRiskAccepted
+      : true
 
   const isSubmitEnabled =
     isFormValid && isPriceImpactCheckSatisfied && isHealthFactorCheckSatisfied
