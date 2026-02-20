@@ -34,6 +34,7 @@ export const useMarketTransactionsColumns = () => {
             from={row.original.from}
             toAmount={row.original.toAmount}
             to={row.original.to}
+            showLogo
           />
         )
       },
