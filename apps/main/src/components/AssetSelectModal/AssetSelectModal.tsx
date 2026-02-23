@@ -65,11 +65,11 @@ export const AssetSelectModalContent = ({
 
   const isProvidedSortedAssets =
     customSortedAssets && customSortedAssets.length > 0
-  const { sortedAssets, isLoading } = useAssetSelectModalAssets(
-    isProvidedSortedAssets ? emptyAssets : assets,
-    debouncedSearch,
+  const { sortedAssets, isLoading } = useAssetSelectModalAssets({
+    assets: isProvidedSortedAssets ? emptyAssets : assets,
+    search: debouncedSearch,
     selectedAssetId,
-  )
+  })
 
   const filteredCustomAssets = useFilteredSearchAssets(
     customSortedAssets ?? [],

@@ -7,18 +7,23 @@ import { TAsset } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
-import { sortAssets } from "@/utils/sort"
+import { sortAssets, SortAssetsOptions } from "@/utils/sort"
 
 export type TAssetWithBalance = TAsset & {
   readonly balance?: string
   readonly balanceDisplay?: string
 }
 
-export const useAssetSelectModalAssets = (
-  assets: TAsset[],
-  search: string,
-  selectedAssetId?: string,
-) => {
+export const useAssetSelectModalAssets = ({
+  assets,
+  search,
+  selectedAssetId,
+  ...sortOptions
+}: {
+  assets: TAssetData[]
+  search: string
+  selectedAssetId?: string
+} & SortAssetsOptions) => {
   const { account } = useAccount()
   const { balances, getTransferableBalance, isBalanceLoading } =
     useAccountBalances()
@@ -60,6 +65,7 @@ export const useAssetSelectModalAssets = (
   const sortedAssets = sortAssets(assetsWithBalances, "balanceDisplay", {
     firstAssetId: selectedAssetId,
     search,
+    ...sortOptions,
   })
 
   return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }

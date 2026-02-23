@@ -24,11 +24,15 @@ import {
   AddStablepoolLiquidityProps,
   AddStablepoolLiquidityWrapper,
 } from "@/modules/liquidity/components/AddStablepoolLiquidity/AddStablepoolLiquidity"
+import { SupplyIsolatedLiquidity } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity"
 
 export const SupplyAssetsTable = () => {
   const { t } = useTranslation("borrow")
   const [modalProps, setModalProps] = useState<
-    Omit<AddStablepoolLiquidityProps, "onSubmitted"> | undefined
+    | (Omit<AddStablepoolLiquidityProps, "onSubmitted"> & {
+        isIsolated?: boolean
+      })
+    | undefined
   >()
   const baseColumns = useSupplyAssetsTableColumns("base")
   const strategyColumns = useSupplyAssetsTableColumns("strategy", setModalProps)
@@ -61,7 +65,7 @@ export const SupplyAssetsTable = () => {
 
   const gSorting = useDataTableUrlSorting("/borrow/dashboard", "supplyGSort")
   const sorting = useDataTableUrlSorting("/borrow/dashboard", "supplySort")
-
+  console.log(modalProps)
   return (
     <>
       {isMobile ? (
@@ -115,15 +119,18 @@ export const SupplyAssetsTable = () => {
         onOpenChange={() => setModalProps(undefined)}
         variant="popup"
       >
-        {!!modalProps && (
-          <AddStablepoolLiquidityWrapper
-            {...modalProps}
-            initialOption="stablepool"
-            title={t("supply")}
-            closable
-            onSubmitted={() => setModalProps(undefined)}
-          />
-        )}
+        {modalProps &&
+          (!modalProps.isIsolated ? (
+            <AddStablepoolLiquidityWrapper
+              {...modalProps}
+              initialOption="stablepool"
+              title={t("supply")}
+              closable
+              onSubmitted={() => setModalProps(undefined)}
+            />
+          ) : (
+            <SupplyIsolatedLiquidity assetId={modalProps.id} />
+          ))}
       </Modal>
     </>
   )

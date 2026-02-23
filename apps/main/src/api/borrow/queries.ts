@@ -26,15 +26,17 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
+import { Binary, FixedSizeArray } from "polkadot-api"
 import { useCallback } from "react"
 
 import {
   useBorrowIncentivesContract,
+  useBorrowPoolContract,
   useBorrowPoolDataContract,
   useGhoServiceContract,
 } from "@/api/borrow/contracts"
 import { useBlockTimestamp } from "@/api/chain"
+import { TProviderData } from "@/api/provider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const { H160 } = h160
@@ -459,21 +461,21 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       throw new Error("Invalid claim transaction")
     }
 
-    const gasPriceBase = await evm.getGasPrice()
-    const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
-    const gasPrice = gasPriceBase + gasPriceSurplus
+    const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+      await estimateGasLimit({
+        evm,
+        gasLimit: tx.gasLimit.toString(),
+        action: ProtocolAction.claimRewards,
+      })
 
     const evmCall = papi.tx.EVM.call({
       source: Binary.fromHex(tx.from),
       target: Binary.fromHex(tx.to),
       input: Binary.fromHex(tx.data),
       value: [0n, 0n, 0n, 0n],
-      gas_limit: BigInt(
-        gasLimitRecommendations[ProtocolAction.claimRewards]?.limit ||
-          tx.gasLimit.toString(),
-      ),
-      max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
-      max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
+      gas_limit: gasLimit,
+      max_fee_per_gas: maxFeePerGas,
+      max_priority_fee_per_gas: maxPriorityFeePerGas,
       access_list: [],
       authorization_list: [],
       nonce: undefined,
@@ -483,4 +485,97 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       call: evmCall.decodedCall,
     })
   }, [account?.address, evm, papi, user])
+}
+
+export const estimateGasLimit = async ({
+  evm,
+  gasLimit,
+  action,
+}: {
+  gasLimit?: string
+  evm: TProviderData["evm"]
+  action?: ProtocolAction
+}) => {
+  const gasPriceBase = await evm.getGasPrice()
+  const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
+  const gasPrice = gasPriceBase + gasPriceSurplus
+
+  const defaultGasLimit =
+    gasLimit ?? gasLimitRecommendations.default?.recommended
+
+  if (!defaultGasLimit) {
+    throw new Error("Default gas limit not found")
+  }
+
+  const feePerGas = [gasPrice, 0n, 0n, 0n] as FixedSizeArray<4, bigint>
+
+  return {
+    gasLimit: BigInt(
+      action
+        ? gasLimitRecommendations[action]?.recommended || defaultGasLimit
+        : defaultGasLimit,
+    ),
+    maxFeePerGas: feePerGas,
+    maxPriorityFeePerGas: feePerGas,
+  }
+}
+
+export const useBorrowDisableCollateralTxs = () => {
+  const { evm, papi } = useRpcProvider()
+  const poolContract = useBorrowPoolContract()
+  const { account } = useAccount()
+  const { data: userReserves } = useUserBorrowReserves()
+
+  return useCallback(async () => {
+    if (!poolContract || !account || !userReserves) return null
+
+    const address = account?.address || ""
+    const evmAddress = H160.fromAny(address)
+
+    const activeCollaterals = userReserves.userReserves.filter(
+      (reserve) => reserve.usageAsCollateralEnabledOnUser,
+    )
+
+    return await Promise.all(
+      activeCollaterals.map(async (collateral) => {
+        const collateralTxs = await poolContract.setUsageAsCollateral({
+          reserve: collateral.underlyingAsset,
+          usageAsCollateral: false,
+          user: evmAddress,
+        })
+
+        const tx = await collateralTxs
+          .find((tx) => "DLP_ACTION" === tx.txType)
+          ?.tx()
+
+        if (!tx || !tx.from || !tx.to || !tx.data || !tx.gasLimit) {
+          throw new Error(
+            `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
+          )
+        }
+
+        const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+          await estimateGasLimit({
+            evm,
+            gasLimit: tx.gasLimit.toString(),
+            action: ProtocolAction.claimRewards,
+          })
+
+        const evmCall = papi.tx.EVM.call({
+          source: Binary.fromHex(tx.from),
+          target: Binary.fromHex(tx.to),
+          input: Binary.fromHex(tx.data),
+          value: [0n, 0n, 0n, 0n],
+          gas_limit: gasLimit,
+          max_fee_per_gas: maxFeePerGas,
+          max_priority_fee_per_gas: maxPriorityFeePerGas,
+          access_list: [],
+          authorization_list: [],
+          nonce: undefined,
+        })
+
+        return evmCall
+      }),
+    )
+  }, [poolContract, account, evm, papi, userReserves])
 }

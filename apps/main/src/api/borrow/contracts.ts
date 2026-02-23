@@ -2,6 +2,7 @@ import { Web3Provider } from "@ethersproject/providers"
 import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
 import {
   GhoService,
+  Pool,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
@@ -45,4 +46,14 @@ export const useGhoServiceContract = () => {
       uiGhoDataProviderAddress: AaveV3HydrationMainnet.GHO_UI_DATA_PROVIDER,
     })
   }, [evm, isLoaded])
+}
+
+export const useBorrowPoolContract = () => {
+  const { evm } = useRpcProvider()
+
+  return useMemo(() => {
+    return new Pool(new Web3Provider(evm.transport), {
+      POOL: AaveV3HydrationMainnet.POOL,
+    })
+  }, [evm])
 }

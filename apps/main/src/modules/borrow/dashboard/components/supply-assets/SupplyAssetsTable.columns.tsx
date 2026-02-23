@@ -42,7 +42,9 @@ type AssetType = "base" | "strategy"
 export const useSupplyAssetsTableColumns = (
   type: AssetType,
   onSupplyClick?: (
-    props: Omit<AddStablepoolLiquidityProps, "onSubmitted">,
+    props: Omit<AddStablepoolLiquidityProps, "onSubmitted"> & {
+      isIsolated?: boolean
+    },
   ) => void,
 ) => {
   const { t } = useTranslation(["common", "borrow"])
@@ -182,7 +184,7 @@ export const useSupplyAssetsTableColumns = (
         },
       },
       cell: ({ row }) => {
-        const { underlyingAsset } = row.original
+        const { underlyingAsset, isIsolated } = row.original
         const isDisabled = getIsSupplyDisabled(row.original)
 
         return (
@@ -199,7 +201,8 @@ export const useSupplyAssetsTableColumns = (
 
                 if (
                   assetId &&
-                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                  (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) ||
+                    isIsolated) &&
                   aTokenId &&
                   onSupplyClick
                 ) {
@@ -207,6 +210,7 @@ export const useSupplyAssetsTableColumns = (
                     id: assetId,
                     erc20Id: aTokenId,
                     stableswapId: assetId,
+                    isIsolated,
                   })
                 } else {
                   openSupply(underlyingAsset)

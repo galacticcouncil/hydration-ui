@@ -270,7 +270,7 @@ export const SupplyModalContent = React.memo(
       !!debptCeilingWarning ||
       isBlockedSupplying ||
       showEnablingIsolatedModeWarning
-
+    //
     return (
       <>
         <AssetInput
