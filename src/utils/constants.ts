@@ -44,12 +44,16 @@ export const TRILL = 12
 export const QUINTILL = 18
 
 export const DOC_LINK = "https://docs.hydration.net"
+export const NEXT_APP_URL = "https://next-app.hydration.net"
 
 export const HYDRATION_PARACHAIN_ID = 2034
 export const HYDRATION_CHAIN_KEY = "hydration"
 export const HYDRATION_PARACHAIN_ADDRESS =
   "13cKp89Uh2yWgTG28JA1QEvPUMjEPKejqkjHKf9zqLiFKjH6"
 
+export const PRIME_ASSET_ID = "43"
+export const PRIME_STABLESWAP_ASSET_ID = "143"
+export const PRIME_ERC20_ASSET_ID = "1043"
 export const GDOT_STABLESWAP_ASSET_ID = "690"
 export const GDOT_ERC20_ASSET_ID = "69"
 export const GETH_STABLESWAP_ASSET_ID = "4200"
@@ -90,3 +94,5 @@ export const STRATEGY_ASSETS = [
 ]
 
 export const AAVE_EXTRA_GAS = 1_000_000n
+
+export const EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX = "EVMAccounts::claim_account"

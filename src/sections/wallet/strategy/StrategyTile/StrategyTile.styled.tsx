@@ -8,6 +8,7 @@ export enum StrategyTileVariant {
   One = "One",
   Two = "Two",
   Hollar = "Hollar",
+  Prime = "Prime",
 }
 
 const desktopBackgroundVariantStyles: Record<
@@ -51,22 +52,32 @@ const desktopBackgroundVariantStyles: Record<
   [StrategyTileVariant.Hollar]: css`
     background: linear-gradient(
         180deg,
-        rgba(248, 11, 107, 0.6) -0.47%,
-        rgba(79, 31, 71, 0) 27.64%
-      ),
-      ${theme.colors.darkBlue700};
-
-    background: linear-gradient(
-        180deg,
         rgba(179, 207, 146, 0.5) -0.47%,
         rgba(84, 101, 63, 0) 46.94%
       ),
-      var(--primary-dark-blue-700, #111320);
+      ${theme.colors.darkBlue700};
 
     @media ${theme.viewport.gte.md} {
       background: radial-gradient(
           50.55% 157.06% at 4.5% 150.85%,
           #b3cf92 5.78%,
+          rgba(32, 32, 32, 0) 89.15%
+        ),
+        ${theme.colors.darkBlue700};
+    }
+  `,
+  [StrategyTileVariant.Prime]: css`
+    background: linear-gradient(
+        180deg,
+        #8f67fd -0.47%,
+        rgba(79, 31, 71, 0) 27.64%
+      ),
+      ${theme.colors.darkBlue700};
+
+    @media ${theme.viewport.gte.md} {
+      background: radial-gradient(
+          50.55% 157.06% at 4.5% 150.85%,
+          #8f67fd 5.78%,
           rgba(32, 32, 32, 0) 89.15%
         ),
         ${theme.colors.darkBlue700};
