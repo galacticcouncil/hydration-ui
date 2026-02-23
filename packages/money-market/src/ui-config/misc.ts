@@ -12,4 +12,4 @@ export const PRIME_ERC20_ASSET_ID = "1043"
 export const HEALTH_FACTOR_RISK_THRESHOLD = 1.2
 export const HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1
 
-export const PRIME_APY = 0.08
+export const PRIME_APY = 0.075
