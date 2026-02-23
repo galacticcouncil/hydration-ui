@@ -37,7 +37,8 @@ export const DcaWarnings: FC<Props> = ({
     !!order &&
     !!healthFactor &&
     Big(healthFactor.future).gt(1) &&
-    healthFactor.isUserConsentRequired
+    healthFactor.isUserConsentRequired &&
+    healthFactor.future < healthFactor.current
 
   if (!warnings.length && !shouldRenderHealthFactorWarning) {
     return null

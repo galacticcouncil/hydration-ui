@@ -35,6 +35,7 @@ export const useOrderHistoryColumns = () => {
             from={row.original.from}
             toAmount={row.original.toAmountExecuted ?? "0"}
             to={row.original.to}
+            showLogo
           />
         )
       },
