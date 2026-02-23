@@ -71,9 +71,9 @@ export const RemoveDepositModal: FC<Props> = ({
   setRemoveAsset,
 }) => {
   const { createTransaction } = useStore()
-  const [splitRemove, setSplitRemove] = useState(true)
+
   const { addLiquidityLimit } = useLiquidityLimit()
-  const { getErc20, getAsset, getAssetWithFallback, hub } = useAssets()
+  const { getErc20, getAssetWithFallback, hub, isStableSwap } = useAssets()
   const { data: user } = useUserBorrowSummary()
   const { t } = useTranslation()
   const { api } = useRpcProvider()
@@ -84,13 +84,16 @@ export const RemoveDepositModal: FC<Props> = ({
     useState(false)
 
   const underlyingAssetId = getErc20(assetId)?.underlyingAssetId ?? ""
+  const underlyingAsset = getAssetWithFallback(underlyingAssetId)
+  const isUnderlyingAssetStableSwap = isStableSwap(underlyingAsset)
+
+  const [splitRemove, setSplitRemove] = useState(isUnderlyingAssetStableSwap)
 
   const { data: pool } = useStableSwapReserves(underlyingAssetId)
 
-  const uderlyingAsset = getAsset(underlyingAssetId)
-  const firstAssetIdInPool = uderlyingAsset?.isStableSwap
-    ? Object.keys(uderlyingAsset?.meta ?? {})[0]
-    : ""
+  const firstAssetIdInPool = isUnderlyingAssetStableSwap
+    ? Object.keys(underlyingAsset.meta ?? {})[0]
+    : underlyingAssetId
 
   const defaultAssetReceivedId =
     pool?.biggestPercentage?.assetId || // prioritize asset with biggest percentage in pool
@@ -333,12 +336,16 @@ export const RemoveDepositModal: FC<Props> = ({
                     }
                   />
 
-                  <SplitSwitcher
-                    value={splitRemove}
-                    title={t("liquidity.remove.modal.split")}
-                    onChange={setSplitRemove}
-                    css={{ border: "none", marginBottom: 0 }}
-                  />
+                  {isUnderlyingAssetStableSwap ? (
+                    <SplitSwitcher
+                      value={splitRemove}
+                      title={t("liquidity.remove.modal.split")}
+                      onChange={setSplitRemove}
+                      css={{ border: "none", marginBottom: 0 }}
+                    />
+                  ) : (
+                    <div />
+                  )}
 
                   {splitRemove ? (
                     <>
