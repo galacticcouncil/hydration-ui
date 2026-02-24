@@ -22,7 +22,7 @@ import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 type Props = {
   readonly details: OrderData
-  readonly onTerminate: () => void
+  readonly onTerminate: (() => void) | null
 }
 
 export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
@@ -34,7 +34,7 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
         title={t("trade:trade.orders.dcaDetail.title")}
         align="center"
       />
-      <ModalBody sx={{ overflowY: "hidden" }}>
+      <ModalBody>
         <Flex justify="space-between" align="center" pb="xxl">
           <SwapAmount
             fromAmount={details.fromAmountBudget}
@@ -100,7 +100,7 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
           />
         </Flex>
         <ModalContentDivider />
-        {details.status === DcaScheduleStatus.Created && (
+        {details.status === DcaScheduleStatus.Created && onTerminate && (
           <Flex justify="flex-end" pt="l" pb="xxl">
             <Button variant="danger" outline onClick={onTerminate}>
               <Icon component={Trash} size="s" />
