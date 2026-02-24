@@ -6,6 +6,7 @@ import { first, prop } from "remeda"
 
 import { PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
+import { ENV } from "@/config/env"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
@@ -34,7 +35,7 @@ export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
     const sortedRpcList = Array.from(new Set([...urls, ...PROVIDER_URLS]))
 
     useProviderRpcUrlStore.setState({
-      rpcUrl: bestRpc?.url ?? import.meta.env.VITE_PROVIDER_URL,
+      rpcUrl: bestRpc?.url ?? ENV.VITE_PROVIDER_URL,
       rpcUrlList: sortedRpcList,
       updatedAt: Date.now(),
     })

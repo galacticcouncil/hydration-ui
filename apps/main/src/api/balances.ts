@@ -3,6 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 
+import { ENV } from "@/config/env"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
 import { NATIVE_ASSET_DECIMALS, NATIVE_ASSET_ID } from "@/utils/consts"
 import { scaleHuman } from "@/utils/formatting"
@@ -125,7 +126,7 @@ export const tokenBalanceQuery = (
 export const HDXStakingBalanceQuery = (
   rpc: TProviderContext,
 ): ReturnType<typeof tokenBalanceQuery> => ({
-  ...tokenBalanceQuery(rpc, NATIVE_ASSET_ID, import.meta.env.VITE_TRSRY_ADDR),
+  ...tokenBalanceQuery(rpc, NATIVE_ASSET_ID, ENV.VITE_TRSRY_ADDR),
   staleTime: Infinity,
 })
 

@@ -1,12 +1,11 @@
-const grafanaUrl = import.meta.env.VITE_GRAFANA_URL
-const grafanaDsn = Number(import.meta.env.VITE_GRAFANA_DSN)
+import { ENV } from "@/config/env"
 
 export const fetchGrafana = async (
   sql: string,
   refId: "buckets" | "price",
   signal?: AbortSignal,
 ) =>
-  fetch(grafanaUrl, {
+  fetch(ENV.VITE_GRAFANA_URL, {
     headers: {
       Accept: "application/json",
       "Content-Type": "application/json",
@@ -18,7 +17,7 @@ export const fetchGrafana = async (
           refId,
           rawSql: sql,
           format: "table",
-          datasourceId: grafanaDsn,
+          datasourceId: ENV.VITE_GRAFANA_DSN,
         },
       ],
     }),

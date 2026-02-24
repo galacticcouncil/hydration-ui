@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
+import { ENV } from "@/config/env"
 import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
@@ -45,10 +46,8 @@ export type TProviderData = {
   dryRunErrorDecoder: DryRunErrorDecoder
 }
 
-const isHsmEnabled = import.meta.env.VITE_HSM_ENABLED === "true"
-
 export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
-  provider.env.includes(import.meta.env.VITE_ENV),
+  provider.env.includes(ENV.VITE_ENV),
 )
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
@@ -57,8 +56,7 @@ export const getProviderProps = (rpcUrl: string) =>
   PROVIDERS.find((p) => p.url === rpcUrl)
 
 export const getDefaultDataEnv = (): TDataEnv => {
-  const env = import.meta.env.VITE_ENV
-  if (env === "production") return "mainnet"
+  if (ENV.VITE_ENV === "production") return "mainnet"
   return "testnet"
 }
 
@@ -123,7 +121,7 @@ const getProviderData = async (
     ],
   )
 
-  if (isHsmEnabled) {
+  if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
   }
 
@@ -158,11 +156,11 @@ export const useSquidUrl = (): string => {
 }
 
 export const useIndexerUrl = (): string => {
-  return useState(() => import.meta.env.VITE_INDEXER_URL)[0]
+  return useState(() => ENV.VITE_INDEXER_URL)[0]
 }
 
 export const useSnowbridgeUrl = (): string => {
-  return useState(() => import.meta.env.VITE_SNOWBRIDGE_URL)[0]
+  return useState(() => ENV.VITE_SNOWBRIDGE_URL)[0]
 }
 
 export const useActiveProviderProps = (): ProviderProps | null => {

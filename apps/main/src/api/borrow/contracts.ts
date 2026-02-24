@@ -7,6 +7,7 @@ import {
 } from "@galacticcouncil/money-market/utils"
 import { useMemo } from "react"
 
+import { ENV } from "@/config/env"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useBorrowPoolDataContract = () => {
@@ -17,7 +18,7 @@ export const useBorrowPoolDataContract = () => {
     return new UiPoolDataProvider({
       uiPoolDataProviderAddress: AaveV3HydrationMainnet.UI_POOL_DATA_PROVIDER,
       provider: new Web3Provider(evm.transport),
-      chainId: parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
+      chainId: ENV.VITE_EVM_CHAIN_ID,
     })
   }, [evm, isLoaded])
 }
@@ -31,7 +32,7 @@ export const useBorrowIncentivesContract = () => {
       uiIncentiveDataProviderAddress:
         AaveV3HydrationMainnet.UI_INCENTIVE_DATA_PROVIDER,
       provider: new Web3Provider(evm.transport),
-      chainId: parseFloat(import.meta.env.VITE_EVM_CHAIN_ID),
+      chainId: ENV.VITE_EVM_CHAIN_ID,
     })
   }, [evm, isLoaded])
 }

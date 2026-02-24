@@ -5,8 +5,7 @@ import { combine, persist } from "zustand/middleware"
 import { useShallow } from "zustand/shallow"
 
 import { useSubscribedPriceKeys } from "@/api/spotPrice"
-
-const DISPLAY_ASSET_ID = import.meta.env.VITE_DISPLAY_ASSET_ID
+import { ENV } from "@/config/env"
 
 type TDisplayAsset = {
   id: string | undefined
@@ -24,8 +23,8 @@ export type DisplayAssetStore = TDisplayAsset & {
 export const useDisplayAssetStore = create<DisplayAssetStore>()(
   persist(
     (set) => ({
-      id: DISPLAY_ASSET_ID,
-      stableCoinId: DISPLAY_ASSET_ID,
+      id: ENV.VITE_DISPLAY_ASSET_ID,
+      stableCoinId: ENV.VITE_DISPLAY_ASSET_ID,
       symbol: "$",
       isDollar: true,
       isRealUSD: false,
