@@ -57,7 +57,7 @@ import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
 import { PRIME_ASSET_ID } from "utils/constants"
 import { useTransformEvmTxToExtrinsic } from "./evm"
 
-export const PRIME_APY = BN(0.08)
+export const PRIME_APY = BN(0.075)
 
 export const useBorrowContractAddresses = () => {
   const { isLoaded, evm } = useRpcProvider()
