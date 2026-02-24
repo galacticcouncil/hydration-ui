@@ -156,13 +156,13 @@ const getPriceFormatFromSample = (
   const value = sample.close
   if (value <= 0 || !isFinite(value)) return
 
-  if (value >= 1) {
+  if (value >= 100) {
     return { precision: 2, minMove: 0.01 }
   }
 
   const leadingZeros = Math.floor(Math.abs(Math.log10(value)))
-  const precision = leadingZeros + 2
-  const minMove = Math.pow(10, -(leadingZeros + 2))
+  const precision = leadingZeros + 4
+  const minMove = Math.pow(10, -(leadingZeros + 4))
 
   return { precision, minMove }
 }
