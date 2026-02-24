@@ -108,8 +108,6 @@ export const AssetList: React.FC<AssetListProps> = ({
   const initialScrollIndex =
     assetIndex >= MAX_VISIBLE_ASSET_ITEMS ? assetIndex : 0
 
-  console.log({ assetList })
-
   return (
     <VirtualizedList
       items={assetList}
