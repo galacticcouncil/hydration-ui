@@ -1,4 +1,4 @@
-import { Box, Flex, Separator, Skeleton } from "@galacticcouncil/ui/components"
+import { Flex, Separator, Skeleton } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { FC, Fragment } from "react"
 
@@ -17,20 +17,19 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
     usePastExecutionsData(scheduleId)
 
   return (
-    <Box bg={getToken("surfaces.containers.dim.dimOnBg")} className={className}>
+    <Flex
+      direction="column"
+      bg={getToken("surfaces.containers.dim.dimOnBg")}
+      className={className}
+    >
       <PastExecutionsHeader />
-      <Flex
-        sx={{ overflowY: "hidden" }}
-        direction="column"
-        gap="s"
-        maxHeight={300}
-      >
+      <Flex direction="column" gap="s">
         <PastExecutionsListHeader />
         <Separator />
         {isLoading ? (
           <Skeleton height={100} />
         ) : (
-          <Flex direction="column" gap="xs" px="xxl" sx={{ overflowY: "auto" }}>
+          <Flex direction="column" gap="xs" px="xxl">
             {executions.map((execution, index) => (
               <Fragment key={execution.id}>
                 {index > 0 && <Separator sx={{ flexShrink: 0 }} mx="-xl" />}
@@ -44,6 +43,6 @@ export const PastExecutions: FC<Props> = ({ scheduleId, className }) => {
           </Flex>
         )}
       </Flex>
-    </Box>
+    </Flex>
   )
 }
