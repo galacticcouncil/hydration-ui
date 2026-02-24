@@ -25,6 +25,7 @@ import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 const CHAINS_PRIORITY = [
   HYDRATION_CHAIN_KEY,
   "ethereum",
+  "base",
   "solana",
   "sui",
   "assethub",

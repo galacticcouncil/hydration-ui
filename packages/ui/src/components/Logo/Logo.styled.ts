@@ -49,6 +49,12 @@ export const SLogoPlaceholder = styled(Icon, {
     padding: ${theme.space.xs}
     color: ${theme.text.low};
     background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
+    align-items: center;
+    justify-content: center;
+    svg {
+      width: 75%;
+      height: 75%;
+    }
   `,
   sizes(size),
 ])
