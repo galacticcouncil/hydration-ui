@@ -5,7 +5,7 @@ import { FC, forwardRef, lazy, LazyExoticComponent, SVGProps } from "react"
 import { LINKS } from "@/config/navigation"
 import { SHeader } from "@/modules/layout/components/Header.styled"
 import { HeaderToolbar } from "@/modules/layout/components/HeaderToolbar"
-import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
+import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 
 const HeaderMenu = lazy(async () => ({
   default: await import("@/modules/layout/components/HeaderMenu").then(

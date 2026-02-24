@@ -1,4 +1,5 @@
 import { parseIndexerUrlName } from "@galacticcouncil/indexer/squid/lib/parseIndexerUrlName"
+import { omit } from "remeda"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -78,19 +79,24 @@ export const useSquidListStore = create<SquidListStore>()(
   ),
 )
 
-export const useProviderRpcUrlStore = create(
-  persist<{
-    rpcUrl: string
-    squidUrl: string
-    rpcUrlList: string[]
-    autoMode: boolean
-    updatedAt: number
-    setRpcUrl: (rpcUrl: string | undefined) => void
-    setSquidUrl: (squidUrl: string | undefined) => void
-    setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
-    getDataEnv: () => TDataEnv
-    setAutoMode: (state: boolean) => void
-  }>(
+type ProviderRpcUrlStoreState = {
+  rpcUrl: string
+  squidUrl: string
+  rpcUrlList: string[]
+  updatedAt: number
+  autoMode: boolean
+}
+
+type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
+  setRpcUrl: (rpcUrl: string | undefined) => void
+  setSquidUrl: (squidUrl: string | undefined) => void
+  setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
+  getDataEnv: () => TDataEnv
+  setAutoMode: (state: boolean) => void
+}
+
+export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
+  persist(
     (set, get) => ({
       rpcUrl: import.meta.env.VITE_PROVIDER_URL,
       squidUrl: import.meta.env.VITE_SQUID_URL,
@@ -108,7 +114,8 @@ export const useProviderRpcUrlStore = create(
     }),
     {
       name: "rpcUrl",
-      version: 2.6,
+      version: 2.7,
+      partialize: omit(["rpcUrlList"]),
     },
   ),
 )

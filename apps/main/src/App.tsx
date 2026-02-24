@@ -9,9 +9,8 @@ import { Toaster } from "sonner"
 
 import { Page404 } from "@/components/Page404"
 import { ProvideRpcResolver } from "@/components/ProviderRpcSelect/ProviderRpcResolver"
+import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
-import { AssetsProvider } from "@/providers/assetsProvider"
-import { RpcProvider } from "@/providers/rpcProvider"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -33,6 +32,7 @@ const router = createRouter({
   defaultPreloadStaleTime: 0,
   defaultPendingMs: 0,
   defaultNotFoundComponent: Page404,
+  defaultErrorComponent: RouteError,
   scrollRestoration: true,
   scrollRestorationBehavior: "smooth",
 })
@@ -47,18 +47,14 @@ export const App = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <ProvideRpcResolver>
-            <AssetsProvider>
-              <RpcProvider>
-                <TooltipProvider delayDuration={0}>
-                  <RouterProvider router={router} />
-                  <Toaster />
-                </TooltipProvider>
-              </RpcProvider>
-            </AssetsProvider>
-          </ProvideRpcResolver>
-        </ThemeProvider>
+        <ProvideRpcResolver>
+          <ThemeProvider>
+            <TooltipProvider delayDuration={0}>
+              <RouterProvider router={router} />
+              <Toaster />
+            </TooltipProvider>
+          </ThemeProvider>
+        </ProvideRpcResolver>
       </QueryClientProvider>
     </I18nextProvider>
   )

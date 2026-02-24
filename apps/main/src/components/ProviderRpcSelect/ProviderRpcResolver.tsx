@@ -43,16 +43,7 @@ export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
   }, [])
 
   useEffect(() => {
-    if (isBestProviderFound) {
-      const loader = window.document.querySelector(".loader-container")
-      if (loader) {
-        // Removes initial static loader in index.html.
-        loader.remove()
-      }
-
-      return
-    }
-
+    if (isBestProviderFound) return
     fetchBestProvider()
   }, [fetchBestProvider, isBestProviderFound])
 

@@ -5,9 +5,10 @@ import { Box } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
 
 export const SRpcListItem = styled(Box, {
-  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "isInteractive",
-})<{ isInteractive?: boolean }>(
-  ({ theme, isInteractive }) => css`
+  shouldForwardProp: (prop) =>
+    isPropValid(prop) && prop !== "isInteractive" && prop !== "blocked",
+})<{ isInteractive?: boolean; blocked?: boolean }>(
+  ({ theme, isInteractive, blocked }) => css`
     display: grid;
     grid-template-columns: 3fr 2fr 1fr;
     gap: ${theme.space.base};
@@ -21,10 +22,11 @@ export const SRpcListItem = styled(Box, {
       background: ${theme.surfaces.containers.dim.dimOnBg};
     }
 
-    &[data-loading="true"] {
+    ${blocked &&
+    css`
       opacity: 0.5;
       pointer-events: none;
-    }
+    `}
 
     ${isInteractive &&
     css`

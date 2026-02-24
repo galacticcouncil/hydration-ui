@@ -23,7 +23,7 @@ export const SquidStatus: React.FC<SquidStatusProps> = ({ url }) => {
     latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME),
   )
 
-  const { color, text } = useBlockHeightStatus(blockHeight ?? 0)
+  const { color, text } = useBlockHeightStatus(blockHeight ?? null)
 
   const squidUrlList = useFullSquidUrlList()
   const { name } = squidUrlList.find((item) => item.url === url) ?? {}

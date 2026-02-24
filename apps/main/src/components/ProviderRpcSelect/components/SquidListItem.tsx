@@ -72,13 +72,13 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
 
   const squidSdk = getSquidSdk(url)
 
-  const { data: blockHeight, isLoading: isBlockHeightLoading } = useQuery(
-    latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2),
-  )
+  const {
+    data: blockHeight,
+    isLoading: isBlockHeightLoading,
+    isError: isBlockHeightError,
+  } = useQuery(latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2))
 
-  const isLoading = isBlockHeightLoading
-
-  const status = useBlockHeightStatus(blockHeight ?? 0)
+  const status = useBlockHeightStatus(blockHeight ?? null)
 
   const { renameSquid } = useSquidListStore()
 
@@ -96,7 +96,7 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
 
   return (
     <SSquidListItem
-      data-loading={isLoading}
+      blocked={isBlockHeightLoading || isBlockHeightError}
       onClick={() => onClick?.(url)}
       isInteractive={!!onClick || !!onRemove}
     >
@@ -115,7 +115,7 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
         align="center"
         display={["none", "flex"]}
       >
-        {isLoading ? (
+        {isBlockHeightLoading ? (
           <Spinner size="xs" />
         ) : (
           <Text fs="p5" fw={600} color={getToken("text.high")} align="right">

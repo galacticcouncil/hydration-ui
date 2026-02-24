@@ -32,7 +32,7 @@ export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
     })
     .pipe(
       catchError((error) => of({ type: "error" as const, error })),
-      shareReplay(1),
+      shareReplay({ bufferSize: 1, refCount: true }),
     )
 
   return observeTransactionEvents(observer, options)
@@ -60,7 +60,7 @@ export const submitUnsignedPolkadotTx: UnsignedTxSubmitFn<AnyPapiTx> = async (
   const unsignedTx = await txToUnsigedTx(tx)
   const observer = client.submitAndWatch(unsignedTx.asHex()).pipe(
     catchError((error) => of({ type: "error" as const, error })),
-    shareReplay(1),
+    shareReplay({ bufferSize: 1, refCount: true }),
   )
 
   return observeTransactionEvents(observer, options)
