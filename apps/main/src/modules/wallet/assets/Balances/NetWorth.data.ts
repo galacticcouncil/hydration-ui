@@ -14,6 +14,8 @@ export type NetWorthData = {
   readonly time: Date
 }
 
+const LATEST_START_DATE = new Date("2025-03-19").valueOf().toString()
+
 export const useNetWorthData = (
   timeFrame: NetWorthTimeFrameType | null,
   currentNetWorth: string,
@@ -22,15 +24,14 @@ export const useNetWorthData = (
   const squidClient = useSquidClient()
   const { account } = useAccount()
 
-  const [startTimestamp, endTimestamp] = useMemo(() => {
+  const startTimestamp = useMemo(() => {
     if (!timeFrame) {
-      return []
+      return LATEST_START_DATE
     }
 
-    const now = Date.now()
     const ms = TIME_FRAME_MS[timeFrame]
 
-    return [(now - ms).toString(), now.toString()]
+    return (Date.now() - ms).toString()
     // refetch net worth data on latest balance change to keep it consistent
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeFrame, currentNetWorth])
@@ -44,7 +45,7 @@ export const useNetWorthData = (
       squidClient,
       account?.publicKey ?? "",
       startTimestamp,
-      endTimestamp,
+      undefined,
       bucketSize,
     ),
     placeholderData: (prev) => prev,
