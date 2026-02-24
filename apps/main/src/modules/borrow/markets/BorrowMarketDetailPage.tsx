@@ -25,6 +25,7 @@ import { ReserveHeader } from "@/modules/borrow/reserve/components/ReserveHeader
 import { ReserveLabel } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { HollarReserveConfiguration } from "@/modules/borrow/reserve/HollarReserveConfiguration"
 import { ReserveConfiguration } from "@/modules/borrow/reserve/ReserveConfiguration"
+import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { useAssets } from "@/providers/assetsProvider"
 
 export type BorrowMarketDetailPageProps = {
@@ -88,11 +89,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
               </Button>
             </Grid>
           )}
-          <Grid
-            columnTemplate={["1fr", null, null, "1fr 24rem"]}
-            gap="xl"
-            alignItems="start"
-          >
+          <TwoColumnGrid template="sidebar">
             <Paper p="xl" hidden={!overviewVisible}>
               {isGhoReserve ? (
                 <HollarReserveConfiguration reserve={reserve} />
@@ -103,7 +100,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
             <Paper p="xl" hidden={!actionsVisible}>
               <ReserveActions reserve={reserve} />
             </Paper>
-          </Grid>
+          </TwoColumnGrid>
         </Box>
       </Stack>
     </AssetCapsProvider>

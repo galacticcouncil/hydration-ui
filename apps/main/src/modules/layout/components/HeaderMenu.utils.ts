@@ -8,7 +8,7 @@ import {
   topNavOrder,
 } from "@/config/navigation"
 import { useVisibleElements } from "@/hooks/useVisibleElements"
-import { useHasTopNavbar } from "@/modules/layout/use-has-top-navbar"
+import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 
 export const useMenuTranslations = () => {
   const { t } = useTranslation(["common"])

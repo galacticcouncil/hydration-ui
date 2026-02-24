@@ -8,6 +8,8 @@ import { TradeChart } from "@/modules/trade/swap/components/TradeChart/TradeChar
 
 import { SSwapFormContainer } from "./SwapPage.styled"
 
+export const TRADE_CHART_MOBILE_HEIGHT = 300
+
 export const SwapPageMobile: FC = () => {
   return (
     <Flex direction="column" gap="xxl">
@@ -16,7 +18,7 @@ export const SwapPageMobile: FC = () => {
         <Separator mx={-20} />
         <Outlet />
       </SSwapFormContainer>
-      <TradeChart height={300} />
+      <TradeChart height={TRADE_CHART_MOBILE_HEIGHT} />
       <TradeOrders />
     </Flex>
   )

@@ -32,7 +32,10 @@ export const ProviderRpcSelect: FC<Props> = ({ bottomPinned }) => {
   return (
     <SContainer bottomPinned={bottomPinned}>
       <Tooltip
-        text={!isMobile ? <RpcStatusTooltipContent /> : undefined}
+        text={
+          !isMobile &&
+          providerProps && <RpcStatusTooltipContent {...providerProps} />
+        }
         asChild
       >
         <Button

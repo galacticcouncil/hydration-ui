@@ -8,5 +8,5 @@ export type LogoSkeletonProps = {
 }
 
 export const LogoSkeleton: React.FC<LogoSkeletonProps> = ({ size }) => {
-  return <Skeleton sx={{ size: LOGO_SIZES[size] }} circle />
+  return <Skeleton sx={{ size: LOGO_SIZES[size], display: "flex" }} circle />
 }

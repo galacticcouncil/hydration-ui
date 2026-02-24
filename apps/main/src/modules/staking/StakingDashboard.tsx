@@ -1,11 +1,5 @@
 import { ClassNames } from "@emotion/react"
-import {
-  Box,
-  Flex,
-  Grid,
-  Paper,
-  SectionHeader,
-} from "@galacticcouncil/ui/components"
+import { Box, Flex, Paper, SectionHeader } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
@@ -17,6 +11,7 @@ import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
 import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { stakingPositionsQuery } from "@/api/staking"
+import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { ActiveDashboard } from "@/modules/staking/ActiveDashboard"
 import { ActiveDashboardSkeleton } from "@/modules/staking/ActiveDashboardSkeleton"
 import { DashboardStats } from "@/modules/staking/DashboardStats"
@@ -137,16 +132,7 @@ export const StakingDashboard: FC = () => {
 
   return (
     <Flex direction="column" gap="xl">
-      <Grid
-        columnTemplate={[
-          null,
-          null,
-          "minmax(24rem, 1fr) minmax(0, 25rem)",
-          "minmax(30rem, 1fr) minmax(0, 27rem)",
-        ]}
-        columnGap="xl"
-        align="start"
-      >
+      <TwoColumnGrid template="sidebar">
         <ClassNames>
           {({ css }) => (
             <SectionHeader
@@ -193,7 +179,7 @@ export const StakingDashboard: FC = () => {
             votesIsLoading || isLoading || uniquesLoading || locksLoading
           }
         />
-      </Grid>
+      </TwoColumnGrid>
       <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
     </Flex>
   )

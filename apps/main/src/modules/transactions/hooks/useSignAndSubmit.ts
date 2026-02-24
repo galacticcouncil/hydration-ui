@@ -21,6 +21,10 @@ import {
   submitUnsignedPolkadotTx,
 } from "@/modules/transactions/utils/polkadot"
 import { signAndSubmitSolanaTx } from "@/modules/transactions/utils/solana"
+import {
+  addTxSubscription,
+  deleteTxSubscription,
+} from "@/modules/transactions/utils/subscriptions"
 import { signAndSubmitSuiTx } from "@/modules/transactions/utils/sui"
 import {
   isValidEvmCallForPermit,
@@ -46,14 +50,20 @@ export const useSignAndSubmit = (
 
   const subscription = useRef<Subscription | null>(null)
 
-  useEffect(() => () => subscription.current?.unsubscribe(), [])
+  useEffect(() => {
+    return () => {
+      if (subscription.current) {
+        deleteTxSubscription(subscription.current)
+        subscription.current.unsubscribe()
+      }
+    }
+  }, [])
 
   return useMutation({
     ...options,
     mutationFn: async (txOptions: TxOptions) => {
       const { tx } = transaction
       const signer = wallet?.signer
-
       if (isValidEvmCallForPermit(tx, txOptions) && isEthereumSigner(signer)) {
         const permit = await signer.getPermit(tx, txOptions)
         const permitTx = transformPermitToPapiTx(papi, permit)
@@ -102,6 +112,7 @@ export const useSignAndSubmit = (
     onSettled: (result) => {
       if (result instanceof Subscription) {
         subscription.current = result
+        addTxSubscription(result)
       }
     },
   })

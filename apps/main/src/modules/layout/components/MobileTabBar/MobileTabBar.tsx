@@ -28,7 +28,7 @@ import {
 import { MobileTabBarActions } from "@/modules/layout/components/MobileTabBar/MobileTabBarActions"
 import { MobileTabBarSubmenuItem } from "@/modules/layout/components/MobileTabBar/MobileTabBarSubMenu"
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
-import { useHasMobNavbar } from "@/modules/layout/use-has-mob-navbar"
+import { useHasMobNavbar } from "@/modules/layout/hooks/useHasMobNavbar"
 
 export enum MobileTabBarDrawer {
   Settings = "Settings",

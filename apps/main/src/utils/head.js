@@ -18,6 +18,14 @@
         ? JSON.parse(themeStore)?.state?.themePreference
         : null;
 
+    const validThemes = ["light", "dark", "system"];
+    const isValidTheme = validThemes.includes(savedTheme);
+
+    // Prune invalid theme store
+    if (themeStore && !isValidTheme) {
+      localStorage.removeItem("theme");
+    }
+
     // If theme is "system" or not set, use system preference
     if (savedTheme === "system" || savedTheme === null) {
       const darkModeQuery = "(prefers-color-scheme: dark)";
