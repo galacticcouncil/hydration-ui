@@ -13,6 +13,7 @@ import { PingResponse } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
 import { bestNumberQuery } from "@/api/chain"
 import { useRpcStatus } from "@/api/rpc"
@@ -89,7 +90,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
 
   return (
     <SRpcListItem
-      data-loading={isLoading}
+      blocked={isLoading || !isNumber(blockNumber)}
       onClick={() => onClick?.(url)}
       isInteractive={!!onClick || !!onRemove}
     >

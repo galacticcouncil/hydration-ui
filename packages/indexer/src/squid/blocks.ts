@@ -15,4 +15,5 @@ export const latestBlockHeightQuery = (
       return result.blocks?.edges?.[0]?.node?.height ?? null
     },
     refetchInterval,
+    retry: false,
   })

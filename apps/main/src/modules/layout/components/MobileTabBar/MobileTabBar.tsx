@@ -28,7 +28,7 @@ import {
 import { MobileTabBarActions } from "@/modules/layout/components/MobileTabBar/MobileTabBarActions"
 import { MobileTabBarSubmenuItem } from "@/modules/layout/components/MobileTabBar/MobileTabBarSubMenu"
 import { SettingsModal } from "@/modules/layout/components/Settings/SettingsModal"
-import { useHasMobNavbar } from "@/modules/layout/use-has-mob-navbar"
+import { useHasMobNavbar } from "@/modules/layout/hooks/useHasMobNavbar"
 
 export enum MobileTabBarDrawer {
   Settings = "Settings",
@@ -54,12 +54,22 @@ export const MobileTabBar: FC = () => {
 
   return (
     <SMobileTabBar>
-      {navItems.slice(0, itemsShown).map(({ key, icon, to }, index) => (
-        <STabBarItem key={key} as={Link} {...{ to }} tabIndex={index + 1}>
-          <STabBarIcon component={icon ?? IconPlaceholder} />
-          <STabBarLabel>{translations[key]?.title}</STabBarLabel>
-        </STabBarItem>
-      ))}
+      {navItems
+        .slice(0, itemsShown)
+        .map(({ key, icon, to, defaultChild }, index) => {
+          const linkTo = defaultChild ?? to
+          return (
+            <STabBarItem
+              key={key}
+              as={Link}
+              {...{ to: linkTo }}
+              tabIndex={index + 1}
+            >
+              <STabBarIcon component={icon ?? IconPlaceholder} />
+              <STabBarLabel>{translations[key]?.title}</STabBarLabel>
+            </STabBarItem>
+          )
+        })}
       {moreItems.length > 0 && (
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>

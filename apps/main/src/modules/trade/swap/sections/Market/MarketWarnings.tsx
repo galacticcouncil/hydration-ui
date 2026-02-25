@@ -48,7 +48,8 @@ export const MarketWarnings: FC<Props> = ({
   const shouldRenderHealthFactorWarning =
     !!healthFactor &&
     Big(healthFactor.future).gt(1) &&
-    healthFactor.isUserConsentRequired
+    healthFactor.isUserConsentRequired &&
+    healthFactor.future < healthFactor.current
 
   if (
     !shouldRenderSlippageWarning &&

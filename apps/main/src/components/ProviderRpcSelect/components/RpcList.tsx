@@ -1,7 +1,7 @@
 import { Stack, VirtualizedList } from "@galacticcouncil/ui/components"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
-import { prop, uniqueBy } from "remeda"
+import { isFunction, prop, uniqueBy } from "remeda"
 
 import { PROVIDER_LIST } from "@/api/provider"
 import { useRpcsStatus } from "@/api/rpc"
@@ -9,6 +9,8 @@ import {
   RpcListHeader,
   RpcListItem,
 } from "@/components/ProviderRpcSelect/components/RpcListItem"
+import { unsubscribeAllTxs } from "@/modules/transactions/utils/subscriptions"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"
 
 export type RpcListProps = {
@@ -18,7 +20,8 @@ export type RpcListProps = {
 export const RpcList: React.FC<RpcListProps> = ({ className }) => {
   const { t } = useTranslation()
   const { rpcList, removeRpc } = useRpcListStore()
-  const { rpcUrl, setRpcUrl } = useProviderRpcUrlStore()
+  const { setRpcUrl, rpcUrl } = useProviderRpcUrlStore()
+  const { ws } = useRpcProvider()
 
   const providerList = useMemo(() => {
     const list = [
@@ -44,6 +47,16 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
     calculateAvgPing: true,
   })
 
+  const handleSwitchRpc = (url: string) => {
+    if (isFunction(ws.switch)) {
+      unsubscribeAllTxs()
+      ws.switch(url)
+    } else {
+      setRpcUrl(url)
+      window.location.reload()
+    }
+  }
+
   return (
     <Stack className={className}>
       <RpcListHeader />
@@ -59,7 +72,7 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
               {...rpcStatusQuery?.data}
               isLoading={!!rpcStatusQuery?.isLoading}
               isActive={rpcUrl === props.url}
-              onClick={setRpcUrl}
+              onClick={handleSwitchRpc}
               onRemove={removeRpc}
             />
           )

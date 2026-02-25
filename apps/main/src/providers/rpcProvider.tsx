@@ -1,3 +1,4 @@
+import { log } from "@galacticcouncil/common"
 import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
 import {
   AssetMetadataFactory,
@@ -5,25 +6,23 @@ import {
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
-  QueryFilters,
-  useQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
 import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
+  StatusChange,
+  WsEvent,
+  WsJsonRpcProvider,
+} from "polkadot-api/ws-provider"
+import { createContext, ReactNode, useContext, useEffect } from "react"
 
 import {
   getProviderDataEnv,
-  providerQuery,
+  rpcProviderQuery,
   TProviderData,
 } from "@/api/provider"
+import { TDataEnv } from "@/config/rpc"
 import { useAssetRegistry } from "@/states/assetRegistry"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -33,15 +32,14 @@ export type PapiNext = TypedApi<typeof hydrationNext>
 export type TProviderContext = TProviderData & {
   isLoaded: boolean
   isApiLoaded: boolean
+  dataEnv: TDataEnv
+  endpoint: string
 }
 
 const defaultData: TProviderContext = {
   queryClient: {} as QueryClient,
-  isLoaded: false,
-  isApiLoaded: false,
+  ws: {} as WsJsonRpcProvider,
   rpcUrlList: [],
-  endpoint: "",
-  dataEnv: "mainnet",
   slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiNext: {} as TProviderData["papiNext"],
@@ -51,100 +49,78 @@ const defaultData: TProviderContext = {
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
   featureFlags: {} as TProviderData["featureFlags"],
-  poolService: {} as TProviderData["poolService"],
   metadata: AssetMetadataFactory.getInstance(),
   dryRunErrorDecoder: {} as DryRunErrorDecoder,
+  isLoaded: false,
+  isApiLoaded: false,
+  dataEnv: "mainnet",
+  endpoint: "",
 }
 
 const ProviderContext = createContext<TProviderContext>(defaultData)
 
 export const useRpcProvider = () => useContext(ProviderContext)
 
-const WHITELISTED_QUERIES_ON_PROVIDER_CHANGE = ["rpcStatus"]
-const RPC_CHANGE_QUERY_FILTER: QueryFilters = {
-  type: "active",
-  predicate: (query) =>
-    !WHITELISTED_QUERIES_ON_PROVIDER_CHANGE.includes(
-      query.queryKey[0] as string,
-    ),
-}
-
-export const useInvalidateRpcProvider = () => {
-  const [isInvalidating, setIsInvalidating] = useState(false)
-  const queryClient = useQueryClient()
-
-  useEffect(() => {
-    return useProviderRpcUrlStore.subscribe(async (state, prevState) => {
-      const prevRpcUrl = prevState.rpcUrl
-      const nextRpcUrl = state.rpcUrl
-      const hasRpcUrlChanged = prevRpcUrl !== nextRpcUrl
-
-      if (!hasRpcUrlChanged) return
-
-      const prevDataEnv = getProviderDataEnv(prevRpcUrl)
-      const nextDataEnv = getProviderDataEnv(nextRpcUrl)
-
-      const hasDataEnvChanged = !nextDataEnv || prevDataEnv !== nextDataEnv
-
-      setIsInvalidating(true)
-      queryClient.removeQueries({
-        queryKey: ["provider"],
-      })
-
-      if (hasDataEnvChanged) {
-        queryClient.removeQueries(RPC_CHANGE_QUERY_FILTER)
-      } else {
-        queryClient.invalidateQueries(
-          {
-            ...RPC_CHANGE_QUERY_FILTER,
-            refetchType: "none",
-          },
-          { cancelRefetch: true },
-        )
-      }
-      setIsInvalidating(false)
-    })
-  }, [queryClient])
-
-  return { isInvalidating }
+const logWsStatusChange = (status: StatusChange) => {
+  switch (status.type) {
+    case WsEvent.CONNECTING:
+      log.logger.debug("[WS] CONNECTING", status.uri)
+      break
+    case WsEvent.CONNECTED:
+      log.logger.debug("[WS] CONNECTED", status.uri)
+      break
+    case WsEvent.CLOSE:
+      log.logger.debug("[WS] CLOSED", status.event)
+      break
+    case WsEvent.ERROR:
+      log.logger.error("[WS] ERROR", status)
+      break
+  }
 }
 
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
   const { assets } = useAssetRegistry()
-  const { rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
-  const { isInvalidating } = useInvalidateRpcProvider()
+  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
 
-  const rpcProviderUrls = autoMode ? rpcUrlList : [rpcUrl]
-
-  const { data } = useQuery({
-    enabled: !isInvalidating,
-    ...providerQuery(queryClient, rpcProviderUrls),
-  })
-
-  const value = useMemo(() => {
-    if (!data) return defaultData
-
-    return {
-      ...data,
-      isApiLoaded: Object.keys(data.papi).length > 0,
-      isLoaded: assets.length > 0,
-    }
-  }, [assets, data])
+  const { data } = useSuspenseQuery(
+    rpcProviderQuery(queryClient, rpcUrlList, {
+      priorityRpcUrl: !autoMode ? rpcUrl : undefined,
+      probeConfig: {
+        enabled: false,
+      },
+      wsProviderOpts: {
+        onStatusChanged: (status) => {
+          logWsStatusChange(status)
+          if (status.type === WsEvent.CONNECTED) {
+            setRpcUrl(status.uri)
+          }
+        },
+      },
+    }),
+  )
 
   useEffect(() => {
-    if (!data?.sdk) {
-      return
-    }
-
+    if (!Object.keys(data.sdk).length) return
     return () => {
       data.sdk.destroy()
-      data.papiClient.destroy()
     }
-  }, [data?.sdk, data?.papiClient])
+  }, [data?.sdk])
+
+  const isLoaded = assets.length > 0
+  const isApiLoaded =
+    Object.keys(data.papi).length > 0 && Object.keys(data.ws).length > 0
 
   return (
-    <ProviderContext.Provider value={value}>
+    <ProviderContext.Provider
+      value={{
+        ...data,
+        isApiLoaded,
+        isLoaded,
+        endpoint: rpcUrl,
+        dataEnv: getProviderDataEnv(rpcUrl),
+      }}
+    >
       {children}
     </ProviderContext.Provider>
   )

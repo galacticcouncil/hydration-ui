@@ -147,7 +147,10 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       tip,
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
-      nonce,
+      nonce:
+        transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+          ? nonce
+          : undefined,
       priorityRpcUrl:
         transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
           ? rpcUrl

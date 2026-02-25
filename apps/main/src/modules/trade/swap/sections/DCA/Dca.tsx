@@ -5,7 +5,7 @@ import { FormProvider } from "react-hook-form"
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
 import { DcaFooter } from "@/modules/trade/swap/sections/DCA/DcaFooter"
 import { DcaForm } from "@/modules/trade/swap/sections/DCA/DcaForm"
-import { DcaOrderInfo } from "@/modules/trade/swap/sections/DCA/DcaOrderInfo"
+import { DcaHealthFactor } from "@/modules/trade/swap/sections/DCA/DcaHealthFactor"
 import { DcaSummary } from "@/modules/trade/swap/sections/DCA/DcaSummary"
 import { DcaWarnings } from "@/modules/trade/swap/sections/DCA/DcaWarnings"
 import {
@@ -59,7 +59,10 @@ export const Dca: FC = () => {
     priceImpactLossAccepted
 
   const isHealthFactorCheckSatisfied =
-    !healthFactor?.isUserConsentRequired || healthFactorRiskAccepted
+    healthFactor?.isUserConsentRequired &&
+    healthFactor.future < healthFactor.current
+      ? healthFactorRiskAccepted
+      : true
 
   const isSubmitEnabled =
     isFormValid && isPriceImpactCheckSatisfied && isHealthFactorCheckSatisfied
@@ -102,13 +105,13 @@ export const Dca: FC = () => {
           onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
           onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
         />
-        <SwapSectionSeparator />
-        <DcaFooter isEnabled={isSubmitEnabled} />
-        <DcaOrderInfo
+        <DcaHealthFactor
           order={order}
           healthFactor={isHealthFactorShown ? healthFactor : undefined}
           isLoading={isLoading}
         />
+        <SwapSectionSeparator />
+        <DcaFooter isEnabled={isSubmitEnabled} />
       </form>
     </FormProvider>
   )

@@ -64,7 +64,7 @@ export const usePingStatus = (ping: number | null) => {
   }
 }
 
-export const useBlockHeightStatus = (blockHeight: number) => {
+export const useBlockHeightStatus = (blockHeight: number | null) => {
   const { t } = useTranslation()
   const { data: bestNumber } = useBestNumber()
   const blockHeightDifference =
@@ -83,9 +83,11 @@ export const useBlockHeightStatus = (blockHeight: number) => {
   return {
     status,
     color: statusColorMap[status],
-    text: t("rpc.status.blockHeightDiff", {
-      value: blockHeightDifference,
-    }),
+    text: isNumber(blockHeightDifference)
+      ? t("rpc.status.blockHeightDiff", {
+          count: blockHeightDifference,
+        })
+      : "",
     blockHeightDifference,
   }
 }

@@ -1,4 +1,4 @@
-import { log } from "@galacticcouncil/common"
+import { ApiOptions, SubstrateApis } from "@galacticcouncil/common"
 import {
   getMetadata,
   hydration,
@@ -10,23 +10,19 @@ import {
   SnowbridgeSdk,
 } from "@galacticcouncil/indexer/snowbridge"
 import { getSquidSdk, SquidSdk } from "@galacticcouncil/indexer/squid"
-import { api, createSdkContext, pool, SdkCtx } from "@galacticcouncil/sdk-next"
+import { createSdkContext, SdkCtx } from "@galacticcouncil/sdk-next"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
-import { CompatibilityLevel, createClient, PolkadotClient } from "polkadot-api"
-import { WsEvent } from "polkadot-api/ws-provider"
+import { CompatibilityLevel, PolkadotClient } from "polkadot-api"
+import { WsJsonRpcProvider } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
+import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
 
-import {
-  createProvider,
-  ProviderProps,
-  PROVIDERS,
-  TDataEnv,
-} from "@/config/rpc"
+import { ProviderProps, PROVIDERS, TDataEnv } from "@/config/rpc"
 import { Papi, PapiNext, useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -34,6 +30,7 @@ export type TFeatureFlags = object
 
 export type TProviderData = {
   queryClient: QueryClient
+  ws: WsJsonRpcProvider
   papi: Papi
   papiNext: PapiNext
   isNext: boolean
@@ -43,9 +40,6 @@ export type TProviderData = {
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
-  poolService: pool.PoolContextProvider
-  endpoint: string
-  dataEnv: TDataEnv
   slotDurationMs: number
   metadata: AssetMetadataFactory
   dryRunErrorDecoder: DryRunErrorDecoder
@@ -59,8 +53,8 @@ export const PROVIDER_LIST = PROVIDERS.filter((provider) =>
 
 export const PROVIDER_URLS = PROVIDER_LIST.map(({ url }) => url)
 
-export const getProviderProps = (url: string) =>
-  PROVIDERS.find((p) => p.url === url)
+export const getProviderProps = (rpcUrl: string) =>
+  PROVIDERS.find((p) => p.url === rpcUrl)
 
 export const getDefaultDataEnv = (): TDataEnv => {
   const env = import.meta.env.VITE_ENV
@@ -69,17 +63,20 @@ export const getDefaultDataEnv = (): TDataEnv => {
 }
 
 export const getProviderDataEnv = (rpcUrl: string) => {
-  const provider = PROVIDERS.find((provider) => provider.url === rpcUrl)
+  const provider = getProviderProps(rpcUrl)
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
-export const providerQuery = (
+type RpcProviderQueryOptions = ApiOptions & { priorityRpcUrl?: string }
+
+export const rpcProviderQuery = (
   queryClient: QueryClient,
   rpcUrlList: string[],
+  options: RpcProviderQueryOptions,
 ) => {
   return queryOptions({
     queryKey: ["provider"],
-    queryFn: () => getProviderData(queryClient, rpcUrlList),
+    queryFn: () => getProviderData(queryClient, rpcUrlList, options),
     retry: false,
     refetchOnWindowFocus: false,
     gcTime: 0,
@@ -89,50 +86,46 @@ export const providerQuery = (
 const getProviderData = async (
   queryClient: QueryClient,
   rpcUrlList: string[] = [],
+  options: RpcProviderQueryOptions,
 ): Promise<TProviderData> => {
-  let endpoint = ""
-  const ws = api.getWs(rpcUrlList, {
-    onStatusChanged: (status) => {
-      switch (status.type) {
-        case WsEvent.CONNECTING:
-          log.logger.debug("[WS] CONNECTING", status.uri)
-          break
-        case WsEvent.CONNECTED:
-          endpoint = status.uri
-          log.logger.debug("[WS] CONNECTED", status.uri)
-          break
-        case WsEvent.CLOSE:
-          log.logger.debug("[WS] CLOSED", status.event)
-          break
-        case WsEvent.ERROR:
-          log.logger.error("[WS] ERROR", status)
-          break
-      }
-    },
+  const { priorityRpcUrl, ...apiOptions } = options
+
+  const apis = SubstrateApis.getInstance()
+
+  apis.configureMetadataCache({
+    getMetadata,
+    setMetadata: doNothing,
   })
 
-  const papiClient = createClient(ws, { getMetadata })
+  const urls = priorityRpcUrl
+    ? unique([priorityRpcUrl, ...rpcUrlList])
+    : rpcUrlList
+
+  const papiClient = apis.api(urls, apiOptions)
+  const ws = apis.getWs(urls)
+  if (!ws) throw new Error("WsJsonRpcProvider is not available")
+
   const papi = papiClient.getTypedApi(hydration)
   const papiNext = papiClient.getTypedApi(hydrationNext)
 
-  const isNext = await papiNext.constants.System.Version.isCompatible(
-    CompatibilityLevel.Partial,
-  )
-
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, papiCompatibilityToken] = await Promise.all([
-    createSdkContext(papiClient),
-    papi.constants.Aura.SlotDuration(),
-    papi.compatibilityToken,
-    metadata.fetchAssets(),
-    metadata.fetchChains(),
-  ])
+  const [sdk, slotDuration, papiCompatibilityToken, isNext] = await Promise.all(
+    [
+      createSdkContext(papiClient),
+      papi.constants.Aura.SlotDuration(),
+      papi.compatibilityToken,
+      papiNext.constants.System.Version.isCompatible(
+        CompatibilityLevel.Partial,
+      ),
+      metadata.fetchAssets(),
+      metadata.fetchChains(),
+    ],
+  )
 
-  const poolService = (isHsmEnabled ? sdk.ctx.pool.withHsm() : sdk.ctx.pool)
-    .withOmnipool()
-    .withStableswap()
-    .withXyk()
+  if (isHsmEnabled) {
+    sdk.ctx.pool.withHsm()
+  }
 
   const evm = createPublicClient({
     transport: custom({
@@ -143,17 +136,15 @@ const getProviderData = async (
 
   return {
     queryClient,
+    ws,
     papi,
     papiNext,
     papiClient,
     isNext,
     papiCompatibilityToken,
     evm,
-    endpoint,
-    poolService,
     sdk,
     rpcUrlList,
-    dataEnv: getProviderProps(endpoint)?.dataEnv ?? getDefaultDataEnv(),
     slotDurationMs: Number(slotDuration),
     featureFlags: {},
     metadata,
@@ -177,19 +168,7 @@ export const useSnowbridgeUrl = (): string => {
 export const useActiveProviderProps = (): ProviderProps | null => {
   const { endpoint } = useRpcProvider()
 
-  return useMemo(() => {
-    return (
-      getProviderProps(endpoint) ||
-      createProvider(
-        "",
-        import.meta.env.VITE_PROVIDER_URL,
-        import.meta.env.VITE_INDEXER_URL,
-        import.meta.env.VITE_SQUID_URL,
-        import.meta.env.VITE_ENV,
-        getDefaultDataEnv(),
-      )
-    )
-  }, [endpoint])
+  return useMemo(() => getProviderProps(endpoint) || null, [endpoint])
 }
 
 export const useSquidClient = (): SquidSdk => {

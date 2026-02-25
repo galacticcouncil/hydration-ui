@@ -67,9 +67,11 @@ export const Market: FC = () => {
     ? !!swap && !swap.swaps.flatMap((swap) => swap.errors).length
     : !!twap && !twap?.errors.length
 
-  const isHealthFactorCheckSatisfied = healthFactor?.isUserConsentRequired
-    ? healthFactorRiskAccepted
-    : true
+  const isHealthFactorCheckSatisfied =
+    healthFactor?.isUserConsentRequired &&
+    healthFactor.future < healthFactor.current
+      ? healthFactorRiskAccepted
+      : true
 
   const isExpanded = isSwapLoading || (isSingleTrade ? !!swap : !!twap)
 

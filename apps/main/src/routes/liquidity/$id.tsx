@@ -7,6 +7,7 @@ import {
 import z from "zod/v4"
 
 import { PoolDetails } from "@/modules/liquidity/PoolDetails"
+import { PoolDetailsSkeleton } from "@/modules/liquidity/PoolDetailsSkeleton"
 
 const searchSchema = z.object({
   expanded: z.boolean().optional(),
@@ -25,5 +26,6 @@ const Component = () => {
 
 export const Route = createFileRoute("/liquidity/$id")({
   component: Component,
+  pendingComponent: PoolDetailsSkeleton,
   validateSearch: searchSchema,
 })

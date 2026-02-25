@@ -37,6 +37,7 @@ export const useOpenOrdersColumns = () => {
             fromAmount={row.original.fromAmountBudget}
             from={row.original.from}
             to={row.original.to}
+            showLogo
           />
         )
       },

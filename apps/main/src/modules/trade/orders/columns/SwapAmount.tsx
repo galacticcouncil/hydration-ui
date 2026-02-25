@@ -25,8 +25,8 @@ export const SwapAmount = ({
 
   return (
     <Flex gap="m" align="center">
-      {showLogo && <AssetLogo id={from.id} size="small" />}
       <Flex gap="s" align="center">
+        {showLogo && <AssetLogo id={from.id} size="small" />}
         <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
           {t("number", { value: fromAmount })}
         </Text>
