@@ -71,7 +71,7 @@ const observeTransactionEvents = <T extends TxEventOrError>(
   options: TxOptions,
 ) => {
   const sub = observer.subscribe((event) => {
-    logger.log("Transaction status:", event)
+    logger.info("[TX]", event)
     if (event.type === "broadcasted") options?.onSubmitted(event.txHash)
 
     if (event.type === "error") {

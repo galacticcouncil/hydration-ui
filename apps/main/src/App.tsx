@@ -2,7 +2,11 @@ import "@galacticcouncil/ui/fonts.css"
 
 import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import {
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
 import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
@@ -14,7 +18,13 @@ import i18n from "@/i18n"
 
 import { routeTree } from "./routeTree.gen"
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error, query) => {
+      console.error("[RQ]", error, query)
+    },
+  }),
+})
 export interface RouterContext {
   queryClient: QueryClient
   i18n: typeof i18n
