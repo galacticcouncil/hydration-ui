@@ -35,6 +35,11 @@ export const Pending: Story = {
   args: { variant: "pending" },
 }
 
+export const Info: Story = {
+  render: Template,
+  args: { variant: "info" },
+}
+
 export const Error: Story = {
   render: Template,
   args: { variant: "error" },

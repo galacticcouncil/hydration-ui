@@ -1,4 +1,7 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  QUERY_KEY_BLOCK_PREFIX,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQueries } from "@tanstack/react-query"
 import { differenceInMinutes } from "date-fns"
@@ -18,7 +21,9 @@ const TOAST_STALE_AFTER_MINUTES = 60
 
 const isPendingOnChainToast = (toast: ToastData) => {
   return (
-    toast.variant === "pending" && toast.meta.type === TransactionType.Onchain
+    toast.variant === "pending" &&
+    toast.meta.type === TransactionType.Onchain &&
+    toast.meta.srcChainKey === HYDRATION_CHAIN_KEY
   )
 }
 

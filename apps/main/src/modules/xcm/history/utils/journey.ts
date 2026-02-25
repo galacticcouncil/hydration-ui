@@ -1,14 +1,16 @@
 import {
-  CheckIcon,
+  AlertCircleIcon,
+  CheckCircleIcon,
   ClockIcon,
-  TriangleAlert,
 } from "@galacticcouncil/ui/assets/icons"
+import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
 import { XcJourney } from "@galacticcouncil/xc-scan"
 
 export type TJourneyStatus = XcJourney["status"]
 
-export const PENDING_STATUSES: TJourneyStatus[] = ["sent", "pending", "waiting"]
+export const PENDING_STATUSES: TJourneyStatus[] = ["sent", "pending"]
+export const WAITING_STATUSES: TJourneyStatus[] = ["waiting"]
 export const SUCCESS_STATUSES: TJourneyStatus[] = [
   "received",
   "success",
@@ -26,20 +28,26 @@ export const getStatusProps = (
   if (PENDING_STATUSES.includes(status)) {
     return {
       color: "controls.solid.accent",
+      icon: SpinnerIcon,
+    }
+  }
+  if (WAITING_STATUSES.includes(status)) {
+    return {
+      color: "controls.solid.accent",
       icon: ClockIcon,
     }
   }
   if (SUCCESS_STATUSES.includes(status)) {
     return {
       color: "accents.success.emphasis",
-      icon: CheckIcon,
+      icon: CheckCircleIcon,
     }
   }
 
   if (FAILED_STATUSES.includes(status)) {
     return {
       color: "accents.danger.secondary",
-      icon: TriangleAlert,
+      icon: AlertCircleIcon,
     }
   }
 

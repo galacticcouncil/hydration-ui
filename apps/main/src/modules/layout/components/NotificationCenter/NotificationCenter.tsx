@@ -1,7 +1,6 @@
 import { Bell as BellIcon } from "@galacticcouncil/ui/assets/icons"
 import {
   ButtonIcon,
-  Collapsible,
   Icon,
   SheetBody,
   SheetContent,
@@ -10,19 +9,32 @@ import {
   SheetTrigger,
   Spinner,
   Stack,
-  Text,
 } from "@galacticcouncil/ui/components"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EmptyState } from "@/components/EmptyState/EmptyState"
+import { ClaimableNotification } from "@/modules/layout/components/NotificationCenter/ClaimableNotification"
+import { NotificationBadge } from "@/modules/layout/components/NotificationCenter/NotificationBadge"
+import { NotificationGroup } from "@/modules/layout/components/NotificationCenter/NotificationGroup"
 import { NotificationToast } from "@/modules/layout/components/NotificationCenter/NotificationToast"
+import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
+import { useXcScan } from "@/modules/xcm/history/useXcScan"
 import { useToasts } from "@/states/toasts"
 
 export const NotificationCenter: FC = () => {
   const { t } = useTranslation()
+  const { account } = useAccount()
 
   const { toasts } = useToasts()
+  const { data: claimable } = useXcScan(account?.address ?? "", {
+    claimableOnly: true,
+  })
+  const { pendingCorrelationIds } = usePendingClaimsStore()
+  const visibleClaimable = claimable.filter(
+    ({ correlationId }) => !pendingCorrelationIds.includes(correlationId),
+  )
 
   const groups = Object.groupBy(toasts, (toast) =>
     toast.variant === "pending" ? "pending" : "completed",
@@ -46,51 +58,41 @@ export const NotificationCenter: FC = () => {
               }}
             />
           )}
+          <NotificationBadge count={visibleClaimable.length} />
         </ButtonIcon>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader title={t("notifications")} />
         <SheetBody sx={{ pt: 10 }}>
           <Stack gap="xl">
+            {visibleClaimable.length > 0 && (
+              <NotificationGroup label={t("important")} defaultOpen>
+                {visibleClaimable.map((journey) => (
+                  <ClaimableNotification
+                    key={journey.correlationId}
+                    journey={journey}
+                  />
+                ))}
+              </NotificationGroup>
+            )}
+
             {pending.length > 0 && (
-              <Collapsible
-                label={
-                  <Text as="h3" fs="p3" fw={600}>
-                    {t("pending")}
-                  </Text>
-                }
-                actionLabel={t("show")}
-                actionLabelWhenOpen={t("hide")}
-                defaultOpen
-              >
-                <Stack gap="m">
-                  {pending.map((props) => (
-                    <NotificationToast key={props.id} {...props} />
-                  ))}
-                </Stack>
-              </Collapsible>
+              <NotificationGroup label={t("pending")} defaultOpen>
+                {pending.map((props) => (
+                  <NotificationToast key={props.id} {...props} />
+                ))}
+              </NotificationGroup>
             )}
 
             {completed.length > 0 && (
-              <Collapsible
-                label={
-                  <Text as="h3" fs="p3" fw={600}>
-                    {t("completed")}
-                  </Text>
-                }
-                actionLabel={t("show")}
-                actionLabelWhenOpen={t("hide")}
-                defaultOpen
-              >
-                <Stack gap="m">
-                  {completed.map((props) => (
-                    <NotificationToast key={props.id} {...props} />
-                  ))}
-                </Stack>
-              </Collapsible>
+              <NotificationGroup label={t("completed")} defaultOpen>
+                {completed.map((props) => (
+                  <NotificationToast key={props.id} {...props} />
+                ))}
+              </NotificationGroup>
             )}
 
-            {toasts.length === 0 && (
+            {toasts.length === 0 && visibleClaimable.length === 0 && (
               <EmptyState
                 header={t("notifications.empty.title")}
                 description={t("notifications.empty.description")}

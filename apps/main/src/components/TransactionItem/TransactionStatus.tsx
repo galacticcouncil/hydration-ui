@@ -1,10 +1,9 @@
 import {
   Check,
   ExclamationMark,
-  LoaderCircle,
   TriangleAlert,
 } from "@galacticcouncil/ui/assets/icons"
-import { Icon, Text } from "@galacticcouncil/ui/components"
+import { Icon, SpinnerIcon, Text } from "@galacticcouncil/ui/components"
 import { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -23,7 +22,7 @@ export const TransactionStatus: FC<Props> = ({ variant }) => {
 
   const [icon, status] = (
     {
-      [TransactionStatusVariant.Pending]: [LoaderCircle, t("pending")],
+      [TransactionStatusVariant.Pending]: [SpinnerIcon, t("pending")],
       [TransactionStatusVariant.Success]: [Check, t("success")],
       [TransactionStatusVariant.Warning]: [TriangleAlert, t("warning")],
       [TransactionStatusVariant.Error]: [ExclamationMark, t("error")],

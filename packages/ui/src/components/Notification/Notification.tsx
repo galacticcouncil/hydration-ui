@@ -2,6 +2,7 @@ import {
   CircleAlert,
   CircleCheck,
   CircleClose,
+  Info,
   MoveUpRight,
   QuestionCircleRegular,
   Send,
@@ -36,6 +37,7 @@ export type ToastVariant =
   | "submitted"
   | "success"
   | "error"
+  | "info"
   | "unknown"
   | "warning"
 
@@ -50,12 +52,14 @@ type CustomToastProps = {
   link?: string
   hint?: string
   fullWidth?: boolean
+  actions?: React.ReactNode
 }
 
 const notificationIcons: Record<ToastVariant, React.ComponentType> = {
   pending: Spinner,
   success: CircleCheck,
   error: CircleAlert,
+  info: Info,
   submitted: Send,
   warning: TriangleAlert,
   unknown: SquareQuestion,
@@ -72,6 +76,7 @@ export const Notification = ({
   link,
   hint,
   fullWidth = false,
+  actions,
 }: CustomToastProps) => {
   return (
     <SNotification className={className} fullWidth={fullWidth}>
@@ -106,6 +111,7 @@ export const Notification = ({
               </ExternalLink>
             </ButtonIcon>
           )}
+          {actions}
         </Flex>
       </Flex>
       {autoClose && (

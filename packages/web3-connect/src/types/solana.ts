@@ -21,7 +21,7 @@ export interface SolanaInjectedWindowProvider {
   ) => Promise<SolanaSignature>
   signAllTransactions: (
     transactions: VersionedTransaction[],
-  ) => Promise<SolanaSignature[]>
+  ) => Promise<VersionedTransaction[]>
   signAndSendTransaction: (
     transaction: VersionedTransaction,
   ) => Promise<SolanaSignature>

@@ -17,12 +17,15 @@ import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
+import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
+import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
 import { toDecimal } from "@/utils/formatting"
 
 const columnHelper = createColumnHelper<XcJourney>()
@@ -41,6 +44,7 @@ export enum XcScanHistoryTableColumnId {
 
 export const useXcScanHistoryColumns = () => {
   const { t } = useTranslation(["common"])
+  const { pendingCorrelationIds } = usePendingClaimsStore()
 
   return useMemo(() => {
     const fromColumn = columnHelper.accessor("from", {
@@ -195,10 +199,23 @@ export const useXcScanHistoryColumns = () => {
       cell: ({ row }) => {
         const link = xcscan.tx(row.original.correlationId)
 
+        const isNotPending = !pendingCorrelationIds.includes(
+          row.original.correlationId,
+        )
+        const isClaimable = isNotPending && isJourneyClaimable(row.original)
+
         return (
-          <ExternalLink href={link}>
-            <Icon size="m" component={ExternalLinkIcon} />
-          </ExternalLink>
+          <Flex
+            gap="base"
+            align="center"
+            justify="end"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {isClaimable && <ClaimButton journey={row.original} />}
+            <ExternalLink href={link}>
+              <Icon size="m" component={ExternalLinkIcon} />
+            </ExternalLink>
+          </Flex>
         )
       },
     })
@@ -213,5 +230,5 @@ export const useXcScanHistoryColumns = () => {
       durationColumn,
       actionColumn,
     ]
-  }, [t])
+  }, [t, pendingCorrelationIds])
 }

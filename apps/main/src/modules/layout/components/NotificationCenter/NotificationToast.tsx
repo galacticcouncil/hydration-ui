@@ -1,10 +1,6 @@
 import { Notification } from "@galacticcouncil/ui/components"
-import { differenceInSeconds } from "date-fns"
-import { millisecondsInMinute, millisecondsInSecond } from "date-fns/constants"
-import { useState } from "react"
-import { useTranslation } from "react-i18next"
-import { useHarmonicIntervalFn } from "react-use"
 
+import { useRelativeDate } from "@/hooks/useRelativeDate"
 import { ToastData } from "@/states/toasts"
 
 export const NotificationToast: React.FC<ToastData> = ({
@@ -14,17 +10,7 @@ export const NotificationToast: React.FC<ToastData> = ({
   hint,
   dateCreated,
 }) => {
-  const { t } = useTranslation(["common"])
-
-  const date = new Date(dateCreated)
-
-  const [dateString, setDateString] = useState(() =>
-    t("date.relative", { value: date }),
-  )
-
-  useHarmonicIntervalFn(() => {
-    setDateString(t("date.relative", { value: date }))
-  }, getInterval(date))
+  const dateString = useRelativeDate(new Date(dateCreated))
 
   return (
     <Notification
@@ -37,11 +23,4 @@ export const NotificationToast: React.FC<ToastData> = ({
       hint={hint}
     />
   )
-}
-
-function getInterval(date: Date) {
-  const currentTime = new Date()
-  const secondsDiff = differenceInSeconds(currentTime, date)
-
-  return secondsDiff < 60 ? millisecondsInSecond : millisecondsInMinute
 }

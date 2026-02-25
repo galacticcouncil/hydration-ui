@@ -32,9 +32,9 @@ export const JourneyStatus: React.FC<JourneyStatusProps> = ({
   const { color, icon } = getStatusProps(status)
 
   return (
-    <Flex align="center" gap="s" asChild>
-      <Text fw={500} color={getToken(color)} {...props}>
-        {icon && <Icon component={icon} size="s" />}
+    <Flex align="center" gap="s" color={getToken(color)}>
+      {icon && <Icon component={icon} size="s" />}
+      <Text fw={500} lh={1} {...props}>
         {statusLabels[status]}
       </Text>
     </Flex>
