@@ -2024,10 +2024,10 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.9.tgz#50dea3616bc8191fb8e112283b49eaff03e78429"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
-"@galacticcouncil/common@^0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.5.0.tgz#94dbc085c897c2d0453c1405634d8b685bd942cf"
-  integrity sha512-e8MVUtIiInuKXv15RLwxPBVtvnUQK1ceOseXPdHfcivMZ6iSPtZsJhXnGHkiOyJlahS92cvYFBhtYt5A+8zUGA==
+"@galacticcouncil/common@0.5.1-pr286-02e589b":
+  version "0.5.1-pr286-02e589b"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.5.1-pr286-02e589b.tgz#d19cf0e01e9d18918dbc629bcd63faa4618b84c6"
+  integrity sha512-Lkyf2RN3/zscpA4EB8Km6MNI3j4LKSYGv+TK0zGlLTjTtnAjPgQi46D2455vYuruYgCWjZhECPn8PgQaSMIaJw==
   dependencies:
     big.js "^6.2.1"
     lru-cache "^11.2.2"
