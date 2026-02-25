@@ -29,12 +29,12 @@ import { AssetInput } from "sections/lending/ui/transactions/AssetInput"
 import { getMaxAmountAvailableToSupply } from "sections/lending/utils/getMaxAmountAvailableToSupply"
 import { roundToTokenDecimals } from "sections/lending/utils/utils"
 import { SupplyActions } from "./SupplyActions"
-import { PRIME_APY } from "api/borrow"
 import { PRIME_ASSET_ID } from "utils/constants"
 import { getAssetIdFromAddress } from "utils/evm"
 import { Alert } from "components/Alert"
 import { Trans, useTranslation } from "react-i18next"
 import { Text } from "components/Typography/Text/Text"
+import { usePRIMEAPY } from "api/external/kamino"
 
 export enum ErrorType {
   CAP_REACHED,
@@ -70,6 +70,8 @@ export const SupplyModalContent = React.memo(
     const isIsolated = poolReserve.isIsolated
     const isPrimeAsset =
       PRIME_ASSET_ID === getAssetIdFromAddress(poolReserve.underlyingAsset)
+
+    const { data: primeApy } = usePRIMEAPY({ enabled: isPrimeAsset })
 
     const {
       supplyCap,
@@ -302,10 +304,10 @@ export const SupplyModalContent = React.memo(
             incentives={poolReserve.aIncentivesData}
             symbol={poolReserve.symbol}
           />
-          {isPrimeAsset && (
+          {isPrimeAsset && primeApy && (
             <DetailsNumberLine
               description={<span>PRIME APY</span>}
-              value={PRIME_APY.toString()}
+              value={primeApy / 100}
               percent
             />
           )}

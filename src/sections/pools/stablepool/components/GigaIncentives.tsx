@@ -20,6 +20,7 @@ import {
   MONEY_MARKET_GIGA_RESERVES,
   PRIME_ASSET_ADDRESS,
 } from "sections/lending/ui-config/misc"
+import { getApyLabel } from "sections/pools/pool/details/MoneyMarketIncentives"
 
 export const GigaIncentives = ({
   pool: { moneyMarketApy },
@@ -222,12 +223,8 @@ export const MoneyMarketAPY = ({
             )}
 
             {underlyingAssetsApyData.map(
-              ({ id, isStaked, borrowApy, supplyApy }) => {
-                const label = isStaked
-                  ? t("stakeApy")
-                  : isSupply
-                    ? t("supplyApy")
-                    : t("borrowApy")
+              ({ id, apyType, borrowApy, supplyApy }) => {
+                const label = getApyLabel(apyType, isSupply)
                 return (
                   <IncentiveRow
                     key={id}
