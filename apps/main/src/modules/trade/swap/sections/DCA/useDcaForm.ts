@@ -112,9 +112,13 @@ const useSchema = (account: Account | null) => {
         : z.refine(() => true),
     )
     .check(async (ctx) => {
-      const { sellAsset, sellAmount } = ctx.value
+      const { sellAsset, sellAmount, orders } = ctx.value
 
-      if (!sellAsset || !sellAmount) {
+      if (
+        !sellAsset ||
+        !sellAmount ||
+        orders.type === DcaOrdersMode.OpenBudget
+      ) {
         return
       }
 
