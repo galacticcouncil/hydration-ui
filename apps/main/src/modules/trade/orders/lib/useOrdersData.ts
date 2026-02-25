@@ -1,6 +1,6 @@
 import {
   DcaScheduleStatus,
-  isDcaScheduleStatus,
+  getDcaScheduleStatus,
   userOrdersQuery,
 } from "@galacticcouncil/indexer/squid"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
@@ -87,6 +87,8 @@ export const useOrdersData = (
             ? scaleHuman(schedule.totalExecutedAmountOut, to.decimals)
             : null
 
+          const status = getDcaScheduleStatus(schedule)
+
           return {
             kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
             scheduleId: Number(schedule.id),
@@ -97,9 +99,7 @@ export const useOrdersData = (
             singleTradeSize,
             to,
             toAmountExecuted,
-            status: isDcaScheduleStatus(schedule.status)
-              ? schedule.status
-              : null,
+            status,
             blocksPeriod: schedule.period ?? null,
             isOpenBudget,
           }

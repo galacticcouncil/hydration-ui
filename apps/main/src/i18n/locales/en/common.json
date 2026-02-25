@@ -153,7 +153,6 @@
   "error.maxBalance": "Insufficient balance on your account.",
   "error.existentialDeposit": "Too low amount.",
   "error.sellOnly": "This asset is not allowed to be used as a buy asset.",
-  "error.minBudgetTooLow": "The minimum budget is {{value}}",
   "error.timeFrame": "Invalid time frame",
   "error.validAddressOnChain": "The address is incorrect. Please use a valid {{chain}} address.",
   "chart.error": "Error displaying the chart, try loading it again.",

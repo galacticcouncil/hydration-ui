@@ -1,6 +1,6 @@
 import {
   DcaScheduleStatus,
-  isDcaScheduleStatus,
+  getDcaScheduleStatus,
   isTradeOperation,
   RoutedTradeSwapFragment,
   SwapFragment,
@@ -136,6 +136,7 @@ export const getOrderStatus = (
 
   const asset = getAsset(schedule.assetInId ?? "")
   const isOpenBudget = schedule.budgetAmountIn === "0"
+  const status = getDcaScheduleStatus(schedule)
 
   return {
     kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
@@ -143,6 +144,6 @@ export const getOrderStatus = (
     sold: scaleHuman(schedule.totalExecutedAmountIn || "0", asset.decimals),
     total: scaleHuman(schedule.budgetAmountIn || "0", asset.decimals),
     symbol: asset.symbol,
-    status: isDcaScheduleStatus(schedule.status) ? schedule.status : null,
+    status,
   }
 }

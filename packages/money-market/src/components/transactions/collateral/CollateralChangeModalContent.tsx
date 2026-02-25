@@ -11,6 +11,7 @@ import {
   Stack,
   SummaryRow,
   Text,
+  Toggle,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import {
@@ -88,6 +89,7 @@ export const CollateralChangeModalContent: React.FC<
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
+  const [dcaRiskAccepted, setDcaRiskAccepted] = useState(false)
 
   // Messages
   const showEnableIsolationModeInfo =
@@ -165,9 +167,8 @@ export const CollateralChangeModalContent: React.FC<
     ? healthFactorRiskAccepted
     : true
 
-  const isOpenBudgetDcaCheckSatisfies = !isCollateralEnabled
-    ? !hasOpenBudgetDca
-    : true
+  const isOpenBudgetDcaCheckSatisfies =
+    !isCollateralEnabled && hasOpenBudgetDca ? dcaRiskAccepted : true
 
   return (
     <>
@@ -235,10 +236,24 @@ export const CollateralChangeModalContent: React.FC<
           )}
 
           {showEnableIsolationModeWarning && (
-            <Alert
-              variant="warning"
-              description="In order to enable this asset as collateral please cancel your open budget DCA."
-            />
+            <Flex direction="column" gap="base">
+              <Alert
+                variant="warning"
+                description="Please be aware that you have running open budget DCA for this asset. The DCA will not be terminated automatically above a liquidation threshold. If you don't cancel it manually on time your positions might get liquidated."
+                action={
+                  <Flex align="center" as="label" gap="base">
+                    <Toggle
+                      size="large"
+                      checked={dcaRiskAccepted}
+                      onCheckedChange={setDcaRiskAccepted}
+                    />
+                    <Text fs="p4" lh={1.3} fw={600}>
+                      Understood & proceed
+                    </Text>
+                  </Flex>
+                }
+              />
+            </Flex>
           )}
 
           {showEnterIsolationModeMsg && (

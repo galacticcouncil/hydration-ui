@@ -4,7 +4,10 @@ import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
 import { dcaTradeOrderQuery } from "@/api/trade"
-import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import {
+  DcaFormValues,
+  DcaOrdersMode,
+} from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -33,16 +36,34 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     }),
   )
 
+  const assetIn = getAsset(orderData?.order?.assetIn ?? 0)
   const assetOut = getAsset(orderData?.order?.assetOut ?? 0)
+
+  const isOpenBudget = formValues.orders.type === DcaOrdersMode.OpenBudget
 
   const { data: healthFactorData, isLoading: isHealthFactorLoading } = useQuery(
     healthFactorQuery(rpc, {
       fromAsset: formValues.sellAsset,
-      fromAmount: formValues.sellAmount,
+      fromAmount:
+        orderData && assetIn && orderData.order
+          ? isOpenBudget
+            ? toDecimal(
+                orderData.order.tradeAmountIn *
+                  OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
+                assetIn.decimals,
+              )
+            : formValues.sellAmount
+          : "0",
       toAsset: formValues.buyAsset,
       toAmount:
         orderData && assetOut && orderData.order
-          ? toDecimal(orderData.order.amountOut, assetOut.decimals)
+          ? isOpenBudget
+            ? toDecimal(
+                orderData.order.tradeAmountOut *
+                  OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
+                assetOut.decimals,
+              )
+            : toDecimal(orderData.order.amountOut, assetOut.decimals)
           : "0",
       address,
     }),
@@ -56,3 +77,5 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     isLoading: isOrderLoading || isHealthFactorLoading,
   }
 }
+
+const OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER = 3n

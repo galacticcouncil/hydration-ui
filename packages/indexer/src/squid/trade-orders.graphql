@@ -1,9 +1,28 @@
+fragment DcaScheduleStatus on DcaSchedule {
+ status
+ dcaScheduleExecutionsByScheduleId(
+    first: 1
+    orderBy: ID_DESC
+  ) {
+    nodes {
+      dcaScheduleExecutionEventsByScheduleExecutionId(
+        first: 1
+        orderBy: PARA_BLOCK_HEIGHT_DESC
+      ) {
+        nodes {
+          eventName
+        }
+      }
+    }
+  }
+}
+
 fragment SwapDcaSchedule on DcaSchedule {
   id
-  status
   assetInId
   budgetAmountIn: totalAmount
   totalExecutedAmountIn
+  ...DcaScheduleStatus
 }
 
 fragment Swap on Swap {
@@ -86,7 +105,6 @@ query UserOrders(
     totalCount
     nodes {
       id
-      status
       orderType
       assetIn {
         assetRegistryId
@@ -100,6 +118,7 @@ query UserOrders(
       }
       totalExecutedAmountOut
       period
+      ...DcaScheduleStatus
     }
   }
 }
@@ -115,6 +134,7 @@ query UserOpenOrdersCount($address: String!, $assetFilter: DcaScheduleFilter) {
 
 query DcaScheduleExecutions($scheduleId: String!) {
   dcaSchedule(id: $scheduleId) {
+    id
     assetIn {
       assetRegistryId
     }

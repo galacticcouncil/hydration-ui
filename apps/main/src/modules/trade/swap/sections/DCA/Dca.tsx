@@ -15,6 +15,7 @@ import {
   DcaValidationError,
   DcaValidationWarning,
   useDcaValidation,
+  useOpenBudgetDcaHfValidation,
 } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
@@ -28,11 +29,27 @@ export const Dca: FC = () => {
 
   const form = useDcaForm({ assetIn, assetOut })
 
-  const { order, orderTx, dryRunError, healthFactor, isLoading } =
-    useDcaTradeOrder(form)
+  const {
+    order,
+    orderTx,
+    dryRunError,
+    healthFactor: initialHealthFactor,
+    isLoading,
+  } = useDcaTradeOrder(form)
 
   const [duration, ordersType] = form.watch(["duration", "orders.type"])
-  const { warnings, errors } = useDcaValidation(order, duration, ordersType)
+  const { warnings, errors } = useDcaValidation(order, duration)
+
+  const isOpenBudget = ordersType === DcaOrdersMode.OpenBudget
+  const openBudgetHealthFactor = useOpenBudgetDcaHfValidation(
+    order,
+    initialHealthFactor,
+    isOpenBudget,
+  )
+
+  const healthFactor = isOpenBudget
+    ? openBudgetHealthFactor
+    : initialHealthFactor
 
   const submitDcaOrder = useSubmitDcaOrder()
 
@@ -68,13 +85,8 @@ export const Dca: FC = () => {
       ? healthFactorRiskAccepted
       : true
 
-  const isCollateralWarning = warnings.includes(DcaValidationWarning.Collateral)
-
   const isSubmitEnabled =
-    isFormValid &&
-    isPriceImpactCheckSatisfied &&
-    isHealthFactorCheckSatisfied &&
-    !isCollateralWarning
+    isFormValid && isPriceImpactCheckSatisfied && isHealthFactorCheckSatisfied
 
   const isHealthFactorShown =
     form.formState.errors.sellAmount?.message !== maxBalanceError
@@ -145,9 +157,10 @@ export const Dca: FC = () => {
         <DcaWarnings
           isFormValid={isFormValid}
           order={order}
+          isOpenBudget={isOpenBudget}
           warnings={warnings}
-          priceImpactLossAccepted={priceImpactLossAccepted}
           healthFactor={healthFactor}
+          priceImpactLossAccepted={priceImpactLossAccepted}
           healthFactorRiskAccepted={healthFactorRiskAccepted}
           onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
           onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
@@ -158,7 +171,7 @@ export const Dca: FC = () => {
           isLoading={isLoading}
         />
         <SwapSectionSeparator />
-        <DcaFooter isEnabled={isSubmitEnabled} />
+        <DcaFooter isEnabled={isSubmitEnabled} isOpenBudget={isOpenBudget} />
       </form>
     </FormProvider>
   )
