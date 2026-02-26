@@ -368,13 +368,10 @@ export const useOmnipoolStablepools = () => {
 
         lpFeeOmnipool = isNative ? undefined : feeByAsset.get(poolId)
 
-        totalFee =
-          lpFeeStablepool || lpFeeOmnipool
-            ? Big(lpFeeStablepool ?? 0)
-                .plus(lpFeeOmnipool ?? 0)
-                .plus(totalApr)
-                .toString()
-            : undefined
+        totalFee = Big(lpFeeStablepool ?? 0)
+          .plus(lpFeeOmnipool ?? 0)
+          .plus(totalApr)
+          .toString()
       }
 
       if (borrowApyData?.totalSupplyApy) {
