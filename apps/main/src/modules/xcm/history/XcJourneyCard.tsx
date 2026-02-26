@@ -21,7 +21,10 @@ import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetL
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
-import { resolveNetwork } from "@/modules/xcm/history/utils/assets"
+import {
+  getTransferAsset,
+  resolveNetwork,
+} from "@/modules/xcm/history/utils/assets"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = ({
@@ -41,16 +44,9 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
 
   const originNetwork = resolveNetwork(origin)
   const destinationNetwork = resolveNetwork(destination)
-
-  // TODO: fix this in SDK, types are wrong
-  const assetsArray = Array.isArray(assets) ? assets : assets ? [assets] : []
-  const transferAsset =
-    assetsArray.find((a) => a.role === "transfer") || assetsArray[0]
+  const transferAsset = getTransferAsset(assets)
 
   const link = xcscan.tx(correlationId)
-
-  const isValidAsset =
-    !!transferAsset && !!transferAsset.symbol && !!transferAsset.decimals
 
   return (
     <Stack as={Paper} px="primary">
@@ -101,7 +97,7 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
       <Separator mx="-primary" />
 
       <Flex align="center">
-        {isValidAsset && (
+        {transferAsset && (
           <Flex gap="base" py="m" align="center" mr={["l", "xl"]}>
             <JourneyAssetLogo assetKey={transferAsset.asset} size="small" />
             <Stack>

@@ -22,6 +22,7 @@ import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainL
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
+import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { toDecimal } from "@/utils/formatting"
 
 const columnHelper = createColumnHelper<XcJourney>()
@@ -79,19 +80,9 @@ export const useXcScanHistoryColumns = () => {
       id: XcScanHistoryTableColumnId.Assets,
       header: t("asset"),
       cell: ({ row }) => {
-        const assets = row.original.assets
+        const transferAsset = getTransferAsset(row.original.assets)
 
-        // TODO: fix this in SDK, types are wrong
-        const assetsArray = Array.isArray(assets)
-          ? assets
-          : assets
-            ? [assets]
-            : []
-
-        const transferAsset =
-          assetsArray.find((a) => a.role === "transfer") || assetsArray[0]
-
-        if (!transferAsset?.symbol) return null
+        if (!transferAsset) return null
 
         return (
           <Flex gap="base" align="center">

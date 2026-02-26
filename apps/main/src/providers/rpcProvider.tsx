@@ -1,8 +1,8 @@
-import { log } from "@galacticcouncil/common"
 import { hydration, hydrationNext } from "@galacticcouncil/descriptors"
 import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
+  logger,
 } from "@galacticcouncil/utils"
 import {
   QueryClient,
@@ -64,16 +64,16 @@ export const useRpcProvider = () => useContext(ProviderContext)
 const logWsStatusChange = (status: StatusChange) => {
   switch (status.type) {
     case WsEvent.CONNECTING:
-      log.logger.debug("[WS] CONNECTING", status.uri)
+      logger.info("[WS] CONNECTING", status.uri)
       break
     case WsEvent.CONNECTED:
-      log.logger.debug("[WS] CONNECTED", status.uri)
+      logger.info("[WS] CONNECTED", status.uri)
       break
     case WsEvent.CLOSE:
-      log.logger.debug("[WS] CLOSED", status.event)
+      logger.info("[WS] CLOSED", status.event)
       break
     case WsEvent.ERROR:
-      log.logger.error("[WS] ERROR", status)
+      logger.error("[WS] ERROR", status)
       break
   }
 }

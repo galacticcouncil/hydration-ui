@@ -2114,10 +2114,10 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.14.0":
-  version "0.14.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.14.0.tgz#b70e3a1d224ffe181e35a7146e092a4a922c65ab"
-  integrity sha512-SLfsXQNx/gsIL/iNfwtgveHV5RJ1wiVpibMy8ldR9fgC7cMQBFYOqac7XGWJwbE6ZJ+8b5SSwTjq9dCcPNfvGw==
+"@galacticcouncil/xc-cfg@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.15.0.tgz#4ca92acf30bd9a062d05fceba336939b23c6b477"
+  integrity sha512-niIwNqgHIauMAOp2Q+jbZjdc24hmPRb6eSVLEybphnDPxsQ40cM+EfJLQP5s9yXA4H6VNhEgfpyEtdfl9+VSxg==
   dependencies:
     "@galacticcouncil/xc-core" "^0.12.0"
 
@@ -2140,15 +2140,15 @@
     bs58 "^6.0.0"
     buffer "^6.0.3"
 
-"@galacticcouncil/xc-scan@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.1.0.tgz#553148932d0b3135da6f0aef6954459f5485c437"
-  integrity sha512-gxPpIeOojJ5dt7r2X4DqQcItGREPebidfhpeAtRqeQuGZx80+2gZcFcvlwT5QLySgb7pwKfgUMIrYcDwb4jHjA==
+"@galacticcouncil/xc-scan@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.2.0.tgz#465e6a74ce78ff3cde16df57e3885d4cafcbf796"
+  integrity sha512-MQOye4BvkZg5JnOuKoJTeY9WLQ6Ah+5imcov/C5NWPZWqib7LBJwlMrNQ2+d0GcWLvxPBWPtTLbH5EBZsCaBHw==
 
-"@galacticcouncil/xc-sdk@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.6.0.tgz#db0c733d83d51553389b3c3148f0f8afd857c51f"
-  integrity sha512-0epA05RMeJiXrF7X5clXopIQMOmwWLj4jbLM8Q0jKs3CzzN+KgvM+8jfpxgtti5Bom/UdrNlhBWIva9xkuvMQQ==
+"@galacticcouncil/xc-sdk@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.6.1.tgz#4a21761f5aed81175c35a1759584c082d1f956bc"
+  integrity sha512-q3ob67il96ozpiUus0zA3i54f0Ypw32TFffxjXND4XVyLfRSFpmbCAQDPRQ31i09dBI7698RWAJbzM4OSADjJg==
   dependencies:
     "@galacticcouncil/xc-core" "^0.12.0"
 

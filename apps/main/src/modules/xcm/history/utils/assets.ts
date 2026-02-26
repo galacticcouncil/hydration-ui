@@ -1,4 +1,6 @@
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
+import { XcAssetOperation } from "@galacticcouncil/xc-scan"
+import { isNumber, isString } from "remeda"
 
 const networkToEcosystem: Record<string, ChainEcosystem> = {
   polkadot: ChainEcosystem.Polkadot,
@@ -58,5 +60,30 @@ export function resolveAssetIcon(key: string) {
     ...network,
     networkUrn,
     assetId,
+  }
+}
+
+export type XcJourneyTransferAsset = Omit<
+  XcAssetOperation,
+  "symbol" | "decimals"
+> & {
+  symbol: string
+  decimals: number
+}
+
+export function getTransferAsset(
+  assets: XcAssetOperation[],
+): XcJourneyTransferAsset | undefined {
+  const asset = assets.find((a) => a.role === "transfer") || assets[0]
+  if (
+    isString(asset?.symbol) &&
+    isNumber(asset?.decimals) &&
+    isFinite(asset.decimals)
+  ) {
+    return {
+      ...asset,
+      symbol: asset.symbol,
+      decimals: asset.decimals,
+    }
   }
 }
