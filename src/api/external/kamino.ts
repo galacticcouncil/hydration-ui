@@ -10,7 +10,6 @@ import { QUERY_KEYS } from "utils/queryKeys"
 import { z } from "zod"
 import BN from "bignumber.js"
 
-//TODO: probably change indexer to orca
 const getKaminoEndpoint = (yieldSource: string) =>
   `https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/proxy/kamino/yields/${yieldSource}/history`
 
