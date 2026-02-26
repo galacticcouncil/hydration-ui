@@ -7,6 +7,8 @@ import {
   getAssetIdFromAddress,
   GETH_ASSET_ID,
   GETH_ERC20_ID,
+  GSOL_ASSET_ID,
+  GSOL_ERC20_ID,
 } from "@galacticcouncil/utils"
 
 import { AssetLabelFullContainer } from "@/components/AssetLabelFull"
@@ -21,6 +23,7 @@ export type ReserveLabelProps = {
 const RESERVE_LOGO_OVERRIDE_MAP: Record<string, string> = {
   [GDOT_ASSET_ID]: GDOT_ERC20_ID,
   [GETH_ASSET_ID]: GETH_ERC20_ID,
+  [GSOL_ASSET_ID]: GSOL_ERC20_ID,
 }
 
 export const ReserveLabel: React.FC<ReserveLabelProps> = ({

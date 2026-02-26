@@ -22,6 +22,9 @@ export const HUSDE_ASSET_ID = "113"
 export const PRIME_ASSET_ID = "43"
 export const PRIME_ERC20_ID = "1043"
 export const PRIME_STABLESWAP_ASSET_ID = "143"
+export const GSOL_ASSET_ID = "90001"
+export const GSOL_ERC20_ID = "9001"
+export const JITOSOL_ASSET_ID = "40"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
@@ -30,8 +33,8 @@ export const HOLLAR_ASSETS = [
   HUSDE_ASSET_ID,
 ]
 
-export const GIGA_ASSETS = [GDOT_ASSET_ID, GETH_ASSET_ID]
-export const GIGA_ERC20 = [GDOT_ERC20_ID, GETH_ERC20_ID]
+export const GIGA_ASSETS = [GDOT_ASSET_ID, GETH_ASSET_ID, GSOL_ASSET_ID]
+export const GIGA_ERC20 = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
 
 export const MONEY_MARKET_STRATEGY_ASSETS = [
   ...GIGA_ASSETS,

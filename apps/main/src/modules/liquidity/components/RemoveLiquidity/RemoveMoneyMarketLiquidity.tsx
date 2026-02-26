@@ -130,7 +130,7 @@ export const RemoveMoneyMarketLiquidityForm = (
               name="split"
               render={({ field: { value, onChange } }) => (
                 <Flex align="center" justify="space-between">
-                  <Text>
+                  <Text fs="p3">
                     {t("liquidity.remove.stablepool.modal.proportionally")}
                   </Text>
                   <Toggle

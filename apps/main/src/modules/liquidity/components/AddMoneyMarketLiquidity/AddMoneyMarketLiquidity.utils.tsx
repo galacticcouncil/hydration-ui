@@ -1,4 +1,3 @@
-import { GETH_ERC20_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -14,6 +13,7 @@ import {
   healthFactorQuery,
 } from "@/api/aave"
 import { omnipoolMiningPositionsKey, omnipoolPositionsKey } from "@/api/account"
+import { useOmnipoolIds } from "@/api/pools"
 import { bestSellWithTxQuery } from "@/api/trade"
 import {
   useCheckJoinOmnipoolFarm,
@@ -53,6 +53,8 @@ export const useAddMoneyMarketLiquidityWrapper = ({
   const { getAssetWithFallback } = useAssets()
   const { balances } = useAccountBalances()
   const addableReserves = useAddableStablepoolTokens(stableswapId, reserves)
+  const { data: omnipoolIds } = useOmnipoolIds()
+  const isAddableToOmnipool = omnipoolIds?.includes(erc20Id)
 
   const stablepoolAssets = useMemo(() => {
     return reserves.map((reserve) => ({
@@ -74,8 +76,9 @@ export const useAddMoneyMarketLiquidityWrapper = ({
       ),
     ]),
   )
-  const isGeth = erc20Id === GETH_ERC20_ID
-  const defaultOption = initialOption || (isGeth ? "omnipool" : "stablepool")
+
+  const defaultOption =
+    initialOption || (isAddableToOmnipool ? "omnipool" : "stablepool")
 
   const assetsToSelect = useAssetsToAddToMoneyMarket({
     stableswapId,
@@ -90,7 +93,7 @@ export const useAddMoneyMarketLiquidityWrapper = ({
 
   const form = useStablepoolAddLiquidityForm({
     stablepoolId: stableswapId,
-    omnipoolId: isGeth ? GETH_ERC20_ID : stableswapId,
+    omnipoolId: isAddableToOmnipool ? erc20Id : stableswapId,
     selectedAssetId: initialAssetIdToAdd ?? "",
     accountBalances,
     option: defaultOption,

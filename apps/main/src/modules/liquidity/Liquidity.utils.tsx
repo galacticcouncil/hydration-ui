@@ -368,13 +368,10 @@ export const useOmnipoolStablepools = () => {
 
         lpFeeOmnipool = isNative ? undefined : feeByAsset.get(poolId)
 
-        totalFee =
-          lpFeeStablepool || lpFeeOmnipool
-            ? Big(lpFeeStablepool ?? 0)
-                .plus(lpFeeOmnipool ?? 0)
-                .plus(totalApr)
-                .toString()
-            : undefined
+        totalFee = Big(lpFeeStablepool ?? 0)
+          .plus(lpFeeOmnipool ?? 0)
+          .plus(totalApr)
+          .toString()
       }
 
       if (borrowApyData?.totalSupplyApy) {
@@ -418,12 +415,11 @@ export const useOmnipoolStablepools = () => {
           ? getOmnipoolTradability(pool.tradeable)
           : { canAddLiquidity: false, canRemoveLiquidity: false }
 
+      const isOverrideMeta = OVERRIDE_META.includes(poolId)
+
       return {
         id: poolId,
-        meta:
-          aStableswapAsset && OVERRIDE_META.includes(poolId)
-            ? aStableswapAsset
-            : meta,
+        meta: aStableswapAsset && isOverrideMeta ? aStableswapAsset : meta,
         price,
         tvlDisplay,
         lpFeeOmnipool,

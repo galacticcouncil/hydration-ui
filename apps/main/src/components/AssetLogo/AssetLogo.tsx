@@ -4,7 +4,11 @@ import {
   AssetLogoProps as AssetLogoPrimitiveProps,
   MultipleAssetLogoWrapper,
 } from "@galacticcouncil/ui/components"
-import { GDOT_ERC20_ID, GETH_ERC20_ID } from "@galacticcouncil/utils"
+import {
+  GDOT_ERC20_ID,
+  GETH_ERC20_ID,
+  GSOL_ERC20_ID,
+} from "@galacticcouncil/utils"
 import { useMemo } from "react"
 
 import {
@@ -28,7 +32,7 @@ type AssetLogoProps = Omit<AssetLogoPrimitiveProps, "id"> & {
   isLoading?: boolean
 }
 
-const ATOKEN_DECOR_BLACKLIST = [GDOT_ERC20_ID, GETH_ERC20_ID]
+const ATOKEN_DECOR_BLACKLIST = [GDOT_ERC20_ID, GETH_ERC20_ID, GSOL_ERC20_ID]
 
 export const AssetLogo: React.FC<AssetLogoProps> = ({
   id,

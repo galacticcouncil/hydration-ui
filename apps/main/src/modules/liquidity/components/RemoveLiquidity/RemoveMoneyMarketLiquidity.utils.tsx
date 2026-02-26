@@ -1,7 +1,8 @@
+import { GSOL_ERC20_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { prop } from "remeda"
 import { useDebounce } from "use-debounce"
@@ -86,26 +87,31 @@ export const useRemoveMoneyMarketLiquidity = ({
     receiveAsset.decimals,
   )
 
-  const receiveAssetsProportionally = (() => {
-    const totalIssuance = pool.totalIssuance.toString()
-    const fee = calculatePoolFee(pool.fee)
-    const minReceive = Big(tradeMinReceive)
+  const getMinAssetsOut = useCallback(
+    (value: string) => {
+      const totalIssuance = pool.totalIssuance.toString()
+      const fee = calculatePoolFee(pool.fee)
+      const minReceive = Big(value)
 
-    if (fee) {
-      return reserves.map((reserve) => {
-        const maxValue = minReceive
-          .div(totalIssuance)
-          .times(reserve.amount)
-          .toFixed(0)
+      if (fee) {
+        return reserves.map((reserve) => {
+          const maxValue = minReceive
+            .div(totalIssuance)
+            .times(reserve.amount)
+            .toFixed(0)
 
-        const value = Big(maxValue)
-          .minus(Big(slippage).times(maxValue).div(100))
-          .toFixed(0)
+          const value = Big(maxValue)
+            .minus(Big(slippage).times(maxValue).div(100))
+            .toFixed(0)
 
-        return { value, asset: reserve.meta }
-      })
-    }
-  })()
+          return { value, asset: reserve.meta }
+        })
+      }
+    },
+    [pool.totalIssuance, pool.fee, slippage, reserves],
+  )
+
+  const receiveAssetsProportionally = getMinAssetsOut(tradeMinReceive)
 
   const receiveErc20Asset = receiveAssetsProportionally?.find((asset) =>
     isErc20AToken(asset.asset),
@@ -138,9 +144,106 @@ export const useRemoveMoneyMarketLiquidity = ({
         throw new Error("Receive assets not found")
       if (!account) throw new Error("Account not found")
 
-      const { papi } = rpc
+      const { papi, sdk } = rpc
 
       const swapTx = trade?.tx
+
+      // since gsol can have different trade routes, submit should be execetued in two steps
+      if (erc20Id === GSOL_ERC20_ID && split) {
+        const initialBalance = await getTransferableBalance(erc20Id)
+
+        await createTransaction({
+          tx: [
+            {
+              stepTitle: t("liquidity.remove.modal.stepper.sellAsset", {
+                symbol: meta.symbol,
+              }),
+              tx: async () => {
+                const tx = papi.tx.Dispatcher.dispatch_with_extra_gas({
+                  call: swapTx.decodedCall,
+                  extra_gas: AAVE_GAS_LIMIT,
+                })
+
+                const tOptions = {
+                  value: debouncedAmount,
+                  symbol: meta.symbol,
+                }
+
+                const toasts = {
+                  submitted: t(
+                    "liquidity.remove.sell.modal.toast.submitted",
+                    tOptions,
+                  ),
+                  success: t(
+                    "liquidity.remove.sell.modal.toast.success",
+                    tOptions,
+                  ),
+                }
+
+                return {
+                  tx,
+                  toasts,
+                }
+              },
+            },
+            {
+              stepTitle: t("liquidity.remove.modal.stepper.withdrawLiquidity"),
+              onSubmitted,
+              tx: async () => {
+                const { client } = sdk
+                const { balance } = client
+
+                const allShares = await balance.getBalance(
+                  account?.address ?? "",
+                  pool.id,
+                )
+
+                const diffShares = allShares.transferable - initialBalance
+
+                const limits = getMinAssetsOut(diffShares.toString())?.map(
+                  (minAssetOut) => {
+                    return {
+                      amount: BigInt(minAssetOut.value),
+                      asset_id: Number(minAssetOut.asset.id),
+                    }
+                  },
+                )
+
+                if (!limits) throw new Error("Limits not found")
+
+                const tOptions = {
+                  value: removeAmountShifted,
+                  symbol: t("shares"),
+                  where: meta.symbol,
+                }
+                const toasts = {
+                  submitted: t(
+                    "liquidity.remove.moneyMarket.modal.toast.submitted",
+                    tOptions,
+                  ),
+                  success: t(
+                    "liquidity.remove.moneyMarket.modal.toast.success",
+                    tOptions,
+                  ),
+                }
+
+                const tx = papi.tx.Stableswap.remove_liquidity({
+                  pool_id: Number(pool.id),
+                  share_amount: BigInt(removeAmount.toFixed(0)),
+                  min_amounts_out: limits,
+                })
+
+                return {
+                  tx,
+                  toasts: toasts,
+                }
+              },
+            },
+          ],
+        })
+
+        return
+      }
 
       let tx: AnyTransaction | undefined
 
