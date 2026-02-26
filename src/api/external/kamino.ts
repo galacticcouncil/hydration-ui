@@ -12,7 +12,7 @@ import BN from "bignumber.js"
 
 //TODO: probably change indexer to orca
 const getKaminoEndpoint = (yieldSource: string) =>
-  `https://galacticcouncil.squids.live/hydration-pools:orca-prod-pool-01/api/proxy/kamino/yields/${yieldSource}/history`
+  `https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/proxy/kamino/yields/${yieldSource}/history`
 
 export const ASSET_ID_TO_KAMINO_ID: Record<string, string> = {
   [PRIME_ASSET_ID]: "3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7",
