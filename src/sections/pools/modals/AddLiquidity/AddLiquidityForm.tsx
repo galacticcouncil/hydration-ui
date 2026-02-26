@@ -98,8 +98,13 @@ export const AddLiquidityForm = ({
 
   const [debouncedAmount] = useDebouncedValue(watch("amount"), 300)
 
-  const { totalShares, omnipoolFee, assetBalance, sharesToGet, isGETH } =
-    useAddLiquidity(poolId, selectedAssetId, debouncedAmount)
+  const {
+    totalShares,
+    omnipoolFee,
+    assetBalance,
+    sharesToGet,
+    isErc20InOmnipool,
+  } = useAddLiquidity(poolId, selectedAssetId, debouncedAmount)
 
   const hfChange = useHealthFactorChange({
     assetId: selectedAssetId,
@@ -112,7 +117,7 @@ export const AddLiquidityForm = ({
   )
 
   const balance = assetBalance?.transferable ?? "0"
-  const balanceMax = isGETH
+  const balanceMax = isErc20InOmnipool
     ? balance
     : estimatedFees.accountCurrencyId === assetMeta.id
       ? BN(balance)

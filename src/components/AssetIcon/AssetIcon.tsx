@@ -19,7 +19,11 @@ import { useExternalAssetsMetadata } from "state/store"
 import { useShallow } from "hooks/useShallow"
 import { TExternalAsset } from "sections/wallet/addToken/AddToken.utils"
 import { pick } from "utils/rx"
-import { GDOT_ERC20_ASSET_ID, GETH_ERC20_ASSET_ID } from "utils/constants"
+import {
+  GDOT_ERC20_ASSET_ID,
+  GETH_ERC20_ASSET_ID,
+  GSOL_ERC20_ASSET_ID,
+} from "utils/constants"
 import { ChainEcosystem } from "@galacticcouncil/xcm-core"
 
 export const UigcAssetPlaceholder = createComponent({
@@ -49,6 +53,7 @@ export const UigcChainLogo = createComponent({
 const A_TOKEN_HIGHLIGHT_RING_BLACKLIST = [
   GDOT_ERC20_ASSET_ID,
   GETH_ERC20_ASSET_ID,
+  GSOL_ERC20_ASSET_ID,
 ]
 
 export const MultipleAssetLogo = ({
