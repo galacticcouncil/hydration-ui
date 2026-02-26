@@ -4,6 +4,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { getProviderDataEnv } from "@/api/provider"
+import { ENV } from "@/config/env"
 import { TDataEnv } from "@/config/rpc"
 
 type RpcListStore = {
@@ -98,8 +99,8 @@ type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
 export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
   persist(
     (set, get) => ({
-      rpcUrl: import.meta.env.VITE_PROVIDER_URL,
-      squidUrl: import.meta.env.VITE_SQUID_URL,
+      rpcUrl: ENV.VITE_PROVIDER_URL,
+      squidUrl: ENV.VITE_SQUID_URL,
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
