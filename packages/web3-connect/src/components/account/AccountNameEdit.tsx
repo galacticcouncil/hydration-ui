@@ -11,6 +11,7 @@ export const AccountNameEdit: FC<Props> = ({ name, onChange, onCancel }) => {
   return (
     <Input
       autoFocus
+      customSize="small"
       defaultValue={name}
       onKeyDown={(e) => {
         if (e.key === "Enter") {

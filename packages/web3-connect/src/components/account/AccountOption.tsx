@@ -57,7 +57,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
       className={className}
       data-active={isActive}
       data-proxy={isProxy}
-      {...(onSelect
+      {...(onSelect && !isEditing
         ? {
             onClick: () => onSelect(account),
           }
