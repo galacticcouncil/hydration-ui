@@ -51,6 +51,9 @@ const getColor = (cssKey: "color" | "background") =>
     error: css`
       ${cssKey}: ${theme.accents.danger.secondary};
     `,
+    info: css`
+      ${cssKey}: ${theme.accents.info.onPrimary};
+    `,
     submitted: css`
       ${cssKey}:${theme.text.tint.secondary};
     `,

@@ -10,11 +10,16 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
+import { useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainBalance } from "@/api/xcm"
+import {
+  insertOptimisticJourney,
+  removeOptimisticJourney,
+} from "@/modules/xcm/history/utils/optimistic"
 import { ChainAssetSelectModalSelectionChange } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { ChainSwitch } from "@/modules/xcm/transfer/components/ChainSwitch"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
@@ -74,8 +79,26 @@ export const XcmForm = () => {
   const { data: srcBalances } = useCrossChainBalance(srcAddress, srcChainKey)
   const { data: destBalances } = useCrossChainBalance(destAddress, destChainKey)
 
+  const queryClient = useQueryClient()
+
   const submit = useSubmitXcmTransfer({
-    onSubmitted: resetAmounts,
+    onTransferSubmitted: (txHash, values, transfer) => {
+      if (account) {
+        insertOptimisticJourney(
+          queryClient,
+          account.address,
+          txHash,
+          values,
+          transfer,
+        )
+      }
+      resetAmounts()
+    },
+    onTransferError: (txHash) => {
+      if (account) {
+        removeOptimisticJourney(queryClient, account.address, txHash)
+      }
+    },
   })
 
   function onConnect() {

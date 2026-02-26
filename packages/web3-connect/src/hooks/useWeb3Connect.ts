@@ -188,20 +188,11 @@ export const useWeb3Connect = create<WalletProviderStore>()(
       },
       getProviders: (mode: WalletMode) => {
         const { providers } = get()
-
-        if (mode === WalletMode.Default) {
-          return providers
-        }
-
-        return providers.filter(({ type }) => {
-          const providers = PROVIDERS_BY_WALLET_MODE[mode]
-
-          if (providers.length > 0) {
-            return providers.includes(type)
-          }
-
-          return true
-        })
+        const providersByMode = PROVIDERS_BY_WALLET_MODE[mode]
+        return providers.filter(
+          ({ type }) =>
+            !providersByMode.length || providersByMode.includes(type),
+        )
       },
       getConnectedProviders: (mode: WalletMode) => {
         const { getProviders } = get()

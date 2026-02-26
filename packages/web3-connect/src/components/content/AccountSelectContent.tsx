@@ -100,12 +100,12 @@ export const AccountSelectContent = () => {
     [isControlled, onAccountSelect, toggle],
   )
 
-  const shouldRenderSearch = accounts.length > 1
-  const shouldRenderHeader =
-    !isProvidersConnecting && (isDefaultMode || shouldRenderSearch)
-
   const { accountsWithBalances, areBalancesLoading } =
     useAccountsWithBalance(accountList)
+
+  const shouldRenderSearch = accountsWithBalances.length > 1
+  const shouldRenderHeader =
+    !isProvidersConnecting && (isDefaultMode || shouldRenderSearch)
 
   return (
     <>

@@ -17,7 +17,7 @@ export function resolveNetwork(networkUrn: string) {
   if (!ecosystem || !chainId) return
   return {
     ecosystem,
-    chainId,
+    chainId: Number(chainId),
   }
 }
 

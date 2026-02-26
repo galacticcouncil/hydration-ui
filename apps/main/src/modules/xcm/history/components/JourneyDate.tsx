@@ -3,7 +3,7 @@ import { differenceInHours } from "date-fns"
 import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 
-import { TimeAgo } from "@/components/TimeAgo"
+import { RelativeDateText } from "@/components/RelativeDateText"
 
 export type JourneyDateProps = TextProps & {
   timestamp: number
@@ -24,7 +24,7 @@ export const JourneyDate: React.FC<JourneyDateProps> = ({
   if (isWithin24Hours) {
     return (
       <Tooltip text={t("date.datetime", { value: date })} side="left">
-        <TimeAgo date={date} {...props} />
+        <RelativeDateText date={date} {...props} />
       </Tooltip>
     )
   }

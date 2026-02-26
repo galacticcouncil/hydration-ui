@@ -1,15 +1,19 @@
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { SolanaChain } from "@galacticcouncil/xc-core"
-import {
-  Connection,
-  Keypair,
-  MessageV0,
-  SignatureResult,
-  VersionedTransaction,
-} from "@solana/web3.js"
-import waitFor from "p-wait-for"
+import { SolanaCall, SolanaLilJit } from "@galacticcouncil/xc-sdk"
+import { Connection, Keypair, SignatureResult } from "@solana/web3.js"
+import { Buffer } from "buffer"
+import waitFor, { TimeoutError } from "p-wait-for"
 
 import { SolanaInjectedWindowProvider } from "@/types/solana"
+import { dataToVersionedTx } from "@/utils/solana"
+
+enum SolanaTxError {
+  TIMEOUT = "Transaction timed out",
+  SIGNING_FAILED = "Signing transaction failed",
+  SIMULATION_FAILED = "Simulating transaction failed",
+  SENDING_FAILED = "Sending transaction failed",
+}
 
 export type SolanaTxStatus = SignatureResult
 
@@ -24,10 +28,13 @@ export class SolanaSigner {
   address: string
   provider: SolanaInjectedWindowProvider
   connection: Connection
+  lilJit: SolanaLilJit
   constructor(address: string, provider: SolanaInjectedWindowProvider) {
+    const chain = chainsMap.get("solana") as SolanaChain
     this.address = address
     this.provider = provider
     this.connection = (chainsMap.get("solana") as SolanaChain).connection
+    this.lilJit = new SolanaLilJit(chain)
   }
 
   async getTransactionStatus(hash: string) {
@@ -53,19 +60,37 @@ export class SolanaSigner {
     )
   }
 
+  async waitForBundle(bundleId: string, onError: (error: string) => void) {
+    return waitFor(
+      async () => {
+        const result = await this.lilJit.getInflightBundleStatuses([bundleId])
+        const bundle = result.value.find((b) => b.bundle_id === bundleId)
+        return bundle?.status === "Landed" && waitFor.resolveWith(bundle)
+      },
+      {
+        interval: 5000,
+        timeout: 60000,
+      },
+    ).catch((error) => {
+      onError(
+        error instanceof TimeoutError
+          ? SolanaTxError.TIMEOUT
+          : error instanceof Error
+            ? error.message
+            : SolanaTxError.SENDING_FAILED,
+      )
+      throw error
+    })
+  }
+
   async signAndSend(
     data: string,
     signers: Keypair[],
     options: SolanaSignerOptions,
   ) {
-    const mssgBuffer = Buffer.from(data, "hex")
-    const mssgArray = Uint8Array.from(mssgBuffer)
-    const mssgV0 = MessageV0.deserialize(mssgArray)
-    const versioned = new VersionedTransaction(mssgV0)
+    const versioned = dataToVersionedTx(data, signers)
 
     await this.provider.connect()
-
-    versioned.sign(signers)
 
     try {
       const { signature } =
@@ -85,7 +110,44 @@ export class SolanaSigner {
       return status
     } catch (error) {
       options.onError(
-        error instanceof Error ? error.message : "Error signing transaction",
+        error instanceof Error ? error.message : SolanaTxError.SIGNING_FAILED,
+      )
+      throw error
+    }
+  }
+
+  async signAndSendBatch(calls: SolanaCall[], options: SolanaSignerOptions) {
+    const versioned = calls.map((c) => dataToVersionedTx(c.data, c.signers))
+
+    await this.provider.connect()
+
+    const signed = await this.provider.signAllTransactions(versioned)
+
+    const encoded = signed.map((s) => {
+      return Buffer.from(s.serialize()).toString("base64")
+    })
+
+    try {
+      const simulation = await this.lilJit.simulateBundle(encoded)
+
+      if (simulation.value.summary !== "succeeded") {
+        const errorObj = simulation.value.summary.failed
+        const [_, message] = errorObj.error.TransactionFailure
+        options.onSubmitted(errorObj.tx_signature)
+        options.onError(message)
+        throw new Error(message || SolanaTxError.SIMULATION_FAILED)
+      }
+
+      const bundleId = await this.lilJit.sendBundle(encoded)
+      options.onSubmitted(bundleId)
+      const bundle = await this.waitForBundle(bundleId, options.onError)
+      options.onSuccess({ err: null })
+      options.onFinalized({ err: null })
+
+      return { bundleId, bundle }
+    } catch (error) {
+      options.onError(
+        error instanceof Error ? error.message : SolanaTxError.SIGNING_FAILED,
       )
       throw error
     }

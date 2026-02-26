@@ -16,37 +16,47 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
+import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
+import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
   getTransferAsset,
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
+import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
+import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
-export const XcJourneyCard: React.FC<XcJourney> = ({
-  origin,
-  destination,
-  assets,
-  sentAt,
-  correlationId,
-  status,
-  fromFormatted,
-  from,
-  toFormatted,
-  to,
-  totalUsd,
-}) => {
+export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
+  const {
+    origin,
+    destination,
+    assets,
+    sentAt,
+    correlationId,
+    status,
+    fromFormatted,
+    from,
+    toFormatted,
+    to,
+    totalUsd,
+  } = journey
   const { t } = useTranslation(["common", "xcm"])
+  const { pendingCorrelationIds } = usePendingClaimsStore()
 
   const originNetwork = resolveNetwork(origin)
   const destinationNetwork = resolveNetwork(destination)
   const transferAsset = getTransferAsset(assets)
 
   const link = xcscan.tx(correlationId)
+
+  const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
+  const isClaimable = isNotPending && isJourneyClaimable(journey)
 
   return (
     <Stack as={Paper} px="primary">
@@ -110,9 +120,11 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
                   symbol: transferAsset.symbol,
                 })}
               </Text>
-              <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                {t("currency", { value: totalUsd })}
-              </Text>
+              {isNumber(totalUsd) && totalUsd > 0 && (
+                <Text fs="p6" lh={1} color={getToken("text.medium")}>
+                  {t("currency", { value: totalUsd })}
+                </Text>
+              )}
             </Stack>
           </Flex>
         )}
@@ -131,9 +143,16 @@ export const XcJourneyCard: React.FC<XcJourney> = ({
         </Stack>
 
         <Flex py="m" gap="s" ml="auto">
-          <Button variant="accent" outline asChild>
-            <ExternalLink href={link}>Details</ExternalLink>
-          </Button>
+          {isClaimable && <ClaimButton journey={journey} />}
+          {isOptimisticJourney(journey) ? (
+            <Button variant="accent" outline disabled>
+              {t("details")}
+            </Button>
+          ) : (
+            <Button variant="accent" outline asChild>
+              <ExternalLink href={link}>{t("details")}</ExternalLink>
+            </Button>
+          )}
         </Flex>
       </Flex>
     </Stack>

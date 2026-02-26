@@ -12,7 +12,7 @@
     r="24"
     fill="none"
     stroke="url(#spinner-circle-gradient)"
-    stroke-width="3"
+    stroke-width="4"
     stroke-linecap="round"
     stroke-dasharray="70 100"
   >

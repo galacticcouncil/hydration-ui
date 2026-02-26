@@ -1,5 +1,6 @@
 import {
   DataTable,
+  JsonView,
   Paper,
   TableContainer,
 } from "@galacticcouncil/ui/components"
@@ -8,6 +9,7 @@ import { useTranslation } from "react-i18next"
 import { EmptyState } from "@/components/EmptyState"
 import { useDataTableUrlPagination } from "@/hooks/useDataTableUrlPagination"
 import { useDataTableUrlSorting } from "@/hooks/useDataTableUrlSorting"
+import { getJourneyVaaHeader } from "@/modules/xcm/history/utils/claim"
 
 import { useXcScan } from "./useXcScan"
 import { useXcScanHistoryColumns } from "./XcScanHistoryTable.columns"
@@ -33,6 +35,19 @@ export const XcScanHistory = ({ address }: Props) => {
         paginated
         data={data}
         columns={columns}
+        expandable
+        renderSubComponent={(journey) => {
+          const vaaHeader = getJourneyVaaHeader(journey)
+          return (
+            <JsonView
+              src={{
+                stops: journey.stops,
+                ...(vaaHeader && { vaaHeader }),
+              }}
+              collapseObjectsAfterLength={4}
+            />
+          )
+        }}
         emptyState={
           <EmptyState
             header={t("history.emptyState.noTransfers")}

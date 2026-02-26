@@ -26,7 +26,25 @@ import {
 } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
-export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
+export type XcmTransferOptions = TransactionActions & {
+  onTransferSubmitted?: (
+    txHash: string,
+    values: XcmFormValues,
+    transfer: Transfer,
+  ) => void
+  onTransferSuccess?: (
+    txHash: string,
+    values: XcmFormValues,
+    transfer: Transfer,
+  ) => void
+  onTransferError?: (
+    txHash: string,
+    values: XcmFormValues,
+    transfer: Transfer,
+  ) => void
+}
+
+export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
   const { t } = useTranslation(["xcm", "common"])
   const { createTransaction } = useTransactionsStore()
   const configService = useCrossChainConfigService()
@@ -108,6 +126,7 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
       }
 
       if (isApprove) {
+        let transferTxHash: string | null = null
         return createTransaction(
           {
             tx: [
@@ -146,14 +165,51 @@ export const useSubmitXcmTransfer = (options: TransactionActions = {}) => {
               {
                 stepTitle: t("common:transfer"),
                 tx: buildTransferTransaction,
+                onSubmitted: (txHash: string) => {
+                  transferTxHash = txHash
+                  options.onTransferSubmitted?.(txHash, values, transfer)
+                },
               },
             ],
           },
-          options,
+          {
+            ...options,
+            onSuccess: (event) => {
+              if (transferTxHash) {
+                options.onTransferSuccess?.(transferTxHash, values, transfer)
+              }
+              options.onSuccess?.(event)
+            },
+            onError: (message) => {
+              if (transferTxHash) {
+                options.onTransferError?.(transferTxHash, values, transfer)
+              }
+              options.onError?.(message)
+            },
+          },
         )
       }
 
-      return createTransaction(await buildTransferTransaction(), options)
+      let submittedTxHash: string | null = null
+      return createTransaction(await buildTransferTransaction(), {
+        ...options,
+        onSubmitted: (txHash) => {
+          submittedTxHash = txHash
+          options.onTransferSubmitted?.(txHash, values, transfer)
+          options.onSubmitted?.(txHash)
+        },
+        onSuccess: (event) => {
+          if (submittedTxHash) {
+            options.onTransferSuccess?.(submittedTxHash, values, transfer)
+          }
+          options.onSuccess?.(event)
+        },
+        onError: (message) => {
+          if (submittedTxHash)
+            options.onTransferError?.(submittedTxHash, values, transfer)
+          options.onError?.(message)
+        },
+      })
     },
   })
 }
