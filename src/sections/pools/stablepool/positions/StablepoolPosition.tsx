@@ -31,7 +31,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
   const refetchAccountAssets = useRefetchAccountAssets()
   const { getAssetWithFallback } = useAssets()
 
-  const { isGETH, isInOmnipool, poolId } = pool
+  const { isErc20InOmnipool, isInOmnipool, poolId } = pool
   const meta = getAssetWithFallback(poolId)
 
   const [transferOpen, setTransferOpen] = useState(false)
@@ -154,7 +154,7 @@ export const StablepoolPosition = ({ amount }: { amount: BN }) => {
                   gap: 12,
                 }}
               >
-                {isInOmnipool && !isGETH && (
+                {isInOmnipool && !isErc20InOmnipool && (
                   <SOmnipoolButton
                     size="small"
                     fullWidth
