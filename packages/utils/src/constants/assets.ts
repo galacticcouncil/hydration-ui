@@ -22,7 +22,7 @@ export const HUSDE_ASSET_ID = "113"
 export const PRIME_ASSET_ID = "43"
 export const PRIME_ERC20_ID = "1043"
 export const PRIME_STABLESWAP_ASSET_ID = "143"
-export const GSOL_ASSET_ID = "901"
+export const GSOL_ASSET_ID = "90001"
 export const GSOL_ERC20_ID = "9001"
 export const JITOSOL_ASSET_ID = "40"
 
