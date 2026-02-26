@@ -72,7 +72,7 @@ export const USDT_POOL_ASSET_ID = "103"
 export const HOLLAR_ID = "222"
 export const aDOT_ASSET_ID = "1001"
 export const GSOL_ERC20_ASSET_ID = "9001"
-export const GSOL_STABLESWAP_ASSET_ID = "901"
+export const GSOL_STABLESWAP_ASSET_ID = "90001"
 export const JITOSOL_ASSET_ID = "40"
 
 export const HUSDC_ASSET_ID = "110"
