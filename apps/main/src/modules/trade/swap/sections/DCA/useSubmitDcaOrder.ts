@@ -4,10 +4,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import {
-  DcaFormValues,
-  DcaOrdersMode,
-} from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { AnyTransaction } from "@/modules/transactions/types"
 import { useTransactionsStore } from "@/states/transactions"
 import { scaleHuman } from "@/utils/formatting"
@@ -26,7 +23,7 @@ export const useSubmitDcaOrder = () => {
       TradeDcaOrder,
       AnyTransaction,
     ]) => {
-      const { sellAsset, buyAsset, sellAmount, orders } = formValues
+      const { sellAsset, buyAsset, sellAmount } = formValues
 
       if (!sellAsset || !buyAsset || !address) {
         return
@@ -37,7 +34,6 @@ export const useSubmitDcaOrder = () => {
       const buySymbol = buyAsset.symbol
       const duration = getTimeFrameMillis(formValues.duration)
       const frequency = order.tradeCount > 0 ? duration / order.tradeCount : 0
-      const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
 
       const params = {
         amountIn: t("currency", {
@@ -49,24 +45,15 @@ export const useSubmitDcaOrder = () => {
           symbol: sellSymbol,
         }),
         assetOut: buySymbol,
-        frequency: isOpenBudget ? duration : frequency,
+        frequency,
       }
 
       return createTransaction({
         tx: orderTx,
         toasts: {
-          submitted: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.loading`,
-            params,
-          ),
-          success: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.success`,
-            params,
-          ),
-          error: t(
-            `trade:dca.${isOpenBudget ? "openBudget" : "limitedBudget"}.tx.error`,
-            params,
-          ),
+          submitted: t("trade:dca.tx.loading", params),
+          success: t("trade:dca.tx.success", params),
+          error: t("trade:dca.tx.error", params),
         },
       })
     },

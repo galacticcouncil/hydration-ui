@@ -7,7 +7,6 @@ type Props = {
   readonly scheduleId: number
   readonly sold: string | null
   readonly total: string | null
-  readonly openBudget: boolean
   readonly symbol: string
   readonly onClose: () => void
 }
@@ -16,7 +15,6 @@ export const TerminateDcaScheduleModalContent: FC<Props> = ({
   scheduleId,
   sold,
   total,
-  openBudget,
   symbol,
   onClose,
 }) => {
@@ -27,7 +25,6 @@ export const TerminateDcaScheduleModalContent: FC<Props> = ({
       sold={sold}
       total={total}
       symbol={symbol}
-      openBudget={openBudget}
       onBack={onClose}
       onSubmit={() => {
         terminateDcaSchedule.mutate(scheduleId)

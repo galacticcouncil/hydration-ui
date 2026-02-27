@@ -20,17 +20,14 @@ import { Trans, useTranslation } from "react-i18next"
 
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { DcaSummarySkeleton } from "@/modules/trade/swap/sections/DCA/DcaSummarySkeleton"
-import {
-  DcaFormValues,
-  DcaOrdersMode,
-} from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useAssets } from "@/providers/assetsProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
 
 type Props = {
-  readonly order: TradeDcaOrder | undefined | null
+  readonly order: TradeDcaOrder | undefined
   readonly priceImpactLevel: "error" | "warning" | undefined
   readonly isLoading: boolean
 }
@@ -53,8 +50,7 @@ export const DcaSummary: FC<Props> = ({
 
   const now = Date.now()
 
-  const [durationTimeFrame, type] = watch(["duration", "orders.type"])
-  const isOpenBudget = type === DcaOrdersMode.OpenBudget
+  const durationTimeFrame = watch("duration")
   const duration = getTimeFrameMillis(durationTimeFrame)
   const frequency =
     order && order.tradeCount > 0 ? duration / order.tradeCount : 0
@@ -86,11 +82,7 @@ export const DcaSummary: FC<Props> = ({
           <Text fw={500} fs="p2" lh="l" color={getToken("text.high")}>
             <Trans
               t={t}
-              i18nKey={
-                isOpenBudget
-                  ? "trade:dca.summary.openBudget.description"
-                  : "trade:dca.summary.limitedBudget.description"
-              }
+              i18nKey="trade:dca.summary.description"
               values={{
                 sellAmount: t("currency", {
                   value: tradeAmountIn,

@@ -19,6 +19,7 @@ export const SingleTradeSection: FC = () => {
           <TradeSlippage
             slippage={value}
             onSlippageChange={onChange}
+            helpTooltip={t("swap.settings.modal.single.slippage.help")}
             description={t("swap.settings.modal.single.slippage.description")}
             error={error?.message}
           />

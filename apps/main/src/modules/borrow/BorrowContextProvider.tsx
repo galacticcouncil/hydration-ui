@@ -7,7 +7,6 @@ import { TFunction } from "i18next"
 import { PropsWithChildren, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 
-import { useSquidClient } from "@/api/provider"
 import { ApyProvider } from "@/modules/borrow/context/ApyContext"
 import { useExternalApyData } from "@/modules/borrow/hooks/useExternalApyData"
 import { useFormatReserve } from "@/modules/borrow/hooks/useFormatReserve"
@@ -28,7 +27,6 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
   const { createTransaction } = useTransactionsStore()
   const createBatchTx = useCreateBatchTx()
   const { evm, dataEnv, papi } = useRpcProvider()
-  const squidClient = useSquidClient()
 
   const createTx = useCallback<MoneyMarketTxFn>(
     ({ tx, toasts }, options, withExtraGas) => {
@@ -53,7 +51,6 @@ export const BorrowContextProvider: React.FC<PropsWithChildren> = ({
       <MoneyMarketProvider
         env={dataEnv}
         provider={evm.transport}
-        squidClient={squidClient}
         onCreateTransaction={createTx}
         formatCurrency={createFormatterFn(t, "currency")}
         formatNumber={createFormatterFn(t, "number")}

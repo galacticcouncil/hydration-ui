@@ -31,11 +31,7 @@ export const useOrderHistoryColumns = () => {
       cell: ({ row }) => {
         return (
           <SwapAmount
-            fromAmount={
-              row.original.isOpenBudget
-                ? (row.original.fromAmountExecuted ?? "0")
-                : row.original.fromAmountBudget
-            }
+            fromAmount={row.original.fromAmountBudget}
             from={row.original.from}
             toAmount={row.original.toAmountExecuted ?? "0"}
             to={row.original.to}
@@ -61,22 +57,11 @@ export const useOrderHistoryColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const {
-          from,
-          to,
-          fromAmountBudget,
-          fromAmountExecuted,
-          toAmountExecuted,
-          isOpenBudget,
-        } = row.original
-
-        const fromAmount = isOpenBudget
-          ? (fromAmountExecuted ?? "0")
-          : fromAmountBudget
+        const { from, to, fromAmountBudget, toAmountExecuted } = row.original
 
         const price =
-          toAmountExecuted && fromAmount && Big(toAmountExecuted).gt(0)
-            ? Big(fromAmount).div(toAmountExecuted).toString()
+          toAmountExecuted && fromAmountBudget && Big(toAmountExecuted).gt(0)
+            ? Big(fromAmountBudget).div(toAmountExecuted).toString()
             : null
 
         return <SwapPrice from={from} to={to} price={price} />
@@ -89,11 +74,7 @@ export const useOrderHistoryColumns = () => {
         sx: { textAlign: "center" },
       },
       cell: ({ row }) => {
-        return (
-          <Flex justify="center">
-            <SwapType type={row.original.kind} />
-          </Flex>
-        )
+        return <SwapType type={row.original.kind} />
       },
     })
 

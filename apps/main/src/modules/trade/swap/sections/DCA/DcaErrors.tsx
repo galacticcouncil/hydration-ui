@@ -3,7 +3,7 @@ import { DryRunError } from "@galacticcouncil/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { DcaValidationError } from "@/modules/trade/swap/sections/DCA/useDcaValidation"
+import { DcaValidationError } from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {

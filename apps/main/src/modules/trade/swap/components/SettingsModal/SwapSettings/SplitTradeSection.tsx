@@ -21,7 +21,7 @@ export const SplitTradeSection: FC = () => {
           <TradeSlippage
             slippage={value}
             onSlippageChange={(twapSlippage) => onChange(twapSlippage)}
-            helpTooltip={t("dca.settings.modal.slippage.help")}
+            helpTooltip={t("swap.settings.modal.split.slippage.help")}
             error={error?.message}
           />
         )}
@@ -34,7 +34,7 @@ export const SplitTradeSection: FC = () => {
             <Flex justify="space-between" align="center">
               <SettingLabel
                 label={t("swap.settings.modal.split.maxRetries")}
-                helpTooltip={t("dca.settings.modal.maxRetries.help")}
+                helpTooltip={t("swap.settings.modal.split.maxRetries.help")}
               />
               <NumberInput
                 sx={{ width: 85 }}

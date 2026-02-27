@@ -1,6 +1,6 @@
 import {
   DcaScheduleStatus,
-  getDcaScheduleStatus,
+  isDcaScheduleStatus,
   userOrdersQuery,
 } from "@galacticcouncil/indexer/squid"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
@@ -15,7 +15,6 @@ import { scaleHuman } from "@/utils/formatting"
 
 export enum OrderKind {
   Dca = "dca",
-  DcaRolling = "dcaRolling",
 }
 
 export type OrderData = {
@@ -30,14 +29,13 @@ export type OrderData = {
   readonly toAmountExecuted: string | null
   readonly status: DcaScheduleStatus | null
   readonly blocksPeriod: number | null
-  readonly isOpenBudget: boolean
 }
 
 export const useOrdersData = (
   status: Array<DcaScheduleStatus>,
   assetIds: Array<string>,
-  page: number | undefined,
-  pageSize: number | undefined,
+  page: number,
+  pageSize: number,
 ) => {
   const { account } = useAccount()
   const accountAddress = account?.address ?? ""
@@ -55,9 +53,7 @@ export const useOrdersData = (
     () =>
       data?.dcaSchedules?.nodes
         .filter((schedule) => !!schedule)
-        .map<OrderData>((schedule) => {
-          const isOpenBudget = schedule.budgetAmountIn === "0"
-
+        .map((schedule) => {
           const from = getAssetWithFallback(
             schedule.assetIn?.assetRegistryId ?? "",
           )
@@ -87,10 +83,8 @@ export const useOrdersData = (
             ? scaleHuman(schedule.totalExecutedAmountOut, to.decimals)
             : null
 
-          const status = getDcaScheduleStatus(schedule)
-
           return {
-            kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+            kind: OrderKind.Dca,
             scheduleId: Number(schedule.id),
             from,
             fromAmountBudget,
@@ -99,9 +93,10 @@ export const useOrdersData = (
             singleTradeSize,
             to,
             toAmountExecuted,
-            status,
+            status: isDcaScheduleStatus(schedule.status)
+              ? schedule.status
+              : null,
             blocksPeriod: schedule.period ?? null,
-            isOpenBudget,
           }
         }) ?? [],
     [data, getAssetWithFallback],
