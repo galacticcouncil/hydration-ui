@@ -28,7 +28,7 @@ export type OrderData = {
   readonly to: TAsset
   readonly toAmountExecuted: string | null
   readonly status: DcaScheduleStatus | null
-  readonly blocksPeriod: number | null
+  readonly blocksPeriod: string | null
 }
 
 export const useOrdersData = (

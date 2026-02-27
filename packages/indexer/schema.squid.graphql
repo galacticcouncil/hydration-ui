@@ -20858,7 +20858,7 @@ type DcaSchedule {
   orderType: String!
   ownerId: String!
   paraBlockHeight: Int!
-  period: Int
+  period: BigFloat
   slippage: Int
   stabilityThreshold: Int
   startExecutionBlock: Int
@@ -20970,7 +20970,7 @@ input DcaScheduleCondition {
   """Checks for equality with the object’s `paraBlockHeight` field."""
   paraBlockHeight: Int
   """Checks for equality with the object’s `period` field."""
-  period: Int
+  period: BigFloat
   """Checks for equality with the object’s `slippage` field."""
   slippage: Int
   """Checks for equality with the object’s `stabilityThreshold` field."""
@@ -22403,7 +22403,7 @@ input DcaScheduleFilter {
   """Filter by the object’s `paraBlockHeight` field."""
   paraBlockHeight: IntFilter
   """Filter by the object’s `period` field."""
-  period: IntFilter
+  period: BigFloatFilter
   """Filter by the object’s `slippage` field."""
   slippage: IntFilter
   """Filter by the object’s `stabilityThreshold` field."""
@@ -22454,7 +22454,7 @@ input DcaScheduleHavingAverageInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22470,7 +22470,7 @@ input DcaScheduleHavingDistinctCountInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22501,7 +22501,7 @@ input DcaScheduleHavingMaxInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22517,7 +22517,7 @@ input DcaScheduleHavingMinInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22533,7 +22533,7 @@ input DcaScheduleHavingStddevPopulationInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22549,7 +22549,7 @@ input DcaScheduleHavingStddevSampleInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22565,7 +22565,7 @@ input DcaScheduleHavingSumInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22581,7 +22581,7 @@ input DcaScheduleHavingVariancePopulationInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22597,7 +22597,7 @@ input DcaScheduleHavingVarianceSampleInput {
   maxRetries: HavingIntFilter
   minAmountOut: HavingBigfloatFilter
   paraBlockHeight: HavingIntFilter
-  period: HavingIntFilter
+  period: HavingBigfloatFilter
   slippage: HavingIntFilter
   stabilityThreshold: HavingIntFilter
   startExecutionBlock: HavingIntFilter
@@ -22620,7 +22620,7 @@ type DcaScheduleMaxAggregates {
   """Maximum of paraBlockHeight across the matching connection"""
   paraBlockHeight: Int
   """Maximum of period across the matching connection"""
-  period: Int
+  period: BigFloat
   """Maximum of slippage across the matching connection"""
   slippage: Int
   """Maximum of stabilityThreshold across the matching connection"""
@@ -22649,7 +22649,7 @@ type DcaScheduleMinAggregates {
   """Minimum of paraBlockHeight across the matching connection"""
   paraBlockHeight: Int
   """Minimum of period across the matching connection"""
-  period: Int
+  period: BigFloat
   """Minimum of slippage across the matching connection"""
   slippage: Int
   """Minimum of stabilityThreshold across the matching connection"""
@@ -22920,7 +22920,7 @@ type DcaScheduleSumAggregates {
   """Sum of paraBlockHeight across the matching connection"""
   paraBlockHeight: BigInt!
   """Sum of period across the matching connection"""
-  period: BigInt!
+  period: BigFloat!
   """Sum of slippage across the matching connection"""
   slippage: BigInt!
   """Sum of stabilityThreshold across the matching connection"""

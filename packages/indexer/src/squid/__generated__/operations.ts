@@ -90,7 +90,7 @@ export type UserOrdersQueryVariables = Types.Exact<{
 }>;
 
 
-export type UserOrdersQuery = { __typename?: 'Query', dcaSchedules?: { __typename?: 'DcaSchedulesConnection', totalCount: number, nodes: Array<{ __typename?: 'DcaSchedule', id: string, status?: string | null, orderType: string, totalExecutedAmountIn?: string | null, totalExecutedAmountOut?: string | null, period?: number | null, budgetAmountIn?: string | null, singleTradeSize?: string | null, assetIn?: { __typename?: 'Asset', assetRegistryId?: string | null } | null, assetOut?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> } | null };
+export type UserOrdersQuery = { __typename?: 'Query', dcaSchedules?: { __typename?: 'DcaSchedulesConnection', totalCount: number, nodes: Array<{ __typename?: 'DcaSchedule', id: string, status?: string | null, orderType: string, totalExecutedAmountIn?: string | null, totalExecutedAmountOut?: string | null, period?: string | null, budgetAmountIn?: string | null, singleTradeSize?: string | null, assetIn?: { __typename?: 'Asset', assetRegistryId?: string | null } | null, assetOut?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> } | null };
 
 export type UserOpenOrdersCountQueryVariables = Types.Exact<{
   address: Types.Scalars['String']['input'];

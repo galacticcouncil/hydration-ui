@@ -12,6 +12,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
 import { DcaOrderStatus } from "@/modules/trade/orders/columns/DcaOrderStatus"
@@ -27,6 +28,8 @@ type Props = {
 
 export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
   const { t } = useTranslation(["common", "trade"])
+
+  const blocksPeriod = details.blocksPeriod ? Big(details.blocksPeriod) : null
 
   return (
     <>
@@ -79,13 +82,15 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
         </Flex>
         <ModalContentDivider />
         <Flex justify="space-between" py="xxl">
-          {details.blocksPeriod && (
+          {blocksPeriod && (
             <>
               <Amount
                 label={t("trade:trade.orders.dcaDetail.blockInterval")}
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
-                  timeframe: details.blocksPeriod * PARACHAIN_BLOCK_TIME,
-                  count: details.blocksPeriod,
+                  timeframe: blocksPeriod
+                    .times(PARACHAIN_BLOCK_TIME)
+                    .toString(),
+                  count: blocksPeriod.toNumber(),
                 })}
               />
               <Separator orientation="vertical" />
