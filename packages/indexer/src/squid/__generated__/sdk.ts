@@ -107,32 +107,15 @@ export const MoneyMarketEventFragmentDoc = `
   }
 }
     ${EventDataFragmentDoc}`;
-export const DcaScheduleStatusFragmentDoc = `
-    fragment DcaScheduleStatus on DcaSchedule {
-  status
-  dcaScheduleExecutionsByScheduleId(first: 1, orderBy: ID_DESC) {
-    nodes {
-      dcaScheduleExecutionEventsByScheduleExecutionId(
-        first: 1
-        orderBy: PARA_BLOCK_HEIGHT_DESC
-      ) {
-        nodes {
-          eventName
-        }
-      }
-    }
-  }
-}
-    `;
 export const SwapDcaScheduleFragmentDoc = `
     fragment SwapDcaSchedule on DcaSchedule {
   id
+  status
   assetInId
   budgetAmountIn: totalAmount
   totalExecutedAmountIn
-  ...DcaScheduleStatus
 }
-    ${DcaScheduleStatusFragmentDoc}`;
+    `;
 export const SwapFragmentDoc = `
     fragment Swap on Swap {
   paraTimestamp
@@ -289,7 +272,7 @@ export const UserSwapsDocument = `
 }
     ${SwapFragmentDoc}`;
 export const UserOrdersDocument = `
-    query UserOrders($address: String!, $assetInId: StringFilter, $assetOutId: StringFilter, $offset: Int, $pageSize: Int, $status: [String!]!) {
+    query UserOrders($address: String!, $assetInId: StringFilter, $assetOutId: StringFilter, $offset: Int!, $pageSize: Int!, $status: [String!]!) {
   dcaSchedules(
     condition: {ownerId: $address}
     filter: {status: {in: $status}, assetInId: $assetInId, assetOutId: $assetOutId}
@@ -300,10 +283,10 @@ export const UserOrdersDocument = `
     totalCount
     nodes {
       id
+      status
       orderType
       assetIn {
         assetRegistryId
-        underlyingAssetId
       }
       totalExecutedAmountIn
       budgetAmountIn: totalAmount
@@ -313,11 +296,10 @@ export const UserOrdersDocument = `
       }
       totalExecutedAmountOut
       period
-      ...DcaScheduleStatus
     }
   }
 }
-    ${DcaScheduleStatusFragmentDoc}`;
+    `;
 export const UserOpenOrdersCountDocument = `
     query UserOpenOrdersCount($address: String!, $assetFilter: DcaScheduleFilter) {
   dcaSchedules(
@@ -331,7 +313,6 @@ export const UserOpenOrdersCountDocument = `
 export const DcaScheduleExecutionsDocument = `
     query DcaScheduleExecutions($scheduleId: String!) {
   dcaSchedule(id: $scheduleId) {
-    id
     assetIn {
       assetRegistryId
     }

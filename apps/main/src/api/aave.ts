@@ -169,14 +169,3 @@ export const healthFactorQuery = (
     toAmount,
   })
 }
-
-export const aaveSummaryQuery = (
-  { isApiLoaded, sdk }: TProviderContext,
-  address: string,
-  enabled = true,
-) =>
-  queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "aave", "summary", address],
-    queryFn: () => sdk.api.aave.getSummary(address),
-    enabled: isApiLoaded && enabled && !!address,
-  })

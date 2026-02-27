@@ -8,12 +8,8 @@ import { useTranslation } from "react-i18next"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { DcaAssetSwitcher } from "@/modules/trade/swap/sections/DCA/DcaAssetSwitcher"
-import { DcaLimitedBudgetFields } from "@/modules/trade/swap/sections/DCA/DcaLimitedBudgetFields"
-import { DcaOpenBudgetFields } from "@/modules/trade/swap/sections/DCA/DcaOpenBudgetFields"
-import {
-  DcaFormValues,
-  DcaOrdersMode,
-} from "@/modules/trade/swap/sections/DCA/useDcaForm"
+import { DcaDurationField } from "@/modules/trade/swap/sections/DCA/DcaDurationField"
+import { DcaFormValues } from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { useSwitchAssets } from "@/modules/trade/swap/sections/DCA/useSwitchAssets"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
@@ -24,10 +20,8 @@ import {
 
 export const DcaForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
-  const { control, getValues, setValue, reset, trigger, watch } =
+  const { control, getValues, setValue, reset, trigger } =
     useFormContext<DcaFormValues>()
-
-  const isOpenBudget = watch("orders.type") === DcaOrdersMode.OpenBudget
 
   const { tradable, getAsset } = useAssets()
   const switchAssets = useSwitchAssets()
@@ -117,11 +111,7 @@ export const DcaForm: FC = () => {
         assetFieldName="sellAsset"
         amountFieldName="sellAmount"
         assets={tradable}
-        label={
-          isOpenBudget
-            ? t("trade:dca.assetIn.title.open")
-            : t("trade:dca.assetIn.title")
-        }
+        label={t("trade:dca.assetIn.title")}
         maxBalanceFallback="0"
         onAssetChange={handleSellAssetChange}
       />
@@ -145,7 +135,7 @@ export const DcaForm: FC = () => {
         )}
       />
       <SwapSectionSeparator />
-      {isOpenBudget ? <DcaOpenBudgetFields /> : <DcaLimitedBudgetFields />}
+      <DcaDurationField />
     </Box>
   )
 }

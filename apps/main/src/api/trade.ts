@@ -4,11 +4,6 @@ import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { papiDryRunErrorQuery } from "@/api/dryRun"
-import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
-import {
-  DcaFormValues,
-  DcaOrdersMode,
-} from "@/modules/trade/swap/sections/DCA/useDcaForm"
 import { TProviderContext } from "@/providers/rpcProvider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
@@ -462,57 +457,45 @@ export const bestBuyTwapWithTxQuery = (
   })
 }
 
+type DcaOrderArgs = {
+  readonly assetIn: string
+  readonly assetOut: string
+  readonly amountIn: string
+  readonly duration: number
+  readonly orders: number | null
+}
+
 export const dcaOrderQuery = (
   { sdk, isLoaded }: TProviderContext,
-  form: DcaFormValues,
-) => {
-  const duration = getTimeFrameMillis(form.duration)
-
-  const orders =
-    form.orders.type === DcaOrdersMode.Custom
-      ? (form.orders.value ?? undefined)
-      : undefined
-
-  return queryOptions({
+  { assetIn, assetOut, amountIn, duration, orders }: DcaOrderArgs,
+) =>
+  queryOptions({
     queryKey: [
       QUERY_KEY_BLOCK_PREFIX,
       "trade",
       "dcaOrder",
-      form.sellAsset?.id,
-      form.buyAsset?.id,
-      form.sellAmount,
-      form.duration,
-      form.orders,
+      assetIn,
+      assetOut,
+      amountIn,
+      duration,
+      orders,
     ],
-    queryFn: () => {
-      if (!form.sellAsset || !form.buyAsset) {
-        return null
-      }
-
-      return form.orders.type === DcaOrdersMode.OpenBudget
-        ? sdk.api.scheduler.getOpenBudgetDcaOrder(
-            Number(form.sellAsset.id),
-            Number(form.buyAsset.id),
-            form.sellAmount,
-            duration,
-          )
-        : sdk.api.scheduler.getDcaOrder(
-            Number(form.sellAsset.id),
-            Number(form.buyAsset.id),
-            form.sellAmount,
-            duration,
-            orders ?? undefined,
-          )
-    },
+    queryFn: () =>
+      sdk.api.scheduler.getDcaOrder(
+        Number(assetIn),
+        Number(assetOut),
+        amountIn,
+        duration,
+        orders ?? undefined,
+      ),
     enabled:
       isLoaded &&
-      !!form.sellAsset &&
-      !!form.buyAsset &&
-      Big(form.sellAmount || "0").gt(0) &&
+      !!assetIn &&
+      !!assetOut &&
+      Big(amountIn || "0").gt(0) &&
       duration > 0 &&
-      (orders === undefined || orders > 0),
+      (orders === null || orders > 0),
   })
-}
 
 export const dcaTxQuery = (
   { sdk }: TProviderContext,
@@ -535,8 +518,7 @@ export const dcaTxQuery = (
     enabled: !!address,
   })
 
-type DcaTradeOrderArgs = {
-  readonly form: DcaFormValues
+type DcaTradeOrderArgs = DcaOrderArgs & {
   readonly slippage: number
   readonly maxRetries: number
   readonly address: string
@@ -545,10 +527,10 @@ type DcaTradeOrderArgs = {
 
 export const dcaTradeOrderQuery = (
   rpc: TProviderContext,
-  { form, slippage, maxRetries, address, dryRun }: DcaTradeOrderArgs,
+  { slippage, maxRetries, address, dryRun, ...dcaOrderArgs }: DcaTradeOrderArgs,
 ) => {
   const { queryClient } = rpc
-  const dcaOrder = dcaOrderQuery(rpc, form)
+  const dcaOrder = dcaOrderQuery(rpc, dcaOrderArgs)
 
   return queryOptions({
     queryKey: [
@@ -562,18 +544,16 @@ export const dcaTradeOrderQuery = (
     queryFn: async () => {
       const order = await queryClient.ensureQueryData(dcaOrder)
 
-      const txQuery = order
-        ? dcaTxQuery(
-            rpc,
-            order,
-            dcaOrder.queryKey,
-            address,
-            slippage,
-            maxRetries,
-          )
-        : null
+      const txQuery = dcaTxQuery(
+        rpc,
+        order,
+        dcaOrder.queryKey,
+        address,
+        slippage,
+        maxRetries,
+      )
 
-      const orderTx = txQuery?.enabled
+      const orderTx = txQuery.enabled
         ? await queryClient.ensureQueryData(txQuery)
         : null
 

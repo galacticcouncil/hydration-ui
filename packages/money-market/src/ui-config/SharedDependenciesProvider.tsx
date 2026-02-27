@@ -1,4 +1,3 @@
-import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { createContext, useContext } from "react"
 import invariant from "tiny-invariant"
 
@@ -13,7 +12,6 @@ interface SharedDependenciesContextProps {
   approvedAmountService: ApprovedAmountService
   uiIncentivesService: UiIncentivesService
   uiPoolService: UiPoolService
-  squidClient: SquidSdk
 }
 
 const SharedDependenciesContext =
@@ -21,8 +19,7 @@ const SharedDependenciesContext =
 
 export const SharedDependenciesProvider: React.FC<{
   children?: React.ReactNode
-  squidClient: SquidSdk
-}> = ({ children, squidClient }) => {
+}> = ({ children }) => {
   const poolTokensBalanceService = new WalletBalanceService(getProvider)
   const approvedAmountService = new ApprovedAmountService(getProvider)
 
@@ -36,7 +33,6 @@ export const SharedDependenciesProvider: React.FC<{
         approvedAmountService,
         uiPoolService,
         uiIncentivesService,
-        squidClient,
       }}
     >
       {children}

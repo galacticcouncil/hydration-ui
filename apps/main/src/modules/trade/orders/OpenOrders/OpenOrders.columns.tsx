@@ -34,16 +34,7 @@ export const useOpenOrdersColumns = () => {
       cell: ({ row }) => {
         return (
           <SwapAmount
-            fromAmount={
-              row.original.isOpenBudget
-                ? row.original.fromAmountExecuted
-                : row.original.fromAmountBudget
-            }
-            toAmount={
-              row.original.isOpenBudget
-                ? row.original.toAmountExecuted
-                : undefined
-            }
+            fromAmount={row.original.fromAmountBudget}
             from={row.original.from}
             to={row.original.to}
             showLogo
@@ -85,11 +76,7 @@ export const useOpenOrdersColumns = () => {
         sx: { textAlign: "center" },
       },
       cell: ({ row }) => {
-        return (
-          <Flex justify="center">
-            <SwapType type={row.original.kind} />
-          </Flex>
-        )
+        return <SwapType type={row.original.kind} />
       },
     })
 
@@ -134,7 +121,6 @@ export const useOpenOrdersColumns = () => {
                 sold={row.original.fromAmountExecuted}
                 total={row.original.fromAmountBudget}
                 symbol={row.original.from.symbol}
-                openBudget={row.original.isOpenBudget}
                 onClose={() => setModal("none")}
               />
             </Modal>

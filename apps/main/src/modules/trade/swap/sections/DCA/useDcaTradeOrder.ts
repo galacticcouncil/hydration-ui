@@ -1,3 +1,4 @@
+import { getTimeFrameMillis } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
@@ -24,11 +25,21 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     dca: { slippage, maxRetries },
   } = useTradeSettings()
 
-  const formValues = form.watch()
+  const [sellAsset, buyAsset, sellAmount, durationTimeFrame, orders] =
+    form.watch(["sellAsset", "buyAsset", "sellAmount", "duration", "orders"])
+
+  const tradeCount =
+    orders.type === DcaOrdersMode.Auto ? null : (orders.value ?? 0)
+
+  const duration = getTimeFrameMillis(durationTimeFrame)
 
   const { data: orderData, isLoading: isOrderLoading } = useQuery(
     dcaTradeOrderQuery(rpc, {
-      form: formValues,
+      assetIn: sellAsset?.id ?? "",
+      assetOut: buyAsset?.id ?? "",
+      amountIn: sellAmount,
+      duration,
+      orders: tradeCount,
       slippage,
       maxRetries,
       address,
@@ -36,34 +47,16 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     }),
   )
 
-  const assetIn = getAsset(orderData?.order?.assetIn ?? 0)
-  const assetOut = getAsset(orderData?.order?.assetOut ?? 0)
-
-  const isOpenBudget = formValues.orders.type === DcaOrdersMode.OpenBudget
+  const assetOut = getAsset(orderData?.order.assetOut ?? 0)
 
   const { data: healthFactorData, isLoading: isHealthFactorLoading } = useQuery(
     healthFactorQuery(rpc, {
-      fromAsset: formValues.sellAsset,
-      fromAmount:
-        orderData && assetIn && orderData.order
-          ? isOpenBudget
-            ? toDecimal(
-                orderData.order.tradeAmountIn *
-                  OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
-                assetIn.decimals,
-              )
-            : formValues.sellAmount
-          : "0",
-      toAsset: formValues.buyAsset,
+      fromAsset: sellAsset,
+      fromAmount: sellAmount,
+      toAsset: buyAsset,
       toAmount:
-        orderData && assetOut && orderData.order
-          ? isOpenBudget
-            ? toDecimal(
-                orderData.order.tradeAmountOut *
-                  OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
-                assetOut.decimals,
-              )
-            : toDecimal(orderData.order.amountOut, assetOut.decimals)
+        orderData && assetOut
+          ? toDecimal(orderData.order.amountOut, assetOut.decimals)
           : "0",
       address,
     }),
@@ -77,5 +70,3 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     isLoading: isOrderLoading || isHealthFactorLoading,
   }
 }
-
-const OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER = 3n

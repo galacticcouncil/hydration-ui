@@ -40,7 +40,6 @@ export const getAbsoluteMaxDcaOrders = (duration: TimeFrame): number => {
 export enum DcaOrdersMode {
   Custom = "Custom",
   Auto = "Auto",
-  OpenBudget = "OpenBudget",
 }
 
 const ordersSchema = z.discriminatedUnion("type", [
@@ -55,10 +54,6 @@ const ordersSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal(DcaOrdersMode.Auto),
     value: z.never().optional(),
-  }),
-  z.object({
-    type: z.literal(DcaOrdersMode.OpenBudget),
-    useSplitTrade: z.boolean(),
   }),
 ])
 
@@ -77,10 +72,9 @@ const schemaBase = z.object({
 })
 
 export type DcaFormValues = z.infer<typeof schemaBase>
-export type DcaDuration = DcaFormValues["duration"]
 
 const schema = schemaBase.superRefine(({ duration, orders }, { addIssue }) => {
-  if (orders.type !== DcaOrdersMode.Custom) {
+  if (orders.type === DcaOrdersMode.Auto) {
     return
   }
 
@@ -96,12 +90,11 @@ const schema = schemaBase.superRefine(({ duration, orders }, { addIssue }) => {
 })
 
 const useSchema = (account: Account | null) => {
-  const { t } = useTranslation(["common", "trade"])
+  const { t } = useTranslation()
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
   const refineMaxBalance = useValidateFormMaxBalance()
-  const { getBalance } = useAccountBalances()
 
   const minBudgetSchema = schema
     .check(
@@ -113,58 +106,22 @@ const useSchema = (account: Account | null) => {
         : z.refine(() => true),
     )
     .check(async (ctx) => {
-      const { sellAsset, sellAmount, orders } = ctx.value
+      const { sellAsset, sellAmount } = ctx.value
 
       if (!sellAsset || !sellAmount) {
         return
       }
 
-      const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
-
-      {
-        const minAmount = await queryClient.ensureQueryData(
-          minimumOrderBudgetQuery(rpc, sellAsset.id, sellAsset.decimals),
-        )
-
-        const minAmountHuman = scaleHuman(
-          // min amount for open budget is 500 HDX, vs 1000 HDX for limited budget
-          (isOpenBudget ? minAmount / 2n : minAmount).toString(),
-          sellAsset.decimals,
-        )
-
-        const isValid = Big(sellAmount).gte(minAmountHuman)
-
-        if (!isValid) {
-          ctx.issues.push({
-            code: "custom",
-            input: sellAmount,
-            path: ["sellAmount" satisfies keyof DcaFormValues],
-            message: t("trade:dca.errors.minBudgetTooLow", {
-              value: t("currency", {
-                value: minAmountHuman,
-                symbol: sellAsset.symbol,
-              }),
-            }),
-          })
-        }
-      }
-
-      if (!isOpenBudget) {
-        return
-      }
-
-      const balance = getBalance(sellAsset.id)
-
-      const minAmount = Big(balance?.transferable.toString() || "0")
-        .div(3)
-        .toString()
+      const minAmount = await queryClient.ensureQueryData(
+        minimumOrderBudgetQuery(rpc, sellAsset.id, sellAsset.decimals),
+      )
 
       const minAmountHuman = scaleHuman(
         minAmount.toString(),
         sellAsset.decimals,
       )
 
-      const isValid = Big(sellAmount).lte(minAmountHuman)
+      const isValid = Big(sellAmount).gte(minAmountHuman)
 
       if (isValid) {
         return
@@ -174,7 +131,12 @@ const useSchema = (account: Account | null) => {
         code: "custom",
         input: sellAmount,
         path: ["sellAmount" satisfies keyof DcaFormValues],
-        message: t("trade:dca.errors.minTrades"),
+        message: t("error.minBudgetTooLow", {
+          value: t("currency", {
+            value: minAmountHuman,
+            symbol: sellAsset.symbol,
+          }),
+        }),
       })
     })
 
@@ -195,7 +157,10 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAsset: getAsset(assetIn) ?? null,
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
-    duration: DEFAULT_DCA_DURATION,
+    duration: {
+      type: "day",
+      value: 1,
+    },
     orders: {
       type: DcaOrdersMode.Auto,
     },
@@ -222,9 +187,4 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
   }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
 
   return form
-}
-
-export const DEFAULT_DCA_DURATION: DcaDuration = {
-  type: "day",
-  value: 1,
 }

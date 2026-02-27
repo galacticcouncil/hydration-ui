@@ -1,46 +1,18 @@
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
-import { DcaScheduleStatusFragment, SquidSdk } from "@/squid"
+import { SquidSdk } from "@/squid"
 
 export enum DcaScheduleStatus {
   Created = "Created",
   Completed = "Completed",
   Terminated = "Terminated",
-  Cancelled = "Cancelled",
-}
-
-export enum DcaScheduleExecutionEvent {
-  Planned = "Planned",
-  Executed = "Executed",
 }
 
 export const isDcaScheduleStatus = (
   status: unknown,
 ): status is DcaScheduleStatus =>
   Object.values(DcaScheduleStatus).includes(status as DcaScheduleStatus)
-
-export const getDcaScheduleStatus = (
-  schedule: DcaScheduleStatusFragment,
-): DcaScheduleStatus | null => {
-  if (!isDcaScheduleStatus(schedule.status)) {
-    return null
-  }
-
-  if (schedule.status !== DcaScheduleStatus.Terminated) {
-    return schedule.status
-  }
-
-  const lastExecutionEvent = schedule.dcaScheduleExecutionsByScheduleId.nodes
-    .at(0)
-    ?.dcaScheduleExecutionEventsByScheduleExecutionId.nodes.at(0)?.eventName
-
-  if (lastExecutionEvent === DcaScheduleExecutionEvent.Planned) {
-    return DcaScheduleStatus.Cancelled
-  }
-
-  return schedule.status
-}
 
 export enum DcaScheduleExecutionStatus {
   Planned = "Planned",
@@ -111,9 +83,8 @@ export const userOrdersQuery = (
   address: string,
   status: Array<DcaScheduleStatus>,
   assetIds: Array<string>,
-  pageIndex: number | undefined,
-  pageSize: number | undefined,
-  enabled = true,
+  pageIndex: number,
+  pageSize: number,
 ) =>
   queryOptions({
     queryKey: [
@@ -135,11 +106,10 @@ export const userOrdersQuery = (
           assetOutId: { in: assetIds },
         }),
         status,
-        ...(pageIndex !== undefined &&
-          pageSize !== undefined && { offset: pageIndex * pageSize }),
+        offset: pageIndex * pageSize,
         pageSize,
       }),
-    enabled: enabled && !!address,
+    enabled: !!address,
   })
 
 export const userOpenOrdersCountQuery = (

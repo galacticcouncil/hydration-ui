@@ -1,6 +1,6 @@
 import {
   DcaScheduleStatus,
-  getDcaScheduleStatus,
+  isDcaScheduleStatus,
   isTradeOperation,
   RoutedTradeSwapFragment,
   SwapFragment,
@@ -25,7 +25,7 @@ export type MarketSwapStatus = {
 }
 
 export type MyActivityDcaOrderStatus = {
-  readonly kind: OrderKind.Dca | OrderKind.DcaRolling
+  readonly kind: OrderKind.Dca
   readonly status: DcaScheduleStatus | null
   readonly scheduleId: number
   readonly sold: string
@@ -135,15 +135,13 @@ export const getOrderStatus = (
   }
 
   const asset = getAsset(schedule.assetInId ?? "")
-  const isOpenBudget = schedule.budgetAmountIn === "0"
-  const status = getDcaScheduleStatus(schedule)
 
   return {
-    kind: isOpenBudget ? OrderKind.DcaRolling : OrderKind.Dca,
+    kind: OrderKind.Dca,
     scheduleId: Number(schedule.id),
     sold: scaleHuman(schedule.totalExecutedAmountIn || "0", asset.decimals),
     total: scaleHuman(schedule.budgetAmountIn || "0", asset.decimals),
     symbol: asset.symbol,
-    status,
+    status: isDcaScheduleStatus(schedule.status) ? schedule.status : null,
   }
 }
