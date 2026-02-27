@@ -7,9 +7,10 @@ import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction
 
 type Props = {
   readonly isEnabled: boolean
+  readonly isOpenBudget: boolean
 }
 
-export const DcaFooter: FC<Props> = ({ isEnabled }) => {
+export const DcaFooter: FC<Props> = ({ isEnabled, isOpenBudget }) => {
   const { t } = useTranslation(["common", "trade"])
 
   return (
@@ -20,7 +21,11 @@ export const DcaFooter: FC<Props> = ({ isEnabled }) => {
         </Button>
       </AuthorizedAction>
       <Text fs="p5" lh={1.4} color={getToken("text.high")}>
-        {t("trade:dca.footer.message")}
+        {t(
+          isOpenBudget
+            ? "trade:dca.footer.message.open"
+            : "trade:dca.footer.message",
+        )}
       </Text>
     </Grid>
   )

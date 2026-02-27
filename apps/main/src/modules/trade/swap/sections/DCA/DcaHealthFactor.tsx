@@ -9,7 +9,7 @@ import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 type Props = {
-  readonly order: TradeDcaOrder | undefined
+  readonly order: TradeDcaOrder | undefined | null
   readonly healthFactor: HealthFactorResult | undefined
   readonly isLoading: boolean
 }
