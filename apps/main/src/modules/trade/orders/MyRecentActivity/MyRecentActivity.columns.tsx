@@ -20,6 +20,7 @@ import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
+import { OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
 import { RoutedTradeData } from "@/modules/trade/orders/lib/useRoutedTradesData"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
@@ -78,7 +79,11 @@ export const useMyRecentActivityColumns = () => {
       },
       cell: ({ row }) => {
         return (
-          row.original.status && <SwapType type={row.original.status.kind} />
+          row.original.status && (
+            <Flex justify="center">
+              <SwapType type={row.original.status.kind} />
+            </Flex>
+          )
         )
       },
     })
@@ -95,7 +100,8 @@ export const useMyRecentActivityColumns = () => {
           return null
         }
 
-        return status.kind === "dca" ? (
+        return status.kind === OrderKind.Dca ||
+          status.kind === OrderKind.DcaRolling ? (
           status.status && <DcaOrderStatus status={status.status} />
         ) : (
           <SwapStatus />
@@ -111,7 +117,8 @@ export const useMyRecentActivityColumns = () => {
 
         return (
           <Flex gap="base" align="center" justify="flex-end" height={28}>
-            {status?.kind === "dca" &&
+            {(status?.kind === OrderKind.Dca ||
+              status?.kind === OrderKind.DcaRolling) &&
               status.status === DcaScheduleStatus.Created && (
                 <>
                   <Button
@@ -135,6 +142,7 @@ export const useMyRecentActivityColumns = () => {
                       sold={status.sold}
                       total={status.total}
                       symbol={status.symbol}
+                      openBudget={status.kind === OrderKind.DcaRolling}
                       onClose={() => setModal("none")}
                     />
                   </Modal>

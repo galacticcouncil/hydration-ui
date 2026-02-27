@@ -37,7 +37,14 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
       <ModalBody>
         <Flex justify="space-between" align="center" pb="xxl">
           <SwapAmount
-            fromAmount={details.fromAmountBudget}
+            fromAmount={
+              details.isOpenBudget
+                ? details.fromAmountExecuted
+                : details.fromAmountBudget
+            }
+            toAmount={
+              details.isOpenBudget ? details.toAmountExecuted : undefined
+            }
             from={details.from}
             to={details.to}
             showLogo
@@ -48,19 +55,26 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
         <Flex justify="space-between" py="xxl">
           <Flex direction="column" gap="s">
             <Text fs="p4" lh={1} color={getToken("text.low")}>
-              {t("remaining")} / {t("budget")}
+              {details.isOpenBudget
+                ? t("spent")
+                : `${t("remaining")} / ${t("budget")}`}
             </Text>
             <Text fw={500} fs="p4" lh={1} color={getToken("text.high")}>
               {t("number", {
-                value:
-                  details.status === DcaScheduleStatus.Created
+                value: details.isOpenBudget
+                  ? details.fromAmountExecuted
+                  : details.status === DcaScheduleStatus.Created
                     ? details.fromAmountRemaining
                     : "0",
               })}
-              /
-              {t("number", {
-                value: details.fromAmountBudget,
-              })}{" "}
+              {!details.isOpenBudget && (
+                <>
+                  /
+                  {t("number", {
+                    value: details.fromAmountBudget,
+                  })}
+                </>
+              )}{" "}
               {details.from.symbol}
             </Text>
           </Flex>

@@ -1,4 +1,5 @@
 import { ExternalProvider, Web3Provider } from "@ethersproject/providers"
+import { SquidSdk } from "@galacticcouncil/indexer/squid"
 import { FC, lazy, Suspense, useEffect } from "react"
 
 import { BackgroundDataProvider } from "@/hooks/app-data-provider/BackgroundDataProvider"
@@ -55,6 +56,7 @@ export type MoneyMarketProviderProps = AppFormattersProvidersContextType & {
   children: React.ReactNode
   provider: ExternalProvider
   env: MoneyMarketEnv
+  squidClient: SquidSdk
   onCreateTransaction: MoneyMarketTxFn
   externalApyData: ExternalApyData
 }
@@ -64,6 +66,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
   env,
   onCreateTransaction,
   provider: externalProvider,
+  squidClient,
   externalApyData,
   ...formatters
 }) => {
@@ -94,7 +97,7 @@ export const MoneyMarketProvider: FC<MoneyMarketProviderProps> = ({
           <PermissionProvider>
             <ModalContextProvider>
               <AppDataProvider externalApyData={externalApyData}>
-                <SharedDependenciesProvider>
+                <SharedDependenciesProvider squidClient={squidClient}>
                   {children}
                   <Suspense>
                     <SupplyModal />
