@@ -295,9 +295,7 @@ export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
       ) : (
         children
       )
-    case props.assetId === VDOT_ASSET_ID:
-      return <MoneyMarketAPYWrapper {...props} />
-    case props.assetId === PRIME_ASSET_ID:
+    case [VDOT_ASSET_ID, PRIME_ASSET_ID].includes(props.assetId):
       return <MoneyMarketAPYWrapper {...props} />
     default:
       return children

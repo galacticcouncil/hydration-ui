@@ -28,10 +28,19 @@ const historyApiResponseSchema = z.array(historyEntrySchema)
 export const fetchKaminoApy = async (address: string) => {
   const now = new Date()
   const start = subHours(now, 2)
+  const params = new URLSearchParams({
+    start: start.toISOString(),
+    end: now.toISOString(),
+  })
   const response = await fetch(
-    `${getKaminoEndpoint(address)}?start=${start.toISOString()}&end=${now.toISOString()}`,
+    `${getKaminoEndpoint(address)}?${params.toString()}`,
   )
   const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch kamino APY: ${response.statusText}`)
+  }
+
   const parsed = historyApiResponseSchema.parse(data)
   const lastEntry = parsed[parsed.length - 1]
 

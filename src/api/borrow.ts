@@ -46,7 +46,7 @@ import {
   defillamaLatestApyQuery,
 } from "api/external/defillama"
 import { uniqBy } from "utils/rx"
-import { identity } from "utils/helpers"
+import { identity, isNotNil } from "utils/helpers"
 import {
   TReservesBalance,
   TStablePoolDetails,
@@ -729,7 +729,7 @@ export const useExternalApys = (assetIds: string[]) => {
 
       return null
     })
-    .filter((c): c is NonNullable<typeof c> => c != null)
+    .filter(isNotNil)
 
   const queries = queryConfigs.map((c) => c.query)
 
