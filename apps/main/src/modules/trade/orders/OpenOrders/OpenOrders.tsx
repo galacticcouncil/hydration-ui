@@ -69,6 +69,7 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
             sold={isDetailOpen.detail.fromAmountExecuted}
             total={isDetailOpen.detail.fromAmountBudget}
             symbol={isDetailOpen.detail.from.symbol}
+            openBudget={isDetailOpen.detail.isOpenBudget}
             onClose={() =>
               setIsDetailOpen({
                 detail: isDetailOpen.detail,
