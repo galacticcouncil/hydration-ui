@@ -5,6 +5,7 @@ import { mergeUint8 } from "polkadot-api/utils"
 import { isBigInt, isFunction, isNumber, isObjectType, isString } from "remeda"
 import { catchError, Observable, of, shareReplay } from "rxjs"
 
+import { getParachainFeeAssetLocation } from "@/api/external/common"
 import {
   AnyPapiTx,
   TxBestBlocksStateResult,
@@ -24,11 +25,16 @@ export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   AnyPapiTx,
   PolkadotSigner
 > = async (tx, signer, options) => {
+  const signerFeeAsset = options.signerFeeAsset
+    ? getParachainFeeAssetLocation(options.chainKey, options.signerFeeAsset)
+    : null
+
   const observer = tx
     .signSubmitAndWatch(signer, {
       nonce: options?.nonce,
       tip: options?.tip,
       mortality: { mortal: true, period: options.mortalityPeriod },
+      ...(signerFeeAsset && { asset: signerFeeAsset }),
     })
     .pipe(
       catchError((error) => of({ type: "error" as const, error })),
