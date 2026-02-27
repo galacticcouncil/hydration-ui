@@ -2,6 +2,7 @@ import { BigNumber } from "bignumber.js"
 
 import { CollateralType } from "@/helpers/types"
 import {
+  ComputedReserveData,
   ComputedUserReserveData,
   ExtendedFormattedUser,
 } from "@/hooks/commonTypes"
@@ -113,4 +114,25 @@ export const getAssetCollateralType = (
   }
 
   return collateralType
+}
+
+export const isShowIsolationWarning = (
+  user: ExtendedFormattedUser,
+  poolReserve: ComputedReserveData,
+  userReserve: ComputedUserReserveData,
+) => {
+  const hasDifferentCollateral = user.userReservesData.find(
+    (reserve) =>
+      reserve.usageAsCollateralEnabledOnUser &&
+      reserve.reserve.id !== poolReserve.id,
+  )
+
+  return (
+    !user.isInIsolationMode &&
+    poolReserve.isIsolated &&
+    !hasDifferentCollateral &&
+    (userReserve && userReserve.underlyingBalance !== "0"
+      ? userReserve.usageAsCollateralEnabledOnUser
+      : true)
+  )
 }

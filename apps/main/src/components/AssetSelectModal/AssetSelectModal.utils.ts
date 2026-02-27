@@ -18,9 +18,11 @@ export const useAssetSelectModalAssets = ({
   assets,
   search,
   selectedAssetId,
+  ignoreAssetIds,
   ...sortOptions
 }: {
   assets: TAssetData[]
+  ignoreAssetIds?: string[]
   search: string
   selectedAssetId?: string
 } & SortAssetsOptions) => {
@@ -31,6 +33,7 @@ export const useAssetSelectModalAssets = ({
   const filteredAssets: TAssetWithBalance[] = useFilteredSearchAssets(
     assets,
     search,
+    ignoreAssetIds,
   )
 
   const assetsBalanceIds = useMemo(() => {
@@ -74,14 +77,27 @@ export const useAssetSelectModalAssets = ({
 export const useFilteredSearchAssets = <T extends TAssetData>(
   assets: Array<T>,
   search: string,
+  ignoreAssetIds?: string[],
 ) => {
   return useMemo(() => {
-    return search.length
-      ? assets.filter(
-          (asset) =>
-            asset.name.toLowerCase().includes(search.toLowerCase()) ||
-            asset.symbol.toLowerCase().includes(search.toLowerCase()),
-        )
+    const ignoredAssetIdSet = new Set(ignoreAssetIds ?? [])
+
+    return search.length || ignoreAssetIds
+      ? assets.filter((asset) => {
+          let isVisible = true
+
+          if (search.length) {
+            isVisible =
+              asset.name.toLowerCase().includes(search.toLowerCase()) ||
+              asset.symbol.toLowerCase().includes(search.toLowerCase())
+          }
+
+          if (ignoreAssetIds) {
+            isVisible = !ignoredAssetIdSet.has(asset.id)
+          }
+
+          return isVisible
+        })
       : assets
-  }, [assets, search])
+  }, [assets, search, ignoreAssetIds])
 }

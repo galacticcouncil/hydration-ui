@@ -185,7 +185,7 @@ export const useSupplyAssetsTableColumns = (
       },
       cell: ({ row }) => {
         const { underlyingAsset, isIsolated } = row.original
-        const isDisabled = getIsSupplyDisabled(row.original)
+        const isDisabled = !isIsolated && getIsSupplyDisabled(row.original)
 
         return (
           <Flex justify="flex-end" align="center" gap="s">

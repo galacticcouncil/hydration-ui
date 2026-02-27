@@ -118,6 +118,7 @@
   "totalBorrowed": "Total borrowed",
   "stablepool": "Stablepool",
   "stakeApy": "Stake APY",
+  "nativeYieldApy": "Native Yield",
   "supplyApy": "Supply APY",
   "borrowApy": "Borrow APY",
   "incentivesApr": "Incentives APR",

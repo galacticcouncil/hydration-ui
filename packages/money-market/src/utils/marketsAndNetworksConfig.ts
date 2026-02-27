@@ -11,10 +11,6 @@ import {
   networkConfigs as _networkConfigs,
 } from "@/ui-config/networksConfig"
 
-export type Pool = {
-  address: string
-}
-
 export const networkConfigs = Object.keys(_networkConfigs).reduce(
   (acc, value) => {
     acc[value] = _networkConfigs[value]

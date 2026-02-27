@@ -129,7 +129,10 @@ export const SupplyAssetsTable = () => {
               onSubmitted={() => setModalProps(undefined)}
             />
           ) : (
-            <SupplyIsolatedLiquidity assetId={modalProps.id} />
+            <SupplyIsolatedLiquidity
+              assetId={modalProps.id}
+              onSubmitted={() => setModalProps(undefined)}
+            />
           ))}
       </Modal>
     </>

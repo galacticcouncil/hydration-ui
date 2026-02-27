@@ -1,4 +1,7 @@
-import { ProtocolAction } from "@aave/contract-helpers"
+import {
+  DEFAULT_NULL_VALUE_ON_TX,
+  ProtocolAction,
+} from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
 import { h160 } from "@galacticcouncil/common"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
@@ -23,6 +26,7 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   QueryClient,
   queryOptions,
+  useQueries,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
@@ -36,12 +40,17 @@ import {
   useGhoServiceContract,
 } from "@/api/borrow/contracts"
 import { useBlockTimestamp } from "@/api/chain"
+import {
+  ASSET_ID_TO_DEFILLAMA_ID,
+  defillamaLatestApyQuery,
+} from "@/api/external/defillama"
+import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { TProviderData } from "@/api/provider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const { H160 } = h160
 
-const lendingPoolAddressProvider =
+export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
 export const borrowIncentivesQuery = (
@@ -293,6 +302,11 @@ export const useGhoUserData = (evmAddress: string) => {
   )
 }
 
+export const userBorrowSummaryQueryKey = (
+  evmAddress: string,
+  lendingPoolAddressProvider: string,
+) => ["borrow", "userSummary", evmAddress, lendingPoolAddressProvider]
+
 export const userBorrowSummaryQuery = (
   evmAddress: string,
   queryClient: QueryClient,
@@ -303,7 +317,7 @@ export const userBorrowSummaryQuery = (
   timestamp: bigint,
 ) =>
   queryOptions({
-    queryKey: ["borrow", "userSummary", evmAddress, lendingPoolAddressProvider],
+    queryKey: userBorrowSummaryQueryKey(evmAddress, lendingPoolAddressProvider),
     queryFn: async () => {
       if (!timestamp || timestamp <= 0n) throw new Error("Invalid timestamp")
       if (!poolDataContract || !ghoServiceContract)
@@ -524,6 +538,7 @@ export const useBorrowDisableCollateralTxs = () => {
   const { evm, papi } = useRpcProvider()
   const poolContract = useBorrowPoolContract()
   const { account } = useAccount()
+
   const { data: userReserves } = useUserBorrowReserves()
 
   return useCallback(async () => {
@@ -578,4 +593,116 @@ export const useBorrowDisableCollateralTxs = () => {
       }),
     )
   }, [poolContract, account, evm, papi, userReserves])
+}
+
+export const useSetUsageAsCollateralTx = () => {
+  const { papi, evm } = useRpcProvider()
+  const poolContract = useBorrowPoolContract()
+  const { account } = useAccount()
+
+  return useCallback(
+    async (reserve: string, usageAsCollateral: boolean) => {
+      const address = account?.address || ""
+      const evmAddress = H160.fromAny(address)
+
+      const poolInstace = poolContract.getContractInstance(
+        poolContract.poolAddress,
+      )
+
+      const txRaw =
+        await poolInstace.populateTransaction.setUserUseReserveAsCollateral(
+          reserve,
+          usageAsCollateral,
+        )
+
+      const tx = {
+        ...txRaw,
+        from: evmAddress,
+        value: DEFAULT_NULL_VALUE_ON_TX,
+      }
+
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm,
+          gasLimit: tx.gasLimit?.toString(),
+          action: ProtocolAction.claimRewards,
+        })
+
+      const evmCall = papi.tx.EVM.call({
+        source: Binary.fromHex(tx.from),
+        target: Binary.fromHex(tx.to),
+        input: Binary.fromHex(tx.data),
+        value: [0n, 0n, 0n, 0n],
+        gas_limit: gasLimit,
+        max_fee_per_gas: maxFeePerGas,
+        max_priority_fee_per_gas: maxPriorityFeePerGas,
+        access_list: [],
+        authorization_list: [],
+        nonce: undefined,
+      })
+
+      return evmCall
+    },
+    [poolContract, account?.address, evm, papi],
+  )
+}
+
+export enum ExternalApyType {
+  stake = "stake",
+  nativeYield = "nativeYield",
+}
+
+export const useExternalApys = (assetIds: string[]) => {
+  const queryConfigs = assetIds
+    .map((assetId) => {
+      const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
+      if (defillamaId) {
+        return {
+          assetId,
+          type: ExternalApyType.stake,
+          query: {
+            ...defillamaLatestApyQuery(defillamaId),
+            enabled: !!defillamaId,
+          },
+        }
+      }
+
+      const kaminoId = ASSET_ID_TO_KAMINO_ID[assetId]
+      if (kaminoId) {
+        return {
+          assetId,
+          type: ExternalApyType.nativeYield,
+          query: {
+            ...kaminoApyQuery(kaminoId),
+            enabled: !!kaminoId,
+          },
+        }
+      }
+
+      return null
+    })
+    .filter((c): c is NonNullable<typeof c> => c !== null)
+
+  const queries = queryConfigs.map((c) => c.query)
+
+  const results = useQueries({
+    queries,
+  })
+
+  return {
+    isLoading: results.some((result) => result.isLoading),
+    data: results.map((result, i) => {
+      const queryConfig = queryConfigs[i] as NonNullable<
+        (typeof queryConfigs)[number]
+      >
+
+      return [
+        queryConfig.assetId,
+        {
+          apyType: queryConfig.type,
+          apy: result.data,
+        },
+      ] as const
+    }),
+  }
 }

@@ -27,7 +27,7 @@ import { useModalContext } from "@/hooks/useModal"
 import { useProtocolDataContext } from "@/hooks/useProtocolDataContext"
 import { useRootStore } from "@/store/root"
 import { PRIME_APY, PRIME_ASSET_ID } from "@/ui-config"
-import { formatHealthFactorResult } from "@/utils"
+import { formatHealthFactorResult, isShowIsolationWarning } from "@/utils"
 import { getMaxAmountAvailableToSupply } from "@/utils/getMaxAmountAvailableToSupply"
 import { getAssetCollateralType } from "@/utils/transactions"
 import { roundToTokenDecimals } from "@/utils/utils"
@@ -210,19 +210,11 @@ export const SupplyModalContent = React.memo(
 
     // ************** Warnings **********
     // isolation warning
-    const hasDifferentCollateral = user.userReservesData.find(
-      (reserve) =>
-        reserve.usageAsCollateralEnabledOnUser &&
-        reserve.reserve.id !== poolReserve.id,
+    const showIsolationWarning = isShowIsolationWarning(
+      user,
+      poolReserve,
+      userReserve,
     )
-    const showIsolationWarning: boolean =
-      !user.isInIsolationMode &&
-      poolReserve.isIsolated &&
-      !hasDifferentCollateral &&
-      (userReserve && userReserve.underlyingBalance !== "0"
-        ? userReserve.usageAsCollateralEnabledOnUser
-        : true)
-
     // collateralization state
     const collateralType = getAssetCollateralType(
       userReserve,
