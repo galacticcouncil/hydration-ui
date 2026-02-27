@@ -100,7 +100,7 @@ export const SubmitTransactionPage = () => {
               {t("submit")}
             </Button>
           ) : (
-            <Web3ConnectButton />
+            <Web3ConnectButton size="large" />
           )}
 
           <Alert variant="warning" title={t("submitTransaction.warning")} />
