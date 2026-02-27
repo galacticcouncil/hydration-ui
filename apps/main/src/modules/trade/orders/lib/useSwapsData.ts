@@ -44,7 +44,7 @@ export type SwapData = {
   readonly fillPrice: string
   readonly link: string | null
   readonly address: string | null
-  readonly date: Date
+  readonly date: Date | null
   readonly status: OrderStatus | null
 }
 
@@ -96,7 +96,7 @@ export const useSwapsData = (
             ? swap.operationType
             : null
           const address = safeConvertPublicKeyToSS58(swap.swapperId ?? "")
-          const date = new Date(swap.paraTimestamp)
+          const date = swap.paraTimestamp ? new Date(swap.paraTimestamp) : null
 
           return {
             from,

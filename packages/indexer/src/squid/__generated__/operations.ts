@@ -8,14 +8,14 @@ export type AccountTotalBalancesByPeriodQueryVariables = Types.Exact<{
 }>;
 
 
-export type AccountTotalBalancesByPeriodQuery = { __typename?: 'Query', accountTotalBalancesByPeriod: { __typename?: 'AccountTotalBalancesByPeriodResponse', nodes: Array<{ __typename?: 'AccountTotalBalanceSnapshot', referenceAssetId: string, buckets: Array<{ __typename?: 'AccountTotalBalanceBucket', transferableNorm: string, timestamp: string }> } | null> } };
+export type AccountTotalBalancesByPeriodQuery = { __typename?: 'Query', accountTotalBalancesByPeriod: { __typename?: 'AccountTotalBalancesByPeriodResponse', nodes: Array<{ __typename?: 'AccountTotalBalanceSnapshot', referenceAssetId: string, buckets: Array<{ __typename?: 'AccountTotalBalanceBucket', transferableNorm: string, lockedNorm: string, timestamp: string }> } | null> } };
 
 export type LatestAccountsBalancesQueryVariables = Types.Exact<{
   accountId?: Types.InputMaybe<Types.Scalars['String']['input']>;
 }>;
 
 
-export type LatestAccountsBalancesQuery = { __typename?: 'Query', accountTotalBalanceHistoricalData?: { __typename?: 'AccountTotalBalanceHistoricalDataConnection', nodes: Array<{ __typename?: 'AccountTotalBalanceHistoricalDatum', totalTransferableNorm: string } | null> } | null };
+export type LatestAccountsBalancesQuery = { __typename?: 'Query', accountTotalBalanceHistoricalData?: { __typename?: 'AccountTotalBalanceHistoricalDataConnection', nodes: Array<{ __typename?: 'AccountTotalBalanceHistoricalDatum', totalTransferableNorm: string, totalLockedNorm: string } | null> } | null };
 
 export type LatestBlockHeightQueryQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -68,7 +68,7 @@ export type StableswapYieldMetricsQuery = { __typename?: 'Query', stableswapYiel
 
 export type SwapDcaScheduleFragment = { __typename?: 'DcaSchedule', id: string, status?: string | null, assetInId?: string | null, totalExecutedAmountIn?: string | null, budgetAmountIn?: string | null };
 
-export type SwapFragment = { __typename?: 'Swap', paraTimestamp: string, operationType: string, swapperId?: string | null, event?: { __typename?: 'Event', paraBlockHeight: number, indexInBlock: number } | null, swapInputs: { __typename?: 'SwapInputRecordsConnection', nodes: Array<{ __typename?: 'SwapInputRecord', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, swapOutputs: { __typename?: 'SwapOutputsConnection', nodes: Array<{ __typename?: 'SwapOutput', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, dcaScheduleExecutionEvent?: { __typename?: 'DcaScheduleExecutionEvent', scheduleExecution?: { __typename?: 'DcaScheduleExecution', status?: string | null, schedule?: { __typename?: 'DcaSchedule', id: string, status?: string | null, assetInId?: string | null, totalExecutedAmountIn?: string | null, budgetAmountIn?: string | null } | null } | null } | null };
+export type SwapFragment = { __typename?: 'Swap', paraTimestamp?: string | null, operationType: string, swapperId: string, event?: { __typename?: 'Event', paraBlockHeight: number, indexInBlock: number } | null, swapInputs: { __typename?: 'SwapInputRecordsConnection', nodes: Array<{ __typename?: 'SwapInputRecord', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, swapOutputs: { __typename?: 'SwapOutputsConnection', nodes: Array<{ __typename?: 'SwapOutput', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, dcaScheduleExecutionEvent?: { __typename?: 'DcaScheduleExecutionEvent', scheduleExecution?: { __typename?: 'DcaScheduleExecution', status?: string | null, schedule?: { __typename?: 'DcaSchedule', id: string, status?: string | null, assetInId?: string | null, totalExecutedAmountIn?: string | null, budgetAmountIn?: string | null } | null } | null } | null };
 
 export type UserSwapsQueryVariables = Types.Exact<{
   swapperIdFilter?: Types.InputMaybe<Types.StringFilter>;
@@ -78,7 +78,7 @@ export type UserSwapsQueryVariables = Types.Exact<{
 }>;
 
 
-export type UserSwapsQuery = { __typename?: 'Query', swaps?: { __typename?: 'SwapsConnection', totalCount: number, nodes: Array<{ __typename?: 'Swap', paraTimestamp: string, operationType: string, swapperId?: string | null, event?: { __typename?: 'Event', paraBlockHeight: number, indexInBlock: number } | null, swapInputs: { __typename?: 'SwapInputRecordsConnection', nodes: Array<{ __typename?: 'SwapInputRecord', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, swapOutputs: { __typename?: 'SwapOutputsConnection', nodes: Array<{ __typename?: 'SwapOutput', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, dcaScheduleExecutionEvent?: { __typename?: 'DcaScheduleExecutionEvent', scheduleExecution?: { __typename?: 'DcaScheduleExecution', status?: string | null, schedule?: { __typename?: 'DcaSchedule', id: string, status?: string | null, assetInId?: string | null, totalExecutedAmountIn?: string | null, budgetAmountIn?: string | null } | null } | null } | null } | null> } | null };
+export type UserSwapsQuery = { __typename?: 'Query', swaps?: { __typename?: 'SwapsConnection', totalCount: number, nodes: Array<{ __typename?: 'Swap', paraTimestamp?: string | null, operationType: string, swapperId: string, event?: { __typename?: 'Event', paraBlockHeight: number, indexInBlock: number } | null, swapInputs: { __typename?: 'SwapInputRecordsConnection', nodes: Array<{ __typename?: 'SwapInputRecord', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, swapOutputs: { __typename?: 'SwapOutputsConnection', nodes: Array<{ __typename?: 'SwapOutput', amount?: string | null, asset?: { __typename?: 'Asset', assetRegistryId?: string | null } | null } | null> }, dcaScheduleExecutionEvent?: { __typename?: 'DcaScheduleExecutionEvent', scheduleExecution?: { __typename?: 'DcaScheduleExecution', status?: string | null, schedule?: { __typename?: 'DcaSchedule', id: string, status?: string | null, assetInId?: string | null, totalExecutedAmountIn?: string | null, budgetAmountIn?: string | null } | null } | null } | null } | null> } | null };
 
 export type UserOrdersQueryVariables = Types.Exact<{
   address: Types.Scalars['String']['input'];

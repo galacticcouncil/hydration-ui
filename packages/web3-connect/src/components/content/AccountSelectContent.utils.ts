@@ -120,11 +120,12 @@ export const useAccountsWithBalance = (accounts: Account[]) => {
             : new Map(
                 accounts.map((account, index) => {
                   const data = queries[index]?.data
-                  const balance =
-                    Number(
-                      data?.accountTotalBalanceHistoricalData?.nodes.at(0)
-                        ?.totalTransferableNorm,
-                    ) || 0
+                  const balances =
+                    data?.accountTotalBalanceHistoricalData?.nodes.at(0)
+                  const transferable =
+                    Number(balances?.totalTransferableNorm) || 0
+                  const locked = Number(balances?.totalLockedNorm) || 0
+                  const balance = transferable + locked
 
                   return [account.publicKey, balance]
                 }),

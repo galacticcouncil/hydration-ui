@@ -171,6 +171,7 @@ export const AccountTotalBalancesByPeriodDocument = `
       referenceAssetId
       buckets {
         transferableNorm
+        lockedNorm
         timestamp
       }
     }
@@ -186,6 +187,7 @@ export const LatestAccountsBalancesDocument = `
   ) {
     nodes {
       totalTransferableNorm
+      totalLockedNorm
     }
   }
 }
