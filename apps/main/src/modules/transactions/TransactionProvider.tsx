@@ -143,6 +143,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const signAndSubmit = () => {
     signAndSubmitMutation.mutate({
       chainKey: transaction.meta.srcChainKey,
+      signerFeeAsset: transaction.signerFeeAsset,
       feeAssetId,
       tip,
       weight: paymentInfo?.weight?.ref_time,

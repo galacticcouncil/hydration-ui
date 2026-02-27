@@ -46,6 +46,7 @@ export const XcmForm = () => {
   const handleChainSwitch = useChainSwitch()
 
   const {
+    alerts,
     status,
     transfer,
     dryRunError,
@@ -281,13 +282,24 @@ export const XcmForm = () => {
           <XcmSummary />
           <Separator />
           <Box p={["l", "xl"]}>
-            <Flex direction="column" gap="m">
-              {dryRunError && (
-                <Alert
-                  variant="error"
-                  title={dryRunError.name}
-                  tooltip={dryRunError.description}
-                />
+            <Flex direction="column" gap={["l", "xl"]}>
+              {(alerts.length > 0 || dryRunError) && (
+                <Stack gap="base">
+                  {dryRunError && (
+                    <Alert
+                      variant="error"
+                      title={dryRunError.name}
+                      tooltip={dryRunError.description}
+                    />
+                  )}
+                  {alerts.map((alert) => (
+                    <Alert
+                      variant="error"
+                      key={alert.key}
+                      title={alert.message}
+                    />
+                  ))}
+                </Stack>
               )}
               <SubmitButton
                 status={status}
