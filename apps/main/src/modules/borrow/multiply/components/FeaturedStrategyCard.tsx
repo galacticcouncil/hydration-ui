@@ -16,6 +16,7 @@ import {
   GETH_ASSET_ID,
   GETH_ERC20_ID,
 } from "@galacticcouncil/utils"
+import { Link } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { BorrowAssetApyData } from "@/api/borrow"
@@ -89,7 +90,7 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
       : "—"
 
   return (
-    <Paper p="xl">
+    <Paper p="xl" position="relative">
       <Stack gap="l">
         <Flex
           justify="space-between"
@@ -142,6 +143,11 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
           </Text>
         </Stack>
       </Stack>
+      <Link
+        to="/borrow/multiply/$id"
+        params={{ id: assetId }}
+        sx={{ "&::before": { content: "''", position: "absolute", inset: 0 } }}
+      />
     </Paper>
   )
 }
