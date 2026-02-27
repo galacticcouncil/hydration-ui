@@ -12776,7 +12776,7 @@ export type DcaScheduleCondition = {
   /** Checks for equality with the object’s `paraBlockHeight` field. */
   paraBlockHeight?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `period` field. */
-  period?: InputMaybe<Scalars['Int']['input']>;
+  period?: InputMaybe<Scalars['BigFloat']['input']>;
   /** Checks for equality with the object’s `slippage` field. */
   slippage?: InputMaybe<Scalars['Int']['input']>;
   /** Checks for equality with the object’s `stabilityThreshold` field. */
@@ -13613,7 +13613,7 @@ export type DcaScheduleFilter = {
   /** Filter by the object’s `paraBlockHeight` field. */
   paraBlockHeight?: InputMaybe<IntFilter>;
   /** Filter by the object’s `period` field. */
-  period?: InputMaybe<IntFilter>;
+  period?: InputMaybe<BigFloatFilter>;
   /** Filter by the object’s `slippage` field. */
   slippage?: InputMaybe<IntFilter>;
   /** Filter by the object’s `stabilityThreshold` field. */
@@ -13664,7 +13664,7 @@ export type DcaScheduleHavingAverageInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13680,7 +13680,7 @@ export type DcaScheduleHavingDistinctCountInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13711,7 +13711,7 @@ export type DcaScheduleHavingMaxInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13727,7 +13727,7 @@ export type DcaScheduleHavingMinInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13743,7 +13743,7 @@ export type DcaScheduleHavingStddevPopulationInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13759,7 +13759,7 @@ export type DcaScheduleHavingStddevSampleInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13775,7 +13775,7 @@ export type DcaScheduleHavingSumInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13791,7 +13791,7 @@ export type DcaScheduleHavingVariancePopulationInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
@@ -13807,7 +13807,7 @@ export type DcaScheduleHavingVarianceSampleInput = {
   maxRetries?: InputMaybe<HavingIntFilter>;
   minAmountOut?: InputMaybe<HavingBigfloatFilter>;
   paraBlockHeight?: InputMaybe<HavingIntFilter>;
-  period?: InputMaybe<HavingIntFilter>;
+  period?: InputMaybe<HavingBigfloatFilter>;
   slippage?: InputMaybe<HavingIntFilter>;
   stabilityThreshold?: InputMaybe<HavingIntFilter>;
   startExecutionBlock?: InputMaybe<HavingIntFilter>;
