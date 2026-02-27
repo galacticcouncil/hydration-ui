@@ -81,7 +81,8 @@ export const useNetWorthData = (
     }
 
     const balances = buckets.map<NetWorthData>((bucket) => ({
-      netWorth: Number(bucket.transferableNorm) || 0,
+      netWorth:
+        (Number(bucket.transferableNorm) || 0) + Number(bucket.lockedNorm) || 0,
       time: new Date(Number(bucket.timestamp)),
     }))
 

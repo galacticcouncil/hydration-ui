@@ -2,7 +2,7 @@ import { CodegenConfig } from "@graphql-codegen/cli"
 
 export default {
   schema:
-    "https://galacticcouncil.squids.live/hydration-pools:whale-prod-pool-01/api/graphql",
+    "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/graphql",
   overwrite: true,
   config: {
     preResolveTypes: true,
