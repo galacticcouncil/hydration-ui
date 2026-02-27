@@ -8,12 +8,13 @@ import {
   Modal,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { Link } from "@tanstack/react-router"
+import { Link, useMatch } from "@tanstack/react-router"
 import { FC, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
   bottomNavOrder,
+  LINKS,
   NAV_ITEMS_SHOWN_MOBILE,
   NAV_ITEMS_SHOWN_TABLET,
   NAVIGATION,
@@ -39,6 +40,10 @@ export const MobileTabBar: FC = () => {
   const translations = useMenuTranslations()
   const { isMobile } = useBreakpoints()
   const hasMobNavbar = useHasMobNavbar()
+  const isSubmitTransactionPage = !!useMatch({
+    from: LINKS.submitTransaction,
+    shouldThrow: false,
+  })
 
   const [drawer, setDrawer] = useState<MobileTabBarDrawer | null>(null)
   const closeDrawer = () => setDrawer(null)
@@ -50,7 +55,7 @@ export const MobileTabBar: FC = () => {
   )
   const moreItems = navItems.slice(itemsShown)
 
-  if (!hasMobNavbar) return null
+  if (!hasMobNavbar || isSubmitTransactionPage) return null
 
   return (
     <SMobileTabBar>
