@@ -1572,6 +1572,7 @@
   "borrowApy": "Borrow APY",
   "supplyAndStakeApy": "Supply + Stake APY",
   "stakeApy": "Stake APY",
+  "nativeYieldApy": "Native Yield",
   "incentivesApr": "Incentives APR",
   "giga.campaign.title": "Polkadot GIGAHydration",
   "giga.campaign.description": "The new farms with GIGA incentives are live.",
