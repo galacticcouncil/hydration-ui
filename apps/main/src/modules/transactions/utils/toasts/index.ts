@@ -9,7 +9,7 @@ import {
   processors,
   ToastProcessorFn,
 } from "@/modules/transactions/utils/toasts/processors"
-import { ToastData, ToastMeta } from "@/states/toasts"
+import { TransactionToastData } from "@/states/toasts"
 import { TransactionType, XcmTag } from "@/states/transactions"
 
 enum ToastProcessorType {
@@ -28,7 +28,7 @@ const MAX_TOAST_MINUTE_AGE = {
   [ToastProcessorType.Unknown]: 0,
 } as const
 
-const REQUIRED_TOAST_META_KEYS: (keyof ToastMeta)[] = [
+const REQUIRED_TOAST_META_KEYS: (keyof TransactionToastData["meta"])[] = [
   "type",
   "txHash",
   "ecosystem",
@@ -36,7 +36,7 @@ const REQUIRED_TOAST_META_KEYS: (keyof ToastMeta)[] = [
 
 const validateToastForProcessing = (
   type: ToastProcessorType,
-  toast: ToastData,
+  toast: TransactionToastData,
 ): boolean => {
   if (REQUIRED_TOAST_META_KEYS.some((key) => !toast.meta[key])) {
     return false
@@ -50,7 +50,9 @@ const validateToastForProcessing = (
   return toastAgeInMinutes < MAX_TOAST_MINUTE_AGE[type]
 }
 
-const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
+const getToastProcessorType = (
+  toast: TransactionToastData,
+): ToastProcessorType => {
   const { type, ecosystem } = toast.meta
 
   const tags = type === TransactionType.Xcm ? (toast.meta.tags ?? []) : []

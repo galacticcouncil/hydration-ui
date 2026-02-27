@@ -1,0 +1,24 @@
+import { AssetLabel } from "@galacticcouncil/ui/components"
+
+import { AssetLogo } from "@/components/AssetLogo"
+import { useAssets } from "@/providers/assetsProvider"
+
+import { SRow } from "./CexAssetSelectRow.styled"
+
+type CexAssetSelectRowProps = {
+  onClick: () => void
+  assetId: string
+}
+export const CexAssetSelectRow: React.FC<CexAssetSelectRowProps> = ({
+  assetId,
+  ...props
+}) => {
+  const { getAssetWithFallback } = useAssets()
+  const asset = getAssetWithFallback(assetId)
+  return (
+    <SRow {...props}>
+      <AssetLogo id={asset.id} size="medium" />
+      <AssetLabel symbol={asset.symbol} name={asset.name} />
+    </SRow>
+  )
+}

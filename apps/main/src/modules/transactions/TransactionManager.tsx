@@ -2,14 +2,16 @@ import { useProcessTransactionToasts } from "@/modules/transactions/hooks/usePro
 import { ReviewMultiTransaction } from "@/modules/transactions/review/ReviewMultiTransaction"
 import { ReviewTransaction } from "@/modules/transactions/review/ReviewTransaction"
 import { TransactionProvider } from "@/modules/transactions/TransactionProvider"
-import { useToasts } from "@/states/toasts"
+import { isTransactionToast, useToasts } from "@/states/toasts"
 import { isMultiTransaction, useTransactionsStore } from "@/states/transactions"
 
 export const TransactionManager = () => {
   const { transactions } = useTransactionsStore()
   const { toasts } = useToasts()
 
-  useProcessTransactionToasts(toasts)
+  const transactionToasts = toasts.filter(isTransactionToast)
+
+  useProcessTransactionToasts(transactionToasts)
 
   return (
     <>

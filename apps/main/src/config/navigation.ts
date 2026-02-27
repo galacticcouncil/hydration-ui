@@ -50,6 +50,8 @@ export const LINKS = {
   statsHollar: "/stats/hollar",
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
+  deposit: "/deposit",
+  withdraw: "/withdraw",
   // memepad: "/memepad",
   // submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
@@ -299,6 +301,14 @@ export const getMenuTranslations = (t: TFunction) =>
     statsFees: {
       title: t("navigation.statsFees.title"),
       description: "",
+    },
+    deposit: {
+      title: t("navigation.deposit.title"),
+      description: t("navigation.deposit.description"),
+    },
+    withdraw: {
+      title: t("navigation.withdraw.title"),
+      description: t("navigation.withdraw.description"),
     },
     // memepad: {
     //   title: t("navigation.memepad.title"),

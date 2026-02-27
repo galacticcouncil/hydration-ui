@@ -36,6 +36,17 @@ const VariantTemplate = (args: Story["args"]) => (
         Button
       </Button>
     </Flex>
+    <Flex align="center" gap="xl">
+      <Button {...args} outline glow size="large">
+        Button
+      </Button>
+      <Button {...args} outline glow size="medium">
+        Button
+      </Button>
+      <Button {...args} outline glow size="small">
+        Button
+      </Button>
+    </Flex>
   </Flex>
 )
 
@@ -68,6 +79,13 @@ export const Tertiary: Story = {
   render: VariantTemplate,
   args: {
     variant: "tertiary",
+  },
+}
+
+export const Success: Story = {
+  render: VariantTemplate,
+  args: {
+    variant: "success",
   },
 }
 

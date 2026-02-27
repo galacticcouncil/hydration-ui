@@ -13,10 +13,11 @@ import { useTransactionsStore } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
 type Props = {
-  readonly onClose: () => void
+  readonly onClose?: () => void
+  readonly onSuccess?: () => void
 }
 
-export const useSubmitTransferPosition = ({ onClose }: Props) => {
+export const useSubmitTransferPosition = ({ onClose, onSuccess }: Props) => {
   const { t } = useTranslation("wallet")
   const { createTransaction } = useTransactionsStore()
   const { isErc20 } = useAssets()
@@ -72,5 +73,6 @@ export const useSubmitTransferPosition = ({ onClose }: Props) => {
       })
     },
     onMutate: onClose,
+    onSuccess: onSuccess,
   })
 }

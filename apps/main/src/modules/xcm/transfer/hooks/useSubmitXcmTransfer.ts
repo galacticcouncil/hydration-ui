@@ -1,22 +1,18 @@
-import {
-  HexString,
-  HYDRATION_CHAIN_KEY,
-  isEvmChain,
-  isParachain,
-} from "@galacticcouncil/utils"
+import { HexString, invariant, isEvmChain } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { AnyChain, ConfigBuilder } from "@galacticcouncil/xc-core"
-import { Call, Transfer } from "@galacticcouncil/xc-sdk"
+import { ConfigBuilder } from "@galacticcouncil/xc-core"
+import { Transfer } from "@galacticcouncil/xc-sdk"
 import { useMutation } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainConfigService } from "@/api/xcm"
-import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
+import {
+  assertTransferValues,
+  buildXcmTx,
+} from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   TransactionActions,
@@ -55,13 +51,10 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
-      const { srcAmount, srcChain, destChain, srcAsset, destAsset } = values
+      invariant(account, "Account is required")
 
-      if (!account) throw new Error("Account is required")
-      if (!destChain) throw new Error("Destination chain is required")
-      if (!srcChain) throw new Error("Source chain is required")
-      if (!srcAsset) throw new Error("Source asset is required")
-      if (!destAsset) throw new Error("Destination asset is required")
+      const { srcAmount, srcChain, destChain, srcAsset, destAsset } =
+        assertTransferValues(values)
 
       const { destination, source } = transfer
 
@@ -84,18 +77,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       const isApprove = isEvmApproveCall(call)
 
       const buildTransferTransaction = async () => {
-        const call = await transfer.buildCall(srcAmount)
-        const transferCall = await buildTransferCall(
-          call,
-          transfer,
-          srcChain,
-          srcAmount,
-        )
-
-        const tx =
-          srcChain.key === HYDRATION_CHAIN_KEY
-            ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
-            : await getExternalChainTx(srcChain, transferCall)
+        const tx = await buildXcmTx(srcChain, transfer, srcAmount, papi)
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
@@ -212,14 +194,4 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
       })
     },
   })
-}
-
-async function getExternalChainTx(
-  chain: AnyChain,
-  call: Call,
-): Promise<AnyPapiTx | Call> {
-  if (!isParachain(chain)) {
-    return call
-  }
-  return chain.client.getUnsafeApi().txFromCallData(Binary.fromHex(call.data))
 }

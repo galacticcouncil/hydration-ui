@@ -6,11 +6,13 @@ import {
 import { Asset } from "@galacticcouncil/sdk-next"
 import { isAnyParachain } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AnyParachain, Parachain } from "@galacticcouncil/xc-core"
+import { AnyChain, AnyParachain } from "@galacticcouncil/xc-core"
 import { Buffer } from "buffer"
 import { FixedSizeBinary } from "polkadot-api"
 
 import { TAssetData } from "@/api/assets"
+import { assethub } from "@/api/external/assethub"
+import { pendulum } from "@/api/external/pendulum"
 
 export const ASSETHUB_ID_BLACKLIST = [
   "34",
@@ -40,9 +42,6 @@ export const ASSETHUB_ID_BLACKLIST = [
   "50000033",
   "50000034",
 ]
-
-export const assethub = chainsMap.get("assethub") as Parachain
-export const pendulum = chainsMap.get("pendulum") as Parachain
 
 const chains = Array.from(chainsMap.values())
 
