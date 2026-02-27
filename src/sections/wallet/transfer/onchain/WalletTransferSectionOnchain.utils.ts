@@ -4,7 +4,7 @@ import BN from "bignumber.js"
 import { t } from "i18next"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useAccount } from "sections/web3-connect/Web3Connect.utils"
-import { AAVE_EXTRA_GAS, BN_0 } from "utils/constants"
+import { BN_0 } from "utils/constants"
 import { H160, isEvmAddress, safeConvertAddressH160 } from "utils/evm"
 import { safeConvertAddressSS58 } from "utils/formatting"
 import { maxBalance, required } from "utils/validators"
@@ -106,20 +106,11 @@ export const getAssetTransferTx = (
   amount: string,
 ) => {
   if (asset.id === NATIVE_ASSET_ID) {
-    return api.tx.dispatcher.dispatchWithExtraGas(
-      api.tx.currencies.transfer(dest, asset.id, amount),
-      AAVE_EXTRA_GAS,
-    )
+    return api.tx.currencies.transfer(dest, asset.id, amount)
   }
   if (asset.isErc20) {
-    return api.tx.dispatcher.dispatchWithExtraGas(
-      api.tx.currencies.transfer(dest, asset.id, amount),
-      AAVE_EXTRA_GAS,
-    )
+    return api.tx.currencies.transfer(dest, asset.id, amount)
   }
 
-  return api.tx.dispatcher.dispatchWithExtraGas(
-    api.tx.tokens.transfer(dest, asset.id, amount),
-    AAVE_EXTRA_GAS,
-  )
+  return api.tx.tokens.transfer(dest, asset.id, amount)
 }
