@@ -51,7 +51,7 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
-  // submitTransaction: "/submit-transaction",
+  submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
 export type NavigationKey = keyof typeof LINKS
@@ -304,10 +304,10 @@ export const getMenuTranslations = (t: TFunction) =>
     //   title: t("navigation.memepad.title"),
     //   description: "",
     // },
-    // submitTransaction: {
-    //   title: t("navigation.submitTransaction.title"),
-    //   description: "",
-    // },
+    submitTransaction: {
+      title: t("navigation.submitTransaction.title"),
+      description: "",
+    },
   }) satisfies Record<NavigationKey, { title: string; description: string }>
 
 export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {

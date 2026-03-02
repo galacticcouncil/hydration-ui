@@ -1,5 +1,5 @@
 import { safeParse, safeStringify } from "@galacticcouncil/utils"
-import { CompatibilityToken } from "polkadot-api"
+import { Binary, CompatibilityToken } from "polkadot-api"
 import { fromEntries, isBigInt, pipe, prop, zip } from "remeda"
 import { Abi, decodeFunctionData, getAbiItem, Hex } from "viem"
 
@@ -11,6 +11,7 @@ import {
   isSolanaCall,
   isSuiCall,
 } from "@/modules/transactions/utils/xcm"
+import { Papi } from "@/providers/rpcProvider"
 
 export const decodeEvmCall = (abi: Abi, data: Hex) => {
   try {
@@ -82,4 +83,16 @@ export const getTxCallHash = (
   }
 
   return ""
+}
+
+export const encodeCallHashToTx = (callHash: string, papi?: Papi) => {
+  if (papi) {
+    try {
+      return papi.txFromCallData(Binary.fromHex(callHash))
+    } catch (error) {
+      throw new Error("Failed to encode call hash to tx")
+    }
+  }
+
+  throw new Error("Papi is required")
 }

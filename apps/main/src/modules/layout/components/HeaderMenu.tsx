@@ -6,7 +6,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@galacticcouncil/ui/components"
-import { Link } from "@tanstack/react-router"
+import { Link, useMatch } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
 import { LINKS, NAVIGATION, NavigationItem } from "@/config/navigation"
@@ -17,6 +17,14 @@ export const HeaderMenu: React.FC<
   React.ComponentProps<typeof NavigationMenu>
 > = (props) => {
   const translations = useMenuTranslations()
+  const isSubmitTransactionPage = !!useMatch({
+    from: LINKS.submitTransaction,
+    shouldThrow: false,
+  })
+
+  if (isSubmitTransactionPage) {
+    return <div />
+  }
 
   return (
     <NavigationMenu {...props}>
