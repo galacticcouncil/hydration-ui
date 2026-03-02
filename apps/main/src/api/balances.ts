@@ -1,4 +1,3 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
