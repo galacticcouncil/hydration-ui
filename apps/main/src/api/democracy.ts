@@ -1,12 +1,10 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
-import { queryOptions } from "@tanstack/react-query"
+import { QueryClient, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
 import { number, string, z } from "zod/v4"
 
+import { bestNumberQuery } from "@/api/chain"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
-import { NATIVE_ASSET_DECIMALS } from "@/utils/consts"
-import { scaleHuman } from "@/utils/formatting"
 
 export type CastingVoteInfo = Extract<
   Awaited<
@@ -29,6 +27,11 @@ export type OngoingGovReferenda = Extract<
   { type: "Ongoing" }
 >["value"]
 
+export type TUnlockableVote = {
+  voteId: number
+  classId: number
+}
+
 const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   none: 0,
   locked1x: 43200,
@@ -39,124 +42,42 @@ const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   locked6x: 1382400,
 }
 
-export const accountVotesQuery = (
-  { papi, isApiLoaded }: TProviderContext,
-  address: string,
-  currentBlock: number,
-) => {
-  return queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "democracy", "votes", address],
-    queryFn: async () => {
-      const votesRaw = await papi.query.Democracy.VotingOf.getValue(address)
+/** Substrate encodes Standard vote as one byte: bit 7 = Aye(1)/Nay(0), bits 0-6 = conviction index (0=None..6=Locked6x) */
+const CONVICTION_NAMES = [
+  "none",
+  "locked1x",
+  "locked2x",
+  "locked3x",
+  "locked4x",
+  "locked5x",
+  "locked6x",
+] as const
 
-      if (!votesRaw || votesRaw.type === "Delegating") {
-        return undefined
-      }
+export const decodeStandardVote = (packedVote: number) => {
+  const aye = (packedVote & 0x80) !== 0
+  const index = packedVote & 0x7f
+  const conviction =
+    (index <= 6 ? CONVICTION_NAMES[index] : CONVICTION_NAMES[0]) ?? "none"
+  return { conviction, aye }
+}
 
-      const votes = votesRaw.value.votes.map(([id, vote]) => {
-        const voteConviction = (): string => {
-          if (vote.type === "Standard") {
-            // TODO where is vote.conviction?
-            // return vote.asStandard?.vote.conviction.toString()
-            return vote.value.vote.toString()
-          } else {
-            return "None"
-          }
-        }
+const getVoteAmount = (vote: ConvictionVotingVoteAccountVote) => {
+  if (vote.type === "Split") {
+    return vote.value.aye + vote.value.nay
+  } else if (vote.type === "Standard") {
+    return vote.value.balance
+  } else if (vote.type === "SplitAbstain") {
+    return vote.value.aye + vote.value.nay + vote.value.abstain
+  } else {
+    return 0n
+  }
+}
 
-        const voteAmount = (): bigint => {
-          if (vote.type === "Split") {
-            return vote.value.aye + vote.value.nay
-          } else if (vote.type === "Standard") {
-            return vote.value.balance
-          } else {
-            return 0n
-          }
-        }
-
-        return {
-          id,
-          balance: voteAmount(),
-          conviction: voteConviction(),
-        }
-      })
-
-      const votedAmounts = await Promise.all(
-        votes.map(async (vote) => {
-          const voteId = vote.id
-          const referendum =
-            await papi.query.Democracy.ReferendumInfoOf.getValue(voteId)
-
-          if (!referendum) {
-            return {
-              isUnlocked: true,
-              amount: scaleHuman(vote.balance, NATIVE_ASSET_DECIMALS),
-              id: voteId,
-              endDiff: 0,
-            }
-          }
-
-          const isFinished = referendum.type === "Finished"
-          const endBlock = referendum.value.end
-
-          const convictionBlock =
-            CONVICTIONS_BLOCKS[vote.conviction.toLocaleLowerCase()] ?? 0
-
-          const unlockBlockNumber = endBlock + convictionBlock
-          const isUnlocked = isFinished
-            ? unlockBlockNumber <= currentBlock
-            : false
-
-          return {
-            isUnlocked,
-            amount: scaleHuman(vote.balance, NATIVE_ASSET_DECIMALS),
-            id: voteId,
-            endDiff: unlockBlockNumber - currentBlock,
-          }
-        }),
-      )
-
-      const unlockedVotes = votedAmounts.reduce<{
-        maxUnlockedValue: string
-        maxLockedValue: string
-        maxLockedBlock: number
-        ids: ReadonlyArray<number>
-      }>(
-        (acc, votedAmount) => {
-          if (votedAmount.isUnlocked) {
-            return {
-              maxUnlockedValue: Big.max(
-                acc.maxUnlockedValue,
-                votedAmount.amount,
-              ).toString(),
-              maxLockedValue: acc.maxLockedValue,
-              maxLockedBlock: Math.max(votedAmount.endDiff, acc.maxLockedBlock),
-              ids: [...acc.ids, votedAmount.id],
-            }
-          }
-
-          return {
-            maxLockedValue: Big.max(
-              acc.maxLockedValue,
-              votedAmount.amount,
-            ).toString(),
-            maxUnlockedValue: acc.maxUnlockedValue,
-            maxLockedBlock: Math.max(votedAmount.endDiff, acc.maxLockedBlock),
-            ids: [],
-          }
-        },
-        {
-          maxLockedValue: "0",
-          maxUnlockedValue: "0",
-          maxLockedBlock: 0,
-          ids: [],
-        },
-      )
-
-      return unlockedVotes
-    },
-    enabled: isApiLoaded && !!address && !!currentBlock,
-  })
+const getVoteConviction = (vote: ConvictionVotingVoteAccountVote): string => {
+  if (vote.type === "Standard") {
+    return decodeStandardVote(vote.value.vote).conviction
+  }
+  return "none"
 }
 
 export type OpenGovReferendum = Extract<
@@ -198,6 +119,8 @@ export const openGovReferendaQuery = ({
 export type TAccountVote = {
   readonly id: number
   readonly classId: number
+  readonly balance: bigint
+  readonly conviction: string
 }
 
 export const accountOpenGovVotesQuery = (
@@ -219,10 +142,12 @@ export const accountOpenGovVotesQuery = (
           const votes = voteClass.value.value.votes
           const classId = voteClass.keyArgs[1]
 
-          votes.forEach(([id]) => {
+          votes.forEach(([id, data]) => {
             acc.push({
               id,
               classId,
+              balance: getVoteAmount(data),
+              conviction: getVoteConviction(data),
             })
           })
 
@@ -268,5 +193,125 @@ export const referendumInfoQuery = (referendumIndex: number) =>
         return null
 
       return parsed
+    },
+  })
+
+export const openGovUnlockedTokensQuery = (
+  rpc: TProviderContext,
+  queryClient: QueryClient,
+  address: string,
+) =>
+  queryOptions({
+    queryKey: ["openGovUnlockedTokens", address],
+    queryFn: async () => {
+      const [accountVotes, bestNumber] = await Promise.all([
+        queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
+        queryClient.ensureQueryData(bestNumberQuery(rpc)),
+      ])
+
+      if (!bestNumber) {
+        throw new Error("Best number not found")
+      }
+
+      const currentBlock = bestNumber.parachainBlockNumber
+
+      const votesData = await Promise.all(
+        accountVotes.map(async (accountVote) => {
+          const referendumInfo =
+            await rpc.papi.query.Referenda.ReferendumInfoFor.getValue(
+              accountVote.id,
+            )
+
+          if (!referendumInfo) {
+            return {
+              isUnlocked: true,
+              amount: accountVote.balance,
+              id: accountVote.id,
+              classId: accountVote.classId,
+              endDiff: undefined,
+            }
+          }
+
+          if (referendumInfo.type === "Ongoing") {
+            return {
+              isUnlocked: false,
+              amount: accountVote.balance,
+              id: accountVote.id,
+              classId: accountVote.classId,
+              endDiff: undefined,
+            }
+          } else {
+            const endBlock =
+              referendumInfo.type === "Killed"
+                ? referendumInfo.value
+                : referendumInfo.value[0]
+            const convictionBlockNumber =
+              CONVICTIONS_BLOCKS[accountVote.conviction]
+
+            if (convictionBlockNumber === undefined) {
+              throw new Error("Invalid conviction")
+            }
+
+            const unlockBlockNumber = endBlock + convictionBlockNumber
+            const isUnlocked = Big(unlockBlockNumber).lte(currentBlock)
+
+            return {
+              isUnlocked,
+              amount: accountVote.balance,
+              id: accountVote.id,
+              classId: accountVote.classId,
+              endDiff: unlockBlockNumber - currentBlock,
+            }
+          }
+        }),
+      )
+
+      const unlockedVotes = votesData.reduce<{
+        maxUnlockedValue: string
+        maxLockedValue: string
+        maxLockedBlock: number | undefined
+        ids: TUnlockableVote[]
+      }>(
+        (acc, voteData) => {
+          if (voteData.isUnlocked) {
+            return {
+              maxUnlockedValue: Big.max(
+                acc.maxUnlockedValue,
+                voteData.amount.toString(),
+              ).toString(),
+              maxLockedValue: acc.maxLockedValue,
+              maxLockedBlock: voteData.endDiff
+                ? Big.max(voteData.endDiff, acc.maxLockedBlock ?? 0).toNumber()
+                : undefined,
+              ids: [
+                ...acc.ids,
+                { voteId: voteData.id, classId: voteData.classId },
+              ],
+            }
+          }
+
+          return {
+            maxLockedValue: Big.max(
+              acc.maxLockedValue,
+              voteData.amount.toString(),
+            ).toString(),
+            maxUnlockedValue: acc.maxUnlockedValue,
+            maxLockedBlock: Big.max(
+              voteData.endDiff ?? 0,
+              acc.maxLockedBlock ?? 0,
+            ).toNumber(),
+
+            ids: acc.ids,
+          }
+        },
+        {
+          maxUnlockedValue: "0",
+          maxLockedValue: "0",
+          ids: [],
+          maxLockedBlock: undefined,
+        },
+      )
+
+      return unlockedVotes
     },
   })

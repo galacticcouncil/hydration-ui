@@ -1,4 +1,3 @@
-import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInMinute } from "date-fns/constants"
@@ -24,7 +23,7 @@ export const nativeTokenLocksQuery = (
   address: string,
 ) => {
   return queryOptions({
-    queryKey: [QUERY_KEY_BLOCK_PREFIX, "balances", "native-lock", address],
+    queryKey: ["balances", "native-lock", address],
     queryFn: async () => {
       const locks = await papi.query.Balances.Locks.getValue(address)
 
