@@ -1,5 +1,5 @@
 import { Box } from "@/components/Box"
-import { styled } from "@/utils"
+import { css, styled } from "@/utils"
 
 export const SList = styled(Box)`
   width: 100%;
@@ -7,12 +7,26 @@ export const SList = styled(Box)`
 `
 
 export const SListItem = styled("div", {
-  shouldForwardProp: (props) => props !== "size" && props !== "start",
-})<{ size: number; start: number }>`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: ${({ size }) => size}px;
-  transform: translateY(${({ start }) => start}px);
-`
+  shouldForwardProp: (prop) =>
+    prop !== "size" && prop !== "start" && prop !== "bordered",
+})<{ size: number; start: number; bordered: boolean }>(
+  ({ theme, size, start, bordered }) => css`
+    position: absolute;
+    box-sizing: content-box;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: ${size}px;
+    transform: translateY(${start}px);
+    border-bottom: 1px solid transparent;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
+
+    ${bordered &&
+    css`
+      border-bottom-color: ${theme.details.separators};
+    `}
+  `,
+)

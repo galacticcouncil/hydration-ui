@@ -4,15 +4,28 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 
-import { useXcmFormSchema } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import {
+  useXcmFormSchema,
+  XcmFormValues,
+} from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmQueryParams } from "@/modules/xcm/transfer/hooks/useXcmQueryParams"
 import { getXcmFormDefaults } from "@/modules/xcm/transfer/utils/chain"
 
-export const useXcmForm = (transfer: Transfer | null) => {
+type UseXcmFormOptions = {
+  syncWithQueryParams?: boolean
+  defaultValues?: Partial<XcmFormValues>
+}
+
+export const useXcmForm = (
+  transfer: Transfer | null,
+  options?: UseXcmFormOptions,
+) => {
   const { account } = useAccount()
 
+  const { syncWithQueryParams = true, defaultValues } = options ?? {}
+
   const { parsedQueryParams, updateQueryParams } = useXcmQueryParams()
-  const defaults = {
+  const defaults = defaultValues || {
     ...getXcmFormDefaults(account),
     ...parsedQueryParams,
   }
@@ -43,13 +56,21 @@ export const useXcmForm = (transfer: Transfer | null) => {
   ])
 
   useEffect(() => {
+    if (!syncWithQueryParams) return
     updateQueryParams({
       srcChain: srcChain?.key,
       srcAsset: srcAsset?.key,
       destChain: destChain?.key,
       destAsset: destAsset?.key,
     })
-  }, [destAsset, destChain, srcAsset, srcChain, updateQueryParams])
+  }, [
+    syncWithQueryParams,
+    destAsset,
+    destChain,
+    srcAsset,
+    srcChain,
+    updateQueryParams,
+  ])
 
   return form
 }
