@@ -1,4 +1,7 @@
-import { ProtocolAction } from "@aave/contract-helpers"
+import {
+  DEFAULT_NULL_VALUE_ON_TX,
+  ProtocolAction,
+} from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
 import { h160 } from "@galacticcouncil/common"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
@@ -23,23 +26,31 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   QueryClient,
   queryOptions,
+  useQueries,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { Binary } from "polkadot-api"
+import { Binary, FixedSizeArray } from "polkadot-api"
 import { useCallback } from "react"
 
 import {
   useBorrowIncentivesContract,
+  useBorrowPoolContract,
   useBorrowPoolDataContract,
   useGhoServiceContract,
 } from "@/api/borrow/contracts"
 import { useBlockTimestamp } from "@/api/chain"
+import {
+  ASSET_ID_TO_DEFILLAMA_ID,
+  defillamaLatestApyQuery,
+} from "@/api/external/defillama"
+import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
+import { TProviderData } from "@/api/provider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const { H160 } = h160
 
-const lendingPoolAddressProvider =
+export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
 export const borrowIncentivesQuery = (
@@ -291,6 +302,11 @@ export const useGhoUserData = (evmAddress: string) => {
   )
 }
 
+export const userBorrowSummaryQueryKey = (
+  evmAddress: string,
+  lendingPoolAddressProvider: string,
+) => ["borrow", "userSummary", evmAddress, lendingPoolAddressProvider]
+
 export const userBorrowSummaryQuery = (
   evmAddress: string,
   queryClient: QueryClient,
@@ -301,7 +317,7 @@ export const userBorrowSummaryQuery = (
   timestamp: bigint,
 ) =>
   queryOptions({
-    queryKey: ["borrow", "userSummary", evmAddress, lendingPoolAddressProvider],
+    queryKey: userBorrowSummaryQueryKey(evmAddress, lendingPoolAddressProvider),
     queryFn: async () => {
       if (!timestamp || timestamp <= 0n) throw new Error("Invalid timestamp")
       if (!poolDataContract || !ghoServiceContract)
@@ -459,21 +475,21 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       throw new Error("Invalid claim transaction")
     }
 
-    const gasPriceBase = await evm.getGasPrice()
-    const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
-    const gasPrice = gasPriceBase + gasPriceSurplus
+    const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+      await estimateGasLimit({
+        evm,
+        gasLimit: tx.gasLimit.toString(),
+        action: ProtocolAction.claimRewards,
+      })
 
     const evmCall = papi.tx.EVM.call({
       source: Binary.fromHex(tx.from),
       target: Binary.fromHex(tx.to),
       input: Binary.fromHex(tx.data),
       value: [0n, 0n, 0n, 0n],
-      gas_limit: BigInt(
-        gasLimitRecommendations[ProtocolAction.claimRewards]?.limit ||
-          tx.gasLimit.toString(),
-      ),
-      max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
-      max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
+      gas_limit: gasLimit,
+      max_fee_per_gas: maxFeePerGas,
+      max_priority_fee_per_gas: maxPriorityFeePerGas,
       access_list: [],
       authorization_list: [],
       nonce: undefined,
@@ -483,4 +499,210 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       call: evmCall.decodedCall,
     })
   }, [account?.address, evm, papi, user])
+}
+
+export const estimateGasLimit = async ({
+  evm,
+  gasLimit,
+  action,
+}: {
+  gasLimit?: string
+  evm: TProviderData["evm"]
+  action?: ProtocolAction
+}) => {
+  const gasPriceBase = await evm.getGasPrice()
+  const gasPriceSurplus = (gasPriceBase * 5n) / 100n // 5% surplus
+  const gasPrice = gasPriceBase + gasPriceSurplus
+
+  const defaultGasLimit =
+    gasLimit ?? gasLimitRecommendations.default?.recommended
+
+  if (!defaultGasLimit) {
+    throw new Error("Default gas limit not found")
+  }
+
+  const feePerGas = [gasPrice, 0n, 0n, 0n] as FixedSizeArray<4, bigint>
+
+  return {
+    gasLimit: BigInt(
+      action
+        ? gasLimitRecommendations[action]?.recommended || defaultGasLimit
+        : defaultGasLimit,
+    ),
+    maxFeePerGas: feePerGas,
+    maxPriorityFeePerGas: feePerGas,
+  }
+}
+
+export const useBorrowDisableCollateralTxs = () => {
+  const { evm, papi } = useRpcProvider()
+  const poolContract = useBorrowPoolContract()
+  const { account } = useAccount()
+
+  const { data: userReserves } = useUserBorrowReserves()
+
+  return useCallback(async () => {
+    if (!poolContract || !account || !userReserves) return null
+
+    const address = account?.address || ""
+    const evmAddress = H160.fromAny(address)
+
+    const activeCollaterals = userReserves.userReserves.filter(
+      (reserve) => reserve.usageAsCollateralEnabledOnUser,
+    )
+
+    return await Promise.all(
+      activeCollaterals.map(async (collateral) => {
+        const collateralTxs = await poolContract.setUsageAsCollateral({
+          reserve: collateral.underlyingAsset,
+          usageAsCollateral: false,
+          user: evmAddress,
+        })
+
+        const tx = await collateralTxs
+          .find((tx) => "DLP_ACTION" === tx.txType)
+          ?.tx()
+
+        if (!tx || !tx.from || !tx.to || !tx.data || !tx.gasLimit) {
+          throw new Error(
+            `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
+          )
+        }
+
+        const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+          await estimateGasLimit({
+            evm,
+            gasLimit: tx.gasLimit.toString(),
+            action: ProtocolAction.claimRewards,
+          })
+
+        const evmCall = papi.tx.EVM.call({
+          source: Binary.fromHex(tx.from),
+          target: Binary.fromHex(tx.to),
+          input: Binary.fromHex(tx.data),
+          value: [0n, 0n, 0n, 0n],
+          gas_limit: gasLimit,
+          max_fee_per_gas: maxFeePerGas,
+          max_priority_fee_per_gas: maxPriorityFeePerGas,
+          access_list: [],
+          authorization_list: [],
+          nonce: undefined,
+        })
+
+        return evmCall
+      }),
+    )
+  }, [poolContract, account, evm, papi, userReserves])
+}
+
+export const useSetUsageAsCollateralTx = () => {
+  const { papi, evm } = useRpcProvider()
+  const poolContract = useBorrowPoolContract()
+  const { account } = useAccount()
+
+  return useCallback(
+    async (reserve: string, usageAsCollateral: boolean) => {
+      const address = account?.address || ""
+      const evmAddress = H160.fromAny(address)
+
+      const poolInstace = poolContract.getContractInstance(
+        poolContract.poolAddress,
+      )
+
+      const txRaw =
+        await poolInstace.populateTransaction.setUserUseReserveAsCollateral(
+          reserve,
+          usageAsCollateral,
+        )
+
+      const tx = {
+        ...txRaw,
+        from: evmAddress,
+        value: DEFAULT_NULL_VALUE_ON_TX,
+      }
+
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm,
+          gasLimit: tx.gasLimit?.toString(),
+          action: ProtocolAction.claimRewards,
+        })
+
+      const evmCall = papi.tx.EVM.call({
+        source: Binary.fromHex(tx.from),
+        target: Binary.fromHex(tx.to),
+        input: Binary.fromHex(tx.data),
+        value: [0n, 0n, 0n, 0n],
+        gas_limit: gasLimit,
+        max_fee_per_gas: maxFeePerGas,
+        max_priority_fee_per_gas: maxPriorityFeePerGas,
+        access_list: [],
+        authorization_list: [],
+        nonce: undefined,
+      })
+
+      return evmCall
+    },
+    [poolContract, account?.address, evm, papi],
+  )
+}
+
+export enum ExternalApyType {
+  stake = "stake",
+  nativeYield = "nativeYield",
+}
+
+export const useExternalApys = (assetIds: string[]) => {
+  const queryConfigs = assetIds
+    .map((assetId) => {
+      const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
+      if (defillamaId) {
+        return {
+          assetId,
+          type: ExternalApyType.stake,
+          query: {
+            ...defillamaLatestApyQuery(defillamaId),
+            enabled: !!defillamaId,
+          },
+        }
+      }
+
+      const kaminoId = ASSET_ID_TO_KAMINO_ID[assetId]
+      if (kaminoId) {
+        return {
+          assetId,
+          type: ExternalApyType.nativeYield,
+          query: {
+            ...kaminoApyQuery(kaminoId),
+            enabled: !!kaminoId,
+          },
+        }
+      }
+
+      return null
+    })
+    .filter((c): c is NonNullable<typeof c> => c !== null)
+
+  const queries = queryConfigs.map((c) => c.query)
+
+  const results = useQueries({
+    queries,
+  })
+
+  return {
+    isLoading: results.some((result) => result.isLoading),
+    data: results.map((result, i) => {
+      const queryConfig = queryConfigs[i] as NonNullable<
+        (typeof queryConfigs)[number]
+      >
+
+      return [
+        queryConfig.assetId,
+        {
+          apyType: queryConfig.type,
+          apy: result.data,
+        },
+      ] as const
+    }),
+  }
 }
