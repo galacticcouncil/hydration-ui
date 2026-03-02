@@ -268,7 +268,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                         </MenuSelectionItem>
                       </DropdownMenuItem>
                     )}
-                    {!isOmnipool && (
+                    {!isOmnipool && original.isStablepoolInOmnipool && (
                       <DropdownMenuItem asChild>
                         <MenuSelectionItem
                           variant="filterLink"
@@ -348,7 +348,7 @@ export const useOmnipoolPositionsTableColumns = () => {
                   </Link>
                 </Button>
               )}
-              {!isOmnipool && (
+              {!isOmnipool && original.isStablepoolInOmnipool && (
                 <Button
                   variant="secondary"
                   asChild
