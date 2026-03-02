@@ -1,5 +1,5 @@
 import {
-  Hourglass,
+  //Hourglass,
   Landmark,
   Layers,
   LockOpen,
@@ -29,13 +29,13 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
   const { t } = useTranslation(["wallet", "common"])
 
   const locks = useNativeAssetLocks()
-  const unlockable = useUnlockableNativeTokens(locks.lockedInDemocracy)
+  const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
 
   const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
 
   // TODO integrate
-  const xcm = "-1"
-  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
+  // const xcm = "-1"
+  // const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
 
   return (
     <Flex direction="column" gap="xl">
@@ -48,7 +48,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
         })}
         displayValue={reservedDisplayPrice}
       />
-      {xcm !== "-1" && (
+      {/* {xcm !== "-1" && (
         <>
           <ExpandedRowSeparator />
           <Amount
@@ -64,7 +64,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
             displayValue={xcmDisplay}
           />
         </>
-      )}
+      )} */}
       <ExpandedRowSeparator />
       <Amount
         variant="horizontalLabel"
@@ -99,7 +99,7 @@ export const ExpandedNativeRow: FC<Props> = ({ asset }) => {
           css={{ flex: 1 }}
           variant="horizontalLabel"
           color="tint"
-          label={t("myAssets.expandedNative.unlockableInDemocracy")}
+          label={t("myAssets.expandedNative.unlockable")}
           labelIcon={LockOpen}
           value={t("common:number", {
             value: unlockable.value,
