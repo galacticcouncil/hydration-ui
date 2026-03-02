@@ -1,10 +1,11 @@
 import { useMarketAssetsData } from "@galacticcouncil/money-market/hooks"
 import { isGho } from "@galacticcouncil/money-market/utils"
-import { Paper, Stack } from "@galacticcouncil/ui/components"
+import { Stack } from "@galacticcouncil/ui/components"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Navigate } from "@tanstack/react-router"
 
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
+import { MultiplyApp } from "@/modules/borrow/multiply/components/MultiplyApp"
 import { StrategyAboutCard } from "@/modules/borrow/multiply/components/StrategyAboutCard"
 import { StrategyHeader } from "@/modules/borrow/multiply/components/StrategyHeader"
 import { StrategyOverviewCard } from "@/modules/borrow/multiply/components/StrategyOverviewCard"
@@ -18,6 +19,7 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
   id,
 }) => {
   const { data: reserves, isLoading } = useMarketAssetsData()
+
   const { apyMap } = useApyContext()
 
   //const debtAssetId = getStrategyDebtAssetId(id)
@@ -52,7 +54,7 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
           />
           <StrategyAboutCard symbol={collateralReserve.symbol} />
         </Stack>
-        <Paper p="xl" sx={{ minHeight: "6xl" }}></Paper>
+        <MultiplyApp collateralReserve={collateralReserve} />
       </TwoColumnGrid>
     </Stack>
   )
