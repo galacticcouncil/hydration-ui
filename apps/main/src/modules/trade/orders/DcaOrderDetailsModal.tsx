@@ -89,7 +89,7 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
                 value={t("trade:trade.orders.dcaDetail.schedulePeriod", {
                   timeframe: blocksPeriod
                     .times(PARACHAIN_BLOCK_TIME)
-                    .toString(),
+                    .toNumber(),
                   count: blocksPeriod.toNumber(),
                 })}
               />
