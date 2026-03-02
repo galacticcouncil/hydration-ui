@@ -9,6 +9,9 @@ import { z } from "zod"
 import i18n from "@/i18n"
 import { validNumber } from "@/utils/validators"
 
+const MAX_YEAR_FRAME = 1
+const MAX_TIME_FRAME_MS = millisecondsInDay * MAX_YEAR_FRAME * 365
+
 export const timeFrameTypes = [
   "minute",
   "hour",
@@ -30,11 +33,26 @@ export const getTimeFrameSchema = <TType extends TimeFrameType>(
     .refine(
       ({ type, value }) => {
         const millis = TIME_FRAME_MS[type] * (value ?? 0)
-
-        return !isNaN(new Date(Date.now() + millis).valueOf())
+        return !millis || !isNaN(new Date(Date.now() + millis).valueOf())
       },
       { error: i18n.t("error.timeFrame"), path: ["value"] },
     )
+    .superRefine((data, { addIssue }) => {
+      const { type, value } = data
+      const millis = TIME_FRAME_MS[type] * (value ?? 0)
+      if (millis > MAX_TIME_FRAME_MS) {
+        const maxInUnit = Math.floor(MAX_TIME_FRAME_MS / TIME_FRAME_MS[type])
+
+        const valueFormatted = i18n.t(type as TimeFrameType, {
+          count: maxInUnit,
+        })
+        addIssue({
+          code: "custom",
+          path: ["value"],
+          message: i18n.t("error.timeFrameMax", { value: valueFormatted }),
+        })
+      }
+    })
 
 export const timeFrameSchema = getTimeFrameSchema(timeFrameTypes)
 
