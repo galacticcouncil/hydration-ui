@@ -32,6 +32,7 @@ import {
   TSupplyIsolatedLiquidityFormValues,
   useSupplyIsolatedLiquidity,
 } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquidity.utils"
+import { SupplyIsolatedLiquiditySkeleton } from "@/modules/liquidity/components/SupplyIsolatedLiquidity/SupplyIsolatedLiquiditySkeleton"
 import {
   TradeLimit,
   TradeLimitType,
@@ -70,7 +71,7 @@ export const SupplyIsolatedLiquidity = ({
     !userBorrowData ||
     !userReserve
   )
-    return null
+    return <SupplyIsolatedLiquiditySkeleton />
 
   return (
     <SupplyIsolatedLiquidityBody
@@ -157,14 +158,16 @@ const SupplyIsolatedLiquidityBody = ({
               content={<TradeLimit type={TradeLimitType.Trade} />}
               sx={{ my: 0 }}
             />
-            <SummaryRow
-              label={t("minimumReceived")}
-              content={t("common:currency", {
-                value: minReceiveAmountShifted,
-                symbol: aToken.symbol,
-              })}
-              sx={{ my: 0 }}
-            />
+            {!isBlockedByBorrowedAssets && (
+              <SummaryRow
+                label={t("minimumReceived")}
+                content={t("common:currency", {
+                  value: minReceiveAmountShifted,
+                  symbol: aToken.symbol,
+                })}
+                sx={{ my: 0 }}
+              />
+            )}
             {collateralType && (
               <SummaryRow
                 label="Collateral"

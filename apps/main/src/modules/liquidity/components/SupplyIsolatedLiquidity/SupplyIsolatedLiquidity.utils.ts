@@ -31,13 +31,14 @@ import {
   useSetUsageAsCollateralTx,
 } from "@/api/borrow"
 import { bestSellWithTxQuery } from "@/api/trade"
+import i18n from "@/i18n"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
-import { scaleHuman } from "@/utils/formatting"
-import { required, validateFieldMaxBalance } from "@/utils/validators"
+import { scaleHuman, toDecimal } from "@/utils/formatting"
+import { validateMaxBalance } from "@/utils/validators"
 
 export type TSupplyIsolatedLiquidityFormValues = {
   amount: string
@@ -85,7 +86,7 @@ export const useSupplyIsolatedLiquidity = ({
   const { usageAsCollateralEnabledOnUser, reserve, underlyingAsset } =
     userReserve
   const assetCap = getAssetCapData(reserve)
-  console.log(userReserve)
+
   const [amountIn, assetIn] = form.watch(["amount", "asset"])
 
   const [debouncedAmountIn] = useDebounce(amountIn, 300)
@@ -212,10 +213,6 @@ export const useSupplyIsolatedLiquidity = ({
 
 const useSupplyIsolatedLiquidityForm = ({ asset }: { asset: TAssetData }) => {
   const { getTransferableBalance } = useAccountBalances()
-  const balanceHuman = scaleHuman(
-    getTransferableBalance(asset.id),
-    asset.decimals,
-  )
 
   return useForm<TSupplyIsolatedLiquidityFormValues>({
     mode: "onChange",
@@ -224,10 +221,21 @@ const useSupplyIsolatedLiquidityForm = ({ asset }: { asset: TAssetData }) => {
       asset,
     },
     resolver: standardSchemaResolver(
-      z.object({
-        amount: required.check(validateFieldMaxBalance(balanceHuman)),
-        asset: z.custom<TAssetData>(),
-      }),
+      z.object({ amount: z.string(), asset: z.custom<TAssetData>() }).refine(
+        (values) => {
+          return validateMaxBalance(
+            toDecimal(
+              getTransferableBalance(values.asset.id),
+              values.asset.decimals,
+            ),
+            values.amount,
+          )
+        },
+        {
+          message: i18n.t("error.maxBalance"),
+          path: ["amount"],
+        },
+      ),
     ),
   })
 }
