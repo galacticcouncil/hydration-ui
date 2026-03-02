@@ -85,7 +85,7 @@ export const CollateralChangeModalContent: React.FC<
 
   const hasOpenBudgetDca = openOrders?.dcaSchedules?.nodes
     .filter((node) => node?.budgetAmountIn === "0")
-    .some((node) => node?.assetIn?.underlyingAssetId === assetId)
+    .some((node) => node?.assetIn?.assetRegistryId === assetId)
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
