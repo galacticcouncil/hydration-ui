@@ -10,6 +10,7 @@ import { useRootStore } from "@/store/root"
 export interface WithdrawActionsProps {
   poolReserve: ComputedReserveData
   amountToWithdraw: string
+  amount: string
   poolAddress: string
   symbol: string
   blocked: boolean
@@ -19,6 +20,7 @@ export interface WithdrawActionsProps {
 export const WithdrawActions = ({
   poolReserve,
   amountToWithdraw,
+  amount,
   poolAddress,
   symbol,
   blocked,
@@ -29,7 +31,7 @@ export const WithdrawActions = ({
 
   const protocolAction = ProtocolAction.withdraw
   const toasts = useProtocolActionToasts(protocolAction, {
-    value: formatCurrency(amountToWithdraw || "0", {
+    value: formatCurrency(amount || "0", {
       symbol,
     }),
   })

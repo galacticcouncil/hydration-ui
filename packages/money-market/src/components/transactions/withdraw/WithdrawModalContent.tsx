@@ -160,6 +160,7 @@ export const WithdrawModalContent: React.FC<TxModalWrapperRenderProps> = ({
       <WithdrawActions
         poolReserve={poolReserve}
         amountToWithdraw={isMaxSelected ? withdrawMax : withdrawAmount}
+        amount={withdrawAmount}
         poolAddress={poolReserve.underlyingAsset}
         symbol={symbol}
         blocked={
