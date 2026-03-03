@@ -30,8 +30,7 @@ export const getTimeFrameSchema = <TType extends TimeFrameType>(
     .refine(
       ({ type, value }) => {
         const millis = TIME_FRAME_MS[type] * (value ?? 0)
-
-        return !isNaN(new Date(Date.now() + millis).valueOf())
+        return !millis || !isNaN(new Date(Date.now() + millis).valueOf())
       },
       { error: i18n.t("error.timeFrame"), path: ["value"] },
     )
