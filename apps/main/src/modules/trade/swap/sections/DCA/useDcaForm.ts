@@ -1,14 +1,16 @@
 import {
   getTimeFrameMillis,
   getTimeFrameSchema,
+  TIME_FRAME_MS,
   TimeFrame,
+  TimeFrameType,
   timeFrameTypes,
 } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsInHour } from "date-fns/constants"
+import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { useEffect } from "react"
 import { FieldPath, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -76,24 +78,59 @@ const schemaBase = z.object({
   orders: ordersSchema,
 })
 
+const MAX_OPEN_BUDGET_YEAR_FRAME = 1
+const MAX_YEAR_FRAME = 5
+const MAX_TIME_FRAME_MS = millisecondsInDay * MAX_YEAR_FRAME * 365
+const MAX_OPEN_BUDGET_TIME_FRAME_MS =
+  millisecondsInDay * MAX_OPEN_BUDGET_YEAR_FRAME * 365
+
 export type DcaFormValues = z.infer<typeof schemaBase>
 export type DcaDuration = DcaFormValues["duration"]
 
-const schema = schemaBase.superRefine(({ duration, orders }, { addIssue }) => {
-  if (orders.type !== DcaOrdersMode.Custom) {
-    return
-  }
+const schema = schemaBase
+  .superRefine(({ duration, orders }, { addIssue }) => {
+    if (orders.type !== DcaOrdersMode.Custom) {
+      return
+    }
 
-  const maxOrders = getAbsoluteMaxDcaOrders(duration)
+    const maxOrders = getAbsoluteMaxDcaOrders(duration)
 
-  if (orders.value && orders.value > maxOrders) {
-    addIssue({
-      code: "custom",
-      message: i18n.t("trade:dca.errors.maxOrders", { count: maxOrders }),
-      path: ["orders.value" satisfies FieldPath<DcaFormValues>],
-    })
-  }
-})
+    if (orders.value && orders.value > maxOrders) {
+      addIssue({
+        code: "custom",
+        message: i18n.t("trade:dca.errors.maxOrders", { count: maxOrders }),
+        path: ["orders.value" satisfies FieldPath<DcaFormValues>],
+      })
+    }
+  })
+  .superRefine((data, { addIssue }) => {
+    const { duration, orders } = data
+
+    const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+    const maxMillis = isOpenBudget
+      ? MAX_OPEN_BUDGET_TIME_FRAME_MS
+      : MAX_TIME_FRAME_MS
+
+    const { type, value } = duration
+    const millis = TIME_FRAME_MS[type] * (value ?? 0)
+    if (millis > maxMillis) {
+      const maxInUnit = Math.floor(maxMillis / TIME_FRAME_MS[type])
+
+      const valueFormatted = i18n.t(type as TimeFrameType, {
+        count: maxInUnit,
+      })
+      addIssue({
+        code: "custom",
+        path: ["duration.value"],
+        message: i18n.t(
+          isOpenBudget
+            ? "error.timeFrameIntervalMax"
+            : "error.timeFrameDurationMax",
+          { value: valueFormatted },
+        ),
+      })
+    }
+  })
 
 const useSchema = (account: Account | null) => {
   const { t } = useTranslation(["common", "trade"])
