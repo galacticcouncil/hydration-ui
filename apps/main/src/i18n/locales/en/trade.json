@@ -123,7 +123,6 @@
   "dca.summary.scheduleEnd": "End date (est.)",
   "dca.summary.splitTrade": "Use split trade",
   "dca.summary.splitTrade.tradeSize": "Optimized trade size",
-  "dca.summary.splitTrade.tradeSize.tooltip": "TODO",
   "dca.summary.slippage": "Trade limit",
   "dca.summary.priceImpact": "Price impact per trade",
   "dca.footer.message": "Budget & fee will be reserved for this trade.",

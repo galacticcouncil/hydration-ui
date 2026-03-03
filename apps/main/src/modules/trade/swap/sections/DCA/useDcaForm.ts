@@ -193,7 +193,7 @@ const useSchema = (account: Account | null) => {
       const balance = getBalance(sellAsset.id)
 
       const minAmount = Big(balance?.transferable.toString() || "0")
-        .div(3)
+        .div(MIN_DCA_ORDERS)
         .toString()
 
       const minAmountHuman = scaleHuman(

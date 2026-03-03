@@ -36,8 +36,10 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     }),
   )
 
-  const assetIn = getAsset(orderData?.order?.assetIn ?? 0)
-  const assetOut = getAsset(orderData?.order?.assetOut ?? 0)
+  const assetInId = orderData?.order?.assetIn
+  const assetOutId = orderData?.order?.assetOut
+  const assetInMeta = assetInId ? getAsset(assetInId) : undefined
+  const assetOutMeta = assetOutId ? getAsset(assetOutId) : undefined
 
   const isOpenBudget = formValues.orders.type === DcaOrdersMode.OpenBudget
 
@@ -45,25 +47,25 @@ export const useDcaTradeOrder = (form: UseFormReturn<DcaFormValues>) => {
     healthFactorQuery(rpc, {
       fromAsset: formValues.sellAsset,
       fromAmount:
-        orderData && assetIn && orderData.order
+        orderData && assetInMeta && orderData.order
           ? isOpenBudget
             ? toDecimal(
                 orderData.order.tradeAmountIn *
                   OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
-                assetIn.decimals,
+                assetInMeta.decimals,
               )
             : formValues.sellAmount
           : "0",
       toAsset: formValues.buyAsset,
       toAmount:
-        orderData && assetOut && orderData.order
+        orderData && assetOutMeta && orderData.order
           ? isOpenBudget
             ? toDecimal(
                 orderData.order.tradeAmountOut *
                   OPEN_BUDGET_LOCKED_TRADES_MULTIPLIER,
-                assetOut.decimals,
+                assetOutMeta.decimals,
               )
-            : toDecimal(orderData.order.amountOut, assetOut.decimals)
+            : toDecimal(orderData.order.amountOut, assetOutMeta.decimals)
           : "0",
       address,
     }),
