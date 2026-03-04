@@ -32,7 +32,7 @@ export function useWithdrawClaim(journey: XcJourney) {
 
   const getClaimTxOptions = useClaimTxOptions({ value, symbol, chainName })
 
-  const { mutate, isPending } = useMutation({
+  const mutation = useMutation({
     onMutate: () => {
       setIsWaitingForSignature(true)
     },
@@ -99,5 +99,5 @@ export function useWithdrawClaim(journey: XcJourney) {
     },
   })
 
-  return { mutate, isPending, isWaitingForSignature }
+  return { ...mutation, isWaitingForSignature }
 }

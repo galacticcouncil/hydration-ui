@@ -73,6 +73,7 @@
   "copyError": "Copy error",
   "copied": "Copied",
   "claim": "Claim",
+  "claim.asset": "Claim {{ symbol }}",
   "claiming": "Claiming...",
   "claim.toast.idle": "Claim your {{ value, currency }} on {{ chainName }}",
   "claim.toast.submitted": "Claiming your {{ value, currency }} on {{ chainName }}",
