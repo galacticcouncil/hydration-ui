@@ -1,89 +1,17 @@
-import { Check, PixelCheck, PixelX } from "@galacticcouncil/ui/assets/icons"
-import {
-  Flex,
-  Icon,
-  MicroButton,
-  Spinner,
-  Text,
-} from "@galacticcouncil/ui/components"
+import { Check } from "@galacticcouncil/ui/assets/icons"
+import { Flex, Icon, MicroButton, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useCopy } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import React from "react"
 import { useTranslation } from "react-i18next"
 
 import { useBestNumber, useChainSpecData } from "@/api/chain"
+import { TransactionStatus } from "@/components/TransactionStatus"
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
-import { TxStatus } from "@/modules/transactions/types"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
 import { stringifyErrorContext } from "@/utils/errors"
-
-export type ReviewTransactionStatusProps = {
-  status: TxStatus
-}
-
-type StatusIconProps = {
-  status: TxStatus
-}
-
-const StatusIcon: React.FC<StatusIconProps> = ({ status }) => {
-  if (status === "idle") return null
-
-  if (status === "submitted") {
-    return <Spinner size={90} />
-  }
-
-  return (
-    <Flex
-      size={90}
-      justify="center"
-      align="center"
-      bg={
-        status === "error"
-          ? getToken("accents.danger.dimBg")
-          : getToken("accents.success.dim")
-      }
-      sx={{ borderRadius: "full", mb: 4 }}
-    >
-      <Icon
-        size={40}
-        sx={{ flexShrink: 0 }}
-        color={
-          status === "error"
-            ? getToken("accents.danger.emphasis")
-            : getToken("accents.success.emphasis")
-        }
-        component={status === "error" ? PixelX : PixelCheck}
-      />
-    </Flex>
-  )
-}
-
-type StatusBoxProps = {
-  title: string
-  description: string
-}
-
-const StatusText: React.FC<StatusBoxProps> = ({ title, description }) => {
-  return (
-    <Flex
-      direction="column"
-      justify="center"
-      align="center"
-      gap="base"
-      maxWidth={400}
-    >
-      <Text as="h2" align="center" fs="h7" fw={500} font="primary">
-        {title}
-      </Text>
-      <Text fs="p5" align="center" color={getToken("text.medium")}>
-        {description}
-      </Text>
-    </Flex>
-  )
-}
 
 const ErrorCopyButton = () => {
   const { t } = useTranslation()
@@ -126,43 +54,23 @@ const ErrorCopyButton = () => {
 
 export const ReviewTransactionStatus = () => {
   const { t } = useTranslation()
-  const { isIdle, isSubmitted, isSuccess, isError, status, reset, error } =
-    useTransaction()
+  const { isIdle, status, reset, error } = useTransaction()
 
   if (isIdle) {
     return null
   }
 
   return (
-    <Flex direction="column" justify="center" align="center" gap="base" p="xl">
-      <StatusIcon status={status} />
-      {isSubmitted && (
-        <StatusText
-          title={t("transaction.status.submitted.title")}
-          description={t("transaction.status.submitted.description")}
-        />
-      )}
-
-      {isSuccess && (
-        <StatusText
-          title={t("transaction.status.success.title")}
-          description={t("transaction.status.success.description")}
-        />
-      )}
-      {isError && (
+    <TransactionStatus
+      status={status}
+      errorActions={
         <>
-          <StatusText
-            title={t("transaction.status.error.title")}
-            description={t("transaction.status.error.description")}
-          />
-          <Flex gap="base" mt="base">
-            <MicroButton onClick={reset}>
-              {t("transaction.status.error.tryAgain")}
-            </MicroButton>
-            {error && <ErrorCopyButton />}
-          </Flex>
+          <MicroButton onClick={reset}>
+            {t("transaction.status.error.tryAgain")}
+          </MicroButton>
+          {error && <ErrorCopyButton />}
         </>
-      )}
-    </Flex>
+      }
+    />
   )
 }

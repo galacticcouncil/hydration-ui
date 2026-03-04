@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next"
 export const ClaimPendingModalContent = () => {
   const { t } = useTranslation(["common"])
   return (
-    <Stack justify="center" align="center" gap="base">
+    <Stack justify="center" align="center" gap="base" py="xl">
       <Spinner size={90} />
       <Flex direction="column" justify="center" align="center" gap="base">
         <Text as="h2" align="center" fs="h7" fw={500} font="primary">

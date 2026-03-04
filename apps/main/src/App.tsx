@@ -3,6 +3,7 @@ import "@galacticcouncil/ui/fonts.css"
 import { ThemeProvider } from "@galacticcouncil/ui/theme"
 import { Provider as TooltipProvider } from "@radix-ui/react-tooltip"
 import {
+  MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
@@ -20,6 +21,11 @@ import { routeTree } from "./routeTree.gen"
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
+    onError: (error, query) => {
+      console.error("[RQ]", error, query)
+    },
+  }),
+  mutationCache: new MutationCache({
     onError: (error, query) => {
       console.error("[RQ]", error, query)
     },
