@@ -15,12 +15,12 @@ export const TransactionStatusIcon: React.FC<TransactionStatusIconProps> = ({
   if (status === "idle") return null
 
   if (status === "submitted") {
-    return <Spinner size={90} />
+    return <Spinner size="3xl" />
   }
 
   return (
     <Flex
-      size={90}
+      size="3xl"
       justify="center"
       align="center"
       bg={
@@ -28,10 +28,10 @@ export const TransactionStatusIcon: React.FC<TransactionStatusIconProps> = ({
           ? getToken("accents.danger.dimBg")
           : getToken("accents.success.dim")
       }
-      sx={{ borderRadius: "full", mb: 4 }}
+      sx={{ borderRadius: "full", mb: "s" }}
     >
       <Icon
-        size={40}
+        size="2xl"
         sx={{ flexShrink: 0 }}
         color={
           status === "error"

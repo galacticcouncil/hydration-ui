@@ -65,7 +65,9 @@ export const ClaimButton: React.FC<ClaimButtonProps> = ({ journey }) => {
       >
         <ModalHeader
           title={
-            transferAsset ? `${t("claim")} ${transferAsset.symbol}` : t("claim")
+            transferAsset
+              ? t("claim.asset", { symbol: transferAsset.symbol })
+              : t("claim")
           }
           closable={!!error}
         />
