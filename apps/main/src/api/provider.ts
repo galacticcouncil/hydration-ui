@@ -76,8 +76,8 @@ export const rpcProviderQuery = (
     queryKey: ["provider"],
     queryFn: () => getProviderData(queryClient, rpcUrlList, options),
     retry: false,
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
-    gcTime: 0,
   })
 }
 
