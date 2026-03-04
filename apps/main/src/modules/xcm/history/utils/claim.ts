@@ -19,9 +19,14 @@ import {
 } from "@galacticcouncil/xc-sdk"
 import { minutesToMilliseconds } from "date-fns"
 
-import { resolveNetwork } from "@/modules/xcm/history/utils/assets"
+import {
+  getTransferAsset,
+  resolveNetwork,
+} from "@/modules/xcm/history/utils/assets"
 
 const CLAIM_THRESHOLD = minutesToMilliseconds(5)
+
+const BLACKLISTED_SOLANA_ASSETS = ["SOL"]
 
 function hasExceededClaimThreshold(emittedAt: number) {
   const now = Date.now()
@@ -35,7 +40,18 @@ export function isJourneyClaimable(journey: XcJourney): boolean {
   if (!vaaHeader) return false
 
   const toChain = resolveChainFromUrn(journey.destination)
-  return !!toChain && hasExceededClaimThreshold(vaaHeader.timestamp)
+  if (!toChain) return false
+
+  const asset = getTransferAsset(journey.assets)
+  if (!asset) return false
+
+  const isBlacklisted =
+    toChain instanceof SolanaChain &&
+    BLACKLISTED_SOLANA_ASSETS.includes(asset.symbol)
+
+  const canClaim = hasExceededClaimThreshold(vaaHeader.timestamp)
+
+  return !isBlacklisted && canClaim
 }
 
 export function getClaimableJourneys(journeys: XcJourney[]) {
