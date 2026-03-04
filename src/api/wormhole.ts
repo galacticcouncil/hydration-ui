@@ -1,4 +1,5 @@
 import { HYDRADX_PARACHAIN_ID } from "@galacticcouncil/sdk"
+import { SolanaChain } from "@galacticcouncil/xcm-core"
 import { WhTransfer, WormholeTransfer } from "@galacticcouncil/xcm-sdk"
 import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 import { useHydrationConfigService } from "api/xcm"
@@ -7,6 +8,10 @@ import { useMemo } from "react"
 import { QUERY_KEYS } from "utils/queryKeys"
 
 type WormholeTransfersFilter = "all" | "redeemable"
+
+const BLACKLISTED_SOLANA_ASSETS = [
+  "So11111111111111111111111111111111111111112",
+]
 
 export const useWormholeTransfersApi = () => {
   const configService = useHydrationConfigService()
@@ -36,7 +41,13 @@ export const useWormholeTransfersQuery = (
         api.getWithdraws(address),
       ])
 
-      return [...deposits, ...withdraws].sort(sortTransfersByTimestamp)
+      const withdrawsFiltered = withdraws.filter(({ asset, toChain }) =>
+        toChain instanceof SolanaChain
+          ? !BLACKLISTED_SOLANA_ASSETS.includes(asset)
+          : true,
+      )
+
+      return [...deposits, ...withdrawsFiltered].sort(sortTransfersByTimestamp)
     },
     select: (data) => {
       if (filter === "redeemable") {

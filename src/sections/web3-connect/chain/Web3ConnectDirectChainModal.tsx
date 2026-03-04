@@ -79,7 +79,6 @@ export const Web3ConnectDirectChainModal = ({
                     key={provider.type}
                     provider={provider}
                     onEnable={(accounts) => {
-                      console.log({ accounts })
                       setWalletAccounts(accounts)
                       paginateTo(1)
                     }}
