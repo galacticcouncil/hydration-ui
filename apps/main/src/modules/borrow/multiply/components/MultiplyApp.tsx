@@ -27,7 +27,6 @@ import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { useLooping } from "@/modules/borrow/hooks/useLooping"
 import { getMaxLeverage } from "@/modules/borrow/multiply/utils/leverage"
 import { useAssets } from "@/providers/assetsProvider"
-import { scaleHuman } from "@/utils/formatting"
 
 const SectionSeparator = () => <Separator sx={{ mx: "-xl" }} />
 
