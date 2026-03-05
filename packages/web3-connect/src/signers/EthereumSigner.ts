@@ -326,6 +326,7 @@ export class EthereumSigner {
       const nonce = await this.publicClient.getTransactionCount({
         address: this.address as Hex,
       })
+
       const txHash = await this.walletClient.sendTransaction({
         account: this.address as Hex,
         data: call.data as Hex,
