@@ -3,7 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
-import { Status } from "@/modules/trade/orders/columns/SwapStatus"
+import { Status, SwapStatus } from "@/modules/trade/orders/columns/SwapStatus"
 
 type Props = {
   readonly status: DcaScheduleStatus
@@ -27,19 +27,19 @@ export const DcaOrderStatus: FC<Props> = ({ status, isDcaSwap = false }) => {
         </Status>
       )
     case DcaScheduleStatus.Created:
-      return (
+      return isDcaSwap ? (
+        <SwapStatus />
+      ) : (
         <Status color={getToken("accents.success.emphasis")}>
-          {isDcaSwap
-            ? t("trade.orders.status.filled")
-            : t("trade.orders.status.active")}
+          {t("trade.orders.status.active")}
         </Status>
       )
     default:
-      return (
+      return isDcaSwap ? (
+        <SwapStatus />
+      ) : (
         <Status color={getToken("text.tint.quart")}>
-          {isDcaSwap
-            ? t("trade.orders.status.filled")
-            : t("trade.orders.status.completed")}
+          {t("trade.orders.status.completed")}
         </Status>
       )
   }
