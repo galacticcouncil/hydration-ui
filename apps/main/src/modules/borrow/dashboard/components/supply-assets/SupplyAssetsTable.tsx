@@ -65,7 +65,7 @@ export const SupplyAssetsTable = () => {
 
   const gSorting = useDataTableUrlSorting("/borrow/dashboard", "supplyGSort")
   const sorting = useDataTableUrlSorting("/borrow/dashboard", "supplySort")
-  console.log(modalProps)
+
   return (
     <>
       {isMobile ? (

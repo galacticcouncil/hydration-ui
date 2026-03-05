@@ -170,7 +170,7 @@ const SupplyIsolatedLiquidityBody = ({
             )}
             {collateralType && (
               <SummaryRow
-                label="Collateral"
+                label={t("borrow:collateral")}
                 content={<CollateralState collateralType={collateralType} />}
                 sx={{ my: 0 }}
               />

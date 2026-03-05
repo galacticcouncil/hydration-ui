@@ -1,3 +1,4 @@
+import { stringEquals } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -80,24 +81,24 @@ export const useFilteredSearchAssets = <T extends TAssetData>(
   ignoreAssetIds?: string[],
 ) => {
   return useMemo(() => {
+    if (!search.length && !ignoreAssetIds?.length) {
+      return assets
+    }
+
     const ignoredAssetIdSet = new Set(ignoreAssetIds ?? [])
 
-    return search.length || ignoreAssetIds
-      ? assets.filter((asset) => {
-          let isVisible = true
+    return assets.filter((asset) => {
+      if (ignoredAssetIdSet.has(asset.id)) {
+        return false
+      }
 
-          if (search.length) {
-            isVisible =
-              asset.name.toLowerCase().includes(search.toLowerCase()) ||
-              asset.symbol.toLowerCase().includes(search.toLowerCase())
-          }
+      if (search.length) {
+        return (
+          stringEquals(asset.name, search) || stringEquals(asset.symbol, search)
+        )
+      }
 
-          if (ignoreAssetIds) {
-            isVisible = !ignoredAssetIdSet.has(asset.id)
-          }
-
-          return isVisible
-        })
-      : assets
+      return true
+    })
   }, [assets, search, ignoreAssetIds])
 }
