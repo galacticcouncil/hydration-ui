@@ -7,9 +7,10 @@ import { Status } from "@/modules/trade/orders/columns/SwapStatus"
 
 type Props = {
   readonly status: DcaScheduleStatus
+  readonly isDcaSwap?: boolean
 }
 
-export const DcaOrderStatus: FC<Props> = ({ status }) => {
+export const DcaOrderStatus: FC<Props> = ({ status, isDcaSwap = false }) => {
   const { t } = useTranslation("trade")
 
   switch (status) {
@@ -28,13 +29,17 @@ export const DcaOrderStatus: FC<Props> = ({ status }) => {
     case DcaScheduleStatus.Created:
       return (
         <Status color={getToken("accents.success.emphasis")}>
-          {t("trade.orders.status.active")}
+          {isDcaSwap
+            ? t("trade.orders.status.filled")
+            : t("trade.orders.status.active")}
         </Status>
       )
     default:
       return (
         <Status color={getToken("text.tint.quart")}>
-          {t("trade.orders.status.completed")}
+          {isDcaSwap
+            ? t("trade.orders.status.filled")
+            : t("trade.orders.status.completed")}
         </Status>
       )
   }
