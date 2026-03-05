@@ -6,6 +6,8 @@ import {
 import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Box,
+  CollapsibleContent,
+  CollapsibleRoot,
   Flex,
   FormLabel,
   LoadingButton,
@@ -19,11 +21,13 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { Controller, useForm } from "react-hook-form"
-import { useTranslation } from "react-i18next"
+import { Trans, useTranslation } from "react-i18next"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice/AssetPrice"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useLooping } from "@/modules/borrow/hooks/useLooping"
 import { getMaxLeverage } from "@/modules/borrow/multiply/utils/leverage"
 import { useAssets } from "@/providers/assetsProvider"
@@ -46,6 +50,7 @@ type MultiplyAppProps = {
 export const MultiplyApp: React.FC<MultiplyAppProps> = ({
   collateralReserve,
 }) => {
+  const { isConnected } = useAccount()
   const { t } = useTranslation(["borrow", "common"])
   const { getAssetWithFallback, getRelatedAToken } = useAssets()
 
@@ -95,8 +100,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
       withEmode: true,
     },
     {
-      enabled: true,
-      //onSubmitted: onClose,
+      enabled: isConnected,
     },
   )
 
@@ -134,7 +138,13 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
         <Flex justify="space-between" mb="xs">
           <FormLabel>{t("multiply.app.leverage")}</FormLabel>
           <FormLabel>
-            {t("multiply.app.leverageCurrent", { value: multiplier })}
+            <Trans
+              i18nKey="multiply.app.leverageCurrent"
+              values={{ value: multiplier }}
+              t={t}
+            >
+              <Text fw={500} as="span" color={getToken("text.high")} />
+            </Trans>
           </FormLabel>
         </Flex>
         <Controller
@@ -190,26 +200,29 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
       <SectionSeparator />
 
-      <LoadingButton
-        isLoading={isLoopingLoading}
-        disabled={isLoopingLoading}
-        variant="primary"
-        size="large"
-        width="100%"
-        type="button"
-      >
-        {t("multiply.app.openPosition")}
-      </LoadingButton>
+      <AuthorizedAction size="large" width="100%">
+        <LoadingButton
+          isLoading={isLoopingLoading}
+          disabled={isLoopingLoading}
+          variant="primary"
+          size="large"
+          width="100%"
+        >
+          {t("multiply.app.openPosition")}
+        </LoadingButton>
+      </AuthorizedAction>
 
-      <Summary separator={<SectionSeparator />}>
-        {/* <SummaryRow
+      <CollapsibleRoot open={isConnected}>
+        <CollapsibleContent>
+          <Summary separator={<SectionSeparator />}>
+            {/* <SummaryRow
           label={t("multiply.app.totalFees")}
           content={t("common:currency", {
             value: 5.63,
           })}
         /> */}
 
-        {/*     {selectedAsset && (
+            {/*     {selectedAsset && (
           <SummaryRow
             label={t("multiply.app.minimumReceived")}
             content={t("common:currency", {
@@ -218,54 +231,56 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
             })}
           />
         )} */}
-        {selectedAsset && (
-          <SummaryRow
-            label="Total supplied"
-            content={
-              <Flex gap="s">
-                {t("common:currency", {
-                  value: totalSupply,
-                  symbol: selectedAsset.symbol,
-                })}
-                <Text fs="p5" color={getToken("text.medium")}>
-                  ({supplyDisplayPrice})
-                </Text>
-              </Flex>
-            }
-          />
-        )}
-        {debtAsset && (
-          <SummaryRow
-            label="Total debt"
-            content={
-              <Flex gap="s">
-                {t("common:currency", {
-                  value: totalBorrow,
-                  symbol: debtAsset.symbol,
-                })}
-                <Text fs="p5" color={getToken("text.medium")}>
-                  ({debtDisplayPrice})
-                </Text>
-              </Flex>
-            }
-          />
-        )}
-        {/*       <SummaryRow label={t("common:yield")} content={"Up to 16.55%"} /> */}
-        {/*      <SummaryRow
+            {selectedAsset && (
+              <SummaryRow
+                label="Total supplied"
+                content={
+                  <Flex gap="s">
+                    {t("common:currency", {
+                      value: totalSupply,
+                      symbol: selectedAsset.symbol,
+                    })}
+                    <Text fs="p5" color={getToken("text.medium")}>
+                      ({supplyDisplayPrice})
+                    </Text>
+                  </Flex>
+                }
+              />
+            )}
+            {debtAsset && (
+              <SummaryRow
+                label="Total debt"
+                content={
+                  <Flex gap="s">
+                    {t("common:currency", {
+                      value: totalBorrow,
+                      symbol: debtAsset.symbol,
+                    })}
+                    <Text fs="p5" color={getToken("text.medium")}>
+                      ({debtDisplayPrice})
+                    </Text>
+                  </Flex>
+                }
+              />
+            )}
+            {/*       <SummaryRow label={t("common:yield")} content={"Up to 16.55%"} /> */}
+            {/*      <SummaryRow
           label={t("common:price")}
           content={`1 ${asset.symbol} = ${t("common:currency", {
             value: 1000,
           })}`}
         /> */}
-        {/*         <SummaryRow
+            {/*         <SummaryRow
           label={t("multiply.app.liquidationPrice")}
           content={"0.0566 (-15.45%)"}
         /> */}
-        <SummaryRow
-          label={t("common:healthFactor")}
-          content={<HealthFactorChange {...hf} />}
-        />
-      </Summary>
+            <SummaryRow
+              label={t("common:healthFactor")}
+              content={<HealthFactorChange {...hf} />}
+            />
+          </Summary>
+        </CollapsibleContent>
+      </CollapsibleRoot>
     </Stack>
   )
 }

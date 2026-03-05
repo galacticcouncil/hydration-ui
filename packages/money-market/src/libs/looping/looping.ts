@@ -9,12 +9,6 @@ import {
 
 const MAX_STEPS = 50
 
-const MAX_LTV = 1.0
-const MAX_MULTIPLIER = 8
-
-const MIN_LTV = 0.7
-const MIN_MULTIPLIER = 2
-
 const HF_SQUEEZE_SAFETY_MARGIN = 0.9
 
 export type LoopingStep = { supply: Big; borrow: Big }
@@ -22,15 +16,6 @@ export type LoopingStep = { supply: Big; borrow: Big }
 export const LOOPING_ASSET_PAIRS: Record<string, string> = {
   [GDOT_STABLESWAP_ASSET_ID]: DOT_ASSET_ID,
   [GETH_STABLESWAP_ASSET_ID]: ETH_ASSET_ID,
-}
-
-export function getMaxMultiplierFromLtv(ltv: number): number {
-  if (ltv < MIN_LTV || ltv > MAX_LTV) return 0
-
-  const slope = (MAX_MULTIPLIER - MIN_MULTIPLIER) / (MAX_LTV - MIN_LTV)
-  const intercept = MAX_MULTIPLIER - slope * MAX_LTV
-
-  return Math.max(0, Math.floor(slope * ltv + intercept))
 }
 
 export function getLoopingSteps({
