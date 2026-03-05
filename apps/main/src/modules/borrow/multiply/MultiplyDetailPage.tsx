@@ -2,6 +2,7 @@ import { useMarketAssetsData } from "@galacticcouncil/money-market/hooks"
 import { isGho } from "@galacticcouncil/money-market/utils"
 import { Stack } from "@galacticcouncil/ui/components"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { Navigate } from "@tanstack/react-router"
 
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
@@ -18,9 +19,12 @@ type MultiplyDetailPageProps = {
 export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
   id,
 }) => {
+  const { account } = useAccount()
   const { data: reserves, isLoading } = useMarketAssetsData()
 
   const { apyMap } = useApyContext()
+
+  if (!account) return null
 
   //const debtAssetId = getStrategyDebtAssetId(id)
 
