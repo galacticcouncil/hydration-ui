@@ -116,13 +116,16 @@ export const useLooping = (
       const { userEmodeCategoryId } = user ?? { userEmodeCategoryId: 0 }
       const isInEmode = userEmodeCategoryId === supplyReserve.eModeCategoryId
 
+      const baseLtv = supplyReserve.formattedBaseLTVasCollateral
+      const emodeLtv =
+        supplyReserve.formattedEModeLtv !== "0"
+          ? supplyReserve.formattedEModeLtv
+          : baseLtv
+
       const loopingSteps = getLoopingSteps({
         initialAmount: amount,
         multiplier,
-        ltv:
-          isInEmode || withEmode
-            ? supplyReserve.formattedEModeLtv
-            : supplyReserve.formattedBaseLTVasCollateral,
+        ltv: isInEmode || withEmode ? emodeLtv : baseLtv,
       })
 
       const spotPrice = await sdk.api.router.getSpotPrice(
@@ -264,11 +267,11 @@ export const useLooping = (
         txs,
         transaction: {
           toasts: {
-            submitted: t("looping.toast.onLoading", {
+            submitted: t("multiply.toast.onLoading", {
               symbol: assetOut?.symbol,
               value: amount,
             }),
-            success: t("looping.toast.onSuccess", {
+            success: t("multiply.toast.onSuccess", {
               symbol: assetOut?.symbol,
               value: amount,
             }),
