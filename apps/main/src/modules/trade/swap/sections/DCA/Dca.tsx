@@ -1,6 +1,8 @@
+import { SliderTabs } from "@galacticcouncil/ui/components"
 import { useSearch } from "@tanstack/react-router"
 import { FC, useEffect, useState } from "react"
-import { FormProvider } from "react-hook-form"
+import { Controller, FormProvider } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 
 import { DcaErrors } from "@/modules/trade/swap/sections/DCA/DcaErrors"
 import { DcaFooter } from "@/modules/trade/swap/sections/DCA/DcaFooter"
@@ -8,27 +10,46 @@ import { DcaForm } from "@/modules/trade/swap/sections/DCA/DcaForm"
 import { DcaHealthFactor } from "@/modules/trade/swap/sections/DCA/DcaHealthFactor"
 import { DcaSummary } from "@/modules/trade/swap/sections/DCA/DcaSummary"
 import { DcaWarnings } from "@/modules/trade/swap/sections/DCA/DcaWarnings"
+import { useDcaTradeOrder } from "@/modules/trade/swap/sections/DCA/useDcaTradeOrder"
 import {
   DcaValidationError,
   DcaValidationWarning,
-  useDcaPriceImpactValidation,
-} from "@/modules/trade/swap/sections/DCA/useDcaPriceImpactValidation"
-import { useDcaTradeOrder } from "@/modules/trade/swap/sections/DCA/useDcaTradeOrder"
+  useDcaValidation,
+  useOpenBudgetDcaHfValidation,
+} from "@/modules/trade/swap/sections/DCA/useDcaValidation"
 import { useSubmitDcaOrder } from "@/modules/trade/swap/sections/DCA/useSubmitDcaOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { maxBalanceError } from "@/utils/validators"
 
-import { useDcaForm } from "./useDcaForm"
+import { DcaOrdersMode, DEFAULT_DCA_DURATION, useDcaForm } from "./useDcaForm"
 
 export const Dca: FC = () => {
+  const { t } = useTranslation(["trade"])
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
   const form = useDcaForm({ assetIn, assetOut })
 
-  const { order, orderTx, dryRunError, healthFactor, isLoading } =
-    useDcaTradeOrder(form)
-  const duration = form.watch("duration")
-  const { warnings, errors } = useDcaPriceImpactValidation(order, duration)
+  const {
+    order,
+    orderTx,
+    dryRunError,
+    healthFactor: initialHealthFactor,
+    isLoading,
+  } = useDcaTradeOrder(form)
+
+  const [duration, ordersType] = form.watch(["duration", "orders.type"])
+  const { warnings, errors } = useDcaValidation(order, duration)
+
+  const isOpenBudget = ordersType === DcaOrdersMode.OpenBudget
+  const openBudgetHealthFactor = useOpenBudgetDcaHfValidation(
+    order,
+    initialHealthFactor,
+    isOpenBudget,
+  )
+
+  const healthFactor = isOpenBudget
+    ? openBudgetHealthFactor
+    : initialHealthFactor
 
   const submitDcaOrder = useSubmitDcaOrder()
 
@@ -60,6 +81,7 @@ export const Dca: FC = () => {
 
   const isHealthFactorCheckSatisfied =
     healthFactor?.isUserConsentRequired &&
+    healthFactor.isSignificantChange &&
     healthFactor.future < healthFactor.current
       ? healthFactorRiskAccepted
       : true
@@ -78,6 +100,44 @@ export const Dca: FC = () => {
             order && orderTx && submitDcaOrder.mutate([values, order, orderTx]),
         )}
       >
+        <Controller
+          control={form.control}
+          name="orders"
+          render={({ field }) => (
+            <SliderTabs
+              sx={{ mt: "m" }}
+              options={[
+                {
+                  id: DcaOrdersMode.Auto,
+                  label: t("trade:trade.orders.limitedBudget"),
+                },
+                {
+                  id: DcaOrdersMode.OpenBudget,
+                  label: t("trade:trade.orders.openBudget"),
+                },
+              ]}
+              selected={
+                field.value.type === DcaOrdersMode.OpenBudget
+                  ? DcaOrdersMode.OpenBudget
+                  : DcaOrdersMode.Auto
+              }
+              onSelect={({ id: type }) => {
+                form.reset({
+                  ...form.getValues(),
+                  orders: {
+                    ...(type === DcaOrdersMode.OpenBudget
+                      ? { type, useSplitTrade: true }
+                      : { type }),
+                  },
+                  sellAmount: "",
+                  duration: DEFAULT_DCA_DURATION,
+                })
+
+                form.trigger()
+              }}
+            />
+          )}
+        />
         <DcaForm />
         <DcaSummary
           order={order}
@@ -98,9 +158,10 @@ export const Dca: FC = () => {
         <DcaWarnings
           isFormValid={isFormValid}
           order={order}
+          isOpenBudget={isOpenBudget}
           warnings={warnings}
-          priceImpactLossAccepted={priceImpactLossAccepted}
           healthFactor={healthFactor}
+          priceImpactLossAccepted={priceImpactLossAccepted}
           healthFactorRiskAccepted={healthFactorRiskAccepted}
           onPriceImpactLossAcceptedChange={setPriceImpactLossAccepted}
           onHealthFactorRiskAcceptedChange={setHealthFactorRiskAccepted}
@@ -111,7 +172,7 @@ export const Dca: FC = () => {
           isLoading={isLoading}
         />
         <SwapSectionSeparator />
-        <DcaFooter isEnabled={isSubmitEnabled} />
+        <DcaFooter isEnabled={isSubmitEnabled} isOpenBudget={isOpenBudget} />
       </form>
     </FormProvider>
   )

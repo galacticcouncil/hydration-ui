@@ -19,6 +19,12 @@ export const DcaOrderStatus: FC<Props> = ({ status }) => {
           {t("trade.orders.status.failed")}
         </Status>
       )
+    case DcaScheduleStatus.Cancelled:
+      return (
+        <Status color={getToken("accents.danger.secondary")}>
+          {t("trade.orders.status.cancelled")}
+        </Status>
+      )
     case DcaScheduleStatus.Created:
       return (
         <Status color={getToken("accents.success.emphasis")}>

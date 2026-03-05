@@ -328,6 +328,12 @@ export const SMicroButton = styled(Box)<{ variant?: MicroButtonVariant }>(
     css`
       all: unset;
 
+      display: grid;
+      grid-auto-flow: column;
+      column-gap: ${theme.space.s};
+      align-items: center;
+      place-content: center;
+
       cursor: pointer;
 
       padding: ${theme.space.xs} ${theme.space.base};

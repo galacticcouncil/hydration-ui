@@ -9,6 +9,7 @@ import {
 export type HealthFactorRiskWarningProps = FlexProps & {
   canContinue?: boolean
   message: string
+  toggleMessage?: string
   accepted: boolean
   isUserConsentRequired: boolean
   onAcceptedChange: (checked: boolean) => void
@@ -19,6 +20,7 @@ export const HealthFactorRiskWarning: React.FC<
 > = ({
   canContinue,
   message,
+  toggleMessage,
   accepted,
   onAcceptedChange,
   isUserConsentRequired,
@@ -39,7 +41,7 @@ export const HealthFactorRiskWarning: React.FC<
                 onCheckedChange={onAcceptedChange}
               />
               <Text fs="p4" lh={1.3} fw={600}>
-                I acknowledge the risks involved.
+                {toggleMessage || "I acknowledge the risks involved."}
               </Text>
             </Flex>
           )
