@@ -13,6 +13,8 @@ type Props = {
 export const DcaOrderStatus: FC<Props> = ({ status, isDcaSwap = false }) => {
   const { t } = useTranslation("trade")
 
+  if (isDcaSwap) return <SwapStatus />
+
   switch (status) {
     case DcaScheduleStatus.Terminated:
       return (
@@ -27,17 +29,13 @@ export const DcaOrderStatus: FC<Props> = ({ status, isDcaSwap = false }) => {
         </Status>
       )
     case DcaScheduleStatus.Created:
-      return isDcaSwap ? (
-        <SwapStatus />
-      ) : (
+      return (
         <Status color={getToken("accents.success.emphasis")}>
           {t("trade.orders.status.active")}
         </Status>
       )
     default:
-      return isDcaSwap ? (
-        <SwapStatus />
-      ) : (
+      return (
         <Status color={getToken("text.tint.quart")}>
           {t("trade.orders.status.completed")}
         </Status>
