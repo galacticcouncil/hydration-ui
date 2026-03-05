@@ -233,7 +233,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
         )} */}
             {selectedAsset && (
               <SummaryRow
-                label="Total supplied"
+                label="Total collateral"
                 content={
                   <Flex gap="s">
                     {t("common:currency", {
