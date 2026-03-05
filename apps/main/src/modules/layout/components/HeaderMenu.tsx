@@ -6,23 +6,26 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@galacticcouncil/ui/components"
-import { Link, useMatch } from "@tanstack/react-router"
+import { Link, useMatchRoute } from "@tanstack/react-router"
 
 import { DetailedLink } from "@/components/DetailedLink"
 import { LINKS, NAVIGATION, NavigationItem } from "@/config/navigation"
-import { useMenuTranslations } from "@/modules/layout/components/HeaderMenu.utils"
+import {
+  HIDDEN_DESKTOP_NAV_ROUTES,
+  useMenuTranslations,
+} from "@/modules/layout/components/HeaderMenu.utils"
 import { useIsLiquidityProvided } from "@/modules/liquidity/Liquidity.utils"
 
 export const HeaderMenu: React.FC<
   React.ComponentProps<typeof NavigationMenu>
 > = (props) => {
   const translations = useMenuTranslations()
-  const isSubmitTransactionPage = !!useMatch({
-    from: LINKS.submitTransaction,
-    shouldThrow: false,
-  })
+  const matchRoute = useMatchRoute()
+  const isHiddenDesktopNavRoute = HIDDEN_DESKTOP_NAV_ROUTES.some(
+    (route) => !!matchRoute({ to: route }),
+  )
 
-  if (isSubmitTransactionPage) {
+  if (isHiddenDesktopNavRoute) {
     return <div />
   }
 

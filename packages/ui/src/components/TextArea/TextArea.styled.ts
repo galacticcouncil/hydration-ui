@@ -5,7 +5,7 @@ export const STextAreaContainer = styled.label<{ error?: string }>(
   ({ error, theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: ${theme.space.m};
 
     width: 100%;
 
@@ -18,7 +18,7 @@ export const STextAreaContainer = styled.label<{ error?: string }>(
 
     background-color: ${theme.buttons.outlineDark.rest};
 
-    padding: 14px;
+    padding: ${theme.space.m};
 
     :focus,
     :focus-visible,
@@ -54,7 +54,7 @@ export const STextArea = styled.textarea(
 
     ::placeholder {
       font-family: ${theme.fontFamilies1.secondary};
-      color: rgba(114, 131, 165, 0.6);
+      color: ${theme.text.medium};
     }
   `,
 )

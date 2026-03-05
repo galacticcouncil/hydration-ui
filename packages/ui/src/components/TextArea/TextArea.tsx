@@ -12,6 +12,7 @@ type TextAreaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
   label?: string
   error?: string
   icon?: ReactNode
+  autoSize?: boolean
 }
 
 export const TextArea = ({
@@ -22,49 +23,43 @@ export const TextArea = ({
   name,
   icon,
   error,
+  autoSize = true,
   ...p
 }: TextAreaProps) => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    if (textAreaRef.current) {
+    if (autoSize && textAreaRef.current) {
       textAreaRef.current.style.height = "0px"
       const scrollHeight = textAreaRef.current.scrollHeight
 
       textAreaRef.current.style.height = scrollHeight + 1 + "px"
     }
-  }, [textAreaRef, value])
+  }, [textAreaRef, value, autoSize])
 
   return (
-    <>
-      <STextAreaContainer htmlFor={name} error={error}>
-        {label || icon ? (
-          <STextAreaBar>
-            {label && (
-              <Text
-                className="label"
-                color={getToken("text.high")}
-                fs="p5"
-                transform="uppercase"
-              >
-                {label}
-              </Text>
-            )}
-            {icon}
-          </STextAreaBar>
-        ) : null}
-        <STextArea
-          ref={textAreaRef}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            onChange(e.target.value)
-          }
-          value={value ?? ""}
-          id={name}
-          autoComplete="off"
-          placeholder={placeholder}
-          {...p}
-        />
-      </STextAreaContainer>
-    </>
+    <STextAreaContainer htmlFor={name} error={error}>
+      {(label || icon) && (
+        <STextAreaBar>
+          {label && (
+            <Text color={getToken("text.high")} fs="p5" transform="uppercase">
+              {label}
+            </Text>
+          )}
+          {icon}
+        </STextAreaBar>
+      )}
+      <STextArea
+        ref={textAreaRef}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+          onChange(e.target.value)
+        }
+        value={value ?? ""}
+        id={name}
+        autoComplete="off"
+        placeholder={placeholder}
+        {...p}
+      />
+    </STextAreaContainer>
   )
 }

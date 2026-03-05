@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import {
   bottomNavOrder,
   getMenuTranslations,
+  LINKS,
   NAVIGATION,
   topNavOrder,
 } from "@/config/navigation"
@@ -54,3 +55,9 @@ export const useVisibleHeaderMenuItems = <T extends HTMLElement>() => {
     }
   }, [hiddenElementsKeys, observe, hasTopNavbar])
 }
+
+export const HIDDEN_DESKTOP_NAV_ROUTES = [LINKS.submitTransaction]
+export const HIDDEN_MOBILE_NAV_ROUTES = [
+  LINKS.submitTransaction,
+  LINKS.liquidity,
+]
