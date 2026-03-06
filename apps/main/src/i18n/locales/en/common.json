@@ -146,6 +146,9 @@
   "apy.rewards.description": "Estimated rewards based on current TVL, without considering the effect of Impermanent Loss.",
   "apyBorrowRate": "Borrow rate APY",
   "max": "Max",
+  "default": "Default",
+  "evm": "EVM",
+  "substrate": "Substrate",
   "approx.long": "approx.",
   "approx.short": "≈",
   "error.invalidWebsocketUrl": "Provided RPC url is invalid",
@@ -330,5 +333,4 @@
   "submitTransaction.warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
   "submitTransaction.toasts.success": "Extrinsic successful",
   "submitTransaction.toasts.submitted": "Extrinsic submitted"
-
 }
