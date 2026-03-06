@@ -39,7 +39,7 @@
     "@ethersproject/providers": "^5.7.2",
     "@galacticcouncil/apps": "^13.11.2",
     "@galacticcouncil/math-staking": "^1.2.0",
-    "@galacticcouncil/sdk": "^10.6.2",
+    "@galacticcouncil/sdk": "10.7.1-pr288-7ff3934",
     "@galacticcouncil/ui": "^5.7.0",
     "@galacticcouncil/xcm-cfg": "^10.24.0",
     "@galacticcouncil/xcm-core": "^8.11.0",
