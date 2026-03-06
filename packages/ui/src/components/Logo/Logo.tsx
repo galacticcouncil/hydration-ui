@@ -20,3 +20,5 @@ export const Logo: React.FC<LogoProps> = ({ size = "medium", ...props }) => (
     }
   />
 )
+
+export { LOGO_SIZES } from "./Logo.styled"

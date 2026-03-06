@@ -118,8 +118,6 @@
   "multiply.detail.loopingOverview": "Looping Overview",
   "multiply.detail.maxLeverage": "Max Leverage",
   "multiply.detail.maxLtv": "Max LTV",
-  "multiply.detail.maxNetApy": "Max Net APY",
-  "multiply.strategy.netApy": "Net APY",
   "multiply.strategy.liquidityAvailable": "Liquidity Available",
   "multiply.strategy.upTo": "UP TO {{multiplier}}",
   "multiply.toast.onLoading": "Multiplying {{ value }} {{ symbol }}...",
