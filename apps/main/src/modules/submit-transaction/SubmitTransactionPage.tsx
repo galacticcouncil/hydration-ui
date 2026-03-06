@@ -2,7 +2,7 @@ import {
   Alert,
   Button,
   Flex,
-  FormField,
+  FormError,
   SectionHeader,
   Stack,
   TextArea,
@@ -69,23 +69,23 @@ export const SubmitTransactionPage = () => {
     <Stack width={["auto", "auto", "80%", "50%"]} mx="auto">
       <SectionHeader title={t("submitTransaction.title")} noTopPadding />
       <Flex direction="column" gap="xl" asChild>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          autoComplete="off"
-          sx={{ flex: "column", gap: 10 }}
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
           <Controller
             name="tx"
             control={form.control}
-            render={({ field: { value, name, onChange }, fieldState }) => (
-              <FormField error={fieldState.error?.message}>
+            render={({
+              field: { value, name, onChange },
+              fieldState: { error },
+            }) => (
+              <Flex direction="column" gap="s">
                 <TextArea
                   label={t("submitTransaction.form.label")}
                   name={name}
                   value={value}
                   onChange={onChange}
                 />
-              </FormField>
+                {error && <FormError>{error.message}</FormError>}
+              </Flex>
             )}
           />
 

@@ -59,5 +59,5 @@ export const useVisibleHeaderMenuItems = <T extends HTMLElement>() => {
 export const HIDDEN_DESKTOP_NAV_ROUTES = [LINKS.submitTransaction]
 export const HIDDEN_MOBILE_NAV_ROUTES = [
   LINKS.submitTransaction,
-  LINKS.liquidity,
+  "/liquidity/$id",
 ]
