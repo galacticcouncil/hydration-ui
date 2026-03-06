@@ -1,10 +1,7 @@
 import { useMarketAssetsData } from "@galacticcouncil/money-market/hooks"
-import { LOOPING_ASSET_PAIRS } from "@galacticcouncil/money-market/libs/looping"
+import { getReserveAddressByAssetId } from "@galacticcouncil/money-market/utils"
 import { Stack } from "@galacticcouncil/ui/components"
-import {
-  getAddressFromAssetId,
-  getAssetIdFromAddress,
-} from "@galacticcouncil/utils"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Navigate } from "@tanstack/react-router"
 
 import { EmptyState } from "@/components/EmptyState"
@@ -13,6 +10,7 @@ import { MultiplyApp } from "@/modules/borrow/multiply/components/MultiplyApp"
 import { StrategyAboutCard } from "@/modules/borrow/multiply/components/StrategyAboutCard"
 import { StrategyHeader } from "@/modules/borrow/multiply/components/StrategyHeader"
 import { StrategyOverviewCard } from "@/modules/borrow/multiply/components/StrategyOverviewCard"
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -25,25 +23,22 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
 }) => {
   const { getAsset } = useAssets()
   const { data: reserves, isLoading } = useMarketAssetsData()
-
   const { apyMap } = useApyContext()
 
-  //const debtAssetId = getStrategyDebtAssetId(id)
+  const strategy = MULTIPLY_ASSETS_CONFIG.find(
+    (s) => s.collateralAssetId === id,
+  )
 
   const collateralReserve = reserves.find(
     (r) => getAssetIdFromAddress(r.underlyingAsset) === id,
   )
 
-  const supplyAssetId = getAssetIdFromAddress(
-    collateralReserve?.underlyingAsset ?? "",
-  )
-
-  const borrowAssetId = LOOPING_ASSET_PAIRS[supplyAssetId] ?? ""
+  const borrowAssetId = strategy?.debtAssetId ?? ""
   const borrowAsset = getAsset(borrowAssetId)
 
   const debtReserve = borrowAsset
     ? reserves.find(
-        (r) => r.underlyingAsset === getAddressFromAssetId(borrowAsset.id),
+        (r) => r.underlyingAsset === getReserveAddressByAssetId(borrowAsset.id),
       )
     : undefined
 
@@ -72,7 +67,7 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
       <TwoColumnGrid template="sidebar">
         <Stack gap="xxl">
           <StrategyOverviewCard
-            reserve={collateralReserve}
+            collateralReserve={collateralReserve}
             debtReserve={debtReserve}
             apyData={apyData}
           />

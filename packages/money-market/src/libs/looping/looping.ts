@@ -5,6 +5,9 @@ import {
   ETH_ASSET_ID,
   GDOT_STABLESWAP_ASSET_ID,
   GETH_STABLESWAP_ASSET_ID,
+  HOLLAR_ASSET_ID,
+  PRIME_ASSET_ID,
+  WBTC_ASSET_ID,
 } from "@/ui-config/misc"
 
 const MAX_STEPS = 50
@@ -16,6 +19,9 @@ export type LoopingStep = { supply: Big; borrow: Big }
 export const LOOPING_ASSET_PAIRS: Record<string, string> = {
   [GDOT_STABLESWAP_ASSET_ID]: DOT_ASSET_ID,
   [GETH_STABLESWAP_ASSET_ID]: ETH_ASSET_ID,
+  [PRIME_ASSET_ID]: HOLLAR_ASSET_ID,
+  [WBTC_ASSET_ID]: HOLLAR_ASSET_ID,
+  [HOLLAR_ASSET_ID]: WBTC_ASSET_ID,
 }
 
 export function getLoopingSteps({

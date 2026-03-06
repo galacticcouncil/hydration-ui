@@ -2,30 +2,25 @@ import { DashboardReserve } from "@galacticcouncil/money-market/utils"
 import {
   Chip,
   Flex,
+  Icon,
+  LOGO_SIZES,
   Paper,
+  Separator,
   Skeleton,
   Stack,
   Text,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  GDOT_ASSET_ID,
-  GDOT_ERC20_ID,
-  getAssetIdFromAddress,
-  GETH_ASSET_ID,
-  GETH_ERC20_ID,
-} from "@galacticcouncil/utils"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { Link } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 
 import { BorrowAssetApyData } from "@/api/borrow"
 import { AssetLogo } from "@/components/AssetLogo"
-
-const RESERVE_LOGO_OVERRIDE_MAP: Record<string, string> = {
-  [GDOT_ASSET_ID]: GDOT_ERC20_ID,
-  [GETH_ASSET_ID]: GETH_ERC20_ID,
-}
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config"
+import { getMaxReserveLeverage } from "@/modules/borrow/multiply/utils/leverage"
+import { useAssets } from "@/providers/assetsProvider"
 
 type FeaturedStrategyCardProps =
   | {
@@ -45,6 +40,7 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
   isLoading,
 }) => {
   const { t } = useTranslation(["common", "borrow"])
+  const { getRelatedAToken } = useAssets()
 
   if (isLoading) {
     return (
@@ -72,22 +68,26 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
       </Paper>
     )
   }
-
   const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
-  const logoId = RESERVE_LOGO_OVERRIDE_MAP[assetId] ?? assetId
+  const aToken = getRelatedAToken(assetId)
+  const logoId = aToken?.id || assetId
 
-  const netApy =
-    apyData?.totalSupplyApy !== null && apyData?.totalSupplyApy !== undefined
-      ? t("common:percent", { value: apyData.totalSupplyApy })
-      : "—"
+  const strategy = MULTIPLY_ASSETS_CONFIG.find(
+    (s) => s.collateralAssetId === assetId,
+  )!
 
-  const liquidity =
-    reserve.availableLiquidityUSD !== null &&
-    reserve.availableLiquidityUSD !== undefined
-      ? t("common:currency.compact", {
-          value: Number(reserve.availableLiquidityUSD),
-        })
-      : "—"
+  const displayName = strategy.name ?? reserve.symbol
+
+  const baseSupplyApy = Number(reserve.supplyAPY) * 100
+  const supplyApy = apyData?.underlyingSupplyApy || baseSupplyApy
+
+  const liquidity = reserve.availableLiquidityUSD
+    ? t("common:currency.compact", {
+        value: Number(reserve.availableLiquidityUSD),
+      })
+    : "—"
+
+  const maxLeverage = getMaxReserveLeverage(reserve)
 
   return (
     <Paper p="xl" position="relative">
@@ -97,24 +97,30 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
           align="flex-start"
           sx={{ aspectRatio: ["3 / 1", "2 / 1"] }}
         >
-          <AssetLogo id={logoId} size="extra-large" />
+          {strategy?.icon ? (
+            <Icon component={strategy.icon} size={LOGO_SIZES["extra-large"]} />
+          ) : (
+            <AssetLogo id={logoId} size="extra-large" />
+          )}
           <Chip variant="green" size="small" rounded>
-            {t("borrow:multiply.strategy.upTo", { multiplier: "4X" })}
+            {t("borrow:multiply.strategy.upTo", {
+              multiplier: t("common:multiplier", { value: maxLeverage }),
+            })}
           </Chip>
         </Flex>
 
         <Flex gap="xl">
           <ValueStats
-            label={t("borrow:multiply.strategy.netApy")}
+            label={t("apy")}
             customValue={
               <Text
                 fs="h5"
                 lh={1}
                 font="primary"
-                fw={500}
+                fw={600}
                 color={getToken("accents.success.emphasis")}
               >
-                {netApy}
+                {t("common:percent", { value: supplyApy })}
               </Text>
             }
             size="medium"
@@ -123,7 +129,7 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
           <ValueStats
             label={t("borrow:multiply.strategy.liquidityAvailable")}
             customValue={
-              <Text fs="h5" lh={1} font="primary" fw={500}>
+              <Text fs="h5" lh={1} font="primary" fw={600}>
                 {liquidity}
               </Text>
             }
@@ -132,9 +138,11 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
           />
         </Flex>
 
+        <Separator my="s" />
+
         <Stack gap="base">
           <Text fw={500} lh={1.1} fs="h6" font="primary">
-            {reserve.symbol}
+            {displayName}
           </Text>
           <Text fs="p4" color={getToken("text.low")}>
             Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis

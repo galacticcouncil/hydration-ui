@@ -146,6 +146,7 @@
   "apy.rewards.description": "Estimated rewards based on current TVL, without considering the effect of Impermanent Loss.",
   "apyBorrowRate": "Borrow rate APY",
   "max": "Max",
+  "multiplier": "{{ value }}x",
   "default": "Default",
   "evm": "EVM",
   "substrate": "Substrate",
