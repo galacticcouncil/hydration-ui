@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-query"
 import { millisecondsInHour } from "date-fns"
 import {
+  JITOSOL_ASSET_ID,
   SUSDE_ASSET_ID,
   SUSDS_ASSET_ID,
   VDOT_ASSET_ID,
@@ -34,6 +35,7 @@ export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
   [WSTETH_ASSET_ID]: "747c1d2a-c668-4682-b9f9-296708a3dd90",
   [SUSDE_ASSET_ID]: "66985a81-9c51-46ca-9977-42b4fe7bc6df",
   [SUSDS_ASSET_ID]: "d8c4eff5-c8a9-46fc-a888-057c4c668e72",
+  [JITOSOL_ASSET_ID]: "0e7d0722-9054-4907-8593-567b353c0900",
 }
 
 const DEFILLAMA_APY_ENDPOINT =

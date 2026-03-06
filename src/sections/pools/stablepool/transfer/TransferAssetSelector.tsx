@@ -1,7 +1,7 @@
 import { TAsset, TErc20, useAssets } from "providers/assets"
 import { AssetsModalContent } from "sections/assets/AssetsModal"
 import { useNewDepositAssets } from "sections/wallet/strategy/NewDepositForm/NewDepositAssetSelector.utils"
-import { GETH_ERC20_ASSET_ID } from "utils/constants"
+import { ERC20_IN_OMNIPOOL } from "sections/pools/PoolsPage.utils"
 
 type TransferAssetSelectorProps = {
   stablepoolAsset: TAsset
@@ -21,7 +21,7 @@ const TransferErc20AssetSelector: React.FC<
 
   const selectableAssets = useNewDepositAssets(depositAssetId, {
     blacklist:
-      stablepoolAsset.id === GETH_ERC20_ASSET_ID && !ignoreStablepoolAsset
+      ERC20_IN_OMNIPOOL.has(stablepoolAsset.id) && !ignoreStablepoolAsset
         ? []
         : [stablepoolAsset.id],
     firstAssetId,

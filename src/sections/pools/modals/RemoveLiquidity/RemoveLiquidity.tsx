@@ -38,7 +38,7 @@ export const RemoveLiquidity = ({
   const isXyk = isXYKPoolType(pool)
   const { page, direction, back, paginateTo } = useModalPagination()
 
-  if (isStablepoolType(pool) && !pool.isGETH) {
+  if (isStablepoolType(pool) && !pool.isErc20InOmnipool) {
     return (
       <RemoveStablepoolLiquidityModal
         isOpen={isOpen}

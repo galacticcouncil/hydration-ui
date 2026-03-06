@@ -26,7 +26,7 @@ import {
 } from "sections/pools/pool/details/PoolDetails.styled"
 import { useOmnipoolFee } from "api/omnipool"
 import Skeleton from "react-loading-skeleton"
-import { BN_1, BN_MILL, GETH_ERC20_ASSET_ID } from "utils/constants"
+import { BN_1, BN_MILL } from "utils/constants"
 import BN from "bignumber.js"
 import { TAsset, useAssets } from "providers/assets"
 import { usePoolData } from "sections/pools/pool/Pool"
@@ -46,16 +46,16 @@ export const PoolDetails = () => {
   const omnipoolFee = useOmnipoolFee()
 
   const isTransferModalOpen = isOpen && isStablepoolType(pool)
-  const isGeth = !ixXYKPool && pool.isGETH
+  const isErc20InOmnipool = !ixXYKPool && pool.isErc20InOmnipool
 
   const initialAssetId = (() => {
-    if (!isTransferModalOpen || !isGeth) {
+    if (!isTransferModalOpen || !isErc20InOmnipool) {
       return undefined
     }
 
-    const hasGethBalance = new BN(pool.balance?.transferable || "0").gt(0)
+    const hasBalance = new BN(pool.balance?.transferable || "0").gt(0)
 
-    return hasGethBalance ? GETH_ERC20_ASSET_ID : undefined
+    return hasBalance ? pool.id : undefined
   })()
 
   const isFarms = pool.farms?.length > 0
@@ -67,7 +67,7 @@ export const PoolDetails = () => {
         poolId={pool.poolId}
         stablepoolAssetId={pool.relatedAToken?.id ?? pool.id}
         onClose={() => setOpen(false)}
-        skipOptions={isGeth}
+        skipOptions={isErc20InOmnipool}
         initialAssetId={initialAssetId}
         disabledOmnipool={!pool.canAddLiquidity}
       />

@@ -32,6 +32,7 @@ import { scale, scaleHuman } from "utils/balance"
 import {
   AAVE_EXTRA_GAS,
   BN_0,
+  GSOL_ERC20_ASSET_ID,
   HOLLAR_ID,
   STABLEPOOL_TOKEN_DECIMALS,
 } from "utils/constants"
@@ -43,6 +44,9 @@ import { TradeAlert } from "sections/pools/stablepool/components/TradeAlert"
 import { getAddressFromAssetId } from "utils/evm"
 import BN from "bignumber.js"
 import { useWithdrawAndSellAll } from "sections/lending/components/transactions/Withdraw/utils"
+import { useAccountBalances } from "api/deposits"
+import { useAccount } from "sections/web3-connect/Web3Connect.utils"
+import { StepProps } from "components/Stepper/Stepper"
 
 const MAX_WITHDRAW_TX_ENABLED = false
 
@@ -76,9 +80,10 @@ export const RemoveDepositModal: FC<Props> = ({
   const { getErc20, getAssetWithFallback, hub, isStableSwap } = useAssets()
   const { data: user } = useUserBorrowSummary()
   const { t } = useTranslation()
-  const { api } = useRpcProvider()
-
+  const { api, sdk } = useRpcProvider()
+  const { data: accountAssets } = useAccountBalances()
   const asset = getAssetWithFallback(assetId)
+  const { account } = useAccount()
 
   const [healthFactorRiskAccepted, setHealthFactorRiskAccepted] =
     useState(false)
@@ -196,6 +201,112 @@ export const RemoveDepositModal: FC<Props> = ({
     .toString()
 
   const onSubmit = async () => {
+    if (splitRemove && GSOL_ERC20_ASSET_ID === assetId) {
+      const swapTx = await getSwapTx()
+      if (!swapTx) throw new Error("Missing swap tx")
+
+      const initialBalance =
+        accountAssets?.accountAssetsMap.get(underlyingAssetId)?.balance
+          .transferable ?? "0"
+
+      const getStepper = (activeIndex: number): StepProps[] => {
+        const labels = [
+          t("wallet.strategy.gsol.stepper.first"),
+          t("wallet.strategy.gsol.stepper.second"),
+        ]
+
+        return labels.map((label, index) => ({
+          label,
+          state:
+            index === activeIndex
+              ? "active"
+              : index < activeIndex
+                ? "done"
+                : "todo",
+        }))
+      }
+
+      await createTransaction(
+        {
+          tx: api.tx.dispatcher.dispatchWithExtraGas(swapTx, AAVE_EXTRA_GAS),
+        },
+        {
+          toast: createToastMessages("wallet.strategy.sell.gsol.toast", {
+            t,
+            tOptions: {
+              amount: debouncedAmount,
+            },
+            components: ["span.highlight"],
+          }),
+          disableAutoClose: true,
+          onBack: () => {},
+          steps: getStepper(0),
+        },
+      )
+
+      const allShares = (
+        await sdk.client.balance.getBalance(
+          account?.address ?? "",
+          underlyingAssetId,
+        )
+      ).toString()
+
+      const diffBalance = BigNumber(allShares).minus(initialBalance).toString()
+
+      const limits = pool.reserves.map((reserve) => {
+        const assetOutValue = getAssetOutProportionally(
+          reserve.amount,
+          diffBalance,
+        )
+
+        const amount = BigNumber(assetOutValue)
+          .minus(BigNumber(addLiquidityLimit).times(assetOutValue).div(100))
+          .dp(0)
+          .toString()
+
+        return {
+          amount,
+          assetId: reserve.asset_id.toString(),
+        }
+      })
+
+      await createTransaction(
+        {
+          tx: api.tx.stableswap.removeLiquidity(
+            underlyingAssetId,
+            diffBalance,
+            limits,
+          ),
+        },
+        {
+          toast: createToastMessages(
+            "wallet.strategy.remove.proportionally.toast",
+            {
+              t,
+              tOptions: {
+                assets: minAssetsOut
+                  .map((minAssetOut) => {
+                    const value = scaleHuman(
+                      minAssetOut.minValue,
+                      minAssetOut.meta.decimals,
+                    )
+                    const symbol = minAssetOut.meta.symbol
+
+                    return `${t("value.tokenWithSymbol", { value, symbol })}`
+                  })
+                  .join(", "),
+                pool: asset.name,
+              },
+              components: ["span.highlight"],
+            },
+          ),
+          onBack: () => {},
+          steps: getStepper(1),
+        },
+      )
+
+      return
+    }
     const getTx = async () => {
       const swapTx = await getSwapTx()
       if (!swapTx) throw new Error("Missing swap tx")

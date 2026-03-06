@@ -10,7 +10,7 @@ import {
   useStablepoolShares,
   useStablepoolSubmitHandler,
 } from "./AddStablepoolLiquidity.utils"
-import { GETH_ERC20_ASSET_ID } from "utils/constants"
+
 import { useAddToOmnipoolZod } from "sections/pools/modals/AddLiquidity/AddLiquidity.utils"
 import { useAccountBalances } from "api/deposits"
 import { AddLiquidityForm } from "sections/pools/modals/AddLiquidity/AddLiquidityForm"
@@ -21,6 +21,7 @@ import {
   AddSplitMoneyMarketStablepoolOmnipool,
   StablepoolForm,
 } from "./AddMoneyMarketLiquidity"
+import { ERC20_IN_OMNIPOOL } from "sections/pools/PoolsPage.utils"
 
 export const AddStablepoolLiquidityWrapper = (
   props: AddStablepoolWrapperProps,
@@ -39,9 +40,9 @@ export const AddStablepoolLiquidityWrapper = (
     asset: { id: selectedAssetId, decimals },
   } = props
 
-  const isMoveGETHToOmnipool =
-    stablepoolAsset.id === GETH_ERC20_ASSET_ID &&
-    selectedAssetId === GETH_ERC20_ASSET_ID
+  const isMoveErc20ToOmnipool =
+    ERC20_IN_OMNIPOOL.has(stablepoolAsset.id) &&
+    ERC20_IN_OMNIPOOL.has(selectedAssetId)
 
   const initialAmounts = split
     ? reserves.map((reserve) => ({
@@ -59,7 +60,7 @@ export const AddStablepoolLiquidityWrapper = (
       "0",
   }))
 
-  if (isMoveGETHToOmnipool && !split) {
+  if (isMoveErc20ToOmnipool && !split) {
     return (
       <AddLiquidityForm
         selectedAssetId={selectedAssetId}

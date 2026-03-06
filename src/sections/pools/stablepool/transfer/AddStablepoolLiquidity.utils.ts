@@ -613,10 +613,10 @@ export const useMoneyMarketStablepoolSubmit = (
 
   const getStepper = (activeIndex: number): StepProps[] => {
     const labels = [
-      t("liquidity.add.modal.geth.stepper.first"),
-      t(
-        `liquidity.add.modal.geth.stepper.second${isJoinFarms ? ".joinFarms" : ""}`,
-      ),
+      t("liquidity.add.modal.stepper.first", {
+        symbol: stablepoolAsset.symbol,
+      }),
+      t(`liquidity.add.modal.stepper.second${isJoinFarms ? ".joinFarms" : ""}`),
     ]
 
     return labels.map((label, index) => ({

@@ -25,7 +25,6 @@ import {
   BN_100,
   BN_NAN,
   DOT_ASSET_ID,
-  GETH_ERC20_ASSET_ID,
 } from "utils/constants"
 import BN from "bignumber.js"
 import { ApiPromise } from "@polkadot/api"
@@ -34,7 +33,7 @@ import { useEstimatedFees } from "api/transaction"
 import { TAsset } from "providers/assets"
 import { useAccountBalances } from "api/deposits"
 import { useAssets } from "providers/assets"
-import { TAnyPool } from "sections/pools/PoolsPage.utils"
+import { ERC20_IN_OMNIPOOL, TAnyPool } from "sections/pools/PoolsPage.utils"
 
 export const getAddToOmnipoolFee = (
   api: ApiPromise,
@@ -118,7 +117,7 @@ export const useAddLiquidity = (
     omnipoolFee,
     assetBalance,
     ommipoolAsset,
-    isGETH: poolMeta.id === GETH_ERC20_ASSET_ID,
+    isErc20InOmnipool: !!ERC20_IN_OMNIPOOL.get(poolMeta.id),
   }
 }
 
