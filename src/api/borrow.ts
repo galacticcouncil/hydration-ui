@@ -9,7 +9,7 @@ import {
   formatReservesAndIncentives,
   formatUserSummaryAndIncentives,
 } from "@aave/math-utils"
-import { useMutation, useQuery, UseQueryResult } from "@tanstack/react-query"
+import { useMutation, useQueries, useQuery } from "@tanstack/react-query"
 import { isPaseoRpcUrl, isTestnetRpcUrl } from "api/provider"
 import { useRpcProvider } from "providers/rpcProvider"
 import { useCallback, useMemo } from "react"
@@ -41,9 +41,12 @@ import { HEALTH_FACTOR_RISK_THRESHOLD } from "sections/lending/ui-config/misc"
 import { useStablepoolFees } from "./stableswap"
 import { ReserveIncentiveResponse } from "@aave/math-utils/dist/esm/formatters/incentive/calculate-reserve-incentives"
 import { TFarmAprData, useOmnipoolFarms } from "./farms"
-import { useDefillamaLatestApyQueries } from "api/external/defillama"
-import { uniqBy, zipArrays } from "utils/rx"
-import { identity } from "utils/helpers"
+import {
+  ASSET_ID_TO_DEFILLAMA_ID,
+  defillamaLatestApyQuery,
+} from "api/external/defillama"
+import { uniqBy } from "utils/rx"
+import { identity, isNotNil } from "utils/helpers"
 import {
   TReservesBalance,
   TStablePoolDetails,
@@ -54,8 +57,8 @@ import { Pool } from "@aave/contract-helpers"
 import { useEvmAccount } from "sections/web3-connect/Web3Connect.utils"
 import { PopulatedTransaction, BigNumber as ethersBN } from "ethers"
 import { gasLimitRecommendations } from "sections/lending/ui-config/gasLimit"
-import { PRIME_ASSET_ID } from "utils/constants"
 import { useTransformEvmTxToExtrinsic } from "./evm"
+import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "./external/kamino"
 
 export const PRIME_APY = BN(0.075)
 
@@ -543,9 +546,14 @@ export const useMaxWithdrawAmount = (assetId: string) => {
   }, [underlyingAssetId, user])
 }
 
+export enum ExternalApyType {
+  stake = "stake",
+  nativeYield = "nativeYield",
+}
+
 type UnderlyingAssetApy = {
   id: string
-  isStaked: boolean
+  apyType?: ExternalApyType
   supplyApy: number
   borrowApy: number
 }
@@ -628,7 +636,10 @@ const calculateAssetApyTotals = (
   stableSwapBalances: TReservesBalance,
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
-  externalApysMap: Map<string, UseQueryResult<number>>,
+  externalApysMap: Map<
+    string,
+    { apyType: ExternalApyType; apy: number | undefined }
+  >,
   lpAPY: number,
   farmsAPR: number,
   getRelatedAToken: (id: string) => TErc20 | undefined,
@@ -650,11 +661,7 @@ const calculateAssetApyTotals = (
 
       return {
         id,
-        isStaked: false,
-        supplyApy: (id === PRIME_ASSET_ID ? PRIME_APY : supplyAPY)
-          .times(100)
-          .times(proportion)
-          .toNumber(),
+        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
         borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
       }
     },
@@ -663,7 +670,7 @@ const calculateAssetApyTotals = (
   for (const id of stableSwapAssetIds) {
     const externalApy = externalApysMap.get(id)
 
-    if (externalApy?.data) {
+    if (externalApy?.apy) {
       const percentage =
         stableSwapBalances.find((bal) => bal.id === id)?.percentage ??
         100 / assetCount
@@ -672,9 +679,9 @@ const calculateAssetApyTotals = (
 
       underlyingAssetsApyData.push({
         id,
-        isStaked: true,
-        supplyApy: BN(externalApy.data).times(proportion).toNumber(),
-        borrowApy: BN(externalApy.data).times(proportion).toNumber(),
+        apyType: externalApy.apyType,
+        supplyApy: BN(externalApy.apy).times(proportion).toNumber(),
+        borrowApy: BN(externalApy.apy).times(proportion).toNumber(),
       })
     }
   }
@@ -690,6 +697,59 @@ const calculateAssetApyTotals = (
     ...apySums,
     underlyingAssetsApyData,
     incentivesNetAPR,
+  }
+}
+
+export const useExternalApys = (assetIds: string[]) => {
+  const queryConfigs = assetIds
+    .map((assetId) => {
+      const defillamaId = ASSET_ID_TO_DEFILLAMA_ID[assetId]
+      if (defillamaId) {
+        return {
+          assetId,
+          type: ExternalApyType.stake,
+          query: {
+            ...defillamaLatestApyQuery(defillamaId),
+            enabled: !!defillamaId,
+          },
+        }
+      }
+
+      const kaminoId = ASSET_ID_TO_KAMINO_ID[assetId]
+      if (kaminoId) {
+        return {
+          assetId,
+          type: ExternalApyType.nativeYield,
+          query: {
+            ...kaminoApyQuery(kaminoId),
+            enabled: !!kaminoId,
+          },
+        }
+      }
+
+      return null
+    })
+    .filter(isNotNil)
+
+  const queries = queryConfigs.map((c) => c.query)
+
+  const results = useQueries({
+    queries,
+  })
+
+  return {
+    isLoading: results.some((result) => result.isLoading),
+    data: results.map((result, i) => {
+      const queryConfig = queryConfigs[i]
+
+      return [
+        queryConfig.assetId,
+        {
+          apyType: queryConfig.type,
+          apy: result.data,
+        },
+      ] as const
+    }),
   }
 }
 
@@ -742,19 +802,19 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
     return uniqBy(identity, ids)
   }, [assetIdsMemo, getAsset])
 
+  const { data: externalApys, isLoading: isLoadingExternalApys } =
+    useExternalApys(allAssetIds)
+
   const isLoadingBase =
-    isLoadingStableSwapReserves || isLoadingReserves || isLoadingStablepoolFees
+    isLoadingStableSwapReserves ||
+    isLoadingReserves ||
+    isLoadingStablepoolFees ||
+    isLoadingExternalApys
 
   const isLoading =
     omnipoolAssetIdsWithFarms.length > 0
       ? isLoadingBase || isLoadingFarms
       : isLoadingBase
-
-  const externalApys = useDefillamaLatestApyQueries(allAssetIds)
-  const externalApysMap = useMemo(() => {
-    const externalApyEntries = zipArrays(allAssetIds, externalApys)
-    return new Map(externalApyEntries)
-  }, [allAssetIds, externalApys])
 
   const data = useMemo<BorrowAssetApyData[]>(() => {
     if (isLoading) return []
@@ -799,7 +859,7 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
         stablepoolData?.balances ?? [],
         underlyingReserves,
         assetReserve?.aIncentivesData ?? [],
-        externalApysMap,
+        new Map(externalApys ?? []),
         lpAPY,
         farmsAPR,
         getRelatedAToken,
@@ -818,7 +878,7 @@ export const useBorrowAssetsApy = (assetIds: string[], withFarms = false) => {
     })
   }, [
     assetIdsMemo,
-    externalApysMap,
+    externalApys,
     farmsConfig,
     getAsset,
     getErc20,
