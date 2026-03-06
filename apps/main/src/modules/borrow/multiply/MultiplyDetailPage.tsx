@@ -78,7 +78,10 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
           />
           <StrategyAboutCard symbol={collateralReserve.symbol} />
         </Stack>
-        <MultiplyApp collateralReserve={collateralReserve} />
+        <MultiplyApp
+          collateralReserve={collateralReserve}
+          debtReserve={debtReserve}
+        />
       </TwoColumnGrid>
     </Stack>
   )

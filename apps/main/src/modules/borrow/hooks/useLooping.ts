@@ -11,10 +11,7 @@ import {
   getLoopingSteps,
   LoopingStep,
 } from "@galacticcouncil/money-market/libs/looping"
-import {
-  AaveV3HydrationMainnet,
-  gasLimitRecommendations,
-} from "@galacticcouncil/money-market/ui-config"
+import { AaveV3HydrationMainnet } from "@galacticcouncil/money-market/ui-config"
 import { getReserveAddressByAssetId } from "@galacticcouncil/money-market/utils"
 import { bigShift, formatCurrency, stringEquals } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
@@ -28,7 +25,11 @@ import Big from "big.js"
 import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
-import { useBorrowReserves, useUserBorrowSummary } from "@/api/borrow/queries"
+import {
+  estimateGasLimit,
+  useBorrowReserves,
+  useUserBorrowSummary,
+} from "@/api/borrow/queries"
 import { Trade } from "@/api/trade"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
@@ -89,13 +90,13 @@ export const useLooping = (
     stringEquals(r.underlyingAsset, getReserveAddressByAssetId(supplyAssetId)),
   )
 
-  const { data: gasPrice, isLoading: isLoadingGasPrice } = useQuery({
-    queryKey: ["gasPrice"],
-    queryFn: async () => {
-      const gasPriceBase = await evm.getGasPrice()
-      const gasPriceSurplus = (gasPriceBase * 5n) / 100n
-      return gasPriceBase + gasPriceSurplus
-    },
+  const { data: gas, isLoading: isLoadingGas } = useQuery({
+    queryKey: ["gas", ProtocolAction.borrow],
+    queryFn: () =>
+      estimateGasLimit({
+        evm,
+        action: ProtocolAction.borrow,
+      }),
   })
 
   const { data, isLoading: isLoadingBatch } = useQuery({
@@ -104,7 +105,7 @@ export const useLooping = (
       !!borrowReserve &&
       !!supplyReserve &&
       !!assetOut &&
-      !!gasPrice,
+      !!gas,
     placeholderData: keepPreviousData,
     queryKey: [
       "borrow",
@@ -122,7 +123,7 @@ export const useLooping = (
       if (!assetIn || !assetOut) throw new Error("Assets not found")
       if (!borrowReserve) throw new Error("Borrow reserve not found")
       if (!supplyReserve) throw new Error("Supply reserve not found")
-      if (!gasPrice) throw new Error("Gas price base not found")
+      if (!gas) throw new Error("Gas estimattion failed")
 
       const address = account.address
       const evmAddress = H160.fromAny(address)
@@ -158,11 +159,6 @@ export const useLooping = (
         supply: step.supply,
       }))
 
-      const gasLimit = BigInt(
-        gasLimitRecommendations[ProtocolAction.borrow]?.recommended ??
-          "1000000",
-      )
-
       const provider = new Web3Provider(evm.transport)
       const pool = new Pool(provider, { POOL: AaveV3HydrationMainnet.POOL })
       const poolBundle = new PoolBundle(provider, {
@@ -180,9 +176,9 @@ export const useLooping = (
           target: Binary.fromHex(tx.to ?? ""),
           input: Binary.fromHex(tx.data ?? ""),
           value: [0n, 0n, 0n, 0n],
-          gas_limit: gasLimit,
-          max_fee_per_gas: [gasPrice, 0n, 0n, 0n],
-          max_priority_fee_per_gas: [gasPrice, 0n, 0n, 0n],
+          gas_limit: gas.gasLimit,
+          max_fee_per_gas: gas.maxFeePerGas,
+          max_priority_fee_per_gas: gas.maxPriorityFeePerGas,
           access_list: [],
           authorization_list: [],
           nonce: undefined,
@@ -300,7 +296,7 @@ export const useLooping = (
     },
   })
 
-  const isLoading = isLoadingBatch || isSubmitting || isLoadingGasPrice
+  const isLoading = isLoadingBatch || isSubmitting || isLoadingGas
 
   return {
     isLoading,

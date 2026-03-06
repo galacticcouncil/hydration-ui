@@ -303,7 +303,6 @@ export class EthereumSigner {
       const receipt = await this.publicClient.waitForTransactionReceipt({
         hash: txHash,
       })
-
       if (receipt.status === "reverted") {
         options.onError(this.formatError(new ExecutionRevertedError()))
       } else {

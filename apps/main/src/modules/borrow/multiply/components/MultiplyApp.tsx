@@ -3,7 +3,6 @@ import {
   ComputedReserveData,
   useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
-import { LOOPING_ASSET_PAIRS } from "@galacticcouncil/money-market/libs/looping"
 import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Box,
@@ -33,6 +32,7 @@ import { useLooping } from "@/modules/borrow/hooks/useLooping"
 import { MAX_SAFE_LEVERAGE_FACTOR } from "@/modules/borrow/multiply/config"
 import { getMaxLeverage } from "@/modules/borrow/multiply/utils/leverage"
 import { useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 const SectionSeparator = () => <Separator sx={{ mx: "-xl" }} />
 
@@ -47,29 +47,28 @@ type MultiplyFormValues = {
 
 type MultiplyAppProps = {
   collateralReserve: ComputedReserveData
+  debtReserve: ComputedReserveData
 }
 
 export const MultiplyApp: React.FC<MultiplyAppProps> = ({
   collateralReserve,
+  debtReserve,
 }) => {
   const { isConnected } = useAccount()
   const { t } = useTranslation(["borrow", "common"])
-  const { getAsset, getAssetWithFallback, getRelatedAToken } = useAssets()
+  const { getAsset, getRelatedAToken } = useAssets()
 
   const { user } = useMoneyMarketData()
 
   const assetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
-  const asset = getAssetWithFallback(assetId)
-  const relatedAToken = getRelatedAToken(assetId)
+  //const asset = getAssetWithFallback(assetId)
 
-  const supplyAssetId = getAssetIdFromAddress(
-    collateralReserve?.underlyingAsset ?? "",
-  )
+  const supplyAssetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
+  const borrowAssetId = getAssetIdFromAddress(debtReserve.underlyingAsset)
 
-  const borrowAssetId = LOOPING_ASSET_PAIRS[supplyAssetId] ?? ""
+  const supplyAsset = getAsset(supplyAssetId)
+  const supplyAToken = getRelatedAToken(assetId)
   const borrowAsset = getAsset(borrowAssetId)
-
-  const selectedAsset = borrowAsset
 
   const { control, watch } = useForm<MultiplyFormValues>({
     defaultValues: { amount: "", multiplier: LEVERAGE_DEFAULT },
@@ -86,38 +85,27 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     futureHF: futureHF,
   })
 
-  const isLoopingAvailable =
-    !!selectedAsset && !!supplyAssetId && !!borrowAssetId
-
-  console.log({ isLoopingAvailable, asset })
+  const isLoopingAvailable = !!supplyAsset && !!borrowAsset
 
   const {
     submitLooping,
     isLoading: isLoopingLoading,
-    //minAmountOut: minLoopedAmountOut,
+    minAmountOut: minLoopedAmountOut,
     totalBorrow,
-    totalSupply,
   } = useLooping(
     {
       amount,
       multiplier,
       supplyAssetId,
       borrowAssetId,
-      assetInId: selectedAsset?.id ?? "",
-      assetOutId: relatedAToken?.id ?? "",
+      assetInId: borrowAsset?.id ?? "",
+      assetOutId: supplyAToken?.id ?? "",
       withEmode: true,
     },
     {
       enabled: isLoopingAvailable && isConnected,
     },
   )
-
-  console.log({
-    assetInId: selectedAsset?.id ?? "",
-    assetOutId: asset.id,
-    asset,
-    relatedAToken,
-  })
 
   const maxLtvValue =
     collateralReserve.eModeCategoryId > 0
@@ -129,8 +117,15 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     MAX_SAFE_LEVERAGE_FACTOR,
   )
 
+  const minTotalSupply = supplyAToken
+    ? scaleHuman(minLoopedAmountOut, supplyAToken.decimals)
+    : "0"
+
   const [debtDisplayPrice] = useDisplayAssetPrice(borrowAssetId, totalBorrow)
-  const [supplyDisplayPrice] = useDisplayAssetPrice(supplyAssetId, totalSupply)
+  const [minSupplyDisplayPrice] = useDisplayAssetPrice(
+    supplyAssetId,
+    minTotalSupply,
+  )
 
   return (
     <Stack gap="l" as={Paper} p="xl">
@@ -142,7 +137,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
             sx={{ py: 0 }}
             label={t("multiply.app.yourDeposit")}
             assets={[]}
-            selectedAsset={selectedAsset}
+            selectedAsset={borrowAsset}
             value={field.value}
             onChange={field.onChange}
             maxBalanceFallback="0"
@@ -192,7 +187,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
       <SectionSeparator />
 
-      {selectedAsset && (
+      {supplyAToken && (
         <Paper p="m">
           <Flex justify="space-between" align="center">
             <Box>
@@ -204,12 +199,13 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
             <Stack align="end">
               <Text fs="p2" color="text.high" fw={600}>
                 {t("common:currency", {
+                  prefix: t("common:approx.short"),
                   value: loopedAmount,
-                  symbol: selectedAsset.symbol,
+                  symbol: supplyAToken.symbol,
                 })}
               </Text>
               <Text fs="p6" color={getToken("text.medium")}>
-                {supplyDisplayPrice}
+                {minSupplyDisplayPrice}
               </Text>
             </Stack>
           </Flex>
@@ -234,33 +230,21 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
       <CollapsibleRoot open={isConnected}>
         <CollapsibleContent>
           <Summary separator={<SectionSeparator />}>
-            {/* <SummaryRow
-          label={t("multiply.app.totalFees")}
-          content={t("common:currency", {
-            value: 5.63,
-          })}
-        /> */}
-
-            {/*     {selectedAsset && (
-          <SummaryRow
-            label={t("multiply.app.minimumReceived")}
-            content={t("common:currency", {
-              value: scaleHuman(minLoopedAmountOut, selectedAsset.decimals),
-              symbol: selectedAsset.symbol,
-            })}
-          />
-        )} */}
-            {selectedAsset && (
+            {supplyAToken && (
               <SummaryRow
                 label="Total collateral"
                 content={
                   <Flex gap="s">
                     {t("common:currency", {
-                      value: totalSupply,
-                      symbol: selectedAsset.symbol,
+                      prefix: t("common:approx.short"),
+                      value: scaleHuman(
+                        minLoopedAmountOut,
+                        supplyAToken.decimals,
+                      ),
+                      symbol: supplyAToken.symbol,
                     })}
                     <Text fs="p5" color={getToken("text.medium")}>
-                      ({supplyDisplayPrice})
+                      ({minSupplyDisplayPrice})
                     </Text>
                   </Flex>
                 }
@@ -272,6 +256,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                 content={
                   <Flex gap="s">
                     {t("common:currency", {
+                      prefix: t("common:approx.short"),
                       value: totalBorrow,
                       symbol: borrowAsset.symbol,
                     })}
