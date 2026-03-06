@@ -3,6 +3,7 @@ import {
   ComputedReserveData,
   useMoneyMarketData,
 } from "@galacticcouncil/money-market/hooks"
+import { LOOPING_ASSET_PAIRS } from "@galacticcouncil/money-market/libs/looping"
 import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   Box,
@@ -20,7 +21,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress, HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { Controller, useForm } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
@@ -29,6 +30,7 @@ import { useDisplayAssetPrice } from "@/components/AssetPrice/AssetPrice"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useLooping } from "@/modules/borrow/hooks/useLooping"
+import { MAX_SAFE_LEVERAGE_FACTOR } from "@/modules/borrow/multiply/config"
 import { getMaxLeverage } from "@/modules/borrow/multiply/utils/leverage"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -52,14 +54,22 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 }) => {
   const { isConnected } = useAccount()
   const { t } = useTranslation(["borrow", "common"])
-  const { getAssetWithFallback, getRelatedAToken } = useAssets()
+  const { getAsset, getAssetWithFallback, getRelatedAToken } = useAssets()
 
   const { user } = useMoneyMarketData()
 
   const assetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
   const asset = getAssetWithFallback(assetId)
+  const relatedAToken = getRelatedAToken(assetId)
 
-  const selectedAsset = getRelatedAToken(assetId)
+  const supplyAssetId = getAssetIdFromAddress(
+    collateralReserve?.underlyingAsset ?? "",
+  )
+
+  const borrowAssetId = LOOPING_ASSET_PAIRS[supplyAssetId] ?? ""
+  const borrowAsset = getAsset(borrowAssetId)
+
+  const selectedAsset = borrowAsset
 
   const { control, watch } = useForm<MultiplyFormValues>({
     defaultValues: { amount: "", multiplier: LEVERAGE_DEFAULT },
@@ -76,15 +86,13 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     futureHF: futureHF,
   })
 
-  const supplyAssetId = getAssetIdFromAddress(
-    collateralReserve?.underlyingAsset ?? "",
-  )
+  const isLoopingAvailable =
+    !!selectedAsset && !!supplyAssetId && !!borrowAssetId
 
-  const borrowAssetId = HOLLAR_ASSET_ID
-
-  const debtAsset = getAssetWithFallback(borrowAssetId)
+  console.log({ isLoopingAvailable, asset })
 
   const {
+    submitLooping,
     isLoading: isLoopingLoading,
     //minAmountOut: minLoopedAmountOut,
     totalBorrow,
@@ -96,20 +104,30 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
       supplyAssetId,
       borrowAssetId,
       assetInId: selectedAsset?.id ?? "",
-      assetOutId: asset.id,
+      assetOutId: relatedAToken?.id ?? "",
       withEmode: true,
     },
     {
-      enabled: isConnected,
+      enabled: isLoopingAvailable && isConnected,
     },
   )
+
+  console.log({
+    assetInId: selectedAsset?.id ?? "",
+    assetOutId: asset.id,
+    asset,
+    relatedAToken,
+  })
 
   const maxLtvValue =
     collateralReserve.eModeCategoryId > 0
       ? collateralReserve.formattedEModeLtv
       : collateralReserve.formattedBaseLTVasCollateral
 
-  const maxSafeLeverage = getMaxLeverage(Number(maxLtvValue), 0.95)
+  const maxSafeLeverage = getMaxLeverage(
+    Number(maxLtvValue),
+    MAX_SAFE_LEVERAGE_FACTOR,
+  )
 
   const [debtDisplayPrice] = useDisplayAssetPrice(borrowAssetId, totalBorrow)
   const [supplyDisplayPrice] = useDisplayAssetPrice(supplyAssetId, totalSupply)
@@ -207,6 +225,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
           variant="primary"
           size="large"
           width="100%"
+          onClick={() => submitLooping()}
         >
           {t("multiply.app.openPosition")}
         </LoadingButton>
@@ -247,14 +266,14 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                 }
               />
             )}
-            {debtAsset && (
+            {borrowAsset && (
               <SummaryRow
                 label="Total debt"
                 content={
                   <Flex gap="s">
                     {t("common:currency", {
                       value: totalBorrow,
-                      symbol: debtAsset.symbol,
+                      symbol: borrowAsset.symbol,
                     })}
                     <Text fs="p5" color={getToken("text.medium")}>
                       ({debtDisplayPrice})
