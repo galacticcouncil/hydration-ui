@@ -46,7 +46,6 @@ import {
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { TProviderData } from "@/api/provider"
-import { transformEvmCallToPapiTx } from "@/modules/transactions/utils/tx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 const { H160 } = h160
@@ -629,11 +628,17 @@ export const useSetUsageAsCollateralTx = () => {
           action: ProtocolAction.claimRewards,
         })
 
-      const evmCall = transformEvmCallToPapiTx(papi, {
-        ...tx,
-        gasLimit,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
+      const evmCall = papi.tx.EVM.call({
+        source: Binary.fromHex(tx.from),
+        target: Binary.fromHex(tx.to),
+        input: Binary.fromHex(tx.data),
+        value: [0n, 0n, 0n, 0n],
+        gas_limit: gasLimit,
+        max_fee_per_gas: maxFeePerGas,
+        max_priority_fee_per_gas: maxPriorityFeePerGas,
+        access_list: [],
+        authorization_list: [],
+        nonce: undefined,
       })
 
       return evmCall
