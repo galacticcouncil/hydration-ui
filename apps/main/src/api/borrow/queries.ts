@@ -177,7 +177,7 @@ export const useUserBorrowReserves = (givenAddress?: string) => {
   const { account } = useAccount()
 
   const address = givenAddress || account?.address || ""
-  const evmAddress = H160.fromAny(address)
+  const evmAddress = address ? H160.fromAny(address) : ""
 
   return useQuery(
     userBorrowReservesQuery(
@@ -217,9 +217,9 @@ export const useBorrowUserIncentives = (givenAddress?: string) => {
   const incentivesContract = useBorrowIncentivesContract()
   const { account } = useAccount()
 
-  const address = givenAddress || account?.address || ""
+  const address = givenAddress || account?.address
 
-  const evmAddress = H160.fromAny(address)
+  const evmAddress = address ? H160.fromAny(address) : ""
 
   return useQuery(
     borrowUserIncentivesQuery(
@@ -407,7 +407,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   const incentivesContract = useBorrowIncentivesContract()
 
   const address = givenAddress || account?.address || ""
-  const evmAddress = H160.fromAny(address)
+  const evmAddress = address ? H160.fromAny(address) : ""
 
   return useQuery(
     userBorrowSummaryQuery(
@@ -429,7 +429,7 @@ export const useGetClaimAllBorrowRewardsTx = () => {
 
   return useCallback(async () => {
     const address = account?.address || ""
-    const evmAddress = H160.fromAny(address)
+    const evmAddress = address ? H160.fromAny(address) : ""
 
     const incentivesTxBuilderV2 = new IncentivesControllerV2(
       new Web3Provider(evm.transport),
