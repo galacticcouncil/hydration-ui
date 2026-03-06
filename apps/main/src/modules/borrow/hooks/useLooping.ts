@@ -89,9 +89,22 @@ export const useLooping = (
     stringEquals(r.underlyingAsset, getReserveAddressByAssetId(supplyAssetId)),
   )
 
+  const { data: gasPrice, isLoading: isLoadingGasPrice } = useQuery({
+    queryKey: ["gasPrice"],
+    queryFn: async () => {
+      const gasPriceBase = await evm.getGasPrice()
+      const gasPriceSurplus = (gasPriceBase * 5n) / 100n
+      return gasPriceBase + gasPriceSurplus
+    },
+  })
+
   const { data, isLoading: isLoadingBatch } = useQuery({
     enabled:
-      options.enabled && !!borrowReserve && !!supplyReserve && !!assetOut,
+      options.enabled &&
+      !!borrowReserve &&
+      !!supplyReserve &&
+      !!assetOut &&
+      !!gasPrice,
     placeholderData: keepPreviousData,
     queryKey: [
       "borrow",
@@ -109,6 +122,7 @@ export const useLooping = (
       if (!assetIn || !assetOut) throw new Error("Assets not found")
       if (!borrowReserve) throw new Error("Borrow reserve not found")
       if (!supplyReserve) throw new Error("Supply reserve not found")
+      if (!gasPrice) throw new Error("Gas price base not found")
 
       const address = account.address
       const evmAddress = H160.fromAny(address)
@@ -144,9 +158,6 @@ export const useLooping = (
         supply: step.supply,
       }))
 
-      const gasPriceBase = await evm.getGasPrice()
-      const gasPriceSurplus = (gasPriceBase * 5n) / 100n
-      const gasPrice = gasPriceBase + gasPriceSurplus
       const gasLimit = BigInt(
         gasLimitRecommendations[ProtocolAction.borrow]?.recommended ??
           "1000000",
@@ -263,6 +274,8 @@ export const useLooping = (
         }),
       )
 
+      console.log({ txs })
+
       return createBatchTx({
         txs,
         transaction: {
@@ -287,7 +300,7 @@ export const useLooping = (
     },
   })
 
-  const isLoading = isLoadingBatch || isSubmitting
+  const isLoading = isLoadingBatch || isSubmitting || isLoadingGasPrice
 
   return {
     isLoading,

@@ -27,7 +27,12 @@ export function getLoopingSteps({
   multiplier: number
   ltv: string
 }): LoopingStep[] {
-  const amount = new Big(initialAmount)
+  const amount = new Big(initialAmount || "0")
+
+  if (amount.lte(0)) {
+    return []
+  }
+
   const targetSupply = amount.times(multiplier)
 
   const steps: LoopingStep[] = [{ supply: amount, borrow: Big(0) }]
