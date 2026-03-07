@@ -1,9 +1,7 @@
 import {
-  Alert,
   CollapsibleContent,
   CollapsibleRoot,
   Separator,
-  Stack,
   Summary,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
@@ -21,7 +19,7 @@ import { toDecimal } from "@/utils/formatting"
 
 export const XcmSummary = () => {
   const { t } = useTranslation(["common", "xcm"])
-  const { transfer, call, alerts, isLoading } = useXcmProvider()
+  const { transfer, call, isLoading } = useXcmProvider()
 
   const { formState, watch } = useFormContext<XcmFormValues>()
 
@@ -79,51 +77,34 @@ export const XcmSummary = () => {
     })
   })()
 
-  const isTransferValid = !!transfer && formState.isValid && !alerts.length
-  const isSummaryOpen = isTransferValid || alerts.length > 0
+  const isTransferValid = !!transfer && formState.isValid
 
   return (
-    <CollapsibleRoot open={isSummaryOpen}>
+    <CollapsibleRoot open={isTransferValid}>
       <CollapsibleContent>
-        {alerts.length > 0 && (
-          <>
-            <Separator />
-            <Stack gap="base" px="xl" my="xl">
-              {alerts.map((alert) => (
-                <Alert
-                  variant="error"
-                  key={alert.key}
-                  description={alert.message}
-                />
-              ))}
-            </Stack>
-          </>
-        )}
-        {isTransferValid && (
-          <Summary
-            separator={<Separator mx="-xl" />}
-            px="xl"
-            withLeadingSeparator
-          >
-            {call && isEvmSourceChain && isEvmApproveCall(call) && (
-              <SummaryRow
-                label={t("xcm:summary.approvalFee")}
-                loading={isLoading || isLoadingApprovalFee}
-                content={approvalFeeValue}
-              />
-            )}
+        <Summary
+          separator={<Separator mx="-xl" />}
+          px="xl"
+          withLeadingSeparator
+        >
+          {call && isEvmSourceChain && isEvmApproveCall(call) && (
             <SummaryRow
-              label={t("xcm:summary.sourceFee")}
-              loading={isLoading}
-              content={sourceFeeValue}
+              label={t("xcm:summary.approvalFee")}
+              loading={isLoading || isLoadingApprovalFee}
+              content={approvalFeeValue}
             />
-            <SummaryRow
-              label={destFeeLabel}
-              loading={isLoading}
-              content={destFeeValue}
-            />
-          </Summary>
-        )}
+          )}
+          <SummaryRow
+            label={t("xcm:summary.sourceFee")}
+            loading={isLoading}
+            content={sourceFeeValue}
+          />
+          <SummaryRow
+            label={destFeeLabel}
+            loading={isLoading}
+            content={destFeeValue}
+          />
+        </Summary>
       </CollapsibleContent>
     </CollapsibleRoot>
   )
