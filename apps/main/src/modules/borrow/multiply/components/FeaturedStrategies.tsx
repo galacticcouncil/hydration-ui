@@ -1,33 +1,11 @@
-import { useSupplyAssetsData } from "@galacticcouncil/money-market/hooks"
-import { getReserveAddressByAssetId } from "@galacticcouncil/money-market/utils"
 import { Grid } from "@galacticcouncil/ui/components"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
-import { useMemo } from "react"
-import { filter, pipe, sortBy } from "remeda"
 
-import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { FeaturedStrategyCard } from "@/modules/borrow/multiply/components/FeaturedStrategyCard"
 import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config"
+import { useMultiplyReserves } from "@/modules/borrow/multiply/hooks/useMultiplyReserves"
 
 export const FeaturedStrategies: React.FC = () => {
-  const { data, isLoading } = useSupplyAssetsData({ showAll: true })
-  const { apyMap } = useApyContext()
-
-  const reserves = useMemo(() => {
-    const collateralReserveIds = MULTIPLY_ASSETS_CONFIG.map((s) =>
-      getReserveAddressByAssetId(s.collateralAssetId),
-    )
-
-    return pipe(
-      data,
-      filter((reserve) =>
-        collateralReserveIds.includes(reserve.underlyingAsset),
-      ),
-      sortBy((reserve) =>
-        collateralReserveIds.indexOf(reserve.underlyingAsset),
-      ),
-    )
-  }, [data])
+  const { data, isLoading } = useMultiplyReserves()
 
   return (
     <Grid columns={[1, 1, 2, 3, 4]} gap="l">
@@ -35,17 +13,13 @@ export const FeaturedStrategies: React.FC = () => {
         ? MULTIPLY_ASSETS_CONFIG.map((strategy) => (
             <FeaturedStrategyCard key={strategy.collateralAssetId} isLoading />
           ))
-        : reserves.map((reserve) => {
-            const assetId = getAssetIdFromAddress(reserve.underlyingAsset)
-
-            return (
-              <FeaturedStrategyCard
-                key={reserve.underlyingAsset}
-                reserve={reserve}
-                apyData={apyMap.get(assetId)}
-              />
-            )
-          })}
+        : data.map((row) => (
+            <FeaturedStrategyCard
+              key={row.reserve.underlyingAsset}
+              reserve={row.reserve}
+              apyData={row.apyData}
+            />
+          ))}
     </Grid>
   )
 }

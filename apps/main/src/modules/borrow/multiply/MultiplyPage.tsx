@@ -1,10 +1,18 @@
-import { Flex, Stack, ValueStats } from "@galacticcouncil/ui/components"
+import {
+  Flex,
+  SectionHeader,
+  Stack,
+  ValueStats,
+} from "@galacticcouncil/ui/components"
+import { useTranslation } from "react-i18next"
 
 import { FeaturedStrategies } from "@/modules/borrow/multiply/components/FeaturedStrategies"
+import { MultiplyAssetsTable } from "@/modules/borrow/multiply/components/MultiplyAssetsTable"
 
 export const MultiplyPage = () => {
+  const { t } = useTranslation("borrow")
   return (
-    <Stack gap="xxl">
+    <Stack>
       <Flex align="center" justify="space-between" width="100%">
         <Stack
           direction={["column", null, "row"]}
@@ -26,7 +34,10 @@ export const MultiplyPage = () => {
           />
         </Stack>
       </Flex>
+      <SectionHeader title={t("multiply.featuredStrategies")} />
       <FeaturedStrategies />
+      <SectionHeader title={t("multiply.allPairs")} />
+      <MultiplyAssetsTable />
     </Stack>
   )
 }

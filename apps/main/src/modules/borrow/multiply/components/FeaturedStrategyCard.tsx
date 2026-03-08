@@ -90,7 +90,7 @@ export const FeaturedStrategyCard: React.FC<FeaturedStrategyCardProps> = ({
   const maxLeverage = getMaxReserveLeverage(reserve)
 
   return (
-    <Paper p="xl" position="relative">
+    <Paper p="xl" hoverable>
       <Stack gap="l">
         <Flex
           justify="space-between"
