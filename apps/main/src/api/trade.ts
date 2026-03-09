@@ -523,7 +523,7 @@ export const dcaTxQuery = (
   maxRetries: number,
 ) =>
   queryOptions({
-    queryKey: [orderKey, "tx"],
+    queryKey: [...orderKey, "tx", address, slippage, maxRetries],
     queryFn: () =>
       sdk.tx
         .order(order)
@@ -551,14 +551,7 @@ export const dcaTradeOrderQuery = (
   const dcaOrder = dcaOrderQuery(rpc, form)
 
   return queryOptions({
-    queryKey: [
-      QUERY_KEY_BLOCK_PREFIX,
-      dcaOrder.queryKey,
-      slippage,
-      maxRetries,
-      address,
-      dryRun,
-    ],
+    queryKey: [...dcaOrder.queryKey, slippage, maxRetries, address, dryRun],
     queryFn: async () => {
       const order = await queryClient.ensureQueryData(dcaOrder)
 
