@@ -8,6 +8,7 @@ import {
 import {
   EVM_CALL_PERMIT_ABI,
   EVM_CALL_PERMIT_ADDRESS,
+  EVM_GAS_TO_WEIGHT,
 } from "@galacticcouncil/web3-connect/src/config/evm"
 import {
   queryOptions,
@@ -15,13 +16,17 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary } from "polkadot-api"
 import { isString } from "remeda"
-import { getContract, Hex } from "viem"
+import { formatEther, getContract, Hex } from "viem"
 
+import { AAVE_GAS_LIMIT } from "@/api/aave"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
+import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 const { H160, isEvmAccount, isEvmAddress } = h160
 
@@ -126,4 +131,32 @@ const pendingPermitQuery = (
 
 export const usePendingPermit = (address: string) => {
   return useQuery(pendingPermitQuery(useRpcProvider(), address))
+}
+
+export const weightToEvmFeeQuery = (
+  rpc: TProviderContext,
+  weight: bigint,
+  assetOutId: string,
+) => {
+  const { evm, queryClient } = rpc
+  return queryOptions({
+    enabled: weight > 0n && !!assetOutId,
+    queryKey: ["weightToEvmFee", weight.toString(), assetOutId],
+    queryFn: async () => {
+      const [gasPrice, spot] = await Promise.all([
+        evm.getGasPrice(),
+        queryClient.ensureQueryData(
+          spotPriceQuery(rpc, NATIVE_EVM_ASSET_ID, assetOutId),
+        ),
+      ])
+
+      if (!spot?.spotPrice) return "0"
+
+      const gas = weight ? weight / EVM_GAS_TO_WEIGHT + AAVE_GAS_LIMIT : 0n
+
+      const wei = gasPrice * gas
+      const eth = formatEther(wei)
+      return Big(eth).times(spot.spotPrice.toString()).toString()
+    },
+  })
 }
