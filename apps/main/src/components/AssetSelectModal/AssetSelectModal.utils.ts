@@ -94,7 +94,8 @@ export const useFilteredSearchAssets = <T extends TAssetData>(
 
       if (search.length) {
         return (
-          stringEquals(asset.name, search) || stringEquals(asset.symbol, search)
+          asset.name.toLowerCase().includes(search.toLowerCase()) ||
+          asset.symbol.toLowerCase().includes(search.toLowerCase())
         )
       }
 
