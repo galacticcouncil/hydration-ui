@@ -1,4 +1,3 @@
-import { stringEquals } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { useMemo } from "react"
@@ -94,7 +93,8 @@ export const useFilteredSearchAssets = <T extends TAssetData>(
 
       if (search.length) {
         return (
-          stringEquals(asset.name, search) || stringEquals(asset.symbol, search)
+          asset.name.toLowerCase().includes(search.toLowerCase()) ||
+          asset.symbol.toLowerCase().includes(search.toLowerCase())
         )
       }
 
