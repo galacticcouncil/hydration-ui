@@ -77,8 +77,6 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     (s) => s.collateralAssetId === assetId,
   )
 
-  //const asset = getAssetWithFallback(assetId)
-
   const supplyAssetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
   const borrowAssetId = strategy?.enterWithAssetId
     ? strategy.enterWithAssetId
@@ -123,7 +121,6 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
       borrowAssetId,
       assetInId: borrowAsset?.id ?? "",
       assetOutId: supplyAToken?.id ?? "",
-      withEmode: true,
     },
     {
       enabled: isLoopingAvailable && isConnected,
