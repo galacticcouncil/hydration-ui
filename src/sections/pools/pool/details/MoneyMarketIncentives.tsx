@@ -10,6 +10,24 @@ import { IncentiveRow } from "sections/pools/stablepool/components/GigaIncentive
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { getAssetIdFromAddress } from "utils/evm"
 import { AssetLogo } from "components/AssetIcon/AssetIcon"
+import { ExternalApyType } from "api/borrow"
+import i18n from "i18n/i18n"
+
+export const getApyLabel = (apyType?: ExternalApyType, isSupply?: boolean) => {
+  if (apyType === "stake") {
+    return i18n.t("stakeApy")
+  }
+
+  if (apyType === "nativeYield") {
+    return i18n.t("nativeYieldApy")
+  }
+
+  if (isSupply) {
+    return i18n.t("supplyApy")
+  } else {
+    return i18n.t("borrowApy")
+  }
+}
 
 export const MoneyMarketIncentives = ({ pool }: { pool: TStablepool }) => {
   const { t } = useTranslation()
@@ -105,8 +123,9 @@ export const MoneyMarketIncentives = ({ pool }: { pool: TStablepool }) => {
                 )}
 
                 {moneyMarketApy.underlyingAssetsApyData.map(
-                  ({ id, isStaked, supplyApy }) => {
-                    const label = isStaked ? t("stakeApy") : t("supplyApy")
+                  ({ id, apyType, supplyApy }) => {
+                    const label = getApyLabel(apyType)
+
                     return (
                       <IncentiveRow
                         key={id}

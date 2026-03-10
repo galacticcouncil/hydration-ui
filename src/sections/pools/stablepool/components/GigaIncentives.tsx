@@ -3,7 +3,7 @@ import { Text } from "components/Typography/Text/Text"
 import { useAssets } from "providers/assets"
 import { useTranslation } from "react-i18next"
 import BN from "bignumber.js"
-import { BN_0, VDOT_ASSET_ID } from "utils/constants"
+import { BN_0, PRIME_ASSET_ID, VDOT_ASSET_ID } from "utils/constants"
 import { Icon } from "components/Icon/Icon"
 import { Heading } from "components/Typography/Heading/Heading"
 import { SContainer, SIncentiveRow } from "./GigaIncentives.styled"
@@ -16,10 +16,8 @@ import { getAddressFromAssetId, getAssetIdFromAddress } from "utils/evm"
 import { FormattedNumber } from "sections/lending/components/primitives/FormattedNumber"
 import { MultipleIcons } from "components/MultipleIcons/MultipleIcons"
 import { TStablepool } from "sections/pools/PoolsPage.utils"
-import {
-  MONEY_MARKET_GIGA_RESERVES,
-  PRIME_ASSET_ADDRESS,
-} from "sections/lending/ui-config/misc"
+import { MONEY_MARKET_GIGA_RESERVES } from "sections/lending/ui-config/misc"
+import { getApyLabel } from "sections/pools/pool/details/MoneyMarketIncentives"
 
 export const GigaIncentives = ({
   pool: { moneyMarketApy },
@@ -222,12 +220,8 @@ export const MoneyMarketAPY = ({
             )}
 
             {underlyingAssetsApyData.map(
-              ({ id, isStaked, borrowApy, supplyApy }) => {
-                const label = isStaked
-                  ? t("stakeApy")
-                  : isSupply
-                    ? t("supplyApy")
-                    : t("borrowApy")
+              ({ id, apyType, borrowApy, supplyApy }) => {
+                const label = getApyLabel(apyType, isSupply)
                 return (
                   <IncentiveRow
                     key={id}
@@ -293,7 +287,7 @@ type OverrideApyProps = APYProps & {
 
 export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
   switch (true) {
-    case [...MONEY_MARKET_GIGA_RESERVES, PRIME_ASSET_ADDRESS].includes(
+    case MONEY_MARKET_GIGA_RESERVES.includes(
       getAddressFromAssetId(props.assetId),
     ):
       return props.type === "supply" ? (
@@ -301,7 +295,7 @@ export const OverrideApy = ({ children, ...props }: OverrideApyProps) => {
       ) : (
         children
       )
-    case props.assetId === VDOT_ASSET_ID:
+    case [VDOT_ASSET_ID, PRIME_ASSET_ID].includes(props.assetId):
       return <MoneyMarketAPYWrapper {...props} />
     default:
       return children
