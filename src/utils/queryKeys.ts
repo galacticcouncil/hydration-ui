@@ -313,6 +313,7 @@ export const QUERY_KEYS = {
   externalApi: (chain: string) => ["externalApi", chain],
   externalStore: ["externalStore"],
   defillamaApyHistory: (id: string) => ["defillamaApyHistory", id],
+  kaminoApyHistory: (id: string) => ["kaminoApyHistory", id],
   variableBorrowRates: (assetId: string, from: string, to: string) => [
     "variableBorrowRates",
     assetId,
