@@ -1,3 +1,4 @@
+import { h160 } from "@galacticcouncil/common"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { toHex } from "@polkadot-api/utils"
 import { Buffer } from "buffer"
@@ -8,6 +9,8 @@ import { createQueryString, stripTrailingSlash } from "./helpers"
 
 const H160_PREFIX_BYTES = Buffer.from("ETH\0")
 const ASSET_BASE_ADDRESS = "0000000000000000000000000000000100000000"
+
+const { H160 } = h160
 
 export const numToBuffer = (num: number): Buffer => {
   const arr = new Uint8Array(4)
@@ -68,6 +71,14 @@ export const safeConvertSS58toH160 = (address: string) => {
       const slicedBytes = decodedBytes.slice(0, 20)
       return toHex(slicedBytes)
     }
+  } catch {
+    return ""
+  }
+}
+
+export const safeConvertAnyToH160 = (address: string) => {
+  try {
+    return H160.fromAny(address)
   } catch {
     return ""
   }

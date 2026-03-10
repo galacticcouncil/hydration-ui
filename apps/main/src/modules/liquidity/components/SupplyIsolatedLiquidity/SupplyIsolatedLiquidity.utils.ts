@@ -1,4 +1,3 @@
-import { h160 } from "@galacticcouncil/common"
 import {
   ComputedUserReserveData,
   ExtendedFormattedUser,
@@ -11,6 +10,7 @@ import {
   getAssetCollateralType,
   isShowIsolationWarning,
 } from "@galacticcouncil/money-market/utils"
+import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -44,8 +44,6 @@ export type TSupplyIsolatedLiquidityFormValues = {
   amount: string
   asset: TAssetData
 }
-
-const { H160 } = h160
 
 export const useSupplyIsolatedLiquidity = ({
   initialAsset,
@@ -186,7 +184,7 @@ export const useSupplyIsolatedLiquidity = ({
           queryClient.invalidateQueries({ queryKey: queryKeysFactory.pool })
           queryClient.invalidateQueries({
             queryKey: userBorrowSummaryQueryKey(
-              H160.fromAny(account?.address ?? ""),
+              safeConvertAnyToH160(account?.address ?? ""),
               lendingPoolAddressProvider,
             ),
           })

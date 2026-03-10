@@ -2,6 +2,7 @@ import { h160 } from "@galacticcouncil/common"
 import {
   isEvmParachainAccount,
   QUERY_KEY_BLOCK_PREFIX,
+  safeConvertAnyToH160,
   safeConvertSS58toH160,
   strip0x,
 } from "@galacticcouncil/utils"
@@ -28,7 +29,7 @@ import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
-const { H160, isEvmAccount, isEvmAddress } = h160
+const { isEvmAccount, isEvmAddress } = h160
 
 export const evmAccountBindingQuery = (
   { papi, isLoaded }: TProviderContext,
@@ -81,7 +82,9 @@ const permitNonceQuery = (
   { evm, isLoaded }: TProviderContext,
   address: string,
 ) => {
-  const evmAddress = isEvmParachainAccount(address) ? H160.fromAny(address) : ""
+  const evmAddress = isEvmParachainAccount(address)
+    ? safeConvertAnyToH160(address)
+    : ""
   return queryOptions({
     enabled: isLoaded && !!evmAddress,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "permitNonce", evmAddress],
@@ -105,7 +108,9 @@ const pendingPermitQuery = (
   { papiClient, isLoaded }: TProviderContext,
   address: string,
 ) => {
-  const evmAddress = isEvmParachainAccount(address) ? H160.fromAny(address) : ""
+  const evmAddress = isEvmParachainAccount(address)
+    ? safeConvertAnyToH160(address)
+    : ""
   return queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "pendingPermit", evmAddress],
     queryFn: async () => {
