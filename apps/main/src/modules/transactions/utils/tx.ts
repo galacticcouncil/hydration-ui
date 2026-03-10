@@ -3,6 +3,8 @@ import { HYDRATION_CHAIN_KEY, isBinary } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, CompatibilityToken } from "polkadot-api"
 
+import { weightToEvmFeeQuery } from "@/api/evm"
+import { paymentInfoQuery } from "@/api/transaction"
 import {
   AnyPapiTx,
   AnyTransaction,
@@ -10,7 +12,7 @@ import {
 } from "@/modules/transactions/types"
 import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { Papi } from "@/providers/rpcProvider"
+import { Papi, TProviderContext } from "@/providers/rpcProvider"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
@@ -91,4 +93,23 @@ export const getPapiTransactionCallData = (
   } catch {
     return ""
   }
+}
+
+export const getExtraTxFeeByWeight = async (
+  rpc: TProviderContext,
+  address: string,
+  tx: AnyTransaction,
+  assetOutId: string,
+): Promise<string | null> => {
+  const { queryClient } = rpc
+  const info = await queryClient.ensureQueryData(
+    paymentInfoQuery(rpc, address, tx),
+  )
+  if (!info) return null
+
+  const weight = info.weight.ref_time
+
+  return queryClient.ensureQueryData(
+    weightToEvmFeeQuery(rpc, weight, assetOutId),
+  )
 }
