@@ -23,19 +23,29 @@ const INDEXER_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
   { max: Infinity, status: DataProviderStatus.DEGRADED },
 ]
 
+const INDEXER_TIMEOUT_MS = 3000
+
 export async function fetchIndexerInfo(
   indexer: IndexerProps,
 ): Promise<IndexerInfo> {
   const start = performance.now()
+  const signal = AbortSignal.timeout(INDEXER_TIMEOUT_MS)
 
   const [metadataResult, blockHeightResult] = await Promise.allSettled([
-    fetch(indexer.metadataUrl).then((r) => {
+    fetch(indexer.metadataUrl, { signal }).then((r) => {
       if (!r.ok) throw new Error("Metadata fetch failed")
       return r.json()
     }),
-    getSquidSdk(indexer.graphqlUrl)
-      .LatestBlockHeightQuery()
-      .then((r) => r.blocks?.edges?.[0]?.node?.height ?? null),
+    Promise.race([
+      getSquidSdk(indexer.graphqlUrl)
+        .LatestBlockHeightQuery()
+        .then((r) => r.blocks?.edges?.[0]?.node?.height ?? null),
+      new Promise((_, reject) => {
+        signal.addEventListener("abort", () =>
+          reject(new Error("Indexer timeout")),
+        )
+      }),
+    ]),
   ])
 
   const isValidResponse =
