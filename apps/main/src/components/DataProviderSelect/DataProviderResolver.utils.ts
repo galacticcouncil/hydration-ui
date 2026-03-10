@@ -23,7 +23,7 @@ const INDEXER_STATUS_THRESHOLDS: DataProviderStatusThreshold[] = [
   { max: Infinity, status: DataProviderStatus.DEGRADED },
 ]
 
-const INDEXER_TIMEOUT_MS = 3000
+const INDEXER_TIMEOUT_MS = 2000
 
 export async function fetchIndexerInfo(
   indexer: IndexerProps,
