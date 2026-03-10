@@ -3,7 +3,6 @@ import {
   ProtocolAction,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
-import { h160 } from "@galacticcouncil/common"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
 import {
   AaveV3HydrationMainnet,
@@ -22,6 +21,7 @@ import {
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
+import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   QueryClient,
@@ -47,8 +47,6 @@ import {
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { TProviderData } from "@/api/provider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-
-const { H160 } = h160
 
 export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
@@ -177,7 +175,7 @@ export const useUserBorrowReserves = (givenAddress?: string) => {
   const { account } = useAccount()
 
   const address = givenAddress || account?.address || ""
-  const evmAddress = H160.fromAny(address)
+  const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery(
     userBorrowReservesQuery(
@@ -219,7 +217,7 @@ export const useBorrowUserIncentives = (givenAddress?: string) => {
 
   const address = givenAddress || account?.address || ""
 
-  const evmAddress = H160.fromAny(address)
+  const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery(
     borrowUserIncentivesQuery(
@@ -407,7 +405,7 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   const incentivesContract = useBorrowIncentivesContract()
 
   const address = givenAddress || account?.address || ""
-  const evmAddress = H160.fromAny(address)
+  const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery(
     userBorrowSummaryQuery(
@@ -429,7 +427,7 @@ export const useGetClaimAllBorrowRewardsTx = () => {
 
   return useCallback(async () => {
     const address = account?.address || ""
-    const evmAddress = H160.fromAny(address)
+    const evmAddress = safeConvertAnyToH160(address)
 
     const incentivesTxBuilderV2 = new IncentivesControllerV2(
       new Web3Provider(evm.transport),
@@ -545,7 +543,7 @@ export const useBorrowDisableCollateralTxs = () => {
     if (!poolContract || !account || !userReserves) return null
 
     const address = account?.address || ""
-    const evmAddress = H160.fromAny(address)
+    const evmAddress = safeConvertAnyToH160(address)
 
     const activeCollaterals = userReserves.userReserves.filter(
       (reserve) => reserve.usageAsCollateralEnabledOnUser,
@@ -603,7 +601,7 @@ export const useSetUsageAsCollateralTx = () => {
   return useCallback(
     async (reserve: string, usageAsCollateral: boolean) => {
       const address = account?.address || ""
-      const evmAddress = H160.fromAny(address)
+      const evmAddress = safeConvertAnyToH160(address)
 
       const poolInstance = poolContract.getContractInstance(
         poolContract.poolAddress,

@@ -22,6 +22,7 @@ import {
   getAssetIdFromAddress,
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -49,6 +50,8 @@ export const useSupplyAssetsTableColumns = (
 ) => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset, getRelatedAToken } = useAssets()
+  const { account } = useAccount()
+  const isConnected = !!account
 
   const { openSupply } = useModalContext()
 
@@ -185,7 +188,8 @@ export const useSupplyAssetsTableColumns = (
       },
       cell: ({ row }) => {
         const { underlyingAsset, isIsolated } = row.original
-        const isDisabled = !isIsolated && getIsSupplyDisabled(row.original)
+        const isDisabled =
+          (!isIsolated && getIsSupplyDisabled(row.original)) || !isConnected
 
         return (
           <Flex justify="flex-end" align="center" gap="s">
@@ -234,7 +238,7 @@ export const useSupplyAssetsTableColumns = (
       id: "actions",
       cell: ({ row }) => {
         const { underlyingAsset } = row.original
-        const isDisabled = getIsSupplyDisabled(row.original)
+        const isDisabled = getIsSupplyDisabled(row.original) || !isConnected
 
         return (
           <Button
@@ -285,6 +289,7 @@ export const useSupplyAssetsTableColumns = (
     isBaseAssetType,
     getRelatedAToken,
     onSupplyClick,
+    isConnected,
   ])
 }
 
