@@ -40,7 +40,7 @@ export async function fetchIndexerInfo(
       getSquidSdk(indexer.graphqlUrl)
         .LatestBlockHeightQuery()
         .then((r) => r.blocks?.edges?.[0]?.node?.height ?? null),
-      new Promise((_, reject) => {
+      new Promise<never>((_, reject) => {
         signal.addEventListener("abort", () =>
           reject(new Error("Indexer timeout")),
         )
