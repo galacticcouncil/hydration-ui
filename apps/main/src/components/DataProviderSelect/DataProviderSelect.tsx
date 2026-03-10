@@ -10,17 +10,17 @@ import { FC, useState } from "react"
 
 import { bestNumberQuery } from "@/api/chain"
 import { useActiveProviderProps, useSquidUrl } from "@/api/provider"
-import { RpcSelectModal } from "@/components/ProviderRpcSelect/components/RpcSelectModal"
-import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
-import { RpcStatusTooltipContent } from "@/components/ProviderRpcSelect/components/RpcStatusTooltipContent"
-import { SContainer } from "@/components/ProviderRpcSelect/ProviderRpcSelect.styled"
+import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
+import { StatusTooltipContent } from "@/components/DataProviderSelect/components/StatusTooltipContent"
+import { SContainer } from "@/components/DataProviderSelect/DataProviderSelect.styled"
+import { DataProviderSelectModal } from "@/components/DataProviderSelect/DataProviderSelectModal"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 type Props = {
   readonly bottomPinned?: boolean
 }
 
-export const ProviderRpcSelect: FC<Props> = ({ bottomPinned }) => {
+export const DataProviderSelect: FC<Props> = ({ bottomPinned }) => {
   const [modalOpen, setModalOpen] = useState(false)
   const provider = useRpcProvider()
   const { isMobile } = useBreakpoints()
@@ -34,7 +34,7 @@ export const ProviderRpcSelect: FC<Props> = ({ bottomPinned }) => {
       <Tooltip
         text={
           !isMobile &&
-          providerProps && <RpcStatusTooltipContent {...providerProps} />
+          providerProps && <StatusTooltipContent {...providerProps} />
         }
         asChild
       >
@@ -60,7 +60,7 @@ export const ProviderRpcSelect: FC<Props> = ({ bottomPinned }) => {
           )}
         </Button>
       </Tooltip>
-      <RpcSelectModal open={modalOpen} onOpenChange={setModalOpen} />
+      <DataProviderSelectModal open={modalOpen} onOpenChange={setModalOpen} />
     </SContainer>
   )
 }

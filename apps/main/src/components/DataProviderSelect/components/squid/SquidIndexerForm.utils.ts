@@ -2,12 +2,14 @@ import { stripTrailingSlash } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 import { z } from "zod/v4"
 
-import { useFullSquidUrlList } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
+import { useFullSquidUrlList } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { required, validHttpUrl } from "@/utils/validators"
 
-export type SquidFormValues = z.infer<ReturnType<typeof useSquidFormSchema>>
+export type SquidIndexerFormValues = z.infer<
+  ReturnType<typeof useSquidIndexerFormSchema>
+>
 
-export const useSquidFormSchema = () => {
+export const useSquidIndexerFormSchema = () => {
   const { t } = useTranslation()
 
   const squidUrlList = useFullSquidUrlList()

@@ -1,17 +1,18 @@
 import { CaretDown } from "@galacticcouncil/ui/assets/icons"
 import { Box, Flex, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { PingResponse } from "@galacticcouncil/utils"
+import { DataProviderStatus, PingResponse } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
+import { isNumber } from "remeda"
 
 import {
   SStatusOffline,
   SStatusSuccess,
-} from "@/components/ProviderRpcSelect/components/RpcStatus.styled"
+} from "@/components/DataProviderSelect/components/rpc/RpcStatus.styled"
 import {
   useElapsedTimeStatus,
   usePingStatus,
-} from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
+} from "@/components/DataProviderSelect/DataProviderSelect.utils"
 
 export type RpcStatusProps = Partial<PingResponse> & {
   url: string
@@ -27,7 +28,7 @@ export const RpcStatusSuccess = () => {
         sx={{ size: "2xs" }}
         viewBox="0 0 11 11"
         fill="none"
-        xmlns="http://www.w3.org/2000.svg?react"
+        xmlns="http://www.w3.org/2000.svg"
       >
         <circle cx="5.5" cy="5.5" r="5" stroke="currentColor" />
       </svg>
@@ -50,19 +51,29 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
 
   const { status, color } = useElapsedTimeStatus(timestamp ?? 0)
 
+  const statusComponent = (() => {
+    switch (status) {
+      case DataProviderStatus.HEALTHY:
+        return <RpcStatusSuccess key={timestamp} />
+      case DataProviderStatus.DEGRADED:
+      case DataProviderStatus.LAGGING:
+        return <RpcStatusSlow />
+      case DataProviderStatus.OFFLINE:
+        return <RpcStatusOffline />
+    }
+  })()
+
   return (
     <Box>
       <Flex align="center" gap="s" color={getToken(color)}>
-        {blockNumber && (
+        {isNumber(blockNumber) && (
           <Text fs="p5" fw={600}>
             {t("number", {
               value: blockNumber,
             })}
           </Text>
         )}
-        {status === "online" && <RpcStatusSuccess key={timestamp} />}
-        {status === "degraded" && <RpcStatusSlow />}
-        {status === "offline" && <RpcStatusOffline />}
+        {statusComponent}
       </Flex>
 
       {ping && ping < Infinity && <RpcPing ping={ping} />}

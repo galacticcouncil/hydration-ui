@@ -8,6 +8,13 @@ export type ProviderProps = {
   dataEnv: TDataEnv
 }
 
+export type IndexerProps = {
+  name: string
+  url: string
+  graphqlUrl: string
+  metadataUrl: string
+}
+
 const MAINNET_INDEXER_URL = "https://explorer.hydradx.cloud/graphql"
 const MAINNET_SQUID_URL =
   "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql"
@@ -28,16 +35,42 @@ export const createProvider = (
   dataEnv,
 })
 
-export const SQUID_URLS = [
+export const SQUID_URLS_CONFIG = [
   {
     name: "Orca Prod",
-    url: "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/graphql",
+    url: "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api",
   },
   {
-    name: "Orca Prod 2",
-    url: "https://reaper-11340001-head-orca-p2.sparrow.shadow-senate.com/graphql",
+    name: "Orca Prod 01 indx",
+    url: "https://orca-prod-pool-01-aggr-indx.indexer.hydration.cloud",
+  },
+  {
+    name: "Orca Prod 02 indx",
+    url: "https://orca-prod-pool-02-aggr-indx.indexer.hydration.cloud",
+  },
+  {
+    name: "Orca Prod 03 indx",
+    url: "https://orca-prod-pool-03-aggr-indx.indexer.hydration.cloud",
+  },
+  {
+    name: "Orca Prod 01 indexer",
+    url: "https://orca-prod-pool-01.aggr-indexer-hydration.shadow-senate.com",
+  },
+  {
+    name: "Orca Prod 02 indexer",
+    url: "https://orca-prod-pool-02.aggr-indexer-hydration.shadow-senate.com",
+  },
+  {
+    name: "Orca Prod 03 indexer",
+    url: "https://orca-prod-pool-03.aggr-indexer-hydration.shadow-senate.com",
   },
 ]
+
+export const SQUID_URLS: IndexerProps[] = SQUID_URLS_CONFIG.map((config) => ({
+  ...config,
+  graphqlUrl: `${config.url}/graphql`,
+  metadataUrl: `${config.url}/rest/service/metadata`,
+}))
 
 export const PROVIDERS: ProviderProps[] = [
   createProvider("Dwellir", "wss://hydration-rpc.n.dwellir.com"),

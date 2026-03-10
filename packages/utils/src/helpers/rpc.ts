@@ -1,3 +1,5 @@
+import { capitalize } from "remeda"
+
 import { wsToHttp } from "./formatting"
 
 export type PingResponse = {
@@ -138,4 +140,20 @@ export async function getBestRpcs(urls: string[]): Promise<PingResponse[]> {
   }
 
   return results
+}
+
+export function parseLarkRpcUrlName(url: string): string {
+  const { rawName } =
+    /^wss?:\/\/(?<rawName>[\w.-]+)\.hydration\.cloud/.exec(url)?.groups ?? {}
+
+  if (!rawName) {
+    return ""
+  }
+
+  const formatted = rawName
+    .split(".")
+    .map((word) => capitalize(word))
+    .join(" ")
+
+  return formatted
 }

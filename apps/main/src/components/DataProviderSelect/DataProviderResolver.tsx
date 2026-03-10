@@ -7,9 +7,12 @@ import { first, prop } from "remeda"
 import { PROVIDER_URLS } from "@/api/provider"
 import { rpcStatusQueryOptions } from "@/api/rpc"
 import { ENV } from "@/config/env"
+import { SQUID_URLS } from "@/config/rpc"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
-export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
+import { fetchIndexerInfo, getBestIndexer } from "./DataProviderResolver.utils"
+
+export const DataProviderResolver: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const queryClient = useQueryClient()
@@ -19,9 +22,16 @@ export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
   )
 
   const [, fetchBestProvider] = useAsyncFn(async () => {
-    const result = await getBestRpcs(PROVIDER_URLS)
+    const indexerInfoPromises = SQUID_URLS.map((indexer) =>
+      fetchIndexerInfo(indexer),
+    )
 
-    const bestRpc = first(result)
+    const [bestRpcs, ...indexerInfos] = await Promise.all([
+      getBestRpcs(PROVIDER_URLS),
+      ...indexerInfoPromises,
+    ])
+
+    const bestRpc = first(bestRpcs)
 
     if (bestRpc) {
       queryClient.setQueryData(
@@ -31,13 +41,21 @@ export const ProvideRpcResolver: React.FC<PropsWithChildren> = ({
     }
 
     // top RPC results are added to the top of the list
-    const urls = result.map(prop("url"))
-    const sortedRpcList = Array.from(new Set([...urls, ...PROVIDER_URLS]))
+    const bestRpcsUrls = bestRpcs.map(prop("url"))
+    const sortedRpcList = Array.from(
+      new Set([...bestRpcsUrls, ...PROVIDER_URLS]),
+    )
+
+    const bestIndexer = getBestIndexer(
+      indexerInfos,
+      bestRpc?.blockNumber ?? null,
+    )
 
     useProviderRpcUrlStore.setState({
       rpcUrl: bestRpc?.url ?? ENV.VITE_PROVIDER_URL,
       rpcUrlList: sortedRpcList,
       updatedAt: Date.now(),
+      ...(bestIndexer ? { squidUrl: bestIndexer.config.graphqlUrl } : {}),
     })
 
     setIsBestProviderFound(true)

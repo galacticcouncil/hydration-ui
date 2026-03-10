@@ -1,5 +1,6 @@
 import { Save } from "@galacticcouncil/ui/assets/icons"
 import {
+  Box,
   ButtonTransparent,
   Flex,
   FormError,
@@ -56,7 +57,7 @@ export const ListItemEditForm: React.FC<ListItemEditFormProps> = ({
           name="name"
           control={form.control}
           render={({ field, fieldState }) => (
-            <>
+            <Box position="relative">
               <Input
                 {...field}
                 variant="embedded"
@@ -68,7 +69,7 @@ export const ListItemEditForm: React.FC<ListItemEditFormProps> = ({
                   {fieldState.error.message}
                 </FormError>
               )}
-            </>
+            </Box>
           )}
         />
         <Flex
