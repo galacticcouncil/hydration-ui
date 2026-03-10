@@ -124,20 +124,7 @@ export const useTransformEvmTxToExtrinsic = () => {
     (
       tx: PopulatedTransaction | TransactionRequest,
     ): SubmittableExtrinsic<"promise"> => {
-      const ethereumRpcCallFn = api.call.ethereumRuntimeRPCApi.call
-      const ethereumRpcCallParams = ethereumRpcCallFn.meta.params
-
-      const ethereumRpcCallArgs: [
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        string,
-        null,
-        [],
-      ] = [
+      return api.tx.evm.call(
         tx.from ?? "",
         tx.to ?? "",
         tx.data?.toString() ?? "",
@@ -147,18 +134,8 @@ export const useTransformEvmTxToExtrinsic = () => {
         tx.maxPriorityFeePerGas?.toString() ?? "0",
         null,
         [],
-      ]
-
-      // Temporary solution until Mainnet RT supports authorization list
-      const requiresAuthList = ethereumRpcCallParams.some(
-        (p) => p.name === "authorization_list",
+        [],
       )
-
-      if (requiresAuthList) {
-        ethereumRpcCallArgs.push([])
-      }
-
-      return api.tx.evm.call(...ethereumRpcCallArgs)
     },
     [api],
   )
