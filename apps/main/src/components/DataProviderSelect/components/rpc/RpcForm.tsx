@@ -1,4 +1,3 @@
-import { getSquidSdk } from "@galacticcouncil/indexer/squid"
 import { Plus } from "@galacticcouncil/ui/assets/icons"
 import {
   Button,
@@ -6,36 +5,40 @@ import {
   Input,
   Spinner,
 } from "@galacticcouncil/ui/components"
+import { parseLarkRpcUrlName, pingRpc } from "@galacticcouncil/utils"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation } from "@tanstack/react-query"
 import { Controller, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import {
-  SquidFormValues,
-  useSquidFormSchema,
-} from "@/components/ProviderRpcSelect/components/SquidForm.utils"
-import { useSquidListStore } from "@/states/provider"
+  RpcFormValues,
+  useRpcFormSchema,
+} from "@/components/DataProviderSelect/components/rpc/RpcForm.utils"
+import { useRpcListStore } from "@/states/provider"
 
-export const SquidForm = () => {
+const PING_TIMEOUT = 10000
+
+export const RpcForm = () => {
   const { t } = useTranslation()
-  const { addSquid } = useSquidListStore()
+  const { addRpc } = useRpcListStore()
 
-  const form = useForm<SquidFormValues>({
-    defaultValues: { address: "" },
+  const form = useForm<RpcFormValues>({
+    defaultValues: { address: "wss://" },
     mode: "onChange",
-    resolver: standardSchemaResolver(useSquidFormSchema()),
+    resolver: standardSchemaResolver(useRpcFormSchema()),
   })
 
   const { mutate, isPending } = useMutation({
-    mutationFn: async ({ address }: SquidFormValues) => {
-      try {
-        await getSquidSdk(address).LatestBlockHeightQuery()
-      } catch (error) {
-        throw new Error(t("rpc.change.modal.errors.indexerInvalid"))
+    mutationFn: async ({ address }: RpcFormValues) => {
+      const status = await pingRpc(address, PING_TIMEOUT)
+
+      if (status.ping === Infinity) {
+        throw new Error(t("rpc.change.modal.errors.rpcInvalid"))
       }
 
-      addSquid(address)
+      const larkName = parseLarkRpcUrlName(address)
+      addRpc(address, larkName || undefined)
       form.reset()
     },
     onMutate: () => {
@@ -56,7 +59,7 @@ export const SquidForm = () => {
             <Input
               {...field}
               customSize="large"
-              placeholder="https://"
+              placeholder="wss://"
               autoComplete="off"
               readOnly={isPending}
               iconStart={Plus}
@@ -67,9 +70,9 @@ export const SquidForm = () => {
                 ) : (
                   <Button
                     variant="secondary"
-                    sx={{ px: 12 }}
-                    {...props}
                     type="submit"
+                    {...props}
+                    sx={{ px: 12 }}
                   >
                     {t("add")}
                   </Button>

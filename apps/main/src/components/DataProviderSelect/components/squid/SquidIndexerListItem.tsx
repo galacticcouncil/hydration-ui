@@ -8,6 +8,7 @@ import {
   Flex,
   Icon,
   Spinner,
+  Stack,
   Text,
   TextButton,
   Tooltip,
@@ -17,15 +18,18 @@ import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ListItemEditForm } from "@/components/ProviderRpcSelect/components/ListItemEditForm"
-import { useBlockHeightStatus } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
+import { ListItemEditForm } from "@/components/DataProviderSelect/components/ListItemEditForm"
+import {
+  SRpcRadio,
+  SRpcRadioThumb,
+} from "@/components/DataProviderSelect/components/rpc/RpcListItem.styled"
+import { useBlockHeightStatus } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { useSquidListStore } from "@/states/provider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
-import { SRpcRadio, SRpcRadioThumb } from "./RpcListItem.styled"
-import { SSquidListItem } from "./SquidListItem.styled"
+import { SSquidIndexerListItem } from "./SquidIndexerListItem.styled"
 
-export type SquidListItemProps = {
+export type SquidIndexerListItemProps = {
   name: string
   url: string
   isActive?: boolean
@@ -34,10 +38,10 @@ export type SquidListItemProps = {
   onRemove?: (url: string) => void
 }
 
-export const SquidListHeader: React.FC = () => {
+export const SquidIndexerListHeader: React.FC = () => {
   const { t } = useTranslation()
   return (
-    <SSquidListItem
+    <SSquidIndexerListItem
       bg={getToken("details.separatorsOnDim")}
       sx={{ height: "auto", borderTop: 0 }}
     >
@@ -55,11 +59,11 @@ export const SquidListHeader: React.FC = () => {
       <Text fs="p5" color={getToken("text.medium")} align="right">
         {t("rpc.change.modal.column.status")}
       </Text>
-    </SSquidListItem>
+    </SSquidIndexerListItem>
   )
 }
 
-export const SquidListItem: React.FC<SquidListItemProps> = ({
+export const SquidIndexerListItem: React.FC<SquidIndexerListItemProps> = ({
   name,
   url,
   isActive,
@@ -78,24 +82,26 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
     isError: isBlockHeightError,
   } = useQuery(latestBlockHeightQuery(squidSdk, url, PARACHAIN_BLOCK_TIME / 2))
 
-  const status = useBlockHeightStatus(blockHeight ?? null)
+  const { blockDiffText, statusText, color } = useBlockHeightStatus(
+    blockHeight ?? null,
+  )
 
   const { renameSquid } = useSquidListStore()
 
   if (isEdit) {
     return (
-      <SSquidListItem data-edit="true">
+      <SSquidIndexerListItem data-edit="true">
         <ListItemEditForm
           name={name}
           onClose={() => setIsEdit(false)}
           onSubmit={(newName) => renameSquid(url, newName)}
         />
-      </SSquidListItem>
+      </SSquidIndexerListItem>
     )
   }
 
   return (
-    <SSquidListItem
+    <SSquidIndexerListItem
       blocked={isBlockHeightLoading || isBlockHeightError}
       onClick={() => onClick?.(url)}
       isInteractive={!!onClick || !!onRemove}
@@ -118,7 +124,7 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
         {isBlockHeightLoading ? (
           <Spinner size="xs" />
         ) : (
-          <Text fs="p5" fw={600} color={getToken("text.high")} align="right">
+          <Text fs="p5" fw={600} align="center" color={getToken("text.high")}>
             {t("number", {
               value: blockHeight,
             })}
@@ -131,9 +137,23 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
         justify="end"
         align="center"
       >
-        <Text fs="p5" align="right" color={getToken(status.color)}>
-          {status.text}
-        </Text>
+        <Stack gap="xs">
+          <Text
+            fs="p5"
+            fw={600}
+            align="right"
+            color={getToken(color)}
+            transform="uppercase"
+          >
+            {statusText}
+          </Text>
+          {blockDiffText && (
+            <Text fs="p6" fw={500} align="right" color={getToken(color)}>
+              {blockDiffText}
+            </Text>
+          )}
+        </Stack>
+
         {isCustom && !!onRemove && (
           <>
             <Tooltip text={t("remove")} asChild side="top">
@@ -166,6 +186,6 @@ export const SquidListItem: React.FC<SquidListItemProps> = ({
           </Box>
         )}
       </Flex>
-    </SSquidListItem>
+    </SSquidIndexerListItem>
   )
 }

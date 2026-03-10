@@ -8,7 +8,7 @@ import { useRpcsStatus } from "@/api/rpc"
 import {
   RpcListHeader,
   RpcListItem,
-} from "@/components/ProviderRpcSelect/components/RpcListItem"
+} from "@/components/DataProviderSelect/components/rpc/RpcListItem"
 import { unsubscribeAllTxs } from "@/modules/transactions/utils/subscriptions"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore, useRpcListStore } from "@/states/provider"

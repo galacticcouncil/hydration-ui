@@ -1,16 +1,20 @@
 import {
-  Box,
   Flex,
   ModalBody,
+  Separator,
   Spinner,
+  Stack,
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { useActiveProviderProps } from "@/api/provider"
-import { RpcList } from "@/components/ProviderRpcSelect/components/RpcList"
-import { RpcListItemActive } from "@/components/ProviderRpcSelect/components/RpcListItem"
+import { RpcList } from "@/components/DataProviderSelect/components/rpc/RpcList"
+import {
+  RpcListHeader,
+  RpcListItemActive,
+} from "@/components/DataProviderSelect/components/rpc/RpcListItem"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
@@ -24,16 +28,17 @@ export const RpcListModalContent = () => {
     return (
       <ModalBody>
         {isLoaded && activeProvider ? (
-          <Box
+          <Stack
             bg={getToken("surfaces.containers.dim.dimOnBg")}
             borderRadius="m"
-            p="s"
           >
+            <RpcListHeader />
+            <Separator />
             <RpcListItemActive
               url={activeProvider.url}
               name={activeProvider.name}
             />
-          </Box>
+          </Stack>
         ) : (
           <Flex align="center" justify="center" gap="base" p="base" height={64}>
             <Spinner size="s" />

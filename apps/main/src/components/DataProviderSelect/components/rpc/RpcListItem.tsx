@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { PingResponse } from "@galacticcouncil/utils"
+import { getHostnameFromUrl, PingResponse } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -17,9 +17,9 @@ import { isNumber } from "remeda"
 
 import { bestNumberQuery } from "@/api/chain"
 import { useRpcStatus } from "@/api/rpc"
-import { ListItemEditForm } from "@/components/ProviderRpcSelect/components/ListItemEditForm"
-import { RpcRemoveModal } from "@/components/ProviderRpcSelect/components/RpcRemoveModal"
-import { RpcStatus } from "@/components/ProviderRpcSelect/components/RpcStatus"
+import { ListItemEditForm } from "@/components/DataProviderSelect/components/ListItemEditForm"
+import { RpcRemoveModal } from "@/components/DataProviderSelect/components/rpc/RpcRemoveModal"
+import { RpcStatus } from "@/components/DataProviderSelect/components/rpc/RpcStatus"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useRpcListStore } from "@/states/provider"
 
@@ -107,7 +107,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
           display={["block", "none"]}
           color={getToken("text.medium")}
         >
-          {new URL(url).hostname}
+          {getHostnameFromUrl(url)}
         </Text>
       </Box>
       <Box>

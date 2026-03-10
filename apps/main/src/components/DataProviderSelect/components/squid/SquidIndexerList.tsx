@@ -1,17 +1,19 @@
 import { Stack, VirtualizedList } from "@galacticcouncil/ui/components"
 
 import {
-  SquidListHeader,
-  SquidListItem,
-} from "@/components/ProviderRpcSelect/components/SquidListItem"
-import { useFullSquidUrlList } from "@/components/ProviderRpcSelect/ProviderRpcSelect.utils"
+  SquidIndexerListHeader,
+  SquidIndexerListItem,
+} from "@/components/DataProviderSelect/components/squid/SquidIndexerListItem"
+import { useFullSquidUrlList } from "@/components/DataProviderSelect/DataProviderSelect.utils"
 import { useProviderRpcUrlStore, useSquidListStore } from "@/states/provider"
 
-export type SquidListProps = {
+export type SquidIndexerListProps = {
   className?: string
 }
 
-export const SquidList: React.FC<SquidListProps> = ({ className }) => {
+export const SquidIndexerList: React.FC<SquidIndexerListProps> = ({
+  className,
+}) => {
   const { removeSquid } = useSquidListStore()
   const { squidUrl, setSquidUrl } = useProviderRpcUrlStore()
 
@@ -19,13 +21,13 @@ export const SquidList: React.FC<SquidListProps> = ({ className }) => {
 
   return (
     <Stack className={className}>
-      <SquidListHeader />
+      <SquidIndexerListHeader />
       <VirtualizedList
         items={urlList}
         maxVisibleItems={5}
         itemSize={56}
         renderItem={(props) => (
-          <SquidListItem
+          <SquidIndexerListItem
             {...props}
             isActive={squidUrl === props.url}
             onClick={setSquidUrl}

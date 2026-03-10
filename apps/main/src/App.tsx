@@ -12,8 +12,8 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { I18nextProvider } from "react-i18next"
 import { Toaster } from "sonner"
 
+import { DataProviderResolver } from "@/components/DataProviderSelect/DataProviderResolver"
 import { Page404 } from "@/components/Page404"
-import { ProvideRpcResolver } from "@/components/ProviderRpcSelect/ProviderRpcResolver"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
 
@@ -63,14 +63,14 @@ export const App = () => {
   return (
     <I18nextProvider i18n={i18n}>
       <QueryClientProvider client={queryClient}>
-        <ProvideRpcResolver>
+        <DataProviderResolver>
           <ThemeProvider>
             <TooltipProvider delayDuration={0}>
               <RouterProvider router={router} />
               <Toaster />
             </TooltipProvider>
           </ThemeProvider>
-        </ProvideRpcResolver>
+        </DataProviderResolver>
       </QueryClientProvider>
     </I18nextProvider>
   )

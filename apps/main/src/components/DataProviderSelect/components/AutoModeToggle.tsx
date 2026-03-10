@@ -2,7 +2,7 @@ import { Box, Flex, Text, Toggle } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-export const RpcAutoModeToggle: React.FC<
+export const AutoModeToggle: React.FC<
   React.ComponentPropsWithoutRef<typeof Toggle>
 > = (props) => {
   const { t } = useTranslation("common")
