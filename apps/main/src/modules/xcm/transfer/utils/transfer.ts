@@ -16,8 +16,25 @@ import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { XCM_BRIDGE_TAGS, XcmTags } from "@/states/transactions"
+import { XCM_BRIDGE_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
+
+/**
+ * Bridge provider tags in priority order (InstaBridge first as the faster option).
+ */
+export const BRIDGE_PROVIDER_TAGS = [
+  XcmTag.InstaBridge,
+  XcmTag.Wormhole,
+  XcmTag.Snowbridge,
+] as const
+
+/**
+ * Returns the primary bridge provider tag for a given route.
+ */
+export const getPrimaryBridgeTag = (route: AssetRoute): string | null => {
+  const tags = (route.tags ?? []) as string[]
+  return BRIDGE_PROVIDER_TAGS.find((tag) => tags.includes(tag)) ?? null
+}
 
 export enum XcmTransferStatus {
   Default = "DEFAULT",
@@ -78,7 +95,8 @@ export const getXcmTransferArgs = (
   account: Account | null,
   values: XcmFormValues,
 ): XcmTransferArgs => {
-  const { srcChain, srcAsset, destChain, destAsset, destAddress } = values
+  const { srcChain, srcAsset, destChain, destAsset, destAddress, bridgeProvider } =
+    values
   const isValidPair =
     srcChain && srcAsset
       ? srcChain.assetsData.values().some((a) => a.asset.key === srcAsset.key)
@@ -98,6 +116,7 @@ export const getXcmTransferArgs = (
       : "",
     destAsset: isValidAsset ? destAsset.key : "",
     destChain: destChain?.key ?? "",
+    bridgeTag: bridgeProvider ?? undefined,
   }
 }
 
