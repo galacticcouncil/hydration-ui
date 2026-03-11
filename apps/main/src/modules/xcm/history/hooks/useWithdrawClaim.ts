@@ -25,7 +25,7 @@ export function useWithdrawClaim(journey: XcJourney) {
   const chain = resolveChainFromUrn(journey.destination)
   const chainName = chain?.name ?? ""
 
-  const asset = getTransferAsset(journey.assets)
+  const asset = getTransferAsset(journey)
 
   const value = asset ? toDecimal(asset.amount, asset.decimals) : ""
   const symbol = asset?.symbol ?? ""

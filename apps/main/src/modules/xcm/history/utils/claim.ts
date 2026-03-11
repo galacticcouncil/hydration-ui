@@ -42,7 +42,7 @@ export function isJourneyClaimable(journey: XcJourney): boolean {
   const toChain = resolveChainFromUrn(journey.destination)
   if (!toChain) return false
 
-  const asset = getTransferAsset(journey.assets)
+  const asset = getTransferAsset(journey)
   if (!asset) return false
 
   const isBlacklisted =
@@ -96,9 +96,9 @@ export function resolveChainFromUrn(
   const chain = chainsMap.values().find((c) => {
     switch (ecosystem) {
       case ChainEcosystem.Ethereum:
-        return isEvmChain(c) && c.id === chainId
+        return isEvmChain(c) && c.id === Number(chainId)
       case ChainEcosystem.Solana:
-        return isSolanaChain(c) && c.id === chainId
+        return isSolanaChain(c) && c.id === Number(chainId)
       default:
         return false
     }

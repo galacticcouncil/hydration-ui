@@ -84,7 +84,7 @@ export const useXcScanHistoryColumns = () => {
       id: XcScanHistoryTableColumnId.Assets,
       header: t("asset"),
       cell: ({ row }) => {
-        const transferAsset = getTransferAsset(row.original.assets)
+        const transferAsset = getTransferAsset(row.original)
 
         if (!transferAsset) return null
 

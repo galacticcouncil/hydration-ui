@@ -36,7 +36,6 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const {
     origin,
     destination,
-    assets,
     sentAt,
     correlationId,
     status,
@@ -51,7 +50,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
 
   const originNetwork = resolveNetwork(origin)
   const destinationNetwork = resolveNetwork(destination)
-  const transferAsset = getTransferAsset(assets)
+  const transferAsset = getTransferAsset(journey)
 
   const link = xcscan.tx(correlationId)
 
