@@ -37,7 +37,7 @@ export const ClaimButton: React.FC<ClaimButtonProps> = ({ journey }) => {
   const { mutate, isPending, isWaitingForSignature, error, reset } =
     useWithdrawClaim(journey)
 
-  const transferAsset = getTransferAsset(journey.assets)
+  const transferAsset = getTransferAsset(journey)
 
   return (
     <>

@@ -21,7 +21,7 @@ export const ClaimableNotification: FC<ClaimableNotificationProps> = ({
     new Date(journey.sentAt ?? journey.createdAt),
   )
 
-  const asset = getTransferAsset(journey.assets)
+  const asset = getTransferAsset(journey)
   const chain = resolveChainFromUrn(journey.destination)
 
   return (
