@@ -8,6 +8,7 @@ import {
   xcmTransferQuery,
   xcmTransferReportQuery,
 } from "@/api/xcm"
+import { ENV } from "@/config/env"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { getXcmTransferArgs } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -33,7 +34,7 @@ export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
         transfer ?? null,
         values.srcAmount,
         transferArgs,
-        form.formState.isValid,
+        form.formState.isValid && ENV.VITE_DRY_RUN_ENABLED,
       ),
     ],
   })
