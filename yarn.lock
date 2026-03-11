@@ -2089,17 +2089,17 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@0.17.0-pr294-9b91595":
-  version "0.17.0-pr294-9b91595"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.17.0-pr294-9b91595.tgz#8af1206f34ff5d03ff3b0c78f78bd334243b08bb"
-  integrity sha512-BFZu7AbMsUUmUS8TCJeTxQAuj6PAEJMbwIRsYkD7X2QOIalkjPT0krmLLsCZgvoWJgkXosw7KYRXXOZGWP9AuA==
+"@galacticcouncil/xc-cfg@0.17.0-pr294-e720946":
+  version "0.17.0-pr294-e720946"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.17.0-pr294-e720946.tgz#2a0329324ff7e9fb2631d80944a597ed5fd18c3d"
+  integrity sha512-I0kgjIEbRaqwsa7YqTcuMWG97QHm8wjZtT86bPwVJK5Z9gf+AMcVTvkPGSJCKJiICP53ldSQwnWxck2FLk6LEw==
   dependencies:
-    "@galacticcouncil/xc-core" "0.13.0-pr294-9b91595"
+    "@galacticcouncil/xc-core" "0.13.0-pr294-e720946"
 
-"@galacticcouncil/xc-core@0.13.0-pr294-9b91595":
-  version "0.13.0-pr294-9b91595"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.13.0-pr294-9b91595.tgz#34494c679b0a671eaa2bca850e828f6a822c1e18"
-  integrity sha512-PrXdPlGOkfOxsgm4u3YUsCRtSSVlFgoRyEBO3NCzsjTyZz7gDv4zhZBbyw47yyzsCJl3fw7xCt/0Nkgphqsu5g==
+"@galacticcouncil/xc-core@0.13.0-pr294-e720946":
+  version "0.13.0-pr294-e720946"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.13.0-pr294-e720946.tgz#38854c852542b91cddc6607a62c10eab852e90c0"
+  integrity sha512-zmi73ZDcHQ47Fmouaw3jGDKM55RUt1N7OAiJm3xXJgyiu+OBlW4rhWQlOPQgOEkIrEhBAx8H59YZDlFIfGwW9Q==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -2120,12 +2120,12 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.3.0.tgz#662bb011c53f056c230d1d1057d31b94424758f7"
   integrity sha512-onH/zcGdA5JQx/tE7fcnhMUwosPnGflkJgcujgKeyuJPL15onvMPPKlDzvvNnUN8clfnefRtmEY9SNPo4md9uw==
 
-"@galacticcouncil/xc-sdk@0.8.1-pr294-9b91595":
-  version "0.8.1-pr294-9b91595"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.8.1-pr294-9b91595.tgz#8dcc682d77f0f01ae9d34273e371d1f57d6cbc32"
-  integrity sha512-mpgtAiirejOx+GXmYK/C/L6T02kL40LZcP7MlHQjMaECAJweMCIAoHHlV6BYlJZmrUEENE7BaTCwSPmrl6qfOw==
+"@galacticcouncil/xc-sdk@0.8.1-pr294-e720946":
+  version "0.8.1-pr294-e720946"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.8.1-pr294-e720946.tgz#ddc4dd912df6a0f219e69c76ed88d6624422fe2f"
+  integrity sha512-ij5wrXIl3woKGPpBiYdB9r9QI+Q2G2+Dv4zOVChos35v5bVt/BhP0Xg2mcuXm35xu9vO44RCwBxMK+Nr9WuQ1g==
   dependencies:
-    "@galacticcouncil/xc-core" "0.13.0-pr294-9b91595"
+    "@galacticcouncil/xc-core" "0.13.0-pr294-e720946"
 
 "@galacticcouncil/xc@^0.4.0":
   version "0.4.0"
