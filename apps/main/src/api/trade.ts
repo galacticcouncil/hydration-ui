@@ -5,6 +5,7 @@ import Big from "big.js"
 
 import { papiDryRunErrorQuery } from "@/api/dryRun"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
+import { ENV } from "@/config/env"
 import {
   DcaFormValues,
   DcaOrdersMode,
@@ -117,7 +118,7 @@ export const bestSellWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx, bestSellArgs.debug),
             )
@@ -231,7 +232,7 @@ export const bestSellTwapWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx),
             )
@@ -336,7 +337,7 @@ export const bestBuyWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx, bestBuyArgs.debug),
             )
@@ -450,7 +451,7 @@ export const bestBuyTwapWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx),
             )
@@ -571,7 +572,7 @@ export const dcaTradeOrderQuery = (
         : null
 
       const dryRunError =
-        orderTx && dryRun
+        orderTx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, orderTx),
             )

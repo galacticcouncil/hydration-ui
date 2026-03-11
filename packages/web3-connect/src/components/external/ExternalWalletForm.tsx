@@ -41,7 +41,7 @@ export const ExternalWalletForm: React.FC<ExternalWalletFormProps> = ({
 
     if (!isExternalWallet) return
 
-    wallet.setAccount(values.address)
+    wallet.setAccount(values.address, true)
     await enable(WalletProviderType.ExternalWallet)
 
     const accounts = await wallet.getAccounts()
