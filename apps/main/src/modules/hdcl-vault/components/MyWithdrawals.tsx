@@ -2,11 +2,11 @@ import { Flex, SectionHeader, TableRowAction, Text } from "@galacticcouncil/ui/c
 import { getToken } from "@galacticcouncil/ui/utils"
 
 import { formatNumber, formatDays, formatDate } from "../utils/format"
-import { SContentCard, STableHeader, STableRow } from "../WdclVault.styled"
+import { SContentCard, STableHeader, STableRow } from "../HdclVault.styled"
 
 interface Withdrawal {
   id: number
-  amountWdcl: number
+  amountHdcl: number
   estHollar: number
   requestedDate: Date
   maxTimeRemainingDays: number
@@ -42,11 +42,11 @@ export const MyWithdrawals = ({ withdrawals, exchangeRate, apr, onCancelRedeem, 
         {withdrawals.map((w) => (
           <STableRow key={w.id} css={{ gridTemplateColumns: GRID, gap: 12 }}>
             <Flex gap={4} align="baseline">
-              <Text fs="p4" fw={500} color={getToken("text.high")}>{formatNumber(w.amountWdcl, 0)}</Text>
-              <Text fs="p6" color={getToken("text.low")}>wDCL</Text>
+              <Text fs="p4" fw={500} color={getToken("text.high")}>{formatNumber(w.amountHdcl, 0)}</Text>
+              <Text fs="p6" color={getToken("text.low")}>HDCL</Text>
             </Flex>
             <Flex gap={4} align="baseline">
-              <Text fs="p4" fw={500} color={getToken("text.high")}>{formatNumber(w.amountWdcl * projectRate(exchangeRate, apr, w.maxTimeRemainingDays), 2)}</Text>
+              <Text fs="p4" fw={500} color={getToken("text.high")}>{formatNumber(w.amountHdcl * projectRate(exchangeRate, apr, w.maxTimeRemainingDays), 2)}</Text>
               <Text fs="p6" color={getToken("text.low")}>HOLLAR</Text>
             </Flex>
             <Text fs="p4" color={getToken("text.medium")}>{formatDate(w.requestedDate)}</Text>

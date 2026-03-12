@@ -40,7 +40,7 @@ function useVaultEvmCall() {
         { tx: evmCall, toasts },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["wdcl-vault"] })
+            queryClient.invalidateQueries({ queryKey: ["hdcl-vault"] })
           },
         },
       )
@@ -95,17 +95,17 @@ export function useRequestRedeem() {
   const { submitTx } = useVaultEvmCall()
 
   return useMutation({
-    mutationFn: (wdclAmount: number) => {
+    mutationFn: (hdclAmount: number) => {
       const data = encodeFunctionData({
         abi: VAULT_ABI,
         functionName: "requestRedeem",
-        args: [parseUnits(wdclAmount.toString(), 18)],
+        args: [parseUnits(hdclAmount.toString(), 18)],
       })
 
-      const fmt = formatNumber(wdclAmount, 2)
+      const fmt = formatNumber(hdclAmount, 2)
       return submitTx(VAULT_ADDRESS, data, [...VAULT_ABI], {
-        submitted: `Requesting ${fmt} wDCL withdrawal...`,
-        success: `${fmt} wDCL withdrawal requested`,
+        submitted: `Requesting ${fmt} HDCL withdrawal...`,
+        success: `${fmt} HDCL withdrawal requested`,
       })
     },
   })

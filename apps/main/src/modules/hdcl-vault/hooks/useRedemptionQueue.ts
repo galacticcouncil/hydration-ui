@@ -6,9 +6,9 @@ import { VAULT_ADDRESS, VAULT_ABI, vaultEvmClient } from "../constants"
 export interface QueueEntry {
   requestId: number
   user: string
-  wdclAmount: number
-  wdclFulfilled: number
-  wdclRemaining: number
+  hdclAmount: number
+  hdclFulfilled: number
+  hdclRemaining: number
   active: boolean
   isUser: boolean
   estTimeRemainingDays: number
@@ -16,7 +16,7 @@ export interface QueueEntry {
 
 export interface WithdrawalRequest {
   id: number
-  amountWdcl: number
+  amountHdcl: number
   estHollar: number
   requestedDate: Date
   maxTimeRemainingDays: number
@@ -24,7 +24,7 @@ export interface WithdrawalRequest {
 
 export function useRedemptionQueue(evmAddress: Hex | undefined) {
   return useQuery({
-    queryKey: ["wdcl-vault-queue", evmAddress],
+    queryKey: ["hdcl-vault-queue", evmAddress],
     queryFn: async () => {
       const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
 
@@ -36,7 +36,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
 
       const queueLength = Number(length)
       const queueHead = Number(head)
-      const totalQueuedWdcl = Number(formatUnits(totalQueued, 18))
+      const totalQueuedHdcl = Number(formatUnits(totalQueued, 18))
 
       const entries: QueueEntry[] = []
       const addr = evmAddress?.toLowerCase()
@@ -47,16 +47,16 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
           vault.read.getEstimatedWaitTime([BigInt(i)]),
         ])
 
-        const [user, wdclAmount, wdclFulfilled, active] = reqResult
+        const [user, hdclAmount, hdclFulfilled, active] = reqResult
         if (!active) continue
 
-        const remaining = Number(formatUnits(wdclAmount - wdclFulfilled, 18))
+        const remaining = Number(formatUnits(hdclAmount - hdclFulfilled, 18))
         entries.push({
           requestId: i,
           user,
-          wdclAmount: Number(formatUnits(wdclAmount, 18)),
-          wdclFulfilled: Number(formatUnits(wdclFulfilled, 18)),
-          wdclRemaining: remaining,
+          hdclAmount: Number(formatUnits(hdclAmount, 18)),
+          hdclFulfilled: Number(formatUnits(hdclFulfilled, 18)),
+          hdclRemaining: remaining,
           active,
           isUser: addr ? user.toLowerCase() === addr : false,
           estTimeRemainingDays: Math.ceil(Number(waitResult) / 86400),
@@ -67,8 +67,8 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
         .filter((e) => e.isUser)
         .map((e) => ({
           id: e.requestId,
-          amountWdcl: e.wdclRemaining,
-          estHollar: e.wdclRemaining,
+          amountHdcl: e.hdclRemaining,
+          estHollar: e.hdclRemaining,
           requestedDate: new Date(),
           maxTimeRemainingDays: e.estTimeRemainingDays,
         }))
@@ -76,7 +76,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
       return {
         queue: entries,
         myWithdrawals,
-        totalQueuedWdcl,
+        totalQueuedHdcl,
       }
     },
     refetchInterval: 30_000,
