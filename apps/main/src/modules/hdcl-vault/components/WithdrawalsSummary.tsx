@@ -2,7 +2,7 @@ import { Flex, SectionHeader, Separator, Text } from "@galacticcouncil/ui/compon
 import { getToken } from "@galacticcouncil/ui/utils"
 
 import { formatNumber } from "../utils/format"
-import { SContentCard, SClickableRow } from "../WdclVault.styled"
+import { SContentCard, SClickableRow } from "../HdclVault.styled"
 
 interface Props {
   myWithdrawalsHollar: number

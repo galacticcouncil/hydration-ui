@@ -15,7 +15,7 @@ import { useApproveHollar, useCancelRedeem, useDeposit, useRequestRedeem } from 
 import { usePositions } from "./hooks/usePositions"
 import { useRedemptionQueue } from "./hooks/useRedemptionQueue"
 
-export const WdclVaultPage = () => {
+export const HdclVaultPage = () => {
   const { account } = useAccount()
   const [showQueue, setShowQueue] = useState(false)
   const [showPositions, setShowPositions] = useState(false)
@@ -54,11 +54,11 @@ export const WdclVaultPage = () => {
     apr: 18,
   }
 
-  const userBalances = balances ?? { hollar: 0, wdcl: 0 }
+  const userBalances = balances ?? { hollar: 0, hdcl: 0 }
   const allowance = allowanceData ?? 0
   const queue = queueData?.queue ?? []
   const myWithdrawals = queueData?.myWithdrawals ?? []
-  const totalQueuedWdcl = queueData?.totalQueuedWdcl ?? 0
+  const totalQueuedHdcl = queueData?.totalQueuedHdcl ?? 0
   const positionsList = positions ?? []
 
   return (
@@ -77,7 +77,7 @@ export const WdclVaultPage = () => {
         <Flex direction="column" gap={20}>
           <WithdrawalsSummary
             myWithdrawalsHollar={myWithdrawals.reduce((s, w) => s + w.estHollar, 0)}
-            totalWithdrawalsHollar={totalQueuedWdcl * stats.exchangeRate}
+            totalWithdrawalsHollar={totalQueuedHdcl * stats.exchangeRate}
             onToggleMyWithdrawals={() => setShowMyWithdrawals(!showMyWithdrawals)}
             onShowQueue={() => setShowQueue(true)}
           />

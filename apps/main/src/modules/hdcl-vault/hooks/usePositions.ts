@@ -16,7 +16,7 @@ export interface Position {
 
 export function usePositions() {
   return useQuery({
-    queryKey: ["wdcl-vault-positions"],
+    queryKey: ["hdcl-vault-positions"],
     queryFn: async () => {
       const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
 

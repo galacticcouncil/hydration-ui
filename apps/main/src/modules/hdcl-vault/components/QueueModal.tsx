@@ -3,7 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 
 import type { QueueEntry } from "../hooks/useRedemptionQueue"
 import { formatNumber, formatDays } from "../utils/format"
-import { SModalBackdrop, SModalContent, STableHeader, STableRow } from "../WdclVault.styled"
+import { SModalBackdrop, SModalContent, STableHeader, STableRow } from "../HdclVault.styled"
 
 interface Props {
   queue: QueueEntry[]
@@ -54,7 +54,7 @@ export const QueueModal = ({ queue, onClose }: Props) => {
           >
             <Text fs="p4" fw={500} color={getToken("text.high")}>{idx + 1}</Text>
             <Flex gap={4} align="baseline">
-              <Text fs="p4" fw={500} color={getToken("text.high")}>{formatNumber(entry.wdclRemaining, 0)}</Text>
+              <Text fs="p4" fw={500} color={getToken("text.high")}>{formatNumber(entry.hdclRemaining, 0)}</Text>
               <Text fs="p6" color={getToken("text.low")}>HOLLAR</Text>
             </Flex>
             <Text fs="p4" color={getToken("text.medium")} css={{ textAlign: "right" }}>

@@ -2,7 +2,7 @@ import { Flex, SectionHeader, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 
 import { formatNumber, formatDays, formatDate } from "../utils/format"
-import { SContentCard, STableHeader, STableRow } from "../WdclVault.styled"
+import { SContentCard, STableHeader, STableRow } from "../HdclVault.styled"
 
 interface HistoryEntry {
   id: number

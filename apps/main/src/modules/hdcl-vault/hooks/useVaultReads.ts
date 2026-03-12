@@ -5,7 +5,7 @@ import { VAULT_ADDRESS, HOLLAR_ADDRESS, VAULT_ABI, ERC20_ABI, vaultEvmClient } f
 
 export function useVaultStats() {
   return useQuery({
-    queryKey: ["wdcl-vault-stats"],
+    queryKey: ["hdcl-vault-stats"],
     queryFn: async () => {
       const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
 
@@ -40,22 +40,22 @@ export function useVaultStats() {
 
 export function useUserBalances(evmAddress: Hex | undefined) {
   return useQuery({
-    queryKey: ["wdcl-vault-balances", evmAddress],
+    queryKey: ["hdcl-vault-balances", evmAddress],
     enabled: !!evmAddress,
     queryFn: async () => {
-      if (!evmAddress) return { hollar: 0, wdcl: 0 }
+      if (!evmAddress) return { hollar: 0, hdcl: 0 }
 
       const hollarToken = getContract({ address: HOLLAR_ADDRESS, abi: ERC20_ABI, client: vaultEvmClient })
       const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
 
-      const [hollarBal, wdclBal] = await Promise.all([
+      const [hollarBal, hdclBal] = await Promise.all([
         hollarToken.read.balanceOf([evmAddress]),
         vault.read.balanceOf([evmAddress]),
       ])
 
       return {
         hollar: Number(formatUnits(hollarBal, 18)),
-        wdcl: Number(formatUnits(wdclBal, 18)),
+        hdcl: Number(formatUnits(hdclBal, 18)),
       }
     },
     refetchInterval: 15_000,
@@ -64,7 +64,7 @@ export function useUserBalances(evmAddress: Hex | undefined) {
 
 export function useHollarAllowance(evmAddress: Hex | undefined) {
   return useQuery({
-    queryKey: ["wdcl-vault-allowance", evmAddress],
+    queryKey: ["hdcl-vault-allowance", evmAddress],
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return 0

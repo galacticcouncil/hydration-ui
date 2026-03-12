@@ -71,7 +71,7 @@ export const STokenPill = styled(Box)(
   `,
 )
 
-export const STokenIcon = styled(Box)<{ variant: "hollar" | "wdcl" }>(
+export const STokenIcon = styled(Box)<{ variant: "hollar" | "hdcl" }>(
   ({ variant }) => css`
     width: 24px;
     height: 24px;

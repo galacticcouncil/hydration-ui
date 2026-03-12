@@ -3,7 +3,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 
 import type { Position } from "../hooks/usePositions"
 import { formatNumber, formatDays } from "../utils/format"
-import { SModalBackdrop, SModalContent, STableHeader, STableRow } from "../WdclVault.styled"
+import { SModalBackdrop, SModalContent, STableHeader, STableRow } from "../HdclVault.styled"
 
 interface Props {
   positions: Position[]
