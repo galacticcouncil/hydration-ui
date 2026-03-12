@@ -16,6 +16,7 @@ import { DataProviderResolver } from "@/components/DataProviderSelect/DataProvid
 import { Page404 } from "@/components/Page404"
 import { RouteError } from "@/components/RouteError"
 import i18n from "@/i18n"
+import { TurnkeyProviderWrapper } from "@/providers/turnkeyProvider"
 
 import { routeTree } from "./routeTree.gen"
 
@@ -61,18 +62,20 @@ declare module "@tanstack/react-router" {
 
 export const App = () => {
   return (
-    <I18nextProvider i18n={i18n}>
-      <QueryClientProvider client={queryClient}>
-        <DataProviderResolver>
-          <ThemeProvider>
-            <TooltipProvider delayDuration={0}>
-              <RouterProvider router={router} />
-              <Toaster />
-            </TooltipProvider>
-          </ThemeProvider>
-        </DataProviderResolver>
-      </QueryClientProvider>
-    </I18nextProvider>
+    <TurnkeyProviderWrapper>
+      <I18nextProvider i18n={i18n}>
+        <QueryClientProvider client={queryClient}>
+          <DataProviderResolver>
+            <ThemeProvider>
+              <TooltipProvider delayDuration={0}>
+                <RouterProvider router={router} />
+                <Toaster />
+              </TooltipProvider>
+            </ThemeProvider>
+          </DataProviderResolver>
+        </QueryClientProvider>
+      </I18nextProvider>
+    </TurnkeyProviderWrapper>
   )
 }
 

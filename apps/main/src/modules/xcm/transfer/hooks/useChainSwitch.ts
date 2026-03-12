@@ -1,4 +1,5 @@
 import { useAccount } from "@galacticcouncil/web3-connect"
+import { WalletProviderType } from "@galacticcouncil/web3-connect/src/config/providers"
 import { useCallback } from "react"
 import { useFormContext } from "react-hook-form"
 
@@ -17,8 +18,11 @@ export const useChainSwitch = () => {
     const newDestChain = srcChain
     const newDestAsset = srcAsset
 
+    const isTurnkey = account?.provider === WalletProviderType.Turnkey
     const isAccountValidForDest =
-      !!newDestChain && isAccountValidOnChain(account, newDestChain)
+      !isTurnkey &&
+      !!newDestChain &&
+      isAccountValidOnChain(account, newDestChain)
 
     form.reset({
       srcChain: newSrcChain,
