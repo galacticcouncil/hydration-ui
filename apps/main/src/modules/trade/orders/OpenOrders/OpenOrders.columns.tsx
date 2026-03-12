@@ -19,7 +19,8 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData, OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import { RemoveIntentModalContent } from "@/modules/trade/orders/RemoveIntentModalContent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const columnHelper = createColumnHelper<OrderData>()
@@ -32,10 +33,12 @@ export const useOpenOrdersColumns = () => {
     const fromToColumn = columnHelper.display({
       header: t("trade:trade.orders.openOrders.inOut"),
       cell: ({ row }) => {
+        const isLimit = row.original.kind === OrderKind.Limit
         return (
           <SwapAmount
             fromAmount={row.original.fromAmountBudget}
             from={row.original.from}
+            toAmount={isLimit ? row.original.toAmountExecuted : null}
             to={row.original.to}
             showLogo
           />
@@ -59,11 +62,13 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const { from, to, fromAmountExecuted, fromAmountBudget, toAmountExecuted } =
+          row.original
 
+        const amountIn = fromAmountExecuted ?? fromAmountBudget
         const price =
-          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
-            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
+          toAmountExecuted && amountIn && Big(toAmountExecuted).gt(0)
+            ? Big(amountIn).div(toAmountExecuted).toString()
             : null
 
         return <SwapPrice from={from} to={to} price={price} />
@@ -96,6 +101,7 @@ export const useOpenOrdersColumns = () => {
       id: "actions",
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<"confirmation" | "none">("none")
+        const isLimit = row.original.kind === OrderKind.Limit
 
         return (
           <Flex align="center" gap="base">
@@ -111,18 +117,27 @@ export const useOpenOrdersColumns = () => {
             >
               <Icon component={Trash} size="s" />
             </Button>
-            <TableRowDetailsExpand />
+            {!isLimit && <TableRowDetailsExpand />}
             <Modal
               open={modal === "confirmation"}
               onOpenChange={() => setModal("none")}
             >
-              <TerminateDcaScheduleModalContent
-                scheduleId={row.original.scheduleId}
-                sold={row.original.fromAmountExecuted}
-                total={row.original.fromAmountBudget}
-                symbol={row.original.from.symbol}
-                onClose={() => setModal("none")}
-              />
+              {isLimit && row.original.intentId !== undefined ? (
+                <RemoveIntentModalContent
+                  intentId={row.original.intentId}
+                  fromAmount={row.original.fromAmountBudget}
+                  symbol={row.original.from.symbol}
+                  onClose={() => setModal("none")}
+                />
+              ) : (
+                <TerminateDcaScheduleModalContent
+                  scheduleId={row.original.scheduleId}
+                  sold={row.original.fromAmountExecuted}
+                  total={row.original.fromAmountBudget}
+                  symbol={row.original.from.symbol}
+                  onClose={() => setModal("none")}
+                />
+              )}
             </Modal>
           </Flex>
         )

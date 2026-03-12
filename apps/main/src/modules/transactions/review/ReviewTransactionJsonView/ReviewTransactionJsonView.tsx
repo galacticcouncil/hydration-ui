@@ -14,11 +14,11 @@ import { decodeTx, getTxCallHash } from "./ReviewTransactionJsonView.utils"
 
 export const ReviewTransactionJsonView = () => {
   const { t } = useTranslation("common")
-  const { papiCompatibilityToken } = useRpcProvider()
+  const { papiCompatibilityToken, papiNextCompatibilityToken } = useRpcProvider()
   const { tx, meta } = useTransaction()
 
   const txJson = decodeTx(tx)
-  const txCallHash = getTxCallHash(tx, papiCompatibilityToken)
+  const txCallHash = getTxCallHash(tx, papiCompatibilityToken, papiNextCompatibilityToken)
   const txUrl = usePolkadotJSExtrinsicUrl(tx, meta.srcChainKey)
 
   const isValidTxCallHash = !!txCallHash

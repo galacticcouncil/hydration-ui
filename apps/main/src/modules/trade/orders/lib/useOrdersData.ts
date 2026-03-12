@@ -15,11 +15,13 @@ import { scaleHuman } from "@/utils/formatting"
 
 export enum OrderKind {
   Dca = "dca",
+  Limit = "limit",
 }
 
 export type OrderData = {
   readonly kind: OrderKind
   readonly scheduleId: number
+  readonly intentId?: bigint
   readonly from: TAsset
   readonly fromAmountBudget: string | null
   readonly fromAmountExecuted: string | null

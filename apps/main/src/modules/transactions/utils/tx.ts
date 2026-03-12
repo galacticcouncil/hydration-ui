@@ -81,14 +81,17 @@ export const isValidPapiTxForPermit = (
 
 export const getPapiTransactionCallData = (
   tx: AnyTransaction,
-  papiCompatibilityToken: CompatibilityToken,
+  ...compatibilityTokens: CompatibilityToken[]
 ): string => {
   if (!isPapiTransaction(tx)) return ""
 
-  try {
-    const binary = tx.getEncodedData(papiCompatibilityToken)
-    return isBinary(binary) ? binary.asHex() : ""
-  } catch {
-    return ""
+  for (const token of compatibilityTokens) {
+    try {
+      const binary = tx.getEncodedData(token)
+      if (isBinary(binary)) return binary.asHex()
+    } catch {
+      // try next token
+    }
   }
+  return ""
 }

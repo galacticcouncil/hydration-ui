@@ -5,38 +5,43 @@ export const SPriceMarkerLine = styled.div(
     position: absolute;
     left: 0;
     right: 0;
-
     height: 1px;
     border-top: 1px dashed ${theme.text.high};
-
     pointer-events: none;
     z-index: 1;
   `,
 )
 
+export const SPriceMarkerAnchor = styled.div(
+  () => css`
+    position: absolute;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 2;
+  `,
+)
+
 export const SPriceMarkerTag = styled.div(
   ({ theme }) => css`
-    position: absolute;
-    right: 0;
-    transform: translateY(-50%);
-
-    padding: 4px 8px;
-    border-radius: 4px;
-    border: none;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
     font-weight: 600;
     white-space: nowrap;
-
-    background-color: transparent;
-    color: ${theme.text.high};
-    transition: all 0.2s ease;
-
+    background-color: ${theme.details.values.positive};
+    color: ${theme.text.contrast};
     cursor: pointer;
-    z-index: 2;
+
+    span + span {
+      padding-left: 6px;
+      border-left: 1px solid ${theme.text.contrast}40;
+    }
 
     :hover {
-      background-color: ${theme.text.high};
-      color: ${theme.text.contrast};
+      opacity: 0.85;
     }
   `,
 )

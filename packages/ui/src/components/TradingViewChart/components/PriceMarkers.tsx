@@ -1,8 +1,10 @@
 import { formatNumber } from "@galacticcouncil/utils"
+import { IChartApi } from "lightweight-charts"
 import { FC, useEffect, useState } from "react"
 
 import { Box } from "@/components"
 import {
+  SPriceMarkerAnchor,
   SPriceMarkerLine,
   SPriceMarkerTag,
 } from "@/components/TradingViewChart/components/PriceMarkers.styled"
@@ -11,11 +13,15 @@ import { TradingViewChartSeries } from "@/components/TradingViewChart/utils"
 type PriceMarkersProps = {
   priceLines: Array<number>
   seriesApi: TradingViewChartSeries
+  chartApi: IChartApi
+  label?: string
 }
 
 export const PriceMarkers: FC<PriceMarkersProps> = ({
   priceLines,
   seriesApi,
+  chartApi,
+  label,
 }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [positions, setPositions] = useState<
@@ -44,29 +50,31 @@ export const PriceMarkers: FC<PriceMarkersProps> = ({
 
     const timeout = setTimeout(updatePositions, 100)
 
+    chartApi.timeScale().subscribeVisibleLogicalRangeChange(updatePositions)
+
     return () => {
       clearTimeout(timeout)
+      chartApi.timeScale().unsubscribeVisibleLogicalRangeChange(updatePositions)
     }
-  }, [priceLines, seriesApi])
+  }, [priceLines, seriesApi, chartApi])
 
   return (
     <>
       {positions.map((pos, index) => (
         <Box key={index}>
           {hoveredIndex === index && (
-            <SPriceMarkerLine
-              sx={{
-                top: pos.top,
-              }}
-            />
+            <SPriceMarkerLine style={{ top: pos.top }} />
           )}
-          <SPriceMarkerTag
-            sx={{ top: pos.top }}
+          <SPriceMarkerAnchor
+            style={{ top: pos.top }}
             onMouseEnter={() => setHoveredIndex(index)}
             onMouseLeave={() => setHoveredIndex(null)}
           >
-            {formatNumber(pos.price)}
-          </SPriceMarkerTag>
+            <SPriceMarkerTag>
+              {label && <span>{label}</span>}
+              <span>{formatNumber(pos.price)}</span>
+            </SPriceMarkerTag>
+          </SPriceMarkerAnchor>
         </Box>
       ))}
     </>

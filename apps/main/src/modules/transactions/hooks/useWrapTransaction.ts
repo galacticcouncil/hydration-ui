@@ -9,15 +9,5 @@ export const useWrapTransaction = (
   transaction: SingleTransaction,
 ): SingleTransaction => {
   const { papi } = useRpcProvider()
-  return transaction?.withExtraGas && isPapiTransaction(transaction.tx)
-    ? {
-        ...transaction,
-        tx: papi.tx.Dispatcher.dispatch_with_extra_gas({
-          call: transaction.tx.decodedCall,
-          extra_gas: isBigInt(transaction.withExtraGas)
-            ? transaction.withExtraGas
-            : AAVE_GAS_LIMIT,
-        }),
-      }
-    : transaction
+  return transaction
 }

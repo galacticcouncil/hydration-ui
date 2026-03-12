@@ -871,6 +871,7 @@ export const useIsLiquidityProvided = () => {
   const { positionsAmount } = useAccountPositions()
 
   return useMemo(() => {
+    if (!getAsset) return false
     if (positionsAmount > 0) return true
 
     return Object.values(balances).some((balance) => {
