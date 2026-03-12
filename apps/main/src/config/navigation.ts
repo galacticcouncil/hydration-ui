@@ -51,6 +51,7 @@ export const LINKS = {
   statsFees: "/stats/fees",
   statsAmm: "/stats/amm",
   // memepad: "/memepad",
+  wdclVault: "/wdcl-vault",
   submitTransaction: "/submit-transaction",
 } satisfies Record<string, Route>
 
@@ -150,6 +151,11 @@ export const NAVIGATION: NavigationItem[] = [
       // { key: "statsAmm", to: LINKS.statsAmm },
       { key: "statsFees", to: LINKS.statsFees },
     ],
+  },
+  {
+    key: "wdclVault",
+    to: LINKS.wdclVault,
+    icon: CoinsIcon,
   },
   {
     key: "staking",
@@ -300,6 +306,10 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.statsFees.title"),
       description: "",
     },
+    wdclVault: {
+      title: "wDCL Vault",
+      description: "Invest in the Decentral yield vault",
+    },
     // memepad: {
     //   title: t("navigation.memepad.title"),
     //   description: "",
@@ -339,6 +349,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
   "borrow",
+  "wdclVault",
   "liquidity",
   "wallet",
   "crossChain",
