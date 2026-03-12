@@ -38,7 +38,8 @@ const HYDRATION_RPC_URL =
  */
 function wrapProviderForHydration(provider: EIP1193Provider): EIP1193Provider {
   const originalRequest = provider.request.bind(provider)
-  provider.request = (async (args: { method: string; params?: any[] }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  provider.request = (async (args: any) => {
     switch (args.method) {
       case "wallet_switchEthereumChain":
         return null
