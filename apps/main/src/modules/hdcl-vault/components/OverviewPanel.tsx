@@ -14,7 +14,7 @@ import {
   STokenIcon,
   SArrowToggle,
   SExchangeRatePill,
-} from "../WdclVault.styled"
+} from "../HdclVault.styled"
 
 interface VaultStats {
   totalAssets: number
@@ -28,7 +28,7 @@ interface VaultStats {
 
 interface Balances {
   hollar: number
-  wdcl: number
+  hdcl: number
 }
 
 interface Props {
@@ -64,9 +64,9 @@ export const OverviewPanel = ({
     ? inputNum / vaultStats.exchangeRate
     : inputNum * vaultStats.exchangeRate
 
-  const sellLabel = isInvest ? "HOLLAR" : "wDCL"
-  const buyLabel = isInvest ? "wDCL" : "HOLLAR"
-  const sellBalance = isInvest ? balances.hollar : balances.wdcl
+  const sellLabel = isInvest ? "HOLLAR" : "HDCL"
+  const buyLabel = isInvest ? "HDCL" : "HOLLAR"
+  const sellBalance = isInvest ? balances.hollar : balances.hdcl
 
   const isBelowMin = isInvest && inputNum > 0 && inputNum < vaultStats.minDeposit
 
@@ -92,12 +92,12 @@ export const OverviewPanel = ({
   }
 
   const hollarIcon = <AssetLogo id={HOLLAR_ASSET_ID} size="medium" />
-  const wdclIcon = (
-    <STokenIcon variant="wdcl">w</STokenIcon>
+  const hdclIcon = (
+    <STokenIcon variant="hdcl">H</STokenIcon>
   )
 
-  const sellIcon = isInvest ? hollarIcon : wdclIcon
-  const buyIcon = isInvest ? wdclIcon : hollarIcon
+  const sellIcon = isInvest ? hollarIcon : hdclIcon
+  const buyIcon = isInvest ? hdclIcon : hollarIcon
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value
@@ -110,7 +110,7 @@ export const OverviewPanel = ({
 
   return (
     <div>
-      <SectionHeader title="wDCL Overview" noTopPadding />
+      <SectionHeader title="HDCL Overview" noTopPadding />
 
       <SStickyCard>
         {/* Stats row */}
@@ -256,7 +256,7 @@ export const OverviewPanel = ({
               color={getToken("text.low")}
               css={{ whiteSpace: "nowrap", lineHeight: "120%" }}
             >
-              Balance: {formatNumber(isInvest ? balances.wdcl : balances.hollar, 2)}
+              Balance: {formatNumber(isInvest ? balances.hdcl : balances.hollar, 2)}
             </Text>
           </Flex>
           <Flex align="center" justify="space-between" gap="m" css={{ overflowX: "hidden" }}>
