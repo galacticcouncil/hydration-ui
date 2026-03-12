@@ -6,8 +6,10 @@ import {
   DropletIcon,
   DropletsIcon,
   GemIcon,
+  GlobeIcon,
   Grid2X2Icon,
   HistoryIcon,
+  HydrationLogo,
   Repeat2Icon,
   WalletCardsIcon,
   WavesIcon,
@@ -26,15 +28,18 @@ export const LINKS = {
   pools: "/liquidity",
   swap: "/trade/swap",
   swapMarket: "/trade/swap/market",
+  swapLimit: "/trade/swap/limit",
   swapDca: "/trade/swap/dca",
   wallet: "/wallet",
   walletAssets: "/wallet/assets",
+  walletMultichain: "/wallet/multichain",
   walletTransactions: "/wallet/transactions",
   crossChain: "/cross-chain",
   crossChainHistory: "/cross-chain/history",
   // bridge: "/bridge",
   trade: "/trade",
   otc: "/trade/otc",
+  strategies: "/strategies",
   staking: "/staking",
   // stakingDashboard: "/staking/dashboard",
   // stakingGovernance: "/staking/governance",
@@ -79,11 +84,17 @@ export const NAVIGATION: NavigationItem[] = [
         icon: Repeat2Icon,
         children: [
           { key: "swapMarket", to: LINKS.swapMarket },
+          { key: "swapLimit", to: LINKS.swapLimit },
           { key: "swapDca", to: LINKS.swapDca },
         ],
       },
       { key: "otc", to: LINKS.otc, icon: CoinsIcon },
     ],
+  },
+  {
+    key: "strategies",
+    to: LINKS.strategies,
+    icon: ChartPieIcon,
   },
   {
     key: "borrow",
@@ -121,7 +132,8 @@ export const NAVIGATION: NavigationItem[] = [
     icon: WalletCardsIcon,
     defaultChild: LINKS.walletAssets,
     children: [
-      { key: "walletAssets", to: LINKS.walletAssets },
+      { key: "walletAssets", to: LINKS.walletAssets, icon: HydrationLogo },
+      { key: "walletMultichain", to: LINKS.walletMultichain, icon: GlobeIcon },
       // { key: "walletTransactions", to: LINKS.walletTransactions },
     ],
   },
@@ -192,6 +204,10 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.walletAssets.title"),
       description: "",
     },
+    walletMultichain: {
+      title: t("navigation.walletMultichain.title"),
+      description: "",
+    },
     walletTransactions: {
       title: t("navigation.walletTransactions.title"),
       description: "",
@@ -220,6 +236,10 @@ export const getMenuTranslations = (t: TFunction) =>
       title: t("navigation.swapMarket.title"),
       description: "",
     },
+    swapLimit: {
+      title: t("navigation.swapLimit.title"),
+      description: "",
+    },
     swapDca: {
       title: t("navigation.swapDca.title"),
       description: "",
@@ -227,6 +247,10 @@ export const getMenuTranslations = (t: TFunction) =>
     otc: {
       title: t("navigation.otc.title"),
       description: t("navigation.otc.description"),
+    },
+    strategies: {
+      title: t("navigation.strategies.title"),
+      description: "",
     },
     // stats: {
     //   title: t("navigation.stats.title"),
@@ -338,6 +362,7 @@ export const getPageMeta = (navKey: NavigationKey, t: TFunction) => {
 
 export const topNavOrder: ReadonlyArray<NavigationKey> = [
   "trade",
+  "strategies",
   "borrow",
   "liquidity",
   "wallet",

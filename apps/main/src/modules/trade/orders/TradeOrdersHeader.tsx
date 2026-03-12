@@ -16,6 +16,7 @@ import { useSquidClient } from "@/api/provider"
 import { TabItem, TabMenu } from "@/components/TabMenu"
 import { TabMenuItem } from "@/components/TabMenu/TabMenuItem"
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
+import { useIntentsData } from "@/modules/trade/orders/lib/useIntentsData"
 import { TradeHistorySearchParams } from "@/routes/trade/_history/route"
 
 export const tradeOrderTabs = [
@@ -51,7 +52,16 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
     ),
   )
 
-  const openOrdersCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
+  const dcaCount = openOrdersCountData?.dcaSchedules?.totalCount ?? 0
+
+  const { orders: intentOrders } = useIntentsData()
+  const intentCount = allPairs
+    ? intentOrders.length
+    : intentOrders.filter(
+        (o) => o.from.id === assetIn && o.to.id === assetOut,
+      ).length
+
+  const openOrdersCount = dcaCount + intentCount
 
   const navigate = useNavigate()
 

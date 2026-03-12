@@ -26,6 +26,22 @@ import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 import { allPools } from "./pools"
 
+const EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX = "EVMAccounts::claim_account"
+
+function getEvmAccountClaimMessage(address: string, assetId: string): Uint8Array {
+  const prefixBytes = new TextEncoder().encode(EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX)
+  const addressInfo = getSs58AddressInfo(address as SS58String)
+  if (!addressInfo.isValid) throw new Error("Invalid SS58 address")
+  const assetIdBytes = new Uint8Array(4)
+  new DataView(assetIdBytes.buffer).setUint32(0, Number(assetId), true)
+  return mergeUint8(
+    compactNumber.enc(prefixBytes.length),
+    prefixBytes,
+    addressInfo.publicKey,
+    assetIdBytes,
+  )
+}
+
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
   // Native asset is always accepted
   if (asset.id === NATIVE_ASSET_ID) return true
@@ -211,6 +227,55 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
         return papi.tx.MultiTransactionPayment.set_currency({
           currency: Number(asset.id),
         })
+      }
+
+      if (account?.address) {
+        const accountInfo = await papi.query.System.Account.getValue(
+          account.address,
+        )
+        const isUnclaimedAccount =
+          accountInfo.nonce === 0 &&
+          accountInfo.providers === 0 &&
+          accountInfo.sufficients === 0
+
+        const signer = wallet?.signer
+
+        if (isUnclaimedAccount && isPolkadotSigner(signer)) {
+          const message = getEvmAccountClaimMessage(account.address, assetId)
+          const sigBytes = await signer.signBytes(message)
+
+          const claimTx = papi.tx.EVMAccounts.claim_account({
+            account: account.address as SS58String,
+            asset_id: Number(assetId),
+            signature: MultiSignature.Sr25519(new FixedSizeBinary(sigBytes)),
+          })
+
+          const callData = await claimTx.getEncodedData()
+          const rawCallData = callData.asBytes()
+          const unsignedTxHex = Binary.fromBytes(
+            mergeUint8(
+              compactNumber.enc(rawCallData.length + 1),
+              new Uint8Array([4]),
+              rawCallData,
+            ),
+          ).asHex()
+
+          await new Promise<void>((resolve, reject) => {
+            const sub = papiClient.submitAndWatch(unsignedTxHex).subscribe({
+              next: (event) => {
+                if (event.type === "txBestBlocksState" && event.found) {
+                  if (!event.ok) {
+                    reject(new Error("EVM account claim failed"))
+                  } else {
+                    resolve()
+                  }
+                  sub.unsubscribe()
+                }
+              },
+              error: reject,
+            })
+          })
+        }
       }
 
       return createTransaction(

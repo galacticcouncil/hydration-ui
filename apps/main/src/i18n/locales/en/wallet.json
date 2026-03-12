@@ -1,4 +1,6 @@
 {
+  "multichain.noAssets": "No supported assets found on this chain.",
+  "multichain.transfer": "Transfer to Hydration",
   "emptyState.title": "No wallet connected",
   "emptyState.description": "Connect a wallet to view your assets.",
   "balances.title": "Balances",

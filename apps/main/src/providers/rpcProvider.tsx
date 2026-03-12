@@ -45,6 +45,7 @@ const defaultData: TProviderContext = {
   papiNext: {} as TProviderData["papiNext"],
   isNext: false,
   papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
+  papiNextCompatibilityToken: {} as TProviderData["papiNextCompatibilityToken"],
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],

@@ -81,10 +81,10 @@ export const decodeTx = (tx: AnyTransaction): object | JsonValue => {
 
 export const getTxCallHash = (
   tx: AnyTransaction,
-  papiCompatibilityToken: CompatibilityToken,
+  ...compatibilityTokens: CompatibilityToken[]
 ): string => {
   if (isPapiTransaction(tx)) {
-    return getPapiTransactionCallData(tx, papiCompatibilityToken)
+    return getPapiTransactionCallData(tx, ...compatibilityTokens)
   }
 
   if (isEvmCall(tx) || isSolanaCall(tx) || isSuiCall(tx)) {

@@ -11,10 +11,10 @@ export const usePolkadotJSExtrinsicUrl = (
   tx: AnyTransaction,
   srcChainKey: string = HYDRATION_CHAIN_KEY,
 ): string => {
-  const { papiCompatibilityToken } = useRpcProvider()
+  const { papiCompatibilityToken, papiNextCompatibilityToken } = useRpcProvider()
   const { rpcUrl } = useProviderRpcUrlStore()
 
-  const callData = getPapiTransactionCallData(tx, papiCompatibilityToken)
+  const callData = getPapiTransactionCallData(tx, papiCompatibilityToken, papiNextCompatibilityToken)
 
   if (!callData) return ""
 

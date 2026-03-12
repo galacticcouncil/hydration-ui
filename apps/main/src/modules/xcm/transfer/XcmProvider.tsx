@@ -26,6 +26,7 @@ import {
   isAccountValidOnChain,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 import {
   calculateTransferDestAmount,
   getTransferStatus,
@@ -33,14 +34,18 @@ import {
 
 type XcmProviderProps = {
   children: React.ReactNode
+  initialSearch?: XcmQueryParams
 }
 
-export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
+export const XcmProvider: React.FC<XcmProviderProps> = ({
+  children,
+  initialSearch,
+}) => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const [transfer, setTransfer] = useState<Transfer | null>(null)
 
-  const form = useXcmForm(transfer)
+  const form = useXcmForm(transfer, initialSearch)
 
   const configService = useCrossChainConfigService()
 

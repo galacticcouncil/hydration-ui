@@ -38,6 +38,7 @@ export type TProviderData = {
   sdk: SdkCtx
   papiClient: PolkadotClient
   papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
+  papiNextCompatibilityToken: Awaited<PapiNext["compatibilityToken"]>
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
@@ -108,11 +109,12 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, papiCompatibilityToken, isNext] = await Promise.all(
+  const [sdk, slotDuration, papiCompatibilityToken, papiNextCompatibilityToken, isNext] = await Promise.all(
     [
       createSdkContext(papiClient),
       papi.constants.Aura.SlotDuration(),
       papi.compatibilityToken,
+      papiNext.compatibilityToken,
       papiNext.constants.System.Version.isCompatible(
         CompatibilityLevel.Partial,
       ),
@@ -141,6 +143,7 @@ const getProviderData = async (
     papiClient,
     isNext,
     papiCompatibilityToken,
+    papiNextCompatibilityToken,
     evm,
     sdk,
     rpcUrlList,
