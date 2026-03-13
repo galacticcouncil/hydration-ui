@@ -19,6 +19,7 @@ import { Solflare } from "@/wallets/Solflare"
 import { SubWallet, SubWalletEvm, SubWalletH160 } from "@/wallets/SubWallet"
 import { Suiet } from "@/wallets/Suiet"
 import { Talisman, TalismanEvm, TalismanH160 } from "@/wallets/Talisman"
+import { TurnkeyWallet } from "@/wallets/Turnkey"
 
 export {
   AlephZero,
@@ -46,6 +47,7 @@ export {
   Talisman,
   TalismanEvm,
   TalismanH160,
+  TurnkeyWallet,
 }
 
 const wallets = [
@@ -64,6 +66,7 @@ const wallets = [
   new SubWalletH160(),
   new TalismanH160(),
   new NovaWalletH160(),
+  new TurnkeyWallet(),
 
   // EVM
   new MetaMask(),

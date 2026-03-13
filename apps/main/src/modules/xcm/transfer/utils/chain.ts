@@ -15,6 +15,7 @@ import {
   SUBSTRATE_H160_PROVIDERS,
   SUBSTRATE_PROVIDERS,
   SUI_PROVIDERS,
+  WalletProviderType,
 } from "@galacticcouncil/web3-connect/src/config/providers"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Asset, ChainEcosystem } from "@galacticcouncil/xc-core"
@@ -86,8 +87,11 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
 
   const destChain = chainsMap.get(HYDRATION_CHAIN_KEY) || null
 
+  const isTurnkey = provider === WalletProviderType.Turnkey
   const destAccount =
-    !!destChain && isAccountValidOnChain(account, destChain) ? account : null
+    !isTurnkey && !!destChain && isAccountValidOnChain(account, destChain)
+      ? account
+      : null
 
   return {
     srcChain,

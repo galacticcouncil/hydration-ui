@@ -35,6 +35,7 @@ export enum WalletMode {
 
 export const COMPATIBLE_WALLET_PROVIDERS: WalletProviderType[] = [
   ...SUBSTRATE_PROVIDERS,
+  ...SUBSTRATE_H160_PROVIDERS,
   ...EVM_PROVIDERS,
 ]
 
@@ -45,7 +46,7 @@ export const PROVIDERS_BY_WALLET_MODE: Record<
   [WalletMode.Default]: COMPATIBLE_WALLET_PROVIDERS,
   [WalletMode.EVM]: EVM_PROVIDERS,
   [WalletMode.Substrate]: SUBSTRATE_PROVIDERS,
-  [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...EVM_PROVIDERS],
+  [WalletMode.SubstrateEVM]: [...SUBSTRATE_PROVIDERS, ...SUBSTRATE_H160_PROVIDERS, ...EVM_PROVIDERS],
   [WalletMode.SubstrateH160]: SUBSTRATE_H160_PROVIDERS,
   [WalletMode.Solana]: SOLANA_PROVIDERS,
   [WalletMode.Sui]: SUI_PROVIDERS,

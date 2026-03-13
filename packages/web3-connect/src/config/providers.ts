@@ -22,6 +22,7 @@ export enum WalletProviderType {
   Talisman = "talisman",
   TalismanEvm = "talisman-evm",
   TalismanH160 = "talisman-h160",
+  Turnkey = "turnkey",
   TrustWallet = "trustwallet",
   Slush = "slush",
   Suiet = "suiet",
@@ -70,6 +71,7 @@ export const SUBSTRATE_H160_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TalismanH160,
   WalletProviderType.SubwalletH160,
   WalletProviderType.NovaWalletH160,
+  WalletProviderType.Turnkey,
 ]
 
 export const SOLANA_PROVIDERS: WalletProviderType[] = [
