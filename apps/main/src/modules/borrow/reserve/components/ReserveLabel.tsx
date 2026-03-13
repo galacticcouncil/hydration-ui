@@ -34,6 +34,7 @@ export const ReserveLabel: React.FC<ReserveLabelProps> = ({
   const assetId = isGho(reserve)
     ? GHO_ASSET_ID
     : getAssetIdFromAddress(reserve.underlyingAsset)
+
   return (
     <AssetLabelFullContainer>
       <AssetLogo
