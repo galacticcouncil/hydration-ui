@@ -645,6 +645,55 @@ export const useSetUsageAsCollateralTx = () => {
   )
 }
 
+export const useSetUserEModeTx = () => {
+  const { papi, evm } = useRpcProvider()
+  const poolContract = useBorrowPoolContract()
+  const { account } = useAccount()
+
+  return useCallback(
+    async (categoryId: number) => {
+      const address = account?.address || ""
+      const evmAddress = safeConvertAnyToH160(address)
+
+      const poolInstance = poolContract.getContractInstance(
+        poolContract.poolAddress,
+      )
+
+      const txRaw =
+        await poolInstance.populateTransaction.setUserEMode(categoryId)
+
+      const tx = {
+        ...txRaw,
+        from: evmAddress,
+        value: DEFAULT_NULL_VALUE_ON_TX,
+      }
+
+      const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+        await estimateGasLimit({
+          evm,
+          gasLimit: tx.gasLimit?.toString(),
+          action: ProtocolAction.setEModeUsage,
+        })
+
+      const evmCall = papi.tx.EVM.call({
+        source: Binary.fromHex(tx.from),
+        target: Binary.fromHex(tx.to),
+        input: Binary.fromHex(tx.data),
+        value: [0n, 0n, 0n, 0n],
+        gas_limit: gasLimit,
+        max_fee_per_gas: maxFeePerGas,
+        max_priority_fee_per_gas: maxPriorityFeePerGas,
+        access_list: [],
+        authorization_list: [],
+        nonce: undefined,
+      })
+
+      return evmCall
+    },
+    [poolContract, account?.address, evm, papi],
+  )
+}
+
 export enum ExternalApyType {
   stake = "stake",
   nativeYield = "nativeYield",
