@@ -1,4 +1,5 @@
 export * from "./addresses"
+export * from "./emode"
 export * from "./gasLimit"
 export * from "./marketsConfig"
 export * from "./misc"
