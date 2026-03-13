@@ -42,5 +42,5 @@ export const MarketErrors: FC<Props> = ({ swap }) => {
     }
   })()
 
-  return <Alert sx={{ mt: 8 }} variant="error" description={message} />
+  return <Alert sx={{ mt: "base" }} variant="error" description={message} />
 }

@@ -12,6 +12,7 @@ import {
   EVM_GAS_TO_WEIGHT,
 } from "@galacticcouncil/web3-connect/src/config/evm"
 import {
+  keepPreviousData,
   queryOptions,
   useMutation,
   useQuery,
@@ -30,6 +31,18 @@ import { useTransactionsStore } from "@/states/transactions"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 const { isEvmAccount, isEvmAddress } = h160
+
+export const evmGasPriceQuery = ({ evm }: TProviderContext) => {
+  return queryOptions({
+    queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "gasPrice"],
+    placeholderData: keepPreviousData,
+    queryFn: async () => {
+      const gasPriceBase = await evm.getGasPrice()
+      const gasPriceSurplus = (gasPriceBase * 5n) / 100n
+      return gasPriceBase + gasPriceSurplus
+    },
+  })
+}
 
 export const evmAccountBindingQuery = (
   { papi, isLoaded }: TProviderContext,
@@ -143,13 +156,13 @@ export const weightToEvmFeeQuery = (
   weight: bigint,
   assetOutId: string,
 ) => {
-  const { evm, queryClient } = rpc
+  const { queryClient } = rpc
   return queryOptions({
     enabled: weight > 0n && !!assetOutId,
     queryKey: ["weightToEvmFee", weight.toString(), assetOutId],
     queryFn: async () => {
       const [gasPrice, spot] = await Promise.all([
-        evm.getGasPrice(),
+        queryClient.ensureQueryData(evmGasPriceQuery(rpc)),
         queryClient.ensureQueryData(
           spotPriceQuery(rpc, NATIVE_EVM_ASSET_ID, assetOutId),
         ),

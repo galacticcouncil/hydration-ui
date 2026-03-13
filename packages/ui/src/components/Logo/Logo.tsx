@@ -3,7 +3,12 @@ import { ImageProps } from "@/components/Image"
 
 import { SLogo, SLogoPlaceholder } from "./Logo.styled"
 
-export type LogoSize = "large" | "medium" | "small" | "extra-small"
+export type LogoSize =
+  | "extra-large"
+  | "large"
+  | "medium"
+  | "small"
+  | "extra-small"
 export type LogoProps = ImageProps & { size?: LogoSize }
 
 export const Logo: React.FC<LogoProps> = ({ size = "medium", ...props }) => (
@@ -15,3 +20,5 @@ export const Logo: React.FC<LogoProps> = ({ size = "medium", ...props }) => (
     }
   />
 )
+
+export { LOGO_SIZES } from "./Logo.styled"
