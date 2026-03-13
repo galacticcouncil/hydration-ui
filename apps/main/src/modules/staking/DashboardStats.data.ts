@@ -13,7 +13,6 @@ import {
   StakeEventAccumulatedRps,
   stakeQuery,
   stakingInitializedEventsQuery,
-  subscanHDXSupplyQuery,
 } from "@/api/staking"
 import { useIncreaseStake } from "@/modules/staking/Stake.utils"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -28,12 +27,11 @@ export const useStakingSupply = () => {
   const rpc = useRpcProvider()
 
   const { data: stakeData, isLoading: stakeLoading } = useQuery(stakeQuery(rpc))
-  const { data: hdxSupply, isLoading: hdxSupplyLoading } = useQuery(
-    subscanHDXSupplyQuery,
-  )
+
+  const hdxSupply = "5918000000000000000000"
   const { data: treasuryData } = useQuery(HDXStakingBalanceQuery(rpc))
 
-  const circulatingSupply = Big(hdxSupply?.available_balance || "0").minus(
+  const circulatingSupply = Big(hdxSupply || "0").minus(
     treasuryData?.balance || "0",
   )
 
@@ -57,7 +55,7 @@ export const useStakingSupply = () => {
       circulatingSupply.toString(),
       NATIVE_ASSET_DECIMALS,
     ),
-    isLoading: hdxSupplyLoading || stakeLoading,
+    isLoading: stakeLoading,
   }
 }
 
