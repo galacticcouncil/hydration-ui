@@ -1,11 +1,16 @@
 import { Text } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { ComponentProps, FC } from "react"
 import { useTranslation } from "react-i18next"
 
 export const SwapStatus: FC = () => {
   const { t } = useTranslation("trade")
 
-  return <Status color="#AAEEFC">{t("trade.orders.status.filled")}</Status>
+  return (
+    <Status color={getToken("text.tint.quart")}>
+      {t("trade.orders.status.filled")}
+    </Status>
+  )
 }
 
 export const Status: FC<ComponentProps<typeof Text>> = (props) => {
