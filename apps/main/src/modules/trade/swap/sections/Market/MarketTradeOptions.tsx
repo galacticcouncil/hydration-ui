@@ -42,7 +42,7 @@ export const MarketTradeOptions: FC<Props> = ({
   const { t } = useTranslation("trade")
   const rpc = useRpcProvider()
 
-  const { control, watch, getValues, reset } =
+  const { control, watch, getValues, reset, trigger } =
     useFormContext<MarketFormValues>()
   const [buyAsset, sellAsset] = watch(["buyAsset", "sellAsset"])
 
@@ -93,6 +93,7 @@ export const MarketTradeOptions: FC<Props> = ({
           isSingleTrade,
         }),
       })
+      trigger()
     } else if (formValues.buyAsset) {
       reset({
         ...formValues,
@@ -103,6 +104,7 @@ export const MarketTradeOptions: FC<Props> = ({
           isSingleTrade,
         }),
       })
+      trigger()
     }
   }
 
