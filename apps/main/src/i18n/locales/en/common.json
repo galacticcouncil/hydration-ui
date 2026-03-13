@@ -213,6 +213,8 @@
   "rpc.change.modal.autoMode.desc": "Enabling this will automatically switch RPCs and Indexers when one of the active ones is unavailable.",
   "rpc.change.modal.autoMode.title": "Auto-connect to working RPC and Indexer",
   "rpc.change.modal.autoMode.loading": "Connecting to best RPC...",
+  "rpc.change.modal.legacyProvider.title": "Legacy RPC provider",
+  "rpc.change.modal.legacyProvider.desc": "Enable compatibility with RPC nodes using the legacy JSON-RPC interface (state_*, chain_* methods).",
   "rpc.change.modal.column.name": "Name",
   "rpc.change.modal.column.rpc": "RPC Address",
   "rpc.change.modal.column.status": "Status",

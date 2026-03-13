@@ -86,6 +86,7 @@ type ProviderRpcUrlStoreState = {
   rpcUrlList: string[]
   updatedAt: number
   autoMode: boolean
+  legacyProvider: boolean
 }
 
 type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
@@ -94,6 +95,7 @@ type ProviderRpcUrlStore = ProviderRpcUrlStoreState & {
   setRpcUrlList: (rpcUrlList: string[], updatedAt: number) => void
   getDataEnv: () => TDataEnv
   setAutoMode: (state: boolean) => void
+  setLegacyProvider: (state: boolean) => void
 }
 
 export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
@@ -104,10 +106,12 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
       rpcUrlList: [],
       updatedAt: 0,
       autoMode: true,
+      legacyProvider: false,
       setRpcUrl: (rpcUrl) => set({ rpcUrl }),
       setSquidUrl: (squidUrl) => set({ squidUrl }),
       setRpcUrlList: (rpcUrlList, updatedAt) => set({ rpcUrlList, updatedAt }),
       setAutoMode: (state) => set({ autoMode: state }),
+      setLegacyProvider: (state) => set({ legacyProvider: state }),
       getDataEnv: () => {
         const { rpcUrl } = get()
         return getProviderDataEnv(rpcUrl)

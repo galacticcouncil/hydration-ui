@@ -15,6 +15,7 @@ import {
   WsEvent,
   WsJsonRpcProvider,
 } from "polkadot-api/ws-provider"
+import { withLegacy } from "@polkadot-api/legacy-provider"
 import { createContext, ReactNode, useContext, useEffect } from "react"
 
 import {
@@ -81,7 +82,8 @@ const logWsStatusChange = (status: StatusChange) => {
 export const RpcProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient()
   const { assets } = useAssetRegistry()
-  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode } = useProviderRpcUrlStore()
+  const { setRpcUrl, rpcUrl, rpcUrlList, autoMode, legacyProvider } =
+    useProviderRpcUrlStore()
 
   const { data } = useSuspenseQuery(
     rpcProviderQuery(queryClient, rpcUrlList, {
@@ -90,6 +92,7 @@ export const RpcProvider = ({ children }: { children: ReactNode }) => {
         enabled: false,
       },
       wsProviderOpts: {
+        ...(legacyProvider && { innerEnhancer: withLegacy() }),
         onStatusChanged: (status) => {
           logWsStatusChange(status)
           if (status.type === WsEvent.CONNECTED) {

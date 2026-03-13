@@ -1,5 +1,6 @@
 import {
   Button,
+  Flex,
   Modal,
   ModalCloseTrigger,
   ModalFooter,
@@ -9,6 +10,8 @@ import {
   Stack,
   TabsContent,
   TabsRoot,
+  Text,
+  Toggle,
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
@@ -33,7 +36,8 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
   props,
 ) => {
   const { t } = useTranslation()
-  const { autoMode, setAutoMode } = useProviderRpcUrlStore()
+  const { autoMode, setAutoMode, legacyProvider, setLegacyProvider } =
+    useProviderRpcUrlStore()
 
   const [view, setView] = useState<TabView>(TabView.RPC)
 
@@ -65,6 +69,14 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
                 {t("rpc.change.modal.view.indexer")}
               </ToggleGroupItem>
             </ToggleGroup>
+            <Flex align="center" justify="space-between">
+              <Text>{t("rpc.change.modal.legacyProvider.title")}</Text>
+              <Toggle
+                size="large"
+                checked={legacyProvider}
+                onCheckedChange={setLegacyProvider}
+              />
+            </Flex>
             <AutoModeToggle
               size="large"
               checked={autoMode}
