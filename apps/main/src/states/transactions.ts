@@ -14,7 +14,11 @@ import {
 export const XcmTag = tags.Tag
 export type XcmTags = Array<keyof typeof XcmTag>
 
-export const XCM_BRIDGE_TAGS: XcmTags = [XcmTag.Wormhole, XcmTag.Snowbridge]
+export const XCM_BRIDGE_TAGS: XcmTags = [
+  XcmTag.Wormhole,
+  XcmTag.Snowbridge,
+  XcmTag.InstaBridge,
+]
 
 export enum TransactionType {
   Onchain = "Onchain",

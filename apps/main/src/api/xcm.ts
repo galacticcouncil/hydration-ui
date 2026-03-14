@@ -1,8 +1,10 @@
 import { formatSourceChainAddress } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
+import { AnyChain, AssetAmount, ConfigBuilder } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
+
+import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import {
   keepPreviousData,
   queryOptions,
@@ -135,6 +137,7 @@ export type XcmTransferArgs = {
   readonly destAddress: string
   readonly destAsset: string
   readonly destChain: string
+  readonly bridgeTag?: string
 }
 
 export const xcmTransferQuery = (
@@ -146,6 +149,7 @@ export const xcmTransferQuery = (
     destAddress,
     destChain,
     destAsset,
+    bridgeTag,
   }: XcmTransferArgs,
   options?: UseQueryOptions<Transfer>,
 ) => {
@@ -162,17 +166,48 @@ export const xcmTransferQuery = (
       destAsset,
       srcChain,
       destChain,
+      bridgeTag,
     ],
-    queryFn: () =>
-      TransferBuilder(wallet)
+    queryFn: async () => {
+      const builder = TransferBuilder(wallet)
         .withAsset(srcAsset)
         .withSource(srcChain)
         .withDestination(destChain)
-        .build({
-          srcAddress: srcAddress,
-          dstAddress: destAddress,
-          dstAsset: destAsset,
-        }),
+
+      if (bridgeTag) {
+        const selectedRoute =
+          builder.routes.find((r) =>
+            (r.tags as string[] | undefined)?.includes(bridgeTag),
+          ) ??
+          getSupplementalBridgeRoutes(srcChain, destChain, srcAsset).find(
+            (r) => (r.tags as string[] | undefined)?.includes(bridgeTag),
+          )
+
+        if (selectedRoute) {
+          const configs = ConfigBuilder(wallet.config)
+            .assets()
+            .asset(srcAsset)
+            .source(srcChain)
+            .destination(destChain)
+            .build(destAsset)
+
+          return wallet.getTransferData(
+            {
+              origin: { chain: configs.origin.chain, route: selectedRoute },
+              reverse: configs.reverse,
+            },
+            srcAddress,
+            destAddress,
+          )
+        }
+      }
+
+      return builder.build({
+        srcAddress: srcAddress,
+        dstAddress: destAddress,
+        dstAsset: destAsset,
+      })
+    },
     enabled:
       !!srcAddress &&
       !!destAddress &&

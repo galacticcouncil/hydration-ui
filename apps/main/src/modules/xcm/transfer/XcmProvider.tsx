@@ -26,10 +26,13 @@ import {
   isAccountValidOnChain,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
+import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import {
   calculateTransferDestAmount,
+  getPrimaryBridgeTag,
   getTransferStatus,
 } from "@/modules/xcm/transfer/utils/transfer"
+import { XcmTag } from "@/states/transactions"
 
 type XcmProviderProps = {
   children: React.ReactNode
@@ -44,15 +47,23 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const configService = useCrossChainConfigService()
 
-  const [srcChain, srcAsset, destChain, destAsset, srcAmount, destAddress] =
-    form.watch([
-      "srcChain",
-      "srcAsset",
-      "destChain",
-      "destAsset",
-      "srcAmount",
-      "destAddress",
-    ])
+  const [
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+    srcAmount,
+    destAddress,
+    bridgeProvider,
+  ] = form.watch([
+    "srcChain",
+    "srcAsset",
+    "destChain",
+    "destAsset",
+    "srcAmount",
+    "destAddress",
+    "bridgeProvider",
+  ])
 
   const config = useMemo(
     () => ConfigBuilder(configService).assets(),
@@ -96,9 +107,61 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         .source(srcChain)
         .destination(chain)
 
-      return { chain, routes, assets: routes.map((r) => r.destination.asset) }
+      // Deduplicate assets - multiple bridge routes may share the same destination asset
+      const seenKeys = new Set<string>()
+      const assets = routes
+        .map((r) => r.destination.asset)
+        .filter((a) => (seenKeys.has(a.key) ? false : seenKeys.add(a.key)))
+
+      return { chain, routes, assets }
     })
   }, [config, srcAsset, srcChain, configService])
+
+  const availableBridgeRoutes = useMemo(() => {
+    if (!srcChain || !srcAsset || !destChain || !destAsset) return []
+    const destPair = destChainAssetPairs.find(
+      (p) => p.chain.key === destChain.key,
+    )
+    if (!destPair) return []
+
+    const configRoutes = destPair.routes.filter(
+      (r) =>
+        r.destination.asset.key === destAsset.key &&
+        getPrimaryBridgeTag(r) !== null,
+    )
+    const existingTags = new Set(configRoutes.map((r) => getPrimaryBridgeTag(r)))
+    const supplemental = getSupplementalBridgeRoutes(
+      srcChain.key,
+      destChain.key,
+      srcAsset.key,
+    ).filter(
+      (r) =>
+        r.destination.asset.key === destAsset.key &&
+        !existingTags.has(getPrimaryBridgeTag(r)),
+    )
+    return [...configRoutes, ...supplemental]
+  }, [srcChain, srcAsset, destChain, destAsset, destChainAssetPairs])
+
+  useEffect(() => {
+    if (availableBridgeRoutes.length <= 1) {
+      if (bridgeProvider !== null) {
+        form.setValue("bridgeProvider", null)
+      }
+      return
+    }
+
+    const isCurrentValid = availableBridgeRoutes.some(
+      (r) => getPrimaryBridgeTag(r) === bridgeProvider,
+    )
+    if (isCurrentValid) return
+
+    const defaultRoute =
+      availableBridgeRoutes.find(
+        (r) => getPrimaryBridgeTag(r) === XcmTag.InstaBridge,
+      ) ?? availableBridgeRoutes[0]
+    if (!defaultRoute) return
+    form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))
+  }, [availableBridgeRoutes, bridgeProvider, form])
 
   useEffect(() => {
     const validRoutes = pipe(
@@ -189,6 +252,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
+        availableBridgeRoutes,
         alerts,
         transfer,
         call,

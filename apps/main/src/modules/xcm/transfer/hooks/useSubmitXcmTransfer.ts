@@ -12,6 +12,7 @@ import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainConfigService } from "@/api/xcm"
+import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
@@ -55,7 +56,14 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
 
   return useMutation({
     mutationFn: async ([values, transfer]: [XcmFormValues, Transfer]) => {
-      const { srcAmount, srcChain, destChain, srcAsset, destAsset } = values
+      const {
+        srcAmount,
+        srcChain,
+        destChain,
+        srcAsset,
+        destAsset,
+        bridgeProvider,
+      } = values
 
       if (!account) throw new Error("Account is required")
       if (!destChain) throw new Error("Destination chain is required")
@@ -72,13 +80,27 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain: destChain.name,
       }
 
-      const { build } = ConfigBuilder(configService)
+      const { routes, build } = ConfigBuilder(configService)
         .assets()
         .asset(srcAsset)
         .source(srcChain)
         .destination(destChain)
 
       const { origin } = build(destAsset)
+
+      const selectedRoute = bridgeProvider
+        ? (routes.find((r) =>
+            (r.tags as string[] | undefined)?.includes(bridgeProvider),
+          ) ??
+            getSupplementalBridgeRoutes(
+              srcChain.key,
+              destChain.key,
+              srcAsset.key,
+            ).find((r) =>
+              (r.tags as string[] | undefined)?.includes(bridgeProvider),
+            ) ??
+            origin.route)
+        : origin.route
 
       const call = await transfer.buildCall(srcAmount)
       const isApprove = isEvmApproveCall(call)
@@ -120,7 +142,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
               destination.fee.decimals,
             ),
             dstChainFeeSymbol: destination.fee.symbol,
-            tags: (origin.route.tags as XcmTags) || [],
+            tags: (selectedRoute.tags as XcmTags) || [],
           },
         }
       }
