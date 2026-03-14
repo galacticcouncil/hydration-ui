@@ -28,7 +28,7 @@ enum FeeDestination {
 }
 
 const FEES_CHARTS_API_URL =
-  "https://hydration-aggregator-staging-v2.orca.hydration.cloud/api/v1/fees/charts"
+  "https://hydration-aggregator-staging-v7.orca.hydration.cloud/api/v1/fees/charts"
 
 const FEES_API_PARAMS = {
   omnipool: {
