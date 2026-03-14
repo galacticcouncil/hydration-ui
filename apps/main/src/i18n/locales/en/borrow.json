@@ -6,6 +6,8 @@
   "binding.banner.cta": "Enable Borrowing",
   "binding.banner.description": "Bind your account to continue. Supply your crypto into a lending pool, accumulate rewards and borrow against your positions.",
   "binding.banner.title": "Borrow on Hydration",
+  "binding.toast.submitted": "Binding account...",
+  "binding.toast.success": "Account bound successfully",
   "borrow": "Borrow",
   "borrow.available": "Available to borrow",
   "borrow.cap": "Borrow Cap",

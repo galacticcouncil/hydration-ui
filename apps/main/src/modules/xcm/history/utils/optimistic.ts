@@ -1,4 +1,9 @@
-import { getChainAssetId, getChainId } from "@galacticcouncil/utils"
+import {
+  getChainAssetId,
+  getChainId,
+  isEvmParachainAccount,
+  safeConvertSS58toH160,
+} from "@galacticcouncil/utils"
 import { AnyChain } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import type { Transfer } from "@galacticcouncil/xc-sdk"
@@ -49,7 +54,9 @@ export function convertXcmFormValuesToOptimisticJourney(
     destinationProtocol: "xcm",
     origin: originUrn,
     destination: destinationUrn,
-    from: fromAddress,
+    from: isEvmParachainAccount(fromAddress)
+      ? safeConvertSS58toH160(fromAddress)
+      : fromAddress,
     to: destAddress,
     sentAt: now,
     createdAt: now,
