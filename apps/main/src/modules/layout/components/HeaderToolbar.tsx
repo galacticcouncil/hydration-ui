@@ -3,6 +3,7 @@ import { ButtonIcon, ExternalLink, Icon } from "@galacticcouncil/ui/components"
 import { FC, lazy } from "react"
 
 import { HYDRATION_DOCS_LINK } from "@/config/links"
+import { DepositButton } from "@/modules/layout/components/DepositButton/DepositButton"
 import { SHeaderToolbar } from "@/modules/layout/components/HeaderToolbar.styled"
 import { HeaderWeb3ConnectButton } from "@/modules/layout/components/HeaderWeb3ConnectButton"
 import { NotificationCenter } from "@/modules/layout/components/NotificationCenter/NotificationCenter"
@@ -28,6 +29,7 @@ export const HeaderToolbar: FC = () => {
       )}
       <NotificationCenter />
       {hasTopNavbar && <Settings />}
+      {hasTopNavbar && <DepositButton />}
       <HeaderWeb3ConnectButton />
     </SHeaderToolbar>
   )

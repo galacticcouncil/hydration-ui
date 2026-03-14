@@ -3,7 +3,15 @@ import Big from "big.js"
 import { ChevronDown } from "lucide-react"
 import { ReactNode } from "react"
 
-import { Flex, Icon, MicroButton, Skeleton, Text } from "@/components"
+import {
+  Flex,
+  FormLabel,
+  Icon,
+  LogoSkeleton,
+  MicroButton,
+  Skeleton,
+  Text,
+} from "@/components"
 import { FormError } from "@/components/FormError"
 import { getToken } from "@/utils"
 
@@ -79,20 +87,7 @@ export const AssetInput = ({
       className={className}
     >
       <Flex align="center" gap="s" justify="space-between">
-        {label && (
-          <Text
-            color={getToken("text.medium")}
-            fs="p5"
-            fw={500}
-            sx={{
-              width: "fit-content",
-              lineHeight: "120%",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </Text>
-        )}
+        {label && <FormLabel>{label}</FormLabel>}
         {!ignoreBalance && (
           <Flex align="center" gap="s" sx={{ marginLeft: "auto" }}>
             <Text
@@ -222,19 +217,9 @@ export const AssetButton = ({
 }) => {
   if (loading)
     return (
-      <Flex
-        direction="column"
-        height="2.375rem"
-        gap="xs"
-        justify="center"
-        className={className}
-      >
-        <div sx={{ height: "xs", lineHeight: 1 }}>
-          <Skeleton sx={{ width: "m", height: "xs" }} />
-        </div>
-        <div sx={{ height: "xs", lineHeight: 1 }}>
-          <Skeleton sx={{ width: "100%", minWidth: "xl", height: "xs" }} />
-        </div>
+      <Flex gap="s" justify="center" className={className}>
+        <LogoSkeleton size="medium" />
+        <Skeleton sx={{ width: "2xl" }} />
       </Flex>
     )
 
