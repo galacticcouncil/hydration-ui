@@ -3,13 +3,15 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
+import { uniqueBy } from "remeda"
 
 import { nativeTokenLocksQuery } from "@/api/balances"
+import { TUnlockableVote } from "@/api/democracy"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useUnlockNativeLocks = (
-  ids: ReadonlyArray<number>,
+  ids: ReadonlyArray<TUnlockableVote>,
   value: string,
 ) => {
   const { t } = useTranslation("wallet")
@@ -21,7 +23,12 @@ export const useUnlockNativeLocks = (
 
   return useMutation({
     mutationFn: async () => {
-      const txs = ids.map((id) => papi.tx.Democracy.remove_vote({ index: id }))
+      const txs = ids.map((id) =>
+        papi.tx.ConvictionVoting.remove_vote({
+          class: id.classId,
+          index: id.voteId,
+        }),
+      )
 
       if (!txs.length) {
         return null
@@ -31,9 +38,15 @@ export const useUnlockNativeLocks = (
         ? safeConvertAddressSS58(account.address)
         : null
 
+      const unlock = uniqueBy(ids, (id) => id.classId)
+
       const batchTx = [
         ...txs,
-        ...(target ? [papi.tx.Democracy.unlock({ target })] : []),
+        ...(target
+          ? unlock.map((id) =>
+              papi.tx.ConvictionVoting.unlock({ target, class: id.classId }),
+            )
+          : []),
       ]
 
       const type = new Big(value).eq(0) ? "clear" : "unlock"
