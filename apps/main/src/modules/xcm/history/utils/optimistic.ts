@@ -18,7 +18,7 @@ export function isOptimisticJourney(journey: XcJourney): boolean {
   return journey.correlationId.startsWith(OPTIMISTIC_JOURNEY_PREFIX)
 }
 
-function chainToUrn(chain: AnyChain): string {
+export function chainToUrn(chain: AnyChain): string {
   const ecosystem = chain.ecosystem
   if (!ecosystem) return ""
   return `urn:ocn:${ecosystem.toLowerCase()}:${getChainId(chain)}`
