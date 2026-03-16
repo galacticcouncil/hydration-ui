@@ -38,6 +38,20 @@ export const OtcOrderStatusDocument = gql`
   }
 }
     `;
+export const PureCreatedEventsDocument = gql`
+    query PureCreatedEvents($purePublicKey: String!) {
+  events(
+    where: {name_eq: "Proxy.PureCreated", args_jsonContains: {pure: $purePublicKey}}
+  ) {
+    block {
+      height
+    }
+    extrinsic {
+      indexInBlock
+    }
+  }
+}
+    `;
 export const AccumulatedRpsUpdatedEventsDocument = gql`
     query AccumulatedRpsUpdatedEvents {
   events(
@@ -78,6 +92,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     OtcOrderStatus(variables: Types.OtcOrderStatusQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.OtcOrderStatusQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.OtcOrderStatusQuery>({ document: OtcOrderStatusDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'OtcOrderStatus', 'query', variables);
+    },
+    PureCreatedEvents(variables: Types.PureCreatedEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.PureCreatedEventsQuery> {
+      return withWrapper((wrappedRequestHeaders) => client.request<Types.PureCreatedEventsQuery>({ document: PureCreatedEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'PureCreatedEvents', 'query', variables);
     },
     AccumulatedRpsUpdatedEvents(variables?: Types.AccumulatedRpsUpdatedEventsQueryVariables, requestHeaders?: GraphQLClientRequestHeaders, signal?: RequestInit['signal']): Promise<Types.AccumulatedRpsUpdatedEventsQuery> {
       return withWrapper((wrappedRequestHeaders) => client.request<Types.AccumulatedRpsUpdatedEventsQuery>({ document: AccumulatedRpsUpdatedEventsDocument, variables, requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders }, signal }), 'AccumulatedRpsUpdatedEvents', 'query', variables);
