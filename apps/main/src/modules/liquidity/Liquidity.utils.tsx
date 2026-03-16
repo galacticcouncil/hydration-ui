@@ -17,7 +17,7 @@ import {
   HOLLAR_ASSETS,
   PRIME_STABLESWAP_ASSET_ID,
 } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate, useRouter } from "@tanstack/react-router"
 import Big from "big.js"
 import { useEffect, useMemo } from "react"
@@ -36,13 +36,18 @@ import {
   PoolToken,
   StableSwapBase,
   useOmnipoolIds,
-  useStablePools,
+  useStablepoolIds,
   useXykPools,
 } from "@/api/pools"
 import { useSquidClient } from "@/api/provider"
-import { useStableSwapTradability } from "@/api/stableswap"
+import type { TReserve } from "@/api/stableswap"
+import {
+  stablepoolReservesQuery,
+  useStableSwapTradability,
+} from "@/api/stableswap"
 import { XYKPoolWithLiquidity } from "@/api/xyk"
 import { TShareToken, useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 import {
   AccountOmnipoolPosition,
   useAccountBalances,
@@ -114,14 +119,6 @@ export type IsolatedPoolTable = {
   isNative: boolean
 }
 
-export type TReserve = {
-  asset_id: number
-  meta: TAssetData
-  amount: string
-  amountHuman: string
-  displayAmount: string
-}
-
 export type TStablepoolData = {
   id: number
   pool: StableSwapBase
@@ -135,12 +132,6 @@ export type TStablepoolData = {
   borrowApyData: BorrowAssetApyData | undefined
 }
 
-export type TStablepoolDetails = {
-  pool: StableSwapBase
-  reserves: TReserve[]
-  totalDisplayAmount: string
-}
-
 const OVERRIDE_META = [...GIGA_ASSETS, ...HOLLAR_ASSETS]
 
 const isStablepoolData = (
@@ -149,7 +140,12 @@ const isStablepoolData = (
 
 export const useStablepools = () => {
   const squidClient = useSquidClient()
-  const { data: pools, isLoading: isPoolsLoading } = useStablepoolsReserves()
+
+  const { data: stablepoolIds } = useStablepoolIds()
+  const { data: pools, isLoading: isPoolsLoading } = useStablepoolsReserves(
+    stablepoolIds ?? [],
+  )
+
   const { data: volumes, isLoading: isVolumeLoading } = useQuery(
     stablepoolVolumeQuery(squidClient),
   )
@@ -670,80 +666,37 @@ export const useOmnipoolCapacity = (id: string) => {
 }
 
 export const useStablepoolReserves = (poolId: string) => {
-  const { data, isLoading } = useStablepoolsReserves([poolId])
+  const rpc = useRpcProvider()
+  const { getAssetWithFallback } = useAssets()
+  const queryClient = useQueryClient()
 
-  return { data: data[0], isLoading }
+  return useQuery(
+    stablepoolReservesQuery(rpc, queryClient, poolId, getAssetWithFallback),
+  )
 }
 
-export const useStablepoolsReserves = (poolIds?: string[]) => {
+export const useStablepoolsReserves = (poolIds: string[]) => {
+  const rpc = useRpcProvider()
   const { getAssetWithFallback } = useAssets()
-  const { data: pools = [], isLoading: isPoolsLoading } = useStablePools()
+  const queryClient = useQueryClient()
 
-  const stablepools_: StableSwapBase[] = []
-  const tokenSet = new Set<string>()
-
-  const filterPoolTokens = (pool: StableSwapBase) => {
-    const tokens: PoolToken[] = []
-
-    pool.tokens.forEach((token) => {
-      if (token.id !== pool.id) {
-        tokenSet.add(String(token.id))
-        tokens.push(token)
-      }
-    })
-
-    stablepools_.push({ ...pool, tokens })
-  }
-
-  if (poolIds) {
-    poolIds.forEach((poolId) => {
-      const pool = pools.find((pool) => pool.id.toString() === poolId)
-
-      if (pool) filterPoolTokens(pool)
-    })
-  } else {
-    pools.forEach(filterPoolTokens)
-  }
-
-  const { getAssetPrice, isLoading: isPriceLoading } = useAssetsPrice([
-    ...tokenSet,
-  ])
-
-  if (isPriceLoading) return { data: [], isLoading: true }
-
-  const data: TStablepoolDetails[] = stablepools_.map((pool) => {
-    const reserves: TReserve[] = []
-    let totalDisplayAmount = Big(0)
-
-    for (const token of pool.tokens) {
-      const id = token.id.toString()
-      const meta = getAssetWithFallback(id)
-      const amountHuman = scaleHuman(token.balance, meta.decimals)
-
-      const { price, isValid } = getAssetPrice(id)
-
-      if (!isValid) continue
-
-      const displayAmount = Big(amountHuman).times(price).toString()
-      totalDisplayAmount = totalDisplayAmount.plus(displayAmount)
-
-      reserves.push({
-        asset_id: Number(id),
-        meta,
-        amount: token.balance.toString(),
-        amountHuman,
-        displayAmount,
-      })
-    }
-
-    return {
-      pool,
-      reserves,
-      totalDisplayAmount: totalDisplayAmount.toString(),
-    }
+  return useQueries({
+    queries: poolIds.map((poolId) => ({
+      ...stablepoolReservesQuery(
+        rpc,
+        queryClient,
+        poolId,
+        getAssetWithFallback,
+      ),
+    })),
+    combine: (results) => {
+      const data = results
+        .map((result) => result.data)
+        .filter((result) => !!result)
+      const isLoading = results.some((result) => result.isLoading)
+      return { data, isLoading }
+    },
   })
-
-  return { data, isLoading: isPoolsLoading || isPriceLoading }
 }
 
 export const useOmnipoolShare = (id: string) => {
