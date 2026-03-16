@@ -31,7 +31,6 @@ import {
   useUserBorrowSummary,
 } from "@/api/borrow/queries"
 import { Trade } from "@/api/trade"
-import { getMaxReserveLtv } from "@/modules/borrow/multiply/utils/leverage"
 import { useCreateBatchTx } from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
@@ -51,6 +50,7 @@ type LoopingProps = {
   supplyAssetId: string
   assetInId: string
   assetOutId: string
+  withEmode: boolean
 }
 
 type LoopingOptions = {
@@ -66,6 +66,7 @@ export const useLooping = (
     borrowAssetId,
     assetInId,
     assetOutId,
+    withEmode,
   }: LoopingProps,
   options: LoopingOptions,
 ) => {
@@ -115,6 +116,7 @@ export const useLooping = (
       borrowAssetId,
       amount,
       multiplier,
+      withEmode,
     ],
     queryFn: async () => {
       if (!account) throw new Error("Account not connected")
@@ -129,12 +131,16 @@ export const useLooping = (
       const { userEmodeCategoryId } = user ?? { userEmodeCategoryId: 0 }
       const isInEmode = userEmodeCategoryId === supplyReserve.eModeCategoryId
 
-      const ltv = getMaxReserveLtv(supplyReserve)
+      const baseLtv = supplyReserve.formattedBaseLTVasCollateral
+      const emodeLtv =
+        supplyReserve.formattedEModeLtv !== "0"
+          ? supplyReserve.formattedEModeLtv
+          : baseLtv
 
       const loopingSteps = getLoopingSteps({
         initialAmount: amount,
         multiplier,
-        ltv,
+        ltv: isInEmode || withEmode ? emodeLtv : baseLtv,
       })
 
       const spotPrice = await sdk.api.router.getSpotPrice(
@@ -182,7 +188,7 @@ export const useLooping = (
 
       const batch: BatchItem[] = []
 
-      if (!isInEmode && supplyReserve.eModeCategoryId > 0) {
+      if (withEmode && !isInEmode) {
         const poolContract = pool.getContractInstance(pool.poolAddress)
         const emodeRawTx = await poolContract.populateTransaction.setUserEMode(
           supplyReserve.eModeCategoryId,
