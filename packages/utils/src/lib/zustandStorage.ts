@@ -1,38 +1,37 @@
 import { z } from "zod/v4"
-import { createJSONStorage } from "zustand/middleware"
+import {
+  createJSONStorage,
+  type PersistOptions,
+  type PersistStorage,
+} from "zustand/middleware"
 
-type PreviousVersionProps<
-  TOldSchema extends z.ZodSchema,
-  TNewSchema extends z.ZodSchema,
-> = {
-  previousStateSchema: TOldSchema
-  migrate: (previousState: z.infer<TOldSchema>) => z.infer<TNewSchema>
+type ZustandStorageConfig<TSchema extends z.ZodSchema> = {
+  name: string
+  version: number
+  schema: TSchema
+  defaultState: z.infer<TSchema>
+  migrate?: (
+    persistedState: unknown,
+    version: number,
+  ) => z.infer<TSchema> | Promise<z.infer<TSchema>>
 }
 
-export const createZustandStorage = <
-  TSchema extends z.ZodSchema,
-  TPreviousSchema extends z.ZodSchema = TSchema,
->(
-  version: number,
-  stateSchema: TSchema,
-  defaultState: z.infer<TSchema>,
-  previousVersion?: PreviousVersionProps<TPreviousSchema, TSchema>,
-) => {
+export const createZustandStorage = <TSchema extends z.ZodSchema>(
+  config: ZustandStorageConfig<TSchema>,
+): Pick<
+  PersistOptions<z.infer<TSchema>>,
+  "name" | "version" | "storage" | "migrate"
+> => {
+  const { name, version, schema, defaultState, migrate } = config
+
   const versionedStateSchema = z.object({
     version: z.literal(version),
-    state: stateSchema,
+    state: schema,
   })
 
-  const versionedStateSchemaPrevious = previousVersion
-    ? z.object({
-        version: z.literal(version - 1),
-        state: previousVersion.previousStateSchema,
-      })
-    : null
-
-  return createJSONStorage(() => ({
-    getItem: async (name) => {
-      const data = window.localStorage.getItem(name)
+  const storage = createJSONStorage(() => ({
+    getItem: async (key) => {
+      const data = window.localStorage.getItem(key)
 
       if (data) {
         try {
@@ -43,28 +42,7 @@ export const createZustandStorage = <
             return JSON.stringify(validatedData.data)
           }
 
-          if (versionedStateSchemaPrevious) {
-            const validatedDataPrevious =
-              versionedStateSchemaPrevious.safeParse(parsedData)
-
-            if (validatedDataPrevious.success && previousVersion) {
-              return JSON.stringify({
-                state: previousVersion.migrate(
-                  (
-                    validatedDataPrevious.data as {
-                      state: z.infer<TPreviousSchema>
-                    }
-                  ).state,
-                ),
-                version,
-              })
-            }
-          }
-
-          return JSON.stringify({
-            state: defaultState,
-            version,
-          })
+          return data
         } catch (err) {
           console.error(err)
         }
@@ -72,14 +50,21 @@ export const createZustandStorage = <
 
       return JSON.stringify({
         state: defaultState,
-        version,
+        version: 0,
       })
     },
-    setItem(name, value) {
-      window.localStorage.setItem(name, value)
+    setItem(key, value) {
+      window.localStorage.setItem(key, value)
     },
-    removeItem(name) {
-      window.localStorage.removeItem(name)
+    removeItem(key) {
+      window.localStorage.removeItem(key)
     },
   }))
+
+  return {
+    name,
+    version,
+    storage: storage as PersistStorage<z.infer<TSchema>>,
+    migrate,
+  }
 }
