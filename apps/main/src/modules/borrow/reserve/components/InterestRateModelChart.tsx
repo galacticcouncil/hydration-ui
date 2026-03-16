@@ -67,7 +67,7 @@ export const InterestRateModelChart: React.FC<InterestRateModelChartProps> = ({
 
   return (
     <AreaChart
-      aspectRatio="2.5 / 1"
+      aspectRatio={["2 / 1", "4 / 1"]}
       data={rates}
       gradient="none"
       xAxisProps={{

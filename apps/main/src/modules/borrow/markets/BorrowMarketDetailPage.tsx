@@ -38,7 +38,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
   const { t } = useTranslation(["borrow"])
   const [mode, setMode] = useState<"overview" | "actions">("overview")
   const { data: reserves, isLoading } = useMarketAssetsData()
-  const { gte } = useBreakpoints()
+  const { isTablet, isMobile } = useBreakpoints()
 
   const reserve = reserves.find(
     (reserve) => reserve.underlyingAsset === address,
@@ -55,7 +55,7 @@ export const BorrowMarketDetailPage: FC<BorrowMarketDetailPageProps> = ({
   if (!isLoading && !asset) return <Navigate to={LINKS.borrowMarkets} />
   if (!reserve) return null
 
-  const filterVisible = !gte("lg")
+  const filterVisible = isTablet || isMobile
   const overviewVisible = mode === "overview" || !filterVisible
   const actionsVisible = mode === "actions" || !filterVisible
 
