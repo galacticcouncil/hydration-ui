@@ -9,6 +9,7 @@ import { useSettingsStore } from "state/store"
 import { usePriceSubscriber } from "./spotPrice"
 import { useProviderMetadata } from "./provider"
 import { useOmnipoolVolumeSubscription } from "./omnipool"
+import BN from "bignumber.js"
 import { useActiveQueries } from "hooks/useActiveQueries"
 import { Balance } from "@galacticcouncil/sdk"
 import {
@@ -22,7 +23,7 @@ import { NATIVE_ASSET_ID } from "utils/api"
 import { TBalance } from "./balances"
 import { setAccountBalances, setIsAccountBalance } from "./deposits"
 import { percentageDifference } from "utils/helpers"
-import { produce } from "immer"
+import { Draft, produce } from "immer"
 
 const ERC20_THRESHOLD = 0.01
 
@@ -199,7 +200,10 @@ export function useBalanceSubscription() {
         accountAddress,
         (assetId: string, balance: Balance) => {
           if (balance.total !== "0") {
-            queryClient.setQueryData(QUERY_KEYS.accountSystemBalance, balance)
+            queryClient.setQueryData(
+              QUERY_KEYS.accountSystemBalance,
+              produce(balance, consolidateBalance),
+            )
           } else {
             queryClient.setQueryData(QUERY_KEYS.accountSystemBalance, false)
           }
@@ -215,7 +219,7 @@ export function useBalanceSubscription() {
 
           for (const [assetId, balance] of balances) {
             if (balance.total !== "0") {
-              validBalances.set(assetId, balance)
+              validBalances.set(assetId, produce(balance, consolidateBalance))
             }
           }
 
@@ -280,6 +284,8 @@ export function useBalanceSubscription() {
               if (maxReserve) {
                 balance.transferable = maxReserve.amount.toString()
               }
+
+              consolidateBalance(balance)
             }
           })
 
@@ -401,4 +407,10 @@ export function useBalanceSubscription() {
       setIsAccountBalance(data.isBalance)
     }
   }, [data?.isBalance])
+}
+
+function consolidateBalance(balance: Draft<Balance>): void {
+  if (BN(balance.transferable).lt(0)) {
+    balance.transferable = "0"
+  }
 }
