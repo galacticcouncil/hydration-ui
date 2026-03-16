@@ -20,6 +20,7 @@ import {
 import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary } from "polkadot-api"
+import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
 import { formatEther, getContract, Hex } from "viem"
 
@@ -58,6 +59,7 @@ export const evmAccountBindingQuery = (
 }
 
 export const useBindEvmAccount = (address: string) => {
+  const { t } = useTranslation("borrow")
   const rpc = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
   const queryClient = useQueryClient()
@@ -68,6 +70,10 @@ export const useBindEvmAccount = (address: string) => {
       return createTransaction(
         {
           tx,
+          toasts: {
+            submitted: t("binding.toast.submitted"),
+            success: t("binding.toast.success"),
+          },
         },
         {
           onSuccess: () =>
