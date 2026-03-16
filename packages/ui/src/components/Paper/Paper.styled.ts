@@ -18,19 +18,9 @@ const variants = createVariants((theme) => ({
 }))
 
 export const SPaper = styled(Box)<PaperProps>(
-  ({ theme, variant = "bordered", hoverable = false }) => [
+  ({ theme, variant = "bordered" }) => [
     variants(variant),
-    hoverable &&
-      css`
-        transition: ${theme.transitions.transform};
-        transition-timing-function: ${theme.easings.outExpo};
-        transition-duration: 0.5s;
-        &:hover {
-          transform: translateY(-0.25rem);
-        }
-      `,
     css`
-      position: relative;
       background-color: ${theme.surfaces.themeBasePalette.surfaceHigh};
     `,
   ],
