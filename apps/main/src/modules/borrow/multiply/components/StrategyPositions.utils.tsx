@@ -1,7 +1,8 @@
 import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
-import { AssetLabel, Button, Flex } from "@galacticcouncil/ui/components"
+import { AssetLabel, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { Amount } from "@galacticcouncil/ui/components/Amount"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
@@ -254,6 +255,13 @@ export const useStrategyAssetsColumns = () => {
       }),
       assetsColumnHelper.accessor("positionsAmount", {
         header: "Positions Amount",
+        cell: ({ row }) => {
+          return (
+            <Text fw={500} fs="p5" lh="s" color={getToken("text.high")}>
+              {row.original.positionsAmount}
+            </Text>
+          )
+        },
       }),
 
       assetsColumnHelper.display({
