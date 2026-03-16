@@ -1,6 +1,7 @@
 import { Flex, Stack, ValueStats } from "@galacticcouncil/ui/components"
 
 import { FeaturedStrategies } from "@/modules/borrow/multiply/components/FeaturedStrategies"
+import { StrategyPositions } from "@/modules/borrow/multiply/components/StrategyPositions"
 
 export const MultiplyPage = () => {
   return (
@@ -26,6 +27,7 @@ export const MultiplyPage = () => {
           />
         </Stack>
       </Flex>
+      <StrategyPositions />
       <FeaturedStrategies />
     </Stack>
   )
