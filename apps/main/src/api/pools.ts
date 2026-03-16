@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import { millisecondsInMinute } from "date-fns/constants"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { HUB_ID } from "@/utils/consts"
@@ -22,6 +23,7 @@ export const PoolType = pool.PoolType
 
 export const allPools = (sdk: SdkCtx) =>
   queryOptions({
+    gcTime: millisecondsInMinute,
     queryKey: ["allPools"],
     queryFn: async () => {
       const pools = await sdk.api.router.getPools()
@@ -80,7 +82,7 @@ export const stablePoolsQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
 
       return stablePools
     },
-    staleTime: Infinity,
+    gcTime: millisecondsInMinute,
   })
 
 export const hubTokenQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
@@ -91,7 +93,7 @@ export const hubTokenQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
 
       return hub
     },
-    staleTime: Infinity,
+    gcTime: millisecondsInMinute,
   })
 
 export const omnipoolTokensQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
@@ -104,7 +106,7 @@ export const omnipoolTokensQuery = (sdk: SdkCtx, queryClient: QueryClient) =>
 
       return omnipoolTokens
     },
-    staleTime: Infinity,
+    gcTime: millisecondsInMinute,
   })
 
 export const xykPoolQuery = (
@@ -165,6 +167,25 @@ export const useOmnipoolIds = () => {
       )
 
       return omnipoolTokens.map((token) => token.id.toString())
+    },
+    staleTime: Infinity,
+    enabled: isApiLoaded,
+    notifyOnChangeProps: [],
+  })
+}
+
+export const useStablepoolIds = () => {
+  const { isApiLoaded, sdk } = useRpcProvider()
+  const queryClient = useQueryClient()
+
+  return useQuery({
+    queryKey: ["stablepoolIds"],
+    queryFn: async () => {
+      const stablePools = await queryClient.ensureQueryData(
+        stablePoolsQuery(sdk, queryClient),
+      )
+
+      return stablePools.map((pool) => pool.id.toString())
     },
     staleTime: Infinity,
     enabled: isApiLoaded,

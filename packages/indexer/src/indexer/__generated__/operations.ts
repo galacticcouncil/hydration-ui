@@ -24,6 +24,13 @@ export type OtcOrderStatusQueryVariables = Types.Exact<{
 
 export type OtcOrderStatusQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', args?: any | null }> };
 
+export type PureCreatedEventsQueryVariables = Types.Exact<{
+  purePublicKey: Types.Scalars['String']['input'];
+}>;
+
+
+export type PureCreatedEventsQuery = { __typename?: 'Query', events: Array<{ __typename?: 'Event', block: { __typename?: 'Block', height: number }, extrinsic?: { __typename?: 'Extrinsic', indexInBlock: number } | null }> };
+
 export type AccumulatedRpsUpdatedEventsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 

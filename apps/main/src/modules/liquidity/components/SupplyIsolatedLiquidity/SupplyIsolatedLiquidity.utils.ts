@@ -24,7 +24,6 @@ import z from "zod"
 import { healthFactorQuery } from "@/api/aave"
 import { TAssetData, TErc20 } from "@/api/assets"
 import {
-  lendingPoolAddressProvider,
   useBorrowAssetsApy,
   useBorrowDisableCollateralTxs,
   userBorrowSummaryQueryKey,
@@ -187,7 +186,7 @@ export const useSupplyIsolatedLiquidity = ({
           queryClient.invalidateQueries({
             queryKey: userBorrowSummaryQueryKey(
               H160.fromAny(account?.address ?? ""),
-              lendingPoolAddressProvider,
+              false,
             ),
           })
         },

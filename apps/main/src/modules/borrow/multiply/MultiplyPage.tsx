@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { FeaturedStrategies } from "@/modules/borrow/multiply/components/FeaturedStrategies"
 import { MultiplyAssetsTable } from "@/modules/borrow/multiply/components/MultiplyAssetsTable"
+import { StrategyPositions } from "@/modules/borrow/multiply/components/StrategyPositions"
 
 export const MultiplyPage = () => {
   const { t } = useTranslation("borrow")
@@ -34,6 +35,7 @@ export const MultiplyPage = () => {
           />
         </Stack>
       </Flex>
+      <StrategyPositions />
       <SectionHeader title={t("multiply.featuredStrategies")} />
       <FeaturedStrategies />
       <SectionHeader title={t("multiply.allPairs")} />
