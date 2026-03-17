@@ -50,7 +50,7 @@ export const TransactionItemMobile: FC<Props> = ({
     statusProps.status === TransactionStatusVariant.Success
       ? [statusProps.sent, statusProps.received]
       : [null, null]
-
+  console.log({ statusProps })
   return (
     <TransactionItemMobileContainer>
       <Flex justify="space-between" flex={1} p="l" className={className}>

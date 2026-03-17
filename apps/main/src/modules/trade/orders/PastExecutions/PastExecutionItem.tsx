@@ -25,7 +25,7 @@ export const PastExecutionItem: FC<Props> = ({
   const { data: decodedError } = useQuery(
     decodePjsErrorQuery(execution.errorState),
   )
-
+  console.log({ execution })
   const statusProps =
     execution.status === TransactionStatusVariant.Success
       ? {
