@@ -1,10 +1,17 @@
-import { getVaaHeader, isEvmChain, isSolanaChain } from "@galacticcouncil/utils"
+import {
+  getVaaHeader,
+  isEvmChain,
+  isSolanaChain,
+  isSuiChain,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
+  AnyChain,
   CallType,
   ChainEcosystem,
   EvmChain,
   SolanaChain,
+  SuiChain,
 } from "@galacticcouncil/xc-core"
 import type {
   XcJourney,
@@ -16,6 +23,8 @@ import {
   EvmClaim,
   SolanaCall,
   SolanaClaim,
+  SuiCall,
+  SuiClaim,
 } from "@galacticcouncil/xc-sdk"
 import { minutesToMilliseconds } from "date-fns"
 
@@ -25,8 +34,6 @@ import {
 } from "@/modules/xcm/history/utils/assets"
 
 const CLAIM_THRESHOLD = minutesToMilliseconds(5)
-
-const BLACKLISTED_SOLANA_ASSETS = ["SOL"]
 
 function hasExceededClaimThreshold(emittedAt: number) {
   const now = Date.now()
@@ -45,13 +52,7 @@ export function isJourneyClaimable(journey: XcJourney): boolean {
   const asset = getTransferAsset(journey)
   if (!asset) return false
 
-  const isBlacklisted =
-    toChain instanceof SolanaChain &&
-    BLACKLISTED_SOLANA_ASSETS.includes(asset.symbol)
-
-  const canClaim = hasExceededClaimThreshold(vaaHeader.timestamp)
-
-  return !isBlacklisted && canClaim
+  return hasExceededClaimThreshold(vaaHeader.timestamp)
 }
 
 export function getClaimableJourneys(journeys: XcJourney[]) {
@@ -87,7 +88,7 @@ export function getJourneyVaaHeader(journey: XcJourney) {
 
 export function resolveChainFromUrn(
   destinationUrn: string,
-): EvmChain | SolanaChain | undefined {
+): AnyChain | undefined {
   const network = resolveNetwork(destinationUrn)
   if (!network) return
 
@@ -99,12 +100,14 @@ export function resolveChainFromUrn(
         return isEvmChain(c) && c.id === Number(chainId)
       case ChainEcosystem.Solana:
         return isSolanaChain(c) && c.id === Number(chainId)
+      case ChainEcosystem.Sui:
+        return isSuiChain(c) && c.id === chainId
       default:
         return false
     }
   })
 
-  return chain as EvmChain | SolanaChain | undefined
+  return chain
 }
 
 type ClaimCallResult =
@@ -113,6 +116,11 @@ type ClaimCallResult =
       type: CallType.Solana
       call: SolanaCall | SolanaCall[]
       chain: SolanaChain
+    }
+  | {
+      type: CallType.Sui
+      call: SuiCall
+      chain: SuiChain
     }
 
 export async function buildClaimCall(
@@ -137,6 +145,15 @@ export async function buildClaimCall(
     return {
       type: CallType.Solana,
       call: await solanaClaim.redeem(claimerAddress, vaaRaw),
+      chain: toChain,
+    }
+  }
+
+  if (isSuiChain(toChain)) {
+    const suiClaim = new SuiClaim(toChain)
+    return {
+      type: CallType.Sui,
+      call: await suiClaim.redeem(claimerAddress, vaaRaw),
       chain: toChain,
     }
   }
