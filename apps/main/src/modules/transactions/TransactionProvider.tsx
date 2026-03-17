@@ -15,6 +15,7 @@ import { useWrapTransaction } from "@/modules/transactions/hooks/useWrapTransact
 import {
   doClose,
   doReset,
+  doSetChangingFeePaymentAsset,
   doSetError,
   doSetFeePaymentModalOpen,
   doSetStatus,
@@ -52,6 +53,7 @@ export type TransactionContext = SingleTransaction &
     setTip: (tip: string) => void
     setStatus: (status: TxStatus) => void
     setFeePaymentModalOpen: (open: boolean) => void
+    setIsChangingFeePaymentAsset: (value: boolean) => void
     signAndSubmit: () => void
     reset: () => void
   }
@@ -127,6 +129,13 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const setFeePaymentModalOpen = useCallback(
     (open: boolean) => {
       dispatch(doSetFeePaymentModalOpen(open))
+    },
+    [dispatch],
+  )
+
+  const setIsChangingFeePaymentAsset = useCallback(
+    (value: boolean) => {
+      dispatch(doSetChangingFeePaymentAsset(value))
     },
     [dispatch],
   )
@@ -216,6 +225,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
 
         setTip,
         setFeePaymentModalOpen,
+        setIsChangingFeePaymentAsset,
         onClose,
         setStatus,
         signAndSubmit,
