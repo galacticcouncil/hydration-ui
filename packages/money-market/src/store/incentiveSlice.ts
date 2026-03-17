@@ -56,6 +56,10 @@ export const createIncentiveSlice: StateCreator<
               }),
             ),
         )
+      } else {
+        set({
+          userIncentiveData: [],
+        })
       }
       await Promise.all(promises)
     } catch (e) {
