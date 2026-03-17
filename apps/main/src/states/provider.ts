@@ -36,6 +36,7 @@ export const useRpcListStore = create<RpcListStore>()(
     }),
     {
       name: "rpcList",
+      version: 1,
     },
   ),
 )
@@ -115,7 +116,7 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
     }),
     {
       name: "rpcUrl",
-      version: 3,
+      version: 4,
       partialize: omit(["rpcUrlList"]),
     },
   ),
