@@ -9,6 +9,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { useTotalOmnipoolLiquidity } from "@/api/omnipool"
 import { PoolToken } from "@/api/pools"
 import { useXYKConsts } from "@/api/xyk"
 import { AssetLogo } from "@/components/AssetLogo"
@@ -17,7 +18,6 @@ import {
   isIsolatedPool,
   IsolatedPoolTable,
   OmnipoolAssetTable,
-  useOmnipoolShare,
 } from "@/modules/liquidity/Liquidity.utils"
 import { useAssets } from "@/providers/assetsProvider"
 import { useAssetPrice } from "@/states/displayAsset"
@@ -98,23 +98,30 @@ const OmnipoolValues = ({ data }: { data: OmnipoolAssetTable }) => {
       {displayOmnipoolShare && (
         <>
           <Separator mx={-20} />
-          <OmnipoolShare id={data.id} />
+          <OmnipoolShare tvl={data.tvlDisplay} />
         </>
       )}
     </>
   )
 }
 
-const OmnipoolShare = ({ id }: { id: string }) => {
+const OmnipoolShare = ({ tvl }: { tvl: string | undefined }) => {
   const { t } = useTranslation(["common", "liquidity"])
-  const { omnipoolShare, isLoading: isOmnipoolShareLoading } =
-    useOmnipoolShare(id)
 
+  const {
+    data: totalOmnipoolLiquidity,
+    isLoading: isTotalOmnipoolLiquidityLoading,
+  } = useTotalOmnipoolLiquidity()
+
+  const percent =
+    tvl && totalOmnipoolLiquidity
+      ? Big(tvl).div(totalOmnipoolLiquidity).times(100).toString()
+      : undefined
   return (
     <ValueStats
       label={t("liquidity:details.values.omnipoolShare")}
-      value={t("percent", { value: omnipoolShare })}
-      isLoading={isOmnipoolShareLoading}
+      value={t("percent", { value: percent })}
+      isLoading={isTotalOmnipoolLiquidityLoading}
       wrap
     />
   )
