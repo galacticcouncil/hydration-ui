@@ -67,7 +67,7 @@
   "toast.sidebar.referendums.voted": "Voted",
   "toast.sidebar.important.title": "Important",
   "rpc.change.modal.title": "Change RPC",
-  "rpc.change.modal.newUI.title": "New UI preview",
+  "rpc.change.modal.newUI.title": "New UI",
   "rpc.change.modal.column.name": "Name",
   "rpc.change.modal.column.status": "Status",
   "rpc.change.modal.column.rpc": "RPC Address",
@@ -1594,10 +1594,5 @@
   "blast.campaign.title": "Earn up to {{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }} APY on USDC",
   "blast.campaign.description": "Put your Nova Shots rewards to work — earn up to <0>{{ rewardApy, bignumber(numberSuffix: '%'; type: 'percentage') }}</0> APY on your USDC or buy Bitcoin.",
   "blast.campaign.cta.bitcoin": "Get Bitcoin",
-  "blast.campaign.cta.usdc": "Earn on USDC",
-  "next.banner.title": "Check the new look!",
-  "next.banner.description": "Take a peek at the future of finance! Our platform's fresh design makes trading crypto and hedging with precious metals easier than ever. Get started in just a few clicks and experience the difference.",
-  "next.banner.subtitle": "Jump in and start earning!",
-  "next.banner.cta.skip": "Skip",
-  "next.banner.cta.preview": "Preview new UI"
+  "blast.campaign.cta.usdc": "Earn on USDC"
 }
