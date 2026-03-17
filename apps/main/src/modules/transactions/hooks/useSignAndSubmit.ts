@@ -62,8 +62,14 @@ export const useSignAndSubmit = (
   return useMutation({
     ...options,
     mutationFn: async (txOptions: TxOptions) => {
-      const { tx } = transaction
+      const { tx, isUnsigned } = transaction
+
       const signer = wallet?.signer
+
+      if (isUnsigned && isPapiTransaction(tx)) {
+        return submitUnsignedPolkadotTx(tx, papiClient, txOptions)
+      }
+
       if (isValidEvmCallForPermit(tx, txOptions) && isEthereumSigner(signer)) {
         const permit = await signer.getPermit(tx, txOptions)
         const permitTx = transformPermitToPapiTx(papi, permit)
