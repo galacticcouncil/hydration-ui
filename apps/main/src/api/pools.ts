@@ -18,6 +18,7 @@ export type PoolBase = Omit<pool.PoolBase, "tokens"> & {
 }
 export type PoolToken = pool.PoolToken
 export type PoolFee = pool.PoolFee
+export type PoolError = pool.PoolError
 
 export const PoolType = pool.PoolType
 

@@ -31,6 +31,7 @@ export type TransactionCommon = {
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
+  successMode?: "best" | "finalized"
 }
 
 interface SingleTransactionInput extends TransactionCommon {
@@ -39,7 +40,7 @@ interface SingleTransactionInput extends TransactionCommon {
 
 type SingleTransactionInputDynamic = {
   tx: (
-    results: TSuccessResult[],
+    results: TTransactionResult[],
   ) => Promise<SingleTransactionInput> | SingleTransactionInput
 }
 
@@ -114,8 +115,10 @@ export type TFinalizedResult =
   | SolanaTxStatus
   | SuiTxStatus
 
+export type TTransactionResult = TSuccessResult | TFinalizedResult
+
 export interface TransactionActions {
-  onSuccess?: (event: TSuccessResult) => void
+  onSuccess?: (event: TTransactionResult) => void
   onSubmitted?: (txHash: string) => void
   onError?: (message: string) => void
   onClose?: () => void
@@ -176,7 +179,7 @@ interface TransactionsStore {
   createTransaction: (
     transaction: TransactionInput,
     options?: TransactionOptions,
-  ) => Promise<TSuccessResult>
+  ) => Promise<TTransactionResult>
   cancelTransaction: (id: string) => void
   addPendingTransaction: (
     id: string,
@@ -190,7 +193,7 @@ export const useTransactionsStore = create<TransactionsStore>((set) => ({
   transactions: [],
   pendingTransactions: [],
   createTransaction: (transaction, options) => {
-    return new Promise<TSuccessResult>((resolve, reject) => {
+    return new Promise<TTransactionResult>((resolve, reject) => {
       set((state) => {
         const meta: TransactionMeta =
           "meta" in transaction && transaction.meta
