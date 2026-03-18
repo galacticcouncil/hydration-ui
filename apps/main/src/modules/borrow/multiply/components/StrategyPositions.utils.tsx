@@ -170,7 +170,7 @@ export const useStrategyGroupedPositions = () => {
   }
 }
 
-export const getStrategyByPosition = (position: StrategyPositionsData) => {
+export const getMultiplyPairByPosition = (position: StrategyPositionsData) => {
   const debtAssetId = position.debtReserve
     ? getReserveAssetIdByAddress(position.debtReserve.underlyingAsset)
     : undefined
@@ -483,7 +483,7 @@ export const useClosePositions = () => {
 
       const { proxyAddress } = position
 
-      const strategy = getStrategyByPosition(position)
+      const strategy = getMultiplyPairByPosition(position)
 
       if (!strategy) throw new Error("Strategy not found")
 
@@ -684,17 +684,22 @@ export const useStrategyAssetsColumns = () => {
         id: "actions",
         size: 50,
         cell: ({ row }) => {
+          const position = row.original.positions[0]
+          const pair = position
+            ? getMultiplyPairByPosition(position)
+            : undefined
+          if (!pair) return null
           return (
-            <Button variant="secondary" size="small" asChild>
+            <Button
+              variant="secondary"
+              size="small"
+              asChild
+              onClick={(e) => e.stopPropagation()}
+            >
               <Link
                 to="/borrow/multiply/$id"
                 params={{
-                  id:
-                    MULTIPLY_ASSETS_CONFIG.find(
-                      (config) =>
-                        config.collateralAssetId ===
-                        row.original.suppliedAssetId,
-                    )?.id ?? "",
+                  id: pair.id,
                 }}
               >
                 Go to pair
@@ -708,10 +713,13 @@ export const useStrategyAssetsColumns = () => {
   )
 }
 
-export const getStrategyPositionsColumnsVisibility = (isMobile: boolean) => ({
+export const getStrategyPositionsColumnsVisibility = (
+  isMobile: boolean,
+  actionColumnHidden?: boolean,
+) => ({
   underlyingAssetId: true,
   netWorth: true,
   avgApy: !isMobile,
   positionsAmount: !isMobile,
-  actions: !isMobile,
+  actions: !isMobile && !actionColumnHidden,
 })

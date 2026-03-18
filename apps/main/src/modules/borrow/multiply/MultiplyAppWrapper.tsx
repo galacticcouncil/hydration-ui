@@ -1,9 +1,6 @@
-import { Alert } from "@galacticcouncil/ui/components"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { createProxyFeesQuery, useAccountProxies } from "@/api/proxy"
-import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config/pairs"
 import {
   MultiplyApp,
   MultiplyAppProps,
@@ -13,12 +10,13 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 
 type MultiplyAppWrapperProps = Pick<
   MultiplyAppProps,
-  "collateralReserve" | "debtReserve"
+  "collateralReserve" | "debtReserve" | "strategy"
 >
 
 export const MultiplyAppWrapper = ({
   collateralReserve,
   debtReserve,
+  strategy,
 }: MultiplyAppWrapperProps) => {
   const rpc = useRpcProvider()
   const { data: proxies = [], isLoading: isProxiesLoading } =
@@ -32,18 +30,6 @@ export const MultiplyAppWrapper = ({
   const proxyCreationFee =
     proxyFees.proxyDepositBase +
     proxyFees.proxyDepositFactor * BigInt(proxies.length)
-
-  const collateralAssetId = getAssetIdFromAddress(
-    collateralReserve.underlyingAsset,
-  )
-
-  const strategy = MULTIPLY_ASSETS_PAIRS.find(
-    (s) => s.collateralAssetId === collateralAssetId,
-  )
-
-  if (!strategy) {
-    return <Alert variant="error" description="Strategy not found" />
-  }
 
   return (
     <MultiplyApp

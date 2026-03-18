@@ -23,7 +23,7 @@ import {
   SStrategyPositionMobile,
 } from "@/modules/borrow/multiply/components/StrategyPosition.styled"
 import {
-  getStrategyByPosition,
+  getMultiplyPairByPosition,
   isLoopedPosition,
   StrategyPositionsData,
   useCloseLoopedPosition,
@@ -54,7 +54,7 @@ const LoopedStrategyPosition = ({
     debtBalance: string
   }
 }) => {
-  const strategy = getStrategyByPosition(position)
+  const strategy = getMultiplyPairByPosition(position)
 
   if (!strategy) throw new Error("Strategy not found")
 

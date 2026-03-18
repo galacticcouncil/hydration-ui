@@ -4,9 +4,16 @@ import { useMemo } from "react"
 
 import { BorrowAssetApyData, useBorrowReserves } from "@/api/borrow"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
-import { FEATURED_RESERVES_COUNT } from "@/modules/borrow/multiply/config/constants"
-import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
-import { MultiplyAssetPairConfig } from "@/modules/borrow/multiply/types"
+import {
+  FEATURED_MULTIPLY_HIGHLIGHTS,
+  MULTIPLY_ASSETS_CONFIG,
+  MULTIPLY_STRATEGIES_BY_ID,
+} from "@/modules/borrow/multiply/config/pairs"
+import {
+  MultiplyAssetPairConfig,
+  MultiplyStrategyConfig,
+} from "@/modules/borrow/multiply/types"
+import { getMaxReservePairLeverage } from "@/modules/borrow/multiply/utils/leverage"
 
 export type MultiplyPair = {
   id: string
@@ -18,13 +25,35 @@ export type MultiplyPair = {
   debtAssetId: string
 }
 
+export type FeaturedMultiplyPairItem = {
+  variant: "pair"
+  pair: MultiplyPair
+}
+
+export type FeaturedMultiplyStrategyItem = {
+  variant: "strategy"
+  strategy: MultiplyStrategyConfig
+  maxApy: number
+  maxLeverage: number
+}
+
+export type FeaturedMultiplyItem =
+  | FeaturedMultiplyPairItem
+  | FeaturedMultiplyStrategyItem
+
+export function getPairSupplyApyPercent(pair: MultiplyPair): number {
+  const baseSupplyApy = Number(pair.collateralReserve.supplyAPY) * 100
+  return pair.apyData?.underlyingSupplyApy ?? baseSupplyApy
+}
+
 export function useMultiplyPairs() {
   const { data, isLoading: isLoadingReserves } = useBorrowReserves()
 
   const { apyMap, isLoading: isLoadingApy } = useApyContext()
 
   const pairs = useMemo(() => {
-    if (!data) return { allPairs: [], featuredPairs: [] }
+    if (!data)
+      return { allPairs: [], featuredItems: [] as FeaturedMultiplyItem[] }
 
     const reserveByAddress = new Map(
       data.formattedReserves.map((r) => [r.underlyingAsset, r]),
@@ -53,11 +82,42 @@ export function useMultiplyPairs() {
       })
     }
 
-    const featuredPairs = allPairs.slice(0, FEATURED_RESERVES_COUNT)
+    const pairById = new Map(allPairs.map((p) => [p.id, p]))
+    const featuredItems: FeaturedMultiplyItem[] = []
+
+    for (const slot of FEATURED_MULTIPLY_HIGHLIGHTS) {
+      if (slot.type === "pair") {
+        const pair = pairById.get(slot.pairId)
+        if (pair) {
+          featuredItems.push({ variant: "pair", pair })
+        }
+      } else {
+        const strategy = MULTIPLY_STRATEGIES_BY_ID[slot.strategyId]
+        const constituentPairs = strategy.pairIds
+          .map((id) => pairById.get(id))
+          .filter((p): p is MultiplyPair => !!p)
+        if (constituentPairs.length === 0) continue
+
+        const maxApy = Math.max(
+          ...constituentPairs.map(getPairSupplyApyPercent),
+        )
+        const maxLeverage = Math.max(
+          ...constituentPairs.map((p) =>
+            getMaxReservePairLeverage(p.collateralReserve, p.debtReserve),
+          ),
+        )
+        featuredItems.push({
+          variant: "strategy",
+          strategy,
+          maxApy,
+          maxLeverage,
+        })
+      }
+    }
 
     return {
       allPairs,
-      featuredPairs,
+      featuredItems,
     }
   }, [data, apyMap])
 
