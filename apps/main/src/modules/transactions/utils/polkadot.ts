@@ -99,6 +99,7 @@ const observeTransactionEvents = <T extends TxEventOrError>(
       const isEvmError = event.events.some(
         ({ type, value }) => type === "EVM" && value.type === "ExecutedFailed",
       )
+
       if (isEvmError) {
         options?.onError(
           formatTxError(event.dispatchError || "EVM execution failed"),

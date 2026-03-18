@@ -13,6 +13,7 @@ export const LOGO_SIZES = {
   small: pxToRem(18),
   medium: pxToRem(24),
   large: pxToRem(36),
+  "extra-large": pxToRem(56),
 } as const
 
 const sizes = createVariants(() =>
