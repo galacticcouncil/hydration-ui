@@ -7,7 +7,7 @@ import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { AboutCard } from "@/modules/borrow/multiply/components/AboutCard"
 import { AssetHeader } from "@/modules/borrow/multiply/components/AssetHeader"
 import { OverviewCard } from "@/modules/borrow/multiply/components/OverviewCard"
-import { MultiplyApp } from "@/modules/borrow/multiply/MultiplyApp"
+import { MultiplyAppWrapper } from "@/modules/borrow/multiply/MultiplyAppWrapper"
 import { MultiplyPositionsTable } from "@/modules/borrow/multiply/MultiplyPositionsTable"
 import { MultiplyAssetPairConfig } from "@/modules/borrow/multiply/types"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -62,7 +62,11 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
           />
           <AboutCard symbol={collateralReserve.symbol} />
         </Stack>
-        <SetupProxyAppWapper collateralReserve={collateralReserve} />
+
+        <MultiplyAppWrapper
+          collateralReserve={collateralReserve}
+          debtReserve={debtReserve}
+        />
       </TwoColumnGrid>
     </Stack>
   )
