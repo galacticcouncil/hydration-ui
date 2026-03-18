@@ -57,7 +57,7 @@ export const useXcScanHistoryColumns = () => {
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.origin} />
             <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(from)}
+              {shortenAccountAddress(from).toLowerCase()}
             </Text>
           </Flex>
         )
@@ -73,7 +73,7 @@ export const useXcScanHistoryColumns = () => {
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.destination} />
             <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(to)}
+              {shortenAccountAddress(to).toLowerCase()}
             </Text>
           </Flex>
         )

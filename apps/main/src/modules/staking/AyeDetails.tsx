@@ -20,7 +20,6 @@ export const AyeDetails: FC<Props> = ({
   value,
   percent,
   percentProps,
-  voted,
 }) => {
   const { t } = useTranslation(["common"])
   const { native } = useAssets()
@@ -36,11 +35,7 @@ export const AyeDetails: FC<Props> = ({
         fw={500}
         fs="p6"
         lh={1}
-        color={
-          voted
-            ? getToken("text.medium")
-            : getToken("surfaces.containers.low.onPrimary")
-        }
+        color={getToken("text.medium")}
         {...percentProps}
       >
         {value ? (

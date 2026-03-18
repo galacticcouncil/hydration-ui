@@ -37,23 +37,28 @@ export const ReferendaStatus: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "staking"])
   const { isMobile } = useBreakpoints()
+
   return (
     <Flex direction="column" gap="l">
       <Flex direction="column" gap="s">
         <SReferendaProgress size="large">
           <Flex position="relative" gap="s">
-            <Box
-              height="2xs"
-              bg="#6FC272"
-              width={`${ayePercent}%`}
-              borderRadius="m"
-            />
-            <Box
-              height="2xs"
-              bg="#FF5757"
-              width={`${nayPercent}%`}
-              borderRadius="m"
-            />
+            {ayePercent > 0 && (
+              <Box
+                height="2xs"
+                bg={getToken("details.chart")}
+                width={`${ayePercent}%`}
+                borderRadius="m"
+              />
+            )}
+            {nayPercent > 0 && (
+              <Box
+                height="2xs"
+                bg="#FF5757"
+                width={`${nayPercent}%`}
+                borderRadius="m"
+              />
+            )}
             <ReferendaThresholdLine
               sx={{ top: "-m" }}
               percentage={thresholdPercent}
@@ -65,9 +70,7 @@ export const ReferendaStatus: FC<Props> = ({
           <AyeDetails
             label={t("staking:referenda.item.aye")}
             labelProps={{
-              color: voted
-                ? getToken("accents.success.emphasis")
-                : getToken("text.lowest"),
+              color: getToken("accents.success.emphasis"),
             }}
             value={ayeValue}
             percent={ayePercent}
@@ -76,9 +79,7 @@ export const ReferendaStatus: FC<Props> = ({
           <AyeDetails
             label={t("staking:referenda.item.threshold")}
             labelProps={{
-              color: voted
-                ? getToken("text.medium")
-                : getToken("surfaces.containers.low.onPrimary"),
+              color: getToken("text.medium"),
               align: "center",
             }}
             percent={thresholdPercent}
@@ -90,9 +91,7 @@ export const ReferendaStatus: FC<Props> = ({
           <AyeDetails
             label={t("staking:referenda.item.nay")}
             labelProps={{
-              color: voted
-                ? getToken("accents.danger.secondary")
-                : getToken("text.lowest"),
+              color: getToken("accents.danger.secondary"),
               align: "right",
             }}
             value={nayValue}
@@ -132,7 +131,7 @@ export const ReferendaStatus: FC<Props> = ({
           <AyeDetails
             label={t("staking:referenda.item.threshold")}
             labelProps={{
-              color: voted ? getToken("text.medium") : getToken("text.lowest"),
+              color: getToken("text.medium"),
               align: "center",
             }}
             percent={supportThreshold}
@@ -144,9 +143,7 @@ export const ReferendaStatus: FC<Props> = ({
           <AyeDetails
             percent={supportMaxPercentage}
             percentProps={{
-              color: voted
-                ? getToken("text.high")
-                : getToken("surfaces.containers.low.onPrimary"),
+              color: getToken("text.high"),
               align: "right",
             }}
             voted={voted}
