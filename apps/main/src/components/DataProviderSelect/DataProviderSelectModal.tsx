@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Flex,
   Modal,
@@ -15,6 +16,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -70,7 +72,16 @@ export const DataProviderSelectModal: React.FC<DataProviderSelectModalProps> = (
               </ToggleGroupItem>
             </ToggleGroup>
             <Flex align="center" justify="space-between">
-              <Text>{t("rpc.change.modal.legacyProvider.title")}</Text>
+              <Box>
+                <Text>{t("rpc.change.modal.legacyProvider.title")}</Text>
+                <Text
+                  fs="p5"
+                  color={getToken("text.medium")}
+                  maxWidth={["100%", "75%"]}
+                >
+                  {t("rpc.change.modal.legacyProvider.desc")}
+                </Text>
+              </Box>
               <Toggle
                 size="large"
                 checked={legacyProvider}
