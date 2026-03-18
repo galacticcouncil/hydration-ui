@@ -110,5 +110,7 @@ export function useWithdrawClaim(journey: XcJourney) {
     },
   })
 
-  return { ...mutation, isWaitingForSignature }
+  const isPending = mutation.isPending || isWaitingForSignature
+
+  return { ...mutation, isPending }
 }
