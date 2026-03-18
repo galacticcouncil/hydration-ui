@@ -31,13 +31,130 @@ export function useLooping(options: UseLoopingStepsProps) {
     stringEquals(r.underlyingAsset, getReserveAddressByAssetId(supplyAssetId)),
   )
 
-  const {
-    batch,
-    targetCollateral,
-    targetDebt,
-    totalCollateral,
-    isLoading: isLoadingBatch,
-  } = useLoopingBatch(options)
+  const { data: gasPrice, isLoading: isLoadingGasPrice } = useQuery(
+    evmGasPriceQuery(rpc),
+  )
+
+  const { data: loopingData, isLoading: isLoadingLoopingData } =
+    useLoopingSteps({
+      amount,
+      multiplier,
+      supplyAssetId,
+      borrowAssetId,
+      assetInId,
+      assetOutId,
+      isParityPair,
+      eModeCategory,
+    })
+
+  const { steps } = loopingData
+
+  const { data: batch, isLoading: isLoadingBatch } = useQuery({
+    enabled:
+      isConnected &&
+      steps.length > 0 &&
+      !!supplyReserve &&
+      !!borrowReserve &&
+      !!assetIn &&
+      !!assetOut &&
+      !!gasPrice,
+    placeholderData: keepPreviousData,
+    queryKey: [
+      "borrow",
+      "looping",
+      "batch",
+      supplyAssetId,
+      borrowAssetId,
+      assetInId,
+      assetOutId,
+      amount,
+      multiplier,
+    ],
+    queryFn: async () => {
+      if (!account) throw new Error("Account not connected")
+      if (!assetIn || !assetOut) throw new Error("Assets not found")
+      if (!supplyReserve) throw new Error("Supply reserve not found")
+      if (!borrowReserve) throw new Error("Borrow reserve not found")
+      if (!gasPrice) throw new Error("Gas estimation failed")
+      if (!poolBundleContract) throw new Error("Pool bundle contract not found")
+
+      const evmAddress = safeConvertAnyToH160(account.address)
+      const amountBig = new Big(amount || "0")
+
+      const batch: LoopingBatchItem[] = []
+
+      const isStrategyAsset =
+        MONEY_MARKET_STRATEGY_ASSETS.includes(supplyAssetId)
+
+      const slippageFactor = isStrategyAsset
+        ? new Big(1).minus(new Big(slippage).div(100))
+        : new Big(1)
+
+      if (isStrategyAsset) {
+        const sell = await sdk.api.router.getBestSell(
+          Number(assetInId),
+          Number(assetOutId),
+          amountBig.toString(),
+        )
+        batch.push({ type: CallType.Substrate, data: sell })
+      } else {
+        const supplyTx = poolBundleContract.supplyTxBuilder.generateTxData({
+          user: evmAddress,
+          reserve: supplyReserve.underlyingAsset,
+          amount: bigShift(amountBig, supplyReserve.decimals).toFixed(0),
+          onBehalfOf: evmAddress,
+          useOptimizedPath: false,
+        })
+        validateLoopingEvmTx(supplyTx, "supply")
+        batch.push({ type: CallType.Evm, data: createEvmTx(supplyTx) })
+      }
+
+      if (eModeCategory !== EModeCategory.NONE) {
+        const eModeTx = await getSetUserEModeTx(eModeCategory)
+        batch.push({ type: CallType.Evm, data: eModeTx })
+      }
+
+      if (supplyReserve.isIsolated) {
+        const enableCollateralTx = await getSetUsageAsCollateralTx(
+          supplyReserve.underlyingAsset,
+          true,
+        )
+
+        batch.push({
+          type: CallType.Evm,
+          data: enableCollateralTx,
+        })
+      }
+
+      // For each step: borrow + swap
+      for (const step of steps) {
+        const borrowAmount = new Big(step.borrow)
+
+        const borrowTx = poolBundleContract.borrowTxBuilder.generateTxData({
+          amount: bigShift(borrowAmount, borrowReserve.decimals)
+            .times(slippageFactor)
+            .toFixed(0),
+          reserve: borrowReserve.underlyingAsset,
+          interestRateMode: InterestRate.Variable,
+          debtTokenAddress: borrowReserve.variableDebtTokenAddress,
+          user: evmAddress,
+          useOptimizedPath: false,
+        })
+        validateLoopingEvmTx(borrowTx, "borrow")
+        batch.push({ type: CallType.Evm, data: createEvmTx(borrowTx) })
+
+        // Swap borrowed asset -> supply aToken
+        const sell = await sdk.api.router.getBestSell(
+          Number(assetInId),
+          Number(assetOutId),
+          borrowAmount.toString(),
+        )
+        batch.push({ type: CallType.Substrate, data: sell })
+      }
+
+      return batch
+    },
+  })
 
   const { mutate: submit, isPending: isSubmitting } = useMutation({
     mutationFn: async () => {

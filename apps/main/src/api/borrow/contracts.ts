@@ -8,7 +8,6 @@ import {
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
 import { queryOptions, useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
 
 import { TProviderData } from "@/api/provider"
 import { ENV } from "@/config/env"
@@ -81,6 +80,19 @@ export const borrowPoolContractQuery = (
       }),
   })
 
+export const borrowPoolBundleContractQuery = (
+  evm: TProviderData["evm"],
+  isLoaded: boolean,
+) =>
+  queryOptions({
+    queryKey: ["borrowPoolBundleContract"],
+    enabled: isLoaded,
+    queryFn: () =>
+      new PoolBundle(new Web3Provider(evm.transport), {
+        POOL: AaveV3HydrationMainnet.POOL,
+      }),
+  })
+
 export const useBorrowPoolDataContract = () => {
   const rpc = useRpcProvider()
 
@@ -116,11 +128,11 @@ export const useBorrowPoolContract = () => {
 }
 
 export const useBorrowPoolBundleContract = () => {
-  const { evm } = useRpcProvider()
+  const rpc = useRpcProvider()
 
-  return useMemo(() => {
-    return new PoolBundle(new Web3Provider(evm.transport), {
-      POOL: AaveV3HydrationMainnet.POOL,
-    })
-  }, [evm])
+  const { data } = useQuery(
+    borrowPoolBundleContractQuery(rpc.evm, rpc.isLoaded),
+  )
+
+  return data
 }
