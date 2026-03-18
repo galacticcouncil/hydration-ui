@@ -41,7 +41,7 @@ export const XcScanHistory = ({ address }: Props) => {
           return (
             <JsonView
               src={{
-                stops: journey.stops,
+                journey,
                 ...(vaaHeader && { vaaHeader }),
               }}
               collapseObjectsAfterLength={4}

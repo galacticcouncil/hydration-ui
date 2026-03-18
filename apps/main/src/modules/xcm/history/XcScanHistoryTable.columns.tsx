@@ -26,6 +26,7 @@ import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
+import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { toDecimal } from "@/utils/formatting"
 
 const columnHelper = createColumnHelper<XcJourney>()
@@ -51,13 +52,12 @@ export const useXcScanHistoryColumns = () => {
       id: XcScanHistoryTableColumnId.From,
       header: t("from"),
       cell: ({ row }) => {
-        const from = row.original.fromFormatted || row.original.from
-
+        const { from } = getFormattedAddresses(row.original)
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.origin} />
             <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(from).toLowerCase()}
+              {shortenAccountAddress(from)}
             </Text>
           </Flex>
         )
@@ -68,12 +68,12 @@ export const useXcScanHistoryColumns = () => {
       id: XcScanHistoryTableColumnId.To,
       header: t("to"),
       cell: ({ row }) => {
-        const to = row.original.toFormatted || row.original.to
+        const { to } = getFormattedAddresses(row.original)
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.destination} />
             <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(to).toLowerCase()}
+              {shortenAccountAddress(to)}
             </Text>
           </Flex>
         )

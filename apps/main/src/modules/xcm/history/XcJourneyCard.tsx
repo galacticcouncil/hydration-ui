@@ -29,28 +29,20 @@ import {
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
 import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
+import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
-  const {
-    origin,
-    destination,
-    sentAt,
-    correlationId,
-    status,
-    fromFormatted,
-    from,
-    toFormatted,
-    to,
-    totalUsd,
-  } = journey
+  const { origin, destination, sentAt, correlationId, status, totalUsd } =
+    journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
 
   const originNetwork = resolveNetwork(origin)
   const destinationNetwork = resolveNetwork(destination)
   const transferAsset = getTransferAsset(journey)
+  const { from, to } = getFormattedAddresses(journey)
 
   const link = xcscan.tx(correlationId)
 
@@ -130,16 +122,18 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
 
         <Stack>
           <Flex gap="s" align="center">
-            <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-              {t("from")}:{" "}
-              {shortenAccountAddress(fromFormatted || from).toLowerCase()}
-            </Text>
+            {from && (
+              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                {t("from")}: {shortenAccountAddress(from)}
+              </Text>
+            )}
           </Flex>
           <Flex gap="s" align="center">
-            <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-              {t("to")}:{" "}
-              {shortenAccountAddress(toFormatted || to).toLowerCase()}
-            </Text>
+            {to && (
+              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                {t("to")}: {shortenAccountAddress(to)}
+              </Text>
+            )}
           </Flex>
         </Stack>
 
