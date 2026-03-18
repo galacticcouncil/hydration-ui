@@ -6,14 +6,6 @@ type Props = {
   readonly voted?: boolean
 }
 
-export const ReferendaSeparator: FC<Props> = ({ voted }) => {
-  return (
-    <Separator
-      bg={
-        voted
-          ? getToken("details.borders")
-          : getToken("surfaces.containers.low.border")
-      }
-    />
-  )
+export const ReferendaSeparator: FC<Props> = () => {
+  return <Separator bg={getToken("details.borders")} mx="-l" />
 }
