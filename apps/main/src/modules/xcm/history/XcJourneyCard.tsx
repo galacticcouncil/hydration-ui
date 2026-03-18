@@ -122,14 +122,18 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
 
         <Stack>
           <Flex gap="s" align="center">
-            <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-              {t("from")}: {shortenAccountAddress(from)}
-            </Text>
+            {from && (
+              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                {t("from")}: {shortenAccountAddress(from)}
+              </Text>
+            )}
           </Flex>
           <Flex gap="s" align="center">
-            <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-              {t("to")}: {shortenAccountAddress(to)}
-            </Text>
+            {to && (
+              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                {t("to")}: {shortenAccountAddress(to)}
+              </Text>
+            )}
           </Flex>
         </Stack>
 
