@@ -9,19 +9,19 @@ import { Image } from "../Image"
 import { LogoSize } from "./Logo"
 
 export const LOGO_SIZES = {
-  "extra-small": pxToRem(12),
-  small: pxToRem(18),
-  medium: pxToRem(24),
-  large: pxToRem(36),
+  "extra-small": 12,
+  small: 18,
+  medium: 24,
+  large: 36,
 } as const
 
 const sizes = createVariants(() =>
   mapValues(
     LOGO_SIZES,
     (size) => css`
-      width: ${size};
-      height: ${size};
-      font-size: ${size};
+      width: ${pxToRem(size)};
+      height: ${pxToRem(size)};
+      font-size: ${pxToRem(size)};
     `,
   ),
 )

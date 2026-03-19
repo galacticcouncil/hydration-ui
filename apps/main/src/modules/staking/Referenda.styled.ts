@@ -24,21 +24,18 @@ type SReferendaProps = {
 }
 
 export const SReferenda = styled.div<SReferendaProps>(
-  ({ theme, voted }) => css`
+  ({ theme }) => css`
     display: flex;
     flex-direction: column;
-    gap: ${theme.space.base};
+    gap: ${theme.space.l};
 
     min-width: 22rem;
     padding-inline: ${theme.space.l};
-    padding-block: ${theme.space.xl};
+    padding-block: ${theme.space.l};
     border-radius: ${theme.radii.xl};
-    background: ${voted
-      ? theme.surfaces.containers.high.primary
-      : theme.surfaces.containers.low.primary};
+    background: ${theme.surfaces.containers.high.primary};
 
-    border: solid 1px
-      ${voted ? theme.details.borders : theme.surfaces.containers.low.border};
+    border: solid 1px ${theme.details.borders};
   `,
 )
 
@@ -48,11 +45,11 @@ export const SReferendaProgress = styled.div<{
   ({ theme, size }) => css`
     display: grid;
 
-    padding-inline: ${theme.space.base};
-    padding-block: ${size === "small" ? theme.space.s : theme.space.base};
+    padding-inline: ${theme.space.s};
+    padding-block: ${size === "small" ? theme.space.xs : theme.space.s};
 
-    background: #4d525f1a;
-    border: solid 1px #7c7f8a33;
-    border-radius: 12px;
+    background: ${theme.surfaces.containers.dim.dimOnBg};
+    border: solid 1px ${theme.controls.dim.accent};
+    border-radius: ${theme.radii.full};
   `,
 )

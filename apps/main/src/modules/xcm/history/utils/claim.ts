@@ -1,6 +1,8 @@
 import {
   getVaaHeader,
+  isAnyParachain,
   isEvmChain,
+  isEvmParachain,
   isSolanaChain,
   isSuiChain,
 } from "@galacticcouncil/utils"
@@ -10,6 +12,7 @@ import {
   CallType,
   ChainEcosystem,
   EvmChain,
+  Parachain,
   SolanaChain,
   SuiChain,
 } from "@galacticcouncil/xc-core"
@@ -23,6 +26,8 @@ import {
   EvmClaim,
   SolanaCall,
   SolanaClaim,
+  SubstrateCall,
+  SubstrateClaim,
   SuiCall,
   SuiClaim,
 } from "@galacticcouncil/xc-sdk"
@@ -102,6 +107,9 @@ export function resolveChainFromUrn(
         return isSolanaChain(c) && c.id === Number(chainId)
       case ChainEcosystem.Sui:
         return isSuiChain(c) && c.id === chainId
+      case ChainEcosystem.Polkadot:
+      case ChainEcosystem.Kusama:
+        return isAnyParachain(c) && c.parachainId === Number(chainId)
       default:
         return false
     }
@@ -121,6 +129,11 @@ type ClaimCallResult =
       type: CallType.Sui
       call: SuiCall
       chain: SuiChain
+    }
+  | {
+      type: CallType.Substrate
+      call: SubstrateCall
+      chain: Parachain
     }
 
 export async function buildClaimCall(
@@ -154,6 +167,18 @@ export async function buildClaimCall(
     return {
       type: CallType.Sui,
       call: await suiClaim.redeem(claimerAddress, vaaRaw),
+      chain: toChain,
+    }
+  }
+
+  if (isAnyParachain(toChain)) {
+    const moonbeam = chainsMap.get("moonbeam")
+    if (!moonbeam || !isEvmParachain(moonbeam)) return undefined
+
+    const substrateClaim = new SubstrateClaim(moonbeam)
+    return {
+      type: CallType.Substrate,
+      call: await substrateClaim.redeemMrlViaXcm(claimerAddress, vaaRaw),
       chain: toChain,
     }
   }
