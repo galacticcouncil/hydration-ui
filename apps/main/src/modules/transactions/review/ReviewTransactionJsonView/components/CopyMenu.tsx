@@ -16,7 +16,7 @@ import {
   MenuItemLabel,
   MenuSelectionItem,
 } from "@galacticcouncil/ui/components"
-import { safeStringify } from "@galacticcouncil/utils"
+import { JsonValue, safeStringify } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 import { isObjectType } from "remeda"
 
@@ -25,7 +25,7 @@ import { CopyMenuTrigger } from "./CopyMenu.styled"
 export type CopyMenuProps = {
   txUrl?: string
   txCallHash?: string
-  txJson?: object
+  txJson?: object | JsonValue
 }
 
 export const CopyMenu: React.FC<CopyMenuProps> = ({
