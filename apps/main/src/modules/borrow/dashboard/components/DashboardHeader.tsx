@@ -39,7 +39,7 @@ export const DashboardHeader = () => {
     healthFactorColor,
     isHealthFactorValid,
     healthFactorLevel,
-  } = useFormattedHealthFactor(user.healthFactor)
+  } = useFormattedHealthFactor(isConnected ? user.healthFactor : "-1")
 
   return (
     <>
