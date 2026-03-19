@@ -1,23 +1,22 @@
 import { stablepoolYieldMetricsQuery } from "@galacticcouncil/indexer/squid"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { ReserveIncentiveResponse } from "@galacticcouncil/money-market/types"
-import {
-  PRIME_APY,
-  PRIME_ASSET_ID,
-} from "@galacticcouncil/money-market/ui-config"
 import { getUserClaimableRewards } from "@galacticcouncil/money-market/utils"
 import {
   getAddressFromAssetId,
   getAssetIdFromAddress,
   useStableArray,
 } from "@galacticcouncil/utils"
-import { useQuery, UseQueryResult } from "@tanstack/react-query"
+import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { useMemo } from "react"
-import { zip } from "remeda"
 
-import { useBorrowReserves, useUserBorrowSummary } from "@/api/borrow/queries"
-import { useDefillamaLatestApyQueries } from "@/api/external/defillama"
+import {
+  ExternalApyType,
+  useBorrowReserves,
+  useExternalApys,
+  useUserBorrowSummary,
+} from "@/api/borrow/queries"
 import { useSquidClient } from "@/api/provider"
 import { useStablepoolsReserves } from "@/modules/liquidity/Liquidity.utils"
 import { TStablepoolDetails } from "@/modules/liquidity/Liquidity.utils"
@@ -29,7 +28,7 @@ import {
 
 type UnderlyingAssetApy = {
   id: string
-  isStaked: boolean
+  apyType?: ExternalApyType
   supplyApy: number
   borrowApy: number
 }
@@ -96,16 +95,14 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     return [...new Set(ids)]
   }, [assetIdsMemo, getAsset])
 
-  const externalApys = useDefillamaLatestApyQueries(allAssetIds)
-  const externalApysMap = useMemo(() => {
-    const externalApyEntries = zip(allAssetIds, externalApys)
-    return new Map(externalApyEntries)
-  }, [allAssetIds, externalApys])
+  const { data: externalApys, isLoading: isLoadingExternalApys } =
+    useExternalApys(allAssetIds)
 
   const isLoading =
     isLoadingBorrowReserves ||
     isLoadingStablepoolsReserves ||
-    isYieldMetricsLoading
+    isYieldMetricsLoading ||
+    isLoadingExternalApys
 
   const data = useMemo<BorrowAssetApyData[]>(() => {
     if (isLoading) return []
@@ -142,7 +139,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
         stableSwapAssetIds,
         underlyingReserves,
         assetReserve?.aIncentivesData ?? [],
-        externalApysMap,
+        new Map(externalApys),
         stablepoolData,
         lpAPY ?? 0,
         getRelatedAToken,
@@ -160,7 +157,7 @@ export const useBorrowAssetsApy = (assetIds: string[]) => {
     getRelatedAToken,
     assetIdsMemo,
     stablepoolsMap,
-    externalApysMap,
+    externalApys,
     getAsset,
     getErc20AToken,
     isLoading,
@@ -255,7 +252,7 @@ const calculateAssetApyTotals = (
   stableSwapAssetIds: string[],
   underlyingReserves: ComputedReserveData[],
   incentives: ReserveIncentiveResponse[],
-  externalApysMap: Map<string, UseQueryResult<number>>,
+  externalApysMap: Map<string, { apyType: ExternalApyType; apy?: number }>,
   stablepoolData: TStablepoolDetails | undefined,
   lpAPY: number,
   getRelatedAToken: TAssetsContext["getRelatedAToken"],
@@ -276,11 +273,7 @@ const calculateAssetApyTotals = (
 
       return {
         id,
-        isStaked: false,
-        supplyApy: (id === PRIME_ASSET_ID ? Big(PRIME_APY) : supplyAPY)
-          .times(100)
-          .times(proportion)
-          .toNumber(),
+        supplyApy: supplyAPY.times(100).times(proportion).toNumber(),
         borrowApy: borrowAPY.times(100).times(proportion).toNumber(),
       }
     },
@@ -289,16 +282,16 @@ const calculateAssetApyTotals = (
   for (const id of stableSwapAssetIds) {
     const externalApy = externalApysMap.get(id)
 
-    if (externalApy?.data) {
+    if (externalApy?.apy) {
       const proportion =
         calculateAssetProportionInStablepool(id, stablepoolData) ||
         1 / assetCount
 
       underlyingAssetsApyData.push({
         id,
-        isStaked: true,
-        supplyApy: Big(externalApy.data).times(proportion).toNumber(),
-        borrowApy: Big(externalApy.data).times(proportion).toNumber(),
+        apyType: externalApy.apyType,
+        supplyApy: Big(externalApy.apy).times(proportion).toNumber(),
+        borrowApy: Big(externalApy.apy).times(proportion).toNumber(),
       })
     }
   }

@@ -86,19 +86,20 @@ type CollapsibleProps = CollapsibleRootProps &
       }
   )
 const Collapsible: React.FC<CollapsibleProps> = (props) => {
-  const { children, ...rootProps } = props
+  const { children, label, actionLabel, actionLabelWhenOpen, ...rootProps } =
+    props
 
   const trigger = (() => {
     if (isValidElement(props.trigger)) {
       return props.trigger
     }
 
-    if (props.label && props.actionLabel) {
+    if (label && actionLabel) {
       return (
         <DefaultCollapsibleTrigger
-          label={props.label}
-          actionLabel={props.actionLabel}
-          actionLabelWhenOpen={props.actionLabelWhenOpen}
+          label={label}
+          actionLabel={actionLabel}
+          actionLabelWhenOpen={actionLabelWhenOpen}
         />
       )
     }

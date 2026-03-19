@@ -6,6 +6,8 @@
   "binding.banner.cta": "Enable Borrowing",
   "binding.banner.description": "Bind your account to continue. Supply your crypto into a lending pool, accumulate rewards and borrow against your positions.",
   "binding.banner.title": "Borrow on Hydration",
+  "binding.toast.submitted": "Binding account...",
+  "binding.toast.success": "Account bound successfully",
   "borrow": "Borrow",
   "borrow.available": "Available to borrow",
   "borrow.cap": "Borrow Cap",
@@ -103,5 +105,11 @@
   "utilization.current": "Current",
   "utilization.optimal": "Optimal",
   "utilization.rate": "Utilization Rate",
-  "withdraw": "Withdraw"
+  "withdraw": "Withdraw",
+  "alert.supplyIsolated": "To supply {{ symbol }} and enter isolated mode, all current collaterals will be disabled",
+  "alert.borrowIsolated": "To borrow against {{ symbol }} collateral, your account must be in Isolated Mode. To continue, switch to an account with no active loans or repay all existing positions.",
+  "alert.enableIsolatedMode.desc": "In Isolation mode, you cannot supply other assets as collateral. A global debt ceiling limits the borrowing power of the isolated asset. To exit isolation mode, disable {{ symbol }} as collateral before borrowing another asset.",
+  "alert.enableIsolatedMode.title": "You are entering Isolated mode",
+  "supply.isolated.toasts.submitted": "Supplying {{ value }} and entering isolated mode...",
+  "supply.isolated.toasts.success": "Supplied {{ value }} and entered isolated mode."
 }

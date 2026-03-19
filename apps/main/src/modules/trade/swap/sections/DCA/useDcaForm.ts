@@ -1,14 +1,16 @@
 import {
   getTimeFrameMillis,
   getTimeFrameSchema,
+  TIME_FRAME_MS,
   TimeFrame,
+  TimeFrameType,
   timeFrameTypes,
 } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import { Account, useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
-import { millisecondsInHour } from "date-fns/constants"
+import { millisecondsInDay, millisecondsInHour } from "date-fns/constants"
 import { useEffect } from "react"
 import { FieldPath, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -40,6 +42,7 @@ export const getAbsoluteMaxDcaOrders = (duration: TimeFrame): number => {
 export enum DcaOrdersMode {
   Custom = "Custom",
   Auto = "Auto",
+  OpenBudget = "OpenBudget",
 }
 
 const ordersSchema = z.discriminatedUnion("type", [
@@ -54,6 +57,10 @@ const ordersSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal(DcaOrdersMode.Auto),
     value: z.never().optional(),
+  }),
+  z.object({
+    type: z.literal(DcaOrdersMode.OpenBudget),
+    useSplitTrade: z.boolean(),
   }),
 ])
 
@@ -71,30 +78,67 @@ const schemaBase = z.object({
   orders: ordersSchema,
 })
 
+const MAX_OPEN_BUDGET_YEAR_FRAME = 1
+const MAX_YEAR_FRAME = 5
+const MAX_TIME_FRAME_MS = millisecondsInDay * MAX_YEAR_FRAME * 365
+const MAX_OPEN_BUDGET_TIME_FRAME_MS =
+  millisecondsInDay * MAX_OPEN_BUDGET_YEAR_FRAME * 365
+
 export type DcaFormValues = z.infer<typeof schemaBase>
+export type DcaDuration = DcaFormValues["duration"]
 
-const schema = schemaBase.superRefine(({ duration, orders }, { addIssue }) => {
-  if (orders.type === DcaOrdersMode.Auto) {
-    return
-  }
+const schema = schemaBase
+  .superRefine(({ duration, orders }, { addIssue }) => {
+    if (orders.type !== DcaOrdersMode.Custom) {
+      return
+    }
 
-  const maxOrders = getAbsoluteMaxDcaOrders(duration)
+    const maxOrders = getAbsoluteMaxDcaOrders(duration)
 
-  if (orders.value && orders.value > maxOrders) {
-    addIssue({
-      code: "custom",
-      message: i18n.t("trade:dca.errors.maxOrders", { count: maxOrders }),
-      path: ["orders.value" satisfies FieldPath<DcaFormValues>],
-    })
-  }
-})
+    if (orders.value && orders.value > maxOrders) {
+      addIssue({
+        code: "custom",
+        message: i18n.t("trade:dca.errors.maxOrders", { count: maxOrders }),
+        path: ["orders.value" satisfies FieldPath<DcaFormValues>],
+      })
+    }
+  })
+  .superRefine((data, { addIssue }) => {
+    const { duration, orders } = data
+
+    const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+    const maxMillis = isOpenBudget
+      ? MAX_OPEN_BUDGET_TIME_FRAME_MS
+      : MAX_TIME_FRAME_MS
+
+    const { type, value } = duration
+    const millis = TIME_FRAME_MS[type] * (value ?? 0)
+    if (millis > maxMillis) {
+      const maxInUnit = Math.floor(maxMillis / TIME_FRAME_MS[type])
+
+      const valueFormatted = i18n.t(type as TimeFrameType, {
+        count: maxInUnit,
+      })
+      addIssue({
+        code: "custom",
+        path: ["duration.value"],
+        message: i18n.t(
+          isOpenBudget
+            ? "error.timeFrameIntervalMax"
+            : "error.timeFrameDurationMax",
+          { value: valueFormatted },
+        ),
+      })
+    }
+  })
 
 const useSchema = (account: Account | null) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common", "trade"])
   const rpc = useRpcProvider()
   const queryClient = useQueryClient()
 
   const refineMaxBalance = useValidateFormMaxBalance()
+  const { getBalance } = useAccountBalances()
 
   const minBudgetSchema = schema
     .check(
@@ -106,22 +150,58 @@ const useSchema = (account: Account | null) => {
         : z.refine(() => true),
     )
     .check(async (ctx) => {
-      const { sellAsset, sellAmount } = ctx.value
+      const { sellAsset, sellAmount, orders } = ctx.value
 
       if (!sellAsset || !sellAmount) {
         return
       }
 
-      const minAmount = await queryClient.ensureQueryData(
-        minimumOrderBudgetQuery(rpc, sellAsset.id, sellAsset.decimals),
-      )
+      const isOpenBudget = orders.type === DcaOrdersMode.OpenBudget
+
+      {
+        const minAmount = await queryClient.ensureQueryData(
+          minimumOrderBudgetQuery(rpc, sellAsset.id, sellAsset.decimals),
+        )
+
+        const minAmountHuman = scaleHuman(
+          // min amount for open budget is 500 HDX, vs 1000 HDX for limited budget
+          (isOpenBudget ? minAmount / 2n : minAmount).toString(),
+          sellAsset.decimals,
+        )
+
+        const isValid = Big(sellAmount).gte(minAmountHuman)
+
+        if (!isValid) {
+          ctx.issues.push({
+            code: "custom",
+            input: sellAmount,
+            path: ["sellAmount" satisfies keyof DcaFormValues],
+            message: t("trade:dca.errors.minBudgetTooLow", {
+              value: t("currency", {
+                value: minAmountHuman,
+                symbol: sellAsset.symbol,
+              }),
+            }),
+          })
+        }
+      }
+
+      if (!isOpenBudget) {
+        return
+      }
+
+      const balance = getBalance(sellAsset.id)
+
+      const minAmount = Big(balance?.transferable.toString() || "0")
+        .div(MIN_DCA_ORDERS)
+        .toString()
 
       const minAmountHuman = scaleHuman(
         minAmount.toString(),
         sellAsset.decimals,
       )
 
-      const isValid = Big(sellAmount).gte(minAmountHuman)
+      const isValid = Big(sellAmount).lte(minAmountHuman)
 
       if (isValid) {
         return
@@ -131,12 +211,7 @@ const useSchema = (account: Account | null) => {
         code: "custom",
         input: sellAmount,
         path: ["sellAmount" satisfies keyof DcaFormValues],
-        message: t("error.minBudgetTooLow", {
-          value: t("currency", {
-            value: minAmountHuman,
-            symbol: sellAsset.symbol,
-          }),
-        }),
+        message: t("trade:dca.errors.minTrades"),
       })
     })
 
@@ -157,10 +232,7 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
     sellAsset: getAsset(assetIn) ?? null,
     sellAmount: "",
     buyAsset: getAsset(assetOut) ?? null,
-    duration: {
-      type: "day",
-      value: 1,
-    },
+    duration: DEFAULT_DCA_DURATION,
     orders: {
       type: DcaOrdersMode.Auto,
     },
@@ -187,4 +259,9 @@ export const useDcaForm = ({ assetIn, assetOut }: Args) => {
   }, [account, isBalanceLoading, trigger, getValues, isBalanceLoaded])
 
   return form
+}
+
+export const DEFAULT_DCA_DURATION: DcaDuration = {
+  type: "day",
+  value: 1,
 }

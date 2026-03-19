@@ -1,4 +1,8 @@
-import { isSS58Address, safeStringify } from "@galacticcouncil/utils"
+import {
+  isSS58Address,
+  isValidBigSource,
+  safeStringify,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 import Big from "big.js"
@@ -6,7 +10,11 @@ import Big from "big.js"
 import { useAccountFeePaymentAssetId } from "@/api/payments"
 import { getSpotPrice } from "@/api/spotPrice"
 import { AnyTransaction } from "@/modules/transactions/types"
-import { transformAnyToPapiTx } from "@/modules/transactions/utils/tx"
+import {
+  getExtraTxFeeByWeight,
+  transformAnyToPapiTx,
+} from "@/modules/transactions/utils/tx"
+import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -16,7 +24,8 @@ export const useEstimateFee = (
   anyTx: AnyTransaction | null,
   feePaymentAssetIdOverride?: string,
 ) => {
-  const { papi, sdk, isLoaded } = useRpcProvider()
+  const rpc = useRpcProvider()
+  const { papi, sdk, isLoaded } = rpc
   const { native, getAsset } = useAssets()
   const { account } = useAccount()
 
@@ -35,6 +44,7 @@ export const useEstimateFee = (
     feePaymentAssetIdOverride || accountFeePaymentAssetId?.toString()
   const feeAsset = getAsset(feeAssetId ?? "")
 
+  const isEvmTx = !!anyTx && isEvmCall(anyTx)
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
   return useQuery({
@@ -60,12 +70,17 @@ export const useEstimateFee = (
         native.id,
         feeAsset.id,
       )
-      const [fees, spot] = await Promise.all([
+
+      const [fees, spot, extraFee] = await Promise.all([
         tx.getEstimatedFees(address),
         getSpotPriceFn(),
+        isEvmTx ? getExtraTxFeeByWeight(rpc, address, tx, native.id) : null,
       ])
 
-      const feeEstimateNative = scaleHuman(fees, native.decimals)
+      const feeEstimateNativeBase = scaleHuman(fees, native.decimals)
+      const feeEstimateNative = isValidBigSource(extraFee)
+        ? Big(extraFee).add(feeEstimateNativeBase).toString()
+        : feeEstimateNativeBase
 
       const feeAssetBalance = scaleHuman(
         getTransferableBalance(feeAsset.id),

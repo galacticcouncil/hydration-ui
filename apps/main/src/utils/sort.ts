@@ -75,7 +75,7 @@ export const naturallyDesc = descending(naturally)
 export const logically: Compare<boolean> = (a, b) =>
   numerically(Number(a), Number(b))
 
-type SortAssetsOptions = {
+export type SortAssetsOptions = {
   firstAssetId?: string
   tickerOrder?: string[]
   lowPriorityAssetIds?: string[]

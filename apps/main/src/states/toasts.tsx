@@ -39,19 +39,27 @@ export type ToastData = ToastParams & {
   dateCreated: string
 }
 
-interface ToastStore {
+type ToastsState = {
   toasts: Record<string, Array<ToastData>>
+}
+
+type ToastsActions = {
   update: (
     accountAddress: string,
     callback: (toasts: Array<ToastData>) => Array<ToastData>,
   ) => void
 }
 
+type ToastStore = ToastsState & ToastsActions
+
+const defaultState: ToastsState = {
+  toasts: {},
+}
+
 export const useToastsStore = create<ToastStore>()(
   persist(
     (set) => ({
-      toasts: {},
-
+      ...defaultState,
       update: (accountAddress, cb) =>
         set((state) => {
           const accountToasts = state.toasts[accountAddress] ?? []
@@ -67,6 +75,15 @@ export const useToastsStore = create<ToastStore>()(
     {
       name: "toasts",
       version: 2,
+      migrate: (persistedState, version) => {
+        switch (version) {
+          case 0:
+          case 1:
+            return defaultState
+          default:
+            return persistedState
+        }
+      },
     },
   ),
 )

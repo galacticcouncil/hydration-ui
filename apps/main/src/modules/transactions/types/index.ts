@@ -3,7 +3,7 @@ import { tx } from "@galacticcouncil/sdk-next"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { Call } from "@galacticcouncil/xc-sdk"
-import { InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
+import { Enum, InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
 import { Subscription } from "rxjs"
 import { TransactionReceipt } from "viem"
 
@@ -11,6 +11,11 @@ import { TFinalizedResult, TSuccessResult } from "@/states/transactions"
 
 export type AnyPapiTx = tx.Transaction
 export type AnyTransaction = AnyPapiTx | Call | ExtendedEvmCall
+
+export type DecodedCallEnum = AnyPapiTx["decodedCall"]
+export type BatchDecodedCallValue = Enum<{
+  batch_all: { calls: DecodedCallEnum[] }
+}>
 
 export enum TxActionType {
   CLOSE = "CLOSE",
@@ -20,6 +25,7 @@ export enum TxActionType {
   RESET = "RESET",
   SET_TIP = "SET_TIP",
   SET_FEE_PAYMENT_MODAL_OPEN = "SET_FEE_PAYMENT_MODAL_OPEN",
+  SET_CHANGING_FEE_PAYMENT_ASSET = "SET_CHANGING_FEE_PAYMENT_ASSET",
 }
 
 export type TxStatus = "idle" | "submitted" | "success" | "error"
@@ -84,6 +90,7 @@ export type TxState = {
   tipAssetId: string
   mortalityPeriod: TxMortalityPeriod
   isFeePaymentModalOpen: boolean
+  isChangingFeePaymentAsset: boolean
 }
 
 export type TxStateAction =
@@ -93,4 +100,5 @@ export type TxStateAction =
   | { type: TxActionType.SET_STATUS; payload: TxStatus }
   | { type: TxActionType.SET_TIP; payload: string }
   | { type: TxActionType.SET_FEE_PAYMENT_MODAL_OPEN; payload: boolean }
+  | { type: TxActionType.SET_CHANGING_FEE_PAYMENT_ASSET; payload: boolean }
   | { type: TxActionType.RESET }

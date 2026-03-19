@@ -1,6 +1,10 @@
 import { etherscan, jitoexplorer, solexplorer } from "@galacticcouncil/utils"
 import type { Account } from "@galacticcouncil/web3-connect"
-import { isEthereumSigner, isSolanaSigner } from "@galacticcouncil/web3-connect"
+import {
+  isEthereumSigner,
+  isSolanaSigner,
+  isSuiSigner,
+} from "@galacticcouncil/web3-connect"
 import { getWallet } from "@galacticcouncil/web3-connect/src/wallets"
 import { CallType } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
@@ -25,14 +29,14 @@ export function useWithdrawClaim(journey: XcJourney) {
   const chain = resolveChainFromUrn(journey.destination)
   const chainName = chain?.name ?? ""
 
-  const asset = getTransferAsset(journey.assets)
+  const asset = getTransferAsset(journey)
 
   const value = asset ? toDecimal(asset.amount, asset.decimals) : ""
   const symbol = asset?.symbol ?? ""
 
   const getClaimTxOptions = useClaimTxOptions({ value, symbol, chainName })
 
-  const { mutate, isPending } = useMutation({
+  const mutation = useMutation({
     onMutate: () => {
       setIsWaitingForSignature(true)
     },
@@ -95,9 +99,18 @@ export function useWithdrawClaim(journey: XcJourney) {
         }
       }
 
+      if (result.type === CallType.Sui && isSuiSigner(signer)) {
+        const { call, chain } = result
+
+        const options = getClaimTxOptions(chain, result.type, commonCallbacks)
+        return signer.signAndSend(call.data, options)
+      }
+
       throw new Error("Unsupported claim transaction type")
     },
   })
 
-  return { mutate, isPending, isWaitingForSignature }
+  const isPending = mutation.isPending || isWaitingForSignature
+
+  return { ...mutation, isPending }
 }

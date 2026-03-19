@@ -55,14 +55,16 @@ export class ExternalWallet implements Wallet {
     return new Error(err.message)
   }
 
-  setAccount = (address: string) => {
+  setAccount = (address: string, shouldUpdateQueryString = false) => {
     if (isSS58Address(address) || isH160Address(address)) {
       this.account = {
         address,
         name: "External Account",
         provider: this.provider,
       }
-      updateQueryString("address", address)
+      if (shouldUpdateQueryString) {
+        updateQueryString("address", address)
+      }
     }
   }
 

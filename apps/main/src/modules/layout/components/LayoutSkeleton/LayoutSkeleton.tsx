@@ -1,7 +1,7 @@
 import { useMatch, useMatches, useRouter } from "@tanstack/react-router"
 
+import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
 import { Loader } from "@/components/Loader"
-import { ProviderRpcSelect } from "@/components/ProviderRpcSelect/ProviderRpcSelect"
 import { TabMenu } from "@/components/TabMenu"
 import {
   Container,
@@ -57,7 +57,7 @@ export const LayoutSkeleton = () => {
       ) : (
         <Loader />
       )}
-      <ProviderRpcSelect bottomPinned />
+      <DataProviderSelect bottomPinned />
     </>
   )
 }

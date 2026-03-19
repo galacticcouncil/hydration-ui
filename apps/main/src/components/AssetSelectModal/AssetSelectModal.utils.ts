@@ -7,18 +7,25 @@ import { TAsset } from "@/providers/assetsProvider"
 import { useAccountBalances } from "@/states/account"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { scaleHuman } from "@/utils/formatting"
-import { sortAssets } from "@/utils/sort"
+import { sortAssets, SortAssetsOptions } from "@/utils/sort"
 
 export type TAssetWithBalance = TAsset & {
   readonly balance?: string
   readonly balanceDisplay?: string
 }
 
-export const useAssetSelectModalAssets = (
-  assets: TAsset[],
-  search: string,
-  selectedAssetId?: string,
-) => {
+export const useAssetSelectModalAssets = ({
+  assets,
+  search,
+  selectedAssetId,
+  ignoreAssetIds,
+  ...sortOptions
+}: {
+  assets: TAssetData[]
+  ignoreAssetIds?: string[]
+  search: string
+  selectedAssetId?: string
+} & SortAssetsOptions) => {
   const { account } = useAccount()
   const { balances, getTransferableBalance, isBalanceLoading } =
     useAccountBalances()
@@ -26,6 +33,7 @@ export const useAssetSelectModalAssets = (
   const filteredAssets: TAssetWithBalance[] = useFilteredSearchAssets(
     assets,
     search,
+    ignoreAssetIds,
   )
 
   const assetsBalanceIds = useMemo(() => {
@@ -60,6 +68,7 @@ export const useAssetSelectModalAssets = (
   const sortedAssets = sortAssets(assetsWithBalances, "balanceDisplay", {
     firstAssetId: selectedAssetId,
     search,
+    ...sortOptions,
   })
 
   return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }
@@ -68,14 +77,28 @@ export const useAssetSelectModalAssets = (
 export const useFilteredSearchAssets = <T extends TAssetData>(
   assets: Array<T>,
   search: string,
+  ignoreAssetIds?: string[],
 ) => {
   return useMemo(() => {
-    return search.length
-      ? assets.filter(
-          (asset) =>
-            asset.name.toLowerCase().includes(search.toLowerCase()) ||
-            asset.symbol.toLowerCase().includes(search.toLowerCase()),
+    if (!search.length && !ignoreAssetIds?.length) {
+      return assets
+    }
+
+    const ignoredAssetIdSet = new Set(ignoreAssetIds ?? [])
+
+    return assets.filter((asset) => {
+      if (ignoredAssetIdSet.has(asset.id)) {
+        return false
+      }
+
+      if (search.length) {
+        return (
+          asset.name.toLowerCase().includes(search.toLowerCase()) ||
+          asset.symbol.toLowerCase().includes(search.toLowerCase())
         )
-      : assets
-  }, [assets, search])
+      }
+
+      return true
+    })
+  }, [assets, search, ignoreAssetIds])
 }

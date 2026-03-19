@@ -171,7 +171,7 @@ export const MarketSummaryTwap: FC<Props> = ({ swap, twap, twapTx }) => {
       />
       <CollapsibleContent asChild>
         <Summary separator={<SwapSectionSeparator />} withLeadingSeparator>
-          <PriceImpactSummaryRow priceImpact={swap.priceImpactPct} />
+          <PriceImpactSummaryRow priceImpact={twap.tradeImpactPct} />
           <SwapSummaryRow
             label={t("trade:market.summary.estTradeFees")}
             content={

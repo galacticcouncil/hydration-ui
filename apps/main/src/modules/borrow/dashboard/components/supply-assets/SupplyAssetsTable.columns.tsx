@@ -22,6 +22,7 @@ import {
   getAssetIdFromAddress,
   MONEY_MARKET_STRATEGY_ASSETS,
 } from "@galacticcouncil/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -42,11 +43,15 @@ type AssetType = "base" | "strategy"
 export const useSupplyAssetsTableColumns = (
   type: AssetType,
   onSupplyClick?: (
-    props: Omit<AddStablepoolLiquidityProps, "onSubmitted">,
+    props: Omit<AddStablepoolLiquidityProps, "onSubmitted"> & {
+      isIsolated?: boolean
+    },
   ) => void,
 ) => {
   const { t } = useTranslation(["common", "borrow"])
   const { getAsset, getRelatedAToken } = useAssets()
+  const { account } = useAccount()
+  const isConnected = !!account
 
   const { openSupply } = useModalContext()
 
@@ -182,8 +187,9 @@ export const useSupplyAssetsTableColumns = (
         },
       },
       cell: ({ row }) => {
-        const { underlyingAsset } = row.original
-        const isDisabled = getIsSupplyDisabled(row.original)
+        const { underlyingAsset, isIsolated } = row.original
+        const isDisabled =
+          (!isIsolated && getIsSupplyDisabled(row.original)) || !isConnected
 
         return (
           <Flex justify="flex-end" align="center" gap="s">
@@ -199,7 +205,8 @@ export const useSupplyAssetsTableColumns = (
 
                 if (
                   assetId &&
-                  MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) &&
+                  (MONEY_MARKET_STRATEGY_ASSETS.includes(assetId) ||
+                    isIsolated) &&
                   aTokenId &&
                   onSupplyClick
                 ) {
@@ -207,6 +214,7 @@ export const useSupplyAssetsTableColumns = (
                     id: assetId,
                     erc20Id: aTokenId,
                     stableswapId: assetId,
+                    isIsolated,
                   })
                 } else {
                   openSupply(underlyingAsset)
@@ -230,7 +238,7 @@ export const useSupplyAssetsTableColumns = (
       id: "actions",
       cell: ({ row }) => {
         const { underlyingAsset } = row.original
-        const isDisabled = getIsSupplyDisabled(row.original)
+        const isDisabled = getIsSupplyDisabled(row.original) || !isConnected
 
         return (
           <Button
@@ -281,6 +289,7 @@ export const useSupplyAssetsTableColumns = (
     isBaseAssetType,
     getRelatedAToken,
     onSupplyClick,
+    isConnected,
   ])
 }
 

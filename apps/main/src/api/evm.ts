@@ -2,12 +2,14 @@ import { h160 } from "@galacticcouncil/common"
 import {
   isEvmParachainAccount,
   QUERY_KEY_BLOCK_PREFIX,
+  safeConvertAnyToH160,
   safeConvertSS58toH160,
   strip0x,
 } from "@galacticcouncil/utils"
 import {
   EVM_CALL_PERMIT_ABI,
   EVM_CALL_PERMIT_ADDRESS,
+  EVM_GAS_TO_WEIGHT,
 } from "@galacticcouncil/web3-connect/src/config/evm"
 import {
   queryOptions,
@@ -15,15 +17,20 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary } from "polkadot-api"
+import { useTranslation } from "react-i18next"
 import { isString } from "remeda"
-import { getContract, Hex } from "viem"
+import { formatEther, getContract, Hex } from "viem"
 
+import { AAVE_GAS_LIMIT } from "@/api/aave"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
+import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
-const { H160, isEvmAccount, isEvmAddress } = h160
+const { isEvmAccount, isEvmAddress } = h160
 
 export const evmAccountBindingQuery = (
   { papi, isLoaded }: TProviderContext,
@@ -52,6 +59,7 @@ export const evmAccountBindingQuery = (
 }
 
 export const useBindEvmAccount = (address: string) => {
+  const { t } = useTranslation("borrow")
   const rpc = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
   const queryClient = useQueryClient()
@@ -62,6 +70,10 @@ export const useBindEvmAccount = (address: string) => {
       return createTransaction(
         {
           tx,
+          toasts: {
+            submitted: t("binding.toast.submitted"),
+            success: t("binding.toast.success"),
+          },
         },
         {
           onSuccess: () =>
@@ -76,7 +88,9 @@ const permitNonceQuery = (
   { evm, isLoaded }: TProviderContext,
   address: string,
 ) => {
-  const evmAddress = isEvmParachainAccount(address) ? H160.fromAny(address) : ""
+  const evmAddress = isEvmParachainAccount(address)
+    ? safeConvertAnyToH160(address)
+    : ""
   return queryOptions({
     enabled: isLoaded && !!evmAddress,
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "permitNonce", evmAddress],
@@ -100,7 +114,9 @@ const pendingPermitQuery = (
   { papiClient, isLoaded }: TProviderContext,
   address: string,
 ) => {
-  const evmAddress = isEvmParachainAccount(address) ? H160.fromAny(address) : ""
+  const evmAddress = isEvmParachainAccount(address)
+    ? safeConvertAnyToH160(address)
+    : ""
   return queryOptions({
     queryKey: [QUERY_KEY_BLOCK_PREFIX, "evm", "pendingPermit", evmAddress],
     queryFn: async () => {
@@ -126,4 +142,32 @@ const pendingPermitQuery = (
 
 export const usePendingPermit = (address: string) => {
   return useQuery(pendingPermitQuery(useRpcProvider(), address))
+}
+
+export const weightToEvmFeeQuery = (
+  rpc: TProviderContext,
+  weight: bigint,
+  assetOutId: string,
+) => {
+  const { evm, queryClient } = rpc
+  return queryOptions({
+    enabled: weight > 0n && !!assetOutId,
+    queryKey: ["weightToEvmFee", weight.toString(), assetOutId],
+    queryFn: async () => {
+      const [gasPrice, spot] = await Promise.all([
+        evm.getGasPrice(),
+        queryClient.ensureQueryData(
+          spotPriceQuery(rpc, NATIVE_EVM_ASSET_ID, assetOutId),
+        ),
+      ])
+
+      if (!spot?.spotPrice) return "0"
+
+      const gas = weight ? weight / EVM_GAS_TO_WEIGHT + AAVE_GAS_LIMIT : 0n
+
+      const wei = gasPrice * gas
+      const eth = formatEther(wei)
+      return Big(eth).times(spot.spotPrice.toString()).toString()
+    },
+  })
 }

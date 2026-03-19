@@ -1,6 +1,4 @@
 {
-  "beta.title": "Beta version",
-  "beta.description": "For production transfers, please use battle tested XCM in original app",
   "approve": "Approve",
   "approve.description": "Approve {{ amount, number }} {{ symbol }} spending cap on {{ srcChain }}",
   "approve.title": "Approve spending cap",

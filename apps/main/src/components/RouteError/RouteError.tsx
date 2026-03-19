@@ -21,7 +21,7 @@ export const RouteError: ErrorRouteComponent = ({ error }) => {
   const { data: feeAssetId } = useAccountFeePaymentAssetId()
 
   return (
-    <Flex width="100vw" height="100vh" justify="center" align="center" p="xl">
+    <Flex height={["auto", "50vh"]} justify="center" align="center" p="xl">
       <Flex direction="column" gap="xl" align="center">
         <Text as="h1" font="primary" fs={[30, null, 40]} align="center">
           {t("routeError.title")}

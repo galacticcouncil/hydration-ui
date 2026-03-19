@@ -8,7 +8,8 @@ type SliderTabsOptionKey = string | number
 export type SliderTabsOption<TKey extends SliderTabsOptionKey> = {
   readonly id: TKey
   readonly label: string
-  readonly icon?: React.ReactNode
+  readonly leadingElement?: React.ReactNode
+  readonly trailingElement?: React.ReactNode
 }
 
 type SliderTabsProps<TKey extends SliderTabsOptionKey> = {
@@ -42,8 +43,9 @@ export const SliderTabs = <TKey extends SliderTabsOptionKey>({
             disabled={disabled}
             sx={{ flex: 1 }}
           >
-            {option.icon}
+            {option.leadingElement}
             {option.label}
+            {option.trailingElement}
           </Button>
         )
       })}

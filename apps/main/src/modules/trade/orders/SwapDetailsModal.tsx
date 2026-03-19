@@ -48,7 +48,7 @@ export const SwapDetailsModal = ({ details }: Props) => {
             <SwapStatus />
           ) : (
             details.status?.status && (
-              <DcaOrderStatus status={details.status.status} />
+              <DcaOrderStatus status={details.status.status} isDcaSwap />
             )
           )}
         </Flex>

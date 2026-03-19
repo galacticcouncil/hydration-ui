@@ -1,5 +1,6 @@
 import {
   createZustandStorage,
+  isH160Address,
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
 import { z } from "zod/v4"
@@ -39,8 +40,6 @@ type State = z.infer<typeof stateSchema>
 const defaultState: State = {
   addresses: [],
 }
-
-const version = 3
 
 export type AddressStore = State & {
   readonly add: (address: Address | Address[]) => void
@@ -82,31 +81,47 @@ export const useAddressStore = create<AddressStore>()(
           addresses: state.addresses.filter((a) => a.publicKey !== publicKey),
         })),
     }),
-    {
+    createZustandStorage({
       name: "address-book",
-      version,
-      storage: createZustandStorage(version, stateSchema, defaultState, {
-        previousStateSchema: stateSchemaV2,
-        migrate: (previousState) => ({
-          addresses: previousState.addresses
-            .map<Address | null>((address) => {
-              const publicKey = safeConvertSS58toPublicKey(address.address)
-
-              if (!publicKey || !isWalletProviderType(address.provider)) {
-                return null
-              }
-
-              return {
-                address: address.address,
-                name: address.name,
-                provider: address.provider,
-                isCustom: address.isCustom,
-                publicKey,
-              }
-            })
-            .filter((address) => address !== null),
-        }),
-      }),
-    },
+      version: 3,
+      schema: stateSchema,
+      defaultState,
+      migrate: (persistedState, storedVersion) => {
+        switch (storedVersion) {
+          case 2:
+            return migrateLegacyAddressBookV2(persistedState)
+          default:
+            return persistedState as State
+        }
+      },
+    }),
   ),
 )
+
+function migrateLegacyAddressBookV2(persistedState: unknown): State {
+  const parsed = stateSchemaV2.safeParse(persistedState)
+
+  if (!parsed.success) return defaultState
+
+  return {
+    addresses: parsed.data.addresses
+      .map<Address | null>((address) => {
+        if (!address.isCustom) return null
+
+        const publicKey = isH160Address(address.address)
+          ? address.address
+          : safeConvertSS58toPublicKey(address.address)
+
+        if (!publicKey || !isWalletProviderType(address.provider)) return null
+
+        return {
+          address: address.address,
+          name: address.name,
+          provider: address.provider,
+          isCustom: address.isCustom,
+          publicKey,
+        }
+      })
+      .filter((address) => address !== null),
+  }
+}

@@ -1,10 +1,20 @@
-import { getVaaHeader, isEvmChain, isSolanaChain } from "@galacticcouncil/utils"
+import {
+  getVaaHeader,
+  isAnyParachain,
+  isEvmChain,
+  isEvmParachain,
+  isSolanaChain,
+  isSuiChain,
+} from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
+  AnyChain,
   CallType,
   ChainEcosystem,
   EvmChain,
+  Parachain,
   SolanaChain,
+  SuiChain,
 } from "@galacticcouncil/xc-core"
 import type {
   XcJourney,
@@ -16,10 +26,17 @@ import {
   EvmClaim,
   SolanaCall,
   SolanaClaim,
+  SubstrateCall,
+  SubstrateClaim,
+  SuiCall,
+  SuiClaim,
 } from "@galacticcouncil/xc-sdk"
 import { minutesToMilliseconds } from "date-fns"
 
-import { resolveNetwork } from "@/modules/xcm/history/utils/assets"
+import {
+  getTransferAsset,
+  resolveNetwork,
+} from "@/modules/xcm/history/utils/assets"
 
 const CLAIM_THRESHOLD = minutesToMilliseconds(5)
 
@@ -35,7 +52,12 @@ export function isJourneyClaimable(journey: XcJourney): boolean {
   if (!vaaHeader) return false
 
   const toChain = resolveChainFromUrn(journey.destination)
-  return !!toChain && hasExceededClaimThreshold(vaaHeader.timestamp)
+  if (!toChain) return false
+
+  const asset = getTransferAsset(journey)
+  if (!asset) return false
+
+  return hasExceededClaimThreshold(vaaHeader.timestamp)
 }
 
 export function getClaimableJourneys(journeys: XcJourney[]) {
@@ -71,7 +93,7 @@ export function getJourneyVaaHeader(journey: XcJourney) {
 
 export function resolveChainFromUrn(
   destinationUrn: string,
-): EvmChain | SolanaChain | undefined {
+): AnyChain | undefined {
   const network = resolveNetwork(destinationUrn)
   if (!network) return
 
@@ -80,15 +102,20 @@ export function resolveChainFromUrn(
   const chain = chainsMap.values().find((c) => {
     switch (ecosystem) {
       case ChainEcosystem.Ethereum:
-        return isEvmChain(c) && c.id === chainId
+        return isEvmChain(c) && c.id === Number(chainId)
       case ChainEcosystem.Solana:
-        return isSolanaChain(c) && c.id === chainId
+        return isSolanaChain(c) && c.id === Number(chainId)
+      case ChainEcosystem.Sui:
+        return isSuiChain(c) && c.id === chainId
+      case ChainEcosystem.Polkadot:
+      case ChainEcosystem.Kusama:
+        return isAnyParachain(c) && c.parachainId === Number(chainId)
       default:
         return false
     }
   })
 
-  return chain as EvmChain | SolanaChain | undefined
+  return chain
 }
 
 type ClaimCallResult =
@@ -97,6 +124,16 @@ type ClaimCallResult =
       type: CallType.Solana
       call: SolanaCall | SolanaCall[]
       chain: SolanaChain
+    }
+  | {
+      type: CallType.Sui
+      call: SuiCall
+      chain: SuiChain
+    }
+  | {
+      type: CallType.Substrate
+      call: SubstrateCall
+      chain: Parachain
     }
 
 export async function buildClaimCall(
@@ -121,6 +158,27 @@ export async function buildClaimCall(
     return {
       type: CallType.Solana,
       call: await solanaClaim.redeem(claimerAddress, vaaRaw),
+      chain: toChain,
+    }
+  }
+
+  if (isSuiChain(toChain)) {
+    const suiClaim = new SuiClaim(toChain)
+    return {
+      type: CallType.Sui,
+      call: await suiClaim.redeem(claimerAddress, vaaRaw),
+      chain: toChain,
+    }
+  }
+
+  if (isAnyParachain(toChain)) {
+    const moonbeam = chainsMap.get("moonbeam")
+    if (!moonbeam || !isEvmParachain(moonbeam)) return undefined
+
+    const substrateClaim = new SubstrateClaim(moonbeam)
+    return {
+      type: CallType.Substrate,
+      call: await substrateClaim.redeemMrlViaXcm(claimerAddress, vaaRaw),
       chain: toChain,
     }
   }

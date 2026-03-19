@@ -12,7 +12,7 @@ type RpcListStore = {
     name?: string
     url: string
   }>
-  addRpc: (account: string) => void
+  addRpc: (url: string, name?: string) => void
   removeRpc: (url: string) => void
   renameRpc: (url: string, newName: string) => void
 }
@@ -21,8 +21,8 @@ export const useRpcListStore = create<RpcListStore>()(
   persist(
     (set) => ({
       rpcList: [],
-      addRpc: (url) =>
-        set((store) => ({ rpcList: [...store.rpcList, { url }] })),
+      addRpc: (url, name) =>
+        set((store) => ({ rpcList: [...store.rpcList, { url, name }] })),
       removeRpc: (urlToRemove) =>
         set((store) => ({
           rpcList: store.rpcList.filter((rpc) => rpc.url !== urlToRemove),
@@ -36,6 +36,7 @@ export const useRpcListStore = create<RpcListStore>()(
     }),
     {
       name: "rpcList",
+      version: 1,
     },
   ),
 )
@@ -115,7 +116,7 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
     }),
     {
       name: "rpcUrl",
-      version: 2.7,
+      version: 4,
       partialize: omit(["rpcUrlList"]),
     },
   ),

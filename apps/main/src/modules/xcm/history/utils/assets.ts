@@ -1,6 +1,6 @@
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
-import { XcAssetOperation } from "@galacticcouncil/xc-scan"
-import { isNumber, isString } from "remeda"
+import { XcAssetOperation, XcJourney } from "@galacticcouncil/xc-scan"
+import { isNumber, isString, sortBy } from "remeda"
 
 const networkToEcosystem: Record<string, ChainEcosystem> = {
   polkadot: ChainEcosystem.Polkadot,
@@ -17,7 +17,7 @@ export function resolveNetwork(networkUrn: string) {
   if (!ecosystem || !chainId) return
   return {
     ecosystem,
-    chainId: Number(chainId),
+    chainId,
   }
 }
 
@@ -72,9 +72,19 @@ export type XcJourneyTransferAsset = Omit<
 }
 
 export function getTransferAsset(
-  assets: XcAssetOperation[],
+  journey: XcJourney,
 ): XcJourneyTransferAsset | undefined {
-  const asset = assets.find((a) => a.role === "transfer") || assets[0]
+  const assets = sortBy(journey.assets, [
+    (asset) => asset.sequence ?? 0,
+    "desc",
+  ])
+  const transferAsset = assets.find((a) => {
+    const [destinationUrn] = a.asset.split("|")
+    return a.role === "transfer" && journey.destination === destinationUrn
+  })
+
+  const asset = transferAsset || assets[0]
+
   if (
     isString(asset?.symbol) &&
     isNumber(asset?.decimals) &&

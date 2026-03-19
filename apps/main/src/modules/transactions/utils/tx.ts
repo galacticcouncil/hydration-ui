@@ -3,14 +3,20 @@ import { HYDRATION_CHAIN_KEY, isBinary } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, CompatibilityToken } from "polkadot-api"
 
+import { weightToEvmFeeQuery } from "@/api/evm"
+import { paymentInfoQuery } from "@/api/transaction"
 import {
   AnyPapiTx,
   AnyTransaction,
   TxOptions,
 } from "@/modules/transactions/types"
-import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import {
+  isBatchDecodedCallValue,
+  isDecodedCallEnum,
+  isPapiTransaction,
+} from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
-import { Papi } from "@/providers/rpcProvider"
+import { Papi, TProviderContext } from "@/providers/rpcProvider"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
 
 export const transformPermitToPapiTx = (
@@ -63,6 +69,42 @@ export const transformAnyToPapiTx = (
   return null
 }
 
+export function containsEvmCall(tx: AnyTransaction): boolean {
+  if (!isPapiTransaction(tx)) return false
+
+  const decoded = tx.decodedCall
+  if (!isDecodedCallEnum(decoded)) return false
+
+  if (decoded.type === "EVM") return true
+
+  if (decoded.type === "Utility" && isBatchDecodedCallValue(decoded.value)) {
+    return decoded.value.value.calls.some(
+      (call) => isDecodedCallEnum(call) && call.type === "EVM",
+    )
+  }
+
+  return false
+}
+
+export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {
+  const bindTx = papi.tx.EVMAccounts.bind_evm_address()
+  const decoded = tx.decodedCall
+
+  if (
+    isDecodedCallEnum(decoded) &&
+    decoded.type === "Utility" &&
+    isBatchDecodedCallValue(decoded.value)
+  ) {
+    return papi.tx.Utility.batch_all({
+      calls: [bindTx.decodedCall, ...decoded.value.value.calls],
+    })
+  }
+
+  return papi.tx.Utility.batch_all({
+    calls: [bindTx.decodedCall, tx.decodedCall],
+  })
+}
+
 export const isValidTxOptionsForPermit = (txOptions: TxOptions) =>
   txOptions.chainKey === HYDRATION_CHAIN_KEY &&
   txOptions.feeAssetId !== NATIVE_EVM_ASSET_ID
@@ -91,4 +133,23 @@ export const getPapiTransactionCallData = (
   } catch {
     return ""
   }
+}
+
+export const getExtraTxFeeByWeight = async (
+  rpc: TProviderContext,
+  address: string,
+  tx: AnyTransaction,
+  assetOutId: string,
+): Promise<string | null> => {
+  const { queryClient } = rpc
+  const info = await queryClient.ensureQueryData(
+    paymentInfoQuery(rpc, address, tx),
+  )
+  if (!info) return null
+
+  const weight = info.weight.ref_time
+
+  return queryClient.ensureQueryData(
+    weightToEvmFeeQuery(rpc, weight, assetOutId),
+  )
 }

@@ -4,12 +4,21 @@ import { TransactionFeePaymentAssetModal } from "@/modules/transactions/Transact
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 
 export const ReviewTransactionFeePaymentAssetModal = () => {
-  const { isFeePaymentModalOpen, setFeePaymentModalOpen } = useTransaction()
+  const {
+    isFeePaymentModalOpen,
+    setFeePaymentModalOpen,
+    setIsChangingFeePaymentAsset,
+  } = useTransaction()
 
   return (
     <Modal open={isFeePaymentModalOpen} onOpenChange={setFeePaymentModalOpen}>
       <TransactionFeePaymentAssetModal
-        onSubmitted={() => setFeePaymentModalOpen(false)}
+        onSubmitted={() => {
+          setFeePaymentModalOpen(false)
+          setIsChangingFeePaymentAsset(true)
+        }}
+        onSuccess={() => setIsChangingFeePaymentAsset(false)}
+        onError={() => setIsChangingFeePaymentAsset(false)}
       />
     </Modal>
   )

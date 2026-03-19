@@ -11,8 +11,14 @@ export const DEFAULT_TRADE_ASSET_OUT_ID = NATIVE_ASSET_ID
 const searchSchema = z
   .object({
     tab: z.enum(tradeOrderTabs).default("myActivity"),
-    assetIn: z.string().default(HOLLAR_ASSET_ID),
-    assetOut: z.string().default(NATIVE_ASSET_ID),
+    assetIn: z
+      .string()
+      .default(DEFAULT_TRADE_ASSET_IN_ID)
+      .catch(DEFAULT_TRADE_ASSET_IN_ID),
+    assetOut: z
+      .string()
+      .default(DEFAULT_TRADE_ASSET_OUT_ID)
+      .catch(DEFAULT_TRADE_ASSET_OUT_ID),
     allPairs: z.boolean().default(true),
     page: z.number().optional(),
   })

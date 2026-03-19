@@ -2032,92 +2032,67 @@
     big.js "^6.2.1"
     lru-cache "^11.2.2"
 
-"@galacticcouncil/descriptors@^1.13.0":
-  version "1.13.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.13.0.tgz#9197ef1fa107224738951a2e0c82dae2ec14aa10"
-  integrity sha512-81A+dpyMPDCamOTMYWqom8myzN14fqHO/w3lUEBVxoHmpW38wUjT8KEkq2Azj8RMRFwBCDokcMnxwxaLwB6dvw==
+"@galacticcouncil/descriptors@^1.14.0":
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.14.0.tgz#d2060cbee7e17b6dc1ffec51fbf3741b8c37e8b9"
+  integrity sha512-/TyGsfWgZncFGGsQ+W6mcLEB+LG3r3CPFgELAobmkAmnrBVhT/mqL8c30znJyGb/vScp9tO3BGJoWT4fRhNGTg==
 
-"@galacticcouncil/math-hsm@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.1.0.tgz#51a13c336cf8949602925624b2ef21ed29903e89"
-  integrity sha512-S6dGohpr+TejaFc4+heMQbp/r7PWUJLDotocCVC5XIJLfMwfwQgqifU9rg5rzwdrhWNUaqLX02D2ya6ouJt/Eg==
-
-"@galacticcouncil/math-lbp@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-1.0.0.tgz#40b5ea3eced1aec4a37494294168bb39fa791c20"
-  integrity sha512-G5WsqJpQEkHcN8oFKxPOYqh7GSrt/6X6YQJWTNjxm9aKpXc/xQlTYXybML2J4wZ4VywEnqvX3CmpPfOg7wQkLg==
-
-"@galacticcouncil/math-lbp@^1.2.0":
+"@galacticcouncil/math-hsm@^1.2.0":
   version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-1.2.0.tgz#43600f837fb095729b8b62a3d74c348be6452702"
-  integrity sha512-EM4q1aFT5mo8MYMTokED5hD+YTrR8XJWaT5mp+W5f1BWjzRierux5EwnNvjR8O1DUbIOL3yDfeWVljjxwsQ1Ag==
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-hsm/-/math-hsm-1.2.0.tgz#2a8292eb7715fff4b4af0d0c406132264d55aa4d"
+  integrity sha512-SGTYWqWQ6EFFCkJOANLWLx3MkKoJBLNE06BD2tqscuhp7J5kgmfLi1KzRjv4DIjBDFfWz/b6PPMvyu2P07O+4A==
 
-"@galacticcouncil/math-liquidity-mining@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-liquidity-mining/-/math-liquidity-mining-1.0.0.tgz#e54660ed9d01082c891da078876d273c1005226a"
-  integrity sha512-5B/ccr6VqT9v96qlSnClcC6/+7eLKUZwndFSfUr1WvIaVbej5GTx6EI1Pyvk+c4TVmudBK1eoIIVTv5uxWcfXQ==
-
-"@galacticcouncil/math-liquidity-mining@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-liquidity-mining/-/math-liquidity-mining-1.2.0.tgz#1e314f59d8c804f26a311d451f230e0ec083297f"
-  integrity sha512-JXyUtZ3qqhDZM7WdZWx/CjFpG9IzCsIBM6tgLcgbQ5m+diaLsGSDdWXgciI+pdJRFJ3HEpcZUmp+SpaB+UeYGA==
-
-"@galacticcouncil/math-omnipool@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-1.1.0.tgz#e8b97131c80867a49752fd2d464f26b9529f3713"
-  integrity sha512-9sfzxwPeKTGTCxZfeYU7Wdp7Zye4tncyQ7aBrlae1qCncmoLsdr6BQd1MCOHeigJ06WxKBUtxSozO4Ipuxk1gQ==
-
-"@galacticcouncil/math-omnipool@^1.3.0":
+"@galacticcouncil/math-lbp@^1.3.0":
   version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-1.3.0.tgz#2a287447ae8a51784f31ba0339588a52125d468f"
-  integrity sha512-a8WydUDaIkPpN9q2FhkGzCmPmBc+1NesaNEBewlIYx22GY7lkYqnoJx7hSL+gGUcO0LI/nUGWbFcB15hUIBa0Q==
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-lbp/-/math-lbp-1.3.0.tgz#5e7f0da37c06f1afd3bf070a94690d6b58bbe171"
+  integrity sha512-K+MYbS7NBzuPx8Sh03nceTxdhSxxiW8Hk+OFWaxWZVDBE0lIUwa26AAUTrKOVjVdSrCt2JGYMae50SU23CKWyw==
 
-"@galacticcouncil/math-stableswap@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-2.0.0.tgz#09014d0e88814d49f54bb2ab412b6497a50ee0a0"
-  integrity sha512-cFOuZlm04D3gHVCbsUZINOyuSLXaG6ZHqoHVQnW0PnZVEGRL9hXD3iLz06j9R5+xfHONirKHDJ/ZShw0XCx9Cw==
+"@galacticcouncil/math-liquidity-mining@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-liquidity-mining/-/math-liquidity-mining-1.3.0.tgz#a7e7c7f9c6b53e4debafb4322e6ffaab046ae0ad"
+  integrity sha512-tTEIjBfCihigiy3BTAZ75e2p1An6u6hEZAZ4LYNB81gftFiRN3nEF0dcHgtjt56ivVXgeDS1pBWYTm4aw2A20w==
 
-"@galacticcouncil/math-stableswap@^2.4.0":
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-2.4.0.tgz#ea851e0a98470224d85319b14fab12625d399fc3"
-  integrity sha512-eRih9KB8Xk0oI/bKJeUuM3GGTPH3oqcYaJ94S2EnTSQcbijAtQSA5Jk44AyLL5tds3Et8ze++jiOeMk3pmQpMA==
+"@galacticcouncil/math-omnipool@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-omnipool/-/math-omnipool-1.4.0.tgz#b8005d9eb74bf3338d841e1ee4ba80665590243b"
+  integrity sha512-Agqe2uJc4Wqt0mTS0rT6kxHdr9M2R6ArxJ0G+WZtqJJtsKXwm8fuNyMRMhFRnStZDS6Q1FNrK3yskgVvqo4YzQ==
 
-"@galacticcouncil/math-staking@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-1.2.0.tgz#02625a57c25b4bd8e504d958c085a01530351c0f"
-  integrity sha512-Q5YknGXJggVjOOXhT16VGuGfF5RNRfcl5ZhGZbqzwcHov8A3/f+f6sp31/xi77uwQq5KfHlS9KPDsezvpGy7DQ==
+"@galacticcouncil/math-stableswap@^2.5.0":
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-stableswap/-/math-stableswap-2.5.0.tgz#d8871e1266aa8249733c23890b2e16011dfb7c3f"
+  integrity sha512-96xh4NRg3Siyx+4UXRPGkpKYNzuBSZxohHKOFgOackYzHBtupnUtPpDpLFjs8IYEB1joPtQrgKz57bOkScOeUA==
 
-"@galacticcouncil/math-xyk@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.0.0.tgz#eeb6f3693587c96131647a24af31536cab423d96"
-  integrity sha512-n44M7jKes5Rxr4RQZ5W7kscTfoO4xwhW3VL/VyaEP1KEHMavlICpDNOlCwO/k6RTr+UXU8cHLJZdBzGFa2soJA==
+"@galacticcouncil/math-staking@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-staking/-/math-staking-1.3.0.tgz#5259192fc0214d30676f3618f66423acd3ffbf90"
+  integrity sha512-JhB/fG/Lob4TdBnNqas1rWhagWknJlbjBtRhlvPXKWPIeWlcDVAUZyHzpb/pXcp5jo1rp0QBJ9y9Mssxzr4uuw==
 
-"@galacticcouncil/math-xyk@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.2.0.tgz#920837d95e9f2c760bed809bc957b807c00165f2"
-  integrity sha512-a+qcctffczjZ61vbdoXddmWVNq5nKK/pgsKPwvSBl41BotkvCqwePBieS/8jPTMKu+7uYEGv6eh+sX0ZejrFzg==
+"@galacticcouncil/math-xyk@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.3.0.tgz#96d3b3e63a93544c7e60d3fa9e1be9a576a20efe"
+  integrity sha512-ZYVSyI5W2pQKCqpkaRM7t1AJqtPyxQ0P04T2+KpBEEABMRjSpQz2x44s1tk6r3DdFR8dICeZJEh5BI7eQYlT6w==
 
-"@galacticcouncil/sdk-next@^0.35.0":
-  version "0.35.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.35.0.tgz#b5e9e75a52ac6f880a364b7bb000f400d011d90e"
-  integrity sha512-F4br3JlH5dEAsIv9pZZSXTc9f/i0DgwCERQQnnkU1Fkr4yNOKz8j7E17laFfhrxLWm7QeAhI849mFng9xZE9xw==
+"@galacticcouncil/sdk-next@^0.37.0":
+  version "0.37.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.37.0.tgz#0e9121d16936b71cea8265e20b3d7191e0084901"
+  integrity sha512-wfoRKLriLCFNNi+z+ld59TulnkiFf+u9pG6Q1Fbq76bYmpy+k2QxQv5aLaPt8WY5/tZTClzk2AHJ8zk8RYvA9g==
   dependencies:
-    "@galacticcouncil/math-hsm" "^1.1.0"
-    "@galacticcouncil/math-lbp" "^1.2.0"
-    "@galacticcouncil/math-liquidity-mining" "^1.2.0"
-    "@galacticcouncil/math-omnipool" "^1.3.0"
-    "@galacticcouncil/math-stableswap" "^2.4.0"
-    "@galacticcouncil/math-staking" "^1.2.0"
-    "@galacticcouncil/math-xyk" "^1.2.0"
+    "@galacticcouncil/math-hsm" "^1.2.0"
+    "@galacticcouncil/math-lbp" "^1.3.0"
+    "@galacticcouncil/math-liquidity-mining" "^1.3.0"
+    "@galacticcouncil/math-omnipool" "^1.4.0"
+    "@galacticcouncil/math-stableswap" "^2.5.0"
+    "@galacticcouncil/math-staking" "^1.3.0"
+    "@galacticcouncil/math-xyk" "^1.3.0"
     "@noble/hashes" "^1.6.1"
     "@thi.ng/cache" "^2.1.35"
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.15.0":
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.15.0.tgz#4ca92acf30bd9a062d05fceba336939b23c6b477"
-  integrity sha512-niIwNqgHIauMAOp2Q+jbZjdc24hmPRb6eSVLEybphnDPxsQ40cM+EfJLQP5s9yXA4H6VNhEgfpyEtdfl9+VSxg==
+"@galacticcouncil/xc-cfg@^0.17.0":
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.17.0.tgz#fac8ec0418cd37e03d1a7eb0ac1da737fae1c964"
+  integrity sha512-/Gr9ZuY9MrrtIdTLFb9lAOHWejMAAsLpHDyGLKeZE8u/yffBmAVkR8NX8yevGLvqxoCYEbSgiiKulmVxy4BNVQ==
   dependencies:
     "@galacticcouncil/xc-core" "^0.12.0"
 
@@ -2140,15 +2115,15 @@
     bs58 "^6.0.0"
     buffer "^6.0.3"
 
-"@galacticcouncil/xc-scan@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.2.0.tgz#465e6a74ce78ff3cde16df57e3885d4cafcbf796"
-  integrity sha512-MQOye4BvkZg5JnOuKoJTeY9WLQ6Ah+5imcov/C5NWPZWqib7LBJwlMrNQ2+d0GcWLvxPBWPtTLbH5EBZsCaBHw==
+"@galacticcouncil/xc-scan@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.3.0.tgz#662bb011c53f056c230d1d1057d31b94424758f7"
+  integrity sha512-onH/zcGdA5JQx/tE7fcnhMUwosPnGflkJgcujgKeyuJPL15onvMPPKlDzvvNnUN8clfnefRtmEY9SNPo4md9uw==
 
-"@galacticcouncil/xc-sdk@^0.6.1":
-  version "0.6.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.6.1.tgz#4a21761f5aed81175c35a1759584c082d1f956bc"
-  integrity sha512-q3ob67il96ozpiUus0zA3i54f0Ypw32TFffxjXND4XVyLfRSFpmbCAQDPRQ31i09dBI7698RWAJbzM4OSADjJg==
+"@galacticcouncil/xc-sdk@^0.9.0":
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.9.0.tgz#1e9f08cb54f6486b260781ff9b4681d83ad75fc0"
+  integrity sha512-/3Bq5HFnQfBCrYiubrmW7pXuAsekaZ0zEAIFc1+1T+aZ0aOVHHHUUsR0HHRj37ayNA50tVMB+/KL+pdeHRgTng==
   dependencies:
     "@galacticcouncil/xc-core" "^0.12.0"
 
@@ -3677,6 +3652,20 @@
     "@radix-ui/react-use-controllable-state" "1.2.2"
     "@radix-ui/react-use-previous" "1.1.1"
     "@radix-ui/react-use-size" "1.1.1"
+
+"@radix-ui/react-tabs@^1.1.13":
+  version "1.1.13"
+  resolved "https://registry.yarnpkg.com/@radix-ui/react-tabs/-/react-tabs-1.1.13.tgz#3537ce379d7e7ff4eeb6b67a0973e139c2ac1f15"
+  integrity sha512-7xdcatg7/U+7+Udyoj2zodtI9H/IIopqo+YOIcZOq1nJwXWBZ9p8xiu5llXlekDbZkca79a/fozEYQXIA4sW6A==
+  dependencies:
+    "@radix-ui/primitive" "1.1.3"
+    "@radix-ui/react-context" "1.1.2"
+    "@radix-ui/react-direction" "1.1.1"
+    "@radix-ui/react-id" "1.1.1"
+    "@radix-ui/react-presence" "1.1.5"
+    "@radix-ui/react-primitive" "2.1.3"
+    "@radix-ui/react-roving-focus" "1.1.11"
+    "@radix-ui/react-use-controllable-state" "1.2.2"
 
 "@radix-ui/react-toggle-group@^1.1.11":
   version "1.1.11"

@@ -172,6 +172,11 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
 
   const isUserEmodeCategorySet = user.userEmodeCategoryId !== 0
 
+  const shouldRenderAlerts =
+    !!blockingError ||
+    user.userEmodeCategoryId === 0 ||
+    showLiquidationRiskAlert
+
   return (
     <>
       {isUserEmodeCategorySet && (
@@ -265,9 +270,9 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
           <SummaryRow
             label="Available assets"
             content={
-              <Flex gap="s" justify="flex-end" align="center" maxWidth="50%">
+              <Flex gap="s" justify="flex-end" align="center">
                 {eModes[user.userEmodeCategoryId] && (
-                  <Flex align="center" justify="flex-end">
+                  <Flex align="center" justify="flex-end" flex={1}>
                     {user.userEmodeCategoryId !== 0 ? (
                       <Text fs="p6" fw={500} align="right">
                         {eModes[user.userEmodeCategoryId].assets.join(", ")}
@@ -286,7 +291,7 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
                       component={ArrowRight}
                       sx={{ flexShrink: 0 }}
                     />
-                    <Flex align="center" justify="flex-end">
+                    <Flex align="center" justify="flex-end" flex={1}>
                       {selectedEmode?.id !== 0 ? (
                         <Text
                           fs="p6"
@@ -341,30 +346,33 @@ export const EmodeModalContent = ({ mode }: EmodeModalContentProps) => {
         </Stack>
       )}
 
-      <Stack gap="m" py="m">
-        {(blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING ||
-          blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING) && (
-          <BlockingError />
-        )}
-        {user.userEmodeCategoryId === 0 && (
-          <Alert
-            variant="warning"
-            description=" Enabling E-Mode only allows you to borrow assets belonging to the selected category."
-          />
-        )}
-        {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && (
-          <BlockingError />
-        )}
-        {showLiquidationRiskAlert && (
-          <Alert
-            variant="error"
-            title="Liquidation risk"
-            description="This action will reduce your health factor. Please be mindful of the increased risk of collateral liquidation."
-          />
-        )}
-      </Stack>
-
-      <Separator mx="var(--modal-content-inset)" />
+      {shouldRenderAlerts && (
+        <>
+          <Stack gap="m" py="m">
+            {(blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_SWITCHING ||
+              blockingError === ErrorType.CLOSE_POSITIONS_BEFORE_DISABLING) && (
+              <BlockingError />
+            )}
+            {user.userEmodeCategoryId === 0 && (
+              <Alert
+                variant="warning"
+                description="Enabling E-Mode only allows you to borrow assets belonging to the selected category."
+              />
+            )}
+            {blockingError === ErrorType.EMODE_DISABLED_LIQUIDATION && (
+              <BlockingError />
+            )}
+            {showLiquidationRiskAlert && (
+              <Alert
+                variant="error"
+                title="Liquidation risk"
+                description="This action will reduce your health factor. Please be mindful of the increased risk of collateral liquidation."
+              />
+            )}
+          </Stack>
+          <Separator mx="var(--modal-content-inset)" />
+        </>
+      )}
 
       <EmodeActions
         blocked={blockingError !== undefined || !selectedEmode}

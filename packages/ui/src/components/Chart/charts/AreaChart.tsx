@@ -1,5 +1,13 @@
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
-import { ReactNode, useId, useState } from "react"
+import {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react"
 import {
   Area,
   AreaChart as AreaChartPrimitive,
@@ -13,7 +21,7 @@ import {
 } from "recharts"
 import { CategoricalChartFunc } from "recharts/types/chart/types"
 import { CurveType } from "recharts/types/shape/Curve"
-import { isNumber, isString } from "remeda"
+import { funnel, isNumber, isString } from "remeda"
 
 import { ChartContainer } from "@/components/Chart"
 import { ChartTooltip } from "@/components/Chart/ChartTooltip"
@@ -97,21 +105,48 @@ export function AreaChart<TData extends TChartData>({
 
   const [activePointValue, setActivePointValue] = useState<number | null>(null)
 
-  const onMouseMove: CategoricalChartFunc = (chartState) => {
-    if (withoutActiveDot && withoutTooltip) return
-    const index = Number(chartState?.activeTooltipIndex)
+  const latestData = useRef(data)
+  useEffect(() => {
+    latestData.current = data
+  }, [data])
 
-    if (Number.isNaN(index)) {
-      return onCrosshairMove?.(null)
+  const { call: onMouseMove } = useMemo(() => {
+    if (withoutReferenceLine && !onCrosshairMove) {
+      return {
+        call: undefined,
+      }
     }
+    return funnel(
+      (chartState: Parameters<CategoricalChartFunc>[0]) => {
+        const index = Number(chartState?.activeTooltipIndex)
 
-    const activeData = data[index]
+        if (Number.isNaN(index)) {
+          return onCrosshairMove?.(null)
+        }
 
-    if (isString(primarySeriesKey) && isNumber(activeData[primarySeriesKey])) {
-      setActivePointValue(activeData[primarySeriesKey])
-      onCrosshairMove?.(activeData)
-    }
-  }
+        const activeData = latestData.current[index]
+
+        if (
+          isString(primarySeriesKey) &&
+          isNumber(activeData[primarySeriesKey])
+        ) {
+          setActivePointValue(activeData[primarySeriesKey])
+          onCrosshairMove?.(activeData)
+        }
+      },
+      {
+        minGapMs: 100,
+        triggerAt: "start",
+        reducer: (_, next: Parameters<CategoricalChartFunc>[0]) => next,
+      },
+    )
+  }, [withoutReferenceLine, onCrosshairMove, primarySeriesKey])
+
+  const onMouseLeave = useCallback(() => {
+    if (withoutReferenceLine && !onCrosshairMove) return
+    setActivePointValue(null)
+    onCrosshairMove?.(null)
+  }, [withoutReferenceLine, onCrosshairMove])
 
   const {
     margin,
@@ -128,12 +163,9 @@ export function AreaChart<TData extends TChartData>({
     <ChartContainer config={config} height={height} aspectRatio={aspectRatio}>
       <AreaChartPrimitive
         accessibilityLayer
-        data={data}
+        data={latestData.current}
         onMouseMove={onMouseMove}
-        onMouseLeave={() => {
-          setActivePointValue(null)
-          onCrosshairMove?.(null)
-        }}
+        onMouseLeave={onMouseLeave}
         margin={margin}
       >
         <CartesianGrid
@@ -196,7 +228,7 @@ export function AreaChart<TData extends TChartData>({
             y={activePointValue ?? 0}
             stroke={theme.text.low}
             strokeDasharray="6 6"
-            opacity={activePointValue ? 1 : 0}
+            opacity={activePointValue !== null ? 1 : 0}
             shapeRendering="crispEdges"
           />
         )}
