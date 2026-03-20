@@ -51,7 +51,7 @@ export const JsonViewTabsList = styled(TabsList)(
     display: flex;
     gap: ${theme.space.m};
 
-    margin-bottom: -${theme.space.m};
+    margin-bottom: -${theme.space.s};
     padding-block: ${theme.space.base};
 
     border-bottom: 1px solid ${theme.details.borders};

@@ -84,11 +84,6 @@ export const WalletRewardsSection: FC = () => {
           value={referralsDisplay}
           isLoading={referral.loading}
         />
-        {referral.isEmpty && !referral.loading && (
-          <WalletRewardsSectionEmpty link="/referrals">
-            {t("rewards.referrals.empty")}
-          </WalletRewardsSectionEmpty>
-        )}
       </Flex>
       <Flex justify="space-between" align="center">
         <Button
