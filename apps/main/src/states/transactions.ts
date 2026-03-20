@@ -114,6 +114,7 @@ export type TransactionMeta =
 
 export type TSuccessResult =
   | TxBestBlocksStateResult
+  | TxFinalizedResult
   | TransactionReceipt
   | SolanaTxStatus
   | SuiTxStatus
@@ -166,7 +167,10 @@ export const isSingleTransaction = (
 export const isSubstrateTxResult = (
   result: TSuccessResult,
 ): result is TxBestBlocksStateResult => {
-  return "type" in result && result.type === "txBestBlocksState"
+  return (
+    "type" in result &&
+    (result.type === "txBestBlocksState" || result.type === "finalized")
+  )
 }
 
 export const isBridgeTransaction = (meta: TransactionMeta) => {
