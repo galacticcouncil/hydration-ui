@@ -18,7 +18,7 @@ import Big from "big.js"
 import { Enum } from "polkadot-api"
 import { useForm } from "react-hook-form"
 import { useDebounce } from "use-debounce"
-import { z } from "zod"
+import { z } from "zod/v4"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
@@ -41,6 +41,7 @@ import {
 import { MultiplyAppProps } from "@/modules/borrow/multiply/MultiplyApp"
 import { validateLoopingEvmTx } from "@/modules/borrow/multiply/utils/looping"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
+import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -88,7 +89,7 @@ const useSchema = ({ proxyCreationFee }: { proxyCreationFee: bigint }) => {
           toDecimal(proxyCreationFee, native.decimals),
         ),
       {
-        message: "Not HDX to pay fee",
+        error: "Not HDX to pay fee",
         path: ["fee"],
       },
     )
@@ -114,6 +115,7 @@ export const useMultiplyApp = ({
   const queryClient = useQueryClient()
   const { createTransaction } = useTransactionsStore()
   const poolBundleContract = useBorrowPoolBundleContract()
+
   const getSetUsageAsCollateralTx = useSetUsageAsCollateralTx()
   const getSetUserEModeTx = useSetUserEModeTx()
   const createEvmTx = useCreateLoopingEvmTx()
@@ -243,11 +245,19 @@ export const useMultiplyApp = ({
         {
           stepTitle: "Create proxy",
           tx: async () => {
-            const tx = rpc.papi.tx.Proxy.create_pure({
-              proxy_type: Enum("Any"),
-              delay: 0,
-              index: 0,
-            })
+            if (!trade?.tx) {
+              throw new Error("Trade not found")
+            }
+
+            const txs = [
+              trade.tx,
+              rpc.papi.tx.Proxy.create_pure({
+                proxy_type: Enum("Any"),
+                delay: 0,
+                index: 0,
+              }),
+            ]
+
             const toasts = {
               submitted: "Creating proxy",
               success: "Proxy created",
@@ -255,7 +265,9 @@ export const useMultiplyApp = ({
 
             return {
               title: "Create proxy",
-              tx: tx,
+              tx: rpc.papi.tx.Utility.batch_all({
+                calls: txs.map((tx) => tx.decodedCall),
+              }),
               toasts,
               successMode: "finalized",
             }
@@ -264,10 +276,6 @@ export const useMultiplyApp = ({
         {
           stepTitle: "Send funds",
           tx: async (res) => {
-            if (!trade?.tx) {
-              throw new Error("Trade not found")
-            }
-
             const blockResults = res[0]
 
             let proxyAddress: string | undefined
@@ -313,21 +321,20 @@ export const useMultiplyApp = ({
 
             newCreateadProxy = proxyAddress
 
-            const txs = [
-              trade.tx,
+            const txs: AnyPapiTx[] = [
               rpc.papi.tx.Dispatcher.dispatch_with_extra_gas({
                 call: rpc.papi.tx.Currencies.transfer({
                   currency_id: Number(supplyAToken.id),
                   dest: proxyAddress,
-                  amount: BigInt(scale(amount, supplyAToken.decimals)),
+                  amount: BigInt(minReceiveAmount), // tranfer a correct amount after swap
                 }).decodedCall,
                 extra_gas: AAVE_GAS_LIMIT,
               }),
-              rpc.papi.tx.Currencies.transfer({
-                currency_id: 20,
-                dest: proxyAddress,
-                amount: 10000000000000n,
-              }),
+              // rpc.papi.tx.Currencies.transfer({
+              //   currency_id: 20,
+              //   dest: proxyAddress,
+              //   amount: 10000000000000n,
+              // }),
               createProxyCall(
                 rpc.papi,
                 proxyAddress,
@@ -352,7 +359,10 @@ export const useMultiplyApp = ({
             }
 
             if (eModeCategory !== EModeCategory.NONE) {
-              const eModeTx = await getSetUserEModeTx(eModeCategory)
+              const eModeTx = await getSetUserEModeTx(
+                eModeCategory,
+                proxyAddress,
+              )
 
               txs.push(
                 createProxyCall(rpc.papi, proxyAddress, eModeTx.decodedCall),
@@ -375,7 +385,8 @@ export const useMultiplyApp = ({
         },
         {
           stepTitle: "Looping",
-          tx: async () => {
+          tx: async (res) => {
+            console.log(res)
             if (!newCreateadProxy) {
               throw new Error("Proxy not found")
             }

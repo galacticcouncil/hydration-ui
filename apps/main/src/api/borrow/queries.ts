@@ -657,9 +657,8 @@ export const useSetUserEModeTx = () => {
   const { account } = useAccount()
 
   return useCallback(
-    async (categoryId: number) => {
-      const address = account?.address || ""
-      const evmAddress = safeConvertAnyToH160(address)
+    async (categoryId: number, address?: string) => {
+      const evmAddress = safeConvertAnyToH160(address || account?.address || "")
 
       if (!poolContract) throw new Error("Invalid poolContract")
 
@@ -851,17 +850,19 @@ export const useStrategyPositions = () => {
 
             const publicKey = safeConvertSS58toPublicKey(proxyAddress)
 
-            const { events } = await queryClient.fetchQuery(
-              pureCreatedEventsQuery(indexerClient, publicKey),
-            )
+            // const { events } = await queryClient.fetchQuery(
+            //   pureCreatedEventsQuery(indexerClient, publicKey),
+            // )
 
-            const event = events[0]
+            // const event = events[0]
 
-            if (!event || !event.extrinsic) throw new Error("No event found")
+            // if (!event || !event.extrinsic) throw new Error("No event found")
 
             const proxyCreateData = {
-              blockHeight: event.block.height,
-              extrinsicIndex: event.extrinsic.indexInBlock,
+              // blockHeight: event.block.height,
+              // extrinsicIndex: event.extrinsic.indexInBlock,
+              blockHeight: 64000,
+              extrinsicIndex: 1,
             }
 
             const blocksAgo =
