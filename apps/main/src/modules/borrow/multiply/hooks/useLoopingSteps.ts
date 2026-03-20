@@ -6,7 +6,9 @@ import Big from "big.js"
 import { last } from "remeda"
 
 import { useBorrowReserves } from "@/api/borrow/queries"
+import { PoolError } from "@/api/pools"
 import { spotPriceQuery } from "@/api/spotPrice"
+import { Trade } from "@/api/trade"
 import { getReservePairLtv } from "@/modules/borrow/multiply/utils/leverage"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -21,6 +23,8 @@ export type LoopStep = {
   swap: string
   collateralAfter: string
   debtAfter: string
+  trade: Trade
+  swapErrors: PoolError[]
 }
 
 export type UseLoopingStepsProps = {
@@ -123,16 +127,26 @@ export function useLoopingSteps({
           : remaining
 
         if (borrowAmount.lt(EPSILON)) break
-        const borrowInDebt = borrowAmount.div(priceDivisor)
+        const borrowInDebt = borrowAmount.div(priceDivisor).toString()
         const swap = borrowAmount.times(slippageFactor)
 
         collateral = collateral.plus(swap)
         debt = debt.plus(borrowAmount)
 
+        const trade = await rpc.sdk.api.router.getBestSell(
+          Number(assetInId),
+          Number(assetOutId),
+          borrowInDebt,
+        )
+
+        const swapErrors = trade.swaps.flatMap((swap) => swap.errors)
+
         result.push({
           step: i + 1,
-          borrow: borrowInDebt.toString(),
+          borrow: borrowInDebt,
           swap: swap.toString(),
+          trade,
+          swapErrors,
           collateralAfter: collateral.minus(amountBig).toString(),
           debtAfter: debt.div(priceDivisor).toString(),
         })

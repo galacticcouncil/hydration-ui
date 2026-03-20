@@ -97,7 +97,7 @@ type AmountMediumLabelProps = ComponentProps<typeof Text> & {
   readonly ref?: Ref<HTMLParagraphElement>
 }
 
-const AmountLabel: FC<AmountMediumLabelProps> = ({
+export const AmountLabel: FC<AmountMediumLabelProps> = ({
   variant = "default",
   color = "default",
   ...props

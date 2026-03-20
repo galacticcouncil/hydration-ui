@@ -1,6 +1,7 @@
-import { PoolError } from "@galacticcouncil/sdk-next/build/types/pool"
 import { Alert, Stack } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
+
+import { PoolError } from "@/api/pools"
 
 export type MultiplyErrorsProps = {
   errors: PoolError[]

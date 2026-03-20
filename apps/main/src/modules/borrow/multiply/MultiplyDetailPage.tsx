@@ -8,7 +8,7 @@ import { AboutCard } from "@/modules/borrow/multiply/components/AboutCard"
 import { AssetHeader } from "@/modules/borrow/multiply/components/AssetHeader"
 import { OverviewCard } from "@/modules/borrow/multiply/components/OverviewCard"
 import { MultiplyAssetPairConfig } from "@/modules/borrow/multiply/config"
-import { MultiplyApp } from "@/modules/borrow/multiply/MultiplyApp"
+import { MultiplyAppWrapper } from "@/modules/borrow/multiply/MultiplyAppWrapper"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -60,7 +60,8 @@ export const MultiplyDetailPage: React.FC<MultiplyDetailPageProps> = ({
           />
           <AboutCard symbol={collateralReserve.symbol} />
         </Stack>
-        <MultiplyApp
+
+        <MultiplyAppWrapper
           collateralReserve={collateralReserve}
           debtReserve={debtReserve}
         />

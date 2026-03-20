@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next"
 
 import { FeaturedPairs } from "@/modules/borrow/multiply/components/FeaturedPairs"
 import { MultiplyPairsTable } from "@/modules/borrow/multiply/components/MultiplyPairsTable"
+import { StrategyPositions } from "@/modules/borrow/multiply/components/StrategyPositions"
 import { useMultiplyPairs } from "@/modules/borrow/multiply/hooks/useMultiplyPairs"
 import { MultiplyPageSkeleton } from "@/modules/borrow/multiply/MultiplyPageSkeleton"
 
@@ -19,7 +20,7 @@ export const MultiplyPage = () => {
   if (isLoading) return <MultiplyPageSkeleton />
 
   return (
-    <Stack>
+    <Stack gap="xxl">
       <Flex align="center" justify="space-between" width="100%">
         <Stack
           direction={["column", null, "row"]}
@@ -41,6 +42,8 @@ export const MultiplyPage = () => {
           />
         </Stack>
       </Flex>
+
+      <StrategyPositions />
 
       <SectionHeader title={t("multiply.featuredStrategies")} />
       <FeaturedPairs pairs={featuredParis} />

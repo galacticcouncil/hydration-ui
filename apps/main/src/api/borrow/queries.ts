@@ -3,7 +3,9 @@ import {
   ProtocolAction,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
+import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
+import { ExternalApyData } from "@galacticcouncil/money-market/types"
 import {
   AaveV3HydrationMainnet,
   gasLimitRecommendations,
@@ -18,10 +20,14 @@ import {
   getUserApyValues,
   GhoService,
   IncentivesControllerV2,
-  UiIncentiveDataProvider,
-  UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
-import { safeConvertAnyToH160 } from "@galacticcouncil/utils"
+import {
+  GDOT_ASSET_ID,
+  getAddressFromAssetId,
+  PRIME_ASSET_ID,
+  safeConvertAnyToH160,
+  safeConvertSS58toPublicKey,
+} from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import {
   QueryClient,
@@ -30,34 +36,45 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import Big from "big.js"
+import { produce } from "immer"
 import { Binary, FixedSizeArray } from "polkadot-api"
 import { useCallback } from "react"
 
 import {
-  useBorrowIncentivesContract,
+  borrowIncentivesContractQuery,
+  borrowPoolDataContractQuery,
+  ghoServiceContractQuery,
   useBorrowPoolContract,
-  useBorrowPoolDataContract,
   useGhoServiceContract,
 } from "@/api/borrow/contracts"
-import { useBlockTimestamp } from "@/api/chain"
+import { borrowAssetApyQuery } from "@/api/borrow/hooks"
+import { bestNumberQuery, useBlockTimestamp } from "@/api/chain"
 import {
   ASSET_ID_TO_DEFILLAMA_ID,
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { TProviderData } from "@/api/provider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderData, useSquidClient } from "@/api/provider"
+import { useIndexerClient } from "@/api/provider"
+import { getAccountProxies } from "@/api/proxy"
+import { useAssets } from "@/providers/assetsProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
 
 export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
 
 export const borrowIncentivesQuery = (
-  lendingPoolAddressProvider: string,
-  incentivesContract: UiIncentiveDataProvider | null,
+  rpc: TProviderContext,
+  queryClient: QueryClient,
 ) =>
   queryOptions({
     queryKey: ["borrow", "incentives", lendingPoolAddressProvider],
     queryFn: async () => {
+      const incentivesContract = await queryClient.ensureQueryData(
+        borrowIncentivesContractQuery(rpc.evm, rpc.isLoaded),
+      )
       if (!incentivesContract) throw new Error("Invalid incentivesContract")
 
       const incentives =
@@ -68,36 +85,35 @@ export const borrowIncentivesQuery = (
       return formatReserveIncentives(incentives)
     },
     retry: false,
-    enabled: !!lendingPoolAddressProvider && !!incentivesContract,
+    enabled: !!lendingPoolAddressProvider,
   })
 
 export const useBorrowIncentives = () => {
-  const incentivesContract = useBorrowIncentivesContract()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
 
-  return useQuery(
-    borrowIncentivesQuery(lendingPoolAddressProvider, incentivesContract),
-  )
+  return useQuery(borrowIncentivesQuery(rpc, queryClient))
 }
 
 export const borrowReservesQuery = (
+  rpc: TProviderContext,
   queryClient: QueryClient,
-  lendingPoolAddressProvider: string,
-  poolDataContract: UiPoolDataProvider | null,
-  incentivesContract: UiIncentiveDataProvider | null,
   timestamp: bigint,
 ) =>
   queryOptions({
     queryKey: ["borrow", "reserves", lendingPoolAddressProvider],
     queryFn: async () => {
+      const poolDataContract = await queryClient.ensureQueryData(
+        borrowPoolDataContractQuery(rpc.evm, rpc.isLoaded),
+      )
+
       if (!poolDataContract) throw new Error("Invalid poolDataContract")
 
       const [reserves, reserveIncentives] = await Promise.all([
         poolDataContract.getReservesHumanized({
           lendingPoolAddressProvider,
         }),
-        queryClient.ensureQueryData(
-          borrowIncentivesQuery(lendingPoolAddressProvider, incentivesContract),
-        ),
+        queryClient.ensureQueryData(borrowIncentivesQuery(rpc, queryClient)),
       ])
 
       const { baseCurrencyData, reservesData } = reserves
@@ -124,31 +140,21 @@ export const borrowReservesQuery = (
       }
     },
     retry: false,
-    enabled:
-      !!lendingPoolAddressProvider && !!poolDataContract && timestamp > 0n,
+    enabled: !!lendingPoolAddressProvider && timestamp > 0n,
   })
 
 export const useBorrowReserves = () => {
   const queryClient = useQueryClient()
   const { data: timestamp } = useBlockTimestamp()
-  const poolDataContract = useBorrowPoolDataContract()
-  const incentivesContract = useBorrowIncentivesContract()
+  const rpc = useRpcProvider()
 
-  return useQuery(
-    borrowReservesQuery(
-      queryClient,
-      lendingPoolAddressProvider,
-      poolDataContract,
-      incentivesContract,
-      timestamp ?? 0n,
-    ),
-  )
+  return useQuery(borrowReservesQuery(rpc, queryClient, timestamp ?? 0n))
 }
 
 export const userBorrowReservesQuery = (
+  rpc: TProviderContext,
+  queryClient: QueryClient,
   evmAddress: string,
-  lendingPoolAddressProvider: string,
-  poolDataContract: UiPoolDataProvider | null,
 ) =>
   queryOptions({
     queryKey: [
@@ -158,6 +164,9 @@ export const userBorrowReservesQuery = (
       lendingPoolAddressProvider,
     ],
     queryFn: async () => {
+      const poolDataContract = await queryClient.ensureQueryData(
+        borrowPoolDataContractQuery(rpc.evm, rpc.isLoaded),
+      )
       if (!poolDataContract) throw new Error("Invalid poolDataContract")
 
       return poolDataContract.getUserReservesHumanized({
@@ -166,30 +175,25 @@ export const userBorrowReservesQuery = (
       })
     },
     retry: false,
-    enabled: !!evmAddress && !!lendingPoolAddressProvider && !!poolDataContract,
+    enabled: !!evmAddress,
   })
 
 export const useUserBorrowReserves = (givenAddress?: string) => {
-  const poolDataContract = useBorrowPoolDataContract()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
 
   const { account } = useAccount()
 
   const address = givenAddress || account?.address || ""
   const evmAddress = safeConvertAnyToH160(address)
 
-  return useQuery(
-    userBorrowReservesQuery(
-      evmAddress,
-      lendingPoolAddressProvider,
-      poolDataContract,
-    ),
-  )
+  return useQuery(userBorrowReservesQuery(rpc, queryClient, evmAddress))
 }
 
 export const borrowUserIncentivesQuery = (
+  rpc: TProviderContext,
   evmAddress: string,
-  lendingPoolAddressProvider: string,
-  incentivesContract: UiIncentiveDataProvider | null,
+  queryClient: QueryClient,
 ) =>
   queryOptions({
     queryKey: [
@@ -199,6 +203,9 @@ export const borrowUserIncentivesQuery = (
       lendingPoolAddressProvider,
     ],
     queryFn: async () => {
+      const incentivesContract = await queryClient.ensureQueryData(
+        borrowIncentivesContractQuery(rpc.evm, rpc.isLoaded),
+      )
       if (!incentivesContract) throw new Error("Invalid incentivesContract")
 
       return incentivesContract.getUserReservesIncentivesDataHumanized({
@@ -207,28 +214,24 @@ export const borrowUserIncentivesQuery = (
       })
     },
     retry: false,
-    enabled:
-      !!evmAddress && !!lendingPoolAddressProvider && !!incentivesContract,
+    enabled: !!evmAddress,
   })
 
 export const useBorrowUserIncentives = (givenAddress?: string) => {
-  const incentivesContract = useBorrowIncentivesContract()
+  const rpc = useRpcProvider()
+  const queryClient = useQueryClient()
   const { account } = useAccount()
 
   const address = givenAddress || account?.address || ""
 
   const evmAddress = safeConvertAnyToH160(address)
 
-  return useQuery(
-    borrowUserIncentivesQuery(
-      evmAddress,
-      lendingPoolAddressProvider,
-      incentivesContract,
-    ),
-  )
+  return useQuery(borrowUserIncentivesQuery(rpc, evmAddress, queryClient))
 }
 
-export const ghoReserveDataQuery = (ghoServiceContract: GhoService | null) =>
+export const ghoReserveDataQuery = (
+  ghoServiceContract: GhoService | null | undefined,
+) =>
   queryOptions({
     queryKey: ["borrow", "gho", "data"],
     queryFn: async () => {
@@ -252,14 +255,17 @@ export const useGhoReserveData = () => {
 }
 
 export const ghoUserDataQuery = (
-  evmAddress: string,
+  rpc: TProviderContext,
   queryClient: QueryClient,
-  ghoServiceContract: GhoService | null,
+  evmAddress: string,
   timestamp: bigint,
 ) =>
   queryOptions({
     queryKey: ["borrow", "gho", "userData", evmAddress],
     queryFn: async () => {
+      const ghoServiceContract = await queryClient.ensureQueryData(
+        ghoServiceContractQuery(rpc.evm, rpc.isLoaded),
+      )
       if (!ghoServiceContract) throw new Error("Invalid ghoServiceContract")
 
       if (timestamp <= 0n) throw new Error("Invalid timestamp")
@@ -282,95 +288,84 @@ export const ghoUserDataQuery = (
       }
     },
     retry: false,
-    enabled: !!evmAddress && !!ghoServiceContract && timestamp > 0n,
+    enabled: !!evmAddress && timestamp > 0n,
   })
 
 export const useGhoUserData = (evmAddress: string) => {
   const { data: timestamp } = useBlockTimestamp()
   const queryClient = useQueryClient()
-  const ghoServiceContract = useGhoServiceContract()
+  const rpc = useRpcProvider()
 
   return useQuery(
-    ghoUserDataQuery(
-      evmAddress,
-      queryClient,
-      ghoServiceContract,
-      timestamp ?? 0n,
-    ),
+    ghoUserDataQuery(rpc, queryClient, evmAddress, timestamp ?? 0n),
   )
 }
 
 export const userBorrowSummaryQueryKey = (
   evmAddress: string,
-  lendingPoolAddressProvider: string,
-) => ["borrow", "userSummary", evmAddress, lendingPoolAddressProvider]
+  withExternalApy: boolean,
+) => [
+  "borrow",
+  "userSummary",
+  evmAddress,
+  lendingPoolAddressProvider,
+  withExternalApy,
+]
 
 export const userBorrowSummaryQuery = (
+  rpc: TProviderContext,
   evmAddress: string,
   queryClient: QueryClient,
-  lendingPoolAddressProvider: string,
-  poolDataContract: UiPoolDataProvider | null,
-  ghoServiceContract: GhoService | null,
-  incentivesContract: UiIncentiveDataProvider | null,
   timestamp: bigint,
+  externalApyData?: ExternalApyData,
 ) =>
   queryOptions({
-    queryKey: userBorrowSummaryQueryKey(evmAddress, lendingPoolAddressProvider),
+    queryKey: userBorrowSummaryQueryKey(evmAddress, !!externalApyData),
     queryFn: async () => {
       if (!timestamp || timestamp <= 0n) throw new Error("Invalid timestamp")
-      if (!poolDataContract || !ghoServiceContract)
-        throw new Error("Invalid poolDataContract or ghoServiceContract")
 
       const [user, reserves, reserveIncentives, userIncentives, gho] =
         await Promise.all([
-          poolDataContract.getUserReservesHumanized({
-            lendingPoolAddressProvider,
-            user: evmAddress,
-          }),
           queryClient.ensureQueryData(
-            borrowReservesQuery(
-              queryClient,
-              lendingPoolAddressProvider,
-              poolDataContract,
-              incentivesContract,
-              timestamp,
-            ),
+            userBorrowReservesQuery(rpc, queryClient, evmAddress),
           ),
           queryClient.ensureQueryData(
-            borrowIncentivesQuery(
-              lendingPoolAddressProvider,
-              incentivesContract,
-            ),
+            borrowReservesQuery(rpc, queryClient, timestamp),
+          ),
+          queryClient.ensureQueryData(borrowIncentivesQuery(rpc, queryClient)),
+          queryClient.ensureQueryData(
+            borrowUserIncentivesQuery(rpc, evmAddress, queryClient),
           ),
           queryClient.ensureQueryData(
-            borrowUserIncentivesQuery(
-              evmAddress,
-              lendingPoolAddressProvider,
-              incentivesContract,
-            ),
-          ),
-          queryClient.ensureQueryData(
-            ghoUserDataQuery(
-              evmAddress,
-              queryClient,
-              ghoServiceContract,
-              timestamp,
-            ),
+            ghoUserDataQuery(rpc, queryClient, evmAddress, timestamp),
           ),
         ])
 
       const { userEmodeCategoryId, userReserves } = user
-      const { baseCurrencyData, formattedReserves } = reserves
       const { formattedGhoUserData, formattedGhoReserveData } = gho
 
       const currentTimestamp = Number(timestamp) / 1000
 
+      const formattedReserves = externalApyData
+        ? produce(reserves.formattedReserves, (draft) => {
+            const reserveMap = new Map(draft.map((r) => [r.underlyingAsset, r]))
+
+            for (const [assetId, data] of externalApyData.entries()) {
+              const reserve = reserveMap.get(getAddressFromAssetId(assetId))
+              if (reserve) {
+                reserve.supplyAPY = data.supplyApy
+                reserve.variableBorrowAPY = data.borrowApy
+              }
+            }
+          })
+        : reserves.formattedReserves
+
       const summary = formatUserSummaryAndIncentives({
         currentTimestamp,
         marketReferencePriceInUsd:
-          baseCurrencyData.marketReferenceCurrencyPriceInUsd,
+          reserves.baseCurrencyData.marketReferenceCurrencyPriceInUsd,
         marketReferenceCurrencyDecimals:
-          baseCurrencyData.marketReferenceCurrencyDecimals,
+          reserves.baseCurrencyData.marketReferenceCurrencyDecimals,
         userReserves,
         formattedReserves,
         userEmodeCategoryId,
@@ -393,31 +388,40 @@ export const userBorrowSummaryQuery = (
       return extendedUser
     },
     retry: false,
-    enabled: !!lendingPoolAddressProvider && !!evmAddress && timestamp > 0n,
+    enabled: !!evmAddress && timestamp > 0n,
   })
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
   const queryClient = useQueryClient()
   const { account } = useAccount()
+  const rpc = useRpcProvider()
   const { data: timestamp } = useBlockTimestamp()
-  const poolDataContract = useBorrowPoolDataContract()
-  const ghoServiceContract = useGhoServiceContract()
-  const incentivesContract = useBorrowIncentivesContract()
 
   const address = givenAddress || account?.address || ""
   const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery(
-    userBorrowSummaryQuery(
-      evmAddress,
-      queryClient,
-      lendingPoolAddressProvider,
-      poolDataContract,
-      ghoServiceContract,
-      incentivesContract,
-      timestamp ?? 0n,
-    ),
+    userBorrowSummaryQuery(rpc, evmAddress, queryClient, timestamp ?? 0n),
   )
+}
+
+export const useUsersBorrowSummary = (addresses: string[]) => {
+  const queryClient = useQueryClient()
+  const rpc = useRpcProvider()
+  const { data: timestamp } = useBlockTimestamp()
+
+  return useQueries({
+    queries: addresses.map((address) => {
+      const evmAddress = safeConvertAnyToH160(address || "")
+
+      return userBorrowSummaryQuery(
+        rpc,
+        evmAddress,
+        queryClient,
+        timestamp ?? 0n,
+      )
+    }),
+  })
 }
 
 export const useGetClaimAllBorrowRewardsTx = () => {
@@ -599,9 +603,11 @@ export const useSetUsageAsCollateralTx = () => {
   const { account } = useAccount()
 
   return useCallback(
-    async (reserve: string, usageAsCollateral: boolean) => {
-      const address = account?.address || ""
-      const evmAddress = safeConvertAnyToH160(address)
+    async (reserve: string, usageAsCollateral: boolean, address?: string) => {
+      const evmAddress = safeConvertAnyToH160(address || account?.address || "")
+
+      if (!evmAddress) throw new Error("Invalid EVM address")
+      if (!poolContract) throw new Error("Invalid poolContract")
 
       const poolInstance = poolContract.getContractInstance(
         poolContract.poolAddress,
@@ -651,9 +657,10 @@ export const useSetUserEModeTx = () => {
   const { account } = useAccount()
 
   return useCallback(
-    async (categoryId: number) => {
-      const address = account?.address || ""
-      const evmAddress = safeConvertAnyToH160(address)
+    async (categoryId: number, address?: string) => {
+      const evmAddress = safeConvertAnyToH160(address || account?.address || "")
+
+      if (!poolContract) throw new Error("Invalid poolContract")
 
       const poolInstance = poolContract.getContractInstance(
         poolContract.poolAddress,
@@ -752,4 +759,132 @@ export const useExternalApys = (assetIds: string[]) => {
       ] as const
     }),
   }
+}
+
+export const useStrategyPositions = () => {
+  const { account } = useAccount()
+  const queryClient = useQueryClient()
+  const indexerClient = useIndexerClient()
+  const squidClient = useSquidClient()
+  const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
+  const rpc = useRpcProvider()
+
+  const { data: timestamp } = useBlockTimestamp()
+
+  const accountAddress = account?.address || ""
+
+  return useQuery(
+    queryOptions({
+      queryKey: ["strategyPositions", accountAddress],
+      enabled: !!accountAddress && !!timestamp,
+      queryFn: async () => {
+        const accountProxies = await queryClient.ensureQueryData(
+          getAccountProxies(rpc, queryClient, accountAddress),
+        )
+
+        const bestNumber = await queryClient.ensureQueryData(
+          bestNumberQuery(rpc),
+        )
+
+        if (!bestNumber) throw new Error("Best number not found")
+
+        const parachainBlockNumber = bestNumber.parachainBlockNumber
+        const currentTimestampMs = bestNumber.timestamp
+
+        const apys = await Promise.all(
+          [PRIME_ASSET_ID, GDOT_ASSET_ID].map((assetId) =>
+            queryClient.ensureQueryData(
+              borrowAssetApyQuery(
+                rpc,
+                queryClient,
+                squidClient,
+                assetId,
+                getAssetWithFallback,
+                getErc20AToken,
+                getRelatedAToken,
+                timestamp,
+              ),
+            ),
+          ),
+        )
+
+        const filteredApys = apys.filter((apy) => apy !== undefined)
+
+        const entries = filteredApys.map(
+          ({ assetId, underlyingSupplyApy, underlyingBorrowApy, lpAPY }) => {
+            const supplyApy = Big(underlyingSupplyApy)
+              .plus(lpAPY ?? 0)
+              .div(100)
+            const borrowApy = Big(underlyingBorrowApy)
+              .plus(lpAPY ?? 0)
+              .div(100)
+            return [
+              assetId,
+              {
+                supplyApy: supplyApy.toString(),
+                borrowApy: borrowApy.toString(),
+              },
+            ] as const
+          },
+        )
+
+        const positions = await Promise.all(
+          accountProxies.map(async (proxyAddress) => {
+            const evmAddress = safeConvertAnyToH160(proxyAddress)
+
+            const borrowSummary = await queryClient.ensureQueryData(
+              userBorrowSummaryQuery(
+                rpc,
+                evmAddress,
+                queryClient,
+                timestamp ?? 0n,
+                new Map(entries),
+              ),
+            )
+
+            const borrowSummaryData = borrowSummary.userReservesData.find(
+              (userReserve) => Big(userReserve.underlyingBalance).gt(0),
+            )
+
+            if (!borrowSummaryData) return undefined
+
+            const publicKey = safeConvertSS58toPublicKey(proxyAddress)
+
+            // const { events } = await queryClient.fetchQuery(
+            //   pureCreatedEventsQuery(indexerClient, publicKey),
+            // )
+
+            // const event = events[0]
+
+            // if (!event || !event.extrinsic) throw new Error("No event found")
+
+            const proxyCreateData = {
+              // blockHeight: event.block.height,
+              // extrinsicIndex: event.extrinsic.indexInBlock,
+              blockHeight: 64000,
+              extrinsicIndex: 1,
+            }
+
+            const blocksAgo =
+              Number(parachainBlockNumber) - Number(proxyCreateData.blockHeight)
+            const deltaMs = blocksAgo * PARACHAIN_BLOCK_TIME
+            const proxyCreatedAt = new Date(currentTimestampMs - deltaMs)
+
+            return {
+              borrowSummaryData,
+              proxyCreateData,
+              proxyCreatedAt,
+              publicKey,
+              proxyAddress,
+              netApy: borrowSummary.netAPY,
+              netWorth: borrowSummary.netWorthUSD,
+              healthFactor: borrowSummary.healthFactor,
+            }
+          }),
+        )
+
+        return positions.filter((position) => position !== undefined)
+      },
+    }),
+  )
 }
