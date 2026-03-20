@@ -52,10 +52,9 @@ export const ReferendaHeader: FC<Props> = ({
           <Text
             font="primary"
             fs="p3"
+            fw={500}
             lh={1.3}
-            color={
-              voted ? getToken("text.medium") : getToken("text.tint.primary")
-            }
+            color={getToken("text.medium")}
           >
             #{number}
           </Text>
@@ -71,17 +70,7 @@ export const ReferendaHeader: FC<Props> = ({
       {isTitledLoading ? (
         <Skeleton height={23} width="100%" />
       ) : (
-        <Text
-          py="s"
-          fw={500}
-          fs="p2"
-          lh={1.3}
-          color={
-            voted
-              ? getToken("text.high")
-              : getToken("surfaces.containers.low.onPrimary")
-          }
-        >
+        <Text py="s" fw={500} fs="p2" lh={1.3} color={getToken("text.high")}>
           {title || "N/a"}
         </Text>
       )}

@@ -5,6 +5,7 @@ import {
   TabsContent,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
@@ -79,9 +80,10 @@ export const ReviewTransactionJsonView = () => {
   const { papi } = useRpcProvider()
   const { tx, meta } = useTransaction()
 
-  const isEvm = isEvmCall(tx)
+  const isHydrationEvm =
+    isEvmCall(tx) && meta.srcChainKey === HYDRATION_CHAIN_KEY
 
-  const tabs: JsonContentProps[] = isEvm
+  const tabs: JsonContentProps[] = isHydrationEvm
     ? [
         { mode: "evm", tx, srcChainKey: meta.srcChainKey },
         {

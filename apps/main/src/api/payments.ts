@@ -1,13 +1,23 @@
+import { MultiSignature } from "@galacticcouncil/descriptors"
 import { DOT_ASSET_ID } from "@galacticcouncil/utils"
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  isPolkadotSigner,
+  useAccount,
+  useWallet,
+} from "@galacticcouncil/web3-connect"
+import { AccountId, compactNumber } from "@polkadot-api/substrate-bindings"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { FixedSizeBinary } from "polkadot-api"
+import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { isBigInt, isNumber, pick, prop, unique, zip } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { useAccountInfo } from "@/api/account"
 import { UseBaseObservableQueryOptions } from "@/hooks/useObservableQuery"
 import { usePapiValue } from "@/hooks/usePapiValue"
+import { AnyPapiTx } from "@/modules/transactions/types"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountData } from "@/states/account"
@@ -19,10 +29,8 @@ import { allPools } from "./pools"
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
   // Native asset is always accepted
   if (asset.id === NATIVE_ASSET_ID) return true
-  // Disallow all Erc20 assets
-  if (asset.type === "Erc20") return false
   // Allow all other assets with data
-  if (isBigInt(data) && data > 0) return true
+  if (isBigInt(data) && data > 0n) return true
   return false
 }
 
@@ -145,24 +153,72 @@ export const useAccountFeePaymentAssets = () => {
   }
 }
 
+export const EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX = "EVMAccounts::claim_account"
+
+export function getEvmAccountClaimMessage(
+  address: string,
+  assetId: string,
+): Uint8Array {
+  const prefixU8a = new TextEncoder().encode(EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX)
+  const compactPrefix = mergeUint8(
+    compactNumber.enc(prefixU8a.length),
+    prefixU8a,
+  )
+
+  const publicKey = AccountId().enc(address)
+
+  const assetIdBuffer = new ArrayBuffer(4)
+  new DataView(assetIdBuffer).setUint32(0, Number(assetId), true)
+  const assetIdU8a = new Uint8Array(assetIdBuffer)
+
+  return mergeUint8(compactPrefix, publicKey, assetIdU8a)
+}
+
 export const useSetFeePaymentAsset = (options: TransactionOptions) => {
   const { t } = useTranslation(["common"])
   const { papi } = useRpcProvider()
+  const { account } = useAccount()
+  const wallet = useWallet()
+
   const { createTransaction } = useTransactionsStore()
   const { getAsset, isErc20 } = useAssets()
+  const { data: accountInfo } = useAccountInfo()
 
   return useMutation({
     mutationFn: async (assetId: string) => {
       const asset = getAsset(assetId)
 
+      if (!account) throw new Error("No account connected")
       if (!asset) throw new Error(`Asset (${assetId}) not found`)
+      if (!accountInfo) throw new Error("Account info not found")
+
+      const { nonce, providers, sufficients } = accountInfo
+      const isUnclaimedAccount =
+        nonce === 0 && providers === 0 && sufficients === 0
+
+      const getTx = async (): Promise<AnyPapiTx> => {
+        if (isUnclaimedAccount && isPolkadotSigner(wallet?.signer)) {
+          const message = getEvmAccountClaimMessage(account.address, assetId)
+          const signature = await wallet.signer.signBytes(message)
+
+          return papi.tx.EVMAccounts.claim_account({
+            account: account.address,
+            asset_id: Number(assetId),
+            signature: MultiSignature.Sr25519(new FixedSizeBinary(signature)),
+          })
+        }
+
+        return papi.tx.MultiTransactionPayment.set_currency({
+          currency: Number(asset.id),
+        })
+      }
 
       return createTransaction(
         {
-          withExtraGas: isErc20(asset),
-          tx: papi.tx.MultiTransactionPayment.set_currency({
-            currency: Number(asset.id),
-          }),
+          ...(isUnclaimedAccount
+            ? { isUnsigned: true }
+            : { withExtraGas: isErc20(asset) }),
+          tx: await getTx(),
           fee: {
             feePaymentAssetId: assetId,
           },
@@ -171,9 +227,6 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
               symbol: asset.symbol,
             }),
             success: t("payment.toast.onSuccess", {
-              symbol: asset.symbol,
-            }),
-            error: t("payment.toast.onLoading", {
               symbol: asset.symbol,
             }),
           },

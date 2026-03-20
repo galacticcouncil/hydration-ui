@@ -5,7 +5,7 @@ import { linearScale } from "@galacticcouncil/utils"
 import { Logo, LogoSize } from "@/components/Logo"
 import { LOGO_SIZES } from "@/components/Logo/Logo.styled"
 import { ThemeProps } from "@/theme"
-import { createVariants, ROOT_FONT_SIZE } from "@/utils"
+import { createVariants, pxToRem } from "@/utils"
 
 import { Icon } from "../Icon"
 import { Image } from "../Image"
@@ -21,8 +21,8 @@ const LOGO_OVERLAP = {
 const DECOR_THICKNESS = {
   "extra-small": 1,
   small: 1.5,
-  medium: 1.5,
-  large: 2,
+  medium: 1.75,
+  large: 2.5,
 } as const
 
 const DECOR_PADDING = {
@@ -40,14 +40,14 @@ const getATokenDecorationStyles = (
   const backdropColor = theme.surfaces.themeBasePalette.background
   return css`
     ${SAssetLogo} {
-      border: ${padding}px solid ${backdropColor};
+      border: ${pxToRem(padding)} solid ${backdropColor};
       background: ${backdropColor};
     }
 
     &::before {
       content: "";
       position: absolute;
-      inset: -${thickness}px;
+      inset: -${pxToRem(thickness)};
       background: linear-gradient(to right, #39a5ff, #0063b5 50%, transparent);
     }
   `
@@ -72,7 +72,7 @@ const getCirclePosition = (
     percentage,
     diameter - thickness * 2 - overlap * 2,
   )
-  return `calc(${percentage}% - ${offset}px)`
+  return `calc(${percentage}% - ${pxToRem(offset)})`
 }
 
 const generateATokenMask = (
@@ -92,7 +92,7 @@ const generateATokenMask = (
   const masks = positions.map(
     (position) =>
       `radial-gradient(
-      circle ${maskRadius}px at ${getCirclePosition(position, diameter, thickness, overlap)},
+      circle ${pxToRem(maskRadius)} at ${getCirclePosition(position, diameter, thickness, overlap)},
       black 0%,
       black 98%,
       transparent 100%
@@ -119,7 +119,7 @@ export const SAssetChainLogo = styled(Image)<{ size: LogoSize }>(({
   const backdropColor = theme.surfaces.themeBasePalette.background
   const borderSize = ["medium", "large"].includes(size) ? 2 : 1
   return css`
-    --border-size: ${borderSize}px;
+    --border-size: ${pxToRem(borderSize)};
     display: flex;
 
     position: absolute;
@@ -178,23 +178,27 @@ export const SDecorationContainer = styled.div<{
   const diameter = LOGO_SIZES[size]
   return [
     css`
-      font-size: ${diameter}px;
+      font-size: ${pxToRem(diameter)};
       position: relative;
       display: inline-flex;
       width: fit-content;
       flex-shrink: 0;
 
       > :not(:first-of-type) {
-        margin-left: -${overlap}px;
+        margin-left: -${pxToRem(overlap)};
       }
     `,
     decorations(thickness, padding)(decoration),
     decoration === "atoken" &&
       css`
         &::before {
+          width: ${pxToRem(
+            diameter * count - overlap * (count - 1) + (thickness + padding),
+          )};
+
           mask-image: ${generateATokenMask(
             count,
-            parseFloat(diameter) * ROOT_FONT_SIZE,
+            diameter,
             overlap,
             thickness,
           )};

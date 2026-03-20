@@ -7,6 +7,8 @@ import { catchError, Observable, of, shareReplay } from "rxjs"
 
 import {
   AnyPapiTx,
+  BatchDecodedCallValue,
+  DecodedCallEnum,
   TxBestBlocksStateResult,
   TxEventOrError,
   TxFinalizedResult,
@@ -19,6 +21,16 @@ export const isPapiTransaction = (tx: unknown): tx is AnyPapiTx =>
   isObjectType(tx) &&
   "signSubmitAndWatch" in tx &&
   isFunction(tx.signSubmitAndWatch)
+
+export const isDecodedCallEnum = (value: unknown): value is DecodedCallEnum => {
+  return isObjectType(value) && "type" in value && "value" in value
+}
+
+export const isBatchDecodedCallValue = (
+  value: unknown,
+): value is BatchDecodedCallValue => {
+  return isObjectType(value) && "type" in value && value.type === "batch_all"
+}
 
 export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   AnyPapiTx,

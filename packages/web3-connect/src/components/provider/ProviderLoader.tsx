@@ -1,5 +1,5 @@
 import { Box, Spinner, Text } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { FC, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { isNonNullish } from "remeda"
@@ -23,7 +23,7 @@ export const ProviderLoader: FC<ProviderLoaderProps> = ({ providers }) => {
   return (
     <SContainer>
       <SpinnerContainer>
-        <Spinner size={140} strokeWidth={1} />
+        <Spinner size={pxToRem(140)} />
         <ProviderIcons providers={wallets.map(({ provider }) => provider)} />
       </SpinnerContainer>
       <Box my="xl">
