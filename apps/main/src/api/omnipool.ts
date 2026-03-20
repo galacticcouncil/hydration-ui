@@ -162,17 +162,10 @@ export const useOraclePrice = (
 }
 
 export const useTotalOmnipoolLiquidity = () => {
-  const queryClient = useQueryClient()
   const squidClient = useSquidClient()
 
   return useQuery({
-    queryKey: ["totalOmnipoolLiquidity"],
-    queryFn: async () => {
-      const data = await queryClient.ensureQueryData(
-        platformTotalQuery(squidClient),
-      )
-
-      return data.omnipoolTvlNorm
-    },
+    ...platformTotalQuery(squidClient),
+    select: (data) => data.omnipoolTvlNorm,
   })
 }
