@@ -10,13 +10,14 @@ export const CallHashText: React.FC<CallHashTextProps> = ({ hash }) => {
   const chunks = hash.split(/(0{3,})/g)
 
   return (
-    <Text wordBreak="break-all">
+    <Text wordBreak="break-all" lh={1.3}>
       {chunks.map((str, index) => (
         <Fragment key={index}>
           <Text
             as="span"
-            fs="p4"
+            fs="p6"
             font="mono"
+            fw={600}
             color={
               str.startsWith("00")
                 ? getToken("text.low")

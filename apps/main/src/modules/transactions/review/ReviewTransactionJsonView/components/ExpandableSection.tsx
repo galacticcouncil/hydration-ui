@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { ThemeUICSSProperties } from "@galacticcouncil/ui/types"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ExpandableContainer, ExpandButton } from "./ExpandableSection.styled"
@@ -30,21 +30,24 @@ export const ExpandableSection: React.FC<ExpandableSectionProps> = ({
     maxContentHeight === "100%",
   )
 
+  useEffect(() => {
+    setIsContentExpanded(maxContentHeight === "100%")
+  }, [maxContentHeight])
+
   const shouldRenderExpandButton = isSectionExpanded && !isContentExpanded
 
   return (
-    <Box position="relative" px="l" py="m">
+    <Box position="relative" px="l" py="s">
       <ButtonTransparent onClick={() => setIsSectionExpanded((prev) => !prev)}>
         <Text
           as="span"
           color={getToken("buttons.primary.medium.rest")}
           fs="p5"
           fw={500}
-          mb="s"
           sx={{ display: "flex", alignItems: "center", gap: "s" }}
         >
           <Icon
-            size={10}
+            size="2xs"
             sx={{ rotate: isSectionExpanded ? "0" : "-90deg" }}
             component={CaretDown}
           />

@@ -14,9 +14,10 @@ const ReactJsonView = lazy(() => import("react18-json-view"))
 export type JsonViewProps = ReactJsonViewProps & {
   className?: string
   fs?: ThemeUICSSProperties["fontSize"]
+  ref?: Ref<HTMLDivElement>
 }
 
-export const JsonView: FC<JsonViewProps & { ref?: Ref<HTMLDivElement> }> = ({
+export const JsonView: FC<JsonViewProps> = ({
   fs,
   className,
   ref,

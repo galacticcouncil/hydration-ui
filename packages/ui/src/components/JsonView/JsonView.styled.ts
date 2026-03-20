@@ -9,6 +9,9 @@ export const SRoot = styled.div(
       min-height: 1.5rem
       font-family: GeistMono;
       font-size: inherit;
+      font-weight: 600;
+
+      color: ${theme.text.low};
 
       --json-property: ${theme.text.high};
       --json-index: ${theme.text.low};
@@ -20,6 +23,19 @@ export const SRoot = styled.div(
       opacity: 0;
       animation: ${theme.animations.fadeIn} 0.2s ease forwards;
     }
+
+    .json-view {
+      &--string {
+        word-break: break-all;
+      }
+
+      .jv-indent {
+        margin-left: 0.2rem;
+        padding-left: 1.2rem;
+        border-left: 1px solid ${theme.details.separatorsOnDim};
+      }
+    }
+
 
     pre {
       position: relative;
