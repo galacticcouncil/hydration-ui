@@ -22,12 +22,14 @@ export const AssetDetailUnlock: FC<Props> = ({
   const { t } = useTranslation(["wallet"])
 
   const unlock = useUnlockNativeLocks(votesToRemove, classIds, value)
+  const isDisabled = votesToRemove.length === 0 && classIds.length === 0
+
   return (
     <Button
       variant="accent"
       outline
       className={className}
-      disabled={!votesToRemove.length || unlock.isPending}
+      disabled={isDisabled || unlock.isPending}
       onClick={() => unlock.mutate()}
     >
       <Key />
