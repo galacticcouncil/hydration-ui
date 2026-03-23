@@ -178,8 +178,7 @@ export async function detectLegacyRpc(
     legacyCache.set(httpUrl, isLegacy)
     return isLegacy
   } catch {
-    legacyCache.set(httpUrl, false)
-    return false
+    return false 
   }
 }
 
