@@ -118,6 +118,7 @@ const getProviderData = async (
       ),
       metadata.fetchAssets(),
       metadata.fetchChains(),
+      metadata.fetchMetadata(),
     ],
   )
 
