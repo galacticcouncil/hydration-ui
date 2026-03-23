@@ -52,7 +52,10 @@ export function useAccountBalanceSubscription() {
     ])
   }, [all, xykShareTokens])
 
-  const erc20AssetIds = useMemo(() => erc20.map((a) => Number(a.id)), [erc20])
+  const erc20AssetIds = useMemo(
+    () => erc20.filter((a) => a.isTradable).map((a) => Number(a.id)),
+    [erc20],
+  )
 
   useEffect(() => {
     if (
