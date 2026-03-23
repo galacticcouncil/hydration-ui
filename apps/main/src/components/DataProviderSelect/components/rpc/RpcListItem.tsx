@@ -70,6 +70,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
   timestamp,
   blockNumber,
   ping,
+  legacy,
   isLoading,
 }) => {
   const { t } = useTranslation()
@@ -120,6 +121,7 @@ const RpcListItemLayout: React.FC<RpcListItemProps & Partial<PingResponse>> = ({
             timestamp={timestamp}
             blockNumber={blockNumber}
             ping={ping}
+            legacy={legacy}
           />
         )}
       </Box>

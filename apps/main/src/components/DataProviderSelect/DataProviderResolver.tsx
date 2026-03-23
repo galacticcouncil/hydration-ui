@@ -55,6 +55,7 @@ export const DataProviderResolver: React.FC<PropsWithChildren> = ({
       rpcUrl: bestRpc?.url ?? ENV.VITE_PROVIDER_URL,
       rpcUrlList: sortedRpcList,
       updatedAt: Date.now(),
+      legacyProvider: bestRpc?.legacy ?? false,
       ...(bestIndexer ? { squidUrl: bestIndexer.config.graphqlUrl } : {}),
     })
 

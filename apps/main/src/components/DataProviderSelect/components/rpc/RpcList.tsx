@@ -48,6 +48,9 @@ export const RpcList: React.FC<RpcListProps> = ({ className }) => {
   })
 
   const handleSwitchRpc = (url: string) => {
+    const index = providerListUrls.indexOf(url)
+    const legacy = rpcsStatusQueries[index]?.data?.legacy ?? false
+    useProviderRpcUrlStore.setState({ legacyProvider: legacy })
     if (isFunction(ws.switch)) {
       unsubscribeAllTxs()
       ws.switch(url)

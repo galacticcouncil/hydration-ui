@@ -16,6 +16,7 @@ import {
   DryRunErrorDecoder,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
+import { withLegacy } from "@polkadot-api/legacy-provider"
 import { CompatibilityLevel, PolkadotClient } from "polkadot-api"
 import { WsJsonRpcProvider } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
@@ -65,7 +66,10 @@ export const getProviderDataEnv = (rpcUrl: string) => {
   return provider ? provider.dataEnv : getDefaultDataEnv()
 }
 
-type RpcProviderQueryOptions = ApiOptions & { priorityRpcUrl?: string }
+type RpcProviderQueryOptions = ApiOptions & {
+  priorityRpcUrl?: string
+  legacyProvider?: boolean
+}
 
 export const rpcProviderQuery = (
   queryClient: QueryClient,
@@ -86,7 +90,7 @@ const getProviderData = async (
   rpcUrlList: string[] = [],
   options: RpcProviderQueryOptions,
 ): Promise<TProviderData> => {
-  const { priorityRpcUrl, ...apiOptions } = options
+  const { priorityRpcUrl, legacyProvider, ...apiOptions } = options
 
   const apis = SubstrateApis.getInstance()
 
@@ -98,6 +102,13 @@ const getProviderData = async (
   const urls = priorityRpcUrl
     ? unique([priorityRpcUrl, ...rpcUrlList])
     : rpcUrlList
+
+  if (legacyProvider) {
+    apiOptions.wsProviderOpts = {
+      ...apiOptions.wsProviderOpts,
+      innerEnhancer: withLegacy(),
+    }
+  }
 
   const papiClient = apis.api(urls, apiOptions)
   const ws = apis.getWs(urls)

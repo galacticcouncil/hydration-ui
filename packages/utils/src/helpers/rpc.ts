@@ -7,6 +7,7 @@ export type PingResponse = {
   timestamp: number
   ping: number | null
   blockNumber: number | null
+  legacy: boolean
 }
 
 /**
@@ -28,22 +29,22 @@ export async function pingRpc(
         ping: Infinity,
         timestamp: 0,
         blockNumber: null,
+        legacy: false,
       }
 
       try {
         const response = await Promise.race([
           (async () => {
             try {
+              const httpUrl = wsToHttp(url)
               const start = performance.now()
-              const latestBlock = await jsonRpcFetch<{
-                number: string
-                timestamp: string
-              }>(
-                wsToHttp(url),
-                "eth_getBlockByNumber",
-                ["latest", false],
-                signal,
-              )
+              const [latestBlock, legacy] = await Promise.all([
+                jsonRpcFetch<{
+                  number: string
+                  timestamp: string
+                }>(httpUrl, "eth_getBlockByNumber", ["latest", false], signal),
+                detectLegacyRpc(httpUrl, signal),
+              ])
               const ping = performance.now() - start
 
               return {
@@ -51,6 +52,7 @@ export async function pingRpc(
                 ping,
                 blockNumber: parseInt(latestBlock.number, 16),
                 timestamp: parseInt(latestBlock.timestamp, 16) * 1000,
+                legacy,
               }
             } catch {
               return defaultResponse
@@ -140,6 +142,45 @@ export async function getBestRpcs(urls: string[]): Promise<PingResponse[]> {
   }
 
   return results
+}
+
+/**
+ * Detects whether an RPC endpoint requires legacy JSON-RPC mode.
+ * Results are cached per URL since legacy status doesn't change at runtime.
+ *
+ * Checks two conditions:
+ * 1. If `chainHead_v1_follow` is absent from `rpc_methods` 
+ * 2. If `dev_newBlock` is present in `rpc_methods` (Chopsticks with partial/broken chainHead support)
+ */
+const legacyCache = new Map<string, boolean>()
+
+export async function detectLegacyRpc(
+  httpUrl: string,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  const cached = legacyCache.get(httpUrl)
+  if (cached !== undefined) return cached
+
+  try {
+    const methods = await jsonRpcFetch<{ methods: string[] }>(
+      httpUrl,
+      "rpc_methods",
+      [],
+      signal,
+    )
+
+    if (methods.methods.includes("dev_newBlock")) {
+      legacyCache.set(httpUrl, true)
+      return true
+    }
+
+    const isLegacy = !methods.methods.includes("chainHead_v1_follow")
+    legacyCache.set(httpUrl, isLegacy)
+    return isLegacy
+  } catch {
+    legacyCache.set(httpUrl, false)
+    return false
+  }
 }
 
 export function parseLarkRpcUrlName(url: string): string {
