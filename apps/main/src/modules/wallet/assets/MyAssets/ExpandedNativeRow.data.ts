@@ -81,7 +81,6 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
     : lockedInReferendaBig.minus(maxLocked).toString()
 
   const [displayValue] = useDisplayAssetPrice(native.id, value)
-  const unlockableIds = unlockedTokens?.ids ?? []
 
   const lockedSeconds =
     (unlockedTokens?.maxLockedBlock ?? 0) * PARACHAIN_BLOCK_TIME
@@ -90,7 +89,9 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
     value,
     displayValue,
     lockedSeconds,
-    unlockableIds,
+    unlockableIds: [],
+    votesToRemove: unlockedTokens?.votesToRemove ?? [],
+    classIds: unlockedTokens?.classIds ?? [],
     isLoading: unlockedTokensLoading,
   }
 }

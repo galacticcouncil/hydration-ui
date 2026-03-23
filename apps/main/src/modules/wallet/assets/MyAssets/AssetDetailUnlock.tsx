@@ -7,25 +7,27 @@ import { useTranslation } from "react-i18next"
 import { useUnlockNativeLocks } from "@/modules/wallet/assets/MyAssets/AssetDetailUnlock.tx"
 
 type Props = {
-  readonly unlockableIds: ReadonlyArray<{ voteId: number; classId: number }>
+  readonly votesToRemove: ReadonlyArray<{ voteId: number; classId: number }>
+  readonly classIds: ReadonlyArray<number>
   readonly value: string
   readonly className?: string
 }
 
 export const AssetDetailUnlock: FC<Props> = ({
-  unlockableIds,
+  votesToRemove,
+  classIds,
   value,
   className,
 }) => {
   const { t } = useTranslation(["wallet"])
 
-  const unlock = useUnlockNativeLocks(unlockableIds, value)
+  const unlock = useUnlockNativeLocks(votesToRemove, classIds, value)
   return (
     <Button
       variant="accent"
       outline
       className={className}
-      disabled={!unlockableIds.length || unlock.isPending}
+      disabled={!votesToRemove.length || unlock.isPending}
       onClick={() => unlock.mutate()}
     >
       <Key />

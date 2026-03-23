@@ -4,6 +4,7 @@ import { millisecondsInMinute } from "date-fns/constants"
 import { number, string, z } from "zod/v4"
 
 import { bestNumberQuery } from "@/api/chain"
+import { accountVotesQuery, SubsquareVoteState } from "@/api/external/subsquare"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
 
 export type CastingVoteInfo = Extract<
@@ -34,15 +35,24 @@ export type TUnlockableVote = {
 
 const CONVICTIONS_BLOCKS: { [key: string]: number } = {
   none: 0,
-  locked1x: 43200,
-  locked2x: 86400,
-  locked3x: 172800,
-  locked4x: 345600,
-  locked5x: 691200,
-  locked6x: 1382400,
+  locked1x: 100800,
+  locked2x: 201600,
+  locked3x: 403200,
+  locked4x: 806400,
+  locked5x: 1612800,
+  locked6x: 3225600,
 }
 
-/** Substrate encodes Standard vote as one byte: bit 7 = Aye(1)/Nay(0), bits 0-6 = conviction index (0=None..6=Locked6x) */
+const CONVICTIONS_BLOCKS_BY_INDEX: { [key: string]: number } = {
+  0: 0,
+  1: 100800,
+  2: 201600,
+  3: 403200,
+  4: 806400,
+  5: 1612800,
+  6: 3225600,
+}
+
 const CONVICTION_NAMES = [
   "none",
   "locked1x",
@@ -123,6 +133,11 @@ export type TAccountVote = {
   readonly conviction: string
 }
 
+type TAccountOpenGovVotesAccumulator = {
+  votes: TAccountVote[]
+  classIds: Set<number>
+}
+
 export const accountOpenGovVotesQuery = (
   { papi, isApiLoaded }: TProviderContext,
   address: string,
@@ -130,33 +145,35 @@ export const accountOpenGovVotesQuery = (
   return queryOptions({
     queryKey: ["accountOpenGovVotes", address],
     queryFn: async () => {
-      const votes =
+      const voteEntries =
         await papi.query.ConvictionVoting.VotingFor.getEntries(address)
 
-      const filteredVotes = votes.reduce<Array<TAccountVote>>(
-        (acc, voteClass) => {
-          if (voteClass.value.type !== "Casting") {
-            return acc
-          }
+      const { votes, classIds } =
+        voteEntries.reduce<TAccountOpenGovVotesAccumulator>(
+          (acc, voteClass) => {
+            if (voteClass.value.type !== "Casting") {
+              return acc
+            }
 
-          const votes = voteClass.value.value.votes
-          const classId = voteClass.keyArgs[1]
+            const votes = voteClass.value.value.votes
+            const classId = voteClass.keyArgs[1]
 
-          votes.forEach(([id, data]) => {
-            acc.push({
-              id,
-              classId,
-              balance: getVoteAmount(data),
-              conviction: getVoteConviction(data),
+            votes.forEach(([id, data]) => {
+              acc.votes.push({
+                id,
+                classId,
+                balance: getVoteAmount(data),
+                conviction: getVoteConviction(data),
+              })
             })
-          })
+            acc.classIds.add(classId)
 
-          return acc
-        },
-        [],
-      )
+            return acc
+          },
+          { votes: [], classIds: new Set([]) },
+        )
 
-      return filteredVotes
+      return { votes, classIds: Array.from(classIds) }
     },
     enabled: isApiLoaded && !!address,
     refetchInterval: millisecondsInMinute,
@@ -204,19 +221,66 @@ export const openGovUnlockedTokensQuery = (
   queryOptions({
     queryKey: ["openGovUnlockedTokens", address],
     queryFn: async () => {
-      const [accountVotes, bestNumber] = await Promise.all([
-        queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
-        queryClient.ensureQueryData(bestNumberQuery(rpc)),
-      ])
-
+      const [accountVotes, bestNumber, subsquareAccountVotes] =
+        await Promise.all([
+          queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
+          queryClient.ensureQueryData(bestNumberQuery(rpc)),
+          queryClient.ensureQueryData(accountVotesQuery(address)),
+        ])
       if (!bestNumber) {
         throw new Error("Best number not found")
       }
 
       const currentBlock = bestNumber.parachainBlockNumber
 
+      const filteredVotes = []
+      for (const vote of subsquareAccountVotes.items) {
+        const status = vote.proposal.state.name
+        if (status === SubsquareVoteState.Executed) {
+          const convictionBlockNumber =
+            CONVICTIONS_BLOCKS_BY_INDEX[vote.conviction]
+
+          if (convictionBlockNumber === undefined) {
+            filteredVotes.push({
+              amount: BigInt(vote.balance),
+              id: vote.referendumIndex,
+              locked: true,
+              diffBlockNumber: undefined,
+            })
+            continue
+          }
+
+          const unlockBlockNumber =
+            vote.proposal.state.indexer.blockHeight + convictionBlockNumber
+
+          const diffBlockNumber = unlockBlockNumber - currentBlock
+
+          filteredVotes.push({
+            id: vote.referendumIndex,
+            amount: BigInt(vote.balance),
+            locked: Big(unlockBlockNumber).gt(currentBlock),
+            diffBlockNumber,
+          })
+          continue
+        } else if (
+          status === SubsquareVoteState.Ongoing ||
+          status === SubsquareVoteState.Deciding ||
+          status === SubsquareVoteState.Confirming
+        ) {
+          filteredVotes.push({
+            id: vote.referendumIndex,
+            amount: BigInt(vote.balance),
+            locked: true,
+            diffBlockNumber: undefined,
+          })
+          continue
+        } else {
+          continue
+        }
+      }
+
       const votesData = await Promise.all(
-        accountVotes.map(async (accountVote) => {
+        accountVotes.votes.map(async (accountVote) => {
           const referendumInfo =
             await rpc.papi.query.Referenda.ReferendumInfoFor.getValue(
               accountVote.id,
@@ -229,6 +293,8 @@ export const openGovUnlockedTokensQuery = (
               id: accountVote.id,
               classId: accountVote.classId,
               endDiff: undefined,
+              locked: false,
+              diffBlockNumber: undefined,
             }
           }
 
@@ -239,6 +305,8 @@ export const openGovUnlockedTokensQuery = (
               id: accountVote.id,
               classId: accountVote.classId,
               endDiff: undefined,
+              locked: true,
+              diffBlockNumber: undefined,
             }
           } else {
             const endBlock =
@@ -255,63 +323,76 @@ export const openGovUnlockedTokensQuery = (
             const unlockBlockNumber = endBlock + convictionBlockNumber
             const isUnlocked = Big(unlockBlockNumber).lte(currentBlock)
 
+            const diffBlockNumber = unlockBlockNumber - currentBlock
+
             return {
               isUnlocked,
               amount: accountVote.balance,
               id: accountVote.id,
               classId: accountVote.classId,
               endDiff: unlockBlockNumber - currentBlock,
+              diffBlockNumber,
+              locked: Big(unlockBlockNumber).gt(currentBlock),
             }
           }
         }),
       )
 
-      const unlockedVotes = votesData.reduce<{
-        maxUnlockedValue: string
+      type TVoteData = {
+        amount: bigint
+        id: number
+        classId?: number
+        locked: boolean
+        diffBlockNumber: number | undefined
+      }
+
+      const votesById = new Map<number, TVoteData>()
+
+      for (const vote of filteredVotes) {
+        votesById.set(vote.id, vote)
+      }
+
+      for (const vote of votesData) {
+        votesById.set(vote.id, vote)
+      }
+
+      const mergedVotesMax = [...votesById.values()].reduce<{
         maxLockedValue: string
         maxLockedBlock: number | undefined
-        ids: TUnlockableVote[]
+        votesToRemove: TUnlockableVote[]
       }>(
         (acc, voteData) => {
-          if (voteData.isUnlocked) {
-            return {
-              maxUnlockedValue: Big.max(
-                acc.maxUnlockedValue,
-                voteData.amount.toString(),
-              ).toString(),
-              maxLockedValue: acc.maxLockedValue,
-              maxLockedBlock: voteData.endDiff
-                ? Big.max(voteData.endDiff, acc.maxLockedBlock ?? 0).toNumber()
-                : undefined,
-              ids: [
-                ...acc.ids,
-                { voteId: voteData.id, classId: voteData.classId },
-              ],
-            }
+          if (!voteData.locked && typeof voteData.classId === "number") {
+            acc.votesToRemove.push({
+              voteId: voteData.id,
+              classId: voteData.classId,
+            })
           }
+
+          if (!voteData.locked) return acc
 
           return {
             maxLockedValue: Big.max(
               acc.maxLockedValue,
               voteData.amount.toString(),
             ).toString(),
-            maxUnlockedValue: acc.maxUnlockedValue,
-            maxLockedBlock: Big.max(
-              voteData.endDiff ?? 0,
-              acc.maxLockedBlock ?? 0,
-            ).toNumber(),
-
-            ids: acc.ids,
+            maxLockedBlock:
+              voteData.diffBlockNumber !== undefined
+                ? Big.max(
+                    voteData.diffBlockNumber,
+                    acc.maxLockedBlock ?? 0,
+                  ).toNumber()
+                : acc.maxLockedBlock,
+            votesToRemove: acc.votesToRemove,
           }
         },
         {
-          maxUnlockedValue: "0",
           maxLockedValue: "0",
-          ids: [],
           maxLockedBlock: undefined,
+          votesToRemove: [],
         },
       )
 
-      return unlockedVotes
+      return { ...mergedVotesMax, classIds: accountVotes.classIds }
     },
   })
