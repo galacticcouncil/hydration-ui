@@ -1,4 +1,7 @@
-import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+import {
+  isH160Address,
+  safeConvertSS58toPublicKey,
+} from "@galacticcouncil/utils"
 import { useMutation } from "@tanstack/react-query"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
@@ -43,7 +46,9 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
             address: account.address,
             name: account.name,
             provider: account.provider,
-            publicKey: safeConvertSS58toPublicKey(account.address),
+            publicKey: isH160Address(account.address)
+              ? account.address
+              : safeConvertSS58toPublicKey(account.address),
           }),
         )
         .filter(

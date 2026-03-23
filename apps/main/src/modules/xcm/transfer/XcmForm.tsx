@@ -307,11 +307,6 @@ export const XcmForm = () => {
             </Flex>
           </Box>
         </Paper>
-        <Alert
-          sx={{ mt: ["l", null, null, "xl"], width: "100%" }}
-          title={t("xcm:beta.title")}
-          description={t("xcm:beta.description")}
-        />
       </Stack>
     </form>
   )

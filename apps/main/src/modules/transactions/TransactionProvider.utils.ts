@@ -15,6 +15,7 @@ export const INITIAL_STATUS: TxState = {
   tipAssetId: NATIVE_ASSET_ID,
   mortalityPeriod: 512,
   isFeePaymentModalOpen: false,
+  isChangingFeePaymentAsset: false,
 }
 
 export const transactionStatusReducer = (
@@ -55,6 +56,11 @@ export const transactionStatusReducer = (
         ...state,
         isFeePaymentModalOpen: action.payload,
       }
+    case TxActionType.SET_CHANGING_FEE_PAYMENT_ASSET:
+      return {
+        ...state,
+        isChangingFeePaymentAsset: action.payload,
+      }
     case TxActionType.RESET:
       return INITIAL_STATUS
     default:
@@ -83,5 +89,10 @@ export const doSetTip = (payload: string) =>
 export const doSetFeePaymentModalOpen = (payload: boolean) =>
   ({
     type: TxActionType.SET_FEE_PAYMENT_MODAL_OPEN,
+    payload,
+  }) as const
+export const doSetChangingFeePaymentAsset = (payload: boolean) =>
+  ({
+    type: TxActionType.SET_CHANGING_FEE_PAYMENT_ASSET,
     payload,
   }) as const

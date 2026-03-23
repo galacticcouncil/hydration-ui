@@ -25,6 +25,7 @@ export const ReviewTransactionSubmitButton = () => {
     isSigning,
     signAndSubmit,
     isLoadingFeeEstimate,
+    isChangingFeePaymentAsset,
     setFeePaymentModalOpen,
   } = useTransaction()
 
@@ -55,13 +56,19 @@ export const ReviewTransactionSubmitButton = () => {
 
   if (isInsufficientFeeBalance) {
     return (
-      <Button size="large" onClick={() => setFeePaymentModalOpen(true)}>
+      <LoadingButton
+        size="large"
+        onClick={() => setFeePaymentModalOpen(true)}
+        isLoading={isChangingFeePaymentAsset}
+        disabled={isChangingFeePaymentAsset}
+      >
         {t("transaction.sign.changeFeePaymentAsset")}
-      </Button>
+      </LoadingButton>
     )
   }
 
-  const isLoading = isSigning || isLoadingFeeEstimate
+  const isLoading =
+    isSigning || isLoadingFeeEstimate || isChangingFeePaymentAsset
   const isDisabled = isSigningBlocked || hasAlerts || isLoading
 
   return (

@@ -52,15 +52,14 @@ export const OtcTable: FC<Props> = ({
   )
 
   const assetIds = useMemo(
-    () =>
-      new Set(
+    () => [
+      ...new Set(
         filteredOffers.flatMap((offer) => [
           offer.assetIn.id,
           offer.assetOut.id,
         ]),
-      )
-        .values()
-        .toArray(),
+      ),
+    ],
     [filteredOffers],
   )
 

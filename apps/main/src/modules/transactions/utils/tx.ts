@@ -10,7 +10,11 @@ import {
   AnyTransaction,
   TxOptions,
 } from "@/modules/transactions/types"
-import { isPapiTransaction } from "@/modules/transactions/utils/polkadot"
+import {
+  isBatchDecodedCallValue,
+  isDecodedCallEnum,
+  isPapiTransaction,
+} from "@/modules/transactions/utils/polkadot"
 import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { Papi, TProviderContext } from "@/providers/rpcProvider"
 import { NATIVE_EVM_ASSET_ID } from "@/utils/consts"
@@ -63,6 +67,42 @@ export const transformAnyToPapiTx = (
   }
 
   return null
+}
+
+export function containsEvmCall(tx: AnyTransaction): boolean {
+  if (!isPapiTransaction(tx)) return false
+
+  const decoded = tx.decodedCall
+  if (!isDecodedCallEnum(decoded)) return false
+
+  if (decoded.type === "EVM") return true
+
+  if (decoded.type === "Utility" && isBatchDecodedCallValue(decoded.value)) {
+    return decoded.value.value.calls.some(
+      (call) => isDecodedCallEnum(call) && call.type === "EVM",
+    )
+  }
+
+  return false
+}
+
+export function prependEvmBindingTx(papi: Papi, tx: AnyPapiTx): AnyPapiTx {
+  const bindTx = papi.tx.EVMAccounts.bind_evm_address()
+  const decoded = tx.decodedCall
+
+  if (
+    isDecodedCallEnum(decoded) &&
+    decoded.type === "Utility" &&
+    isBatchDecodedCallValue(decoded.value)
+  ) {
+    return papi.tx.Utility.batch_all({
+      calls: [bindTx.decodedCall, ...decoded.value.value.calls],
+    })
+  }
+
+  return papi.tx.Utility.batch_all({
+    calls: [bindTx.decodedCall, tx.decodedCall],
+  })
 }
 
 export const isValidTxOptionsForPermit = (txOptions: TxOptions) =>

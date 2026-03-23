@@ -5,6 +5,7 @@ import {
 } from "@galacticcouncil/ui/assets/icons"
 import { SpinnerIcon } from "@galacticcouncil/ui/components"
 import { ThemeToken } from "@galacticcouncil/ui/theme"
+import { isH160Address } from "@galacticcouncil/utils"
 import { XcJourney } from "@galacticcouncil/xc-scan"
 
 export type TJourneyStatus = XcJourney["status"]
@@ -55,4 +56,13 @@ export const getStatusProps = (
     color: "text.medium",
     icon: null,
   }
+}
+
+export function getFormattedAddresses(journey: XcJourney) {
+  const from = isH160Address(journey.from)
+    ? journey.from
+    : journey.fromFormatted || ""
+  const to = isH160Address(journey.to) ? journey.to : journey.toFormatted || ""
+
+  return { from: from.toLowerCase(), to: to.toLowerCase() }
 }

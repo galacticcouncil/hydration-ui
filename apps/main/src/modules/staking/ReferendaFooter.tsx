@@ -14,18 +14,13 @@ export const ReferendaFooter: FC<Props> = ({ id, voted }) => {
 
   return (
     <Button
-      sx={{
-        ...(!voted && {
-          paddingInline: 32,
-        }),
-      }}
       size="large"
       variant={voted ? "tertiary" : "primary"}
       outline={voted}
       asChild
     >
       <ExternalLink href={REFERENDA_URL(id)}>
-        <Icon component={SubSquare} size="s" color="white" />
+        <Icon component={SubSquare} />
         {voted ? t("open") : t("staking:referenda.item.cta")}
       </ExternalLink>
     </Button>

@@ -1,9 +1,20 @@
-import { createZustandStorage } from "@galacticcouncil/utils"
+import { createZustandStorage, safeParse } from "@galacticcouncil/utils"
 import * as z from "zod/v4"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 import { validNumber } from "@/utils/validators"
+
+const legacyTradeSettingsSchema = z.object({
+  slippage: z.string().or(z.number()),
+  slippageTwap: z.string().or(z.number()),
+  maxRetries: z.string().or(z.number()),
+})
+
+const legacyDcaSettingsSchema = z.object({
+  slippage: z.string().or(z.number()),
+  maxRetries: z.string().or(z.number()),
+})
 
 const generalSettingsSchema = z.object({
   isSummaryExpanded: z.boolean(),
@@ -52,8 +63,6 @@ export const tradeSettingsSchema = z.object({
 
 export type TradeSettings = z.infer<typeof tradeSettingsSchema>
 
-const version = 1
-
 const defaultState: TradeSettings = {
   general: { isSummaryExpanded: false },
   swap: {
@@ -84,10 +93,61 @@ export const useTradeSettings = create<TradeSettingsStore>()(
       ...defaultState,
       update: (values) => set(values),
     }),
-    {
-      name: "trade.settings",
-      version,
-      storage: createZustandStorage(version, tradeSettingsSchema, defaultState),
-    },
+    createZustandStorage({
+      name: "trade-settings",
+      version: 1,
+      schema: tradeSettingsSchema,
+      defaultState,
+      migrate: (persistedState, storedVersion) => {
+        switch (storedVersion) {
+          case 0:
+            return migrateLegacySettings()
+          default:
+            return persistedState as TradeSettings
+        }
+      },
+    }),
   ),
 )
+
+const LEGACY_TRADE_SETTINGS_STORE = "trade.settings"
+const LEGACY_DCA_SETTINGS_STORE = "dca.settings"
+
+function migrateLegacySettings() {
+  const rawTrade = window.localStorage.getItem(LEGACY_TRADE_SETTINGS_STORE)
+  const legacyTrade = legacyTradeSettingsSchema.safeParse(
+    rawTrade ? safeParse(rawTrade) : null,
+  )
+
+  const rawDca = window.localStorage.getItem(LEGACY_DCA_SETTINGS_STORE)
+  const legacyDca = legacyDcaSettingsSchema.safeParse(
+    rawDca ? safeParse(rawDca) : null,
+  )
+
+  if (legacyTrade.success) {
+    window.localStorage.removeItem(LEGACY_TRADE_SETTINGS_STORE)
+  }
+
+  if (legacyDca.success) {
+    window.localStorage.removeItem(LEGACY_DCA_SETTINGS_STORE)
+  }
+
+  return {
+    ...defaultState,
+    swap: legacyTrade.success
+      ? {
+          single: { swapSlippage: Number(legacyTrade.data.slippage) },
+          split: {
+            twapSlippage: Number(legacyTrade.data.slippageTwap),
+            twapMaxRetries: Number(legacyTrade.data.maxRetries),
+          },
+        }
+      : defaultState.swap,
+    dca: legacyDca.success
+      ? {
+          slippage: Number(legacyDca.data.slippage),
+          maxRetries: Number(legacyDca.data.maxRetries),
+        }
+      : defaultState.dca,
+  }
+}

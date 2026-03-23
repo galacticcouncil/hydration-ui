@@ -138,6 +138,11 @@ export function getMaxGhoMintAmount(
      */
     user.totalBorrowsMarketReferenceCurrency !== "0" ||
     /**
+     * When the user is trying to do a max borrow/mint we need to add margin
+     * (mirrors `getMaxAmountAvailableToBorrow()` logic for non-GHO reserves).
+     */
+    maxAmountUserCanMint.gte(userAvailableBorrows) ||
+    /**
      * When borrow cap could be reached and debt accumulates the debt would be surpassed.
      */
     (poolReserve.borrowCapUSD &&
