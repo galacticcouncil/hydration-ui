@@ -1,5 +1,5 @@
 import {
-  Hourglass,
+  // Hourglass,
   Landmark,
   Layers,
   LockOpen,
@@ -34,7 +34,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const { native } = useAssets()
 
   const locks = useNativeAssetLocks()
-  const unlockable = useUnlockableNativeTokens(locks.lockedInDemocracy)
+  const unlockable = useUnlockableNativeTokens(locks.lockedInOpenGov)
 
   const { data: borrow } = useUserBorrowSummary()
 
@@ -47,8 +47,8 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
   const [borrowedDisplay] = useDisplayAssetPrice(asset.id, borrowed)
 
   // TODO integrate
-  const xcm = "-1"
-  const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
+  // const xcm = "-1"
+  // const [xcmDisplay] = useDisplayAssetPrice(asset.id, xcm)
 
   const [reservedDisplayPrice] = useDisplayAssetPrice(asset.id, asset.reserved)
 
@@ -81,7 +81,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
         })}
         displayValue={reservedDisplayPrice}
       />
-      {xcm !== "-1" && (
+      {/* {xcm !== "-1" && (
         <>
           <SAssetDetailMobileSeparator />
           <Amount
@@ -97,7 +97,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
             displayValue={xcmDisplay}
           />
         </>
-      )}
+      )} */}
       <SAssetDetailMobileSeparator />
       <SAssetDetailMobileSeparator />
       <Amount
@@ -132,7 +132,7 @@ export const AssetDetailNativeMobileModalBalances: FC<Props> = ({ asset }) => {
         <Amount
           variant="horizontalLabel"
           color="tint"
-          label={t("myAssets.expandedNative.unlockableInDemocracy")}
+          label={t("myAssets.expandedNative.unlockable")}
           labelIcon={LockOpen}
           value={t("common:number", {
             value: unlockable.value,
