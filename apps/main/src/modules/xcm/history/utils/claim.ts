@@ -71,7 +71,8 @@ function isWormholeStop(
 }
 
 function findWormholeStop(journey: XcJourney): XcJourneyWhStop | undefined {
-  const stops = journey?.stops ?? []
+  const stops = journey?.stops
+  if (!Array.isArray(stops)) return undefined
   return stops.find(isWormholeStop)
 }
 
