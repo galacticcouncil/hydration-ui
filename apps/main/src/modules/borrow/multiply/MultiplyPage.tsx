@@ -28,13 +28,13 @@ export const MultiplyPage = () => {
           separated
         >
           <ValueStats
-            label="Total deposits"
+            label={t("multiply.page.totalDeposits")}
             value="$142.50M"
             size="large"
             wrap={[false, false, true]}
           />
           <ValueStats
-            label="Active borrows"
+            label={t("multiply.page.activeBorrows")}
             value="$86.20M"
             size="large"
             wrap={[false, false, true]}

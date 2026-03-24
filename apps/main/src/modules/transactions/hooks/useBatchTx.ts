@@ -61,6 +61,7 @@ export const useCreateBatchTx = () => {
       const isFitBlock = proof_size > proofSizeTx && ref_time > refTimeTx
 
       if (isFitBlock) {
+        console.log({ transaction })
         return createTransaction({ ...transaction, tx: batchTx }, options)
       }
 

@@ -4,11 +4,9 @@ import { useMemo } from "react"
 
 import { BorrowAssetApyData, useBorrowReserves } from "@/api/borrow"
 import { useApyContext } from "@/modules/borrow/context/ApyContext"
-import {
-  FEATURED_RESERVES_COUNT,
-  MULTIPLY_ASSETS_CONFIG,
-  MultiplyAssetPairConfig,
-} from "@/modules/borrow/multiply/config"
+import { FEATURED_RESERVES_COUNT } from "@/modules/borrow/multiply/config/constants"
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
+import { MultiplyAssetPairConfig } from "@/modules/borrow/multiply/types"
 
 export type MultiplyPair = {
   id: string

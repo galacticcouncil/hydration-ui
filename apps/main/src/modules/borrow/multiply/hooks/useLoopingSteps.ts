@@ -1,19 +1,22 @@
 import { EModeCategory } from "@galacticcouncil/money-market/ui-config"
 import { getReserveAddressByAssetId } from "@galacticcouncil/money-market/utils"
-import { formatNumber, stringEquals } from "@galacticcouncil/utils"
+import { stringEquals } from "@galacticcouncil/utils"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { last } from "remeda"
 
 import { useBorrowReserves } from "@/api/borrow/queries"
 import { spotPriceQuery } from "@/api/spotPrice"
+import { MultiplyLoopConfig } from "@/modules/borrow/multiply/types"
 import { getReservePairLtv } from "@/modules/borrow/multiply/utils/leverage"
+import {
+  EPSILON,
+  MAX_STEPS,
+  printFormattedSteps,
+} from "@/modules/borrow/multiply/utils/steps"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
-
-const EPSILON = 1e-9
-const MAX_STEPS = 50
 
 export type LoopStep = {
   step: number
@@ -23,14 +26,9 @@ export type LoopStep = {
   debtAfter: string
 }
 
-export type UseLoopingStepsProps = {
+export type UseLoopingStepsProps = MultiplyLoopConfig & {
   amount: string
   multiplier: number
-  supplyAssetId: string
-  borrowAssetId: string
-  assetInId: string
-  assetOutId: string
-  isParityPair: boolean
   eModeCategory: EModeCategory
 }
 
@@ -41,15 +39,16 @@ const INITIAL_DATA = {
   targetDebt: "0",
 }
 
-export function useLoopingSteps({
-  amount,
-  multiplier,
-  supplyAssetId,
-  borrowAssetId,
-  assetInId,
-  assetOutId,
-  isParityPair,
-}: UseLoopingStepsProps) {
+export function useLoopingSteps(options: UseLoopingStepsProps) {
+  const {
+    amount,
+    multiplier,
+    supplyAssetId,
+    borrowAssetId,
+    assetInId,
+    assetOutId,
+    isParityPair,
+  } = options
   const rpc = useRpcProvider()
   const { data: reserves } = useBorrowReserves()
   const { getAsset } = useAssets()
@@ -77,17 +76,7 @@ export function useLoopingSteps({
       multiplier >= 1,
     initialData: INITIAL_DATA,
     placeholderData: keepPreviousData,
-    queryKey: [
-      "borrow",
-      "looping",
-      "steps",
-      supplyAssetId,
-      assetInId,
-      assetOutId,
-      amount,
-      multiplier,
-      slippage,
-    ],
+    queryKey: ["borrow", "looping", "steps", slippage, options],
     queryFn: async () => {
       const amountBig = new Big(amount || "0")
 
@@ -154,16 +143,4 @@ export function useLoopingSteps({
       }
     },
   })
-}
-
-function printFormattedSteps(steps: LoopStep[]) {
-  console.table(
-    steps.map(({ step, borrow, swap, collateralAfter, debtAfter }) => ({
-      step,
-      borrow: formatNumber(borrow),
-      swap: formatNumber(swap),
-      collateralAfter: formatNumber(collateralAfter),
-      debtAfter: formatNumber(debtAfter),
-    })),
-  )
 }
