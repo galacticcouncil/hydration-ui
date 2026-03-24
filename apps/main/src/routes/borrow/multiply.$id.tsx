@@ -1,6 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router"
 
-import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config"
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
 import { MultiplyDetailPage } from "@/modules/borrow/multiply/MultiplyDetailPage"
 
 const RouteComponent = () => {

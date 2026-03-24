@@ -1,4 +1,5 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
+import Big from "big.js"
 
 export function getReservePairLtv(
   collateralReserve: ComputedReserveData,
@@ -37,4 +38,17 @@ export function calculateMaxLeverage(ltv: number, factor: number = 1): number {
   const theoretical = 1 / (1 - ltv)
   const reduced = theoretical * factor
   return Math.floor(reduced * 10) / 10
+}
+
+export function calculateEffectiveLeverage(
+  collateralAmount: string,
+  debtAmount: string,
+): number | null {
+  const collateral = new Big(collateralAmount || "0")
+  const debt = new Big(debtAmount || "0")
+  const difference = collateral.minus(debt)
+
+  if (difference.lte(0)) return null
+
+  return collateral.div(difference).toNumber()
 }

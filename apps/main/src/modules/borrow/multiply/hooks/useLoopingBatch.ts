@@ -19,15 +19,12 @@ import {
   useSetUserEModeTx,
 } from "@/api/borrow/queries"
 import { evmGasPriceQuery } from "@/api/evm"
-import { useCreateLoopingEvmTx } from "@/modules/borrow/hooks/useCreateLoopingEvmTx"
+import { useCreateMultiplyEvmTx } from "@/modules/borrow/hooks/useCreateMultiplyEvmTx"
 import {
   useLoopingSteps,
   UseLoopingStepsProps,
 } from "@/modules/borrow/multiply/hooks/useLoopingSteps"
-import {
-  LoopingBatchItem,
-  validateLoopingEvmTx,
-} from "@/modules/borrow/multiply/utils/looping"
+import { BatchItem, validateEvmTx } from "@/modules/borrow/multiply/utils/batch"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
@@ -40,14 +37,13 @@ export function useLoopingBatch(options: UseLoopingStepsProps) {
   const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
   const poolBundleContract = useBorrowPoolBundleContract()
 
-  const createEvmTx = useCreateLoopingEvmTx()
+  const createEvmTx = useCreateMultiplyEvmTx()
   const getSetUsageAsCollateralTx = useSetUsageAsCollateralTx()
   const getSetUserEModeTx = useSetUserEModeTx()
 
   const { sdk } = rpc
   const {
     amount,
-    multiplier,
     supplyAssetId,
     borrowAssetId,
     assetInId,
@@ -88,12 +84,13 @@ export function useLoopingBatch(options: UseLoopingStepsProps) {
       "borrow",
       "looping",
       "batch",
+      amount,
       supplyAssetId,
       borrowAssetId,
       assetInId,
       assetOutId,
-      amount,
-      multiplier,
+      eModeCategory,
+      slippage,
     ],
     queryFn: async () => {
       if (!account) throw new Error("Account not connected")
@@ -105,7 +102,7 @@ export function useLoopingBatch(options: UseLoopingStepsProps) {
       const evmAddress = safeConvertAnyToH160(account.address)
       const amountBig = new Big(amount || "0")
 
-      const batch: LoopingBatchItem[] = []
+      const batch: BatchItem[] = []
 
       const isStrategyAsset =
         MONEY_MARKET_STRATEGY_ASSETS.includes(supplyAssetId)
@@ -129,7 +126,7 @@ export function useLoopingBatch(options: UseLoopingStepsProps) {
           onBehalfOf: evmAddress,
           useOptimizedPath: false,
         })
-        validateLoopingEvmTx(supplyTx, "supply")
+        validateEvmTx(supplyTx)
         batch.push({ type: CallType.Evm, data: createEvmTx(supplyTx) })
       }
 
@@ -164,7 +161,7 @@ export function useLoopingBatch(options: UseLoopingStepsProps) {
           user: evmAddress,
           useOptimizedPath: false,
         })
-        validateLoopingEvmTx(borrowTx, "borrow")
+        validateEvmTx(borrowTx)
         batch.push({ type: CallType.Evm, data: createEvmTx(borrowTx) })
 
         // Swap borrowed asset -> supply aToken

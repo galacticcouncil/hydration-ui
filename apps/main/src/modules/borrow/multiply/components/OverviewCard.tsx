@@ -120,7 +120,7 @@ export const OverviewCard: React.FC<OverviewCardProps> = ({
           <Stack gap="m" separated withTrailingSeparator>
             <Flex justify="space-between" align="center">
               <Text fs="p4" color={getToken("text.medium")}>
-                {t("borrow:multiply.detail.collateralAsset")}
+                {t("borrow:collateralAsset")}
               </Text>
               <Box>
                 <ReserveLabel reserve={collateralReserve} size="small" />
@@ -128,7 +128,7 @@ export const OverviewCard: React.FC<OverviewCardProps> = ({
             </Flex>
             <Flex justify="space-between" align="center">
               <Text fs="p4" color={getToken("text.medium")}>
-                {t("borrow:multiply.detail.debtAsset")}
+                {t("borrow:debtAsset")}
               </Text>
               <Box>
                 <ReserveLabel reserve={debtReserve} size="small" />

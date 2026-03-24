@@ -68,8 +68,8 @@ export const FeaturedPairCard: React.FC<MultiplyPair> = ({
             <AssetLogo id={logoId} size="extra-large" />
           )}
           <Chip variant="green" size="small" rounded>
-            {t("borrow:multiply.strategy.upTo", {
-              multiplier: t("common:multiplier", { value: maxLeverage }),
+            {t("multiplier.upTo", {
+              value: maxLeverage,
             })}
           </Chip>
         </Flex>
@@ -92,7 +92,7 @@ export const FeaturedPairCard: React.FC<MultiplyPair> = ({
             wrap
           />
           <ValueStats
-            label={t("borrow:multiply.strategy.liquidityAvailable")}
+            label={t("borrow:multiply.detail.liquidityAvailable")}
             customValue={
               <Text fs="h5" lh={1} font="primary" fw={600}>
                 {liquidity}

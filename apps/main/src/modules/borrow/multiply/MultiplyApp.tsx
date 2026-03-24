@@ -36,9 +36,12 @@ import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { MultiplyErrors } from "@/modules/borrow/multiply/components/MultiplyErrors"
 import {
+  LEVERAGE_DEFAULT,
+  LEVERAGE_MIN,
+  LEVERAGE_STEP,
   MAX_SAFE_LEVERAGE_FACTOR,
-  MULTIPLY_ASSETS_PAIRS,
-} from "@/modules/borrow/multiply/config"
+} from "@/modules/borrow/multiply/config/constants"
+import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config/pairs"
 import { useLooping } from "@/modules/borrow/multiply/hooks/useLooping"
 import { getMaxReservePairLeverage } from "@/modules/borrow/multiply/utils/leverage"
 import { TAsset, useAssets } from "@/providers/assetsProvider"
@@ -49,10 +52,6 @@ import {
 } from "@/utils/validators"
 
 const SectionSeparator = () => <Separator sx={{ mx: "-xl" }} />
-
-const LEVERAGE_MIN = 1.1
-const LEVERAGE_STEP = 0.1
-const LEVERAGE_DEFAULT = 2
 
 type MultiplyAppProps = {
   collateralReserve: ComputedReserveData
@@ -266,7 +265,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
               <Summary separator={<SectionSeparator />}>
                 {supplyAsset && (
                   <SummaryRow
-                    label="Total collateral"
+                    label={t("multiply.app.totalCollateral")}
                     content={
                       <Flex gap="s">
                         {t("common:currency", {
@@ -283,7 +282,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                 )}
                 {borrowAsset && (
                   <SummaryRow
-                    label="Total debt"
+                    label={t("multiply.app.totalDebt")}
                     content={
                       <Flex gap="s">
                         {t("common:currency", {

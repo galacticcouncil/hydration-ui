@@ -10,7 +10,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 
 import { AssetLogo } from "@/components/AssetLogo"
-import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config"
+import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config/pairs"
 import { useAssets } from "@/providers/assetsProvider"
 
 type AssetHeaderProps = {
