@@ -18,6 +18,7 @@ import { useStrategyPositions } from "@/api/borrow/queries"
 import { useIndexerClient } from "@/api/provider"
 import { createProxyCall } from "@/api/proxy"
 import { AssetLogo } from "@/components/AssetLogo"
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config"
 import { RESERVE_LOGO_OVERRIDE_MAP } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -272,7 +273,14 @@ export const useStrategyAssetsColumns = () => {
             <Button variant="secondary" size="small" asChild>
               <Link
                 to="/borrow/multiply/$id"
-                params={{ id: row.original.underlyingAssetId }}
+                params={{
+                  id:
+                    MULTIPLY_ASSETS_CONFIG.find(
+                      (config) =>
+                        config.collateralAssetId ===
+                        row.original.underlyingAssetId,
+                    )?.id ?? "",
+                }}
               >
                 Go to pair
               </Link>
