@@ -86,10 +86,17 @@ export const createProxyCall = (
   papi: Papi,
   proxyAddress: string,
   call: TxCallData,
+  withFeePayer?: boolean,
 ) => {
-  return papi.tx.Proxy.proxy({
+  const proxyCall = papi.tx.Proxy.proxy({
     real: proxyAddress,
     call,
     force_proxy_type: Enum("Any"),
   })
+
+  return withFeePayer
+    ? papi.tx.Dispatcher.dispatch_with_fee_payer({
+        call: proxyCall.decodedCall,
+      })
+    : proxyCall
 }

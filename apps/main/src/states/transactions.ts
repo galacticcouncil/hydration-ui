@@ -44,7 +44,7 @@ type SingleTransactionInputDynamic = {
   ) => Promise<SingleTransactionInput> | SingleTransactionInput
 }
 
-type MultiTransactionConfig = (
+export type MultiTransactionConfig = (
   | SingleTransactionInput
   | SingleTransactionInputDynamic
 ) & {
