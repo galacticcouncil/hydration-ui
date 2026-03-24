@@ -491,5 +491,6 @@ export const useMultiplyApp = ({
     errors: steps.flatMap((step) => step.swapErrors),
     supplyAsset,
     borrowAsset,
+    supplyAToken,
   }
 }

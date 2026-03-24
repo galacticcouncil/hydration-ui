@@ -74,6 +74,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     errors,
     borrowAsset,
     supplyAsset,
+    supplyAToken,
     onSubmit,
   } = useMultiplyApp({
     collateralReserve,
@@ -168,7 +169,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                     {t("common:currency", {
                       prefix: t("common:approx.short"),
                       value: totalCollateral,
-                      symbol: supplyAsset.symbol,
+                      symbol: supplyAToken?.symbol,
                     })}
                   </Text>
                   <Text fs="p6" color={getToken("text.medium")}>
@@ -216,7 +217,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                         {t("common:currency", {
                           prefix: t("common:approx.short"),
                           value: totalCollateral,
-                          symbol: supplyAsset.symbol,
+                          symbol: supplyAToken?.symbol,
                         })}
                         <Text fs="p5" color={getToken("text.medium")}>
                           ({collateralDisplayPrice})

@@ -13,6 +13,7 @@ import {
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -23,6 +24,8 @@ import {
   useStrategyGroupedPositions,
 } from "@/modules/borrow/multiply/components/StrategyPositions.utils"
 
+const LOW_HF_THRESHOLD = 1.5
+
 export const StrategyPositions = () => {
   const { isMobile } = useBreakpoints()
   const { t } = useTranslation("common")
@@ -30,56 +33,49 @@ export const StrategyPositions = () => {
   const { data, isLoading } = useStrategyGroupedPositions()
   const assetsColumns = useStrategyAssetsColumns()
 
-  const { totalNetWorth, avgApy, avgHealthFactor } = useMemo(() => {
+  const { totalNetWorth, avgApy, totalPositionsWithLowHF } = useMemo(() => {
     if (!data.length) {
       return {
         totalNetWorth: 0,
         avgApy: 0,
-        avgHealthFactor: 0,
+        totalPositionsWithLowHF: 0,
       }
     }
 
-    const {
-      totalNetWorth,
-      totalWeightedApy,
-      totalHealthFactor,
-      totalPositions,
-    } = data.reduce(
-      (acc, row) => {
-        const positions = row.positionsAmount
-        const netWorth = Number(row.netWorth)
-        const avgApy = Number(row.avgApy ?? 0)
-        const avgHealthFactor = Math.max(0, Number(row.avgHealthFactor ?? 0))
+    const { totalNetWorth, totalWeightedApy, totalPositionsWithLowHF } =
+      data.reduce(
+        (acc, row) => {
+          const netWorth = Number(row.netWorth)
+          const avgApy = Number(row.avgApy ?? 0)
 
-        return {
-          totalNetWorth: acc.totalNetWorth + netWorth,
-          totalWeightedApy: acc.totalWeightedApy + avgApy * netWorth,
-          totalHealthFactor:
-            acc.totalHealthFactor + avgHealthFactor * Number(positions ?? 0),
-          totalPositions: acc.totalPositions + Number(positions ?? 0),
-        }
-      },
-      {
-        totalNetWorth: 0,
-        totalWeightedApy: 0,
-        totalHealthFactor: 0,
-        totalPositions: 0,
-      },
-    )
+          return {
+            totalNetWorth: acc.totalNetWorth + netWorth,
+            totalWeightedApy: acc.totalWeightedApy + avgApy * netWorth,
+            totalPositionsWithLowHF:
+              acc.totalPositionsWithLowHF +
+              row.positions.filter(
+                (position) =>
+                  Big(position.healthFactor).lte(LOW_HF_THRESHOLD) &&
+                  Big(position.healthFactor).gt(1),
+              ).length,
+          }
+        },
+        {
+          totalNetWorth: 0,
+          totalWeightedApy: 0,
+          totalPositionsWithLowHF: 0,
+        },
+      )
 
     return {
       totalNetWorth,
       avgApy: totalNetWorth ? totalWeightedApy / totalNetWorth : 0,
-      avgHealthFactor: totalPositions ? totalHealthFactor / totalPositions : 0,
+      totalPositionsWithLowHF,
     }
   }, [data])
 
-  const {
-    healthFactor: formattedHealthFactor,
-    healthFactorColor,
-    isHealthFactorValid,
-  } = useFormattedHealthFactor(
-    avgHealthFactor ? avgHealthFactor.toString() : "-1",
+  const { healthFactorColor } = useFormattedHealthFactor(
+    LOW_HF_THRESHOLD.toString(),
   )
 
   return (
@@ -119,33 +115,28 @@ export const StrategyPositions = () => {
           isLoading={isLoading}
           wrap={[false, false, true]}
         />
-        <ValueStats
-          label="Average health factor"
-          value={
-            isHealthFactorValid
-              ? t("number", { value: formattedHealthFactor })
-              : "-"
-          }
-          isLoading={isLoading}
-          wrap={[false, false, true]}
-          customValue={
-            <Flex align="center" gap="base">
-              <SValueStatsValue size="large" sx={{ color: healthFactorColor }}>
-                {isLoading ? (
-                  <Skeleton width={50} />
-                ) : isHealthFactorValid ? (
-                  t("number", {
-                    value: formattedHealthFactor,
-                    maximumFractionDigits: 2,
-                    notation: "compact",
-                  })
-                ) : (
-                  "-"
-                )}
-              </SValueStatsValue>
-            </Flex>
-          }
-        />
+        {totalPositionsWithLowHF > 0 && (
+          <ValueStats
+            label={`Positions amount with HF < ${LOW_HF_THRESHOLD}`}
+            value={t("number", { value: totalPositionsWithLowHF })}
+            isLoading={isLoading}
+            wrap={[false, false, true]}
+            customValue={
+              <Flex align="center" gap="base">
+                <SValueStatsValue
+                  size="large"
+                  sx={{ color: healthFactorColor }}
+                >
+                  {isLoading ? (
+                    <Skeleton width={50} />
+                  ) : (
+                    t("number", { value: totalPositionsWithLowHF })
+                  )}
+                </SValueStatsValue>
+              </Flex>
+            }
+          />
+        )}
       </Stack>
 
       <Separator my="m" />

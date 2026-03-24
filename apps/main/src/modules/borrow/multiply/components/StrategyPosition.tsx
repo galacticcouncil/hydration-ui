@@ -145,7 +145,7 @@ const HealtFactorValue = ({ healthFactor }: { healthFactor: string }) => {
       <AmountLabel>Health factor</AmountLabel>
       <Text fs="p4" lh="s" color={healthFactorColor}>
         {isHealthFactorValid
-          ? t("percent", {
+          ? t("number", {
               value: formattedHealthFactor,
             })
           : "-"}
