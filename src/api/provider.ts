@@ -47,8 +47,7 @@ export const PASEO_WS_URL = "wss://paseo-rpc.play.hydration.cloud"
 
 const defaultProvider: Omit<ProviderProps, "name" | "url"> = {
   indexerUrl: "https://explorer.hydradx.cloud/graphql",
-  squidUrl:
-    "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
+  squidUrl: "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql",
   env: "production",
   dataEnv: "mainnet",
 }
@@ -128,8 +127,7 @@ export const PROVIDERS: ProviderProps[] = [
     name: "Testnet",
     url: "wss://rpc.nice.hydration.cloud",
     indexerUrl: "https://archive.nice.hydration.cloud/graphql",
-    squidUrl:
-      "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
+    squidUrl: "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql",
     env: ["development"],
     dataEnv: "testnet",
   },
