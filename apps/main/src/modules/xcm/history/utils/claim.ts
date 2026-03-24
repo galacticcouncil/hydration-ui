@@ -5,6 +5,7 @@ import {
   isEvmParachain,
   isSolanaChain,
   isSuiChain,
+  safeParse,
 } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import {
@@ -71,7 +72,10 @@ function isWormholeStop(
 }
 
 function findWormholeStop(journey: XcJourney): XcJourneyWhStop | undefined {
-  const stops = journey?.stops
+  const stops =
+    typeof journey?.stops === "string"
+      ? safeParse(journey.stops)
+      : journey?.stops
   if (!Array.isArray(stops)) return undefined
   return stops.find(isWormholeStop)
 }
