@@ -5,8 +5,8 @@ import { useMutation } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 import { useBorrowReserves } from "@/api/borrow/queries"
-import { useLoopingBatch } from "@/modules/borrow/multiply/hooks/useLoopingBatch"
-import { UseLoopingStepsProps } from "@/modules/borrow/multiply/hooks/useLoopingSteps"
+import { useUnloopingBatch } from "@/modules/borrow/multiply/hooks/useUnloopingBatch"
+import { UseUnloopingStepsProps } from "@/modules/borrow/multiply/hooks/useUnloopingSteps"
 import {
   convertBatchToTxs,
   getBatchErrors,
@@ -16,8 +16,8 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { TransactionOptions } from "@/states/transactions"
 
-export function useLooping(
-  props: UseLoopingStepsProps,
+export function useUnlooping(
+  props: UseUnloopingStepsProps,
   options?: TransactionOptions,
 ) {
   const { t } = useTranslation(["borrow"])
@@ -29,25 +29,26 @@ export function useLooping(
   const createBatchTx = useCreateBatchTx()
 
   const { sdk } = rpc
-  const { amount, supplyAssetId } = props
+  const { repayAmount, borrowAssetId } = props
 
-  const supplyReserve = reserves?.formattedReserves.find((r) =>
-    stringEquals(r.underlyingAsset, getReserveAddressByAssetId(supplyAssetId)),
+  const borrowReserve = reserves?.formattedReserves.find((r) =>
+    stringEquals(r.underlyingAsset, getReserveAddressByAssetId(borrowAssetId)),
   )
 
   const {
     batch,
-    targetCollateral,
-    targetDebt,
-    totalCollateral,
+    remainingCollateral,
+    remainingDebt,
+    totalRepaid,
+    totalWithdrawn,
     isLoading: isLoadingBatch,
-  } = useLoopingBatch(props)
+  } = useUnloopingBatch(props)
 
   const { mutate: submit, isPending: isSubmitting } = useMutation({
     mutationFn: async () => {
-      if (!batch?.length) throw new Error("Invalid looping batch")
+      if (!batch?.length) throw new Error("Invalid unlooping batch")
       if (!account) throw new Error("Account not connected")
-      if (!supplyReserve) throw new Error("Supply reserve not found")
+      if (!borrowReserve) throw new Error("Borrow reserve not found")
 
       const txs = await convertBatchToTxs(sdk, batch, account.address, slippage)
 
@@ -57,13 +58,13 @@ export function useLooping(
         transaction: {
           invalidateQueries: [["borrow"]],
           toasts: {
-            submitted: t("multiply.toast.loop.onLoading", {
-              symbol: supplyReserve.symbol,
-              value: amount,
+            submitted: t("multiply.toast.unloop.onLoading", {
+              symbol: borrowReserve.symbol,
+              value: repayAmount,
             }),
-            success: t("multiply.toast.loop.onSuccess", {
-              symbol: supplyReserve.symbol,
-              value: amount,
+            success: t("multiply.toast.unloop.onSuccess", {
+              symbol: borrowReserve.symbol,
+              value: repayAmount,
             }),
           },
         },
@@ -76,9 +77,10 @@ export function useLooping(
   const errors = batch ? getBatchErrors(batch) : []
 
   return {
-    targetCollateral,
-    targetDebt,
-    totalCollateral,
+    remainingCollateral,
+    remainingDebt,
+    totalRepaid,
+    totalWithdrawn,
     isLoading,
     submit,
     errors,

@@ -9,22 +9,10 @@ import {
   WBTC_ASSET_ID,
 } from "@galacticcouncil/utils"
 
-export const FEATURED_RESERVES_COUNT = 4
-export const MAX_SAFE_LEVERAGE_FACTOR = 0.95
-
-export type MultiplyAssetPair = {
-  name?: string
-  icon?: React.ComponentType
-  collateralAssetId: string
-  debtAssetId: string
-  enterWithAssetId?: string
-  isParityPair: boolean
-  eModeCategory: EModeCategory
-}
-
-export type MultiplyAssetPairConfig = {
-  id: string
-} & MultiplyAssetPair
+import {
+  MultiplyAssetPair,
+  MultiplyAssetPairConfig,
+} from "@/modules/borrow/multiply/types"
 
 export const MULTIPLY_ASSETS_PAIRS: MultiplyAssetPair[] = [
   {

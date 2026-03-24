@@ -5,20 +5,21 @@ import { unique } from "remeda"
 import { Trade } from "@/api/trade"
 import { AnyPapiTx } from "@/modules/transactions/types"
 
-export type LoopingBatchItem =
+export type BatchItem =
   | { type: CallType.Substrate; data: Trade }
   | { type: CallType.Evm; data: AnyPapiTx }
 
-export function validateLoopingEvmTx(
-  tx: { from?: string; to?: string; data?: string },
-  label: string,
-): asserts tx is { from: string; to: string; data: string } {
+type MinimalEvmTx = { from: string; to: string; data: string }
+
+export function validateEvmTx(
+  tx: Partial<MinimalEvmTx>,
+): asserts tx is MinimalEvmTx {
   if (!tx.from || !tx.to || !tx.data) {
-    throw new Error(`Invalid ${label} transaction`)
+    throw new Error(`Invalid EVM transaction`)
   }
 }
 
-export function getLoopingBatchErrors(batch: LoopingBatchItem[]) {
+export function getBatchErrors(batch: BatchItem[]) {
   return unique(
     batch.flatMap(({ data, type }) =>
       type === CallType.Substrate
@@ -28,9 +29,9 @@ export function getLoopingBatchErrors(batch: LoopingBatchItem[]) {
   )
 }
 
-export async function convertLoopingBatchToTxs(
+export async function convertBatchToTxs(
   sdk: SdkCtx,
-  batch: LoopingBatchItem[],
+  batch: BatchItem[],
   address: string,
   slippage: number,
 ): Promise<AnyPapiTx[]> {

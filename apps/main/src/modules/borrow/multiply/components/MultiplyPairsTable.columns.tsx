@@ -30,7 +30,7 @@ export const useMultiplyPairsTableColumns = () => {
   return useMemo(() => {
     const collateralColumn = columnHelper.display({
       id: "collateralAsset",
-      header: t("borrow:multiply.detail.collateralAsset"),
+      header: t("borrow:collateralAsset"),
       cell: ({ row }) => {
         return <ReserveLabel reserve={row.original.collateralReserve} />
       },
@@ -38,7 +38,7 @@ export const useMultiplyPairsTableColumns = () => {
 
     const debtColumn = columnHelper.display({
       id: "debtAsset",
-      header: t("borrow:multiply.detail.debtAsset"),
+      header: t("borrow:debtAsset"),
       cell: ({ row }) => {
         const debtAsset = getAsset(row.original.config.debtAssetId)
         if (!debtAsset) return null
@@ -96,7 +96,7 @@ export const useMultiplyPairsTableColumns = () => {
 
     const liquidityColumn = columnHelper.display({
       id: "liquidity",
-      header: t("borrow:multiply.strategy.liquidityAvailable"),
+      header: t("borrow:multiply.detail.liquidityAvailable"),
       meta: {
         sx: { textAlign: "right" },
       },
