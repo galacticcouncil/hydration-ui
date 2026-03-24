@@ -8,6 +8,7 @@ import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEn
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
+import { useAccountBalance } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useMarketSellData = (
@@ -23,6 +24,8 @@ export const useMarketSellData = (
     "buyAsset",
     "buyAmount",
   ])
+
+  const sellBalance = useAccountBalance(sellAsset?.id ?? "")
 
   const {
     swap: {
@@ -43,6 +46,7 @@ export const useMarketSellData = (
         slippage: swapSlippage,
         address,
         dryRun: form.formState.isValid,
+        balance: sellBalance?.transferable.toString(),
         debug: true,
       }),
       healthFactorQuery(rpc, {
