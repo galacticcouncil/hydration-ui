@@ -15,7 +15,7 @@ import { MultiplyPageSkeleton } from "@/modules/borrow/multiply/MultiplyPageSkel
 export const MultiplyPage = () => {
   const { t } = useTranslation("borrow")
 
-  const { isLoading, allPairs, featuredParis } = useMultiplyPairs()
+  const { isLoading, allPairs, featuredPairs } = useMultiplyPairs()
 
   if (isLoading) return <MultiplyPageSkeleton />
 
@@ -46,7 +46,7 @@ export const MultiplyPage = () => {
       <StrategyPositions />
 
       <SectionHeader title={t("multiply.featuredStrategies")} />
-      <FeaturedPairs pairs={featuredParis} />
+      <FeaturedPairs pairs={featuredPairs} />
 
       <SectionHeader title={t("multiply.allPairs")} />
       <MultiplyPairsTable pairs={allPairs} />
