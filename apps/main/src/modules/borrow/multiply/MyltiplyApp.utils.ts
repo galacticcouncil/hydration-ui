@@ -14,7 +14,6 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import Big from "big.js"
 import { Enum } from "polkadot-api"
 import { useForm } from "react-hook-form"
 import { useDebounce } from "use-debounce"
@@ -27,6 +26,7 @@ import {
   useSetUsageAsCollateralTx,
   useSetUserEModeTx,
 } from "@/api/borrow"
+import { blockWeightsQuery } from "@/api/chain"
 import {
   createProxyCall,
   filterAccountProxies,
@@ -41,6 +41,10 @@ import {
 import { MultiplyAppProps } from "@/modules/borrow/multiply/MultiplyApp"
 import { validateLoopingEvmTx } from "@/modules/borrow/multiply/utils/looping"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
+import {
+  calculateChunkSize,
+  getChunkByIndex,
+} from "@/modules/transactions/hooks/useBatchTx"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -48,9 +52,10 @@ import { useAccountBalances } from "@/states/account"
 import { useTradeSettings } from "@/states/tradeSettings"
 import {
   isSubstrateTxResult,
+  MultiTransactionConfig,
   useTransactionsStore,
 } from "@/states/transactions"
-import { scale, scaleHuman, toDecimal } from "@/utils/formatting"
+import { scaleHuman, toDecimal } from "@/utils/formatting"
 import {
   required,
   useValidateFormMaxBalance,
@@ -106,6 +111,7 @@ export const useMultiplyApp = ({
   const { getRelatedAToken, getAssetWithFallback } = useAssets()
   const { user } = useMoneyMarketData()
   const { account } = useAccount()
+  const { getTransferableBalance } = useAccountBalances()
   const {
     swap: {
       single: { swapSlippage },
@@ -198,19 +204,13 @@ export const useMultiplyApp = ({
   const getLoopingSteps = async (steps: LoopStep[], address: string) => {
     if (!poolBundleContract) throw new Error("Pool bundle contract not found")
 
-    const slippageFactor = isStrategyAsset
-      ? new Big(1).minus(new Big(swapSlippage).div(100))
-      : new Big(1)
-
     const evmAddress = safeConvertAnyToH160(address)
 
     return (
       await Promise.all(
         steps.map(async (step) => {
           const borrowTx = poolBundleContract.borrowTxBuilder.generateTxData({
-            amount: bigShift(step.borrow, debtReserve.decimals)
-              .times(slippageFactor)
-              .toFixed(0),
+            amount: bigShift(step.borrow, debtReserve.decimals).toFixed(0),
             reserve: debtReserve.underlyingAsset,
             interestRateMode: InterestRate.Variable,
             debtTokenAddress: debtReserve.variableDebtTokenAddress,
@@ -239,161 +239,218 @@ export const useMultiplyApp = ({
 
     const prevAccountProxies = proxies
     let newCreateadProxy: string | undefined
+    const prevTransferableBalance = getTransferableBalance(supplyAToken.id)
 
-    await createTransaction({
-      tx: [
-        {
-          stepTitle: "Create proxy",
-          tx: async () => {
-            if (!trade?.tx) {
-              throw new Error("Trade not found")
-            }
+    const blockWeights = await queryClient.fetchQuery(blockWeightsQuery(rpc))
 
-            const txs = [
-              trade.tx,
-              rpc.papi.tx.Proxy.create_pure({
-                proxy_type: Enum("Any"),
-                delay: 0,
-                index: 0,
-              }),
-            ]
+    const blockWeightsData = blockWeights?.per_class.normal.max_extrinsic
 
-            const toasts = {
-              submitted: "Creating proxy",
-              success: "Proxy created",
-            }
+    if (!blockWeightsData)
+      throw new Error("Missing required parameters for batch transaction")
 
-            return {
-              title: "Create proxy",
-              tx: rpc.papi.tx.Utility.batch_all({
-                calls: txs.map((tx) => tx.decodedCall),
-              }),
-              toasts,
-              successMode: "finalized",
-            }
-          },
+    const { chunkSize, index } = await calculateChunkSize(
+      rpc.papi,
+      account.address,
+      await getLoopingSteps(steps, account.address),
+      blockWeightsData,
+    )
+
+    const tx: MultiTransactionConfig[] = [
+      {
+        stepTitle: "Create proxy",
+        tx: async () => {
+          if (!trade?.tx) {
+            throw new Error("Trade not found")
+          }
+
+          const txs = [
+            trade.tx,
+            rpc.papi.tx.Proxy.create_pure({
+              proxy_type: Enum("Any"),
+              delay: 0,
+              index: 0,
+            }),
+          ]
+
+          const toasts = {
+            submitted: "Creating proxy",
+            success: "Proxy created",
+          }
+
+          return {
+            title: "Create proxy",
+            tx: rpc.papi.tx.Utility.batch_all({
+              calls: txs.map((tx) => tx.decodedCall),
+            }),
+            toasts,
+            successMode: "finalized",
+          }
         },
-        {
-          stepTitle: "Send funds",
-          tx: async (res) => {
-            const blockResults = res[0]
+      },
+      {
+        stepTitle: "Send funds",
+        tx: async (res) => {
+          const blockResults = res[0]
 
-            let proxyAddress: string | undefined
+          let proxyAddress: string | undefined
 
-            if (!blockResults || !isSubstrateTxResult(blockResults)) {
-              const newAllProxies = await queryClient.fetchQuery(
-                getAllProxies(rpc),
-              )
+          // can be also taken from events, but only for substrate wallet
+          const balance = await rpc.sdk.client.balance.getErc20Balance(
+            account.address,
+            Number(supplyAToken.id),
+          )
+          const transferableBalance = balance.transferable
+          const swappedAmount = transferableBalance - prevTransferableBalance
 
-              const newAccountProxies = filterAccountProxies(
-                newAllProxies,
-                account?.address ?? "",
-              ).map((proxy) => proxy.keyArgs[0].toString())
+          if (!blockResults || !isSubstrateTxResult(blockResults)) {
+            const newAllProxies = await queryClient.fetchQuery(
+              getAllProxies(rpc),
+            )
 
-              proxyAddress = newAccountProxies.find(
-                (newProxy) => !prevAccountProxies.includes(newProxy),
-              )
-            } else {
-              console.log(blockResults.events, res)
+            const newAccountProxies = filterAccountProxies(
+              newAllProxies,
+              account?.address ?? "",
+            ).map((proxy) => proxy.keyArgs[0].toString())
 
-              const newAllProxies = await queryClient.fetchQuery(
-                getAllProxies(rpc),
-              )
+            proxyAddress = newAccountProxies.find(
+              (newProxy) => !prevAccountProxies.includes(newProxy),
+            )
+          } else {
+            const newAllProxies = await queryClient.fetchQuery(
+              getAllProxies(rpc),
+            )
 
-              const newAccountProxies = filterAccountProxies(
-                newAllProxies,
-                account?.address ?? "",
-              ).map((proxy) => proxy.keyArgs[0].toString())
+            const newAccountProxies = filterAccountProxies(
+              newAllProxies,
+              account?.address ?? "",
+            ).map((proxy) => proxy.keyArgs[0].toString())
 
-              const newProxy = newAccountProxies.find(
-                (newProxy) => !prevAccountProxies.includes(newProxy),
-              )
+            const newProxy = newAccountProxies.find(
+              (newProxy) => !prevAccountProxies.includes(newProxy),
+            )
 
-              console.log({ newProxy, newAccountProxies })
-              proxyAddress = rpc.papi.event.Proxy.PureCreated.filter(
-                blockResults.events,
-              ).find((event) => event.who === account.address)?.pure
-            }
-            console.log(proxyAddress)
-            if (!proxyAddress) {
-              throw new Error("Proxy not found")
-            }
+            console.log({ newProxy, newAccountProxies })
+            proxyAddress = rpc.papi.event.Proxy.PureCreated.filter(
+              blockResults.events,
+            ).find((event) => event.who === account.address)?.pure
+          }
 
-            newCreateadProxy = proxyAddress
+          if (!proxyAddress) {
+            throw new Error("Proxy not found")
+          }
+          console.log("Proxy account:", proxyAddress)
+          newCreateadProxy = proxyAddress
 
-            const txs: AnyPapiTx[] = [
-              rpc.papi.tx.Dispatcher.dispatch_with_extra_gas({
-                call: rpc.papi.tx.Currencies.transfer({
-                  currency_id: Number(supplyAToken.id),
-                  dest: proxyAddress,
-                  amount: BigInt(minReceiveAmount), // tranfer a correct amount after swap
-                }).decodedCall,
-                extra_gas: AAVE_GAS_LIMIT,
-              }),
-              // rpc.papi.tx.Currencies.transfer({
-              //   currency_id: 20,
-              //   dest: proxyAddress,
-              //   amount: 10000000000000n,
-              // }),
+          const txs: AnyPapiTx[] = [
+            rpc.papi.tx.Dispatcher.dispatch_with_extra_gas({
+              call: rpc.papi.tx.Currencies.transfer({
+                currency_id: Number(supplyAToken.id),
+                dest: proxyAddress,
+                amount: BigInt(swappedAmount),
+              }).decodedCall,
+              extra_gas: AAVE_GAS_LIMIT,
+            }),
+            createProxyCall(
+              rpc.papi,
+              proxyAddress,
+              rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
+            ),
+          ]
+
+          if (collateralReserve.isIsolated) {
+            const enableCollateralTx = await getSetUsageAsCollateralTx(
+              collateralReserve.underlyingAsset,
+              true,
+              proxyAddress,
+            )
+
+            txs.push(
               createProxyCall(
                 rpc.papi,
                 proxyAddress,
-                rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
-              ),
-            ]
-
-            if (collateralReserve.isIsolated) {
-              const enableCollateralTx = await getSetUsageAsCollateralTx(
-                collateralReserve.underlyingAsset,
+                enableCollateralTx.decodedCall,
                 true,
-                proxyAddress,
-              )
+              ),
+            )
+          }
 
-              txs.push(
-                createProxyCall(
-                  rpc.papi,
-                  proxyAddress,
-                  enableCollateralTx.decodedCall,
-                ),
-              )
-            }
+          if (eModeCategory !== EModeCategory.NONE) {
+            const eModeTx = await getSetUserEModeTx(eModeCategory, proxyAddress)
 
-            if (eModeCategory !== EModeCategory.NONE) {
-              const eModeTx = await getSetUserEModeTx(
-                eModeCategory,
-                proxyAddress,
-              )
+            const proxyCall = createProxyCall(
+              rpc.papi,
+              proxyAddress,
+              eModeTx.decodedCall,
+              true,
+            )
 
-              txs.push(
-                createProxyCall(rpc.papi, proxyAddress, eModeTx.decodedCall),
-              )
-            }
+            txs.push(proxyCall)
+          }
 
-            const tx = rpc.papi.tx.Utility.batch_all({
-              calls: txs.map((tx) => tx.decodedCall),
-            })
+          const tx = rpc.papi.tx.Utility.batch_all({
+            calls: txs.map((tx) => tx.decodedCall),
+          })
 
-            return {
-              title: "Send funds",
-              tx,
-              toasts: {
-                submitted: "Sending funds",
-                success: "Funds sent",
-              },
-            }
-          },
+          return {
+            title: "Send funds",
+            tx,
+            toasts: {
+              submitted: "Sending funds",
+              success: "Funds sent",
+            },
+          }
         },
-        {
+      },
+    ]
+
+    if (index === 1) {
+      tx.push({
+        stepTitle: "Looping",
+        tx: async (res) => {
+          if (!newCreateadProxy) {
+            throw new Error("Proxy not found")
+          }
+
+          const txs = await getLoopingSteps(steps, newCreateadProxy)
+
+          console.log("response from prev steps:", res)
+
+          console.log("looping txs:", txs)
+          console.log("Proxy account:", newCreateadProxy)
+
+          return {
+            title: "Looping",
+            tx: createProxyCall(
+              rpc.papi,
+              newCreateadProxy,
+              rpc.papi.tx.Utility.batch_all({
+                calls: txs.map((tx) => tx.decodedCall),
+              }).decodedCall,
+              true,
+            ),
+            toasts: {
+              submitted: "Looping",
+              success: "Looped",
+            },
+          }
+        },
+      })
+    } else {
+      Array.from({ length: index }, (_, i) => {
+        tx.push({
           stepTitle: "Looping",
           tx: async (res) => {
-            console.log(res)
             if (!newCreateadProxy) {
               throw new Error("Proxy not found")
             }
 
             const txs = await getLoopingSteps(steps, newCreateadProxy)
+            const chunk = getChunkByIndex(txs, i, chunkSize)
 
-            console.log(newCreateadProxy, txs)
+            console.log("response from prev steps:", res)
+
+            console.log("looping chunk:", chunk)
+            console.log("Proxy account:", newCreateadProxy)
 
             return {
               title: "Looping",
@@ -401,8 +458,9 @@ export const useMultiplyApp = ({
                 rpc.papi,
                 newCreateadProxy,
                 rpc.papi.tx.Utility.batch_all({
-                  calls: txs.map((tx) => tx.decodedCall),
+                  calls: chunk.map((tx) => tx.decodedCall),
                 }).decodedCall,
+                true,
               ),
               toasts: {
                 submitted: "Looping",
@@ -410,8 +468,12 @@ export const useMultiplyApp = ({
               },
             }
           },
-        },
-      ],
+        })
+      })
+    }
+
+    await createTransaction({
+      tx,
       invalidateQueries: [
         ["allProxies"],
         ["accountProxies", account?.address ?? ""],
