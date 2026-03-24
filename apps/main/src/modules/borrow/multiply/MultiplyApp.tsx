@@ -186,7 +186,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
           {feeError && (
             <>
-              <Alert variant="error" description={feeError} />
+              <Alert variant="error" title={feeError} />
               <SectionSeparator />
             </>
           )}

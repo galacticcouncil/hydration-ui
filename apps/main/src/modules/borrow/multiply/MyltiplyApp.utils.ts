@@ -15,9 +15,10 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { Enum } from "polkadot-api"
+import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useDebounce } from "use-debounce"
-import { z } from "zod/v4"
+import z from "zod"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
@@ -75,29 +76,17 @@ const schema = z.object({
 
 export type MultiplyFormValues = z.infer<typeof schema>
 
-const useSchema = ({ proxyCreationFee }: { proxyCreationFee: bigint }) => {
-  const { native } = useAssets()
+const useSchema = () => {
   const { account } = useAccount()
   const refineMaxBalance = useValidateFormMaxBalance()
-  const { getTransferableBalance } = useAccountBalances()
 
   if (!account) {
     return schema
   }
 
-  return schema
-    .check(refineMaxBalance("amount", (form) => [form.asset, form.amount]))
-    .refine(
-      () =>
-        validateMaxBalance(
-          toDecimal(getTransferableBalance(native.id), native.decimals),
-          toDecimal(proxyCreationFee, native.decimals),
-        ),
-      {
-        error: "Not HDX to pay fee",
-        path: ["fee"],
-      },
-    )
+  return schema.check(
+    refineMaxBalance("amount", (form) => [form.asset, form.amount]),
+  )
 }
 
 export const useMultiplyApp = ({
@@ -108,7 +97,7 @@ export const useMultiplyApp = ({
   proxies,
 }: MultiplyAppProps) => {
   const rpc = useRpcProvider()
-  const { getRelatedAToken, getAssetWithFallback } = useAssets()
+  const { getRelatedAToken, getAssetWithFallback, native } = useAssets()
   const { user } = useMoneyMarketData()
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
@@ -142,6 +131,13 @@ export const useMultiplyApp = ({
     ? getAssetWithFallback(enterWithAssetId)
     : supplyAsset
 
+  const hasEnoughNativeForFee = validateMaxBalance(
+    toDecimal(getTransferableBalance(native.id), native.decimals),
+    toDecimal(proxyCreationFee, native.decimals),
+  )
+
+  const accountAddress = account?.address
+
   const form = useForm<MultiplyFormValues>({
     mode: "onChange",
     defaultValues: {
@@ -149,8 +145,18 @@ export const useMultiplyApp = ({
       asset: enteredWithAsset,
       multiplier: LEVERAGE_DEFAULT,
     },
-    resolver: standardSchemaResolver(useSchema({ proxyCreationFee })),
+    resolver: standardSchemaResolver(useSchema()),
   })
+
+  useEffect(() => {
+    if (!accountAddress) return
+
+    if (!hasEnoughNativeForFee) {
+      form.setError("fee", { message: "Not enough HDX to pay fee" })
+    } else {
+      form.clearErrors("fee")
+    }
+  }, [accountAddress, form, hasEnoughNativeForFee])
 
   const isStrategyAsset = MONEY_MARKET_STRATEGY_ASSETS.includes(supplyAssetId)
 
@@ -166,7 +172,7 @@ export const useMultiplyApp = ({
       assetOut: supplyAToken?.id ?? "",
       amountIn: debouncedAmountIn,
       slippage: swapSlippage,
-      address: account?.address ?? "",
+      address: accountAddress ?? "",
     }),
   )
 
@@ -234,7 +240,7 @@ export const useMultiplyApp = ({
 
   const onSubmit = async () => {
     if (!supplyAToken) throw new Error("Asset not found")
-    if (!account?.address) throw new Error("Account not found")
+    if (!accountAddress) throw new Error("Account not found")
     if (!poolBundleContract) throw new Error("Pool bundle contract not found")
 
     const prevAccountProxies = proxies
@@ -250,8 +256,8 @@ export const useMultiplyApp = ({
 
     const { chunkSize, index } = await calculateChunkSize(
       rpc.papi,
-      account.address,
-      await getLoopingSteps(steps, account.address),
+      accountAddress,
+      await getLoopingSteps(steps, accountAddress),
       blockWeightsData,
     )
 
@@ -296,7 +302,7 @@ export const useMultiplyApp = ({
 
           // can be also taken from events, but only for substrate wallet
           const balance = await rpc.sdk.client.balance.getErc20Balance(
-            account.address,
+            accountAddress,
             Number(supplyAToken.id),
           )
           const transferableBalance = balance.transferable
@@ -309,7 +315,7 @@ export const useMultiplyApp = ({
 
             const newAccountProxies = filterAccountProxies(
               newAllProxies,
-              account?.address ?? "",
+              accountAddress ?? "",
             ).map((proxy) => proxy.keyArgs[0].toString())
 
             proxyAddress = newAccountProxies.find(
@@ -322,7 +328,7 @@ export const useMultiplyApp = ({
 
             const newAccountProxies = filterAccountProxies(
               newAllProxies,
-              account?.address ?? "",
+              accountAddress ?? "",
             ).map((proxy) => proxy.keyArgs[0].toString())
 
             const newProxy = newAccountProxies.find(
@@ -332,7 +338,7 @@ export const useMultiplyApp = ({
             console.log({ newProxy, newAccountProxies })
             proxyAddress = rpc.papi.event.Proxy.PureCreated.filter(
               blockResults.events,
-            ).find((event) => event.who === account.address)?.pure
+            ).find((event) => event.who === accountAddress)?.pure
           }
 
           if (!proxyAddress) {
@@ -476,7 +482,7 @@ export const useMultiplyApp = ({
       tx,
       invalidateQueries: [
         ["allProxies"],
-        ["accountProxies", account?.address ?? ""],
+        ["accountProxies", accountAddress ?? ""],
       ],
     })
   }
