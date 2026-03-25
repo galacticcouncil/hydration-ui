@@ -142,7 +142,15 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
         i++
       }
 
-      printFormattedSteps(result)
+      printFormattedSteps(
+        result.map((step) => ({
+          step: step.step,
+          borrow: step.borrow,
+          swap: step.swap,
+          collateralAfter: step.collateralAfter,
+          debtAfter: step.debtAfter,
+        })),
+      )
 
       const finalCollateral = last(result)?.collateralAfter
       const totalCollateral = finalCollateral

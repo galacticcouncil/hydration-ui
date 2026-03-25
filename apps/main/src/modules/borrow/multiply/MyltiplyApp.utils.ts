@@ -35,6 +35,7 @@ import {
 } from "@/api/proxy"
 import { bestSellWithTxQuery } from "@/api/trade"
 import { useCreateLoopingEvmTx } from "@/modules/borrow/hooks/useCreateLoopingEvmTx"
+import { LEVERAGE_DEFAULT } from "@/modules/borrow/multiply/config/constants"
 import {
   LoopStep,
   useLoopingSteps,
@@ -62,10 +63,6 @@ import {
   useValidateFormMaxBalance,
   validateMaxBalance,
 } from "@/utils/validators"
-
-export const LEVERAGE_MIN = 1.1
-export const LEVERAGE_STEP = 0.1
-export const LEVERAGE_DEFAULT = 2
 
 const schema = z.object({
   amount: required,
