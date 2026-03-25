@@ -52,11 +52,7 @@ export const Market: FC = () => {
 
   const {
     swap,
-    swapTx,
-    swapDryRunError,
     twap,
-    twapTx,
-    twapDryRunError,
     healthFactor,
     isSwapLoading,
     isTwapLoading,
@@ -87,8 +83,8 @@ export const Market: FC = () => {
         sx={{ pb: isExpanded ? "xxl" : 0 }}
         onSubmit={form.handleSubmit((values) =>
           isSingleTrade
-            ? swap && swapTx && submitSwap.mutate([values, swap, swapTx])
-            : twap && twapTx && submitTwap.mutate([values, twap, twapTx]),
+            ? swap && submitSwap.mutate([values, swap])
+            : twap && submitTwap.mutate([values, twap]),
         )}
       >
         <MarketFields swap={swap} />
@@ -96,9 +92,7 @@ export const Market: FC = () => {
           <Box pt="base" pb="m">
             <MarketTradeOptions
               swap={swap}
-              swapDryRunError={swapDryRunError}
               twap={twap}
-              twapDryRunError={twapDryRunError}
               isSwapLoading={isSwapLoading}
               isTwapLoading={isTwapLoading}
             />
@@ -124,9 +118,7 @@ export const Market: FC = () => {
         <MarketSummary
           swapType={type}
           swap={swap}
-          swapTx={swapTx}
           twap={twap}
-          twapTx={twapTx}
           healthFactor={isHealthFactorShown ? healthFactor : undefined}
           isLoading={
             isHealthFactorLoading ||
