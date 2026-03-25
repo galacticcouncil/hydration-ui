@@ -338,15 +338,7 @@ export const openGovUnlockedTokensQuery = (
         }),
       )
 
-      type TVoteData = {
-        amount: bigint
-        id: number
-        classId?: number
-        locked: boolean
-        diffBlockNumber: number | undefined
-      }
-
-      const votesById = new Map<number, TVoteData>()
+      const votesById = new Map()
 
       for (const vote of filteredVotes) {
         votesById.set(vote.id, vote)
@@ -377,18 +369,19 @@ export const openGovUnlockedTokensQuery = (
               voteData.amount.toString(),
             ).toString(),
             maxLockedBlock:
-              voteData.diffBlockNumber !== undefined
+              voteData.diffBlockNumber !== undefined &&
+              acc.maxLockedBlock !== undefined
                 ? Big.max(
                     voteData.diffBlockNumber,
                     acc.maxLockedBlock ?? 0,
                   ).toNumber()
-                : acc.maxLockedBlock,
+                : undefined,
             votesToRemove: acc.votesToRemove,
           }
         },
         {
           maxLockedValue: "0",
-          maxLockedBlock: undefined,
+          maxLockedBlock: 0,
           votesToRemove: [],
         },
       )
