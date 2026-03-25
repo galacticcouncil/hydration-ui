@@ -98,6 +98,7 @@ export function useLoopingBatch(options: UseLoopingStepsProps) {
       if (!supplyReserve) throw new Error("Supply reserve not found")
       if (!borrowReserve) throw new Error("Borrow reserve not found")
       if (!gasPrice) throw new Error("Gas estimation failed")
+      if (!poolBundleContract) throw new Error("Pool bundle contract not found")
 
       const evmAddress = safeConvertAnyToH160(account.address)
       const amountBig = new Big(amount || "0")
