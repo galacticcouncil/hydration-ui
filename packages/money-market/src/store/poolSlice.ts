@@ -347,6 +347,18 @@ export const createPoolSlice: StateCreator<
                 ),
               ),
           )
+        } else {
+          set((state) =>
+            produce(state, (draft) => {
+              const poolEntry = draft.data
+                .get(currentChainId)
+                ?.get(lendingPoolAddressProvider)
+              if (poolEntry) {
+                poolEntry.userReserves = []
+                poolEntry.userEmodeCategoryId = 0
+              }
+            }),
+          )
         }
 
         await Promise.all(promises)

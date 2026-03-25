@@ -29,12 +29,13 @@ type BestSellArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
+  readonly balance?: string
   readonly debug?: boolean
 }
 
 export const bestSellQuery = (
   { sdk, isApiLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn, debug }: BestSellArgs,
+  { assetIn, assetOut, amountIn, balance, debug }: BestSellArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -44,6 +45,7 @@ export const bestSellQuery = (
       assetIn,
       assetOut,
       amountIn,
+      balance,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestSell(
@@ -248,12 +250,13 @@ type BestBuyArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountOut: string
+  readonly balance?: string
   readonly debug?: boolean
 }
 
 export const bestBuyQuery = (
   { sdk, isApiLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut, debug }: BestBuyArgs,
+  { assetIn, assetOut, amountOut, balance, debug }: BestBuyArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -263,6 +266,7 @@ export const bestBuyQuery = (
       assetIn,
       assetOut,
       amountOut,
+      balance,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestBuy(
