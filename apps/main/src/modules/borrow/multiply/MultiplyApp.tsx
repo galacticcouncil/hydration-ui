@@ -26,22 +26,16 @@ import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { MultiplyErrors } from "@/modules/borrow/multiply/components/MultiplyErrors"
 import {
-  LEVERAGE_DEFAULT,
   LEVERAGE_MIN,
   LEVERAGE_STEP,
   MAX_SAFE_LEVERAGE_FACTOR,
 } from "@/modules/borrow/multiply/config/constants"
-import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config/pairs"
-import { useLooping } from "@/modules/borrow/multiply/hooks/useLooping"
 import {
-  LEVERAGE_MIN,
-  LEVERAGE_STEP,
   MultiplyFormValues,
   useMultiplyApp,
 } from "@/modules/borrow/multiply/MyltiplyApp.utils"
 import { MultiplyAssetPair } from "@/modules/borrow/multiply/types"
 import { getMaxReservePairLeverage } from "@/modules/borrow/multiply/utils/leverage"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
 import { useAssets } from "@/providers/assetsProvider"
 import { scaleHuman } from "@/utils/formatting"
 

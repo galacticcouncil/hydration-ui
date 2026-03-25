@@ -3,7 +3,7 @@ import {
   ProtocolAction,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
-import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
+//import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
 import { ExternalApyData } from "@galacticcouncil/money-market/types"
 import {
@@ -56,7 +56,7 @@ import {
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { TProviderData, useSquidClient } from "@/api/provider"
-import { useIndexerClient } from "@/api/provider"
+//import { useIndexerClient } from "@/api/provider"
 import { getAccountProxies } from "@/api/proxy"
 import { useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -764,7 +764,7 @@ export const useExternalApys = (assetIds: string[]) => {
 export const useStrategyPositions = () => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  const indexerClient = useIndexerClient()
+  //const indexerClient = useIndexerClient()
   const squidClient = useSquidClient()
   const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
   const rpc = useRpcProvider()
