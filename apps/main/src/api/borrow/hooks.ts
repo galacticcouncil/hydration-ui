@@ -130,6 +130,7 @@ export const borrowAssetApyQuery = (
 ) => {
   return queryOptions<BorrowAssetApyData | undefined>({
     queryKey: ["borrowAssetApy", assetId],
+    enabled: !!timestamp,
     queryFn: async () => {
       if (!timestamp) throw new Error("Invalid timestamp")
 

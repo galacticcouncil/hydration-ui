@@ -33,7 +33,7 @@ import {
 import {
   MultiplyFormValues,
   useMultiplyApp,
-} from "@/modules/borrow/multiply/MyltiplyApp.utils"
+} from "@/modules/borrow/multiply/MultiplyApp.utils"
 import { MultiplyAssetPair } from "@/modules/borrow/multiply/types"
 import { getMaxReservePairLeverage } from "@/modules/borrow/multiply/utils/leverage"
 import { useAssets } from "@/providers/assetsProvider"
