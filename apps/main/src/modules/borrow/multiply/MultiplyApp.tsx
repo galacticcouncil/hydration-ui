@@ -1,14 +1,7 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import {
-  ComputedReserveData,
-  useMoneyMarketData,
-} from "@galacticcouncil/money-market/hooks"
-import { EModeCategory } from "@galacticcouncil/money-market/ui-config"
-import {
-  formatHealthFactorResult,
-  getReserveAssetIdByAddress,
-} from "@galacticcouncil/money-market/utils"
-import {
+  Alert,
   Box,
   CollapsibleContent,
   CollapsibleRoot,
@@ -24,122 +17,66 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
-import { Controller, FormProvider, useForm } from "react-hook-form"
+import { Controller, FormProvider } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
-import z from "zod"
 
 import { useDisplayAssetPrice } from "@/components/AssetPrice/AssetPrice"
-import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
+import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { MultiplyErrors } from "@/modules/borrow/multiply/components/MultiplyErrors"
 import {
-  LEVERAGE_DEFAULT,
   LEVERAGE_MIN,
   LEVERAGE_STEP,
   MAX_SAFE_LEVERAGE_FACTOR,
 } from "@/modules/borrow/multiply/config/constants"
-import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config/pairs"
-import { useLooping } from "@/modules/borrow/multiply/hooks/useLooping"
-import { getMaxReservePairLeverage } from "@/modules/borrow/multiply/utils/leverage"
-import { TAsset, useAssets } from "@/providers/assetsProvider"
 import {
-  required,
-  requiredObject,
-  useValidateFormMaxBalance,
-} from "@/utils/validators"
+  MultiplyFormValues,
+  useMultiplyApp,
+} from "@/modules/borrow/multiply/MultiplyApp.utils"
+import { MultiplyAssetPair } from "@/modules/borrow/multiply/types"
+import { getMaxReservePairLeverage } from "@/modules/borrow/multiply/utils/leverage"
+import { useAssets } from "@/providers/assetsProvider"
+import { scaleHuman } from "@/utils/formatting"
 
 const SectionSeparator = () => <Separator sx={{ mx: "-xl" }} />
 
-type MultiplyAppProps = {
+export type MultiplyAppProps = {
   collateralReserve: ComputedReserveData
   debtReserve: ComputedReserveData
-}
-
-const schema = z.object({
-  amount: required,
-  asset: requiredObject<TAsset>(),
-  multiplier: z.number(),
-})
-
-type MultiplyFormValues = z.infer<typeof schema>
-
-const useSchema = () => {
-  const { account } = useAccount()
-  const refineMaxBalance = useValidateFormMaxBalance()
-
-  if (!account) {
-    return schema
-  }
-
-  return schema.check(
-    refineMaxBalance("amount", (form) => [form.asset, form.amount]),
-  )
+  proxies: Array<string>
+  proxyCreationFee: bigint
+  strategy: MultiplyAssetPair
 }
 
 export const MultiplyApp: React.FC<MultiplyAppProps> = ({
   collateralReserve,
   debtReserve,
+  strategy,
+  proxyCreationFee,
+  proxies,
 }) => {
+  const { native } = useAssets()
   const { isConnected } = useAccount()
   const { t } = useTranslation(["borrow", "common"])
-  const { getAsset, getRelatedAToken } = useAssets()
-
-  const { user } = useMoneyMarketData()
-
-  const assetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
-
-  const strategy = MULTIPLY_ASSETS_PAIRS.find(
-    (s) => s.collateralAssetId === assetId,
-  )
-
-  const supplyAssetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
-  const borrowAssetId = strategy?.enterWithAssetId
-    ? strategy.enterWithAssetId
-    : getReserveAssetIdByAddress(debtReserve.underlyingAsset)
-
-  const supplyAsset = getAsset(supplyAssetId)
-  const supplyAToken = getRelatedAToken(assetId)
-  const borrowAsset = getAsset(borrowAssetId)
-
-  const enteredWithAsset = strategy?.enterWithAssetId
-    ? getAsset(strategy.enterWithAssetId)
-    : supplyAsset
-
-  const form = useForm<MultiplyFormValues>({
-    mode: "onChange",
-    defaultValues: {
-      amount: "",
-      asset: enteredWithAsset ?? null,
-      multiplier: LEVERAGE_DEFAULT,
-    },
-    resolver: standardSchemaResolver(useSchema()),
+  const {
+    form,
+    hf,
+    totalCollateral,
+    targetDebt,
+    isLoading,
+    errors,
+    borrowAsset,
+    supplyAsset,
+    supplyAToken,
+    onSubmit,
+  } = useMultiplyApp({
+    collateralReserve,
+    debtReserve,
+    strategy,
+    proxyCreationFee,
+    proxies,
   })
-
-  const [amount, multiplier] = form.watch(["amount", "multiplier"])
-
-  const currentHF = user?.healthFactor ?? ""
-  const futureHF = currentHF // @TODO: Calculate future HF
-
-  const hf = formatHealthFactorResult({
-    currentHF: currentHF,
-    futureHF: futureHF,
-  })
-
-  const { submit, totalCollateral, targetDebt, isLoading, errors } = useLooping(
-    {
-      amount,
-      multiplier,
-      supplyAssetId,
-      borrowAssetId,
-      assetInId: borrowAsset?.id ?? "",
-      assetOutId: supplyAToken?.id ?? "",
-      isParityPair: strategy?.isParityPair ?? false,
-      eModeCategory: strategy?.eModeCategory ?? EModeCategory.NONE,
-    },
-  )
 
   const maxSafeLeverage = getMaxReservePairLeverage(
     collateralReserve,
@@ -147,31 +84,27 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     MAX_SAFE_LEVERAGE_FACTOR,
   )
 
-  const [debtDisplayPrice] = useDisplayAssetPrice(borrowAssetId, targetDebt)
+  const [debtDisplayPrice] = useDisplayAssetPrice(borrowAsset.id, targetDebt)
   const [collateralDisplayPrice] = useDisplayAssetPrice(
-    supplyAssetId,
+    supplyAsset.id,
     totalCollateral,
   )
 
+  const [multiplier] = form.watch(["multiplier"])
+
+  const feeError = form.formState.errors.fee?.message
+
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(() => submit())}>
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <Stack gap="l" as={Paper} p="xl">
-          <Controller
-            control={form.control}
-            name="amount"
-            render={({ field, fieldState }) => (
-              <AssetSelect
-                sx={{ py: 0 }}
-                label={t("multiply.app.yourDeposit")}
-                assets={[]}
-                selectedAsset={enteredWithAsset}
-                value={field.value}
-                onChange={field.onChange}
-                maxBalanceFallback="0"
-                amountError={fieldState.error?.message}
-              />
-            )}
+          <AssetSelectFormField<MultiplyFormValues>
+            label={t("multiply.app.yourDeposit")}
+            assetFieldName="asset"
+            amountFieldName="amount"
+            assets={[]}
+            disabledAssetSelector
+            sx={{ pt: 0 }}
           />
 
           <SectionSeparator />
@@ -230,7 +163,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                     {t("common:currency", {
                       prefix: t("common:approx.short"),
                       value: totalCollateral,
-                      symbol: supplyAsset.symbol,
+                      symbol: supplyAToken?.symbol,
                     })}
                   </Text>
                   <Text fs="p6" color={getToken("text.medium")}>
@@ -244,6 +177,13 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
           <SectionSeparator />
 
           {errors.length > 0 && <MultiplyErrors errors={errors} />}
+
+          {feeError && (
+            <>
+              <Alert variant="error" title={feeError} />
+              <SectionSeparator />
+            </>
+          )}
 
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
@@ -271,7 +211,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                         {t("common:currency", {
                           prefix: t("common:approx.short"),
                           value: totalCollateral,
-                          symbol: supplyAsset.symbol,
+                          symbol: supplyAToken?.symbol,
                         })}
                         <Text fs="p5" color={getToken("text.medium")}>
                           ({collateralDisplayPrice})
@@ -297,6 +237,15 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
                     }
                   />
                 )}
+
+                <SummaryRow
+                  label="Create proxy fee"
+                  content={t("common:currency", {
+                    value: scaleHuman(proxyCreationFee, native.decimals),
+                    symbol: native.symbol,
+                  })}
+                />
+
                 <SummaryRow
                   label={t("common:healthFactor")}
                   content={<HealthFactorChange {...hf} />}

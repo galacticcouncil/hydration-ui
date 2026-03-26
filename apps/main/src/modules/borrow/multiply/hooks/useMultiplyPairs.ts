@@ -24,7 +24,7 @@ export function useMultiplyPairs() {
   const { apyMap, isLoading: isLoadingApy } = useApyContext()
 
   const pairs = useMemo(() => {
-    if (!data) return { allPairs: [], featuredParis: [] }
+    if (!data) return { allPairs: [], featuredPairs: [] }
 
     const reserveByAddress = new Map(
       data.formattedReserves.map((r) => [r.underlyingAsset, r]),
@@ -53,11 +53,11 @@ export function useMultiplyPairs() {
       })
     }
 
-    const featuredParis = allPairs.slice(0, FEATURED_RESERVES_COUNT)
+    const featuredPairs = allPairs.slice(0, FEATURED_RESERVES_COUNT)
 
     return {
       allPairs,
-      featuredParis,
+      featuredPairs,
     }
   }, [data, apyMap])
 

@@ -95,6 +95,8 @@ export function useUnloopingBatch(options: UseUnloopingStepsProps) {
       if (!supplyReserve) throw new Error("Supply reserve not found")
       if (!borrowReserve) throw new Error("Borrow reserve not found")
       if (!gasPrice) throw new Error("Gas estimation failed")
+      if (!poolBundleContract) throw new Error("Pool bundle contract not found")
+      if (!poolContract) throw new Error("Pool contract not found")
 
       const evmAddress = safeConvertAnyToH160(account.address)
 
