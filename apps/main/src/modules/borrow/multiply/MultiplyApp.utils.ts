@@ -34,7 +34,7 @@ import {
   getAllProxies,
 } from "@/api/proxy"
 import { bestSellWithTxQuery } from "@/api/trade"
-import { useCreateLoopingEvmTx } from "@/modules/borrow/hooks/useCreateLoopingEvmTx"
+import { useCreateMultiplyEvmTx } from "@/modules/borrow/hooks/useCreateMultiplyEvmTx"
 import { LEVERAGE_DEFAULT } from "@/modules/borrow/multiply/config/constants"
 import {
   LoopStep,
@@ -110,7 +110,7 @@ export const useMultiplyApp = ({
 
   const getSetUsageAsCollateralTx = useSetUsageAsCollateralTx()
   const getSetUserEModeTx = useSetUserEModeTx()
-  const createEvmTx = useCreateLoopingEvmTx()
+  const createEvmTx = useCreateMultiplyEvmTx()
 
   const assetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
   const { enterWithAssetId, eModeCategory, isParityPair } = strategy
@@ -241,7 +241,7 @@ export const useMultiplyApp = ({
     if (!poolBundleContract) throw new Error("Pool bundle contract not found")
 
     const prevAccountProxies = proxies
-    let newCreateadProxy: string | undefined
+    let newCreatedProxy: string | undefined
     const prevTransferableBalance = getTransferableBalance(supplyAToken.id)
 
     const blockWeights = await queryClient.fetchQuery(blockWeightsQuery(rpc))
@@ -251,7 +251,7 @@ export const useMultiplyApp = ({
     if (!blockWeightsData)
       throw new Error("Missing required parameters for batch transaction")
 
-    const { chunkSize, index } = await calculateChunkSize(
+    const { chunkSize, batchCount } = await calculateChunkSize(
       rpc.papi,
       accountAddress,
       await getLoopingSteps(steps, accountAddress),
@@ -342,7 +342,7 @@ export const useMultiplyApp = ({
             throw new Error("Proxy not found")
           }
           console.log("Proxy account:", proxyAddress)
-          newCreateadProxy = proxyAddress
+          newCreatedProxy = proxyAddress
 
           const txs: AnyPapiTx[] = [
             rpc.papi.tx.Dispatcher.dispatch_with_extra_gas({
@@ -406,28 +406,31 @@ export const useMultiplyApp = ({
       },
     ]
 
-    if (index === 1) {
+    const chunkIndices =
+      batchCount === 1 ? [null] : [...Array(batchCount).keys()]
+
+    for (const i of chunkIndices) {
       tx.push({
         stepTitle: "Looping",
         tx: async (res) => {
-          if (!newCreateadProxy) {
+          if (!newCreatedProxy) {
             throw new Error("Proxy not found")
           }
 
-          const txs = await getLoopingSteps(steps, newCreateadProxy)
+          const txs = await getLoopingSteps(steps, newCreatedProxy)
+          const calls = i === null ? txs : getChunkByIndex(txs, i, chunkSize)
 
           console.log("response from prev steps:", res)
-
-          console.log("looping txs:", txs)
-          console.log("Proxy account:", newCreateadProxy)
+          console.log(i === null ? "looping txs:" : "looping chunk:", calls)
+          console.log("Proxy account:", newCreatedProxy)
 
           return {
             title: "Looping",
             tx: createProxyCall(
               rpc.papi,
-              newCreateadProxy,
+              newCreatedProxy,
               rpc.papi.tx.Utility.batch_all({
-                calls: txs.map((tx) => tx.decodedCall),
+                calls: calls.map((tx) => tx.decodedCall),
               }).decodedCall,
               true,
             ),
@@ -437,41 +440,6 @@ export const useMultiplyApp = ({
             },
           }
         },
-      })
-    } else {
-      Array.from({ length: index }, (_, i) => {
-        tx.push({
-          stepTitle: "Looping",
-          tx: async (res) => {
-            if (!newCreateadProxy) {
-              throw new Error("Proxy not found")
-            }
-
-            const txs = await getLoopingSteps(steps, newCreateadProxy)
-            const chunk = getChunkByIndex(txs, i, chunkSize)
-
-            console.log("response from prev steps:", res)
-
-            console.log("looping chunk:", chunk)
-            console.log("Proxy account:", newCreateadProxy)
-
-            return {
-              title: "Looping",
-              tx: createProxyCall(
-                rpc.papi,
-                newCreateadProxy,
-                rpc.papi.tx.Utility.batch_all({
-                  calls: chunk.map((tx) => tx.decodedCall),
-                }).decodedCall,
-                true,
-              ),
-              toasts: {
-                submitted: "Looping",
-                success: "Looped",
-              },
-            }
-          },
-        })
       })
     }
 

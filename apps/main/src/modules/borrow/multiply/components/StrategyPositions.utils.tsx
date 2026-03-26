@@ -218,10 +218,10 @@ export const useStrategyAssetsColumns = () => {
             original: { underlyingAssetId, symbol },
           },
         }) => {
-          const ovverideIconId = RESERVE_LOGO_OVERRIDE_MAP[underlyingAssetId]
+          const overrideIconId = RESERVE_LOGO_OVERRIDE_MAP[underlyingAssetId]
 
-          const logoId = ovverideIconId ?? underlyingAssetId
-          const symbol_ = ovverideIconId
+          const logoId = overrideIconId ?? underlyingAssetId
+          const symbol_ = overrideIconId
             ? (getRelatedAToken(underlyingAssetId)?.symbol ?? symbol)
             : symbol
 
@@ -293,7 +293,7 @@ export const useStrategyAssetsColumns = () => {
   )
 }
 
-export const getStratgiesColumnsVisibility = (isMobile: boolean) => ({
+export const getStrategyPositionsColumnsVisibility = (isMobile: boolean) => ({
   underlyingAssetId: true,
   netWorth: true,
   avgApy: !isMobile,

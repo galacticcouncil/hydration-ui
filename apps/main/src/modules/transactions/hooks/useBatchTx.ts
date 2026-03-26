@@ -35,19 +35,19 @@ export const calculateChunkSize = async (
   const isFitBlock = proof_size > proofSizeTx && ref_time > refTimeTx
 
   if (isFitBlock) {
-    return { chunkSize: 1, index: 1 }
+    return { chunkSize: txs.length, batchCount: 1 }
   }
 
-  const index = Math.ceil(
+  const batchCount = Math.ceil(
     Big.max(
       Big(proofSizeTx.toString()).div(proof_size.toString()),
       Big(refTimeTx.toString()).div(ref_time.toString()),
     ).toNumber(),
   )
 
-  const chunkSize = Math.ceil(txs.length / index)
+  const chunkSize = Math.ceil(txs.length / batchCount)
 
-  return { chunkSize, index }
+  return { chunkSize, batchCount }
 }
 
 export const getChunkByIndex = (
@@ -97,21 +97,21 @@ export const useCreateBatchTx = () => {
         calls: txs.map((t) => t.decodedCall),
       })
 
-      const { chunkSize, index } = await calculateChunkSize(
+      const { chunkSize, batchCount } = await calculateChunkSize(
         papi,
         address,
         txs,
         blockWeightsData,
       )
 
-      if (index === 1) {
+      if (batchCount === 1) {
         return createTransaction({ ...transaction, tx: batchTx }, options)
       }
 
       const warning = t("transaction.batch.warning")
 
       return createTransaction({
-        tx: Array.from({ length: index }, (_, i) => {
+        tx: Array.from({ length: batchCount }, (_, i) => {
           const chunk = getChunkByIndex(txs, i, chunkSize)
 
           return {

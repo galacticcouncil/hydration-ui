@@ -846,6 +846,10 @@ export const useStrategyPositions = () => {
               (userReserve) => Big(userReserve.underlyingBalance).gt(0),
             )
 
+            const debtReserve = borrowSummary.userReservesData.find(
+              (userReserve) => Big(userReserve.totalBorrows).gt(0),
+            )?.reserve
+
             if (!borrowSummaryData) return undefined
 
             const publicKey = safeConvertSS58toPublicKey(proxyAddress)
@@ -872,6 +876,7 @@ export const useStrategyPositions = () => {
 
             return {
               borrowSummaryData,
+              debtReserve,
               proxyCreateData,
               proxyCreatedAt,
               publicKey,

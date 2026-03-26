@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next"
 
 import { StrategyPosition } from "@/modules/borrow/multiply/components/StrategyPosition"
 import {
-  getStratgiesColumnsVisibility,
+  getStrategyPositionsColumnsVisibility,
   useStrategyAssetsColumns,
   useStrategyGroupedPositions,
 } from "@/modules/borrow/multiply/components/StrategyPositions.utils"
@@ -146,7 +146,7 @@ export const StrategyPositions = () => {
         data={data}
         columns={assetsColumns}
         isLoading={isLoading}
-        columnVisibility={getStratgiesColumnsVisibility(isMobile)}
+        columnVisibility={getStrategyPositionsColumnsVisibility(isMobile)}
         expandable={"single"}
         getIsExpandable={({ positionsAmount }) => positionsAmount > 0}
         renderSubComponent={(row) => (
