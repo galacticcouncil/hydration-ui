@@ -1,6 +1,6 @@
 import {
-  isH160Address,
-  isSS58Address,
+  safeConvertAddressH160,
+  safeConvertAddressSS58,
   updateQueryString,
 } from "@galacticcouncil/utils"
 
@@ -55,17 +55,21 @@ export class ExternalWallet implements Wallet {
     return new Error(err.message)
   }
 
-  setAccount = (address: string, shouldUpdateQueryString = false) => {
-    if (isSS58Address(address) || isH160Address(address)) {
-      this.account = {
-        address,
-        name: "External Account",
-        provider: this.provider,
-      }
-      if (shouldUpdateQueryString) {
-        updateQueryString("address", address)
-      }
+  setAccount = (address: string, shouldUpdateQueryString = false): boolean => {
+    const normalized =
+      safeConvertAddressH160(address) || safeConvertAddressSS58(address)
+
+    if (!normalized) return false
+
+    this.account = {
+      address: normalized,
+      name: "External Account",
+      provider: this.provider,
     }
+    if (shouldUpdateQueryString) {
+      updateQueryString("account", normalized)
+    }
+    return true
   }
 
   getAccounts = async (): Promise<WalletAccount[]> => {
