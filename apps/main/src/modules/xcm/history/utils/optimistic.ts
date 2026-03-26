@@ -64,9 +64,9 @@ export function convertXcmFormValuesToOptimisticJourney(
     toFormatted: destAddress,
     sentAt: now,
     createdAt: now,
-    stops: [],
-    instructions: {},
-    transactCalls: [],
+    stops: "",
+    instructions: "",
+    transactCalls: "",
     originTxPrimary: txHash,
     totalUsd: 0,
     assets: [
