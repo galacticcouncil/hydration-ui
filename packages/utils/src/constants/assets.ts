@@ -25,12 +25,14 @@ export const PRIME_STABLESWAP_ASSET_ID = "143"
 export const GSOL_ASSET_ID = "90001"
 export const GSOL_ERC20_ID = "9001"
 export const JITOSOL_ASSET_ID = "40"
+export const HEURC_ASSET_ID = "10044"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
   HUSDT_ASSET_ID,
   HUSDS_ASSET_ID,
   HUSDE_ASSET_ID,
+  HEURC_ASSET_ID,
 ]
 
 export const GIGA_ASSETS = [GDOT_ASSET_ID, GETH_ASSET_ID, GSOL_ASSET_ID]
