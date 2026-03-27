@@ -79,12 +79,14 @@ export const HUSDC_ASSET_ID = "110"
 export const HUSDT_ASSET_ID = "111"
 export const HUSDS_ASSET_ID = "112"
 export const HUSDE_ASSET_ID = "113"
+export const HEURC_ASSET_ID = "10044"
 
 export const HOLLAR_ASSETS = [
   HUSDC_ASSET_ID,
   HUSDT_ASSET_ID,
   HUSDS_ASSET_ID,
   HUSDE_ASSET_ID,
+  HEURC_ASSET_ID,
 ]
 
 export const GIGA_ASSETS = [
