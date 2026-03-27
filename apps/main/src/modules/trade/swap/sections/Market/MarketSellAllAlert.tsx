@@ -14,13 +14,13 @@ export const MarketSellAllAlert: React.FC<MarketSellAllAlertProps> = ({
 }) => {
   const { t } = useTranslation()
 
-  const { getBalance } = useAccountBalances()
-  const balance = getBalance(asset.id)
+  const { getTransferableBalance } = useAccountBalances()
+  const balance = getTransferableBalance(asset.id)
 
   return (
     <Text fs="p4" lh={1.3} fw={600}>
       {t("transaction.alert.sellAll", {
-        value: balance ? scaleHuman(balance.transferable, asset.decimals) : "",
+        value: scaleHuman(balance, asset.decimals),
         symbol: asset.symbol,
       })}
     </Text>
