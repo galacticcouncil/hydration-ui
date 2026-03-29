@@ -3,4 +3,6 @@ export enum Web3ConnectModalPage {
   ExternalWallet = "ExternalWallet",
   AccountSelect = "AccountSelect",
   Error = "Error",
+  MultisigSetup = "MultisigSetup",
+  MultisigSignerSelect = "MultisigSignerSelect",
 }

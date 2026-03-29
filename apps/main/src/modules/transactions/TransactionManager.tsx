@@ -1,3 +1,4 @@
+import { MultisigTxPoller } from "@/modules/transactions/MultisigTxPoller"
 import { useProcessTransactionToasts } from "@/modules/transactions/hooks/useProcessTransactionToasts"
 import { ReviewMultiTransaction } from "@/modules/transactions/review/ReviewMultiTransaction"
 import { ReviewTransaction } from "@/modules/transactions/review/ReviewTransaction"
@@ -13,6 +14,7 @@ export const TransactionManager = () => {
 
   return (
     <>
+      <MultisigTxPoller />
       {transactions.map((transaction) => {
         if (isMultiTransaction(transaction)) {
           return (
