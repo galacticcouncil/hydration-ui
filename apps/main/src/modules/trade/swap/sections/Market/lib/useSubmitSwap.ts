@@ -77,7 +77,7 @@ export const useSubmitSwap = () => {
         alerts: isSellAll
           ? [
               {
-                requiresUserConsent: true,
+                requiresUserConsent: false,
                 variant: "warning",
                 description: React.createElement(MarketSellAllAlert, {
                   asset: sellAsset,
