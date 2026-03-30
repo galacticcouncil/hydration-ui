@@ -11,7 +11,7 @@ import { z } from "zod"
 import BN from "bignumber.js"
 
 const getKaminoEndpoint = (yieldSource: string) =>
-  `https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/proxy/kamino/yields/${yieldSource}/history`
+  `https://orca-main-aggr-indx.indexer.hydration.cloud/proxy/kamino/yields/${yieldSource}/history`
 
 export const ASSET_ID_TO_KAMINO_ID: Record<string, string> = {
   [PRIME_ASSET_ID]: "3b8X44fLF9ooXaUm3hhSgjpmVs6rZZ3pPoGnGahc3Uu7",

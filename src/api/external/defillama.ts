@@ -39,7 +39,7 @@ export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
 }
 
 const DEFILLAMA_APY_ENDPOINT =
-  "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/proxy/defillama/yields/chart"
+  "https://orca-main-aggr-indx.indexer.hydration.cloud/proxy/defillama/yields/chart"
 
 const fetchDefillamaLatestApy = async (id: string): Promise<number> => {
   const res = await fetch(`${DEFILLAMA_APY_ENDPOINT}/${id}`)
