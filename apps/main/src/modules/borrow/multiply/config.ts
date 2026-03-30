@@ -9,6 +9,8 @@ import {
   WBTC_ASSET_ID,
 } from "@galacticcouncil/utils"
 
+import { MultiplyAssetPairConfig } from "@/modules/borrow/multiply/types"
+
 export const FEATURED_RESERVES_COUNT = 4
 export const MAX_SAFE_LEVERAGE_FACTOR = 0.95
 
@@ -21,10 +23,6 @@ export type MultiplyAssetPair = {
   isParityPair: boolean
   eModeCategory: EModeCategory
 }
-
-export type MultiplyAssetPairConfig = {
-  id: string
-} & MultiplyAssetPair
 
 export const MULTIPLY_ASSETS_PAIRS: MultiplyAssetPair[] = [
   {

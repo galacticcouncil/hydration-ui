@@ -5,6 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import { millisecondsInMinute } from "date-fns/constants"
 import { Enum, TxCallData } from "polkadot-api"
 
 import { Papi, TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
@@ -35,22 +36,27 @@ export const getAllProxies = ({ papi, isApiLoaded }: TProviderContext) =>
     enabled: isApiLoaded,
   })
 
+export const getAccountProxiesQueryKey = (accountAddress: string) => [
+  "accountProxies",
+  accountAddress,
+]
 export const getAccountProxies = (
   context: TProviderContext,
   queryClient: QueryClient,
   accountAddress: string,
 ) =>
   queryOptions({
-    queryKey: ["accountProxies", accountAddress],
+    queryKey: getAccountProxiesQueryKey(accountAddress),
     queryFn: async () => {
-      const allProxies = await queryClient.ensureQueryData(
-        getAllProxies(context),
-      )
+      const allProxies = await queryClient.fetchQuery(getAllProxies(context))
+
       return filterAccountProxies(allProxies, accountAddress).map((data) =>
         data.keyArgs[0].toString(),
       )
     },
     enabled: context.isApiLoaded && !!accountAddress,
+    gcTime: millisecondsInMinute,
+    staleTime: millisecondsInMinute,
   })
 
 export const useAccountProxies = () => {

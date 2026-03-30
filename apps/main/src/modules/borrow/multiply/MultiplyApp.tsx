@@ -67,7 +67,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     isLoading,
     errors,
     borrowAsset,
-    supplyAsset,
+    collateralAsset,
     supplyAToken,
     onSubmit,
   } = useMultiplyApp({
@@ -86,7 +86,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
   const [debtDisplayPrice] = useDisplayAssetPrice(borrowAsset.id, targetDebt)
   const [collateralDisplayPrice] = useDisplayAssetPrice(
-    supplyAsset.id,
+    collateralAsset.id,
     totalCollateral,
   )
 
@@ -149,7 +149,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
           <SectionSeparator />
 
-          {supplyAsset && (
+          {collateralAsset && (
             <Paper p="m">
               <Flex justify="space-between" align="center">
                 <Box>
@@ -203,7 +203,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
           <CollapsibleRoot open={isConnected}>
             <CollapsibleContent>
               <Summary separator={<SectionSeparator />}>
-                {supplyAsset && (
+                {collateralAsset && (
                   <SummaryRow
                     label={t("multiply.app.totalCollateral")}
                     content={

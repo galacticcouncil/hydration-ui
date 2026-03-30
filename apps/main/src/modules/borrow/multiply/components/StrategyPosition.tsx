@@ -1,4 +1,7 @@
-import { useFormattedHealthFactor } from "@galacticcouncil/money-market/hooks"
+import {
+  ComputedReserveData,
+  useFormattedHealthFactor,
+} from "@galacticcouncil/money-market/hooks"
 import { CircleX } from "@galacticcouncil/ui/assets/icons"
 import {
   Amount,
@@ -12,36 +15,116 @@ import {
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { useTranslation } from "react-i18next"
 
+import { PoolError } from "@/api/pools"
 import { AssetLogo } from "@/components/AssetLogo"
 import {
   SStrategyPosition,
   SStrategyPositionMobile,
 } from "@/modules/borrow/multiply/components/StrategyPosition.styled"
 import {
+  getStrategyByPosition,
+  isLoopedPosition,
   StrategyPositionsData,
+  useCloseLoopedPosition,
   useClosePositions,
 } from "@/modules/borrow/multiply/components/StrategyPositions.utils"
+import { useUnloopingProxySteps } from "@/modules/borrow/multiply/hooks/useUnloopingProxySteps"
+import { getEnterWithAssetId } from "@/modules/borrow/multiply/MultiplyApp.utils"
 import { RESERVE_LOGO_OVERRIDE_MAP } from "@/modules/borrow/reserve/components/ReserveLabel"
 import { useAssets } from "@/providers/assetsProvider"
 
-export const StrategyPosition = ({
+export const StrategyPositionWrapper = ({
   position,
 }: {
   position: StrategyPositionsData
 }) => {
+  return isLoopedPosition(position) ? (
+    <LoopedStrategyPosition position={position} />
+  ) : (
+    <SimpleStrategyPosition position={position} />
+  )
+}
+
+const LoopedStrategyPosition = ({
+  position,
+}: {
+  position: StrategyPositionsData & {
+    debtReserve: ComputedReserveData
+    debtBalance: string
+  }
+}) => {
+  const strategy = getStrategyByPosition(position)
+
+  if (!strategy) throw new Error("Strategy not found")
+
+  const { data: unloopingData } = useUnloopingProxySteps({
+    supplied: position.suppliedBalance,
+    borrowed: position.debtBalance,
+    repayAmount: position.debtBalance,
+    supplyReserve: position.suppliedReserve,
+    borrowReserve: position.debtReserve,
+    isParityPair: strategy.isParityPair,
+    enterWithAssetId: strategy.enterWithAssetId,
+  })
+
+  const enterWithAssetId = getEnterWithAssetId(
+    strategy,
+    position.suppliedAssetId,
+  )
+
+  const { mutate: closePosition } = useCloseLoopedPosition(
+    unloopingData?.steps ?? [],
+    enterWithAssetId,
+  )
+
+  return (
+    <StrategyPosition
+      position={position}
+      onSubmit={() => closePosition(position)}
+    />
+  )
+}
+
+const SimpleStrategyPosition = ({
+  position,
+}: {
+  position: StrategyPositionsData
+}) => {
+  const { mutate: closePosition } = useClosePositions()
+
+  return (
+    <StrategyPosition
+      position={position}
+      onSubmit={() => closePosition(position)}
+    />
+  )
+}
+
+export const StrategyPosition = ({
+  position,
+  errors,
+  onSubmit,
+}: {
+  position: StrategyPositionsData
+  errors?: PoolError[]
+  onSubmit: () => void
+}) => {
   const { t } = useTranslation("common")
   const { getRelatedAToken } = useAssets()
 
-  const { mutate: closePosition } = useClosePositions()
-  const assetId = position.underlyingAssetId
+  const assetId = position.suppliedAssetId
   const ovverideIconId = RESERVE_LOGO_OVERRIDE_MAP[assetId]
 
   const { isMobile } = useBreakpoints()
 
   const logoId = ovverideIconId ?? assetId
   const symbol = ovverideIconId
-    ? (getRelatedAToken(position.underlyingAssetId)?.symbol ?? position.symbol)
-    : position.symbol
+    ? (getRelatedAToken(position.suppliedAssetId)?.symbol ??
+      position.suppliedSymbol)
+    : position.suppliedSymbol
+
+  const swapErrors = errors
+  const isSwapErrors = swapErrors && swapErrors.length > 0
 
   if (isMobile) {
     return (
@@ -55,7 +138,8 @@ export const StrategyPosition = ({
           variant="tertiary"
           size="small"
           width="min-content"
-          onClick={() => closePosition(position)}
+          disabled={isSwapErrors}
+          onClick={onSubmit}
         >
           <Icon component={CircleX} size="s" />
           {t("close")}
@@ -123,7 +207,8 @@ export const StrategyPosition = ({
         variant="tertiary"
         size="small"
         width="min-content"
-        onClick={() => closePosition(position)}
+        disabled={isSwapErrors}
+        onClick={onSubmit}
       >
         <Icon component={CircleX} size="s" />
         {t("close")}
