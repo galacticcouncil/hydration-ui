@@ -1,10 +1,7 @@
 import { InterestRate } from "@aave/contract-helpers"
 import { useMoneyMarketData } from "@galacticcouncil/money-market/hooks"
 import { EModeCategory } from "@galacticcouncil/money-market/ui-config"
-import {
-  formatHealthFactorResult,
-  getReserveAssetIdByAddress,
-} from "@galacticcouncil/money-market/utils"
+import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
   bigShift,
   getAssetIdFromAddress,
@@ -23,16 +20,13 @@ import z from "zod"
 import { AAVE_GAS_LIMIT } from "@/api/aave"
 import { TAssetData } from "@/api/assets"
 import {
+  getStrategyPositionsQueryKey,
   useBorrowPoolBundleContract,
   useSetUsageAsCollateralTx,
   useSetUserEModeTx,
 } from "@/api/borrow"
 import { blockWeightsQuery } from "@/api/chain"
-import {
-  createProxyCall,
-  filterAccountProxies,
-  getAllProxies,
-} from "@/api/proxy"
+import { createProxyCall, getAccountProxies } from "@/api/proxy"
 import { bestSellWithTxQuery } from "@/api/trade"
 import { useCreateMultiplyEvmTx } from "@/modules/borrow/hooks/useCreateMultiplyEvmTx"
 import { LEVERAGE_DEFAULT } from "@/modules/borrow/multiply/config/constants"
@@ -41,6 +35,7 @@ import {
   useLoopingSteps,
 } from "@/modules/borrow/multiply/hooks/useLoopingSteps"
 import { MultiplyAppProps } from "@/modules/borrow/multiply/MultiplyApp"
+import { MultiplyAssetPair } from "@/modules/borrow/multiply/types"
 import { validateLoopingEvmTx } from "@/modules/borrow/multiply/utils/looping"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
 import {
@@ -113,20 +108,16 @@ export const useMultiplyApp = ({
   const createEvmTx = useCreateMultiplyEvmTx()
 
   const assetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
-  const { enterWithAssetId, eModeCategory, isParityPair } = strategy
+  const { eModeCategory, isParityPair, collateralAssetId, debtAssetId } =
+    strategy
 
-  const supplyAssetId = getAssetIdFromAddress(collateralReserve.underlyingAsset)
-  const borrowAssetId = enterWithAssetId
-    ? enterWithAssetId
-    : getReserveAssetIdByAddress(debtReserve.underlyingAsset)
-
-  const supplyAsset = getAssetWithFallback(supplyAssetId)
+  const collateralAsset = getAssetWithFallback(collateralAssetId)
+  const borrowAsset = getAssetWithFallback(debtAssetId)
   const supplyAToken = getRelatedAToken(assetId)
-  const borrowAsset = getAssetWithFallback(borrowAssetId)
 
-  const enteredWithAsset = enterWithAssetId
-    ? getAssetWithFallback(enterWithAssetId)
-    : supplyAsset
+  const enteredWithAsset = getAssetWithFallback(
+    getEnterWithAssetId(strategy, collateralAssetId),
+  )
 
   const hasEnoughNativeForFee = validateMaxBalance(
     toDecimal(getTransferableBalance(native.id), native.decimals),
@@ -155,7 +146,8 @@ export const useMultiplyApp = ({
     }
   }, [accountAddress, form, hasEnoughNativeForFee])
 
-  const isStrategyAsset = MONEY_MARKET_STRATEGY_ASSETS.includes(supplyAssetId)
+  const isStrategyAsset =
+    MONEY_MARKET_STRATEGY_ASSETS.includes(collateralAssetId)
 
   const [amount, asset, multiplier] = form.watch([
     "amount",
@@ -196,8 +188,8 @@ export const useMultiplyApp = ({
   } = useLoopingSteps({
     amount: minReceiveAmountShifted,
     multiplier,
-    supplyAssetId,
-    borrowAssetId,
+    supplyAssetId: collateralAssetId,
+    borrowAssetId: debtAssetId,
     assetInId: borrowAsset.id,
     assetOutId: supplyAToken?.id ?? "",
     isParityPair,
@@ -306,36 +298,32 @@ export const useMultiplyApp = ({
           const swappedAmount = transferableBalance - prevTransferableBalance
 
           if (!blockResults || !isSubstrateTxResult(blockResults)) {
-            const newAllProxies = await queryClient.fetchQuery(
-              getAllProxies(rpc),
+            const newAccountProxies = await queryClient.fetchQuery(
+              getAccountProxies(rpc, queryClient, accountAddress),
             )
-
-            const newAccountProxies = filterAccountProxies(
-              newAllProxies,
-              accountAddress ?? "",
-            ).map((proxy) => proxy.keyArgs[0].toString())
 
             proxyAddress = newAccountProxies.find(
               (newProxy) => !prevAccountProxies.includes(newProxy),
             )
           } else {
-            const newAllProxies = await queryClient.fetchQuery(
-              getAllProxies(rpc),
-            )
-
-            const newAccountProxies = filterAccountProxies(
-              newAllProxies,
-              accountAddress ?? "",
-            ).map((proxy) => proxy.keyArgs[0].toString())
-
-            const newProxy = newAccountProxies.find(
-              (newProxy) => !prevAccountProxies.includes(newProxy),
-            )
-
-            console.log({ newProxy, newAccountProxies })
-            proxyAddress = rpc.papi.event.Proxy.PureCreated.filter(
+            const newProxyAddress = rpc.papi.event.Proxy.PureCreated.filter(
               blockResults.events,
             ).find((event) => event.who === accountAddress)?.pure
+
+            if (newProxyAddress) {
+              proxyAddress = newProxyAddress
+
+              queryClient.setQueriesData<string[]>(
+                {
+                  queryKey: getAccountProxies(rpc, queryClient, accountAddress)
+                    .queryKey,
+                },
+                (previousProxies) => [
+                  ...(previousProxies ?? []),
+                  newProxyAddress,
+                ],
+              )
+            }
           }
 
           if (!proxyAddress) {
@@ -445,10 +433,7 @@ export const useMultiplyApp = ({
 
     await createTransaction({
       tx,
-      invalidateQueries: [
-        ["allProxies"],
-        ["accountProxies", accountAddress ?? ""],
-      ],
+      invalidateQueries: [getStrategyPositionsQueryKey(accountAddress)],
     })
   }
 
@@ -460,8 +445,19 @@ export const useMultiplyApp = ({
     targetDebt,
     isLoading,
     errors: steps.flatMap((step) => step.swapErrors),
-    supplyAsset,
+    collateralAsset,
     borrowAsset,
     supplyAToken,
   }
+}
+
+export const getEnterWithAssetId = (
+  strategy: MultiplyAssetPair,
+  collaretalAssetId: string,
+) => {
+  if (strategy.enterWithAssetId) {
+    return strategy.enterWithAssetId
+  }
+
+  return collaretalAssetId
 }

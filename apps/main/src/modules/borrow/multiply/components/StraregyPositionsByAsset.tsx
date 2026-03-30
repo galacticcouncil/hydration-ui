@@ -9,7 +9,7 @@ import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
-import { StrategyPosition } from "@/modules/borrow/multiply/components/StrategyPosition"
+import { StrategyPositionWrapper } from "@/modules/borrow/multiply/components/StrategyPosition"
 import {
   getStrategyPositionsColumnsVisibility,
   useStrategyAssetsColumns,
@@ -22,7 +22,7 @@ export const StrategyPositionsByAsset = ({ assetId }: { assetId: string }) => {
   const assetsColumns = useStrategyAssetsColumns()
   const { isMobile } = useBreakpoints()
 
-  const filteredData = data.find((item) => item.underlyingAssetId === assetId)
+  const filteredData = data.find((item) => item.suppliedAssetId === assetId)
 
   return (
     <TableContainer as={Paper}>
@@ -52,7 +52,7 @@ export const StrategyPositionsByAsset = ({ assetId }: { assetId: string }) => {
         renderSubComponent={(row) => (
           <Flex direction="column" gap="m">
             {row.positions.map((position) => (
-              <StrategyPosition
+              <StrategyPositionWrapper
                 key={position.proxyAddress}
                 position={position}
               />

@@ -3,7 +3,7 @@ import {
   ProtocolAction,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
-//import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
+import { pureCreatedEventsQuery } from "@galacticcouncil/indexer/indexer"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
 import { ExternalApyData } from "@galacticcouncil/money-market/types"
 import {
@@ -22,9 +22,7 @@ import {
   IncentivesControllerV2,
 } from "@galacticcouncil/money-market/utils"
 import {
-  GDOT_ASSET_ID,
   getAddressFromAssetId,
-  PRIME_ASSET_ID,
   safeConvertAnyToH160,
   safeConvertSS58toPublicKey,
 } from "@galacticcouncil/utils"
@@ -55,9 +53,10 @@ import {
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
-import { TProviderData, useSquidClient } from "@/api/provider"
-//import { useIndexerClient } from "@/api/provider"
+import { TProviderData, useIndexerClient, useSquidClient } from "@/api/provider"
 import { getAccountProxies } from "@/api/proxy"
+import { EXTERNAL_APY_ASSET_IDS } from "@/modules/borrow/hooks/useExternalApyData"
+import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config"
 import { useAssets } from "@/providers/assetsProvider"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 import { PARACHAIN_BLOCK_TIME } from "@/utils/consts"
@@ -326,17 +325,17 @@ export const userBorrowSummaryQuery = (
 
       const [user, reserves, reserveIncentives, userIncentives, gho] =
         await Promise.all([
-          queryClient.ensureQueryData(
+          queryClient.fetchQuery(
             userBorrowReservesQuery(rpc, queryClient, evmAddress),
           ),
           queryClient.ensureQueryData(
             borrowReservesQuery(rpc, queryClient, timestamp),
           ),
           queryClient.ensureQueryData(borrowIncentivesQuery(rpc, queryClient)),
-          queryClient.ensureQueryData(
+          queryClient.fetchQuery(
             borrowUserIncentivesQuery(rpc, evmAddress, queryClient),
           ),
-          queryClient.ensureQueryData(
+          queryClient.fetchQuery(
             ghoUserDataQuery(rpc, queryClient, evmAddress, timestamp),
           ),
         ])
@@ -761,10 +760,15 @@ export const useExternalApys = (assetIds: string[]) => {
   }
 }
 
+export const getStrategyPositionsQueryKey = (address: string) => [
+  "strategyPositions",
+  address,
+]
+
 export const useStrategyPositions = () => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
-  //const indexerClient = useIndexerClient()
+  const indexerClient = useIndexerClient()
   const squidClient = useSquidClient()
   const { getAssetWithFallback, getErc20AToken, getRelatedAToken } = useAssets()
   const rpc = useRpcProvider()
@@ -773,9 +777,16 @@ export const useStrategyPositions = () => {
 
   const accountAddress = account?.address || ""
 
+  const externalApyAssetIds = EXTERNAL_APY_ASSET_IDS.filter((assetId) =>
+    MULTIPLY_ASSETS_CONFIG.some(
+      (config) =>
+        config.collateralAssetId === assetId || config.debtAssetId === assetId,
+    ),
+  )
+
   return useQuery(
     queryOptions({
-      queryKey: ["strategyPositions", accountAddress],
+      queryKey: getStrategyPositionsQueryKey(accountAddress),
       enabled: !!accountAddress && !!timestamp,
       queryFn: async () => {
         const accountProxies = await queryClient.ensureQueryData(
@@ -792,7 +803,7 @@ export const useStrategyPositions = () => {
         const currentTimestampMs = bestNumber.timestamp
 
         const apys = await Promise.all(
-          [PRIME_ASSET_ID, GDOT_ASSET_ID].map((assetId) =>
+          externalApyAssetIds.map((assetId) =>
             queryClient.ensureQueryData(
               borrowAssetApyQuery(
                 rpc,
@@ -832,7 +843,7 @@ export const useStrategyPositions = () => {
           accountProxies.map(async (proxyAddress) => {
             const evmAddress = safeConvertAnyToH160(proxyAddress)
 
-            const borrowSummary = await queryClient.ensureQueryData(
+            const borrowSummary = await queryClient.fetchQuery(
               userBorrowSummaryQuery(
                 rpc,
                 evmAddress,
@@ -842,31 +853,27 @@ export const useStrategyPositions = () => {
               ),
             )
 
-            const borrowSummaryData = borrowSummary.userReservesData.find(
+            const suppliedSummaryData = borrowSummary.userReservesData.find(
               (userReserve) => Big(userReserve.underlyingBalance).gt(0),
             )
 
-            const debtReserve = borrowSummary.userReservesData.find(
+            const debtSummaryData = borrowSummary.userReservesData.find(
               (userReserve) => Big(userReserve.totalBorrows).gt(0),
-            )?.reserve
+            )
 
-            if (!borrowSummaryData) return undefined
+            if (!suppliedSummaryData) return undefined
 
             const publicKey = safeConvertSS58toPublicKey(proxyAddress)
 
-            // const { events } = await queryClient.fetchQuery(
-            //   pureCreatedEventsQuery(indexerClient, publicKey),
-            // )
+            const { events } = await queryClient.fetchQuery(
+              pureCreatedEventsQuery(indexerClient, publicKey),
+            )
 
-            // const event = events[0]
-
-            // if (!event || !event.extrinsic) throw new Error("No event found")
+            const event = events[0]
 
             const proxyCreateData = {
-              // blockHeight: event.block.height,
-              // extrinsicIndex: event.extrinsic.indexInBlock,
-              blockHeight: 64000,
-              extrinsicIndex: 1,
+              blockHeight: event?.block.height ?? 64000,
+              extrinsicIndex: event?.extrinsic?.indexInBlock ?? 1,
             }
 
             const blocksAgo =
@@ -875,8 +882,8 @@ export const useStrategyPositions = () => {
             const proxyCreatedAt = new Date(currentTimestampMs - deltaMs)
 
             return {
-              borrowSummaryData,
-              debtReserve,
+              suppliedSummaryData,
+              debtSummaryData,
               proxyCreateData,
               proxyCreatedAt,
               publicKey,

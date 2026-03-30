@@ -17,7 +17,7 @@ import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { StrategyPosition } from "@/modules/borrow/multiply/components/StrategyPosition"
+import { StrategyPositionWrapper } from "@/modules/borrow/multiply/components/StrategyPosition"
 import {
   getStrategyPositionsColumnsVisibility,
   useStrategyAssetsColumns,
@@ -152,7 +152,7 @@ export const StrategyPositions = () => {
         renderSubComponent={(row) => (
           <Flex direction="column" gap="m">
             {row.positions.map((position) => (
-              <StrategyPosition
+              <StrategyPositionWrapper
                 key={position.proxyAddress}
                 position={position}
               />
