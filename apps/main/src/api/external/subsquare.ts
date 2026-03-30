@@ -3,7 +3,7 @@ import { millisecondsInMinute } from "date-fns/constants"
 import z from "zod"
 
 export const getSubsquareEndpoint = (address: string) =>
-  `https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/proxy/subsquare/users/${address}/referenda/votes?page_size=100&includes_title=1`
+  `https://orca-main-aggr-indx.indexer.hydration.cloud/proxy/subsquare/users/${address}/referenda/votes?page_size=100&includes_title=1`
 
 export enum SubsquareVoteState {
   Ongoing = "Ongoing",
