@@ -30,7 +30,7 @@ export const useUnlockNativeLocks = (
         }),
       )
 
-      if (!txs.length) {
+      if (!txs.length && !classIds.length) {
         return null
       }
 
