@@ -33,7 +33,7 @@ export const AssetDetailUnlock: FC<Props> = ({
       onClick={() => unlock.mutate()}
     >
       <Key />
-      {new Big(value).gt(0)
+      {new Big(value || "0").gt(0)
         ? t("myAssets.expandedNative.actions.unlockAvailableAssets")
         : t("myAssets.expandedNative.actions.clearLocks")}
     </Button>
