@@ -3,7 +3,7 @@ import { getAssetIdFromAddress } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 
 import { createProxyFeesQuery, useAccountProxies } from "@/api/proxy"
-import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config"
+import { MULTIPLY_ASSETS_PAIRS } from "@/modules/borrow/multiply/config/pairs"
 import {
   MultiplyApp,
   MultiplyAppProps,
