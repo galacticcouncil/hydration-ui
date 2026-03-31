@@ -38,7 +38,7 @@ export const createProvider = (
 export const SQUID_URLS_CONFIG = [
   {
     name: "Orca Prod",
-    url: "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api",
+    url: "https://orca-main-aggr-indx.indexer.hydration.cloud",
   },
   {
     name: "Orca Prod 01 indx",

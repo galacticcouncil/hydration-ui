@@ -1,8 +1,7 @@
 import { CodegenConfig } from "@graphql-codegen/cli"
 
 export default {
-  schema:
-    "https://galacticcouncil.squids.live/hydration-pools:orca-prod/api/graphql",
+  schema: "https://orca-main-aggr-indx.indexer.hydration.cloud/graphql",
   overwrite: true,
   config: {
     preResolveTypes: true,
