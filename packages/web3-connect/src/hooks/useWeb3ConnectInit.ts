@@ -43,13 +43,18 @@ export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
     pageRef.current = page
   }, [page])
 
-  // Clear multisig active state when account is disconnected
+  // Clear multisig active state only when account explicitly changes to null
+  // (user disconnects). Using a scoped selector prevents this from firing on
+  // every unrelated state change (e.g. wallet connecting and accounts loading).
   useEffect(() => {
-    return useWeb3Connect.subscribe((state) => {
-      if (!state.account) {
-        useMultisigStore.getState().clear()
-      }
-    })
+    return useWeb3Connect.subscribe(
+      (state) => state.account,
+      (account, prevAccount) => {
+        if (!account && prevAccount) {
+          useMultisigStore.getState().clear()
+        }
+      },
+    )
   }, [])
 
   useEffect(() => {
