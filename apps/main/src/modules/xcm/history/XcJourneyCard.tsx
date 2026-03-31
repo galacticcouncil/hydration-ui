@@ -23,7 +23,6 @@ import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetL
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
-import { useXcmBridgeTxStore } from "@/modules/xcm/history/hooks/useXcmBridgeTxStore"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
   getTransferAsset,
@@ -32,37 +31,23 @@ import {
 import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
 import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
-import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
-
-function getBasejumpStatus(status: TJourneyStatus): TJourneyStatus {
-  if (FAILED_STATUSES.includes(status)) return status
-  if (status === "pending" || status === "sent") return status
-  return "completed"
-}
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const { origin, destination, sentAt, correlationId, status, totalUsd } =
     journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
-  const { entries } = useXcmBridgeTxStore()
-
-  const entry = originTxPrimary ? entries[originTxPrimary] : undefined
-  const isBasejump = entry?.bridgeProvider === XcmTag.Basejump
-
-  const displayDestination = (isBasejump && entry?.destUrn) ? entry.destUrn : destination
-  const displayStatus = isBasejump ? getBasejumpStatus(status) : status
 
   const originNetwork = resolveNetwork(origin)
-  const destinationNetwork = resolveNetwork(displayDestination)
+  const destinationNetwork = resolveNetwork(destination)
   const transferAsset = getTransferAsset(journey)
   const { from, to } = getFormattedAddresses(journey)
 
   const link = xcscan.tx(correlationId)
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
-  const isClaimable = isNotPending && !isBasejump && isJourneyClaimable(journey)
+  const isClaimable = isNotPending && isJourneyClaimable(journey)
 
   return (
     <Stack as={Paper} px="primary">
@@ -77,7 +62,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
                 mx="s"
                 color={getToken("icons.onSurface")}
               />
-              <JourneyChainLogo networkUrn={displayDestination} />
+              <JourneyChainLogo networkUrn={destination} />
             </>
           ) : (
             <Icon
@@ -95,13 +80,8 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
           sx={{ alignSelf: "stretch" }}
         />
 
-        <Flex align="center" gap="s">
-          {isBasejump && (
-            <Text fs="p5" fw={500} color={getToken("controls.solid.accent")}>
-              {t("xcm:bridge.provider.basejump", "Basejump 🪂")}
-            </Text>
-          )}
-          <JourneyStatus status={displayStatus} fs="p5" />
+        <Flex align="center" justify="space-between">
+          <JourneyStatus status={status} fs="p5" />
         </Flex>
 
         {sentAt && (
