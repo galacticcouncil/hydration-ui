@@ -20,11 +20,10 @@ import { DynamicFee } from "@/components/DynamicFee"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
+import { useSwapFee } from "@/modules/trade/swap/sections/Market/lib/useSwapFee"
 import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/CalculatedAmountSummaryRow"
 import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
-import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
-import { AnyTransaction } from "@/modules/transactions/types"
 import { useAssets } from "@/providers/assetsProvider"
 import { useTradeSettings } from "@/states/tradeSettings"
 import { scaleHuman } from "@/utils/formatting"
@@ -32,15 +31,10 @@ import { getTradeFeeIntervals } from "@/utils/trade"
 
 type Props = {
   readonly swap: Trade
-  readonly swapTx: AnyTransaction | null
   readonly healthFactor: HealthFactorResult | undefined
 }
 
-export const MarketSummarySwap: FC<Props> = ({
-  swap,
-  swapTx,
-  healthFactor,
-}) => {
+export const MarketSummarySwap: FC<Props> = ({ swap, healthFactor }) => {
   const { t } = useTranslation(["common", "trade"])
   const { getAssetWithFallback } = useAssets()
 
@@ -65,7 +59,8 @@ export const MarketSummarySwap: FC<Props> = ({
   const { watch } = form
   const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
 
-  const { data: transactionFee } = useEstimateFee(swapTx)
+  const { data: transactionFee, isLoading: isTransactionFeeLoading } =
+    useSwapFee(swap)
   const transactionCosts = transactionFee?.feeEstimate || "0"
 
   const isBuy = swap.type === TradeType.Buy
@@ -170,6 +165,7 @@ export const MarketSummarySwap: FC<Props> = ({
             />
             <SwapSummaryRow
               label={t("trade:market.summary.transactionCosts")}
+              loading={isTransactionFeeLoading}
               content={
                 <SummaryRowValue>
                   {transactionCostsDisplay} (

@@ -1,9 +1,5 @@
 import { h160 } from "@galacticcouncil/common"
-import {
-  isH160Address,
-  isSS58Address,
-  safeConvertSS58toH160,
-} from "@galacticcouncil/utils"
+import { safeConvertSS58toH160 } from "@galacticcouncil/utils"
 import { useEffect, useRef, useState } from "react"
 import { useMount, usePrevious } from "react-use"
 import { pick } from "remeda"
@@ -103,17 +99,18 @@ export const useWeb3EagerEnable = (enabled = true) => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const address = params.get("address")
+    const address = params.get("account")
 
-    // Override connected account to ExternalWallet if address is provided in query param
-    if (address && (isH160Address(address) || isSS58Address(address))) {
-      const externalWallet = getWallet(WalletProviderType.ExternalWallet)
-      if (externalWallet instanceof ExternalWallet) {
-        externalWallet.setAccount(address)
-        enable(WalletProviderType.ExternalWallet).then(([account]) => {
-          setAccount(toStoredAccount(account))
-        })
-      }
-    }
+    if (!address) return
+
+    const externalWallet = getWallet(WalletProviderType.ExternalWallet)
+    if (!(externalWallet instanceof ExternalWallet)) return
+
+    const isValid = externalWallet.setAccount(address)
+    if (!isValid) return
+
+    enable(WalletProviderType.ExternalWallet).then(([account]) => {
+      setAccount(toStoredAccount(account))
+    })
   }, [enable, setAccount])
 }

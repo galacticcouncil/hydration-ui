@@ -3,13 +3,11 @@ import { useQueries, useQuery } from "@tanstack/react-query"
 import { UseFormReturn } from "react-hook-form"
 
 import { healthFactorQuery } from "@/api/aave"
-import { bestSellTwapWithTxQuery, bestSellWithTxQuery } from "@/api/trade"
+import { bestSellQuery, bestSellTwapQuery } from "@/api/trade"
 import { isTwapEnabled } from "@/modules/trade/swap/sections/Market/lib/isTwapEnabled"
 import { TradeProviderProps } from "@/modules/trade/swap/sections/Market/lib/tradeProvider"
 import { MarketFormValues } from "@/modules/trade/swap/sections/Market/lib/useMarketForm"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useAccountBalance } from "@/states/account"
-import { useTradeSettings } from "@/states/tradeSettings"
 
 export const useMarketSellData = (
   form: UseFormReturn<MarketFormValues>,
@@ -25,28 +23,15 @@ export const useMarketSellData = (
     "buyAmount",
   ])
 
-  const sellBalance = useAccountBalance(sellAsset?.id ?? "")
-
-  const {
-    swap: {
-      single: { swapSlippage },
-      split: { twapSlippage, twapMaxRetries },
-    },
-  } = useTradeSettings()
-
   const [
-    { data: swapData, isLoading: isSwapLoading },
+    { data: swap, isLoading: isSwapLoading },
     { data: healthFactorData, isLoading: isHealthFactorLoading },
   ] = useQueries({
     queries: [
-      bestSellWithTxQuery(rpc, {
+      bestSellQuery(rpc, {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountIn: sellAmount,
-        slippage: swapSlippage,
-        address,
-        dryRun: form.formState.isValid,
-        balance: sellBalance?.transferable.toString(),
         debug: true,
       }),
       healthFactorQuery(rpc, {
@@ -59,29 +44,21 @@ export const useMarketSellData = (
     ],
   })
 
-  const { data: twapData, isLoading: isTwapLoading } = useQuery(
-    bestSellTwapWithTxQuery(
+  const { data: twap, isLoading: isTwapLoading } = useQuery(
+    bestSellTwapQuery(
       rpc,
       {
         assetIn: sellAsset?.id ?? "",
         assetOut: buyAsset?.id ?? "",
         amountIn: sellAmount,
-        slippage: twapSlippage,
-        maxRetries: twapMaxRetries,
-        address,
-        dryRun: form.formState.isValid,
       },
-      isTwapEnabled(swapData?.swap),
+      isTwapEnabled(swap),
     ),
   )
 
   return {
-    swap: swapData?.swap,
-    swapTx: swapData?.tx ?? null,
-    swapDryRunError: swapData?.dryRunError ?? null,
-    twap: twapData?.twap,
-    twapTx: twapData?.tx ?? null,
-    twapDryRunError: twapData?.dryRunError ?? null,
+    swap,
+    twap,
     healthFactor: healthFactorData,
     isSwapLoading,
     isTwapLoading,

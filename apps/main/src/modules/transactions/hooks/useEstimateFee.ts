@@ -4,7 +4,7 @@ import {
   safeStringify,
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
-import { useQuery } from "@tanstack/react-query"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 
 import { useAccountFeePaymentAssetId } from "@/api/payments"
@@ -48,6 +48,7 @@ export const useEstimateFee = (
   const tx = anyTx ? transformAnyToPapiTx(papi, anyTx) : null
 
   return useQuery({
+    placeholderData: keepPreviousData,
     enabled:
       isLoaded &&
       !!tx &&
