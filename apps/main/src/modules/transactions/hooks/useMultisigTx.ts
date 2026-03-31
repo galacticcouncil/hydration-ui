@@ -1,4 +1,5 @@
 import { useAccount, useMultisigStore } from "@galacticcouncil/web3-connect"
+import { AccountId } from "@polkadot-api/substrate-bindings"
 import { PolkadotClient } from "polkadot-api"
 import { useCallback } from "react"
 
@@ -35,10 +36,32 @@ export const useMultisigTx = () => {
         proof_size: 1_000_000n,
       }
 
-      // other_signatories must be sorted lexicographically by raw bytes, excluding the signer
+      // other_signatories must be sorted by raw public-key bytes (not SS58 string).
+      // SS58 encoding changes sort order relative to the underlying bytes, so
+      // a plain .sort() on address strings produces SignatoriesOutOfOrder errors.
       const otherSignatories = config.signers
-        .filter((s: string) => s !== signerAddress)
-        .sort()
+        .filter((s: string) => {
+          try {
+            const signerBytes = AccountId().enc(signerAddress)
+            const sBytes = AccountId().enc(s)
+            return !signerBytes.every((b, i) => b === sBytes[i])
+          } catch {
+            return s !== signerAddress
+          }
+        })
+        .sort((a: string, b: string) => {
+          try {
+            const rawA = AccountId().enc(a)
+            const rawB = AccountId().enc(b)
+            for (let i = 0; i < rawA.length; i++) {
+              if (rawA[i] < rawB[i]) return -1
+              if (rawA[i] > rawB[i]) return 1
+            }
+            return 0
+          } catch {
+            return a < b ? -1 : a > b ? 1 : 0
+          }
+        })
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const unsafeTx = (papiClient.getUnsafeApi().tx as any).Multisig.as_multi({
