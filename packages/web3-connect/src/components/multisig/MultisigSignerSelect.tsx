@@ -145,53 +145,62 @@ export const MultisigSignerSelect: React.FC = () => {
         </Stack>
       )}
 
-      {!isAnyWalletConnecting && (
+      {!isAnyWalletConnecting && hasSubstrateAccounts && (
         <Stack gap="m">
           <Text fs="p4" fw={500}>
             {t("multisig.signerSelect.selectAccount")}
           </Text>
 
-          {!hasSigners && (
-            <Alert variant="warning" description={t("multisig.signerSelect.noSigners")} />
-          )}
+          <Stack gap="s">
+            {substrateAccounts.map((account) => {
+              const isSigner = isSignerAddress(account.address)
+              const accountDisplay = toAccount(account)
 
-          {hasSigners && (
-            <Stack gap="s">
-              {signerAccounts.map((account) => {
-                const accountDisplay = toAccount(account)
-
-                return (
-                  <SAccountOption
-                    key={`${account.publicKey}-${account.provider}`}
-                    onClick={() => handleSelectSigner(account.address)}
-                  >
-                    <Flex align="center" gap="m">
-                      <Box sx={{ flexShrink: 0 }}>
-                        <AccountAvatar address={accountDisplay.displayAddress} />
-                      </Box>
-                      <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
+              return (
+                <SAccountOption
+                  key={`${account.publicKey}-${account.provider}`}
+                  disabled={!isSigner}
+                  onClick={() => isSigner && handleSelectSigner(account.address)}
+                  sx={{ opacity: isSigner ? 1 : 0.45 }}
+                >
+                  <Flex align="center" gap="m">
+                    <Box sx={{ flexShrink: 0 }}>
+                      <AccountAvatar address={accountDisplay.displayAddress} />
+                    </Box>
+                    <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
+                      <Flex align="center" justify="space-between">
                         <Text fs="p3" truncate={200}>
                           {account.name}
                         </Text>
-                        <Text
-                          fs="p4"
-                          color={getToken("text.medium")}
-                          sx={{ minWidth: 0 }}
-                        >
-                          <Text as="span" truncate display={["none", "block"]}>
-                            {accountDisplay.displayAddress}
+                        {isSigner && (
+                          <Text
+                            fs="p5"
+                            fw={500}
+                            color={getToken("accents.success.primary")}
+                            sx={{ flexShrink: 0, ml: "s" }}
+                          >
+                            ✓ {t("multisig.signerSelect.signerBadge")}
                           </Text>
-                          <Text as="span" display={["block", "none"]}>
-                            {shortenAccountAddress(accountDisplay.displayAddress, 12)}
-                          </Text>
-                        </Text>
+                        )}
                       </Flex>
+                      <Text
+                        fs="p4"
+                        color={getToken("text.medium")}
+                        sx={{ minWidth: 0 }}
+                      >
+                        <Text as="span" truncate display={["none", "block"]}>
+                          {accountDisplay.displayAddress}
+                        </Text>
+                        <Text as="span" display={["block", "none"]}>
+                          {shortenAccountAddress(accountDisplay.displayAddress, 12)}
+                        </Text>
+                      </Text>
                     </Flex>
-                  </SAccountOption>
-                )
-              })}
-            </Stack>
-          )}
+                  </Flex>
+                </SAccountOption>
+              )
+            })}
+          </Stack>
         </Stack>
       )}
 
