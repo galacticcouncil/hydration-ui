@@ -33,8 +33,9 @@ export const ProviderMultisigButton = () => {
         color={getToken("text.tint.primary")}
         gap="s"
         align="center"
+        justify="center"
       >
-        <Text fs="p5">
+        <Text fs="p5" align="center">
           {isActive && activeConfig
             ? `${activeConfig.name || t("multisig.title", "Multisig")} (${activeConfig.threshold}/${activeConfig.signers.length})`
             : t("multisig.setup.short", "Setup")}

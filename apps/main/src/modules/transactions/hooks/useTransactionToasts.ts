@@ -143,6 +143,9 @@ export const useTransactionToasts = (
                   startedAt: Date.now(),
                   threshold,
                   multixUrl: multixUrl ?? "",
+                  title:
+                    toasts?.submitted ??
+                    t("transaction.status.multisig.submitted.title"),
                 })
               }
             }

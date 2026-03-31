@@ -1,7 +1,8 @@
-import { Trash2 } from "@galacticcouncil/ui/assets/icons"
+import { Trash2, Users } from "@galacticcouncil/ui/assets/icons"
 import {
   AccountInput,
   Alert,
+  Box,
   Button,
   CopyButton,
   Flex,
@@ -13,6 +14,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
+import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -301,52 +303,42 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
               {t("multisig.setup.savedLabel")}
             </Text>
             {configs.map((config) => (
-              <Flex
+              <SAccountOption
                 key={config.id}
-                align="center"
-                justify="space-between"
-                gap="s"
-                sx={{
-                  p: "m",
-                  borderRadius: "m",
-                  border: "1px solid",
-                  borderColor:
-                    activeConfigId === config.id
-                      ? "buttons.secondary.outline.outline"
-                      : "details.borders",
-                  bg: "surfaces.containers.dim.dimOnBg",
-                }}
+                data-active={activeConfigId === config.id}
+                onClick={() => handleUseConfig(config)}
               >
-                <Stack gap="xs" sx={{ minWidth: 0, flex: 1 }}>
-                  <Text fs="p4" fw={500} truncate={160}>
-                    {config.name || t("multisig.title")} ({config.threshold}/
-                    {config.signers.length})
-                  </Text>
-                  <Text fs="p5" color={getToken("text.medium")} truncate={160}>
-                    {shortenAccountAddress(config.address)}
-                  </Text>
-                </Stack>
-                <Flex gap="s" sx={{ flexShrink: 0 }}>
-                  <Button
-                    variant="secondary"
-                    outline
-                    size="small"
-                    onClick={() => handleUseConfig(config)}
-                    type="button"
-                  >
-                    {t("multisig.setup.use")}
-                  </Button>
-                  <Button
-                    variant="muted"
-                    outline
-                    size="small"
-                    onClick={() => remove(config.id)}
-                    type="button"
-                  >
-                    {t("multisig.setup.delete")}
-                  </Button>
+                <Flex align="center" gap="m">
+                  <Box sx={{ flexShrink: 0 }}>
+                    <Icon
+                      size="m"
+                      component={Users}
+                      color={getToken("text.medium")}
+                    />
+                  </Box>
+                  <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
+                    <Flex align="center" justify="space-between">
+                      <Text fs="p3" truncate={200}>
+                        {config.name || t("multisig.title")} (
+                        {config.threshold}/{config.signers.length})
+                      </Text>
+                      <Icon
+                        size="s"
+                        component={Trash2}
+                        color={getToken("text.medium")}
+                        sx={{ flexShrink: 0, ml: "s" }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          remove(config.id)
+                        }}
+                      />
+                    </Flex>
+                    <Text fs="p4" color={getToken("text.medium")} truncate={200}>
+                      {shortenAccountAddress(config.address)}
+                    </Text>
+                  </Flex>
                 </Flex>
-              </Flex>
+              </SAccountOption>
             ))}
           </Stack>
         </>

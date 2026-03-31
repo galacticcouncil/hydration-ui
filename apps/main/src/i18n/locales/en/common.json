@@ -303,6 +303,7 @@
   "transaction.status.multisig.submitted.hint": "{{threshold}} signers required",
   "transaction.status.multisig.approvals": "{{current}}/{{threshold}} approvals",
   "transaction.status.multisig.executed.title": "Multisig executed",
+  "transaction.status.multisig.executed.hint": "All approvals collected, transaction executed",
   "transaction.status.submitted.description": "Fantastic! Data has been broadcasted and awaits confirmation on the blockchain.",
   "transaction.summary.cost.label": "Transaction cost",
   "transaction.summary.nonce.label": "Nonce",

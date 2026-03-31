@@ -1,5 +1,7 @@
 import {
+  AccountAvatar,
   Alert,
+  Box,
   Flex,
   Grid,
   Skeleton,
@@ -9,6 +11,8 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { safeConvertAddressSS58, safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+
+import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
@@ -139,7 +143,7 @@ export const MultisigSignerSelect: React.FC = () => {
         </Stack>
       )}
 
-      {hasSubstrateAccounts && !isAnyWalletConnecting && (
+      {!isAnyWalletConnecting && (
         <Stack gap="m">
           <Text fs="p4" fw={500}>
             {t("multisig.signerSelect.selectAccount")}
@@ -149,51 +153,43 @@ export const MultisigSignerSelect: React.FC = () => {
             <Alert variant="warning" description={t("multisig.signerSelect.noSigners")} />
           )}
 
-          <Stack gap="s">
-            {substrateAccounts.map((account) => {
-              const isSigner = isSignerAddress(account.address)
-              const accountDisplay = toAccount(account)
+          {hasSigners && (
+            <Stack gap="s">
+              {signerAccounts.map((account) => {
+                const accountDisplay = toAccount(account)
 
-              return (
-                <Flex
-                  key={`${account.publicKey}-${account.provider}`}
-                  align="center"
-                  justify="space-between"
-                  gap="s"
-                  onClick={() => isSigner && handleSelectSigner(account.address)}
-                  sx={{
-                    p: "m",
-                    borderRadius: "m",
-                    border: "1px solid",
-                    borderColor: "details.borders",
-                    bg: "surfaces.containers.dim.dimOnBg",
-                    cursor: isSigner ? "pointer" : "default",
-                    opacity: isSigner ? 1 : 0.5,
-                    "&:hover": isSigner ? { bg: "buttons.secondary.outline.fill", borderColor: "buttons.secondary.outline.outline" } : {},
-                  }}
-                >
-                  <Stack gap="xs" sx={{ minWidth: 0, flex: 1 }}>
-                    <Text fs="p4" fw={500} truncate={160}>
-                      {account.name}
-                    </Text>
-                    <Text fs="p5" color={getToken("text.medium")} truncate={160}>
-                      {shortenAccountAddress(accountDisplay.displayAddress)}
-                    </Text>
-                  </Stack>
-                  {isSigner && (
-                    <Text
-                      fs="p5"
-                      fw={500}
-                      color={getToken("accents.success.primary")}
-                      sx={{ flexShrink: 0 }}
-                    >
-                      ✓ {t("multisig.signerSelect.signerBadge")}
-                    </Text>
-                  )}
-                </Flex>
-              )
-            })}
-          </Stack>
+                return (
+                  <SAccountOption
+                    key={`${account.publicKey}-${account.provider}`}
+                    onClick={() => handleSelectSigner(account.address)}
+                  >
+                    <Flex align="center" gap="m">
+                      <Box sx={{ flexShrink: 0 }}>
+                        <AccountAvatar address={accountDisplay.displayAddress} />
+                      </Box>
+                      <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
+                        <Text fs="p3" truncate={200}>
+                          {account.name}
+                        </Text>
+                        <Text
+                          fs="p4"
+                          color={getToken("text.medium")}
+                          sx={{ minWidth: 0 }}
+                        >
+                          <Text as="span" truncate display={["none", "block"]}>
+                            {accountDisplay.displayAddress}
+                          </Text>
+                          <Text as="span" display={["block", "none"]}>
+                            {shortenAccountAddress(accountDisplay.displayAddress, 12)}
+                          </Text>
+                        </Text>
+                      </Flex>
+                    </Flex>
+                  </SAccountOption>
+                )
+              })}
+            </Stack>
+          )}
         </Stack>
       )}
 

@@ -7,6 +7,7 @@ export type MultisigWatch = {
   startedAt: number
   threshold: number
   multixUrl: string
+  title: string
 }
 
 type MultisigWatchStore = {

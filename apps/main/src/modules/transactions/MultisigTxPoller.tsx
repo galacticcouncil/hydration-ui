@@ -46,25 +46,24 @@ export const MultisigTxPoller = () => {
             // Storage entry gone → multisig was executed
             edit(watch.toastId, {
               variant: "success",
-              title: t("transaction.status.multisig.executed.title"),
-              hint: undefined,
+              title: watch.title,
+              hint: t("transaction.status.multisig.executed.hint"),
               link: watch.multixUrl || undefined,
               dateCreated: new Date().toISOString(),
               duration: DEFAULT_AUTO_CLOSE_TIME,
             })
             removeWatch(watch.toastId)
           } else {
-            // Entry still present — update approval count in both store + Sonner popup
+            // Entry still present — update approval count
             const approvalCount: number =
               Array.isArray(entry.approvals) ? entry.approvals.length : 1
-            const approvalHint = t("transaction.status.multisig.approvals", {
-              current: approvalCount,
-              threshold: watch.threshold,
-            })
             edit(watch.toastId, {
               variant: "pending",
-              title: t("transaction.status.multisig.submitted.title"),
-              hint: approvalHint,
+              title: watch.title,
+              hint: t("transaction.status.multisig.approvals", {
+                current: approvalCount,
+                threshold: watch.threshold,
+              }),
               link: watch.multixUrl || undefined,
               duration: Infinity,
             })
