@@ -2,7 +2,7 @@ import { ThemeToken } from "@galacticcouncil/ui/theme"
 
 const XC_SCAN_PROTOCOLS: Record<string, { label: string; color: ThemeToken }> =
   {
-    instabridge: {
+    basejump: {
       label: "Basejump 🪂",
       color: "colors.skyBlue.600",
     },

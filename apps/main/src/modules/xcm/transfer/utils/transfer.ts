@@ -20,10 +20,10 @@ import { XCM_BRIDGE_TAGS, XcmTag, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
 /**
- * Bridge provider tags in priority order (InstaBridge first as the faster option).
+ * Bridge provider tags in priority order (Basejump first as the faster option).
  */
 export const BRIDGE_PROVIDER_TAGS = [
-  XcmTag.InstaBridge,
+  XcmTag.Basejump,
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
 ] as const

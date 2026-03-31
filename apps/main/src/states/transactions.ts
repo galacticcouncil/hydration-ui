@@ -17,7 +17,7 @@ export type XcmTags = Array<keyof typeof XcmTag>
 export const XCM_BRIDGE_TAGS: XcmTags = [
   XcmTag.Wormhole,
   XcmTag.Snowbridge,
-  XcmTag.InstaBridge,
+  XcmTag.Basejump,
 ]
 
 export enum TransactionType {

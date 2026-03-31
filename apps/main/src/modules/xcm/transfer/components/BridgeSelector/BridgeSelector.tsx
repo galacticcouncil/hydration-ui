@@ -11,7 +11,7 @@ import { XcmTag } from "@/states/transactions"
 import { SBridgeOption, SParticle } from "./BridgeSelector.styled"
 
 const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
-  [XcmTag.InstaBridge]: "~42 sec",
+  [XcmTag.Basejump]: "~42 sec",
   [XcmTag.Wormhole]: "~18 min",
   [XcmTag.Snowbridge]: "~25 min",
 }
@@ -19,13 +19,13 @@ const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
 // Particle animation durations — ratio matches real-world transfer times
 // Base Jumper: 42 sec, Wormhole: 18 min (1080 sec) → ~25.7× slower
 const BRIDGE_PARTICLE_DURATION: Partial<Record<string, string[]>> = {
-  [XcmTag.InstaBridge]: ["0.9s", "0.9s", "0.9s"], // 3 staggered packets = rapid stream
+  [XcmTag.Basejump]: ["0.9s", "0.9s", "0.9s"], // 3 staggered packets = rapid stream
   [XcmTag.Wormhole]: ["23s"],
   [XcmTag.Snowbridge]: ["36s"],
 }
 
 const BRIDGE_PARTICLE_COLOR: Partial<Record<string, string>> = {
-  [XcmTag.InstaBridge]: "#4fc4f9",
+  [XcmTag.Basejump]: "#4fc4f9",
   [XcmTag.Wormhole]: "#a78bfa",
   [XcmTag.Snowbridge]: "#60a5fa",
 }

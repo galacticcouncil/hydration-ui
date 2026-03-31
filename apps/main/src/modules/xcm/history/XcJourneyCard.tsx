@@ -49,7 +49,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const { entries } = useXcmBridgeTxStore()
 
   const entry = originTxPrimary ? entries[originTxPrimary] : undefined
-  const isBasejump = entry?.bridgeProvider === XcmTag.InstaBridge
+  const isBasejump = entry?.bridgeProvider === XcmTag.Basejump
 
   const displayDestination = (isBasejump && entry?.destUrn) ? entry.destUrn : destination
   const displayStatus = isBasejump ? getBasejumpStatus(status) : status
@@ -98,7 +98,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         <Flex align="center" gap="s">
           {isBasejump && (
             <Text fs="p5" fw={500} color={getToken("controls.solid.accent")}>
-              {t("xcm:bridge.provider.instabridge", "Basejump 🪂")}
+              {t("xcm:bridge.provider.basejump", "Basejump 🪂")}
             </Text>
           )}
           <JourneyStatus status={displayStatus} fs="p5" />

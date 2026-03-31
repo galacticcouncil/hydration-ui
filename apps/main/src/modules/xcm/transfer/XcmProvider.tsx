@@ -157,7 +157,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
     const defaultRoute =
       availableBridgeRoutes.find(
-        (r) => getPrimaryBridgeTag(r) === XcmTag.InstaBridge,
+        (r) => getPrimaryBridgeTag(r) === XcmTag.Basejump,
       ) ?? availableBridgeRoutes[0]
     if (!defaultRoute) return
     form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))

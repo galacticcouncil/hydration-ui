@@ -26,7 +26,7 @@ const buildSupplementalRoutes = (): Map<string, AssetRoute[]> => {
   if (!eurc || !eurcMwh || !eth) return new Map()
 
   // Base → Hydration EURC via Wormhole+MRL
-  // This route is overwritten in ChainRoutes by the InstaBridge route (same map key)
+  // This route is overwritten in ChainRoutes by the Basejump route (same map key)
   const wormholeRoute = new AssetRoute({
     source: {
       asset: eurc,
