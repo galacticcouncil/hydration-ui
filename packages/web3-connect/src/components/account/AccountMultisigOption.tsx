@@ -76,10 +76,9 @@ export const AccountMultisigOption: React.FC<Props> = ({
                 {shortenAccountAddress(polkadotAddress, 12)}
               </Text>
             </Text>
-            <SCopyButton
-              text={polkadotAddress}
-              onClick={(e) => e.stopPropagation()}
-            />
+            <span onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+              <SCopyButton text={polkadotAddress} />
+            </span>
           </Flex>
         </Flex>
       </Flex>
