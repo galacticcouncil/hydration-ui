@@ -8,6 +8,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { replaceAaveWithBorrow } from "@galacticcouncil/utils"
 import { FC, ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -50,7 +51,6 @@ export const TransactionItemMobile: FC<Props> = ({
     statusProps.status === TransactionStatusVariant.Success
       ? [statusProps.sent, statusProps.received]
       : [null, null]
-
   return (
     <TransactionItemMobileContainer>
       <Flex justify="space-between" flex={1} p="l" className={className}>
@@ -75,7 +75,7 @@ export const TransactionItemMobile: FC<Props> = ({
               variant={statusProps.status}
               sx={{ maxWidth: "200px", textAlign: "end" }}
             >
-              {message}
+              {replaceAaveWithBorrow(message)}
             </TransactionStatusMessage>
           )}
         </Flex>
@@ -84,7 +84,11 @@ export const TransactionItemMobile: FC<Props> = ({
         {link && (
           <ButtonIcon asChild>
             <ExternalLink href={link}>
-              <Icon size="s" component={SubScan} color="#FEFEFE" />
+              <Icon
+                size="s"
+                component={SubScan}
+                color={getToken("text.high")}
+              />
             </ExternalLink>
           </ButtonIcon>
         )}
