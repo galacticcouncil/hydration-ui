@@ -10,6 +10,7 @@ import {
   Button,
   Flex,
   Icon,
+  SpinnerIcon,
   Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
@@ -72,7 +73,7 @@ const LoopedStrategyPosition = ({
     position.suppliedAssetId,
   )
 
-  const { mutate: closePosition } = useCloseLoopedPosition(
+  const { mutate: closePosition, isPending } = useCloseLoopedPosition(
     unloopingData?.steps ?? [],
     enterWithAssetId,
   )
@@ -80,6 +81,7 @@ const LoopedStrategyPosition = ({
   return (
     <StrategyPosition
       position={position}
+      isPending={isPending}
       onSubmit={() => closePosition(position)}
     />
   )
@@ -90,11 +92,12 @@ const SimpleStrategyPosition = ({
 }: {
   position: StrategyPositionsData
 }) => {
-  const { mutate: closePosition } = useClosePositions()
+  const { mutate: closePosition, isPending } = useClosePositions()
 
   return (
     <StrategyPosition
       position={position}
+      isPending={isPending}
       onSubmit={() => closePosition(position)}
     />
   )
@@ -102,10 +105,12 @@ const SimpleStrategyPosition = ({
 
 export const StrategyPosition = ({
   position,
+  isPending,
   errors,
   onSubmit,
 }: {
   position: StrategyPositionsData
+  isPending: boolean
   errors?: PoolError[]
   onSubmit: () => void
 }) => {
@@ -138,10 +143,10 @@ export const StrategyPosition = ({
           variant="tertiary"
           size="small"
           width="min-content"
-          disabled={isSwapErrors}
+          disabled={isSwapErrors || isPending}
           onClick={onSubmit}
         >
-          <Icon component={CircleX} size="s" />
+          <Icon component={isPending ? SpinnerIcon : CircleX} size="s" />
           {t("close")}
         </Button>
 
@@ -207,10 +212,10 @@ export const StrategyPosition = ({
         variant="tertiary"
         size="small"
         width="min-content"
-        disabled={isSwapErrors}
+        disabled={isSwapErrors || isPending}
         onClick={onSubmit}
       >
-        <Icon component={CircleX} size="s" />
+        <Icon component={isPending ? SpinnerIcon : CircleX} size="s" />
         {t("close")}
       </Button>
     </SStrategyPosition>

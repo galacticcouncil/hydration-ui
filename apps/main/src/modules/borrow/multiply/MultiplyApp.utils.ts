@@ -453,11 +453,11 @@ export const useMultiplyApp = ({
 
 export const getEnterWithAssetId = (
   strategy: MultiplyAssetPair,
-  collaretalAssetId: string,
+  collateralAssetId: string,
 ) => {
   if (strategy.enterWithAssetId) {
     return strategy.enterWithAssetId
   }
 
-  return collaretalAssetId
+  return collateralAssetId
 }
