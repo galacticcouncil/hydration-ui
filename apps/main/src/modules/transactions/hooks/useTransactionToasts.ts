@@ -4,7 +4,11 @@ import {
   subscan,
   wormholescan,
 } from "@galacticcouncil/utils"
-import { useAccount, useMultisigStore } from "@galacticcouncil/web3-connect"
+import {
+  toPolkadotAddress,
+  useAccount,
+  useMultisigStore,
+} from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -43,7 +47,16 @@ export const useTransactionToasts = (
       onSubmitted: (txHash) => {
         if (isMultisig) {
           const config = getActiveConfig()
-          const multisigAddress = account?.address
+          // Convert multisig address to Polkadot format (prefix 0, starts with 1)
+          // as Multix expects this format in its URL
+          const multisigAddress = config?.address
+            ? toPolkadotAddress(config.address)
+            : undefined
+          console.debug("[multisig] onSubmitted", {
+            accountAddress: account?.address,
+            configAddress: config?.address,
+            multisigAddress,
+          })
           const multixUrl = multisigAddress
             ? `${MULTIX_BASE_URL}/?network=hydration&address=${multisigAddress}`
             : undefined
@@ -55,11 +68,12 @@ export const useTransactionToasts = (
               t("transaction.status.multisig.submitted.title"),
             link: multixUrl,
             hint: config
-              ? t("transaction.status.multisig.submitted.hint", {
+              ? t("transaction.status.multisig.approvals", {
+                  current: 1,
                   threshold: config.threshold,
-                  total: config.signers.length,
                 })
               : undefined,
+            duration: Infinity,
             meta: {
               ...meta,
               txHash,
@@ -82,9 +96,31 @@ export const useTransactionToasts = (
       },
       onSuccess: (event) => {
         if (isMultisig) {
-          // For multisig, the first approval was confirmed on-chain.
-          // Extract the callHash from Multisig.NewMultisig event and start polling
-          // for when all co-signers approve (storage entry disappears = executed).
+          // First approval confirmed on-chain — update toast to show "1/N approvals"
+          // and start polling for co-signer approvals.
+          const config = getActiveConfig()
+          const threshold = config?.threshold ?? 1
+          const multisigAddress = config?.address
+            ? toPolkadotAddress(config.address)
+            : account?.address ?? ""
+          const multixUrl = multisigAddress
+            ? `${MULTIX_BASE_URL}/?network=hydration&address=${multisigAddress}`
+            : undefined
+
+          edit(id, {
+            variant: "pending",
+            title:
+              toasts?.submitted ??
+              t("transaction.status.multisig.submitted.title"),
+            hint: t("transaction.status.multisig.approvals", {
+              current: 1,
+              threshold,
+            }),
+            link: multixUrl,
+            duration: Infinity,
+          })
+
+          // Extract callHash from Multisig.NewMultisig event and register watch
           const papiEvent = event as TxBestBlocksStateResult
           if (papiEvent?.events) {
             const newMultisigEvent = papiEvent.events.find(
@@ -99,13 +135,14 @@ export const useTransactionToasts = (
                   value: { call_hash: { asHex: () => string } }
                 }
               ).value.call_hash
-              const multisigAddress = account?.address
               if (multisigAddress) {
                 addWatch({
                   toastId: id,
                   multisigAddress,
                   callHash: callHashBinary.asHex(),
                   startedAt: Date.now(),
+                  threshold,
+                  multixUrl: multixUrl ?? "",
                 })
               }
             }

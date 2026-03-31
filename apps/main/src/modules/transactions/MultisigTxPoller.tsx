@@ -1,3 +1,4 @@
+import { DEFAULT_AUTO_CLOSE_TIME } from "@galacticcouncil/ui/components"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Binary } from "polkadot-api"
@@ -42,13 +43,31 @@ export const MultisigTxPoller = () => {
           )
 
           if (entry === undefined) {
-            // Storage entry gone → multisig was executed by co-signers
+            // Storage entry gone → multisig was executed
             edit(watch.toastId, {
               variant: "success",
               title: t("transaction.status.multisig.executed.title"),
+              hint: undefined,
+              link: watch.multixUrl || undefined,
               dateCreated: new Date().toISOString(),
+              duration: DEFAULT_AUTO_CLOSE_TIME,
             })
             removeWatch(watch.toastId)
+          } else {
+            // Entry still present — update approval count in both store + Sonner popup
+            const approvalCount: number =
+              Array.isArray(entry.approvals) ? entry.approvals.length : 1
+            const approvalHint = t("transaction.status.multisig.approvals", {
+              current: approvalCount,
+              threshold: watch.threshold,
+            })
+            edit(watch.toastId, {
+              variant: "pending",
+              title: t("transaction.status.multisig.submitted.title"),
+              hint: approvalHint,
+              link: watch.multixUrl || undefined,
+              duration: Infinity,
+            })
           }
         } catch {
           // Ignore transient RPC errors; try again next tick

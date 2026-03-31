@@ -40,6 +40,12 @@ export const MultisigSignerSelect: React.FC = () => {
 
   if (!activeConfig) return null
 
+  // Only show buttons for wallets that are NOT yet connected — connected
+  // wallets already contribute accounts to the list below.
+  const unconnectedWallets = installed.filter(
+    (w) => getStatus(w.provider) !== WalletProviderStatus.Connected,
+  )
+
   const isAnyWalletConnecting = installed.some(
     (w) => getStatus(w.provider) === WalletProviderStatus.Pending,
   )
@@ -113,15 +119,17 @@ export const MultisigSignerSelect: React.FC = () => {
         {t("multisig.signerSelect.description")}
       </Text>
 
-      {/* Substrate wallet buttons */}
-      <Grid columns={[2, 3]} gap="base">
-        {installed.map((wallet) => {
-          const data = getWalletData(wallet)
-          return (
-            <ProviderInstalledButton key={data.provider} walletData={data} />
-          )
-        })}
-      </Grid>
+      {/* Substrate wallet buttons — only for wallets not yet connected */}
+      {unconnectedWallets.length > 0 && (
+        <Grid columns={[2, 3]} gap="base">
+          {unconnectedWallets.map((wallet) => {
+            const data = getWalletData(wallet)
+            return (
+              <ProviderInstalledButton key={data.provider} walletData={data} />
+            )
+          })}
+        </Grid>
+      )}
 
       {/* Account list after wallet connects */}
       {isAnyWalletConnecting && (

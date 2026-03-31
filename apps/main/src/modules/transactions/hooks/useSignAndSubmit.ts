@@ -87,7 +87,7 @@ export const useSignAndSubmit = (
 
       if (isPapiTransaction(tx) && isPolkadotSigner(signer)) {
         const wrappedTx = isMultisigActive
-          ? await wrapInMultisig(papi, tx)
+          ? await wrapInMultisig(papiClient, tx)
           : tx
         return signAndSubmitPolkadotTx(wrappedTx, signer, txOptions)
       }
@@ -104,7 +104,7 @@ export const useSignAndSubmit = (
         // EVM calls are wrapped in evm.call first, then the multisig wrapper goes around it
         const evmTx = transformEvmCallToPapiTx(papi, tx)
         const wrappedTx = isMultisigActive
-          ? await wrapInMultisig(papi, evmTx)
+          ? await wrapInMultisig(papiClient, evmTx)
           : evmTx
         return signAndSubmitPolkadotTx(wrappedTx, signer, txOptions)
       }

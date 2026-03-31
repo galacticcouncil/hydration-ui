@@ -6,18 +6,21 @@ import { useRpcProvider } from "@/providers/rpcProvider"
 import { scaleHuman } from "@/utils/formatting"
 
 export const useMultisigDeposit = (numSignatories: number) => {
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { papiClient, isApiLoaded } = useRpcProvider()
   const { native } = useAssets()
 
   return useQuery({
     enabled: isApiLoaded && numSignatories > 0,
     queryKey: ["multisig", "deposit", numSignatories],
     queryFn: async () => {
+      // papi descriptor doesn't expose Multisig constants — use unsafeApi instead
+      const unsafeApi = papiClient.getUnsafeApi()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const papiAny = papi as any
-      const [base, factor] = await Promise.all([
-        papiAny.constants.Multisig.DepositBase() as Promise<bigint>,
-        papiAny.constants.Multisig.DepositFactor() as Promise<bigint>,
+      const multisigConsts = (unsafeApi.constants as any).Multisig
+      if (!multisigConsts) throw new Error("Multisig constants not available")
+      const [base, factor]: [bigint, bigint] = await Promise.all([
+        multisigConsts.DepositBase(),
+        multisigConsts.DepositFactor(),
       ])
 
       const deposit = base + factor * BigInt(numSignatories)

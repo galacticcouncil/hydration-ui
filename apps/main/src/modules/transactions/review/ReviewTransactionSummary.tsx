@@ -13,7 +13,7 @@ import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
-import { useMultisigDeposit } from "@/api/multisig"
+import { useMultisigDeposit, useMultisigSignerBalance } from "@/api/multisig"
 import { ReviewTransactionFee } from "@/modules/transactions/review/ReviewTransactionFee"
 import { ReviewTransactionMortality } from "@/modules/transactions/review/ReviewTransactionMortality"
 import { ReviewTransactionTip } from "@/modules/transactions/review/ReviewTransactionTip/ReviewTransactionTip"
@@ -56,6 +56,32 @@ const MultisigDepositRow = () => {
   )
 }
 
+const SignerBalanceRow = () => {
+  const { t } = useTranslation(["common"])
+  const { account } = useAccount()
+  const { data, isLoading } = useMultisigSignerBalance()
+
+  if (!account?.isMultisig) return null
+
+  return (
+    <SummaryRow
+      label={t("transaction.summary.signerBalance.label")}
+      content={
+        isLoading ? (
+          <Skeleton width={80} />
+        ) : (
+          <Text as="span" fs="p5" fw={500} color={getToken("text.high")}>
+            {t("currency", {
+              value: data?.transferableHuman,
+              symbol: data?.symbol,
+            })}
+          </Text>
+        )
+      }
+    />
+  )
+}
+
 const OnchainSummary = () => {
   const { t } = useTranslation(["common"])
   const { nonce, isLoadingNonce, meta } = useTransaction()
@@ -78,6 +104,7 @@ const OnchainSummary = () => {
         content={<ReviewTransactionFee />}
       />
       <MultisigDepositRow />
+      <SignerBalanceRow />
       {isPolkadotEcosystem && (
         <SummaryRow
           label={t("transaction.summary.mortality.label")}

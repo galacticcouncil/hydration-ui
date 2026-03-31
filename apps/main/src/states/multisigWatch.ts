@@ -5,6 +5,8 @@ export type MultisigWatch = {
   multisigAddress: string
   callHash: string
   startedAt: number
+  threshold: number
+  multixUrl: string
 }
 
 type MultisigWatchStore = {

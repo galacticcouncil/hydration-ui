@@ -45,14 +45,11 @@ export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
 
   // Clear multisig active state when account is disconnected
   useEffect(() => {
-    return useWeb3Connect.subscribe(
-      (state) => state.account,
-      (account) => {
-        if (!account) {
-          useMultisigStore.getState().clear()
-        }
-      },
-    )
+    return useWeb3Connect.subscribe((state) => {
+      if (!state.account) {
+        useMultisigStore.getState().clear()
+      }
+    })
   }, [])
 
   useEffect(() => {

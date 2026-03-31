@@ -41,8 +41,13 @@ export const useTransactionAlerts = () => {
     multisigConfig?.signers.length ?? 0,
   )
 
+  // For multisig, fee is paid by the signer (not the multisig account itself),
+  // so skip the regular fee balance check — isSignerBalanceInsufficient covers it.
   const isFeeBalanceInsufficient =
-    feeAssetBalance && feeEstimate && Big(feeAssetBalance).lt(feeEstimate)
+    !isMultisig &&
+    feeAssetBalance &&
+    feeEstimate &&
+    Big(feeAssetBalance).lt(feeEstimate)
 
   // For multisig: signer must cover native tx fee + multisig deposit
   const isSignerBalanceInsufficient =

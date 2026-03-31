@@ -80,7 +80,7 @@ export const Web3ConnectButton: FC<
           <Icon
             size="m"
             component={Users}
-            color={getToken("accents.alert.onPrimary")}
+            color={getToken("text.high")}
           />
           <Flex direction="column">
             <Flex gap="xs" align="center">

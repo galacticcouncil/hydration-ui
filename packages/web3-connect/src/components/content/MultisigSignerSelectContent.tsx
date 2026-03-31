@@ -14,7 +14,7 @@ export const MultisigSignerSelectContent = () => {
       <ModalHeader
         title={t("multisig.signerSelect.title")}
         align="center"
-        onBack={() => setPage(Web3ConnectModalPage.MultisigSetup)}
+        onBack={() => setPage(Web3ConnectModalPage.AccountSelect)}
       />
       <ModalBody scrollable>
         <MultisigSignerSelect />
