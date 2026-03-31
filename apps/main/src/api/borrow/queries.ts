@@ -37,7 +37,7 @@ import {
 import Big from "big.js"
 import { produce } from "immer"
 import { Binary, FixedSizeArray } from "polkadot-api"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 
 import {
   borrowIncentivesContractQuery,
@@ -777,12 +777,16 @@ export const useStrategyPositions = () => {
 
   const accountAddress = account?.address || ""
 
-  const externalApyAssetIds = EXTERNAL_APY_ASSET_IDS.filter((assetId) =>
-    MULTIPLY_ASSETS_CONFIG.some(
-      (config) =>
-        config.collateralAssetId === assetId || config.debtAssetId === assetId,
-    ),
-  )
+  const externalApyAssetIds = useMemo(() => {
+    const configAssets = new Set<string>()
+
+    for (const config of MULTIPLY_ASSETS_CONFIG) {
+      configAssets.add(config.collateralAssetId)
+      configAssets.add(config.debtAssetId)
+    }
+
+    return EXTERNAL_APY_ASSET_IDS.filter((assetId) => configAssets.has(assetId))
+  }, [])
 
   return useQuery(
     queryOptions({
