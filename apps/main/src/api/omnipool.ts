@@ -1,3 +1,4 @@
+import { platformTotalQuery } from "@galacticcouncil/indexer/squid"
 import { fixed_from_rational } from "@galacticcouncil/math-liquidity-mining"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
@@ -5,6 +6,7 @@ import { millisecondsInHour } from "date-fns/constants"
 import { Binary, Enum } from "polkadot-api"
 import { useMemo } from "react"
 
+import { useSquidClient } from "@/api/provider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 import { hubTokenQuery, omnipoolTokensQuery } from "./pools"
@@ -156,5 +158,14 @@ export const useOraclePrice = (
             return null
           }
         : () => null,
+  })
+}
+
+export const useTotalOmnipoolLiquidity = () => {
+  const squidClient = useSquidClient()
+
+  return useQuery({
+    ...platformTotalQuery(squidClient),
+    select: (data) => data.omnipoolTvlNorm,
   })
 }

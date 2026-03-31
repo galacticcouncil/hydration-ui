@@ -327,7 +327,6 @@ export const XcmForm = () => {
             </Flex>
           </Box>
         </Paper>
-
       </Stack>
     </form>
   )

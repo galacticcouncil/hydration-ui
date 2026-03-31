@@ -17,7 +17,7 @@ export type IndexerProps = {
 
 const MAINNET_INDEXER_URL = "https://explorer.hydradx.cloud/graphql"
 const MAINNET_SQUID_URL =
-  "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql"
+  "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql"
 
 export const createProvider = (
   name: string,
@@ -92,7 +92,7 @@ export const PROVIDERS: ProviderProps[] = [
     "Testnet",
     "wss://rpc.nice.hydration.cloud",
     "https://archive.nice.hydration.cloud/graphql",
-    "https://galacticcouncil.squids.live/hydration-pools:unified-prod/api/graphql",
+    "https://unified-main-aggr-indx.indexer.hydration.cloud/graphql",
     ["development"],
     "testnet",
   ),

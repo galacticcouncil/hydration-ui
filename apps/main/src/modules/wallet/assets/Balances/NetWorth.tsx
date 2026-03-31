@@ -1,11 +1,14 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
+  AnimatedValue,
   AreaChart,
   Flex,
   Grid,
+  SValueStatsValue,
   ValueStats,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
+import { pxToRem } from "@galacticcouncil/ui/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import Big from "big.js"
 import { FC, useState } from "react"
@@ -69,18 +72,27 @@ export const NetWorth: FC<Props> = ({
   const lastDataPoint = last(balances)
   const value = (crosshair ?? lastDataPoint)?.netWorth ?? 0
 
-  const [netWorth] = useDisplayAssetPrice(assetId ?? USDT_ASSET_ID, value)
+  const [_, { price }] = useDisplayAssetPrice(assetId ?? USDT_ASSET_ID, value)
 
   const isEmpty = isSuccess && !balances.length
-  const chartDisplayValue = !isEmpty && !isError ? netWorth : ""
 
   return (
-    <Grid minWidth={320} rowTemplate="auto 1fr" align="center">
+    <Grid minWidth={pxToRem(320)} rowTemplate="auto 1fr" align="center">
       <ValueStats
         wrap={isLaptop}
         size="medium"
         label={t("balances.header.netWorth")}
-        value={chartDisplayValue}
+        customValue={
+          !isEmpty &&
+          !isError && (
+            <SValueStatsValue size="medium">
+              <AnimatedValue
+                value={Number(price)}
+                format={(value) => t("common:currency", { value })}
+              />
+            </SValueStatsValue>
+          )
+        }
       />
       <Flex
         align="center"
@@ -100,7 +112,8 @@ export const NetWorth: FC<Props> = ({
             config={{
               xAxisKey: "time",
               xAxisType: "time",
-              yAxisFormatter: (value) => t("common:currency", { value }),
+              yAxisFormatter: (value: number) =>
+                t("common:currency", { value }),
               tooltipType: "timeBottom",
               series: [
                 {

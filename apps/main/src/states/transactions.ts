@@ -34,6 +34,7 @@ export type TransactionCommon = {
   meta?: TransactionMeta
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
+  isUnsigned?: boolean
 }
 
 interface SingleTransactionInput extends TransactionCommon {

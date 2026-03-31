@@ -6,8 +6,8 @@ import {
   StorageValue,
 } from "zustand/middleware"
 
-const DB_VERSION = 4
-const DB_NAME = "storage"
+const DB_VERSION = 1
+const DB_NAME = "hydration-db"
 const KEY_PATH = "key" as const
 
 export enum IndexedDBStores {

@@ -5,7 +5,9 @@ import {
   TabsContent,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
+import { useMeasure } from "react-use"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
 import { CallHashText } from "@/modules/transactions/review/ReviewTransactionJsonView/components/CallHashText"
@@ -33,6 +35,8 @@ type JsonContentProps = {
   srcChainKey: string
 }
 
+const JSON_MAX_HEIGHT = 200
+
 const ReviewTransactionJsonContent: React.FC<
   Omit<JsonContentProps, "mode">
 > = ({ tx, srcChainKey }) => {
@@ -45,22 +49,25 @@ const ReviewTransactionJsonContent: React.FC<
 
   const isValidTxCallHash = !!txCallHash
 
+  const [ref, rect] = useMeasure<HTMLDivElement>()
+
+  const isJsonOverflowing = rect.height > JSON_MAX_HEIGHT
+
   return (
     <>
       <CopyMenu txUrl={txUrl} txCallHash={txCallHash} txJson={txJson} />
       <ScrollArea>
         <ExpandableSection
           title={t("transaction.jsonview.decoded")}
-          maxContentHeight={isValidTxCallHash ? 120 : 200}
+          maxContentHeight={
+            isJsonOverflowing && isValidTxCallHash ? JSON_MAX_HEIGHT : "100%"
+          }
         >
-          <JsonView fs="p5" src={txJson} />
+          <JsonView ref={ref} fs="p6" src={txJson} />
         </ExpandableSection>
         {isValidTxCallHash && (
           <>
-            <Separator
-              my="base"
-              sx={{ background: getToken("details.borders") }}
-            />
+            <Separator sx={{ background: getToken("details.borders") }} />
             <ExpandableSection
               title={t("transaction.jsonview.calldata")}
               maxContentHeight="100%"
@@ -79,9 +86,10 @@ export const ReviewTransactionJsonView = () => {
   const { papi } = useRpcProvider()
   const { tx, meta } = useTransaction()
 
-  const isEvm = isEvmCall(tx)
+  const isHydrationEvm =
+    isEvmCall(tx) && meta.srcChainKey === HYDRATION_CHAIN_KEY
 
-  const tabs: JsonContentProps[] = isEvm
+  const tabs: JsonContentProps[] = isHydrationEvm
     ? [
         { mode: "evm", tx, srcChainKey: meta.srcChainKey },
         {

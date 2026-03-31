@@ -5,6 +5,7 @@ import Big from "big.js"
 
 import { papiDryRunErrorQuery } from "@/api/dryRun"
 import { getTimeFrameMillis } from "@/components/TimeFrame/TimeFrame.utils"
+import { ENV } from "@/config/env"
 import {
   DcaFormValues,
   DcaOrdersMode,
@@ -28,12 +29,13 @@ type BestSellArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountIn: string
+  readonly balance?: string
   readonly debug?: boolean
 }
 
 export const bestSellQuery = (
   { sdk, isApiLoaded }: TProviderContext,
-  { assetIn, assetOut, amountIn, debug }: BestSellArgs,
+  { assetIn, assetOut, amountIn, balance, debug }: BestSellArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -43,6 +45,7 @@ export const bestSellQuery = (
       assetIn,
       assetOut,
       amountIn,
+      balance,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestSell(
@@ -117,7 +120,7 @@ export const bestSellWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx, bestSellArgs.debug),
             )
@@ -231,7 +234,7 @@ export const bestSellTwapWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx),
             )
@@ -247,12 +250,13 @@ type BestBuyArgs = {
   readonly assetIn: string
   readonly assetOut: string
   readonly amountOut: string
+  readonly balance?: string
   readonly debug?: boolean
 }
 
 export const bestBuyQuery = (
   { sdk, isApiLoaded }: TProviderContext,
-  { assetIn, assetOut, amountOut, debug }: BestBuyArgs,
+  { assetIn, assetOut, amountOut, balance, debug }: BestBuyArgs,
 ) =>
   queryOptions({
     queryKey: [
@@ -262,6 +266,7 @@ export const bestBuyQuery = (
       assetIn,
       assetOut,
       amountOut,
+      balance,
     ],
     queryFn: async () => {
       const swap = await sdk.api.router.getBestBuy(
@@ -336,7 +341,7 @@ export const bestBuyWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx, bestBuyArgs.debug),
             )
@@ -450,7 +455,7 @@ export const bestBuyTwapWithTxQuery = (
         : null
 
       const dryRunError =
-        tx && dryRun
+        tx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, tx),
             )
@@ -571,7 +576,7 @@ export const dcaTradeOrderQuery = (
         : null
 
       const dryRunError =
-        orderTx && dryRun
+        orderTx && dryRun && ENV.VITE_DRY_RUN_ENABLED
           ? await queryClient.ensureQueryData(
               papiDryRunErrorQuery(rpc, address, orderTx),
             )

@@ -11,14 +11,13 @@ type Props = {
 
 export const ReferendaThresholdLine: FC<Props> = ({
   percentage,
-  voted,
   className,
 }) => {
   return (
     <Box
       position="absolute"
       left={`${clamp(percentage, { min: 0, max: 100 })}%`}
-      bg={voted ? getToken("text.medium") : getToken("text.tint.primary")}
+      bg={getToken("text.medium")}
       width={1}
       height={32}
       className={className}

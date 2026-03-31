@@ -11,6 +11,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { FC, useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { filter, pipe, sortBy } from "remeda"
 
 import {
   AccountFilter,
@@ -46,7 +47,7 @@ export const AddressBookModal: FC<Props> = ({
   const [publicKeyToRemove, setPublicKeyToRemove] = useState("")
   const [searchPhrase, setSearchPhrase] = useState("")
 
-  const [filter, setFilter] = useState<AccountFilterOption>(
+  const [accountFilter, setAccountFilter] = useState<AccountFilterOption>(
     whitelist ? (whitelist[0] ?? WalletMode.Default) : WalletMode.Default,
   )
 
@@ -64,10 +65,15 @@ export const AddressBookModal: FC<Props> = ({
     ),
   )
 
-  const validProviders = PROVIDERS_BY_WALLET_MODE[filter]
+  const validProviders = PROVIDERS_BY_WALLET_MODE[accountFilter]
 
-  const filteredAddresses = allAddresses.filter((address) =>
-    validProviders.includes(address.provider),
+  const filteredAddresses = pipe(
+    allAddresses,
+    filter((address) => validProviders.includes(address.provider)),
+    sortBy(
+      [(address) => address.isCustom || false, "desc"],
+      [(address) => address.name.toLocaleLowerCase(), "asc"],
+    ),
   )
 
   const searchedAddresses = filteredAddresses.filter(
@@ -89,10 +95,13 @@ export const AddressBookModal: FC<Props> = ({
     validFilterOptions.includes(addressProvider)
 
   useEffect(() => {
-    if (filter !== WalletMode.Default && !filterOptions.includes(filter)) {
-      setFilter(WalletMode.Default)
+    if (
+      accountFilter !== WalletMode.Default &&
+      !filterOptions.includes(accountFilter)
+    ) {
+      setAccountFilter(WalletMode.Default)
     }
-  }, [filterOptions, filter])
+  }, [filterOptions, accountFilter])
 
   if (publicKeyToRemove) {
     return (
@@ -123,8 +132,8 @@ export const AddressBookModal: FC<Props> = ({
 
     setSearchPhrase("")
 
-    if (filter !== addressProvider) {
-      setFilter(WalletMode.Default)
+    if (accountFilter !== addressProvider) {
+      setAccountFilter(WalletMode.Default)
     }
   }
 
@@ -140,10 +149,10 @@ export const AddressBookModal: FC<Props> = ({
         />
         {filterOptions.length > 1 && (
           <AccountFilter
-            active={filter}
+            active={accountFilter}
             whitelist={filterOptions}
             blacklist={blacklist}
-            onSetActive={setFilter}
+            onSetActive={setAccountFilter}
           />
         )}
         {searchedAddresses.length === 0 ? (

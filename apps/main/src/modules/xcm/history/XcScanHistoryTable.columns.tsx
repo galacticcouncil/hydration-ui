@@ -24,10 +24,9 @@ import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
 import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
-import { useXcmBridgeTxStore } from "@/modules/xcm/history/hooks/useXcmBridgeTxStore"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
-import { XcmTag } from "@/states/transactions"
+import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { toDecimal } from "@/utils/formatting"
 
 const columnHelper = createColumnHelper<XcJourney>()
@@ -47,15 +46,13 @@ export enum XcScanHistoryTableColumnId {
 export const useXcScanHistoryColumns = () => {
   const { t } = useTranslation(["common"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
-  const { entries: bridgeTxEntries } = useXcmBridgeTxStore()
 
   return useMemo(() => {
     const fromColumn = columnHelper.accessor("from", {
       id: XcScanHistoryTableColumnId.From,
       header: t("from"),
       cell: ({ row }) => {
-        const from = row.original.fromFormatted || row.original.from
-
+        const { from } = getFormattedAddresses(row.original)
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.origin} />
@@ -71,7 +68,7 @@ export const useXcScanHistoryColumns = () => {
       id: XcScanHistoryTableColumnId.To,
       header: t("to"),
       cell: ({ row }) => {
-        const to = row.original.toFormatted || row.original.to
+        const { to } = getFormattedAddresses(row.original)
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.destination} />
@@ -87,7 +84,7 @@ export const useXcScanHistoryColumns = () => {
       id: XcScanHistoryTableColumnId.Assets,
       header: t("asset"),
       cell: ({ row }) => {
-        const transferAsset = getTransferAsset(row.original.assets)
+        const transferAsset = getTransferAsset(row.original)
 
         if (!transferAsset) return null
 
@@ -143,12 +140,6 @@ export const useXcScanHistoryColumns = () => {
       cell: ({ row }) => {
         const originProtocol = row.original.originProtocol
         const destinationProtocol = row.original.destinationProtocol
-        const txHash = row.original.originTxPrimary
-        const bridgeTag = txHash ? bridgeTxEntries[txHash] : undefined
-
-        if (bridgeTag?.bridgeProvider === XcmTag.InstaBridge) {
-          return <JourneyProtocol protocol="instabridge" />
-        }
 
         if (!originProtocol && !destinationProtocol) {
           return null
@@ -239,5 +230,5 @@ export const useXcScanHistoryColumns = () => {
       durationColumn,
       actionColumn,
     ]
-  }, [t, pendingCorrelationIds, bridgeTxEntries])
+  }, [t, pendingCorrelationIds])
 }

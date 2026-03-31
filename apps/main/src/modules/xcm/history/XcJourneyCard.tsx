@@ -30,10 +30,7 @@ import {
   resolveNetwork,
 } from "@/modules/xcm/history/utils/assets"
 import { isJourneyClaimable } from "@/modules/xcm/history/utils/claim"
-import {
-  FAILED_STATUSES,
-  TJourneyStatus,
-} from "@/modules/xcm/history/utils/journey"
+import { getFormattedAddresses } from "@/modules/xcm/history/utils/journey"
 import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { XcmTag } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
@@ -45,20 +42,8 @@ function getBasejumpStatus(status: TJourneyStatus): TJourneyStatus {
 }
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
-  const {
-    origin,
-    destination,
-    assets,
-    sentAt,
-    correlationId,
-    status,
-    fromFormatted,
-    from,
-    toFormatted,
-    to,
-    totalUsd,
-    originTxPrimary,
-  } = journey
+  const { origin, destination, sentAt, correlationId, status, totalUsd } =
+    journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
   const { entries } = useXcmBridgeTxStore()
@@ -71,7 +56,8 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
 
   const originNetwork = resolveNetwork(origin)
   const destinationNetwork = resolveNetwork(displayDestination)
-  const transferAsset = getTransferAsset(assets)
+  const transferAsset = getTransferAsset(journey)
+  const { from, to } = getFormattedAddresses(journey)
 
   const link = xcscan.tx(correlationId)
 
@@ -156,14 +142,18 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
 
         <Stack>
           <Flex gap="s" align="center">
-            <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-              {t("from")}: {shortenAccountAddress(fromFormatted || from)}
-            </Text>
+            {from && (
+              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                {t("from")}: {shortenAccountAddress(from)}
+              </Text>
+            )}
           </Flex>
           <Flex gap="s" align="center">
-            <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-              {t("to")}: {shortenAccountAddress(toFormatted || to)}
-            </Text>
+            {to && (
+              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                {t("to")}: {shortenAccountAddress(to)}
+              </Text>
+            )}
           </Flex>
         </Stack>
 
