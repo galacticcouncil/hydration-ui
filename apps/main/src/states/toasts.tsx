@@ -19,6 +19,9 @@ export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastMeta = TransactionMeta & {
   txHash: string
   ecosystem: CallType
+  /** When true, the substrate processor must not auto-resolve this toast —
+   *  it is a multisig first-approval waiting for co-signers. */
+  isMultisigPending?: boolean
 }
 
 export type ToastMessageType = (typeof TOAST_MESSAGES)[number]

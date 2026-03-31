@@ -51,6 +51,8 @@ export const MultisigTxPoller = () => {
               link: watch.multixUrl || undefined,
               dateCreated: new Date().toISOString(),
               duration: DEFAULT_AUTO_CLOSE_TIME,
+              // Clear the flag so the substrate processor can resolve it going forward
+              meta: { isMultisigPending: false } as never,
             })
             removeWatch(watch.toastId)
           } else {

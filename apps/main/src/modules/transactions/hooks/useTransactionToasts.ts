@@ -118,6 +118,7 @@ export const useTransactionToasts = (
             }),
             link: multixUrl,
             duration: Infinity,
+            meta: { ...meta, txHash: "", ecosystem, isMultisigPending: true },
           })
 
           // Extract callHash from Multisig.NewMultisig event and register watch
