@@ -12,11 +12,11 @@ import { Binary } from "polkadot-api"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainConfigService } from "@/api/xcm"
-import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -92,14 +92,14 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         ? (routes.find((r) =>
             (r.tags as string[] | undefined)?.includes(bridgeProvider),
           ) ??
-            getSupplementalBridgeRoutes(
-              srcChain.key,
-              destChain.key,
-              srcAsset.key,
-            ).find((r) =>
-              (r.tags as string[] | undefined)?.includes(bridgeProvider),
-            ) ??
-            origin.route)
+          getSupplementalBridgeRoutes(
+            srcChain.key,
+            destChain.key,
+            srcAsset.key,
+          ).find((r) =>
+            (r.tags as string[] | undefined)?.includes(bridgeProvider),
+          ) ??
+          origin.route)
         : origin.route
 
       const call = await transfer.buildCall(srcAmount)

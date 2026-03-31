@@ -95,8 +95,14 @@ export const getXcmTransferArgs = (
   account: Account | null,
   values: XcmFormValues,
 ): XcmTransferArgs => {
-  const { srcChain, srcAsset, destChain, destAsset, destAddress, bridgeProvider } =
-    values
+  const {
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+    destAddress,
+    bridgeProvider,
+  } = values
   const isValidPair =
     srcChain && srcAsset
       ? srcChain.assetsData.values().some((a) => a.asset.key === srcAsset.key)

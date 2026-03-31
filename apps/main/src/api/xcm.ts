@@ -3,8 +3,6 @@ import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, AssetAmount, ConfigBuilder } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
-
-import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import {
   keepPreviousData,
   queryOptions,
@@ -16,6 +14,7 @@ import {
 import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
+import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
@@ -179,8 +178,8 @@ export const xcmTransferQuery = (
           builder.routes.find((r) =>
             (r.tags as string[] | undefined)?.includes(bridgeTag),
           ) ??
-          getSupplementalBridgeRoutes(srcChain, destChain, srcAsset).find(
-            (r) => (r.tags as string[] | undefined)?.includes(bridgeTag),
+          getSupplementalBridgeRoutes(srcChain, destChain, srcAsset).find((r) =>
+            (r.tags as string[] | undefined)?.includes(bridgeTag),
           )
 
         if (selectedRoute) {

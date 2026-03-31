@@ -22,8 +22,8 @@ import {
   insertOptimisticJourney,
   removeOptimisticJourney,
 } from "@/modules/xcm/history/utils/optimistic"
-import { ChainAssetSelectModalSelectionChange } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { BridgeSelector } from "@/modules/xcm/transfer/components/BridgeSelector"
+import { ChainAssetSelectModalSelectionChange } from "@/modules/xcm/transfer/components/ChainAssetSelect"
 import { ChainSwitch } from "@/modules/xcm/transfer/components/ChainSwitch"
 import { ConnectButton } from "@/modules/xcm/transfer/components/ConnectButton"
 import {

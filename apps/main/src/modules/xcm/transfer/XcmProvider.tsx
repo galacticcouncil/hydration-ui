@@ -21,12 +21,12 @@ import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
+import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import {
   getChainPriority,
   isAccountValidOnChain,
   XCM_CHAINS,
 } from "@/modules/xcm/transfer/utils/chain"
-import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import {
   calculateTransferDestAmount,
   getPrimaryBridgeTag,
@@ -129,7 +129,9 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         r.destination.asset.key === destAsset.key &&
         getPrimaryBridgeTag(r) !== null,
     )
-    const existingTags = new Set(configRoutes.map((r) => getPrimaryBridgeTag(r)))
+    const existingTags = new Set(
+      configRoutes.map((r) => getPrimaryBridgeTag(r)),
+    )
     const supplemental = getSupplementalBridgeRoutes(
       srcChain.key,
       destChain.key,

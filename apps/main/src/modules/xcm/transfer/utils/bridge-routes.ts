@@ -61,5 +61,8 @@ export const getSupplementalBridgeRoutes = (
   destChainKey: string,
   srcAssetKey: string,
 ): AssetRoute[] => {
-  return SUPPLEMENTAL_ROUTES.get(`${srcChainKey}-${destChainKey}-${srcAssetKey}`) ?? []
+  return (
+    SUPPLEMENTAL_ROUTES.get(`${srcChainKey}-${destChainKey}-${srcAssetKey}`) ??
+    []
+  )
 }
