@@ -10,7 +10,9 @@ import {
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
-import { safeConvertAddressSS58, safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+
+import { toPolkadotAddress } from "@/utils/multisig"
 
 import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { useTranslation } from "react-i18next"
@@ -63,7 +65,7 @@ export const MultisigSignerSelect: React.FC = () => {
 
   const isSignerAddress = (address: string) =>
     activeConfig.signers.some(
-      (s) => safeConvertAddressSS58(s) === safeConvertAddressSS58(address),
+      (s) => toPolkadotAddress(s) === toPolkadotAddress(address),
     )
 
   const signerAccounts = substrateAccounts.filter((a) =>
