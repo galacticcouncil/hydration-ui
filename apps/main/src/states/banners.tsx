@@ -8,7 +8,7 @@ import { toast as bannerSonner } from "sonner"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-import bannersMarkdown from "@/content/banners/banners.md?raw"
+import bannersMarkdown from "@/banners.md?raw"
 
 type BannerConfig = PromoteBannerItem & { to?: string }
 
@@ -86,7 +86,7 @@ export const useBannersStore = create<BannersStore>()(
     }),
     {
       name: "promote-banners",
-      version: 1,
+      version: 2,
     },
   ),
 )
