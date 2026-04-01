@@ -1,5 +1,6 @@
 import { Stack } from "@galacticcouncil/ui/components"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
+import { isNonNullish } from "remeda"
 
 import { StrategyHeader } from "@/modules/borrow/multiply/components/StrategyHeader"
 import { MULTIPLY_ASSETS_CONFIG } from "@/modules/borrow/multiply/config/pairs"
@@ -20,31 +21,13 @@ export const MultiplyStrategyDetailPage: React.FC<
     () =>
       strategy.pairIds
         .map((id) => MULTIPLY_ASSETS_CONFIG.find((c) => c.id === id))
-        .filter((c): c is NonNullable<typeof c> => !!c),
+        .filter(isNonNullish),
     [strategy.pairIds],
   )
 
-  const selectedPairId = useMemo(() => {
-    if (pairIdFromSearch && strategy.pairIds.includes(pairIdFromSearch)) {
-      return pairIdFromSearch
-    }
-    return strategy.pairIds[0]!
-  }, [pairIdFromSearch, strategy.pairIds])
-
-  useEffect(() => {
-    if (
-      pairIdFromSearch &&
-      !strategy.pairIds.includes(pairIdFromSearch) &&
-      strategy.pairIds[0]
-    ) {
-      onPairIdChange(strategy.pairIds[0])
-    }
-  }, [pairIdFromSearch, strategy.pairIds, onPairIdChange])
-
-  const selectedConfig = useMemo(
-    () => pairConfigs.find((c) => c.id === selectedPairId) ?? pairConfigs[0],
-    [pairConfigs, selectedPairId],
-  )
+  const selectedConfig = pairIdFromSearch
+    ? pairConfigs.find((c) => c.id === pairIdFromSearch)
+    : pairConfigs[0]
 
   const detail = useMultiplyPairDetailData(selectedConfig)
 
@@ -55,7 +38,7 @@ export const MultiplyStrategyDetailPage: React.FC<
       <StrategyHeader
         name={strategy.name}
         icon={strategy.icon}
-        selectedPairId={selectedPairId}
+        selectedPairId={selectedConfig.id}
         onPairIdChange={onPairIdChange}
         pairs={pairConfigs}
       />

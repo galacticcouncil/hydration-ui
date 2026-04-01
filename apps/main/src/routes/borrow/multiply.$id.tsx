@@ -38,9 +38,20 @@ const RouteComponent = () => {
 export const Route = createFileRoute("/borrow/multiply/$id")({
   validateSearch: searchSchema,
   component: RouteComponent,
-  loader: ({ params }) => {
+  loader: ({ params, location: { search } }) => {
     const strategy = MULTIPLY_STRATEGIES_BY_ID[params.id as MultiplyStrategyId]
-    if (strategy) return { type: "strategy" as const, strategy }
+
+    if (strategy) {
+      const searchParams = searchSchema.safeParse(search)
+      const isValidPairId =
+        searchParams.success && searchParams.data.pairId
+          ? strategy.pairIds.includes(searchParams.data.pairId)
+          : true
+
+      if (!isValidPairId) throw notFound()
+
+      return { type: "strategy" as const, strategy }
+    }
 
     const config = MULTIPLY_ASSETS_CONFIG.find((c) => c.id === params.id)
     if (config) return { type: "pair" as const, config }
