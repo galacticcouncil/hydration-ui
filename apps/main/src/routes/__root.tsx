@@ -12,7 +12,7 @@ import { useSquidClient } from "@/api/provider"
 import { usePriceSubscriber } from "@/api/spotPrice"
 import { useAccountBalanceSubscription } from "@/api/subscriptions"
 import { RouterContext } from "@/App"
-import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
+import { Footer } from "@/modules/layout/components/Footer"
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
@@ -68,12 +68,12 @@ function RootComponent() {
         <RpcProvider>
           <MainLayout />
           <Services />
-          <DataProviderSelect />
+          <Footer />
           {!hasTopNavbar && <MobileTabBar />}
         </RpcProvider>
       </AssetsProvider>
-      {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
-      {hasTopNavbar && <TanStackRouterDevtools position="bottom-left" />}
+      {hasTopNavbar && <ReactQueryDevtools buttonPosition="top-left" />}
+      {hasTopNavbar && <TanStackRouterDevtools position="top-left" />}
     </>
   )
 }

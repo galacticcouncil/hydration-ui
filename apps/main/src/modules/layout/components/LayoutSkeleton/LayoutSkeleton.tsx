@@ -1,6 +1,5 @@
 import { useMatch, useMatches, useRouter } from "@tanstack/react-router"
 
-import { DataProviderSelect } from "@/components/DataProviderSelect/DataProviderSelect"
 import { Loader } from "@/components/Loader"
 import { TabMenu } from "@/components/TabMenu"
 import {
@@ -9,6 +8,7 @@ import {
   ContentContainer,
   MainContent,
 } from "@/modules/layout/components/Content"
+import { Footer } from "@/modules/layout/components/Footer"
 import { Header } from "@/modules/layout/components/Header"
 import { useRemoveInitialLoader } from "@/modules/layout/hooks/useRemoveInitialLoader"
 import { useSubNav } from "@/modules/layout/hooks/useSubNav"
@@ -57,7 +57,7 @@ export const LayoutSkeleton = () => {
       ) : (
         <Loader />
       )}
-      <DataProviderSelect bottomPinned />
+      <Footer />
     </>
   )
 }

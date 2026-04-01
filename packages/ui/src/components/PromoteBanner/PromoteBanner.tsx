@@ -17,6 +17,9 @@ export type PromoteBannerItem = {
   backgroundImage: string
   backgroundImageMobile: string
   title: string
+  textColor?: string
+  ctaColor?: string
+  ctaTextColor?: string
   description?: string
   cta?: string
   onCta?: () => void
@@ -60,6 +63,7 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                     lh={[1, 1.2]}
                     color={getToken("colors.darkBlue.900")}
                     font="primary"
+                    sx={{ color: item.textColor }}
                   >
                     {item.title}
                   </Text>
@@ -72,6 +76,7 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                       lh={[1, 1.2]}
                       color={getToken("colors.darkBlue.900")}
                       font="secondary"
+                      sx={{ color: item.textColor }}
                     >
                       {item.description}
                     </Text>
@@ -84,6 +89,10 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
                     variant="sliderTabActive"
                     size="medium"
                     onClick={item.onCta}
+                    sx={{
+                      backgroundColor: item.ctaColor,
+                      color: item.ctaTextColor,
+                    }}
                   >
                     {item.cta}
                   </Button>

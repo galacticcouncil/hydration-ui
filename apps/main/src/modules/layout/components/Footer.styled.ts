@@ -1,29 +1,27 @@
-import { css, Theme } from "@emotion/react"
-import styled from "@emotion/styled"
+import { Theme } from "@emotion/react"
+import { Flex } from "@galacticcouncil/ui/components"
 import { mq } from "@galacticcouncil/ui/theme"
-import { pxToRem } from "@galacticcouncil/ui/utils"
+import { css, pxToRem, styled } from "@galacticcouncil/ui/utils"
 
 const bottomPinnedStyle = (theme: Theme) => css`
   position: fixed;
-  right: 0;
   bottom: 0;
   padding-bottom: ${theme.space.base};
   z-index: 1001;
 `
 
-export const SContainer = styled.div<{ readonly bottomPinned?: boolean }>(
+export const SFooter = styled(Flex)<{ readonly bottomPinned?: boolean }>(
   ({ theme, bottomPinned }) => css`
-    display: flex;
-
     gap: ${theme.space.base};
     padding: ${theme.space.base};
     padding-bottom: ${pxToRem(80)};
+
+    width: 100%;
 
     ${bottomPinned
       ? bottomPinnedStyle(theme)
       : css`
           display: flex;
-          justify-content: end;
         `}
 
     ${mq("lg")} {

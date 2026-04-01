@@ -49,6 +49,9 @@ const parseBannersMarkdown = (markdown: string): Array<BannerConfig> => {
       backgroundImageMobile: getRequiredValue("backgroundImageMobile"),
       title: getRequiredValue("title"),
       description: getRequiredValue("description"),
+      textColor: getOptionalValue("textColor"),
+      ctaColor: getOptionalValue("ctaColor"),
+      ctaTextColor: getOptionalValue("ctaTextColor"),
       cta: getOptionalValue("cta"),
       to: getOptionalValue("to"),
     }
@@ -63,6 +66,7 @@ type BannersState = {
 
 type BannersActions = {
   close: (id: string) => void
+  openGigaNews: () => void
 }
 
 type BannersStore = BannersState & BannersActions
@@ -83,10 +87,16 @@ export const useBannersStore = create<BannersStore>()(
             closedBannerIds: [...state.closedBannerIds, id],
           }
         }),
+      openGigaNews: () =>
+        set(() => {
+          return {
+            closedBannerIds: [],
+          }
+        }),
     }),
     {
       name: "promote-banners",
-      version: 1,
+      version: 2,
     },
   ),
 )
