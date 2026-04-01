@@ -145,7 +145,6 @@ export async function getBestRpcs(urls: string[]): Promise<PingResponse[]> {
   return results
 }
 
-
 export function parseLarkRpcUrlName(url: string): string {
   const { rawName } =
     /^wss?:\/\/(?<rawName>[\w.-]+)\.hydration\.cloud/.exec(url)?.groups ?? {}
