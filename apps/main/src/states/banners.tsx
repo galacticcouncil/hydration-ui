@@ -8,22 +8,54 @@ import { toast as bannerSonner } from "sonner"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
-import PrimeImage from "@/assets/images/Prime.webp"
-import PrimeImageMobile from "@/assets/images/PrimeMobile.webp"
-import { LINKS } from "@/config/navigation"
-import i18n from "@/i18n"
+import bannersMarkdown from "@/content/banners/banners.md?raw"
 
-const bannerConfig: Array<PromoteBannerItem & { to: string }> = [
-  {
-    id: "prime",
-    backgroundImage: PrimeImage,
-    backgroundImageMobile: PrimeImageMobile,
-    title: i18n.t("banner.prime.title"),
-    description: i18n.t("banner.prime.description"), //@TODO: could be taken from real data
-    cta: i18n.t("banner.prime.cta"),
-    to: LINKS.borrowDashboard,
-  },
-]
+type BannerConfig = PromoteBannerItem & { to?: string }
+
+const parseBannersMarkdown = (markdown: string): Array<BannerConfig> => {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(markdown)
+  } catch {
+    throw new Error("Invalid banners markdown: expected a JSON array")
+  }
+
+  if (!Array.isArray(parsed)) {
+    throw new Error("Invalid banners markdown: expected an array")
+  }
+
+  return parsed.map((item) => {
+    if (typeof item !== "object" || item === null) {
+      throw new Error("Invalid banners markdown: each banner must be an object")
+    }
+
+    const values = item as Record<string, unknown>
+
+    const getRequiredValue = (key: string): string => {
+      const value = values[key]
+      if (typeof value !== "string" || value.length === 0) {
+        throw new Error(`Invalid banners markdown: missing "${key}"`)
+      }
+      return value
+    }
+    const getOptionalValue = (key: string): string => {
+      const value = values[key]
+      return typeof value === "string" ? value : ""
+    }
+
+    return {
+      id: getRequiredValue("id"),
+      backgroundImage: getRequiredValue("backgroundImage"),
+      backgroundImageMobile: getRequiredValue("backgroundImageMobile"),
+      title: getRequiredValue("title"),
+      description: getRequiredValue("description"),
+      cta: getOptionalValue("cta"),
+      to: getOptionalValue("to"),
+    }
+  })
+}
+
+const bannerConfig: Array<BannerConfig> = parseBannersMarkdown(bannersMarkdown)
 
 type BannersState = {
   closedBannerIds: string[]
@@ -79,10 +111,14 @@ export const useBanners = () => {
           <PromoteBanner
             item={{
               ...banner,
-              onCta: () => {
-                navigate({ to: banner.to })
-              },
               onClose,
+              ...(banner.to
+                ? {
+                    onCta: () => {
+                      navigate({ to: banner.to })
+                    },
+                  }
+                : {}),
             }}
           />
         ),
