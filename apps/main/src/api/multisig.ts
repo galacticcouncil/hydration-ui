@@ -1,4 +1,4 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { StoredAccount, useAccount } from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
 
 import { useAssets } from "@/providers/assetsProvider"
@@ -38,16 +38,18 @@ export const useMultisigSignerBalance = () => {
   const { papi, isApiLoaded } = useRpcProvider()
   const { native } = useAssets()
 
-  const signerAddress = account?.isMultisig
-    ? account.multisigSignerAddress
+  const storedAccount = account as StoredAccount | null
+  const signerAddress = storedAccount?.isMultisig
+    ? storedAccount.multisigSignerAddress
     : undefined
 
   return useQuery({
     enabled: isApiLoaded && !!signerAddress,
     queryKey: ["multisig", "signerBalance", signerAddress],
     queryFn: async () => {
-      const balanceData =
-        await papi.query.System.Account.getValue(signerAddress!)
+      const balanceData = await papi.query.System.Account.getValue(
+        signerAddress!,
+      )
       const free = balanceData.data.free
       const frozen = balanceData.data.frozen
       const transferable = free > frozen ? free - frozen : 0n

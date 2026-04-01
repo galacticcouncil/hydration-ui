@@ -1,5 +1,9 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
-import { useAccount, useMultisigStore } from "@galacticcouncil/web3-connect"
+import {
+  StoredAccount,
+  useAccount,
+  useMultisigStore,
+} from "@galacticcouncil/web3-connect"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 import { isObjectType } from "remeda"
@@ -26,14 +30,19 @@ export const useTransactionAlerts = () => {
 
   const { data: isPermitPending } = useAccountPendingPermit()
 
-  const { feeEstimate, feeEstimateNative, feeAssetBalance, isUsingPermit, nonce } =
-    useTransaction()
+  const {
+    feeEstimate,
+    feeEstimateNative,
+    feeAssetBalance,
+    isUsingPermit,
+    nonce,
+  } = useTransaction()
 
   const pendingTransactions = useTransactionsStore(
     (state) => state.pendingTransactions,
   )
 
-  const isMultisig = !!account?.isMultisig
+  const isMultisig = !!(account as StoredAccount | null)?.isMultisig
   const multisigConfig = isMultisig ? getActiveConfig() : null
 
   const { data: signerBalance } = useMultisigSignerBalance()

@@ -1,11 +1,18 @@
+import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
 import { Users } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Skeleton, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { latestAccountBalanceQuery } from "@galacticcouncil/indexer/squid"
-import { formatCurrency, safeConvertSS58toPublicKey, shortenAccountAddress } from "@galacticcouncil/utils"
+import {
+  formatCurrency,
+  safeConvertSS58toPublicKey,
+  shortenAccountAddress,
+} from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 
-import { SAccountOption, SCopyButton } from "@/components/account/AccountOption.styled"
+import {
+  SAccountOption,
+  SCopyButton,
+} from "@/components/account/AccountOption.styled"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { MultisigConfig } from "@/hooks/useMultisigStore"
 import { toPolkadotAddress } from "@/utils/multisig"
@@ -31,8 +38,7 @@ export const AccountMultisigOption: React.FC<Props> = ({
   )
 
   const balance = (() => {
-    const node =
-      balanceData?.accountTotalBalanceHistoricalData?.nodes.at(0)
+    const node = balanceData?.accountTotalBalanceHistoricalData?.nodes.at(0)
     if (!node) return undefined
     const transferable = Number(node.totalTransferableNorm) || 0
     const locked = Number(node.totalLockedNorm) || 0
@@ -55,7 +61,11 @@ export const AccountMultisigOption: React.FC<Props> = ({
                 {config.name ||
                   `Multisig ${config.threshold}/${config.signers.length}`}
               </Text>
-              <Text fs="p6" color={getToken("text.medium")} sx={{ flexShrink: 0 }}>
+              <Text
+                fs="p6"
+                color={getToken("text.medium")}
+                sx={{ flexShrink: 0 }}
+              >
                 {config.threshold}/{config.signers.length}
               </Text>
             </Flex>

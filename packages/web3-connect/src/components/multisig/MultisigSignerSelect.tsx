@@ -1,6 +1,5 @@
 import {
   AccountAvatar,
-  Alert,
   Box,
   Flex,
   Grid,
@@ -11,24 +10,22 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
-
-import { toPolkadotAddress } from "@/utils/multisig"
-
-import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { useTranslation } from "react-i18next"
 import { pick } from "remeda"
 import { useShallow } from "zustand/shallow"
 
+import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
 import { SUBSTRATE_PROVIDERS } from "@/config/providers"
 import { useMultisigStore } from "@/hooks/useMultisigStore"
+import { useWalletProviders } from "@/hooks/useWalletProviders"
 import {
   StoredAccount,
   useWeb3Connect,
   WalletMode,
   WalletProviderStatus,
 } from "@/hooks/useWeb3Connect"
-import { useWalletProviders } from "@/hooks/useWalletProviders"
+import { toPolkadotAddress } from "@/utils/multisig"
 import { toAccount } from "@/utils/wallet"
 import { getWalletData } from "@/wallets"
 
@@ -67,11 +64,6 @@ export const MultisigSignerSelect: React.FC = () => {
     activeConfig.signers.some(
       (s) => toPolkadotAddress(s) === toPolkadotAddress(address),
     )
-
-  const signerAccounts = substrateAccounts.filter((a) =>
-    isSignerAddress(a.address),
-  )
-  const hasSigners = signerAccounts.length > 0
 
   const handleSelectSigner = (signerAddress: string) => {
     if (!activeConfigId) return
@@ -160,7 +152,9 @@ export const MultisigSignerSelect: React.FC = () => {
                 <SAccountOption
                   key={`${account.publicKey}-${account.provider}`}
                   disabled={!isSigner}
-                  onClick={() => isSigner && handleSelectSigner(account.address)}
+                  onClick={() =>
+                    isSigner && handleSelectSigner(account.address)
+                  }
                   sx={{ opacity: isSigner ? 1 : 0.45 }}
                 >
                   <Flex align="center" gap="m">
@@ -192,7 +186,10 @@ export const MultisigSignerSelect: React.FC = () => {
                           {accountDisplay.displayAddress}
                         </Text>
                         <Text as="span" display={["block", "none"]}>
-                          {shortenAccountAddress(accountDisplay.displayAddress, 12)}
+                          {shortenAccountAddress(
+                            accountDisplay.displayAddress,
+                            12,
+                          )}
                         </Text>
                       </Text>
                     </Flex>
@@ -203,7 +200,6 @@ export const MultisigSignerSelect: React.FC = () => {
           </Stack>
         </Stack>
       )}
-
     </Stack>
   )
 }

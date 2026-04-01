@@ -157,7 +157,7 @@ export const useWeb3Connect = create<WalletProviderStore>()(
           if (wallet instanceof BaseSubstrateWallet) {
             // For multisig accounts, sign with the signer address, not the multisig address.
             const signerAddress = account.isMultisig
-              ? account.multisigSignerAddress ?? account.address
+              ? (account.multisigSignerAddress ?? account.address)
               : account.address
             wallet.setSigner(signerAddress)
           }

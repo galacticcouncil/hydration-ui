@@ -27,12 +27,12 @@ import {
   useAccountsWithBalance,
 } from "@/components/content/AccountSelectContent.utils"
 import { ProviderLoader } from "@/components/provider/ProviderLoader"
+import { Web3ConnectModalPage } from "@/config/modal"
 import {
   SOLANA_PROVIDERS,
   SUI_PROVIDERS,
   WalletProviderType,
 } from "@/config/providers"
-import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useAccount } from "@/hooks/useAccount"
 import { MultisigConfig, useMultisigStore } from "@/hooks/useMultisigStore"

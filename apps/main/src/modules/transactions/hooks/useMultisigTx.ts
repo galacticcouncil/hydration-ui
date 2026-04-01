@@ -1,4 +1,8 @@
-import { useAccount, useMultisigStore } from "@galacticcouncil/web3-connect"
+import {
+  StoredAccount,
+  useAccount,
+  useMultisigStore,
+} from "@galacticcouncil/web3-connect"
 import { AccountId } from "@polkadot-api/substrate-bindings"
 import { PolkadotClient } from "polkadot-api"
 import { useCallback } from "react"
@@ -17,15 +21,17 @@ export const useMultisigTx = () => {
   const { account } = useAccount()
   const { getActiveConfig } = useMultisigStore()
 
+  const storedAccount = account as StoredAccount | null
   const isMultisigActive =
-    !!account?.isMultisig && !!account.multisigSignerAddress
+    !!storedAccount?.isMultisig && !!storedAccount.multisigSignerAddress
 
   const wrapInMultisig = useCallback(
     async (papiClient: PolkadotClient, tx: AnyPapiTx): Promise<AnyPapiTx> => {
       const config = getActiveConfig()
-      if (!config || !account?.multisigSignerAddress) return tx
+      const _account = account as StoredAccount | null
+      if (!config || !_account?.multisigSignerAddress) return tx
 
-      const signerAddress = account.multisigSignerAddress
+      const signerAddress = _account.multisigSignerAddress
 
       // Use a generous fixed max_weight instead of fetching via getPaymentInfo.
       // Fetching adds an async RPC round-trip that can push the tx past its era
@@ -54,8 +60,10 @@ export const useMultisigTx = () => {
             const rawA = AccountId().enc(a)
             const rawB = AccountId().enc(b)
             for (let i = 0; i < rawA.length; i++) {
-              if (rawA[i] < rawB[i]) return -1
-              if (rawA[i] > rawB[i]) return 1
+              const byteA = rawA[i] ?? 0
+              const byteB = rawB[i] ?? 0
+              if (byteA < byteB) return -1
+              if (byteA > byteB) return 1
             }
             return 0
           } catch {

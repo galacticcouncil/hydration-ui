@@ -1,5 +1,5 @@
-import { MultisigTxPoller } from "@/modules/transactions/MultisigTxPoller"
 import { useProcessTransactionToasts } from "@/modules/transactions/hooks/useProcessTransactionToasts"
+import { MultisigTxPoller } from "@/modules/transactions/MultisigTxPoller"
 import { ReviewMultiTransaction } from "@/modules/transactions/review/ReviewMultiTransaction"
 import { ReviewTransaction } from "@/modules/transactions/review/ReviewTransaction"
 import { TransactionProvider } from "@/modules/transactions/TransactionProvider"

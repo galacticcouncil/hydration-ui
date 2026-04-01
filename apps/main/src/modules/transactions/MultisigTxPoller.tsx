@@ -1,11 +1,11 @@
 import { DEFAULT_AUTO_CLOSE_TIME } from "@galacticcouncil/ui/components"
+import { Binary } from "polkadot-api"
 import { useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Binary } from "polkadot-api"
 
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { useToasts } from "@/states/toasts"
 import { useMultisigWatchStore } from "@/states/multisigWatch"
+import { useToasts } from "@/states/toasts"
 
 const POLL_INTERVAL_MS = 6_000
 const MAX_WATCH_DURATION_MS = 30 * 60 * 1000 // 30 minutes
@@ -57,8 +57,9 @@ export const MultisigTxPoller = () => {
             removeWatch(watch.toastId)
           } else {
             // Entry still present — update approval count
-            const approvalCount: number =
-              Array.isArray(entry.approvals) ? entry.approvals.length : 1
+            const approvalCount: number = Array.isArray(entry.approvals)
+              ? entry.approvals.length
+              : 1
             edit(watch.toastId, {
               variant: "pending",
               title: watch.title,

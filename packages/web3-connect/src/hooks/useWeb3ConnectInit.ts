@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react"
 import { prop } from "remeda"
 
 import { Web3ConnectModalPage } from "@/config/modal"
+import { useMultisigStore } from "@/hooks/useMultisigStore"
 import {
   useWeb3Connect,
   WalletMode,
   WalletProviderStatus,
 } from "@/hooks/useWeb3Connect"
-import { useMultisigStore } from "@/hooks/useMultisigStore"
 
 const MULTISIG_PAGES: Web3ConnectModalPage[] = [
   Web3ConnectModalPage.MultisigSetup,

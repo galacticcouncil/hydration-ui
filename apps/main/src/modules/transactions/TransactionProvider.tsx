@@ -1,10 +1,10 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { StoredAccount, useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useReducer } from "react"
 import { useLatest } from "react-use"
 
-import { useAccount } from "@galacticcouncil/web3-connect"
 import { useEstimateFee } from "@/modules/transactions/hooks/useEstimateFee"
 import { useNonce } from "@/modules/transactions/hooks/useNonce"
 import { useSignAndSubmit } from "@/modules/transactions/hooks/useSignAndSubmit"
@@ -79,7 +79,7 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
   const { account } = useAccount()
-  const isMultisig = !!(account as any)?.isMultisig
+  const isMultisig = !!(account as StoredAccount)?.isMultisig
 
   const transaction = useWrapTransaction(config)
 

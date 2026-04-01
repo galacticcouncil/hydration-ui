@@ -40,10 +40,7 @@ export const useMultisigStore = create<MultisigStore>()(
       ...defaultState,
       add: (config) =>
         set((state) => ({
-          configs: [
-            ...state.configs,
-            { ...config, id: crypto.randomUUID() },
-          ],
+          configs: [...state.configs, { ...config, id: crypto.randomUUID() }],
         })),
       remove: (id) =>
         set((state) => ({

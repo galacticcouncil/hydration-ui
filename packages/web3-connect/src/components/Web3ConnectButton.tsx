@@ -77,11 +77,7 @@ export const Web3ConnectButton: FC<
           variant="tertiary"
           sx={{ px: 10, gap: "base" }}
         >
-          <Icon
-            size="m"
-            component={Users}
-            color={getToken("text.high")}
-          />
+          <Icon size="m" component={Users} color={getToken("text.high")} />
           <Flex direction="column">
             <Flex gap="xs" align="center">
               <Text fs="p3" lh={1.2} truncate={120}>

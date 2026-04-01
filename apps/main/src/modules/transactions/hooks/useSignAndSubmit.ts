@@ -10,8 +10,8 @@ import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Subscription } from "rxjs"
 
-import { TxOptions, TxResult } from "@/modules/transactions/types"
 import { useMultisigTx } from "@/modules/transactions/hooks/useMultisigTx"
+import { TxOptions, TxResult } from "@/modules/transactions/types"
 import {
   signAndSubmitEvmDispatchTx,
   signAndSubmitEvmTx,

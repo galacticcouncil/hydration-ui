@@ -14,8 +14,9 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
-import { useToasts } from "@/states/toasts"
 import { TxBestBlocksStateResult } from "@/modules/transactions/types"
+import { useMultisigWatchStore } from "@/states/multisigWatch"
+import { useToasts } from "@/states/toasts"
 import {
   isBridgeTransaction,
   SingleTransaction,
@@ -23,7 +24,6 @@ import {
   TransactionType,
   XcmTag,
 } from "@/states/transactions"
-import { useMultisigWatchStore } from "@/states/multisigWatch"
 
 const MULTIX_BASE_URL = "https://multix.cloud"
 
@@ -102,7 +102,7 @@ export const useTransactionToasts = (
           const threshold = config?.threshold ?? 1
           const multisigAddress = config?.address
             ? toPolkadotAddress(config.address)
-            : account?.address ?? ""
+            : (account?.address ?? "")
           const multixUrl = multisigAddress
             ? `${MULTIX_BASE_URL}/?network=hydration&address=${multisigAddress}`
             : undefined

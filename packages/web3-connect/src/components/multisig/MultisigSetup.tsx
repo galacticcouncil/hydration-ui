@@ -14,12 +14,12 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress } from "@galacticcouncil/utils"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
+import { SAccountOption } from "@/components/account/AccountOption.styled"
 import { MultisigConfig, useMultisigStore } from "@/hooks/useMultisigStore"
 import {
   deriveMultisigAddress,
@@ -96,9 +96,7 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
   const handleSignerBlur = (index: number) => {
     setSigners((prev) =>
       prev.map((s, i) =>
-        i === index
-          ? { ...s, error: validateSigner(s.value, index) }
-          : s,
+        i === index ? { ...s, error: validateSigner(s.value, index) } : s,
       ),
     )
   }
@@ -201,7 +199,10 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
               const val = parseInt(e.target.value, 10)
               if (!isNaN(val)) {
                 setThreshold(
-                  Math.max(1, Math.min(val, validSigners.length || MIN_SIGNERS)),
+                  Math.max(
+                    1,
+                    Math.min(val, validSigners.length || MIN_SIGNERS),
+                  ),
                 )
               }
             }}
@@ -214,7 +215,10 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
           </Text>
         </Flex>
         {threshold === 1 && (
-          <Alert variant="warning" description={t("multisig.setup.warning.threshold1")} />
+          <Alert
+            variant="warning"
+            description={t("multisig.setup.warning.threshold1")}
+          />
         )}
       </Stack>
 
@@ -250,8 +254,14 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
                 }}
               >
                 <Stack gap="xs" sx={{ minWidth: 0, flex: 1 }}>
-                  <Text fs="p6" color={getToken("text.medium")}>Polkadot</Text>
-                  <Text fs="p5" color={getToken("text.high")} sx={{ wordBreak: "break-all" }}>
+                  <Text fs="p6" color={getToken("text.medium")}>
+                    Polkadot
+                  </Text>
+                  <Text
+                    fs="p5"
+                    color={getToken("text.high")}
+                    sx={{ wordBreak: "break-all" }}
+                  >
                     {derivedAddressPolkadot}
                   </Text>
                 </Stack>
@@ -270,8 +280,14 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
                 }}
               >
                 <Stack gap="xs" sx={{ minWidth: 0, flex: 1 }}>
-                  <Text fs="p6" color={getToken("text.medium")}>Hydration</Text>
-                  <Text fs="p5" color={getToken("text.high")} sx={{ wordBreak: "break-all" }}>
+                  <Text fs="p6" color={getToken("text.medium")}>
+                    Hydration
+                  </Text>
+                  <Text
+                    fs="p5"
+                    color={getToken("text.high")}
+                    sx={{ wordBreak: "break-all" }}
+                  >
                     {derivedAddress}
                   </Text>
                 </Stack>
@@ -319,8 +335,8 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
                   <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
                     <Flex align="center" justify="space-between">
                       <Text fs="p3" truncate={200}>
-                        {config.name || t("multisig.title")} (
-                        {config.threshold}/{config.signers.length})
+                        {config.name || t("multisig.title")} ({config.threshold}
+                        /{config.signers.length})
                       </Text>
                       <Icon
                         size="s"
@@ -333,7 +349,11 @@ export const MultisigSetup: React.FC<Props> = ({ onContinue }) => {
                         }}
                       />
                     </Flex>
-                    <Text fs="p4" color={getToken("text.medium")} truncate={200}>
+                    <Text
+                      fs="p4"
+                      color={getToken("text.medium")}
+                      truncate={200}
+                    >
                       {shortenAccountAddress(config.address)}
                     </Text>
                   </Flex>
