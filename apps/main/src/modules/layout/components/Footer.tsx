@@ -12,7 +12,7 @@ export const Footer = () => {
   const openGigaNews = useBannersStore((state) => state.openGigaNews)
 
   return (
-    <SFooter justify="space-between" bottomPinned>
+    <SFooter justify="space-between">
       <Button
         variant="tertiary"
         outline
