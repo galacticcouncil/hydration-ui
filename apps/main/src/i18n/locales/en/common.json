@@ -233,6 +233,7 @@
   "rpc.status.lagging": "Slightly delayed block on this network. Prices update on every block.",
   "rpc.status.degraded": "This RPC is having a hard time. Please select another RPC.",
   "rpc.status.offline": "This RPC seems to be down. Please select another RPC.",
+  "rpc.status.legacy": "Legacy",
   "rpc.status.ping": "{{ value, number }} ms",
   "rpc.status.blockHeightDiff_one": "{{ count, number }} block behind",
   "rpc.status.blockHeightDiff_other": "{{ count, number }} blocks behind",

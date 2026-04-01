@@ -1,3 +1,4 @@
+import { detectLegacyRpc } from "@galacticcouncil/common"
 import { capitalize } from "remeda"
 
 import { wsToHttp } from "./formatting"
@@ -7,6 +8,7 @@ export type PingResponse = {
   timestamp: number
   ping: number | null
   blockNumber: number | null
+  legacy: boolean
 }
 
 /**
@@ -28,22 +30,22 @@ export async function pingRpc(
         ping: Infinity,
         timestamp: 0,
         blockNumber: null,
+        legacy: false,
       }
 
       try {
         const response = await Promise.race([
           (async () => {
             try {
+              const httpUrl = wsToHttp(url)
               const start = performance.now()
-              const latestBlock = await jsonRpcFetch<{
-                number: string
-                timestamp: string
-              }>(
-                wsToHttp(url),
-                "eth_getBlockByNumber",
-                ["latest", false],
-                signal,
-              )
+              const [latestBlock, legacy] = await Promise.all([
+                jsonRpcFetch<{
+                  number: string
+                  timestamp: string
+                }>(httpUrl, "eth_getBlockByNumber", ["latest", false], signal),
+                detectLegacyRpc(httpUrl, signal),
+              ])
               const ping = performance.now() - start
 
               return {
@@ -51,6 +53,7 @@ export async function pingRpc(
                 ping,
                 blockNumber: parseInt(latestBlock.number, 16),
                 timestamp: parseInt(latestBlock.timestamp, 16) * 1000,
+                legacy,
               }
             } catch {
               return defaultResponse
@@ -141,6 +144,7 @@ export async function getBestRpcs(urls: string[]): Promise<PingResponse[]> {
 
   return results
 }
+
 
 export function parseLarkRpcUrlName(url: string): string {
   const { rawName } =
