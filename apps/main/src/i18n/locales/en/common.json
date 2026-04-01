@@ -344,5 +344,8 @@
   "submitTransaction.validation": "Invalid hex",
   "submitTransaction.warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
   "submitTransaction.toasts.success": "Extrinsic successful",
-  "submitTransaction.toasts.submitted": "Extrinsic submitted"
+  "submitTransaction.toasts.submitted": "Extrinsic submitted",
+  "banner.prime.title": "Borrow Hollar against yield-bearing Prime",
+  "banner.prime.description": "Start earning 7,5% base yield on real estate-backed assets.",
+  "banner.prime.cta": "Try Prime"
 }
