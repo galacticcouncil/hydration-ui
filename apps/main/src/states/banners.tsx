@@ -53,8 +53,8 @@ export const useBannersStore = create<BannersStore>()(
         }),
     }),
     {
-      name: "banners",
-      version: 2,
+      name: "promote-banners",
+      version: 1,
     },
   ),
 )
