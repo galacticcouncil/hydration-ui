@@ -86,7 +86,7 @@ export const useBannersStore = create<BannersStore>()(
     }),
     {
       name: "promote-banners",
-      version: 2,
+      version: 1,
     },
   ),
 )
