@@ -80,11 +80,7 @@ export const RpcStatus: React.FC<RpcStatusProps> = ({
       <Flex gap="s" align="center">
         {ping && ping < Infinity && <RpcPing ping={ping} />}
         {legacy && (
-          <Text
-            fs="p6"
-            mt="xs"
-            color={getToken("text.medium")}
-          >
+          <Text fs="p6" mt="xs" color={getToken("text.medium")}>
             {t("rpc.status.legacy")}
           </Text>
         )}

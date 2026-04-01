@@ -15,8 +15,8 @@ import {
   AssetMetadataFactory,
   DryRunErrorDecoder,
 } from "@galacticcouncil/utils"
-import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { withLegacy } from "@polkadot-api/legacy-provider"
+import { QueryClient, queryOptions } from "@tanstack/react-query"
 import { CompatibilityLevel, PolkadotClient } from "polkadot-api"
 import { WsJsonRpcProvider } from "polkadot-api/ws-provider"
 import { useEffect, useMemo, useState } from "react"
