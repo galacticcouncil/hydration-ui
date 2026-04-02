@@ -9,7 +9,8 @@
     "ctaColor": "rgb(137, 43, 238)",
     "ctaTextColor": "#f4f1ff",
     "cta": "Try Prime",
-    "to": "/borrow"
+    "to": "/borrow",
+    "priority": "2"
   },
   {
     "id": "eurc",
@@ -21,18 +22,20 @@
     "ctaColor": "rgb(0, 0, 0)",
     "ctaTextColor": "#ecfffb",
     "cta": "Try EURC",
-    "to": "/borrow"
+    "to": "/borrow",
+    "priority": "1"
   },
   {
     "id": "gigasol",
     "backgroundImage": "/images/gigasol.webp",
     "backgroundImageMobile": "/images/gigasolMobile.webp",
-    "title": "GIGApower|your SOL",
+    "title": "GIGApower your SOL",
     "description": "Loop, farm rewards or borrow HOLLAR against your yield-bearing GIGASOL position.",
     "textColor": "rgba(255, 255, 255, 0.82)",
     "ctaColor": "#373c4b",
     "ctaTextColor": "#ffffff",
     "cta": "Try GIGASOL",
-    "to": "/borrow"
+    "to": "/borrow",
+    "priority": "3"
   }
 ]

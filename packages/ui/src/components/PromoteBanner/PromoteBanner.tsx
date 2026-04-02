@@ -63,6 +63,7 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
           backgroundImage={item.backgroundImage}
           backgroundImageMobile={item.backgroundImageMobile}
           $exiting={exiting}
+          m="auto"
         >
           <SPromoteBannerBody
             direction="column"

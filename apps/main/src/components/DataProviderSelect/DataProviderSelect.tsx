@@ -32,7 +32,7 @@ export const DataProviderSelect = () => {
 
   return (
     <>
-      <Button variant="tertiary" outline size="small" asChild>
+      <Button variant="tertiary" outline size="small" blur asChild>
         <ExternalLink href={CLASSIC_UI_LINK}>
           <Text fw={600} as="span" color={getToken("text.high")}>
             {t("classicUi")}
@@ -50,6 +50,7 @@ export const DataProviderSelect = () => {
           variant="tertiary"
           size="small"
           outline
+          blur
           onClick={() => setModalOpen(true)}
         >
           {data ? (

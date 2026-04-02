@@ -1,28 +1,27 @@
-import { Flame } from "@galacticcouncil/ui/assets/icons"
-import {
-  Box,
-  Button,
-  Icon,
-  PromoteBanner,
-} from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { Close, Flame } from "@galacticcouncil/ui/assets/icons"
+import { Icon, MorphLabel, PromoteBanner } from "@galacticcouncil/ui/components"
 import { useNavigate } from "@tanstack/react-router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import {
+  SGigaNewsContainer,
+  SGigaNewsToggleButton,
   SStackEnter,
   SStackLayer,
   SStackRoot,
 } from "@/components/GigaNews/GigaNews.styled"
 import { bannerConfig, useBannersStore } from "@/states/banners"
 
-export const GigaNews = () => {
+export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   const { t } = useTranslation("common")
   const [isCloseAll, setCloseAll] = useState(false)
+
   const { openAll, closeAll, closedBannerIds } = useBannersStore()
 
   const allClosed = closedBannerIds.length === bannerConfig.length
+  const [expanded, setExpanded] = useState(allClosed ? false : true)
+  const toggleLabel = expanded ? t("closeAll") : t("gigaNews")
 
   const close = useBannersStore((state) => state.close)
   const navigate = useNavigate()
@@ -37,7 +36,13 @@ export const GigaNews = () => {
   const onCloseAll = useCallback(() => {
     if (!onCloseRef.current || isCloseAll) return
     setCloseAll(true)
-  }, [isCloseAll])
+    setExpanded(false)
+  }, [isCloseAll, setExpanded])
+
+  const onOpenAll = useCallback(() => {
+    setExpanded(true)
+    openAll()
+  }, [openAll, setExpanded])
 
   useEffect(() => {
     if (!isCloseAll) return
@@ -48,8 +53,14 @@ export const GigaNews = () => {
     return () => clearTimeout(id)
   }, [isCloseAll])
 
+  useEffect(() => {
+    if (allClosed && expanded) {
+      setExpanded(false)
+    }
+  }, [allClosed, expanded, setExpanded])
+
   return (
-    <Box>
+    <SGigaNewsContainer $hidden={isHidden && allClosed}>
       {visibleBanners.length > 0 && (
         <SStackRoot>
           {visibleBanners.map((banner, depth) => {
@@ -80,16 +91,16 @@ export const GigaNews = () => {
           })}
         </SStackRoot>
       )}
-      <Button
+      <SGigaNewsToggleButton
         variant="tertiary"
-        outline
         size="small"
-        onClick={allClosed ? openAll : onCloseAll}
-        sx={{ color: getToken("text.high"), textTransform: "uppercase" }}
+        outline
+        blur
+        onClick={allClosed ? onOpenAll : onCloseAll}
       >
-        <Icon size={18} component={Flame} />
-        {allClosed ? t("gigaNews") : t("closeAll")}
-      </Button>
-    </Box>
+        <Icon size={expanded ? 14 : 16} component={expanded ? Close : Flame} />
+        <MorphLabel text={toggleLabel} />
+      </SGigaNewsToggleButton>
+    </SGigaNewsContainer>
   )
 }

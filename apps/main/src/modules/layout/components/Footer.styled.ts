@@ -29,3 +29,16 @@ export const SFooter = styled(Flex)<{ readonly bottomPinned?: boolean }>(
     }
   `,
 )
+
+export const hiddenStyles = (hidden?: boolean) => css`
+  opacity: ${hidden ? 0 : 1};
+  pointer-events: ${hidden ? "none" : "auto"};
+  transform: ${hidden ? "translateY(8px)" : "none"};
+  transition:
+    opacity 360ms ease,
+    transform 360ms ease;
+`
+
+export const SFooterControls = styled(Flex)<{ readonly $hidden?: boolean }>(
+  ({ $hidden }) => hiddenStyles($hidden),
+)

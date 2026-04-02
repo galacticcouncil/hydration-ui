@@ -18,38 +18,44 @@ const parseBannersMarkdown = (markdown: string): Array<BannerConfig> => {
     throw new Error("Invalid banners markdown: expected an array")
   }
 
-  return parsed.map((item) => {
-    if (typeof item !== "object" || item === null) {
-      throw new Error("Invalid banners markdown: each banner must be an object")
-    }
-
-    const values = item as Record<string, unknown>
-
-    const getRequiredValue = (key: string): string => {
-      const value = values[key]
-      if (typeof value !== "string" || value.length === 0) {
-        throw new Error(`Invalid banners markdown: missing "${key}"`)
+  return parsed
+    .map((item) => {
+      if (typeof item !== "object" || item === null) {
+        throw new Error(
+          "Invalid banners markdown: each banner must be an object",
+        )
       }
-      return value
-    }
-    const getOptionalValue = (key: string): string => {
-      const value = values[key]
-      return typeof value === "string" ? value : ""
-    }
 
-    return {
-      id: getRequiredValue("id"),
-      backgroundImage: getRequiredValue("backgroundImage"),
-      backgroundImageMobile: getRequiredValue("backgroundImageMobile"),
-      title: getRequiredValue("title"),
-      description: getRequiredValue("description"),
-      textColor: getOptionalValue("textColor"),
-      ctaColor: getOptionalValue("ctaColor"),
-      ctaTextColor: getOptionalValue("ctaTextColor"),
-      cta: getOptionalValue("cta"),
-      to: getOptionalValue("to"),
-    }
-  })
+      const values = item as Record<string, unknown>
+
+      const getRequiredValue = (key: string): string => {
+        const value = values[key]
+        if (typeof value !== "string" || value.length === 0) {
+          throw new Error(`Invalid banners markdown: missing "${key}"`)
+        }
+        return value
+      }
+
+      const getOptionalValue = (key: string): string => {
+        const value = values[key]
+        return typeof value === "string" ? value : ""
+      }
+
+      return {
+        id: getRequiredValue("id"),
+        backgroundImage: getRequiredValue("backgroundImage"),
+        backgroundImageMobile: getRequiredValue("backgroundImageMobile"),
+        title: getRequiredValue("title"),
+        description: getRequiredValue("description"),
+        textColor: getOptionalValue("textColor"),
+        ctaColor: getOptionalValue("ctaColor"),
+        ctaTextColor: getOptionalValue("ctaTextColor"),
+        cta: getOptionalValue("cta"),
+        to: getOptionalValue("to"),
+        priority: getRequiredValue("priority"),
+      }
+    })
+    .sort((a, b) => Number(a.priority) - Number(b.priority))
 }
 
 export const bannerConfig: Array<BannerConfig> =
