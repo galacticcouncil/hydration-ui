@@ -1,6 +1,11 @@
 import { logger } from "@galacticcouncil/utils"
 import { Binary, compactNumber } from "@polkadot-api/substrate-bindings"
-import { InvalidTxError, PolkadotSigner } from "polkadot-api"
+import {
+  HexString,
+  InvalidTxError,
+  PolkadotClient,
+  PolkadotSigner,
+} from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { isBigInt, isFunction, isNumber, isObjectType, isString } from "remeda"
 import { catchError, Observable, of, shareReplay } from "rxjs"
@@ -32,12 +37,29 @@ export const isBatchDecodedCallValue = (
   return isObjectType(value) && "type" in value && value.type === "batch_all"
 }
 
+export const getBlockHashAtParentOffset = async (
+  client: PolkadotClient,
+  offset: number,
+): Promise<HexString | undefined> => {
+  try {
+    const block = await client.getFinalizedBlock()
+    const targetHash = await client._request<string>("chain_getBlockHash", [
+      block.number - offset,
+    ])
+
+    return targetHash
+  } catch (error) {
+    return undefined
+  }
+}
+
 export const signAndSubmitPolkadotTx: TxSignAndSubmitFn<
   AnyPapiTx,
   PolkadotSigner
 > = async (tx, signer, options) => {
   const observer = tx
     .signSubmitAndWatch(signer, {
+      at: options?.signAt,
       nonce: options?.nonce,
       tip: options?.tip,
       mortality: { mortal: true, period: options.mortalityPeriod },

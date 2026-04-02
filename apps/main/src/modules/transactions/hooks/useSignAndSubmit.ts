@@ -1,3 +1,4 @@
+import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import {
   isEthereumSigner,
   isPolkadotSigner,
@@ -16,6 +17,7 @@ import {
   signAndSubmitEvmTx,
 } from "@/modules/transactions/utils/ethereum"
 import {
+  getBlockHashAtParentOffset,
   isPapiTransaction,
   signAndSubmitPolkadotTx,
   submitUnsignedPolkadotTx,
@@ -39,6 +41,8 @@ import {
 } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"
+
+export const MORTALITY_BIRTH_BLOCK_OFFSET = 20
 
 export const useSignAndSubmit = (
   transaction: SingleTransaction,
@@ -84,7 +88,15 @@ export const useSignAndSubmit = (
       }
 
       if (isPapiTransaction(tx) && isPolkadotSigner(signer)) {
-        return signAndSubmitPolkadotTx(tx, signer, txOptions)
+        const signAt =
+          txOptions.chainKey === HYDRATION_CHAIN_KEY
+            ? await getBlockHashAtParentOffset(
+                papiClient,
+                MORTALITY_BIRTH_BLOCK_OFFSET,
+              )
+            : undefined
+
+        return signAndSubmitPolkadotTx(tx, signer, { ...txOptions, signAt })
       }
 
       if (isPapiTransaction(tx) && isEthereumSigner(signer)) {
@@ -96,10 +108,18 @@ export const useSignAndSubmit = (
       }
 
       if (isEvmCall(tx) && isPolkadotSigner(signer)) {
+        const signAt =
+          txOptions.chainKey === HYDRATION_CHAIN_KEY
+            ? await getBlockHashAtParentOffset(
+                papiClient,
+                MORTALITY_BIRTH_BLOCK_OFFSET,
+              )
+            : undefined
+
         return signAndSubmitPolkadotTx(
           transformEvmCallToPapiTx(papi, tx),
           signer,
-          txOptions,
+          { ...txOptions, signAt },
         )
       }
 

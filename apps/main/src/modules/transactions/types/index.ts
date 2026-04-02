@@ -3,7 +3,13 @@ import { tx } from "@galacticcouncil/sdk-next"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { Call } from "@galacticcouncil/xc-sdk"
-import { Enum, InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
+import {
+  Enum,
+  HexString,
+  InvalidTxError,
+  PolkadotClient,
+  TxEvent,
+} from "polkadot-api"
 import { Subscription } from "rxjs"
 import { TransactionReceipt } from "viem"
 
@@ -43,6 +49,7 @@ export type TxOptions = TxStatusCallbacks & {
   tip?: bigint
   weight?: bigint
   mortalityPeriod: TxMortalityPeriod
+  signAt?: HexString | "finalized" | "best"
   chainKey: string
   feeAssetId: string
   priorityRpcUrl?: string
