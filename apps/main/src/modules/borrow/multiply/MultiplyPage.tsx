@@ -1,4 +1,5 @@
 import {
+  Box,
   Flex,
   SectionHeader,
   Stack,
@@ -15,12 +16,12 @@ import { MultiplyPageSkeleton } from "@/modules/borrow/multiply/MultiplyPageSkel
 export const MultiplyPage = () => {
   const { t } = useTranslation("borrow")
 
-  const { isLoading, allPairs, featuredPairs } = useMultiplyPairs()
+  const { isLoading, allPairs, featuredItems } = useMultiplyPairs()
 
   if (isLoading) return <MultiplyPageSkeleton />
 
   return (
-    <Stack gap="xxl">
+    <Stack>
       <Flex align="center" justify="space-between" width="100%">
         <Stack
           direction={["column", null, "row"]}
@@ -43,13 +44,16 @@ export const MultiplyPage = () => {
         </Stack>
       </Flex>
 
-      <StrategyPositions />
+      <Box>
+        <StrategyPositions sx={{ mt: "xxl" }} />
+        <SectionHeader title={t("multiply.featuredStrategies")} />
+        <FeaturedPairs items={featuredItems} />
+      </Box>
 
-      <SectionHeader title={t("multiply.featuredStrategies")} />
-      <FeaturedPairs pairs={featuredPairs} />
-
-      <SectionHeader title={t("multiply.allPairs")} />
-      <MultiplyPairsTable pairs={allPairs} />
+      <Box>
+        <SectionHeader title={t("multiply.allPairs")} />
+        <MultiplyPairsTable pairs={allPairs} />
+      </Box>
     </Stack>
   )
 }

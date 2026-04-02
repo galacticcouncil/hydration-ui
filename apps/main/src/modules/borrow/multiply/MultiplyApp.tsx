@@ -65,6 +65,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     totalCollateral,
     targetDebt,
     isLoading,
+    isSubmitting,
     errors,
     borrowAsset,
     collateralAsset,
@@ -96,7 +97,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={form.handleSubmit(() => onSubmit())}>
         <Stack gap="l" as={Paper} p="xl">
           <AssetSelectFormField<MultiplyFormValues>
             label={t("multiply.app.yourDeposit")}
@@ -187,9 +188,12 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
           <AuthorizedAction size="large" width="100%">
             <LoadingButton
-              isLoading={isLoading}
+              isLoading={isLoading || isSubmitting}
               disabled={
-                isLoading || errors.length > 0 || !form.formState.isValid
+                isLoading ||
+                isSubmitting ||
+                errors.length > 0 ||
+                !form.formState.isValid
               }
               variant="primary"
               size="large"

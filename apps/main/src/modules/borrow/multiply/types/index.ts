@@ -10,16 +10,22 @@ export type MultiplyLoopConfig = {
   enterWithAssetId?: string
 }
 
-export type MultiplyAssetPair = {
-  name?: string
-  icon?: ComponentType
+export type MultiplyAssetPairConfig = {
+  id: string
   collateralAssetId: string
   debtAssetId: string
   enterWithAssetId?: string
   isParityPair: boolean
   eModeCategory: EModeCategory
+  name?: string
+  icon?: ComponentType
 }
 
-export type MultiplyAssetPairConfig = {
+export type MultiplyAssetPair = Omit<MultiplyAssetPairConfig, "id">
+
+export type MultiplyStrategyConfig = {
   id: string
-} & MultiplyAssetPair
+  name: string
+  icon: ComponentType
+  pairIds: readonly string[]
+}

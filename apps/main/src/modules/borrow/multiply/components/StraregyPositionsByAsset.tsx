@@ -1,12 +1,14 @@
 import {
+  CollapsibleContent,
+  CollapsibleRoot,
   DataTable,
   Flex,
   Paper,
+  SectionHeader,
+  Separator,
   TableContainer,
-  Text,
 } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
-import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
 import { StrategyPositionWrapper } from "@/modules/borrow/multiply/components/StrategyPosition"
@@ -16,7 +18,15 @@ import {
   useStrategyGroupedPositions,
 } from "@/modules/borrow/multiply/components/StrategyPositions.utils"
 
-export const StrategyPositionsByAsset = ({ assetId }: { assetId: string }) => {
+type StrategyPositionsByAssetProps = {
+  assetId: string
+  actionColumnHidden?: boolean
+  className?: string
+}
+
+export const StrategyPositionsByAsset: React.FC<
+  StrategyPositionsByAssetProps
+> = ({ assetId, actionColumnHidden, className }) => {
   const { t } = useTranslation("common")
   const { data, isLoading } = useStrategyGroupedPositions()
   const assetsColumns = useStrategyAssetsColumns()
@@ -25,41 +35,40 @@ export const StrategyPositionsByAsset = ({ assetId }: { assetId: string }) => {
   const filteredData = data.find((item) => item.suppliedAssetId === assetId)
 
   return (
-    <TableContainer as={Paper}>
-      <Text
-        fs="p3"
-        fw={500}
-        font="primary"
-        color={getToken("text.high")}
-        sx={{
-          px: ["base", "l"],
-          py: "l",
-          borderBottom: "1px solid",
-          borderColor: getToken("details.separators"),
-        }}
-      >
-        {t("myPositions")}
-      </Text>
-
-      <DataTable
-        size="small"
-        data={filteredData ? [filteredData] : []}
-        columns={assetsColumns}
-        isLoading={isLoading}
-        columnVisibility={getStrategyPositionsColumnsVisibility(isMobile)}
-        expandable={"single"}
-        getIsExpandable={({ positionsAmount }) => positionsAmount > 0}
-        renderSubComponent={(row) => (
-          <Flex direction="column" gap="m">
-            {row.positions.map((position) => (
-              <StrategyPositionWrapper
-                key={position.proxyAddress}
-                position={position}
-              />
-            ))}
-          </Flex>
-        )}
-      />
-    </TableContainer>
+    <CollapsibleRoot open={!isLoading && data.length > 0}>
+      <CollapsibleContent className={className}>
+        <TableContainer as={Paper}>
+          <SectionHeader
+            title={t("myPositions")}
+            noTopPadding
+            hasDescription
+            sx={{ px: ["base", "l"], pt: "l" }}
+          />
+          <Separator mt="m" />
+          <DataTable
+            size="small"
+            data={filteredData ? [filteredData] : []}
+            columns={assetsColumns}
+            isLoading={isLoading}
+            columnVisibility={getStrategyPositionsColumnsVisibility(
+              isMobile,
+              actionColumnHidden,
+            )}
+            expandable={"single"}
+            getIsExpandable={({ positionsAmount }) => positionsAmount > 0}
+            renderSubComponent={(row) => (
+              <Flex direction="column" gap="m">
+                {row.positions.map((position) => (
+                  <StrategyPositionWrapper
+                    key={position.proxyAddress}
+                    position={position}
+                  />
+                ))}
+              </Flex>
+            )}
+          />
+        </TableContainer>
+      </CollapsibleContent>
+    </CollapsibleRoot>
   )
 }

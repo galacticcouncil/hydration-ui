@@ -12,6 +12,6 @@ export const Route = createFileRoute("/borrow/multiply/")({
       context: { i18n },
     },
   }) => ({
-    meta: getPageMeta("borrow", i18n.t),
+    meta: getPageMeta("borrowMultiply", i18n.t),
   }),
 })
