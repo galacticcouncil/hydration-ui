@@ -116,7 +116,7 @@ export const useProviderRpcUrlStore = create<ProviderRpcUrlStore>()(
     }),
     {
       name: "rpcUrl",
-      version: 4,
+      version: 4.1,
       partialize: omit(["rpcUrlList"]),
     },
   ),
