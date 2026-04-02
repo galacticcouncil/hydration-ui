@@ -1,10 +1,4 @@
-import {
-  PromoteBanner,
-  type PromoteBannerItem,
-} from "@galacticcouncil/ui/components"
-import { useNavigate } from "@tanstack/react-router"
-import { useCallback, useEffect } from "react"
-import { toast as bannerSonner } from "sonner"
+import { type PromoteBannerItem } from "@galacticcouncil/ui/components"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
@@ -58,7 +52,8 @@ const parseBannersMarkdown = (markdown: string): Array<BannerConfig> => {
   })
 }
 
-const bannerConfig: Array<BannerConfig> = parseBannersMarkdown(bannersMarkdown)
+export const bannerConfig: Array<BannerConfig> =
+  parseBannersMarkdown(bannersMarkdown)
 
 type BannersState = {
   closedBannerIds: string[]
@@ -66,7 +61,8 @@ type BannersState = {
 
 type BannersActions = {
   close: (id: string) => void
-  openGigaNews: () => void
+  openAll: () => void
+  closeAll: () => void
 }
 
 type BannersStore = BannersState & BannersActions
@@ -87,10 +83,16 @@ export const useBannersStore = create<BannersStore>()(
             closedBannerIds: [...state.closedBannerIds, id],
           }
         }),
-      openGigaNews: () =>
+      openAll: () =>
         set(() => {
           return {
             closedBannerIds: [],
+          }
+        }),
+      closeAll: () =>
+        set(() => {
+          return {
+            closedBannerIds: bannerConfig.map((banner) => banner.id),
           }
         }),
     }),
@@ -100,55 +102,3 @@ export const useBannersStore = create<BannersStore>()(
     },
   ),
 )
-
-export const useBanners = () => {
-  const closedBannerIds = useBannersStore((state) => state.closedBannerIds)
-  const close = useBannersStore((state) => state.close)
-  const navigate = useNavigate()
-
-  const renderBanners = useCallback(() => {
-    bannerConfig.forEach((banner) => {
-      if (closedBannerIds.includes(banner.id)) return
-
-      const onClose = () => {
-        close(banner.id)
-        banner.onClose?.()
-        bannerSonner.dismiss(banner.id)
-      }
-
-      bannerSonner.custom(
-        () => (
-          <PromoteBanner
-            item={{
-              ...banner,
-              onClose,
-              ...(banner.to
-                ? {
-                    onCta: () => {
-                      navigate({ to: banner.to })
-                    },
-                  }
-                : {}),
-            }}
-          />
-        ),
-        {
-          id: banner.id,
-          duration: Infinity,
-          position: "bottom-left",
-          onDismiss: onClose,
-        },
-      )
-    })
-  }, [close, closedBannerIds, navigate])
-
-  return { renderBanners }
-}
-
-export const useRenderBanners = () => {
-  const { renderBanners } = useBanners()
-
-  useEffect(() => {
-    renderBanners()
-  }, [renderBanners])
-}

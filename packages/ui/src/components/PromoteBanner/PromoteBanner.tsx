@@ -1,6 +1,7 @@
 import { pxToRem } from "@galacticcouncil/ui/utils"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { Button, Flex, Icon, Text } from "@/components"
 import { getToken } from "@/utils"
@@ -34,6 +35,23 @@ export type PromoteBannerProps = {
 export const PromoteBanner = ({ item }: PromoteBannerProps) => {
   const isOpen = item.open ?? true
 
+  const [exiting, setExiting] = useState(false)
+  const onCloseRef = useRef(item.onClose)
+  onCloseRef.current = item.onClose
+
+  const requestClose = useCallback(() => {
+    if (!onCloseRef.current || exiting) return
+    setExiting(true)
+  }, [exiting])
+
+  useEffect(() => {
+    if (!exiting) return
+    const id = setTimeout(() => {
+      onCloseRef.current?.()
+    }, 280)
+    return () => clearTimeout(id)
+  }, [exiting])
+
   return (
     <DialogPrimitive.Root
       open={isOpen}
@@ -44,6 +62,7 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
         <SPromoteBannerContent
           backgroundImage={item.backgroundImage}
           backgroundImageMobile={item.backgroundImageMobile}
+          $exiting={exiting}
         >
           <SPromoteBannerBody
             direction="column"
@@ -103,14 +122,13 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
             </Flex>
 
             {item.onClose && (
-              <DialogPrimitive.Close asChild>
-                <SPromoteBannerClose
-                  onClick={item.onClose}
-                  aria-label="Close promote banner"
-                >
-                  <Icon component={X} size="s" />
-                </SPromoteBannerClose>
-              </DialogPrimitive.Close>
+              <SPromoteBannerClose
+                type="button"
+                onClick={requestClose}
+                aria-label="Close promote banner"
+              >
+                <Icon component={X} size="s" />
+              </SPromoteBannerClose>
             )}
           </SPromoteBannerBody>
         </SPromoteBannerContent>
