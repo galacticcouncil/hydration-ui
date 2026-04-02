@@ -9,7 +9,7 @@ export const WalletRewards: FC = () => {
 
   return (
     <Grid rowTemplate="auto 1fr">
-      <SectionHeader title={t("rewards.title")} />
+      <SectionHeader noTopPadding title={t("rewards.title")} />
       <WalletRewardsSection />
     </Grid>
   )
