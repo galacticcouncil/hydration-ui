@@ -57,7 +57,7 @@ export const LayoutSkeleton = () => {
       ) : (
         <Loader />
       )}
-      <Footer />
+      <Footer loading />
     </>
   )
 }

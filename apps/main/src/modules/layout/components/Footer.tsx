@@ -9,7 +9,7 @@ import {
 
 const FOOTER_VISIBLE_AFTER_ACTIVITY_MS = 1000
 
-export const Footer = () => {
+export const Footer = ({ loading }: { loading?: boolean }) => {
   const [isActive, setIsActive] = useState(false)
   const [isAtBottom, setIsAtBottom] = useState(false)
   const activityTimeoutRef = useRef<number | null>(null)
@@ -53,11 +53,11 @@ export const Footer = () => {
     }
   }, [])
 
-  const hidden = !isActive && !isAtBottom
+  const hidden = !isActive && !isAtBottom && !loading
 
   return (
     <SFooter justify="space-between">
-      <GigaNews isHidden={hidden} />
+      {!loading ? <GigaNews isHidden={hidden} /> : <div />}
 
       <SFooterControls $hidden={hidden} gap="base">
         <DataProviderSelect />
