@@ -3,7 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import { Button, Flex, Icon, Text } from "@/components"
+import { Flex, Icon, SDefaultButton, Text } from "@/components"
 import { getToken } from "@/utils"
 
 import {
@@ -104,17 +104,19 @@ export const PromoteBanner = ({ item }: PromoteBannerProps) => {
               </Flex>
               {item.cta ? (
                 typeof item.cta === "string" ? (
-                  <Button
-                    variant="sliderTabActive"
+                  <SDefaultButton
                     size="medium"
                     onClick={item.onCta}
                     sx={{
                       backgroundColor: item.ctaColor,
                       color: item.ctaTextColor,
+                      ":hover": {
+                        filter: "brightness(1.18)",
+                      },
                     }}
                   >
                     {item.cta}
-                  </Button>
+                  </SDefaultButton>
                 ) : (
                   item.cta
                 )

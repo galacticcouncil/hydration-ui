@@ -305,6 +305,14 @@ export const SButton = styled(Box, {
   disabledStyles,
 )
 
+export const SDefaultButton = styled(Box, {
+  shouldForwardProp: (prop) => !["variant", "size", "outline"].includes(prop),
+})<SButtonProps>(
+  defaulStyles,
+  ({ size = "small" }) => [sizes(size)],
+  disabledStyles,
+)
+
 export const SButtonTransparent = styled.button`
   background: transparent;
 
