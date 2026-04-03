@@ -52,6 +52,15 @@ export const useAssetSelectModalAssets = ({
     }
   }
 
+  const isLoading = isPriceLoading || isBalanceLoading
+
+  if (isLoading) {
+    return {
+      sortedAssets: filteredAssets,
+      isLoading,
+    }
+  }
+
   const assetsWithBalances = filteredAssets.map((asset) => {
     const balance = scaleHuman(getTransferableBalance(asset.id), asset.decimals)
 
@@ -71,7 +80,7 @@ export const useAssetSelectModalAssets = ({
     ...sortOptions,
   })
 
-  return { sortedAssets, isLoading: isPriceLoading || isBalanceLoading }
+  return { sortedAssets, isLoading }
 }
 
 export const useFilteredSearchAssets = <T extends TAssetData>(
