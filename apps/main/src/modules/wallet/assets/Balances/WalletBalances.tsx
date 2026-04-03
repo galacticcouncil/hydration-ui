@@ -27,7 +27,7 @@ export const WalletBalances: FC = () => {
 
   return (
     <Grid rowTemplate="auto 1fr">
-      <SectionHeader title={t("balances.title")} />
+      <SectionHeader noTopPadding title={t("balances.title")} />
       <SWalletBalances>
         <NetWorth
           assetBalance={assets}
