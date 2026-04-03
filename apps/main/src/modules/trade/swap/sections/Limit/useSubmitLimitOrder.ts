@@ -9,8 +9,8 @@ import { scale } from "@/utils/formatting"
 
 const EXPIRY_MS: Record<string, number> = {
   "1h": 1 * 60 * 60 * 1000,
-  "24h": 24 * 60 * 60 * 1000,
-  "48h": 48 * 60 * 60 * 1000,
+  "12h": 12 * 60 * 60 * 1000,
+  "24h": 23 * 60 * 60 * 1000 + 59 * 60 * 1000, // just under runtime's 24h max
 }
 
 export const useSubmitLimitOrder = () => {

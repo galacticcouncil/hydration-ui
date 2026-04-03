@@ -6,20 +6,24 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
+import { formatNumber, SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
-import { ArrowLeftRight } from "lucide-react"
+import { ArrowDown, ArrowLeftRight, ArrowUp, Pencil, X } from "lucide-react"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { formatNumber } from "@galacticcouncil/utils"
 import { spotPriceQuery } from "@/api/spotPrice"
+import { bestSellQuery } from "@/api/trade"
+import { scaleHuman } from "@/utils/formatting"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
+  SCustomPctInput,
+  SCustomPill,
   SDenominationPill,
+  SPctBadge,
   SPriceOption,
 } from "@/modules/trade/swap/sections/Limit/Limit.styled"
 import { LimitAssetSwitcher } from "@/modules/trade/swap/sections/Limit/LimitAssetSwitcher"
@@ -37,13 +41,12 @@ import {
   DEFAULT_TRADE_ASSET_OUT_ID,
 } from "@/routes/trade/_history/route"
 
-const PRICE_ADJUSTMENTS = [
-  { label: "-10%", factor: 0.9 },
-  { label: "-5%", factor: 0.95 },
-  { label: "Market", factor: 1, isMarket: true },
-  { label: "+5%", factor: 1.05 },
-  { label: "+10%", factor: 1.1 },
-] as const
+// Percentage offsets shown as pills. Factors are derived per-render based on isPriceInverted.
+const PILL_PCTS = [2, 5, 10] as const
+
+// Buffer applied to "Best" (market) pill: sets limit slightly below spot so the order
+// can be filled via AMM routing even without a CoW match (accounts for price impact).
+const BEST_PILL_BUFFER = 0.005 // 0.5% below spot in internal (buyAsset/sellAsset) terms
 
 export const LimitForm: FC = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -55,7 +58,13 @@ export const LimitForm: FC = () => {
   const { control, getValues, setValue, reset, trigger, watch } =
     useFormContext<LimitFormValues>()
 
-  const [sellAsset, buyAsset] = watch(["sellAsset", "buyAsset"])
+  const [sellAsset, buyAsset, limitPrice, sellAmount, buyAmountVal] = watch([
+    "sellAsset",
+    "buyAsset",
+    "limitPrice",
+    "sellAmount",
+    "buyAmount",
+  ])
 
   const buyableAssets = useMemo(
     () => tradable.filter((asset) => !SELL_ONLY_ASSETS.includes(asset.id)),
@@ -66,71 +75,164 @@ export const LimitForm: FC = () => {
     spotPriceQuery(rpc, sellAsset?.id ?? "", buyAsset?.id ?? ""),
   )
 
-  const [selectedFactor, setSelectedFactor] = useState<number>(1)
-  const [isPriceInverted, setIsPriceInverted] = useState(true)
+  // Swap execution quote: gives us the effective rate including fees & price impact
+  const { data: bestSellData } = useQuery(
+    bestSellQuery(rpc, {
+      assetIn: sellAsset?.id ?? "",
+      assetOut: buyAsset?.id ?? "",
+      amountIn: sellAmount || "0",
+    }),
+  )
 
-  // Reset price direction when assets change
+  // Derive "Best" price from the swap quote (effective execution rate).
+  // bestPrice = amountOut / sellAmount (in human-readable units = buyAsset per sellAsset).
+  // Falls back to spot × (1 - buffer) when no sell amount or quote unavailable.
+  const bestPrice = useMemo(() => {
+    if (bestSellData && sellAmount && Big(sellAmount).gt(0) && buyAsset) {
+      const amountOutHuman = scaleHuman(
+        bestSellData.amountOut,
+        buyAsset.decimals,
+      )
+      if (amountOutHuman && Big(amountOutHuman).gt(0)) {
+        return Big(amountOutHuman).div(sellAmount).toString()
+      }
+    }
+    // Fallback: spot price with buffer
+    if (spotPriceData?.spotPrice) {
+      return Big(spotPriceData.spotPrice)
+        .times(1 - BEST_PILL_BUFFER)
+        .toString()
+    }
+    return null
+  }, [bestSellData, sellAmount, buyAsset, spotPriceData?.spotPrice])
+
+  // selectedFactor: 1 = Market, 0 = custom/manual, else a specific pill factor
+  const [selectedFactor, setSelectedFactor] = useState<number>(1)
+  // isPriceInverted=true: display = sellAsset per buyAsset (1/internal)
+  // isPriceInverted=false: display = buyAsset per sellAsset (internal)
+  const [isPriceInverted, setIsPriceInverted] = useState(false)
+  const [customPct, setCustomPct] = useState<string>("0")
+
+  // Guards to prevent onValueChange from treating programmatic updates as user edits
+  const programmaticPriceRef = useRef(false)
+  const denominationChangingRef = useRef(false)
+  // Tracks whether buy amount was last edited by user (prevents live-sync overwriting it)
+  const buyEditedRef = useRef(false)
+
+  // Reset display direction when assets change
   useEffect(() => {
-    setIsPriceInverted(true)
+    setIsPriceInverted(false)
   }, [sellAsset?.id, buyAsset?.id])
 
+  // Displayed symbol (numerator of the price ratio shown to user)
+  // Denomination pill / input label: shows the current display unit (numerator of the price ratio)
+  const displaySymbol = isPriceInverted ? sellAsset?.symbol : buyAsset?.symbol
+
+  // Arrow icon direction for "better" pills: inverted display goes down, non-inverted goes up
+  const PillArrowIcon = isPriceInverted ? ArrowDown : ArrowUp
+
+  // Each pill factor: for inverted display, "better" = lower displayed = lower internal factor
+  const pillAdjustments = PILL_PCTS.map((pct) => ({
+    pct,
+    factor: isPriceInverted ? 1 - pct / 100 : 1 + pct / 100,
+  }))
+
+  // Convert internal price (buyAsset per sellAsset) to displayed value
   const toDisplayPrice = (internal: string) => {
     if (!internal || Big(internal).eq(0)) return ""
     const raw = isPriceInverted ? Big(1).div(internal).toString() : internal
     return formatNumber(raw, undefined, { useGrouping: false })
   }
 
+  // Convert displayed price back to internal (buyAsset per sellAsset)
   const toInternalPrice = (displayed: string) => {
     if (!displayed || Big(displayed).eq(0)) return ""
     return isPriceInverted ? Big(1).div(displayed).toString() : displayed
   }
 
-  const recalculateBuyAmount = (sellAmount: string, limitPrice: string) => {
-    if (!sellAmount || !limitPrice || Big(limitPrice).eq(0)) {
+  // Round to 5 significant digits for display of calculated amounts
+  const toSignificant = (value: string, digits = 5) => {
+    const n = Big(value)
+    if (n.eq(0)) return "0"
+    return n.toPrecision(digits)
+  }
+
+  const recalculateBuyAmount = (
+    currentSellAmount: string,
+    internalLimitPrice: string,
+  ) => {
+    if (
+      !currentSellAmount ||
+      !internalLimitPrice ||
+      Big(internalLimitPrice).eq(0)
+    ) {
       setValue("buyAmount", "")
       return
     }
-    setValue("buyAmount", Big(sellAmount).times(limitPrice).toString())
+    setValue(
+      "buyAmount",
+      toSignificant(Big(currentSellAmount).times(internalLimitPrice).toString()),
+    )
   }
 
+  // % deviation from spot, symmetric across denomination toggle.
+  // Computed from internal prices (buyAsset per sellAsset), sign flipped for inverted display.
+  const pctFromMarket = useMemo(() => {
+    if (!limitPrice || !spotPriceData?.spotPrice || Big(limitPrice).eq(0))
+      return null
+    const market = Big(spotPriceData.spotPrice)
+    const limit = Big(limitPrice)
+    if (market.eq(0)) return null
+    const internalPct = limit.div(market).minus(1).times(100)
+    return isPriceInverted ? internalPct.neg() : internalPct
+  }, [limitPrice, spotPriceData?.spotPrice, isPriceInverted])
 
-  // Prefill limit price with market price on initial load or when assets change
+  // Treat as "at market" when Market pill is explicitly selected or deviation is negligible
+  const isAtMarket =
+    selectedFactor === 1 ||
+    (pctFromMarket !== null && pctFromMarket.abs().lt(0.01))
+
+  // Prefill limit price on initial load or asset change
   const prevAssetsRef = useRef<string>("")
   useEffect(() => {
     const assetsKey = `${sellAsset?.id}-${buyAsset?.id}`
     const assetsChanged = prevAssetsRef.current !== assetsKey
     prevAssetsRef.current = assetsKey
 
-    if (!spotPriceData?.spotPrice) return
+    if (!bestPrice) return
 
     const currentLimitPrice = getValues("limitPrice")
     if (!currentLimitPrice || assetsChanged) {
-      setValue("limitPrice", spotPriceData.spotPrice)
+      programmaticPriceRef.current = true
+      setValue("limitPrice", bestPrice)
       setSelectedFactor(1)
-      const sellAmount = getValues("sellAmount")
-      if (sellAmount) {
-        recalculateBuyAmount(sellAmount, spotPriceData.spotPrice)
+      const currentSellAmount = getValues("sellAmount")
+      if (currentSellAmount) {
+        recalculateBuyAmount(currentSellAmount, bestPrice)
       }
     }
-  }, [spotPriceData, sellAsset?.id, buyAsset?.id, getValues, setValue])
+  }, [bestPrice, sellAsset?.id, buyAsset?.id, getValues, setValue])
 
-  // When "Market" is selected, keep limit price synced to live spot price every block
+  // Keep limit price synced to live quote every block while Best pill is selected
   useEffect(() => {
-    if (selectedFactor !== 1 || !spotPriceData?.spotPrice) return
+    if (selectedFactor !== 1 || !bestPrice) return
 
-    const adjustedPrice = spotPriceData.spotPrice
-    setValue("limitPrice", adjustedPrice)
+    programmaticPriceRef.current = true
+    setValue("limitPrice", bestPrice)
     trigger("limitPrice")
 
-    const sellAmount = getValues("sellAmount")
-    if (sellAmount) recalculateBuyAmount(sellAmount, adjustedPrice)
-  }, [spotPriceData?.spotPrice, selectedFactor, setValue, trigger, getValues])
+    // Only recalculate buy if the user didn't manually edit it
+    if (!buyEditedRef.current) {
+      const currentSellAmount = getValues("sellAmount")
+      if (currentSellAmount) recalculateBuyAmount(currentSellAmount, bestPrice)
+    }
+  }, [bestPrice, selectedFactor, setValue, trigger, getValues])
 
-  // Ensure default assets are set on mount
+  // Ensure default assets on mount
   useEffect(() => {
-    const { sellAsset, buyAsset, ...values } = getValues()
+    const { sellAsset: sa, buyAsset: ba, ...values } = getValues()
 
-    if (!sellAsset || !buyAsset) {
+    if (!sa || !ba) {
       reset({
         ...values,
         sellAsset: getAsset(DEFAULT_TRADE_ASSET_IN_ID),
@@ -150,19 +252,19 @@ export const LimitForm: FC = () => {
   }, [getValues, reset, getAsset, navigate])
 
   const handleSellAssetChange = (
-    sellAsset: TAsset,
+    newSellAsset: TAsset,
     previousSellAsset: TAsset | null,
   ): void => {
-    const { buyAsset } = getValues()
+    const { buyAsset: ba } = getValues()
 
-    if (sellAsset.id !== buyAsset?.id) {
+    if (newSellAsset.id !== ba?.id) {
       trigger("sellAmount")
       navigate({
         to: ".",
         search: (search) => ({
           ...search,
-          assetIn: sellAsset.id,
-          assetOut: buyAsset?.id,
+          assetIn: newSellAsset.id,
+          assetOut: ba?.id,
         }),
         resetScroll: false,
       })
@@ -173,18 +275,18 @@ export const LimitForm: FC = () => {
   }
 
   const handleBuyAssetChange = (
-    buyAsset: TAsset,
+    newBuyAsset: TAsset,
     previousBuyAsset: TAsset | null,
   ): void => {
-    const { sellAsset } = getValues()
+    const { sellAsset: sa } = getValues()
 
-    if (buyAsset.id !== sellAsset?.id) {
+    if (newBuyAsset.id !== sa?.id) {
       navigate({
         to: ".",
         search: (search) => ({
           ...search,
-          assetIn: sellAsset?.id,
-          assetOut: buyAsset.id,
+          assetIn: sa?.id,
+          assetOut: newBuyAsset.id,
         }),
         resetScroll: false,
       })
@@ -194,29 +296,42 @@ export const LimitForm: FC = () => {
     }
   }
 
-  const recalculateLimitPrice = (sellAmount: string, buyAmount: string) => {
-    if (!sellAmount || !buyAmount || Big(sellAmount).eq(0)) {
-      return
+  const resetLimitToBest = () => {
+    if (bestPrice) {
+      programmaticPriceRef.current = true
+      setValue("limitPrice", bestPrice)
     }
-    setValue("limitPrice", Big(buyAmount).div(sellAmount).toString())
-    trigger("limitPrice")
-    setSelectedFactor(0)
+    setSelectedFactor(1)
   }
 
   const handleSellAmountChange = (newSellAmount: string) => {
+    buyEditedRef.current = false
+    if (!newSellAmount) {
+      setValue("buyAmount", "")
+      resetLimitToBest()
+      return
+    }
     recalculateBuyAmount(newSellAmount, getValues("limitPrice"))
   }
 
   const handleBuyAmountChange = (newBuyAmount: string) => {
-    setSelectedFactor(0)
-    const sellAmount = getValues("sellAmount")
-    if (sellAmount) {
-      recalculateLimitPrice(sellAmount, newBuyAmount)
+    buyEditedRef.current = true
+    // Buy edited → recalculate sell (sell = buy / limitPrice), keep limit price fixed
+    // Buy cleared → clear sell too
+    if (!newBuyAmount) {
+      setValue("sellAmount", "")
+      buyEditedRef.current = false
+      resetLimitToBest()
+      return
+    }
+    const currentLimitPrice = getValues("limitPrice")
+    if (currentLimitPrice && !Big(currentLimitPrice).eq(0)) {
+      setValue("sellAmount", toSignificant(Big(newBuyAmount).div(currentLimitPrice).toString()))
     }
   }
 
-  const handleLimitPriceChange = (newLimitPrice: string) => {
-    recalculateBuyAmount(getValues("sellAmount"), newLimitPrice)
+  const handleLimitPriceChange = (internalLimitPrice: string) => {
+    recalculateBuyAmount(getValues("sellAmount"), internalLimitPrice)
   }
 
   const handlePriceAdjustment = (factor: number) => {
@@ -224,9 +339,27 @@ export const LimitForm: FC = () => {
     if (!marketPrice) return
 
     setSelectedFactor(factor)
-    // When display is inverted (sellAsset per buyAsset), the factor must be applied
-    // to the displayed value, which means dividing the internal price instead of multiplying.
-    // e.g. displayed=20, +10% → displayed=22 → internal=1/22 = marketInternal/1.1
+    programmaticPriceRef.current = true
+    const adjustedPrice =
+      factor === 1
+        ? bestPrice ?? Big(marketPrice).times(1 - BEST_PILL_BUFFER).toString()
+        : isPriceInverted
+          ? Big(marketPrice).div(factor).toString()
+          : Big(marketPrice).times(factor).toString()
+    setValue("limitPrice", adjustedPrice)
+    trigger("limitPrice")
+    handleLimitPriceChange(adjustedPrice)
+  }
+
+  // Custom pill: pct is the displayed % deviation from market (positive = above displayed market)
+  const handleCustomPctChange = (pct: string) => {
+    setCustomPct(pct)
+    const pctNum = parseFloat(pct)
+    if (isNaN(pctNum) || !spotPriceData?.spotPrice) return
+    const factor = 1 + pctNum / 100
+    if (factor <= 0) return
+    const marketPrice = spotPriceData.spotPrice
+    programmaticPriceRef.current = true
     const adjustedPrice = isPriceInverted
       ? Big(marketPrice).div(factor).toString()
       : Big(marketPrice).times(factor).toString()
@@ -235,6 +368,28 @@ export const LimitForm: FC = () => {
     handleLimitPriceChange(adjustedPrice)
   }
 
+  const handleCustomPillClick = () => {
+    setSelectedFactor(0)
+    if (pctFromMarket !== null) {
+      setCustomPct(pctFromMarket.toFixed(2))
+    }
+  }
+
+  const handleDenominationToggle = () => {
+    denominationChangingRef.current = true
+    setIsPriceInverted((prev) => !prev)
+    // Do NOT reset selectedFactor — the internal limitPrice is unchanged,
+    // only the display direction flips (toDisplayPrice inverts the value).
+  }
+
+  const handleClear = () => {
+    buyEditedRef.current = false
+    setValue("sellAmount", "")
+    setValue("buyAmount", "")
+    resetLimitToBest()
+  }
+
+  const hasClearableAmounts = !!sellAmount || !!buyAmountVal
 
   return (
     <Box>
@@ -259,25 +414,87 @@ export const LimitForm: FC = () => {
         onAmountChange={handleBuyAmountChange}
       />
 
+      {hasClearableAmounts && (
+        <Flex justify="flex-end" mt="xs">
+          <button
+            type="button"
+            onClick={handleClear}
+            style={{
+              cursor: "pointer",
+              background: "none",
+              border: "none",
+              padding: 0,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            <Icon size="xs" component={X} />
+            <Text fs="p5" fw={500} color={getToken("text.low")}>
+              {t("common:clear")}
+            </Text>
+          </button>
+        </Flex>
+      )}
+
       <SwapSectionSeparator />
 
       <Box pt="l" pb="m">
-        <Flex align="center" gap="s" mb="s" wrap>
+        <Flex align="center" gap="s" mb="s">
           <Text fw={500} fs="p5" color={getToken("text.low")}>
-            {t("trade:limit.limitPrice.label")}
+            {displaySymbol} {t("trade:limit.limitPrice.label")}
           </Text>
-          <Flex gap="xxs" ml="auto">
-            {PRICE_ADJUSTMENTS.map(({ label, factor }) => (
-              <SPriceOption
-                key={label}
-                active={selectedFactor === factor}
-                onClick={() => handlePriceAdjustment(factor)}
-              >
-                {label}
-              </SPriceOption>
-            ))}
-          </Flex>
+          <SPctBadge
+            style={{
+              visibility:
+                !isAtMarket && pctFromMarket !== null ? "visible" : "hidden",
+            }}
+          >
+            {pctFromMarket !== null ? (
+              <>
+                {pctFromMarket.gt(0) ? "+" : ""}
+                {pctFromMarket.toFixed(1)}%
+              </>
+            ) : (
+              "0.0%"
+            )}
+          </SPctBadge>
         </Flex>
+        <Flex gap="xxs" mb="m" wrap>
+          <SPriceOption
+            active={selectedFactor === 1}
+            onClick={() => handlePriceAdjustment(1)}
+          >
+            {t("trade:limit.market")}
+          </SPriceOption>
+          {pillAdjustments.map(({ pct, factor }) => (
+            <SPriceOption
+              key={pct}
+              active={selectedFactor === factor}
+              onClick={() => handlePriceAdjustment(factor)}
+            >
+              <Icon size="xs" component={PillArrowIcon} />
+              {pct}%
+            </SPriceOption>
+          ))}
+          <SCustomPill
+            active={selectedFactor === 0}
+            onClick={handleCustomPillClick}
+          >
+            <Icon size="xs" component={Pencil} />
+            <SCustomPctInput
+              type="number"
+              value={customPct}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => {
+                setSelectedFactor(0)
+                handleCustomPctChange(e.target.value)
+              }}
+            />
+            %
+          </SCustomPill>
+        </Flex>
+
         <Controller
           control={control}
           name="limitPrice"
@@ -285,17 +502,23 @@ export const LimitForm: FC = () => {
             <NumberInput
               value={toDisplayPrice(field.value)}
               onValueChange={({ value }) => {
+                if (programmaticPriceRef.current) {
+                  programmaticPriceRef.current = false
+                  return
+                }
+                if (denominationChangingRef.current) {
+                  denominationChangingRef.current = false
+                  return
+                }
                 const internal = toInternalPrice(value)
                 field.onChange(internal)
                 setSelectedFactor(0)
                 handleLimitPriceChange(internal)
               }}
               leadingElement={
-                <SDenominationPill
-                  onClick={() => setIsPriceInverted((prev) => !prev)}
-                >
+                <SDenominationPill onClick={handleDenominationToggle}>
                   <Icon size="s" component={ArrowLeftRight} />
-                  {isPriceInverted ? sellAsset?.symbol : buyAsset?.symbol}
+                  {displaySymbol}
                 </SDenominationPill>
               }
               allowNegative={false}
@@ -303,6 +526,22 @@ export const LimitForm: FC = () => {
             />
           )}
         />
+
+        <Text
+          fw={400}
+          fs="p5"
+          color={getToken("text.low")}
+          mt="xs"
+          style={{
+            visibility:
+              !isAtMarket && spotPriceData?.spotPrice ? "visible" : "hidden",
+          }}
+        >
+          {t("trade:limit.spot")}:{" "}
+          {spotPriceData?.spotPrice
+            ? toDisplayPrice(spotPriceData.spotPrice)
+            : "\u00A0"}
+        </Text>
       </Box>
 
       <Flex align="center" gap="s" pb="m">
@@ -329,7 +568,6 @@ export const LimitForm: FC = () => {
           />
         </Flex>
       </Flex>
-
     </Box>
   )
 }

@@ -26,21 +26,6 @@ import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 import { allPools } from "./pools"
 
-const EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX = "EVMAccounts::claim_account"
-
-function getEvmAccountClaimMessage(address: string, assetId: string): Uint8Array {
-  const prefixBytes = new TextEncoder().encode(EVM_CLAIM_ACCOUNT_MESSAGE_PREFIX)
-  const addressInfo = getSs58AddressInfo(address as SS58String)
-  if (!addressInfo.isValid) throw new Error("Invalid SS58 address")
-  const assetIdBytes = new Uint8Array(4)
-  new DataView(assetIdBytes.buffer).setUint32(0, Number(assetId), true)
-  return mergeUint8(
-    compactNumber.enc(prefixBytes.length),
-    prefixBytes,
-    addressInfo.publicKey,
-    assetIdBytes,
-  )
-}
 
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
   // Native asset is always accepted

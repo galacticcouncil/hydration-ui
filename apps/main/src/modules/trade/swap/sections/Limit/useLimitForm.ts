@@ -13,7 +13,7 @@ import {
   validateAssetSellOnly,
 } from "@/utils/validators"
 
-export const EXPIRY_OPTIONS = ["open", "1h", "24h", "48h"] as const
+export const EXPIRY_OPTIONS = ["1h", "12h", "24h", "open"] as const
 export type ExpiryOption = (typeof EXPIRY_OPTIONS)[number]
 
 const schemaBase = z.object({

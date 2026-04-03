@@ -14,6 +14,9 @@ export const intentsByAccountQuery = (
     refetchInterval: 30_000,
     queryKey: ["intents", "byAccount", address],
     queryFn: async () => {
+      // TODO: switch to Intent.AccountIntents.getEntries(address) once
+      // the new runtime (PR #1360) is deployed — it's a direct reverse index
+      // and avoids this full scan.
       const ownerEntries = await papiNext.query.Intent.IntentOwner.getEntries({
         at: "best",
       })

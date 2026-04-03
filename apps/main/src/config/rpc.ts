@@ -89,6 +89,14 @@ export const PROVIDERS: ProviderProps[] = [
   // createProvider("lait", "wss://rpc.lait.hydration.cloud"),
   // createProvider("3", "wss://3.rpc.hydration.cloud"),
   createProvider(
+    "Lark (Intents)",
+    "wss://node3.lark.hydration.cloud",
+    MAINNET_INDEXER_URL,
+    MAINNET_SQUID_URL,
+    ["development"],
+    "testnet",
+  ),
+  createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",
     "https://archive.nice.hydration.cloud/graphql",

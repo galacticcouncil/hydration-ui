@@ -175,10 +175,10 @@
   "otc.cancelOrder.success": "OTC order cancelled for {{ amount }}.",
   "otc.cancelOrder.error": "Failed to cancel OTC order for {{ amount }}.",
   "limit.expiry.label": "Expires",
-  "limit.expiry.open": "Open",
   "limit.expiry.1h": "1h",
+  "limit.expiry.12h": "12h",
   "limit.expiry.24h": "24h",
-  "limit.expiry.48h": "48h",
+  "limit.expiry.open": "Open",
   "limit.limitPrice.label": "Limit price",
   "limit.limitPrice.takeProfit": "Take profit",
   "limit.limitPrice.stopLoss": "Stop loss",
@@ -190,5 +190,8 @@
   "limit.submit": "Set limit order",
   "limit.tx.submitted": "Submitting limit order: {{amountIn}} for {{amountOut}}",
   "limit.tx.success": "Limit order set: {{amountIn}} for {{amountOut}}",
-  "limit.tx.error": "Failed to set limit order: {{amountIn}} for {{amountOut}}"
+  "limit.tx.error": "Failed to set limit order: {{amountIn}} for {{amountOut}}",
+  "limit.market": "Best",
+  "limit.spot": "Spot",
+  "limit.receive": "When filled, you receive"
 }
