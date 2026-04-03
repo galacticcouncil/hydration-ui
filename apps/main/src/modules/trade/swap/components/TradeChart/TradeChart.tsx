@@ -87,7 +87,7 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const chartValue =
     !isEmpty && !isError
-      ? t("common:currency", {
+      ? t("common:currency" as any, {
           value,
           symbol: getAssetWithFallback(assetIn).symbol,
         })
@@ -97,10 +97,10 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     !isEmpty && !isError ? (
       <Box>
         <Box>
-          {t("common:price")}: {formattedAssetPrice}
+          {t("common:price" as any)}: {formattedAssetPrice}
         </Box>
         <Box visibility={volume > 0 ? "visible" : "hidden"}>
-          {t("common:vol")}: {formattedVolumePrice}
+          {t("common:vol" as any)}: {formattedVolumePrice}
         </Box>
       </Box>
     ) : undefined

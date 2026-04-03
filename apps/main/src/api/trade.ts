@@ -1,4 +1,4 @@
-import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
+import { pool, SdkCtx, sor } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
@@ -46,7 +46,7 @@ export const bestSellQuery = (
       amountIn,
     ],
     queryFn: async () => {
-      sdk.api.router.withFilter({ exclude: ["HSM"] })
+      sdk.api.router.withFilter({ exclude: [pool.PoolType.HSM] })
       const swap = await sdk.api.router.getBestSell(
         Number(assetIn),
         Number(assetOut),
@@ -266,7 +266,7 @@ export const bestBuyQuery = (
       amountOut,
     ],
     queryFn: async () => {
-      sdk.api.router.withFilter({ exclude: ["HSM"] })
+      sdk.api.router.withFilter({ exclude: [pool.PoolType.HSM] })
       const swap = await sdk.api.router.getBestBuy(
         Number(assetIn),
         Number(assetOut),

@@ -42,12 +42,13 @@ export const useOpenOrdersColumns = () => {
                 : row.original.fromAmountBudget
             }
             toAmount={
-              row.original.isOpenBudget
+              isLimit
                 ? row.original.toAmountExecuted
-                : undefined
+                : row.original.isOpenBudget
+                  ? row.original.toAmountExecuted
+                  : undefined
             }
             from={row.original.from}
-            toAmount={isLimit ? row.original.toAmountExecuted : null}
             to={row.original.to}
             showLogo
           />

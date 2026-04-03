@@ -42,6 +42,7 @@ export const useIntentsData = () => {
             toAmountExecuted: toAmount,
             status: null,
             blocksPeriod: null,
+            isOpenBudget: false,
           } satisfies OrderData
         })
         .filter((o) => o !== null),

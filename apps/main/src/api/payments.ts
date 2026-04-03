@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { AccountId, compactNumber } from "@polkadot-api/substrate-bindings"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { FixedSizeBinary } from "polkadot-api"
+import { Binary, FixedSizeBinary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -177,7 +177,7 @@ export function getEvmAccountClaimMessage(
 
 export const useSetFeePaymentAsset = (options: TransactionOptions) => {
   const { t } = useTranslation(["common"])
-  const { papi } = useRpcProvider()
+  const { papi, papiClient } = useRpcProvider()
   const { account } = useAccount()
   const wallet = useWallet()
 
@@ -230,7 +230,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
           const sigBytes = await signer.signBytes(message)
 
           const claimTx = papi.tx.EVMAccounts.claim_account({
-            account: account.address as SS58String,
+            account: account.address as any,
             asset_id: Number(assetId),
             signature: MultiSignature.Sr25519(new FixedSizeBinary(sigBytes)),
           })
@@ -247,7 +247,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
 
           await new Promise<void>((resolve, reject) => {
             const sub = papiClient.submitAndWatch(unsignedTxHex).subscribe({
-              next: (event) => {
+              next: (event: any) => {
                 if (event.type === "txBestBlocksState" && event.found) {
                   if (!event.ok) {
                     reject(new Error("EVM account claim failed"))
