@@ -19,7 +19,9 @@ export const useAssetSelectModalAssets = ({
   search,
   selectedAssetId,
   ignoreAssetIds,
-  ...sortOptions
+  tickerOrder,
+  lowPriorityAssetIds,
+  highPriorityAssetIds,
 }: {
   assets: TAssetData[]
   ignoreAssetIds?: string[]
@@ -45,42 +47,54 @@ export const useAssetSelectModalAssets = ({
   const { getAssetPrice, isLoading: isPriceLoading } =
     useAssetsPrice(assetsBalanceIds)
 
-  if (!account || !assets.length) {
-    return {
-      sortedAssets: filteredAssets,
-      isLoading: false,
-    }
-  }
+  const invalidState = !account || !assets.length
 
   const isLoading = isPriceLoading || isBalanceLoading
 
-  if (isLoading) {
-    return {
-      sortedAssets: filteredAssets,
-      isLoading,
+  const sortedAssets = useMemo(() => {
+    if (invalidState || isLoading) {
+      return filteredAssets
     }
-  }
 
-  const assetsWithBalances = filteredAssets.map((asset) => {
-    const balance = scaleHuman(getTransferableBalance(asset.id), asset.decimals)
+    const assetsWithBalances = filteredAssets.map((asset) => {
+      const balance = scaleHuman(
+        getTransferableBalance(asset.id),
+        asset.decimals,
+      )
 
-    const { price, isValid } = getAssetPrice(asset.id)
-    const balanceDisplay = isValid ? Big(price).times(balance).toString() : "0"
+      const { price, isValid } = getAssetPrice(asset.id)
+      const balanceDisplay = isValid
+        ? Big(price).times(balance).toString()
+        : "0"
 
-    return {
-      ...asset,
-      balance,
-      balanceDisplay,
-    }
-  })
+      return {
+        ...asset,
+        balance,
+        balanceDisplay,
+      }
+    })
 
-  const sortedAssets = sortAssets(assetsWithBalances, "balanceDisplay", {
-    firstAssetId: selectedAssetId,
+    return sortAssets(assetsWithBalances, "balanceDisplay", {
+      firstAssetId: selectedAssetId,
+      search,
+      tickerOrder,
+      lowPriorityAssetIds,
+      highPriorityAssetIds,
+    })
+  }, [
+    invalidState,
+    filteredAssets,
+    getAssetPrice,
+    getTransferableBalance,
+    highPriorityAssetIds,
+    isLoading,
+    lowPriorityAssetIds,
+    selectedAssetId,
     search,
-    ...sortOptions,
-  })
+    tickerOrder,
+  ])
 
-  return { sortedAssets, isLoading }
+  return { sortedAssets, isLoading: invalidState ? false : isLoading }
 }
 
 export const useFilteredSearchAssets = <T extends TAssetData>(
@@ -94,6 +108,7 @@ export const useFilteredSearchAssets = <T extends TAssetData>(
     }
 
     const ignoredAssetIdSet = new Set(ignoreAssetIds ?? [])
+    const searchLower = search.length ? search.toLowerCase() : ""
 
     return assets.filter((asset) => {
       if (ignoredAssetIdSet.has(asset.id)) {
@@ -102,8 +117,8 @@ export const useFilteredSearchAssets = <T extends TAssetData>(
 
       if (search.length) {
         return (
-          asset.name.toLowerCase().includes(search.toLowerCase()) ||
-          asset.symbol.toLowerCase().includes(search.toLowerCase())
+          asset.name.toLowerCase().includes(searchLower) ||
+          asset.symbol.toLowerCase().includes(searchLower)
         )
       }
 
