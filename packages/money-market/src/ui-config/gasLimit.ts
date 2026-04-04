@@ -19,8 +19,8 @@ export const gasLimitRecommendations: GasRecommendationType = {
     recommended: "1000000",
   },
   [ProtocolAction.claimRewards]: {
-    limit: "1000000",
-    recommended: "1000000",
+    limit: "3000000",
+    recommended: "3000000",
   },
   [ProtocolAction.repay]: {
     limit: "1000000",

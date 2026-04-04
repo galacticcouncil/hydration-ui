@@ -17,7 +17,6 @@ import {
   getGhoBorrowApyRange,
   getUserApyValues,
   GhoService,
-  IncentivesControllerV2,
   UiIncentiveDataProvider,
   UiPoolDataProvider,
 } from "@galacticcouncil/money-market/utils"
@@ -30,6 +29,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
+import { Contract } from "ethers"
 import { Binary, FixedSizeArray } from "polkadot-api"
 import { useCallback } from "react"
 
@@ -429,10 +429,6 @@ export const useGetClaimAllBorrowRewardsTx = () => {
     const address = account?.address || ""
     const evmAddress = safeConvertAnyToH160(address)
 
-    const incentivesTxBuilderV2 = new IncentivesControllerV2(
-      new Web3Provider(evm.transport),
-    )
-
     const userIncentive = user
       ? Object.values(user.calculatedUserIncentives)[0]
       : undefined
@@ -460,23 +456,36 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       [],
     )
 
-    const call = incentivesTxBuilderV2.claimAllRewards({
-      user: evmAddress,
-      to: evmAddress,
-      assets,
+    const provider = new Web3Provider(evm.transport)
+    const incentivesContract = new Contract(
       incentivesControllerAddress,
-    })
+      ["function claimAllRewards(address[] assets, address to)"],
+      provider,
+    )
 
-    const tx = await call?.find((tx) => tx.txType === "REWARD_ACTION")?.tx()
+    if (!incentivesContract.populateTransaction.claimAllRewards) {
+      throw new Error("Claim all rewards function not found")
+    }
 
-    if (!tx || !tx.from || !tx.to || !tx.data || !tx.gasLimit) {
+    const populated =
+      await incentivesContract.populateTransaction.claimAllRewards(
+        assets,
+        evmAddress,
+      )
+
+    const tx = {
+      ...populated,
+      from: evmAddress,
+      value: populated.value ?? DEFAULT_NULL_VALUE_ON_TX,
+    }
+
+    if (!tx.from || !tx.to || !tx.data) {
       throw new Error("Invalid claim transaction")
     }
 
     const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
       await estimateGasLimit({
         evm,
-        gasLimit: tx.gasLimit.toString(),
         action: ProtocolAction.claimRewards,
       })
 

@@ -3,14 +3,13 @@ import {
   BaseDebtToken,
   DebtSwitchAdapterService,
   DEFAULT_NULL_VALUE_ON_TX,
+  eEthereumTxType,
   ERC20_2612Service,
   ERC20Service,
   EthereumTransactionTypeExtended,
   FaucetParamsType,
   FaucetService,
   IncentivesController,
-  IncentivesControllerV2,
-  IncentivesControllerV2Interface,
   InterestRate,
   LendingPool,
   LendingPoolBundle,
@@ -72,6 +71,11 @@ import {
   selectFormattedReserves,
 } from "./poolSelectors"
 import { RootStore } from "./root"
+
+const V3_INCENTIVES_CONTROLLER_IFACE = new utils.Interface([
+  "function claimAllRewards(address[],address)",
+  "function claimRewards(address[],uint256,address,address)",
+])
 
 // TODO: what is the better name for this type?
 export type PoolReserve = {
@@ -872,28 +876,50 @@ export const createPoolSlice: StateCreator<
       const incentivesTxBuilder = new IncentivesController(
         get().jsonRpcProvider(),
       )
-      const incentivesTxBuilderV2: IncentivesControllerV2Interface =
-        new IncentivesControllerV2(get().jsonRpcProvider())
-
       if (get().currentMarketData.v3) {
+        const provider = get().jsonRpcProvider()
+        const to = currentAccount
+        const controller = selectedReward.incentiveControllerAddress
+
+        const buildV3ClaimTx = (
+          data: string,
+        ): EthereumTransactionTypeExtended[] => [
+          {
+            tx: async () => ({
+              from: currentAccount,
+              to: controller,
+              data,
+              value: DEFAULT_NULL_VALUE_ON_TX,
+            }),
+            txType: eEthereumTxType.REWARD_ACTION,
+            gas: async () => {
+              const gasPrice = await provider.getGasPrice()
+              return {
+                gasLimit:
+                  gasLimitRecommendations[ProtocolAction.claimRewards]
+                    .recommended,
+                gasPrice: gasPrice.toString(),
+              }
+            },
+          },
+        ]
+
         if (selectedReward.symbol === "all") {
-          return incentivesTxBuilderV2.claimAllRewards({
-            user: currentAccount,
-            assets: allReserves,
-            to: currentAccount,
-            incentivesControllerAddress:
-              selectedReward.incentiveControllerAddress,
-          })
-        } else {
-          return incentivesTxBuilderV2.claimRewards({
-            user: currentAccount,
-            assets: allReserves,
-            to: currentAccount,
-            incentivesControllerAddress:
-              selectedReward.incentiveControllerAddress,
-            reward: selectedReward.rewardTokenAddress,
-          })
+          return buildV3ClaimTx(
+            V3_INCENTIVES_CONTROLLER_IFACE.encodeFunctionData(
+              "claimAllRewards",
+              [allReserves, to],
+            ),
+          )
         }
+        return buildV3ClaimTx(
+          V3_INCENTIVES_CONTROLLER_IFACE.encodeFunctionData("claimRewards", [
+            allReserves,
+            MAX_UINT_AMOUNT,
+            to,
+            selectedReward.rewardTokenAddress,
+          ]),
+        )
       } else {
         return incentivesTxBuilder.claimRewards({
           user: currentAccount,
