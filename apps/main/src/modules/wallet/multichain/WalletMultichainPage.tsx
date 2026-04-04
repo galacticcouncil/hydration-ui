@@ -3,11 +3,11 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useSearch } from "@tanstack/react-router"
 import { useState } from "react"
 
-import { XcmTransferApp } from "@/modules/xcm/transfer/XcmTransferApp"
-import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
-import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
 import { MultichainAssetList } from "@/modules/wallet/multichain/components/MultichainAssetList"
 import { MultichainChainTabs } from "@/modules/wallet/multichain/components/MultichainChainTabs"
+import { WalletEmptyState } from "@/modules/wallet/WalletEmptyState"
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
+import { XcmTransferApp } from "@/modules/xcm/transfer/XcmTransferApp"
 
 export const WalletMultichainPage = () => {
   const { account } = useAccount()

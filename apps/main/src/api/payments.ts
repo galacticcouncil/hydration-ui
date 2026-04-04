@@ -26,7 +26,6 @@ import { NATIVE_ASSET_ID } from "@/utils/consts"
 
 import { allPools } from "./pools"
 
-
 const isCurrencyAccepted = (asset: TAsset, data?: bigint) => {
   // Native asset is always accepted
   if (asset.id === NATIVE_ASSET_ID) return true
@@ -230,6 +229,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
           const sigBytes = await signer.signBytes(message)
 
           const claimTx = papi.tx.EVMAccounts.claim_account({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             account: account.address as any,
             asset_id: Number(assetId),
             signature: MultiSignature.Sr25519(new FixedSizeBinary(sigBytes)),
@@ -247,6 +247,7 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
 
           await new Promise<void>((resolve, reject) => {
             const sub = papiClient.submitAndWatch(unsignedTxHex).subscribe({
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               next: (event: any) => {
                 if (event.type === "txBestBlocksState" && event.found) {
                   if (!event.ok) {

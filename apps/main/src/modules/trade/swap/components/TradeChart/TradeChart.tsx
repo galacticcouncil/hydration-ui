@@ -87,7 +87,8 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const chartValue =
     !isEmpty && !isError
-      ? t("common:currency" as any, {
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        t("common:currency" as any, {
           value,
           symbol: getAssetWithFallback(assetIn).symbol,
         })
@@ -97,9 +98,11 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     !isEmpty && !isError ? (
       <Box>
         <Box>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {t("common:price" as any)}: {formattedAssetPrice}
         </Box>
         <Box visibility={volume > 0 ? "visible" : "hidden"}>
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           {t("common:vol" as any)}: {formattedVolumePrice}
         </Box>
       </Box>

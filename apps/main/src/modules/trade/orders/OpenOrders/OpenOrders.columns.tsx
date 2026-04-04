@@ -72,8 +72,13 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, fromAmountBudget, toAmountExecuted } =
-          row.original
+        const {
+          from,
+          to,
+          fromAmountExecuted,
+          fromAmountBudget,
+          toAmountExecuted,
+        } = row.original
 
         const amountIn = fromAmountExecuted ?? fromAmountBudget
         const price =

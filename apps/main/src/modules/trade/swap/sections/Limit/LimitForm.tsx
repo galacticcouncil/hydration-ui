@@ -17,7 +17,6 @@ import { useTranslation } from "react-i18next"
 
 import { spotPriceQuery } from "@/api/spotPrice"
 import { bestSellQuery } from "@/api/trade"
-import { scaleHuman } from "@/utils/formatting"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import {
   SCustomPctInput,
@@ -40,6 +39,7 @@ import {
   DEFAULT_TRADE_ASSET_IN_ID,
   DEFAULT_TRADE_ASSET_OUT_ID,
 } from "@/routes/trade/_history/route"
+import { scaleHuman } from "@/utils/formatting"
 
 // Percentage offsets shown as pills. Factors are derived per-render based on isPriceInverted.
 const PILL_PCTS = [2, 5, 10] as const
@@ -171,7 +171,9 @@ export const LimitForm: FC = () => {
     }
     setValue(
       "buyAmount",
-      toSignificant(Big(currentSellAmount).times(internalLimitPrice).toString()),
+      toSignificant(
+        Big(currentSellAmount).times(internalLimitPrice).toString(),
+      ),
     )
   }
 
@@ -211,6 +213,7 @@ export const LimitForm: FC = () => {
         recalculateBuyAmount(currentSellAmount, bestPrice)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bestPrice, sellAsset?.id, buyAsset?.id, getValues, setValue])
 
   // Keep limit price synced to live quote every block while Best pill is selected
@@ -226,6 +229,7 @@ export const LimitForm: FC = () => {
       const currentSellAmount = getValues("sellAmount")
       if (currentSellAmount) recalculateBuyAmount(currentSellAmount, bestPrice)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bestPrice, selectedFactor, setValue, trigger, getValues])
 
   // Ensure default assets on mount
@@ -326,7 +330,10 @@ export const LimitForm: FC = () => {
     }
     const currentLimitPrice = getValues("limitPrice")
     if (currentLimitPrice && !Big(currentLimitPrice).eq(0)) {
-      setValue("sellAmount", toSignificant(Big(newBuyAmount).div(currentLimitPrice).toString()))
+      setValue(
+        "sellAmount",
+        toSignificant(Big(newBuyAmount).div(currentLimitPrice).toString()),
+      )
     }
   }
 
@@ -342,7 +349,10 @@ export const LimitForm: FC = () => {
     programmaticPriceRef.current = true
     const adjustedPrice =
       factor === 1
-        ? bestPrice ?? Big(marketPrice).times(1 - BEST_PILL_BUFFER).toString()
+        ? (bestPrice ??
+          Big(marketPrice)
+            .times(1 - BEST_PILL_BUFFER)
+            .toString())
         : isPriceInverted
           ? Big(marketPrice).div(factor).toString()
           : Big(marketPrice).times(factor).toString()

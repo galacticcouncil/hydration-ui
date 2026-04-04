@@ -41,10 +41,15 @@ const ReviewTransactionJsonContent: React.FC<
   Omit<JsonContentProps, "mode">
 > = ({ tx, srcChainKey }) => {
   const { t } = useTranslation("common")
-  const { papiCompatibilityToken, papiNextCompatibilityToken } = useRpcProvider()
+  const { papiCompatibilityToken, papiNextCompatibilityToken } =
+    useRpcProvider()
 
   const txJson = decodeTx(tx)
-  const txCallHash = getTxCallHash(tx, papiCompatibilityToken, papiNextCompatibilityToken)
+  const txCallHash = getTxCallHash(
+    tx,
+    papiCompatibilityToken,
+    papiNextCompatibilityToken,
+  )
   const txUrl = usePolkadotJSExtrinsicUrl(tx, srcChainKey)
 
   const isValidTxCallHash = !!txCallHash

@@ -57,9 +57,8 @@ export const TradeOrdersHeader: FC<Props> = ({ paginationProps }) => {
   const { orders: intentOrders } = useIntentsData()
   const intentCount = allPairs
     ? intentOrders.length
-    : intentOrders.filter(
-        (o) => o.from.id === assetIn && o.to.id === assetOut,
-      ).length
+    : intentOrders.filter((o) => o.from.id === assetIn && o.to.id === assetOut)
+        .length
 
   const openOrdersCount = dcaCount + intentCount
 

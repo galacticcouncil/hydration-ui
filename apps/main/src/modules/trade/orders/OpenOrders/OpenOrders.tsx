@@ -5,12 +5,12 @@ import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
+import { useIntentsData } from "@/modules/trade/orders/lib/useIntentsData"
 import {
   OrderData,
   OrderKind,
   useOrdersData,
 } from "@/modules/trade/orders/lib/useOrdersData"
-import { useIntentsData } from "@/modules/trade/orders/lib/useIntentsData"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
 import { OrdersEmptyState } from "@/modules/trade/orders/OrdersEmptyState"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
@@ -30,7 +30,11 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
     readonly isTermination: boolean
   } | null>(null)
 
-  const { orders: dcaOrders, totalCount, isLoading: isDcaLoading } = useOrdersData(
+  const {
+    orders: dcaOrders,
+    totalCount,
+    isLoading: isDcaLoading,
+  } = useOrdersData(
     [DcaScheduleStatus.Created],
     allPairs ? [] : [assetIn, assetOut],
     paginationProps.pagination.pageIndex,

@@ -1,17 +1,19 @@
-import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
 import { formatSourceChainAddress } from "@galacticcouncil/utils"
 import { getChainAssetId, getChainId } from "@galacticcouncil/utils"
-import { EvmParachain } from "@galacticcouncil/xc-core"
 import { Account } from "@galacticcouncil/web3-connect"
+import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { EvmParachain } from "@galacticcouncil/xc-core"
 import Big from "big.js"
 import { useMemo } from "react"
 
-import { useCrossChainBalance, useCrossChainBalanceSubscription } from "@/api/xcm"
+import {
+  useCrossChainBalance,
+  useCrossChainBalanceSubscription,
+} from "@/api/xcm"
+import { MultichainChainKey } from "@/routes/wallet/multichain"
 import { useAssetsPrice } from "@/states/displayAsset"
 import { toDecimal } from "@/utils/formatting"
-
-import { MultichainChainKey } from "@/routes/wallet/multichain"
 
 export type MultichainAssetRow = {
   key: string
@@ -82,10 +84,9 @@ export const useMultichainAssets = (
     return [
       ...new Set(
         xcmAssets.flatMap((asset) => {
-          const primaryId = registryChain
-            ?.getBalanceAssetId(asset)
-            ?.toString()
-          const sameSymbolIds = hydrationAssetsBySymbol[asset.originSymbol] ?? []
+          const primaryId = registryChain?.getBalanceAssetId(asset)?.toString()
+          const sameSymbolIds =
+            hydrationAssetsBySymbol[asset.originSymbol] ?? []
           return [primaryId, ...sameSymbolIds].filter(Boolean) as string[]
         }),
       ),
@@ -107,9 +108,7 @@ export const useMultichainAssets = (
         const amount = toDecimal(balance.amount, balance.decimals)
 
         // Primary Hydration ID + same-symbol fallbacks (e.g. sUSDS: 1000626 → 1000745)
-        const primaryId = registryChain
-          ?.getBalanceAssetId(asset)
-          ?.toString()
+        const primaryId = registryChain?.getBalanceAssetId(asset)?.toString()
         const sameSymbolIds = hydrationAssetsBySymbol[asset.originSymbol] ?? []
         const spotPriceIds = [
           ...new Set([primaryId, ...sameSymbolIds].filter(Boolean) as string[]),

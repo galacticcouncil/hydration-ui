@@ -4,11 +4,10 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
 
-import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
-
 import { useXcmFormSchema } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmQueryParams } from "@/modules/xcm/transfer/hooks/useXcmQueryParams"
 import { getXcmFormDefaults } from "@/modules/xcm/transfer/utils/chain"
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 
 export const useXcmForm = (
   transfer: Transfer | null,

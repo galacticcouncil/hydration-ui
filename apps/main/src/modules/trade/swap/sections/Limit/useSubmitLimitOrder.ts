@@ -43,6 +43,7 @@ export const useSubmitLimitOrder = () => {
       const deadline =
         expiryMs !== undefined ? BigInt(Date.now() + expiryMs) : undefined
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tx = (papiNext as any).tx.Intent.submit_intent({
         intent: {
           data: {

@@ -12,8 +12,8 @@ import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { ExternalAssetLogo } from "@/components/ExternalAssetLogo"
-import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 import { MultichainAssetRow } from "@/modules/wallet/multichain/useMultichainAssets"
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 import { MultichainChainKey } from "@/routes/wallet/multichain"
 
 type MultichainTableRow = MultichainAssetRow & {

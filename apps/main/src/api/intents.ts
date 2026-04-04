@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
 import { queryOptions } from "@tanstack/react-query"
 
@@ -17,7 +18,9 @@ export const intentsByAccountQuery = (
       // TODO: switch to Intent.AccountIntents.getEntries(address) once
       // the new runtime (PR #1360) is deployed — it's a direct reverse index
       // and avoids this full scan.
-      const ownerEntries = await (papiNext as any).query.Intent.IntentOwner.getEntries({
+      const ownerEntries = await (
+        papiNext as any
+      ).query.Intent.IntentOwner.getEntries({
         at: "best",
       })
 
@@ -34,9 +37,12 @@ export const intentsByAccountQuery = (
 
       const results = await Promise.all(
         myIntentIds.map(async (id: any) => {
-          const intent = await (papiNext as any).query.Intent.Intents.getValue(id, {
-            at: "best",
-          })
+          const intent = await (papiNext as any).query.Intent.Intents.getValue(
+            id,
+            {
+              at: "best",
+            },
+          )
           return intent ? { id, intent } : null
         }),
       )

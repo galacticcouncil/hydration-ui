@@ -1,10 +1,10 @@
+import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
-import { useAccount } from "@galacticcouncil/web3-connect"
+import { AnyTransaction } from "@/modules/transactions/types"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useTransactionsStore } from "@/states/transactions"
-import { AnyTransaction } from "@/modules/transactions/types"
 
 export const useRemoveIntents = () => {
   const { t } = useTranslation(["common", "trade"])
@@ -28,6 +28,7 @@ export const useRemoveIntents = () => {
     },
     mutationFn: async (intentIds: bigint[]) => {
       const txs = intentIds.map((id) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (papiNext as any).tx.Intent.remove_intent({ id }),
       )
 

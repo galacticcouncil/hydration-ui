@@ -1,7 +1,7 @@
 import { FC } from "react"
 
-import { useRemoveIntents } from "@/modules/trade/swap/sections/Limit/useRemoveIntents"
 import { CancelTradeOrderModalContent } from "@/modules/trade/otc/cancel-order/CancelTradeOrderModalContent"
+import { useRemoveIntents } from "@/modules/trade/swap/sections/Limit/useRemoveIntents"
 
 type Props = {
   readonly intentId: bigint

@@ -20,13 +20,17 @@ export const useIntentsData = () => {
   const orders = useMemo<Array<OrderData>>(
     () =>
       (data ?? [])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .map(({ id, intent }: any) => {
           if (intent.data.type !== "Swap") return null
 
           const swap = intent.data.value
           const from = getAssetWithFallback(String(swap.asset_in))
           const to = getAssetWithFallback(String(swap.asset_out))
-          const fromAmount = scaleHuman(swap.amount_in.toString(), from.decimals)
+          const fromAmount = scaleHuman(
+            swap.amount_in.toString(),
+            from.decimals,
+          )
           const toAmount = scaleHuman(swap.amount_out.toString(), to.decimals)
 
           return {
@@ -45,6 +49,7 @@ export const useIntentsData = () => {
             isOpenBudget: false,
           } satisfies OrderData
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .filter((o: any): o is OrderData => o !== null) as OrderData[],
     [data, getAssetWithFallback],
   )

@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { LimitForm } from "@/modules/trade/swap/sections/Limit/LimitForm"
-import { useSubmitLimitOrder } from "@/modules/trade/swap/sections/Limit/useSubmitLimitOrder"
 import { useLimitForm } from "@/modules/trade/swap/sections/Limit/useLimitForm"
+import { useSubmitLimitOrder } from "@/modules/trade/swap/sections/Limit/useSubmitLimitOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
 export const Limit: FC = () => {
@@ -22,7 +22,11 @@ export const Limit: FC = () => {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit((values) => submitLimitOrder.mutate(values))}>
+      <form
+        onSubmit={form.handleSubmit((values) =>
+          submitLimitOrder.mutate(values),
+        )}
+      >
         <LimitForm />
         <SwapSectionSeparator />
         <Grid py="xl" justifyItems="center">

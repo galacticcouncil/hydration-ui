@@ -1,18 +1,18 @@
 import {
   DataTable,
+  Flex,
   Paper,
   TableContainer,
   Text,
-  Flex,
 } from "@galacticcouncil/ui/components"
-import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { Account } from "@galacticcouncil/web3-connect"
+import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
-import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
-import { useMultichainAssets } from "@/modules/wallet/multichain/useMultichainAssets"
 import { useMultichainColumns } from "@/modules/wallet/multichain/components/MultichainTable.columns"
+import { useMultichainAssets } from "@/modules/wallet/multichain/useMultichainAssets"
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 import { MultichainChainKey } from "@/routes/wallet/multichain"
 
 type Props = {
@@ -28,7 +28,11 @@ const CHAIN_ECOSYSTEMS: Record<MultichainChainKey, ChainEcosystem> = {
   sui: ChainEcosystem.Sui,
 }
 
-export const MultichainAssetList = ({ chainKey, account, onTransfer }: Props) => {
+export const MultichainAssetList = ({
+  chainKey,
+  account,
+  onTransfer,
+}: Props) => {
   const { t } = useTranslation(["wallet"])
   const { rows, isLoading, isPriceLoading } = useMultichainAssets(
     chainKey,

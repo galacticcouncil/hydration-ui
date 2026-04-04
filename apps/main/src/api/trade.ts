@@ -303,13 +303,11 @@ export const bestBuyTxQuery = (
       const k = BigInt(Math.round(slippage * 100))
       const denom = 10000n - k
       // Inflate amountOut so min_buy_amount >= amountOut_original after SDK subtracts slippage%
-      const amountOutInflated =
-        (swap.amountOut * 10000n + denom - 1n) / denom
+      const amountOutInflated = (swap.amountOut * 10000n + denom - 1n) / denom
       // Inflate amountIn by slippage% — the slippage buffer goes on the input side,
       // matching original buy tx semantics (max_sell_amount = amountIn + slippage%).
       // This lets the tx succeed despite small price movements between quote and execution.
-      const amountInInflated =
-        (swap.amountIn * (10000n + k) + 9999n) / 10000n
+      const amountInInflated = (swap.amountIn * (10000n + k) + 9999n) / 10000n
 
       return sdk.tx
         .trade({
