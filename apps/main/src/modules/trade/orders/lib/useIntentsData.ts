@@ -20,7 +20,7 @@ export const useIntentsData = () => {
   const orders = useMemo<Array<OrderData>>(
     () =>
       (data ?? [])
-        .map(({ id, intent }) => {
+        .map(({ id, intent }: any) => {
           if (intent.data.type !== "Swap") return null
 
           const swap = intent.data.value
@@ -45,7 +45,7 @@ export const useIntentsData = () => {
             isOpenBudget: false,
           } satisfies OrderData
         })
-        .filter((o) => o !== null),
+        .filter((o: any): o is OrderData => o !== null) as OrderData[],
     [data, getAssetWithFallback],
   )
 

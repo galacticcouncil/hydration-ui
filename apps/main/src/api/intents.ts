@@ -17,7 +17,7 @@ export const intentsByAccountQuery = (
       // TODO: switch to Intent.AccountIntents.getEntries(address) once
       // the new runtime (PR #1360) is deployed — it's a direct reverse index
       // and avoids this full scan.
-      const ownerEntries = await papiNext.query.Intent.IntentOwner.getEntries({
+      const ownerEntries = await (papiNext as any).query.Intent.IntentOwner.getEntries({
         at: "best",
       })
 
@@ -25,23 +25,23 @@ export const intentsByAccountQuery = (
 
       const myIntentIds = ownerEntries
         .filter(
-          (entry) =>
+          (entry: any) =>
             safeConvertSS58toPublicKey(entry.value) === accountPublicKey,
         )
-        .map((entry) => entry.keyArgs[0])
+        .map((entry: any) => entry.keyArgs[0])
 
       if (myIntentIds.length === 0) return []
 
       const results = await Promise.all(
-        myIntentIds.map(async (id) => {
-          const intent = await papiNext.query.Intent.Intents.getValue(id, {
+        myIntentIds.map(async (id: any) => {
+          const intent = await (papiNext as any).query.Intent.Intents.getValue(id, {
             at: "best",
           })
           return intent ? { id, intent } : null
         }),
       )
 
-      return results.filter((r) => r !== null)
+      return results.filter((r: any) => r !== null)
     },
   })
 }

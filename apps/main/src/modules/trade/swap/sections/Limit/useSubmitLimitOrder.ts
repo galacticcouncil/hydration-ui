@@ -43,7 +43,7 @@ export const useSubmitLimitOrder = () => {
       const deadline =
         expiryMs !== undefined ? BigInt(Date.now() + expiryMs) : undefined
 
-      const tx = papiNext.tx.Intent.submit_intent({
+      const tx = (papiNext as any).tx.Intent.submit_intent({
         intent: {
           data: {
             type: "Swap",

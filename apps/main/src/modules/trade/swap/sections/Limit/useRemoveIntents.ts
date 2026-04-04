@@ -28,7 +28,7 @@ export const useRemoveIntents = () => {
     },
     mutationFn: async (intentIds: bigint[]) => {
       const txs = intentIds.map((id) =>
-        papiNext.tx.Intent.remove_intent({ id }),
+        (papiNext as any).tx.Intent.remove_intent({ id }),
       )
 
       const tx =
