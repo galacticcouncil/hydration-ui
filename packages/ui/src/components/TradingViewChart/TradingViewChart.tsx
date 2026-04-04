@@ -74,9 +74,9 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
 
-  const [seriesState, setSeriesState] = useState<ReturnType<
-    typeof renderSeries
-  >[0] | null>(null)
+  const [seriesState, setSeriesState] = useState<
+    ReturnType<typeof renderSeries>[0] | null
+  >(null)
   const [chartState, setChartState] = useState<IChartApi | null>(null)
 
   useImperativeHandle(ref, () => ({
@@ -185,7 +185,16 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       setSeriesState(null)
       setChartState(null)
     }
-  }, [data, height, themeProps, type, hidePriceIndicator, uiScale, isMobile, priceLines])
+  }, [
+    data,
+    height,
+    themeProps,
+    type,
+    hidePriceIndicator,
+    uiScale,
+    isMobile,
+    priceLines,
+  ])
 
   return (
     <Box
