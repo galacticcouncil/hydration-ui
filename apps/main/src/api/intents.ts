@@ -18,11 +18,17 @@ export const intentsByAccountQuery = (
       // TODO: switch to Intent.AccountIntents.getEntries(address) once
       // the new runtime (PR #1360) is deployed — it's a direct reverse index
       // and avoids this full scan.
-      const ownerEntries = await (
-        papiNext as any
-      ).query.Intent.IntentOwner.getEntries({
-        at: "best",
-      })
+      let ownerEntries: any[]
+      try {
+        ownerEntries = await (
+          papiNext as any
+        ).query.Intent.IntentOwner.getEntries({
+          at: "best",
+        })
+      } catch {
+        // Intent pallet not available on this chain
+        return []
+      }
 
       const accountPublicKey = safeConvertSS58toPublicKey(address)
 

@@ -91,7 +91,7 @@ export const PROVIDERS: ProviderProps[] = [
     "wss://node3.lark.hydration.cloud",
     MAINNET_INDEXER_URL,
     MAINNET_SQUID_URL,
-    ["development"],
+    ["development", "production"],
     "testnet",
   ),
   createProvider(
