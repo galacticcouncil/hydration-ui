@@ -17,7 +17,7 @@ export const useSubmitLimitOrder = () => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
 
-  const { papiNext } = useRpcProvider()
+  const { papiClient } = useRpcProvider()
 
   const createTransaction = useTransactionsStore((s) => s.createTransaction)
   const queryClient = useQueryClient()
@@ -43,8 +43,10 @@ export const useSubmitLimitOrder = () => {
       const deadline =
         expiryMs !== undefined ? BigInt(Date.now() + expiryMs) : undefined
 
+      // Use unsafe API to bypass descriptor checksum validation
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const tx = (papiNext as any).tx.Intent.submit_intent({
+      const unsafeApi = papiClient.getUnsafeApi() as any
+      const tx = unsafeApi.tx.Intent.submit_intent({
         intent: {
           data: {
             type: "Swap",
