@@ -14,7 +14,7 @@ import {
 import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
-import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
   const { sdk } = useRpcProvider()
@@ -199,34 +199,18 @@ export const xcmTransferReportQuery = (
   })
 
 export const xcmTransferCallQuery = (
-  { dryRunErrorDecoder }: TProviderContext,
   transfer: Transfer | null,
   amount: string,
   transferArgs: XcmTransferArgs,
-  dryRun?: boolean,
 ) =>
   queryOptions({
     enabled: !!transfer && !!amount,
     placeholderData: keepPreviousData,
-    queryKey: ["xcm", "call", amount, transferArgs, dryRun],
+    queryKey: ["xcm", "call", amount, transferArgs],
     queryFn: async () => {
       if (!transfer) throw new Error("Invalid transfer")
       const call = await transfer.buildCall(amount)
 
-      const dryRunError = await (async () => {
-        if (!dryRun) {
-          return null
-        }
-
-        const result = await call?.dryRun()
-
-        if (result?.error) {
-          return await dryRunErrorDecoder.parseError(result.error)
-        }
-
-        return null
-      })()
-
-      return { call, dryRunError }
+      return { call }
     },
   })

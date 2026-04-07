@@ -22,7 +22,7 @@ type ReviewTransactionFooterProps = {
 export const ReviewTransactionFooter: React.FC<
   ReviewTransactionFooterProps
 > = ({ closable = true }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
 
   const {
     onClose,
@@ -30,6 +30,7 @@ export const ReviewTransactionFooter: React.FC<
     isSigning,
     isSubmitted,
     alerts: txAlerts,
+    dryRunError,
   } = useTransaction()
 
   const { alerts: genericAlerts } = useTransactionAlerts()
@@ -44,7 +45,7 @@ export const ReviewTransactionFooter: React.FC<
 
   const hasGenericAlerts = genericAlerts.length > 0
   const hasTxAlerts = !!txAlerts && txAlerts.length > 0
-  const hasAlerts = hasGenericAlerts || hasTxAlerts
+  const hasAlerts = hasGenericAlerts || hasTxAlerts || !!dryRunError
 
   if (isIdle) {
     return (
@@ -73,7 +74,7 @@ export const ReviewTransactionFooter: React.FC<
                           })
                         }}
                       />
-                      <Text fs="p4" lh={1.3} fw={600}>
+                      <Text fs="p4" lh={1.3} fw={500}>
                         {isString(alert.requiresUserConsent)
                           ? alert.requiresUserConsent
                           : t("transaction.alert.acceptRisk")}
@@ -83,6 +84,19 @@ export const ReviewTransactionFooter: React.FC<
                 }
               />
             ))}
+
+        {dryRunError && (
+          <Alert
+            variant="warning"
+            description={
+              <Text fs="p4" fw={500} lh={1}>
+                {t("transaction.alert.dryRunWarning", {
+                  reason: dryRunError.name,
+                })}
+              </Text>
+            }
+          />
+        )}
 
         {hasAlerts && <ModalContentDivider my="m" />}
 

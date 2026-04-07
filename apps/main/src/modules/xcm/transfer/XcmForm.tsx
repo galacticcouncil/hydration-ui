@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Flex,
   Paper,
@@ -48,7 +47,6 @@ export const XcmForm = () => {
   const {
     status,
     transfer,
-    dryRunError,
     sourceChainAssetPairs,
     destChainAssetPairs,
     isLoading,
@@ -282,13 +280,6 @@ export const XcmForm = () => {
           <Separator />
           <Box p={["l", "xl"]}>
             <Flex direction="column" gap="m">
-              {dryRunError && (
-                <Alert
-                  variant="error"
-                  title={dryRunError.name}
-                  tooltip={dryRunError.description}
-                />
-              )}
               <SubmitButton
                 status={status}
                 disabled={

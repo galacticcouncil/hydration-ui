@@ -1,7 +1,7 @@
 import { hydration } from "@galacticcouncil/descriptors"
 import {
   metadata as metadataCodec,
-  V15,
+  V16,
 } from "@polkadot-api/substrate-bindings"
 import { PolkadotClient, TypedApi } from "polkadot-api"
 
@@ -19,8 +19,8 @@ type DryRunExecutionError = Extract<
   { success: false }
 >["value"]["error"]
 
-type Pallet = V15["pallets"][number]
-type Lookup = V15["lookup"][number]
+type Pallet = V16["pallets"][number]
+type Lookup = V16["lookup"][number]
 
 export type DryRunError = {
   readonly name: string
@@ -77,7 +77,7 @@ export class DryRunErrorDecoder {
       return
     }
 
-    const errorType = this.#lookupById.get(pallet.errors)
+    const errorType = this.#lookupById.get(pallet.errors.type)
 
     if (!errorType || errorType.def.tag !== "variant") {
       return
@@ -107,7 +107,7 @@ export class DryRunErrorDecoder {
     )
 
     const { metadata } = metadataCodec.dec(metadataBytes)
-    const { pallets, lookup } = metadata.value as V15
+    const { pallets, lookup } = metadata.value as V16
 
     this.#palletByName = new Map(pallets.map((p) => [p.name, p] as const))
     this.#lookupById = new Map(lookup.map((t) => [t.id, t] as const))
