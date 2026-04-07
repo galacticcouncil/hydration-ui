@@ -28,9 +28,7 @@ export const SStackRoot = styled.div(
 
     z-index: 1001;
 
-    margin: 0 ${pxToRem(8)};
-    margin-bottom: ${pxToRem(62)};
-    padding: 0 ${pxToRem(12)} 0;
+    margin: 0 ${pxToRem(8)} ${pxToRem(62)};
 
     min-height: ${pxToRem(200)};
 
@@ -38,10 +36,11 @@ export const SStackRoot = styled.div(
       width: ${pxToRem(278)};
       height: ${pxToRem(345)};
 
-      overflow: hidden;
+      margin-left: ${pxToRem(10)};
+    }
 
-      margin-bottom: ${pxToRem(42)};
-      padding: 0 ${pxToRem(12)} ${pxToRem(12)};
+    ${mq("lg")} {
+      margin-bottom: ${pxToRem(46)};
     }
   `,
 )
@@ -50,33 +49,28 @@ export const SStackEnter = styled.div<{
   readonly $depth: number
   readonly $closing: boolean
 }>(
-  ({ $depth, $closing }) => css`
+  ({ $closing }) => css`
     width: 100%;
     height: 100%;
 
     opacity: ${$closing ? 1 : 0};
     animation: ${$closing ? "gigaNewsClose" : "gigaNewsEnter"} 0.28s
       cubic-bezier(0.33, 1, 0.68, 1) both;
-    animation-delay: ${Math.min($depth, $closing ? 1 : 1.5) * 0.06}s;
 
     @keyframes gigaNewsEnter {
       from {
-        transform: translateY(50%);
         opacity: 0;
       }
       to {
-        transform: translateY(0%);
         opacity: 1;
       }
     }
 
     @keyframes gigaNewsClose {
       from {
-        transform: translateY(0%);
         opacity: 1;
       }
       to {
-        transform: translateY(50%);
         opacity: 0;
       }
     }
