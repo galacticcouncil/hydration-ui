@@ -12,6 +12,7 @@ export const SAssetDetailModalBody = styled(ModalBody)(
     --modal-body-padding: ${theme.space.l};
     padding-inline: var(--modal-body-padding);
     padding-block: 0;
+    padding-top: var(--modal-body-padding);
 
     display: flex;
     flex-direction: column;
