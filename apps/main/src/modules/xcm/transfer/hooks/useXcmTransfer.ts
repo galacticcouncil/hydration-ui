@@ -26,12 +26,7 @@ export const useXcmTransfer = (form: UseFormReturn<XcmFormValues>) => {
   const [reportQuery, callQuery] = useQueries({
     queries: [
       xcmTransferReportQuery(transfer ?? null, transferArgs),
-      xcmTransferCallQuery(
-        transfer ?? null,
-        values.srcAmount,
-        transferArgs,
-        form.formState.isValid,
-      ),
+      xcmTransferCallQuery(transfer ?? null, values.srcAmount, transferArgs),
     ],
   })
 
