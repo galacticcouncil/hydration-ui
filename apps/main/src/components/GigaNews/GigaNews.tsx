@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next"
 import {
   SGigaNewsContainer,
   SGigaNewsToggleButton,
-  SStackEnter,
   SStackLayer,
   SStackRoot,
 } from "@/components/GigaNews/GigaNews.styled"
@@ -62,7 +61,7 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
   return (
     <SGigaNewsContainer $hidden={isHidden && allClosed}>
       {visibleBanners.length > 0 && (
-        <SStackRoot>
+        <SStackRoot $closing={isCloseAll}>
           {visibleBanners.map((banner, depth) => {
             const onClose = () => {
               close(banner.id)
@@ -71,21 +70,19 @@ export const GigaNews = ({ isHidden }: { isHidden: boolean }) => {
 
             return (
               <SStackLayer key={banner.id} $depth={depth}>
-                <SStackEnter $depth={depth} $closing={isCloseAll}>
-                  <PromoteBanner
-                    item={{
-                      ...banner,
-                      onClose: depth === 0 ? onClose : undefined,
-                      ...(banner.to
-                        ? {
-                            onCta: () => {
-                              navigate({ to: banner.to })
-                            },
-                          }
-                        : {}),
-                    }}
-                  />
-                </SStackEnter>
+                <PromoteBanner
+                  item={{
+                    ...banner,
+                    onClose: depth === 0 ? onClose : undefined,
+                    ...(banner.to
+                      ? {
+                          onCta: () => {
+                            navigate({ to: banner.to })
+                          },
+                        }
+                      : {}),
+                  }}
+                />
               </SStackLayer>
             )
           })}

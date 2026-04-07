@@ -19,8 +19,8 @@ export const SGigaNewsToggleButton = styled(Button)(
   `,
 )
 
-export const SStackRoot = styled.div(
-  () => css`
+export const SStackRoot = styled.div<{ readonly $closing?: boolean }>(
+  ({ $closing }) => css`
     position: fixed;
     inset: auto 0 0 0;
 
@@ -31,27 +31,6 @@ export const SStackRoot = styled.div(
     margin: 0 ${pxToRem(8)} ${pxToRem(62)};
 
     min-height: ${pxToRem(200)};
-
-    ${mq("sm")} {
-      width: ${pxToRem(278)};
-      height: ${pxToRem(345)};
-
-      margin-left: ${pxToRem(10)};
-    }
-
-    ${mq("lg")} {
-      margin-bottom: ${pxToRem(46)};
-    }
-  `,
-)
-
-export const SStackEnter = styled.div<{
-  readonly $depth: number
-  readonly $closing: boolean
-}>(
-  ({ $closing }) => css`
-    width: 100%;
-    height: 100%;
 
     opacity: ${$closing ? 1 : 0};
     animation: ${$closing ? "gigaNewsClose" : "gigaNewsEnter"} 0.28s
@@ -73,6 +52,17 @@ export const SStackEnter = styled.div<{
       to {
         opacity: 0;
       }
+    }
+
+    ${mq("sm")} {
+      width: ${pxToRem(278)};
+      height: ${pxToRem(345)};
+
+      margin-left: ${pxToRem(10)};
+    }
+
+    ${mq("lg")} {
+      margin-bottom: ${pxToRem(46)};
     }
   `,
 )
