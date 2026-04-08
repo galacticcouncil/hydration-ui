@@ -105,11 +105,7 @@ const createAccountsBalances: StateCreator<
     set((state) =>
       produce(state, (draft) => {
         balances.forEach((balance) => {
-          if (balance.total > 0n) {
-            draft.balances[balance.assetId] = balance
-          } else {
-            delete draft.balances[balance.assetId]
-          }
+          draft.balances[balance.assetId] = balance
         })
       }),
     ),

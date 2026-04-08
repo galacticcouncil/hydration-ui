@@ -199,10 +199,13 @@
   "navigation.swap.description": "Trade instantly using the Omnipool",
   "navigation.swap.title": "Swap",
   "navigation.trade.title": "Trade",
+  "navigation.strategies.title": "Strategies",
   "navigation.swapMarket.title": "Market",
+  "navigation.swapLimit.title": "Limit",
   "navigation.swapDca.title": "DCA",
   "navigation.wallet.title": "Wallet",
-  "navigation.walletAssets.title": "Overview",
+  "navigation.walletAssets.title": "Hydration",
+  "navigation.walletMultichain.title": "Multichain",
   "navigation.walletTransactions.title": "Transactions",
   "navigation.statsOverview.title": "Overview",
   "navigation.statsTreasury.title": "Treasury",
@@ -345,5 +348,6 @@
   "submitTransaction.validation": "Invalid hex",
   "submitTransaction.warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
   "submitTransaction.toasts.success": "Extrinsic successful",
-  "submitTransaction.toasts.submitted": "Extrinsic submitted"
+  "submitTransaction.toasts.submitted": "Extrinsic submitted",
+  "clear": "Clear"
 }

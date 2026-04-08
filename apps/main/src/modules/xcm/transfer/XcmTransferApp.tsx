@@ -1,9 +1,14 @@
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 import { XcmForm } from "@/modules/xcm/transfer/XcmForm"
 import { XcmProvider } from "@/modules/xcm/transfer/XcmProvider"
 
-export const XcmTransferApp = () => {
+type XcmTransferAppProps = {
+  initialSearch?: XcmQueryParams
+}
+
+export const XcmTransferApp = ({ initialSearch }: XcmTransferAppProps) => {
   return (
-    <XcmProvider>
+    <XcmProvider initialSearch={initialSearch}>
       <XcmForm />
     </XcmProvider>
   )

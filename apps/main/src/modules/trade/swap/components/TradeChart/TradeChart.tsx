@@ -10,7 +10,8 @@ import {
 import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewChart/utils"
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
-import React, { useRef, useState } from "react"
+import Big from "big.js"
+import React, { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
 
@@ -21,6 +22,7 @@ import {
   ChartTimeRangeOptionType,
 } from "@/components/ChartTimeRange/ChartTimeRange"
 import i18n from "@/i18n"
+import { useIntentsData } from "@/modules/trade/orders/lib/useIntentsData"
 import { useTradeChartData } from "@/modules/trade/swap/components/TradeChart/TradeChart.data"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -40,7 +42,7 @@ type TradeChartProps = {
 }
 
 export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("trade")
 
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
@@ -55,6 +57,19 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     assetOutId: assetOut,
     timeFrame: interval === "all" ? null : interval,
   })
+
+  const { orders: intentOrders } = useIntentsData()
+
+  const intentPriceLines = useMemo(() => {
+    return intentOrders
+      .filter((o) => o.from.id === assetIn && o.to.id === assetOut)
+      .flatMap((o) => {
+        if (!o.fromAmountBudget || !o.toAmountExecuted) return []
+        const toAmount = Big(o.toAmountExecuted)
+        if (toAmount.eq(0)) return []
+        return [Number(Big(o.fromAmountBudget).div(toAmount))]
+      })
+  }, [intentOrders, assetIn, assetOut])
 
   const isEmpty = isSuccess && !prices.length
 
@@ -72,7 +87,8 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const chartValue =
     !isEmpty && !isError
-      ? t("currency", {
+      ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        t("common:currency" as any, {
           value,
           symbol: getAssetWithFallback(assetIn).symbol,
         })
@@ -82,10 +98,12 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     !isEmpty && !isError ? (
       <Box>
         <Box>
-          {t("price")}: {formattedAssetPrice}
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {t("common:price" as any)}: {formattedAssetPrice}
         </Box>
         <Box visibility={volume > 0 ? "visible" : "hidden"}>
-          {t("vol")}: {formattedVolumePrice}
+          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+          {t("common:vol" as any)}: {formattedVolumePrice}
         </Box>
       </Box>
     ) : undefined
@@ -118,6 +136,10 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           height={height}
           data={prices}
           hidePriceIndicator
+          priceLines={intentPriceLines.length ? intentPriceLines : undefined}
+          priceLinesLabel={
+            intentPriceLines.length ? t("limit.chart.label") : undefined
+          }
           onCrosshairMove={setCrosshair}
         />
       </ChartState>

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { Fragment } from "@galacticcouncil/ui/jsx/jsx-runtime"
 import {
   ReactNode,

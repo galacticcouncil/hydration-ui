@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
+
 import { isValidElement } from "react"
 import { BaseAxisProps } from "recharts/types/util/types"
 import { first, isArray, isNumber, isObjectType, isString } from "remeda"

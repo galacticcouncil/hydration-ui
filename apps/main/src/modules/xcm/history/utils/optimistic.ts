@@ -64,9 +64,12 @@ export function convertXcmFormValuesToOptimisticJourney(
     toFormatted: destAddress,
     sentAt: now,
     createdAt: now,
-    stops: "",
-    instructions: "",
-    transactCalls: "",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    stops: [] as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    instructions: "" as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    transactCalls: "" as any,
     originTxPrimary: txHash,
     totalUsd: 0,
     assets: [

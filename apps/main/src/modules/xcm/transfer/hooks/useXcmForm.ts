@@ -7,11 +7,16 @@ import { useForm } from "react-hook-form"
 import { useXcmFormSchema } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { useXcmQueryParams } from "@/modules/xcm/transfer/hooks/useXcmQueryParams"
 import { getXcmFormDefaults } from "@/modules/xcm/transfer/utils/chain"
+import { XcmQueryParams } from "@/modules/xcm/transfer/utils/query"
 
-export const useXcmForm = (transfer: Transfer | null) => {
+export const useXcmForm = (
+  transfer: Transfer | null,
+  initialSearch?: XcmQueryParams,
+) => {
   const { account } = useAccount()
 
-  const { parsedQueryParams, updateQueryParams } = useXcmQueryParams()
+  const { parsedQueryParams, updateQueryParams } =
+    useXcmQueryParams(initialSearch)
   const defaults = {
     ...getXcmFormDefaults(account),
     ...parsedQueryParams,

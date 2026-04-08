@@ -1,4 +1,4 @@
-import { SdkCtx, sor } from "@galacticcouncil/sdk-next"
+import { pool, SdkCtx, sor } from "@galacticcouncil/sdk-next"
 import { QUERY_KEY_BLOCK_PREFIX } from "@galacticcouncil/utils"
 import { QueryKey, queryOptions } from "@tanstack/react-query"
 import Big from "big.js"
@@ -46,6 +46,7 @@ export const bestSellQuery = (
       amountIn,
     ],
     queryFn: async () => {
+      sdk.api.router.withFilter({ exclude: [pool.PoolType.HSM] })
       const swap = await sdk.api.router.getBestSell(
         Number(assetIn),
         Number(assetOut),
@@ -265,6 +266,7 @@ export const bestBuyQuery = (
       amountOut,
     ],
     queryFn: async () => {
+      sdk.api.router.withFilter({ exclude: [pool.PoolType.HSM] })
       const swap = await sdk.api.router.getBestBuy(
         Number(assetIn),
         Number(assetOut),
@@ -290,13 +292,35 @@ export const bestBuyTxQuery = (
 ) =>
   queryOptions({
     queryKey: [swapKey, "tx"],
-    queryFn: () =>
-      sdk.tx
-        .trade(swap)
+    queryFn: () => {
+      // We submit a sell tx for a buy (exact-out) trade. The SDK's withSlippage()
+      // on a sell reduces min_buy_amount, which would let the user receive less than
+      // the amountOut they specified. To prevent this, we inflate amountOut so that
+      // after SDK subtracts slippage%, min_buy_amount >= original amountOut.
+      // Formula: amountOutInflated = ceil(amountOut * 10000 / (10000 - k))
+      // where k = round(slippage * 100). Then: min_buy_amount = amountOutInflated - k/10000
+      //   >= amountOut_original.
+      const k = BigInt(Math.round(slippage * 100))
+      const denom = 10000n - k
+      // Inflate amountOut so min_buy_amount >= amountOut_original after SDK subtracts slippage%
+      const amountOutInflated = (swap.amountOut * 10000n + denom - 1n) / denom
+      // Inflate amountIn by slippage% — the slippage buffer goes on the input side,
+      // matching original buy tx semantics (max_sell_amount = amountIn + slippage%).
+      // This lets the tx succeed despite small price movements between quote and execution.
+      const amountInInflated = (swap.amountIn * (10000n + k) + 9999n) / 10000n
+
+      return sdk.tx
+        .trade({
+          ...swap,
+          amountIn: amountInInflated,
+          amountOut: amountOutInflated,
+          type: TradeType.Sell,
+        })
         .withSlippage(slippage)
         .withBeneficiary(address)
         .build()
-        .then((tx) => tx.get()),
+        .then((tx) => tx.get())
+    },
     enabled: !!address,
   })
 

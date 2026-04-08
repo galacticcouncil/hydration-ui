@@ -85,6 +85,14 @@ export const PROVIDERS: ProviderProps[] = [
   createProvider("coke", "wss://rpc.coke.hydration.cloud"),
   // createProvider("owl", "wss://rpc-owl-1.owl.shadow-senate.com"),
   createProvider(
+    "Lark (Intents)",
+    "wss://node3.lark.hydration.cloud",
+    MAINNET_INDEXER_URL,
+    MAINNET_SQUID_URL,
+    ["development", "production"],
+    "testnet",
+  ),
+  createProvider(
     "Testnet",
     "wss://rpc.nice.hydration.cloud",
     "https://archive.nice.hydration.cloud/graphql",

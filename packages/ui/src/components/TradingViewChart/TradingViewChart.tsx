@@ -2,6 +2,7 @@ import { hexToRgba } from "@galacticcouncil/utils"
 import {
   createChart,
   IChartApi,
+  LineStyle,
   LineType,
   SeriesType,
 } from "lightweight-charts"
@@ -16,6 +17,7 @@ import {
 import { Box } from "@/components"
 import { Crosshair } from "@/components/TradingViewChart/components/Crosshair"
 import { PriceIndicator } from "@/components/TradingViewChart/components/PriceIndicator"
+import { PriceMarkers } from "@/components/TradingViewChart/components/PriceMarkers"
 import {
   crosshair,
   grid,
@@ -53,6 +55,8 @@ export type TradingViewChartProps = ChartTypeProps & {
   data: Array<OhlcData>
   height?: number
   hidePriceIndicator?: boolean
+  priceLines?: Array<number>
+  priceLinesLabel?: string
 }
 
 export const TradingViewChart: React.FC<TradingViewChartProps> = ({
@@ -61,12 +65,19 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
   type = "Baseline",
   height = 400,
   hidePriceIndicator,
+  priceLines,
+  priceLinesLabel,
   onCrosshairMove,
 }) => {
   const chartContainerRef = useRef<HTMLDivElement | null>(null)
   const crosshairRef = useRef<HTMLDivElement | null>(null)
   const priceIndicatorRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
+
+  const [seriesState, setSeriesState] = useState<
+    ReturnType<typeof renderSeries>[0] | null
+  >(null)
+  const [chartState, setChartState] = useState<IChartApi | null>(null)
 
   useImperativeHandle(ref, () => ({
     resetZoom: () => {
@@ -130,6 +141,20 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     chart.timeScale().fitContent()
 
+    priceLines?.forEach((price) => {
+      series.createPriceLine({
+        price,
+        color: themeProps.details.values.positive,
+        lineWidth: 1,
+        lineStyle: LineStyle.Dashed,
+        axisLabelVisible: false,
+        title: "",
+      })
+    })
+
+    setSeriesState(series)
+    setChartState(chart)
+
     const previousVisibleRange = chartRef.current?.timeScale().getVisibleRange()
 
     if (previousVisibleRange) {
@@ -157,8 +182,19 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
 
     return () => {
       chart.remove()
+      setSeriesState(null)
+      setChartState(null)
     }
-  }, [data, height, themeProps, type, hidePriceIndicator, uiScale, isMobile])
+  }, [
+    data,
+    height,
+    themeProps,
+    type,
+    hidePriceIndicator,
+    uiScale,
+    isMobile,
+    priceLines,
+  ])
 
   return (
     <Box
@@ -170,6 +206,14 @@ export const TradingViewChart: React.FC<TradingViewChartProps> = ({
       <div ref={chartContainerRef} />
       <Crosshair ref={crosshairRef} {...crosshairData} />
       {!hidePriceIndicator && <PriceIndicator ref={priceIndicatorRef} />}
+      {priceLines?.length && seriesState && chartState && (
+        <PriceMarkers
+          priceLines={priceLines}
+          seriesApi={seriesState}
+          chartApi={chartState}
+          label={priceLinesLabel}
+        />
+      )}
     </Box>
   )
 }

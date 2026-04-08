@@ -5,8 +5,10 @@ import { FC, useState } from "react"
 
 import { PaginationProps } from "@/hooks/useDataTableUrlPagination"
 import { DcaOrderDetailsModal } from "@/modules/trade/orders/DcaOrderDetailsModal"
+import { useIntentsData } from "@/modules/trade/orders/lib/useIntentsData"
 import {
   OrderData,
+  OrderKind,
   useOrdersData,
 } from "@/modules/trade/orders/lib/useOrdersData"
 import { useOpenOrdersColumns } from "@/modules/trade/orders/OpenOrders/OpenOrders.columns"
@@ -28,12 +30,28 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
     readonly isTermination: boolean
   } | null>(null)
 
-  const { orders, totalCount, isLoading } = useOrdersData(
+  const {
+    orders: dcaOrders,
+    totalCount,
+    isLoading: isDcaLoading,
+  } = useOrdersData(
     [DcaScheduleStatus.Created],
     allPairs ? [] : [assetIn, assetOut],
     paginationProps.pagination.pageIndex,
     paginationProps.pagination.pageSize,
   )
+
+  const { orders: allIntentOrders, isLoading: isIntentsLoading } =
+    useIntentsData()
+
+  const intentOrders = allPairs
+    ? allIntentOrders
+    : allIntentOrders.filter(
+        (o) => o.from.id === assetIn && o.to.id === assetOut,
+      )
+
+  const orders = [...intentOrders, ...dcaOrders]
+  const isLoading = isDcaLoading || isIntentsLoading
 
   const columns = useOpenOrdersColumns()
 
@@ -45,10 +63,12 @@ export const OpenOrders: FC<Props> = ({ allPairs, paginationProps }) => {
         isLoading={isLoading}
         paginated
         {...paginationProps}
-        rowCount={totalCount}
-        onRowClick={(detail) =>
-          setIsDetailOpen({ detail, isTermination: false })
-        }
+        rowCount={totalCount + intentOrders.length}
+        onRowClick={(detail) => {
+          if (detail.kind !== OrderKind.Limit) {
+            setIsDetailOpen({ detail, isTermination: false })
+          }
+        }}
         emptyState={<OrdersEmptyState />}
       />
       <Modal open={!!isDetailOpen} onOpenChange={() => setIsDetailOpen(null)}>

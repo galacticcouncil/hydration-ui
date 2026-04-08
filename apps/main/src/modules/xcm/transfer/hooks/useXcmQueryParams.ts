@@ -43,7 +43,7 @@ const parseQueryParams = (params: XcmQueryParams): ParsedXcmQueryParams => {
   }
 }
 
-export const useXcmQueryParams = () => {
+export const useXcmQueryParams = (override?: XcmQueryParams) => {
   const navigate = useNavigate()
 
   const searchParams = useSearch({
@@ -51,13 +51,14 @@ export const useXcmQueryParams = () => {
     shouldThrow: false,
   })
 
-  const parsedQueryParams = useMemo(
-    () => (searchParams ? parseQueryParams(searchParams) : undefined),
-    [searchParams],
-  )
+  const parsedQueryParams = useMemo(() => {
+    if (override) return parseQueryParams(override)
+    return searchParams ? parseQueryParams(searchParams) : undefined
+  }, [override, searchParams])
 
   const updateQueryParams = useCallback(
     (values: XcmQueryParams) => {
+      if (override) return
       navigate({
         to: ".",
         search: values,
@@ -65,7 +66,7 @@ export const useXcmQueryParams = () => {
         replace: true,
       })
     },
-    [navigate],
+    [navigate, override],
   )
 
   return {
