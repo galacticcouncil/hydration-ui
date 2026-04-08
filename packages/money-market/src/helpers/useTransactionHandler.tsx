@@ -156,7 +156,6 @@ export const useTransactionHandler = ({
           TxAction.GAS_ESTIMATION,
           false,
         )
-        console.log(error, parsedError)
         setTxError(parsedError)
         setMainTxState({
           txHash: undefined,

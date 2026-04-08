@@ -12,7 +12,7 @@ import {
 } from "@/components/address-book/AddressBook.store"
 import { WalletProviderType } from "@/config/providers"
 import { useWeb3Connect, WalletProviderStatus } from "@/hooks/useWeb3Connect"
-import { BaseWalletError } from "@/utils/errors"
+import { BaseWalletError, UserRejectedError } from "@/utils/errors"
 import { toStoredAccount } from "@/utils/wallet"
 import { getWallet } from "@/wallets"
 
@@ -58,9 +58,10 @@ export const useWeb3Enable = (options: UseWeb3EnableOptions = {}) => {
       addToAddressBook(addresses)
     },
     onError: (error, type) => {
-      if (options.disconnectOnError) {
+      if (options.disconnectOnError || error instanceof UserRejectedError) {
         return disconnect(type)
       }
+
       setStatus(type, WalletProviderStatus.Error)
       if (error instanceof BaseWalletError) {
         setError(error.message)

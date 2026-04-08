@@ -10,7 +10,6 @@ import {
   FaucetService,
   IncentivesController,
   IncentivesControllerV2,
-  IncentivesControllerV2Interface,
   InterestRate,
   LendingPool,
   LendingPoolBundle,
@@ -29,6 +28,7 @@ import {
   UiPoolDataProvider,
   UserReserveDataHumanized,
   V3FaucetService,
+  valueToWei,
   WithdrawAndSwitchAdapterService,
 } from "@aave/contract-helpers"
 import {
@@ -45,6 +45,7 @@ import {
 } from "@aave/contract-helpers/dist/esm/v3-pool-contract/lendingPoolTypes"
 import {
   BigNumber,
+  constants,
   PopulatedTransaction,
   providers,
   Signature,
@@ -171,6 +172,24 @@ export interface PoolSlice {
     tx: PopulatedTransaction,
     action?: ProtocolAction,
   ) => Promise<PopulatedTransaction>
+}
+
+const bypassGasEstimation = (
+  txArr: EthereumTransactionTypeExtended[],
+  user: string,
+  rawCall: () => Promise<PopulatedTransaction>,
+): EthereumTransactionTypeExtended[] => {
+  return txArr.map((props) => ({
+    ...props,
+    tx: async () => {
+      const tx = await rawCall()
+      return {
+        ...tx,
+        from: user,
+        value: DEFAULT_NULL_VALUE_ON_TX,
+      }
+    },
+  }))
 }
 
 export const createPoolSlice: StateCreator<
@@ -461,14 +480,34 @@ export const createPoolSlice: StateCreator<
         return service.mint({ ...args, userAddress })
       }
     },
-    withdraw: (args) => {
+    withdraw: async (args) => {
       const pool = getCorrectPool()
       const user = get().account
-      return pool.withdraw({
+      const poolContract = pool.getContractInstance(
+        pool instanceof Pool ? pool.poolAddress : pool.lendingPoolAddress,
+      )
+
+      const tx = await pool.withdraw({
         ...args,
         user,
         useOptimizedPath: optimizedPath(get().currentChainId),
       })
+
+      const { amount, reserve } = args
+      const { decimalsOf } = pool.erc20Service
+      const decimals = await decimalsOf(reserve)
+      const convertedAmount =
+        amount === "-1"
+          ? constants.MaxUint256.toString()
+          : valueToWei(amount, decimals)
+
+      return bypassGasEstimation(tx, user, () =>
+        poolContract.populateTransaction.withdraw(
+          reserve,
+          convertedAmount,
+          user,
+        ),
+      )
     },
     setUsageAsCollateralTx: async (args) => {
       const pool = getCorrectPool()
@@ -495,12 +534,22 @@ export const createPoolSlice: StateCreator<
     setUsageAsCollateral: async (args) => {
       const pool = getCorrectPool()
       const user = get().account
+      const poolContract = pool.getContractInstance(
+        pool instanceof Pool ? pool.poolAddress : pool.lendingPoolAddress,
+      )
 
-      return pool.setUsageAsCollateral({
+      const tx = await pool.setUsageAsCollateral({
         ...args,
         user,
         useOptimizedPath: get().useOptimizedPath(),
       })
+
+      return bypassGasEstimation(tx, user, () =>
+        poolContract.populateTransaction.setUserUseReserveAsCollateral(
+          args.reserve,
+          args.usageAsCollateral,
+        ),
+      )
     },
     swapBorrowRateMode: async (args) => {
       const pool = getCorrectPool()
@@ -837,10 +886,16 @@ export const createPoolSlice: StateCreator<
     setUserEMode: async (categoryId) => {
       const pool = getCorrectPool() as Pool
       const user = get().account
-      return pool.setUserEMode({
+      const poolContract = pool.getContractInstance(pool.poolAddress)
+
+      const tx = pool.setUserEMode({
         user,
         categoryId,
       })
+
+      return bypassGasEstimation(tx, user, () =>
+        poolContract.populateTransaction.setUserEMode(categoryId),
+      )
     },
     signERC20Approval: async (args) => {
       const pool = getCorrectPool() as Pool
@@ -872,20 +927,31 @@ export const createPoolSlice: StateCreator<
       const incentivesTxBuilder = new IncentivesController(
         get().jsonRpcProvider(),
       )
-      const incentivesTxBuilderV2: IncentivesControllerV2Interface =
-        new IncentivesControllerV2(get().jsonRpcProvider())
+      const incentivesTxBuilderV2 = new IncentivesControllerV2(
+        get().jsonRpcProvider(),
+      )
 
       if (get().currentMarketData.v3) {
+        const incentivesContract = incentivesTxBuilderV2.getContractInstance(
+          selectedReward.incentiveControllerAddress,
+        )
         if (selectedReward.symbol === "all") {
-          return incentivesTxBuilderV2.claimAllRewards({
+          const tx = incentivesTxBuilderV2.claimAllRewards({
             user: currentAccount,
             assets: allReserves,
             to: currentAccount,
             incentivesControllerAddress:
               selectedReward.incentiveControllerAddress,
           })
+
+          return bypassGasEstimation(tx, currentAccount, () =>
+            incentivesContract.populateTransaction.claimAllRewards(
+              allReserves,
+              currentAccount,
+            ),
+          )
         } else {
-          return incentivesTxBuilderV2.claimRewards({
+          const tx = incentivesTxBuilderV2.claimRewards({
             user: currentAccount,
             assets: allReserves,
             to: currentAccount,
@@ -893,6 +959,15 @@ export const createPoolSlice: StateCreator<
               selectedReward.incentiveControllerAddress,
             reward: selectedReward.rewardTokenAddress,
           })
+
+          return bypassGasEstimation(tx, currentAccount, () =>
+            incentivesContract.populateTransaction.claimRewards(
+              allReserves,
+              constants.MaxUint256.toString(),
+              currentAccount,
+              selectedReward.rewardTokenAddress,
+            ),
+          )
         }
       } else {
         return incentivesTxBuilder.claimRewards({

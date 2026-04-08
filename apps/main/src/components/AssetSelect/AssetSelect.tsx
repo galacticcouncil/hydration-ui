@@ -48,6 +48,7 @@ export const AssetSelect = ({
   const displayValueLoading = props.displayValueLoading ?? displayValueLoading_
 
   const { getTransferableBalance } = useAccountBalances()
+
   const maxBalance = ((): string | undefined => {
     if (providedMaxBalance) {
       return providedMaxBalance

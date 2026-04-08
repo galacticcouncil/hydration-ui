@@ -26,7 +26,6 @@ export enum WalletProviderType {
   Slush = "slush",
   Suiet = "suiet",
   WalletConnect = "walletconnect",
-  WalletConnectEvm = "walletconnect-evm",
 }
 
 export const isWalletProviderType = (
@@ -50,7 +49,7 @@ export const EVM_PROVIDERS: WalletProviderType[] = [
   WalletProviderType.TrustWallet,
   WalletProviderType.BraveWallet,
   WalletProviderType.RabbyWallet,
-  WalletProviderType.WalletConnectEvm,
+  WalletProviderType.WalletConnect,
 ]
 
 export const SUBSTRATE_PROVIDERS: WalletProviderType[] = [
