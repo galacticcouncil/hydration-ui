@@ -23,7 +23,10 @@ export const useObservable = <T>(
   useEffect(() => {
     if (!enabled || !isObservable(observable)) return
 
-    const sub = observable.subscribe(onUpdateRef.current)
+    // Pass a wrapper function that always points to the LATEST ref value
+    const sub = observable.subscribe((data) => {
+      onUpdateRef.current(data)
+    })
 
     return () => {
       sub.unsubscribe()
