@@ -47,7 +47,7 @@ export const AssetSelect = ({
   const displayValue = props.displayValue ?? displayValue_
   const displayValueLoading = props.displayValueLoading ?? displayValueLoading_
 
-  const { getTransferableBalance, isBalanceLoading } = useAccountBalances()
+  const { getTransferableBalance } = useAccountBalances()
 
   const maxBalance = ((): string | undefined => {
     if (providedMaxBalance) {
@@ -75,7 +75,6 @@ export const AssetSelect = ({
         }
         symbol={selectedAsset?.symbol}
         modalDisabled={!setSelectedAsset}
-        loading={isBalanceLoading}
         displayValue={displayValue}
         displayValueLoading={displayValueLoading}
         maxBalance={maxBalance}
