@@ -1,6 +1,6 @@
 import { createPublicClient, http, type Hex } from "viem"
 
-export const VAULT_ADDRESS: Hex = "0x493f00bA516E55e5CA932f55CeB6b5c4b6E4257F"
+export const VAULT_ADDRESS: Hex = "0x4360067b4Ee1C89449bBa7AE6b60940D8562aa35"
 export const HOLLAR_ADDRESS: Hex = "0x531a654d1696ED52e7275A8cede955E82620f99a"
 
 export const EVM_CALL_GAS = 5_000_000n
@@ -9,7 +9,7 @@ export const EVM_CALL_GAS = 5_000_000n
 // The app's papi custom transport (WebSocket) returns empty data for eth_call
 // to contracts deployed on the Lark fork, so we use a direct HTTP transport.
 const rpcUrl = import.meta.env.VITE_PROVIDER_URL?.replace("wss://", "https://").replace("ws://", "http://")
-  || "https://4.lark.hydration.cloud"
+  || "https://2.lark.hydration.cloud"
 
 export const vaultEvmClient = createPublicClient({
   transport: http(rpcUrl),
@@ -21,8 +21,11 @@ export const VAULT_ABI = [
   { type: "function", name: "totalSupply", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "exchangeRate", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "balanceOf", inputs: [{ name: "account", type: "address" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "INVESTMENT_PERIOD", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "WITHDRAWAL_DELAY", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "withdrawalDelay", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "minRedeemAmount", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "getAPYWad", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "getRedemptionQueuePending", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "queueTail", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "tvlCap", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "paused", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
   { type: "function", name: "depositsPaused", inputs: [], outputs: [{ name: "", type: "bool" }], stateMutability: "view" },
@@ -51,13 +54,13 @@ export const VAULT_ABI = [
     inputs: [{ name: "requestId", type: "uint256" }],
     outputs: [
       { name: "user", type: "address" },
-      { name: "wdclAmount", type: "uint256" },
-      { name: "wdclFulfilled", type: "uint256" },
+      { name: "hdclAmount", type: "uint256" },
+      { name: "hdclFulfilled", type: "uint256" },
       { name: "active", type: "bool" },
     ],
     stateMutability: "view",
   },
-  { type: "function", name: "getTotalQueuedWdcl", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "getTotalQueuedHdcl", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "getIdleHollar", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   {
     type: "function", name: "getEstimatedWaitTime",
@@ -66,14 +69,14 @@ export const VAULT_ABI = [
     stateMutability: "view",
   },
   // Preview
-  { type: "function", name: "previewDeposit", inputs: [{ name: "hollarAmount", type: "uint256" }], outputs: [{ name: "wdclAmount", type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "previewRedeem", inputs: [{ name: "wdclAmount", type: "uint256" }], outputs: [{ name: "hollarAmount", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "previewDeposit", inputs: [{ name: "hollarAmount", type: "uint256" }], outputs: [{ name: "hdclAmount", type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "previewRedeem", inputs: [{ name: "hdclAmount", type: "uint256" }], outputs: [{ name: "hollarAmount", type: "uint256" }], stateMutability: "view" },
   // APY
   { type: "function", name: "getActiveAPYCount", inputs: [], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   { type: "function", name: "getActiveAPY", inputs: [{ name: "index", type: "uint256" }], outputs: [{ name: "", type: "uint256" }], stateMutability: "view" },
   // Write functions
-  { type: "function", name: "deposit", inputs: [{ name: "hollarAmount", type: "uint256" }], outputs: [{ name: "wdclMinted", type: "uint256" }], stateMutability: "nonpayable" },
-  { type: "function", name: "requestRedeem", inputs: [{ name: "wdclAmount", type: "uint256" }], outputs: [{ name: "requestId", type: "uint256" }], stateMutability: "nonpayable" },
+  { type: "function", name: "deposit", inputs: [{ name: "hollarAmount", type: "uint256" }], outputs: [{ name: "hdclMinted", type: "uint256" }], stateMutability: "nonpayable" },
+  { type: "function", name: "requestRedeem", inputs: [{ name: "hdclAmount", type: "uint256" }], outputs: [{ name: "requestId", type: "uint256" }], stateMutability: "nonpayable" },
   { type: "function", name: "cancelRedeem", inputs: [{ name: "requestId", type: "uint256" }], outputs: [], stateMutability: "nonpayable" },
 ] as const
 
