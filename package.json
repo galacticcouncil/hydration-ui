@@ -6,6 +6,7 @@
     "packages/*"
   ],
   "scripts": {
+    "postinstall": "rm -rf node_modules/viem/node_modules/@noble/hashes",
     "build": "turbo build",
     "dev": "turbo dev",
     "dev:production": "turbo dev:production",
@@ -16,8 +17,7 @@
   },
   "resolutions": {
     "polkadot-api": "1.23.3",
-    "strip-ansi": "6.0.1",
-    "@noble/hashes": "1.8.0"
+    "strip-ansi": "6.0.1"
   },
   "dependencies": {
     "@galacticcouncil/common": "^0.6.0",
