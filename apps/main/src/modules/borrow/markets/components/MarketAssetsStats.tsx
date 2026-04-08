@@ -16,19 +16,19 @@ export const MarketAssetsStats = () => {
     >
       <ValueStats
         label={t("borrow:market.stats.totalSize")}
-        value={t("common:currency", { value: data.totalLiquidity })}
+        value={t("common:currency.compact", { value: data.totalLiquidity })}
         size="large"
         wrap={[false, false, true]}
       />
       <ValueStats
         label={t("borrow:market.stats.totalAvailable")}
-        value={t("common:currency", { value: data.totalAvailable })}
+        value={t("common:currency.compact", { value: data.totalAvailable })}
         size="large"
         wrap={[false, false, true]}
       />
       <ValueStats
         label={t("borrow:market.stats.totalBorrows")}
-        value={t("common:currency", { value: data.totalDebt })}
+        value={t("common:currency.compact", { value: data.totalDebt })}
         size="large"
         wrap={[false, false, true]}
       />

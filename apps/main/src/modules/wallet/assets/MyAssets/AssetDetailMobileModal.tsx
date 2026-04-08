@@ -27,13 +27,10 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
       <ModalHeader
         sx={{ p: 16 }}
         title={asset.symbol}
-        customTitle={
-          <AssetLabelFull asset={asset} size="primary" variant="vertical" />
-        }
+        customTitle={<AssetLabelFull asset={asset} size="primary" />}
       />
       <SAssetDetailModalBody>
         <Flex direction="column" gap="base">
-          <SAssetDetailMobileSeparator />
           <AssetDetailTotal assetId={asset.id} total={asset.total} />
         </Flex>
         {asset.origin?.name && (
@@ -47,11 +44,8 @@ export const AssetDetailMobileModal: FC<Props> = ({ asset, onModalOpen }) => {
           <AssetDetailMobileModalBalancesHeader />
           <SAssetDetailMobileSeparator />
         </div>
-        <AssetDetailMobileModalBalances
-          assetId={asset.id}
-          reserved={asset.reserved}
-          reservedDca={asset.reservedDca}
-        />
+
+        <AssetDetailMobileModalBalances asset={asset} />
         <AssetDetailMobileActions asset={asset} onModalOpen={onModalOpen} />
       </SAssetDetailModalBody>
     </>
