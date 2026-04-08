@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next"
 import { isNot, prop } from "remeda"
 
 import { SProviderButton } from "@/components/provider/ProviderButton.styled"
+import { WalletProviderType } from "@/config/providers"
 import { COMPATIBLE_WALLET_PROVIDERS, useWeb3Enable } from "@/hooks"
 import { Wallet } from "@/types/wallet"
 
@@ -9,11 +10,15 @@ type Props = {
   installed: Wallet[]
 }
 
+const CONNECT_ALL_BLACKLIST = [WalletProviderType.WalletConnect]
+
 export const ProviderConnectAll: React.FC<Props> = ({ installed }) => {
   const { t } = useTranslation()
   const { enable } = useWeb3Enable({ disconnectOnError: true })
-  const installedCompatible = installed.filter(({ provider }) =>
-    COMPATIBLE_WALLET_PROVIDERS.includes(provider),
+  const installedCompatible = installed.filter(
+    ({ provider }) =>
+      COMPATIBLE_WALLET_PROVIDERS.includes(provider) &&
+      !CONNECT_ALL_BLACKLIST.includes(provider),
   )
 
   const disabledCompatible = installedCompatible.filter(isNot(prop("enabled")))

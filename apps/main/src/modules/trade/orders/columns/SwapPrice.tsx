@@ -13,7 +13,14 @@ type Props = {
 }
 
 export const SwapPrice: FC<Props> = ({ from, to, price }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
+
+  if (!price)
+    return (
+      <Text fw={500} fs="p6" lh="s" color={getToken("text.high")}>
+        -
+      </Text>
+    )
 
   return (
     <Flex align="center" gap="s" justify="center">

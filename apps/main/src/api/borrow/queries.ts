@@ -1,6 +1,7 @@
 import {
   DEFAULT_NULL_VALUE_ON_TX,
   ProtocolAction,
+  transactionType,
 } from "@aave/contract-helpers"
 import { Web3Provider } from "@ethersproject/providers"
 import { ExtendedFormattedUser } from "@galacticcouncil/money-market/hooks"
@@ -549,19 +550,25 @@ export const useBorrowDisableCollateralTxs = () => {
       (reserve) => reserve.usageAsCollateralEnabledOnUser,
     )
 
+    const poolInstance = poolContract.getContractInstance(
+      poolContract.poolAddress,
+    )
+
     return await Promise.all(
       activeCollaterals.map(async (collateral) => {
-        const collateralTxs = await poolContract.setUsageAsCollateral({
-          reserve: collateral.underlyingAsset,
-          usageAsCollateral: false,
-          user: evmAddress,
-        })
+        const txRaw =
+          await poolInstance.populateTransaction.setUserUseReserveAsCollateral(
+            collateral.underlyingAsset,
+            false,
+          )
 
-        const tx = await collateralTxs
-          .find((tx) => "DLP_ACTION" === tx.txType)
-          ?.tx()
+        const tx: transactionType = {
+          ...txRaw,
+          from: evmAddress,
+          value: DEFAULT_NULL_VALUE_ON_TX,
+        }
 
-        if (!tx || !tx.from || !tx.to || !tx.data || !tx.gasLimit) {
+        if (!tx || !tx.from || !tx.to || !tx.data) {
           throw new Error(
             `Disable collateral transaction not found for ${collateral.underlyingAsset}`,
           )
@@ -570,7 +577,7 @@ export const useBorrowDisableCollateralTxs = () => {
         const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
           await estimateGasLimit({
             evm,
-            gasLimit: tx.gasLimit.toString(),
+            gasLimit: tx.gasLimit?.toString(),
             action: ProtocolAction.setUsageAsCollateral,
           })
 
@@ -623,7 +630,7 @@ export const useSetUsageAsCollateralTx = () => {
         await estimateGasLimit({
           evm,
           gasLimit: tx.gasLimit?.toString(),
-          action: ProtocolAction.claimRewards,
+          action: ProtocolAction.setUsageAsCollateral,
         })
 
       const evmCall = papi.tx.EVM.call({

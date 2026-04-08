@@ -40,10 +40,12 @@ export const StakingDashboard: FC = () => {
     useQuery(stakingPositionsQuery(rpc, address, stakingId))
 
   const {
-    data: votesData = [],
+    data: accountVotes,
     isLoading: votesIsLoading,
     isSuccess: votesIsSuccess,
   } = useQuery(accountOpenGovVotesQuery(rpc, address))
+
+  const votesData = accountVotes?.votes ?? []
 
   const staked = stakingPositionsData?.stake
     ? toDecimal(stakingPositionsData.stake, native.decimals)
