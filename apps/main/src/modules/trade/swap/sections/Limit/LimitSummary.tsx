@@ -23,7 +23,7 @@ export const LimitSummary: FC = () => {
   const { data: iceFee } = useQuery(iceFeeQuery(rpc))
 
   const iceFeePercent = useMemo(() => {
-    if (iceFee == null) return null
+    if (!iceFee) return null
     try {
       return Big(iceFee).div(10_000).toFixed(2)
     } catch {
@@ -32,7 +32,7 @@ export const LimitSummary: FC = () => {
   }, [iceFee])
 
   const minReceive = useMemo(() => {
-    if (iceFee == null || !buyAsset) return null
+    if (!iceFee || !buyAsset) return null
     try {
       const amt = Big(buyAmount || "0")
       if (amt.lte(0)) return null
@@ -43,7 +43,7 @@ export const LimitSummary: FC = () => {
     }
   }, [buyAmount, iceFee, buyAsset])
 
-  if (iceFeePercent == null) return null
+  if (iceFeePercent === null) return null
 
   return (
     <>
