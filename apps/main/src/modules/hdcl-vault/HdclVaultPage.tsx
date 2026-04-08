@@ -46,11 +46,11 @@ export const HdclVaultPage = () => {
     totalSupply: 0,
     exchangeRate: 1,
     withdrawalDelayDays: 0,
-    investmentPeriodDays: 0,
     tvlCap: 0,
     paused: false,
     depositsPaused: false,
     minDeposit: 10,
+    minRedeem: 1,
     apr: 18,
   }
 

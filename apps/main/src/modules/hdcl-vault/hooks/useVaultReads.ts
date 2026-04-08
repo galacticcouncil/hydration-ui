@@ -9,16 +9,17 @@ export function useVaultStats() {
     queryFn: async () => {
       const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
 
-      const [totalAssets, totalSupply, exchangeRateWad, withdrawalDelay, investmentPeriod, tvlCap, paused, depositsPaused, minReinvest] = await Promise.all([
+      const [totalAssets, totalSupply, exchangeRateWad, withdrawalDelay, tvlCap, paused, depositsPaused, minReinvest, minRedeem, apyWad] = await Promise.all([
         vault.read.totalAssets(),
         vault.read.totalSupply(),
         vault.read.exchangeRate(),
-        vault.read.WITHDRAWAL_DELAY(),
-        vault.read.INVESTMENT_PERIOD(),
+        vault.read.withdrawalDelay(),
         vault.read.tvlCap(),
         vault.read.paused(),
         vault.read.depositsPaused(),
         vault.read.minReinvestAmount(),
+        vault.read.minRedeemAmount(),
+        vault.read.getAPYWad(),
       ])
 
       return {
@@ -26,12 +27,12 @@ export function useVaultStats() {
         totalSupply: Number(formatUnits(totalSupply, 18)),
         exchangeRate: Number(formatUnits(exchangeRateWad, 18)),
         withdrawalDelayDays: Math.ceil(Number(withdrawalDelay) / 86400),
-        investmentPeriodDays: Math.ceil(Number(investmentPeriod) / 86400),
         tvlCap: Number(formatUnits(tvlCap, 18)),
         paused,
         depositsPaused,
         minDeposit: Number(formatUnits(minReinvest, 18)),
-        apr: 18, // TODO: derive from getActiveAPY once positions exist
+        minRedeem: Number(formatUnits(minRedeem, 18)),
+        apr: Number(formatUnits(apyWad, 16)), // WAD APY → percentage (e.g. 0.18e18 → 18)
       }
     },
     refetchInterval: 30_000,

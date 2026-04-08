@@ -31,7 +31,7 @@ export function useRedemptionQueue(evmAddress: Hex | undefined) {
       const [length, head, totalQueued] = await Promise.all([
         vault.read.getRedemptionQueueLength(),
         vault.read.getQueueHead(),
-        vault.read.getTotalQueuedWdcl(),
+        vault.read.getTotalQueuedHdcl(),
       ])
 
       const queueLength = Number(length)
