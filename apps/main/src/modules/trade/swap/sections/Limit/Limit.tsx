@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next"
 
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { LimitForm } from "@/modules/trade/swap/sections/Limit/LimitForm"
+import { LimitSummary } from "@/modules/trade/swap/sections/Limit/LimitSummary"
 import { useLimitForm } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { useSubmitLimitOrder } from "@/modules/trade/swap/sections/Limit/useSubmitLimitOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
@@ -41,6 +42,7 @@ export const Limit: FC = () => {
             </Button>
           </AuthorizedAction>
         </Grid>
+        <LimitSummary />
       </form>
     </FormProvider>
   )

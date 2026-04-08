@@ -4,6 +4,31 @@ import { queryOptions } from "@tanstack/react-query"
 
 import { TProviderContext } from "@/providers/rpcProvider"
 
+export const iceFeeQuery = (context: TProviderContext) => {
+  const { papiClient, isApiLoaded } = context
+
+  return queryOptions({
+    enabled: isApiLoaded,
+    staleTime: Infinity,
+    queryKey: ["iceFee"],
+    queryFn: async () => {
+      const unsafeApi = papiClient.getUnsafeApi() as any
+      try {
+        // Permill: parts per million (e.g. 200 = 0.02%)
+        const raw = unsafeApi.constants.ICE.Fee
+        console.log("[iceFee] raw value:", raw, typeof raw)
+        const fee =
+          typeof raw === "object" ? Number(raw.value ?? raw) : Number(raw)
+        if (!isNaN(fee) && fee > 0) return fee
+      } catch (e) {
+        console.warn("[iceFee] ICE.Fee constant not available:", e)
+      }
+      // Fallback: 200 Permill = 0.02% (matches runtime config)
+      return 200
+    },
+  })
+}
+
 export const intentsByAccountQuery = (
   context: TProviderContext,
   address: string,

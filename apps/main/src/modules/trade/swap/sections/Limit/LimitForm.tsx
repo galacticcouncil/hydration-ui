@@ -106,8 +106,10 @@ export const LimitForm: FC = () => {
     return null
   }, [bestSellData, sellAmount, buyAsset, spotPriceData?.spotPrice])
 
-  // selectedFactor: 1 = Market, 0 = custom/manual, else a specific pill factor
-  const [selectedFactor, setSelectedFactor] = useState<number>(1)
+  // selectedPill: "market" = Market/Best, "custom" = manual, or a pct number (2, 5, 10)
+  const [selectedPill, setSelectedPill] = useState<
+    "market" | "custom" | number
+  >("market")
   // isPriceInverted=true: display = sellAsset per buyAsset (1/internal)
   // isPriceInverted=false: display = buyAsset per sellAsset (internal)
   const [isPriceInverted, setIsPriceInverted] = useState(false)
@@ -115,7 +117,7 @@ export const LimitForm: FC = () => {
 
   // Guards to prevent onValueChange from treating programmatic updates as user edits
   const programmaticPriceRef = useRef(false)
-  const denominationChangingRef = useRef(false)
+  const denominationChangingRef = useRef(0)
   // Tracks whether buy amount was last edited by user (prevents live-sync overwriting it)
   const buyEditedRef = useRef(false)
 
@@ -191,7 +193,7 @@ export const LimitForm: FC = () => {
 
   // Treat as "at market" when Market pill is explicitly selected or deviation is negligible
   const isAtMarket =
-    selectedFactor === 1 ||
+    selectedPill === "market" ||
     (pctFromMarket !== null && pctFromMarket.abs().lt(0.01))
 
   // Prefill limit price on initial load or asset change
@@ -207,7 +209,7 @@ export const LimitForm: FC = () => {
     if (!currentLimitPrice || assetsChanged) {
       programmaticPriceRef.current = true
       setValue("limitPrice", bestPrice)
-      setSelectedFactor(1)
+      setSelectedPill("market")
       const currentSellAmount = getValues("sellAmount")
       if (currentSellAmount) {
         recalculateBuyAmount(currentSellAmount, bestPrice)
@@ -218,7 +220,7 @@ export const LimitForm: FC = () => {
 
   // Keep limit price synced to live quote every block while Best pill is selected
   useEffect(() => {
-    if (selectedFactor !== 1 || !bestPrice) return
+    if (selectedPill !== "market" || !bestPrice) return
 
     programmaticPriceRef.current = true
     setValue("limitPrice", bestPrice)
@@ -230,7 +232,7 @@ export const LimitForm: FC = () => {
       if (currentSellAmount) recalculateBuyAmount(currentSellAmount, bestPrice)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bestPrice, selectedFactor, setValue, trigger, getValues])
+  }, [bestPrice, selectedPill, setValue, trigger, getValues])
 
   // Ensure default assets on mount
   useEffect(() => {
@@ -305,7 +307,7 @@ export const LimitForm: FC = () => {
       programmaticPriceRef.current = true
       setValue("limitPrice", bestPrice)
     }
-    setSelectedFactor(1)
+    setSelectedPill("market")
   }
 
   const handleSellAmountChange = (newSellAmount: string) => {
@@ -341,21 +343,28 @@ export const LimitForm: FC = () => {
     recalculateBuyAmount(getValues("sellAmount"), internalLimitPrice)
   }
 
-  const handlePriceAdjustment = (factor: number) => {
+  const handlePriceAdjustment = (pill: "market" | number) => {
     const marketPrice = spotPriceData?.spotPrice
     if (!marketPrice) return
 
-    setSelectedFactor(factor)
+    setSelectedPill(pill)
     programmaticPriceRef.current = true
-    const adjustedPrice =
-      factor === 1
-        ? (bestPrice ??
-          Big(marketPrice)
-            .times(1 - BEST_PILL_BUFFER)
-            .toString())
-        : isPriceInverted
-          ? Big(marketPrice).div(factor).toString()
-          : Big(marketPrice).times(factor).toString()
+
+    let adjustedPrice: string
+    if (pill === "market") {
+      adjustedPrice =
+        bestPrice ??
+        Big(marketPrice)
+          .times(1 - BEST_PILL_BUFFER)
+          .toString()
+    } else {
+      // pill is the pct (2, 5, 10); compute factor based on current denomination
+      const factor = isPriceInverted ? 1 - pill / 100 : 1 + pill / 100
+      adjustedPrice = isPriceInverted
+        ? Big(marketPrice).div(factor).toString()
+        : Big(marketPrice).times(factor).toString()
+    }
+
     setValue("limitPrice", adjustedPrice)
     trigger("limitPrice")
     handleLimitPriceChange(adjustedPrice)
@@ -379,16 +388,16 @@ export const LimitForm: FC = () => {
   }
 
   const handleCustomPillClick = () => {
-    setSelectedFactor(0)
+    setSelectedPill("custom")
     if (pctFromMarket !== null) {
       setCustomPct(pctFromMarket.toFixed(2))
     }
   }
 
   const handleDenominationToggle = () => {
-    denominationChangingRef.current = true
+    denominationChangingRef.current = Date.now()
     setIsPriceInverted((prev) => !prev)
-    // Do NOT reset selectedFactor — the internal limitPrice is unchanged,
+    // Do NOT reset selectedPill — the internal limitPrice is unchanged,
     // only the display direction flips (toDisplayPrice inverts the value).
   }
 
@@ -472,23 +481,23 @@ export const LimitForm: FC = () => {
         </Flex>
         <Flex gap="xxs" mb="m" wrap>
           <SPriceOption
-            active={selectedFactor === 1}
-            onClick={() => handlePriceAdjustment(1)}
+            active={selectedPill === "market"}
+            onClick={() => handlePriceAdjustment("market")}
           >
             {t("trade:limit.market")}
           </SPriceOption>
-          {pillAdjustments.map(({ pct, factor }) => (
+          {pillAdjustments.map(({ pct }) => (
             <SPriceOption
               key={pct}
-              active={selectedFactor === factor}
-              onClick={() => handlePriceAdjustment(factor)}
+              active={selectedPill === pct}
+              onClick={() => handlePriceAdjustment(pct)}
             >
               <Icon size="xs" component={PillArrowIcon} />
               {pct}%
             </SPriceOption>
           ))}
           <SCustomPill
-            active={selectedFactor === 0}
+            active={selectedPill === "custom"}
             onClick={handleCustomPillClick}
           >
             <Icon size="xs" component={Pencil} />
@@ -497,7 +506,7 @@ export const LimitForm: FC = () => {
               value={customPct}
               onClick={(e) => e.stopPropagation()}
               onChange={(e) => {
-                setSelectedFactor(0)
+                setSelectedPill("custom")
                 handleCustomPctChange(e.target.value)
               }}
             />
@@ -516,13 +525,15 @@ export const LimitForm: FC = () => {
                   programmaticPriceRef.current = false
                   return
                 }
-                if (denominationChangingRef.current) {
-                  denominationChangingRef.current = false
+                if (
+                  denominationChangingRef.current &&
+                  Date.now() - denominationChangingRef.current < 500
+                ) {
                   return
                 }
                 const internal = toInternalPrice(value)
                 field.onChange(internal)
-                setSelectedFactor(0)
+                setSelectedPill("custom")
                 handleLimitPriceChange(internal)
               }}
               leadingElement={
