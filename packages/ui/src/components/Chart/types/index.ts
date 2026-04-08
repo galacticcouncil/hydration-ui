@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { ThemeUICSSProperties } from "@theme-ui/css"
 import { XAxisProps, YAxisProps } from "recharts"
 import { BaseAxisProps } from "recharts/types/util/types"

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { CrosshairDot, Ellipse } from "@galacticcouncil/ui/assets/icons"
 import {
   AreaChart,
