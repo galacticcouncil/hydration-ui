@@ -1,6 +1,10 @@
-import { useAccount } from "@galacticcouncil/web3-connect"
+import {
+  useAccount,
+  useActiveMultisigConfig,
+} from "@galacticcouncil/web3-connect"
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
+import { AccountId } from "polkadot-api"
+import { useCallback, useMemo } from "react"
 import { isBigInt } from "remeda"
 
 import { AAVE_GAS_LIMIT } from "@/api/aave"
@@ -15,7 +19,7 @@ import { isEvmCall } from "@/modules/transactions/utils/xcm"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { SingleTransaction } from "@/states/transactions"
 
-export const useWrapTransaction = (
+export const useWrapEvmTransaction = (
   transaction: SingleTransaction,
 ): SingleTransaction => {
   const rpc = useRpcProvider()
@@ -63,4 +67,88 @@ export const useWrapTransaction = (
 
     return transaction
   }, [transaction, isEvmAccountBound, papi])
+}
+
+export const useMultisigTx = () => {
+  const { papi } = useRpcProvider()
+  const { account } = useAccount()
+  const activeMultisigConfig = useActiveMultisigConfig()
+
+  const isMultisigActive =
+    !!account?.isMultisig && !!account.multisigSignerAddress
+
+  const wrapInMultisig = useCallback(
+    (transaction: SingleTransaction): SingleTransaction => {
+      const config = activeMultisigConfig
+      if (!config || !account || !account?.multisigSignerAddress) {
+        return transaction
+      }
+
+      const tx = isPapiTransaction(transaction.tx)
+        ? transaction.tx
+        : isEvmCall(transaction.tx)
+          ? transformEvmCallToPapiTx(papi, transaction.tx)
+          : null
+
+      if (!tx) {
+        return transaction
+      }
+
+      const signerAddress = account.multisigSignerAddress
+
+      // other_signatories must be sorted by raw public-key bytes (not SS58 string).
+      // SS58 encoding changes sort order relative to the underlying bytes, so
+      // a plain .sort() on address strings produces SignatoriesOutOfOrder errors.
+      const otherSignatories = config.signers
+        .filter((s: string) => {
+          try {
+            const signerBytes = AccountId().enc(signerAddress)
+            const sBytes = AccountId().enc(s)
+            return !signerBytes.every((b, i) => b === sBytes[i])
+          } catch {
+            return s !== signerAddress
+          }
+        })
+        .sort((a: string, b: string) => {
+          try {
+            const rawA = AccountId().enc(a)
+            const rawB = AccountId().enc(b)
+            for (let i = 0; i < rawA.length; i++) {
+              const byteA = rawA[i] ?? 0
+              const byteB = rawB[i] ?? 0
+              if (byteA < byteB) return -1
+              if (byteA > byteB) return 1
+            }
+            return 0
+          } catch {
+            return a < b ? -1 : a > b ? 1 : 0
+          }
+        })
+
+      return {
+        ...transaction,
+        tx: papi.tx.Multisig.as_multi({
+          threshold: config.threshold,
+          other_signatories: otherSignatories,
+          maybe_timepoint: undefined,
+          call: tx.decodedCall,
+          max_weight: {
+            ref_time: 0n,
+            proof_size: 0n,
+          },
+        }),
+      }
+    },
+    [account, activeMultisigConfig, papi],
+  )
+
+  return { isMultisigActive, wrapInMultisig }
+}
+
+export const useWrapTransaction = (
+  transaction: SingleTransaction,
+): SingleTransaction => {
+  const tx = useWrapEvmTransaction(transaction)
+  const { wrapInMultisig } = useMultisigTx()
+  return wrapInMultisig(tx)
 }

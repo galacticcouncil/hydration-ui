@@ -23,7 +23,6 @@ export const SNotification = styled("div", {
     width: ${fullWidth ? "100%" : "19.375rem"};
 
     position: relative;
-    overflow: hidden;
 
     border-radius: ${theme.radii.xl};
     border: 1px solid ${theme.details.borders};
@@ -96,9 +95,10 @@ export const SProgress = styled.div<{
 ])
 
 export const SIconVariant = styled(Icon)<{ variant: ToastVariant }>(
-  ({ variant }) => [
+  ({ theme, variant }) => [
     css`
       flex-shrink: 0;
+      margin-top: ${theme.space.xs};
     `,
     getColor("color")(variant),
   ],
@@ -107,8 +107,8 @@ export const SIconVariant = styled(Icon)<{ variant: ToastVariant }>(
 export const SCloseIcon = styled(Icon)(
   ({ theme }) => css`
     position: absolute;
-    top: 4px;
-    right: 5px;
+    top: -${theme.space.s};
+    right: -${theme.space.s};
 
     color: ${theme.icons.onContainer};
   `,

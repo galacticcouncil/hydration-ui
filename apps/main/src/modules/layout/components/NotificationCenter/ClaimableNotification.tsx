@@ -34,7 +34,7 @@ export const ClaimableNotification: FC<ClaimableNotificationProps> = ({
         symbol: asset?.symbol ?? "",
         chainName: chain?.name ?? "",
       })}
-      dateString={dateString}
+      description={dateString}
       actions={<ClaimButton journey={journey} />}
     />
   )

@@ -26,6 +26,7 @@ import { useWithdrawClaim } from "@/modules/xcm/history/hooks/useWithdrawClaim"
 import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
 import { resolveChainFromUrn } from "@/modules/xcm/history/utils/claim"
 import { getWalletModeByChain } from "@/modules/xcm/transfer/utils/chain"
+import { useRpcProvider } from "@/providers/rpcProvider"
 
 type DepositMutation = ReturnType<typeof useDepositClaim>
 type WithdrawMutation = ReturnType<typeof useWithdrawClaim>
@@ -48,6 +49,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
   mutation,
 }) => {
   const { t } = useTranslation("common")
+  const { papi } = useRpcProvider()
   const squidSdk = useSquidClient()
   const [modalOpen, setModalOpen] = useState(false)
   const { account } = useAccount()
@@ -76,6 +78,7 @@ export const ClaimFlowModalButton: React.FC<ClaimFlowModalButtonProps> = ({
       </Button>
       <Web3ConnectModal
         squidSdk={squidSdk}
+        papi={papi}
         open={modalOpen}
         mode={walletMode}
         onOpenChange={setModalOpen}

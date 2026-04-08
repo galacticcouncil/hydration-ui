@@ -3251,6 +3251,17 @@
     "@polkadot-api/raw-client" "0.1.1"
     "@polkadot-api/utils" "0.2.0"
 
+"@polkadot-api/tx-utils@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/tx-utils/-/tx-utils-0.2.2.tgz#6cc3c814b719494710a3ec69caab36918b6ccf54"
+  integrity sha512-IidYgzy6r4vriNGpIoe4OoiYIIC6j1+rboNINLaxhNPtrds+p0oDuu5O82WW7K20nimMQrCOVRClZCc3QAgfwQ==
+  dependencies:
+    "@polkadot-api/merkleize-metadata" "1.1.29"
+    "@polkadot-api/metadata-builders" "0.13.9"
+    "@polkadot-api/signers-common" "0.1.20"
+    "@polkadot-api/substrate-bindings" "0.17.0"
+    "@polkadot-api/utils" "0.2.0"
+
 "@polkadot-api/utils@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@polkadot-api/utils/-/utils-0.2.0.tgz#812d4c4ee282691440aed4b6ddf863651e804444"

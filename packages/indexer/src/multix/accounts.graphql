@@ -1,0 +1,59 @@
+query MultisigsByAccountIds($accountIds: [String!]) {
+  accounts(
+    where: {
+      AND: [
+        {
+          OR: [
+            { id_in: $accountIds }
+            { signatories_some: { signatory: { id_in: $accountIds } } }
+          ]
+        }
+        { isMultisig_eq: true }
+      ]
+    }
+  ) {
+    id
+    pubKey
+    isMultisig
+    isPureProxy
+    threshold
+    signatories {
+      id
+      signatory {
+        id
+        pubKey
+      }
+    }
+    delegateeFor {
+      id
+      type
+      delegator {
+        id
+        pubKey
+        isPureProxy
+      }
+      delegatee {
+        id
+        pubKey
+        isPureProxy
+      }
+    }
+    delegatorFor {
+      id
+      type
+      delegatee {
+        id
+        pubKey
+        isMultisig
+        threshold
+        signatories {
+          id
+          signatory {
+            id
+            pubKey
+          }
+        }
+      }
+    }
+  }
+}
