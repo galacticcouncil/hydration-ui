@@ -23,7 +23,9 @@ export const useObservable = <T>(
   useEffect(() => {
     if (!enabled || !isObservable(observable)) return
 
-    const sub = observable.subscribe(onUpdateRef.current)
+    const sub = observable.subscribe((data) => {
+      onUpdateRef.current?.(data)
+    })
 
     return () => {
       sub.unsubscribe()
