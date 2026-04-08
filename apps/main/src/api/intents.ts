@@ -16,7 +16,6 @@ export const iceFeeQuery = (context: TProviderContext) => {
       try {
         // Permill: parts per million (e.g. 200 = 0.02%)
         const raw = unsafeApi.constants.ICE.Fee
-        console.log("[iceFee] raw value:", raw, typeof raw)
         const fee =
           typeof raw === "object" ? Number(raw.value ?? raw) : Number(raw)
         if (!isNaN(fee) && fee > 0) return fee
