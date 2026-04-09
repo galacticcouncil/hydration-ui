@@ -3,10 +3,11 @@ import {
   Notification,
   ToastVariant,
 } from "@galacticcouncil/ui/components"
-import { uuid } from "@galacticcouncil/utils"
+import { hasOwn, uuid } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useCallback } from "react"
+import { isObjectType } from "remeda"
 import { toast as toastSonner } from "sonner"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -15,6 +16,10 @@ import { useShallow } from "zustand/shallow"
 import { TransactionMeta } from "@/states/transactions"
 
 export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
+
+export type TransactionToastData = ToastData & {
+  meta: ToastMeta
+}
 
 export type ToastMeta = TransactionMeta & {
   txHash: string
@@ -31,7 +36,7 @@ type ToastParams = {
   address?: string
   hint?: string
   duration?: number
-  meta: ToastMeta
+  meta?: ToastMeta
 }
 
 export type ToastData = ToastParams & {
@@ -210,4 +215,16 @@ export const useToasts = () => {
     pending,
     unknown,
   }
+}
+
+export function isTransactionToast(
+  toast: ToastData,
+): toast is TransactionToastData {
+  return (
+    hasOwn(toast, "meta") &&
+    isObjectType(toast.meta) &&
+    !!toast.meta.txHash &&
+    !!toast.meta.ecosystem &&
+    !!toast.meta.type
+  )
 }
