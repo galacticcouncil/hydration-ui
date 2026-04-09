@@ -3,7 +3,7 @@ import { Text, TextProps } from "@/components/Text"
 import { getToken } from "@/utils"
 
 export const FormLabel: React.FC<TextProps> = (props) => (
-  <Text fs="p5" fw={400} color={getToken("text.medium")} {...props} />
+  <Text fs="p5" fw={400} lh={1.2} color={getToken("text.medium")} {...props} />
 )
 
 export const FormError: React.FC<TextProps> = (props) => (
