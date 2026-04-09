@@ -66,9 +66,9 @@ export const DcaOrderDetailsModal = ({ details, onTerminate }: Props) => {
               {t("number", {
                 value: details.isOpenBudget
                   ? details.fromAmountExecuted
-                  : details.status === DcaScheduleStatus.Created
-                    ? details.fromAmountRemaining
-                    : "0",
+                  : details.status === DcaScheduleStatus.Completed
+                    ? "0"
+                    : (details.fromAmountRemaining ?? details.fromAmountBudget),
               })}
               {!details.isOpenBudget && (
                 <>

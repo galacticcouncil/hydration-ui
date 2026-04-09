@@ -99,3 +99,11 @@ export const formatPascalCaseToSentence = (text: string): string =>
     .trim()
     .toLowerCase()
     .replace(/^\w/, (c) => c.toUpperCase())
+
+export const replaceAaveWithBorrow = (text: string) => {
+  try {
+    return text.replace(/aave/gi, "Borrow")
+  } catch (error) {
+    return text
+  }
+}

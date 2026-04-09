@@ -1,3 +1,4 @@
+import { AlertProps } from "@galacticcouncil/ui/components"
 import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
@@ -27,6 +28,13 @@ export enum TransactionType {
   EvmApprove = "EvmApprove",
 }
 
+export type TransactionAlert = Pick<
+  AlertProps,
+  "variant" | "title" | "description"
+> & {
+  requiresUserConsent?: boolean | string
+}
+
 export type TransactionCommon = {
   title?: string
   description?: string
@@ -36,6 +44,7 @@ export type TransactionCommon = {
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
+  alerts?: TransactionAlert[]
 }
 
 interface SingleTransactionInput extends TransactionCommon {
