@@ -23,6 +23,7 @@ import { PublicClient } from "viem"
 import { createBasejumpScanQueryKey } from "@/modules/xcm/history/useBasejumpScan"
 import { getChainXcScanUrn } from "@/modules/xcm/history/utils/journey"
 import { ToastData } from "@/states/toasts"
+import { TransactionToastData } from "@/states/toasts"
 import { TransactionType } from "@/states/transactions"
 
 const ASSETHUB_KUSAMA_CHAIN_KEY = "assethub_kusama"
@@ -41,9 +42,11 @@ type ToastStatus = {
   link?: string
 }
 
-export type ToastProcessorFn = (toast: ToastData) => Promise<ToastStatus>
+export type ToastProcessorFn = (
+  toast: TransactionToastData,
+) => Promise<ToastStatus>
 
-function isAssetHubKusamaDstToast(toast: ToastData): boolean {
+function isAssetHubKusamaDstToast(toast: TransactionToastData): boolean {
   return (
     toast.meta.type === TransactionType.Xcm &&
     toast.meta.dstChainKey === ASSETHUB_KUSAMA_CHAIN_KEY
