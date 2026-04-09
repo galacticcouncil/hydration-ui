@@ -4,7 +4,7 @@ import {
   Stack,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, isValidBigSource } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { ChainEcosystem } from "@galacticcouncil/xc-core"
 import Big from "big.js"
@@ -70,19 +70,26 @@ const XcmSummary = () => {
   const srcChain = chainsMap.get(meta.srcChainKey)
 
   const isPolkadotEcosystem = srcChain?.ecosystem === ChainEcosystem.Polkadot
+
   return (
     <Stack
       separated
       separator={<RowSeparator />}
       sx={{ mb: "var(--modal-content-inset)" }}
     >
-      <SummaryRow
-        label={t("transaction.summary.srcFee.label")}
-        content={t("currency", {
-          value: meta.srcChainFee,
-          symbol: meta.srcChainFeeSymbol,
-        })}
-      />
+      {!!meta.srcChainFee && (
+        <SummaryRow
+          label={t("transaction.summary.srcFee.label")}
+          content={
+            isValidBigSource(meta.srcChainFee)
+              ? t("currency", {
+                  value: meta.srcChainFee,
+                  symbol: meta.srcChainFeeSymbol,
+                })
+              : meta.srcChainFee
+          }
+        />
+      )}
       {Big(meta.dstChainFee || "0").gt(0) && (
         <SummaryRow
           label={t("transaction.summary.destFee.label")}

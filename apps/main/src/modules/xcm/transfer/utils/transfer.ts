@@ -16,17 +16,8 @@ import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
-import { XCM_BRIDGE_TAGS, XcmTag, XcmTags } from "@/states/transactions"
+import { BRIDGE_PROVIDER_TAGS, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
-
-/**
- * Bridge provider tags in priority order (Basejump first as the faster option).
- */
-export const BRIDGE_PROVIDER_TAGS = [
-  XcmTag.Basejump,
-  XcmTag.Wormhole,
-  XcmTag.Snowbridge,
-] as const
 
 /**
  * Returns the primary bridge provider tag for a given route.
@@ -88,7 +79,7 @@ export const calculateTransferDestAmount = (
 
 export const isBridgeAssetRoute = (route: AssetRoute | null): boolean => {
   const tags = (route?.tags ?? []) as XcmTags
-  return tags.some((tag) => XCM_BRIDGE_TAGS.includes(tag))
+  return tags.some((tag) => BRIDGE_PROVIDER_TAGS.includes(tag))
 }
 
 export const getXcmTransferArgs = (

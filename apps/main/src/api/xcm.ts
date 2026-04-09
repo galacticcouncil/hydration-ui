@@ -175,11 +175,9 @@ export const xcmTransferQuery = (
 
       if (bridgeTag) {
         const selectedRoute =
-          builder.routes.find((r) =>
-            (r.tags as string[] | undefined)?.includes(bridgeTag),
-          ) ??
+          builder.routes.find((r) => r.tags?.includes(bridgeTag)) ??
           getSupplementalBridgeRoutes(srcChain, destChain, srcAsset).find((r) =>
-            (r.tags as string[] | undefined)?.includes(bridgeTag),
+            r.tags?.includes(bridgeTag),
           )
 
         if (selectedRoute) {

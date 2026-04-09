@@ -19,9 +19,10 @@ export const SBridgeOption = styled.button<{ active: boolean }>(
     overflow: hidden;
 
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
-    border-radius: 8px;
+    border-radius: ${theme.radii.m};
 
-    padding: 16px 12px;
+    padding-block: ${theme.space.l};
+    padding-inline: ${theme.space.m};
 
     cursor: pointer;
 
@@ -29,8 +30,8 @@ export const SBridgeOption = styled.button<{ active: boolean }>(
 
     ${active
       ? css`
-          background-color: ${theme.buttons.secondary.outline.fill};
-          border-color: ${theme.buttons.secondary.outline.outline};
+          background-color: ${theme.controls.dim.active};
+          border-color: ${theme.controls.dim.active};
         `
       : css`
           &:hover:not(:disabled) {

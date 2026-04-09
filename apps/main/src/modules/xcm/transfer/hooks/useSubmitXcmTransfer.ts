@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next"
 import { useCrossChainConfigService } from "@/api/xcm"
 import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
+import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
@@ -118,6 +119,17 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
           srcChain.key === HYDRATION_CHAIN_KEY
             ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
             : await getExternalChainTx(srcChain, transferCall)
+
+        const sourceFeeValue = (() => {
+          if (!source) return ""
+          if (source.fee.amount === 0n)
+            return t("xcm:summary.feeEstimationNotAvailable")
+          return t("common:currency", {
+            value: toDecimal(source.fee.amount, source.fee.decimals),
+            symbol: source.fee.originSymbol,
+          })
+        })()
+
         return {
           title: t("form.title"),
           description: t("tx.description", i18nVars),
@@ -134,7 +146,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
           meta: {
             type: TransactionType.Xcm,
             srcChainKey: srcChain.key,
-            srcChainFee: toDecimal(source.fee.amount, source.fee.decimals),
+            srcChainFee: sourceFeeValue,
             srcChainFeeSymbol: source.fee.symbol,
             dstChainKey: destChain.key,
             dstChainFee: toDecimal(
@@ -186,6 +198,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
               },
               {
                 stepTitle: t("common:transfer"),
+                pendingComponent: PendingApproval,
                 tx: buildTransferTransaction,
                 onSubmitted: (txHash: string) => {
                   transferTxHash = txHash
