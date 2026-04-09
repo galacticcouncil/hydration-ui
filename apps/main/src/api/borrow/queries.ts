@@ -40,14 +40,14 @@ import {
   useBorrowPoolDataContract,
   useGhoServiceContract,
 } from "@/api/borrow/contracts"
-import { useBlockTimestamp } from "@/api/chain"
+import { bestNumberQuery } from "@/api/chain"
 import {
   ASSET_ID_TO_DEFILLAMA_ID,
   defillamaLatestApyQuery,
 } from "@/api/external/defillama"
 import { ASSET_ID_TO_KAMINO_ID, kaminoApyQuery } from "@/api/external/kamino"
 import { TProviderData } from "@/api/provider"
-import { useRpcProvider } from "@/providers/rpcProvider"
+import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const lendingPoolAddressProvider =
   AaveV3HydrationMainnet.POOL_ADDRESSES_PROVIDER
@@ -80,27 +80,66 @@ export const useBorrowIncentives = () => {
   )
 }
 
-export const borrowReservesQuery = (
+export const borrowReserveQuery = (
   queryClient: QueryClient,
+  rpc: TProviderContext,
   lendingPoolAddressProvider: string,
   poolDataContract: UiPoolDataProvider | null,
   incentivesContract: UiIncentiveDataProvider | null,
-  timestamp: bigint,
+  reserveId: string,
+) =>
+  queryOptions({
+    queryKey: ["borrow", "reserve", reserveId, lendingPoolAddressProvider],
+    queryFn: async () => {
+      if (!poolDataContract) throw new Error("Invalid poolDataContract")
+
+      const reserves = await queryClient.ensureQueryData(
+        borrowReservesQuery(
+          queryClient,
+          rpc,
+          lendingPoolAddressProvider,
+          poolDataContract,
+          incentivesContract,
+        ),
+      )
+
+      if (!reserves) throw new Error("Reserves not found")
+
+      return reserves.formattedReserves.find(
+        (r) => r.underlyingAsset === reserveId,
+      )
+    },
+    retry: false,
+    enabled:
+      !!lendingPoolAddressProvider &&
+      !!poolDataContract &&
+      !!reserveId &&
+      rpc.isApiLoaded,
+  })
+
+export const borrowReservesQuery = (
+  queryClient: QueryClient,
+  rpc: TProviderContext,
+  lendingPoolAddressProvider: string,
+  poolDataContract: UiPoolDataProvider | null,
+  incentivesContract: UiIncentiveDataProvider | null,
 ) =>
   queryOptions({
     queryKey: ["borrow", "reserves", lendingPoolAddressProvider],
     queryFn: async () => {
       if (!poolDataContract) throw new Error("Invalid poolDataContract")
 
-      const [reserves, reserveIncentives] = await Promise.all([
+      const [reserves, reserveIncentives, bestNumber] = await Promise.all([
         poolDataContract.getReservesHumanized({
           lendingPoolAddressProvider,
         }),
         queryClient.ensureQueryData(
           borrowIncentivesQuery(lendingPoolAddressProvider, incentivesContract),
         ),
+        queryClient.ensureQueryData(bestNumberQuery(rpc)),
       ])
 
+      const timestamp = bestNumber.timestamp
       const { baseCurrencyData, reservesData } = reserves
       const currentTimestamp = Number(timestamp) / 1000
 
@@ -126,22 +165,22 @@ export const borrowReservesQuery = (
     },
     retry: false,
     enabled:
-      !!lendingPoolAddressProvider && !!poolDataContract && timestamp > 0n,
+      !!lendingPoolAddressProvider && !!poolDataContract && rpc.isApiLoaded,
   })
 
 export const useBorrowReserves = () => {
   const queryClient = useQueryClient()
-  const { data: timestamp } = useBlockTimestamp()
+  const rpc = useRpcProvider()
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()
 
   return useQuery(
     borrowReservesQuery(
       queryClient,
+      rpc,
       lendingPoolAddressProvider,
       poolDataContract,
       incentivesContract,
-      timestamp ?? 0n,
     ),
   )
 }
@@ -255,15 +294,17 @@ export const useGhoReserveData = () => {
 export const ghoUserDataQuery = (
   evmAddress: string,
   queryClient: QueryClient,
+  rpc: TProviderContext,
   ghoServiceContract: GhoService | null,
-  timestamp: bigint,
 ) =>
   queryOptions({
     queryKey: ["borrow", "gho", "userData", evmAddress],
     queryFn: async () => {
       if (!ghoServiceContract) throw new Error("Invalid ghoServiceContract")
 
-      if (timestamp <= 0n) throw new Error("Invalid timestamp")
+      const bestNumber = await queryClient.ensureQueryData(bestNumberQuery(rpc))
+      const timestamp = bestNumber.timestamp
+      if (!timestamp || timestamp <= 0) throw new Error("Invalid timestamp")
 
       const [{ ghoReserveData, formattedGhoReserveData }, ghoUserData] =
         await Promise.all([
@@ -283,21 +324,16 @@ export const ghoUserDataQuery = (
       }
     },
     retry: false,
-    enabled: !!evmAddress && !!ghoServiceContract && timestamp > 0n,
+    enabled: !!evmAddress && !!ghoServiceContract && rpc.isApiLoaded,
   })
 
 export const useGhoUserData = (evmAddress: string) => {
-  const { data: timestamp } = useBlockTimestamp()
   const queryClient = useQueryClient()
+  const rpc = useRpcProvider()
   const ghoServiceContract = useGhoServiceContract()
 
   return useQuery(
-    ghoUserDataQuery(
-      evmAddress,
-      queryClient,
-      ghoServiceContract,
-      timestamp ?? 0n,
-    ),
+    ghoUserDataQuery(evmAddress, queryClient, rpc, ghoServiceContract),
   )
 }
 
@@ -309,18 +345,21 @@ export const userBorrowSummaryQueryKey = (
 export const userBorrowSummaryQuery = (
   evmAddress: string,
   queryClient: QueryClient,
+  rpc: TProviderContext,
   lendingPoolAddressProvider: string,
   poolDataContract: UiPoolDataProvider | null,
   ghoServiceContract: GhoService | null,
   incentivesContract: UiIncentiveDataProvider | null,
-  timestamp: bigint,
 ) =>
   queryOptions({
     queryKey: userBorrowSummaryQueryKey(evmAddress, lendingPoolAddressProvider),
     queryFn: async () => {
-      if (!timestamp || timestamp <= 0n) throw new Error("Invalid timestamp")
       if (!poolDataContract || !ghoServiceContract)
         throw new Error("Invalid poolDataContract or ghoServiceContract")
+
+      const bestNumber = await queryClient.ensureQueryData(bestNumberQuery(rpc))
+      const timestamp = bestNumber.timestamp
+      if (!timestamp || timestamp <= 0) throw new Error("Invalid timestamp")
 
       const [user, reserves, reserveIncentives, userIncentives, gho] =
         await Promise.all([
@@ -331,10 +370,10 @@ export const userBorrowSummaryQuery = (
           queryClient.ensureQueryData(
             borrowReservesQuery(
               queryClient,
+              rpc,
               lendingPoolAddressProvider,
               poolDataContract,
               incentivesContract,
-              timestamp,
             ),
           ),
           queryClient.ensureQueryData(
@@ -351,12 +390,7 @@ export const userBorrowSummaryQuery = (
             ),
           ),
           queryClient.ensureQueryData(
-            ghoUserDataQuery(
-              evmAddress,
-              queryClient,
-              ghoServiceContract,
-              timestamp,
-            ),
+            ghoUserDataQuery(evmAddress, queryClient, rpc, ghoServiceContract),
           ),
         ])
 
@@ -394,13 +428,13 @@ export const userBorrowSummaryQuery = (
       return extendedUser
     },
     retry: false,
-    enabled: !!lendingPoolAddressProvider && !!evmAddress && timestamp > 0n,
+    enabled: !!lendingPoolAddressProvider && !!evmAddress && rpc.isApiLoaded,
   })
 
 export const useUserBorrowSummary = (givenAddress?: string) => {
   const queryClient = useQueryClient()
+  const rpc = useRpcProvider()
   const { account } = useAccount()
-  const { data: timestamp } = useBlockTimestamp()
   const poolDataContract = useBorrowPoolDataContract()
   const ghoServiceContract = useGhoServiceContract()
   const incentivesContract = useBorrowIncentivesContract()
@@ -412,11 +446,11 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
     userBorrowSummaryQuery(
       evmAddress,
       queryClient,
+      rpc,
       lendingPoolAddressProvider,
       poolDataContract,
       ghoServiceContract,
       incentivesContract,
-      timestamp ?? 0n,
     ),
   )
 }
