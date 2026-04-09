@@ -21,9 +21,9 @@
   "dependencies": {
     "@galacticcouncil/common": "^0.6.0",
     "@galacticcouncil/descriptors": "1.15.1-pr301-9665b45",
-    "@galacticcouncil/sdk-next": "^0.38.0",
+    "@galacticcouncil/sdk-next": "^0.40.0",
     "@galacticcouncil/xc": "^0.5.0",
-    "@galacticcouncil/xc-cfg": "^0.18.1",
+    "@galacticcouncil/xc-cfg": "^0.18.2",
     "@galacticcouncil/xc-core": "^0.13.0",
     "@galacticcouncil/xc-scan": "^0.4.0",
     "@galacticcouncil/xc-sdk": "^0.9.1",

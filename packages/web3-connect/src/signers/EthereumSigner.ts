@@ -151,7 +151,7 @@ export class EthereumSigner {
     const newChainId = evmClient.chain.id
 
     if (prevChainId !== newChainId) {
-      this.publicClient = evmClient.getProvider()
+      this.publicClient = evmClient.getProvider() as PublicClient
     }
 
     await this.walletClient.switchChain({ id: evmClient.chain.id })

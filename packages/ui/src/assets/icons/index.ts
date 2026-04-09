@@ -1,5 +1,4 @@
 export { default as ArrowRightLong } from "./ArrowRightLong.svg?react"
-export { default as AssetIcon } from "./AssetIcon.svg?react"
 export { default as CaretDown } from "./CaretDown.svg?react"
 export { default as CircleAlert } from "./CircleAlert.svg?react"
 export { default as CircleCheck } from "./CircleCheck.svg?react"

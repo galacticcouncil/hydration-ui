@@ -28,8 +28,14 @@ export const BorrowMarketsPage = () => {
               placeholder={t("search.placeholder.assets")}
               iconStart={Search}
               onChange={(e) => setSearchPhrase(e.target.value)}
+              sx={{ minWidth: ["100%", 250] }}
             />
           }
+          sx={{
+            flexDirection: ["column-reverse", "row"],
+            gap: ["xl", 0],
+            alignItems: ["flex-start", "center"],
+          }}
         />
         <MarketAssetsTable search={searchPhrase} />
       </Box>
