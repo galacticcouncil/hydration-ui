@@ -38,7 +38,7 @@ export const ChainAssetSelectButton: React.FC<ChainAssetSelectButtonProps> = ({
           <XAssetLogo
             asset={currentSelection.asset}
             chain={currentSelection.chain}
-            sx={{ ml: "-base" }}
+            sx={{ ml: "-l" }}
           />
           <Text fs="p3" fw={600} color={getToken("text.high")}>
             {currentSelection.asset.originSymbol}
