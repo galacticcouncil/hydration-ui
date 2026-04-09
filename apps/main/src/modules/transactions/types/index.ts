@@ -2,6 +2,7 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { tx } from "@galacticcouncil/sdk-next"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
+import { Asset } from "@galacticcouncil/xc-core"
 import { Call } from "@galacticcouncil/xc-sdk"
 import { Enum, InvalidTxError, PolkadotClient, TxEvent } from "polkadot-api"
 import { Subscription } from "rxjs"
@@ -46,6 +47,7 @@ export type TxOptions = TxStatusCallbacks & {
   chainKey: string
   feeAssetId: string
   priorityRpcUrl?: string
+  signerFeeAsset?: Asset
 }
 
 export type TxEventOrError =
