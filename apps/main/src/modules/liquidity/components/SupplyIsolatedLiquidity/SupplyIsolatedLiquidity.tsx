@@ -13,6 +13,7 @@ import {
   ModalContentDivider,
   ModalFooter,
   ModalHeader,
+  Skeleton,
   Stack,
   SummaryRow,
 } from "@galacticcouncil/ui/components"
@@ -20,7 +21,7 @@ import { getAddressFromAssetId } from "@galacticcouncil/utils"
 import { FormProvider } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { TAssetData, TErc20 } from "@/api/assets"
+import { TAssetData, TErc20AToken } from "@/api/assets"
 import { useUserBorrowSummary } from "@/api/borrow/queries"
 import {
   TAssetWithBalance,
@@ -46,13 +47,14 @@ export const SupplyIsolatedLiquidity = ({
   assetId: string
   onSubmitted: () => void
 }) => {
-  const { tradable, native, getRelatedAToken } = useAssets()
+  const { tradable, native, getRelatedAToken, isErc20AToken } = useAssets()
   const { data: userBorrowData } = useUserBorrowSummary()
-  const aToken = getRelatedAToken(assetId)
+  const relatedAToken = getRelatedAToken(assetId)
+
   const selectabledAssets = useAssetSelectModalAssets({
     assets: tradable,
     search: "",
-    ignoreAssetIds: aToken ? [aToken.id] : undefined,
+    ignoreAssetIds: relatedAToken ? [relatedAToken.id] : undefined,
     highPriorityAssetIds: [assetId],
     lowPriorityAssetIds: [native.id],
   })
@@ -67,11 +69,15 @@ export const SupplyIsolatedLiquidity = ({
   if (
     selectabledAssets.isLoading ||
     !initialAsset ||
-    !aToken ||
+    !relatedAToken ||
     !userBorrowData ||
     !userReserve
   )
     return <SupplyIsolatedLiquiditySkeleton />
+
+  const aToken = isErc20AToken(relatedAToken) ? relatedAToken : undefined
+
+  if (!aToken) throw new Error("A token is not found")
 
   return (
     <SupplyIsolatedLiquidityBody
@@ -98,7 +104,7 @@ const SupplyIsolatedLiquidityBody = ({
   initialAsset: TAssetData
   selectabledAssets: TAssetWithBalance[]
   assetId: string
-  aToken: TErc20
+  aToken: TErc20AToken
   userBorrowData: ExtendedFormattedUser
   userReserve: ComputedUserReserveData
   onSubmitted: () => void
@@ -117,6 +123,9 @@ const SupplyIsolatedLiquidityBody = ({
     isBlockedSupply,
     minReceiveAmountShifted,
     apys,
+    spotPriceData,
+    isPriceLoading,
+    isAaveSupply,
   } = useSupplyIsolatedLiquidity({
     initialAsset,
     supplyAssetId: assetId,
@@ -128,7 +137,10 @@ const SupplyIsolatedLiquidityBody = ({
 
   return (
     <FormProvider {...form}>
-      <ModalHeader title={t("borrow:supply")} closable />
+      <ModalHeader
+        title={t("borrow:supply.withSymbol", { symbol: initialAsset.symbol })}
+        closable
+      />
       <form onSubmit={form.handleSubmit(onSubmit)} autoComplete="off">
         <ModalBody>
           <AssetSelectFormField<TSupplyIsolatedLiquidityFormValues>
@@ -153,11 +165,6 @@ const SupplyIsolatedLiquidityBody = ({
                 sx={{ my: 0 }}
               />
             ))}
-            <SummaryRow
-              label={t("tradeLimit")}
-              content={<TradeLimit type={TradeLimitType.Trade} />}
-              sx={{ my: 0 }}
-            />
             {!isBlockedByBorrowedAssets && (
               <SummaryRow
                 label={t("minimumReceived")}
@@ -168,6 +175,31 @@ const SupplyIsolatedLiquidityBody = ({
                 sx={{ my: 0 }}
               />
             )}
+
+            <SummaryRow
+              label={t("tradeLimit")}
+              content={<TradeLimit type={TradeLimitType.Trade} />}
+              sx={{ my: 0 }}
+            />
+
+            {!isAaveSupply && (
+              <SummaryRow
+                label={t("price")}
+                content={
+                  isPriceLoading ? (
+                    <Skeleton width={50} height="100%" />
+                  ) : (
+                    t("liquidity:liquidity.remove.stablepool.modal.price", {
+                      poolSymbol: form.watch("asset").symbol,
+                      value: spotPriceData?.spotPrice,
+                      symbol: aToken.symbol,
+                    })
+                  )
+                }
+                sx={{ my: 0 }}
+              />
+            )}
+
             {collateralType && (
               <SummaryRow
                 label={t("borrow:collateral")}
