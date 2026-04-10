@@ -345,5 +345,7 @@
   "submitTransaction.validation": "Invalid hex",
   "submitTransaction.warning": "Warning! Do not submit transactions somebody sent you in a message. Always check what you are sending on transaction confirmation screen or in https://polkadot.js.org/apps/#/extrinsics/decode",
   "submitTransaction.toasts.success": "Extrinsic successful",
-  "submitTransaction.toasts.submitted": "Extrinsic submitted"
+  "submitTransaction.toasts.submitted": "Extrinsic submitted",
+  "gigaNews": "GIGA News",
+  "closeAll": "Close all"
 }
