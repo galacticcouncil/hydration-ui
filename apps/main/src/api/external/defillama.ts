@@ -8,6 +8,7 @@ import {
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
 import z from "zod/v4"
 
+import { useSquidUrl } from "@/api/provider"
 import { GC_TIME, STALE_TIME } from "@/utils/consts"
 
 const defillamaApyHistoryEntrySchema = z.object({
@@ -32,11 +33,14 @@ export const ASSET_ID_TO_DEFILLAMA_ID: Record<string, string> = {
   [JITOSOL_ASSET_ID]: "0e7d0722-9054-4907-8593-567b353c0900",
 }
 
-const DEFILLAMA_APY_ENDPOINT =
-  "https://orca-main-aggr-indx.indexer.hydration.cloud/proxy/defillama/yields/chart"
+const DEFILLAMA_YIELDS_CHART = "defillama/yields/chart"
 
-const fetchDefillamaLatestApy = async (id: string): Promise<number> => {
-  const res = await fetch(`${DEFILLAMA_APY_ENDPOINT}/${id}`)
+const fetchDefillamaLatestApy = async (
+  id: string,
+  indexerUrl: string,
+): Promise<number> => {
+  const endpoint = `${indexerUrl}/${DEFILLAMA_YIELDS_CHART}/${id}`
+  const res = await fetch(endpoint)
 
   if (!res.ok) {
     throw new Error(`Failed to fetch DeFiLlama APY: ${res.statusText}`)
@@ -49,25 +53,29 @@ const fetchDefillamaLatestApy = async (id: string): Promise<number> => {
   return latestApy
 }
 
-export const defillamaLatestApyQuery = (id: string) =>
+export const defillamaLatestApyQuery = (id: string, indexerUrl: string) =>
   queryOptions({
     queryKey: ["defillamaApyHistory", id],
-    queryFn: () => fetchDefillamaLatestApy(id),
+    queryFn: () => fetchDefillamaLatestApy(id, indexerUrl),
     staleTime: STALE_TIME,
     gcTime: GC_TIME,
     enabled: !!id,
   })
 
 export const useDefillamaLatestApyQuery = (assetId: string) => {
+  const url = useSquidUrl()
+
   const id = ASSET_ID_TO_DEFILLAMA_ID[assetId] ?? ""
-  return useQuery(defillamaLatestApyQuery(id))
+  return useQuery(defillamaLatestApyQuery(id, url))
 }
 
 export const useDefillamaLatestApyQueries = (assetIds: string[]) => {
+  const url = useSquidUrl()
+
   return useQueries({
     queries: assetIds.map((assetId) => {
       const id = ASSET_ID_TO_DEFILLAMA_ID[assetId] ?? ""
-      return defillamaLatestApyQuery(id)
+      return defillamaLatestApyQuery(id, url)
     }),
   })
 }
