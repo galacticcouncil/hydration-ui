@@ -72,7 +72,7 @@ const getPoolTransactionAbi = (action?: ProtocolAction) => {
 
 const getClaimTransactionAbi = (tx: PopulatedTransaction) => {
   const factory = IAaveIncentivesControllerV2__factory
-  const isClaimAll = tx.data?.startsWith("0xbb492bf5")
+  const isClaimAll = tx.data?.startsWith(CLAIM_ALL_METHOD_HASH)
   return isClaimAll
     ? getFunctionDefsFromAbi(factory.abi, "claimAllRewards")
     : getFunctionDefsFromAbi(factory.abi, "claimRewards")
