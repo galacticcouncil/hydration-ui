@@ -15,6 +15,9 @@ import { ExtendedEvmCall, MoneyMarketTxFn, ToastsConfig } from "@/types"
 import { queryKeysFactory } from "@/ui-config/queries"
 import { getFunctionDefsFromAbi } from "@/utils/utils"
 
+const CLAIM_ALL_METHOD_HASH = "0xbb492bf5"
+const CLAIM_METHOD_HASH = "0x236300dc"
+
 export type ERC20TokenType = {
   address: string
   symbol: string
@@ -54,25 +57,35 @@ const getAbiMethodByProtocolAction = (action: ProtocolAction) => {
   }
 }
 
-const getTransactionAbi = (action?: ProtocolAction) => {
+const getPoolTransactionAbi = (action?: ProtocolAction) => {
   if (!action) {
     return ""
   }
 
-  const factory =
-    action === ProtocolAction.claimRewards
-      ? IAaveIncentivesControllerV2__factory
-      : IPool__factory
-
-  const abi = action
-    ? getFunctionDefsFromAbi(factory.abi, getAbiMethodByProtocolAction(action))
+  return action
+    ? getFunctionDefsFromAbi(
+        IPool__factory.abi,
+        getAbiMethodByProtocolAction(action),
+      )
     : undefined
+}
 
-  return abi ?? ""
+const getClaimTransactionAbi = (tx: PopulatedTransaction) => {
+  const factory = IAaveIncentivesControllerV2__factory
+  const isClaimAll = tx.data?.startsWith("0xbb492bf5")
+  return isClaimAll
+    ? getFunctionDefsFromAbi(factory.abi, "claimAllRewards")
+    : getFunctionDefsFromAbi(factory.abi, "claimRewards")
 }
 
 const convertTx = (tx: PopulatedTransaction, action?: ProtocolAction) => {
-  const abi = getTransactionAbi(action)
+  const isClaimTx =
+    tx.data?.startsWith(CLAIM_ALL_METHOD_HASH) ||
+    tx.data?.startsWith(CLAIM_METHOD_HASH)
+
+  const abi = isClaimTx
+    ? getClaimTransactionAbi(tx)
+    : getPoolTransactionAbi(action)
 
   const evmCall: ExtendedEvmCall = {
     data: tx.data ?? "",
