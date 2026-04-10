@@ -461,23 +461,30 @@ export const useGetClaimAllBorrowRewardsTx = () => {
       [],
     )
 
-    const call = incentivesTxBuilderV2.claimAllRewards({
-      user: evmAddress,
-      to: evmAddress,
-      assets,
+    const incentivesContract = incentivesTxBuilderV2.getContractInstance(
       incentivesControllerAddress,
-    })
+    )
 
-    const tx = await call?.find((tx) => tx.txType === "REWARD_ACTION")?.tx()
+    const txRaw = await incentivesContract.populateTransaction.claimAllRewards(
+      assets,
+      evmAddress,
+    )
 
-    if (!tx || !tx.from || !tx.to || !tx.data || !tx.gasLimit) {
+    const tx: transactionType = {
+      ...txRaw,
+      from: evmAddress,
+      value: DEFAULT_NULL_VALUE_ON_TX,
+    }
+
+    if (!tx || !tx.from || !tx.to || !tx.data) {
       throw new Error("Invalid claim transaction")
     }
 
     const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
       await estimateGasLimit({
         evm,
-        gasLimit: tx.gasLimit.toString(),
+        gasLimit:
+          gasLimitRecommendations[ProtocolAction.claimRewards]?.recommended,
         action: ProtocolAction.claimRewards,
       })
 
