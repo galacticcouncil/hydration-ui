@@ -151,7 +151,6 @@ export const spotPriceKeyQuery = (
 }
 
 export const scSpotPriceKeyQuery = (
-  queryClient: QueryClient,
   rpc: TProviderContext,
   poolDataContract: UiPoolDataProvider | null,
   incentivesContract: UiIncentiveDataProvider | null,
@@ -164,9 +163,8 @@ export const scSpotPriceKeyQuery = (
   return queryOptions({
     queryKey: spotPriceQueryKey(assetId),
     queryFn: async () => {
-      const reserve = await queryClient.ensureQueryData(
+      const reserve = await rpc.queryClient.ensureQueryData(
         borrowReserveQuery(
-          queryClient,
           rpc,
           lendingPoolAddressProvider,
           poolDataContract,
@@ -192,7 +190,6 @@ const SC_ASSETS = new Map<string, string>([
 
 export const useSubscribedPriceKeys = (assetIds: string[]) => {
   const rpc = useRpcProvider()
-  const queryClient = useQueryClient()
   const poolDataContract = useBorrowPoolDataContract()
   const incentivesContract = useBorrowIncentivesContract()
 
@@ -202,7 +199,6 @@ export const useSubscribedPriceKeys = (assetIds: string[]) => {
 
       if (reserveId) {
         return scSpotPriceKeyQuery(
-          queryClient,
           rpc,
           poolDataContract,
           incentivesContract,
