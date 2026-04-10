@@ -13,6 +13,7 @@ export const Icon: React.FC<IconProps> = ({
   <Box
     color={color}
     size={size}
+    sx={{ flexShrink: 0 }}
     css={{
       "& > *": { width: "100%", height: "100%" },
     }}
