@@ -147,7 +147,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
     isLoadingTransfer,
     isLoadingCall,
     call,
-    dryRunError,
+
     report,
   } = useXcmTransfer(form)
 
@@ -192,7 +192,6 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         alerts,
         transfer,
         call,
-        dryRunError,
         registryChain: chainsMap.get(HYDRATION_CHAIN_KEY) as EvmParachain,
         status: getTransferStatus(form.getValues(), transfer, call, alerts),
       }}

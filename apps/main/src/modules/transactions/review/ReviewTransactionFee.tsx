@@ -7,6 +7,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { useTranslation } from "react-i18next"
 
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useTransaction } from "@/modules/transactions/TransactionProvider"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -21,6 +22,10 @@ export const ReviewTransactionFee = () => {
     fee,
     setFeePaymentModalOpen,
   } = useTransaction()
+
+  const [feeDisplay] = useDisplayAssetPrice(feeAssetId, feeEstimate ?? "", {
+    maximumFractionDigits: 4,
+  })
 
   const feeAsset = getAsset(feeAssetId)
 
@@ -49,11 +54,13 @@ export const ReviewTransactionFee = () => {
   return (
     <Text fs="p5" fw={500} color={getToken("text.high")}>
       <Flex as="span" gap="s">
-        {t("approx.short")}{" "}
+        {t("approx.short")}
+        {feeDisplay} (
         {t("currency", {
           symbol: feeAsset?.symbol,
           value: feeEstimate,
         })}
+        )
         {!isChangingFeeAsset && (
           <ButtonTransparent onClick={() => setFeePaymentModalOpen(true)}>
             <Text as="span" color={getToken("accents.info.onPrimary")}>
