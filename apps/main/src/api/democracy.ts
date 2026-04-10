@@ -217,6 +217,7 @@ export const openGovUnlockedTokensQuery = (
   rpc: TProviderContext,
   queryClient: QueryClient,
   address: string,
+  indexerUrl: string,
 ) =>
   queryOptions({
     queryKey: ["openGovUnlockedTokens", address],
@@ -225,7 +226,7 @@ export const openGovUnlockedTokensQuery = (
         await Promise.all([
           queryClient.ensureQueryData(accountOpenGovVotesQuery(rpc, address)),
           queryClient.ensureQueryData(bestNumberQuery(rpc)),
-          queryClient.ensureQueryData(accountVotesQuery(address)),
+          queryClient.ensureQueryData(accountVotesQuery(address, indexerUrl)),
         ])
       if (!bestNumber) {
         throw new Error("Best number not found")

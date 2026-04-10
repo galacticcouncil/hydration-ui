@@ -2,8 +2,8 @@ import { queryOptions } from "@tanstack/react-query"
 import { millisecondsInMinute } from "date-fns/constants"
 import z from "zod"
 
-export const getSubsquareEndpoint = (address: string) =>
-  `https://orca-main-aggr-indx.indexer.hydration.cloud/proxy/subsquare/users/${address}/referenda/votes?page_size=100&includes_title=1`
+export const getSubsquareEndpoint = (address: string, indexerUrl: string) =>
+  `${indexerUrl}/subsquare/users/${address}/referenda/votes?page_size=100&includes_title=1`
 
 export enum SubsquareVoteState {
   Ongoing = "Ongoing",
@@ -36,11 +36,11 @@ const schema = z.object({
   ),
 })
 
-export const accountVotesQuery = (address: string) =>
+export const accountVotesQuery = (address: string, indexerUrl: string) =>
   queryOptions({
     queryKey: ["subsquareAccountVotes", address],
     queryFn: async () => {
-      const res = await fetch(getSubsquareEndpoint(address))
+      const res = await fetch(getSubsquareEndpoint(address, indexerUrl))
       const data = await res.json()
       const parsed = schema.parse(data)
       return parsed

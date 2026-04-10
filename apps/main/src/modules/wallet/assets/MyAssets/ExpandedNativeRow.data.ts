@@ -4,6 +4,7 @@ import Big from "big.js"
 
 import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
 import { openGovUnlockedTokensQuery } from "@/api/democracy"
+import { useProxyUrl } from "@/api/provider"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -64,9 +65,15 @@ export const useUnlockableNativeTokens = (lockedInReferenda: string) => {
   const { account } = useAccount()
   const queryClient = useQueryClient()
   const { native } = useAssets()
+  const indexerUrl = useProxyUrl()
 
   const { data: unlockedTokens, isLoading: unlockedTokensLoading } = useQuery(
-    openGovUnlockedTokensQuery(rpc, queryClient, account?.address ?? ""),
+    openGovUnlockedTokensQuery(
+      rpc,
+      queryClient,
+      account?.address ?? "",
+      indexerUrl,
+    ),
   )
 
   const lockedInReferendaBig = new Big(lockedInReferenda)
