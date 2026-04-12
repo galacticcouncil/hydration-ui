@@ -6,7 +6,6 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "rm -rf node_modules/viem/node_modules/@noble/hashes",
     "build": "turbo build",
     "dev": "turbo dev",
     "dev:production": "turbo dev:production",

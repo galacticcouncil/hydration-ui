@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 import { isValidElement } from "react"
-import { XAxisProps } from "recharts"
+import { BaseAxisProps } from "recharts/types/util/types"
 import { first, isArray, isNumber, isObjectType, isString } from "remeda"
 
 import {
@@ -128,7 +128,7 @@ export const getBarSeriesBorderRadius = (
 }
 
 export const getAxisLabelProps = (
-  config: XAxisProps["label"],
+  config: BaseAxisProps["label"],
   isVerticalLayout: boolean,
   labelProps?: AxisLabelCssProps,
 ) => {
@@ -153,7 +153,7 @@ export const getAxisLabelProps = (
   if (isObjectType(config)) {
     return {
       ...defaultProps,
-      ...(config as Record<string, unknown>),
+      ...config,
     }
   }
 

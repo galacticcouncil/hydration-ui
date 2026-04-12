@@ -109,7 +109,7 @@ export function BarChart<TData extends TChartData>({
           label={getAxisLabelProps(
             isVerticalLayout ? yAxisLabel : xAxisLabel,
             false,
-          ) as any}
+          )}
         />
         <YAxis
           dataKey={isVerticalLayout ? xAxisKey : undefined}
@@ -123,11 +123,11 @@ export function BarChart<TData extends TChartData>({
           label={getAxisLabelProps(
             isVerticalLayout ? xAxisLabel : yAxisLabel,
             true,
-          ) as any}
+          )}
         />
         <Tooltip
           content={customTooltipContent ?? ChartTooltip}
-          labelFormatter={labelFormatter as any}
+          labelFormatter={labelFormatter}
           formatter={(value) => {
             if (valueFormatter && isNumber(value)) {
               return valueFormatter(value)

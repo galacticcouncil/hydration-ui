@@ -2,6 +2,7 @@
 // @ts-nocheck
 import { ThemeUICSSProperties } from "@theme-ui/css"
 import { XAxisProps, YAxisProps } from "recharts"
+import { BaseAxisProps } from "recharts/types/util/types"
 
 export type TChartData = Record<string, unknown>
 
@@ -49,10 +50,10 @@ export type ChartSharedProps<TData extends TChartData> = {
   gridVerticalValues?: number[] | string[]
   xAxisHidden?: boolean
   xAxisProps?: XAxisProps
-  xAxisLabel?: XAxisProps["label"]
+  xAxisLabel?: BaseAxisProps["label"]
   yAxisHidden?: boolean
   yAxisProps?: YAxisProps
-  yAxisLabel?: YAxisProps["label"]
+  yAxisLabel?: BaseAxisProps["label"]
   onCrosshairMove?: (data: TData | null) => void
 } & ChartSizeProps
 
