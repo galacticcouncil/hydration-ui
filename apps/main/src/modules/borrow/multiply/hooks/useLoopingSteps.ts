@@ -9,8 +9,12 @@ import { useBorrowReserves } from "@/api/borrow/queries"
 import { PoolError } from "@/api/pools"
 import { spotPriceQuery } from "@/api/spotPrice"
 import { Trade } from "@/api/trade"
+import { useApyContext } from "@/modules/borrow/context/ApyContext"
 import { MultiplyLoopConfig } from "@/modules/borrow/multiply/types"
-import { getReservePairLtv } from "@/modules/borrow/multiply/utils/leverage"
+import {
+  getReservePairLiquidationLtv,
+  getReservePairLtv,
+} from "@/modules/borrow/multiply/utils/leverage"
 import {
   EPSILON,
   MAX_STEPS,
@@ -41,6 +45,8 @@ const INITIAL_DATA = {
   totalCollateral: "0",
   targetCollateral: "0",
   targetDebt: "0",
+  futureHF: "-1",
+  netApy: "0",
 }
 
 export function useLoopingSteps(options: UseLoopingStepsProps) {
@@ -55,6 +61,7 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
   } = options
   const rpc = useRpcProvider()
   const { data: reserves } = useBorrowReserves()
+  const { apyMap } = useApyContext()
   const { getAsset } = useAssets()
 
   const supplyReserve = reserves?.formattedReserves.find((r) =>
@@ -96,12 +103,26 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
 
       const ltv = getReservePairLtv(supplyReserve, borrowReserve)
       const ltvBig = new Big(ltv || "0")
+      const liquidationLtv = getReservePairLiquidationLtv(
+        supplyReserve,
+        borrowReserve,
+      )
+      const liquidationLtvBig = new Big(liquidationLtv || "0")
+      const supplyExternalApy = apyMap.get(supplyAssetId)
+      const borrowExternalApy = apyMap.get(borrowAssetId)
+      const supplyApyBig = supplyExternalApy
+        ? new Big(supplyExternalApy.totalSupplyApy).div(100)
+        : new Big(supplyReserve.supplyAPY || "0")
+      const borrowApyBig = borrowExternalApy
+        ? new Big(borrowExternalApy.totalBorrowApy).div(100)
+        : new Big(borrowReserve.variableBorrowAPY || "0")
       const slippageFactor = new Big(1).minus(new Big(slippage).div(100))
+
+      const priceDivisor = isParityPair ? new Big(1) : new Big(spot.spotPrice)
 
       const targetCollateral = amountBig.times(multiplier)
       const targetDebt = targetCollateral.minus(amountBig)
 
-      const priceDivisor = isParityPair ? new Big(1) : new Big(spot.spotPrice)
       let collateral = amountBig
       let debt = new Big(0)
       const result: LoopStep[] = []
@@ -157,11 +178,31 @@ export function useLoopingSteps(options: UseLoopingStepsProps) {
         ? new Big(finalCollateral).plus(amountBig)
         : amountBig
 
+      const totalCollateralUsd = totalCollateral.times(supplyReserve.priceInUSD)
+      const targetDebtShifted = targetDebt.div(priceDivisor)
+      const totalDebtUsd = targetDebtShifted.times(borrowReserve.priceInUSD)
+      const futureHF = targetDebtShifted.lte(0)
+        ? "-1"
+        : totalCollateralUsd
+            .times(liquidationLtvBig)
+            .div(totalDebtUsd)
+            .toString()
+      const netWorth = totalCollateralUsd.minus(totalDebtUsd)
+      const netApy = netWorth.lte(0)
+        ? "0"
+        : totalCollateralUsd
+            .times(supplyApyBig)
+            .minus(totalDebtUsd.times(borrowApyBig))
+            .div(netWorth)
+            .toString()
+
       return {
         steps: result,
         targetCollateral: targetCollateral.toString(),
-        targetDebt: targetDebt.div(priceDivisor).toString(),
+        targetDebt: targetDebtShifted.toString(),
         totalCollateral: totalCollateral.toString(),
+        futureHF,
+        netApy,
       }
     },
   })

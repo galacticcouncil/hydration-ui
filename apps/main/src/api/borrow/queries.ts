@@ -424,90 +424,89 @@ export const useUsersBorrowSummary = (addresses: string[]) => {
   })
 }
 
+export const getClaimAllBorrowRewardsTx = async (
+  rpc: TProviderContext,
+  user: ExtendedFormattedUser,
+  address: string,
+) => {
+  const evmAddress = safeConvertAnyToH160(address)
+  const incentivesTxBuilderV2 = new IncentivesControllerV2(
+    new Web3Provider(rpc.evm.transport),
+  )
+
+  const userIncentive = Object.values(user.calculatedUserIncentives)[0]
+  const incentivesControllerAddress = userIncentive?.incentiveControllerAddress
+
+  if (!evmAddress) throw new Error("Invalid EVM account address")
+  if (!user?.userReservesData) throw new Error("User reserves not found")
+  if (!incentivesControllerAddress)
+    throw new Error("Incentive controller address not found")
+
+  const assets = user.userReservesData.reduce<string[]>((acc, { reserve }) => {
+    return acc.concat(
+      reserve.aIncentivesData?.length ? [reserve.aTokenAddress] : [],
+      reserve.vIncentivesData?.length ? [reserve.variableDebtTokenAddress] : [],
+      reserve.sIncentivesData?.length ? [reserve.stableDebtTokenAddress] : [],
+    )
+  }, [])
+
+  const incentivesContract = incentivesTxBuilderV2.getContractInstance(
+    incentivesControllerAddress,
+  )
+
+  const txRaw = await incentivesContract.populateTransaction.claimAllRewards(
+    assets,
+    evmAddress,
+  )
+
+  const tx: transactionType = {
+    ...txRaw,
+    from: evmAddress,
+    value: DEFAULT_NULL_VALUE_ON_TX,
+  }
+
+  if (!tx || !tx.from || !tx.to || !tx.data) {
+    throw new Error("Invalid claim transaction")
+  }
+
+  const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
+    await estimateGasLimit({
+      evm: rpc.evm,
+      gasLimit:
+        gasLimitRecommendations[ProtocolAction.claimRewards]?.recommended,
+      action: ProtocolAction.claimRewards,
+    })
+
+  const evmCall = rpc.papi.tx.EVM.call({
+    source: Binary.fromHex(tx.from),
+    target: Binary.fromHex(tx.to),
+    input: Binary.fromHex(tx.data),
+    value: [0n, 0n, 0n, 0n],
+    gas_limit: gasLimit,
+    max_fee_per_gas: maxFeePerGas,
+    max_priority_fee_per_gas: maxPriorityFeePerGas,
+    access_list: [],
+    authorization_list: [],
+    nonce: undefined,
+  })
+
+  return rpc.papi.tx.Dispatcher.dispatch_evm_call({
+    call: evmCall.decodedCall,
+  })
+}
+
 export const useGetClaimAllBorrowRewardsTx = () => {
-  const { papi, evm } = useRpcProvider()
+  const rpc = useRpcProvider()
   const { account } = useAccount()
   const { data: user } = useUserBorrowSummary()
 
   return useCallback(async () => {
     const address = account?.address || ""
-    const evmAddress = safeConvertAnyToH160(address)
 
-    const incentivesTxBuilderV2 = new IncentivesControllerV2(
-      new Web3Provider(evm.transport),
-    )
+    if (!user) throw new Error("User not found")
 
-    const userIncentive = user
-      ? Object.values(user.calculatedUserIncentives)[0]
-      : undefined
-
-    const incentivesControllerAddress =
-      userIncentive?.incentiveControllerAddress
-
-    if (!evmAddress) throw new Error("Invalid EVM account address")
-    if (!user?.userReservesData) throw new Error("User reserves not found")
-    if (!incentivesControllerAddress)
-      throw new Error("Incentive controller address not found")
-
-    const assets = user.userReservesData.reduce<string[]>(
-      (acc, { reserve }) => {
-        return acc.concat(
-          reserve.aIncentivesData?.length ? [reserve.aTokenAddress] : [],
-          reserve.vIncentivesData?.length
-            ? [reserve.variableDebtTokenAddress]
-            : [],
-          reserve.sIncentivesData?.length
-            ? [reserve.stableDebtTokenAddress]
-            : [],
-        )
-      },
-      [],
-    )
-
-    const incentivesContract = incentivesTxBuilderV2.getContractInstance(
-      incentivesControllerAddress,
-    )
-
-    const txRaw = await incentivesContract.populateTransaction.claimAllRewards(
-      assets,
-      evmAddress,
-    )
-
-    const tx: transactionType = {
-      ...txRaw,
-      from: evmAddress,
-      value: DEFAULT_NULL_VALUE_ON_TX,
-    }
-
-    if (!tx || !tx.from || !tx.to || !tx.data) {
-      throw new Error("Invalid claim transaction")
-    }
-
-    const { gasLimit, maxFeePerGas, maxPriorityFeePerGas } =
-      await estimateGasLimit({
-        evm,
-        gasLimit:
-          gasLimitRecommendations[ProtocolAction.claimRewards]?.recommended,
-        action: ProtocolAction.claimRewards,
-      })
-
-    const evmCall = papi.tx.EVM.call({
-      source: Binary.fromHex(tx.from),
-      target: Binary.fromHex(tx.to),
-      input: Binary.fromHex(tx.data),
-      value: [0n, 0n, 0n, 0n],
-      gas_limit: gasLimit,
-      max_fee_per_gas: maxFeePerGas,
-      max_priority_fee_per_gas: maxPriorityFeePerGas,
-      access_list: [],
-      authorization_list: [],
-      nonce: undefined,
-    })
-
-    return papi.tx.Dispatcher.dispatch_evm_call({
-      call: evmCall.decodedCall,
-    })
-  }, [account?.address, evm, papi, user])
+    return getClaimAllBorrowRewardsTx(rpc, user, address)
+  }, [account?.address, rpc, user])
 }
 
 export const estimateGasLimit = async ({
@@ -861,7 +860,7 @@ export const useStrategyPositions = () => {
           accountProxies.map(async (proxyAddress) => {
             const evmAddress = safeConvertAnyToH160(proxyAddress)
 
-            const borrowSummary = await queryClient.fetchQuery(
+            const userBorrowSummary = await queryClient.fetchQuery(
               userBorrowSummaryQuery(
                 rpc,
                 evmAddress,
@@ -871,11 +870,11 @@ export const useStrategyPositions = () => {
               ),
             )
 
-            const suppliedSummaryData = borrowSummary.userReservesData.find(
+            const suppliedSummaryData = userBorrowSummary.userReservesData.find(
               (userReserve) => Big(userReserve.underlyingBalance).gt(0),
             )
 
-            const debtSummaryData = borrowSummary.userReservesData.find(
+            const debtSummaryData = userBorrowSummary.userReservesData.find(
               (userReserve) => Big(userReserve.totalBorrows).gt(0),
             )
 
@@ -906,9 +905,7 @@ export const useStrategyPositions = () => {
               proxyCreatedAt,
               publicKey,
               proxyAddress,
-              netApy: borrowSummary.netAPY,
-              netWorth: borrowSummary.netWorthUSD,
-              healthFactor: borrowSummary.healthFactor,
+              userBorrowSummary,
             }
           }),
         )

@@ -1,5 +1,9 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
+import {
+  ComputedReserveData,
+  ExtendedFormattedUser,
+} from "@galacticcouncil/money-market/hooks"
+import { GDOT_ERC20_ASSET_ID } from "@galacticcouncil/money-market/ui-config"
 import { getReserveAssetIdByAddress } from "@galacticcouncil/money-market/utils"
 import { AssetLabel, Button, Flex, Text } from "@galacticcouncil/ui/components"
 import { Amount } from "@galacticcouncil/ui/components/Amount"
@@ -22,6 +26,7 @@ import { useTranslation } from "react-i18next"
 
 import { useBorrowPoolBundleContract } from "@/api/borrow/contracts"
 import {
+  getClaimAllBorrowRewardsTx,
   getStrategyPositionsQueryKey,
   useStrategyPositions,
 } from "@/api/borrow/queries"
@@ -70,6 +75,7 @@ export type StrategyPositionsData = {
   healthFactor: string
   debtReserve: ComputedReserveData | undefined
   debtBalance: string | undefined
+  userBorrowSummary: ExtendedFormattedUser
   proxyCreateData: {
     blockHeight: number
     extrinsicIndex: number
@@ -95,27 +101,30 @@ export const useStrategyGroupedPositions = () => {
     if (!strategyPositions) return []
 
     const positions: Array<StrategyPositionsData> = strategyPositions.map(
-      (position) => ({
-        proxyAddress: position.proxyAddress,
-        publicKey: position.publicKey,
-        suppliedReserve: position.suppliedSummaryData.reserve,
-        suppliedAssetAddress:
-          position.suppliedSummaryData.reserve.underlyingAsset,
-        suppliedAssetId: getAssetIdFromAddress(
-          position.suppliedSummaryData.reserve.underlyingAsset,
-        ),
-        suppliedBalance: position.suppliedSummaryData.underlyingBalance,
-        suppliedDisplayBalance:
-          position.suppliedSummaryData.underlyingBalanceUSD,
-        suppliedSymbol: position.suppliedSummaryData.reserve.symbol,
-        createdAt: position.proxyCreatedAt,
-        netApy: position.netApy,
-        netWorth: position.netWorth,
-        healthFactor: position.healthFactor,
-        debtReserve: position.debtSummaryData?.reserve,
-        debtBalance: position.debtSummaryData?.totalBorrows,
-        proxyCreateData: position.proxyCreateData,
-      }),
+      (position) => {
+        return {
+          proxyAddress: position.proxyAddress,
+          publicKey: position.publicKey,
+          suppliedReserve: position.suppliedSummaryData.reserve,
+          suppliedAssetAddress:
+            position.suppliedSummaryData.reserve.underlyingAsset,
+          suppliedAssetId: getAssetIdFromAddress(
+            position.suppliedSummaryData.reserve.underlyingAsset,
+          ),
+          suppliedBalance: position.suppliedSummaryData.underlyingBalance,
+          suppliedDisplayBalance:
+            position.suppliedSummaryData.underlyingBalanceUSD,
+          suppliedSymbol: position.suppliedSummaryData.reserve.symbol,
+          createdAt: position.proxyCreatedAt,
+          netApy: position.userBorrowSummary.netAPY,
+          netWorth: position.userBorrowSummary.netWorthUSD,
+          healthFactor: position.userBorrowSummary.healthFactor,
+          debtReserve: position.debtSummaryData?.reserve,
+          debtBalance: position.debtSummaryData?.totalBorrows,
+          proxyCreateData: position.proxyCreateData,
+          userBorrowSummary: position.userBorrowSummary,
+        }
+      },
     )
 
     return Object.entries(
@@ -183,6 +192,8 @@ export const getMultiplyPairByPosition = (position: StrategyPositionsData) => {
 }
 
 const isFullClose = true // support only full withdraw for now
+const SUPPORTED_CLAIMABLE_ASSET_ID = GDOT_ERC20_ASSET_ID
+const MIN_CLAIMABLE_REWARDS_USD = 1
 
 export const useCloseLoopedPosition = (
   steps: UnloopStep[],
@@ -191,7 +202,7 @@ export const useCloseLoopedPosition = (
   const rpc = useRpcProvider()
   const { createTransaction } = useTransactionsStore()
   const { account } = useAccount()
-  const { getRelatedAToken } = useAssets()
+  const { getRelatedAToken, getAssetWithFallback } = useAssets()
   const slippage = useTradeSettings((s) => s.swap.single.swapSlippage)
   const poolBundleContract = useBorrowPoolBundleContract()
   const createEvmTx = useCreateMultiplyEvmTx()
@@ -261,7 +272,28 @@ export const useCloseLoopedPosition = (
         debtReserve.underlyingAsset,
       )
 
+      const claimableAsset = getAssetWithFallback(SUPPORTED_CLAIMABLE_ASSET_ID)
+      const isClaimableRewards = Object.entries(
+        position.userBorrowSummary.calculatedUserIncentives,
+      ).some(
+        ([, value]) =>
+          value.claimableRewards.gt(0) &&
+          bigShift(value.claimableRewards.toString(), -claimableAsset.decimals)
+            .times(value.rewardPriceFeed)
+            .gt(MIN_CLAIMABLE_REWARDS_USD),
+      )
+
       const unloopTxs = await getUnloopTxs(steps, debtReserve, proxyAddress)
+
+      if (isClaimableRewards) {
+        const claimBorrowTx = await getClaimAllBorrowRewardsTx(
+          rpc,
+          position.userBorrowSummary,
+          proxyAddress,
+        )
+
+        unloopTxs.push(claimBorrowTx)
+      }
 
       const { chunkSize, batchCount } = await calculateChunkSize(
         rpc.papi,
@@ -311,6 +343,7 @@ export const useCloseLoopedPosition = (
             submitted: "Sending funds",
             success: "Funds sent",
           }
+          const txs: AnyPapiTx[] = []
 
           const [collateralBalance, debtBalance] = await Promise.all([
             sdk.client.balance.getBalance(
@@ -335,7 +368,7 @@ export const useCloseLoopedPosition = (
             .withBeneficiary(proxyAddress)
             .build()
 
-          let debtTradeTx: AnyPapiTx | undefined
+          txs.push(collateralTradeTx.get())
 
           if (
             debtBalance.transferable > 0n &&
@@ -355,13 +388,46 @@ export const useCloseLoopedPosition = (
             )
 
             if (!isErrors) {
-              debtTradeTx = await (
-                await sdk.tx
-                  .trade(debtTrade)
-                  .withSlippage(slippage)
-                  .withBeneficiary(proxyAddress)
-                  .build()
-              ).get()
+              const debtTradeTx = await sdk.tx
+                .trade(debtTrade)
+                .withSlippage(slippage)
+                .withBeneficiary(proxyAddress)
+                .build()
+
+              txs.push(debtTradeTx.get())
+            }
+          }
+
+          if (
+            isClaimableRewards &&
+            SUPPORTED_CLAIMABLE_ASSET_ID !== collateralAsset.id
+          ) {
+            const claimableBalance = await sdk.client.balance.getBalance(
+              proxyAddress,
+              Number(SUPPORTED_CLAIMABLE_ASSET_ID),
+            )
+
+            const rewardsTrade = await rpc.sdk.api.router.getBestSell(
+              Number(SUPPORTED_CLAIMABLE_ASSET_ID),
+              Number(enterWithAssetId),
+              bigShift(
+                claimableBalance.transferable.toString(),
+                -claimableAsset.decimals,
+              ).toString(),
+            )
+
+            const isErrors = rewardsTrade.swaps.some(
+              (swap) => swap.errors.length > 0,
+            )
+
+            if (!isErrors) {
+              const rewardTradeTx = await sdk.tx
+                .trade(rewardsTrade)
+                .withSlippage(slippage)
+                .withBeneficiary(proxyAddress)
+                .build()
+
+              txs.push(rewardTradeTx.get())
             }
           }
 
@@ -370,12 +436,9 @@ export const useCloseLoopedPosition = (
             tx: createProxyCall(
               rpc.papi,
               position.proxyAddress,
-              debtTradeTx
+              txs.length > 1
                 ? rpc.papi.tx.Utility.batch_all({
-                    calls: [
-                      debtTradeTx.decodedCall,
-                      collateralTradeTx.get().decodedCall,
-                    ],
+                    calls: txs.map((tx) => tx.decodedCall),
                   }).decodedCall
                 : collateralTradeTx.get().decodedCall,
             ),
