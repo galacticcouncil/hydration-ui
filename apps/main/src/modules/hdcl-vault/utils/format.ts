@@ -2,14 +2,14 @@ const NB_SPACE = String.fromCharCode(160)
 
 export function formatNumber(value: number, decimals = 2): string {
   const parts = value.toFixed(decimals).split(".")
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, NB_SPACE)
+  parts[0] = parts[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, NB_SPACE) ?? ""
   return parts.join(".")
 }
 
 export function formatInputDisplay(value: string): string {
   if (!value) return ""
   const parts = value.split(".")
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+  parts[0] = parts[0]?.replace(/\B(?=(\d{3})+(?!\d))/g, " ") ?? ""
   return parts.join(".")
 }
 

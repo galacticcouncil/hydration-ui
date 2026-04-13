@@ -4,16 +4,25 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 import { type Hex } from "viem"
 
-import { History } from "./components/History"
-import { MyWithdrawals } from "./components/MyWithdrawals"
-import { OverviewPanel } from "./components/OverviewPanel"
-import { PositionsModal } from "./components/PositionsModal"
-import { QueueModal } from "./components/QueueModal"
-import { WithdrawalsSummary } from "./components/WithdrawalsSummary"
-import { useHollarAllowance, useUserBalances, useVaultStats } from "./hooks/useVaultReads"
-import { useApproveHollar, useCancelRedeem, useDeposit, useRequestRedeem } from "./hooks/useVaultWrites"
-import { usePositions } from "./hooks/usePositions"
-import { useRedemptionQueue } from "./hooks/useRedemptionQueue"
+import { History } from "@/modules/hdcl-vault/components/History"
+import { MyWithdrawals } from "@/modules/hdcl-vault/components/MyWithdrawals"
+import { OverviewPanel } from "@/modules/hdcl-vault/components/OverviewPanel"
+import { PositionsModal } from "@/modules/hdcl-vault/components/PositionsModal"
+import { QueueModal } from "@/modules/hdcl-vault/components/QueueModal"
+import { WithdrawalsSummary } from "@/modules/hdcl-vault/components/WithdrawalsSummary"
+import { usePositions } from "@/modules/hdcl-vault/hooks/usePositions"
+import { useRedemptionQueue } from "@/modules/hdcl-vault/hooks/useRedemptionQueue"
+import {
+  useHollarAllowance,
+  useUserBalances,
+  useVaultStats,
+} from "@/modules/hdcl-vault/hooks/useVaultReads"
+import {
+  useApproveHollar,
+  useCancelRedeem,
+  useDeposit,
+  useRequestRedeem,
+} from "@/modules/hdcl-vault/hooks/useVaultWrites"
 
 export const HdclVaultPage = () => {
   const { account } = useAccount()
@@ -23,7 +32,9 @@ export const HdclVaultPage = () => {
 
   // Derive EVM address from Substrate account
   const address = account?.address ?? ""
-  const evmAddress = address ? (safeConvertSS58toH160(address) as Hex) : undefined
+  const evmAddress = address
+    ? (safeConvertSS58toH160(address) as Hex)
+    : undefined
 
   // Contract reads
   const { data: vaultStats } = useVaultStats()
@@ -38,7 +49,10 @@ export const HdclVaultPage = () => {
   const redeemMutation = useRequestRedeem()
   const cancelMutation = useCancelRedeem()
 
-  const isPending = approveMutation.isPending || depositMutation.isPending || redeemMutation.isPending
+  const isPending =
+    approveMutation.isPending ||
+    depositMutation.isPending ||
+    redeemMutation.isPending
 
   // Defaults
   const stats = vaultStats ?? {
@@ -76,9 +90,14 @@ export const HdclVaultPage = () => {
         {/* Left column */}
         <Flex direction="column" gap={20}>
           <WithdrawalsSummary
-            myWithdrawalsHollar={myWithdrawals.reduce((s, w) => s + w.estHollar, 0)}
+            myWithdrawalsHollar={myWithdrawals.reduce(
+              (s, w) => s + w.estHollar,
+              0,
+            )}
             totalWithdrawalsHollar={totalQueuedHdcl * stats.exchangeRate}
-            onToggleMyWithdrawals={() => setShowMyWithdrawals(!showMyWithdrawals)}
+            onToggleMyWithdrawals={() =>
+              setShowMyWithdrawals(!showMyWithdrawals)
+            }
             onShowQueue={() => setShowQueue(true)}
           />
 
@@ -113,7 +132,10 @@ export const HdclVaultPage = () => {
         <QueueModal queue={queue} onClose={() => setShowQueue(false)} />
       )}
       {showPositions && (
-        <PositionsModal positions={positionsList} onClose={() => setShowPositions(false)} />
+        <PositionsModal
+          positions={positionsList}
+          onClose={() => setShowPositions(false)}
+        />
       )}
     </>
   )

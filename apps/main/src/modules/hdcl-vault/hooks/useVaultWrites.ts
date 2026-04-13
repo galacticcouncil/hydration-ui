@@ -3,12 +3,18 @@ import { useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useCallback } from "react"
-import { type Abi, encodeFunctionData, parseUnits, type Hex } from "viem"
+import { type Abi, encodeFunctionData, type Hex, parseUnits } from "viem"
 
+import {
+  ERC20_ABI,
+  EVM_CALL_GAS,
+  HOLLAR_ADDRESS,
+  VAULT_ABI,
+  VAULT_ADDRESS,
+  vaultEvmClient,
+} from "@/modules/hdcl-vault/constants"
+import { formatNumber } from "@/modules/hdcl-vault/utils/format"
 import { useTransactionsStore } from "@/states/transactions"
-
-import { VAULT_ADDRESS, HOLLAR_ADDRESS, VAULT_ABI, ERC20_ABI, EVM_CALL_GAS, vaultEvmClient } from "../constants"
-import { formatNumber } from "../utils/format"
 
 function useVaultEvmCall() {
   const { account } = useAccount()
@@ -19,7 +25,12 @@ function useVaultEvmCall() {
   const evmAddress = safeConvertSS58toH160(address) as Hex
 
   const submitTx = useCallback(
-    async (to: Hex, data: Hex, abi: Abi, toasts: { submitted: string; success: string }) => {
+    async (
+      to: Hex,
+      data: Hex,
+      abi: Abi,
+      toasts: { submitted: string; success: string },
+    ) => {
       // Fetch current gas price and add 1% buffer (matches borrow module pattern)
       const gasPrice = await vaultEvmClient.getGasPrice()
       const gasPricePlus = gasPrice + gasPrice / 100n
@@ -52,7 +63,7 @@ function useVaultEvmCall() {
 }
 
 export function useApproveHollar() {
-  const { evmAddress, submitTx } = useVaultEvmCall()
+  const { submitTx } = useVaultEvmCall()
 
   return useMutation({
     mutationFn: (amount: number) => {

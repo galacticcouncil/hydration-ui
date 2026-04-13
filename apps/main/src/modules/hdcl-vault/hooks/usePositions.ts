@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract } from "viem"
 
-import { VAULT_ADDRESS, VAULT_ABI, vaultEvmClient } from "../constants"
+import {
+  VAULT_ABI,
+  VAULT_ADDRESS,
+  vaultEvmClient,
+} from "@/modules/hdcl-vault/constants"
 
 export interface Position {
   id: number
@@ -18,7 +22,11 @@ export function usePositions() {
   return useQuery({
     queryKey: ["hdcl-vault-positions"],
     queryFn: async () => {
-      const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: vaultEvmClient,
+      })
 
       const [count, head] = await Promise.all([
         vault.read.getPositionCount(),
@@ -35,7 +43,8 @@ export function usePositions() {
 
       for (let i = posHead; i < posCount; i++) {
         const result = await vault.read.getPosition([BigInt(i)])
-        const [tokenId, principal, apyWad, depositTime, maturityTime, state] = result
+        const [tokenId, principal, apyWad, depositTime, maturityTime, state] =
+          result
 
         const matSec = Number(maturityTime)
         const remaining = Math.max(0, matSec - now)

@@ -1,20 +1,30 @@
-import { Button, Flex, MicroButton, SectionHeader, Separator, SValueStatsValue, Text } from "@galacticcouncil/ui/components"
-import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
+import {
+  Button,
+  Flex,
+  MicroButton,
+  SectionHeader,
+  Separator,
+  SValueStatsValue,
+  Text,
+} from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { HOLLAR_ASSET_ID } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useState } from "react"
 
 import { AssetLogo } from "@/components/AssetLogo"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
-
-import { formatNumber, formatInputDisplay } from "../utils/format"
 import {
-  SStickyCard,
-  STokenPill,
-  STokenIcon,
   SArrowToggle,
   SExchangeRatePill,
-} from "../HdclVault.styled"
+  SStickyCard,
+  STokenIcon,
+  STokenPill,
+} from "@/modules/hdcl-vault/HdclVault.styled"
+import {
+  formatInputDisplay,
+  formatNumber,
+} from "@/modules/hdcl-vault/utils/format"
 
 interface VaultStats {
   totalAssets: number
@@ -68,7 +78,8 @@ export const OverviewPanel = ({
   const buyLabel = isInvest ? "HDCL" : "HOLLAR"
   const sellBalance = isInvest ? balances.hollar : balances.hdcl
 
-  const isBelowMin = isInvest && inputNum > 0 && inputNum < vaultStats.minDeposit
+  const isBelowMin =
+    isInvest && inputNum > 0 && inputNum < vaultStats.minDeposit
 
   const handleSubmit = () => {
     if (!isConnected || inputNum <= 0 || isBelowMin) return
@@ -86,23 +97,21 @@ export const OverviewPanel = ({
 
   const getButtonLabel = () => {
     if (isPending) return "Pending..."
-    if (isBelowMin) return `Min. ${formatNumber(vaultStats.minDeposit, 0)} HOLLAR`
-    if (isInvest && allowance < inputNum && inputNum > 0) return "Approve HOLLAR"
+    if (isBelowMin)
+      return `Min. ${formatNumber(vaultStats.minDeposit, 0)} HOLLAR`
+    if (isInvest && allowance < inputNum && inputNum > 0)
+      return "Approve HOLLAR"
     return isInvest ? "Invest" : "Withdraw"
   }
 
   const hollarIcon = <AssetLogo id={HOLLAR_ASSET_ID} size="medium" />
-  const hdclIcon = (
-    <STokenIcon variant="hdcl">H</STokenIcon>
-  )
+  const hdclIcon = <STokenIcon variant="hdcl">H</STokenIcon>
 
   const sellIcon = isInvest ? hollarIcon : hdclIcon
   const buyIcon = isInvest ? hdclIcon : hollarIcon
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value
-      .replace(/\s+/g, "")
-      .replace(/,/g, ".")
+    const raw = e.target.value.replace(/\s+/g, "").replace(/,/g, ".")
     if (raw === "" || !isNaN(Number(raw))) {
       setInputAmount(raw)
     }
@@ -116,25 +125,53 @@ export const OverviewPanel = ({
         {/* Stats row */}
         <Flex justify="space-between">
           <Flex direction="column" gap={4}>
-            <Text fs="p5" fw={600} color={getToken("text.low")} transform="uppercase">Total HOLLAR</Text>
-            <Flex align="center" gap={6} css={{ cursor: "pointer" }} onClick={onShowPositions}>
+            <Text
+              fs="p5"
+              fw={600}
+              color={getToken("text.low")}
+              transform="uppercase"
+            >
+              Total HOLLAR
+            </Text>
+            <Flex
+              align="center"
+              gap={6}
+              css={{ cursor: "pointer" }}
+              onClick={onShowPositions}
+            >
               <SValueStatsValue size="large">
                 {formatNumber(vaultStats.totalAssets, 0)}
               </SValueStatsValue>
-              <Text fs="p5" color="accents.info.primary">↗</Text>
+              <Text fs="p5" color="accents.info.primary">
+                ↗
+              </Text>
             </Flex>
           </Flex>
           <Flex direction="column" gap={4} align="flex-end">
-            <Text fs="p5" fw={600} color={getToken("text.low")} transform="uppercase">APR</Text>
-            <SValueStatsValue size="large" sx={{ color: "accents.success.emphasis" }}>
+            <Text
+              fs="p5"
+              fw={600}
+              color={getToken("text.low")}
+              transform="uppercase"
+            >
+              APR
+            </Text>
+            <SValueStatsValue
+              size="large"
+              sx={{ color: "accents.success.emphasis" }}
+            >
               {vaultStats.apr}%
             </SValueStatsValue>
           </Flex>
         </Flex>
 
         <Flex justify="space-between" sx={{ mt: "m" }}>
-          <Text fs="p4" color={getToken("text.medium")}>Withdrawal period</Text>
-          <Text fs="p4" fw={500} color={getToken("text.high")}>{vaultStats.withdrawalDelayDays} days</Text>
+          <Text fs="p4" color={getToken("text.medium")}>
+            Withdrawal period
+          </Text>
+          <Text fs="p4" fw={500} color={getToken("text.high")}>
+            {vaultStats.withdrawalDelayDays} days
+          </Text>
         </Flex>
 
         <Separator sx={{ my: "l" }} />
@@ -144,21 +181,31 @@ export const OverviewPanel = ({
           <Button
             variant={mode === 0 ? "secondary" : "muted"}
             size="medium"
-            onClick={() => { setMode(0); setInputAmount("") }}
+            onClick={() => {
+              setMode(0)
+              setInputAmount("")
+            }}
           >
             Invest
           </Button>
           <Button
             variant={mode === 1 ? "secondary" : "muted"}
             size="medium"
-            onClick={() => { setMode(1); setInputAmount("") }}
+            onClick={() => {
+              setMode(1)
+              setInputAmount("")
+            }}
           >
             Withdraw
           </Button>
         </Flex>
 
         {/* Sell input */}
-        <Flex direction="column" gap="m" css={{ marginTop: 16, overflow: "hidden" }}>
+        <Flex
+          direction="column"
+          gap="m"
+          css={{ marginTop: 16, overflow: "hidden" }}
+        >
           <Flex justify="space-between" align="center">
             <Text
               fs="p5"
@@ -187,10 +234,20 @@ export const OverviewPanel = ({
               </MicroButton>
             </Flex>
           </Flex>
-          <Flex align="center" justify="space-between" gap="m" css={{ overflowX: "hidden" }}>
+          <Flex
+            align="center"
+            justify="space-between"
+            gap="m"
+            css={{ overflowX: "hidden" }}
+          >
             <STokenPill>
               {sellIcon}
-              <Text fs="p3" fw={600} color={getToken("text.high")} css={{ whiteSpace: "nowrap" }}>
+              <Text
+                fs="p3"
+                fw={600}
+                color={getToken("text.high")}
+                css={{ whiteSpace: "nowrap" }}
+              >
                 {sellLabel}
               </Text>
             </STokenPill>
@@ -201,6 +258,7 @@ export const OverviewPanel = ({
               value={formatInputDisplay(inputAmount)}
               onChange={handleInputChange}
               placeholder="0"
+              /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
               css={(theme: any) => ({
                 background: "none",
                 border: "none",
@@ -221,7 +279,12 @@ export const OverviewPanel = ({
         {/* Arrow + exchange rate */}
         <Flex align="center" css={{ margin: "8px -20px" }}>
           <Separator css={{ flexShrink: 0, width: 32 }} />
-          <SArrowToggle onClick={() => { setMode(mode === 0 ? 1 : 0); setInputAmount("") }}>
+          <SArrowToggle
+            onClick={() => {
+              setMode(mode === 0 ? 1 : 0)
+              setInputAmount("")
+            }}
+          >
             ↓
           </SArrowToggle>
           <Separator css={{ flex: 1 }} />
@@ -229,11 +292,15 @@ export const OverviewPanel = ({
             css={{ cursor: "pointer" }}
             onClick={() => setPriceReversed((v) => !v)}
           >
-            <Text fw={500} fs="p6" color={getToken("text.high")} css={{ whiteSpace: "nowrap" }}>
+            <Text
+              fw={500}
+              fs="p6"
+              color={getToken("text.high")}
+              css={{ whiteSpace: "nowrap" }}
+            >
               {priceReversed
                 ? `1 ${buyLabel} = ${formatNumber(isInvest ? vaultStats.exchangeRate : 1 / vaultStats.exchangeRate, 4)} ${sellLabel}`
-                : `1 ${sellLabel} = ${formatNumber(isInvest ? 1 / vaultStats.exchangeRate : vaultStats.exchangeRate, 4)} ${buyLabel}`
-              }
+                : `1 ${sellLabel} = ${formatNumber(isInvest ? 1 / vaultStats.exchangeRate : vaultStats.exchangeRate, 4)} ${buyLabel}`}
             </Text>
           </SExchangeRatePill>
           <Separator css={{ flexShrink: 0, width: 32 }} />
@@ -256,13 +323,24 @@ export const OverviewPanel = ({
               color={getToken("text.low")}
               css={{ whiteSpace: "nowrap", lineHeight: "120%" }}
             >
-              Balance: {formatNumber(isInvest ? balances.hdcl : balances.hollar, 2)}
+              Balance:{" "}
+              {formatNumber(isInvest ? balances.hdcl : balances.hollar, 2)}
             </Text>
           </Flex>
-          <Flex align="center" justify="space-between" gap="m" css={{ overflowX: "hidden" }}>
+          <Flex
+            align="center"
+            justify="space-between"
+            gap="m"
+            css={{ overflowX: "hidden" }}
+          >
             <STokenPill>
               {buyIcon}
-              <Text fs="p3" fw={600} color={getToken("text.high")} css={{ whiteSpace: "nowrap" }}>
+              <Text
+                fs="p3"
+                fw={600}
+                color={getToken("text.high")}
+                css={{ whiteSpace: "nowrap" }}
+              >
                 {buyLabel}
               </Text>
             </STokenPill>

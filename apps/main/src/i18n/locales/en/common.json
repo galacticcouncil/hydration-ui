@@ -202,6 +202,7 @@
   "navigation.swapMarket.title": "Market",
   "navigation.swapDca.title": "DCA",
   "navigation.wallet.title": "Wallet",
+  "navigation.hdclVault.title": "HDCL Vault",
   "navigation.walletAssets.title": "Overview",
   "navigation.walletTransactions.title": "Transactions",
   "navigation.statsOverview.title": "Overview",

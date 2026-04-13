@@ -38,7 +38,7 @@ export const STableHeader = styled(Box)(
 )
 
 export const SClickableRow = styled(Box)(
-  ({ theme }) => css`
+  () => css`
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -112,7 +112,8 @@ export const SArrowToggle = styled(Box)(
 export const SExchangeRatePill = styled(Box)(
   ({ theme }) => css`
     background: ${theme.controls.dim.base};
-    border-radius: ${theme.containers?.cornerRadius?.containersPrimary || "32px"};
+    border-radius: ${theme.containers?.cornerRadius?.containersPrimary ||
+    "32px"};
     padding: 2px 14px;
     height: 28px;
     display: flex;
@@ -158,13 +159,13 @@ export const SCancelButton = styled(Box)<{ disabled?: boolean }>(
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
-    color: ${theme.colors.gray400 || "#aeb0b7"};
+    color: ${theme.colors.greys[400] || "#aeb0b7"};
     border: 1px solid ${theme.details.borders};
     transition: all 0.15s;
 
     &:hover:not([disabled]) {
-      color: ${theme.colors.white || "#fff"};
-      border-color: ${theme.colors.gray400 || "#aeb0b7"};
+      color: #fff;
+      border-color: ${theme.colors.greys[400] || "#aeb0b7"};
     }
   `,
 )
@@ -181,14 +182,11 @@ export const SPillTab = styled(Box)<{ isActive?: boolean }>(
     background-color: ${isActive
       ? theme.buttons.primary?.high?.rest || "#fc408c"
       : "transparent"};
-    color: ${isActive ? "#fff" : theme.colors.gray500 || "#aeb0b7"};
-    border: 1px solid ${isActive
-      ? "transparent"
-      : theme.details.borders};
+    color: ${isActive ? "#fff" : theme.colors.greys[500] || "#aeb0b7"};
+    border: 1px solid ${isActive ? "transparent" : theme.details.borders};
 
     &:hover {
       opacity: 0.85;
     }
   `,
 )
-

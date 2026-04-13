@@ -1,15 +1,36 @@
 import { useQuery } from "@tanstack/react-query"
 import { formatUnits, getContract, type Hex } from "viem"
 
-import { VAULT_ADDRESS, HOLLAR_ADDRESS, VAULT_ABI, ERC20_ABI, vaultEvmClient } from "../constants"
+import {
+  ERC20_ABI,
+  HOLLAR_ADDRESS,
+  VAULT_ABI,
+  VAULT_ADDRESS,
+  vaultEvmClient,
+} from "@/modules/hdcl-vault/constants"
 
 export function useVaultStats() {
   return useQuery({
     queryKey: ["hdcl-vault-stats"],
     queryFn: async () => {
-      const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: vaultEvmClient,
+      })
 
-      const [totalAssets, totalSupply, exchangeRateWad, withdrawalDelay, tvlCap, paused, depositsPaused, minReinvest, minRedeem, apyWad] = await Promise.all([
+      const [
+        totalAssets,
+        totalSupply,
+        exchangeRateWad,
+        withdrawalDelay,
+        tvlCap,
+        paused,
+        depositsPaused,
+        minReinvest,
+        minRedeem,
+        apyWad,
+      ] = await Promise.all([
         vault.read.totalAssets(),
         vault.read.totalSupply(),
         vault.read.exchangeRate(),
@@ -46,8 +67,16 @@ export function useUserBalances(evmAddress: Hex | undefined) {
     queryFn: async () => {
       if (!evmAddress) return { hollar: 0, hdcl: 0 }
 
-      const hollarToken = getContract({ address: HOLLAR_ADDRESS, abi: ERC20_ABI, client: vaultEvmClient })
-      const vault = getContract({ address: VAULT_ADDRESS, abi: VAULT_ABI, client: vaultEvmClient })
+      const hollarToken = getContract({
+        address: HOLLAR_ADDRESS,
+        abi: ERC20_ABI,
+        client: vaultEvmClient,
+      })
+      const vault = getContract({
+        address: VAULT_ADDRESS,
+        abi: VAULT_ABI,
+        client: vaultEvmClient,
+      })
 
       const [hollarBal, hdclBal] = await Promise.all([
         hollarToken.read.balanceOf([evmAddress]),
@@ -69,8 +98,15 @@ export function useHollarAllowance(evmAddress: Hex | undefined) {
     enabled: !!evmAddress,
     queryFn: async () => {
       if (!evmAddress) return 0
-      const hollarToken = getContract({ address: HOLLAR_ADDRESS, abi: ERC20_ABI, client: vaultEvmClient })
-      const allowance = await hollarToken.read.allowance([evmAddress, VAULT_ADDRESS])
+      const hollarToken = getContract({
+        address: HOLLAR_ADDRESS,
+        abi: ERC20_ABI,
+        client: vaultEvmClient,
+      })
+      const allowance = await hollarToken.read.allowance([
+        evmAddress,
+        VAULT_ADDRESS,
+      ])
       return Number(formatUnits(allowance, 18))
     },
     refetchInterval: 15_000,
