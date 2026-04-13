@@ -16,6 +16,5 @@ export const uiScale = [
   // getUiScaleCss(1440, 1.1),
   // getUiScaleCss(1680, 1.1),
   getUiScaleCss(1920, 1.2),
-  getUiScaleCss(2560, 1.5),
-  getUiScaleCss(3840, 3),
+  getUiScaleCss(2560, 1.35),
 ]

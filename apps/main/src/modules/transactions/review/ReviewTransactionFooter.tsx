@@ -1,5 +1,15 @@
-import { Alert, Button, Flex, Stack } from "@galacticcouncil/ui/components"
+import {
+  Alert,
+  Button,
+  Flex,
+  ModalContentDivider,
+  Stack,
+  Text,
+  Toggle,
+} from "@galacticcouncil/ui/components"
+import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { isString } from "remeda"
 
 import { useTransactionAlerts } from "@/modules/transactions/hooks/useTransactionAlerts"
 import { ReviewTransactionSubmitButton } from "@/modules/transactions/review/ReviewTransactionSubmitButton"
@@ -14,18 +24,68 @@ export const ReviewTransactionFooter: React.FC<
 > = ({ closable = true }) => {
   const { t } = useTranslation()
 
-  const { onClose, isIdle, isSigning, isSubmitted } = useTransaction()
+  const {
+    onClose,
+    isIdle,
+    isSigning,
+    isSubmitted,
+    alerts: txAlerts,
+  } = useTransaction()
 
-  const { alerts } = useTransactionAlerts()
+  const { alerts: genericAlerts } = useTransactionAlerts()
+
+  const [consented, setConsented] = useState<boolean[]>([])
 
   const isCloseDisabled = isSigning || isSubmitted || !closable
+
+  const isConsentPending = !!txAlerts?.some(
+    (alert, i) => alert.requiresUserConsent && !consented[i],
+  )
+
+  const hasGenericAlerts = genericAlerts.length > 0
+  const hasTxAlerts = !!txAlerts && txAlerts.length > 0
+  const hasAlerts = hasGenericAlerts || hasTxAlerts
 
   if (isIdle) {
     return (
       <Stack width="100%" gap="base">
-        {alerts.map(({ key, ...alert }) => (
-          <Alert key={key} {...alert} />
-        ))}
+        {hasGenericAlerts
+          ? genericAlerts.map(({ key, ...alert }) => (
+              <Alert key={key} {...alert} />
+            ))
+          : txAlerts?.map((alert, i) => (
+              <Alert
+                key={i}
+                variant={alert.variant}
+                title={alert.title}
+                description={alert.description}
+                action={
+                  alert.requiresUserConsent ? (
+                    <Flex align="center" as="label" gap="base">
+                      <Toggle
+                        size="large"
+                        checked={!!consented[i]}
+                        onCheckedChange={(checked) => {
+                          setConsented((prev) => {
+                            const next = [...prev]
+                            next[i] = checked
+                            return next
+                          })
+                        }}
+                      />
+                      <Text fs="p4" lh={1.3} fw={600}>
+                        {isString(alert.requiresUserConsent)
+                          ? alert.requiresUserConsent
+                          : t("transaction.alert.acceptRisk")}
+                      </Text>
+                    </Flex>
+                  ) : undefined
+                }
+              />
+            ))}
+
+        {hasAlerts && <ModalContentDivider my="m" />}
+
         <Flex
           direction={["column-reverse", "row"]}
           justify="space-between"
@@ -40,7 +100,7 @@ export const ReviewTransactionFooter: React.FC<
             {t("close")}
           </Button>
 
-          <ReviewTransactionSubmitButton />
+          <ReviewTransactionSubmitButton disabled={isConsentPending} />
         </Flex>
       </Stack>
     )

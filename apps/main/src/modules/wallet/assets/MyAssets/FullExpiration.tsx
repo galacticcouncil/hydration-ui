@@ -18,7 +18,7 @@ export const FullExpiration: FC<Props> = ({
 
   const seconds = useCountdown(initialLockedSeconds)
   const endDate = useMemo(
-    () => durationInDaysAndHoursFromNow(seconds * 1000),
+    () => durationInDaysAndHoursFromNow(seconds),
     [seconds],
   )
 

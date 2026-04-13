@@ -25,7 +25,7 @@ export const Isolated = () => {
     <>
       <ValueStats
         label={t("liquidity:header.valueInIsolatedPools")}
-        value={t("common:currency", {
+        value={t("common:currency.compact", {
           value: totals.liquidity,
         })}
         isLoading={isLoadingXYK}
@@ -35,7 +35,7 @@ export const Isolated = () => {
       <PoolsHeaderSeparator />
       <ValueStats
         label={t("liquidity:header.volume")}
-        value={t("common:currency", { value: totals.volume })}
+        value={t("common:currency.compact", { value: totals.volume })}
         isLoading={false}
         size="medium"
         wrap

@@ -10,6 +10,34 @@ import { XcJourney } from "@galacticcouncil/xc-scan"
 
 export type TJourneyStatus = XcJourney["status"]
 
+export type XcJourneyWhVAAInstruction = {
+  type: "WormholeVAA"
+  value: {
+    raw: string
+    guardianSetIndex: number
+    isDuplicated: boolean
+  }
+}
+export type XcJourneyWhStop = {
+  type: "wormhole"
+  from: object
+  to: object
+  relay?: object
+  instructions: XcJourneyWhVAAInstruction
+  messageId?: string
+}
+
+export type XcJourneyGenericStop = {
+  type: string
+  from: object
+  to: object
+  relay?: object
+  instructions: object[]
+  messageId?: string
+}
+
+export type XcJourneyStop = XcJourneyGenericStop | XcJourneyWhStop
+
 export const PENDING_STATUSES: TJourneyStatus[] = ["sent", "pending"]
 export const WAITING_STATUSES: TJourneyStatus[] = ["waiting"]
 export const SUCCESS_STATUSES: TJourneyStatus[] = [

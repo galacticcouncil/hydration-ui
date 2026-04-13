@@ -11,7 +11,7 @@
   "chainAssetSelect.modal.title": "Chain & asset",
   "chainAssetSelect.search.assets": "Search assets...",
   "chainAssetSelect.search.chains": "Search chains...",
-  "chainNotConnected": "{{ chainName }} not connected",
+  "chainNotConnected": "{{ chainName }} account is not connected",
   "connect.modal.description": "Use available crypto wallets to connect to {{ chain }}.",
   "connect.modal.title": "Connect to {{ chain }}",
   "error.maxAmount": "Maximum transferable amount is {{ amount, number }} {{ symbol }}",
