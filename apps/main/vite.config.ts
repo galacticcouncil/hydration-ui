@@ -29,6 +29,11 @@ const loaderHtml = fs.readFileSync(
 )
 
 export default defineConfig({
+  server: {
+    watch: {
+      ignored: ["**/routeTree.gen.ts"],
+    },
+  },
   build: {
     target: "es2022",
     outDir: "build",

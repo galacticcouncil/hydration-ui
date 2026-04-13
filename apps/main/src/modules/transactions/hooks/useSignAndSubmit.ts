@@ -10,6 +10,7 @@ import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Subscription } from "rxjs"
 
+import { useMultisigTx } from "@/modules/transactions/hooks/useMultisigTx"
 import { TxOptions, TxResult } from "@/modules/transactions/types"
 import {
   signAndSubmitEvmDispatchTx,
@@ -47,6 +48,7 @@ export const useSignAndSubmit = (
   const { t } = useTranslation("common")
   const { papi, papiClient } = useRpcProvider()
   const wallet = useWallet()
+  const { isMultisigActive, wrapInMultisig } = useMultisigTx()
 
   const subscription = useRef<Subscription | null>(null)
 
@@ -84,7 +86,10 @@ export const useSignAndSubmit = (
       }
 
       if (isPapiTransaction(tx) && isPolkadotSigner(signer)) {
-        return signAndSubmitPolkadotTx(tx, signer, txOptions)
+        const wrappedTx = isMultisigActive
+          ? await wrapInMultisig(papiClient, tx)
+          : tx
+        return signAndSubmitPolkadotTx(wrappedTx, signer, txOptions)
       }
 
       if (isPapiTransaction(tx) && isEthereumSigner(signer)) {
@@ -96,11 +101,12 @@ export const useSignAndSubmit = (
       }
 
       if (isEvmCall(tx) && isPolkadotSigner(signer)) {
-        return signAndSubmitPolkadotTx(
-          transformEvmCallToPapiTx(papi, tx),
-          signer,
-          txOptions,
-        )
+        // EVM calls are wrapped in evm.call first, then the multisig wrapper goes around it
+        const evmTx = transformEvmCallToPapiTx(papi, tx)
+        const wrappedTx = isMultisigActive
+          ? await wrapInMultisig(papiClient, evmTx)
+          : evmTx
+        return signAndSubmitPolkadotTx(wrappedTx, signer, txOptions)
       }
 
       if (isSolanaCall(tx) && isSolanaSigner(signer)) {

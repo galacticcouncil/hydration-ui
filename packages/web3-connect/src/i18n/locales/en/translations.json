@@ -1,6 +1,7 @@
 {
   "button.connect": "Connect Wallet",
   "button.selectAccount": "Select Account",
+  "button.multisig.signingAs": "signing as",
 
   "provider.installedAndRecent": "Installed & recently used",
   "provider.availableWallets": "Available wallets",
@@ -47,5 +48,33 @@
 
   "error.title": "Connection error",
   "error.unknown": "Unknown error, please try again",
-  "error.retry": "Retry"
+  "error.retry": "Retry",
+
+  "multisig.title": "Multisig",
+  "multisig.setup.title": "Set up multisig",
+  "multisig.setup.short": "Setup",
+  "multisig.setup.signersLabel": "Signers",
+  "multisig.setup.signerPlaceholder": "Paste signer address...",
+  "multisig.setup.addSigner": "+ Add signer",
+  "multisig.setup.thresholdLabel": "Threshold",
+  "multisig.setup.thresholdSuffix": "of {{count}} signers",
+  "multisig.setup.nameLabel": "Name (optional)",
+  "multisig.setup.namePlaceholder": "e.g. Council multisig",
+  "multisig.setup.derivedAddressLabel": "Multisig address",
+  "multisig.setup.cta": "Save & Connect as Signer",
+  "multisig.setup.savedLabel": "Saved multisigs",
+  "multisig.setup.use": "Use",
+  "multisig.setup.delete": "Delete",
+  "multisig.setup.error.duplicate": "Duplicate address",
+  "multisig.setup.error.invalid": "Invalid address",
+  "multisig.setup.error.minSigners": "At least 2 signers required",
+  "multisig.setup.warning.threshold1": "Threshold of 1 means any signer can execute",
+
+  "multisig.signerSelect.title": "Connect signer",
+  "multisig.signerSelect.description": "Connect a wallet containing one of the signers on this multisig.",
+  "multisig.signerSelect.selectAccount": "Select a signer account:",
+  "multisig.signerSelect.signerBadge": "signer",
+  "multisig.signerSelect.noSigners": "None of your accounts are signers on this multisig",
+  "multisig.signerSelect.cta": "Connect",
+  "multisig.signerSelect.multisigLabel": "Multisig"
 }

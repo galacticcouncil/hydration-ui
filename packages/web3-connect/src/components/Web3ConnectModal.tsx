@@ -8,6 +8,8 @@ import { useShallow } from "zustand/shallow"
 import { AccountSelectContent } from "@/components/content/AccountSelectContent"
 import { ErrorContent } from "@/components/content/ErrorContent"
 import { ExternalWalletContent } from "@/components/content/ExternalWalletContent"
+import { MultisigSetupContent } from "@/components/content/MultisigSetupContent"
+import { MultisigSignerSelectContent } from "@/components/content/MultisigSignerSelectContent"
 import { ProviderSelectContent } from "@/components/content/ProviderSelectContent"
 import { AccountActionsFooter } from "@/components/footer/AccountActionsFooter"
 import { Web3ConnectModalPage } from "@/config/modal"
@@ -27,6 +29,8 @@ const contentMap: Record<Web3ConnectModalPage, React.ReactNode> = {
   [Web3ConnectModalPage.ExternalWallet]: <ExternalWalletContent />,
   [Web3ConnectModalPage.AccountSelect]: <AccountSelectContent />,
   [Web3ConnectModalPage.Error]: <ErrorContent />,
+  [Web3ConnectModalPage.MultisigSetup]: <MultisigSetupContent />,
+  [Web3ConnectModalPage.MultisigSignerSelect]: <MultisigSignerSelectContent />,
 }
 
 type ControlledProps = {

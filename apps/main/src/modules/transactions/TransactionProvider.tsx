@@ -1,4 +1,5 @@
 import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { StoredAccount, useAccount } from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useQueryClient } from "@tanstack/react-query"
 import { createContext, useCallback, useContext, useReducer } from "react"
@@ -77,6 +78,8 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
   const rpcUrl = useProviderRpcUrlStore((state) => state.rpcUrl)
   const { cancelTransaction, addPendingTransaction, removePendingTransaction } =
     useTransactionsStore()
+  const { account } = useAccount()
+  const isMultisig = !!(account as StoredAccount)?.isMultisig
 
   const transaction = useWrapTransaction(config)
 
@@ -156,8 +159,11 @@ export const TransactionProvider: React.FC<TransactionProviderProps> = ({
       tip,
       weight: paymentInfo?.weight?.ref_time,
       mortalityPeriod: state.mortalityPeriod,
+      // For multisig, the signer (not the multisig address) submits the tx.
+      // Passing the multisig account's nonce would cause Invalid.Stale because
+      // papi would sign with the wrong nonce. Let papi auto-fetch the signer's nonce.
       nonce:
-        transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
+        !isMultisig && transaction.meta.srcChainKey === HYDRATION_CHAIN_KEY
           ? nonce
           : undefined,
       priorityRpcUrl:

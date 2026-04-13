@@ -49,6 +49,7 @@ export function convertXcmFormValuesToOptimisticJourney(
     ? safeConvertSS58toH160(fromAddress)
     : fromAddress
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return {
     id: 0,
     correlationId: getOptimisticJourneyId(txHash),
@@ -78,7 +79,7 @@ export function convertXcmFormValuesToOptimisticJourney(
         role: "transfer",
       },
     ],
-  } satisfies XcJourney
+  } as unknown as XcJourney
 }
 
 export function insertOptimisticJourney(

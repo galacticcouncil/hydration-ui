@@ -19,6 +19,9 @@ export const TOAST_MESSAGES = ["onLoading", "onSuccess", "onError"] as const
 export type ToastMeta = TransactionMeta & {
   txHash: string
   ecosystem: CallType
+  /** When true, the substrate processor must not auto-resolve this toast —
+   *  it is a multisig first-approval waiting for co-signers. */
+  isMultisigPending?: boolean
 }
 
 export type ToastMessageType = (typeof TOAST_MESSAGES)[number]
@@ -30,6 +33,8 @@ type ToastParams = {
   persist?: boolean
   address?: string
   hint?: string
+  /** Sonner popup duration in ms. Pass Infinity to keep it until manually dismissed. */
+  duration?: number
   meta: ToastMeta
 }
 
@@ -106,6 +111,7 @@ export const useToasts = () => {
         address = currentAddress,
         id = uuid(),
         persist = true,
+        duration = DEFAULT_AUTO_CLOSE_TIME,
         ...toast
       }: ToastParams,
       variant: ToastVariant,
@@ -120,9 +126,14 @@ export const useToasts = () => {
 
       toastSonner.custom(
         () => (
-          <Notification variant={variant} content={toast.title} fullWidth />
+          <Notification
+            variant={variant}
+            content={toast.title}
+            hint={toast.hint}
+            fullWidth
+          />
         ),
-        { id, duration: DEFAULT_AUTO_CLOSE_TIME },
+        { id, duration },
       )
 
       if (persist && address) {
@@ -142,7 +153,7 @@ export const useToasts = () => {
   )
 
   const edit = useCallback(
-    (id: string, props: Partial<ToastData>) => {
+    (id: string, props: Partial<ToastData> & { duration?: number }) => {
       if (!currentAddress) return
 
       update(currentAddress, (toasts) =>
@@ -151,15 +162,19 @@ export const useToasts = () => {
         ),
       )
 
-      const { variant, title } = props
+      const { variant, title, hint, duration = DEFAULT_AUTO_CLOSE_TIME } = props
 
       if (variant && title) {
         toastSonner.custom(
-          () => <Notification variant={variant} content={title} fullWidth />,
-          {
-            id,
-            duration: DEFAULT_AUTO_CLOSE_TIME,
-          },
+          () => (
+            <Notification
+              variant={variant}
+              content={title}
+              hint={hint}
+              fullWidth
+            />
+          ),
+          { id, duration },
         )
       }
     },

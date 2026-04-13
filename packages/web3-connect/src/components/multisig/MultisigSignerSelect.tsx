@@ -1,0 +1,205 @@
+import {
+  AccountAvatar,
+  Box,
+  Flex,
+  Grid,
+  Skeleton,
+  Stack,
+  Text,
+} from "@galacticcouncil/ui/components"
+import { getToken } from "@galacticcouncil/ui/utils"
+import { shortenAccountAddress } from "@galacticcouncil/utils"
+import { safeConvertSS58toPublicKey } from "@galacticcouncil/utils"
+import { useTranslation } from "react-i18next"
+import { pick } from "remeda"
+import { useShallow } from "zustand/shallow"
+
+import { SAccountOption } from "@/components/account/AccountOption.styled"
+import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
+import { SUBSTRATE_PROVIDERS } from "@/config/providers"
+import { useMultisigStore } from "@/hooks/useMultisigStore"
+import { useWalletProviders } from "@/hooks/useWalletProviders"
+import {
+  StoredAccount,
+  useWeb3Connect,
+  WalletMode,
+  WalletProviderStatus,
+} from "@/hooks/useWeb3Connect"
+import { toPolkadotAddress } from "@/utils/multisig"
+import { toAccount } from "@/utils/wallet"
+import { getWalletData } from "@/wallets"
+
+export const MultisigSignerSelect: React.FC = () => {
+  const { t } = useTranslation()
+  const { getActiveConfig, setActive, activeConfigId } = useMultisigStore()
+  const activeConfig = getActiveConfig()
+
+  const { accounts, toggle, getStatus } = useWeb3Connect(
+    useShallow(pick(["accounts", "toggle", "getStatus"])),
+  )
+  const { setAccount } = useWeb3Connect(useShallow(pick(["setAccount"])))
+
+  const { installed } = useWalletProviders(WalletMode.Substrate)
+
+  if (!activeConfig) return null
+
+  // Only show buttons for wallets that are NOT yet connected — connected
+  // wallets already contribute accounts to the list below.
+  const unconnectedWallets = installed.filter(
+    (w) => getStatus(w.provider) !== WalletProviderStatus.Connected,
+  )
+
+  const isAnyWalletConnecting = installed.some(
+    (w) => getStatus(w.provider) === WalletProviderStatus.Pending,
+  )
+
+  // Filter to substrate accounts only
+  const substrateAccounts = accounts.filter((a) =>
+    SUBSTRATE_PROVIDERS.includes(a.provider),
+  )
+
+  const hasSubstrateAccounts = substrateAccounts.length > 0
+
+  const isSignerAddress = (address: string) =>
+    activeConfig.signers.some(
+      (s) => toPolkadotAddress(s) === toPolkadotAddress(address),
+    )
+
+  const handleSelectSigner = (signerAddress: string) => {
+    if (!activeConfigId) return
+
+    const signerAccount = accounts.find((a) => a.address === signerAddress)
+    if (!signerAccount) return
+
+    const multisigAccount: StoredAccount = {
+      name:
+        activeConfig.name ||
+        `${t("multisig.title")} (${activeConfig.threshold}/${activeConfig.signers.length})`,
+      address: activeConfig.address,
+      rawAddress: activeConfig.address,
+      publicKey: safeConvertSS58toPublicKey(activeConfig.address),
+      provider: signerAccount.provider,
+      isMultisig: true,
+      multisigConfigId: activeConfigId,
+      multisigSignerAddress: signerAddress,
+    }
+
+    setActive(activeConfigId, signerAddress)
+    setAccount(multisigAccount)
+    toggle()
+  }
+
+  return (
+    <Stack gap="var(--modal-content-padding)">
+      {/* Multisig info */}
+      <Stack
+        gap="s"
+        sx={{
+          p: "m",
+          borderRadius: "m",
+          border: "1px solid",
+          borderColor: "details.borders",
+          bg: "surfaces.containers.dim.dimOnBg",
+        }}
+      >
+        <Text fs="p4" fw={500}>
+          {t("multisig.signerSelect.multisigLabel")}:{" "}
+          {activeConfig.name
+            ? `${activeConfig.name} (${activeConfig.threshold}/${activeConfig.signers.length})`
+            : `${activeConfig.threshold}/${activeConfig.signers.length}`}
+        </Text>
+        <Text fs="p5" color={getToken("text.medium")}>
+          {shortenAccountAddress(activeConfig.address)}
+        </Text>
+      </Stack>
+
+      <Text fs="p4" color={getToken("text.medium")}>
+        {t("multisig.signerSelect.description")}
+      </Text>
+
+      {/* Substrate wallet buttons — only for wallets not yet connected */}
+      {unconnectedWallets.length > 0 && (
+        <Grid columns={[2, 3]} gap="base">
+          {unconnectedWallets.map((wallet) => {
+            const data = getWalletData(wallet)
+            return (
+              <ProviderInstalledButton key={data.provider} walletData={data} />
+            )
+          })}
+        </Grid>
+      )}
+
+      {/* Account list after wallet connects */}
+      {isAnyWalletConnecting && (
+        <Stack gap="s">
+          <Skeleton height={48} />
+          <Skeleton height={48} />
+        </Stack>
+      )}
+
+      {!isAnyWalletConnecting && hasSubstrateAccounts && (
+        <Stack gap="m">
+          <Text fs="p4" fw={500}>
+            {t("multisig.signerSelect.selectAccount")}
+          </Text>
+
+          <Stack gap="s">
+            {substrateAccounts.map((account) => {
+              const isSigner = isSignerAddress(account.address)
+              const accountDisplay = toAccount(account)
+
+              return (
+                <SAccountOption
+                  key={`${account.publicKey}-${account.provider}`}
+                  disabled={!isSigner}
+                  onClick={() =>
+                    isSigner && handleSelectSigner(account.address)
+                  }
+                  sx={{ opacity: isSigner ? 1 : 0.45 }}
+                >
+                  <Flex align="center" gap="m">
+                    <Box sx={{ flexShrink: 0 }}>
+                      <AccountAvatar address={accountDisplay.displayAddress} />
+                    </Box>
+                    <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
+                      <Flex align="center" justify="space-between">
+                        <Text fs="p3" truncate={200}>
+                          {account.name}
+                        </Text>
+                        {isSigner && (
+                          <Text
+                            fs="p5"
+                            fw={500}
+                            color={getToken("accents.success.primary")}
+                            sx={{ flexShrink: 0, ml: "s" }}
+                          >
+                            ✓ {t("multisig.signerSelect.signerBadge")}
+                          </Text>
+                        )}
+                      </Flex>
+                      <Text
+                        fs="p4"
+                        color={getToken("text.medium")}
+                        sx={{ minWidth: 0 }}
+                      >
+                        <Text as="span" truncate display={["none", "block"]}>
+                          {accountDisplay.displayAddress}
+                        </Text>
+                        <Text as="span" display={["block", "none"]}>
+                          {shortenAccountAddress(
+                            accountDisplay.displayAddress,
+                            12,
+                          )}
+                        </Text>
+                      </Text>
+                    </Flex>
+                  </Flex>
+                </SAccountOption>
+              )
+            })}
+          </Stack>
+        </Stack>
+      )}
+    </Stack>
+  )
+}

@@ -69,7 +69,9 @@ export const useProcessTransactionToasts = (toasts: ToastData[]) => {
     (toast) =>
       isValidToastForProcessing(toast) &&
       // make sure we don't process toasts of transactions that are not finalized yet
-      !transactions.some((transaction) => transaction.id === toast.id),
+      !transactions.some((transaction) => transaction.id === toast.id) &&
+      // multisig toasts stay pending until all co-signers approve — never auto-resolve
+      !toast.meta.isMultisigPending,
   )
 
   const processToast = useTransactionToastProcessorFn()
