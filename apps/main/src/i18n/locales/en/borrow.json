@@ -91,6 +91,7 @@
   "supplied.table.empty": "Nothing supplied yet",
   "supplied.table.title": "Your supplies",
   "supply": "Supply",
+  "supply.withSymbol": "Supply {{ symbol }}",
   "isolated": "Isolated",
   "supply.assetCannotBeCollateral": "Asset cannot be used as collateral.",
   "supply.available": "Available to supply",

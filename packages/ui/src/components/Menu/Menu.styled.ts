@@ -53,11 +53,15 @@ export const MenuItem = styled(Box)<{ variant?: MenuItemVariant }>(
   ],
 )
 
-export const MenuItemIcon = styled(Icon)`
-  grid-row: 1 / -1;
-  width: 20px;
-  height: 20px;
-`
+export const MenuItemIcon = styled(Icon)(
+  ({ theme }) => css`
+    grid-row: 1 / -1;
+    width: ${theme.sizes.xl};
+    height: ${theme.sizes.xl};
+    padding: ${theme.space.xs};
+    flex-shrink: 0;
+  `,
+)
 
 export const MenuItemLabel = styled.span(
   ({ theme }) => css`

@@ -22,13 +22,14 @@ import { useDebounce } from "use-debounce"
 import z from "zod"
 
 import { healthFactorQuery } from "@/api/aave"
-import { TAssetData, TErc20 } from "@/api/assets"
+import { TAssetData, TErc20AToken } from "@/api/assets"
 import {
   useBorrowAssetsApy,
   useBorrowDisableCollateralTxs,
   userBorrowSummaryQueryKey,
   useSetUsageAsCollateralTx,
 } from "@/api/borrow"
+import { spotPriceQuery } from "@/api/spotPrice"
 import { bestSellWithTxQuery } from "@/api/trade"
 import i18n from "@/i18n"
 import { useMinimumTradeAmount } from "@/modules/liquidity/components/RemoveLiquidity/RemoveMoneyMarketLiquidity.utils"
@@ -54,7 +55,7 @@ export const useSupplyIsolatedLiquidity = ({
 }: {
   supplyAssetId: string
   initialAsset: TAssetData
-  aToken: TErc20
+  aToken: TErc20AToken
   userBorrowData: ExtendedFormattedUser
   userReserve: ComputedUserReserveData
   onSubmitted: () => void
@@ -85,6 +86,13 @@ export const useSupplyIsolatedLiquidity = ({
   const assetCap = getAssetCapData(reserve)
 
   const [amountIn, assetIn] = form.watch(["amount", "asset"])
+
+  const isAaveSupply = aToken.underlyingAssetId === assetIn.id
+
+  const { data: spotPriceData, isLoading: isPriceLoading } = useQuery({
+    ...spotPriceQuery(rpc, assetIn.id, aToken.id),
+    enabled: !isAaveSupply,
+  })
 
   const [debouncedAmountIn] = useDebounce(amountIn, 300)
 
@@ -138,7 +146,10 @@ export const useSupplyIsolatedLiquidity = ({
     }),
   )
 
-  const minReceiveAmount = getMinimumTradeAmount(trade?.swap)?.toString() ?? "0"
+  const minReceiveAmount =
+    (isAaveSupply
+      ? trade?.swap.amountOut
+      : getMinimumTradeAmount(trade?.swap)?.toString()) ?? "0"
   const minReceiveAmountShifted = scaleHuman(minReceiveAmount, aToken.decimals)
 
   const { data: healthFactor } = useQuery(
@@ -205,6 +216,9 @@ export const useSupplyIsolatedLiquidity = ({
     isBlockedSupply,
     minReceiveAmountShifted,
     apys,
+    spotPriceData,
+    isPriceLoading,
+    isAaveSupply,
   }
 }
 

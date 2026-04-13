@@ -309,9 +309,9 @@ export const getStablepoolShares = (
 }
 
 const useStablepoolAddLiquidityFormResolver = (
-  omnipoolId: string,
   stablepoolId: string,
   accountReserveBalances: Map<string, string>,
+  omnipoolId?: string,
 ) => {
   const omnipoolZodSchema = useAddToOmnipoolZod(omnipoolId)
   const { data: reserves } = useBorrowReserves()
@@ -399,9 +399,9 @@ export const useStablepoolAddLiquidityForm = ({
   split?: boolean
 }) => {
   const resolver = useStablepoolAddLiquidityFormResolver(
-    omnipoolId,
     stablepoolId,
     accountBalances,
+    option === "omnipool" ? omnipoolId : undefined,
   )
 
   const fields = split
