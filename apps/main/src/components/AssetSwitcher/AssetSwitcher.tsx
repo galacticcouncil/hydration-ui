@@ -25,7 +25,6 @@ type AssetSwitcherProps = {
   readonly switcherDisabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean
-  readonly hidePrice?: boolean
   readonly onSwitchAssets?: () => void
 }
 
@@ -39,14 +38,10 @@ export const AssetSwitcher = ({
   switcherDisabled,
   fallbackPrice,
   isFallbackPriceLoading,
-  hidePrice = false,
   onSwitchAssets,
 }: AssetSwitcherProps) => {
   const { t } = useTranslation()
   const [view, setView] = useState(defaultView)
-  // Persistent click-driven rotation so the swap animation doesn't snap back
-  // when the button briefly becomes disabled (pending state) or loses hover.
-  const [rotation, setRotation] = useState(0)
 
   const { getAssetWithFallback } = useAssets()
   const assetIn = getAssetWithFallback(assetInId)
@@ -69,7 +64,6 @@ export const AssetSwitcher = ({
 
   const switchAssets = (): void => {
     setView(defaultView)
-    setRotation((r) => r + 180)
     onSwitchAssets?.()
   }
 
@@ -79,17 +73,10 @@ export const AssetSwitcher = ({
   const isPriceDisabled = !assetInId || !assetOutId || shownPrice.lte(0)
 
   return (
-    <SAssetSwitcher
-      sx={{ alignItems: "center", mx: -20 }}
-      data-no-price={hidePrice ? "true" : undefined}
-    >
+    <SAssetSwitcher sx={{ alignItems: "center", mx: -20 }}>
       <Separator />
       {onSwitchAssets && (
-        <SSwitchContainer
-          onClick={switchAssets}
-          disabled={isSwitcherDisabled}
-          rotation={rotation}
-        >
+        <SSwitchContainer onClick={switchAssets} disabled={isSwitcherDisabled}>
           <Icon
             size="m"
             component={ArrowDown}
@@ -97,33 +84,27 @@ export const AssetSwitcher = ({
           />
         </SSwitchContainer>
       )}
-      {!hidePrice ? (
-        <>
-          <Separator />
-          <SPriceContainer
-            disabled={isPriceDisabled}
-            onClick={() =>
-              setView((view) => (view === "default" ? "reversed" : "default"))
-            }
-          >
-            <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
-              {!isPriceReady && <Skeleton width={120} />}
-              {isPriceReady &&
-                (isPriceDisabled
-                  ? t("unknownExchangeRate")
-                  : `1 ${shownAssetIn.symbol} = ${t("currency", {
-                      value: shownPrice,
-                      symbol: shownAssetOut.symbol,
-                    })}`)}
-            </Text>
-          </SPriceContainer>
-          <Separator />
-        </>
-      ) : (
-        // No price pill: render a single full-width separator on the right so
-        // the divider visually spans across the row instead of leaving a stub.
+      <>
         <Separator />
-      )}
+        <SPriceContainer
+          disabled={isPriceDisabled}
+          onClick={() =>
+            setView((view) => (view === "default" ? "reversed" : "default"))
+          }
+        >
+          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+            {!isPriceReady && <Skeleton width={120} />}
+            {isPriceReady &&
+              (isPriceDisabled
+                ? t("unknownExchangeRate")
+                : `1 ${shownAssetIn.symbol} = ${t("currency", {
+                    value: shownPrice,
+                    symbol: shownAssetOut.symbol,
+                  })}`)}
+          </Text>
+        </SPriceContainer>
+      </>
+      <Separator />
     </SAssetSwitcher>
   )
 }

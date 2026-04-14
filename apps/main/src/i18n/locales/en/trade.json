@@ -174,7 +174,7 @@
   "otc.cancelOrder.loading": "Cancelling an OTC order for {{ amount }}.",
   "otc.cancelOrder.success": "OTC order cancelled for {{ amount }}.",
   "otc.cancelOrder.error": "Failed to cancel OTC order for {{ amount }}.",
-  "limit.expiry.label": "Expiration",
+  "limit.expiry.label": "Expires in",
   "limit.expiry.15m": "15M",
   "limit.expiry.30m": "30M",
   "limit.expiry.1h": "1H",

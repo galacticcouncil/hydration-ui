@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next"
 import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { LimitForm } from "@/modules/trade/swap/sections/Limit/LimitForm"
 import { LimitSummary } from "@/modules/trade/swap/sections/Limit/LimitSummary"
-import { LimitWarnings } from "@/modules/trade/swap/sections/Limit/LimitWarnings"
 import {
   LimitFormValues,
   useLimitForm,
@@ -56,7 +55,6 @@ export const Limit: FC = () => {
         )}
       >
         <LimitForm />
-        <LimitWarnings />
         <SwapSectionSeparator />
         <LimitSubmitButton />
         <LimitSummary />
