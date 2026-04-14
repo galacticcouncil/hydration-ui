@@ -33,10 +33,10 @@ export const ProgressBar: FC<Props> = ({
   className,
   color,
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation("common")
   const clippedValue = Math.max(0, Math.min(100, value))
   const formattedValue =
-    format?.(clippedValue) ?? t("percent", { clippedValue })
+    format?.(clippedValue) ?? t("percent", { value: clippedValue })
 
   return (
     <SContainer size={size} orientation={orientation} className={className}>
