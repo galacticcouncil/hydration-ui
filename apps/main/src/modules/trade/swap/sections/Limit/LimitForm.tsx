@@ -226,9 +226,12 @@ export const LimitForm: FC = () => {
       programmaticPriceRef.current += 1
       setValue("limitPrice", marketPrice)
       setSelectedPill("market")
-      const currentSellAmount = getValues("sellAmount")
-      if (currentSellAmount) {
-        recalculateBuyAmount(currentSellAmount, marketPrice)
+      // Only recalculate buy if user hasn't explicitly typed a buy amount
+      if (userOwnedFieldRef.current !== "buy") {
+        const currentSellAmount = getValues("sellAmount")
+        if (currentSellAmount) {
+          recalculateBuyAmount(currentSellAmount, marketPrice)
+        }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -259,12 +262,15 @@ export const LimitForm: FC = () => {
     setValue("limitPrice", next)
     trigger("limitPrice")
 
-    // ALWAYS recalculate buyAmount (never sellAmount) during live-sync.
-    // sellAmount drives the bestSellQuery — writing to it would trigger a
-    // refetch → new marketPrice → effect re-fires → infinite loop, because
-    // the rate changes with trade size (price impact).
-    const currentSellAmount = getValues("sellAmount")
-    if (currentSellAmount) recalculateBuyAmount(currentSellAmount, next)
+    // Recalculate the derived field based on ownership.
+    // NEVER write sellAmount here — it drives bestSellQuery and would cause
+    // an infinite loop (sellAmount change → refetch → new marketPrice → effect).
+    // When user owns buy, we can't recalculate sell, so skip amount updates
+    // entirely — only the price display updates.
+    if (userOwnedFieldRef.current !== "buy") {
+      const currentSellAmount = getValues("sellAmount")
+      if (currentSellAmount) recalculateBuyAmount(currentSellAmount, next)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketPrice, spotPriceValue, selectedPill, setValue, trigger, getValues])
 
