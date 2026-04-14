@@ -1,5 +1,6 @@
 import {
   Button,
+  ExternalLink,
   Flex,
   Icon,
   ModalBody,
@@ -151,18 +152,16 @@ export const ReviewMultisig: FC<ReviewMultisigProps> = ({ tx, multisig }) => {
         <Button
           size="large"
           variant={hasApproved ? "secondary" : "primary"}
-          onClick={() =>
-            window.open(
-              `https://multix.cloud/?network=hydration&address=${multisigAddress}`,
-              "_blank",
-              "noopener,noreferrer",
-            )
-          }
+          asChild
         >
-          {hasApproved
-            ? t("multisig.modal.viewOnMultix")
-            : t("multisig.modal.approveOnMultix")}
-          <Icon component={MoveUpRight} size="s" />
+          <ExternalLink
+            href={`https://multix.cloud/?network=hydration&address=${multisigAddress}`}
+          >
+            {hasApproved
+              ? t("multisig.modal.viewOnMultix")
+              : t("multisig.modal.approveOnMultix")}
+            <Icon component={MoveUpRight} size="s" />
+          </ExternalLink>
         </Button>
       </ModalFooter>
     </>

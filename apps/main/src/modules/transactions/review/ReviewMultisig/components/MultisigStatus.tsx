@@ -9,7 +9,7 @@ type MultisigStatusProps = {
 }
 
 export const MultisigStatus: FC<MultisigStatusProps> = ({ approved }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(["common"])
 
   return (
     <Flex asChild gap="s">

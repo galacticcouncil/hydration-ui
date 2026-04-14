@@ -68,21 +68,7 @@ export const useMultisigStore = create<MultisigStore>()(
     }),
     {
       name: "multisig-configs",
-      version: 2,
-      migrate: (persistedState: unknown, version: number) => {
-        if (
-          version < 2 &&
-          persistedState &&
-          typeof persistedState === "object"
-        ) {
-          const state = persistedState as MultisigState
-          return {
-            ...state,
-            configs: state.configs.map((c) => ({ ...c, isCustom: true })),
-          }
-        }
-        return persistedState as MultisigState
-      },
+      version: 1,
     },
   ),
 )

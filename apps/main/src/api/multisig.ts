@@ -3,10 +3,11 @@ import { safeStringify } from "@galacticcouncil/utils"
 import { MultisigPendingTx, useAccount } from "@galacticcouncil/web3-connect"
 import { getExtrinsicDecoder } from "@polkadot-api/tx-utils"
 import { useQuery } from "@tanstack/react-query"
+import { Binary } from "polkadot-api"
 
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
-import { scaleHuman } from "@/utils/formatting"
+import { toDecimal } from "@/utils/formatting"
 
 export const useMultisigDeposit = (numSignatories: number) => {
   const { papi, isApiLoaded } = useRpcProvider()
@@ -16,14 +17,13 @@ export const useMultisigDeposit = (numSignatories: number) => {
     enabled: isApiLoaded && numSignatories > 0,
     queryKey: ["multisig", "deposit", numSignatories],
     queryFn: async () => {
-      const [base, factor]: [bigint, bigint] = await Promise.all([
+      const [base, factor] = await Promise.all([
         papi.constants.Multisig.DepositBase(),
         papi.constants.Multisig.DepositFactor(),
       ])
       const deposit = base + factor * BigInt(numSignatories)
       return {
-        deposit,
-        depositHuman: scaleHuman(deposit, native.decimals),
+        deposit: toDecimal(deposit, native.decimals),
         symbol: native.symbol,
       }
     },
@@ -60,7 +60,9 @@ export const useDecodedMultisigTx = (tx: MultisigPendingTx) => {
 
       const decodedExtrinsic = decoder(extrinsic)
       return {
-        tx: await papi.txFromCallData(decodedExtrinsic.callData),
+        tx: await papi.txFromCallData(
+          Binary.fromBytes(decodedExtrinsic.callData),
+        ),
         timestamp: Number(timestamp),
       }
     },
@@ -69,7 +71,7 @@ export const useDecodedMultisigTx = (tx: MultisigPendingTx) => {
 
 export const useMultisigSignerBalance = () => {
   const { account } = useAccount()
-  const { papi, isApiLoaded } = useRpcProvider()
+  const { sdk, isApiLoaded } = useRpcProvider()
   const { native } = useAssets()
 
   const signerAddress = account?.isMultisig
@@ -80,15 +82,12 @@ export const useMultisigSignerBalance = () => {
     enabled: isApiLoaded && !!signerAddress,
     queryKey: ["multisig", "signerBalance", signerAddress],
     queryFn: async () => {
-      const balanceData = await papi.query.System.Account.getValue(
-        signerAddress!,
-      )
-      const free = balanceData.data.free
-      const frozen = balanceData.data.frozen
-      const transferable = free > frozen ? free - frozen : 0n
+      if (!signerAddress) throw new Error("Invalid signer address")
+      const { transferable } =
+        await sdk.client.balance.getSystemBalance(signerAddress)
+
       return {
-        transferable,
-        transferableHuman: scaleHuman(transferable, native.decimals),
+        transferable: toDecimal(transferable, native.decimals),
         symbol: native.symbol,
       }
     },

@@ -36,18 +36,12 @@ export const MultisigProvider = ({ children }: { children: ReactNode }) => {
   const { isApiLoaded, papi } = useRpcProvider()
   const queryClient = useQueryClient()
 
-  const multisigs = useMemo(
-    () => accountMultisigs?.accounts ?? [],
-    [accountMultisigs?.accounts],
-  )
-
-  const multisigAddresses = useMemo(
-    () =>
-      multisigs
-        .map((m) => safeConvertPublicKeyToSS58(m.pubKey))
-        .filter(Boolean),
-    [multisigs],
-  )
+  const multisigAddresses = useMemo(() => {
+    if (!accountMultisigs?.accounts) return []
+    return accountMultisigs.accounts
+      .map((m) => safeConvertPublicKeyToSS58(m.pubKey))
+      .filter(Boolean)
+  }, [accountMultisigs?.accounts])
 
   const pendingTxQueries = useQueries({
     queries: multisigAddresses.map((address) => ({
@@ -124,7 +118,7 @@ export const MultisigProvider = ({ children }: { children: ReactNode }) => {
   return (
     <MultisigContext.Provider
       value={{
-        multisigs,
+        multisigs: accountMultisigs?.accounts ?? [],
         isMultisigsLoading,
         pendingTxsByMultisig,
         isPendingTxsLoading,

@@ -43,7 +43,7 @@ const MultisigDepositRow = () => {
         ) : (
           <Text as="span" fs="p5" fw={500} color={getToken("text.high")}>
             {t("currency", {
-              value: data?.depositHuman,
+              value: data?.deposit,
               symbol: data?.symbol,
             })}{" "}
             <Text as="span" fs="p5" color={getToken("text.medium")}>
@@ -69,7 +69,7 @@ const SignerBalanceRow = () => {
         ) : (
           <Text as="span" fs="p5" fw={500} color={getToken("text.high")}>
             {t("currency", {
-              value: data?.transferableHuman,
+              value: data?.transferable,
               symbol: data?.symbol,
             })}
           </Text>

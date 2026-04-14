@@ -1,14 +1,19 @@
 import { Check, ChevronDown } from "@galacticcouncil/ui/assets/icons"
-import { Flex, Icon, Stack, Text } from "@galacticcouncil/ui/components"
+import { Icon, Stack, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 
-import { SStepTrigger } from "@/components/multisig/components/StepTrigger.styled"
+import {
+  SStepIndicator,
+  SStepTrigger,
+} from "@/components/multisig/components/StepTrigger.styled"
 
-type StepTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+export type StepTriggerState = "active" | "done" | "todo"
+
+export type StepTriggerProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   stepNumber: number
   title: string
   description?: string
-  state: "active" | "done" | "todo"
+  state: StepTriggerState
 }
 
 export const StepTrigger: React.FC<StepTriggerProps> = ({
@@ -23,25 +28,7 @@ export const StepTrigger: React.FC<StepTriggerProps> = ({
 
   return (
     <SStepTrigger isInteractive={isDone} {...props}>
-      <Flex
-        align="center"
-        justify="center"
-        sx={{
-          width: "xl",
-          height: "xl",
-          borderRadius: "50%",
-          flexShrink: 0,
-          border: "1px solid transparent",
-          bg: isActive
-            ? getToken("buttons.primary.medium.rest")
-            : isDone
-              ? getToken("details.separators")
-              : "transparent",
-          borderColor: isDone
-            ? "transparent"
-            : getToken("buttons.primary.medium.rest"),
-        }}
-      >
+      <SStepIndicator state={state}>
         {isDone ? (
           <Icon
             size="s"
@@ -62,7 +49,7 @@ export const StepTrigger: React.FC<StepTriggerProps> = ({
             {stepNumber}
           </Text>
         )}
-      </Flex>
+      </SStepIndicator>
       <Stack gap="2xs">
         <Text fs="p4" fw={600} lh={1.3} color={getToken("text.high")}>
           {title}

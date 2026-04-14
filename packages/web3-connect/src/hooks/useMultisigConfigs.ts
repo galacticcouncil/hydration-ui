@@ -25,26 +25,25 @@ export const useMultisigConfigs = () => {
 
     const { accounts } = multisigs
 
-    const indexedConfigs: MultisigConfig[] =
-      accounts
-        .filter((multisig) => isNumber(multisig.threshold))
-        .filter((multisig) => {
-          const address = safeConvertPublicKeyToSS58(multisig.pubKey)
-          return !storedAddresses.has(safeConvertAddressSS58(address))
-        })
-        .map((multisig) => {
-          const address = safeConvertPublicKeyToSS58(multisig.pubKey)
-          return {
-            id: multisig.id,
-            address,
-            name: `${t("multisig.title")}`,
-            threshold: multisig.threshold ?? 0,
-            signers: multisig.signatories.map((signatory) =>
-              safeConvertPublicKeyToSS58(signatory.signatory.pubKey),
-            ),
-            isCustom: false,
-          }
-        }) ?? []
+    const indexedConfigs: MultisigConfig[] = accounts
+      .filter((multisig) => {
+        if (!isNumber(multisig.threshold)) return false
+        const address = safeConvertPublicKeyToSS58(multisig.pubKey)
+        return !storedAddresses.has(safeConvertAddressSS58(address))
+      })
+      .map((multisig) => {
+        const address = safeConvertPublicKeyToSS58(multisig.pubKey)
+        return {
+          id: multisig.id,
+          address,
+          name: `${t("multisig.title")}`,
+          threshold: multisig.threshold ?? 0,
+          signers: multisig.signatories.map((signatory) =>
+            safeConvertPublicKeyToSS58(signatory.signatory.pubKey),
+          ),
+          isCustom: false,
+        }
+      })
 
     return sortByAddress([...indexedConfigs, ...storedConfigs])
   }, [multisigs, storedConfigs, t])

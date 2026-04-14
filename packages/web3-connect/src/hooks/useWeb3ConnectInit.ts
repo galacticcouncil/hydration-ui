@@ -36,27 +36,10 @@ export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
     getInitialPage(mode),
   )
 
-  // Use a ref to read the current page inside the store subscription
-  // without recreating the subscription on every page change.
   const pageRef = useRef(page)
   useEffect(() => {
     pageRef.current = page
   }, [page])
-
-  // Clear multisig active state only when account explicitly changes to null
-  // (user disconnects). Track previous value via ref so we only clear on an
-  // explicit account → null transition, not on every unrelated state update
-  // (e.g. wallet connecting / accounts array loading).
-  /*   const prevAccountRef = useRef(useWeb3Connect.getState().account)
-  useEffect(() => {
-    return useWeb3Connect.subscribe((state) => {
-      const prev = prevAccountRef.current
-      prevAccountRef.current = state.account
-      if (!state.account && prev) {
-        useMultisigStore.getState().clear()
-      }
-    })
-  }, []) */
 
   useEffect(() => {
     return useWeb3Connect.subscribe(

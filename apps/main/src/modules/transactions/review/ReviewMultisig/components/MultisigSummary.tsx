@@ -6,8 +6,6 @@ import {
 import {
   safeConvertAddressSS58,
   safeConvertPublicKeyToSS58,
-  safeConvertSS58toPublicKey,
-  stringEquals,
 } from "@galacticcouncil/utils"
 import { MultisigAccount, useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
@@ -34,23 +32,17 @@ export const MultisigSummary: FC<MultisigSummaryProps> = ({
           safeConvertAddressSS58(sigAddress),
         )
 
-        const isConnectedAsMultisig =
-          !!account?.isMultisig &&
-          stringEquals(
-            safeConvertSS58toPublicKey(account?.multisigSignerAddress ?? ""),
-            entry.signatory.pubKey,
-          )
         const isConnected =
-          !!account && account.publicKey === entry.signatory.pubKey
+          !!account &&
+          (account.isMultisig
+            ? account.multisigSignerAddress === sigAddress
+            : account.address === sigAddress)
 
         return (
           <SummaryRow
             key={entry.id}
             label={
-              <MultisigIdentity
-                address={sigAddress}
-                isYou={isConnected || isConnectedAsMultisig}
-              />
+              <MultisigIdentity address={sigAddress} isYou={isConnected} />
             }
             content={<MultisigStatus approved={sigApproved} />}
           />

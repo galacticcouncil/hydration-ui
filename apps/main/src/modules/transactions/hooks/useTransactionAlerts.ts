@@ -1,6 +1,5 @@
 import { AlertProps } from "@galacticcouncil/ui/components"
 import {
-  StoredAccount,
   useAccount,
   useActiveMultisigConfig,
 } from "@galacticcouncil/web3-connect"
@@ -42,7 +41,7 @@ export const useTransactionAlerts = () => {
     (state) => state.pendingTransactions,
   )
 
-  const isMultisig = !!(account as StoredAccount | null)?.isMultisig
+  const isMultisig = !!account?.isMultisig
   const multisigConfig = isMultisig ? activeMultisigConfig : null
 
   const { data: signerBalance } = useMultisigSignerBalance()
@@ -61,11 +60,11 @@ export const useTransactionAlerts = () => {
   // For multisig: signer must cover native tx fee + multisig deposit
   const isSignerBalanceInsufficient =
     isMultisig &&
-    signerBalance?.transferableHuman &&
+    signerBalance?.transferable &&
     feeEstimateNative &&
-    depositData?.depositHuman &&
-    Big(signerBalance.transferableHuman).lt(
-      Big(feeEstimateNative).plus(depositData.depositHuman),
+    depositData?.deposit &&
+    Big(signerBalance.transferable).lt(
+      Big(feeEstimateNative).plus(depositData.deposit),
     )
 
   const isDispatchPermitBlocked = isUsingPermit

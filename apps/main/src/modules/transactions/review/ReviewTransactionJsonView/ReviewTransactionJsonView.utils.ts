@@ -1,6 +1,7 @@
 import {
   formatTypeValueJson,
   JsonValue,
+  propPath,
   safeParse,
   safeStringify,
 } from "@galacticcouncil/utils"
@@ -49,21 +50,6 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
   } catch {
     return {}
   }
-}
-
-export function propPath<T extends Record<string, unknown>>(
-  obj: T,
-  path: string,
-): unknown {
-  const keys = path.split(".")
-  if (keys.length === 0) return obj
-
-  return keys.reduce<unknown>(
-    (acc, key) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      acc === null || acc === undefined ? acc : prop(acc as any, key),
-    obj,
-  )
 }
 
 export const decodeTx = (
