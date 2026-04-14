@@ -1,4 +1,4 @@
-import { FarmDepositReward } from "@galacticcouncil/sdk-next/build/types/farm"
+import { FarmDepositReward } from "@galacticcouncil/sdk-next/farm"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { useMutation } from "@tanstack/react-query"
 import Big from "big.js"
