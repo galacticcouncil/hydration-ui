@@ -1,8 +1,10 @@
+import { ChevronDown, ChevronUp } from "@galacticcouncil/ui/assets/icons"
 import {
   Box,
   CollapsibleContent,
   CollapsibleRoot,
   Flex,
+  Icon,
   Summary,
   SummaryRowDisplayValue,
   SummaryRowValue,
@@ -25,7 +27,6 @@ import { DynamicFee } from "@/components/DynamicFee"
 import { SwapSummaryRow } from "@/modules/trade/swap/components/SwapSummaryRow"
 import { TradeRoutes } from "@/modules/trade/swap/components/TradeRoutes/TradeRoutes"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
-import { CalculatedAmountSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/CalculatedAmountSummaryRow"
 import { PriceImpactSummaryRow } from "@/modules/trade/swap/sections/Market/Summary/PriceImpactSummaryRow"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 import { useRpcProvider } from "@/providers/rpcProvider"
@@ -211,17 +212,35 @@ export const LimitSummary: FC = () => {
             onOpenChange={changeSummaryExpanded}
           >
             {afterIceFee && iceFeePercent !== null && (
-              <CalculatedAmountSummaryRow
+              <SwapSummaryRow
+                sx={{ alignItems: "flex-start" }}
                 label={`After ICE fee (${iceFeePercent}%)`}
+                loading={afterIceFeeDisplayLoading}
+                content={
+                  <Flex align="center" gap="base">
+                    <Flex direction="column" align="flex-end">
+                      <SummaryRowValue>
+                        {t("currency", {
+                          value: afterIceFeeRaw,
+                          symbol: buyAsset.symbol,
+                        })}
+                      </SummaryRowValue>
+                      <SummaryRowDisplayValue>
+                        {afterIceFeeDisplay}
+                      </SummaryRowDisplayValue>
+                    </Flex>
+                    <Icon
+                      component={isSummaryExpanded ? ChevronUp : ChevronDown}
+                      size="l"
+                      color={getToken("icons.onContainer")}
+                    />
+                  </Flex>
+                }
+                onClick={(e) => {
+                  e.preventDefault()
+                  changeSummaryExpanded(!isSummaryExpanded)
+                }}
                 tooltip={t("trade:limit.afterIceFee.tooltip")}
-                amount={t("currency", {
-                  value: afterIceFeeRaw,
-                  symbol: buyAsset.symbol,
-                })}
-                amountDisplay={afterIceFeeDisplay}
-                isLoading={afterIceFeeDisplayLoading}
-                isExpanded={isSummaryExpanded}
-                onIsExpandedChange={changeSummaryExpanded}
               />
             )}
             <CollapsibleContent asChild>

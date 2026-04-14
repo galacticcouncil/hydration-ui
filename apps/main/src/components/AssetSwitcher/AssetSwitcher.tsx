@@ -25,6 +25,7 @@ type AssetSwitcherProps = {
   readonly switcherDisabled?: boolean
   readonly fallbackPrice?: string | undefined | null
   readonly isFallbackPriceLoading?: boolean
+  readonly hidePrice?: boolean
   readonly onSwitchAssets?: () => void
 }
 
@@ -38,6 +39,7 @@ export const AssetSwitcher = ({
   switcherDisabled,
   fallbackPrice,
   isFallbackPriceLoading,
+  hidePrice,
   onSwitchAssets,
 }: AssetSwitcherProps) => {
   const { t } = useTranslation()
@@ -84,26 +86,30 @@ export const AssetSwitcher = ({
           />
         </SSwitchContainer>
       )}
-      <>
+      {hidePrice ? (
         <Separator />
-        <SPriceContainer
-          disabled={isPriceDisabled}
-          onClick={() =>
-            setView((view) => (view === "default" ? "reversed" : "default"))
-          }
-        >
-          <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
-            {!isPriceReady && <Skeleton width={120} />}
-            {isPriceReady &&
-              (isPriceDisabled
-                ? t("unknownExchangeRate")
-                : `1 ${shownAssetIn.symbol} = ${t("currency", {
-                    value: shownPrice,
-                    symbol: shownAssetOut.symbol,
-                  })}`)}
-          </Text>
-        </SPriceContainer>
-      </>
+      ) : (
+        <>
+          <Separator />
+          <SPriceContainer
+            disabled={isPriceDisabled}
+            onClick={() =>
+              setView((view) => (view === "default" ? "reversed" : "default"))
+            }
+          >
+            <Text fw={500} fs="p6" lh={1.4} color={getToken("text.high")}>
+              {!isPriceReady && <Skeleton width={120} />}
+              {isPriceReady &&
+                (isPriceDisabled
+                  ? t("unknownExchangeRate")
+                  : `1 ${shownAssetIn.symbol} = ${t("currency", {
+                      value: shownPrice,
+                      symbol: shownAssetOut.symbol,
+                    })}`)}
+            </Text>
+          </SPriceContainer>
+        </>
+      )}
       <Separator />
     </SAssetSwitcher>
   )

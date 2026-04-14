@@ -16,6 +16,8 @@ export const useSwitchAssets = () => {
         ...values,
         buyAsset: values.sellAsset,
         sellAsset: values.buyAsset,
+        sellAmount: "",
+        buyAmount: "",
         limitPrice: "",
       })
 

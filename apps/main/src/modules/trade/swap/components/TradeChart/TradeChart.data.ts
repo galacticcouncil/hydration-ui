@@ -22,12 +22,14 @@ type Args = {
   readonly assetInId: string
   readonly assetOutId: string
   readonly timeFrame: TradeChartTimeFrameType | null
+  readonly inverted?: boolean
 }
 
 export const useTradeChartData = ({
   assetInId,
   assetOutId,
   timeFrame,
+  inverted = false,
 }: Args) => {
   const rpc = useRpcProvider()
   const squidClient = useSquidClient()
@@ -109,12 +111,23 @@ export const useTradeChartData = ({
           compare: numerically,
         }),
       )
-      .map<OhlcData>((bucket) => ({
-        time: toUTCTimestamp(bucket.timestamp),
-        close: Number(bucket.amount),
-        volume: Number(bucket.volume),
-      }))
-  }, [data, isLoading, isAssetInFirst, isSpotPriceLoading, spotPriceData])
+      .map<OhlcData>((bucket) => {
+        const close = Number(bucket.amount)
+        return {
+          time: toUTCTimestamp(bucket.timestamp),
+          // When inverted, flip all prices so the chart shows the reciprocal pair
+          close: inverted && close > 0 ? 1 / close : close,
+          volume: Number(bucket.volume),
+        }
+      })
+  }, [
+    data,
+    isLoading,
+    isAssetInFirst,
+    inverted,
+    isSpotPriceLoading,
+    spotPriceData,
+  ])
 
   return {
     prices,

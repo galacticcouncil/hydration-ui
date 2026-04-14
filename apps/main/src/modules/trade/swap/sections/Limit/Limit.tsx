@@ -14,33 +14,6 @@ import {
 import { useSubmitLimitOrder } from "@/modules/trade/swap/sections/Limit/useSubmitLimitOrder"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
-// Isolated component so that watching limitPrice only re-renders the button,
-// not the entire form tree (LimitForm, LimitWarnings, LimitSummary).
-const LimitSubmitButton: FC = () => {
-  const { t } = useTranslation(["common", "trade"])
-  const { formState } = useFormContext<LimitFormValues>()
-  const submitLimitOrder = useSubmitLimitOrder()
-  const limitPrice = useWatch<LimitFormValues, "limitPrice">({
-    name: "limitPrice",
-  })
-  const isFormValid = formState.isValid && !!limitPrice
-
-  return (
-    <Grid py="xl" justifyItems="center">
-      <AuthorizedAction size="large" width="100%">
-        <Button
-          type="submit"
-          size="large"
-          width="100%"
-          disabled={!isFormValid || submitLimitOrder.isPending}
-        >
-          {t("trade:limit.submit")}
-        </Button>
-      </AuthorizedAction>
-    </Grid>
-  )
-}
-
 export const Limit: FC = () => {
   const { assetIn, assetOut } = useSearch({ from: "/trade/_history" })
 
@@ -56,9 +29,35 @@ export const Limit: FC = () => {
       >
         <LimitForm />
         <SwapSectionSeparator />
-        <LimitSubmitButton />
+        <LimitSubmitButton isPending={submitLimitOrder.isPending} />
         <LimitSummary />
       </form>
     </FormProvider>
+  )
+}
+
+// Isolated component so that watching limitPrice only re-renders the button,
+// not the entire form tree (LimitForm, LimitWarnings, LimitSummary).
+const LimitSubmitButton: FC<{ isPending: boolean }> = ({ isPending }) => {
+  const { t } = useTranslation(["common", "trade"])
+  const { formState } = useFormContext<LimitFormValues>()
+  const limitPrice = useWatch<LimitFormValues, "limitPrice">({
+    name: "limitPrice",
+  })
+  const isFormValid = formState.isValid && !!limitPrice
+
+  return (
+    <Grid py="xl" justifyItems="center">
+      <AuthorizedAction size="large" width="100%">
+        <Button
+          type="submit"
+          size="large"
+          width="100%"
+          disabled={!isFormValid || isPending}
+        >
+          {t("trade:limit.submit")}
+        </Button>
+      </AuthorizedAction>
+    </Grid>
   )
 }

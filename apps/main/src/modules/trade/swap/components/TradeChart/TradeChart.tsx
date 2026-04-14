@@ -1,8 +1,10 @@
 import { timeFrameTypes } from "@galacticcouncil/main/src/components/TimeFrame/TimeFrame.utils"
 import {
   Box,
+  ButtonIcon,
   ChartValues,
   Flex,
+  Icon,
   Paper,
   TradingViewChart,
   TradingViewChartRef,
@@ -11,6 +13,7 @@ import { BaselineChartData } from "@galacticcouncil/ui/components/TradingViewCha
 import { USDT_ASSET_ID } from "@galacticcouncil/utils"
 import { useSearch } from "@tanstack/react-router"
 import Big from "big.js"
+import { ArrowUpDown } from "lucide-react"
 import React, { useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { last } from "remeda"
@@ -51,11 +54,13 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
     "week",
   )
   const [crosshair, setCrosshair] = useState<BaselineChartData | null>(null)
+  const [inverted, setInverted] = useState(false)
 
   const { prices, isLoading, isSuccess, isError } = useTradeChartData({
     assetInId: assetIn,
     assetOutId: assetOut,
     timeFrame: interval === "all" ? null : interval,
+    inverted,
   })
 
   const { orders: intentOrders } = useIntentsData()
@@ -65,11 +70,15 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
       .filter((o) => o.from.id === assetIn && o.to.id === assetOut)
       .flatMap((o) => {
         if (!o.fromAmountBudget || !o.toAmountExecuted) return []
+        const fromAmount = Big(o.fromAmountBudget)
         const toAmount = Big(o.toAmountExecuted)
-        if (toAmount.eq(0)) return []
-        return [Number(Big(o.fromAmountBudget).div(toAmount))]
+        if (fromAmount.eq(0) || toAmount.eq(0)) return []
+        const price = inverted
+          ? Number(fromAmount.div(toAmount))
+          : Number(toAmount.div(fromAmount))
+        return [price]
       })
-  }, [intentOrders, assetIn, assetOut])
+  }, [intentOrders, assetIn, assetOut, inverted])
 
   const isEmpty = isSuccess && !prices.length
 
@@ -77,20 +86,21 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
   const value = crosshair?.value ?? lastDataPoint?.close ?? 0
   const volume = crosshair?.volume ?? lastDataPoint?.volume ?? 0
 
+  const { getAssetWithFallback } = useAssets()
+
+  const chartAsset = inverted ? assetOut : assetIn
+
   const [formattedAssetPrice, { isLoading: isAssetPriceLoading }] =
-    useDisplayAssetPrice(assetIn, value, { maximumFractionDigits: null })
+    useDisplayAssetPrice(chartAsset, value, { maximumFractionDigits: null })
 
   const [formattedVolumePrice, { isLoading: isVolumePriceLoading }] =
     useDisplayAssetPrice(USDT_ASSET_ID, volume)
-
-  const { getAssetWithFallback } = useAssets()
-
   const chartValue =
     !isEmpty && !isError
       ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
         t("common:currency" as any, {
           value,
-          symbol: getAssetWithFallback(assetIn).symbol,
+          symbol: getAssetWithFallback(chartAsset).symbol,
         })
       : ""
 
@@ -116,14 +126,19 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
           displayValue={chartDisplayValue}
           isLoading={isLoading || isAssetPriceLoading || isVolumePriceLoading}
         />
-        <ChartTimeRange
-          options={intervalOptions}
-          selectedOption={interval}
-          onSelect={(option) => {
-            setInterval(option.key)
-            chartRef.current?.resetZoom()
-          }}
-        />
+        <Flex align="center" gap="s">
+          <ButtonIcon size="small" onClick={() => setInverted((prev) => !prev)}>
+            <Icon component={ArrowUpDown} size="s" />
+          </ButtonIcon>
+          <ChartTimeRange
+            options={intervalOptions}
+            selectedOption={interval}
+            onSelect={(option) => {
+              setInterval(option.key)
+              chartRef.current?.resetZoom()
+            }}
+          />
+        </Flex>
       </Flex>
       <ChartState
         sx={{ height }}

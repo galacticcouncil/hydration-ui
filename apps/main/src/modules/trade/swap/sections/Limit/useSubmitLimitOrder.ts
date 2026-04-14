@@ -6,18 +6,14 @@ import { useTranslation } from "react-i18next"
 import { bestSellQuery } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
-import { TAsset } from "@/providers/assetsProvider"
+import { isErc20AToken, TAsset } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 
 // The Intent pallet works with native asset IDs. ERC20 wrapper tokens
 // (e.g. HUSDT 1111) must be mapped to their underlying asset (USDT 111).
 const getIntentAssetId = (asset: TAsset): number => {
-  if ("underlyingAssetId" in asset && asset.underlyingAssetId) {
-    return Number(
-      Array.isArray(asset.underlyingAssetId)
-        ? asset.id
-        : asset.underlyingAssetId,
-    )
+  if (isErc20AToken(asset)) {
+    return Number(asset.underlyingAssetId)
   }
   return Number(asset.id)
 }

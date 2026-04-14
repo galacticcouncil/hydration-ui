@@ -2,6 +2,7 @@ import {
   Box,
   Flex,
   NumberInput,
+  Separator,
   Text,
   Toggle,
   Tooltip,
@@ -141,30 +142,27 @@ export const LimitForm: FC = () => {
   //   "market" → limitPrice tracks marketPrice each block
   //   number   → limitPrice = spot × (1±pct), updates each block
   //   "custom" → user typed a price manually; no auto-update
-  // Which amount field gets recalculated is determined by lastEditedFieldRef,
-  // not by selectedPill.
   const [selectedPill, setSelectedPill] = useState<
     "market" | "custom" | number
   >("market")
   // Guard to prevent onValueChange from treating programmatic updates as user edits.
-  // Uses a counter (not boolean) so multiple programmatic setValue calls in the same
-  // render cycle are handled correctly — each increment is consumed by one onValueChange.
-  const programmaticPriceRef = useRef(0)
+  // Stores the last programmatically set value so we can compare in onValueChange
+  // rather than relying on a counter that could desync if onValueChange doesn't fire.
+  const programmaticPriceRef = useRef<string | null>(null)
 
-  // Ownership model for the three linked fields (sell, buy, price):
-  //   "sell"  → user typed sell only; buy is derived from sell × price
-  //   "buy"   → user typed buy only; sell is derived from buy / price
-  //   "both"  → user typed both amounts; price is derived from buy / sell
-  // When price changes (pill, manual, live update), the non-owned field is recalculated.
-  // In "both" mode, the less-recently-edited field is recalculated (via lastEditedFieldRef).
-  const userOwnedFieldRef = useRef<"sell" | "buy" | "both">("sell")
-  // Tracks the most-recently-edited amount field (for price-change tiebreaker in "both" mode).
-  const lastEditedFieldRef = useRef<"sell" | "buy">("sell")
-
-  // Match swap page: use Big.toString() which trims trailing zeros,
-  // but cap very small numbers at 6 decimals and large ones at 2.
+  // Match swap page: trim trailing zeros, cap decimals based on magnitude.
+  // Very small numbers (e < -6) use toPrecision to preserve significant digits.
   const formatAmount = (raw: Big) => {
-    const fixed = raw.toFixed(raw.e >= 4 ? 2 : 6)
+    if (raw.eq(0)) return "0"
+    let fixed: string
+    if (raw.e >= 4) {
+      fixed = raw.toFixed(2)
+    } else if (raw.e < -6) {
+      // Very small: preserve 6 significant digits to avoid rounding to zero
+      fixed = raw.toPrecision(6)
+    } else {
+      fixed = raw.toFixed(6)
+    }
     // Strip trailing zeros after decimal point (e.g. "10.000000" → "10")
     if (fixed.includes(".")) {
       return fixed.replace(/\.?0+$/, "")
@@ -191,26 +189,6 @@ export const LimitForm: FC = () => {
     setValue("buyAmount", next)
   }
 
-  const recalculateSellAmount = (
-    currentBuyAmount: string,
-    internalLimitPrice: string,
-  ) => {
-    if (
-      !currentBuyAmount ||
-      !internalLimitPrice ||
-      Big(internalLimitPrice).eq(0)
-    ) {
-      setValue("sellAmount", "")
-      return
-    }
-    const raw = Big(currentBuyAmount).div(internalLimitPrice)
-    const next = formatAmount(raw)
-    // Skip no-op writes — sellAmount is watched and drives bestSellQuery,
-    // so redundant setValue would trigger a refetch → new marketPrice → loop.
-    if (next === getValues("sellAmount")) return
-    setValue("sellAmount", next)
-  }
-
   // Prefill limit price on initial load or asset change
   const prevAssetsRef = useRef<string>("")
   useEffect(() => {
@@ -223,15 +201,12 @@ export const LimitForm: FC = () => {
     const currentLimitPrice = getValues("limitPrice")
     if (!currentLimitPrice || assetsChanged) {
       lastSyncedPriceRef.current = marketPrice
-      programmaticPriceRef.current += 1
+      programmaticPriceRef.current = marketPrice
       setValue("limitPrice", marketPrice)
       setSelectedPill("market")
-      // Only recalculate buy if user hasn't explicitly typed a buy amount
-      if (userOwnedFieldRef.current !== "buy") {
-        const currentSellAmount = getValues("sellAmount")
-        if (currentSellAmount) {
-          recalculateBuyAmount(currentSellAmount, marketPrice)
-        }
+      const currentSellAmount = getValues("sellAmount")
+      if (currentSellAmount) {
+        recalculateBuyAmount(currentSellAmount, marketPrice)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -241,7 +216,7 @@ export const LimitForm: FC = () => {
   // Both spot and market are invalidated every block via @block prefix, so this fires
   // each new block. Market pill tracks marketPrice; numeric pills track spot ± offset.
   // In "custom" (price-locked) mode, refreshes don't touch limitPrice.
-  // Recalculates whichever amount field the user did NOT last edit.
+  // Sell amount is sacred — always recalculates buy = sell × newPrice.
   //
   // lastSyncedPriceRef prevents re-running when the computed pill price hasn't
   // actually changed (e.g. bestSellData got a new object ref but same rate).
@@ -258,19 +233,13 @@ export const LimitForm: FC = () => {
     if (next === lastSyncedPriceRef.current) return
     lastSyncedPriceRef.current = next
 
-    programmaticPriceRef.current += 1
+    programmaticPriceRef.current = next
     setValue("limitPrice", next)
     trigger("limitPrice")
 
-    // Recalculate the derived field based on ownership.
-    // NEVER write sellAmount here — it drives bestSellQuery and would cause
-    // an infinite loop (sellAmount change → refetch → new marketPrice → effect).
-    // When user owns buy, we can't recalculate sell, so skip amount updates
-    // entirely — only the price display updates.
-    if (userOwnedFieldRef.current !== "buy") {
-      const currentSellAmount = getValues("sellAmount")
-      if (currentSellAmount) recalculateBuyAmount(currentSellAmount, next)
-    }
+    // Sell amount is sacred — always recalculate buy from sell × price.
+    const currentSellAmount = getValues("sellAmount")
+    if (currentSellAmount) recalculateBuyAmount(currentSellAmount, next)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketPrice, spotPriceValue, selectedPill, setValue, trigger, getValues])
 
@@ -345,80 +314,40 @@ export const LimitForm: FC = () => {
   const resetLimitToMarket = () => {
     if (marketPrice) {
       lastSyncedPriceRef.current = marketPrice
-      programmaticPriceRef.current += 1
+      programmaticPriceRef.current = marketPrice
       setValue("limitPrice", marketPrice)
     }
     setSelectedPill("market")
-    userOwnedFieldRef.current = lastEditedFieldRef.current
   }
 
   const handleSellAmountChange = (newSellAmount: string) => {
-    lastEditedFieldRef.current = "sell"
-
     if (!newSellAmount || Big(newSellAmount).eq(0)) {
-      // Don't reset userOwnedFieldRef here — this may be a transient empty
-      // state during typing (e.g. triple-click + type briefly fires "").
       setValue("buyAmount", "")
       resetLimitToMarket()
       return
     }
 
-    const currentBuy = getValues("buyAmount")
-    const owned = userOwnedFieldRef.current
-
-    // User is typing buy-side (or was) and now edits sell too → both specified → derive price.
-    if (
-      (owned === "buy" || owned === "both") &&
-      currentBuy &&
-      Big(currentBuy).gt(0)
-    ) {
-      userOwnedFieldRef.current = "both"
-      const derivedPrice = Big(currentBuy).div(Big(newSellAmount))
-      programmaticPriceRef.current += 1
-      setValue("limitPrice", derivedPrice.toString())
-      trigger("limitPrice")
-      setSelectedPill("custom")
-      return
-    }
-
-    // Only sell specified → price is anchor, derive buy.
-    userOwnedFieldRef.current = "sell"
+    // Sell amount is sacred — price stays, derive buy = sell × price.
     recalculateBuyAmount(newSellAmount, getValues("limitPrice"))
   }
 
   const handleBuyAmountChange = (newBuyAmount: string) => {
-    lastEditedFieldRef.current = "buy"
-
     if (!newBuyAmount || Big(newBuyAmount).eq(0)) {
-      // Don't reset userOwnedFieldRef here — this may be a transient empty
-      // state during typing (e.g. triple-click + type briefly fires "").
       setValue("buyAmount", newBuyAmount || "")
       const currentSell = getValues("sellAmount")
       if (!currentSell) resetLimitToMarket()
       return
     }
 
+    // Sell amount is sacred — derive price = buy / sell.
     const currentSell = getValues("sellAmount")
-    const owned = userOwnedFieldRef.current
-
-    // User typed sell first and now edits buy too → both specified → derive price.
-    if (
-      (owned === "sell" || owned === "both") &&
-      currentSell &&
-      Big(currentSell).gt(0)
-    ) {
-      userOwnedFieldRef.current = "both"
+    if (currentSell && Big(currentSell).gt(0)) {
       const derivedPrice = Big(newBuyAmount).div(currentSell)
-      programmaticPriceRef.current += 1
+      programmaticPriceRef.current = derivedPrice.toString()
       setValue("limitPrice", derivedPrice.toString())
       trigger("limitPrice")
       setSelectedPill("custom")
-      return
     }
-
-    // Only buy specified → price is anchor, derive sell.
-    userOwnedFieldRef.current = "buy"
-    recalculateSellAmount(newBuyAmount, getValues("limitPrice"))
   }
 
   const handleLimitPriceChange = (internalLimitPrice: string) => {
@@ -426,17 +355,8 @@ export const LimitForm: FC = () => {
     // (e.g. editing "0.00197" → "0.00" mid-edit).
     if (!internalLimitPrice || Big(internalLimitPrice).eq(0)) return
 
-    // User explicitly set a price → exit "both" mode, keep the most-recently-edited
-    // field and recalculate the other.
-    if (userOwnedFieldRef.current === "both") {
-      userOwnedFieldRef.current = lastEditedFieldRef.current
-    }
-
-    if (userOwnedFieldRef.current === "buy") {
-      recalculateSellAmount(getValues("buyAmount"), internalLimitPrice)
-    } else {
-      recalculateBuyAmount(getValues("sellAmount"), internalLimitPrice)
-    }
+    // Sell amount is sacred — always derive buy = sell × price.
+    recalculateBuyAmount(getValues("sellAmount"), internalLimitPrice)
   }
 
   // Compute the limit price for a pill.
@@ -458,7 +378,7 @@ export const LimitForm: FC = () => {
     setSelectedPill(pill)
     // Record the price so the live-sync effect doesn't immediately re-fire
     lastSyncedPriceRef.current = adjustedPrice
-    programmaticPriceRef.current += 1
+    programmaticPriceRef.current = adjustedPrice
     setValue("limitPrice", adjustedPrice)
     trigger("limitPrice")
     handleLimitPriceChange(adjustedPrice)
@@ -550,8 +470,10 @@ export const LimitForm: FC = () => {
                       : ""
                   }
                   onValueChange={({ value }) => {
-                    if (programmaticPriceRef.current > 0) {
-                      programmaticPriceRef.current -= 1
+                    // Skip programmatic updates — compare against the last
+                    // value we set to avoid treating it as a user edit.
+                    if (programmaticPriceRef.current !== null) {
+                      programmaticPriceRef.current = null
                       return
                     }
                     // Treat empty / zero as intermediate editing state — don't
@@ -594,7 +516,8 @@ export const LimitForm: FC = () => {
         </Flex>
       </Box>
 
-      <Flex align="center" justify="space-between" pb="m">
+      <Separator />
+      <Flex align="center" justify="space-between" py="m">
         <Text fw={500} fs="p5" color={getToken("text.medium")}>
           {t("trade:limit.expiry.label")}
         </Text>
@@ -619,7 +542,8 @@ export const LimitForm: FC = () => {
         </Flex>
       </Flex>
 
-      <Flex align="center" justify="space-between" pb="m">
+      <Separator />
+      <Flex align="center" justify="space-between" py="m">
         <Text fw={500} fs="p5" color={getToken("text.medium")}>
           {t("trade:limit.partiallyFillable.label")}
         </Text>
