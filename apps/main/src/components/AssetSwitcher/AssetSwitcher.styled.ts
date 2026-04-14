@@ -17,17 +17,16 @@ const buttonStyles = createStyles(
   `,
 )
 
-export const SSwitchContainer = styled(ButtonTransparent)(({ theme }) => [
+export const SSwitchContainer = styled(ButtonTransparent, {
+  shouldForwardProp: (prop) => prop !== "rotation",
+})<{ rotation?: number }>(({ theme, rotation = 0 }) => [
   buttonStyles,
   css`
     border-radius: ${theme.radii.full};
     padding: 8px;
 
     transition: ${theme.transitions.transform};
-
-    &:hover:not([disabled]) {
-      transform: rotate(180deg);
-    }
+    transform: rotate(${rotation}deg);
   `,
 ])
 
@@ -59,5 +58,19 @@ export const SAssetSwitcher = styled(Flex)`
   & > div:last-of-type {
     flex-shrink: 0;
     width: 32px;
+  }
+
+  /* When the price pill is hidden, the row only contains
+     [separator][switch-button][separator]. Match the Market swap layout:
+     short stub on the left of the button, long separator extending to the
+     right edge. */
+  &[data-no-price="true"] > div:first-of-type {
+    width: 32px;
+    flex: 0 0 32px;
+  }
+
+  &[data-no-price="true"] > div:last-of-type {
+    width: auto;
+    flex: 1 1 auto;
   }
 `

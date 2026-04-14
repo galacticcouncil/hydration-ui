@@ -119,12 +119,25 @@ const observeTransactionEvents = <T extends TxEventOrError>(
   return sub
 }
 
+// User-friendly descriptions for common on-chain errors.
+// The key is the raw dot-joined pallet error (e.g. "Omnipool.BuyLimitNotReached").
+const FRIENDLY_ERROR_HINTS: Record<string, string> = {
+  "Omnipool.BuyLimitNotReached":
+    "Price moved unfavorably beyond your slippage tolerance before the trade could execute. Try again or increase your slippage setting.",
+  "Omnipool.SellLimitExceeded":
+    "Price moved unfavorably beyond your slippage tolerance before the trade could execute. Try again or increase your slippage setting.",
+  "Router.MaxAmountExceeded":
+    "Price moved unfavorably beyond your slippage tolerance before the trade could execute. Try again or increase your slippage setting.",
+}
+
 export const formatTxError = (err: InvalidTxError["error"]): string => {
   if (!err) return ""
   if (isString(err) || isNumber(err) || isBigInt(err)) return err.toString()
   if (err.type === "Module") return formatTxError(err.value)
-  if (typeof err.type === "string")
-    return [err.type, formatTxError(err.value)].filter(Boolean).join(".")
+  if (typeof err.type === "string") {
+    const raw = [err.type, formatTxError(err.value)].filter(Boolean).join(".")
+    return FRIENDLY_ERROR_HINTS[raw] ?? raw
+  }
   return "Unknown error"
 }
 

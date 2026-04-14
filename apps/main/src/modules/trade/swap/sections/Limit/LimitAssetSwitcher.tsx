@@ -33,6 +33,7 @@ export const LimitAssetSwitcher: FC = () => {
       }
       fallbackPrice={spotPriceData?.spotPrice ?? undefined}
       isFallbackPriceLoading={isSpotPricePending}
+      hidePrice
     />
   )
 }

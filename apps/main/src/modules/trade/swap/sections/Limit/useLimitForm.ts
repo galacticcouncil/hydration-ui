@@ -13,7 +13,7 @@ import {
   validateAssetSellOnly,
 } from "@/utils/validators"
 
-export const EXPIRY_OPTIONS = ["1h", "12h", "24h", "open"] as const
+export const EXPIRY_OPTIONS = ["15m", "30m", "1h", "12h", "open"] as const
 export type ExpiryOption = (typeof EXPIRY_OPTIONS)[number]
 
 const schemaBase = z.object({
@@ -23,6 +23,7 @@ const schemaBase = z.object({
   buyAmount: positiveOptional,
   limitPrice: positiveOptional,
   expiry: z.enum(EXPIRY_OPTIONS),
+  partiallyFillable: z.boolean(),
 })
 
 export type LimitFormValues = z.infer<typeof schemaBase>
@@ -57,6 +58,7 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     buyAmount: "",
     limitPrice: "",
     expiry: "open",
+    partiallyFillable: true,
   }
 
   const form = useForm<LimitFormValues>({

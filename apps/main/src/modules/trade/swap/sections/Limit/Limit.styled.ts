@@ -8,23 +8,23 @@ export const SDenominationPill = styled(Flex)(
     align-items: center;
     gap: ${theme.space.s};
 
-    padding-block: ${theme.space.base};
-    padding-inline: ${theme.space.l};
+    padding-block: 8px;
+    padding-inline: 14px;
     border-radius: ${theme.radii.xxl};
+    border: 1px solid ${theme.details.separators};
 
     font-weight: 500;
-    font-size: ${theme.fontSizes.p5};
+    font-size: ${theme.fontSizes.p4};
     color: ${theme.text.high};
     white-space: nowrap;
 
     cursor: pointer;
     user-select: none;
     flex-shrink: 0;
-
-    margin-left: calc(-1 * ${theme.containers.paddings.tertiary});
+    background: transparent;
 
     svg {
-      color: ${theme.icons.primary};
+      color: ${theme.icons.onContainer};
     }
 
     &:hover {
@@ -33,37 +33,45 @@ export const SDenominationPill = styled(Flex)(
   `,
 )
 
+// Matches SMicroButton (MAX button) sizing: p6 font, xs/base padding, uppercase.
 export const SPriceOption = styled(Box, {
   shouldForwardProp: (prop) => isPropValid(prop) && prop !== "active",
 })<{ active?: boolean }>(
   ({ theme, active }) => css`
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    justify-content: center;
 
-    color: ${active ? theme.text.high : theme.text.low};
+    padding: ${theme.space.xs} ${theme.space.base};
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
+    border: 1px solid ${theme.buttons.secondary.low.borderRest};
+    background: ${theme.buttons.secondary.low.rest};
 
-    padding-block: ${theme.space.base};
-    padding-inline: ${theme.space.l};
-    border-radius: ${theme.radii.xxl};
-
+    font-family: ${theme.fontFamilies1.secondary};
     font-weight: 500;
-    font-size: ${theme.fontSizes.p3};
-    line-height: ${theme.lineHeights.m};
-    text-decoration: none;
+    font-size: ${theme.fontSizes.p6};
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+
+    color: ${theme.text.medium};
 
     cursor: pointer;
     user-select: none;
 
-    ${active
-      ? css`
-          background: ${theme.buttons.secondary.low.rest};
-        `
-      : ""}
+    transition: ${theme.transitions.colors};
+
+    ${active &&
+    css`
+      border-color: ${theme.buttons.secondary.accent.outline};
+      background: ${theme.buttons.secondary.accent.rest};
+      color: ${theme.buttons.secondary.accent.onRest};
+    `}
 
     &:hover {
       color: ${theme.text.high};
-      background: ${theme.buttons.secondary.low.rest};
+      border-color: ${theme.buttons.secondary.accent.outline};
+      background: ${theme.buttons.secondary.accent.hover};
     }
   `,
 )

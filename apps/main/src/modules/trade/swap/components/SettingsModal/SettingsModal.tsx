@@ -10,6 +10,7 @@ export const SettingsModal = () => {
     case !!matchRoute({ to: "/trade/swap/dca" }):
       return <DcaSettingsModal />
     case !!matchRoute({ to: "/trade/swap/market" }):
+    case !!matchRoute({ to: "/trade/swap/limit" }):
       return <SwapSettingsModal />
     default:
       throw new Error("Settings are not available for this route.")

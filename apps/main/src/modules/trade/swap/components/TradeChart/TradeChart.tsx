@@ -60,6 +60,25 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
 
   const { orders: intentOrders } = useIntentsData()
 
+  // Compute visible chart price range so we can filter out far-off limit orders
+  // that would otherwise blow up the Y-axis scale. We extend the data range by
+  // a margin so orders just above/below the visible range still show as markers.
+  const PRICE_RANGE_MARGIN = 0.25 // ±25% of [min, max]
+  const priceRange = useMemo(() => {
+    if (!prices.length) return null
+    let min = Infinity
+    let max = -Infinity
+    for (const p of prices) {
+      if (p.close < min) min = p.close
+      if (p.close > max) max = p.close
+    }
+    if (!isFinite(min) || !isFinite(max) || min <= 0) return null
+    const span = max - min
+    // Guard: if all prices are equal, use a relative band around the value
+    const pad = span > 0 ? span * PRICE_RANGE_MARGIN : max * PRICE_RANGE_MARGIN
+    return { min: Math.max(0, min - pad), max: max + pad }
+  }, [prices])
+
   const intentPriceLines = useMemo(() => {
     return intentOrders
       .filter((o) => o.from.id === assetIn && o.to.id === assetOut)
@@ -67,9 +86,15 @@ export const TradeChart: React.FC<TradeChartProps> = ({ height }) => {
         if (!o.fromAmountBudget || !o.toAmountExecuted) return []
         const toAmount = Big(o.toAmountExecuted)
         if (toAmount.eq(0)) return []
-        return [Number(Big(o.fromAmountBudget).div(toAmount))]
+        const price = Number(Big(o.fromAmountBudget).div(toAmount))
+        // Skip orders outside the (padded) visible price range — prevents
+        // far-out limit orders from distorting the chart scale.
+        if (priceRange && (price < priceRange.min || price > priceRange.max)) {
+          return []
+        }
+        return [price]
       })
-  }, [intentOrders, assetIn, assetOut])
+  }, [intentOrders, assetIn, assetOut, priceRange])
 
   const isEmpty = isSuccess && !prices.length
 
