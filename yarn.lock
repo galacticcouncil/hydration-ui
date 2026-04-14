@@ -2153,10 +2153,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
   integrity sha512-OS/TfBaToyHSN6VqlfDxjXnBeI4Nx03OBGNrlS7a6qlutGF28lqGFiQgzqEGRYo5iQcTV2/WmKcBsWaMOl31fg==
 
-"@galacticcouncil/xc-sdk@^0.10.0":
-  version "0.10.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.10.0.tgz#fa84a598205149b0262e3db487a76ecb17e0f341"
-  integrity sha512-CPXBXBstAm3SntNW565kPsXz9Fm/VdDIpvNxe2JypmLKqgUi6K9/7KevE+KDoJs/KDcwO2HlUt/ltxTDN17RPg==
+"@galacticcouncil/xc-sdk@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.10.1.tgz#5f284e6b42b8d629bb846cee4b1d71bbd8a7c5b9"
+  integrity sha512-DMbDdm3dEWGsMvMWLHsn0bdHlJLyusPlGW/XkJC161N0dnMQEgGPedt0FNVIwsoayfqdRv8TeH1Tf/Pijb4cbQ==
   dependencies:
     "@galacticcouncil/xc-core" "^0.14.0"
 
