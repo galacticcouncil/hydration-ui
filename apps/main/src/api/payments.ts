@@ -7,7 +7,7 @@ import {
 } from "@galacticcouncil/web3-connect"
 import { AccountId, compactNumber } from "@polkadot-api/substrate-bindings"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Binary, FixedSizeBinary } from "polkadot-api"
+import { FixedSizeBinary } from "polkadot-api"
 import { mergeUint8 } from "polkadot-api/utils"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -176,7 +176,7 @@ export function getEvmAccountClaimMessage(
 
 export const useSetFeePaymentAsset = (options: TransactionOptions) => {
   const { t } = useTranslation(["common"])
-  const { papi, papiClient } = useRpcProvider()
+  const { papi } = useRpcProvider()
   const { account } = useAccount()
   const wallet = useWallet()
 
@@ -213,56 +213,56 @@ export const useSetFeePaymentAsset = (options: TransactionOptions) => {
         })
       }
 
-      if (account?.address) {
-        const accountInfo = await papi.query.System.Account.getValue(
-          account.address,
-        )
-        const isUnclaimedAccount =
-          accountInfo.nonce === 0 &&
-          accountInfo.providers === 0 &&
-          accountInfo.sufficients === 0
+      // if (account?.address) {
+      //   const accountInfo = await papi.query.System.Account.getValue(
+      //     account.address,
+      //   )
+      //   const isUnclaimedAccount =
+      //     accountInfo.nonce === 0 &&
+      //     accountInfo.providers === 0 &&
+      //     accountInfo.sufficients === 0
 
-        const signer = wallet?.signer
+      //   const signer = wallet?.signer
 
-        if (isUnclaimedAccount && isPolkadotSigner(signer)) {
-          const message = getEvmAccountClaimMessage(account.address, assetId)
-          const sigBytes = await signer.signBytes(message)
+      //   if (isUnclaimedAccount && isPolkadotSigner(signer)) {
+      //     const message = getEvmAccountClaimMessage(account.address, assetId)
+      //     const sigBytes = await signer.signBytes(message)
 
-          const claimTx = papi.tx.EVMAccounts.claim_account({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            account: account.address as any,
-            asset_id: Number(assetId),
-            signature: MultiSignature.Sr25519(new FixedSizeBinary(sigBytes)),
-          })
+      //     const claimTx = papi.tx.EVMAccounts.claim_account({
+      //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      //       account: account.address as any,
+      //       asset_id: Number(assetId),
+      //       signature: MultiSignature.Sr25519(new FixedSizeBinary(sigBytes)),
+      //     })
 
-          const callData = await claimTx.getEncodedData()
-          const rawCallData = callData.asBytes()
-          const unsignedTxHex = Binary.fromBytes(
-            mergeUint8(
-              compactNumber.enc(rawCallData.length + 1),
-              new Uint8Array([4]),
-              rawCallData,
-            ),
-          ).asHex()
+      //     const callData = await claimTx.getEncodedData()
+      //     const rawCallData = callData.asBytes()
+      //     const unsignedTxHex = Binary.fromBytes(
+      //       mergeUint8(
+      //         compactNumber.enc(rawCallData.length + 1),
+      //         new Uint8Array([4]),
+      //         rawCallData,
+      //       ),
+      //     ).asHex()
 
-          await new Promise<void>((resolve, reject) => {
-            const sub = papiClient.submitAndWatch(unsignedTxHex).subscribe({
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              next: (event: any) => {
-                if (event.type === "txBestBlocksState" && event.found) {
-                  if (!event.ok) {
-                    reject(new Error("EVM account claim failed"))
-                  } else {
-                    resolve()
-                  }
-                  sub.unsubscribe()
-                }
-              },
-              error: reject,
-            })
-          })
-        }
-      }
+      //     await new Promise<void>((resolve, reject) => {
+      //       const sub = papiClient.submitAndWatch(unsignedTxHex).subscribe({
+      //         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      //         next: (event: any) => {
+      //           if (event.type === "txBestBlocksState" && event.found) {
+      //             if (!event.ok) {
+      //               reject(new Error("EVM account claim failed"))
+      //             } else {
+      //               resolve()
+      //             }
+      //             sub.unsubscribe()
+      //           }
+      //         },
+      //         error: reject,
+      //       })
+      //     })
+      //   }
+      // }
 
       return createTransaction(
         {
