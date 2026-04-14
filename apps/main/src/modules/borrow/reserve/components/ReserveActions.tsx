@@ -73,7 +73,7 @@ export const ReserveActions: React.FC<ReserveActionsProps> = ({ reserve }) => {
           />
           <Button
             disabled={disableSupplyButton}
-            onClick={() => openSupply(reserve.underlyingAsset)}
+            onClick={() => openSupply(reserve.underlyingAsset, reserve.symbol)}
           >
             {t("borrow:supply")}
           </Button>
