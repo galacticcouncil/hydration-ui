@@ -1,5 +1,5 @@
 import { math } from "@galacticcouncil/sdk-next"
-import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { Trade, TradeOrder } from "@galacticcouncil/sdk-next/sor"
 import {
   CollapsibleContent,
   CollapsibleRoot,

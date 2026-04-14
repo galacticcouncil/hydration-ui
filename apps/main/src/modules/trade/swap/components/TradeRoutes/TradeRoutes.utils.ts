@@ -1,8 +1,4 @@
-import {
-  BuySwap,
-  SellSwap,
-  Swap,
-} from "@galacticcouncil/sdk-next/build/types/sor"
+import { BuySwap, SellSwap, Swap } from "@galacticcouncil/sdk-next/sor"
 import {
   GDOT_ASSET_ID,
   GETH_ASSET_ID,
