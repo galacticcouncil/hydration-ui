@@ -9,7 +9,7 @@ WITH rates AS (
         AND block.timestamp BETWEEN '$from' AND '$to'
 )
 SELECT
-    floor(extract(epoch FROM timestamp) / 1800) * 1800 AS time,
+    floor(extract(epoch FROM timestamp) / 14400) * 14400 AS time,
     LAST(rate ORDER BY timestamp) AS rate
 FROM rates
 GROUP BY 1

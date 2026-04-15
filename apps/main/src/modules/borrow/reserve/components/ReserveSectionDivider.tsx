@@ -4,7 +4,7 @@ import { getToken } from "@galacticcouncil/ui/utils"
 export const ReserveSectionDivider = () => (
   <Box
     bg={getToken("surfaces.themeBasePalette.background")}
-    height={4}
+    height={1}
     mx={-20}
     my={[20, 40]}
   />
