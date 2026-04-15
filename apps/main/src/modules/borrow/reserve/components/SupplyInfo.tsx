@@ -208,13 +208,13 @@ export const SupplyInfo = ({
                     </Tooltip>
                   </Flex>
                   <Text fs="p3">
-                    {t("currency", {
+                    {t("currency.compact", {
                       value: Number(reserve.isolationModeTotalDebtUSD),
                     })}
                     <Text as="span" display="inline-block" mx="s">
                       of
                     </Text>
-                    {t("currency", {
+                    {t("currency.compact", {
                       value: Number(reserve.debtCeilingUSD),
                     })}
                   </Text>
