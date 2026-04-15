@@ -6,6 +6,7 @@ import { MarketDataType } from "@galacticcouncil/money-market/utils"
 import {
   Box,
   Flex,
+  Separator,
   Stack,
   Text,
   ValueStats,
@@ -47,32 +48,32 @@ export const BorrowInfo = ({
 
   return (
     <>
-      <Flex
+      <Stack
+        gap={[10, 40]}
         direction={["column", "row"]}
-        gap={[20, 40]}
-        align={["start", "center"]}
+        justify="start"
+        align={[null, "center"]}
+        separated
+        width="100%"
+        mb="base"
+        separator={
+          <Separator orientation="vertical" sx={{ height: [1, 50] }} />
+        }
       >
-        {showBorrowCapStatus && (
-          <CapProgressCircle
-            radius={[16, 56]}
-            thickness={3}
-            labelPosition={["end", "center"]}
-            percent={borrowCap.percentUsed}
-            tooltip={t("borrow:borrow.cap.tooltip", {
-              value: maxAvailableToBorrow,
-              tokenSymbol: reserve.symbol,
-              usdValue: maxAvailableToBorrowUSD,
-            })}
-          />
-        )}
-
-        <Stack
-          gap={[10, 40]}
-          direction={["column", "row"]}
-          justify="start"
-          separated
-          width="100%"
-        >
+        <Flex gap={[10, 40]} justify="space-between" align="center">
+          {showBorrowCapStatus && (
+            <CapProgressCircle
+              radius={[16, 46]}
+              thickness={3}
+              labelPosition={["end", "center"]}
+              percent={borrowCap.percentUsed}
+              tooltip={t("borrow:borrow.cap.tooltip", {
+                value: maxAvailableToBorrow,
+                tokenSymbol: reserve.symbol,
+                usdValue: maxAvailableToBorrowUSD,
+              })}
+            />
+          )}
           {showBorrowCapStatus ? (
             <ValueStats
               size="small"
@@ -100,31 +101,31 @@ export const BorrowInfo = ({
               })}
             />
           )}
+        </Flex>
 
+        <ValueStats
+          size="small"
+          font="secondary"
+          wrap={[false, true]}
+          label={t("borrow:apy.variable")}
+          value={t("percent", {
+            value: Number(reserve.variableBorrowAPY) * 100,
+          })}
+        />
+
+        {hasBorrowCap && (
           <ValueStats
             size="small"
             font="secondary"
-            wrap
-            label={t("borrow:apy.variable")}
-            value={t("percent", {
-              value: Number(reserve.variableBorrowAPY) * 100,
+            wrap={[false, true]}
+            label={t("borrow:borrow.cap")}
+            value={t("number.compact", { value: reserve.borrowCap })}
+            bottomLabel={t("currency.compact", {
+              value: reserve.borrowCapUSD,
             })}
           />
-
-          {hasBorrowCap && (
-            <ValueStats
-              size="small"
-              font="secondary"
-              wrap
-              label={t("borrow:borrow.cap")}
-              value={t("number.compact", { value: reserve.borrowCap })}
-              bottomLabel={t("currency.compact", {
-                value: reserve.borrowCapUSD,
-              })}
-            />
-          )}
-        </Stack>
-      </Flex>
+        )}
+      </Stack>
 
       <Flex direction="column" gap="xl">
         <BorrowApyChart assetId={assetId} />

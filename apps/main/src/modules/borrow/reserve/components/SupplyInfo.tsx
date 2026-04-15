@@ -15,6 +15,7 @@ import {
   Tooltip,
   ValueStats,
 } from "@galacticcouncil/ui/components"
+import { Separator } from "@galacticcouncil/ui/components/Separator"
 import { ThemeProps, useTheme } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
@@ -45,34 +46,34 @@ export const SupplyInfo = ({
 
   return (
     <>
-      <Flex
+      <Stack
+        gap={[10, 40]}
         direction={["column", "row"]}
-        gap={[20, 40]}
+        justify="start"
+        align={[null, "center"]}
+        separated
+        width="100%"
         mb="base"
-        align={["start", "center"]}
+        separator={
+          <Separator orientation="vertical" sx={{ height: [1, 50] }} />
+        }
       >
-        {showSupplyCapStatus && (
-          <CapProgressCircle
-            radius={[16, 56]}
-            thickness={3}
-            labelPosition={["end", "center"]}
-            percent={supplyCap.percentUsed}
-            tooltip={t("borrow:supply.cap.tooltip", {
-              value: Big(reserve.supplyCap).minus(reserve.totalLiquidity),
-              tokenSymbol: reserve.symbol,
-              usdValue: Big(reserve.supplyCapUSD).minus(
-                reserve.totalLiquidityUSD,
-              ),
-            })}
-          />
-        )}
-        <Stack
-          gap={[10, 40]}
-          direction={["column", "row"]}
-          justify="start"
-          separated
-          width="100%"
-        >
+        <Flex gap={[10, 40]} justify="space-between" align="center">
+          {showSupplyCapStatus && (
+            <CapProgressCircle
+              radius={[16, 46]}
+              thickness={3}
+              labelPosition={["end", "center"]}
+              percent={supplyCap.percentUsed}
+              tooltip={t("borrow:supply.cap.tooltip", {
+                value: Big(reserve.supplyCap).minus(reserve.totalLiquidity),
+                tokenSymbol: reserve.symbol,
+                usdValue: Big(reserve.supplyCapUSD).minus(
+                  reserve.totalLiquidityUSD,
+                ),
+              })}
+            />
+          )}
           {showSupplyCapStatus ? (
             <ValueStats
               size="small"
@@ -102,17 +103,18 @@ export const SupplyInfo = ({
               })}
             />
           )}
-          <ValueStats
-            size="small"
-            font="secondary"
-            wrap
-            label={t("apy")}
-            value={t("percent", {
-              value: Number(reserve.supplyAPY) * 100,
-            })}
-          />
-        </Stack>
-      </Flex>
+        </Flex>
+
+        <ValueStats
+          size="small"
+          font="secondary"
+          wrap={[false, true]}
+          label={t("apy")}
+          value={t("percent", {
+            value: Number(reserve.supplyAPY) * 100,
+          })}
+        />
+      </Stack>
 
       <Stack gap="xl">
         {(reserve.borrowingEnabled || Number(reserve.totalDebt) > 0) && (
@@ -132,7 +134,7 @@ export const SupplyInfo = ({
             </Box>
           ) : reserve.reserveLiquidationThreshold !== "0" ? (
             <Flex justify="space-between" align="center">
-              <Text fs="p3" mb="base" fw={500} transform="uppercase">
+              <Text fs="p3" fw={500} transform="uppercase">
                 {t("borrow:collateralUsage")}
               </Text>
               <Text
@@ -201,7 +203,7 @@ export const SupplyInfo = ({
                 <Flex justify="space-between" align="center">
                   <Flex align="center">
                     <Text fs="p4" color={getToken("text.medium")}>
-                      Isolated Debt Ceiling
+                      {t("borrow:isolatedDebtCeiling")}
                     </Text>
                     <Tooltip text={t("borrow:tooltip.debtCeilingLimits")}>
                       <CircleInfo />
