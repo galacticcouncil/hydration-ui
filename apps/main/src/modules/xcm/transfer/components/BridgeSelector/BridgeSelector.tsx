@@ -58,7 +58,9 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
       } satisfies BridgeOption
     })
     .filter(isNonNullish)
-    .sort((a, b) => (BRIDGE_PRIORITY[a.id] ?? 99) - (BRIDGE_PRIORITY[b.id] ?? 99))
+    .sort(
+      (a, b) => (BRIDGE_PRIORITY[a.id] ?? 99) - (BRIDGE_PRIORITY[b.id] ?? 99),
+    )
 
   if (options.length < 2) return null
 
