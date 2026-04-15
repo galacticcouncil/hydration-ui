@@ -90,7 +90,7 @@ export const PROVIDERS: ProviderProps[] = [
     MAINNET_INDEXER_URL,
     MAINNET_SQUID_URL,
     ["development", "production"],
-    "testnet",
+    "mainnet",
   ),
   createProvider(
     "Testnet",

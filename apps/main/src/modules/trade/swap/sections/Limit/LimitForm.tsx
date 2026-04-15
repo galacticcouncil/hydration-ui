@@ -12,7 +12,7 @@ import { formatNumber, SELL_ONLY_ASSETS } from "@galacticcouncil/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
 import Big from "big.js"
-import { Info } from "lucide-react"
+import { ArrowDown, ArrowUp, Info, Pencil } from "lucide-react"
 import { FC, useEffect, useMemo, useRef, useState } from "react"
 import { Controller, useFormContext, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -21,7 +21,11 @@ import { spotPriceQuery } from "@/api/spotPrice"
 import { bestSellQuery } from "@/api/trade"
 import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
-import { SPriceOption } from "@/modules/trade/swap/sections/Limit/Limit.styled"
+import {
+  SCustomPctInput,
+  SPctBadge,
+  SPriceOption,
+} from "@/modules/trade/swap/sections/Limit/Limit.styled"
 import { LimitAssetSwitcher } from "@/modules/trade/swap/sections/Limit/LimitAssetSwitcher"
 import {
   EXPIRY_OPTIONS,
@@ -43,6 +47,11 @@ import { scaleHuman } from "@/utils/formatting"
 const PILL_PCTS_NEG = [-3, -1] as const
 const PILL_PCTS_POS = [5, 10] as const
 
+// Custom pill allowed range. Negative < -99% would yield a non-positive price.
+// Upper cap is a sanity limit to prevent runaway values.
+const CUSTOM_PCT_MIN = -99
+const CUSTOM_PCT_MAX = 500
+
 // Isolated component: watches limitPrice via useWatch so only this tiny subtree
 // re-renders when the price changes — NOT the entire LimitForm tree.
 const LimitPriceUsd: FC<{ buyAssetId: string }> = ({ buyAssetId }) => {
@@ -62,6 +71,34 @@ const LimitPriceUsd: FC<{ buyAssetId: string }> = ({ buyAssetId }) => {
       {limitPriceUsd}
     </Text>
   )
+}
+
+// Matcha-style badge: shows signed % deviation of the current limit price
+// from the market spot price. Rendered only when the user has set a custom
+// price (via price input or derived from typing the buy amount).
+const PriceDeviationBadge: FC<{
+  spotPrice: string | null
+  active: boolean
+}> = ({ spotPrice, active }) => {
+  const limitPriceVal = useWatch<LimitFormValues, "limitPrice">({
+    name: "limitPrice",
+  })
+
+  if (!active || !spotPrice || !limitPriceVal) return null
+  try {
+    if (Big(spotPrice).lte(0) || Big(limitPriceVal).lte(0)) return null
+    const pct = Big(limitPriceVal).div(spotPrice).minus(1).times(100)
+    // Hide when essentially at-market to avoid noise like "+0%".
+    if (pct.abs().lt(0.01)) return null
+    const rounded = pct.toFixed(pct.abs().gte(10) ? 0 : 2)
+    const num = Number(rounded)
+    if (num === 0) return null
+    const sign = num > 0 ? "+" : ""
+    const tone = num > 0 ? "positive" : "negative"
+    return <SPctBadge tone={tone}>{`${sign}${rounded}%`}</SPctBadge>
+  } catch {
+    return null
+  }
 }
 
 export const LimitForm: FC = () => {
@@ -149,6 +186,11 @@ export const LimitForm: FC = () => {
   // Stores the last programmatically set value so we can compare in onValueChange
   // rather than relying on a counter that could desync if onValueChange doesn't fire.
   const programmaticPriceRef = useRef<string | null>(null)
+
+  // Custom percentage pill state: user-typed signed percentage deviation from spot.
+  // Stored as raw string so intermediate states like "-" or "" are preserved while typing.
+  const [customPct, setCustomPct] = useState<string>("")
+  const customPctInputRef = useRef<HTMLInputElement>(null)
 
   // Match swap page: trim trailing zeros, cap decimals based on magnitude.
   // Very small numbers (e < -6) use toPrecision to preserve significant digits.
@@ -339,14 +381,24 @@ export const LimitForm: FC = () => {
       return
     }
 
-    // Sell amount is sacred — derive price = buy / sell.
     const currentSell = getValues("sellAmount")
     if (currentSell && Big(currentSell).gt(0)) {
+      // Sell amount is sacred — derive price = buy / sell.
       const derivedPrice = Big(newBuyAmount).div(currentSell)
       programmaticPriceRef.current = derivedPrice.toString()
       setValue("limitPrice", derivedPrice.toString())
       trigger("limitPrice")
       setSelectedPill("custom")
+      setCustomPct("")
+    } else {
+      // Sell is empty — derive sell from buy / current price (market rate).
+      const currentPrice = getValues("limitPrice")
+      if (currentPrice && Big(currentPrice).gt(0)) {
+        const derivedSell = Big(newBuyAmount).div(currentPrice)
+        setValue("sellAmount", formatAmount(derivedSell))
+        trigger("sellAmount")
+        setSelectedPill("custom")
+      }
     }
   }
 
@@ -357,6 +409,44 @@ export const LimitForm: FC = () => {
 
     // Sell amount is sacred — always derive buy = sell × price.
     recalculateBuyAmount(getValues("sellAmount"), internalLimitPrice)
+  }
+
+  // Validate and apply a signed percentage typed into the custom pill.
+  // Mirrors Matcha: reject keystrokes that would push the value out of range.
+  const handleCustomPctChange = (raw: string) => {
+    // Allow: empty, lone sign, or optional sign + up to 4 digits.
+    if (!/^[+-]?\d{0,4}$/.test(raw)) return
+
+    // Empty or lone sign: keep as-is but don't touch the price yet.
+    if (raw === "" || raw === "-" || raw === "+") {
+      setCustomPct(raw)
+      return
+    }
+
+    const num = Number(raw)
+    if (Number.isNaN(num)) return
+    // Reject out-of-range keystrokes to mimic Matcha's typing clamp.
+    if (num < CUSTOM_PCT_MIN || num > CUSTOM_PCT_MAX) return
+
+    setCustomPct(raw)
+
+    // Apply to price: new price = spot × (1 + pct/100).
+    const spot = spotPriceData?.spotPrice
+    if (!spot) return
+    const factor = 1 + num / 100
+    if (factor <= 0) return
+    const adjustedPrice = Big(spot).times(factor).toString()
+
+    lastSyncedPriceRef.current = adjustedPrice
+    programmaticPriceRef.current = adjustedPrice
+    setValue("limitPrice", adjustedPrice)
+    trigger("limitPrice")
+    setSelectedPill("custom")
+
+    // Sell amount is sacred — recalc buy from new price.
+    const currentSellAmount = getValues("sellAmount")
+    if (currentSellAmount)
+      recalculateBuyAmount(currentSellAmount, adjustedPrice)
   }
 
   // Compute the limit price for a pill.
@@ -376,6 +466,8 @@ export const LimitForm: FC = () => {
     const adjustedPrice = computePillPrice(pill)
     if (!adjustedPrice) return
     setSelectedPill(pill)
+    // Clear the custom pill when a preset pill is clicked.
+    setCustomPct("")
     // Record the price so the live-sync effect doesn't immediately re-fire
     lastSyncedPriceRef.current = adjustedPrice
     programmaticPriceRef.current = adjustedPrice
@@ -410,7 +502,7 @@ export const LimitForm: FC = () => {
       <SwapSectionSeparator />
 
       <Box pt="l" pb="m">
-        <Flex align="center" justify="space-between" mb="s">
+        <Flex align="center" gap="s" mb="s">
           <Text
             fw={500}
             fs="p5"
@@ -419,32 +511,10 @@ export const LimitForm: FC = () => {
           >
             {t("trade:limit.limitPrice.label")}
           </Text>
-          <Flex gap="s" style={{ flexShrink: 0 }}>
-            {PILL_PCTS_NEG.map((pct) => (
-              <SPriceOption
-                key={pct}
-                active={selectedPill === pct}
-                onClick={() => handlePriceAdjustment(pct)}
-              >
-                {pct}%
-              </SPriceOption>
-            ))}
-            <SPriceOption
-              active={selectedPill === "market"}
-              onClick={() => handlePriceAdjustment("market")}
-            >
-              {t("trade:limit.market")}
-            </SPriceOption>
-            {PILL_PCTS_POS.map((pct) => (
-              <SPriceOption
-                key={pct}
-                active={selectedPill === pct}
-                onClick={() => handlePriceAdjustment(pct)}
-              >
-                +{pct}%
-              </SPriceOption>
-            ))}
-          </Flex>
+          <PriceDeviationBadge
+            spotPrice={spotPriceData?.spotPrice ?? null}
+            active={selectedPill === "custom"}
+          />
         </Flex>
 
         <Flex align="center" justify="space-between">
@@ -463,11 +533,13 @@ export const LimitForm: FC = () => {
               render={({ field }) => (
                 <NumberInput
                   value={
-                    field.value && !Big(field.value).eq(0)
-                      ? formatNumber(field.value, undefined, {
-                          useGrouping: false,
-                        })
-                      : ""
+                    !field.value
+                      ? ""
+                      : /e/i.test(field.value)
+                        ? formatNumber(field.value, undefined, {
+                            useGrouping: false,
+                          })
+                        : field.value
                   }
                   onValueChange={({ value }) => {
                     // Skip programmatic updates — compare against the last
@@ -481,6 +553,9 @@ export const LimitForm: FC = () => {
                     const parsed = value ? value : "0"
                     field.onChange(parsed)
                     setSelectedPill("custom")
+                    // Clear the custom pill when user types price directly —
+                    // deviation is shown in the separate badge instead.
+                    setCustomPct("")
                     handleLimitPriceChange(parsed)
                   }}
                   trailingElement={
@@ -513,6 +588,71 @@ export const LimitForm: FC = () => {
             />
             <LimitPriceUsd buyAssetId={buyAsset?.id ?? ""} />
           </Flex>
+        </Flex>
+
+        <Flex gap="s" mt="m" justify="center" style={{ flexWrap: "wrap" }}>
+          {PILL_PCTS_NEG.map((pct) => (
+            <SPriceOption
+              key={pct}
+              active={selectedPill === pct}
+              onClick={() => handlePriceAdjustment(pct)}
+            >
+              {pct}%
+            </SPriceOption>
+          ))}
+          <SPriceOption
+            active={selectedPill === "market"}
+            onClick={() => handlePriceAdjustment("market")}
+          >
+            {t("trade:limit.market")}
+          </SPriceOption>
+          {PILL_PCTS_POS.map((pct) => (
+            <SPriceOption
+              key={pct}
+              active={selectedPill === pct}
+              onClick={() => handlePriceAdjustment(pct)}
+            >
+              +{pct}%
+            </SPriceOption>
+          ))}
+          {(() => {
+            const customNum =
+              customPct === "" || customPct === "-" || customPct === "+"
+                ? null
+                : Number(customPct)
+            const isNegative = customNum !== null && customNum < 0
+            const isPositive = customNum !== null && customNum > 0
+            const tone = isPositive
+              ? ("positive" as const)
+              : isNegative
+                ? ("negative" as const)
+                : undefined
+            return (
+              <SPriceOption
+                as="label"
+                tone={tone}
+                active={selectedPill === "custom" && customPct !== "" && !tone}
+                style={{ cursor: "text", gap: 2 }}
+                onClick={() => customPctInputRef.current?.focus()}
+              >
+                {isNegative ? (
+                  <ArrowDown size={9} />
+                ) : isPositive ? (
+                  <ArrowUp size={9} />
+                ) : (
+                  <Pencil size={9} />
+                )}
+                <SCustomPctInput
+                  ref={customPctInputRef}
+                  inputMode="numeric"
+                  value={customPct}
+                  onChange={(e) => handleCustomPctChange(e.target.value)}
+                  placeholder="0"
+                />
+                %
+              </SPriceOption>
+            )
+          })()}
         </Flex>
       </Box>
 

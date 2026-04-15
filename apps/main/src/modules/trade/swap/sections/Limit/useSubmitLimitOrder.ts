@@ -34,12 +34,6 @@ const EXPIRY_MS: Record<string, number> = {
 // amount_out instead of the raw buyAmount.
 const MARKET_PRICE_TOLERANCE = 0.001 // 0.1 %
 
-// Small buffer applied to non-market limit orders so the solver has headroom
-// to fill them even with minor price movements or rounding differences.
-// The user sees their exact target amount; the on-chain amount_out is reduced
-// by this percentage to avoid BuyLimitNotReached rejections.
-const LIMIT_ORDER_BUFFER_PCT = 0.5 // 0.5 %
-
 export const useSubmitLimitOrder = () => {
   const { t } = useTranslation(["common", "trade"])
   const { account } = useAccount()
@@ -88,14 +82,9 @@ export const useSubmitLimitOrder = () => {
       // Determine amount_out for the extrinsic:
       //   - Market mode (limitPrice ≈ router quote rate): send minimum received
       //     (router amountOut - user slippage).
-      //   - Non-market mode (custom price / pill): apply a small fixed buffer
-      //     so the solver can fill the order despite minor price fluctuations.
-      const rawBuyAmount = BigInt(scale(buyAmount || "0", buyAsset.decimals))
-      // Apply small buffer: amount_out = buyAmount × (1 - buffer%)
-      const bufferAmount =
-        (rawBuyAmount * BigInt(Math.round(LIMIT_ORDER_BUFFER_PCT * 100))) /
-        10000n
-      let amountOutRaw = rawBuyAmount - bufferAmount
+      //   - Non-market mode (custom price / pill): send the exact buyAmount
+      //     the user specified — no buffer applied.
+      let amountOutRaw = BigInt(scale(buyAmount || "0", buyAsset.decimals))
 
       try {
         const bestSell = await queryClient.fetchQuery(

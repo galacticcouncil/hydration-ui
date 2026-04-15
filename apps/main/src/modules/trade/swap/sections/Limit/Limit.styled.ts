@@ -34,10 +34,13 @@ export const SDenominationPill = styled(Flex)(
 )
 
 // Matches SMicroButton (MAX button) sizing: p6 font, xs/base padding, uppercase.
+export type PriceOptionTone = "positive" | "negative"
+
 export const SPriceOption = styled(Box, {
-  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "active",
-})<{ active?: boolean }>(
-  ({ theme, active }) => css`
+  shouldForwardProp: (prop) =>
+    isPropValid(prop) && prop !== "active" && prop !== "tone",
+})<{ active?: boolean; tone?: PriceOptionTone }>(
+  ({ theme, active, tone }) => css`
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -66,6 +69,20 @@ export const SPriceOption = styled(Box, {
       border-color: ${theme.buttons.secondary.accent.outline};
       background: ${theme.buttons.secondary.accent.rest};
       color: ${theme.buttons.secondary.accent.onRest};
+    `}
+
+    ${tone === "positive" &&
+    css`
+      color: ${theme.details.values.positive};
+      border-color: ${theme.details.values.positive}66;
+      background: ${theme.details.values.positive}1a;
+    `}
+
+    ${tone === "negative" &&
+    css`
+      color: ${theme.details.values.negative};
+      border-color: ${theme.details.values.negative}66;
+      background: ${theme.details.values.negative}1a;
     `}
 
     &:hover {
@@ -107,29 +124,49 @@ export const SCustomPill = styled(Box, {
   `,
 )
 
-export const SPctBadge = styled.span(
-  ({ theme }) => css`
+export const SPctBadge = styled("span", {
+  shouldForwardProp: (prop) => isPropValid(prop) && prop !== "tone",
+})<{ tone?: PriceOptionTone }>(
+  ({ theme, tone }) => css`
     display: inline-flex;
     align-items: center;
+    justify-content: center;
 
-    padding-block: ${theme.space.base};
-    padding-inline: ${theme.space.s};
-    border-radius: ${theme.radii.xxl};
-
-    font-weight: 500;
-    font-size: ${theme.fontSizes.p5};
-    line-height: ${theme.lineHeights.m};
-    color: ${theme.text.low};
+    padding: ${theme.space.xs} ${theme.space.base};
+    border-radius: ${theme.containers.cornerRadius.buttonsPrimary};
+    border: 1px solid ${theme.buttons.secondary.low.borderRest};
     background: ${theme.buttons.secondary.low.rest};
 
-    user-select: none;
+    font-family: ${theme.fontFamilies1.secondary};
+    font-weight: 500;
+    font-size: ${theme.fontSizes.p6};
+    line-height: 1;
+    text-transform: uppercase;
     white-space: nowrap;
+
+    color: ${theme.text.medium};
+
+    user-select: none;
+
+    ${tone === "positive" &&
+    css`
+      color: ${theme.details.values.positive};
+      border-color: ${theme.details.values.positive}66;
+      background: ${theme.details.values.positive}1a;
+    `}
+
+    ${tone === "negative" &&
+    css`
+      color: ${theme.details.values.negative};
+      border-color: ${theme.details.values.negative}66;
+      background: ${theme.details.values.negative}1a;
+    `}
   `,
 )
 
 export const SCustomPctInput = styled.input(
   () => css`
-    width: 3ch;
+    width: 2ch;
     background: none;
     border: none;
     outline: none;
@@ -143,5 +180,10 @@ export const SCustomPctInput = styled.input(
       -webkit-appearance: none;
     }
     -moz-appearance: textfield;
+
+    &::placeholder {
+      color: inherit;
+      opacity: 0.6;
+    }
   `,
 )
