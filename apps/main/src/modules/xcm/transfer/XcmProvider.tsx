@@ -21,7 +21,6 @@ import { useXcmForm } from "@/modules/xcm/transfer/hooks/useXcmForm"
 import { XcmContext } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { useXcmTransfer } from "@/modules/xcm/transfer/hooks/useXcmTransfer"
 import { useXcmTransferAlerts } from "@/modules/xcm/transfer/hooks/useXcmTransferAlerts"
-import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import {
   getChainPriority,
   isAccountValidOnChain,
@@ -78,7 +77,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
           const assetSource = config.asset(asset).source(chain)
           return assetSource.destinationChains.length > 0
         })
-      return { chain, routes: [], assets }
+      return { chain, routes: [], assets, isTagSelect: false }
     })
   }, [config])
 
@@ -102,68 +101,34 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       .map((a) => a.destination.chain)
 
     return unique(destChains).map((chain) => {
-      const { routes } = config
+      const { routes, destinationAssets, isTagSelect } = config
         .asset(srcAsset)
         .source(srcChain)
         .destination(chain)
 
-      // Deduplicate assets - multiple bridge routes may share the same destination asset
-      const seenKeys = new Set<string>()
-      const assets = routes
-        .map((r) => r.destination.asset)
-        .filter((a) => (seenKeys.has(a.key) ? false : seenKeys.add(a.key)))
-
-      return { chain, routes, assets }
+      return { chain, routes, assets: destinationAssets, isTagSelect }
     })
   }, [config, srcAsset, srcChain, configService])
 
-  const availableBridgeRoutes = useMemo(() => {
-    if (!srcChain || !srcAsset || !destChain || !destAsset) return []
-    const destPair = destChainAssetPairs.find(
-      (p) => p.chain.key === destChain.key,
-    )
-    if (!destPair) return []
-
-    const configRoutes = destPair.routes.filter(
-      (r) =>
-        r.destination.asset.key === destAsset.key &&
-        getPrimaryBridgeTag(r) !== null,
-    )
-    const existingTags = new Set(
-      configRoutes.map((r) => getPrimaryBridgeTag(r)),
-    )
-    const supplemental = getSupplementalBridgeRoutes(
-      srcChain.key,
-      destChain.key,
-      srcAsset.key,
-    ).filter(
-      (r) =>
-        r.destination.asset.key === destAsset.key &&
-        !existingTags.has(getPrimaryBridgeTag(r)),
-    )
-    return [...configRoutes, ...supplemental]
-  }, [srcChain, srcAsset, destChain, destAsset, destChainAssetPairs])
+  const destPair = destChainAssetPairs.find(
+    (p) => p.chain.key === destChain?.key,
+  )
 
   useEffect(() => {
-    if (availableBridgeRoutes.length <= 1) {
-      if (bridgeProvider !== null) {
-        form.setValue("bridgeProvider", null)
-      }
+    if (!destPair?.isTagSelect) {
+      form.setValue("bridgeProvider", null)
       return
     }
 
-    const isCurrentValid = availableBridgeRoutes.some(
-      (r) => getPrimaryBridgeTag(r) === bridgeProvider,
-    )
-    if (isCurrentValid) return
+    if (destPair.routes.some((r) => getPrimaryBridgeTag(r) === bridgeProvider))
+      return
 
     const defaultRoute =
-      availableBridgeRoutes.find(
-        (r) => getPrimaryBridgeTag(r) === XcmTag.Basejump,
-      ) ?? availableBridgeRoutes[0]
-    if (!defaultRoute) return
-    form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))
-  }, [availableBridgeRoutes, bridgeProvider, form])
+      destPair.routes.find((r) => getPrimaryBridgeTag(r) === XcmTag.Basejump) ??
+      destPair.routes[0]
+    if (defaultRoute)
+      form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))
+  }, [destPair, bridgeProvider, form])
 
   useEffect(() => {
     const validRoutes = pipe(
@@ -254,7 +219,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
-        availableBridgeRoutes,
+        availableBridgeRoutes: destPair?.isTagSelect ? destPair.routes : [],
         alerts,
         transfer,
         call,

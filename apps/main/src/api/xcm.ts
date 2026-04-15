@@ -1,7 +1,7 @@
 import { formatSourceChainAddress } from "@galacticcouncil/utils"
 import { createXcContext } from "@galacticcouncil/xc"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
-import { AnyChain, AssetAmount, ConfigBuilder } from "@galacticcouncil/xc-core"
+import { AnyChain, AssetAmount } from "@galacticcouncil/xc-core"
 import { Transfer, TransferBuilder, Wallet } from "@galacticcouncil/xc-sdk"
 import {
   keepPreviousData,
@@ -14,7 +14,6 @@ import {
 import { secondsToMilliseconds } from "date-fns"
 import { useEffect, useRef, useState } from "react"
 
-import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import { TProviderContext, useRpcProvider } from "@/providers/rpcProvider"
 
 export const useCrossChainConfig = () => {
@@ -168,42 +167,16 @@ export const xcmTransferQuery = (
       bridgeTag,
     ],
     queryFn: async () => {
-      const builder = TransferBuilder(wallet)
+      return TransferBuilder(wallet)
         .withAsset(srcAsset)
         .withSource(srcChain)
         .withDestination(destChain)
-
-      if (bridgeTag) {
-        const selectedRoute =
-          builder.routes.find((r) => r.tags?.includes(bridgeTag)) ??
-          getSupplementalBridgeRoutes(srcChain, destChain, srcAsset).find((r) =>
-            r.tags?.includes(bridgeTag),
-          )
-
-        if (selectedRoute) {
-          const configs = ConfigBuilder(wallet.config)
-            .assets()
-            .asset(srcAsset)
-            .source(srcChain)
-            .destination(destChain)
-            .build(destAsset)
-
-          return wallet.getTransferData(
-            {
-              origin: { chain: configs.origin.chain, route: selectedRoute },
-              reverse: configs.reverse,
-            },
-            srcAddress,
-            destAddress,
-          )
-        }
-      }
-
-      return builder.build({
-        srcAddress: srcAddress,
-        dstAddress: destAddress,
-        dstAsset: destAsset,
-      })
+        .build({
+          srcAddress,
+          dstAddress: destAddress,
+          dstAsset: destAsset,
+          tag: bridgeTag,
+        })
     },
     enabled:
       !!srcAddress &&

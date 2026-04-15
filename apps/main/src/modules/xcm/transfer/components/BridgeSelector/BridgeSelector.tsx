@@ -19,6 +19,12 @@ type BridgeOption = {
   icon: React.ComponentType
 }
 
+const BRIDGE_PRIORITY: Record<string, number> = {
+  [XcmTag.Basejump]: 0,
+  [XcmTag.Wormhole]: 1,
+  [XcmTag.Snowbridge]: 2,
+}
+
 const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
   [XcmTag.Basejump]: "~1 min",
   [XcmTag.Wormhole]: "~30 min",
@@ -52,6 +58,7 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
       } satisfies BridgeOption
     })
     .filter(isNonNullish)
+    .sort((a, b) => (BRIDGE_PRIORITY[a.id] ?? 99) - (BRIDGE_PRIORITY[b.id] ?? 99))
 
   if (options.length < 2) return null
 

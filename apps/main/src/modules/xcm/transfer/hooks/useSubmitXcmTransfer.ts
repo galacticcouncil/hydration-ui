@@ -17,7 +17,6 @@ import { isEvmApproveCall, isEvmCall } from "@/modules/transactions/utils/xcm"
 import { PendingApproval } from "@/modules/xcm/transfer/components/PendingApproval/PendingApproval"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
-import { getSupplementalBridgeRoutes } from "@/modules/xcm/transfer/utils/bridge-routes"
 import { buildTransferCall } from "@/modules/xcm/transfer/utils/transfer"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import {
@@ -81,27 +80,12 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
         destChain: destChain.name,
       }
 
-      const { routes, build } = ConfigBuilder(configService)
+      const { origin } = ConfigBuilder(configService)
         .assets()
         .asset(srcAsset)
         .source(srcChain)
         .destination(destChain)
-
-      const { origin } = build(destAsset)
-
-      const selectedRoute = bridgeProvider
-        ? (routes.find((r) =>
-            (r.tags as string[] | undefined)?.includes(bridgeProvider),
-          ) ??
-          getSupplementalBridgeRoutes(
-            srcChain.key,
-            destChain.key,
-            srcAsset.key,
-          ).find((r) =>
-            (r.tags as string[] | undefined)?.includes(bridgeProvider),
-          ) ??
-          origin.route)
-        : origin.route
+        .build(destAsset, bridgeProvider ?? undefined)
 
       const call = await transfer.buildCall(srcAmount)
       const isApprove = isEvmApproveCall(call)
@@ -154,7 +138,7 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
               destination.fee.decimals,
             ),
             dstChainFeeSymbol: destination.fee.symbol,
-            tags: (selectedRoute.tags as XcmTags) || [],
+            tags: (origin.route.tags as XcmTags) || [],
           },
         }
       }
