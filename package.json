@@ -27,6 +27,7 @@
     "@galacticcouncil/xc-core": "^0.14.0",
     "@galacticcouncil/xc-scan": "^0.5.0",
     "@galacticcouncil/xc-sdk": "^0.10.1",
+    "@polkadot-api/tx-utils": "^0.2.2",
     "big.js": "^6.2.2",
     "date-fns": "^4.1.0",
     "immer": "^10.0.3",

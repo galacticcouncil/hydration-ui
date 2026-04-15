@@ -1,0 +1,617 @@
+schema {
+  query: Query
+}
+
+type Account {
+  delegateeFor(limit: Int, offset: Int, orderBy: [ProxyAccountOrderByInput!], where: ProxyAccountWhereInput): [ProxyAccount!]!
+  delegatorFor(limit: Int, offset: Int, orderBy: [ProxyAccountOrderByInput!], where: ProxyAccountWhereInput): [ProxyAccount!]!
+  id: String!
+  isMultisig: Boolean
+  isPureProxy: Boolean
+  multisigs(limit: Int, offset: Int, orderBy: [AccountMultisigOrderByInput!], where: AccountMultisigWhereInput): [AccountMultisig!]!
+  multisigsCalls(limit: Int, offset: Int, orderBy: [MultisigCallOrderByInput!], where: MultisigCallWhereInput): [MultisigCall!]!
+  pubKey: String!
+  signatories(limit: Int, offset: Int, orderBy: [AccountMultisigOrderByInput!], where: AccountMultisigWhereInput): [AccountMultisig!]!
+  threshold: Int
+}
+
+type AccountEdge {
+  cursor: String!
+  node: Account!
+}
+
+type AccountMultisig {
+  id: String!
+  multisig: Account!
+  signatory: Account!
+}
+
+type AccountMultisigEdge {
+  cursor: String!
+  node: AccountMultisig!
+}
+
+enum AccountMultisigOrderByInput {
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  multisig_id_ASC
+  multisig_id_ASC_NULLS_FIRST
+  multisig_id_ASC_NULLS_LAST
+  multisig_id_DESC
+  multisig_id_DESC_NULLS_FIRST
+  multisig_id_DESC_NULLS_LAST
+  multisig_isMultisig_ASC
+  multisig_isMultisig_ASC_NULLS_FIRST
+  multisig_isMultisig_ASC_NULLS_LAST
+  multisig_isMultisig_DESC
+  multisig_isMultisig_DESC_NULLS_FIRST
+  multisig_isMultisig_DESC_NULLS_LAST
+  multisig_isPureProxy_ASC
+  multisig_isPureProxy_ASC_NULLS_FIRST
+  multisig_isPureProxy_ASC_NULLS_LAST
+  multisig_isPureProxy_DESC
+  multisig_isPureProxy_DESC_NULLS_FIRST
+  multisig_isPureProxy_DESC_NULLS_LAST
+  multisig_pubKey_ASC
+  multisig_pubKey_ASC_NULLS_FIRST
+  multisig_pubKey_ASC_NULLS_LAST
+  multisig_pubKey_DESC
+  multisig_pubKey_DESC_NULLS_FIRST
+  multisig_pubKey_DESC_NULLS_LAST
+  multisig_threshold_ASC
+  multisig_threshold_ASC_NULLS_FIRST
+  multisig_threshold_ASC_NULLS_LAST
+  multisig_threshold_DESC
+  multisig_threshold_DESC_NULLS_FIRST
+  multisig_threshold_DESC_NULLS_LAST
+  signatory_id_ASC
+  signatory_id_ASC_NULLS_FIRST
+  signatory_id_ASC_NULLS_LAST
+  signatory_id_DESC
+  signatory_id_DESC_NULLS_FIRST
+  signatory_id_DESC_NULLS_LAST
+  signatory_isMultisig_ASC
+  signatory_isMultisig_ASC_NULLS_FIRST
+  signatory_isMultisig_ASC_NULLS_LAST
+  signatory_isMultisig_DESC
+  signatory_isMultisig_DESC_NULLS_FIRST
+  signatory_isMultisig_DESC_NULLS_LAST
+  signatory_isPureProxy_ASC
+  signatory_isPureProxy_ASC_NULLS_FIRST
+  signatory_isPureProxy_ASC_NULLS_LAST
+  signatory_isPureProxy_DESC
+  signatory_isPureProxy_DESC_NULLS_FIRST
+  signatory_isPureProxy_DESC_NULLS_LAST
+  signatory_pubKey_ASC
+  signatory_pubKey_ASC_NULLS_FIRST
+  signatory_pubKey_ASC_NULLS_LAST
+  signatory_pubKey_DESC
+  signatory_pubKey_DESC_NULLS_FIRST
+  signatory_pubKey_DESC_NULLS_LAST
+  signatory_threshold_ASC
+  signatory_threshold_ASC_NULLS_FIRST
+  signatory_threshold_ASC_NULLS_LAST
+  signatory_threshold_DESC
+  signatory_threshold_DESC_NULLS_FIRST
+  signatory_threshold_DESC_NULLS_LAST
+}
+
+input AccountMultisigWhereInput {
+  AND: [AccountMultisigWhereInput!]
+  OR: [AccountMultisigWhereInput!]
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  multisig: AccountWhereInput
+  multisig_isNull: Boolean
+  signatory: AccountWhereInput
+  signatory_isNull: Boolean
+}
+
+type AccountMultisigsConnection {
+  edges: [AccountMultisigEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+enum AccountOrderByInput {
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  isMultisig_ASC
+  isMultisig_ASC_NULLS_FIRST
+  isMultisig_ASC_NULLS_LAST
+  isMultisig_DESC
+  isMultisig_DESC_NULLS_FIRST
+  isMultisig_DESC_NULLS_LAST
+  isPureProxy_ASC
+  isPureProxy_ASC_NULLS_FIRST
+  isPureProxy_ASC_NULLS_LAST
+  isPureProxy_DESC
+  isPureProxy_DESC_NULLS_FIRST
+  isPureProxy_DESC_NULLS_LAST
+  pubKey_ASC
+  pubKey_ASC_NULLS_FIRST
+  pubKey_ASC_NULLS_LAST
+  pubKey_DESC
+  pubKey_DESC_NULLS_FIRST
+  pubKey_DESC_NULLS_LAST
+  threshold_ASC
+  threshold_ASC_NULLS_FIRST
+  threshold_ASC_NULLS_LAST
+  threshold_DESC
+  threshold_DESC_NULLS_FIRST
+  threshold_DESC_NULLS_LAST
+}
+
+input AccountWhereInput {
+  AND: [AccountWhereInput!]
+  OR: [AccountWhereInput!]
+  delegateeFor_every: ProxyAccountWhereInput
+  delegateeFor_none: ProxyAccountWhereInput
+  delegateeFor_some: ProxyAccountWhereInput
+  delegatorFor_every: ProxyAccountWhereInput
+  delegatorFor_none: ProxyAccountWhereInput
+  delegatorFor_some: ProxyAccountWhereInput
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  isMultisig_eq: Boolean
+  isMultisig_isNull: Boolean
+  isMultisig_not_eq: Boolean
+  isPureProxy_eq: Boolean
+  isPureProxy_isNull: Boolean
+  isPureProxy_not_eq: Boolean
+  multisigsCalls_every: MultisigCallWhereInput
+  multisigsCalls_none: MultisigCallWhereInput
+  multisigsCalls_some: MultisigCallWhereInput
+  multisigs_every: AccountMultisigWhereInput
+  multisigs_none: AccountMultisigWhereInput
+  multisigs_some: AccountMultisigWhereInput
+  pubKey_contains: String
+  pubKey_containsInsensitive: String
+  pubKey_endsWith: String
+  pubKey_eq: String
+  pubKey_gt: String
+  pubKey_gte: String
+  pubKey_in: [String!]
+  pubKey_isNull: Boolean
+  pubKey_lt: String
+  pubKey_lte: String
+  pubKey_not_contains: String
+  pubKey_not_containsInsensitive: String
+  pubKey_not_endsWith: String
+  pubKey_not_eq: String
+  pubKey_not_in: [String!]
+  pubKey_not_startsWith: String
+  pubKey_startsWith: String
+  signatories_every: AccountMultisigWhereInput
+  signatories_none: AccountMultisigWhereInput
+  signatories_some: AccountMultisigWhereInput
+  threshold_eq: Int
+  threshold_gt: Int
+  threshold_gte: Int
+  threshold_in: [Int!]
+  threshold_isNull: Boolean
+  threshold_lt: Int
+  threshold_lte: Int
+  threshold_not_eq: Int
+  threshold_not_in: [Int!]
+}
+
+type AccountsConnection {
+  edges: [AccountEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+"""
+A date-time string in simplified extended ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)
+"""
+scalar DateTime
+
+type MultisigCall {
+  blockHash: String!
+  callIndex: Int!
+  id: String!
+  multisig: Account
+  timestamp: DateTime!
+}
+
+type MultisigCallEdge {
+  cursor: String!
+  node: MultisigCall!
+}
+
+enum MultisigCallOrderByInput {
+  blockHash_ASC
+  blockHash_ASC_NULLS_FIRST
+  blockHash_ASC_NULLS_LAST
+  blockHash_DESC
+  blockHash_DESC_NULLS_FIRST
+  blockHash_DESC_NULLS_LAST
+  callIndex_ASC
+  callIndex_ASC_NULLS_FIRST
+  callIndex_ASC_NULLS_LAST
+  callIndex_DESC
+  callIndex_DESC_NULLS_FIRST
+  callIndex_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  multisig_id_ASC
+  multisig_id_ASC_NULLS_FIRST
+  multisig_id_ASC_NULLS_LAST
+  multisig_id_DESC
+  multisig_id_DESC_NULLS_FIRST
+  multisig_id_DESC_NULLS_LAST
+  multisig_isMultisig_ASC
+  multisig_isMultisig_ASC_NULLS_FIRST
+  multisig_isMultisig_ASC_NULLS_LAST
+  multisig_isMultisig_DESC
+  multisig_isMultisig_DESC_NULLS_FIRST
+  multisig_isMultisig_DESC_NULLS_LAST
+  multisig_isPureProxy_ASC
+  multisig_isPureProxy_ASC_NULLS_FIRST
+  multisig_isPureProxy_ASC_NULLS_LAST
+  multisig_isPureProxy_DESC
+  multisig_isPureProxy_DESC_NULLS_FIRST
+  multisig_isPureProxy_DESC_NULLS_LAST
+  multisig_pubKey_ASC
+  multisig_pubKey_ASC_NULLS_FIRST
+  multisig_pubKey_ASC_NULLS_LAST
+  multisig_pubKey_DESC
+  multisig_pubKey_DESC_NULLS_FIRST
+  multisig_pubKey_DESC_NULLS_LAST
+  multisig_threshold_ASC
+  multisig_threshold_ASC_NULLS_FIRST
+  multisig_threshold_ASC_NULLS_LAST
+  multisig_threshold_DESC
+  multisig_threshold_DESC_NULLS_FIRST
+  multisig_threshold_DESC_NULLS_LAST
+  timestamp_ASC
+  timestamp_ASC_NULLS_FIRST
+  timestamp_ASC_NULLS_LAST
+  timestamp_DESC
+  timestamp_DESC_NULLS_FIRST
+  timestamp_DESC_NULLS_LAST
+}
+
+input MultisigCallWhereInput {
+  AND: [MultisigCallWhereInput!]
+  OR: [MultisigCallWhereInput!]
+  blockHash_contains: String
+  blockHash_containsInsensitive: String
+  blockHash_endsWith: String
+  blockHash_eq: String
+  blockHash_gt: String
+  blockHash_gte: String
+  blockHash_in: [String!]
+  blockHash_isNull: Boolean
+  blockHash_lt: String
+  blockHash_lte: String
+  blockHash_not_contains: String
+  blockHash_not_containsInsensitive: String
+  blockHash_not_endsWith: String
+  blockHash_not_eq: String
+  blockHash_not_in: [String!]
+  blockHash_not_startsWith: String
+  blockHash_startsWith: String
+  callIndex_eq: Int
+  callIndex_gt: Int
+  callIndex_gte: Int
+  callIndex_in: [Int!]
+  callIndex_isNull: Boolean
+  callIndex_lt: Int
+  callIndex_lte: Int
+  callIndex_not_eq: Int
+  callIndex_not_in: [Int!]
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  multisig: AccountWhereInput
+  multisig_isNull: Boolean
+  timestamp_eq: DateTime
+  timestamp_gt: DateTime
+  timestamp_gte: DateTime
+  timestamp_in: [DateTime!]
+  timestamp_isNull: Boolean
+  timestamp_lt: DateTime
+  timestamp_lte: DateTime
+  timestamp_not_eq: DateTime
+  timestamp_not_in: [DateTime!]
+}
+
+type MultisigCallsConnection {
+  edges: [MultisigCallEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type PageInfo {
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+}
+
+type ProxyAccount {
+  createdAt: DateTime!
+  creationBlockNumber: Int
+  delay: Int!
+  delegatee: Account!
+  delegator: Account!
+  extrinsicIndex: Int
+  id: String!
+  type: ProxyType!
+}
+
+type ProxyAccountEdge {
+  cursor: String!
+  node: ProxyAccount!
+}
+
+enum ProxyAccountOrderByInput {
+  createdAt_ASC
+  createdAt_ASC_NULLS_FIRST
+  createdAt_ASC_NULLS_LAST
+  createdAt_DESC
+  createdAt_DESC_NULLS_FIRST
+  createdAt_DESC_NULLS_LAST
+  creationBlockNumber_ASC
+  creationBlockNumber_ASC_NULLS_FIRST
+  creationBlockNumber_ASC_NULLS_LAST
+  creationBlockNumber_DESC
+  creationBlockNumber_DESC_NULLS_FIRST
+  creationBlockNumber_DESC_NULLS_LAST
+  delay_ASC
+  delay_ASC_NULLS_FIRST
+  delay_ASC_NULLS_LAST
+  delay_DESC
+  delay_DESC_NULLS_FIRST
+  delay_DESC_NULLS_LAST
+  delegatee_id_ASC
+  delegatee_id_ASC_NULLS_FIRST
+  delegatee_id_ASC_NULLS_LAST
+  delegatee_id_DESC
+  delegatee_id_DESC_NULLS_FIRST
+  delegatee_id_DESC_NULLS_LAST
+  delegatee_isMultisig_ASC
+  delegatee_isMultisig_ASC_NULLS_FIRST
+  delegatee_isMultisig_ASC_NULLS_LAST
+  delegatee_isMultisig_DESC
+  delegatee_isMultisig_DESC_NULLS_FIRST
+  delegatee_isMultisig_DESC_NULLS_LAST
+  delegatee_isPureProxy_ASC
+  delegatee_isPureProxy_ASC_NULLS_FIRST
+  delegatee_isPureProxy_ASC_NULLS_LAST
+  delegatee_isPureProxy_DESC
+  delegatee_isPureProxy_DESC_NULLS_FIRST
+  delegatee_isPureProxy_DESC_NULLS_LAST
+  delegatee_pubKey_ASC
+  delegatee_pubKey_ASC_NULLS_FIRST
+  delegatee_pubKey_ASC_NULLS_LAST
+  delegatee_pubKey_DESC
+  delegatee_pubKey_DESC_NULLS_FIRST
+  delegatee_pubKey_DESC_NULLS_LAST
+  delegatee_threshold_ASC
+  delegatee_threshold_ASC_NULLS_FIRST
+  delegatee_threshold_ASC_NULLS_LAST
+  delegatee_threshold_DESC
+  delegatee_threshold_DESC_NULLS_FIRST
+  delegatee_threshold_DESC_NULLS_LAST
+  delegator_id_ASC
+  delegator_id_ASC_NULLS_FIRST
+  delegator_id_ASC_NULLS_LAST
+  delegator_id_DESC
+  delegator_id_DESC_NULLS_FIRST
+  delegator_id_DESC_NULLS_LAST
+  delegator_isMultisig_ASC
+  delegator_isMultisig_ASC_NULLS_FIRST
+  delegator_isMultisig_ASC_NULLS_LAST
+  delegator_isMultisig_DESC
+  delegator_isMultisig_DESC_NULLS_FIRST
+  delegator_isMultisig_DESC_NULLS_LAST
+  delegator_isPureProxy_ASC
+  delegator_isPureProxy_ASC_NULLS_FIRST
+  delegator_isPureProxy_ASC_NULLS_LAST
+  delegator_isPureProxy_DESC
+  delegator_isPureProxy_DESC_NULLS_FIRST
+  delegator_isPureProxy_DESC_NULLS_LAST
+  delegator_pubKey_ASC
+  delegator_pubKey_ASC_NULLS_FIRST
+  delegator_pubKey_ASC_NULLS_LAST
+  delegator_pubKey_DESC
+  delegator_pubKey_DESC_NULLS_FIRST
+  delegator_pubKey_DESC_NULLS_LAST
+  delegator_threshold_ASC
+  delegator_threshold_ASC_NULLS_FIRST
+  delegator_threshold_ASC_NULLS_LAST
+  delegator_threshold_DESC
+  delegator_threshold_DESC_NULLS_FIRST
+  delegator_threshold_DESC_NULLS_LAST
+  extrinsicIndex_ASC
+  extrinsicIndex_ASC_NULLS_FIRST
+  extrinsicIndex_ASC_NULLS_LAST
+  extrinsicIndex_DESC
+  extrinsicIndex_DESC_NULLS_FIRST
+  extrinsicIndex_DESC_NULLS_LAST
+  id_ASC
+  id_ASC_NULLS_FIRST
+  id_ASC_NULLS_LAST
+  id_DESC
+  id_DESC_NULLS_FIRST
+  id_DESC_NULLS_LAST
+  type_ASC
+  type_ASC_NULLS_FIRST
+  type_ASC_NULLS_LAST
+  type_DESC
+  type_DESC_NULLS_FIRST
+  type_DESC_NULLS_LAST
+}
+
+input ProxyAccountWhereInput {
+  AND: [ProxyAccountWhereInput!]
+  OR: [ProxyAccountWhereInput!]
+  createdAt_eq: DateTime
+  createdAt_gt: DateTime
+  createdAt_gte: DateTime
+  createdAt_in: [DateTime!]
+  createdAt_isNull: Boolean
+  createdAt_lt: DateTime
+  createdAt_lte: DateTime
+  createdAt_not_eq: DateTime
+  createdAt_not_in: [DateTime!]
+  creationBlockNumber_eq: Int
+  creationBlockNumber_gt: Int
+  creationBlockNumber_gte: Int
+  creationBlockNumber_in: [Int!]
+  creationBlockNumber_isNull: Boolean
+  creationBlockNumber_lt: Int
+  creationBlockNumber_lte: Int
+  creationBlockNumber_not_eq: Int
+  creationBlockNumber_not_in: [Int!]
+  delay_eq: Int
+  delay_gt: Int
+  delay_gte: Int
+  delay_in: [Int!]
+  delay_isNull: Boolean
+  delay_lt: Int
+  delay_lte: Int
+  delay_not_eq: Int
+  delay_not_in: [Int!]
+  delegatee: AccountWhereInput
+  delegatee_isNull: Boolean
+  delegator: AccountWhereInput
+  delegator_isNull: Boolean
+  extrinsicIndex_eq: Int
+  extrinsicIndex_gt: Int
+  extrinsicIndex_gte: Int
+  extrinsicIndex_in: [Int!]
+  extrinsicIndex_isNull: Boolean
+  extrinsicIndex_lt: Int
+  extrinsicIndex_lte: Int
+  extrinsicIndex_not_eq: Int
+  extrinsicIndex_not_in: [Int!]
+  id_contains: String
+  id_containsInsensitive: String
+  id_endsWith: String
+  id_eq: String
+  id_gt: String
+  id_gte: String
+  id_in: [String!]
+  id_isNull: Boolean
+  id_lt: String
+  id_lte: String
+  id_not_contains: String
+  id_not_containsInsensitive: String
+  id_not_endsWith: String
+  id_not_eq: String
+  id_not_in: [String!]
+  id_not_startsWith: String
+  id_startsWith: String
+  type_eq: ProxyType
+  type_in: [ProxyType!]
+  type_isNull: Boolean
+  type_not_eq: ProxyType
+  type_not_in: [ProxyType!]
+}
+
+type ProxyAccountsConnection {
+  edges: [ProxyAccountEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+enum ProxyType {
+  Any
+  Auction
+  CancelProxy
+  Governance
+  IdentityJudgement
+  NominationPools
+  NonTransfer
+  Society
+  Staking
+  SudoBalances
+  Unknown
+}
+
+type Query {
+  accountById(id: String!): Account
+  accountMultisigById(id: String!): AccountMultisig
+  accountMultisigs(limit: Int, offset: Int, orderBy: [AccountMultisigOrderByInput!], where: AccountMultisigWhereInput): [AccountMultisig!]!
+  accountMultisigsConnection(after: String, first: Int, orderBy: [AccountMultisigOrderByInput!]!, where: AccountMultisigWhereInput): AccountMultisigsConnection!
+  accounts(limit: Int, offset: Int, orderBy: [AccountOrderByInput!], where: AccountWhereInput): [Account!]!
+  accountsConnection(after: String, first: Int, orderBy: [AccountOrderByInput!]!, where: AccountWhereInput): AccountsConnection!
+  multisigCallById(id: String!): MultisigCall
+  multisigCalls(limit: Int, offset: Int, orderBy: [MultisigCallOrderByInput!], where: MultisigCallWhereInput): [MultisigCall!]!
+  multisigCallsConnection(after: String, first: Int, orderBy: [MultisigCallOrderByInput!]!, where: MultisigCallWhereInput): MultisigCallsConnection!
+  proxyAccountById(id: String!): ProxyAccount
+  proxyAccounts(limit: Int, offset: Int, orderBy: [ProxyAccountOrderByInput!], where: ProxyAccountWhereInput): [ProxyAccount!]!
+  proxyAccountsConnection(after: String, first: Int, orderBy: [ProxyAccountOrderByInput!]!, where: ProxyAccountWhereInput): ProxyAccountsConnection!
+  squidStatus: SquidStatus
+}
+
+type SquidStatus {
+  """The hash of the last processed finalized block"""
+  finalizedHash: String
+  """The height of the last processed finalized block"""
+  finalizedHeight: Int
+  """The hash of the last processed block"""
+  hash: String
+  """The height of the last processed block"""
+  height: Int
+}

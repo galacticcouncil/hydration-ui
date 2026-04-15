@@ -60,6 +60,9 @@ export type StoredAccount = {
   provider: WalletProviderType
   delegate?: string
   balance?: number
+  isMultisig?: boolean
+  multisigConfigId?: string
+  multisigSignerAddress?: string
 }
 
 export type Account = StoredAccount & {
@@ -149,7 +152,11 @@ export const useWeb3Connect = create<WalletProviderStore>()(
         if (account) {
           const wallet = getWallet(account.provider)
           if (wallet instanceof BaseSubstrateWallet) {
-            wallet.setSigner(account.address)
+            // For multisig accounts, sign with the signer address, not the multisig address.
+            const signerAddress = account.isMultisig
+              ? (account.multisigSignerAddress ?? account.address)
+              : account.address
+            wallet.setSigner(signerAddress)
           }
         }
         return set((state) => ({ ...state, account }))

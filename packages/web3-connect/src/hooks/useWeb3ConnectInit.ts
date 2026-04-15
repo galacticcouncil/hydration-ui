@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { prop } from "remeda"
 
 import { Web3ConnectModalPage } from "@/config/modal"
@@ -7,6 +7,12 @@ import {
   WalletMode,
   WalletProviderStatus,
 } from "@/hooks/useWeb3Connect"
+
+const MULTISIG_PAGES: Web3ConnectModalPage[] = [
+  Web3ConnectModalPage.MultisigSetup,
+  Web3ConnectModalPage.MultisigConfigSelect,
+  Web3ConnectModalPage.MultisigSignerSelect,
+]
 
 const getInitialPage = (mode: WalletMode) => {
   const { getConnectedProviders, accounts } = useWeb3Connect.getState()
@@ -30,6 +36,11 @@ export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
     getInitialPage(mode),
   )
 
+  const pageRef = useRef(page)
+  useEffect(() => {
+    pageRef.current = page
+  }, [page])
+
   useEffect(() => {
     return useWeb3Connect.subscribe(
       ({ recentProvider, error, getStatus, providers }) => {
@@ -44,6 +55,12 @@ export const useWeb3ConnectInit = ({ mode }: { mode: WalletMode }) => {
 
         if (isError && error) {
           return setPage(Web3ConnectModalPage.Error)
+        }
+
+        // Don't auto-navigate away from multisig setup/signer-select pages
+        // when a wallet connects — those pages manage navigation themselves.
+        if (MULTISIG_PAGES.includes(pageRef.current)) {
+          return
         }
 
         if (isConnected || isPending) {

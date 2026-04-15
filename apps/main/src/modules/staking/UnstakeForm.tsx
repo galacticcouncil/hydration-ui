@@ -1,10 +1,10 @@
 import { Button, Grid, Separator } from "@galacticcouncil/ui/components"
-import { useAccount, Web3ConnectButton } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TAccountVote } from "@/api/democracy"
 import { AssetSelect } from "@/components/AssetSelect/AssetSelect"
+import { AuthorizedAction } from "@/components/AuthorizedAction/AuthorizedAction"
 import { useUnstake } from "@/modules/staking/Stake.unstake"
 import { useAssets } from "@/providers/assetsProvider"
 
@@ -26,7 +26,6 @@ export const UnstakeForm: FC<Props> = ({
   onUnstake,
 }) => {
   const { t } = useTranslation(["common", "staking"])
-  const { account } = useAccount()
 
   const { native } = useAssets()
 
@@ -51,18 +50,11 @@ export const UnstakeForm: FC<Props> = ({
       <Separator />
       {
         <Grid px="xl" py="xl">
-          {account ? (
-            <Button
-              variant="secondary"
-              size="large"
-              disabled={isLoading}
-              onClick={submitForm}
-            >
+          <AuthorizedAction size="large">
+            <Button size="large" disabled={isLoading} onClick={submitForm}>
               {t("staking:stake.unstake.cta")}
             </Button>
-          ) : (
-            <Web3ConnectButton variant="secondary" size="large" />
-          )}
+          </AuthorizedAction>
         </Grid>
       }
     </>
