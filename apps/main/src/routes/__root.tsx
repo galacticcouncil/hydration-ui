@@ -18,6 +18,7 @@ import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
 import { useXcScanSubscription } from "@/modules/xcm/history"
 import { AssetsProvider } from "@/providers/assetsProvider"
+import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
 
 const MobileTabBar = lazy(async () => ({
@@ -66,10 +67,12 @@ function RootComponent() {
       <HeadContent />
       <AssetsProvider>
         <RpcProvider>
-          <MainLayout />
-          <Services />
-          <DataProviderSelect />
-          {!hasTopNavbar && <MobileTabBar />}
+          <MultisigProvider>
+            <MainLayout />
+            <Services />
+            <DataProviderSelect />
+            {!hasTopNavbar && <MobileTabBar />}
+          </MultisigProvider>
         </RpcProvider>
       </AssetsProvider>
       {hasTopNavbar && <ReactQueryDevtools buttonPosition="bottom-left" />}
@@ -101,12 +104,11 @@ function AccountSubscriptions({ account }: { account: Account }) {
 function Services() {
   const squidSdk = useSquidClient()
   const { isConnected, account } = useAccount()
-  const { isApiLoaded } = useRpcProvider()
-
+  const { isApiLoaded, papi } = useRpcProvider()
   return (
     <>
       <TransactionManager />
-      <Web3ConnectModal squidSdk={squidSdk} />
+      <Web3ConnectModal squidSdk={squidSdk} papi={papi} />
       {isApiLoaded && <ApiSubscriptions />}
       {isConnected && <AccountSubscriptions account={account} />}
     </>

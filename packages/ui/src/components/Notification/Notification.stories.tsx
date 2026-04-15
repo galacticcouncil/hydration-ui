@@ -20,7 +20,7 @@ const Template = (
       {...args}
       onClose={() => setIteration((i) => i + 1)}
       content="Transaction has been submitted"
-      dateString="2 minutes ago"
+      description="2 minutes ago"
     />
   )
 }

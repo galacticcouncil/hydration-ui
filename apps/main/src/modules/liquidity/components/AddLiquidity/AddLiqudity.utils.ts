@@ -115,7 +115,7 @@ export const useCheckJoinOmnipoolFarm = ({
   }
 }
 
-export const useAddToOmnipoolZod = (poolId: string) => {
+export const useAddToOmnipoolZod = (poolId?: string) => {
   const { getAssetWithFallback } = useAssets()
   const { t } = useTranslation("liquidity")
 
@@ -130,7 +130,8 @@ export const useAddToOmnipoolZod = (poolId: string) => {
     !minPoolLiquidity ||
     !omnipoolAssetData ||
     !hubBalance ||
-    !maxAddLiquidityLimit
+    !maxAddLiquidityLimit ||
+    !poolId
   )
     return undefined
 

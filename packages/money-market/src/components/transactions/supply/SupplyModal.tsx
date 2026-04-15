@@ -13,6 +13,7 @@ import { SupplyModalContent } from "./SupplyModalContent"
 export const SupplyModal = () => {
   const { type, close, args } = useModalContext() as ModalContextType<{
     underlyingAsset: string
+    symbol: string
   }>
 
   const isStrategyAsset = MONEY_MARKET_STRATEGY_ASSETS.includes(
@@ -24,7 +25,7 @@ export const SupplyModal = () => {
       variant="popup"
       open={type === ModalType.Supply}
       setOpen={close}
-      title="Supply"
+      title={`Supply ${args.symbol}`}
     >
       <TxModalWrapper
         action="supply"

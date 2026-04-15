@@ -7,7 +7,7 @@ import {
   Stack,
   Text,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import { isAddressValidOnChain } from "@galacticcouncil/utils"
 import { useAccount, useWeb3ConnectModal } from "@galacticcouncil/web3-connect"
 import { useQueryClient } from "@tanstack/react-query"
@@ -199,8 +199,19 @@ export const XcmForm = () => {
           <Separator />
           <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
-              <Flex gap="base" direction="column" flex={1} maxWidth="40%">
-                <Flex gap="s" align="center">
+              <Flex
+                gap="base"
+                direction="column"
+                flex={1}
+                position="relative"
+                pt={pxToRem(26)}
+              >
+                <Flex
+                  gap="s"
+                  align="center"
+                  position="absolute"
+                  sx={{ top: 0, left: 0 }}
+                >
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("from")}
                   </Text>
@@ -241,7 +252,6 @@ export const XcmForm = () => {
                 disabled={!srcAsset || !hasValidAccounts || isLoading}
                 isLoading={isLoading}
                 assetPrice={price}
-                maxWidth="60%"
               />
             </Flex>
           </Stack>
@@ -252,8 +262,19 @@ export const XcmForm = () => {
         <Paper>
           <Stack p={["l", "xl"]} gap="base">
             <Flex justify="space-between">
-              <Flex gap="base" direction="column" flex={1} maxWidth="40%">
-                <Flex gap="s" align="center">
+              <Flex
+                gap="base"
+                direction="column"
+                flex={1}
+                position="relative"
+                pt={pxToRem(26)}
+              >
+                <Flex
+                  gap="s"
+                  align="center"
+                  position="absolute"
+                  sx={{ top: 0, left: 0 }}
+                >
                   <Text fs="p5" color={getToken("text.medium")}>
                     {t("to")}
                   </Text>
@@ -286,7 +307,6 @@ export const XcmForm = () => {
                 disabled
                 isLoading={isLoading}
                 assetPrice={price}
-                maxWidth="60%"
               />
             </Flex>
           </Stack>

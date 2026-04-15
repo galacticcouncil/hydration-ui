@@ -10,23 +10,28 @@ import {
   Spinner,
   Stack,
 } from "@galacticcouncil/ui/components"
+import { safeConvertPublicKeyToSS58 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { EmptyState } from "@/components/EmptyState/EmptyState"
 import { ClaimableNotification } from "@/modules/layout/components/NotificationCenter/ClaimableNotification"
+import { MultisigNotification } from "@/modules/layout/components/NotificationCenter/MultisigNotification"
 import { NotificationBadge } from "@/modules/layout/components/NotificationCenter/NotificationBadge"
 import { NotificationGroup } from "@/modules/layout/components/NotificationCenter/NotificationGroup"
 import { NotificationToast } from "@/modules/layout/components/NotificationCenter/NotificationToast"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import { useXcScan } from "@/modules/xcm/history/useXcScan"
+import { useMultisigContext } from "@/providers/MultisigProvider"
 import { useToasts } from "@/states/toasts"
 
 export const NotificationCenter: FC = () => {
   const { t } = useTranslation()
   const { account } = useAccount()
 
+  const { totalPendingTxCount, multisigs, pendingTxsByMultisig } =
+    useMultisigContext()
   const { toasts } = useToasts()
   const { data: claimable } = useXcScan(account?.address ?? "", {
     claimableOnly: true,
@@ -43,6 +48,9 @@ export const NotificationCenter: FC = () => {
   const pending = groups.pending ?? []
   const completed = groups.completed ?? []
 
+  const totalclaimableCount = visibleClaimable.length
+  const totalImportantCount = totalclaimableCount + totalPendingTxCount
+
   return (
     <SheetRoot>
       <SheetTrigger asChild>
@@ -58,15 +66,27 @@ export const NotificationCenter: FC = () => {
               }}
             />
           )}
-          <NotificationBadge count={visibleClaimable.length} />
+          <NotificationBadge count={totalImportantCount} />
         </ButtonIcon>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader title={t("notifications")} />
         <SheetBody sx={{ pt: 10 }}>
           <Stack gap="xl">
-            {visibleClaimable.length > 0 && (
+            {totalImportantCount > 0 && (
               <NotificationGroup label={t("important")} defaultOpen>
+                {multisigs.map((multisig) => {
+                  const address = safeConvertPublicKeyToSS58(multisig.pubKey)
+                  const pendingTxs = pendingTxsByMultisig.get(address) ?? []
+
+                  return pendingTxs.map((tx) => (
+                    <MultisigNotification
+                      key={tx.callHash}
+                      tx={tx}
+                      multisig={multisig}
+                    />
+                  ))
+                })}
                 {visibleClaimable.map((journey) => (
                   <ClaimableNotification
                     key={journey.correlationId}
@@ -92,12 +112,14 @@ export const NotificationCenter: FC = () => {
               </NotificationGroup>
             )}
 
-            {toasts.length === 0 && visibleClaimable.length === 0 && (
-              <EmptyState
-                header={t("notifications.empty.title")}
-                description={t("notifications.empty.description")}
-              />
-            )}
+            {toasts.length === 0 &&
+              visibleClaimable.length === 0 &&
+              totalPendingTxCount === 0 && (
+                <EmptyState
+                  header={t("notifications.empty.title")}
+                  description={t("notifications.empty.description")}
+                />
+              )}
           </Stack>
         </SheetBody>
       </SheetContent>

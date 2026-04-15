@@ -11,6 +11,10 @@ export const SViewport = styled(ScrollAreaPrimitive.Viewport)`
   height: 100%;
   border-radius: inherit;
   -webkit-overflow-scrolling: touch;
+
+  & > div {
+    display: block !important;
+  }
 `
 
 export const SRoot = styled(ScrollAreaPrimitive.Root, {
