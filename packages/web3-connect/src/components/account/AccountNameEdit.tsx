@@ -13,6 +13,7 @@ export const AccountNameEdit: FC<Props> = ({ name, onChange, onCancel }) => {
       autoFocus
       customSize="small"
       defaultValue={name}
+      sx={{ height: "l" }}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           e.currentTarget.blur()

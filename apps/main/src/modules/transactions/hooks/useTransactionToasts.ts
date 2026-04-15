@@ -4,11 +4,16 @@ import {
   subscan,
   wormholescan,
 } from "@galacticcouncil/utils"
+import {
+  useAccount,
+  useActiveMultisigConfig,
+} from "@galacticcouncil/web3-connect"
 import { CallType } from "@galacticcouncil/xc-core"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
 import { TxStatusCallbacks } from "@/modules/transactions/types"
+import { parseTxMethodName } from "@/modules/transactions/utils/tx"
 import { useToasts } from "@/states/toasts"
 import {
   isBridgeTransaction,
@@ -23,15 +28,35 @@ export const useTransactionToasts = (
   ecosystem: CallType,
 ) => {
   const { t } = useTranslation()
-  const { pending, edit } = useToasts()
+  const { account } = useAccount()
+  const { pending, remove, edit } = useToasts()
+  const multisigConfig = useActiveMultisigConfig()
 
   const { id, toasts, meta } = transaction
 
   const isBridge = isBridgeTransaction(meta)
+  const isMultisig = !!multisigConfig && !!account?.isMultisig
+
+  const method = parseTxMethodName(transaction.tx, "value.value.call")
 
   return useMemo<Omit<TxStatusCallbacks, "onFinalized">>(() => {
     return {
       onSubmitted: (txHash) => {
+        if (isMultisig) {
+          pending({
+            id,
+            title: method
+              ? t("multisig.toast.named.title", { method })
+              : t("multisig.toast.unnamed.title"),
+            link: getTransactionLink(ecosystem, meta, txHash),
+            meta: {
+              ...meta,
+              txHash,
+              ecosystem,
+            },
+          })
+          return
+        }
         pending({
           id,
           title: toasts?.submitted ?? t("transaction.status.submitted.title"),
@@ -44,6 +69,9 @@ export const useTransactionToasts = (
         })
       },
       onSuccess: () => {
+        if (isMultisig) {
+          return remove(id)
+        }
         if (isBridge) {
           return edit(id, {
             variant: "submitted",
@@ -74,12 +102,15 @@ export const useTransactionToasts = (
     edit,
     id,
     isBridge,
+    isMultisig,
     meta,
     pending,
+    remove,
     t,
     toasts?.error,
     toasts?.submitted,
     toasts?.success,
+    method,
   ])
 }
 

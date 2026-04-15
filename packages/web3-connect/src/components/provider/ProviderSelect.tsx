@@ -19,6 +19,7 @@ import { ProviderDeeplinkedButton } from "@/components/provider/ProviderDeeplink
 import { ProviderExternalButton } from "@/components/provider/ProviderExternalButton"
 import { ProviderInstalledButton } from "@/components/provider/ProviderInstalledButton"
 import { ProviderLastConnectedButton } from "@/components/provider/ProviderLastConnectedButton"
+import { ProviderMultisigButton } from "@/components/provider/ProviderMultisigButton"
 import { Web3ConnectModalPage } from "@/config/modal"
 import { useWeb3ConnectContext } from "@/context/Web3ConnectContext"
 import { useWalletProviders } from "@/hooks/useWalletProviders"
@@ -35,6 +36,10 @@ export const ProviderSelect = () => {
   )
 
   const isDefaultMode = mode === WalletMode.Default
+  const showMultisig =
+    isDefaultMode ||
+    mode === WalletMode.Substrate ||
+    mode === WalletMode.SubstrateEVM
 
   const { installed, deeplinked, other } = useWalletProviders(
     isDefaultMode ? filter : mode,
@@ -76,6 +81,7 @@ export const ProviderSelect = () => {
             )
           })}
           {isDefaultMode && <ProviderExternalButton />}
+          {showMultisig && <ProviderMultisigButton />}
         </Grid>
         {isDefaultMode && !isMobileDevice && (
           <ProviderConnectAll installed={installed} />

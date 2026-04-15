@@ -26,6 +26,7 @@ export enum WalletProviderType {
   Slush = "slush",
   Suiet = "suiet",
   WalletConnect = "walletconnect",
+  Multisig = "multisig",
 }
 
 export const isWalletProviderType = (

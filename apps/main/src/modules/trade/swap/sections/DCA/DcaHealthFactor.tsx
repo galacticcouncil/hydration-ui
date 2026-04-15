@@ -1,6 +1,6 @@
 import { HealthFactorChange } from "@galacticcouncil/money-market/components"
 import { HealthFactorResult } from "@galacticcouncil/money-market/utils"
-import { TradeDcaOrder } from "@galacticcouncil/sdk-next/build/types/sor"
+import { TradeDcaOrder } from "@galacticcouncil/sdk-next/sor"
 import { Summary } from "@galacticcouncil/ui/components"
 import { FC } from "react"
 import { useTranslation } from "react-i18next"
