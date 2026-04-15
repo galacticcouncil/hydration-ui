@@ -1,6 +1,7 @@
 import {
   formatTypeValueJson,
   JsonValue,
+  propPath,
   safeParse,
   safeStringify,
 } from "@galacticcouncil/utils"
@@ -51,9 +52,13 @@ export const decodeEvmCall = (abi: Abi, data: Hex) => {
   }
 }
 
-export const decodeTx = (tx: AnyTransaction): object | JsonValue => {
+export const decodeTx = (
+  tx: AnyTransaction,
+  path?: string,
+): object | JsonValue => {
   if (isPapiTransaction(tx)) {
-    const txJson = safeStringify(tx.decodedCall)
+    const decodedCall = path ? propPath(tx.decodedCall, path) : tx.decodedCall
+    const txJson = safeStringify(decodedCall)
     try {
       return formatTypeValueJson(safeParse(txJson))
     } catch {

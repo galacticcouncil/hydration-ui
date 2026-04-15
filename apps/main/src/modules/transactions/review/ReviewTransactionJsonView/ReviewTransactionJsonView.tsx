@@ -33,18 +33,19 @@ type JsonContentProps = {
   mode: TransactionMode
   tx: AnyTransaction
   srcChainKey: string
+  jsonPath?: string
 }
 
 const JSON_MAX_HEIGHT = 200
 
-const ReviewTransactionJsonContent: React.FC<
+export const ReviewTransactionJsonContent: React.FC<
   Omit<JsonContentProps, "mode">
-> = ({ tx, srcChainKey }) => {
+> = ({ tx, srcChainKey, jsonPath }) => {
   const { t } = useTranslation("common")
   const { papiCompatibilityToken, papiNextCompatibilityToken } =
     useRpcProvider()
 
-  const txJson = decodeTx(tx)
+  const txJson = decodeTx(tx, jsonPath)
   const txCallHash = getTxCallHash(
     tx,
     papiCompatibilityToken,
