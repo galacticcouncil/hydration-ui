@@ -31,6 +31,7 @@ export type AccountOptionProps = Account & {
   isProxy?: boolean
   isBalanceLoading?: boolean
   balanceSymbol?: string
+  nameBadge?: React.ReactNode
   onSelect?: (account: Account) => void
   onEdit?: (name: string) => void
   onDelete?: () => void
@@ -41,6 +42,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
   isActive,
   isProxy = false,
   balance,
+  nameBadge,
   balanceSymbol,
   isBalanceLoading,
   onSelect,
@@ -73,7 +75,7 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
           />
         </Box>
         <Flex direction="column" width="100%" sx={{ minWidth: 0 }}>
-          <Flex align="center" justify="space-between">
+          <Flex align="center" justify="space-between" height="l">
             {isEditing ? (
               <AccountNameEdit
                 name={account.name}
@@ -85,11 +87,14 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
               />
             ) : (
               <Flex align="center" gap="s" sx={{ minWidth: 0 }}>
-                {onDelete && <AccountDeleteButton onClick={onDelete} />}
+                {onEdit && (
+                  <AccountEditButton onClick={() => setIsEditing(true)} />
+                )}
                 {wallet && <ProviderLogo size="xs" wallet={wallet} />}
                 <Text fs="p3" truncate={200}>
                   {account.name}
                 </Text>
+                {nameBadge}
               </Flex>
             )}
             {isBalanceLoading && balance === undefined ? (
@@ -103,7 +108,6 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
                 </Text>
               )
             )}
-            {onEdit && <AccountEditButton onClick={() => setIsEditing(true)} />}
           </Flex>
           <Flex align="center" justify="space-between" gap="s">
             <Text fs="p4" color={getToken("text.medium")} sx={{ minWidth: 0 }}>
@@ -114,7 +118,10 @@ export const AccountOption: React.FC<AccountOptionProps> = ({
                 {shortenAccountAddress(account.displayAddress, 12)}
               </Text>
             </Text>
-            <SCopyButton text={account.displayAddress} />
+            <Flex pl="m" ml="auto" gap="base">
+              <SCopyButton text={account.displayAddress} />
+              {onDelete && <AccountDeleteButton onClick={onDelete} />}
+            </Flex>
           </Flex>
         </Flex>
       </Flex>

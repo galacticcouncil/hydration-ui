@@ -2,9 +2,11 @@ import { ExtendedEvmCall } from "@galacticcouncil/money-market/types"
 import { HYDRATION_CHAIN_KEY, isBinary } from "@galacticcouncil/utils"
 import { PermitResult } from "@galacticcouncil/web3-connect/src/signers/EthereumSigner"
 import { Binary, CompatibilityToken } from "polkadot-api"
+import { first, isObjectType } from "remeda"
 
 import { weightToEvmFeeQuery } from "@/api/evm"
 import { paymentInfoQuery } from "@/api/transaction"
+import { decodeTx } from "@/modules/transactions/review/ReviewTransactionJsonView/ReviewTransactionJsonView.utils"
 import {
   AnyPapiTx,
   AnyTransaction,
@@ -152,4 +154,19 @@ export const getExtraTxFeeByWeight = async (
   return queryClient.ensureQueryData(
     weightToEvmFeeQuery(rpc, weight, assetOutId),
   )
+}
+
+export const parseTxMethodName = (
+  tx: AnyTransaction,
+  path?: string,
+): string | undefined => {
+  if (!isPapiTransaction(tx)) return
+  try {
+    const call = tx ? decodeTx(tx, path) : null
+    if (isObjectType(call)) {
+      return first(Object.keys(call))
+    }
+  } catch {
+    return
+  }
 }

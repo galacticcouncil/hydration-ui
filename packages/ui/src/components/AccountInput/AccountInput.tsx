@@ -20,6 +20,8 @@ export type AccountInputProps = Omit<
   avatarTheme?: AccountAvatarTheme
   isError?: boolean
   className?: string
+  pasteDisabled?: boolean
+  clearDisabled?: boolean
   ref?: React.Ref<HTMLInputElement>
 }
 
@@ -29,6 +31,8 @@ export const AccountInput: React.FC<AccountInputProps> = ({
   avatarTheme = "auto",
   className,
   ref,
+  pasteDisabled = false,
+  clearDisabled = false,
   ...props
 }) => {
   const handlePaste = async () => {
@@ -56,17 +60,19 @@ export const AccountInput: React.FC<AccountInputProps> = ({
         <Input
           ref={ref}
           variant="embedded"
+          spellCheck={false}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           sx={{ p: 0, flex: 1 }}
           {...props}
         />
       </Flex>
-      {!value ? (
+      {!value && !pasteDisabled && (
         <ButtonIcon onClick={handlePaste}>
           <Icon component={ArrowDownToLine} size="m" />
         </ButtonIcon>
-      ) : (
+      )}
+      {value && !clearDisabled && (
         <ButtonIcon onClick={handleClear}>
           <Icon component={Close} size="m" />
         </ButtonIcon>

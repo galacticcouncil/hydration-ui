@@ -18,7 +18,7 @@ export const NotificationToast: React.FC<ToastData> = ({
       autoClose={false}
       variant={variant}
       content={title}
-      dateString={dateString}
+      description={dateString}
       link={link}
       hint={hint}
     />
