@@ -89,19 +89,29 @@ export const createProxyFeesQuery = ({ papi, isApiLoaded }: TProviderContext) =>
   })
 
 export const createProxyCall = (
-  papi: Papi,
+  rpc: TProviderContext,
   proxyAddress: string,
   call: TxCallData,
   withFeePayer?: boolean,
 ) => {
-  const proxyCall = papi.tx.Proxy.proxy({
+  const proxyCall = rpc.papi.tx.Proxy.proxy({
     real: proxyAddress,
     call,
     force_proxy_type: Enum("Any"),
   })
 
+  const unsafeApi = rpc.papiClient.getUnsafeApi()
+
+  // TODO: Update descriptors when RT upgrade is released
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dispatchWithFeePayer = (unsafeApi as any).tx?.Dispatcher
+    ?.dispatch_with_fee_payer
+
+  if (!dispatchWithFeePayer)
+    throw new Error("dispatch_with_fee_payer not found")
+
   return withFeePayer
-    ? papi.tx.Dispatcher.dispatch_with_fee_payer({
+    ? dispatchWithFeePayer({
         call: proxyCall.decodedCall,
       })
     : proxyCall

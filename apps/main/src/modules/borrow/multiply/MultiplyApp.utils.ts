@@ -344,7 +344,7 @@ export const useMultiplyApp = ({
                 extra_gas: AAVE_GAS_LIMIT,
               }),
               createProxyCall(
-                rpc.papi,
+                rpc,
                 proxyAddress,
                 rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
               ),
@@ -359,7 +359,7 @@ export const useMultiplyApp = ({
 
               txs.push(
                 createProxyCall(
-                  rpc.papi,
+                  rpc,
                   proxyAddress,
                   enableCollateralTx.decodedCall,
                   true,
@@ -374,7 +374,7 @@ export const useMultiplyApp = ({
               )
 
               const proxyCall = createProxyCall(
-                rpc.papi,
+                rpc,
                 proxyAddress,
                 eModeTx.decodedCall,
                 true,
@@ -420,7 +420,7 @@ export const useMultiplyApp = ({
             return {
               title: "Looping",
               tx: createProxyCall(
-                rpc.papi,
+                rpc,
                 newCreatedProxy,
                 rpc.papi.tx.Utility.batch_all({
                   calls: calls.map((tx) => tx.decodedCall),
