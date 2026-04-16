@@ -92,7 +92,6 @@ export const useSupplyAssetsTableColumns = (
 
     const balancePlaceholderColumn = columnHelper.display({
       id: "balancePlaceholder",
-      cell: () => <NoData size="m" />,
     })
 
     const balanceColumn = columnHelper.accessor("walletBalanceUSD", {
@@ -287,11 +286,15 @@ export const useSupplyAssetsTableColumns = (
 
     return [
       assetColumn,
-      isBaseAssetType ? balanceColumn : balancePlaceholderColumn,
+      isBaseAssetType
+        ? balanceColumn
+        : isMobile
+          ? null
+          : balancePlaceholderColumn,
       apyColumn,
       collateralColunn,
       isMobile ? actionsColumnMobile : actionsColumn,
-    ]
+    ].filter(Boolean)
   }, [
     isMobile,
     getAsset,
