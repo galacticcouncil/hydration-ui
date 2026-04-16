@@ -1,5 +1,5 @@
 import { pool, SdkCtx } from "@galacticcouncil/sdk-next"
-import { AavePool } from "@galacticcouncil/sdk-next/build/types/pool/aave"
+import { aave } from "@galacticcouncil/sdk-next/pool"
 import {
   type QueryClient,
   queryOptions,
@@ -32,7 +32,7 @@ export const allPools = (sdk: SdkCtx) =>
       const stablePools: StableSwapBase[] = []
       const xykPools: PoolBase[] = []
       const omnipoolTokens: OmniPoolToken[] = []
-      const aavePools: AavePool[] = []
+      const aavePools: aave.AavePool[] = []
       let hub: PoolToken | undefined
 
       for (const pool of pools) {
@@ -60,7 +60,7 @@ export const allPools = (sdk: SdkCtx) =>
             }
           }
         } else if (pool.type === PoolType.Aave) {
-          aavePools.push(pool as AavePool)
+          aavePools.push(pool as aave.AavePool)
         }
       }
 

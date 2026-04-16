@@ -15,7 +15,7 @@ export type ChipVariant =
   | "green"
   | "accent"
 
-export type ChipSize = "small" | "medium" | "large"
+export type ChipSize = "extra-small" | "small" | "medium" | "large"
 export type SChipProps = {
   variant?: ChipVariant
   size?: ChipSize
@@ -48,6 +48,12 @@ const variants = createVariants(({ buttons, accents }) => ({
 }))
 
 const sizes = createVariants((theme) => ({
+  "extra-small": css`
+    font-size: ${theme.fontSizes.p6};
+    padding-block: ${theme.space.xs};
+    padding-inline: ${theme.space.s};
+    height: 1rem;
+  `,
   small: css`
     font-size: ${theme.fontSizes.p6};
     padding: ${theme.space.base};

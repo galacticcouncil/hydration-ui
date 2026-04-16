@@ -2057,18 +2057,18 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.9.tgz#50dea3616bc8191fb8e112283b49eaff03e78429"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
-"@galacticcouncil/common@^0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.6.0.tgz#e8e96cb9f3452211783986ed9f92107309af88ff"
-  integrity sha512-fsCcRNHrqDcPbH9sClgyN2O3M4T7KMy+7ey1OwijJhWeg0OqEuLowdFrJlnS4GvgkqIT2GkSYNu/8sryl+uHxA==
+"@galacticcouncil/common@^0.7.0":
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/common/-/common-0.7.0.tgz#dd57e3c00ac463424f9b08bddc9a76159ae47a43"
+  integrity sha512-5lI2Gh8aNWyRcGabxa+A/W7FUbNyvMKNQBo2bOhzSb7A68sC0H/IJFWO7eXfGKsTiMtAja/oZkch6VKoRrtK0w==
   dependencies:
     big.js "^6.2.1"
     lru-cache "^11.2.2"
 
-"@galacticcouncil/descriptors@1.15.1-pr301-9665b45":
-  version "1.15.1-pr301-9665b45"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.15.1-pr301-9665b45.tgz#9e8deeded309c9536b6749ca53ea1d50ff94c148"
-  integrity sha512-rAJQ1PYBMWuXTW7uTaK33bQTDwyHZ8z6zHGrbZfGXm2c560llBRagC75UsFsvMhrrPrmehDbt85LgxkN9srwkg==
+"@galacticcouncil/descriptors@^1.16.0":
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/descriptors/-/descriptors-1.16.0.tgz#622167e2d6ddb21f26e4b5f663f1dfc7af461f48"
+  integrity sha512-e7/WBs7vYWAF6rr8Frv3yQ54N8teLVuvgHj2eHA/O8OIjEKQu43agpSByxNxMXSue0ccDIZccyApkfIHKJo08w==
 
 "@galacticcouncil/math-hsm@^1.2.0":
   version "1.2.0"
@@ -2105,10 +2105,10 @@
   resolved "https://registry.yarnpkg.com/@galacticcouncil/math-xyk/-/math-xyk-1.3.0.tgz#96d3b3e63a93544c7e60d3fa9e1be9a576a20efe"
   integrity sha512-ZYVSyI5W2pQKCqpkaRM7t1AJqtPyxQ0P04T2+KpBEEABMRjSpQz2x44s1tk6r3DdFR8dICeZJEh5BI7eQYlT6w==
 
-"@galacticcouncil/sdk-next@^0.40.0":
-  version "0.40.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.40.0.tgz#51589b85242c89ee8a7e92c6b43cea43a9cfd950"
-  integrity sha512-dmCq7jzM/NtuBLoLLUwX+iqJtAEPCURX97zMuEf+qtn5AZhLBIDgE+aH2sPoj9B5imbEBV+vUXA+VnyWSgjJxA==
+"@galacticcouncil/sdk-next@^0.41.0":
+  version "0.41.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/sdk-next/-/sdk-next-0.41.0.tgz#c0c8710428ad2e64ccc12e4f97285dcee458d848"
+  integrity sha512-hGKD8vo60hJUHxRGMSUKhR6P6M+ZJ2+/tMzuhvjMmCIdeuGZHRuXpZPEFAAHA+VkjBZHVSENGJbMTzpsL37C7w==
   dependencies:
     "@galacticcouncil/math-hsm" "^1.2.0"
     "@galacticcouncil/math-lbp" "^1.3.0"
@@ -2122,17 +2122,17 @@
     "@thi.ng/memoize" "^4.0.2"
     big.js "^6.2.1"
 
-"@galacticcouncil/xc-cfg@^0.18.2":
-  version "0.18.2"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.18.2.tgz#6ded8d12a9d4491de77c0de68e2c33c5fdc695d3"
-  integrity sha512-vFd4Tpw3y/4NNiPRy+GpemirfOH9oEsGKrWJJi3eDGksBNPRq+yoCd0w/W4fQkIYJnln3PZWztWvNrl8KZ0/ug==
+"@galacticcouncil/xc-cfg@^0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-cfg/-/xc-cfg-0.19.0.tgz#97a334f8188008462500331b36411d0234b1ebb3"
+  integrity sha512-K4QEuqqKiex0mTNVjqn8Y0J2UgVpogzEDvYNVhKYVC/1YLhQEYhSsOVE4Z9+V7H6zeF79xjuwkv6YYt9YeEUtA==
   dependencies:
-    "@galacticcouncil/xc-core" "^0.13.0"
+    "@galacticcouncil/xc-core" "^0.14.0"
 
-"@galacticcouncil/xc-core@^0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.13.0.tgz#6ffb96327c352ba5ccefea8ac634c4561dbb7188"
-  integrity sha512-hfA7s33C3l0vaTgDiHx0zBidvJpR6+L1dlL59ehT4sI6wEDWZH+b4rYdyO5m/CVhnfwZzZgqNQ6ZYZGrjtlL7A==
+"@galacticcouncil/xc-core@^0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-core/-/xc-core-0.14.0.tgz#25ebdc5eed8c0e6f721316536139c428e9485b45"
+  integrity sha512-rLvCaSWtN07nKkn5Erh3vsIciKhh3Mc9avLchjFSxjqMijj0x6C3qIWdiYl54fFldaYU8f2nESvTcWcqTfdz6w==
   dependencies:
     "@noble/hashes" "^1.6.1"
     "@wormhole-foundation/sdk-base" "3.2.0"
@@ -2148,22 +2148,22 @@
     bs58 "^6.0.0"
     buffer "^6.0.3"
 
-"@galacticcouncil/xc-scan@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.4.0.tgz#1c12eba5b8d7fd6f6614d79617f73a6f157a20a0"
-  integrity sha512-RilIVpyvU4Dv4+neAE3+9UtuKNxtoTkS3RDXKOAMK2mAGWbJ2+cmeX6ahZxvXLIOowB2TDssFOFDykLFIcHd0g==
-
-"@galacticcouncil/xc-sdk@^0.9.1":
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.9.1.tgz#145ba1c3c2458e55b2f2c02c4f7a67c365bc671a"
-  integrity sha512-upRR4abs7ZrQp1Qphn+zziXbpX2V6UyBffDCn+ekj/WpOJxELfwPbkzh8tfRHlurrwUgvCU1cv9f3fhvjXWt4w==
-  dependencies:
-    "@galacticcouncil/xc-core" "^0.13.0"
-
-"@galacticcouncil/xc@^0.5.0":
+"@galacticcouncil/xc-scan@^0.5.0":
   version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-0.5.0.tgz#67dee6a85d314246a4d2ffaba4e82ffd2337c883"
-  integrity sha512-LQ31QormbwLE4BqSlPYVCz5E+fQ+cuS8bKAchm0GEudjbronMv/mWeMlK6bZvl6Ck227QOGbCwhprHpLN92ToQ==
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-scan/-/xc-scan-0.5.0.tgz#2b8b9d48fc6d5ab9f5e5b09617e3ed84e1fa9f9c"
+  integrity sha512-OS/TfBaToyHSN6VqlfDxjXnBeI4Nx03OBGNrlS7a6qlutGF28lqGFiQgzqEGRYo5iQcTV2/WmKcBsWaMOl31fg==
+
+"@galacticcouncil/xc-sdk@^0.10.1":
+  version "0.10.1"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc-sdk/-/xc-sdk-0.10.1.tgz#5f284e6b42b8d629bb846cee4b1d71bbd8a7c5b9"
+  integrity sha512-DMbDdm3dEWGsMvMWLHsn0bdHlJLyusPlGW/XkJC161N0dnMQEgGPedt0FNVIwsoayfqdRv8TeH1Tf/Pijb4cbQ==
+  dependencies:
+    "@galacticcouncil/xc-core" "^0.14.0"
+
+"@galacticcouncil/xc@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@galacticcouncil/xc/-/xc-0.6.0.tgz#561b3d2baee281ce033781fcc15f6fc4544231b7"
+  integrity sha512-Oj9E/GxiWlKAHzZgmmp+ILJbksieuXcewGjLfFY0WrcjyosXPpS/DV2Ub35jqniueBP6vPN1Zs/pYJBkNZb0Lg==
 
 "@gql.tada/cli-utils@1.7.2":
   version "1.7.2"
@@ -3138,6 +3138,23 @@
     "@polkadot-api/substrate-bindings" "0.17.0"
     "@polkadot-api/utils" "0.2.0"
 
+"@polkadot-api/merkleize-metadata@1.1.31":
+  version "1.1.31"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/merkleize-metadata/-/merkleize-metadata-1.1.31.tgz#f61f585eecafb928af3357dfd95aefbd796320a1"
+  integrity sha512-bMvWuXr/9vLs+CKTYIwf82KAsfZYS/JSFKRAueDnbOUxUylxFMfWpoz5m1/vVmovs/vIPSZxFgSm0AmGVi222w==
+  dependencies:
+    "@polkadot-api/metadata-builders" "0.13.11"
+    "@polkadot-api/substrate-bindings" "0.19.0"
+    "@polkadot-api/utils" "0.3.0"
+
+"@polkadot-api/metadata-builders@0.13.11":
+  version "0.13.11"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/metadata-builders/-/metadata-builders-0.13.11.tgz#06f2ffb18f045c536b15a5c5d2108249e4bc8d91"
+  integrity sha512-oqSJkRIWYq2C1QfIX8ywO+S2GoI3MxxRfxpwvPF1FGmiDWbH2lMiAMZNnpglIesm1F/cdn5CgcEz7M/GDThvzQ==
+  dependencies:
+    "@polkadot-api/substrate-bindings" "0.19.0"
+    "@polkadot-api/utils" "0.3.0"
+
 "@polkadot-api/metadata-builders@0.13.9":
   version "0.13.9"
   resolved "https://registry.yarnpkg.com/@polkadot-api/metadata-builders/-/metadata-builders-0.13.9.tgz#030f585f31bada2c22c9dc8df9207ec57a6ddb5f"
@@ -3216,6 +3233,16 @@
     "@polkadot-api/substrate-bindings" "0.17.0"
     "@polkadot-api/utils" "0.2.0"
 
+"@polkadot-api/signers-common@0.1.22":
+  version "0.1.22"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/signers-common/-/signers-common-0.1.22.tgz#bf9a6b1b1778aad04c45b116654d04194cdc8a2e"
+  integrity sha512-jcKEblFJ22GoPbOjSANeAZqYlGN3j3SrcbOdTRpLV9O9wuGWtQNQp7kPbxkuOLxbTsK7OMG6/CyOaab2ZC+kGw==
+  dependencies:
+    "@polkadot-api/metadata-builders" "0.13.11"
+    "@polkadot-api/polkadot-signer" "0.1.6"
+    "@polkadot-api/substrate-bindings" "0.19.0"
+    "@polkadot-api/utils" "0.3.0"
+
 "@polkadot-api/sm-provider@0.1.16":
   version "0.1.16"
   resolved "https://registry.yarnpkg.com/@polkadot-api/sm-provider/-/sm-provider-0.1.16.tgz#79c369136fb0f740f4f698740586d3762142badf"
@@ -3242,6 +3269,16 @@
     "@scure/base" "^2.0.0"
     scale-ts "^1.6.1"
 
+"@polkadot-api/substrate-bindings@0.19.0":
+  version "0.19.0"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/substrate-bindings/-/substrate-bindings-0.19.0.tgz#e0dca1287e2987bc989b35114b52fba4d12fe3b7"
+  integrity sha512-IAQx1x+j4LehW3U/S2RQ+dyphFs8J2vj3drpzQeirJ1Z/drVylv/U+JGniiOqRCtEcVkIcVXfiCNR3oNTemmGA==
+  dependencies:
+    "@noble/hashes" "^2.0.1"
+    "@polkadot-api/utils" "0.3.0"
+    "@scure/base" "^2.0.0"
+    scale-ts "^1.6.1"
+
 "@polkadot-api/substrate-client@0.5.0":
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/@polkadot-api/substrate-client/-/substrate-client-0.5.0.tgz#b1c70c2407340186e66eecd59321911af62fb6bd"
@@ -3251,10 +3288,26 @@
     "@polkadot-api/raw-client" "0.1.1"
     "@polkadot-api/utils" "0.2.0"
 
+"@polkadot-api/tx-utils@^0.2.2":
+  version "0.2.5"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/tx-utils/-/tx-utils-0.2.5.tgz#663bdf2eafdfcb8a7974f8bb8f932304bd2217ab"
+  integrity sha512-qfuUMcvBfuh7GNJRmARHmJdZtnJ2quG8PTsNGBJcUy+/vlm2RwuZkYl0hDfUCPe2GnikeOFegNfnCLZMyX0Muw==
+  dependencies:
+    "@polkadot-api/merkleize-metadata" "1.1.31"
+    "@polkadot-api/metadata-builders" "0.13.11"
+    "@polkadot-api/signers-common" "0.1.22"
+    "@polkadot-api/substrate-bindings" "0.19.0"
+    "@polkadot-api/utils" "0.3.0"
+
 "@polkadot-api/utils@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@polkadot-api/utils/-/utils-0.2.0.tgz#812d4c4ee282691440aed4b6ddf863651e804444"
   integrity sha512-nY3i5fQJoAxU4n3bD7Fs208/KR2J95SGfVc58kDjbRYN5a84kWaGEqzjBNtP9oqht49POM8Bm9mbIrkvC1Bzuw==
+
+"@polkadot-api/utils@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@polkadot-api/utils/-/utils-0.3.0.tgz#3c21d187b7c948d4e4f2a81146bfe112bf76b159"
+  integrity sha512-rTMURmpv8bU8DRP/h2qLDQd3aENEH8hCokPcvmWdcgpbY9G2nSRKTv6HyOHYrkgsnoGMAYRdkyhFvFwHaum+Rg==
 
 "@polkadot-api/wasm-executor@^0.2.3":
   version "0.2.3"

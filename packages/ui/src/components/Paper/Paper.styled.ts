@@ -9,16 +9,12 @@ import { PaperProps } from "./Paper"
 const variants = createVariants((theme) => ({
   bordered: css`
     border: 1px solid ${theme.details.borders};
-
-    box-shadow:
-      0px 3px 9px 0px rgba(0, 0, 0, 0.04),
-      0px 14px 37px 0px rgba(0, 0, 0, 0.04);
   `,
   plain: css``,
 }))
 
 export const SPaper = styled(Box)<PaperProps>(
-  ({ theme, variant = "bordered", hoverable = false }) => [
+  ({ theme, variant = "bordered", hoverable = false, shadow = true }) => [
     variants(variant),
     hoverable &&
       css`
@@ -28,6 +24,12 @@ export const SPaper = styled(Box)<PaperProps>(
         &:hover {
           transform: translateY(-0.25rem);
         }
+      `,
+    shadow &&
+      css`
+        box-shadow:
+          0px 3px 9px 0px rgba(0, 0, 0, 0.04),
+          0px 14px 37px 0px rgba(0, 0, 0, 0.04);
       `,
     css`
       position: relative;
