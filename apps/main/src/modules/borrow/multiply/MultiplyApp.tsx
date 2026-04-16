@@ -1,4 +1,4 @@
-import { HealthFactorChange } from "@galacticcouncil/money-market/components"
+import { HealthFactorNumber } from "@galacticcouncil/money-market/components"
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import {
   Alert,
@@ -71,6 +71,7 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
     collateralAsset,
     supplyAToken,
     onSubmit,
+    netApy,
   } = useMultiplyApp({
     collateralReserve,
     debtReserve,
@@ -252,7 +253,11 @@ export const MultiplyApp: React.FC<MultiplyAppProps> = ({
 
                 <SummaryRow
                   label={t("common:healthFactor")}
-                  content={<HealthFactorChange {...hf} />}
+                  content={<HealthFactorNumber value={hf.future} />}
+                />
+                <SummaryRow
+                  label="Net APY"
+                  content={t("common:percent", { value: netApy })}
                 />
               </Summary>
             </CollapsibleContent>

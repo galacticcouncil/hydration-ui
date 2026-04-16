@@ -61,8 +61,7 @@ export const useMultiplyPairsTableColumns = () => {
       cell: ({ row }) => {
         const baseSupplyApy =
           Number(row.original.collateralReserve.supplyAPY) * 100
-        const supplyApy =
-          row.original.apyData?.underlyingSupplyApy || baseSupplyApy
+        const supplyApy = row.original.apyData?.totalSupplyApy || baseSupplyApy
 
         return (
           <Text fs="p4" fw={500} color={getToken("accents.success.emphasis")}>

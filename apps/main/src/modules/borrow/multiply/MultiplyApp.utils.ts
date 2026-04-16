@@ -1,5 +1,4 @@
 import { InterestRate } from "@aave/contract-helpers"
-import { useMoneyMarketData } from "@galacticcouncil/money-market/hooks"
 import { EModeCategory } from "@galacticcouncil/money-market/ui-config"
 import { formatHealthFactorResult } from "@galacticcouncil/money-market/utils"
 import {
@@ -11,6 +10,7 @@ import {
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import Big from "big.js"
 import { Enum } from "polkadot-api"
 import { useEffect } from "react"
 import { useForm } from "react-hook-form"
@@ -90,7 +90,7 @@ export const useMultiplyApp = ({
 }: MultiplyAppProps) => {
   const rpc = useRpcProvider()
   const { getRelatedAToken, getAssetWithFallback, native } = useAssets()
-  const { user } = useMoneyMarketData()
+
   const { account } = useAccount()
   const { getTransferableBalance } = useAccountBalances()
   const {
@@ -155,6 +155,8 @@ export const useMultiplyApp = ({
     "multiplier",
   ])
   const [debouncedAmountIn = "0"] = useDebounce(amount, 300)
+  const [debouncedMultiplier] = useDebounce(multiplier, 300)
+
   const { data: trade } = useQuery(
     bestSellWithTxQuery(rpc, {
       assetIn: asset.id,
@@ -174,20 +176,12 @@ export const useMultiplyApp = ({
     supplyAToken?.decimals ?? 0,
   )
 
-  const currentHF = user?.healthFactor ?? ""
-  const futureHF = currentHF // @TODO: Calculate future HF
-
-  const hf = formatHealthFactorResult({
-    currentHF: currentHF,
-    futureHF: futureHF,
-  })
-
   const {
-    data: { steps, targetDebt, totalCollateral },
+    data: { steps, targetDebt, totalCollateral, futureHF, netApy },
     isLoading,
   } = useLoopingSteps({
     amount: minReceiveAmountShifted,
-    multiplier,
+    multiplier: debouncedMultiplier,
     supplyAssetId: collateralAssetId,
     borrowAssetId: debtAssetId,
     assetInId: borrowAsset.id,
@@ -196,6 +190,10 @@ export const useMultiplyApp = ({
     eModeCategory,
   })
 
+  const hf = formatHealthFactorResult({
+    currentHF: "-1",
+    futureHF,
+  })
   const getLoopingSteps = async (steps: LoopStep[], address: string) => {
     if (!poolBundleContract) throw new Error("Pool bundle contract not found")
 
@@ -457,6 +455,7 @@ export const useMultiplyApp = ({
     collateralAsset,
     borrowAsset,
     supplyAToken,
+    netApy: Big(netApy).mul(100).toString(),
   }
 }
 

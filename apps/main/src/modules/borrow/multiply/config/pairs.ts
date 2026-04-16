@@ -50,14 +50,14 @@ export const MULTIPLY_ASSETS_CONFIG: MultiplyAssetPairConfig[] = [
     collateralAssetId: PRIME_ASSET_ID,
     debtAssetId: HOLLAR_ASSET_ID,
     eModeCategory: EModeCategory.NONE,
-    isParityPair: true,
+    isParityPair: false,
   }),
   createPair(PAIR_IDS.GDOT_DOT, {
     collateralAssetId: GDOT_ASSET_ID,
     debtAssetId: DOT_ASSET_ID,
     enterWithAssetId: DOT_ASSET_ID,
     eModeCategory: EModeCategory.DOT_CORRELATED,
-    isParityPair: true,
+    isParityPair: false,
   }),
   createPair(PAIR_IDS.TBTC_HOLLAR, {
     collateralAssetId: TBTC_ASSET_ID,
