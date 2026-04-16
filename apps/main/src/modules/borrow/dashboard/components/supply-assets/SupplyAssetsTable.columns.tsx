@@ -294,7 +294,7 @@ export const useSupplyAssetsTableColumns = (
       apyColumn,
       collateralColunn,
       isMobile ? actionsColumnMobile : actionsColumn,
-    ].filter(Boolean)
+    ].filter((column) => column !== null)
   }, [
     isMobile,
     getAsset,
