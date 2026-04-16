@@ -51,7 +51,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
 
   return (
     <>
-      <Text fs="p3" fw={500} sx={{ mb: [10, 30] }}>
+      <Text fs="p3" fw={500} sx={{ mb: ["m", "xxl"] }}>
         {t("borrow:reserve.supplyInfo")}
       </Text>
       {supplyCap && (
@@ -67,7 +67,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
       {shouldRenderBorrowInfo && (
         <>
           <ReserveSectionDivider />
-          <Text fs="p3" fw={500} sx={{ mb: [10, 30] }}>
+          <Text fs="p3" fw={500} sx={{ mb: ["m", "xxl"] }}>
             {t("borrow:reserve.borrowInfo")}
           </Text>
           <BorrowInfo
@@ -77,7 +77,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
             borrowCap={borrowCap}
           />
           <ReserveSectionDivider />
-          <Text fs="p3" fw={500} sx={{ mb: [10, 30] }}>
+          <Text fs="p3" fw={500} sx={{ mb: ["m", "xxl"] }}>
             {t("borrow:reserve.interestRateModel")}
           </Text>
 
@@ -88,7 +88,7 @@ export const ReserveConfiguration: React.FC<ReserveConfigurationProps> = ({
       {shouldRenderEModeInfo && (
         <>
           <ReserveSectionDivider />
-          <Text fs="p3" fw={500} sx={{ mb: [10, 30] }}>
+          <Text fs="p3" fw={500} sx={{ mb: ["m", "xxl"] }}>
             {t("borrow:reserve.emodeInfo")}
           </Text>
           <EModeInfo reserve={reserve} />

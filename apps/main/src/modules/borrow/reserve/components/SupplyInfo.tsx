@@ -47,7 +47,7 @@ export const SupplyInfo = ({
   return (
     <>
       <Stack
-        gap={[10, 40]}
+        gap={["m", "xxxl"]}
         direction={["column", "row"]}
         justify="start"
         align={[null, "center"]}
@@ -58,7 +58,7 @@ export const SupplyInfo = ({
           <Separator orientation="vertical" sx={{ height: [1, 50] }} />
         }
       >
-        <Flex gap={[10, 40]} justify="space-between" align="center">
+        <Flex gap={["m", "xxxl"]} justify="space-between" align="center">
           {showSupplyCapStatus && (
             <CapProgressCircle
               radius={[16, 46]}

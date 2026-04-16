@@ -1,11 +1,10 @@
-import { Box } from "@galacticcouncil/ui/components"
+import { Separator } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 
 export const ReserveSectionDivider = () => (
-  <Box
+  <Separator
     bg={getToken("surfaces.themeBasePalette.background")}
-    height={1}
-    mx={-20}
-    my={[20, 40]}
+    mx="-xl"
+    my={["xl", "xxxl"]}
   />
 )
