@@ -1,3 +1,4 @@
+import { TooltipProvider } from "@radix-ui/react-tooltip"
 import type { Meta, StoryObj } from "@storybook/react-vite"
 import { useState } from "react"
 
@@ -20,30 +21,37 @@ const STEPS = [
 
 const Template = (args: React.ComponentPropsWithoutRef<typeof Stepper>) => {
   const [activeStepIndex, setActiveStepIndex] = useState(0)
-  const totalSteps = args.steps.length + 1
+  const stepCount = args.steps.length
+  const totalSteps = Math.max(stepCount, 1)
 
   return (
-    <Flex direction="column" gap="xl">
-      <Stepper {...args} activeStepIndex={activeStepIndex} />
-      <Flex gap="base" justify="space-between" mt="xl">
-        <Button
-          size="small"
-          variant="secondary"
-          onClick={() => setActiveStepIndex((prev) => (prev - 1) % totalSteps)}
-          disabled={activeStepIndex === 0}
-        >
-          Previous
-        </Button>
-        <Button
-          size="small"
-          variant="secondary"
-          onClick={() => setActiveStepIndex((prev) => (prev + 1) % totalSteps)}
-          disabled={activeStepIndex === totalSteps - 1}
-        >
-          Next
-        </Button>
+    <TooltipProvider delayDuration={0}>
+      <Flex direction="column" gap="xl">
+        <Stepper {...args} activeStepIndex={activeStepIndex} />
+        <Flex gap="base" justify="space-between" mt="xl">
+          <Button
+            size="small"
+            variant="secondary"
+            onClick={() =>
+              setActiveStepIndex((prev) => (prev - 1 + totalSteps) % totalSteps)
+            }
+            disabled={activeStepIndex === 0 || stepCount === 0}
+          >
+            Previous
+          </Button>
+          <Button
+            size="small"
+            variant="secondary"
+            onClick={() =>
+              setActiveStepIndex((prev) => (prev + 1) % totalSteps)
+            }
+            disabled={activeStepIndex === stepCount - 1 || stepCount === 0}
+          >
+            Next
+          </Button>
+        </Flex>
       </Flex>
-    </Flex>
+    </TooltipProvider>
   )
 }
 
@@ -61,5 +69,14 @@ export const CustomWidth: Story = {
     steps: STEPS,
     activeStepIndex: 0,
     maxWidth: 500,
+  },
+}
+
+export const Compact: Story = {
+  render: Template,
+  args: {
+    steps: STEPS,
+    activeStepIndex: 0,
+    compact: true,
   },
 }
