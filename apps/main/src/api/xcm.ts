@@ -167,16 +167,24 @@ export const xcmTransferQuery = (
       bridgeTag,
     ],
     queryFn: async () => {
-      return TransferBuilder(wallet)
+      const builder = TransferBuilder(wallet)
         .withAsset(srcAsset)
         .withSource(srcChain)
         .withDestination(destChain)
-        .build({
-          srcAddress,
-          dstAddress: destAddress,
-          dstAsset: destAsset,
-          tag: bridgeTag,
-        })
+
+      // Do not pass invalid/stale dest asset
+      const validDstAsset = builder.routes.some(
+        (r) => r.destination.asset.key === destAsset,
+      )
+        ? destAsset
+        : undefined
+
+      return builder.build({
+        srcAddress,
+        dstAddress: destAddress,
+        dstAsset: validDstAsset,
+        tag: bridgeTag,
+      })
     },
     enabled:
       !!srcAddress &&
