@@ -99,18 +99,19 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
           srcAmount,
         )
 
+        const sourceFee = await transfer.estimateFee(srcAmount)
+
         const tx =
           srcChain.key === HYDRATION_CHAIN_KEY
             ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
             : await getExternalChainTx(srcChain, transferCall)
 
         const sourceFeeValue = (() => {
-          if (!source) return ""
-          if (source.fee.amount === 0n)
+          if (sourceFee.amount === 0n)
             return t("xcm:summary.feeEstimationNotAvailable")
           return t("common:currency", {
-            value: toDecimal(source.fee.amount, source.fee.decimals),
-            symbol: source.fee.originSymbol,
+            value: toDecimal(sourceFee.amount, sourceFee.decimals),
+            symbol: sourceFee.originSymbol,
           })
         })()
 
@@ -124,14 +125,14 @@ export const useSubmitXcmTransfer = (options: XcmTransferOptions = {}) => {
             success: t("tx.toast.success", i18nVars),
           },
           fee: {
-            feeAmount: toDecimal(source.fee.amount, source.fee.decimals),
-            feeSymbol: source.fee.symbol,
+            feeAmount: toDecimal(sourceFee.amount, sourceFee.decimals),
+            feeSymbol: sourceFee.symbol,
           },
           meta: {
             type: TransactionType.Xcm,
             srcChainKey: srcChain.key,
             srcChainFee: sourceFeeValue,
-            srcChainFeeSymbol: source.fee.symbol,
+            srcChainFeeSymbol: sourceFee.symbol,
             dstChainKey: destChain.key,
             dstChainFee: toDecimal(
               destination.fee.amount,
