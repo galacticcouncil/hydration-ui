@@ -323,7 +323,7 @@ export const useCloseLoopedPosition = (
               title: "Unlooping",
               toasts,
               tx: createProxyCall(
-                rpc.papi,
+                rpc,
                 position.proxyAddress,
                 rpc.papi.tx.Utility.batch_all({
                   calls: calls.map((tx) => tx.decodedCall),
@@ -434,7 +434,7 @@ export const useCloseLoopedPosition = (
           return {
             title: "Swap funds",
             tx: createProxyCall(
-              rpc.papi,
+              rpc,
               position.proxyAddress,
               txs.length > 1
                 ? rpc.papi.tx.Utility.batch_all({
@@ -484,7 +484,7 @@ export const useCloseLoopedPosition = (
             title: "Kill proxy",
             toasts,
             tx: createProxyCall(
-              rpc.papi,
+              rpc,
               position.proxyAddress,
               rpc.papi.tx.Utility.batch_all({
                 calls: [transfetBalanceTx.decodedCall, killProxyTx.decodedCall],
@@ -587,7 +587,7 @@ export const useClosePositions = () => {
             return {
               title: "Swap funds",
               tx: createProxyCall(
-                rpc.papi,
+                rpc,
                 position.proxyAddress,
                 collateralTradeTx.get().decodedCall,
               ),
@@ -633,7 +633,7 @@ export const useClosePositions = () => {
               title: "Kill proxy",
               toasts,
               tx: createProxyCall(
-                rpc.papi,
+                rpc,
                 position.proxyAddress,
                 rpc.papi.tx.Utility.batch_all({
                   calls: [

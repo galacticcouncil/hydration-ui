@@ -135,7 +135,7 @@ export const borrowAssetApyQuery = (
       if (!timestamp) throw new Error("Invalid timestamp")
 
       const borrowReserves = await queryClient.ensureQueryData(
-        borrowReservesQuery(rpc, queryClient, timestamp),
+        borrowReservesQuery(rpc),
       )
 
       const assetReserve = borrowReserves?.formattedReserves.find(

@@ -1,6 +1,6 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
 import { getReserveAssetIdByAddress } from "@galacticcouncil/money-market/utils"
-import { PoolError } from "@galacticcouncil/sdk-next/build/types/pool"
+import { PoolError } from "@galacticcouncil/sdk-next/pool"
 import { keepPreviousData, useQuery } from "@tanstack/react-query"
 import Big from "big.js"
 import { last } from "remeda"
