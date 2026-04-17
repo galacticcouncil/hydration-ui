@@ -1,5 +1,5 @@
 import { ComputedReserveData } from "@galacticcouncil/money-market/hooks"
-import { Flex, ScrollArea, ValueStats } from "@galacticcouncil/ui/components"
+import { Stack, ValueStats } from "@galacticcouncil/ui/components"
 import { useTranslation } from "react-i18next"
 
 export type ReserveHeaderProps = {
@@ -12,46 +12,46 @@ export const ReserveHeader: React.FC<ReserveHeaderProps> = ({ reserve }) => {
   const utilRate = Number(reserve.borrowUsageRatio ?? 0) * 100
 
   return (
-    <ScrollArea
-      orientation="horizontal"
-      horizontalEdgeOffset="var(--layout-gutter)"
+    <Stack
+      direction={["column", null, "row"]}
+      justify="flex-start"
+      gap={["base", null, "xxxl", "3.75rem"]}
+      separated
     >
-      <Flex gap="xxl" justify="space-between">
+      <ValueStats
+        label={t("borrow:reserve.reserveSize")}
+        value={t("currency.compact", {
+          value: Math.max(Number(reserve.totalLiquidityUSD), 0),
+        })}
+        size="large"
+        wrap={[false, false, true]}
+      />
+      <ValueStats
+        label={t("borrow:reserve.availableLiq")}
+        value={t("currency.compact", {
+          value: Math.max(Number(reserve.availableLiquidityUSD), 0),
+        })}
+        size="large"
+        wrap={[false, false, true]}
+      />
+      {utilRate > 0 && (
         <ValueStats
-          label={t("borrow:reserve.reserveSize")}
-          value={t("currency.compact", {
-            value: Math.max(Number(reserve.totalLiquidityUSD), 0),
+          label={t("borrow:reserve.utilRate")}
+          value={t("percent", {
+            value: utilRate,
           })}
           size="large"
-          wrap
+          wrap={[false, false, true]}
         />
-        <ValueStats
-          label={t("borrow:reserve.availableLiq")}
-          value={t("currency.compact", {
-            value: Math.max(Number(reserve.availableLiquidityUSD), 0),
-          })}
-          size="large"
-          wrap
-        />
-        {utilRate > 0 && (
-          <ValueStats
-            label={t("borrow:reserve.utilRate")}
-            value={t("percent", {
-              value: utilRate,
-            })}
-            size="large"
-            wrap
-          />
-        )}
-        <ValueStats
-          label={t("borrow:reserve.oraclePrice")}
-          value={t("currency", {
-            value: Number(reserve.priceInUSD ?? 0),
-          })}
-          size="large"
-          wrap
-        />
-      </Flex>
-    </ScrollArea>
+      )}
+      <ValueStats
+        label={t("borrow:reserve.oraclePrice")}
+        value={t("currency", {
+          value: Number(reserve.priceInUSD ?? 0),
+        })}
+        size="large"
+        wrap={[false, false, true]}
+      />
+    </Stack>
   )
 }

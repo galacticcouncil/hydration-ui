@@ -7,6 +7,7 @@ import { Amount, Button, Flex, Icon } from "@galacticcouncil/ui/components"
 import { useBreakpoints } from "@galacticcouncil/ui/theme"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { getAssetIdFromAddress } from "@galacticcouncil/utils"
+import { Link } from "@tanstack/react-router"
 import { createColumnHelper } from "@tanstack/react-table"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -126,18 +127,27 @@ export const useBorrowedAssetsTableColumns = () => {
 
         const isDisabled = !reserve.isActive || reserve.isPaused
         return (
-          <Button
-            variant="tertiary"
-            width="100%"
-            size="large"
-            disabled={isDisabled}
-            onClick={(e) => {
-              e.stopPropagation()
-              openRepay(underlyingAsset, borrowRateMode, reserve.isFrozen)
-            }}
-          >
-            {t("borrow:repay")}
-          </Button>
+          <Flex gap="l" width="100%">
+            <Button
+              width="100%"
+              size="large"
+              disabled={isDisabled}
+              onClick={(e) => {
+                e.stopPropagation()
+                openRepay(underlyingAsset, borrowRateMode, reserve.isFrozen)
+              }}
+            >
+              {t("borrow:repay")}
+            </Button>
+            <Button variant="tertiary" size="large" width="100%" asChild>
+              <Link
+                to="/borrow/markets/$address"
+                params={{ address: underlyingAsset }}
+              >
+                {t("details")}
+              </Link>
+            </Button>
+          </Flex>
         )
       },
     })

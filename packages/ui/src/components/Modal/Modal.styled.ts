@@ -17,12 +17,17 @@ const shouldForwardProp = (prop: string) =>
   isPropValid(prop) &&
   prop !== "animationDurationMs" &&
   prop !== "hasTopContent" &&
-  prop !== "noPadding"
+  prop !== "noPadding" &&
+  prop !== "isBlurred"
 
 export const SModalOverlay = styled(Overlay, {
   shouldForwardProp,
-})<{ animationDurationMs?: number }>(
-  ({ theme, animationDurationMs = DEFAULT_ANIMATION_DURATION }) => css`
+})<{ animationDurationMs?: number; isBlurred?: boolean }>(
+  ({
+    theme,
+    animationDurationMs = DEFAULT_ANIMATION_DURATION,
+    isBlurred = true,
+  }) => css`
     position: fixed;
     inset: 0;
 
@@ -31,7 +36,10 @@ export const SModalOverlay = styled(Overlay, {
 
     z-index: ${theme.zIndices.modal};
 
-    background: ${theme.details.overlays};
+    background: ${isBlurred
+      ? theme.details.overlayHigh
+      : theme.details.overlays};
+    backdrop-filter: ${isBlurred ? "blur(2px)" : "none"};
 
     &[data-state="open"] {
       animation: ${theme.animations.fadeIn};
