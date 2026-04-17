@@ -32,13 +32,31 @@ export const SNotification = styled("div", {
 
 export const SProgressContainer = styled.div(
   ({ theme }) => css`
-    height: ${theme.sizes["4xs"]};
+    pointer-events: none;
+    height: 100%;
     width: 100%;
+    overflow: hidden;
 
-    background: ${theme.buttons.secondary.outline.fill};
+    border-radius: ${theme.radii.xl};
 
     position: absolute;
-    bottom: 0;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    &::after {
+      content: "";
+
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+
+      height: ${theme.sizes["4xs"]};
+      background: ${theme.buttons.secondary.outline.fill};
+    }
   `,
 )
 
@@ -74,14 +92,16 @@ export const SProgress = styled.div<{
   css`
     @keyframes shrink {
       from {
-        width: 100%;
+        transform: scaleX(1);
       }
       to {
-        width: 0%;
+        transform: scaleX(0);
       }
     }
 
     animation: shrink ${closeTime}ms linear forwards;
+
+    transform-origin: right;
 
     width: 100%;
     height: ${theme.sizes["4xs"]};
