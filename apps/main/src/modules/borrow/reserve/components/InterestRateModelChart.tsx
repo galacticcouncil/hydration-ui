@@ -72,8 +72,9 @@ export const InterestRateModelChart: React.FC<InterestRateModelChartProps> = ({
       gradient="none"
       xAxisProps={{
         type: "number",
+        axisLine: true,
       }}
-      yAxisProps={{ padding: { bottom: 2 } }}
+      yAxisProps={{ padding: { bottom: 2 }, axisLine: true }}
       config={{
         xAxisKey: "utilization",
         xAxisFormatter: (value) => t("percent", { value }),
