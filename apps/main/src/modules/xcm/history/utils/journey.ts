@@ -92,5 +92,5 @@ export function getFormattedAddresses(journey: XcJourney) {
     : journey.fromFormatted || ""
   const to = isH160Address(journey.to) ? journey.to : journey.toFormatted || ""
 
-  return { from: from.toLowerCase(), to: to.toLowerCase() }
+  return { from, to }
 }
