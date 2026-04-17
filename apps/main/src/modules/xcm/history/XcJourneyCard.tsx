@@ -15,8 +15,8 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import { shortenAccountAddress, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
+import Big from "big.js"
 import { useTranslation } from "react-i18next"
-import { isNumber } from "remeda"
 
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
@@ -48,6 +48,8 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
   const isClaimable = isNotPending && isJourneyClaimable(journey)
+
+  const usdValue = Big(totalUsd || transferAsset?.usd || 0)
 
   return (
     <Stack as={Paper} px="primary">
@@ -111,9 +113,9 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
                   symbol: transferAsset.symbol,
                 })}
               </Text>
-              {isNumber(totalUsd) && totalUsd > 0 && (
+              {usdValue.gt(0) && (
                 <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                  {t("currency", { value: totalUsd })}
+                  {t("currency", { value: usdValue })}
                 </Text>
               )}
             </Stack>

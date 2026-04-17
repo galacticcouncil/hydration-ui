@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState } from "react"
 
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
-import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
+import { isOptimisticJourneyForTxHash } from "@/modules/xcm/history/utils/optimistic"
 
 import { xcStore } from "./xcScanStore"
 
@@ -57,10 +57,15 @@ export const useXcScanSubscription = (address: string) => {
               return [journey]
             }
             const prev = old.filter((item) => {
-              const isOptimistic =
-                isOptimisticJourney(item) &&
-                item.originTxPrimary === journey.originTxPrimary
-              return !isOptimistic
+              const isOptimisticPrimary = isOptimisticJourneyForTxHash(
+                item,
+                journey.originTxPrimary ?? "",
+              )
+              const isOptimisticSecondary = isOptimisticJourneyForTxHash(
+                item,
+                journey.originTxSecondary ?? "",
+              )
+              return !isOptimisticPrimary && !isOptimisticSecondary
             })
             return [journey, ...prev]
           })

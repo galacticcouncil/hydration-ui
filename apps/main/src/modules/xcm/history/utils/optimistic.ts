@@ -23,6 +23,16 @@ export function isOptimisticJourney(journey: XcJourney): boolean {
   return journey.correlationId.startsWith(OPTIMISTIC_JOURNEY_PREFIX)
 }
 
+export function isOptimisticJourneyForTxHash(
+  journey: XcJourney,
+  txHash: string,
+): boolean {
+  return (
+    isOptimisticJourney(journey) &&
+    (journey.originTxPrimary === txHash || journey.originTxSecondary === txHash)
+  )
+}
+
 export function chainToUrn(chain: AnyChain): string {
   const ecosystem = chain.ecosystem
   if (!ecosystem) return ""
@@ -90,8 +100,8 @@ export function insertOptimisticJourney(
 ) {
   const queryKey = createXcScanQueryKey(address)
   const current = queryClient.getQueryData<XcJourney[]>(queryKey) ?? []
-  const alreadyExists = current.some(
-    (j) => isOptimisticJourney(j) && j.originTxPrimary === txHash,
+  const alreadyExists = current.some((j) =>
+    isOptimisticJourneyForTxHash(j, txHash),
   )
   if (alreadyExists) return
   const optimisticJourney = convertXcmFormValuesToOptimisticJourney(
@@ -100,6 +110,9 @@ export function insertOptimisticJourney(
     txHash,
     address,
   )
+  console.log("OPTIMISTIC", optimisticJourney?.correlationId, {
+    journey: optimisticJourney,
+  })
   if (!optimisticJourney) return
   queryClient.setQueryData<XcJourney[]>(queryKey, (old) => [
     optimisticJourney,
@@ -114,8 +127,6 @@ export function removeOptimisticJourney(
 ) {
   const queryKey = createXcScanQueryKey(address)
   queryClient.setQueryData<XcJourney[]>(queryKey, (old) =>
-    (old ?? []).filter(
-      (j) => !(isOptimisticJourney(j) && j.originTxPrimary === txHash),
-    ),
+    (old ?? []).filter((j) => !isOptimisticJourneyForTxHash(j, txHash)),
   )
 }

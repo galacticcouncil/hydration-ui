@@ -14,6 +14,7 @@ import {
 } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { createColumnHelper } from "@tanstack/react-table"
+import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -88,6 +89,8 @@ export const useXcScanHistoryColumns = () => {
 
         if (!transferAsset) return null
 
+        const usdValue = Big(row.original.totalUsd || transferAsset?.usd || 0)
+
         return (
           <Flex gap="base" align="center">
             <JourneyAssetLogo assetKey={transferAsset.asset} />
@@ -103,9 +106,11 @@ export const useXcScanHistoryColumns = () => {
                     })
                   : t("number", { value: transferAsset.amount })}
               </Text>
-              <Text fs="p6" lh={1} color={getToken("text.medium")}>
-                {t("currency", { value: row.original.totalUsd })}
-              </Text>
+              {usdValue.gt(0) && (
+                <Text fs="p6" lh={1} color={getToken("text.medium")}>
+                  {t("currency", { value: usdValue })}
+                </Text>
+              )}
             </Stack>
           </Flex>
         )
