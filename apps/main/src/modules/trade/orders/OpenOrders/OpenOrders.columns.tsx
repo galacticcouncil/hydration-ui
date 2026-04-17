@@ -19,7 +19,8 @@ import { SwapAmount } from "@/modules/trade/orders/columns/SwapAmount"
 import { SwapMobile } from "@/modules/trade/orders/columns/SwapMobile"
 import { SwapPrice } from "@/modules/trade/orders/columns/SwapPrice"
 import { SwapType } from "@/modules/trade/orders/columns/SwapType"
-import { OrderData } from "@/modules/trade/orders/lib/useOrdersData"
+import { OrderData, OrderKind } from "@/modules/trade/orders/lib/useOrdersData"
+import { useRemoveIntent } from "@/modules/trade/orders/lib/useRemoveIntent"
 import { TerminateDcaScheduleModalContent } from "@/modules/trade/orders/TerminateDcaScheduleModalContent"
 
 const columnHelper = createColumnHelper<OrderData>()
@@ -32,17 +33,23 @@ export const useOpenOrdersColumns = () => {
     const fromToColumn = columnHelper.display({
       header: t("trade:trade.orders.openOrders.inOut"),
       cell: ({ row }) => {
+        const isLimit = row.original.kind === OrderKind.Limit
+
         return (
           <SwapAmount
             fromAmount={
-              row.original.isOpenBudget
-                ? row.original.fromAmountExecuted
-                : row.original.fromAmountBudget
+              isLimit
+                ? row.original.fromAmountBudget
+                : row.original.isOpenBudget
+                  ? row.original.fromAmountExecuted
+                  : row.original.fromAmountBudget
             }
             toAmount={
-              row.original.isOpenBudget
+              isLimit
                 ? row.original.toAmountExecuted
-                : undefined
+                : row.original.isOpenBudget
+                  ? row.original.toAmountExecuted
+                  : undefined
             }
             from={row.original.from}
             to={row.original.to}
@@ -68,12 +75,34 @@ export const useOpenOrdersColumns = () => {
         </Flex>
       ),
       cell: ({ row }) => {
-        const { from, to, fromAmountExecuted, toAmountExecuted } = row.original
+        const {
+          kind,
+          from,
+          to,
+          fromAmountBudget,
+          fromAmountExecuted,
+          toAmountExecuted,
+        } = row.original
 
-        const price =
-          toAmountExecuted && fromAmountExecuted && Big(toAmountExecuted).gt(0)
-            ? Big(fromAmountExecuted).div(toAmountExecuted).toString()
-            : null
+        let price: string | null = null
+        if (kind === OrderKind.Limit) {
+          // Limit: price = amount_out / amount_in
+          if (
+            toAmountExecuted &&
+            fromAmountBudget &&
+            Big(fromAmountBudget).gt(0)
+          ) {
+            price = Big(toAmountExecuted).div(fromAmountBudget).toString()
+          }
+        } else {
+          if (
+            toAmountExecuted &&
+            fromAmountExecuted &&
+            Big(toAmountExecuted).gt(0)
+          ) {
+            price = Big(fromAmountExecuted).div(toAmountExecuted).toString()
+          }
+        }
 
         return <SwapPrice from={from} to={to} price={price} />
       },
@@ -109,6 +138,9 @@ export const useOpenOrdersColumns = () => {
       id: "actions",
       cell: function Cell({ row }) {
         const [modal, setModal] = useState<"confirmation" | "none">("none")
+        const removeIntent = useRemoveIntent()
+
+        const isLimit = row.original.kind === OrderKind.Limit
 
         return (
           <Flex align="center" gap="base">
@@ -119,25 +151,31 @@ export const useOpenOrdersColumns = () => {
               width={34}
               onClick={(e) => {
                 e.stopPropagation()
-                setModal("confirmation")
+                if (isLimit && row.original.intentId !== undefined) {
+                  removeIntent.mutate(row.original.intentId)
+                } else {
+                  setModal("confirmation")
+                }
               }}
             >
               <Icon component={Trash} size="s" />
             </Button>
-            <TableRowDetailsExpand />
-            <Modal
-              open={modal === "confirmation"}
-              onOpenChange={() => setModal("none")}
-            >
-              <TerminateDcaScheduleModalContent
-                scheduleId={row.original.scheduleId}
-                sold={row.original.fromAmountExecuted}
-                total={row.original.fromAmountBudget}
-                symbol={row.original.from.symbol}
-                openBudget={row.original.isOpenBudget}
-                onClose={() => setModal("none")}
-              />
-            </Modal>
+            {!isLimit && <TableRowDetailsExpand />}
+            {!isLimit && (
+              <Modal
+                open={modal === "confirmation"}
+                onOpenChange={() => setModal("none")}
+              >
+                <TerminateDcaScheduleModalContent
+                  scheduleId={row.original.scheduleId}
+                  sold={row.original.fromAmountExecuted}
+                  total={row.original.fromAmountBudget}
+                  symbol={row.original.from.symbol}
+                  openBudget={row.original.isOpenBudget}
+                  onClose={() => setModal("none")}
+                />
+              </Modal>
+            )}
           </Flex>
         )
       },

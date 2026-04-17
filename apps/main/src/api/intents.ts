@@ -1,0 +1,94 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { queryOptions } from "@tanstack/react-query"
+
+import { TProviderContext } from "@/providers/rpcProvider"
+
+export const iceFeeQuery = (context: TProviderContext) => {
+  const { papiClient, isApiLoaded } = context
+
+  return queryOptions({
+    enabled: isApiLoaded,
+    staleTime: Infinity,
+    queryKey: ["iceFee"],
+    queryFn: async () => {
+      const unsafeApi = papiClient.getUnsafeApi() as any
+      try {
+        // Permill: parts per million (e.g. 200 = 0.02%)
+        const raw = unsafeApi.constants.ICE.Fee
+        const fee =
+          typeof raw === "object" ? Number(raw.value ?? raw) : Number(raw)
+        if (!isNaN(fee) && fee > 0) return fee
+      } catch (e) {
+        console.warn("[iceFee] ICE.Fee constant not available:", e)
+      }
+      // Fallback: 200 Permill = 0.02% (matches runtime config)
+      return 200
+    },
+  })
+}
+
+export type IntentSwapData = {
+  asset_in: number
+  asset_out: number
+  amount_in: bigint
+  amount_out: bigint
+  partial: boolean
+}
+
+export type IntentData = {
+  data: { type: "Swap"; value: IntentSwapData } | { type: "Dca"; value: any }
+  deadline?: bigint
+  on_resolved?: unknown
+}
+
+export type AccountIntent = {
+  id: bigint
+  intent: IntentData
+}
+
+export const intentsByAccountQuery = (
+  context: TProviderContext,
+  address: string,
+) => {
+  const { papiClient, isApiLoaded } = context
+
+  return queryOptions({
+    enabled: isApiLoaded && !!address,
+    refetchInterval: 30_000,
+    queryKey: ["intents", "byAccount", address],
+    queryFn: async (): Promise<AccountIntent[]> => {
+      const unsafeApi = papiClient.getUnsafeApi() as any
+
+      // Use the AccountIntents reverse index — keyed by (account, intentId)
+      let accountEntries: any[]
+      try {
+        accountEntries = await unsafeApi.query.Intent.AccountIntents.getEntries(
+          address,
+          {
+            at: "best",
+          },
+        )
+      } catch {
+        // Intent pallet not available on this chain
+        return []
+      }
+
+      const intentIds = accountEntries.map(
+        (entry: any) => entry.keyArgs[1] as bigint,
+      )
+
+      if (intentIds.length === 0) return []
+
+      const results = await Promise.all(
+        intentIds.map(async (id: bigint) => {
+          const intent = await unsafeApi.query.Intent.Intents.getValue(id, {
+            at: "best",
+          })
+          return intent ? { id, intent: intent as IntentData } : null
+        }),
+      )
+
+      return results.filter((r): r is AccountIntent => r !== null)
+    },
+  })
+}
