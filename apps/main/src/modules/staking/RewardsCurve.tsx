@@ -37,6 +37,13 @@ export const RewardsCurve: FC = () => {
     fontWeight: 600,
   }
 
+  const xAxisTickStyle = {
+    fontFamily: themeProps.fontFamilies1.secondary,
+    fontSize: 10,
+    lineHeight: 1.4,
+    color: themeProps.text.high,
+  }
+
   return (
     <Box mb={30} height={190} width="100%">
       <ChartState
@@ -52,20 +59,15 @@ export const RewardsCurve: FC = () => {
             type: "number",
             tickCount: 10,
             interval: "preserveStart",
-            style: {
-              fontFamily: themeProps.fontFamilies1.secondary,
-              fontSize: 10,
-              lineHeight: 1.4,
-              color: themeProps.text.high,
-            },
-            tick({ payload, visibleTicksCount, x, y, style, ...props }) {
+            style: xAxisTickStyle,
+            tick({ payload, visibleTicksCount, x, y, ...props }) {
               const isLastTick = payload.index + 1 === visibleTicksCount
 
               if (isLastTick) {
                 return (
                   <text
                     style={{
-                      ...style,
+                      ...xAxisTickStyle,
                       fontWeight: 600,
                     }}
                     x={x}
@@ -84,7 +86,7 @@ export const RewardsCurve: FC = () => {
               }
 
               return (
-                <text style={style} x={x} y={y} {...props}>
+                <text style={xAxisTickStyle} x={x} y={y} {...props}>
                   {payload.value}
                 </text>
               )

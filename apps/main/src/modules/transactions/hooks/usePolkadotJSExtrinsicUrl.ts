@@ -1,20 +1,27 @@
-import { HYDRATION_CHAIN_KEY, isAnyParachain } from "@galacticcouncil/utils"
+import {
+  HYDRATION_CHAIN_KEY,
+  isAnyParachain,
+  safeStringify,
+} from "@galacticcouncil/utils"
+import { useQuery } from "@tanstack/react-query"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { first } from "remeda"
 
 import { AnyTransaction } from "@/modules/transactions/types"
 import { getPapiTransactionCallData } from "@/modules/transactions/utils/tx"
-import { useRpcProvider } from "@/providers/rpcProvider"
 import { useProviderRpcUrlStore } from "@/states/provider"
 
 export const usePolkadotJSExtrinsicUrl = (
   tx: AnyTransaction,
   srcChainKey: string = HYDRATION_CHAIN_KEY,
 ): string => {
-  const { papiCompatibilityToken } = useRpcProvider()
   const { rpcUrl } = useProviderRpcUrlStore()
 
-  const callData = getPapiTransactionCallData(tx, papiCompatibilityToken)
+  const { data: callData } = useQuery({
+    queryKey: ["papiCallData", safeStringify(tx)],
+    queryFn: () => getPapiTransactionCallData(tx),
+    staleTime: Infinity,
+  })
 
   if (!callData) return ""
 

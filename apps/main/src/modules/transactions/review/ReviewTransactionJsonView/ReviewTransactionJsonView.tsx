@@ -5,9 +5,11 @@ import {
   TabsContent,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { HYDRATION_CHAIN_KEY } from "@galacticcouncil/utils"
+import { HYDRATION_CHAIN_KEY, safeStringify } from "@galacticcouncil/utils"
 import { useTranslation } from "react-i18next"
 import { useMeasure } from "react-use"
+
+import { useQuery } from "@tanstack/react-query"
 
 import { usePolkadotJSExtrinsicUrl } from "@/modules/transactions/hooks/usePolkadotJSExtrinsicUrl"
 import { CallHashText } from "@/modules/transactions/review/ReviewTransactionJsonView/components/CallHashText"
@@ -42,10 +44,13 @@ export const ReviewTransactionJsonContent: React.FC<
   Omit<JsonContentProps, "mode">
 > = ({ tx, srcChainKey, jsonPath }) => {
   const { t } = useTranslation("common")
-  const { papiCompatibilityToken } = useRpcProvider()
 
   const txJson = decodeTx(tx, jsonPath)
-  const txCallHash = getTxCallHash(tx, papiCompatibilityToken)
+  const { data: txCallHash = "" } = useQuery({
+    queryKey: ["txCallHash", safeStringify(tx)],
+    queryFn: () => getTxCallHash(tx),
+    staleTime: Infinity,
+  })
   const txUrl = usePolkadotJSExtrinsicUrl(tx, srcChainKey)
 
   const isValidTxCallHash = !!txCallHash

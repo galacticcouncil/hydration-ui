@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { millisecondsInHour } from "date-fns/constants"
 import { Binary, Enum } from "polkadot-api"
+import type { SizedHex } from "polkadot-api"
 import { useMemo } from "react"
 
 import { useSquidClient } from "@/api/provider"
@@ -131,7 +132,7 @@ export const useOraclePrice = (
             ]
 
             const res = await papi.query.EmaOracle.Oracles.getValue(
-              Binary.fromText(type),
+              Binary.toHex(Binary.fromText(type)) as SizedHex<8>,
               orderedAssets,
               Enum("TenMinutes"),
             )

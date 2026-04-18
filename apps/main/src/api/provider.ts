@@ -16,8 +16,8 @@ import {
   DryRunErrorDecoder,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
-import { CompatibilityLevel, PolkadotClient } from "polkadot-api"
-import { WsJsonRpcProvider } from "polkadot-api/ws-provider"
+import { PolkadotClient } from "polkadot-api"
+import { WsJsonRpcProvider } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -34,10 +34,8 @@ export type TProviderData = {
   ws: WsJsonRpcProvider
   papi: Papi
   papiNext: PapiNext
-  isNext: boolean
   sdk: SdkCtx
   papiClient: PolkadotClient
-  papiCompatibilityToken: Awaited<Papi["compatibilityToken"]>
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
@@ -108,19 +106,13 @@ const getProviderData = async (
 
   const metadata = AssetMetadataFactory.getInstance()
 
-  const [sdk, slotDuration, papiCompatibilityToken, isNext] = await Promise.all(
-    [
-      createSdkContext(papiClient),
-      papi.constants.Aura.SlotDuration(),
-      papi.compatibilityToken,
-      papiNext.constants.System.Version.isCompatible(
-        CompatibilityLevel.Partial,
-      ),
-      metadata.fetchAssets(),
-      metadata.fetchChains(),
-      metadata.fetchMetadata(),
-    ],
-  )
+  const [sdk, slotDuration] = await Promise.all([
+    createSdkContext(papiClient),
+    papi.constants.Aura.SlotDuration(),
+    metadata.fetchAssets(),
+    metadata.fetchChains(),
+    metadata.fetchMetadata(),
+  ])
 
   if (ENV.VITE_HSM_ENABLED) {
     sdk.ctx.pool.withHsm()
@@ -139,8 +131,6 @@ const getProviderData = async (
     papi,
     papiNext,
     papiClient,
-    isNext,
-    papiCompatibilityToken,
     evm,
     sdk,
     rpcUrlList,

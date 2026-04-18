@@ -14,7 +14,7 @@ import {
   StatusChange,
   WsEvent,
   WsJsonRpcProvider,
-} from "polkadot-api/ws-provider"
+} from "polkadot-api/ws"
 import { createContext, ReactNode, useContext, useEffect } from "react"
 
 import {
@@ -43,8 +43,6 @@ const defaultData: TProviderContext = {
   slotDurationMs: 6000,
   papi: {} as TProviderData["papi"],
   papiNext: {} as TProviderData["papiNext"],
-  isNext: false,
-  papiCompatibilityToken: {} as TProviderData["papiCompatibilityToken"],
   sdk: {} as TProviderData["sdk"],
   papiClient: {} as TProviderData["papiClient"],
   evm: {} as TProviderData["evm"],
