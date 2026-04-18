@@ -3,8 +3,8 @@ import {
   isAnyParachain,
   safeStringify,
 } from "@galacticcouncil/utils"
-import { useQuery } from "@tanstack/react-query"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
+import { useQuery } from "@tanstack/react-query"
 import { first } from "remeda"
 
 import { AnyTransaction } from "@/modules/transactions/types"

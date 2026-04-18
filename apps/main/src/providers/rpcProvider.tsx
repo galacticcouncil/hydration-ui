@@ -10,11 +10,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { TypedApi } from "polkadot-api"
-import {
-  StatusChange,
-  WsEvent,
-  WsJsonRpcProvider,
-} from "polkadot-api/ws"
+import { StatusChange, WsEvent, WsJsonRpcProvider } from "polkadot-api/ws"
 import { createContext, ReactNode, useContext, useEffect } from "react"
 
 import {

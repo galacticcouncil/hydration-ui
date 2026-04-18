@@ -83,9 +83,7 @@ export const decodeTx = (
   return {}
 }
 
-export const getTxCallHash = async (
-  tx: AnyTransaction,
-): Promise<string> => {
+export const getTxCallHash = async (tx: AnyTransaction): Promise<string> => {
   if (isPapiTransaction(tx)) {
     return getPapiTransactionCallData(tx)
   }
