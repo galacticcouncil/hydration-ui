@@ -26,7 +26,7 @@ export const SModalOverlay = styled(Overlay, {
   ({
     theme,
     animationDurationMs = DEFAULT_ANIMATION_DURATION,
-    isBlurred = true,
+    isBlurred = false,
   }) => css`
     position: fixed;
     inset: 0;
