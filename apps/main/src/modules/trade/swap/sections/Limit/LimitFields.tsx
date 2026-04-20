@@ -165,22 +165,18 @@ export const LimitFields: FC = () => {
   /** User edits sell amount */
   const handleSellAmountChange = useCallback(
     (newSellAmount: string) => {
+      // Record anchor synchronously so a subsequent price edit
+      // (which is not debounced) already sees the new anchor.
+      setValue("amountAnchor", "sell")
       debounced(() => {
         const values = getValues()
         const price = values.limitPrice
 
         if (!price) return
 
-        if (!values.isLocked) {
-          // Price-sacred: sell changed → recalc buy
-          const newBuy = calcBuyFromSellAndPrice(newSellAmount, price)
-          setValue("buyAmount", newBuy)
-        } else {
-          // Sell-sacred: sell is locked, shouldn't normally be editable
-          // but if it is, recalc buy
-          const newBuy = calcBuyFromSellAndPrice(newSellAmount, price)
-          setValue("buyAmount", newBuy)
-        }
+        // Price-sacred (or locked): sell changed → recalc buy
+        const newBuy = calcBuyFromSellAndPrice(newSellAmount, price)
+        setValue("buyAmount", newBuy)
         trigger()
       })
     },
@@ -190,6 +186,10 @@ export const LimitFields: FC = () => {
   /** User edits buy amount */
   const handleBuyAmountChange = useCallback(
     (newBuyAmount: string) => {
+      // When locked, sell is sacred → anchor stays "sell".
+      // Otherwise the user is now anchoring on buy.
+      const { isLocked } = getValues()
+      if (!isLocked) setValue("amountAnchor", "buy")
       debounced(() => {
         const values = getValues()
         const price = values.limitPrice
@@ -226,7 +226,12 @@ export const LimitFields: FC = () => {
   // ── Lock toggle ──
   const handleLockToggle = useCallback(() => {
     const values = getValues()
-    setValue("isLocked", !values.isLocked)
+    const nextLocked = !values.isLocked
+    setValue("isLocked", nextLocked)
+    // Turning the lock ON forces sell-sacred mode, so the anchor
+    // needs to match — otherwise a subsequent price edit would try
+    // to honor a buy anchor that contradicts the lock.
+    if (nextLocked) setValue("amountAnchor", "sell")
   }, [getValues, setValue])
 
   // ── Asset change handlers ──
@@ -241,6 +246,7 @@ export const LimitFields: FC = () => {
         sellAsset: newSellAsset,
         limitPrice: "",
         buyAmount: "",
+        amountAnchor: "sell",
       })
       trigger()
     },
@@ -256,6 +262,7 @@ export const LimitFields: FC = () => {
         buyAsset: newBuyAsset,
         limitPrice: "",
         buyAmount: "",
+        amountAnchor: "sell",
       })
       trigger()
     },

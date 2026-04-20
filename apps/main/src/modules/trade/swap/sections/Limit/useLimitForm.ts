@@ -27,6 +27,12 @@ const schemaBase = z.object({
   partiallyFillable: z.boolean(),
   /** Lock toggle: false = price-sacred (default), true = sell-sacred */
   isLocked: z.boolean(),
+  /**
+   * Which amount was last touched by the user. On price change we
+   * recalculate the OTHER amount so the user's last explicit input
+   * is preserved. Lock ON overrides this and always forces 'sell'.
+   */
+  amountAnchor: z.enum(["sell", "buy"]),
 })
 
 export type LimitFormValues = z.infer<typeof schemaBase>
@@ -63,6 +69,7 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     expiry: "open",
     partiallyFillable: true,
     isLocked: false,
+    amountAnchor: "sell",
   }
 
   const form = useForm<LimitFormValues>({

@@ -12,9 +12,18 @@ export const useSwitchAssets = () => {
   return useMutation({
     mutationFn: async () => {
       const values = getValues()
-      const { sellAsset, buyAsset, limitPrice } = values
+      const {
+        sellAsset,
+        buyAsset,
+        sellAmount,
+        buyAmount,
+        limitPrice,
+        amountAnchor,
+      } = values
 
-      // Invert the limit price when switching assets
+      // Invert the limit price. Store at full precision so the display
+      // layer (LimitPriceSection) can format without precision loss and
+      // flipping back still round-trips cleanly.
       let newPrice = ""
       if (limitPrice) {
         try {
@@ -27,23 +36,24 @@ export const useSwitchAssets = () => {
         }
       }
 
-      // Recalculate buy amount with new price
-      let newBuyAmount = ""
-      if (values.sellAmount && newPrice) {
-        try {
-          newBuyAmount = new Big(values.sellAmount).times(newPrice).toString()
-        } catch {
-          // ignore
-        }
-      }
+      // Swap amounts: old sellAmount becomes new buyAmount (user was
+      // "selling N of X" — after flip they're now "buying N of X" by
+      // selling the opposite asset), and vice versa.
+      const newSellAmount = buyAmount
+      const newBuyAmount = sellAmount
+
+      // Anchor follows the user's last-touched amount through the swap:
+      // the value that WAS in sell is now in buy and vice versa.
+      const newAnchor: "sell" | "buy" = amountAnchor === "sell" ? "buy" : "sell"
 
       reset({
         ...values,
         sellAsset: buyAsset,
         buyAsset: sellAsset,
-        sellAmount: "",
+        sellAmount: newSellAmount,
         buyAmount: newBuyAmount,
         limitPrice: newPrice,
+        amountAnchor: newAnchor,
       })
 
       trigger()

@@ -180,6 +180,7 @@
   "limit.receiveAtLeast": "Receive at least",
   "limit.submit": "Place limit order",
   "limit.priceLabel": "When 1 {{ symbol }} price is",
+  "limit.priceUnit": "1 {{ symbol }} =",
   "limit.spot": "Spot: {{ value }}",
   "limit.expiry": "Expires in",
   "limit.expiry.1d": "1 DAY",
@@ -191,6 +192,8 @@
   "limit.partiallyFillable.tooltip.intro": "Allows you to choose whether your limit orders will be <0>Partially fillable</0> or <0>Fill or kill</0>.",
   "limit.partiallyFillable.tooltip.partial": "<0>Partially fillable</0> orders may be filled partially if there isn't enough liquidity to fill the full amount.",
   "limit.partiallyFillable.tooltip.fillOrKill": "<0>Fill or kill</0> orders will either be filled fully or not at all.",
+  "limit.summary.description": "Sell <0>{{ sellAmount }}</0> for at least <0>{{ buyAmount }}</0> when price reaches <0>{{ limitPrice }}</0> for <0>1 {{ sellSymbol }}</0>.",
+  "limit.summary.totalFees": "Total fees",
   "limit.tx.submitted": "Limit order submitted: Sell {{ amountIn }} for {{ amountOut }}",
   "limit.tx.success": "Limit order placed: Sell {{ amountIn }} for {{ amountOut }}",
   "limit.tx.error": "Limit order failed: Sell {{ amountIn }} for {{ amountOut }}"

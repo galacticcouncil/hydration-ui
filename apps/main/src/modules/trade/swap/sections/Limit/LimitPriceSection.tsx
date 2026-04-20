@@ -2,7 +2,6 @@ import { css } from "@emotion/react"
 import styled from "@emotion/styled"
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
-  ButtonIcon,
   Flex,
   Icon,
   NumberInput,
@@ -46,13 +45,31 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
   // Denomination toggle: "normal" = 1 SELL = X BUY, "inverted" = 1 BUY = X SELL
   const [isInverted, setIsInverted] = useState(false)
 
+  // When the user types in the price field we store their raw input here
+  // so the NumberInput displays exactly what they typed (no round-trip
+  // through Big.js + formatCalcValue which can mangle digits).
+  // `canonical` is the limitPrice value we wrote at the same time; on
+  // every render we check that limitPrice still matches — if an external
+  // source (spot prefill, asset reset, sell-sacred recalc) has changed
+  // it, we ignore the cached user input and format the new value.
+  const userInputRef = useRef<{
+    value: string
+    inverted: boolean
+    canonical: string
+  } | null>(null)
+
   const displayPrice = (() => {
+    const user = userInputRef.current
+    if (user && user.inverted === isInverted && user.canonical === limitPrice) {
+      return user.value
+    }
     if (!limitPrice) return ""
-    if (!isInverted) return limitPrice
     try {
-      const p = new Big(limitPrice)
-      if (p.lte(0)) return ""
-      return formatCalcValue(Big(1).div(p))
+      const value = isInverted
+        ? Big(1).div(new Big(limitPrice))
+        : new Big(limitPrice)
+      if (value.lte(0)) return ""
+      return formatCalcValue(value)
     } catch {
       return ""
     }
@@ -89,22 +106,53 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     }
   })()
 
-  // Recalculate buy from sell + price
-  const recalcBuy = useCallback(
+  /**
+   * Recalculate the non-anchored amount from the new price.
+   * Anchor rule:
+   *   - Lock ON → always sell-sacred: keep sell, recalc buy (buy = sell × price)
+   *   - Lock OFF, anchor = "sell" → keep sell, recalc buy
+   *   - Lock OFF, anchor = "buy"  → keep buy, recalc sell (sell = buy / price)
+   * Degenerate cases: if only one amount is filled, treat it as the anchor.
+   */
+  const recalcFromPrice = useCallback(
     (price: string) => {
-      const values = getValues()
-      if (values.sellAmount && price) {
-        try {
-          const raw = new Big(values.sellAmount).times(price)
-          setValue("buyAmount", formatCalcValue(raw))
-        } catch {
-          // ignore
+      if (!price) {
+        trigger()
+        return
+      }
+      try {
+        const p = new Big(price)
+        if (p.lte(0)) {
+          trigger()
+          return
         }
+
+        const values = getValues()
+        const hasSell = !!values.sellAmount
+        const hasBuy = !!values.buyAmount
+
+        const keepBuy =
+          !values.isLocked &&
+          (values.amountAnchor === "buy" || (!hasSell && hasBuy))
+
+        if (keepBuy && values.buyAmount) {
+          // buy-anchored → sell = buy / price
+          const newSell = new Big(values.buyAmount).div(p)
+          setValue("sellAmount", formatCalcValue(newSell))
+        } else if (values.sellAmount) {
+          // sell-anchored (default / locked) → buy = sell × price
+          const newBuy = new Big(values.sellAmount).times(p)
+          setValue("buyAmount", formatCalcValue(newBuy))
+        }
+      } catch {
+        // ignore invalid Big parses
       }
       trigger()
     },
     [getValues, setValue, trigger],
   )
+  // Alias kept for callers below that still use the old name.
+  const recalcBuy = recalcFromPrice
 
   // ── Price change handler ──
   const handlePriceChange = useCallback(
@@ -116,14 +164,25 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
         try {
           const p = new Big(displayValue)
           if (p.lte(0)) return
-          // Format to match our decimal convention; raw .toString() here
-          // produces ~20 sig figs which leaks into the non-inverted view.
-          newLimitPrice = formatCalcValue(Big(1).div(p))
+          // Store at full precision so flipping back round-trips cleanly.
+          // The non-inverted display path formats the value via
+          // formatCalcValue so the raw ~20-digit string never reaches
+          // the user.
+          newLimitPrice = Big(1).div(p).toString()
         } catch {
           return
         }
       }
 
+      // Remember exactly what the user typed so the input shows it back
+      // unchanged (the canonical limitPrice may have been transformed).
+      // canonical lets us detect external changes to limitPrice and
+      // invalidate this cache without a stale-render.
+      userInputRef.current = {
+        value: displayValue,
+        inverted: isInverted,
+        canonical: newLimitPrice,
+      }
       setValue("limitPrice", newLimitPrice)
       // Both modes: price changed → recalc buy
       recalcBuy(newLimitPrice)
@@ -134,6 +193,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
   // ── Set limit price to spot/market price ──
   const handleSetSpotPrice = useCallback(() => {
     if (!marketPrice) return
+    userInputRef.current = null
     setValue("limitPrice", marketPrice)
     recalcBuy(marketPrice)
   }, [marketPrice, setValue, recalcBuy])
@@ -153,10 +213,16 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
       if (!marketPrice || !value) return
       try {
         const pct = new Big(value)
+        // A pill value of -100% or less would produce a zero/negative
+        // limit price, which makes no economic sense and leaves the form
+        // in an inconsistent state (display empty, amounts stale). Reject
+        // silently — the user keeps whatever price was there before.
+        if (pct.lte(-100)) return
         const market = new Big(marketPrice)
-        const newPrice = formatCalcValue(
-          market.times(Big(1).plus(pct.div(100))),
-        )
+        const newRaw = market.times(Big(1).plus(pct.div(100)))
+        if (newRaw.lte(0)) return
+        const newPrice = formatCalcValue(newRaw)
+        userInputRef.current = null
         setValue("limitPrice", newPrice)
         recalcBuy(newPrice)
       } catch {
@@ -210,39 +276,43 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
               />
             ) : (
               <SCustomPill
+                type="button"
+                onClick={handlePillEditStart}
+                aria-label="Edit deviation"
                 isPositive={deviation !== null && deviation > 0.005}
                 isNegative={deviation !== null && deviation < -0.005}
               >
                 {deviationDisplay}
-                <SEditButton
-                  type="button"
-                  onClick={handlePillEditStart}
-                  aria-label="Edit deviation"
-                >
-                  <Icon
-                    component={Pencil}
-                    size="2xs"
-                    color={getToken("icons.onContainer")}
-                  />
-                </SEditButton>
+                <Icon
+                  component={Pencil}
+                  size="2xs"
+                  color={getToken("icons.onContainer")}
+                />
               </SCustomPill>
             )}
-            <ButtonIcon
-              size="small"
-              onClick={() => setIsInverted((prev) => !prev)}
-              aria-label="Switch denomination"
-            >
-              <Icon
-                component={ArrowLeftRight}
-                size="xs"
-                color={getToken("icons.onContainer")}
-              />
-            </ButtonIcon>
           </Flex>
         </Flex>
 
-        {/* Price input */}
+        {/* Price input row — flip pill (left) + editable price + denom symbol (right) */}
         <Flex align="center" gap="s">
+          <SFlipPill
+            type="button"
+            onClick={() => setIsInverted((prev) => !prev)}
+            aria-label="Switch denomination"
+          >
+            <Icon
+              component={ArrowLeftRight}
+              size="xs"
+              color={getToken("icons.onContainer")}
+            />
+            <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
+              {t("trade:limit.priceUnit", {
+                symbol: isInverted
+                  ? (buyAsset?.symbol ?? "")
+                  : (sellAsset?.symbol ?? ""),
+              })}
+            </Text>
+          </SFlipPill>
           <NumberInput
             variant="embedded"
             value={displayPrice}
@@ -348,11 +418,34 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
 
 // ── Styled components ──
 
-const SCustomPill = styled.div<{
+const SFlipPill = styled.button(
+  ({ theme }) => css`
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: ${theme.space.xs};
+    padding: ${theme.space.s} ${theme.space.base};
+    border-radius: 30px;
+    border: 1px solid ${theme.buttons.secondary.low.borderRest};
+    background: ${theme.buttons.secondary.low.rest};
+    transition: ${theme.transitions.colors};
+
+    &:hover {
+      background: ${theme.buttons.secondary.low.hover};
+    }
+  `,
+)
+
+const SCustomPill = styled.button<{
   isPositive?: boolean
   isNegative?: boolean
 }>(
   ({ theme, isPositive, isNegative }) => css`
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -383,6 +476,10 @@ const SCustomPill = styled.div<{
         : css`
             color: ${theme.text.low};
             background: ${theme.buttons.secondary.low.rest};
+
+            &:hover {
+              background: ${theme.buttons.secondary.low.hover};
+            }
           `}
   `,
 )
@@ -402,19 +499,6 @@ const SSpotButton = styled.button(
     }
   `,
 )
-
-const SEditButton = styled.button`
-  all: unset;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.7;
-
-  &:hover {
-    opacity: 1;
-  }
-`
 
 const SPillInput = styled.input(
   ({ theme }) => css`

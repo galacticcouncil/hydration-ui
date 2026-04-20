@@ -4,6 +4,7 @@ import { FormProvider } from "react-hook-form"
 
 import { LimitFields } from "@/modules/trade/swap/sections/Limit/LimitFields"
 import { LimitSubmit } from "@/modules/trade/swap/sections/Limit/LimitSubmit"
+import { LimitSummary } from "@/modules/trade/swap/sections/Limit/LimitSummary"
 import { useLimitForm } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { useSubmitLimitOrder } from "@/modules/trade/swap/sections/Limit/useSubmitLimitOrder"
 
@@ -28,6 +29,7 @@ export const Limit: FC = () => {
           isLoading={submitLimitOrder.isPending}
           isEnabled={isSubmitEnabled}
         />
+        <LimitSummary />
       </form>
     </FormProvider>
   )
