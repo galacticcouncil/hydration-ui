@@ -7,17 +7,14 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import {
-  shortenAccountAddress,
-  stringEquals,
-  xcscan,
-} from "@galacticcouncil/utils"
+import { stringEquals, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
 import { useMemo } from "react"
 import { useTranslation } from "react-i18next"
 
+import { AccountIdentity } from "@/components/AccountIdentity"
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
@@ -57,9 +54,11 @@ export const useXcScanHistoryColumns = () => {
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.origin} />
-            <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(from)}
-            </Text>
+            <AccountIdentity
+              fw={500}
+              color={getToken("text.high")}
+              address={from}
+            />
           </Flex>
         )
       },
@@ -73,9 +72,11 @@ export const useXcScanHistoryColumns = () => {
         return (
           <Flex gap="base" align="center">
             <JourneyChainLogo networkUrn={row.original.destination} />
-            <Text fw={500} color={getToken("text.high")}>
-              {shortenAccountAddress(to)}
-            </Text>
+            <AccountIdentity
+              fw={500}
+              color={getToken("text.high")}
+              address={to}
+            />
           </Flex>
         )
       },

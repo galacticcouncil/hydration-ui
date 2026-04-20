@@ -13,11 +13,12 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { shortenAccountAddress, xcscan } from "@galacticcouncil/utils"
+import { xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { AccountIdentity } from "@/components/AccountIdentity"
 import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
@@ -125,16 +126,22 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         <Stack>
           <Flex gap="s" align="center">
             {from && (
-              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-                {t("from")}: {shortenAccountAddress(from)}
-              </Text>
+              <Flex gap="s" align="center">
+                <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                  {t("from")}:
+                </Text>
+                <AccountIdentity fs="p6" lh={1.3} address={from} />
+              </Flex>
             )}
           </Flex>
           <Flex gap="s" align="center">
             {to && (
-              <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
-                {t("to")}: {shortenAccountAddress(to)}
-              </Text>
+              <Flex gap="s" align="center">
+                <Text fs="p6" lh={1.3} color={getToken("text.medium")}>
+                  {t("to")}:
+                </Text>
+                <AccountIdentity fs="p6" lh={1.3} address={to} />
+              </Flex>
             )}
           </Flex>
         </Stack>
