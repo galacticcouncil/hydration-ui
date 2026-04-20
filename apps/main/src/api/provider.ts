@@ -16,8 +16,7 @@ import {
   DryRunErrorDecoder,
 } from "@galacticcouncil/utils"
 import { QueryClient, queryOptions } from "@tanstack/react-query"
-import { PolkadotClient } from "polkadot-api"
-import { WsJsonRpcProvider } from "polkadot-api/ws"
+import { createWsClient } from "polkadot-api/ws"
 import { useEffect, useMemo, useState } from "react"
 import { doNothing, unique } from "remeda"
 import { createPublicClient, custom, PublicClient } from "viem"
@@ -29,13 +28,14 @@ import { useProviderRpcUrlStore } from "@/states/provider"
 
 export type TFeatureFlags = object
 
+export type WsPolkadotClient = ReturnType<typeof createWsClient>
+
 export type TProviderData = {
   queryClient: QueryClient
-  ws: WsJsonRpcProvider
   papi: Papi
   papiNext: PapiNext
   sdk: SdkCtx
-  papiClient: PolkadotClient
+  papiClient: WsPolkadotClient
   evm: PublicClient
   featureFlags: TFeatureFlags
   rpcUrlList: string[]
@@ -97,9 +97,7 @@ const getProviderData = async (
     ? unique([priorityRpcUrl, ...rpcUrlList])
     : rpcUrlList
 
-  const papiClient = apis.api(urls, apiOptions)
-  const ws = apis.getWs(urls)
-  if (!ws) throw new Error("WsJsonRpcProvider is not available")
+  const papiClient = apis.api(urls, apiOptions) as WsPolkadotClient
 
   const papi = papiClient.getTypedApi(hydration)
   const papiNext = papiClient.getTypedApi(hydrationNext)
@@ -127,7 +125,6 @@ const getProviderData = async (
 
   return {
     queryClient,
-    ws,
     papi,
     papiNext,
     papiClient,
