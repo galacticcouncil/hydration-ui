@@ -21,6 +21,7 @@ export const useXcScan = (address: string, options: XcScanOptions = {}) => {
     enabled: !!address,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
+    initialDataUpdatedAt: 0,
     initialData: [],
     select: claimableOnly ? getClaimableJourneys : undefined,
     queryFn: () => [],
