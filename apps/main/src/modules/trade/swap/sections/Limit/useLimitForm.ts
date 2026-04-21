@@ -14,7 +14,7 @@ import {
   validateAssetSellOnly,
 } from "@/utils/validators"
 
-export const EXPIRY_OPTIONS = ["1d", "3d", "10d", "open"] as const
+export const EXPIRY_OPTIONS = ["15min", "30min", "1h", "1d", "open"] as const
 export type ExpiryOption = (typeof EXPIRY_OPTIONS)[number]
 
 const schemaBase = z.object({
@@ -33,6 +33,13 @@ const schemaBase = z.object({
    * is preserved. Lock ON overrides this and always forces 'sell'.
    */
   amountAnchor: z.enum(["sell", "buy"]),
+  /**
+   * "spot" → limitPrice mirrors the live spot price every block.
+   * "user" → user has typed / edited a custom price or deviation %,
+   *          so we stop auto-syncing. Reset to "spot" by clicking the
+   *          Spot button or by changing assets.
+   */
+  priceAnchor: z.enum(["spot", "user"]),
 })
 
 export type LimitFormValues = z.infer<typeof schemaBase>
@@ -70,6 +77,7 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     partiallyFillable: true,
     isLocked: false,
     amountAnchor: "sell",
+    priceAnchor: "spot",
   }
 
   const form = useForm<LimitFormValues>({

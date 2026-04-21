@@ -35,8 +35,29 @@ export type IntentSwapData = {
   partial: boolean
 }
 
+export type IntentDcaData = {
+  asset_in: number
+  asset_out: number
+  /** Per-trade input (native units). */
+  amount_in: bigint
+  /** Per-trade expected output (native units). */
+  amount_out: bigint
+  /** Permill (parts per million). 10_000 = 1%. */
+  slippage: number
+  /**
+   * Total budget cap in native units. `undefined` means "rolling / no
+   * cap" — the intent runs until the account balance is depleted or
+   * until the intent is cancelled.
+   */
+  budget?: bigint
+  /** Blocks between executions. */
+  period: number
+}
+
 export type IntentData = {
-  data: { type: "Swap"; value: IntentSwapData } | { type: "Dca"; value: any }
+  data:
+    | { type: "Swap"; value: IntentSwapData }
+    | { type: "Dca"; value: IntentDcaData }
   deadline?: bigint
   on_resolved?: unknown
 }

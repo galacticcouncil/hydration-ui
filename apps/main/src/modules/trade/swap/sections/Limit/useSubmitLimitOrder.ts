@@ -22,11 +22,16 @@ const getIntentAssetId = (asset: TAsset): number => {
   return Number(asset.id)
 }
 
-// Expiry durations in milliseconds
+// Expiry durations in milliseconds. Must stay within the runtime's
+// `Intent.MaxAllowedIntentDuration` constant — going over it causes
+// the extrinsic to fail with `Intent: InvalidDeadline`. Current devnet
+// appears to cap intents below 1 day, which is why the old
+// 3d / 10d options were removed.
 const EXPIRY_MS: Record<string, number> = {
+  "15min": 15 * 60 * 1000,
+  "30min": 30 * 60 * 1000,
+  "1h": 60 * 60 * 1000,
   "1d": 24 * 60 * 60 * 1000,
-  "3d": 3 * 24 * 60 * 60 * 1000,
-  "10d": 10 * 24 * 60 * 60 * 1000,
 }
 
 // When limit price is within this tolerance of the router quote rate we treat

@@ -140,7 +140,12 @@ export const useOpenOrdersColumns = () => {
         const [modal, setModal] = useState<"confirmation" | "none">("none")
         const removeIntent = useRemoveIntent()
 
-        const isLimit = row.original.kind === OrderKind.Limit
+        // Any row produced by an intent — Swap (limit) or Dca — carries
+        // an `intentId` and is cancelled through `Intent.remove_intent`.
+        // Legacy DCA schedules (from the old pallet, surfaced via the
+        // indexer) have no `intentId` and still use the DCA terminate
+        // modal + extrinsic.
+        const isIntent = row.original.intentId !== undefined
 
         return (
           <Flex align="center" gap="base">
@@ -151,7 +156,7 @@ export const useOpenOrdersColumns = () => {
               width={34}
               onClick={(e) => {
                 e.stopPropagation()
-                if (isLimit && row.original.intentId !== undefined) {
+                if (isIntent && row.original.intentId !== undefined) {
                   removeIntent.mutate(row.original.intentId)
                 } else {
                   setModal("confirmation")
@@ -160,8 +165,8 @@ export const useOpenOrdersColumns = () => {
             >
               <Icon component={Trash} size="s" />
             </Button>
-            {!isLimit && <TableRowDetailsExpand />}
-            {!isLimit && (
+            {!isIntent && <TableRowDetailsExpand />}
+            {!isIntent && (
               <Modal
                 open={modal === "confirmation"}
                 onOpenChange={() => setModal("none")}

@@ -14,7 +14,7 @@ import {
 import { getToken } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
 import { Pencil } from "lucide-react"
-import { FC, useCallback, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
@@ -44,6 +44,29 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
 
   // Denomination toggle: "normal" = 1 SELL = X BUY, "inverted" = 1 BUY = X SELL
   const [isInverted, setIsInverted] = useState(false)
+
+  // Last raw text the user typed into the pill — used to repopulate
+  // the input on re-open so the value isn't lost between edit sessions.
+  const [lastPillValue, setLastPillValue] = useState("")
+
+  /**
+   * When the user sets a % via the pill we store the exact typed number
+   * here and use it for the deviation display instead of re-deriving
+   * it from the rounded limitPrice. Otherwise rounding in
+   * `formatCalcValue(market × (1+pct/100))` would make "15%" redisplay
+   * as "15.01%" (or "14.99%") depending on which way the rounding went.
+   *
+   * `null` = no user pct currently in effect → fall back to computed
+   * deviation from limitPrice vs marketPrice.
+   */
+  const [userPct, setUserPct] = useState<number | null>(null)
+
+  // Reset any remembered pill-% when the pair changes — a 5% deviation
+  // from HDX/USDC doesn't carry meaning over to, say, ETH/USDT.
+  useEffect(() => {
+    setUserPct(null)
+    setLastPillValue("")
+  }, [sellAsset?.id, buyAsset?.id])
 
   // When the user types in the price field we store their raw input here
   // so the NumberInput displays exactly what they typed (no round-trip
@@ -183,7 +206,11 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
         inverted: isInverted,
         canonical: newLimitPrice,
       }
+      // User typed a custom price — stop auto-mirroring spot.
+      setValue("priceAnchor", "user")
       setValue("limitPrice", newLimitPrice)
+      // Typing the price directly invalidates any remembered pill %.
+      setUserPct(null)
       // Both modes: price changed → recalc buy
       recalcBuy(newLimitPrice)
     },
@@ -194,8 +221,14 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
   const handleSetSpotPrice = useCallback(() => {
     if (!marketPrice) return
     userInputRef.current = null
+    // Resume mirroring spot live (next block will confirm via the
+    // spot-mirroring effect in LimitFields, keeping them in sync).
+    setValue("priceAnchor", "spot")
     setValue("limitPrice", marketPrice)
     recalcBuy(marketPrice)
+    // Explicit reset wipes any remembered % — next edit starts clean.
+    setLastPillValue("")
+    setUserPct(null)
   }, [marketPrice, setValue, recalcBuy])
 
   // ── Inline editing mode for custom pill ──
@@ -207,33 +240,69 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     setTimeout(() => pillInputRef.current?.focus(), 0)
   }, [])
 
-  const handlePillEditCommit = useCallback(
+  /**
+   * Apply a percentage-deviation value to the form without exiting edit
+   * mode. Called on every keystroke so the price and receive amount
+   * update live as the user types the percentage. Handles these cases:
+   *
+   *   - Empty / whitespace → resume mirroring spot (priceAnchor = "spot")
+   *   - Valid percentage    → set limitPrice = market × (1 + pct/100),
+   *                           priceAnchor = "user"
+   *   - Invalid / partial   → silently skip (last valid state stays,
+   *                           so typing "5", then "5.", the latter is
+   *                           a no-op)
+   *   - `pct ≤ -100`        → silently skip (would produce a zero or
+   *                           negative price, economically nonsensical)
+   */
+  const applyPillValue = useCallback(
     (value: string) => {
-      setIsEditingPill(false)
-      if (!marketPrice || !value) return
+      if (!marketPrice) return
+      const trimmed = value.trim()
+      if (!trimmed) {
+        userInputRef.current = null
+        setUserPct(null)
+        setValue("priceAnchor", "spot")
+        setValue("limitPrice", marketPrice)
+        recalcBuy(marketPrice)
+        return
+      }
       try {
-        const pct = new Big(value)
-        // A pill value of -100% or less would produce a zero/negative
-        // limit price, which makes no economic sense and leaves the form
-        // in an inconsistent state (display empty, amounts stale). Reject
-        // silently — the user keeps whatever price was there before.
+        const pct = new Big(trimmed)
         if (pct.lte(-100)) return
         const market = new Big(marketPrice)
         const newRaw = market.times(Big(1).plus(pct.div(100)))
         if (newRaw.lte(0)) return
         const newPrice = formatCalcValue(newRaw)
         userInputRef.current = null
+        setUserPct(pct.toNumber())
+        setValue("priceAnchor", "user")
         setValue("limitPrice", newPrice)
         recalcBuy(newPrice)
       } catch {
-        // ignore
+        // ignore — partial input like "5." or "-" is not yet valid
       }
     },
     [marketPrice, setValue, recalcBuy],
   )
 
+  const handlePillEditCommit = useCallback(
+    (value: string) => {
+      setIsEditingPill(false)
+      applyPillValue(value)
+      // Persist the raw text so re-opening the editor shows it again.
+      setLastPillValue(value.trim())
+    },
+    [applyPillValue],
+  )
+
   // ── Deviation display for pill ──
+  // Prefer the user's typed % verbatim (avoids the "15" → "15.01"
+  // drift from rounding). Fall back to computed deviation otherwise.
   const deviationDisplay = (() => {
+    if (userPct !== null) {
+      const sign = userPct > 0 ? "+" : ""
+      return `${sign}${userPct.toFixed(2)}%`
+    }
     if (deviation === null) return "0%"
     const sign = deviation > 0 ? "+" : ""
     return `${sign}${deviation.toFixed(2)}%`
@@ -243,7 +312,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     <Flex direction="column">
       {/* Price section */}
       <Flex direction="column" gap="xs" py="base">
-        {/* Header: "When 1 HDX price is" (left) — "Spot: value" + custom pill + swap btn (right) */}
+        {/* Header: "When 1 HDX price is" (left) — custom % pill (right) */}
         <Flex justify="space-between" align="center">
           <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
             {t("trade:limit.priceLabel", {
@@ -253,47 +322,55 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
             })}
           </Text>
           <Flex align="center" gap="s">
-            {spotDisplayValue && (
-              <SSpotButton type="button" onClick={handleSetSpotPrice}>
-                {t("trade:limit.spot", { value: spotDisplayValue })}
-              </SSpotButton>
-            )}
-            {/* Custom % pill showing deviation from market */}
-            {isEditingPill ? (
-              <SPillInput
-                ref={pillInputRef}
-                type="text"
-                defaultValue={deviation?.toFixed(2) ?? "0"}
-                onBlur={(e) => handlePillEditCommit(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handlePillEditCommit((e.target as HTMLInputElement).value)
-                  }
-                  if (e.key === "Escape") {
-                    setIsEditingPill(false)
-                  }
-                }}
+            {/* Custom % pill — same visual container in view & edit
+                modes, only the numeric text becomes an inline input. */}
+            <SCustomPill
+              onClick={!isEditingPill ? handlePillEditStart : undefined}
+              role={!isEditingPill ? "button" : undefined}
+              tabIndex={!isEditingPill ? 0 : undefined}
+              aria-label={!isEditingPill ? "Edit deviation" : undefined}
+              isPositive={deviation !== null && deviation > 0.005}
+              isNegative={deviation !== null && deviation < -0.005}
+            >
+              {isEditingPill ? (
+                <>
+                  <SPillInlineInput
+                    ref={pillInputRef}
+                    type="text"
+                    defaultValue={lastPillValue}
+                    placeholder={deviationDisplay.replace("%", "")}
+                    onFocus={(e) => e.target.select()}
+                    // Live-recalc on every keystroke: price & receive
+                    // amount reflect the typed % immediately without
+                    // waiting for Enter/blur. Matches Matcha's behaviour.
+                    onChange={(e) => applyPillValue(e.target.value)}
+                    onBlur={(e) => handlePillEditCommit(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handlePillEditCommit(
+                          (e.target as HTMLInputElement).value,
+                        )
+                      }
+                      if (e.key === "Escape") {
+                        setIsEditingPill(false)
+                      }
+                    }}
+                  />
+                  <span>%</span>
+                </>
+              ) : (
+                deviationDisplay
+              )}
+              <Icon
+                component={Pencil}
+                size="2xs"
+                color={getToken("icons.onContainer")}
               />
-            ) : (
-              <SCustomPill
-                type="button"
-                onClick={handlePillEditStart}
-                aria-label="Edit deviation"
-                isPositive={deviation !== null && deviation > 0.005}
-                isNegative={deviation !== null && deviation < -0.005}
-              >
-                {deviationDisplay}
-                <Icon
-                  component={Pencil}
-                  size="2xs"
-                  color={getToken("icons.onContainer")}
-                />
-              </SCustomPill>
-            )}
+            </SCustomPill>
           </Flex>
         </Flex>
 
-        {/* Price input row — flip pill (left) + editable price + denom symbol (right) */}
+        {/* Price input row — flip pill (icon only) + editable price + denom symbol */}
         <Flex align="center" gap="s">
           <SFlipPill
             type="button"
@@ -302,16 +379,9 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
           >
             <Icon
               component={ArrowLeftRight}
-              size="xs"
+              size="s"
               color={getToken("icons.onContainer")}
             />
-            <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
-              {t("trade:limit.priceUnit", {
-                symbol: isInverted
-                  ? (buyAsset?.symbol ?? "")
-                  : (sellAsset?.symbol ?? ""),
-              })}
-            </Text>
           </SFlipPill>
           <NumberInput
             variant="embedded"
@@ -335,6 +405,15 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
             {denominationSuffix}
           </Text>
         </Flex>
+
+        {/* Spot reset — right-aligned, underneath the price input row */}
+        {spotDisplayValue && (
+          <Flex justify="flex-end">
+            <SSpotButton type="button" onClick={handleSetSpotPrice}>
+              {t("trade:limit.spot", { value: spotDisplayValue })}
+            </SSpotButton>
+          </Flex>
+        )}
       </Flex>
 
       <SwapSectionSeparator />
@@ -425,8 +504,9 @@ const SFlipPill = styled.button(
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: ${theme.space.xs};
-    padding: ${theme.space.s} ${theme.space.base};
+    padding: ${theme.space.base};
     border-radius: 30px;
     border: 1px solid ${theme.buttons.secondary.low.borderRest};
     background: ${theme.buttons.secondary.low.rest};
@@ -438,12 +518,11 @@ const SFlipPill = styled.button(
   `,
 )
 
-const SCustomPill = styled.button<{
+const SCustomPill = styled.div<{
   isPositive?: boolean
   isNegative?: boolean
 }>(
   ({ theme, isPositive, isNegative }) => css`
-    all: unset;
     box-sizing: border-box;
     cursor: pointer;
     display: flex;
@@ -484,6 +563,34 @@ const SCustomPill = styled.button<{
   `,
 )
 
+/**
+ * Inline input embedded inside SCustomPill when editing. Styled to
+ * blend into the pill: no border, transparent background, inherits
+ * font/color from the pill so the swap between view and edit mode is
+ * visually stable.
+ */
+const SPillInlineInput = styled.input(
+  ({ theme }) => css`
+    all: unset;
+    /* Size just wide enough for a typical deviation like "-12.34". */
+    width: 4ch;
+    text-align: right;
+    font: inherit;
+    color: inherit;
+
+    &::placeholder {
+      color: ${theme.text.low};
+      opacity: 1;
+    }
+
+    /* Hide the placeholder the moment the input is focused — the user
+       clicked to enter a value, not to read the old one. */
+    &:focus::placeholder {
+      color: transparent;
+    }
+  `,
+)
+
 const SSpotButton = styled.button(
   ({ theme }) => css`
     all: unset;
@@ -496,25 +603,6 @@ const SSpotButton = styled.button(
 
     &:hover {
       color: ${theme.textButtons.small.hover};
-    }
-  `,
-)
-
-const SPillInput = styled.input(
-  ({ theme }) => css`
-    all: unset;
-    width: 60px;
-    padding: 4px 8px;
-    border-radius: ${theme.radii.base};
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.2;
-    background: ${theme.buttons.secondary.low.rest};
-    color: ${theme.text.high};
-    text-align: center;
-
-    &:focus {
-      outline: 1px solid ${theme.controls.solid.accent};
     }
   `,
 )

@@ -133,23 +133,25 @@ export const LimitFields: FC = () => {
     [],
   )
 
-  // ── Initialize limit price from spot price on first load ──
-  const priceInitialized = useRef(false)
-
+  // ── Keep limit price mirrored to spot until the user touches it ──
+  // As long as `priceAnchor === "spot"` we re-sync `limitPrice` to the
+  // latest `marketPrice` every time the spot query refetches (which it
+  // does on every new block via QUERY_KEY_BLOCK_PREFIX). Once the user
+  // types a custom price or % deviation, LimitPriceSection flips
+  // `priceAnchor` to "user" and this effect becomes a no-op — their
+  // typed value is preserved.
   useEffect(() => {
-    if (priceInitialized.current) return
     if (!marketPrice) return
-    priceInitialized.current = true
-
     const values = getValues()
-    if (!values.limitPrice) {
-      setValue("limitPrice", marketPrice)
-      if (values.sellAmount) {
-        setValue(
-          "buyAmount",
-          calcBuyFromSellAndPrice(values.sellAmount, marketPrice),
-        )
-      }
+    if (values.priceAnchor !== "spot") return
+    if (values.limitPrice === marketPrice) return
+
+    setValue("limitPrice", marketPrice)
+    if (values.sellAmount) {
+      setValue(
+        "buyAmount",
+        calcBuyFromSellAndPrice(values.sellAmount, marketPrice),
+      )
     }
   }, [marketPrice, getValues, setValue, calcBuyFromSellAndPrice])
 
@@ -239,14 +241,15 @@ export const LimitFields: FC = () => {
   const handleSellAssetChange = useCallback(
     (newSellAsset: TAsset) => {
       const values = getValues()
-      // Reset price, will be re-initialized from marketPrice
-      priceInitialized.current = false
+      // Reset price — will be re-populated from marketPrice by the
+      // spot-mirroring effect (priceAnchor stays "spot" after reset).
       reset({
         ...values,
         sellAsset: newSellAsset,
         limitPrice: "",
         buyAmount: "",
         amountAnchor: "sell",
+        priceAnchor: "spot",
       })
       trigger()
     },
@@ -256,13 +259,13 @@ export const LimitFields: FC = () => {
   const handleBuyAssetChange = useCallback(
     (newBuyAsset: TAsset) => {
       const values = getValues()
-      priceInitialized.current = false
       reset({
         ...values,
         buyAsset: newBuyAsset,
         limitPrice: "",
         buyAmount: "",
         amountAnchor: "sell",
+        priceAnchor: "spot",
       })
       trigger()
     },
@@ -303,6 +306,7 @@ export const LimitFields: FC = () => {
             type="button"
             onClick={handleLockToggle}
             aria-label={isLocked ? "Unlock sell amount" : "Lock sell amount"}
+            isLocked={isLocked}
             style={
               lockPos ? { left: lockPos.left, top: lockPos.top } : undefined
             }
@@ -310,7 +314,15 @@ export const LimitFields: FC = () => {
             <Icon
               component={isLocked ? LockKeyhole : LockKeyholeOpen}
               sx={{ width: 14, height: 14 }}
-              color={getToken("icons.onContainer")}
+              // When locked: blue accent; when unlocked: neutral.
+              // Matches the active-expiry-pill treatment so the user
+              // reads the lock as an "on/off" state rather than just
+              // a decorative icon.
+              color={getToken(
+                isLocked
+                  ? "buttons.secondary.accent.onRest"
+                  : "icons.onContainer",
+              )}
             />
           </SLockPill>
         )}
@@ -364,9 +376,13 @@ const SLockableField = styled.div`
  * same height (38px), border, border-radius (30px), and padding as the
  * asset selector buttons. Contains a centered 14px lock icon.
  * Position (left + top) is set dynamically via style prop.
+ *
+ * When `isLocked` is true the pill gets the blue accent treatment
+ * (same tokens as the selected expiry pill) so it reads clearly as an
+ * "on" state rather than a decorative icon.
  */
-const SLockPill = styled.button(
-  ({ theme }) => `
+const SLockPill = styled.button<{ isLocked?: boolean }>(
+  ({ theme, isLocked }) => `
     all: unset;
     box-sizing: border-box;
     cursor: pointer;
@@ -378,12 +394,27 @@ const SLockPill = styled.button(
     height: 38px;
     padding: ${theme.space.base} ${theme.space.m};
     border-radius: 30px;
-    border: 1px solid ${theme.buttons.secondary.low.borderRest};
+    border: 1px solid ${
+      isLocked
+        ? theme.buttons.secondary.accent.outline
+        : theme.buttons.secondary.low.borderRest
+    };
+    background: ${
+      isLocked ? theme.buttons.secondary.accent.hover : "transparent"
+    };
     transition: ${theme.transitions.colors};
 
     &:hover {
-      border-color: ${theme.buttons.secondary.low.hover};
-      background: ${theme.buttons.secondary.low.primaryHover};
+      border-color: ${
+        isLocked
+          ? theme.buttons.secondary.accent.outline
+          : theme.buttons.secondary.low.hover
+      };
+      background: ${
+        isLocked
+          ? theme.buttons.secondary.accent.hover
+          : theme.buttons.secondary.low.primaryHover
+      };
     }
   `,
 )
