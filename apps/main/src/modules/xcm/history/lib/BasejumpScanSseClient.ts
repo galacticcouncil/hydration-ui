@@ -7,7 +7,7 @@ import {
 import {
   type BasejumpScanItem,
   basejumpSseEventSchema,
-} from "@/modules/xcm/history/utils/bjscan"
+} from "@/modules/xcm/history/utils/basejump"
 
 export type BasejumpScanSubscribeOptions = {
   onCreate: (transfer: BasejumpScanItem) => void

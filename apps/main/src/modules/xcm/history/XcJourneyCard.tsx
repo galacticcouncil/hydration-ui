@@ -100,7 +100,13 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         </Flex>
 
         {sentAt && (
-          <Flex align="center" justify="space-between" ml="auto" gap="m">
+          <Flex
+            direction={["column", "row"]}
+            align={["flex-end", "center"]}
+            gap={["xs", "m"]}
+            justify="space-between"
+            ml="auto"
+          >
             {originProtocol === "basejump" && (
               <Flex gap="s">
                 <Icon
@@ -112,6 +118,7 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
               </Flex>
             )}
             <JourneyDate
+              truncate
               timestamp={sentAt}
               fs="p5"
               color={getToken("text.medium")}

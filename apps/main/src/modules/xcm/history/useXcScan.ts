@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react"
 
 import { getClaimableJourneys } from "@/modules/xcm/history/utils/claim"
 import { mergeJourneys } from "@/modules/xcm/history/utils/journey"
-import { isOptimisticJourneyForTxHash } from "@/modules/xcm/history/utils/optimistic"
+import {
+  isOptimisticJourneyForTxHash,
+  shouldIgnoreNewJourney,
+} from "@/modules/xcm/history/utils/optimistic"
 
 import { useBasejumpScan } from "./useBasejumpScan"
 import { xcStore } from "./xcScanStore"
@@ -83,6 +86,10 @@ export const useXcScanSubscription = (address: string) => {
           queryClient.setQueryData<XcJourney[] | undefined>(queryKey, (old) => {
             if (!old) {
               return [journey]
+            }
+
+            if (shouldIgnoreNewJourney(old, journey)) {
+              return old
             }
             const prev = old.filter((item) => {
               const isOptimisticPrimary = isOptimisticJourneyForTxHash(

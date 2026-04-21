@@ -34,6 +34,26 @@ export function isOptimisticJourneyForTxHash(
   )
 }
 
+export function shouldIgnoreNewJourney(
+  previous: XcJourney[],
+  incoming: XcJourney,
+): boolean {
+  return previous.some((journey) => {
+    const isOptimisticPrimary = isOptimisticJourneyForTxHash(
+      journey,
+      incoming.originTxPrimary ?? "",
+    )
+    const isOptimisticSecondary = isOptimisticJourneyForTxHash(
+      journey,
+      incoming.originTxSecondary ?? "",
+    )
+    return (
+      journey.originProtocol === "basejump" &&
+      (isOptimisticPrimary || isOptimisticSecondary)
+    )
+  })
+}
+
 export function chainToUrn(chain: AnyChain): string {
   const ecosystem = chain.ecosystem
   if (!ecosystem) return ""

@@ -12,13 +12,13 @@ import { BasejumpScanSseClient } from "@/modules/xcm/history/lib/BasejumpScanSse
 import {
   basejumpItemToXcJourney,
   basejumpScanSchema,
-} from "@/modules/xcm/history/utils/bjscan"
+} from "@/modules/xcm/history/utils/basejump"
 import { removeOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 
 export const bjscan = new BasejumpScanSseClient(basejumpscan.baseUrl)
 
 export const createBasejumpScanQueryKey = (address: string) => [
-  "bjscan",
+  "basejumpscan",
   address,
 ]
 
