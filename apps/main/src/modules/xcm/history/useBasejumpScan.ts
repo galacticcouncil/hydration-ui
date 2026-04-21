@@ -1,4 +1,8 @@
-import { createQueryString, safeConvertAnyToH160 } from "@galacticcouncil/utils"
+import {
+  basejumpscan,
+  createQueryString,
+  safeConvertAnyToH160,
+} from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect } from "react"
@@ -11,10 +15,7 @@ import {
 } from "@/modules/xcm/history/utils/bjscan"
 import { removeOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 
-const BJSCAN_API_BASE_URL = "https://bjscan-api.play.hydration.cloud"
-const BJSCAN_TRANSFERS_URL = `${BJSCAN_API_BASE_URL}/api/transfers`
-
-export const bjscan = new BasejumpScanSseClient(BJSCAN_API_BASE_URL)
+export const bjscan = new BasejumpScanSseClient(basejumpscan.baseUrl)
 
 export const createBasejumpScanQueryKey = (address: string) => [
   "bjscan",
@@ -26,7 +27,7 @@ export const useBasejumpScan = (address: string) => {
     queryKey: createBasejumpScanQueryKey(address),
     queryFn: async () => {
       const res = await fetch(
-        `${BJSCAN_TRANSFERS_URL}${createQueryString({
+        `${basejumpscan.transfers}${createQueryString({
           address: safeConvertAnyToH160(address),
         })}`,
       )

@@ -9,8 +9,6 @@ import {
   basejumpSseEventSchema,
 } from "@/modules/xcm/history/utils/bjscan"
 
-export const BJSCAN_API_ORIGIN = "https://bjscan-api.play.hydration.cloud"
-
 export type BasejumpScanSubscribeOptions = {
   onCreate: (transfer: BasejumpScanItem) => void
   onUpdate: (transfer: BasejumpScanItem) => void

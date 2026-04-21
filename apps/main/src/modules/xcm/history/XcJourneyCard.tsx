@@ -14,7 +14,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { etherscan, xcscan } from "@galacticcouncil/utils"
+import { basejumpscan, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
@@ -45,7 +45,6 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
     status,
     totalUsd,
     originProtocol,
-    originTxPrimary,
   } = journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
@@ -56,8 +55,8 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const { from, to } = getFormattedAddresses(journey)
 
   const link =
-    originProtocol === "basejump" && originTxPrimary
-      ? etherscan.tx("base", originTxPrimary)
+    originProtocol === "basejump"
+      ? basejumpscan.tx(correlationId)
       : xcscan.tx(correlationId)
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)

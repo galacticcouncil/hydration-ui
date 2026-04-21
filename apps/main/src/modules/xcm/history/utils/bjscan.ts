@@ -100,14 +100,6 @@ export function parseBasejumpId(id: string): {
   }
 }
 
-export function parseTimestamp(item: BasejumpScanItem): number {
-  return (
-    item?.initiated?.blockTimestamp ||
-    item?.completed?.blockTimestamp ||
-    Date.parse(item.updated_at)
-  )
-}
-
 export function basejumpItemToXcJourney(
   item: BasejumpScanItem,
 ): XcJourney | undefined {
@@ -127,7 +119,6 @@ export function basejumpItemToXcJourney(
   const { id, correlationId } = parseBasejumpId(item.id)
   const originUrn = chainToUrn(sourceChain)
   const destinationUrn = chainToUrn(destChain)
-  const timestamp = parseTimestamp(item)
 
   return {
     id,
@@ -142,9 +133,9 @@ export function basejumpItemToXcJourney(
     fromFormatted: item.sender,
     to: item.recipient,
     toFormatted: item.recipient,
-    sentAt: timestamp,
-    createdAt: timestamp,
-    recvAt: item.completed ? timestamp : undefined,
+    sentAt: item?.initiated?.blockTimestamp,
+    createdAt: item?.initiated?.blockTimestamp || Date.parse(item.updated_at),
+    recvAt: item?.completed?.blockTimestamp,
     stops: "",
     instructions: "",
     transactCalls: "",
@@ -155,7 +146,7 @@ export function basejumpItemToXcJourney(
       {
         asset: `${originUrn}|${resolvedAsset.id}`,
         symbol: resolvedAsset.asset.originSymbol,
-        amount: item.gross_amount,
+        amount: item.net_amount,
         decimals: resolvedAsset.decimals,
         role: "transfer",
         sequence: 0,
