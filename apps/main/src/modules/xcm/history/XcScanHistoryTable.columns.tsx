@@ -188,7 +188,7 @@ export const useXcScanHistoryColumns = () => {
 
         const durationMs = recvAt - sentAt
 
-        if (durationMs < 0) {
+        if (durationMs <= 0) {
           return null
         }
 

@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  JetSki,
   QuestionCircleRegular,
 } from "@galacticcouncil/ui/assets/icons"
 import {
@@ -13,7 +14,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { xcscan } from "@galacticcouncil/utils"
+import { etherscan, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
@@ -23,6 +24,7 @@ import { ClaimButton } from "@/modules/xcm/history/components/ClaimButton"
 import { JourneyAssetLogo } from "@/modules/xcm/history/components/JourneyAssetLogo"
 import { JourneyChainLogo } from "@/modules/xcm/history/components/JourneyChainLogo"
 import { JourneyDate } from "@/modules/xcm/history/components/JourneyDate"
+import { JourneyProtocol } from "@/modules/xcm/history/components/JourneyProtocol"
 import { JourneyStatus } from "@/modules/xcm/history/components/JourneyStatus"
 import { usePendingClaimsStore } from "@/modules/xcm/history/hooks/usePendingClaimsStore"
 import {
@@ -35,8 +37,16 @@ import { isOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 import { toDecimal } from "@/utils/formatting"
 
 export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
-  const { origin, destination, sentAt, correlationId, status, totalUsd } =
-    journey
+  const {
+    origin,
+    destination,
+    sentAt,
+    correlationId,
+    status,
+    totalUsd,
+    originProtocol,
+    originTxPrimary,
+  } = journey
   const { t } = useTranslation(["common", "xcm"])
   const { pendingCorrelationIds } = usePendingClaimsStore()
 
@@ -45,7 +55,10 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
   const transferAsset = getTransferAsset(journey)
   const { from, to } = getFormattedAddresses(journey)
 
-  const link = xcscan.tx(correlationId)
+  const link =
+    originProtocol === "basejump" && originTxPrimary
+      ? etherscan.tx("base", originTxPrimary)
+      : xcscan.tx(correlationId)
 
   const isNotPending = !pendingCorrelationIds.includes(journey.correlationId)
   const isClaimable = isNotPending && isJourneyClaimable(journey)
@@ -88,7 +101,17 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
         </Flex>
 
         {sentAt && (
-          <Flex align="center" justify="space-between" ml="auto">
+          <Flex align="center" justify="space-between" ml="auto" gap="m">
+            {originProtocol === "basejump" && (
+              <Flex gap="s">
+                <Icon
+                  component={JetSki}
+                  size="m"
+                  color={getToken("colors.skyBlue.600")}
+                />
+                <JourneyProtocol fs="p5" protocol={originProtocol} />
+              </Flex>
+            )}
             <JourneyDate
               timestamp={sentAt}
               fs="p5"

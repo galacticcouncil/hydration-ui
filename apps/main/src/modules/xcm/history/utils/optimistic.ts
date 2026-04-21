@@ -11,6 +11,7 @@ import type { QueryClient } from "@tanstack/react-query"
 
 import { createXcScanQueryKey } from "@/modules/xcm/history/useXcScan"
 import type { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
+import { XcmTag } from "@/states/transactions"
 import { scale } from "@/utils/formatting"
 
 const OPTIMISTIC_JOURNEY_PREFIX = "optimistic:"
@@ -59,13 +60,16 @@ export function convertXcmFormValuesToOptimisticJourney(
     ? safeConvertSS58toH160(fromAddress)
     : fromAddress
 
+  const protocol =
+    values.bridgeProvider === XcmTag.Basejump ? "basejump" : "xcm"
+
   return {
     id: 0,
     correlationId: getOptimisticJourneyId(txHash),
     status: "pending",
     type: "transfer",
-    originProtocol: "xcm",
-    destinationProtocol: "xcm",
+    originProtocol: protocol,
+    destinationProtocol: protocol,
     origin: originUrn,
     destination: destinationUrn,
     from,
@@ -110,9 +114,6 @@ export function insertOptimisticJourney(
     txHash,
     address,
   )
-  console.log("OPTIMISTIC", optimisticJourney?.correlationId, {
-    journey: optimisticJourney,
-  })
   if (!optimisticJourney) return
   queryClient.setQueryData<XcJourney[]>(queryKey, (old) => [
     optimisticJourney,
