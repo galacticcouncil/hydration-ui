@@ -1,23 +1,25 @@
-import { css } from "@emotion/react"
+import { css, useTheme } from "@emotion/react"
 import styled from "@emotion/styled"
 import { ArrowLeftRight } from "@galacticcouncil/ui/assets/icons"
 import {
   Flex,
   Icon,
   NumberInput,
+  Skeleton,
   Text,
   Toggle,
   ToggleLabel,
   ToggleRoot,
   Tooltip,
 } from "@galacticcouncil/ui/components"
-import { getToken } from "@galacticcouncil/ui/utils"
+import { getToken, pxToRem } from "@galacticcouncil/ui/utils"
 import Big from "big.js"
-import { Pencil } from "lucide-react"
-import { FC, useCallback, useEffect, useRef, useState } from "react"
+import { Pencil, X } from "lucide-react"
+import { FC, MouseEvent, useCallback, useEffect, useRef, useState } from "react"
 import { useFormContext } from "react-hook-form"
 import { Trans, useTranslation } from "react-i18next"
 
+import { useDisplayAssetPrice } from "@/components/AssetPrice"
 import { formatCalcValue } from "@/modules/trade/swap/sections/Limit/limitUtils"
 import {
   EXPIRY_OPTIONS,
@@ -25,21 +27,36 @@ import {
 } from "@/modules/trade/swap/sections/Limit/useLimitForm"
 import { SwapSectionSeparator } from "@/modules/trade/swap/SwapPage.styled"
 
+/** vs prior `size="2xs"` (~8px): ×1.3 (see `theme.sizes["2xs"]`). */
+const PILL_SLICE_ICON_SIZE = 8 * 1.3
+
+/** Edit / close icon column — shared by both `SPillSliceButton` instances (~20% under 34px). */
+const SPILL_SLICE_BUTTON_WIDTH_PX = 27
+
 type Props = {
   readonly marketPrice: string | null
 }
 
 export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
+  const theme = useTheme()
   const { t } = useTranslation(["trade", "common"])
   const { watch, setValue, getValues, trigger } =
     useFormContext<LimitFormValues>()
 
-  const [limitPrice, sellAsset, buyAsset, expiry, partiallyFillable] = watch([
+  const [
+    limitPrice,
+    sellAsset,
+    buyAsset,
+    expiry,
+    partiallyFillable,
+    priceAnchor,
+  ] = watch([
     "limitPrice",
     "sellAsset",
     "buyAsset",
     "expiry",
     "partiallyFillable",
+    "priceAnchor",
   ])
 
   // Denomination toggle: "normal" = 1 SELL = X BUY, "inverted" = 1 BUY = X SELL
@@ -101,6 +118,26 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
   const denominationSuffix = isInverted
     ? (sellAsset?.symbol ?? "")
     : (buyAsset?.symbol ?? "")
+
+  const denomAssetIdForFiat = (isInverted ? sellAsset?.id : buyAsset?.id) ?? ""
+
+  const priceHumanForFiat = (() => {
+    if (!displayPrice.trim()) return null
+    try {
+      const n = new Big(displayPrice.replace(/\s/g, "").replace(",", "."))
+      return n.gt(0) ? n.toString() : null
+    } catch {
+      return null
+    }
+  })()
+
+  const [priceFiatDisplay, { isLoading: priceFiatLoading }] =
+    useDisplayAssetPrice(denomAssetIdForFiat, priceHumanForFiat ?? "0", {
+      compact: true,
+      maximumFractionDigits: 2,
+    })
+
+  const showPriceFiatRow = Boolean(denomAssetIdForFiat && priceHumanForFiat)
 
   // ── Deviation from market price ──
   const deviation = (() => {
@@ -231,6 +268,16 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     setUserPct(null)
   }, [marketPrice, setValue, recalcBuy])
 
+  const handlePillDeviationReset = useCallback(
+    (event: MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation()
+      event.preventDefault()
+      setIsEditingPill(false)
+      handleSetSpotPrice()
+    },
+    [handleSetSpotPrice],
+  )
+
   // ── Inline editing mode for custom pill ──
   const [isEditingPill, setIsEditingPill] = useState(false)
   const pillInputRef = useRef<HTMLInputElement>(null)
@@ -308,10 +355,22 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     return `${sign}${deviation.toFixed(2)}%`
   })()
 
+  /** Signed % vs market for styling (+ green / − red). */
+  const signedDeviationPct = userPct ?? deviation ?? 0
+  const pillTone: "neutral" | "positive" | "negative" =
+    signedDeviationPct > 0
+      ? "positive"
+      : signedDeviationPct < 0
+        ? "negative"
+        : "neutral"
+
+  const showResetAction =
+    priceAnchor === "user" && Boolean(marketPrice) && !isEditingPill
+
   return (
     <Flex direction="column">
-      {/* Price section */}
-      <Flex direction="column" gap="xs" py="base">
+      {/* Price section — vertical padding uses sizes.l (20px token), not space.base. */}
+      <Flex direction="column" gap="xs" sx={{ paddingBlock: theme.sizes.l }}>
         {/* Header: "When 1 HDX price is" (left) — custom % pill (right) */}
         <Flex justify="space-between" align="center">
           <Text fw={500} fs="p5" lh="s" color={getToken("text.medium")}>
@@ -324,14 +383,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
           <Flex align="center" gap="s">
             {/* Custom % pill — same visual container in view & edit
                 modes, only the numeric text becomes an inline input. */}
-            <SCustomPill
-              onClick={!isEditingPill ? handlePillEditStart : undefined}
-              role={!isEditingPill ? "button" : undefined}
-              tabIndex={!isEditingPill ? 0 : undefined}
-              aria-label={!isEditingPill ? "Edit deviation" : undefined}
-              isPositive={deviation !== null && deviation > 0.005}
-              isNegative={deviation !== null && deviation < -0.005}
-            >
+            <SCustomPill isActive={isEditingPill} tone={pillTone}>
               {isEditingPill ? (
                 <>
                   <SPillInlineInput
@@ -356,21 +408,48 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
                       }
                     }}
                   />
-                  <span>%</span>
+                  <SPercentSuffix>%</SPercentSuffix>
                 </>
               ) : (
-                deviationDisplay
+                <>
+                  <SPillTrigger
+                    type="button"
+                    onClick={handlePillEditStart}
+                    aria-label={t("trade:limit.deviation.editAria")}
+                  >
+                    {deviationDisplay}
+                  </SPillTrigger>
+                  <SPillActions>
+                    <SPillSeparator aria-hidden />
+                    {showResetAction ? (
+                      <SPillSliceButton
+                        type="button"
+                        onClick={handlePillDeviationReset}
+                        aria-label={t("trade:limit.deviation.resetAria")}
+                      >
+                        <Icon component={X} size={PILL_SLICE_ICON_SIZE + 2} />
+                      </SPillSliceButton>
+                    ) : (
+                      <SPillSliceButton
+                        type="button"
+                        tabIndex={-1}
+                        aria-hidden
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handlePillEditStart()
+                        }}
+                      >
+                        <Icon component={Pencil} size={PILL_SLICE_ICON_SIZE} />
+                      </SPillSliceButton>
+                    )}
+                  </SPillActions>
+                </>
               )}
-              <Icon
-                component={Pencil}
-                size="2xs"
-                color={getToken("icons.onContainer")}
-              />
             </SCustomPill>
           </Flex>
         </Flex>
 
-        {/* Price input row — flip pill (icon only) + editable price + denom symbol */}
+        {/* Price input row — flip pill, then price + denom + fiat (Figma). */}
         <Flex align="center" gap="s">
           <SFlipPill
             type="button"
@@ -383,34 +462,87 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
               color={getToken("icons.onContainer")}
             />
           </SFlipPill>
-          <NumberInput
-            variant="embedded"
-            value={displayPrice}
-            allowNegative={false}
-            onValueChange={({ value }, { source }) => {
-              if (source === "prop") return
-              handlePriceChange(value)
-            }}
-            placeholder="0"
-            sx={{
-              fontWeight: 600,
-              fontSize: 16,
-              lineHeight: 1,
-              color: getToken("text.high"),
-              flex: 1,
-              textAlign: "right",
-            }}
-          />
-          <Text fw={600} fs="p3" lh="s" color={getToken("text.high")}>
-            {denominationSuffix}
-          </Text>
+          <Flex
+            direction="column"
+            flex={1}
+            minWidth={0}
+            align="flex-end"
+            sx={{ gap: "2px" }}
+          >
+            <Flex
+              align="center"
+              width="100%"
+              gap="xs"
+              minWidth={0}
+              justify="flex-end"
+            >
+              <NumberInput
+                variant="embedded"
+                value={displayPrice}
+                allowNegative={false}
+                onValueChange={({ value }, { source }) => {
+                  if (source === "prop") return
+                  handlePriceChange(value)
+                }}
+                placeholder="0"
+                sx={{
+                  fontWeight: 600,
+                  fontSize: 16,
+                  lineHeight: 1,
+                  color: getToken("text.high"),
+                  flex: 1,
+                  minWidth: 0,
+                  textAlign: "right",
+                }}
+              />
+              <Text
+                fw={600}
+                fs="p3"
+                lh="s"
+                color={getToken("text.medium")}
+                whiteSpace="nowrap"
+                sx={{ flexShrink: 0 }}
+              >
+                {denominationSuffix}
+              </Text>
+            </Flex>
+            {showPriceFiatRow && (
+              <Text
+                fs="p6"
+                lh="s"
+                fw={400}
+                color={getToken("text.low")}
+                truncate
+                sx={{
+                  maxWidth: "100%",
+                  textAlign: "right",
+                  /* Embedded row is ~2.5rem tall; pull fiat up so it sits ~2px under the figures. */
+                  marginTop: pxToRem(-14),
+                }}
+              >
+                {priceFiatLoading ? (
+                  <Skeleton
+                    width={72}
+                    height={12}
+                    sx={{ display: "inline-block" }}
+                  />
+                ) : (
+                  priceFiatDisplay
+                )}
+              </Text>
+            )}
+          </Flex>
         </Flex>
 
-        {/* Spot reset — right-aligned, underneath the price input row */}
+        {/* Spot reset — extra top margin vs fiat so it’s clearly separated from the $ line */}
         {spotDisplayValue && (
-          <Flex justify="flex-end">
+          <Flex justify="flex-end" mt="m">
             <SSpotButton type="button" onClick={handleSetSpotPrice}>
-              {t("trade:limit.spot", { value: spotDisplayValue })}
+              <Trans
+                i18nKey="trade:limit.spot"
+                values={{ value: spotDisplayValue }}
+                components={{ spotPrice: <SSpotPrice /> }}
+              />
             </SSpotButton>
           </Flex>
         )}
@@ -518,48 +650,180 @@ const SFlipPill = styled.button(
   `,
 )
 
-const SCustomPill = styled.div<{
-  isPositive?: boolean
-  isNegative?: boolean
-}>(
-  ({ theme, isPositive, isNegative }) => css`
+type PillTone = "neutral" | "positive" | "negative"
+
+const SCustomPill = styled.div<{ isActive?: boolean; tone?: PillTone }>(
+  ({ theme, isActive, tone = "neutral" }) => {
+    const idleNeutral = css`
+      color: ${theme.text.low};
+      background: ${theme.buttons.secondary.low.rest};
+      border: 1px solid ${theme.buttons.secondary.low.borderRest};
+
+      &:hover {
+        background: ${theme.buttons.secondary.low.hover};
+      }
+    `
+
+    const activeNeutral = css`
+      cursor: default;
+      color: ${theme.buttons.secondary.accent.onRest};
+      background: ${theme.buttons.secondary.accent.rest};
+      border: 1px solid ${theme.buttons.secondary.accent.outline};
+
+      &:hover {
+        background: ${theme.buttons.secondary.accent.hover};
+      }
+    `
+
+    const activeToned = css`
+      cursor: default;
+
+      &:hover {
+        filter: brightness(1.03);
+      }
+    `
+
+    const idleByTone =
+      tone === "positive"
+        ? css`
+            color: ${theme.accents.success.emphasis};
+            background: ${theme.accents.success.dim};
+            border: 1px solid ${theme.accents.success.primary};
+
+            &:hover {
+              filter: brightness(1.04);
+            }
+          `
+        : tone === "negative"
+          ? css`
+              color: ${theme.accents.danger.secondary};
+              background: ${theme.accents.danger.dimBg};
+              border: 1px solid ${theme.accents.danger.secondary};
+
+              &:hover {
+                filter: brightness(1.04);
+              }
+            `
+          : idleNeutral
+
+    const activeByTone =
+      tone === "positive"
+        ? css`
+            ${activeToned}
+            color: ${theme.accents.success.emphasis};
+            background: ${theme.accents.success.dim};
+            border: 1px solid ${theme.accents.success.primary};
+          `
+        : tone === "negative"
+          ? css`
+              ${activeToned}
+              color: ${theme.accents.danger.secondary};
+              background: ${theme.accents.danger.dimBg};
+              border: 1px solid ${theme.accents.danger.emphasis};
+            `
+          : activeNeutral
+
+    return css`
+      box-sizing: border-box;
+      display: inline-flex;
+      align-items: stretch;
+      gap: 0;
+      /* Fixed 22px height: view ↔ edit stays aligned; px avoids rem/root drift (~24px). */
+      height: 22px;
+      padding: 0 ${theme.space.base};
+      border-radius: ${theme.radii.full};
+      font-size: ${theme.fontSizes.p6};
+      font-weight: 500;
+      line-height: 1;
+      transition:
+        ${theme.transitions.colors},
+        filter 0.15s ease;
+
+      ${isActive ? activeByTone : idleByTone}
+    `
+  },
+)
+
+const SPillActions = styled.div(
+  ({ theme }) => css`
+    display: inline-flex;
+    align-items: stretch;
+    flex-shrink: 0;
+    align-self: stretch;
+    margin-inline-start: ${theme.space.s};
+    min-width: calc(
+      ${theme.space.s} + 1px + ${pxToRem(SPILL_SLICE_BUTTON_WIDTH_PX)}
+    );
+    margin-inline-end: calc(-1 * ${theme.space.base});
+  `,
+)
+
+const SPillTrigger = styled.button(
+  ({ theme }) => css`
+    all: unset;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    min-width: 0;
+    color: inherit;
+    font: inherit;
+    line-height: inherit;
+
+    &:focus-visible {
+      border-radius: ${theme.radii.full};
+      outline: 2px solid ${theme.controls.outline.active};
+      outline-offset: 1px;
+    }
+  `,
+)
+
+const SPercentSuffix = styled.span(
+  ({ theme }) => css`
+    align-self: center;
+    margin-left: ${theme.space.xs};
+  `,
+)
+
+const SPillSeparator = styled.span(
+  ({ theme }) => css`
+    flex-shrink: 0;
+    align-self: stretch;
+    width: 1px;
+    margin-inline-end: 0;
+    margin-inline-start: ${theme.space.s};
+    background: ${theme.controls.outline.base};
+  `,
+)
+
+/** Edit / close: full-height slice to the pill’s right edge, solid hover fill. */
+const SPillSliceButton = styled.button(
+  ({ theme }) => css`
+    all: unset;
     box-sizing: border-box;
     cursor: pointer;
     display: flex;
+    flex: 0 0 ${pxToRem(SPILL_SLICE_BUTTON_WIDTH_PX)};
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: ${theme.radii.base};
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.2;
-    transition: all 0.15s ease;
+    align-self: stretch;
+    justify-content: center;
+    width: ${pxToRem(SPILL_SLICE_BUTTON_WIDTH_PX)};
+    line-height: 0;
+    padding: 0 ${theme.space.xs};
+    border-radius: 0 ${theme.radii.full} ${theme.radii.full} 0;
+    color: inherit;
+    background: transparent;
+    transition: ${theme.transitions.colors};
 
-    color: ${theme.text.high};
-    ${isPositive
-      ? css`
-          background: linear-gradient(
-            135deg,
-            ${theme.accents.success.emphasis},
-            ${theme.accents.success.primary}
-          );
-        `
-      : isNegative
-        ? css`
-            background: linear-gradient(
-              135deg,
-              ${theme.accents.danger.emphasis},
-              ${theme.accents.danger.secondary}
-            );
-          `
-        : css`
-            color: ${theme.text.low};
-            background: ${theme.buttons.secondary.low.rest};
+    &:hover {
+      background: ${theme.controls.dim.hover};
+    }
 
-            &:hover {
-              background: ${theme.buttons.secondary.low.hover};
-            }
-          `}
+    &:focus-visible {
+      outline: 2px solid ${theme.controls.outline.active};
+      outline-offset: -1px;
+    }
   `,
 )
 
@@ -574,8 +838,14 @@ const SPillInlineInput = styled.input(
     all: unset;
     /* Size just wide enough for a typical deviation like "-12.34". */
     width: 4ch;
+    align-self: center;
+    height: 1em;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
     text-align: right;
     font: inherit;
+    line-height: 1;
     color: inherit;
 
     &::placeholder {
@@ -591,6 +861,11 @@ const SPillInlineInput = styled.input(
   `,
 )
 
+const SSpotPrice = styled.span`
+  text-decoration: underline dotted;
+  text-underline-offset: 0.15em;
+`
+
 const SSpotButton = styled.button(
   ({ theme }) => css`
     all: unset;
@@ -598,11 +873,11 @@ const SSpotButton = styled.button(
     font-size: ${theme.fontSizes.p5};
     font-weight: 500;
     line-height: 1.2;
-    color: ${theme.textButtons.small.rest};
+    color: ${theme.text.medium};
     transition: ${theme.transitions.colors};
 
     &:hover {
-      color: ${theme.textButtons.small.hover};
+      color: ${theme.text.high};
     }
   `,
 )
