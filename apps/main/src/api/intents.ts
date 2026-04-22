@@ -27,6 +27,48 @@ export const iceFeeQuery = (context: TProviderContext) => {
   })
 }
 
+/**
+ * Runtime constant `Intent.MaxAllowedIntentDuration` — maximum
+ * `deadline - now` window in milliseconds that a Swap intent may have.
+ * Exceeding it (or sitting exactly at the boundary when the runtime's
+ * comparison is strict) causes the extrinsic to fail with
+ * `Intent: InvalidDeadline`. Cached indefinitely: changes only on
+ * runtime upgrade.
+ */
+export const maxIntentDurationQuery = (context: TProviderContext) => {
+  const { papiClient, isApiLoaded } = context
+
+  return queryOptions({
+    enabled: isApiLoaded,
+    staleTime: Infinity,
+    queryKey: ["maxIntentDuration"],
+    queryFn: async () => {
+      const unsafeApi = papiClient.getUnsafeApi() as any
+      try {
+        const raw = unsafeApi.constants.Intent.MaxAllowedIntentDuration
+        // The PAPI descriptor types it as `bigint`. Some unsafeApi
+        // wrappers return `{ value: bigint }` — handle both.
+        const ms =
+          typeof raw === "bigint"
+            ? raw
+            : typeof raw?.value === "bigint"
+              ? raw.value
+              : typeof raw === "number"
+                ? BigInt(raw)
+                : null
+        if (ms !== null && ms > 0n) return ms
+      } catch (e) {
+        console.warn(
+          "[maxIntentDuration] Intent.MaxAllowedIntentDuration not available:",
+          e,
+        )
+      }
+      // Fallback: 24h (matches feat/ice-pallet runtime default).
+      return BigInt(24 * 60 * 60 * 1000)
+    },
+  })
+}
+
 export type IntentSwapData = {
   asset_in: number
   asset_out: number

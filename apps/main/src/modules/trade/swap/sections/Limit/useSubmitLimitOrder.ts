@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import Big from "big.js"
 import { useTranslation } from "react-i18next"
 
+import { maxIntentDurationQuery } from "@/api/intents"
 import { bestSellQuery } from "@/api/trade"
 import { calculateSlippage } from "@/api/utils/slippage"
 import { LimitFormValues } from "@/modules/trade/swap/sections/Limit/useLimitForm"
@@ -24,15 +25,26 @@ const getIntentAssetId = (asset: TAsset): number => {
 
 // Expiry durations in milliseconds. Must stay within the runtime's
 // `Intent.MaxAllowedIntentDuration` constant — going over it causes
-// the extrinsic to fail with `Intent: InvalidDeadline`. Current devnet
-// appears to cap intents below 1 day, which is why the old
-// 3d / 10d options were removed.
+// the extrinsic to fail with `Intent: InvalidDeadline`. The clamp
+// below guarantees the deadline we submit is always strictly below
+// the runtime cap, even under clock skew.
 const EXPIRY_MS: Record<string, number> = {
   "15min": 15 * 60 * 1000,
   "30min": 30 * 60 * 1000,
   "1h": 60 * 60 * 1000,
   "1d": 24 * 60 * 60 * 1000,
 }
+
+/**
+ * Safety margin (ms) subtracted from the runtime's max intent duration
+ * before we use it to clamp `deadline - now`. Absorbs:
+ *   - Clock skew between the user's machine and the chain
+ *   - The time between `Date.now()` being sampled client-side and the
+ *     tx actually being included in a block (usually 6–30s on Hydration)
+ * Without this buffer the "1 day" option sits exactly at the runtime
+ * cap and gets rejected with `Intent: InvalidDeadline`.
+ */
+const DEADLINE_SAFETY_MARGIN_MS = 60 * 1000
 
 // When limit price is within this tolerance of the router quote rate we treat
 // the order as "at market" and apply slippage buffer.
@@ -79,9 +91,19 @@ export const useSubmitLimitOrder = () => {
         symbol: buyAsset.symbol,
       })
 
+      // Build the deadline as `now + user-chosen window`, but clamp it
+      // to `(runtime max) - safety margin` so it never sits at or past
+      // the runtime cap. Fetched from chain; falls back to 24h.
       const expiryMs = EXPIRY_MS[expiry]
-      const deadline =
-        expiryMs !== undefined ? BigInt(Date.now() + expiryMs) : undefined
+      let deadline: bigint | undefined
+      if (expiryMs !== undefined) {
+        const maxDurationMs = await queryClient.ensureQueryData(
+          maxIntentDurationQuery(rpc),
+        )
+        const maxSafeMs = Number(maxDurationMs) - DEADLINE_SAFETY_MARGIN_MS
+        const effectiveMs = Math.max(1, Math.min(expiryMs, maxSafeMs))
+        deadline = BigInt(Date.now() + effectiveMs)
+      }
 
       // Determine amount_out:
       //   - Market mode (limitPrice ~ router quote rate): apply slippage buffer
