@@ -9,7 +9,6 @@
   "bridge.wormhole": "Wormhole",
   "bridge.snowbridge": "Snowbridge",
   "bridge.basejump": "Basejump",
-  "bridge.selector.label": "Via",
   "chainAssetSelect.button.selectAssetChain": "Select asset & chain",
   "chainAssetSelect.emptyState.noAssets": "No assets found",
   "chainAssetSelect.modal.title": "Chain & asset",

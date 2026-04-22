@@ -15,9 +15,9 @@ import {
 } from "@/modules/xcm/history/utils/basejump"
 import { removeOptimisticJourney } from "@/modules/xcm/history/utils/optimistic"
 
-export const bjscan = new BasejumpScanSseClient(basejumpscan.baseUrl)
+const bjscan = new BasejumpScanSseClient(basejumpscan.baseUrl)
 
-export const createBasejumpScanQueryKey = (address: string) => [
+const createBasejumpScanQueryKey = (address: string) => [
   "basejumpscan",
   address,
 ]

@@ -16,9 +16,7 @@ import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
 import { useCrossChainBalance } from "@/api/xcm"
-import { useXcmBridgeTxStore } from "@/modules/xcm/history/hooks/useXcmBridgeTxStore"
 import {
-  chainToUrn,
   insertOptimisticJourney,
   removeOptimisticJourney,
 } from "@/modules/xcm/history/utils/optimistic"
@@ -85,8 +83,6 @@ export const XcmForm = () => {
 
   const queryClient = useQueryClient()
 
-  const { addEntry: addBridgeTxEntry } = useXcmBridgeTxStore()
-
   const submit = useSubmitXcmTransfer({
     onTransferSubmitted: (txHash, values, transfer) => {
       if (account) {
@@ -98,12 +94,7 @@ export const XcmForm = () => {
           transfer,
         )
       }
-      if (values.bridgeProvider) {
-        addBridgeTxEntry(txHash, {
-          bridgeProvider: values.bridgeProvider,
-          destUrn: values.destChain ? chainToUrn(values.destChain) : undefined,
-        })
-      }
+
       resetAmounts()
     },
     onTransferError: (txHash) => {

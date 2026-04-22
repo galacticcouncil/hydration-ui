@@ -19,9 +19,6 @@ import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
 import { BRIDGE_PROVIDER_TAGS, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
-/**
- * Returns the primary bridge provider tag for a given route.
- */
 export const getPrimaryBridgeTag = (route: AssetRoute): string | null => {
   const tags = (route.tags ?? []) as string[]
   return BRIDGE_PROVIDER_TAGS.find((tag) => tags.includes(tag)) ?? null
