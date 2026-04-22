@@ -1,4 +1,4 @@
-import { JetSki, Swimmer } from "@galacticcouncil/ui/assets/icons"
+import { Basejumper, Swimmer } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AssetRoute } from "@galacticcouncil/xc-core"
@@ -31,7 +31,7 @@ const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
 }
 
 const BRIDGE_ICONS: Partial<Record<string, React.ComponentType>> = {
-  [XcmTag.Basejump]: JetSki,
+  [XcmTag.Basejump]: Basejumper,
   [XcmTag.Wormhole]: Swimmer,
   [XcmTag.Snowbridge]: Swimmer,
 }
