@@ -49,8 +49,6 @@
   "report.destFee.insufficientBalance": "You need to have at least {{ amount, number }} {{ symbol }} on {{ chain }}",
   "report.asset.frozen": "Your account on {{ chain }} has frozen balance for {{ symbol }}",
   "report.account.insufficientDeposit": "You need to have {{ amount, number }} {{ symbol }} on {{ chain }} for existential deposit",
-  "journey.fastDelivery": "fast delivery",
-  "journey.delivered": "Delivered",
   "journey.status.sent": "In Progress",
   "journey.status.pending": "In Progress",
   "journey.status.received": "Completed",

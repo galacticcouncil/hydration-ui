@@ -66,7 +66,7 @@ export function convertXcmFormValuesToOptimisticJourney(
   txHash: string,
   fromAddress: string,
 ): XcJourney | undefined {
-  const { srcChain, destChain, srcAsset, srcAmount, destAddress } = values
+  const { srcChain, destChain, srcAsset, destAmount, destAddress } = values
   const decimals = transfer.source.balance.decimals
   const now = Date.now()
 
@@ -107,7 +107,7 @@ export function convertXcmFormValuesToOptimisticJourney(
       {
         asset: `${originUrn}|${assetId}`,
         symbol: srcAsset?.originSymbol ?? "",
-        amount: scale(srcAmount, decimals),
+        amount: scale(destAmount, decimals),
         decimals,
         role: "transfer",
       },

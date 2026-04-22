@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  ExternalLinkIcon,
   JetSki,
   QuestionCircleRegular,
 } from "@galacticcouncil/ui/assets/icons"
@@ -179,11 +180,27 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
           {isClaimable && <ClaimButton journey={journey} />}
           {isOptimisticJourney(journey) ? (
             <Button variant="accent" outline disabled>
-              {t("details")}
+              <Text display={["none", "inline"]} as="span">
+                {t("details")}
+              </Text>
+              <Icon
+                display={["block", "none"]}
+                size="s"
+                component={ExternalLinkIcon}
+              />
             </Button>
           ) : (
             <Button variant="accent" outline asChild>
-              <ExternalLink href={link}>{t("details")}</ExternalLink>
+              <ExternalLink href={link}>
+                <Text display={["none", "inline"]} as="span">
+                  {t("details")}
+                </Text>
+                <Icon
+                  display={["block", "none"]}
+                  size="s"
+                  component={ExternalLinkIcon}
+                />
+              </ExternalLink>
             </Button>
           )}
         </Flex>

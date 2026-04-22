@@ -3,7 +3,6 @@ import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AssetRoute } from "@galacticcouncil/xc-core"
 import { useFormContext } from "react-hook-form"
-import { useTranslation } from "react-i18next"
 import { isNonNullish } from "remeda"
 
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
@@ -42,7 +41,6 @@ type BridgeSelectorProps = {
 }
 
 export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
-  const { t } = useTranslation(["xcm"])
   const { watch, setValue } = useFormContext<XcmFormValues>()
   const bridgeProvider = watch("bridgeProvider")
 
@@ -52,7 +50,7 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
       if (!tag) return null
       return {
         id: tag,
-        label: t(`xcm:bridge.provider.${tag.toLowerCase()}`, tag),
+        label: tag,
         time: BRIDGE_TIME_ESTIMATES[tag] ?? "",
         icon: BRIDGE_ICONS[tag] ?? Swimmer,
       } satisfies BridgeOption

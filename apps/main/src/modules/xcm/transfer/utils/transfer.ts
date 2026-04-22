@@ -50,6 +50,7 @@ export const getTransferStatus = (
     case !!transfer && transfer.source.min.amount >= transfer.source.max.amount:
       return XcmTransferStatus.InsufficientBalance
     case !values.srcAmount:
+    case !values.destAmount:
       return XcmTransferStatus.AmountMissing
     case alerts.length > 0:
       return XcmTransferStatus.TransferInvalid
