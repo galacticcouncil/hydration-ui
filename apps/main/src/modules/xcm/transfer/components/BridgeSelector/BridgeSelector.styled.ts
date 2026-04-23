@@ -11,6 +11,8 @@ export const SBridgeOption = styled.button<{ active: boolean }>(
     position: relative;
     overflow: hidden;
 
+    color: ${theme.text.medium};
+
     border: 1px solid ${theme.buttons.outlineDark.onOutline};
     border-radius: ${theme.radii.m};
 
@@ -23,6 +25,7 @@ export const SBridgeOption = styled.button<{ active: boolean }>(
 
     ${active
       ? css`
+          color: ${theme.text.high};
           background-color: ${theme.controls.dim.active};
           border-color: ${theme.controls.dim.active};
         `

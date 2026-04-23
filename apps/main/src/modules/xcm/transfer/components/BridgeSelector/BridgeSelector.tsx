@@ -1,4 +1,4 @@
-import { Basejumper } from "@galacticcouncil/ui/assets/icons"
+import { Basejumper, WormholeLogo } from "@galacticcouncil/ui/assets/icons"
 import { Flex, Icon, Text } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
 import { AssetRoute } from "@galacticcouncil/xc-core"
@@ -15,6 +15,7 @@ type BridgeOption = {
   id: string
   label: string
   time: string
+  icon?: React.ComponentType
 }
 
 const BRIDGE_PRIORITY: Record<string, number> = {
@@ -27,6 +28,11 @@ const BRIDGE_TIME_ESTIMATES: Partial<Record<string, string>> = {
   [XcmTag.Basejump]: "~22 sec",
   [XcmTag.Wormhole]: "~30 min",
   [XcmTag.Snowbridge]: "~25 min",
+}
+
+const BRIDGE_ICONS: Partial<Record<string, React.ComponentType>> = {
+  [XcmTag.Basejump]: Basejumper,
+  [XcmTag.Wormhole]: WormholeLogo,
 }
 
 type BridgeSelectorProps = {
@@ -45,6 +51,7 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
         id: tag,
         label: tag,
         time: BRIDGE_TIME_ESTIMATES[tag] ?? "",
+        icon: BRIDGE_ICONS[tag],
       } satisfies BridgeOption
     })
     .filter(isNonNullish)
@@ -65,16 +72,9 @@ export const BridgeSelector: React.FC<BridgeSelectorProps> = ({ routes }) => {
             active={active}
             onClick={() => setValue("bridgeProvider", option.id)}
           >
-            <Flex gap="s" align="center">
-              {option.id === XcmTag.Basejump && (
-                <Icon
-                  component={Basejumper}
-                  size="xl"
-                  sx={{ transform: "scale(1.8)" }}
-                  color={getToken("text.medium")}
-                />
-              )}
-              <Text fs="p3" lh={1} color={getToken("text.high")}>
+            <Flex gap="base" align="center">
+              {option.icon && <Icon component={option.icon} size="xl" />}
+              <Text fs="p3" fw={500} lh={1} color={getToken("text.high")}>
                 {option.label}
               </Text>
             </Flex>
