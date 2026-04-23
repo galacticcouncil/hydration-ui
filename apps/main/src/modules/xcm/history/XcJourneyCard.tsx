@@ -109,10 +109,11 @@ export const XcJourneyCard: React.FC<XcJourney> = (journey) => {
             ml="auto"
           >
             {originProtocol === "basejump" && (
-              <Flex gap="xs" align="center">
+              <Flex gap="s" align="center">
                 <Icon
                   component={Basejumper}
                   size="m"
+                  sx={{ transform: "scale(1.7)" }}
                   color={getToken("colors.skyBlue.600")}
                 />
                 <JourneyProtocol fs="p5" protocol={originProtocol} />
