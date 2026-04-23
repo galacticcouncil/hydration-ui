@@ -3,6 +3,8 @@ import { HYDRATION_CHAIN_KEY, uuid } from "@galacticcouncil/utils"
 import { SolanaTxStatus } from "@galacticcouncil/web3-connect/src/signers/SolanaSigner"
 import { SuiTxStatus } from "@galacticcouncil/web3-connect/src/signers/SuiSigner"
 import { tags } from "@galacticcouncil/xc-cfg"
+import { Asset } from "@galacticcouncil/xc-core"
+import { ComponentType } from "react"
 import { TransactionReceipt } from "viem"
 import { create } from "zustand"
 
@@ -36,6 +38,7 @@ export type TransactionCommon = {
   fee?: TransactionFee
   toasts?: TransactionToasts
   meta?: TransactionMeta
+  signerFeeAsset?: Asset
   invalidateQueries?: string[][]
   withExtraGas?: boolean | bigint
   isUnsigned?: boolean
@@ -57,6 +60,7 @@ type MultiTransactionConfig = (
   | SingleTransactionInputDynamic
 ) & {
   stepTitle: string
+  pendingComponent?: ComponentType
   //@TODO consider separate all transaction actions per tx
   onSubmitted?: (txHash: string) => void
 }

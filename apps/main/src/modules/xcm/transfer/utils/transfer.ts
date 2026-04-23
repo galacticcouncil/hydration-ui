@@ -2,7 +2,10 @@ import {
   formatDestChainAddress,
   formatSourceChainAddress,
   HexString,
+  HYDRATION_CHAIN_KEY,
+  invariant,
   isEvmChain,
+  isParachain,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -10,12 +13,15 @@ import { Call, Transfer } from "@galacticcouncil/xc-sdk"
 import Big from "big.js"
 import { minutesToMilliseconds } from "date-fns"
 import waitFor from "p-wait-for"
+import { Binary } from "polkadot-api"
 
 import { XcmTransferArgs } from "@/api/xcm"
+import { AnyPapiTx } from "@/modules/transactions/types"
 import { isEvmApproveCall } from "@/modules/transactions/utils/xcm"
 import { useApprovalTrackingStore } from "@/modules/xcm/transfer/hooks/useApprovalTrackingStore"
 import { XcmFormValues } from "@/modules/xcm/transfer/hooks/useXcmFormSchema"
 import { XcmAlert } from "@/modules/xcm/transfer/hooks/useXcmProvider"
+import { Papi } from "@/providers/rpcProvider"
 import { XCM_BRIDGE_TAGS, XcmTags } from "@/states/transactions"
 import { toDecimal } from "@/utils/formatting"
 
@@ -133,4 +139,46 @@ export const buildTransferCall = async (
       timeout: minutesToMilliseconds(3),
     },
   )
+}
+
+export async function getExternalChainTx(
+  chain: AnyChain,
+  call: Call,
+): Promise<AnyPapiTx | Call> {
+  if (!isParachain(chain)) return call
+  return chain.client.getUnsafeApi().txFromCallData(Binary.fromHex(call.data))
+}
+
+export async function buildXcmTx(
+  srcChain: AnyChain,
+  transfer: Transfer,
+  srcAmount: string,
+  papi: Papi,
+): Promise<AnyPapiTx | Call> {
+  const call = await transfer.buildCall(srcAmount)
+  const transferCall = await buildTransferCall(
+    call,
+    transfer,
+    srcChain,
+    srcAmount,
+  )
+  return srcChain.key === HYDRATION_CHAIN_KEY
+    ? await papi.txFromCallData(Binary.fromHex(transferCall.data))
+    : await getExternalChainTx(srcChain, transferCall)
+}
+
+export function assertTransferValues(values: XcmFormValues) {
+  const { srcAmount, srcChain, srcAsset, destChain, destAsset } = values
+  invariant(srcAmount, "Source amount is required")
+  invariant(destChain, "Destination chain is required")
+  invariant(srcChain, "Source chain is required")
+  invariant(srcAsset, "Source asset is required")
+  invariant(destAsset, "Destination asset is required")
+  return {
+    ...values,
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+  }
 }
