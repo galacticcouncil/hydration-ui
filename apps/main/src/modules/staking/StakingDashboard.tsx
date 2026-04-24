@@ -15,6 +15,7 @@ import { ActiveDashboard } from "@/modules/staking/ActiveDashboard"
 import { ActiveDashboardSkeleton } from "@/modules/staking/ActiveDashboardSkeleton"
 import { DashboardStats } from "@/modules/staking/DashboardStats"
 import { DashboardStatsSkeleton } from "@/modules/staking/DashboardStatsSkeleton"
+import { GigaHDXBanner } from "@/modules/staking/gigaStaking/GigaHDXBanner"
 import { HowToStake } from "@/modules/staking/HowToStake"
 import { OngoingReferenda } from "@/modules/staking/OngoingReferenda"
 import { Stake } from "@/modules/staking/Stake"
@@ -85,6 +86,7 @@ export const StakingDashboard: FC = () => {
   if (isMobile || isTablet) {
     return (
       <Flex direction="column" gap="base">
+        {hasPosition && <GigaHDXBanner />}
         <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />
         <Flex direction="column" gap="xl">
           <Box>
@@ -133,6 +135,7 @@ export const StakingDashboard: FC = () => {
 
   return (
     <Flex direction="column" gap="xl">
+      {hasPosition && <GigaHDXBanner />}
       <TwoColumnGrid template="sidebar">
         <SectionHeader
           noTopPadding

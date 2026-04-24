@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Navigate } from "@tanstack/react-router"
 
-import { StakingDashboard } from "@/modules/staking/StakingDashboard"
+import { LINKS } from "@/config/navigation"
 
 export const Route = createFileRoute("/staking/")({
-  component: StakingDashboard,
+  component: () => Navigate({ to: LINKS.stakingOverview }),
 })

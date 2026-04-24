@@ -8,6 +8,8 @@ export const DOT_ASSET_ID = "5"
 export const PRIME_ASSET_ID = "43"
 export const PRIME_STABLESWAP_ASSET_ID = "143"
 export const PRIME_ERC20_ASSET_ID = "1043"
+export const HDX_ERC20_ASSET_ID = "67"
+export const STHDX_ASSET_ID = "670"
 
 export const HEALTH_FACTOR_RISK_THRESHOLD = 1.2
 export const HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1

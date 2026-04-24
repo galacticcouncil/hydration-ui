@@ -17,7 +17,7 @@ export const RewardsInfoDesktop: FC<Props> = ({
 }) => {
   const { t } = useTranslation(["common", "staking"])
   const { native } = useAssets()
-
+  console.log(allocatedRewards)
   return (
     <Flex align="center" justify="space-between">
       <Flex align="center" gap="base">
