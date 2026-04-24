@@ -98,6 +98,7 @@ export const getXcmFormDefaults = (account: Account | null): XcmFormValues => {
     destAmount: "",
     destAddress: destAccount?.rawAddress ?? "",
     destAccount: destAccount,
+    bridgeProvider: null,
   }
 }
 

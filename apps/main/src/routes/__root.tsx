@@ -16,7 +16,11 @@ import { DataProviderSelect } from "@/components/DataProviderSelect/DataProvider
 import { LayoutSkeleton } from "@/modules/layout/components/LayoutSkeleton"
 import { useHasTopNavbar } from "@/modules/layout/hooks/useHasTopNavbar"
 import { MainLayout } from "@/modules/layout/MainLayout"
-import { useXcScanSubscription } from "@/modules/xcm/history"
+import {
+  useBasejumpScanSubscription,
+  useXcScanSubscription,
+} from "@/modules/xcm/history"
+import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
@@ -97,6 +101,8 @@ function ApiSubscriptions() {
 
 function AccountSubscriptions({ account }: { account: Account }) {
   useXcScanSubscription(account.address)
+  useBasejumpScanSubscription(account.address)
+  useProcessBasejumpScanJourneys(account.address)
 
   return null
 }

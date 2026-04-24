@@ -12,9 +12,9 @@ export const XcmPage = () => {
   const address = account?.address ?? ""
 
   const claimable = useClaimableTransactions()
-  const { data: all, dataUpdatedAt } = useXcScan(address)
+  const { data: all, isLoading: isLoadingXcScan } = useXcScan(address)
 
-  const isLoading = !!account && dataUpdatedAt === 0
+  const isLoading = !!account && isLoadingXcScan
   const isTwoColTemplate = !!account && (all.length > 0 || isLoading)
 
   return (

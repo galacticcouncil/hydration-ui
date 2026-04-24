@@ -7,7 +7,7 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
-import { stringEquals, xcscan } from "@galacticcouncil/utils"
+import { basejumpscan, stringEquals, xcscan } from "@galacticcouncil/utils"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
 import { createColumnHelper } from "@tanstack/react-table"
 import Big from "big.js"
@@ -188,7 +188,7 @@ export const useXcScanHistoryColumns = () => {
 
         const durationMs = recvAt - sentAt
 
-        if (durationMs < 0) {
+        if (durationMs <= 0) {
           return null
         }
 
@@ -203,11 +203,13 @@ export const useXcScanHistoryColumns = () => {
     const actionColumn = columnHelper.display({
       id: XcScanHistoryTableColumnId.Action,
       cell: ({ row }) => {
-        const link = xcscan.tx(row.original.correlationId)
+        const { correlationId, originProtocol } = row.original
+        const link =
+          originProtocol === "basejump"
+            ? basejumpscan.tx(correlationId)
+            : xcscan.tx(correlationId)
 
-        const isNotPending = !pendingCorrelationIds.includes(
-          row.original.correlationId,
-        )
+        const isNotPending = !pendingCorrelationIds.includes(correlationId)
         const isClaimable = isNotPending && isJourneyClaimable(row.original)
 
         return (
