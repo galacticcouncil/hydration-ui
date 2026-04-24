@@ -9,9 +9,12 @@ import z from "zod"
 import { chainToUrn } from "@/modules/xcm/history/utils/optimistic"
 import { Papi } from "@/providers/rpcProvider"
 
-type SystemEventsAtBlock = Awaited<
+type SystemEvents = Awaited<
   ReturnType<Papi["query"]["System"]["Events"]["getValue"]>
 >
+
+export const BASEJUMP_LANDING_CONTRACT =
+  "0x70e9b12c3b19cb5f0e59984a5866278ab69df976"
 
 export const TransferExecutedEvt = parseAbiItem(
   "event TransferExecuted(address indexed sourceAsset, address indexed destAsset, bytes32 indexed recipient, uint256 amount)",
@@ -177,10 +180,14 @@ export function createBjscanJourneyKey({
   return `${recipient}-${asset}-${amount}`.toLowerCase()
 }
 
-export function mapTransferExecutedLogs(events: SystemEventsAtBlock) {
+export function mapTransferExecutedLogs(events: SystemEvents) {
   return events
     .map(({ event }) => {
-      if (event.type === "EVM" && event.value.type === "Log") {
+      if (
+        event.type === "EVM" &&
+        event.value.type === "Log" &&
+        event.value.value.log.address.asHex() === BASEJUMP_LANDING_CONTRACT
+      ) {
         const [signatureTopic, ...topics] = event.value.value.log.topics.map(
           (topic) => topic.asHex(),
         ) as Hex[]

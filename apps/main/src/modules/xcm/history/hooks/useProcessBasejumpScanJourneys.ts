@@ -6,7 +6,7 @@ import {
 import { XcJourney } from "@galacticcouncil/xc-scan"
 import { differenceInMinutes } from "date-fns"
 import { useEffect } from "react"
-import { map } from "rxjs"
+import { filter, map } from "rxjs"
 import { decodeEventLog } from "viem"
 
 import {
@@ -38,7 +38,10 @@ export const useProcessBasejumpScanJourneys = (address: string) => {
     if (journeysToProcess.length === 0) return
 
     const sub = papi.query.System.Events.watchValue("best")
-      .pipe(map(mapTransferExecutedLogs))
+      .pipe(
+        map(mapTransferExecutedLogs),
+        filter((events) => events.length > 0),
+      )
       .subscribe((events) => {
         for (const { signatureTopic, topics, data } of events) {
           const decoded = decodeEventLog({
