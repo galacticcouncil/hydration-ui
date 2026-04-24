@@ -20,6 +20,7 @@ import {
   useBasejumpScanSubscription,
   useXcScanSubscription,
 } from "@/modules/xcm/history"
+import { useProcessBasejumpScanJourneys } from "@/modules/xcm/history/hooks/useProcessBasejumpScanJourneys"
 import { AssetsProvider } from "@/providers/assetsProvider"
 import { MultisigProvider } from "@/providers/MultisigProvider"
 import { RpcProvider, useRpcProvider } from "@/providers/rpcProvider"
@@ -101,6 +102,7 @@ function ApiSubscriptions() {
 function AccountSubscriptions({ account }: { account: Account }) {
   useXcScanSubscription(account.address)
   useBasejumpScanSubscription(account.address)
+  useProcessBasejumpScanJourneys(account.address)
 
   return null
 }

@@ -2,10 +2,20 @@ import { HYDRATION_CHAIN_KEY, stringEquals } from "@galacticcouncil/utils"
 import { chainsMap } from "@galacticcouncil/xc-cfg"
 import { AnyChain, Asset } from "@galacticcouncil/xc-core"
 import type { XcJourney } from "@galacticcouncil/xc-scan"
-import { isNumber } from "remeda"
+import { isNonNullish, isNumber } from "remeda"
+import { Hex, parseAbiItem, toEventSelector } from "viem"
 import z from "zod"
 
 import { chainToUrn } from "@/modules/xcm/history/utils/optimistic"
+import { Papi } from "@/providers/rpcProvider"
+
+type SystemEventsAtBlock = Awaited<
+  ReturnType<Papi["query"]["System"]["Events"]["getValue"]>
+>
+
+export const TransferExecutedEvt = parseAbiItem(
+  "event TransferExecuted(address indexed sourceAsset, address indexed destAsset, bytes32 indexed recipient, uint256 amount)",
+)
 
 export const basejumpScanEventSchema = z.object({
   chain: z.string(),
@@ -153,4 +163,35 @@ export function basejumpItemToXcJourney(
       },
     ],
   } satisfies XcJourney
+}
+
+export function createBjscanJourneyKey({
+  recipient,
+  amount,
+}: {
+  recipient: string
+  amount: string
+}): string {
+  return `${recipient}-${amount}`.toLowerCase()
+}
+
+export function mapTransferExecutedLogs(events: SystemEventsAtBlock) {
+  return events
+    .map(({ event }) => {
+      if (event.type === "EVM" && event.value.type === "Log") {
+        const [signatureTopic, ...topics] = event.value.value.log.topics.map(
+          (topic) => topic.asHex(),
+        ) as Hex[]
+
+        return !!signatureTopic &&
+          stringEquals(signatureTopic, toEventSelector(TransferExecutedEvt))
+          ? {
+              data: event.value.value.log.data.asHex(),
+              signatureTopic,
+              topics,
+            }
+          : undefined
+      }
+    })
+    .filter(isNonNullish)
 }

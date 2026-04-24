@@ -17,6 +17,7 @@ enum ToastProcessorType {
   Substrate = "Substrate",
   Wormhole = "Wormhole",
   Snowbridge = "Snowbridge",
+  Basejump = "Basejump",
   Unknown = "Unknown",
 }
 
@@ -25,6 +26,7 @@ const MAX_TOAST_MINUTE_AGE = {
   [ToastProcessorType.Substrate]: 60,
   [ToastProcessorType.Wormhole]: 70,
   [ToastProcessorType.Snowbridge]: 70,
+  [ToastProcessorType.Basejump]: 60,
   [ToastProcessorType.Unknown]: 0,
 } as const
 
@@ -68,12 +70,16 @@ const getToastProcessorType = (toast: ToastData): ToastProcessorType => {
     case type === TransactionType.Xcm && tags.includes(XcmTag.Snowbridge):
       return ToastProcessorType.Snowbridge
 
+    case type === TransactionType.Xcm && tags.includes(XcmTag.Basejump):
+      return ToastProcessorType.Basejump
+
     default:
       return ToastProcessorType.Unknown
   }
 }
 
 export const createToastProcessorFn = (
+  address: string,
   queryClient: QueryClient,
   indexerSdk: IndexerSdk,
   snowbridgeSdk: SnowbridgeSdk,
@@ -83,6 +89,7 @@ export const createToastProcessorFn = (
   const evmProcessor = processors.evm(queryClient, indexerSdk, evm)
   const wormholeProcessor = processors.wormhole(queryClient, indexerSdk, evm)
   const snowbridgeProcessor = processors.snowbridge(queryClient, snowbridgeSdk)
+  const basejumpProcessor = processors.basejump(address, queryClient)
   const invalidProcessor = processors.invalid()
 
   return async (toast) => {
@@ -102,6 +109,8 @@ export const createToastProcessorFn = (
         return wormholeProcessor(toast)
       case ToastProcessorType.Snowbridge:
         return snowbridgeProcessor(toast)
+      case ToastProcessorType.Basejump:
+        return basejumpProcessor(toast)
       case ToastProcessorType.Unknown:
         return invalidProcessor(toast)
     }
