@@ -62,7 +62,7 @@ export const MultisigNotification: React.FC<MultisigNotificationProps> = ({
       }
       actions={
         <ModalRoot>
-          <ModalTrigger>
+          <ModalTrigger asChild>
             <Button size="small" variant="secondary">
               {t("multisig.review")}
             </Button>

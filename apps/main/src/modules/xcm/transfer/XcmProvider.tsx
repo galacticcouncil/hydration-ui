@@ -28,8 +28,10 @@ import {
 } from "@/modules/xcm/transfer/utils/chain"
 import {
   calculateTransferDestAmount,
+  getPrimaryBridgeTag,
   getTransferStatus,
 } from "@/modules/xcm/transfer/utils/transfer"
+import { XcmTag } from "@/states/transactions"
 
 type XcmProviderProps = {
   children: React.ReactNode
@@ -44,15 +46,23 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
 
   const configService = useCrossChainConfigService()
 
-  const [srcChain, srcAsset, destChain, destAsset, srcAmount, destAddress] =
-    form.watch([
-      "srcChain",
-      "srcAsset",
-      "destChain",
-      "destAsset",
-      "srcAmount",
-      "destAddress",
-    ])
+  const [
+    srcChain,
+    srcAsset,
+    destChain,
+    destAsset,
+    srcAmount,
+    destAddress,
+    bridgeProvider,
+  ] = form.watch([
+    "srcChain",
+    "srcAsset",
+    "destChain",
+    "destAsset",
+    "srcAmount",
+    "destAddress",
+    "bridgeProvider",
+  ])
 
   const config = useMemo(
     () => ConfigBuilder(configService).assets(),
@@ -67,7 +77,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
           const assetSource = config.asset(asset).source(chain)
           return assetSource.destinationChains.length > 0
         })
-      return { chain, routes: [], assets }
+      return { chain, routes: [], assets, isTagSelect: false }
     })
   }, [config])
 
@@ -91,14 +101,34 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
       .map((a) => a.destination.chain)
 
     return unique(destChains).map((chain) => {
-      const { routes } = config
+      const { routes, destinationAssets, isTagSelect } = config
         .asset(srcAsset)
         .source(srcChain)
         .destination(chain)
 
-      return { chain, routes, assets: routes.map((r) => r.destination.asset) }
+      return { chain, routes, assets: destinationAssets, isTagSelect }
     })
   }, [config, srcAsset, srcChain, configService])
+
+  const destPair = destChainAssetPairs.find(
+    (p) => p.chain.key === destChain?.key,
+  )
+
+  useEffect(() => {
+    if (!destPair?.isTagSelect) {
+      form.setValue("bridgeProvider", null)
+      return
+    }
+
+    if (destPair.routes.some((r) => getPrimaryBridgeTag(r) === bridgeProvider))
+      return
+
+    const defaultRoute =
+      destPair.routes.find((r) => getPrimaryBridgeTag(r) === XcmTag.Basejump) ??
+      destPair.routes[0]
+    if (defaultRoute)
+      form.setValue("bridgeProvider", getPrimaryBridgeTag(defaultRoute))
+  }, [destPair, bridgeProvider, form])
 
   useEffect(() => {
     const validRoutes = pipe(
@@ -189,6 +219,7 @@ export const XcmProvider: React.FC<XcmProviderProps> = ({ children }) => {
         isConnectedAccountValid,
         sourceChainAssetPairs,
         destChainAssetPairs,
+        availableBridgeRoutes: destPair?.isTagSelect ? destPair.routes : [],
         alerts,
         transfer,
         call,
