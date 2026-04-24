@@ -37,6 +37,7 @@ export const useGigaStake = () => {
       amount: "",
       asset: native,
     },
+    //@TODO: add validation for max supply cap
     resolver: constants
       ? standardSchemaResolver(
           z

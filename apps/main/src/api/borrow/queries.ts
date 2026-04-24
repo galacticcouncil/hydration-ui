@@ -31,6 +31,7 @@ import {
 } from "@galacticcouncil/utils"
 import { useAccount } from "@galacticcouncil/web3-connect"
 import { queryOptions, useQueries, useQuery } from "@tanstack/react-query"
+import { millisecondsInMinute } from "date-fns/constants"
 import { PopulatedTransaction } from "ethers"
 import { Binary, FixedSizeArray } from "polkadot-api"
 import { useCallback } from "react"
@@ -74,6 +75,19 @@ const GIGA_MM2_POOL_ABI = [
       },
       { internalType: "uint256", name: "ltv", type: "uint256" },
       { internalType: "uint256", name: "healthFactor", type: "uint256" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const
+
+const GHO_TOKEN_FACILITATOR_ABI = [
+  {
+    inputs: [{ internalType: "address", name: "facilitator", type: "address" }],
+    name: "getFacilitatorBucket",
+    outputs: [
+      { internalType: "uint256", name: "bucketCapacity", type: "uint256" },
+      { internalType: "uint256", name: "bucketLevel", type: "uint256" },
     ],
     stateMutability: "view",
     type: "function",
@@ -541,6 +555,42 @@ export const userGigaBorrowSummaryQueryKey = (evmAddress: string) => [
   evmAddress,
 ]
 
+export const facilitatorBucketQuery = (
+  rpc: TProviderContext,
+  aTokenAddress: string,
+  ghoServiceContract: GhoService | null,
+) =>
+  queryOptions({
+    queryKey: ["borrow", "gho", "facilitatorBucket", aTokenAddress],
+    queryFn: async () => {
+      if (!ghoServiceContract) throw new Error("Invalid ghoServiceContract")
+
+      const [facilitatorBucketCapacity, facilitatorBucketLevel] =
+        await rpc.evm.readContract({
+          abi: GHO_TOKEN_FACILITATOR_ABI,
+          address: AaveV3HydrationMainnet.GHO_TOKEN_ADDRESS as `0x${string}`,
+          functionName: "getFacilitatorBucket",
+          args: [aTokenAddress as `0x${string}`],
+        })
+
+      return {
+        facilitatorBucketCapacity: facilitatorBucketCapacity,
+        facilitatorBucketLevel: facilitatorBucketLevel,
+      }
+    },
+    retry: false,
+    enabled: !!aTokenAddress && !!ghoServiceContract && rpc.isApiLoaded,
+  })
+
+export const useFacilitatorBucket = (aTokenAddress: string) => {
+  const rpc = useRpcProvider()
+  const ghoServiceContract = useGhoServiceContract()
+
+  return useQuery(
+    facilitatorBucketQuery(rpc, aTokenAddress, ghoServiceContract),
+  )
+}
+
 export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
@@ -551,6 +601,8 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery({
+    staleTime: millisecondsInMinute,
+    gcTime: millisecondsInMinute,
     queryKey: userGigaBorrowSummaryQueryKey(address),
     queryFn: async () => {
       if (!poolDataContract || !ghoServiceContract)
@@ -567,7 +619,7 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
           lendingPoolAddressProvider: gigaLendingPoolAddressProvider,
           user: evmAddress,
         }),
-        rpc.queryClient.ensureQueryData(
+        rpc.queryClient.fetchQuery(
           borrowReservesQuery(
             rpc,
             gigaLendingPoolAddressProvider,

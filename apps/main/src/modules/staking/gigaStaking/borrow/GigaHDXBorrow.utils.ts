@@ -43,6 +43,7 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
   const borrowableAmount = borrowableHollar?.borrowableHollar ?? "0"
   const maxBorrowableWei = BigInt(borrowableHollar?.borrowableHollarWei ?? "0")
 
+  //@TODO: add validation for max borrowable amount
   const form = useForm<GigaHDXBorrowFormValues>({
     mode: "onChange",
     defaultValues: {

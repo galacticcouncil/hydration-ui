@@ -5,6 +5,8 @@
   "gigaStake.header.valueDays": "{{ value, number }} days",
   "gigaStake.header.minimumLockPeriod": "Minimum lock period",
   "gigaStake.header.currentBorrowLimits": "Current borrow limits",
+  "gigaStake.header.currentBorrowLimits.value": "{{ value, number }}<0>/{{max, number(notation: 'compact')}}</0> {{ symbol }}",
+  "gigaStake.header.totalStake": "Total GIGA Stake",
   "gigaStake.section.gigaStakingDashboard": "GIGA staking dashboard",
   "gigaStakingMigration.title": "GIGA staking migration",
   "gigaStakingMigration.lead": "You have <0>{{amount}} HDX</0> staked in Legacy Staking, you can maximize your staking rewards with GIGA HDX.",
