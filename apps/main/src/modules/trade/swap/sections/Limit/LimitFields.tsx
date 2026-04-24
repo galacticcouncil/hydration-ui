@@ -164,53 +164,95 @@ export const LimitFields: FC = () => {
     debounceRef.current = setTimeout(fn, RECALCULATE_DEBOUNCE_MS)
   }, [])
 
+  // ── Sticky-anchor rule ───────────────────────────────────────────────
+  // `amountAnchor` tracks the field the user is currently "driving"
+  // from. It only moves when the user starts typing into a *different*
+  // empty-counterpart field — subsequent edits to the non-anchor field
+  // keep the anchor sacred and derive a new price instead.
+  //
+  // The user's typical flow:
+  //   1. Type buy=1000 → anchor flips to buy (sell was empty), sell
+  //      auto-fills from price.
+  //   2. Explore by editing sell repeatedly → price adjusts each time,
+  //      buy=1000 stays untouched. This is the whole point.
+  //
+  // Lock pill is the escape hatch if the user wants to fix the sell
+  // side instead (forces sell-sacred, price derives on buy edits).
+
   /** User edits sell amount */
   const handleSellAmountChange = useCallback(
     (newSellAmount: string) => {
-      // Record anchor synchronously so a subsequent price edit
-      // (which is not debounced) already sees the new anchor.
-      setValue("amountAnchor", "sell")
+      const values = getValues()
+      const canKeepBuy =
+        !values.isLocked && values.amountAnchor === "buy" && !!values.buyAmount
+
+      // Only re-anchor when we're about to overwrite buy. If buy is
+      // sacred (we'll derive price) the anchor stays "buy" so a later
+      // sell edit continues to preserve buy.
+      if (!canKeepBuy) setValue("amountAnchor", "sell")
+
       debounced(() => {
         const values = getValues()
-        const price = values.limitPrice
-
-        if (!price) return
-
-        // Price-sacred (or locked): sell changed → recalc buy
-        const newBuy = calcBuyFromSellAndPrice(newSellAmount, price)
-        setValue("buyAmount", newBuy)
+        if (canKeepBuy && values.buyAmount) {
+          // Buy is sacred → derive price from both amounts.
+          const newPrice = calcPriceFromAmounts(newSellAmount, values.buyAmount)
+          if (newPrice) {
+            setValue("limitPrice", newPrice)
+            // Derived price → stop auto-mirroring spot.
+            setValue("priceAnchor", "user")
+          }
+        } else if (values.limitPrice) {
+          // Price is sacred → recalc buy.
+          setValue(
+            "buyAmount",
+            calcBuyFromSellAndPrice(newSellAmount, values.limitPrice),
+          )
+        }
         trigger()
       })
     },
-    [debounced, getValues, setValue, calcBuyFromSellAndPrice, trigger],
+    [
+      debounced,
+      getValues,
+      setValue,
+      calcBuyFromSellAndPrice,
+      calcPriceFromAmounts,
+      trigger,
+    ],
   )
 
   /** User edits buy amount */
   const handleBuyAmountChange = useCallback(
     (newBuyAmount: string) => {
-      // When locked, sell is sacred → anchor stays "sell".
-      // Otherwise the user is now anchoring on buy.
-      const { isLocked } = getValues()
-      if (!isLocked) setValue("amountAnchor", "buy")
+      const values = getValues()
+      const isLocked = values.isLocked
+      const canKeepSell =
+        !isLocked && values.amountAnchor === "sell" && !!values.sellAmount
+
+      // Locked always forces sell-sacred (anchor stays "sell").
+      // Otherwise: only re-anchor when we're about to overwrite sell.
+      if (!isLocked && !canKeepSell) setValue("amountAnchor", "buy")
+
       debounced(() => {
         const values = getValues()
-        const price = values.limitPrice
-
-        if (!values.isLocked) {
-          // Price-sacred: buy changed → recalc sell
-          if (price) {
-            const newSell = calcSellFromBuyAndPrice(newBuyAmount, price)
-            setValue("sellAmount", newSell)
-          }
-        } else {
-          // Sell-sacred: sell locked → recalc price
+        if (isLocked || canKeepSell) {
+          // Sell is sacred → derive price from both amounts.
           if (values.sellAmount) {
             const newPrice = calcPriceFromAmounts(
               values.sellAmount,
               newBuyAmount,
             )
-            setValue("limitPrice", newPrice)
+            if (newPrice) {
+              setValue("limitPrice", newPrice)
+              setValue("priceAnchor", "user")
+            }
           }
+        } else if (values.limitPrice) {
+          // Price is sacred → recalc sell.
+          setValue(
+            "sellAmount",
+            calcSellFromBuyAndPrice(newBuyAmount, values.limitPrice),
+          )
         }
         trigger()
       })

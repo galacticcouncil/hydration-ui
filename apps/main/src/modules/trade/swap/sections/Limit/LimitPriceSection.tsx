@@ -85,6 +85,30 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     setLastPillValue("")
   }, [sellAsset?.id, buyAsset?.id])
 
+  // If limitPrice drifts from what the remembered userPct would predict
+  // (market × (1 + userPct/100)), the cached pct is stale — typically
+  // because price was re-derived from the two amounts after an amount
+  // edit. Clear it so the pill shows the true deviation instead of the
+  // old user-entered %. Small tolerance absorbs formatCalcValue rounding.
+  useEffect(() => {
+    if (userPct === null || !marketPrice || !limitPrice) return
+    try {
+      const expected = new Big(marketPrice).times(
+        Big(1).plus(Big(userPct).div(100)),
+      )
+      if (expected.lte(0)) return
+      const actual = new Big(limitPrice)
+      const drift = actual.minus(expected).abs().div(expected)
+      if (drift.gt(0.0001)) {
+        setUserPct(null)
+        setLastPillValue("")
+      }
+    } catch {
+      setUserPct(null)
+      setLastPillValue("")
+    }
+  }, [limitPrice, marketPrice, userPct])
+
   // When the user types in the price field we store their raw input here
   // so the NumberInput displays exactly what they typed (no round-trip
   // through Big.js + formatCalcValue which can mangle digits).
