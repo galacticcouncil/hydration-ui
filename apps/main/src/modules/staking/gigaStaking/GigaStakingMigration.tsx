@@ -8,22 +8,41 @@ import {
   Text,
 } from "@galacticcouncil/ui/components"
 import { getToken } from "@galacticcouncil/ui/utils"
+import { useAccount } from "@galacticcouncil/web3-connect"
+import { useQuery } from "@tanstack/react-query"
 import { FC } from "react"
 import { Trans, useTranslation } from "react-i18next"
 
+import { stakingPositionsQuery } from "@/api/staking"
+import { useAssets } from "@/providers/assetsProvider"
+import { useRpcProvider } from "@/providers/rpcProvider"
+import { toDecimal } from "@/utils/formatting"
+
 export type GigaStakingMigrationProps = {
-  /** User-facing legacy stake total, e.g. `2 345 245 HDX`. */
-  legacyStakedAmount: string
   onMigrate?: () => void
   isMigrateDisabled?: boolean
 }
 
 export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
-  legacyStakedAmount,
   onMigrate,
   isMigrateDisabled,
 }) => {
+  const { native } = useAssets()
+  const rpc = useRpcProvider()
+  const { account } = useAccount()
+  const address = account?.address ?? ""
   const { t } = useTranslation("staking")
+
+  const { data: stakingPositionsData, isPending: isStakingPositionLoading } =
+    useQuery(stakingPositionsQuery(rpc, address))
+
+  if (!isStakingPositionLoading && !stakingPositionsData) {
+    return null
+  }
+
+  const stakedAmount = stakingPositionsData?.stake
+    ? toDecimal(stakingPositionsData.stake, native.decimals)
+    : undefined
 
   return (
     <Paper>
@@ -50,7 +69,7 @@ export const GigaStakingMigration: FC<GigaStakingMigrationProps> = ({
           <Trans
             t={t}
             i18nKey="gigaStakingMigration.lead"
-            values={{ amount: legacyStakedAmount }}
+            values={{ amount: stakedAmount }}
             components={[
               <Text
                 key="giga-migration-amount"

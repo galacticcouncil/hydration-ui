@@ -18,7 +18,7 @@ export const GigaStakingDashboard = () => {
       {gigaHdxBalance > 0n ? <GigaHDXPosition /> : <GigaHDXDescription />}
 
       <Flex direction="column" gap="xl">
-        <GigaStakingMigration legacyStakedAmount="1000 HDX" />
+        <GigaStakingMigration />
         <GigaStake />
         <UnstakingPositions />
       </Flex>

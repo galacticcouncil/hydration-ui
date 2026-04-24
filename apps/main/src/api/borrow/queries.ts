@@ -535,6 +535,12 @@ export const useUserBorrowSummary = (givenAddress?: string) => {
   )
 }
 
+export const userGigaBorrowSummaryQueryKey = (evmAddress: string) => [
+  "gigaBorrow",
+  "userSummary",
+  evmAddress,
+]
+
 export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const rpc = useRpcProvider()
   const { account } = useAccount()
@@ -545,7 +551,7 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
   const evmAddress = safeConvertAnyToH160(address)
 
   return useQuery({
-    queryKey: ["gigaBorrow", "userSummary", evmAddress],
+    queryKey: userGigaBorrowSummaryQueryKey(address),
     queryFn: async () => {
       if (!poolDataContract || !ghoServiceContract)
         throw new Error("Invalid poolDataContract or ghoServiceContract")
@@ -573,9 +579,7 @@ export const useUserGigaBorrowSummary = (givenAddress?: string) => {
           ghoUserDataQuery(evmAddress, rpc, ghoServiceContract),
         ),
 
-        rpc.queryClient.ensureQueryData(
-          gigaBorrowableHollarQuery(evmAddress, rpc),
-        ),
+        rpc.queryClient.fetchQuery(gigaBorrowableHollarQuery(evmAddress, rpc)),
       ])
 
       const { userEmodeCategoryId, userReserves } = user

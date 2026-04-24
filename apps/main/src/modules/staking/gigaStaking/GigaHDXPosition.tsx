@@ -107,6 +107,7 @@ export const GigaHDXPosition = () => {
                   />
                   <Button
                     variant="accent"
+                    disabled={hollarReserve?.totalBorrows === "0"}
                     outline
                     onClick={() => setRepayModalOpen(true)}
                   >

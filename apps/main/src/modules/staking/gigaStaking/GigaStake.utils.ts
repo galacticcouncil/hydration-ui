@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import z from "zod/v4"
 
 import { TAssetData } from "@/api/assets"
+import { userGigaBorrowSummaryQueryKey } from "@/api/borrow/queries"
 import { evmAccountBindingQuery } from "@/api/evm"
 import { gigaStakeConstantsQuery } from "@/api/gigaStake"
 import i18n from "@/i18n"
@@ -75,19 +76,27 @@ export const useGigaStake = () => {
       )
 
       if (!isBound) {
-        return createTransaction({
-          tx: rpc.papi.tx.Utility.batch_all({
-            calls: [
-              rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
-              stakeTx.decodedCall,
-            ],
-          }),
-        })
+        return createTransaction(
+          {
+            tx: rpc.papi.tx.Utility.batch_all({
+              calls: [
+                rpc.papi.tx.EVMAccounts.bind_evm_address().decodedCall,
+                stakeTx.decodedCall,
+              ],
+            }),
+            invalidateQueries: [userGigaBorrowSummaryQueryKey(address)],
+          },
+          { onSuccess: () => form.reset() },
+        )
       }
 
-      return createTransaction({
-        tx: stakeTx,
-      })
+      return createTransaction(
+        {
+          tx: stakeTx,
+          invalidateQueries: [userGigaBorrowSummaryQueryKey(address)],
+        },
+        { onSuccess: () => form.reset() },
+      )
     },
   })
 

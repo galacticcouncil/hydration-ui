@@ -13,6 +13,7 @@ import {
   useApproveErc20,
   useErc20Allowance,
   useGigaBorrowPoolContract,
+  userGigaBorrowSummaryQueryKey,
   useUserGigaBorrowSummary,
 } from "@/api/borrow"
 import { useAssets } from "@/providers/assetsProvider"
@@ -125,6 +126,7 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
                 }).decodedCall,
               ],
             }),
+            invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
           },
           { onSubmitted: onClose },
         )
@@ -134,6 +136,7 @@ export const useGigaHDXBorrow = ({ onClose }: { onClose: () => void }) => {
             tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
               call: evmCall.decodedCall,
             }),
+            invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
           },
           { onSubmitted: onClose },
         )

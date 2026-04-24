@@ -7,7 +7,6 @@ import { FC } from "react"
 import { useTranslation } from "react-i18next"
 
 import { nativeTokenLocksQuery, TokenLockType } from "@/api/balances"
-import { uniquesIds } from "@/api/constants"
 import { accountOpenGovVotesQuery } from "@/api/democracy"
 import { stakingPositionsQuery } from "@/api/staking"
 import { TwoColumnGrid } from "@/modules/layout/components/TwoColumnGrid"
@@ -32,13 +31,8 @@ export const StakingDashboard: FC = () => {
   const { account } = useAccount()
   const address = account?.address ?? ""
 
-  const { data: uniquesData, isLoading: uniquesLoading } = useQuery(
-    uniquesIds(rpc),
-  )
-  const stakingId = uniquesData?.stakingId ?? 0n
-
   const { data: stakingPositionsData, isPending: stakingPositionsPending } =
-    useQuery(stakingPositionsQuery(rpc, address, stakingId))
+    useQuery(stakingPositionsQuery(rpc, address))
 
   const {
     data: accountVotes,
@@ -98,9 +92,7 @@ export const StakingDashboard: FC = () => {
               positionId={stakingPositionsData?.stakePositionId ?? 0n}
               votesSuccess={votesIsSuccess}
               balance={availableBalance}
-              isLoading={
-                votesIsLoading || isLoading || uniquesLoading || locksLoading
-              }
+              isLoading={votesIsLoading || isLoading || locksLoading}
             />
           </Box>
           <Paper px="m" py="xxl">
@@ -174,9 +166,7 @@ export const StakingDashboard: FC = () => {
           positionId={positionId}
           votesSuccess={votesIsSuccess}
           balance={availableBalance}
-          isLoading={
-            votesIsLoading || isLoading || uniquesLoading || locksLoading
-          }
+          isLoading={votesIsLoading || isLoading || locksLoading}
         />
       </TwoColumnGrid>
       <OngoingReferenda votes={votesData} isVotesLoading={votesIsLoading} />

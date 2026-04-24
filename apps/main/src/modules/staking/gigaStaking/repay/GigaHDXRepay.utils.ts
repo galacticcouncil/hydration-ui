@@ -15,7 +15,10 @@ import {
   useGigaBorrowPoolContract,
   useUserGigaBorrowSummary,
 } from "@/api/borrow"
-import { convertEvmTxRawToPapiTx } from "@/api/borrow/queries"
+import {
+  convertEvmTxRawToPapiTx,
+  userGigaBorrowSummaryQueryKey,
+} from "@/api/borrow/queries"
 import { useAssets } from "@/providers/assetsProvider"
 import { useRpcProvider } from "@/providers/rpcProvider"
 import { useAccountBalances } from "@/states/account"
@@ -124,15 +127,15 @@ export const useGigaHDXRepay = ({ onClose }: { onClose: () => void }) => {
         ProtocolAction.repay,
       )
 
-      await createTransaction({
-        tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
-          call: evmCall.decodedCall,
-        }),
-      })
-    },
-    onSuccess: () => {
-      form.reset()
-      onClose()
+      await createTransaction(
+        {
+          tx: provider.papi.tx.Dispatcher.dispatch_evm_call({
+            call: evmCall.decodedCall,
+          }),
+          invalidateQueries: [userGigaBorrowSummaryQueryKey(account.address)],
+        },
+        { onSubmitted: onClose },
+      )
     },
   })
 
