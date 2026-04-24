@@ -3,6 +3,7 @@ import {
   formatSourceChainAddress,
   HexString,
   isEvmChain,
+  isValidBigSource,
 } from "@galacticcouncil/utils"
 import { Account } from "@galacticcouncil/web3-connect"
 import { AnyChain, Asset, AssetRoute } from "@galacticcouncil/xc-core"
@@ -66,6 +67,7 @@ export const calculateTransferDestAmount = (
   transfer: Transfer,
 ): string => {
   const { destinationFee } = transfer.source
+  if (!isValidBigSource(amount)) return ""
   if (asset.isEqual(destinationFee)) {
     const destFee = toDecimal(destinationFee.amount, destinationFee.decimals)
     const amountMinusFee = Big(amount || "0").minus(destFee)

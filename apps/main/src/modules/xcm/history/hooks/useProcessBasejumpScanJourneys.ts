@@ -13,7 +13,10 @@ import {
   createBasejumpScanQueryKey,
   useBasejumpScan,
 } from "@/modules/xcm/history/useBasejumpScan"
-import { getTransferAsset } from "@/modules/xcm/history/utils/assets"
+import {
+  getTransferAsset,
+  resolveAssetIcon,
+} from "@/modules/xcm/history/utils/assets"
 import {
   createBjscanJourneyKey,
   mapTransferExecutedLogs,
@@ -28,6 +31,7 @@ const isValidForProcessing = (journey: XcJourney) =>
 export const useProcessBasejumpScanJourneys = (address: string) => {
   const { papi, isLoaded, queryClient } = useRpcProvider()
   const { data: journeys } = useBasejumpScan(address)
+
   return useEffect(() => {
     if (!isLoaded || !journeys) return
     const journeysToProcess = journeys.filter(isValidForProcessing)
@@ -48,14 +52,17 @@ export const useProcessBasejumpScanJourneys = (address: string) => {
 
           const completedJourneyKey = createBjscanJourneyKey({
             recipient: h160,
+            asset: decoded.args.sourceAsset,
             amount: decoded.args.amount.toString(),
           })
 
           const completedJourney = journeysToProcess.find((journey) => {
             const transferAsset = getTransferAsset(journey)
             if (!transferAsset) return false
+            const assetMeta = resolveAssetIcon(transferAsset.asset)
             const journeyKey = createBjscanJourneyKey({
               recipient: journey.to,
+              asset: assetMeta?.assetId ?? "",
               amount: transferAsset.amount,
             })
             return stringEquals(journeyKey, completedJourneyKey)

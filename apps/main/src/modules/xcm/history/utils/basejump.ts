@@ -167,12 +167,14 @@ export function basejumpItemToXcJourney(
 
 export function createBjscanJourneyKey({
   recipient,
+  asset,
   amount,
 }: {
   recipient: string
+  asset: string
   amount: string
 }): string {
-  return `${recipient}-${amount}`.toLowerCase()
+  return `${recipient}-${asset}-${amount}`.toLowerCase()
 }
 
 export function mapTransferExecutedLogs(events: SystemEventsAtBlock) {
@@ -183,8 +185,11 @@ export function mapTransferExecutedLogs(events: SystemEventsAtBlock) {
           (topic) => topic.asHex(),
         ) as Hex[]
 
-        return !!signatureTopic &&
+        const isTransferExecutedTopic =
+          !!signatureTopic &&
           stringEquals(signatureTopic, toEventSelector(TransferExecutedEvt))
+
+        return isTransferExecutedTopic
           ? {
               data: event.value.value.log.data.asHex(),
               signatureTopic,
