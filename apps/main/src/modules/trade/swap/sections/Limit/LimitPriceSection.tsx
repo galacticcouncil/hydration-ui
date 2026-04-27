@@ -114,7 +114,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
   // through Big.js + formatCalcValue which can mangle digits).
   // `canonical` is the limitPrice value we wrote at the same time; on
   // every render we check that limitPrice still matches — if an external
-  // source (spot prefill, asset reset, sell-sacred recalc) has changed
+  // source (market prefill, asset reset, sell-sacred recalc) has changed
   // it, we ignore the cached user input and format the new value.
   const userInputRef = useRef<{
     value: string
@@ -176,8 +176,8 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     }
   })()
 
-  // ── Spot price display value (same formatting as price field) ──
-  const spotDisplayValue = (() => {
+  // ── "Best" price display value (same formatting as price field) ──
+  const bestDisplayValue = (() => {
     if (!marketPrice) return null
     try {
       const raw = isInverted
@@ -267,7 +267,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
         inverted: isInverted,
         canonical: newLimitPrice,
       }
-      // User typed a custom price — stop auto-mirroring spot.
+      // User typed a custom price — stop auto-mirroring market.
       setValue("priceAnchor", "user")
       setValue("limitPrice", newLimitPrice)
       // Typing the price directly invalidates any remembered pill %.
@@ -278,13 +278,13 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
     [isInverted, setValue, recalcBuy],
   )
 
-  // ── Set limit price to spot/market price ──
-  const handleSetSpotPrice = useCallback(() => {
+  // ── Set limit price to live market (best) price ──
+  const handleSetBestPrice = useCallback(() => {
     if (!marketPrice) return
     userInputRef.current = null
-    // Resume mirroring spot live (next block will confirm via the
-    // spot-mirroring effect in LimitFields, keeping them in sync).
-    setValue("priceAnchor", "spot")
+    // Resume mirroring market live (next block will confirm via the
+    // market-mirroring effect in LimitFields, keeping them in sync).
+    setValue("priceAnchor", "market")
     setValue("limitPrice", marketPrice)
     recalcBuy(marketPrice)
     // Explicit reset wipes any remembered % — next edit starts clean.
@@ -297,9 +297,9 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
       event.stopPropagation()
       event.preventDefault()
       setIsEditingPill(false)
-      handleSetSpotPrice()
+      handleSetBestPrice()
     },
-    [handleSetSpotPrice],
+    [handleSetBestPrice],
   )
 
   // ── Inline editing mode for custom pill ──
@@ -316,7 +316,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
    * mode. Called on every keystroke so the price and receive amount
    * update live as the user types the percentage. Handles these cases:
    *
-   *   - Empty / whitespace → resume mirroring spot (priceAnchor = "spot")
+   *   - Empty / whitespace → resume mirroring market (priceAnchor = "market")
    *   - Valid percentage    → set limitPrice = market × (1 + pct/100),
    *                           priceAnchor = "user"
    *   - Invalid / partial   → silently skip (last valid state stays,
@@ -332,7 +332,7 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
       if (!trimmed) {
         userInputRef.current = null
         setUserPct(null)
-        setValue("priceAnchor", "spot")
+        setValue("priceAnchor", "market")
         setValue("limitPrice", marketPrice)
         recalcBuy(marketPrice)
         return
@@ -558,16 +558,16 @@ export const LimitPriceSection: FC<Props> = ({ marketPrice }) => {
           </Flex>
         </Flex>
 
-        {/* Spot reset — extra top margin vs fiat so it’s clearly separated from the $ line */}
-        {spotDisplayValue && (
+        {/* "Best" reset — extra top margin vs fiat so it's clearly separated from the $ line */}
+        {bestDisplayValue && (
           <Flex justify="flex-end" mt="m">
-            <SSpotButton type="button" onClick={handleSetSpotPrice}>
+            <SBestButton type="button" onClick={handleSetBestPrice}>
               <Trans
-                i18nKey="trade:limit.spot"
-                values={{ value: spotDisplayValue }}
-                components={{ spotPrice: <SSpotPrice /> }}
+                i18nKey="trade:limit.best"
+                values={{ value: bestDisplayValue }}
+                components={{ bestPrice: <SBestPrice /> }}
               />
-            </SSpotButton>
+            </SBestButton>
           </Flex>
         )}
       </Flex>
@@ -885,12 +885,12 @@ const SPillInlineInput = styled.input(
   `,
 )
 
-const SSpotPrice = styled.span`
+const SBestPrice = styled.span`
   text-decoration: underline dotted;
   text-underline-offset: 0.15em;
 `
 
-const SSpotButton = styled.button(
+const SBestButton = styled.button(
   ({ theme }) => css`
     all: unset;
     cursor: pointer;

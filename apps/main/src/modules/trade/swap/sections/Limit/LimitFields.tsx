@@ -17,7 +17,7 @@ import {
 import { useFormContext } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 
-import { spotPriceQuery } from "@/api/spotPrice"
+import { bestSellQuery } from "@/api/trade"
 import { AssetSelectFormField } from "@/form/AssetSelectFormField"
 import { LimitPriceSection } from "@/modules/trade/swap/sections/Limit/LimitPriceSection"
 import { LimitSwitcher } from "@/modules/trade/swap/sections/Limit/LimitSwitcher"
@@ -71,18 +71,40 @@ export const LimitFields: FC = () => {
     (asset) => !SELL_ONLY_ASSETS.includes(asset.id),
   )
 
-  // Use spotPriceQuery — same clean theoretical rate as the swap page
-  // (TradeAssetSwitcher fallback). No fees or price impact.
-  const { data: spotData } = useQuery(
-    spotPriceQuery(rpc, sellAsset?.id ?? "", buyAsset?.id ?? ""),
+  // Market reference price (Option C):
+  //   - User typed sellAmount → execution rate = amountOut / amountIn.
+  //     Fees + price impact at the user's size. Same rate the Market
+  //     (swap) tab shows as "you get".
+  //   - sellAmount empty → probe the router with 1 whole unit. At that
+  //     tiny size impact is negligible, so the resulting rate is
+  //     effectively fee-adjusted spot (≈ spot × (1 − tradeFeePct)).
+  //     This gives the user a stable "top of book with fees" reference
+  //     before they commit to an amount; transitioning to execution
+  //     rate as they type reveals only the impact component.
+  // User slippage buffer is never included here — that's applied
+  // only at submit (see useSubmitLimitOrder).
+  const sellAmountForQuote =
+    sellAmount && Big(sellAmount || "0").gt(0) ? sellAmount : "1"
+
+  const { data: swap } = useQuery(
+    bestSellQuery(rpc, {
+      assetIn: sellAsset?.id ?? "",
+      assetOut: buyAsset?.id ?? "",
+      amountIn: sellAmountForQuote,
+    }),
   )
 
   const marketPrice = (() => {
-    if (!spotData?.spotPrice) return null
+    if (!swap || !sellAsset || !buyAsset) return null
     try {
-      const spot = new Big(spotData.spotPrice)
-      if (spot.lte(0)) return null
-      return formatCalcValue(spot)
+      const inHuman = Big(swap.amountIn.toString()).div(
+        Big(10).pow(sellAsset.decimals),
+      )
+      const outHuman = Big(swap.amountOut.toString()).div(
+        Big(10).pow(buyAsset.decimals),
+      )
+      if (inHuman.lte(0) || outHuman.lte(0)) return null
+      return formatCalcValue(outHuman.div(inHuman))
     } catch {
       return null
     }
@@ -133,27 +155,55 @@ export const LimitFields: FC = () => {
     [],
   )
 
-  // ── Keep limit price mirrored to spot until the user touches it ──
-  // As long as `priceAnchor === "spot"` we re-sync `limitPrice` to the
-  // latest `marketPrice` every time the spot query refetches (which it
-  // does on every new block via QUERY_KEY_BLOCK_PREFIX). Once the user
-  // types a custom price or % deviation, LimitPriceSection flips
-  // `priceAnchor` to "user" and this effect becomes a no-op — their
-  // typed value is preserved.
+  // ── Keep limit price mirrored to market until the user touches it ──
+  // As long as `priceAnchor === "market"` we re-sync `limitPrice` to
+  // the latest `marketPrice` every time the quote refetches (on every
+  // new block via QUERY_KEY_BLOCK_PREFIX, and additionally whenever
+  // the user's sellAmount changes because the price is now amount-
+  // aware). Once the user types a custom price or % deviation,
+  // LimitPriceSection flips `priceAnchor` to "user" and this effect
+  // becomes a no-op — their typed value is preserved.
+  //
+  // Cascade semantics:
+  //   1. Always update `limitPrice` to the fresh market rate.
+  //   2. Cascade between amounts ONLY if both amounts are already
+  //      populated. This keeps two amounts consistent when the market
+  //      moves under their feet, but doesn't auto-fill a field the
+  //      user has intentionally cleared. Initial "type one, auto-fill
+  //      the other" is handled by the edit handlers, not here.
+  //   3. When cascading, respect `amountAnchor` so we don't overwrite
+  //      the user's sacred field: anchor=buy → recalc sell,
+  //      anchor=sell → recalc buy.
   useEffect(() => {
     if (!marketPrice) return
     const values = getValues()
-    if (values.priceAnchor !== "spot") return
+    if (values.priceAnchor !== "market") return
     if (values.limitPrice === marketPrice) return
 
     setValue("limitPrice", marketPrice)
-    if (values.sellAmount) {
+
+    // Update-only cascade — skip when either amount is empty so a
+    // cleared field stays cleared.
+    if (!values.sellAmount || !values.buyAmount) return
+
+    if (values.amountAnchor === "buy") {
+      setValue(
+        "sellAmount",
+        calcSellFromBuyAndPrice(values.buyAmount, marketPrice),
+      )
+    } else {
       setValue(
         "buyAmount",
         calcBuyFromSellAndPrice(values.sellAmount, marketPrice),
       )
     }
-  }, [marketPrice, getValues, setValue, calcBuyFromSellAndPrice])
+  }, [
+    marketPrice,
+    getValues,
+    setValue,
+    calcBuyFromSellAndPrice,
+    calcSellFromBuyAndPrice,
+  ])
 
   // ── Field change handlers (Matcha anchor model) ──
 
@@ -198,7 +248,7 @@ export const LimitFields: FC = () => {
           const newPrice = calcPriceFromAmounts(newSellAmount, values.buyAmount)
           if (newPrice) {
             setValue("limitPrice", newPrice)
-            // Derived price → stop auto-mirroring spot.
+            // Derived price → stop auto-mirroring market.
             setValue("priceAnchor", "user")
           }
         } else if (values.limitPrice) {
@@ -284,14 +334,14 @@ export const LimitFields: FC = () => {
     (newSellAsset: TAsset) => {
       const values = getValues()
       // Reset price — will be re-populated from marketPrice by the
-      // spot-mirroring effect (priceAnchor stays "spot" after reset).
+      // market-mirroring effect (priceAnchor stays "market" after reset).
       reset({
         ...values,
         sellAsset: newSellAsset,
         limitPrice: "",
         buyAmount: "",
         amountAnchor: "sell",
-        priceAnchor: "spot",
+        priceAnchor: "market",
       })
       trigger()
     },
@@ -307,7 +357,7 @@ export const LimitFields: FC = () => {
         limitPrice: "",
         buyAmount: "",
         amountAnchor: "sell",
-        priceAnchor: "spot",
+        priceAnchor: "market",
       })
       trigger()
     },

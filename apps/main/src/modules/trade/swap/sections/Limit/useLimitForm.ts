@@ -34,12 +34,15 @@ const schemaBase = z.object({
    */
   amountAnchor: z.enum(["sell", "buy"]),
   /**
-   * "spot" → limitPrice mirrors the live spot price every block.
-   * "user" → user has typed / edited a custom price or deviation %,
-   *          so we stop auto-syncing. Reset to "spot" by clicking the
-   *          Spot button or by changing assets.
+   * "market" → limitPrice mirrors the live market price every block
+   *            (amount-aware: includes fees + impact at user's size,
+   *            falls back to fee-adjusted spot at probe size when
+   *            sellAmount is empty).
+   * "user"   → user has typed / edited a custom price or deviation %,
+   *            so we stop auto-syncing. Reset to "market" by clicking
+   *            the "Best" button or by changing assets.
    */
-  priceAnchor: z.enum(["spot", "user"]),
+  priceAnchor: z.enum(["market", "user"]),
 })
 
 export type LimitFormValues = z.infer<typeof schemaBase>
@@ -77,7 +80,7 @@ export const useLimitForm = ({ assetIn, assetOut }: Args) => {
     partiallyFillable: true,
     isLocked: false,
     amountAnchor: "sell",
-    priceAnchor: "spot",
+    priceAnchor: "market",
   }
 
   const form = useForm<LimitFormValues>({
