@@ -31,7 +31,7 @@ import { useAssets } from "@/providers/assetsProvider"
 
 export const GigaHDXPosition = () => {
   const { t } = useTranslation(["staking", "common"])
-  const { native, getAssetWithFallback } = useAssets()
+  const { getAssetWithFallback } = useAssets()
 
   const [repayModalOpen, setRepayModalOpen] = useState(false)
   const ghdxMeta = getAssetWithFallback(HDX_ERC20_ASSET_ID)
@@ -48,7 +48,7 @@ export const GigaHDXPosition = () => {
     <>
       <Paper>
         <Flex align="center" p="xl" gap="base">
-          <AssetLogo id={native.id} />
+          <AssetLogo id={ghdxMeta.id} />
 
           <Text
             font="primary"
